@@ -332,7 +332,7 @@ class TestOTXTiling:
             assert isinstance(batch, TileBatchDetDataEntity)
 
     def test_det_tile_merge(self, fxt_det_data_config):
-        model = OTXDetectionModel(num_classes=3)
+        model = OTXDetectionModel(label_info=3)
         # Enable tile adapter
         fxt_det_data_config.tile_config.enable_tiler = True
         tile_datamodule = OTXDataModule(
@@ -348,7 +348,7 @@ class TestOTXTiling:
             model.forward_tiles(batch)
 
     def test_explain_det_tile_merge(self, fxt_det_data_config):
-        model = OTXDetectionModel(num_classes=3)
+        model = OTXDetectionModel(label_info=3)
         # Enable tile adapter
         fxt_det_data_config.tile_config.enable_tiler = True
         fxt_det_data_config.tile_config.enable_adaptive_tiling = False
@@ -367,7 +367,7 @@ class TestOTXTiling:
         self.explain_mode = False
 
     def test_instseg_tile_merge(self, fxt_instseg_data_config):
-        model = OTXInstanceSegModel(num_classes=3)
+        model = OTXInstanceSegModel(label_info=3)
         # Enable tile adapter
         fxt_instseg_data_config.tile_config.enable_tiler = True
         tile_datamodule = OTXDataModule(
@@ -383,7 +383,7 @@ class TestOTXTiling:
             model.forward_tiles(batch)
 
     def test_explain_instseg_tile_merge(self, fxt_instseg_data_config):
-        model = OTXInstanceSegModel(num_classes=3)
+        model = OTXInstanceSegModel(label_info=3)
         # Enable tile adapter
         fxt_instseg_data_config.tile_config.enable_tiler = True
         fxt_instseg_data_config.tile_config.enable_adaptive_tiling = False

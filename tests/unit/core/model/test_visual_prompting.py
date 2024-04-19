@@ -33,7 +33,7 @@ from torchvision import tv_tensors
 @pytest.fixture()
 def otx_visual_prompting_model(mocker) -> OTXVisualPromptingModel:
     mocker.patch.object(OTXVisualPromptingModel, "_create_model")
-    model = OTXVisualPromptingModel(num_classes=1)
+    model = OTXVisualPromptingModel(label_info=1)
     model.model.image_size = 1024
     return model
 
@@ -41,7 +41,7 @@ def otx_visual_prompting_model(mocker) -> OTXVisualPromptingModel:
 @pytest.fixture()
 def otx_zero_shot_visual_prompting_model(mocker) -> OTXZeroShotVisualPromptingModel:
     mocker.patch.object(OTXZeroShotVisualPromptingModel, "_create_model")
-    model = OTXZeroShotVisualPromptingModel(num_classes=1)
+    model = OTXZeroShotVisualPromptingModel(label_info=1)
     model.model.image_size = 1024
     return model
 

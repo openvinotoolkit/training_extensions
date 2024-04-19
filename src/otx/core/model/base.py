@@ -13,6 +13,7 @@ import json
 import logging
 import warnings
 from abc import abstractmethod
+from collections.abc import Sequence
 from typing import TYPE_CHECKING, Any, Callable, Generic, Literal, NamedTuple
 
 import numpy as np
@@ -45,7 +46,7 @@ from otx.core.schedulers import (
     SchedulerCallableSupportHPO,
 )
 from otx.core.types.export import OTXExportFormatType, TaskLevelExportParameters
-from otx.core.types.label import LabelInfo, NullLabelInfo
+from otx.core.types.label import LabelInfo, LabelInfoTypes, NullLabelInfo
 from otx.core.types.precision import OTXPrecisionType
 from otx.core.utils.build import get_default_num_async_infer_requests
 from otx.core.utils.miscellaneous import ensure_callable
@@ -99,7 +100,7 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
 
     def __init__(
         self,
-        num_classes: int,
+        label_info: LabelInfoTypes,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = NullMetricCallable,
@@ -107,7 +108,7 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
     ) -> None:
         super().__init__()
 
-        self._label_info = LabelInfo.from_num_classes(num_classes) if num_classes > 0 else NullLabelInfo()
+        self._label_info = self._dispatch_label_info(label_info)
         self.classification_layers: dict[str, dict[str, Any]] = {}
         self.model = self._create_model()
         self._explain_mode = False
@@ -123,7 +124,7 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
 
         # this line allows to access init params with 'self.hparams' attribute
         # also ensures init params will be stored in ckpt
-        self.save_hyperparameters(logger=False, ignore=["model", "optimizer", "scheduler", "metric"])
+        self.save_hyperparameters(logger=False, ignore=["optimizer", "scheduler", "metric"])
 
     def training_step(self, batch: T_OTXBatchDataEntity, batch_idx: int) -> Tensor:
         """Step for model training."""
@@ -420,20 +421,27 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
         return self._label_info
 
     @label_info.setter
-    def label_info(self, label_info: LabelInfo | list[str]) -> None:
+    def label_info(self, label_info: LabelInfoTypes) -> None:
         """Set this model label information."""
         self._set_label_info(label_info)
 
-    def _set_label_info(self, label_info: LabelInfo | list[str]) -> None:
+    def _set_label_info(self, label_info: LabelInfoTypes) -> None:
         """Actual implementation for set this model label information.
 
         Derived classes should override this function.
         """
-        if isinstance(label_info, list):
-            label_info = LabelInfo(label_names=label_info, label_groups=[label_info])
+        msg = (
+            "Assign new label_info to the model. "
+            "It is usually not recommended. "
+            "Please create a new model instance by giving label_info to its initializer "
+            "such as `OTXModel(label_info=label_info, ...)`."
+        )
+        logger.warning(msg, stacklevel=0)
+
+        new_label_info = self._dispatch_label_info(label_info)
 
         old_num_classes = self._label_info.num_classes
-        new_num_classes = label_info.num_classes
+        new_num_classes = new_label_info.num_classes
 
         if old_num_classes != new_num_classes:
             msg = (
@@ -442,10 +450,10 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
                 "The model prediction layer is reset to the new number of classes "
                 f"(={new_num_classes})."
             )
-            warnings.warn(msg, stacklevel=0)
-            self._reset_prediction_layer(num_classes=label_info.num_classes)
+            logger.warning(msg, stacklevel=0)
+            self._reset_prediction_layer(num_classes=new_label_info.num_classes)
 
-        self._label_info = label_info
+        self._label_info = new_label_info
 
     @property
     def num_classes(self) -> int:
@@ -754,6 +762,17 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
         """Set tiling configurations."""
         self._tile_config = tile_config
 
+    @staticmethod
+    def _dispatch_label_info(label_info: LabelInfoTypes) -> LabelInfo:
+        if isinstance(label_info, int):
+            return LabelInfo.from_num_classes(num_classes=label_info)
+        if isinstance(label_info, Sequence) and all(isinstance(name, str) for name in label_info):
+            return LabelInfo(label_names=label_info, label_groups=[label_info])
+        if isinstance(label_info, LabelInfo):
+            return label_info
+
+        raise TypeError(label_info)
+
 
 class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
     """Base class for the OpenVINO model.
@@ -786,7 +805,7 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
         self.use_throughput_mode = use_throughput_mode
         self.model_api_configuration = model_api_configuration if model_api_configuration is not None else {}
         # NOTE: num_classes and label_info comes from the IR metadata
-        super().__init__(num_classes=-1, metric=metric)
+        super().__init__(label_info=NullLabelInfo(), metric=metric)
         self._label_info = self._create_label_info_from_ov_ir()
 
         tile_enabled = False
@@ -956,16 +975,15 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
         """Model parameters for export."""
         return {}
 
-    def _set_label_info(self, label_info: LabelInfo | list[str]) -> None:
+    def _set_label_info(self, label_info: LabelInfoTypes) -> None:
         """Set this model label information."""
-        if isinstance(label_info, list):
-            label_info = LabelInfo(label_names=label_info, label_groups=[label_info])
+        new_label_info = self._dispatch_label_info(label_info)
 
-        if self._label_info != label_info:
+        if self._label_info != new_label_info:
             msg = "OVModel strictly does not allow overwrite label_info if they are different each other."
             raise ValueError(msg)
 
-        self._label_info = label_info
+        self._label_info = new_label_info
 
     def _create_label_info_from_ov_ir(self) -> LabelInfo:
         ov_model = self.model.get_model()

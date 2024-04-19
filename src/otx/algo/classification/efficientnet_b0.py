@@ -19,7 +19,7 @@ from otx.core.model.classification import (
 )
 from otx.core.model.utils.mmpretrain import ExplainableMixInMMPretrainModel
 from otx.core.schedulers import LRSchedulerListCallable
-from otx.core.types.label import HLabelInfo
+from otx.core.types.label import HLabelInfo, LabelInfoTypes
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
@@ -32,7 +32,7 @@ class EfficientNetB0ForHLabelCls(ExplainableMixInMMPretrainModel, MMPretrainHlab
 
     def __init__(
         self,
-        hlabel_info: HLabelInfo,
+        label_info: HLabelInfo,
         optimizer: OptimizerCallable = lambda params: torch.optim.SGD(
             params=params,
             lr=0.0049,
@@ -50,7 +50,7 @@ class EfficientNetB0ForHLabelCls(ExplainableMixInMMPretrainModel, MMPretrainHlab
         config = read_mmconfig(model_name="efficientnet_b0_light", subdir_name="hlabel_classification")
 
         super().__init__(
-            hlabel_info=hlabel_info,
+            label_info=label_info,
             config=config,
             optimizer=optimizer,
             scheduler=scheduler,
@@ -68,7 +68,7 @@ class EfficientNetB0ForMulticlassCls(ExplainableMixInMMPretrainModel, MMPretrain
 
     def __init__(
         self,
-        num_classes: int,
+        label_info: LabelInfoTypes,
         light: bool = False,
         optimizer: OptimizerCallable = lambda params: torch.optim.SGD(
             params=params,
@@ -89,7 +89,7 @@ class EfficientNetB0ForMulticlassCls(ExplainableMixInMMPretrainModel, MMPretrain
         model_name = "efficientnet_b0_light" if light else "efficientnet_b0"
         config = read_mmconfig(model_name=model_name, subdir_name="multiclass_classification")
         super().__init__(
-            num_classes=num_classes,
+            label_info=label_info,
             config=config,
             optimizer=optimizer,
             scheduler=scheduler,
@@ -110,7 +110,7 @@ class EfficientNetB0ForMultilabelCls(ExplainableMixInMMPretrainModel, MMPretrain
 
     def __init__(
         self,
-        num_classes: int,
+        label_info: LabelInfoTypes,
         optimizer: OptimizerCallable = lambda params: torch.optim.SGD(
             params=params,
             lr=0.0049,
@@ -127,7 +127,7 @@ class EfficientNetB0ForMultilabelCls(ExplainableMixInMMPretrainModel, MMPretrain
     ) -> None:
         config = read_mmconfig(model_name="efficientnet_b0_light", subdir_name="multilabel_classification")
         super().__init__(
-            num_classes=num_classes,
+            label_info=label_info,
             config=config,
             optimizer=optimizer,
             scheduler=scheduler,

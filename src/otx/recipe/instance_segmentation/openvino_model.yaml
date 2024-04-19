@@ -1,7 +1,7 @@
 model:
   class_path: otx.core.model.instance_segmentation.OVInstanceSegmentationModel
   init_args:
-    num_classes: 80
+    label_info: 80
     model_name: openvino.xml
     model_type: MaskRCNN
     async_inference: True

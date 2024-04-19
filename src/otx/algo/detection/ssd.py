@@ -24,6 +24,7 @@ from otx.core.metrics.mean_ap import MeanAPCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
 from otx.core.model.detection import MMDetCompatibleModel
 from otx.core.schedulers import LRSchedulerListCallable
+from otx.core.types.label import LabelInfoTypes
 from otx.core.utils.build import modify_num_classes
 from otx.core.utils.config import convert_conf_to_mmconfig_dict
 from otx.core.utils.utils import get_mean_std_from_data_processing
@@ -348,7 +349,7 @@ class SSD(MMDetCompatibleModel):
 
     def __init__(
         self,
-        num_classes: int,
+        label_info: LabelInfoTypes,
         variant: Literal["mobilenetv2"],
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
@@ -358,7 +359,7 @@ class SSD(MMDetCompatibleModel):
         model_name = f"ssd_{variant}"
         config = read_mmconfig(model_name=model_name)
         super().__init__(
-            num_classes=num_classes,
+            label_info=label_info,
             config=config,
             optimizer=optimizer,
             scheduler=scheduler,

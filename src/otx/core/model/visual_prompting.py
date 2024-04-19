@@ -34,7 +34,7 @@ from otx.core.metrics.visual_prompting import VisualPromptingMetricCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable, OTXModel, OVModel
 from otx.core.schedulers import LRSchedulerListCallable
 from otx.core.types.export import TaskLevelExportParameters
-from otx.core.types.label import LabelInfo, NullLabelInfo
+from otx.core.types.label import LabelInfo, LabelInfoTypes, NullLabelInfo
 from otx.core.utils.mask_util import polygon_to_bitmap
 
 if TYPE_CHECKING:
@@ -168,20 +168,21 @@ class OTXVisualPromptingModel(OTXModel[VisualPromptingBatchDataEntity, VisualPro
 
     def __init__(
         self,
-        num_classes: int = 0,
+        label_info: LabelInfoTypes = NullLabelInfo(),
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = VisualPromptingMetricCallable,
         torch_compile: bool = False,
     ) -> None:
+        msg = f"Given label_info={label_info} has no effect."
+        log.debug(msg)
         super().__init__(
-            num_classes=num_classes,
+            label_info=NullLabelInfo(),
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
             torch_compile=torch_compile,
         )
-        self._label_info = NullLabelInfo()
 
     @property
     def _exporter(self) -> OTXModelExporter:
@@ -274,20 +275,21 @@ class OTXZeroShotVisualPromptingModel(
 
     def __init__(
         self,
-        num_classes: int = 0,
+        label_info: LabelInfoTypes = NullLabelInfo(),
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = VisualPromptingMetricCallable,
         torch_compile: bool = False,
     ) -> None:
+        msg = f"Given label_info={label_info} has no effect."
+        log.debug(msg)
         super().__init__(
-            num_classes=num_classes,
+            label_info=NullLabelInfo(),
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
             torch_compile=torch_compile,
         )
-        self._label_info = NullLabelInfo()
 
     @property
     def _exporter(self) -> OTXModelExporter:

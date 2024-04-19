@@ -298,6 +298,16 @@ target-version = "py38"
 # Enumerate all fixed violations.
 show-fixes = true
 
+[tool.ruff.lint.flake8-bugbear]
+# Allow default arguments like, e.g., `data: List[str] = fastapi.Query(None)`.
+extend-immutable-calls = [
+    "otx.core.types.label.LabelInfo",
+    "otx.core.types.label.HLabelInfo",
+    "otx.core.types.label.SegLabelInfo",
+    "otx.core.types.label.NullLabelInfo",
+    "otx.core.types.label.AnomalyLabelInfo",
+]
+
 [tool.ruff.mccabe]
 # Unlike Flake8, default to a complexity level of 10.
 max-complexity = 20

@@ -13,8 +13,8 @@ class TestATSS:
     @pytest.mark.parametrize(
         "model",
         [
-            ATSS(num_classes=2, variant="mobilenetv2"),
-            ATSS(num_classes=2, variant="resnext101"),
+            ATSS(label_info=2, variant="mobilenetv2"),
+            ATSS(label_info=2, variant="resnext101"),
         ],
     )
     def test(self, model, mocker) -> None:

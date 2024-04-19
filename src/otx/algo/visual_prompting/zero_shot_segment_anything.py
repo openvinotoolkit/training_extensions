@@ -31,6 +31,7 @@ from otx.core.metrics.visual_prompting import VisualPromptingMetricCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
 from otx.core.model.visual_prompting import OTXZeroShotVisualPromptingModel
 from otx.core.schedulers import LRSchedulerListCallable
+from otx.core.types.label import LabelInfoTypes, NullLabelInfo
 
 if TYPE_CHECKING:
     import numpy as np
@@ -627,7 +628,7 @@ class OTXZeroShotSegmentAnything(OTXZeroShotVisualPromptingModel):
     def __init__(  # noqa: PLR0913
         self,
         backbone: Literal["tiny_vit", "vit_b"],
-        num_classes: int = 0,
+        label_info: LabelInfoTypes = NullLabelInfo(),
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = VisualPromptingMetricCallable,
@@ -661,7 +662,7 @@ class OTXZeroShotSegmentAnything(OTXZeroShotVisualPromptingModel):
             **DEFAULT_CONFIG_SEGMENT_ANYTHING[backbone],
         }
         super().__init__(
-            num_classes=num_classes,
+            label_info=label_info,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
