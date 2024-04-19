@@ -620,14 +620,12 @@
             <span class="p">),</span>
         <span class="p">)</span>
 
-        <span class="n">num_classes</span> <span class="o">=</span> <span class="n">datamodule</span><span class="o">.</span><span class="n">label_info</span><span class="o">.</span><span class="n">num_classes</span>
-
         <span class="c1"># Update num_classes &amp; Instantiate Model</span>
         <span class="n">model_config</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;model&quot;</span><span class="p">)</span>
-        <span class="n">model_config</span><span class="p">[</span><span class="s2">&quot;init_args&quot;</span><span class="p">][</span><span class="s2">&quot;num_classes&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">num_classes</span>
+        <span class="n">model_config</span><span class="p">[</span><span class="s2">&quot;init_args&quot;</span><span class="p">][</span><span class="s2">&quot;label_info&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">datamodule</span><span class="o">.</span><span class="n">label_info</span>
 
         <span class="n">model_parser</span> <span class="o">=</span> <span class="n">ArgumentParser</span><span class="p">()</span>
-        <span class="n">model_parser</span><span class="o">.</span><span class="n">add_subclass_arguments</span><span class="p">(</span><span class="n">OTXModel</span><span class="p">,</span> <span class="s2">&quot;model&quot;</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">fail_untyped</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">model_parser</span><span class="o">.</span><span class="n">add_subclass_arguments</span><span class="p">(</span><span class="n">OTXModel</span><span class="p">,</span> <span class="s2">&quot;model&quot;</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">fail_untyped</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">skip</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;label_info&quot;</span><span class="p">})</span>
         <span class="n">model</span> <span class="o">=</span> <span class="n">model_parser</span><span class="o">.</span><span class="n">instantiate_classes</span><span class="p">(</span><span class="n">Namespace</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="n">model_config</span><span class="p">))</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;model&quot;</span><span class="p">)</span>
 
         <span class="c1"># Instantiate Engine</span>

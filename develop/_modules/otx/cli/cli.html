@@ -259,7 +259,6 @@
 <span class="kn">from</span> <span class="nn">otx.cli.utils.help_formatter</span> <span class="kn">import</span> <span class="n">CustomHelpFormatter</span>
 <span class="kn">from</span> <span class="nn">otx.cli.utils.jsonargparse</span> <span class="kn">import</span> <span class="n">get_short_docstring</span><span class="p">,</span> <span class="n">patch_update_configs</span>
 <span class="kn">from</span> <span class="nn">otx.cli.utils.workspace</span> <span class="kn">import</span> <span class="n">Workspace</span>
-<span class="kn">from</span> <span class="nn">otx.core.types.label</span> <span class="kn">import</span> <span class="n">HLabelInfo</span>
 <span class="kn">from</span> <span class="nn">otx.core.types.task</span> <span class="kn">import</span> <span class="n">OTXTaskType</span>
 <span class="kn">from</span> <span class="nn">otx.core.utils.imports</span> <span class="kn">import</span> <span class="n">get_otx_root_path</span>
 
@@ -625,25 +624,26 @@
 <span class="sd">            tuple: The model and optimizer and scheduler.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="kn">from</span> <span class="nn">otx.core.model.base</span> <span class="kn">import</span> <span class="n">OTXModel</span><span class="p">,</span> <span class="n">OVModel</span>
+        <span class="kn">from</span> <span class="nn">otx.utils.utils</span> <span class="kn">import</span> <span class="n">get_model_cls_from_config</span><span class="p">,</span> <span class="n">should_pass_label_info</span>
 
         <span class="n">skip</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
 
-        <span class="c1"># Update num_classes</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_config_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config_init</span><span class="p">,</span> <span class="s2">&quot;disable_infer_num_classes&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
-            <span class="n">num_classes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">datamodule</span><span class="o">.</span><span class="n">label_info</span><span class="o">.</span><span class="n">num_classes</span>
-            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">model_config</span><span class="o">.</span><span class="n">init_args</span><span class="p">,</span> <span class="s2">&quot;num_classes&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">num_classes</span> <span class="o">!=</span> <span class="n">model_config</span><span class="o">.</span><span class="n">init_args</span><span class="o">.</span><span class="n">num_classes</span><span class="p">:</span>
-                <span class="n">warning_msg</span> <span class="o">=</span> <span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;The `num_classes` in dataset is </span><span class="si">{</span><span class="n">num_classes</span><span class="si">}</span><span class="s2"> &quot;</span>
-                    <span class="sa">f</span><span class="s2">&quot;but, the `num_classes` of model is </span><span class="si">{</span><span class="n">model_config</span><span class="o">.</span><span class="n">init_args</span><span class="o">.</span><span class="n">num_classes</span><span class="si">}</span><span class="s2">. &quot;</span>
-                    <span class="sa">f</span><span class="s2">&quot;So, Update `model.num_classes` to </span><span class="si">{</span><span class="n">num_classes</span><span class="si">}</span><span class="s2">.&quot;</span>
-                <span class="p">)</span>
-                <span class="n">warn</span><span class="p">(</span><span class="n">warning_msg</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-                <span class="n">model_config</span><span class="o">.</span><span class="n">init_args</span><span class="o">.</span><span class="n">num_classes</span> <span class="o">=</span> <span class="n">num_classes</span>
+        <span class="c1"># Update label_info</span>
+        <span class="n">model_cls</span> <span class="o">=</span> <span class="n">get_model_cls_from_config</span><span class="p">(</span><span class="n">model_config</span><span class="p">)</span>
 
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">datamodule</span><span class="o">.</span><span class="n">label_info</span><span class="p">,</span> <span class="n">HLabelInfo</span><span class="p">):</span>
-                <span class="n">hlabel_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">datamodule</span><span class="o">.</span><span class="n">label_info</span>
-                <span class="n">model_config</span><span class="o">.</span><span class="n">init_args</span><span class="o">.</span><span class="n">hlabel_info</span> <span class="o">=</span> <span class="n">hlabel_info</span>
-                <span class="n">skip</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">&quot;hlabel_info&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">should_pass_label_info</span><span class="p">(</span><span class="n">model_cls</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_config_value</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">config_init</span><span class="p">,</span>
+            <span class="s2">&quot;disable_infer_num_classes&quot;</span><span class="p">,</span>
+            <span class="kc">False</span><span class="p">,</span>
+        <span class="p">):</span>
+            <span class="n">model_config</span><span class="o">.</span><span class="n">init_args</span><span class="o">.</span><span class="n">label_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">datamodule</span><span class="o">.</span><span class="n">label_info</span>
+            <span class="n">warning_msg</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="s2">&quot;Automatically infer label_info from the given dataset. &quot;</span>
+                <span class="s2">&quot;Then, giving it to the OTXModel.__init__() argument. &quot;</span>
+                <span class="s2">&quot;If you don&#39;t want this behavior, please use `--disable-infer-num-classes` option.&quot;</span>
+            <span class="p">)</span>
+            <span class="n">warn</span><span class="p">(</span><span class="n">warning_msg</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">skip</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">&quot;label_info&quot;</span><span class="p">)</span>
 
         <span class="c1"># Parses the OTXModel separately to update num_classes.</span>
         <span class="n">model_parser</span> <span class="o">=</span> <span class="n">ArgumentParser</span><span class="p">()</span>
@@ -730,7 +730,7 @@
         <span class="n">cfg</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">subcommand</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">))</span>
         <span class="n">cfg</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">init_args</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;optimizer&quot;</span><span class="p">)</span>
         <span class="n">cfg</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">init_args</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;scheduler&quot;</span><span class="p">)</span>
-        <span class="n">cfg</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">init_args</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;hlabel_info&quot;</span><span class="p">)</span>
+        <span class="n">cfg</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">init_args</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;label_info&quot;</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">get_subcommand_parser</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">subcommand</span><span class="p">)</span><span class="o">.</span><span class="n">save</span><span class="p">(</span>
             <span class="n">cfg</span><span class="o">=</span><span class="n">cfg</span><span class="p">,</span>
