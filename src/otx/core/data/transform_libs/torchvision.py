@@ -549,18 +549,10 @@ class Resize(tvt_v2.Transform):
 class RandomResizedCrop(tvt_v2.Transform):
     """Crop the given image to random scale and aspect ratio.
 
+    This class implements mmpretrain.datasets.transforms.RandomResizedCrop reimplemented as torchvision.transform.
     A crop of random size (default: of 0.08 to 1.0) of the original size and a
     random aspect ratio (default: of 3/4 to 4/3) of the original aspect ratio
     is made. This crop is finally resized to given size.
-
-    **Required Keys:**
-
-    - img
-
-    **Modified Keys:**
-
-    - img
-    - img_shape
 
     Args:
         scale (sequence | int): Desired output scale of the crop. If size is an
