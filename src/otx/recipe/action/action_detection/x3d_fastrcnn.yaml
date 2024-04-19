@@ -37,6 +37,7 @@ overrides:
     config:
       data_format: ava
       train_subset:
+        batch_size: 4
         transforms:
           - type: LoadVideoForDetection
           - type: LoadAnnotations
