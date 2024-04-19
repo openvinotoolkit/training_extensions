@@ -1,6 +1,6 @@
 TestToolsOTXInstanceSegmentation:
   nncf:
-    number_of_fakequantizers: 97
+    number_of_fakequantizers: 96
   pot:
     number_of_fakequantizers: 99
   ptq:
@@ -9,7 +9,7 @@ TestToolsOTXInstanceSegmentation:
     number_of_fakequantizers: 99
 TestToolsTilingInstanceSegmentation:
   nncf:
-    number_of_fakequantizers: 97
+    number_of_fakequantizers: 96
   pot:
     number_of_fakequantizers: 99
   ptq:
