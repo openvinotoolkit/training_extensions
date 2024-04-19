@@ -1254,9 +1254,9 @@ class OVZeroShotVisualPromptingModel(
         }
         # save reference info
         path_reference_info: Path = Path(default_root_dir) / self.reference_info_dir / "reference_info.pt"
-        Path.mkdir(Path(path_reference_info).parent, parents=True, exist_ok=True)
+        path_reference_info.parent.mkdir(parents=True, exist_ok=True)
         torch.save({k: torch.as_tensor(v) for k, v in reference_info.items()}, path_reference_info)
-        pickle.dump(reference_info, Path.open(Path(str(path_reference_info).replace(".pt", ".pickle")), "wb"))
+        pickle.dump(reference_info, path_reference_info.with_suffix(".pickle").open("wb"))
         log.info(f"Saved reference info at {path_reference_info}.")
 
     def _generate_masked_features(
@@ -1313,16 +1313,16 @@ class OVZeroShotVisualPromptingModel(
     ######################################
     def load_reference_info(self, default_root_dir: Path | str, *args, **kwargs) -> bool:
         """Load latest reference info to be used."""
-        _infer_reference_info_root = (
+        _infer_reference_info_root: Path = (
             self.infer_reference_info_root
             if self.infer_reference_info_root == self.infer_reference_info_root.absolute()
             else Path(default_root_dir) / self.infer_reference_info_root
         )
 
-        if Path.is_file(
-            path_reference_info := _infer_reference_info_root / self.reference_info_dir / "reference_info.pickle",
-        ):
-            reference_info: dict[str, np.ndarray] = pickle.load(Path.open(path_reference_info, "rb"))  # noqa: S301
+        if (
+            path_reference_info := _infer_reference_info_root / self.reference_info_dir / "reference_info.pickle"
+        ).is_file():
+            reference_info: dict[str, np.ndarray] = pickle.load(path_reference_info.open("rb"))  # noqa: S301
             self.reference_feats = reference_info.get(
                 "reference_feats",
                 np.zeros((0, 1, self.model["decoder"].embed_dim), dtype=np.float32),

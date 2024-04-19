@@ -886,25 +886,25 @@ class OTXZeroShotSegmentAnything(OTXZeroShotVisualPromptingModel):
         }
         # save reference info
         path_reference_info: Path = Path(default_root_dir) / self.reference_info_dir / "reference_info.pt"
-        Path.mkdir(Path(path_reference_info).parent, parents=True, exist_ok=True)
+        path_reference_info.parent.mkdir(parents=True, exist_ok=True)
         torch.save(reference_info, path_reference_info)
         pickle.dump(
             {k: v.numpy() for k, v in reference_info.items()},
-            Path.open(Path(str(path_reference_info).replace(".pt", ".pickle")), "wb"),
+            path_reference_info.with_suffix(".pickle").open("wb"),
         )
         log.info(f"Saved reference info at {path_reference_info}.")
 
     def load_reference_info(self, default_root_dir: Path | str, device: str | torch.device = "cpu") -> bool:
         """Load latest reference info to be used."""
-        _infer_reference_info_root = (
+        _infer_reference_info_root: Path = (
             self.infer_reference_info_root
             if self.infer_reference_info_root == self.infer_reference_info_root.absolute()
             else Path(default_root_dir) / self.infer_reference_info_root
         )
 
-        if Path.is_file(
-            path_reference_info := _infer_reference_info_root / self.reference_info_dir / "reference_info.pt",
-        ):
+        if (
+            path_reference_info := _infer_reference_info_root / self.reference_info_dir / "reference_info.pt"
+        ).is_file():
             reference_info = torch.load(path_reference_info)
             retval = True
             log.info(f"reference info saved at {path_reference_info} was successfully loaded.")
