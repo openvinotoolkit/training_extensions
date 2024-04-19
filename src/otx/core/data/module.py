@@ -13,6 +13,7 @@ from lightning import LightningDataModule
 from omegaconf import DictConfig, OmegaConf
 from torch.utils.data import DataLoader, RandomSampler
 
+from otx.core.config.data import TileConfig
 from otx.core.data.dataset.tile import OTXTileDatasetFactory
 from otx.core.data.factory import OTXDatasetFactory
 from otx.core.data.mem_cache import (
@@ -233,6 +234,11 @@ class OTXDataModule(LightningDataModule):
                 hp[key] = OmegaConf.to_container(value, resolve=False)
 
         return hp
+
+    @property
+    def tile_config(self) -> TileConfig:
+        """Tiling configuration. It is a shortcut for `self.config.tile_config`."""
+        return self.config.tile_config
 
     def __reduce__(self):
         """Re-initialize object when unpickled."""

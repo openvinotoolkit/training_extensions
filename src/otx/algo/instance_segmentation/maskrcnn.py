@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING, Literal
 
 from otx.algo.utils.mmconfig import read_mmconfig
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
+from otx.core.config.data import TileConfig
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.mmdeploy import MMdeployExporter
 from otx.core.metrics.mean_ap import MaskRLEMeanAPCallable
@@ -36,6 +37,7 @@ class MaskRCNN(MMDetInstanceSegCompatibleModel):
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MaskRLEMeanAPCallable,
         torch_compile: bool = False,
+        tile_config: TileConfig = TileConfig(enable_tiler=False),
     ) -> None:
         model_name = f"maskrcnn_{variant}"
         config = read_mmconfig(model_name=model_name)
@@ -46,6 +48,7 @@ class MaskRCNN(MMDetInstanceSegCompatibleModel):
             scheduler=scheduler,
             metric=metric,
             torch_compile=torch_compile,
+            tile_config=tile_config,
         )
         self.image_size = (1, 3, 1024, 1024)
         self.tile_image_size = (1, 3, 512, 512)
@@ -89,6 +92,7 @@ class MaskRCNNSwinT(MMDetInstanceSegCompatibleModel):
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MaskRLEMeanAPCallable,
         torch_compile: bool = False,
+        tile_config: TileConfig = TileConfig(enable_tiler=False),
     ) -> None:
         model_name = "maskrcnn_swint"
         config = read_mmconfig(model_name=model_name)
@@ -99,6 +103,7 @@ class MaskRCNNSwinT(MMDetInstanceSegCompatibleModel):
             scheduler=scheduler,
             metric=metric,
             torch_compile=torch_compile,
+            tile_config=tile_config,
         )
         self.image_size = (1, 3, 1344, 1344)
         self.tile_image_size = (1, 3, 512, 512)

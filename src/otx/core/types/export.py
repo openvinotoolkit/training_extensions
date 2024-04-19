@@ -87,7 +87,7 @@ class TaskLevelExportParameters:
         """
         updated_kwargs = {field.name: getattr(self, field.name) for field in fields(self)}
         updated_kwargs.update(kwargs_to_update)
-        return TaskLevelExportParameters(**updated_kwargs)
+        return TaskLevelExportParameters(**updated_kwargs)  # type: ignore[return-value]
 
     def to_metadata(self) -> dict[tuple[str, str], str]:
         """Convert this dataclass to dictionary format compatible with ModelAPI.

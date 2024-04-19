@@ -268,7 +268,7 @@ class OTXVisualPromptingModel(OTXModel[VisualPromptingBatchDataEntity, VisualPro
         """Convert the prediction entity to the format required by the compute metric function."""
         return _convert_pred_entity_to_compute_metric(preds=preds, inputs=inputs)
 
-    def _set_label_info(self, _: LabelInfo | list[str]) -> None:
+    def _set_label_info(self, _: LabelInfoTypes) -> None:
         msg = f"Reconfiguring label_info has no effect on {self.__class__.__name__}."
         log.warning(msg)
 
@@ -440,7 +440,7 @@ class OTXZeroShotVisualPromptingModel(
         """Convert the prediction entity to the format required by the compute metric function."""
         return _convert_pred_entity_to_compute_metric(preds=preds, inputs=inputs)
 
-    def _set_label_info(self, _: LabelInfo | list[str]) -> None:
+    def _set_label_info(self, _: LabelInfoTypes) -> None:
         msg = f"Reconfiguring label_info has no effect on {self.__class__.__name__}."
         log.warning(msg)
 
@@ -727,12 +727,9 @@ class OVVisualPromptingModel(
         """Create NullLabelInfo since Visual Prompting tasks has no use of label information."""
         return NullLabelInfo()
 
-    def _set_label_info(self, label_info: LabelInfo | list[str]) -> None:
-        """Visual prompting task does not check label_info equivalance.
-
-        This is because it always has NullLabelInfo.
-        """
-        return
+    def _set_label_info(self, _: LabelInfoTypes) -> None:
+        msg = f"Reconfiguring label_info has no effect on {self.__class__.__name__}."
+        log.warning(msg)
 
 
 class OVZeroShotVisualPromptingModel(OVVisualPromptingModel):
@@ -1423,9 +1420,6 @@ class OVZeroShotVisualPromptingModel(OVVisualPromptingModel):
         """Create NullLabelInfo since Visual Prompting tasks has no use of label information."""
         return NullLabelInfo()
 
-    def _set_label_info(self, label_info: LabelInfo | list[str]) -> None:
-        """Visual prompting task does not check label_info equivalance.
-
-        This is because it always has NullLabelInfo.
-        """
-        return
+    def _set_label_info(self, _: LabelInfoTypes) -> None:
+        msg = f"Reconfiguring label_info has no effect on {self.__class__.__name__}."
+        log.warning(msg)

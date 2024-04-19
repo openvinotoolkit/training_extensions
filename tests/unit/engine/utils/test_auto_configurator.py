@@ -111,7 +111,14 @@ class TestAutoConfigurator:
         if fxt_task in {OTXTaskType.H_LABEL_CLS, OTXTaskType.ACTION_DETECTION}:
             pytest.xfail(reason="Not working")
 
-        auto_configurator = AutoConfigurator(task=fxt_task)
+        auto_configurator = AutoConfigurator(
+            data_root=(
+                "tests/assets/car_tree_bug"
+                if fxt_task in {OTXTaskType.DETECTION, OTXTaskType.INSTANCE_SEGMENTATION, OTXTaskType.ROTATED_DETECTION}
+                else None
+            ),
+            task=fxt_task,
+        )
 
         # With label_info
         label_names = ["class1", "class2", "class3"]

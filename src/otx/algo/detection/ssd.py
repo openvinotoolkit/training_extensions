@@ -18,6 +18,7 @@ from otx.algo.detection.backbones.pytorchcv_backbones import _build_pytorchcv_mo
 from otx.algo.detection.heads.custom_ssd_head import SSDHead
 from otx.algo.utils.mmconfig import read_mmconfig
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
+from otx.core.config.data import TileConfig
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.mmdeploy import MMdeployExporter
 from otx.core.metrics.mean_ap import MeanAPCallable
@@ -355,6 +356,7 @@ class SSD(MMDetCompatibleModel):
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MeanAPCallable,
         torch_compile: bool = False,
+        tile_config: TileConfig = TileConfig(enable_tiler=False),
     ) -> None:
         model_name = f"ssd_{variant}"
         config = read_mmconfig(model_name=model_name)
@@ -365,6 +367,7 @@ class SSD(MMDetCompatibleModel):
             scheduler=scheduler,
             metric=metric,
             torch_compile=torch_compile,
+            tile_config=tile_config,
         )
         self.image_size = (1, 3, 864, 864)
         self.tile_image_size = self.image_size
