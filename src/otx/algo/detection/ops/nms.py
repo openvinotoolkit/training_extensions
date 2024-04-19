@@ -223,9 +223,8 @@ def batched_nms(
     return boxes, keep
 
 
-"""From MMDEPLOY"""
-
-
+# Below functions come from mmdeploy
+# https://github.com/open-mmlab/mmdeploy/blob/bc75c9d6c8940aa03d0e1e5b5962bd930478ba77/mmdeploy/mmcv/ops/nms.py
 def multiclass_nms(
     boxes: Tensor,
     scores: Tensor,
