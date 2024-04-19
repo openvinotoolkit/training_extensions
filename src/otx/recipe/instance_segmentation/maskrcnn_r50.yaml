@@ -1,7 +1,7 @@
 model:
   class_path: otx.algo.instance_segmentation.maskrcnn.MaskRCNN
   init_args:
-    num_classes: 80
+    label_info: 80
     variant: r50
 
     optimizer:

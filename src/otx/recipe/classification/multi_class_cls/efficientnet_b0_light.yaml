@@ -1,7 +1,7 @@
 model:
   class_path: otx.algo.classification.efficientnet_b0.EfficientNetB0ForMulticlassCls
   init_args:
-    num_classes: 1000
+    label_info: 1000
     light: True
 
     optimizer:

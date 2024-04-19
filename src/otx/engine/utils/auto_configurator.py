@@ -18,10 +18,11 @@ from otx.core.config.data import DataModuleConfig, SamplerConfig, SubsetConfig, 
 from otx.core.data.module import OTXDataModule
 from otx.core.model.base import OTXModel, OVModel
 from otx.core.types import PathLike
-from otx.core.types.label import LabelInfo
+from otx.core.types.label import LabelInfo, LabelInfoTypes
 from otx.core.types.task import OTXTaskType
 from otx.core.utils.imports import get_otx_root_path
 from otx.core.utils.instantiators import partial_instantiate_class
+from otx.utils.utils import get_model_cls_from_config, should_pass_label_info
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
@@ -229,13 +230,13 @@ class AutoConfigurator:
             ),
         )
 
-    def get_model(self, model_name: str | None = None, label_info: LabelInfo | None = None) -> OTXModel:
+    def get_model(self, model_name: str | None = None, label_info: LabelInfoTypes | None = None) -> OTXModel:
         """Retrieves the OTXModel instance based on the provided model name and meta information.
 
         Args:
             model_name (str | None): The name of the model to retrieve. If None, the default model will be used.
-            label_info (LabelInfo | None): The meta information about the labels. If provided, the number of classes
-                will be updated in the model's configuration.
+            label_info (LabelInfoTypes | None): The meta information about the labels.
+                If provided, the number of classes will be updated in the model's configuration.
 
         Returns:
             OTXModel: The instantiated OTXModel instance.
@@ -258,20 +259,25 @@ class AutoConfigurator:
         if model_name is not None:
             self._config = self._load_default_config(self.model_name)
 
-        skip = {} if self.task != OTXTaskType.H_LABEL_CLS else {"hlabel_info"}
-
         model_parser = ArgumentParser()
-        model_parser.add_subclass_arguments(OTXModel, "model", skip=skip, required=False, fail_untyped=False)
+        model_parser.add_subclass_arguments(
+            OTXModel,
+            "model",
+            skip={"label_info"},
+            required=False,
+            fail_untyped=False,
+        )
 
         model_config = deepcopy(self.config["model"])
 
-        if label_info is not None and self.task != OTXTaskType.H_LABEL_CLS:
-            model_config["init_args"]["num_classes"] = label_info.num_classes
-        elif label_info is not None and self.task == OTXTaskType.H_LABEL_CLS:
-            model_config["init_args"]["hlabel_info"] = label_info
-        elif label_info is None and self.task == OTXTaskType.H_LABEL_CLS:
-            msg = "You should explicitly give label_info for `OTXTaskType.H_LABEL_CLS` task."
-            raise ValueError(msg)
+        model_cls = get_model_cls_from_config(Namespace(model_config))
+
+        if should_pass_label_info(model_cls):
+            if label_info is None:
+                msg = f"Given model class {model_cls} requires a valid label_info to instantiate."
+                raise ValueError(msg)
+
+            model_config["init_args"]["label_info"] = label_info
 
         return model_parser.instantiate_classes(Namespace(model=model_config)).get("model")
 

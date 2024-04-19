@@ -22,7 +22,7 @@ from otx.core.model.classification import (
 )
 from otx.core.model.utils.mmpretrain import ExplainableMixInMMPretrainModel
 from otx.core.schedulers import LRSchedulerListCallable
-from otx.core.types.label import HLabelInfo
+from otx.core.types.label import HLabelInfo, LabelInfoTypes
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
@@ -150,7 +150,7 @@ class DeitTinyForHLabelCls(ForwardExplainMixInForDeit, MMPretrainHlabelClsModel)
 
     def __init__(
         self,
-        hlabel_info: HLabelInfo,
+        label_info: HLabelInfo,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = HLabelClsMetricCallble,
@@ -159,7 +159,7 @@ class DeitTinyForHLabelCls(ForwardExplainMixInForDeit, MMPretrainHlabelClsModel)
         config = read_mmconfig("deit_tiny", subdir_name="hlabel_classification")
 
         super().__init__(
-            hlabel_info=hlabel_info,
+            label_info=label_info,
             config=config,
             optimizer=optimizer,
             scheduler=scheduler,
@@ -177,7 +177,7 @@ class DeitTinyForMulticlassCls(ForwardExplainMixInForDeit, MMPretrainMulticlassC
 
     def __init__(
         self,
-        num_classes: int,
+        label_info: LabelInfoTypes,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MultiClassClsMetricCallable,
@@ -185,7 +185,7 @@ class DeitTinyForMulticlassCls(ForwardExplainMixInForDeit, MMPretrainMulticlassC
     ) -> None:
         config = read_mmconfig("deit_tiny", subdir_name="multiclass_classification")
         super().__init__(
-            num_classes=num_classes,
+            label_info=label_info,
             config=config,
             optimizer=optimizer,
             scheduler=scheduler,
@@ -203,7 +203,7 @@ class DeitTinyForMultilabelCls(ForwardExplainMixInForDeit, MMPretrainMultilabelC
 
     def __init__(
         self,
-        num_classes: int,
+        label_info: LabelInfoTypes,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MultiLabelClsMetricCallable,
@@ -211,7 +211,7 @@ class DeitTinyForMultilabelCls(ForwardExplainMixInForDeit, MMPretrainMultilabelC
     ) -> None:
         config = read_mmconfig("deit_tiny", subdir_name="multilabel_classification")
         super().__init__(
-            num_classes=num_classes,
+            label_info=label_info,
             config=config,
             optimizer=optimizer,
             scheduler=scheduler,

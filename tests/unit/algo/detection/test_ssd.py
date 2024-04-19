@@ -12,7 +12,7 @@ from otx.algo.detection.ssd import SSD
 class TestSSD:
     @pytest.fixture()
     def fxt_model(self) -> SSD:
-        return SSD(num_classes=3, variant="mobilenetv2")
+        return SSD(label_info=3, variant="mobilenetv2")
 
     @pytest.fixture()
     def fxt_checkpoint(self, fxt_model, fxt_data_module, tmpdir, monkeypatch: pytest.MonkeyPatch):

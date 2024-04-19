@@ -2,7 +2,7 @@ model:
   class_path: otx.algo.classification.mobilenet_v3.MobileNetV3ForMultilabelCls
   init_args:
     mode: large
-    num_classes: 1000
+    label_info: 1000
     loss_callable:
       class_path: otx.algo.classification.losses.AsymmetricAngularLossWithIgnore
       init_args:

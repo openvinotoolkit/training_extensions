@@ -13,6 +13,7 @@ from anomalib.models.image import Padim as AnomalibPadim
 
 from otx.core.model.anomaly import OTXAnomaly
 from otx.core.model.base import OTXModel
+from otx.core.types.label import AnomalyLabelInfo
 
 if TYPE_CHECKING:
     from lightning.pytorch.utilities.types import STEP_OUTPUT
@@ -39,10 +40,9 @@ class Padim(OTXAnomaly, OTXModel, AnomalibPadim):
         layers: list[str] = ["layer1", "layer2", "layer3"],  # noqa: B006
         pre_trained: bool = True,
         n_features: int | None = None,
-        num_classes: int = 2,
     ) -> None:
         OTXAnomaly.__init__(self)
-        OTXModel.__init__(self, num_classes=num_classes)
+        OTXModel.__init__(self, label_info=AnomalyLabelInfo())
         AnomalibPadim.__init__(
             self,
             backbone=backbone,

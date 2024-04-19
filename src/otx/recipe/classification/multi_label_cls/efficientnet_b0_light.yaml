@@ -1,7 +1,7 @@
 model:
   class_path: otx.algo.classification.efficientnet_b0.EfficientNetB0ForMultilabelCls
   init_args:
-    num_classes: 1000
+    label_info: 1000
 
     optimizer:
       class_path: torch.optim.SGD

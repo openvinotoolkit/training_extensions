@@ -21,7 +21,7 @@ from otx.core.data.entity.classification import (
 def fxt_multi_class_cls_model():
     return MobileNetV3ForMulticlassCls(
         mode="large",
-        num_classes=10,
+        label_info=10,
     )
 
 
@@ -59,7 +59,7 @@ class TestMobileNetV3ForMulticlassCls:
 def fxt_multi_label_cls_model():
     return MobileNetV3ForMultilabelCls(
         mode="large",
-        num_classes=10,
+        label_info=10,
     )
 
 
@@ -97,7 +97,7 @@ class TestMobileNetV3ForMultilabelCls:
 def fxt_h_label_cls_model(fxt_hlabel_data):
     return MobileNetV3ForHLabelCls(
         mode="large",
-        hlabel_info=fxt_hlabel_data,
+        label_info=fxt_hlabel_data,
     )
 
 
