@@ -211,7 +211,7 @@ def test_otx_e2e_cli(
         return  # Supported only for classification, detection and instance segmentation task.
 
     if "dino" in model_name:
-        return  # DINO and is not supported.
+        return  # DINO is not supported.
 
     format_to_file = {
         "ONNX": "exported_model.onnx",
