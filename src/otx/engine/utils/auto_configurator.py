@@ -259,14 +259,7 @@ class AutoConfigurator:
         if model_name is not None:
             self._config = self._load_default_config(self.model_name)
 
-        model_parser = ArgumentParser()
-        model_parser.add_subclass_arguments(
-            OTXModel,
-            "model",
-            skip={"label_info", "tile_config"},
-            required=False,
-            fail_untyped=False,
-        )
+        skip = set()
 
         model_config = deepcopy(self.config["model"])
 
@@ -278,9 +271,20 @@ class AutoConfigurator:
                 raise ValueError(msg)
 
             model_config["init_args"]["label_info"] = label_info
+            skip.add("label_info")
 
         if can_pass_tile_config(model_cls) and (datamodule := self.get_datamodule()) is not None:
             model_config["init_args"]["tile_config"] = datamodule.tile_config
+            skip.add("tile_config")
+
+        model_parser = ArgumentParser()
+        model_parser.add_subclass_arguments(
+            OTXModel,
+            "model",
+            skip=skip,
+            required=False,
+            fail_untyped=False,
+        )
 
         return model_parser.instantiate_classes(Namespace(model=model_config)).get("model")
 

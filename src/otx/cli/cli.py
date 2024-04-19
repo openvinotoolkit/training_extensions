@@ -23,7 +23,6 @@ from otx.cli.utils.jsonargparse import get_short_docstring, patch_update_configs
 from otx.cli.utils.workspace import Workspace
 from otx.core.types.task import OTXTaskType
 from otx.core.utils.imports import get_otx_root_path
-from otx.utils.utils import can_pass_tile_config
 
 if TYPE_CHECKING:
     from jsonargparse._actions import _ActionSubCommands
@@ -368,7 +367,7 @@ class OTXCLI:
             tuple: The model and optimizer and scheduler.
         """
         from otx.core.model.base import OTXModel
-        from otx.utils.utils import get_model_cls_from_config, should_pass_label_info
+        from otx.utils.utils import can_pass_tile_config, get_model_cls_from_config, should_pass_label_info
 
         skip = set()
 
