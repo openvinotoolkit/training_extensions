@@ -19,21 +19,18 @@ from otx.core.types.precision import OTXPrecisionType
 class TestDeitTiny:
     @pytest.fixture(
         params=[
-            (DeitTinyForMulticlassCls, "fxt_multiclass_cls_batch_data_entity"),
-            (DeitTinyForMultilabelCls, "fxt_multilabel_cls_batch_data_entity"),
-            (DeitTinyForHLabelCls, "fxt_hlabel_cls_batch_data_entity"),
+            (DeitTinyForMulticlassCls, "fxt_multiclass_cls_batch_data_entity", "fxt_multiclass_labelinfo"),
+            (DeitTinyForMultilabelCls, "fxt_multilabel_cls_batch_data_entity", "fxt_multilabel_labelinfo"),
+            (DeitTinyForHLabelCls, "fxt_hlabel_cls_batch_data_entity", "fxt_hlabel_data"),
         ],
         ids=["multiclass", "multilabel", "hlabel"],
     )
-    def fxt_model_and_input(self, request, fxt_hlabel_data):
-        model_cls, input_fxt_name = request.param
+    def fxt_model_and_input(self, request):
+        model_cls, input_fxt_name, label_info_fxt_name = request.param
         fxt_input = request.getfixturevalue(input_fxt_name)
-        num_classes = fxt_hlabel_data.num_classes
+        fxt_label_info = request.getfixturevalue(label_info_fxt_name)
 
-        if model_cls == DeitTinyForHLabelCls:
-            model = model_cls(hlabel_info=fxt_hlabel_data)
-        else:
-            model = model_cls(num_classes=num_classes)
+        model = model_cls(label_info=fxt_label_info)
 
         return model, fxt_input
 

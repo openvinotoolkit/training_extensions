@@ -5,13 +5,19 @@
 
 from __future__ import annotations
 
+import importlib
+import inspect
 from decimal import Decimal
 from typing import TYPE_CHECKING, Any
 
 import torch
 
+from otx.core.model.base import OTXModel
+
 if TYPE_CHECKING:
     from pathlib import Path
+
+    from jsonargparse import Namespace
 
 
 XPU_AVAILABLE = None
@@ -131,3 +137,29 @@ def is_xpu_available() -> bool:
     if XPU_AVAILABLE is None:
         XPU_AVAILABLE = hasattr(torch, "xpu") and torch.xpu.is_available()
     return XPU_AVAILABLE
+
+
+def get_model_cls_from_config(model_config: Namespace) -> type[OTXModel]:
+    """Get Python model class from jsonargparse Namespace."""
+    splited = model_config.class_path.split(".")
+    module_path, class_name = ".".join(splited[:-1]), splited[-1]
+    module = importlib.import_module(module_path)
+    model_cls = getattr(module, class_name)
+
+    if not issubclass(model_cls, OTXModel):
+        raise TypeError(model_cls)
+
+    return model_cls
+
+
+def should_pass_label_info(model_cls: type[OTXModel]) -> bool:
+    """Determine if label_info should be passed when instantiating the given model class.
+
+    Args:
+        model_cls (Type[OTXModel]): OTX model class to instantiate.
+
+    Returns:
+        bool: True if label_info should be passed, False otherwise.
+    """
+    label_info_param = inspect.signature(model_cls).parameters.get("label_info")
+    return label_info_param is not None and label_info_param.default == label_info_param.empty

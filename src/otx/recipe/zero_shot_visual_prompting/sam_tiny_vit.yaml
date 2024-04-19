@@ -2,7 +2,7 @@ model:
   class_path: otx.algo.visual_prompting.zero_shot_segment_anything.OTXZeroShotSegmentAnything
   init_args:
     backbone: tiny_vit
-    num_classes: 0
+    label_info: 0
     freeze_image_encoder: True
     freeze_prompt_encoder: True
     freeze_mask_decoder: True

@@ -6,7 +6,6 @@ from pathlib import Path
 import pytest
 from otx.algo.classification.efficientnet_b0 import EfficientNetB0ForMulticlassCls
 from otx.algo.classification.torchvision_model import OTXTVModel
-from otx.core.config.device import DeviceConfig
 from otx.core.model.base import OTXModel, OVModel
 from otx.core.types.export import OTXExportFormatType
 from otx.core.types.label import NullLabelInfo
@@ -41,22 +40,16 @@ class TestEngine:
         assert engine.datamodule.task == "MULTI_CLASS_CLS"
         assert isinstance(engine.model, EfficientNetB0ForMulticlassCls)
 
-        # Create engine with task
-        engine = Engine(work_dir=tmp_path, task="MULTI_CLASS_CLS")
-        assert engine.task == "MULTI_CLASS_CLS"
-        assert isinstance(engine.model, EfficientNetB0ForMulticlassCls)
-        assert engine.device == DeviceConfig(accelerator="auto", devices=1)
-        with pytest.raises(RuntimeError, match="Please include the `data_root` or `datamodule`"):
-            _ = engine.datamodule
-        with pytest.raises(RuntimeError, match="Please run train"):
-            _ = engine.trainer
-
         assert "default_root_dir" in engine.trainer_params
         assert engine.trainer_params["default_root_dir"] == tmp_path
         assert "accelerator" in engine.trainer_params
         assert engine.trainer_params["accelerator"] == "auto"
         assert "devices" in engine.trainer_params
         assert engine.trainer_params["devices"] == 1
+
+        # Create engine with no data_root
+        with pytest.raises(ValueError, match="Given model class (.*) requires a valid label_info to instantiate."):
+            _ = Engine(work_dir=tmp_path, task="MULTI_CLASS_CLS")
 
     def test_model_setter(self, fxt_engine, mocker) -> None:
         assert isinstance(fxt_engine.model, OTXTVModel)
