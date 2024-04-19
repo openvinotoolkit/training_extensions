@@ -613,17 +613,27 @@ class SSD(MMDetCompatibleModel):
             resize_mode="standard",
             pad_value=0,
             swap_rgb=False,
-            via_onnx=True,
-            onnx_export_configuration=None,
+            via_onnx=True,  # Currently SSD should be exported through ONNX
+            onnx_export_configuration={
+                "input_names": ["image"],
+                "output_names": ["boxes", "labels"],
+                "dynamic_axes": {
+                    "image": {0: "batch", 2: "height", 3: "width"},
+                    "boxes": {0: "batch", 1: "num_dets"},
+                    "labels": {0: "batch", 1: "num_dets"},
+                },
+                "autograd_inlining": False,
+            },
             output_names=["feature_vector", "saliency_map"] if self.explain_mode else None,
         )
 
     def forward_for_tracing(self, inputs: Tensor) -> list[InstanceData]:
         """Forward function for export."""
+        shape = (int(inputs.shape[2]), int(inputs.shape[3]))
         meta_info = {
-            "pad_shape": (int(inputs.shape[2]), int(inputs.shape[3])),
-            "batch_input_shape": (int(inputs.shape[2]), int(inputs.shape[3])),
-            "img_shape": (int(inputs.shape[2]), int(inputs.shape[3])),
+            "pad_shape": shape,
+            "batch_input_shape": shape,
+            "img_shape": shape,
             "scale_factor": (1.0, 1.0),
         }
         sample = InstanceData(

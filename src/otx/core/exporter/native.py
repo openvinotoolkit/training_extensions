@@ -119,7 +119,7 @@ class OTXNativeModelExporter(OTXModelExporter):
         dummy_tensor = torch.rand(self.input_size).to(next(model.parameters()).device)
         save_path = str(output_dir / (base_model_name + ".onnx"))
 
-        torch.onnx.export(model, dummy_tensor, save_path, autograd_inlining=False, **self.onnx_export_configuration)
+        torch.onnx.export(model, dummy_tensor, save_path, **self.onnx_export_configuration)
 
         onnx_model = onnx.load(save_path)
         onnx_model = self._postprocess_onnx_model(onnx_model, embed_metadata, precision)

@@ -546,11 +546,11 @@ class BaseDenseHead(nn.Module):
         """
         num_levels = len(cls_scores)
 
-        featmap_sizes = [cls_scores[i].shape[-2:] for i in range(num_levels)]
+        featmap_sizes = [featmap.size()[-2:] for featmap in cls_scores]
         mlvl_priors = self.prior_generator.grid_priors(
             featmap_sizes,
-            dtype=cls_scores[0].dtype,
-            device=cls_scores[0].device,
+            dtype=bbox_preds[0].dtype,
+            device=bbox_preds[0].device,
         )
 
         cls_score_list = [cls_scores[i].detach() for i in range(num_levels)]
@@ -639,11 +639,9 @@ class BaseDenseHead(nn.Module):
             score_factor_list,
             mlvl_priors,
         ):
-            dim = self.bbox_coder.encode_size
-            bbox_pred = bbox_pred.permute(0, 2, 3, 1).reshape(batch_size, -1, dim)  # noqa: PLW2901
+            cls_score = cls_score.permute(0, 2, 3, 1).reshape(batch_size, -1, self.cls_out_channels)  # noqa: PLW2901
             if with_score_factors:
                 score_factor = score_factor.permute(0, 2, 3, 1).reshape(batch_size, -1).sigmoid()  # noqa: PLW2901
-            cls_score = cls_score.permute(0, 2, 3, 1).reshape(batch_size, -1, self.cls_out_channels)  # noqa: PLW2901
 
             if getattr(self.loss_cls, "custom_cls_channels", False):
                 scores = self.loss_cls.get_activation(cls_score)
@@ -653,7 +651,9 @@ class BaseDenseHead(nn.Module):
                 # remind that we set FG labels to [0, num_class-1]
                 # since mmdet v2.0
                 # BG cat_id: num_class
-                scores = cls_score.softmax(-1)[:, :-1]
+                scores = cls_score.softmax(-1)[:, :, :-1]
+            dim = self.bbox_coder.encode_size
+            bbox_pred = bbox_pred.permute(0, 2, 3, 1).reshape(batch_size, -1, dim)  # noqa: PLW2901
 
             mlvl_bbox_preds.append(bbox_pred)
             mlvl_valid_priors.append(priors)
@@ -664,8 +664,8 @@ class BaseDenseHead(nn.Module):
 
         bbox_pred = torch.cat(mlvl_bbox_preds, dim=1)
         priors = torch.cat(mlvl_valid_priors, dim=1)
-        bboxes = self.bbox_coder.decode_export(priors, bbox_pred, max_shape=img_shape)
         scores = torch.cat(mlvl_scores, dim=1)
+        bboxes = self.bbox_coder.decode_export(priors, bbox_pred, max_shape=img_shape)
 
         return multiclass_nms(
             bboxes,
