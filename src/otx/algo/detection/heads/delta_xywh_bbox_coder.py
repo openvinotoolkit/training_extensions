@@ -290,6 +290,8 @@ def delta2bbox(
     return bboxes.reshape(num_bboxes, -1)
 
 
+# Funtions below come from mmdeploy and modified for OTX usage.
+# https://github.com/open-mmlab/mmdeploy/tree/bc75c9d6c8940aa03d0e1e5b5962bd930478ba77/mmdeploy/codebase/mmdet
 def delta2bbox_export(
     rois: Tensor,
     deltas: Tensor,
@@ -373,8 +375,54 @@ def delta2bbox_export(
     y2 = xy2[..., 1]
 
     if clip_border and max_shape is not None:
-        from mmdeploy.codebase.mmdet.deploy import clip_bboxes
-
         x1, y1, x2, y2 = clip_bboxes(x1, y1, x2, y2, max_shape)
 
     return torch.stack([x1, y1, x2, y2], dim=-1).view(deltas.size())
+
+
+def clip_bboxes(
+    x1: Tensor,
+    y1: Tensor,
+    x2: Tensor,
+    y2: Tensor,
+    max_shape: Tensor | tuple[int, ...],
+) -> tuple[Tensor, ...]:
+    """Clip bboxes for onnx.
+
+    Since torch.clamp cannot have dynamic `min` and `max`, we scale the
+      boxes by 1/max_shape and clamp in the range [0, 1] if necessary.
+
+    Args:
+        x1 (Tensor): The x1 for bounding boxes.
+        y1 (Tensor): The y1 for bounding boxes.
+        x2 (Tensor): The x2 for bounding boxes.
+        y2 (Tensor): The y2 for bounding boxes.
+        max_shape (Tensor | Sequence[int]): The (H,W) of original image.
+
+    Returns:
+        tuple(Tensor): The clipped x1, y1, x2, y2.
+    """
+    if isinstance(max_shape, torch.Tensor):
+        # scale by 1/max_shape
+        x1 = x1 / max_shape[1]
+        y1 = y1 / max_shape[0]
+        x2 = x2 / max_shape[1]
+        y2 = y2 / max_shape[0]
+
+        # clamp [0, 1]
+        x1 = torch.clamp(x1, 0, 1)
+        y1 = torch.clamp(y1, 0, 1)
+        x2 = torch.clamp(x2, 0, 1)
+        y2 = torch.clamp(y2, 0, 1)
+
+        # scale back
+        x1 = x1 * max_shape[1]
+        y1 = y1 * max_shape[0]
+        x2 = x2 * max_shape[1]
+        y2 = y2 * max_shape[0]
+    else:
+        x1 = torch.clamp(x1, 0, max_shape[1])
+        y1 = torch.clamp(y1, 0, max_shape[0])
+        x2 = torch.clamp(x2, 0, max_shape[1])
+        y2 = torch.clamp(y2, 0, max_shape[0])
+    return x1, y1, x2, y2
