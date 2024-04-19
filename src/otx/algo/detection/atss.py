@@ -8,8 +8,7 @@ from __future__ import annotations
 from copy import deepcopy
 from typing import TYPE_CHECKING, Literal
 
-from mmdet.models.necks import FPN
-
+from otx.algo.detection.backbones.fpn import FPN
 from otx.algo.detection.backbones.pytorchcv_backbones import _build_pytorchcv_model
 from otx.algo.detection.heads.custom_atss_head import CustomATSSHead
 from otx.algo.detection.ssd import SingleStageDetector
@@ -52,7 +51,6 @@ class TorchATSS(SingleStageDetector):
         self._is_init = False
         self.backbone = _build_pytorchcv_model(**backbone)
         neck.pop("type")
-        neck["in_channels"] = list(neck["in_channels"])  # Temporary sol, should be removed after neck migration
         self.neck = FPN(**neck)
         bbox_head.update(train_cfg=train_cfg)
         bbox_head.update(test_cfg=test_cfg)
