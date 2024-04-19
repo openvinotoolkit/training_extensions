@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import logging
 from math import sqrt
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from torch.cuda import is_available as cuda_available
 
@@ -16,19 +16,18 @@ from .bs_search_algo import BsSearchAlgo
 
 
 if TYPE_CHECKING:
-    from lightning import Trainer
+    from lightning import Callback
 
-    from otx.core.model.module.base import OTXLitModule
-    from otx.core.data.module import OTXDataModule
+    from otx.engine.engine import Engine
 
 logger = logging.getLogger(__name__)
 
 
 def adapt_batch_size(
-    trainer: Trainer,
-    model: OTXLitModule,
-    datamodule: OTXDataModule,
+    engine: Engine,
     not_increase: bool = True,
+    callbacks: list[Callback] | Callback | None = None,
+    **train_args,
 ) -> None:
     """Decrease batch size if default batch size isn't fit to current GPU device.
 
@@ -53,14 +52,15 @@ def adapt_batch_size(
     if not (cuda_available() or is_xpu_available()):
         msg = "Adaptive batch size supports CUDA or XPU."
         raise RuntimeError(msg)
+    engine.model.patch_optimizer_and_scheduler_for_hpo()
 
-    default_bs = datamodule.config.train_subset.batch_size
+    default_bs = engine.datamodule.config.train_subset.batch_size
     bs_search_algo = BsSearchAlgo(
-        trainer=trainer,
-        model=model,
-        datamodule=datamodule,
+        engine=engine,
         default_bs=default_bs,
-        max_bs=len(datamodule.subsets[datamodule.config.train_subset.subset_name]),
+        callbacks=callbacks,
+        max_bs=len(engine.datamodule.subsets[engine.datamodule.config.train_subset.subset_name]),
+        **_adjust_train_args(train_args),
     )
     if not_increase:
         new_batch_size = bs_search_algo.auto_decrease_batch_size()
@@ -68,19 +68,22 @@ def adapt_batch_size(
         new_batch_size = bs_search_algo.find_big_enough_batch_size()
 
     if default_bs != new_batch_size:
-        datamodule.config.train_subset.batch_size = new_batch_size
+        engine.datamodule.config.train_subset.batch_size = new_batch_size
         logger.warning("Adapting batch size is done.")
         logger.warning(f"Batch size is adapted : {default_bs} -> {new_batch_size}")
 
         bs_change_ratio = new_batch_size / default_bs
-        if isinstance(model.optimizer, list):
-            for i, opt in enumerate(model.optimizer):
-                origin_lr = opt.keywords["lr"]
-                opt.keywords["lr"] *= sqrt(bs_change_ratio)  # Using root scale instead of linear scale
-                logger.warning(f"learning rate of optimizer[{i}] is adapted : {origin_lr} -> {opt.keywords['lr']}")
-        else:
-            origin_lr = model.optimizer.keywords["lr"]
-            model.optimizer.keywords["lr"] *= sqrt(bs_change_ratio)  # Using root scale instead of linear scale
-            logger.warning(f"learning rate is adapted : {origin_lr} -> {model.optimizer.keywords['lr']}")
+        origin_lr = engine.model.optimizer_callable.optimizer_kwargs["lr"]
+        engine.model.optimizer_callable.optimizer_kwargs["lr"] *= sqrt(bs_change_ratio)  # Using root scale instead of linear scale
+        logger.warning(f"learning rate is adapted : {origin_lr} -> {engine.model.optimizer_callable.optimizer_kwargs['lr']}")
     else:
         logger.warning("Adapting batch size is done. Batch size isn't changed.")
+
+
+def _adjust_train_args(train_args: dict[str, Any]) -> dict[str, Any]:
+    train_args.update(train_args.pop("kwargs", {}))
+    train_args.pop("self", None)
+    train_args.pop("run_hpo", None)
+    train_args.pop("adapt_batch_size", None)
+
+    return train_args

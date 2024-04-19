@@ -243,6 +243,9 @@ class Engine:
         """
         checkpoint = checkpoint if checkpoint is not None else self.checkpoint
 
+        if adapt_batch_size != "None":
+            auto_bs(engine=self, **locals(), not_increase=(adapt_batch_size!="Full"))
+
         if run_hpo:
             best_config, best_trial_weight = execute_hpo(engine=self, **locals())
             if best_config is not None:
@@ -264,9 +267,6 @@ class Engine:
             **kwargs,
         )
         fit_kwargs: dict[str, Any] = {}
-
-        if adapt_batch_size != "None":
-            auto_bs(self.trainer, self.model, self.datamodule, not_increase=(adapt_batch_size!="Full"))
 
         # NOTE: Model's label info should be converted datamodule's label info before ckpt loading
         # This is due to smart weight loading check label name as well as number of classes.

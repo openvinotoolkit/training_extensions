@@ -19,32 +19,33 @@ from lightning.pytorch.callbacks.callback import Callback
 from otx.utils.utils import is_xpu_available
 
 if TYPE_CHECKING:
-    from lightning import Trainer
-
-    from otx.core.model.module.base import OTXLitModule
-    from otx.core.data.module import OTXDataModule
+    from otx.engine.engine import Engine
 
 logger = logging.getLogger(__name__)
 
 
-def _run_trial(trainer: Trainer, model, datamodule, bs: int, trial_queue: mp.Queue) -> None:
+def _run_trial(engine: Engine, bs: int, trial_queue: mp.Queue, callbacks = None, **train_args) -> None:
     mp.set_start_method(None, True)  # reset mp start method
 
-    datamodule.config.train_subset.batch_size = bs
+    engine.datamodule.config.train_subset.batch_size = bs
 
     oom = False
     try:
         batch_size_finder: Callback = BatchSizeFinder(steps_per_trial=3)
         # do not continue with the loop in case Tuner is used
         batch_size_finder._early_exit = True
-        trainer.callbacks = [batch_size_finder] + trainer.callbacks
-
-        trainer.fit(model=model, datamodule=datamodule)
+        callbacks = [batch_size_finder] + callbacks
+        engine.train(callbacks=callbacks, **train_args)
     except RuntimeError as e:
         if str(e).startswith("CUDA out of memory.") or str(e).startswith(  # CUDA OOM
             "Allocation is out of device memory on current platform."  # XPU OOM
         ):
             oom = True
+        else:
+            raise e
+    except AttributeError as e:
+        if str(e).startswith("'NoneType' object has no attribute 'best_model_path'"):
+            pass
         else:
             raise e
 
@@ -67,7 +68,14 @@ class BsSearchAlgo:
         max_bs (int): Maximum batch size. It should be bigger than 0.
     """
 
-    def __init__(self, trainer: Trainer, model: OTXLitModule, datamodule: OTXDataModule, max_bs: int):
+    def __init__(
+        self,
+        engine: Engine,
+        default_bs: int,
+        max_bs: int,
+        callbacks: list[Callback] | Callback | None = None,
+        **train_args,
+    ):
         if default_bs <= 0:
             raise ValueError("Batch size should be bigger than 0.")
         if max_bs <= 0:
@@ -76,21 +84,21 @@ class BsSearchAlgo:
         if max_bs < default_bs:
             default_bs = max_bs
 
-        self._trainer = trainer
-        self._model = model
-        self._datamodule = datamodule
+        self._engine = engine
         self._default_bs = default_bs
         self._max_bs = max_bs
         self._bs_try_history: dict[int, int] = {}
         self._total_mem = _get_total_memory_size()
         self._mem_lower_bound = 0.8 * self._total_mem
         self._mem_upper_bound = 0.85 * self._total_mem
+        self._callbacks = callbacks
+        self._train_args = train_args
         self._mp_ctx = mp.get_context("spawn")
 
     def _try_batch_size(self, bs: int) -> tuple[bool, int]:
         trial_queue = self._mp_ctx.Queue()
         proc = self._mp_ctx.Process(
-            target=_run_trial, args=(self._trainer, self._model, self._datamodule, bs, trial_queue)
+            target=_run_trial, args=(self._engine, bs, trial_queue, self._callbacks), kwargs=self._train_args
         )
         proc.start()
         output = None
@@ -459,7 +467,8 @@ def _scale_batch_reset_params(trainer: Trainer, steps_per_trial: int) -> None:
     assert loop is not None
     if isinstance(loop, pl.loops._FitLoop):
         trainer.limit_train_batches = 1.0
-        trainer.limit_val_batches = steps_per_trial
+        if trainer.limit_val_batches != 0:  # for anomaly
+            trainer.limit_val_batches = steps_per_trial
         trainer.fit_loop.epoch_loop.max_steps = steps_per_trial
     elif isinstance(loop, pl.loops._EvaluationLoop):
         stage = trainer.state.stage
