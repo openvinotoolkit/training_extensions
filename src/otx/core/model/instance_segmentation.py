@@ -17,7 +17,7 @@ from openvino.model_api.models import Model
 from openvino.model_api.tilers import InstanceSegmentationTiler
 from torchvision import tv_tensors
 
-from otx.algo.explain.explain_algo import feature_vector_fn
+from otx.algo.explain.explain_algo import InstSegExplainAlgo, feature_vector_fn
 from otx.core.config.data import TileConfig
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.instance_segmentation import InstanceSegBatchDataEntity, InstanceSegBatchPredEntity
@@ -309,9 +309,7 @@ class ExplainableOTXInstanceSegModel(OTXInstanceSegModel):
 
     def get_explain_fn(self) -> Callable:
         """Returns explain function."""
-        from otx.algo.explain.explain_algo import MaskRCNNExplainAlgo
-
-        explainer = MaskRCNNExplainAlgo(num_classes=self.num_classes)
+        explainer = InstSegExplainAlgo(num_classes=self.num_classes)
         return explainer.func
 
     @contextmanager
