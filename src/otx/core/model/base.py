@@ -761,7 +761,7 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
     def tile_config(self, tile_config: TileConfig) -> None:
         """Set tiling configurations."""
         msg = (
-            "Assign new label_info to the model. "
+            "Assign new tile_config to the model. "
             "It is usually not recommended. "
             "Please create a new model instance by giving tile_config to its initializer "
             "such as `OTXModel(..., tile_config=tile_config)`."
