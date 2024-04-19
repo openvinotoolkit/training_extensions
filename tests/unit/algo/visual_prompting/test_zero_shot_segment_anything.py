@@ -461,7 +461,7 @@ class TestZeroShotSegmentAnything:
 class TestOTXZeroShotSegmentAnything:
     @pytest.fixture()
     def model(self) -> OTXZeroShotSegmentAnything:
-        return OTXZeroShotSegmentAnything(backbone="tiny_vit", num_classes=0)
+        return OTXZeroShotSegmentAnything(backbone="tiny_vit")
 
     def test_create_model(self, model) -> None:
         """Test _create_model."""

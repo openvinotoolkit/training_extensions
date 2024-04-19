@@ -34,7 +34,7 @@ from otx.core.model.classification import (
     OTXMultilabelClsModel,
 )
 from otx.core.schedulers import LRSchedulerListCallable
-from otx.core.types.label import HLabelInfo
+from otx.core.types.label import HLabelInfo, LabelInfoTypes
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
@@ -47,7 +47,7 @@ class EfficientNetV2ForMulticlassCls(OTXMulticlassClsModel):
 
     def __init__(
         self,
-        num_classes: int,
+        label_info: HLabelInfo,
         loss_callable: Callable[[], nn.Module] = nn.CrossEntropyLoss,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
@@ -57,7 +57,7 @@ class EfficientNetV2ForMulticlassCls(OTXMulticlassClsModel):
         self.head_config = {"loss_callable": loss_callable}
 
         super().__init__(
-            num_classes=num_classes,
+            label_info=label_info,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
@@ -70,9 +70,9 @@ class EfficientNetV2ForMulticlassCls(OTXMulticlassClsModel):
             backbone=TimmBackbone(backbone="efficientnetv2_s_21k", pretrained=True),
             neck=GlobalAveragePooling(dim=2),
             head=LinearClsHead(
-                num_classes=self.num_classes,
+                num_classes=self.label_info.num_classes,
                 in_channels=1280,
-                topk=(1, 5) if self.num_classes >= 5 else (1,),
+                topk=(1, 5) if self.label_info.num_classes >= 5 else (1,),
                 loss=loss if isinstance(loss, nn.Module) else loss(),
             ),
         )
@@ -159,7 +159,7 @@ class EfficientNetV2ForMultilabelCls(OTXMultilabelClsModel):
 
     def __init__(
         self,
-        num_classes: int,
+        label_info: LabelInfoTypes,
         loss_callable: Callable[[], nn.Module] = nn.CrossEntropyLoss,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
@@ -169,7 +169,7 @@ class EfficientNetV2ForMultilabelCls(OTXMultilabelClsModel):
         self.head_config = {"loss_callable": loss_callable}
 
         super().__init__(
-            num_classes=num_classes,
+            label_info=label_info,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
@@ -182,7 +182,7 @@ class EfficientNetV2ForMultilabelCls(OTXMultilabelClsModel):
             backbone=TimmBackbone(backbone="efficientnetv2_s_21k", pretrained=True),
             neck=GlobalAveragePooling(dim=2),
             head=MultiLabelLinearClsHead(
-                num_classes=self.num_classes,
+                num_classes=self.label_info.num_classes,
                 in_channels=1280,
                 loss=loss if isinstance(loss, nn.Module) else loss(),
                 normalized=True,
@@ -270,9 +270,11 @@ class EfficientNetV2ForMultilabelCls(OTXMultilabelClsModel):
 class EfficientNetV2ForHLabelCls(OTXHlabelClsModel):
     """EfficientNetV2 Model for hierarchical label classification task."""
 
+    label_info: HLabelInfo
+
     def __init__(
         self,
-        hlabel_info: HLabelInfo,
+        label_info: HLabelInfo,
         multiclass_loss_callable: Callable[[], nn.Module] = nn.CrossEntropyLoss,
         multilabel_loss_callable: Callable[[], nn.Module] = nn.CrossEntropyLoss,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
@@ -284,10 +286,9 @@ class EfficientNetV2ForHLabelCls(OTXHlabelClsModel):
             "multiclass_loss_callable": multiclass_loss_callable,
             "multilabel_loss_callable": multilabel_loss_callable,
         }
-        self.hlabel_info = hlabel_info
 
         super().__init__(
-            hlabel_info=hlabel_info,
+            label_info=label_info,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
@@ -304,7 +305,7 @@ class EfficientNetV2ForHLabelCls(OTXHlabelClsModel):
                 in_channels=1280,
                 multiclass_loss=multiclass_loss if isinstance(multiclass_loss, nn.Module) else multiclass_loss(),
                 multilabel_loss=multilabel_loss if isinstance(multilabel_loss, nn.Module) else multilabel_loss(),
-                **self.hlabel_info.as_head_config_dict(),
+                **self.label_info.as_head_config_dict(),
             ),
         )
 

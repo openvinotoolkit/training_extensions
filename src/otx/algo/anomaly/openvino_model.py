@@ -35,12 +35,10 @@ class AnomalyOpenVINO(OVModel):
         max_num_requests: int | None = None,
         use_throughput_mode: bool = True,
         model_api_configuration: dict[str, Any] | None = None,
-        num_classes: int = 2,
         metric: MetricCallable = NullMetricCallable,
         **kwargs,
     ) -> None:
         super().__init__(
-            num_classes=num_classes,  # NOTE: Ideally this should be set to 2 always
             model_name=model_name,
             model_type="AnomalyDetection",
             async_inference=async_inference,
