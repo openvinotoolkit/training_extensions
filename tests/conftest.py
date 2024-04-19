@@ -16,6 +16,7 @@ from otx.core.data.entity.instance_segmentation import (
 )
 from otx.core.data.entity.segmentation import SegBatchDataEntity, SegBatchPredEntity, SegDataEntity
 from otx.core.data.mem_cache import MemCacheHandlerSingleton
+from otx.core.types.label import HLabelInfo, LabelInfo, NullLabelInfo, SegLabelInfo
 from otx.core.types.task import OTXTaskType
 from torch import LongTensor
 from torchvision import tv_tensors
@@ -259,3 +260,111 @@ def fxt_accelerator(request: pytest.FixtureRequest) -> str:
 @pytest.fixture(params=set(OTXTaskType) - {OTXTaskType.DETECTION_SEMI_SL})
 def fxt_task(request: pytest.FixtureRequest) -> OTXTaskType:
     return request.param
+
+
+@pytest.fixture(scope="session", autouse=True)
+def fxt_null_label_info() -> LabelInfo:
+    return NullLabelInfo()
+
+
+@pytest.fixture(scope="session", autouse=True)
+def fxt_seg_label_info() -> SegLabelInfo:
+    label_names = ["class1", "class2", "class3"]
+    return SegLabelInfo(
+        label_names=label_names,
+        label_groups=[
+            label_names,
+            ["class2", "class3"],
+        ],
+    )
+
+
+@pytest.fixture(scope="session", autouse=True)
+def fxt_multiclass_labelinfo() -> LabelInfo:
+    label_names = ["class1", "class2", "class3"]
+    return LabelInfo(
+        label_names=label_names,
+        label_groups=[
+            label_names,
+            ["class2", "class3"],
+        ],
+    )
+
+
+@pytest.fixture(scope="session", autouse=True)
+def fxt_multilabel_labelinfo() -> LabelInfo:
+    label_names = ["class1", "class2", "class3"]
+    return LabelInfo(
+        label_names=label_names,
+        label_groups=[
+            [label_names[0]],
+            [label_names[1]],
+            [label_names[2]],
+        ],
+    )
+
+
+@pytest.fixture()
+def fxt_hlabel_multilabel_info() -> HLabelInfo:
+    return HLabelInfo(
+        label_names=[
+            "Heart",
+            "Spade",
+            "Heart_Queen",
+            "Heart_King",
+            "Spade_A",
+            "Spade_King",
+            "Black_Joker",
+            "Red_Joker",
+            "Extra_Joker",
+        ],
+        label_groups=[
+            ["Heart", "Spade"],
+            ["Heart_Queen", "Heart_King"],
+            ["Spade_A", "Spade_King"],
+            ["Black_Joker"],
+            ["Red_Joker"],
+            ["Extra_Joker"],
+        ],
+        num_multiclass_heads=3,
+        num_multilabel_classes=3,
+        head_idx_to_logits_range={"0": (0, 2), "1": (2, 4), "2": (4, 6)},
+        num_single_label_classes=3,
+        empty_multiclass_head_indices=[],
+        class_to_group_idx={
+            "Heart": (0, 0),
+            "Spade": (0, 1),
+            "Heart_Queen": (1, 0),
+            "Heart_King": (1, 1),
+            "Spade_A": (2, 0),
+            "Spade_King": (2, 1),
+            "Black_Joker": (3, 0),
+            "Red_Joker": (3, 1),
+            "Extra_Joker": (3, 2),
+        },
+        all_groups=[
+            ["Heart", "Spade"],
+            ["Heart_Queen", "Heart_King"],
+            ["Spade_A", "Spade_King"],
+            ["Black_Joker"],
+            ["Red_Joker"],
+            ["Extra_Joker"],
+        ],
+        label_to_idx={
+            "Heart": 0,
+            "Spade": 1,
+            "Heart_Queen": 2,
+            "Heart_King": 3,
+            "Spade_A": 4,
+            "Spade_King": 5,
+            "Black_Joker": 6,
+            "Red_Joker": 7,
+            "Extra_Joker": 8,
+        },
+        label_tree_edges=[
+            ["Heart_Queen", "Heart"],
+            ["Heart_King", "Heart"],
+            ["Spade_A", "Spade"],
+            ["Spade_King", "Spade"],
+        ],
+    )

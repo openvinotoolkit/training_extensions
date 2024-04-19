@@ -13,6 +13,7 @@ from anomalib.models.image.stfpm import Stfpm as AnomalibStfpm
 
 from otx.core.model.anomaly import OTXAnomaly
 from otx.core.model.base import OTXModel
+from otx.core.types.label import AnomalyLabelInfo
 
 if TYPE_CHECKING:
     from lightning.pytorch.utilities.types import STEP_OUTPUT
@@ -35,11 +36,10 @@ class Stfpm(OTXAnomaly, OTXModel, AnomalibStfpm):
         self,
         layers: Sequence[str] = ["layer1", "layer2", "layer3"],
         backbone: str = "resnet18",
-        num_classes: int = 2,
         **kwargs,
     ) -> None:
         OTXAnomaly.__init__(self)
-        OTXModel.__init__(self, num_classes=num_classes)
+        OTXModel.__init__(self, label_info=AnomalyLabelInfo())
         AnomalibStfpm.__init__(
             self,
             backbone=backbone,

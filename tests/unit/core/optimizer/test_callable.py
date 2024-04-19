@@ -94,13 +94,13 @@ class TestOptimizerCallableSupportHPO:
         class _TestOTXModel(OTXModel):
             def __init__(
                 self,
-                num_classes=10,
+                label_info=10,
                 optimizer=default_optimizer_callable,
                 scheduler=DefaultSchedulerCallable,
                 metric=NullMetricCallable,
                 torch_compile: bool = False,
             ) -> None:
-                super().__init__(num_classes, optimizer, scheduler, metric, torch_compile)
+                super().__init__(label_info, optimizer, scheduler, metric, torch_compile)
 
             def _create_model(self) -> nn.Module:
                 return nn.Linear(10, self.num_classes)
