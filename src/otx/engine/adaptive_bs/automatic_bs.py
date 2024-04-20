@@ -5,18 +5,23 @@
 
 from __future__ import annotations
 
+import os
 import logging
 from math import sqrt
 from typing import TYPE_CHECKING, Any
+from functools import partial
 
-from torch.cuda import is_available as cuda_available
+from torch.cuda import is_available as is_cuda_available
+from lightning import Callback
+from lightning.pytorch.loggers.logger import DummyLogger
 
 from otx.utils.utils import is_xpu_available
 from .bs_search_algo import BsSearchAlgo
 
 
 if TYPE_CHECKING:
-    from lightning import Callback
+    from lightning import Trainer
+    from lightning import LightningModule
 
     from otx.engine.engine import Engine
 
@@ -29,61 +34,135 @@ def adapt_batch_size(
     callbacks: list[Callback] | Callback | None = None,
     **train_args,
 ) -> None:
-    """Decrease batch size if default batch size isn't fit to current GPU device.
+    """Change the actual batch size depending on the current GPU status.
 
+    If not_increase is True, check current batch size is available to GPU and if not, decrease batch size.
+    If not_increase is False, increase batch size to use most of GPU memory.
     This function just setup for single iteration training to reduce time for adapting.
     The core part of adapting batch size is done in adapt_batch_size in the torch.utils package.
 
     Args:
-        train_func (Callable): The function to train a model.
-            Only cfg, dataset and meta are passed to the function when invoking it.
-        model (torch.nn.Module): Model to train.
-        datasets (List): List of datasets.
-        cfg (OTXConfig): Configuration of a training.
-        distributed (bool): whether distributed training or not.
-        is_nncf (bool): Whether nncf or not.
-        meta (Optional[Dict[str, Any]]): meta information.
+        engine (Engine): engine instnace.
         not_increase (bool) : Whether adapting batch size to larger value than default value or not.
-        model_builder (Optional[Callable]):
-            Function for building a model. If it exsits, a model build from model_builder is used instead of the model
-            in the argument. It's required for nncf because nncf changes model , which prevent model from pickling.
+        callbacks (list[Callback] | Callback | None, optional): callbacks used during training. Defaults to None.
     """
 
-    if not (cuda_available() or is_xpu_available()):
+    if not (is_cuda_available() or is_xpu_available()):
         msg = "Adaptive batch size supports CUDA or XPU."
         raise RuntimeError(msg)
-    engine.model.patch_optimizer_and_scheduler_for_hpo()
 
+    engine.model.make_optimizer_and_scheduler_picklable()
     default_bs = engine.datamodule.config.train_subset.batch_size
+
+    if (new_batch_size := os.environ.get("ADAPTIVE_BS_FOR_DIST")) is not None:
+        new_batch_size = int(new_batch_size)
+        if default_bs != new_batch_size:
+            _apply_new_batch_size(engine, new_batch_size)
+        return
+
+    train_func = partial(_train_model, engine=engine, callbacks=callbacks, **_adjust_train_args(train_args))
     bs_search_algo = BsSearchAlgo(
-        engine=engine,
+        train_func=train_func,
         default_bs=default_bs,
-        callbacks=callbacks,
-        max_bs=len(engine.datamodule.subsets[engine.datamodule.config.train_subset.subset_name]),
-        **_adjust_train_args(train_args),
+        max_bs=(
+            len(engine.datamodule.subsets[engine.datamodule.config.train_subset.subset_name]) // engine.device.devices
+        ),
     )
     if not_increase:
         new_batch_size = bs_search_algo.auto_decrease_batch_size()
     else:
         new_batch_size = bs_search_algo.find_big_enough_batch_size()
 
-    if default_bs != new_batch_size:
-        engine.datamodule.config.train_subset.batch_size = new_batch_size
-        logger.warning("Adapting batch size is done.")
-        logger.warning(f"Batch size is adapted : {default_bs} -> {new_batch_size}")
+    if engine.device.devices != 1:
+        os.environ["ADAPTIVE_BS_FOR_DIST"] = str(new_batch_size)
 
-        bs_change_ratio = new_batch_size / default_bs
+    if default_bs != new_batch_size:
         origin_lr = engine.model.optimizer_callable.optimizer_kwargs["lr"]
-        engine.model.optimizer_callable.optimizer_kwargs["lr"] *= sqrt(bs_change_ratio)  # Using root scale instead of linear scale
-        logger.warning(f"learning rate is adapted : {origin_lr} -> {engine.model.optimizer_callable.optimizer_kwargs['lr']}")
+        _apply_new_batch_size(engine, new_batch_size)
+        msg = (
+            "Adapting batch size is done.\n"
+            f"Batch size is adapted : {default_bs} -> {new_batch_size}\n"
+            f"learning rate is adapted : {origin_lr} -> {engine.model.optimizer_callable.optimizer_kwargs['lr']}"
+        )
+        logger.info(msg)
     else:
-        logger.warning("Adapting batch size is done. Batch size isn't changed.")
+        logger.info("Adapting batch size is done. Batch size isn't changed.")
 
 
 def _adjust_train_args(train_args: dict[str, Any]) -> dict[str, Any]:
     train_args.update(train_args.pop("kwargs", {}))
     train_args.pop("self", None)
     train_args.pop("run_hpo", None)
-    train_args.pop("adapt_batch_size", None)
-
+    train_args.pop("adaptive_bs")
     return train_args
+    
+
+def _train_model(bs: int, engine: Engine, callbacks: list[Callback] | Callback | None = None, **train_args) -> None:
+    if bs <= 0:
+        msg = f"Batch size should be greater than 0, but {bs} is given."
+        raise ValueError(msg)
+    if engine.device.devices != 1:
+        engine._cache.update(devices=1)
+
+    engine.datamodule.config.train_subset.batch_size = bs
+    engine.train(callbacks=_register_callback(callbacks), **train_args)
+
+
+def _register_callback(callbacks: list[Callback] | Callback | None = None) -> list[Callback]:
+    if isinstance(callbacks, Callback):
+        callbacks = [callbacks]
+    elif callbacks is None:
+        callbacks = []
+    callbacks.append(BatchSizeFinder())
+    return callbacks
+
+
+class BatchSizeFinder(Callback):
+    """BatchSizeFinder
+
+    Args:
+        steps_per_trial: number of steps to run with a given batch size.
+            Ideally 1 should be enough to test if an OOM error occurs, however in practice a few are needed.
+    """
+
+    def __init__(
+        self,
+        steps_per_trial: int = 3,
+    ) -> None:
+        self._steps_per_trial = steps_per_trial
+
+    def setup(self, trainer: Trainer, pl_module: LightningModule, stage: str | None = None) -> None:
+        if stage != "fit":
+            msg = "Adaptive batch size supports only training."
+            raise RuntimeError(msg)
+
+    def on_fit_start(self, trainer: Trainer, pl_module: LightningModule) -> None:
+        _scale_batch_reset_params(trainer, self._steps_per_trial)
+        _try_loop_run(trainer)
+
+
+def _try_loop_run(trainer: Trainer) -> None:
+    loop = trainer._active_loop
+    assert loop is not None
+    loop.restarting = False
+    loop.run()
+
+
+def _scale_batch_reset_params(trainer: Trainer, steps_per_trial: int) -> None:
+    trainer.logger = DummyLogger() if trainer.logger is not None else None
+    trainer.callbacks = []
+
+    loop = trainer._active_loop
+    assert loop is not None
+    trainer.limit_train_batches = 1.0
+    if trainer.limit_val_batches != 0:
+        trainer.limit_val_batches = steps_per_trial
+    trainer.fit_loop.epoch_loop.max_steps = steps_per_trial
+
+
+def _apply_new_batch_size(engine: Engine, new_batch_size: int) -> None:
+    origin_bs = engine.datamodule.config.train_subset.batch_size
+    if new_batch_size == origin_bs:
+        return
+    engine.datamodule.config.train_subset.batch_size = new_batch_size
+    engine.model.optimizer_callable.optimizer_kwargs["lr"] *= sqrt(new_batch_size / origin_bs)

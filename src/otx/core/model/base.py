@@ -736,8 +736,8 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
 
         return super().lr_scheduler_step(scheduler=scheduler, metric=metric)
 
-    def patch_optimizer_and_scheduler_for_hpo(self) -> None:
-        """Patch optimizer and scheduler for hyperparameter optimization.
+    def make_optimizer_and_scheduler_picklable(self) -> None:
+        """Make optimizer and scheduler picklable.
 
         This is inplace function changing inner states (`optimizer_callable` and `scheduler_callable`).
         Both will be changed to be picklable. In addition, `optimizer_callable` is changed

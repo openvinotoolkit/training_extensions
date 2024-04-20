@@ -70,7 +70,7 @@ def execute_hpo(
         msg = "Padim doesn't need HPO. HPO is skipped."
         raise RuntimeError(msg)
 
-    engine.model.patch_optimizer_and_scheduler_for_hpo()
+    engine.model.make_optimizer_and_scheduler_picklable()
 
     hpo_workdir = Path(engine.work_dir) / "hpo"
     hpo_workdir.mkdir(exist_ok=True)
@@ -81,6 +81,13 @@ def execute_hpo(
         hpo_workdir=hpo_workdir,
         callbacks=callbacks,
     )
+    if (
+        train_args.get("adaptive_bs", None) == "Full" and
+        "datamodule.config.train_subset.batch_size" in hpo_configurator.hpo_config["search_space"]
+    ):
+        logger.info("Because adaptive_bs is set as Full, batch size is excluded from HPO.")
+        hpo_configurator.hpo_config["search_space"].pop("datamodule.config.train_subset.batch_size")
+            
     if (hpo_algo := hpo_configurator.get_hpo_algo()) is None:
         logger.warning("HPO is skipped.")
         return None, None
@@ -288,6 +295,7 @@ def _adjust_train_args(train_args: dict[str, Any]) -> dict[str, Any]:
     train_args.update(train_args.pop("kwargs", {}))
     train_args.pop("self", None)
     train_args.pop("run_hpo", None)
+    train_args.pop("adaptive_bs", None)
 
     return train_args
 

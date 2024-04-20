@@ -31,7 +31,7 @@ from otx.core.utils.cache import TrainerArgumentsCache
 from otx.utils.utils import is_xpu_available
 
 from .hpo import execute_hpo, update_hyper_parameter
-from .adaptive_bs.automatic_bs import adapt_batch_size as auto_bs
+from .adaptive_bs.automatic_bs import adapt_batch_size
 from .adaptive_bs.bs_search_algo import _get_max_memory_reserved
 from .utils.auto_configurator import DEFAULT_CONFIG_PER_TASK, AutoConfigurator
 
@@ -185,7 +185,7 @@ class Engine:
         run_hpo: bool = False,
         hpo_config: HpoConfig = HpoConfig(),  # noqa: B008 https://github.com/omni-us/jsonargparse/issues/423
         checkpoint: PathLike | None = None,
-        adapt_batch_size: Literal["None", "Safe", "Full"] = "None",
+        adaptive_bs: Literal["None", "Safe", "Full"] = "None",
         **kwargs,
     ) -> dict[str, Any]:
         """Trains the model using the provided LightningModule and OTXDataModule.
@@ -206,6 +206,9 @@ class Engine:
             run_hpo (bool, optional): If True, optimizer hyper parameters before training a model.
             hpo_config (HpoConfig | None, optional): Configuration for HPO.
             checkpoint (PathLike | None, optional): Path to the checkpoint file. Defaults to None.
+            adaptive_bs (Literal["None", "Safe", "Full"]):
+                Change the actual batch size depending on the current GPU status.
+                Safe => Prevent GPU out of memory. Full => Find a batch size using most of GPU memory.
             **kwargs: Additional keyword arguments for pl.Trainer configuration.
 
         Returns:
@@ -243,8 +246,8 @@ class Engine:
         """
         checkpoint = checkpoint if checkpoint is not None else self.checkpoint
 
-        if adapt_batch_size != "None":
-            auto_bs(engine=self, **locals(), not_increase=(adapt_batch_size!="Full"))
+        if adaptive_bs != "None":
+            adapt_batch_size(engine=self, **locals(), not_increase=(adaptive_bs!="Full"))
 
         if run_hpo:
             best_config, best_trial_weight = execute_hpo(engine=self, **locals())
@@ -297,8 +300,6 @@ class Engine:
                 **fit_kwargs,
             )
         self.checkpoint = self.trainer.checkpoint_callback.best_model_path
-
-        print("*"*100, _get_max_memory_reserved())
 
         if not isinstance(self.checkpoint, (Path, str)):
             msg = "self.checkpoint should be Path or str at this time."

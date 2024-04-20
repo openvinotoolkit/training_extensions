@@ -8,54 +8,14 @@ from __future__ import annotations
 import logging
 import multiprocessing as mp
 import queue
-from copy import deepcopy
-import lightning.pytorch as pl
-from lightning.pytorch.utilities.exceptions import MisconfigurationException, _TunerExitException
-from typing import Any, TYPE_CHECKING
+from typing import Callable, Any
 
 import torch
-from lightning.pytorch.callbacks.callback import Callback
 
 from otx.utils.utils import is_xpu_available
 
-if TYPE_CHECKING:
-    from otx.engine.engine import Engine
 
 logger = logging.getLogger(__name__)
-
-
-def _run_trial(engine: Engine, bs: int, trial_queue: mp.Queue, callbacks = None, **train_args) -> None:
-    mp.set_start_method(None, True)  # reset mp start method
-
-    engine.datamodule.config.train_subset.batch_size = bs
-
-    oom = False
-    try:
-        batch_size_finder: Callback = BatchSizeFinder(steps_per_trial=3)
-        # do not continue with the loop in case Tuner is used
-        batch_size_finder._early_exit = True
-        callbacks = [batch_size_finder] + callbacks
-        engine.train(callbacks=callbacks, **train_args)
-    except RuntimeError as e:
-        if str(e).startswith("CUDA out of memory.") or str(e).startswith(  # CUDA OOM
-            "Allocation is out of device memory on current platform."  # XPU OOM
-        ):
-            oom = True
-        else:
-            raise e
-    except AttributeError as e:
-        if str(e).startswith("'NoneType' object has no attribute 'best_model_path'"):
-            pass
-        else:
-            raise e
-
-    print("*"*100, _get_max_memory_reserved())
-    trial_queue.put(
-        {
-            "oom": oom,
-            "max_memory_reserved": _get_max_memory_reserved(),
-        }
-    )
 
 
 class BsSearchAlgo:
@@ -63,18 +23,15 @@ class BsSearchAlgo:
 
     Args:
         train_func (Callable[[int], None]): Training function with single arugment to set batch size.
-        train_func_kwargs (Dict[str, Any]): Keyword arguments for train_func.
         default_bs (int): Default batch size. It should be bigger than 0.
         max_bs (int): Maximum batch size. It should be bigger than 0.
     """
 
     def __init__(
         self,
-        engine: Engine,
+        train_func,
         default_bs: int,
         max_bs: int,
-        callbacks: list[Callback] | Callback | None = None,
-        **train_args,
     ):
         if default_bs <= 0:
             raise ValueError("Batch size should be bigger than 0.")
@@ -84,22 +41,18 @@ class BsSearchAlgo:
         if max_bs < default_bs:
             default_bs = max_bs
 
-        self._engine = engine
+        self._train_func = train_func
         self._default_bs = default_bs
         self._max_bs = max_bs
         self._bs_try_history: dict[int, int] = {}
         self._total_mem = _get_total_memory_size()
         self._mem_lower_bound = 0.8 * self._total_mem
         self._mem_upper_bound = 0.85 * self._total_mem
-        self._callbacks = callbacks
-        self._train_args = train_args
         self._mp_ctx = mp.get_context("spawn")
 
     def _try_batch_size(self, bs: int) -> tuple[bool, int]:
         trial_queue = self._mp_ctx.Queue()
-        proc = self._mp_ctx.Process(
-            target=_run_trial, args=(self._engine, bs, trial_queue, self._callbacks), kwargs=self._train_args
-        )
+        proc = self._mp_ctx.Process(target=_run_trial, args=(self._train_func, bs, trial_queue))
         proc.start()
         output = None
         while proc.is_alive():
@@ -119,8 +72,7 @@ class BsSearchAlgo:
         if not oom:
             self._bs_try_history[bs] = max_memory_reserved
 
-        # logger.debug(
-        logger.warning(
+        logger.debug(
             f"Adapting Batch size => bs : {bs}, OOM : {oom}, "
             f"memory usage : {max_memory_reserved / self._total_mem}%"
         )
@@ -284,6 +236,33 @@ class BsSearchAlgo:
         return estimated_bs
 
 
+def _run_trial(train_func: Callable[[int], Any], bs: int, trial_queue: mp.Queue) -> None:
+    mp.set_start_method(None, True)  # reset mp start method
+
+    oom = False
+    try:
+        train_func(bs=bs)
+    except RuntimeError as e:
+        if str(e).startswith("CUDA out of memory.") or str(e).startswith(  # CUDA OOM
+            "Allocation is out of device memory on current platform."  # XPU OOM
+        ):
+            oom = True
+        else:
+            raise e
+    except AttributeError as e:
+        if str(e).startswith("'NoneType' object has no attribute 'best_model_path'"):
+            pass
+        else:
+            raise e
+
+    trial_queue.put(
+        {
+            "oom": oom,
+            "max_memory_reserved": _get_max_memory_reserved(),
+        }
+    )
+
+
 def _get_max_memory_reserved() -> int:
     if is_xpu_available():
         return torch.xpu.max_memory_reserved(device=None)
@@ -295,183 +274,3 @@ def _get_total_memory_size() -> int:
         return torch.xpu.get_device_properties(0).total_memory
     _, total_mem = torch.cuda.mem_get_info()
     return total_mem
-
-
-class BatchSizeFinder(Callback):
-    """The ``BatchSizeFinder`` callback tries to find the largest batch size for a given model that does not give an
-    out of memory (OOM) error. All you need to do is add it as a callback inside Trainer and call
-    ``trainer.{fit,validate,test,predict}``. Internally it calls the respective step function ``steps_per_trial`` times
-    for each batch size until one of the batch sizes generates an OOM error.
-
-    .. warning::  This is an :ref:`experimental <versioning:Experimental API>` feature.
-
-    Args:
-        mode: search strategy to update the batch size:
-
-            - ``'power'``: Keep multiplying the batch size by 2, until we get an OOM error.
-            - ``'binsearch'``: Initially keep multiplying by 2 and after encountering an OOM error
-              do a binary search between the last successful batch size and the batch size that failed.
-
-        steps_per_trial: number of steps to run with a given batch size.
-            Ideally 1 should be enough to test if an OOM error occurs,
-            however in practice a few are needed.
-
-        init_val: initial batch size to start the search with.
-
-        max_trials: max number of increases in batch size done before
-            algorithm is terminated
-
-        batch_arg_name: name of the attribute that stores the batch size.
-            It is expected that the user has provided a model or datamodule that has a hyperparameter
-            with that name. We will look for this attribute name in the following places
-
-            - ``model``
-            - ``model.hparams``
-            - ``trainer.datamodule`` (the datamodule passed to the tune method)
-
-    Example::
-
-        # 1. Customize the BatchSizeFinder callback to run at different epochs. This feature is
-        # useful while fine-tuning models since you can't always use the same batch size after
-        # unfreezing the backbone.
-        from lightning.pytorch.callbacks import BatchSizeFinder
-
-
-        class FineTuneBatchSizeFinder(BatchSizeFinder):
-            def __init__(self, milestones, *args, **kwargs):
-                super().__init__(*args, **kwargs)
-                self.milestones = milestones
-
-            def on_fit_start(self, *args, **kwargs):
-                return
-
-            def on_train_epoch_start(self, trainer, pl_module):
-                if trainer.current_epoch in self.milestones or trainer.current_epoch == 0:
-                    self.scale_batch_size(trainer, pl_module)
-
-
-        trainer = Trainer(callbacks=[FineTuneBatchSizeFinder(milestones=(5, 10))])
-        trainer.fit(...)
-
-    Example::
-
-        # 2. Run batch size finder for validate/test/predict.
-        from lightning.pytorch.callbacks import BatchSizeFinder
-
-
-        class EvalBatchSizeFinder(BatchSizeFinder):
-            def __init__(self, *args, **kwargs):
-                super().__init__(*args, **kwargs)
-
-            def on_fit_start(self, *args, **kwargs):
-                return
-
-            def on_test_start(self, trainer, pl_module):
-                self.scale_batch_size(trainer, pl_module)
-
-
-        trainer = Trainer(callbacks=[EvalBatchSizeFinder()])
-        trainer.test(...)
-
-    """
-
-    def __init__(
-        self,
-        steps_per_trial: int = 3,
-    ) -> None:
-        self._steps_per_trial = steps_per_trial
-        self._early_exit = False
-
-    def setup(self, trainer: "pl.Trainer", pl_module: "pl.LightningModule", stage: str | None = None) -> None:
-        if trainer._accelerator_connector.is_distributed:
-            raise MisconfigurationException("The Batch size finder is not supported with distributed strategies.")
-        # TODO: check if this can be enabled (#4040)
-        if not trainer.fit_loop._data_source.is_module():
-            raise MisconfigurationException(
-                "The Batch size finder cannot be used with dataloaders passed directly to `.fit()`. Please disable"
-                " the feature or incorporate the dataloader into your LightningModule or LightningDataModule."
-            )
-
-        # TODO: Add support for multiple eval dataloader
-        if stage != "fit":
-            loop = trainer._active_loop
-            assert loop is not None
-            loop.setup_data()
-            combined_loader = loop._combined_loader
-            assert combined_loader is not None
-            if len(combined_loader.flattened) > 1:
-                stage = trainer.state.stage
-                assert stage is not None
-                raise MisconfigurationException(
-                    f"The Batch size finder cannot be used with multiple {stage.dataloader_prefix} dataloaders."
-                )
-
-
-    def scale_batch_size(self, trainer: "pl.Trainer", pl_module: "pl.LightningModule") -> None:
-        params = _scale_batch_dump_params(trainer)
-        _scale_batch_reset_params(trainer, 3)
-        _try_loop_run(trainer, params)
-
-    def on_fit_start(self, trainer: "pl.Trainer", pl_module: "pl.LightningModule") -> None:
-        self.scale_batch_size(trainer, pl_module)
-
-    def on_validation_start(self, trainer: "pl.Trainer", pl_module: "pl.LightningModule") -> None:
-        if trainer.sanity_checking or trainer.state.fn != "validate":
-            return
-
-        self.scale_batch_size(trainer, pl_module)
-
-    def on_test_start(self, trainer: "pl.Trainer", pl_module: "pl.LightningModule") -> None:
-        self.scale_batch_size(trainer, pl_module)
-
-    def on_predict_start(self, trainer: "pl.Trainer", pl_module: "pl.LightningModule") -> None:
-        self.scale_batch_size(trainer, pl_module)
-
-
-def _scale_batch_dump_params(trainer: Trainer) -> dict[str, Any]:
-    dumped_params = {
-        "loggers": trainer.loggers,
-        "callbacks": trainer.callbacks,
-    }
-    loop = trainer._active_loop
-    assert loop is not None
-    if isinstance(loop, pl.loops._FitLoop):
-        dumped_params["max_steps"] = trainer.max_steps
-        dumped_params["limit_train_batches"] = trainer.limit_train_batches
-        dumped_params["limit_val_batches"] = trainer.limit_val_batches
-    elif isinstance(loop, pl.loops._EvaluationLoop):
-        stage = trainer.state.stage
-        assert stage is not None
-        dumped_params["limit_eval_batches"] = getattr(trainer, f"limit_{stage.dataloader_prefix}_batches")
-        dumped_params["loop_verbose"] = loop.verbose
-
-    dumped_params["loop_state_dict"] = deepcopy(loop.state_dict())
-    return dumped_params
-
-
-def _try_loop_run(trainer: Trainer, params: dict[str, Any]) -> None:
-    loop = trainer._active_loop
-    assert loop is not None
-    loop.load_state_dict(deepcopy(params["loop_state_dict"]))
-    loop.restarting = False
-    loop.run()
-
-
-def _scale_batch_reset_params(trainer: Trainer, steps_per_trial: int) -> None:
-    from lightning.pytorch.loggers.logger import DummyLogger
-
-    trainer.logger = DummyLogger() if trainer.logger is not None else None
-    trainer.callbacks = []
-
-    loop = trainer._active_loop
-    assert loop is not None
-    if isinstance(loop, pl.loops._FitLoop):
-        trainer.limit_train_batches = 1.0
-        if trainer.limit_val_batches != 0:  # for anomaly
-            trainer.limit_val_batches = steps_per_trial
-        trainer.fit_loop.epoch_loop.max_steps = steps_per_trial
-    elif isinstance(loop, pl.loops._EvaluationLoop):
-        stage = trainer.state.stage
-        assert stage is not None
-        setattr(trainer, f"limit_{stage.dataloader_prefix}_batches", steps_per_trial)
-        loop.verbose = False
