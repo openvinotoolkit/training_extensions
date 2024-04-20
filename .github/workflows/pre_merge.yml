@@ -59,7 +59,7 @@ jobs:
   Coverage:
     runs-on: [otx-gpu-t4-1]
     container:
-      image: 219678651685.dkr.ecr.eu-west-1.amazonaws.com/ote-ci:pr-194-1334bef936df3b06d28bc3d1bd90e7248359b99e
+      image: 219678651685.dkr.ecr.eu-west-1.amazonaws.com/ote-ci:pr-365-9ea2e4cf457becf07cc88ad38b5f1b92c6058995
       options: "--runtime=nvidia --env-file=/home/runner/.nvidia.env --shm-size=10g"
     needs: Code-Quality-Checks
     timeout-minutes: 120
