@@ -9,11 +9,9 @@ from functools import partial
 
 import torch
 from mmengine.model import BaseModule
-from mmseg.models.builder import BACKBONES
 from torch import nn
 
 
-@BACKBONES.register_module()
 class DinoVisionTransformer(BaseModule):
     """DINO-v2 Model."""
 

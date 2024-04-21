@@ -88,7 +88,6 @@ data_preprocessor:
     size_divisor: 32
   type: SegDataPreProcessor
 decode_head:
-  type: CustomFCNHead
   in_channels:
     - 40
     - 80

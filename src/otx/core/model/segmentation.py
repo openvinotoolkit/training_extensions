@@ -19,6 +19,11 @@ from otx.core.schedulers import LRSchedulerListCallable
 from otx.core.types.export import TaskLevelExportParameters
 from otx.core.types.label import SegLabelInfo
 from otx.core.utils.config import inplace_num_classes
+import torch
+from otx.core.exporter.base import OTXModelExporter
+from otx.core.exporter.native import OTXNativeModelExporter
+from otx.core.utils.utils import get_mean_std_from_data_processing
+
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
@@ -40,13 +45,71 @@ class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity]):
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = SegmCallable,  # type: ignore[assignment]
         torch_compile: bool = False,
+        pretrained_weights: str | None = None,
+        backbone_configuration: dict[str, Any] = {},
+        decode_head_configuration: dict[str, Any] = {},
+        criterion_configuration: dict[str, Any] = {}
     ):
+
+        self.backbone_configuration = backbone_configuration
+        self.decode_head_configuration = decode_head_configuration
+        self.criterion_configuration = criterion_configuration
+        self.pretrained_weights = pretrained_weights
+        self.mean = decode_head_configuration.get("mean",  [0.485, 0.456, 0.406])
+        self.std = decode_head_configuration.get("std", [0.229, 0.224, 0.225])
+        self.image_size = decode_head_configuration.get("image_size", (512,512))
+
         super().__init__(
             num_classes=num_classes,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
             torch_compile=torch_compile,
+        )
+
+    def _customize_inputs(self, entity: SegBatchDataEntity) -> dict[str, Any]:
+        masks = torch.stack(entity.masks).long()
+        inputs = {"images": entity.images, "masks" : masks}
+        return inputs
+
+    @property
+    def _exporter(self) -> OTXModelExporter:
+        """Creates OTXModelExporter object that can export the model."""
+        return OTXNativeModelExporter(
+            task_level_export_parameters=self._export_parameters,
+            input_size=self.image_size,
+            mean=self.mean,
+            std=self.std,
+            resize_mode="standard",
+            pad_value=0,
+            swap_rgb=False,
+            via_onnx=False,
+            onnx_export_configuration=None,
+            output_names=None,
+        )
+
+    def _customize_outputs(
+        self,
+        outputs: Any,  # noqa: ANN401
+        inputs: SegBatchDataEntity,
+    ) -> SegBatchPredEntity | OTXBatchLossEntity:
+
+        if self.training:
+            losses = OTXBatchLossEntity()
+            losses["loss"] = outputs
+            return losses
+
+        masks = []
+
+        for output in outputs:
+            masks.append(output.argmax(dim=0))
+
+        return SegBatchPredEntity(
+            batch_size=len(outputs),
+            images=inputs.images,
+            imgs_info=inputs.imgs_info,
+            scores=[],
+            masks=masks,
         )
 
     @property

@@ -12,18 +12,16 @@ from __future__ import annotations
 
 import torch
 import torch.utils.checkpoint as cp
-from mmcv.cnn import ConvModule, build_conv_layer, build_norm_layer
 from mmengine.model import BaseModule
 from mmengine.utils import is_tuple_of
-from mmseg.registry import MODELS
 from torch import nn
 from torch.nn import functional
-
-from otx.algo.utils.segmentation import (
+from otx.algo.modules import build_norm_layer, build_conv_layer, ConvModule
+from otx.algo.segmentation.modules import (
     AsymmetricPositionAttentionModule,
     IterativeAggregator,
     LocalAttentionModule,
-    channel_shuffle,
+    channel_shuffle
 )
 
 
@@ -1261,7 +1259,6 @@ class LiteHRModule(nn.Module):
         return out
 
 
-@MODELS.register_module()
 class LiteHRNet(BaseModule):
     """Lite-HRNet backbone.
 
@@ -1299,6 +1296,8 @@ class LiteHRNet(BaseModule):
 
         if norm_cfg is None:
             norm_cfg = {"type": "BN"}
+        if conv_cfg is None:
+            conv_cfg = {"type": "Conv2d"}
 
         self.extra = extra
         self.conv_cfg = conv_cfg
@@ -1306,7 +1305,6 @@ class LiteHRNet(BaseModule):
         self.norm_eval = norm_eval
         self.with_cp = with_cp
         self.zero_init_residual = zero_init_residual
-
         self.stem = Stem(
             in_channels,
             input_norm=self.extra["stem"]["input_norm"],

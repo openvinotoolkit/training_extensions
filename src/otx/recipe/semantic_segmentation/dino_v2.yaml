@@ -1,7 +1,49 @@
 model:
-  class_path: otx.algo.segmentation.dino_v2_seg.DinoV2Seg
+  class_path: otx.algo.segmentation.dino_v2_seg.OTXDinoV2Seg
   init_args:
     num_classes: 2
+    pretrained_weights: "https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/custom_semantic_segmentation/litehrnet18_imagenet1k_rsc.pth"
+
+    criterion_configuration:
+      type: CrossEntropyLoss
+      ignore_index: 255
+
+    backbone_configuration:
+      name: dinov2_vits14_reg
+      freeze_backbone: true
+      out_index:
+        - 8
+        - 9
+        - 10
+        - 11
+      type: DinoVisionTransformer
+
+    decode_head_configuration:
+      init_cfg:
+        checkpoint: https://dl.fbaipublicfiles.com/dinov2/dinov2_vits14/dinov2_vits14_ade20k_linear_head.pth
+        type: Pretrained
+        prefix: decode_head
+      in_channels:
+        - 384
+        - 384
+        - 384
+        - 384
+      in_index:
+        - 0
+        - 1
+        - 2
+        - 3
+      input_transform: resize_concat
+      channels: 1536
+      kernel_size: 1
+      num_convs: 1
+      concat_input: false
+      dropout_ratio: -1
+      num_classes: 2
+      norm_cfg:
+        type: SyncBN
+        requires_grad: true
+      align_corners: false
 
     optimizer:
       class_path: torch.optim.AdamW
