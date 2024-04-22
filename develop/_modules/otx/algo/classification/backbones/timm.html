@@ -4,7 +4,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>otx.algo.classification.backbones.otx_efficientnet_v2 &#8212; OpenVINO™ Training Extensions 2.1.0rc0 documentation</title>
+    <title>otx.algo.classification.backbones.timm &#8212; OpenVINO™ Training Extensions 2.1.0rc0 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
     <script src="../../../../../_static/copybutton.js?v=f281be69"></script>
     <script src="../../../../../_static/tabs.js?v=3030b3cb"></script>
     <script src="../../../../../_static/design-tabs.js?v=36754332"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/otx/algo/classification/backbones/otx_efficientnet_v2';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/otx/algo/classification/backbones/timm';</script>
     <link rel="index" title="Index" href="../../../../../genindex.html" />
     <link rel="search" title="Search" href="../../../../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -234,10 +234,10 @@
             
             <article class="bd-article" role="main">
               
-  <h1>Source code for otx.algo.classification.backbones.otx_efficientnet_v2</h1><div class="highlight"><pre>
-<span></span><span class="c1"># Copyright (C) 2023 Intel Corporation</span>
+  <h1>Source code for otx.algo.classification.backbones.timm</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright (C) 2024 Intel Corporation</span>
 <span class="c1"># SPDX-License-Identifier: Apache-2.0</span>
-<span class="c1">#</span>
+
 <span class="sd">&quot;&quot;&quot;EfficientNetV2 model.</span>
 
 <span class="sd">Original papers:</span>
@@ -248,10 +248,11 @@
 
 <span class="kn">import</span> <span class="nn">os</span>
 
+<span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">import</span> <span class="nn">timm</span>
-<span class="kn">from</span> <span class="nn">mmengine.runner</span> <span class="kn">import</span> <span class="n">load_checkpoint</span>
-<span class="kn">from</span> <span class="nn">mmpretrain.registry</span> <span class="kn">import</span> <span class="n">MODELS</span>
+<span class="kn">from</span> <span class="nn">otx.algo.utils.mmengine_utils</span> <span class="kn">import</span> <span class="n">load_from_http</span><span class="p">,</span> <span class="n">load_checkpoint_to_model</span>
 <span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">nn</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Literal</span>
 
 <span class="n">PRETRAINED_ROOT</span> <span class="o">=</span> <span class="s2">&quot;https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-effv2-weights/&quot;</span>
 <span class="n">pretrained_urls</span> <span class="o">=</span> <span class="p">{</span>
@@ -259,7 +260,7 @@
     <span class="s2">&quot;efficientnetv2_s_1k&quot;</span><span class="p">:</span> <span class="n">PRETRAINED_ROOT</span> <span class="o">+</span> <span class="s2">&quot;tf_efficientnetv2_s_21ft1k-d7dafa41.pth&quot;</span><span class="p">,</span>
 <span class="p">}</span>
 
-<span class="n">NAME_DICT</span> <span class="o">=</span> <span class="p">{</span>
+<span class="n">TIMM_MODEL_NAME_DICT</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s2">&quot;mobilenetv3_large_21k&quot;</span><span class="p">:</span> <span class="s2">&quot;mobilenetv3_large_100_miil_in21k&quot;</span><span class="p">,</span>
     <span class="s2">&quot;mobilenetv3_large_1k&quot;</span><span class="p">:</span> <span class="s2">&quot;mobilenetv3_large_100_miil&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tresnet&quot;</span><span class="p">:</span> <span class="s2">&quot;tresnet_m&quot;</span><span class="p">,</span>
@@ -270,32 +271,51 @@
     <span class="s2">&quot;efficientnetv2_b0&quot;</span><span class="p">:</span> <span class="s2">&quot;tf_efficientnetv2_b0&quot;</span><span class="p">,</span>
 <span class="p">}</span>
 
+<span class="n">TimmModelType</span> <span class="o">=</span> <span class="n">Literal</span><span class="p">[</span>
+    <span class="s2">&quot;mobilenetv3_large_21k&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;mobilenetv3_large_1k&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tresnet&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;efficientnetv2_s_21k&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;efficientnetv2_s_1k&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;efficientnetv2_m_21k&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;efficientnetv2_m_1k&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;efficientnetv2_b0&quot;</span><span class="p">,</span>
+<span class="p">]</span>
 
-<span class="k">class</span> <span class="nc">TimmModelsWrapper</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Timm model wrapper.&quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_name</span><span class="p">,</span> <span class="n">pretrained</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">pooling_type</span><span class="o">=</span><span class="s2">&quot;avg&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="TimmBackbone">
+<a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.classification.backbones.html#otx.algo.classification.backbones.TimmBackbone">[docs]</a>
+<span class="k">class</span> <span class="nc">TimmBackbone</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">backbone</span><span class="p">:</span> <span class="n">TimmModelType</span><span class="p">,</span>
+        <span class="n">pretrained</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">pooling_type</span><span class="o">=</span><span class="s2">&quot;avg&quot;</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">model_name</span> <span class="o">=</span> <span class="n">model_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">backbone</span> <span class="o">=</span> <span class="n">backbone</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">pretrained</span> <span class="o">=</span> <span class="n">pretrained</span>
-        <span class="k">if</span> <span class="n">model_name</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;mobilenetv3_large_100_miil_in21k&quot;</span><span class="p">,</span> <span class="s2">&quot;mobilenetv3_large_100_miil&quot;</span><span class="p">]:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">is_mobilenet</span> <span class="o">=</span> <span class="kc">True</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">is_mobilenet</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">is_mobilenet</span> <span class="o">=</span> <span class="n">backbone</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;mobilenet&quot;</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">timm</span><span class="o">.</span><span class="n">create_model</span><span class="p">(</span><span class="n">NAME_DICT</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">model_name</span><span class="p">],</span> <span class="n">pretrained</span><span class="o">=</span><span class="n">pretrained</span><span class="p">,</span> <span class="n">num_classes</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">timm</span><span class="o">.</span><span class="n">create_model</span><span class="p">(</span><span class="n">TIMM_MODEL_NAME_DICT</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">backbone</span><span class="p">],</span> <span class="n">pretrained</span><span class="o">=</span><span class="n">pretrained</span><span class="p">,</span> <span class="n">num_classes</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pretrained</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;init weight - </span><span class="si">{</span><span class="n">pretrained_urls</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">model_name</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;init weight - </span><span class="si">{</span><span class="n">pretrained_urls</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">backbone</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">classifier</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># Detach classifier. Only use &#39;backbone&#39; part in otx.</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">num_head_features</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">num_features</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">num_features</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">conv_head</span><span class="o">.</span><span class="n">in_channels</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_mobilenet</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">num_features</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">pooling_type</span> <span class="o">=</span> <span class="n">pooling_type</span>
 
+<div class="viewcode-block" id="TimmBackbone.forward">
+<a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.classification.backbones.html#otx.algo.classification.backbones.TimmBackbone.forward">[docs]</a>
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Forward.&quot;&quot;&quot;</span>
         <span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">extract_features</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-        <span class="k">return</span> <span class="p">(</span><span class="n">y</span><span class="p">,)</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">y</span><span class="p">,)</span></div>
 
+
+<div class="viewcode-block" id="TimmBackbone.extract_features">
+<a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.classification.backbones.html#otx.algo.classification.backbones.TimmBackbone.extract_features">[docs]</a>
     <span class="k">def</span> <span class="nf">extract_features</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Extract features.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_mobilenet</span><span class="p">:</span>
@@ -304,8 +324,11 @@
             <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">act1</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
             <span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">blocks</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">y</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">forward_features</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">forward_features</span><span class="p">(</span><span class="n">x</span><span class="p">)</span></div>
 
+
+<div class="viewcode-block" id="TimmBackbone.get_config_optim">
+<a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.classification.backbones.html#otx.algo.classification.backbones.TimmBackbone.get_config_optim">[docs]</a>
     <span class="k">def</span> <span class="nf">get_config_optim</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lrs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get optimizer configs.&quot;&quot;&quot;</span>
         <span class="n">parameters</span> <span class="o">=</span> <span class="p">[</span>
@@ -320,29 +343,22 @@
             <span class="k">for</span> <span class="n">param_dict</span> <span class="ow">in</span> <span class="n">parameters</span><span class="p">:</span>
                 <span class="n">param_dict</span><span class="p">[</span><span class="s2">&quot;lr&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">lrs</span>
 
-        <span class="k">return</span> <span class="n">parameters</span>
+        <span class="k">return</span> <span class="n">parameters</span></div>
 
 
-<div class="viewcode-block" id="OTXEfficientNetV2">
-<a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.classification.backbones.html#otx.algo.classification.backbones.OTXEfficientNetV2">[docs]</a>
-<span class="nd">@MODELS</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
-<span class="k">class</span> <span class="nc">OTXEfficientNetV2</span><span class="p">(</span><span class="n">TimmModelsWrapper</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;EfficientNetV2 for OTX.&quot;&quot;&quot;</span>
-
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="s2">&quot;s_21k&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">model_name</span> <span class="o">=</span> <span class="s2">&quot;efficientnetv2_&quot;</span> <span class="o">+</span> <span class="n">version</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">model_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model_name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-
-<div class="viewcode-block" id="OTXEfficientNetV2.init_weights">
-<a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.classification.backbones.html#otx.algo.classification.backbones.OTXEfficientNetV2.init_weights">[docs]</a>
-    <span class="k">def</span> <span class="nf">init_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pretrained</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="TimmBackbone.init_weights">
+<a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.classification.backbones.html#otx.algo.classification.backbones.TimmBackbone.init_weights">[docs]</a>
+    <span class="k">def</span> <span class="nf">init_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pretrained</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize weights.&quot;&quot;&quot;</span>
+        <span class="n">checkpoint</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">pretrained</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">pretrained</span><span class="p">):</span>
-            <span class="n">load_checkpoint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pretrained</span><span class="p">)</span>
+            <span class="n">checkpoint</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">pretrained</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
             <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;init weight - </span><span class="si">{</span><span class="n">pretrained</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">pretrained</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">load_checkpoint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pretrained_urls</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">model_name</span><span class="p">])</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;init weight - </span><span class="si">{</span><span class="n">pretrained_urls</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">model_name</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+            <span class="n">checkpoint</span> <span class="o">=</span> <span class="n">load_from_http</span><span class="p">(</span><span class="n">pretrained_urls</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">key</span><span class="p">])</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;init weight - </span><span class="si">{</span><span class="n">pretrained_urls</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">key</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">checkpoint</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">load_checkpoint_to_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">checkpoint</span><span class="p">)</span></div>
 </div>
 
 </pre></div>

@@ -494,10 +494,10 @@
         <li><a href="guide/reference/_autosummary/otx.core.model.base.html#id0">(otx.core.model.base.OTXModel property)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="guide/reference/_autosummary/otx.core.model.utils.mmpretrain.html#otx.core.model.utils.mmpretrain.ExplainableMixInMMPretrainModel">ExplainableMixInMMPretrainModel (class in otx.core.model.utils.mmpretrain)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="guide/reference/_autosummary/otx.core.model.detection.html#otx.core.model.detection.ExplainableOTXDetModel">ExplainableOTXDetModel (class in otx.core.model.detection)</a>
 </li>
       <li><a href="guide/reference/_autosummary/otx.core.model.instance_segmentation.html#otx.core.model.instance_segmentation.ExplainableOTXInstanceSegModel">ExplainableOTXInstanceSegModel (class in otx.core.model.instance_segmentation)</a>
@@ -522,6 +522,8 @@
         <li><a href="guide/reference/_autosummary/otx.core.model.instance_segmentation.html#otx.core.model.instance_segmentation.ExplainableOTXInstanceSegModel.export_model_forward_context">(otx.core.model.instance_segmentation.ExplainableOTXInstanceSegModel method)</a>
 </li>
       </ul></li>
+      <li><a href="guide/reference/_autosummary/otx.algo.classification.backbones.html#otx.algo.classification.backbones.TimmBackbone.extract_features">extract_features() (otx.algo.classification.backbones.TimmBackbone method)</a>
+</li>
   </ul></td>
 </tr></table>
 
@@ -542,6 +544,8 @@
         <li><a href="guide/reference/_autosummary/otx.algo.classification.backbones.html#otx.algo.classification.backbones.OTXEfficientNet.forward">(otx.algo.classification.backbones.OTXEfficientNet method)</a>
 </li>
         <li><a href="guide/reference/_autosummary/otx.algo.classification.backbones.html#otx.algo.classification.backbones.OTXMobileNetV3.forward">(otx.algo.classification.backbones.OTXMobileNetV3 method)</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.algo.classification.backbones.html#otx.algo.classification.backbones.TimmBackbone.forward">(otx.algo.classification.backbones.TimmBackbone method)</a>
 </li>
         <li><a href="guide/reference/_autosummary/otx.algo.classification.html#otx.algo.classification.DINOv2.forward">(otx.algo.classification.DINOv2 method)</a>
 </li>
@@ -698,6 +702,8 @@
       </ul></li>
       <li><a href="guide/reference/_autosummary/otx.cli.utils.help_formatter.html#otx.cli.utils.help_formatter.get_cli_usage_docstring">get_cli_usage_docstring() (in module otx.cli.utils.help_formatter)</a>
 </li>
+      <li><a href="guide/reference/_autosummary/otx.algo.classification.backbones.html#otx.algo.classification.backbones.TimmBackbone.get_config_optim">get_config_optim() (otx.algo.classification.backbones.TimmBackbone method)</a>
+</li>
       <li><a href="guide/reference/_autosummary/otx.cli.cli.html#otx.cli.cli.OTXCLI.get_config_value">get_config_value() (otx.cli.cli.OTXCLI method)</a>
 </li>
       <li><a href="guide/reference/_autosummary/otx.cli.utils.jsonargparse.html#otx.cli.utils.jsonargparse.get_configuration">get_configuration() (in module otx.cli.utils.jsonargparse)</a>
@@ -831,9 +837,9 @@
 </li>
         <li><a href="guide/reference/_autosummary/otx.algo.classification.backbones.html#otx.algo.classification.backbones.OTXEfficientNet.init_weights">(otx.algo.classification.backbones.OTXEfficientNet method)</a>
 </li>
-        <li><a href="guide/reference/_autosummary/otx.algo.classification.backbones.html#otx.algo.classification.backbones.OTXEfficientNetV2.init_weights">(otx.algo.classification.backbones.OTXEfficientNetV2 method)</a>
-</li>
         <li><a href="guide/reference/_autosummary/otx.algo.classification.backbones.html#otx.algo.classification.backbones.OTXMobileNetV3.init_weights">(otx.algo.classification.backbones.OTXMobileNetV3 method)</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.algo.classification.backbones.html#otx.algo.classification.backbones.TimmBackbone.init_weights">(otx.algo.classification.backbones.TimmBackbone method)</a>
 </li>
         <li><a href="guide/reference/_autosummary/otx.algo.segmentation.backbones.html#otx.algo.segmentation.backbones.DinoVisionTransformer.init_weights">(otx.algo.segmentation.backbones.DinoVisionTransformer method)</a>
 </li>
@@ -1952,8 +1958,6 @@
 </li>
       <li><a href="guide/reference/_autosummary/otx.algo.classification.backbones.html#otx.algo.classification.backbones.OTXEfficientNet">OTXEfficientNet (class in otx.algo.classification.backbones)</a>
 </li>
-      <li><a href="guide/reference/_autosummary/otx.algo.classification.backbones.html#otx.algo.classification.backbones.OTXEfficientNetV2">OTXEfficientNetV2 (class in otx.algo.classification.backbones)</a>
-</li>
       <li><a href="guide/reference/_autosummary/otx.core.model.classification.html#otx.core.model.classification.OTXHlabelClsModel">OTXHlabelClsModel (class in otx.core.model.classification)</a>
 </li>
       <li><a href="guide/reference/_autosummary/otx.core.model.instance_segmentation.html#otx.core.model.instance_segmentation.OTXInstanceSegModel">OTXInstanceSegModel (class in otx.core.model.instance_segmentation)</a>
@@ -2249,6 +2253,8 @@
       <li><a href="guide/reference/_autosummary/otx.core.config.data.html#otx.core.config.data.TileConfig">TileConfig (class in otx.core.config.data)</a>
 </li>
       <li><a href="guide/reference/_autosummary/otx.core.utils.tile_merge.html#otx.core.utils.tile_merge.TileMerge">TileMerge (class in otx.core.utils.tile_merge)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.algo.classification.backbones.html#otx.algo.classification.backbones.TimmBackbone">TimmBackbone (class in otx.algo.classification.backbones)</a>
 </li>
       <li><a href="guide/reference/_autosummary/otx.algo.visual_prompting.backbones.html#otx.algo.visual_prompting.backbones.TinyViT">TinyViT (class in otx.algo.visual_prompting.backbones)</a>
 </li>

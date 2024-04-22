@@ -18,7 +18,7 @@ otx.algo.classification.backbones
    .. autosummary::
    
       OTXEfficientNet
-      OTXEfficientNetV2
+      TimmBackbone
       OTXMobileNetV3
    
    

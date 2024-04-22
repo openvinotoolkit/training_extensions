@@ -386,8 +386,8 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#otx.algo.classification.backbones.OTXEfficientNet" title="otx.algo.classification.backbones.OTXEfficientNet"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OTXEfficientNet</span></code></a>(version, **kwargs)</p></td>
 <td><p>Create EfficientNet model with specific parameters.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#otx.algo.classification.backbones.OTXEfficientNetV2" title="otx.algo.classification.backbones.OTXEfficientNetV2"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OTXEfficientNetV2</span></code></a>([version])</p></td>
-<td><p>EfficientNetV2 for OTX.</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#otx.algo.classification.backbones.TimmBackbone" title="otx.algo.classification.backbones.TimmBackbone"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TimmBackbone</span></code></a>(backbone[, pretrained, ...])</p></td>
+<td><p>Initializes internal Module state, shared by both nn.Module and ScriptModule.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#otx.algo.classification.backbones.OTXMobileNetV3" title="otx.algo.classification.backbones.OTXMobileNetV3"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OTXMobileNetV3</span></code></a>([mode, width_mult])</p></td>
 <td><p>MobileNetV3 model for OTX.</p></td>
@@ -423,20 +423,6 @@
 </dd></dl>
 
 <dl class="py class">
-<dt class="sig sig-object py" id="otx.algo.classification.backbones.OTXEfficientNetV2">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.algo.classification.backbones.</span></span><span class="sig-name descname"><span class="pre">OTXEfficientNetV2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">version</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'s_21k'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algo/classification/backbones/otx_efficientnet_v2.html#OTXEfficientNetV2"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algo.classification.backbones.OTXEfficientNetV2" title="Link to this definition">#</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">TimmModelsWrapper</span></code></p>
-<p>EfficientNetV2 for OTX.</p>
-<p>Initializes internal Module state, shared by both nn.Module and ScriptModule.</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="otx.algo.classification.backbones.OTXEfficientNetV2.init_weights">
-<span class="sig-name descname"><span class="pre">init_weights</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pretrained</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algo/classification/backbones/otx_efficientnet_v2.html#OTXEfficientNetV2.init_weights"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algo.classification.backbones.OTXEfficientNetV2.init_weights" title="Link to this definition">#</a></dt>
-<dd><p>Initialize weights.</p>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
 <dt class="sig sig-object py" id="otx.algo.classification.backbones.OTXMobileNetV3">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.algo.classification.backbones.</span></span><span class="sig-name descname"><span class="pre">OTXMobileNetV3</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'large'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width_mult</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algo/classification/backbones/mobilenet_v3.html#OTXMobileNetV3"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algo.classification.backbones.OTXMobileNetV3" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">MobileNetV3</span></code></p>
@@ -451,6 +437,37 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.algo.classification.backbones.OTXMobileNetV3.init_weights">
 <span class="sig-name descname"><span class="pre">init_weights</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pretrained</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algo/classification/backbones/mobilenet_v3.html#OTXMobileNetV3.init_weights"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algo.classification.backbones.OTXMobileNetV3.init_weights" title="Link to this definition">#</a></dt>
+<dd><p>Initialize weights.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.algo.classification.backbones.TimmBackbone">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.algo.classification.backbones.</span></span><span class="sig-name descname"><span class="pre">TimmBackbone</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">backbone</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.12)"><span class="pre">Literal</span></a><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'mobilenetv3_large_21k'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'mobilenetv3_large_1k'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'tresnet'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'efficientnetv2_s_21k'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'efficientnetv2_s_1k'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'efficientnetv2_m_21k'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'efficientnetv2_m_1k'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'efficientnetv2_b0'</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pretrained</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pooling_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'avg'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algo/classification/backbones/timm.html#TimmBackbone"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algo.classification.backbones.TimmBackbone" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>Initializes internal Module state, shared by both nn.Module and ScriptModule.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algo.classification.backbones.TimmBackbone.extract_features">
+<span class="sig-name descname"><span class="pre">extract_features</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algo/classification/backbones/timm.html#TimmBackbone.extract_features"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algo.classification.backbones.TimmBackbone.extract_features" title="Link to this definition">#</a></dt>
+<dd><p>Extract features.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algo.classification.backbones.TimmBackbone.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algo/classification/backbones/timm.html#TimmBackbone.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algo.classification.backbones.TimmBackbone.forward" title="Link to this definition">#</a></dt>
+<dd><p>Forward.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algo.classification.backbones.TimmBackbone.get_config_optim">
+<span class="sig-name descname"><span class="pre">get_config_optim</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lrs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algo/classification/backbones/timm.html#TimmBackbone.get_config_optim"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algo.classification.backbones.TimmBackbone.get_config_optim" title="Link to this definition">#</a></dt>
+<dd><p>Get optimizer configs.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algo.classification.backbones.TimmBackbone.init_weights">
+<span class="sig-name descname"><span class="pre">init_weights</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pretrained</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algo/classification/backbones/timm.html#TimmBackbone.init_weights"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algo.classification.backbones.TimmBackbone.init_weights" title="Link to this definition">#</a></dt>
 <dd><p>Initialize weights.</p>
 </dd></dl>
 
@@ -526,26 +543,6 @@
   </ul>
  </li>
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#otx.algo.classification.backbones.OTXEfficientNetV2">
-   <code class="docutils literal notranslate">
-    <span class="pre">
-     OTXEfficientNetV2
-    </span>
-   </code>
-  </a>
-  <ul class="nav section-nav flex-column">
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.algo.classification.backbones.OTXEfficientNetV2.init_weights">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       OTXEfficientNetV2.init_weights()
-      </span>
-     </code>
-    </a>
-   </li>
-  </ul>
- </li>
- <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#otx.algo.classification.backbones.OTXMobileNetV3">
    <code class="docutils literal notranslate">
     <span class="pre">
@@ -568,6 +565,53 @@
      <code class="docutils literal notranslate">
       <span class="pre">
        OTXMobileNetV3.init_weights()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.algo.classification.backbones.TimmBackbone">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     TimmBackbone
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algo.classification.backbones.TimmBackbone.extract_features">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       TimmBackbone.extract_features()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algo.classification.backbones.TimmBackbone.forward">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       TimmBackbone.forward()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algo.classification.backbones.TimmBackbone.get_config_optim">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       TimmBackbone.get_config_optim()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algo.classification.backbones.TimmBackbone.init_weights">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       TimmBackbone.init_weights()
       </span>
      </code>
     </a>
