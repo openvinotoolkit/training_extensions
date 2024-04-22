@@ -254,7 +254,7 @@
 <span class="kn">from</span> <span class="nn">openvino.model_api.tilers</span> <span class="kn">import</span> <span class="n">InstanceSegmentationTiler</span>
 <span class="kn">from</span> <span class="nn">torchvision</span> <span class="kn">import</span> <span class="n">tv_tensors</span>
 
-<span class="kn">from</span> <span class="nn">otx.algo.explain.explain_algo</span> <span class="kn">import</span> <span class="n">feature_vector_fn</span>
+<span class="kn">from</span> <span class="nn">otx.algo.explain.explain_algo</span> <span class="kn">import</span> <span class="n">InstSegExplainAlgo</span><span class="p">,</span> <span class="n">feature_vector_fn</span>
 <span class="kn">from</span> <span class="nn">otx.core.config.data</span> <span class="kn">import</span> <span class="n">TileConfig</span>
 <span class="kn">from</span> <span class="nn">otx.core.data.entity.base</span> <span class="kn">import</span> <span class="n">OTXBatchLossEntity</span>
 <span class="kn">from</span> <span class="nn">otx.core.data.entity.instance_segmentation</span> <span class="kn">import</span> <span class="n">InstanceSegBatchDataEntity</span><span class="p">,</span> <span class="n">InstanceSegBatchPredEntity</span>
@@ -272,7 +272,7 @@
 <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
     <span class="kn">from</span> <span class="nn">lightning.pytorch.cli</span> <span class="kn">import</span> <span class="n">LRSchedulerCallable</span><span class="p">,</span> <span class="n">OptimizerCallable</span>
     <span class="kn">from</span> <span class="nn">mmdet.models.data_preprocessors</span> <span class="kn">import</span> <span class="n">DetDataPreprocessor</span>
-    <span class="kn">from</span> <span class="nn">mmdet.models.detectors.two_stage</span> <span class="kn">import</span> <span class="n">TwoStageDetector</span>
+    <span class="kn">from</span> <span class="nn">mmdet.models.detectors</span> <span class="kn">import</span> <span class="n">TwoStageDetector</span>
     <span class="kn">from</span> <span class="nn">mmdet.structures</span> <span class="kn">import</span> <span class="n">OptSampleList</span>
     <span class="kn">from</span> <span class="nn">omegaconf</span> <span class="kn">import</span> <span class="n">DictConfig</span>
     <span class="kn">from</span> <span class="nn">openvino.model_api.models.utils</span> <span class="kn">import</span> <span class="n">InstanceSegmentationResult</span>
@@ -477,10 +477,9 @@
             <span class="n">tile_config</span><span class="o">=</span><span class="n">tile_config</span><span class="p">,</span>
         <span class="p">)</span>
 
-        <span class="kn">from</span> <span class="nn">otx.algo.explain.explain_algo</span> <span class="kn">import</span> <span class="n">feature_vector_fn</span>
-
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">feature_vector_fn</span> <span class="o">=</span> <span class="n">feature_vector_fn</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">explain_fn</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_explain_fn</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">get_results_from_head</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_results_from_head</span>
 
 <div class="viewcode-block" id="ExplainableOTXInstanceSegModel.forward_explain">
 <a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.model.instance_segmentation.html#otx.core.model.instance_segmentation.ExplainableOTXInstanceSegModel.forward_explain">[docs]</a>
@@ -522,22 +521,17 @@
         <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">extract_feat</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
 
         <span class="n">feature_vector</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">feature_vector_fn</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">predictions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_results_from_head</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">data_samples</span><span class="p">)</span>
 
-        <span class="n">rpn_results_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rpn_head</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">data_samples</span><span class="p">,</span> <span class="n">rescale</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-        <span class="n">results_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">roi_head</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">rpn_results_list</span><span class="p">,</span> <span class="n">data_samples</span><span class="p">,</span> <span class="n">rescale</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">results_list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">results_list</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>  <span class="c1"># rewrite</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">predictions</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">predictions</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
             <span class="c1"># Export case, consists of tensors</span>
-            <span class="n">predictions</span> <span class="o">=</span> <span class="n">results_list</span>
             <span class="c1"># For OV task saliency map are generated on MAPI side</span>
             <span class="n">saliency_map</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
 
-        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">results_list</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">results_list</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">InstanceData</span><span class="p">):</span>  <span class="c1"># rewrite</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">predictions</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">predictions</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">InstanceData</span><span class="p">):</span>
             <span class="c1"># Predict case, consists of InstanceData</span>
-            <span class="n">predictions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">add_pred_to_datasample</span><span class="p">(</span><span class="n">data_samples</span><span class="p">,</span> <span class="n">results_list</span><span class="p">)</span>
-
-            <span class="n">features_for_sal_map</span> <span class="o">=</span> <span class="p">[</span><span class="n">data_sample</span><span class="o">.</span><span class="n">pred_instances</span> <span class="k">for</span> <span class="n">data_sample</span> <span class="ow">in</span> <span class="n">data_samples</span><span class="p">]</span>
-            <span class="n">saliency_map</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">explain_fn</span><span class="p">(</span><span class="n">features_for_sal_map</span><span class="p">)</span>
+            <span class="n">saliency_map</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">explain_fn</span><span class="p">(</span><span class="n">predictions</span><span class="p">)</span>
+            <span class="n">predictions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">add_pred_to_datasample</span><span class="p">(</span><span class="n">data_samples</span><span class="p">,</span> <span class="n">predictions</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="p">{</span>
             <span class="s2">&quot;predictions&quot;</span><span class="p">:</span> <span class="n">predictions</span><span class="p">,</span>
@@ -545,13 +539,36 @@
             <span class="s2">&quot;saliency_map&quot;</span><span class="p">:</span> <span class="n">saliency_map</span><span class="p">,</span>
         <span class="p">}</span>
 
+<div class="viewcode-block" id="ExplainableOTXInstanceSegModel.get_results_from_head">
+<a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.model.instance_segmentation.html#otx.core.model.instance_segmentation.ExplainableOTXInstanceSegModel.get_results_from_head">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_results_from_head</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">x</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span>
+        <span class="n">data_samples</span><span class="p">:</span> <span class="n">OptSampleList</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n">InstanceData</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the results from the head of the instance segmentation model.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            x (tuple[torch.Tensor]): The features from backbone and neck.</span>
+<span class="sd">            data_samples (OptSampleList | None): A list of data samples.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            tuple[torch.Tensor] | list[InstanceData]: The predicted results from the head of the model.</span>
+<span class="sd">            Tuple for the Export case, list for the Predict case.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">from</span> <span class="nn">otx.algo.instance_segmentation.rtmdet_inst</span> <span class="kn">import</span> <span class="n">RTMDetInst</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">RTMDetInst</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">bbox_head</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">data_samples</span><span class="p">,</span> <span class="n">rescale</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">rpn_results_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">rpn_head</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">data_samples</span><span class="p">,</span> <span class="n">rescale</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">roi_head</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">rpn_results_list</span><span class="p">,</span> <span class="n">data_samples</span><span class="p">,</span> <span class="n">rescale</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+
 <div class="viewcode-block" id="ExplainableOTXInstanceSegModel.get_explain_fn">
 <a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.model.instance_segmentation.html#otx.core.model.instance_segmentation.ExplainableOTXInstanceSegModel.get_explain_fn">[docs]</a>
     <span class="k">def</span> <span class="nf">get_explain_fn</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns explain function.&quot;&quot;&quot;</span>
-        <span class="kn">from</span> <span class="nn">otx.algo.explain.explain_algo</span> <span class="kn">import</span> <span class="n">MaskRCNNExplainAlgo</span>
-
-        <span class="n">explainer</span> <span class="o">=</span> <span class="n">MaskRCNNExplainAlgo</span><span class="p">(</span><span class="n">num_classes</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">num_classes</span><span class="p">)</span>
+        <span class="n">explainer</span> <span class="o">=</span> <span class="n">InstSegExplainAlgo</span><span class="p">(</span><span class="n">num_classes</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">num_classes</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">explainer</span><span class="o">.</span><span class="n">func</span></div>
 
 
