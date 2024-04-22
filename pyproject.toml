@@ -301,11 +301,15 @@ show-fixes = true
 [tool.ruff.lint.flake8-bugbear]
 # Allow default arguments like, e.g., `data: List[str] = fastapi.Query(None)`.
 extend-immutable-calls = [
+    # Label info objects
     "otx.core.types.label.LabelInfo",
     "otx.core.types.label.HLabelInfo",
     "otx.core.types.label.SegLabelInfo",
     "otx.core.types.label.NullLabelInfo",
     "otx.core.types.label.AnomalyLabelInfo",
+
+    # Config objects
+    "otx.core.config.data.TileConfig",
 ]
 
 [tool.ruff.mccabe]

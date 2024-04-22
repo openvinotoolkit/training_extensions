@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING, Literal
 
 from otx.algo.utils.mmconfig import read_mmconfig
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
+from otx.core.config.data import TileConfig
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.mmdeploy import MMdeployExporter
 from otx.core.metrics.mean_ap import MeanAPCallable
@@ -36,6 +37,7 @@ class YoloX(MMDetCompatibleModel):
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MeanAPCallable,
         torch_compile: bool = False,
+        tile_config: TileConfig = TileConfig(enable_tiler=False),
     ) -> None:
         model_name = f"yolox_{variant}"
         config = read_mmconfig(model_name=model_name)
@@ -46,6 +48,7 @@ class YoloX(MMDetCompatibleModel):
             scheduler=scheduler,
             metric=metric,
             torch_compile=torch_compile,
+            tile_config=tile_config,
         )
         self.image_size = (1, 3, 640, 640)
         self.tile_image_size = self.image_size
@@ -89,6 +92,7 @@ class YoloXTiny(MMDetCompatibleModel):
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MeanAPCallable,
         torch_compile: bool = False,
+        tile_config: TileConfig = TileConfig(enable_tiler=False),
     ) -> None:
         model_name = "yolox_tiny"
         config = read_mmconfig(model_name=model_name)
@@ -99,6 +103,7 @@ class YoloXTiny(MMDetCompatibleModel):
             scheduler=scheduler,
             metric=metric,
             torch_compile=torch_compile,
+            tile_config=tile_config,
         )
         self.image_size = (1, 3, 416, 416)
         self.tile_image_size = self.image_size

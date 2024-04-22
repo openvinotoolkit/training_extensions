@@ -47,6 +47,10 @@ def test_engine_from_config(
         work_dir=tmp_path_train,
         device=fxt_accelerator,
     )
+    if task.lower() == "zero_shot_visual_prompting":
+        engine.model.infer_reference_info_root = Path()
+        # update litmodule.hparams to reflect changed hparams
+        engine.model.hparams.update({"infer_reference_info_root": str(engine.model.infer_reference_info_root)})
 
     # Check OTXModel & OTXDataModule
     assert isinstance(engine.model, OTXModel)
@@ -89,6 +93,14 @@ def test_engine_from_config(
     # Test with IR Model
     if task in OVMODEL_PER_TASK:
         if task.lower() in ["visual_prompting", "zero_shot_visual_prompting"]:
+            if task.lower() == "zero_shot_visual_prompting":
+                engine.model = engine._auto_configurator.get_ov_model(
+                    model_name=str(exported_model_path["decoder"]),
+                    label_info=engine.datamodule.label_info,
+                )
+                engine.model.infer_reference_info_root = Path()
+                # update litmodule.hparams to reflect changed hparams
+                engine.model.hparams.update({"infer_reference_info_root": str(engine.model.infer_reference_info_root)})
             test_metric_from_ov_model = engine.test(checkpoint=exported_model_path["decoder"], accelerator="cpu")
         else:
             test_metric_from_ov_model = engine.test(checkpoint=exported_model_path, accelerator="cpu")

@@ -9,6 +9,7 @@ from copy import deepcopy
 from typing import TYPE_CHECKING, Literal
 
 from otx.algo.utils.mmconfig import read_mmconfig
+from otx.core.config.data import TileConfig
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.mmdeploy import MMdeployExporter
 from otx.core.metrics.mean_ap import MaskRLEMeanAPCallable
@@ -35,6 +36,7 @@ class RTMDetInst(MMDetInstanceSegCompatibleModel):
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MaskRLEMeanAPCallable,
         torch_compile: bool = False,
+        tile_config: TileConfig = TileConfig(enable_tiler=False),
     ) -> None:
         model_name = f"rtmdet_inst_{variant}"
         config = read_mmconfig(model_name=model_name)
@@ -45,6 +47,7 @@ class RTMDetInst(MMDetInstanceSegCompatibleModel):
             scheduler=scheduler,
             metric=metric,
             torch_compile=torch_compile,
+            tile_config=tile_config,
         )
         self.image_size = (1, 3, 640, 640)
         self.tile_image_size = self.image_size
