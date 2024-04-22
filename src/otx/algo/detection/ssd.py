@@ -11,7 +11,6 @@ from typing import TYPE_CHECKING, Any, Literal
 
 import numpy as np
 from datumaro.components.annotation import Bbox
-from mmdet.registry import MODELS
 from mmengine.structures import InstanceData
 from torch import nn
 
@@ -24,6 +23,7 @@ from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.metrics.mean_ap import MeanAPCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
 from otx.core.model.detection import MMDetCompatibleModel
+from otx.core.model.utils.mmdet import DetDataPreprocessor
 from otx.core.schedulers import LRSchedulerListCallable
 from otx.core.types.label import LabelInfoTypes
 from otx.core.utils.build import modify_num_classes
@@ -35,7 +35,7 @@ if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
     from mmengine import ConfigDict
     from omegaconf import DictConfig
-    from torch import Tensor, device
+    from torch import Tensor
 
     from otx.algo.detection.heads.custom_anchor_generator import SSDAnchorGeneratorClustered
     from otx.core.data.dataset.base import OTXDataset
@@ -54,9 +54,9 @@ class SingleStageDetector(nn.Module):
         self,
         backbone: ConfigDict | dict,
         bbox_head: ConfigDict | dict,
+        data_preprocessor: ConfigDict | dict,
         train_cfg: ConfigDict | dict | None = None,
         test_cfg: ConfigDict | dict | None = None,
-        data_preprocessor: ConfigDict | dict | None = None,
         init_cfg: ConfigDict | list[ConfigDict] | dict | list[dict] = None,
     ) -> None:
         super().__init__()
@@ -65,10 +65,7 @@ class SingleStageDetector(nn.Module):
         bbox_head.update(train_cfg=train_cfg)
         bbox_head.update(test_cfg=test_cfg)
         self.bbox_head = SSDHead(**bbox_head)
-        if isinstance(data_preprocessor, nn.Module):
-            self.data_preprocessor = data_preprocessor
-        elif isinstance(data_preprocessor, dict):
-            self.data_preprocessor = MODELS.build(data_preprocessor)
+        self.data_preprocessor = DetDataPreprocessor(**data_preprocessor)
         self.init_cfg = init_cfg
         self.train_cfg = train_cfg
         self.test_cfg = test_cfg
@@ -401,24 +398,7 @@ class SSD(MMDetCompatibleModel):
         self.tile_image_size = self.image_size
 
     def _create_model(self) -> nn.Module:
-        from mmdet.models.data_preprocessors import (
-            DetDataPreprocessor as _DetDataPreprocessor,
-        )
-        from mmdet.registry import MODELS
         from mmengine.runner import load_checkpoint
-
-        # NOTE: For the history of this monkey patching, please see
-        # https://github.com/openvinotoolkit/training_extensions/issues/2743
-        @MODELS.register_module(force=True)
-        class DetDataPreprocessor(_DetDataPreprocessor):
-            @property
-            def device(self) -> device:
-                try:
-                    buf = next(self.buffers())
-                except StopIteration:
-                    return super().device
-                else:
-                    return buf.device
 
         config = deepcopy(self.config)
         self.classification_layers = self.get_classification_layers(config, "model.")

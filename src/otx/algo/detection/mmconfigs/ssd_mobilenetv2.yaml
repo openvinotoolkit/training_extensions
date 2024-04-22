@@ -29,7 +29,6 @@ backbone:
   norm_eval: false
   pretrained: true
 data_preprocessor:
-  type: DetDataPreprocessor
   mean:
     - 0
     - 0
