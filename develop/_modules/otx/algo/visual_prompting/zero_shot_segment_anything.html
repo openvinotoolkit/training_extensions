@@ -243,7 +243,7 @@
 <span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
 
 <span class="kn">import</span> <span class="nn">logging</span> <span class="k">as</span> <span class="nn">log</span>
-<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">pickle</span>
 <span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span>
 <span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
 <span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">product</span>
@@ -882,7 +882,7 @@
 <span class="k">class</span> <span class="nc">OTXZeroShotSegmentAnything</span><span class="p">(</span><span class="n">OTXZeroShotVisualPromptingModel</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Zero-Shot Visual Prompting model.&quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>  <span class="c1"># noqa: PLR0913</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">backbone</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;tiny_vit&quot;</span><span class="p">,</span> <span class="s2">&quot;vit_b&quot;</span><span class="p">],</span>
         <span class="n">label_info</span><span class="p">:</span> <span class="n">LabelInfoTypes</span> <span class="o">=</span> <span class="n">NullLabelInfo</span><span class="p">(),</span>
@@ -890,7 +890,8 @@
         <span class="n">scheduler</span><span class="p">:</span> <span class="n">LRSchedulerCallable</span> <span class="o">|</span> <span class="n">LRSchedulerListCallable</span> <span class="o">=</span> <span class="n">DefaultSchedulerCallable</span><span class="p">,</span>
         <span class="n">metric</span><span class="p">:</span> <span class="n">MetricCallable</span> <span class="o">=</span> <span class="n">VisualPromptingMetricCallable</span><span class="p">,</span>
         <span class="n">torch_compile</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-        <span class="n">root_reference_info</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;vpm_zsl_reference_infos&quot;</span><span class="p">,</span>
+        <span class="n">reference_info_dir</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;reference_infos&quot;</span><span class="p">,</span>
+        <span class="n">infer_reference_info_root</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;../.latest/train&quot;</span><span class="p">,</span>
         <span class="n">save_outputs</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">pixel_mean</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="p">[</span><span class="mf">123.675</span><span class="p">,</span> <span class="mf">116.28</span><span class="p">,</span> <span class="mf">103.53</span><span class="p">],</span>  <span class="c1"># noqa: B006</span>
         <span class="n">pixel_std</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="p">[</span><span class="mf">58.395</span><span class="p">,</span> <span class="mf">57.12</span><span class="p">,</span> <span class="mf">57.375</span><span class="p">],</span>  <span class="c1"># noqa: B006</span>
@@ -926,7 +927,8 @@
         <span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">save_outputs</span> <span class="o">=</span> <span class="n">save_outputs</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">root_reference_info</span><span class="p">:</span> <span class="n">Path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">root_reference_info</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reference_info_dir</span><span class="p">:</span> <span class="n">Path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">reference_info_dir</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">infer_reference_info_root</span><span class="p">:</span> <span class="n">Path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">infer_reference_info_root</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span><span class="s2">&quot;pixel_mean&quot;</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">(</span><span class="n">pixel_mean</span><span class="p">)</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="kc">False</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span><span class="s2">&quot;pixel_std&quot;</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">(</span><span class="n">pixel_std</span><span class="p">)</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="kc">False</span><span class="p">)</span>
@@ -1170,23 +1172,42 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span><span class="s2">&quot;used_indices&quot;</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">int64</span><span class="p">),</span> <span class="kc">False</span><span class="p">)</span></div>
 
 
-    <span class="k">def</span> <span class="nf">_find_latest_reference_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">root</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Find latest reference info to be used.&quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">Path</span><span class="o">.</span><span class="n">is_dir</span><span class="p">(</span><span class="n">root</span><span class="p">):</span>
-            <span class="k">return</span> <span class="kc">None</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">stamps</span> <span class="o">:=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">root</span><span class="p">),</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">stamps</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="k">return</span> <span class="kc">None</span>
+<div class="viewcode-block" id="OTXZeroShotSegmentAnything.save_reference_info">
+<a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.algo.visual_prompting.html#otx.algo.visual_prompting.OTXZeroShotSegmentAnything.save_reference_info">[docs]</a>
+    <span class="k">def</span> <span class="nf">save_reference_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">default_root_dir</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Save reference info.&quot;&quot;&quot;</span>
+        <span class="n">reference_info</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;reference_feats&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">reference_feats</span><span class="p">,</span>
+            <span class="s2">&quot;used_indices&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">used_indices</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="c1"># save reference info</span>
+        <span class="n">path_reference_info</span><span class="p">:</span> <span class="n">Path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">default_root_dir</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">reference_info_dir</span> <span class="o">/</span> <span class="s2">&quot;reference_info.pt&quot;</span>
+        <span class="n">path_reference_info</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="c1"># TODO (sungchul): ticket no. 139210</span>
+        <span class="n">torch</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">reference_info</span><span class="p">,</span> <span class="n">path_reference_info</span><span class="p">)</span>
+        <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span>
+            <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">reference_info</span><span class="o">.</span><span class="n">items</span><span class="p">()},</span>
+            <span class="n">path_reference_info</span><span class="o">.</span><span class="n">with_suffix</span><span class="p">(</span><span class="s2">&quot;.pickle&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s2">&quot;wb&quot;</span><span class="p">),</span>
+        <span class="p">)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Saved reference info at </span><span class="si">{</span><span class="n">path_reference_info</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="OTXZeroShotSegmentAnything.load_latest_reference_info">
-<a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.algo.visual_prompting.html#otx.algo.visual_prompting.OTXZeroShotSegmentAnything.load_latest_reference_info">[docs]</a>
-    <span class="k">def</span> <span class="nf">load_latest_reference_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span> <span class="o">=</span> <span class="s2">&quot;cpu&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+
+<div class="viewcode-block" id="OTXZeroShotSegmentAnything.load_reference_info">
+<a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.algo.visual_prompting.html#otx.algo.visual_prompting.OTXZeroShotSegmentAnything.load_reference_info">[docs]</a>
+    <span class="k">def</span> <span class="nf">load_reference_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">default_root_dir</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span> <span class="n">device</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span> <span class="o">=</span> <span class="s2">&quot;cpu&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Load latest reference info to be used.&quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="p">(</span><span class="n">latest_stamp</span> <span class="o">:=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_find_latest_reference_info</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root_reference_info</span><span class="p">))</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">latest_reference_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">root_reference_info</span> <span class="o">/</span> <span class="n">latest_stamp</span> <span class="o">/</span> <span class="s2">&quot;reference_info.pt&quot;</span>
-            <span class="n">reference_info</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">latest_reference_info</span><span class="p">)</span>
+        <span class="n">_infer_reference_info_root</span><span class="p">:</span> <span class="n">Path</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">infer_reference_info_root</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">infer_reference_info_root</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">infer_reference_info_root</span><span class="o">.</span><span class="n">absolute</span><span class="p">()</span>
+            <span class="k">else</span> <span class="n">Path</span><span class="p">(</span><span class="n">default_root_dir</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">infer_reference_info_root</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="n">path_reference_info</span> <span class="o">:=</span> <span class="n">_infer_reference_info_root</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">reference_info_dir</span> <span class="o">/</span> <span class="s2">&quot;reference_info.pt&quot;</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
+            <span class="n">reference_info</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">path_reference_info</span><span class="p">)</span>
             <span class="n">retval</span> <span class="o">=</span> <span class="kc">True</span>
-            <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;reference info saved at </span><span class="si">{</span><span class="n">latest_reference_info</span><span class="si">}</span><span class="s2"> was successfully loaded.&quot;</span><span class="p">)</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;reference info saved at </span><span class="si">{</span><span class="n">path_reference_info</span><span class="si">}</span><span class="s2"> was successfully loaded.&quot;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">reference_info</span> <span class="o">=</span> <span class="p">{}</span>
             <span class="n">retval</span> <span class="o">=</span> <span class="kc">False</span>

@@ -238,17 +238,12 @@
 <span></span><span class="c1"># Copyright (C) 2023 Intel Corporation</span>
 <span class="c1"># SPDX-License-Identifier: Apache-2.0</span>
 <span class="c1">#</span>
-<span class="sd">&quot;&quot;&quot;Class definition for visual prompting model entity used in OTX.&quot;&quot;&quot;</span>
-
-<span class="c1"># TODO(vinnamki): There are so many mypy errors. Resolve them after refactoring visual prompting code.</span>
-<span class="c1"># mypy: ignore-errors</span>
+<span class="sd">&quot;&quot;&quot;Class definition for visual prompting models entity used in OTX.&quot;&quot;&quot;</span>
 
 <span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
 
 <span class="kn">import</span> <span class="nn">logging</span> <span class="k">as</span> <span class="nn">log</span>
-<span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">pickle</span>
-<span class="kn">import</span> <span class="nn">time</span>
 <span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span>
 <span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
 <span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
@@ -262,7 +257,7 @@
 <span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">Tensor</span>
 <span class="kn">from</span> <span class="nn">torchvision</span> <span class="kn">import</span> <span class="n">tv_tensors</span>
 
-<span class="kn">from</span> <span class="nn">otx.core.data.entity.base</span> <span class="kn">import</span> <span class="n">OTXBatchLossEntity</span><span class="p">,</span> <span class="n">Points</span>
+<span class="kn">from</span> <span class="nn">otx.core.data.entity.base</span> <span class="kn">import</span> <span class="n">Points</span>
 <span class="kn">from</span> <span class="nn">otx.core.data.entity.visual_prompting</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">VisualPromptingBatchDataEntity</span><span class="p">,</span>
     <span class="n">VisualPromptingBatchPredEntity</span><span class="p">,</span>
@@ -524,7 +519,7 @@
 <span class="k">class</span> <span class="nc">OTXZeroShotVisualPromptingModel</span><span class="p">(</span>
     <span class="n">OTXModel</span><span class="p">[</span><span class="n">ZeroShotVisualPromptingBatchDataEntity</span><span class="p">,</span> <span class="n">ZeroShotVisualPromptingBatchPredEntity</span><span class="p">],</span>
 <span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Base class for the visual prompting models used in OTX.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Base class for the zero-shot visual prompting models used in OTX.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -566,7 +561,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">_optimization_config</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;PTQ config for visual prompting models.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;PTQ config for zero-shot visual prompting models.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="p">{</span>
             <span class="s2">&quot;model_type&quot;</span><span class="p">:</span> <span class="s2">&quot;transformer&quot;</span><span class="p">,</span>
             <span class="s2">&quot;advanced_parameters&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -597,8 +592,8 @@
     <span class="k">def</span> <span class="nf">on_test_start</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Load previously saved reference info.&quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">on_test_start</span><span class="p">()</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_latest_reference_info</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">):</span>
-            <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;No reference info found. `Learn` will be automatically excuted first.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_reference_info</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">default_root_dir</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">):</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;No reference info found. `Learn` will be automatically executed first.&quot;</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">lightning_module</span><span class="o">.</span><span class="n">automatic_optimization</span> <span class="o">=</span> <span class="kc">False</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">fit_loop</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
             <span class="c1"># to use infer logic</span>
@@ -606,15 +601,15 @@
             <span class="c1"># to set _combined_loader</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">_evaluation_loop</span><span class="o">.</span><span class="n">setup_data</span><span class="p">()</span>  <span class="c1"># noqa: SLF001</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">_evaluation_loop</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>  <span class="c1"># noqa: SLF001</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">load_latest_reference_info</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">load_reference_info</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">default_root_dir</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="OTXZeroShotVisualPromptingModel.on_predict_start">
 <a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.model.visual_prompting.html#otx.core.model.visual_prompting.OTXZeroShotVisualPromptingModel.on_predict_start">[docs]</a>
     <span class="k">def</span> <span class="nf">on_predict_start</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Load previously saved reference info.&quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_latest_reference_info</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">):</span>
-            <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;No reference info found. `Learn` will be automatically excuted first.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_reference_info</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">default_root_dir</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">):</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;No reference info found. `Learn` will be automatically executed first.&quot;</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">lightning_module</span><span class="o">.</span><span class="n">automatic_optimization</span> <span class="o">=</span> <span class="kc">False</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">fit_loop</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
             <span class="c1"># to use infer logic</span>
@@ -622,7 +617,7 @@
             <span class="c1"># to set _combined_loader</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">_evaluation_loop</span><span class="o">.</span><span class="n">setup_data</span><span class="p">()</span>  <span class="c1"># noqa: SLF001</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">_evaluation_loop</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>  <span class="c1"># noqa: SLF001</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">load_latest_reference_info</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">load_reference_info</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">default_root_dir</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="OTXZeroShotVisualPromptingModel.on_train_epoch_start">
@@ -636,23 +631,7 @@
     <span class="k">def</span> <span class="nf">on_train_epoch_end</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Skip on_train_epoch_end unused in zero-shot visual prompting.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">save_outputs</span><span class="p">:</span>
-            <span class="n">reference_info</span> <span class="o">=</span> <span class="p">{</span>
-                <span class="s2">&quot;reference_feats&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">reference_feats</span><span class="p">,</span>
-                <span class="s2">&quot;used_indices&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">used_indices</span><span class="p">,</span>
-            <span class="p">}</span>
-            <span class="c1"># save reference info</span>
-            <span class="n">path_reference_info</span><span class="p">:</span> <span class="n">Path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">root_reference_info</span> <span class="o">/</span> <span class="n">time</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y%m</span><span class="si">%d</span><span class="s2">_%H%M%S&quot;</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;reference_info.pt&quot;</span>
-            <span class="n">Path</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">path_reference_info</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">OTXZeroShotVisualPromptingModel</span><span class="p">):</span>
-                <span class="n">torch</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">reference_info</span><span class="p">,</span> <span class="n">path_reference_info</span><span class="p">)</span>
-                <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span>
-                    <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">reference_info</span><span class="o">.</span><span class="n">items</span><span class="p">()},</span>
-                    <span class="n">Path</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">path_reference_info</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;.pt&quot;</span><span class="p">,</span> <span class="s2">&quot;.pickle&quot;</span><span class="p">)),</span> <span class="s2">&quot;wb&quot;</span><span class="p">),</span>
-                <span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">torch</span><span class="o">.</span><span class="n">save</span><span class="p">({</span><span class="n">k</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">reference_info</span><span class="o">.</span><span class="n">items</span><span class="p">()},</span> <span class="n">path_reference_info</span><span class="p">)</span>
-                <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">reference_info</span><span class="p">,</span> <span class="n">Path</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">path_reference_info</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;.pt&quot;</span><span class="p">,</span> <span class="s2">&quot;.pickle&quot;</span><span class="p">)),</span> <span class="s2">&quot;wb&quot;</span><span class="p">))</span>
-            <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Saved reference info at </span><span class="si">{</span><span class="n">path_reference_info</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">save_reference_info</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">default_root_dir</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="OTXZeroShotVisualPromptingModel.on_validation_epoch_start">
@@ -688,7 +667,7 @@
 <a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.model.visual_prompting.html#otx.core.model.visual_prompting.OTXZeroShotVisualPromptingModel.validation_step">[docs]</a>
     <span class="k">def</span> <span class="nf">validation_step</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">inputs</span><span class="p">:</span> <span class="n">VisualPromptingBatchDataEntity</span> <span class="o">|</span> <span class="n">ZeroShotVisualPromptingBatchDataEntity</span><span class="p">,</span>
+        <span class="n">inputs</span><span class="p">:</span> <span class="n">ZeroShotVisualPromptingBatchDataEntity</span><span class="p">,</span>
         <span class="n">batch_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Skip validation_step unused in zero-shot visual prompting.&quot;&quot;&quot;</span></div>
@@ -704,11 +683,11 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Perform a single test step on a batch of data from the test set.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            inputs (VisualPromptingBatchDataEntity): The input data for the test step.</span>
+<span class="sd">            inputs (ZeroShotVisualPromptingBatchDataEntity): The input data for the test step.</span>
 <span class="sd">            batch_idx (int): The index of the current batch.</span>
 
 <span class="sd">        Raises:</span>
-<span class="sd">            TypeError: If the predictions are not of type VisualPromptingBatchPredEntity.</span>
+<span class="sd">            TypeError: If the predictions are not of type ZeroShotVisualPromptingBatchDataEntity.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">_inference_step_for_zero_shot</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">metric</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">metric</span><span class="p">,</span> <span class="n">inputs</span><span class="o">=</span><span class="n">inputs</span><span class="p">)</span></div>
 
@@ -871,7 +850,7 @@
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">outputs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>  <span class="c1"># noqa: ANN401</span>
         <span class="n">inputs</span><span class="p">:</span> <span class="n">VisualPromptingBatchDataEntity</span><span class="p">,</span>  <span class="c1"># type: ignore[override]</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">VisualPromptingBatchPredEntity</span> <span class="o">|</span> <span class="n">OTXBatchLossEntity</span><span class="p">:</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">VisualPromptingBatchPredEntity</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Customize OTX output batch data entity if needed for model.&quot;&quot;&quot;</span>
         <span class="n">masks</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">tv_tensors</span><span class="o">.</span><span class="n">Mask</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">scores</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
@@ -909,7 +888,7 @@
             <span class="k">return</span> <span class="nb">any</span><span class="p">(</span><span class="n">op</span><span class="o">.</span><span class="n">get_type_name</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;FakeQuantize&quot;</span> <span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="n">nodes</span><span class="p">)</span>
 
         <span class="k">def</span> <span class="nf">transform_fn</span><span class="p">(</span>
-            <span class="n">data_batch</span><span class="p">:</span> <span class="n">VisualPromptingBatchDataEntity</span> <span class="o">|</span> <span class="n">ZeroShotVisualPromptingBatchDataEntity</span><span class="p">,</span>
+            <span class="n">data_batch</span><span class="p">:</span> <span class="n">VisualPromptingBatchDataEntity</span><span class="p">,</span>
             <span class="n">module</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;image_encoder&quot;</span><span class="p">,</span> <span class="s2">&quot;decoder&quot;</span><span class="p">],</span>
         <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
             <span class="n">images</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">prompts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_customize_inputs</span><span class="p">(</span><span class="n">data_batch</span><span class="p">)</span>  <span class="c1"># type: ignore[arg-type]</span>
@@ -1031,7 +1010,12 @@
 
 <div class="viewcode-block" id="OVZeroShotVisualPromptingModel">
 <a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.model.visual_prompting.html#otx.core.model.visual_prompting.OVZeroShotVisualPromptingModel">[docs]</a>
-<span class="k">class</span> <span class="nc">OVZeroShotVisualPromptingModel</span><span class="p">(</span><span class="n">OVVisualPromptingModel</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">OVZeroShotVisualPromptingModel</span><span class="p">(</span>
+    <span class="n">OVModel</span><span class="p">[</span>
+        <span class="n">ZeroShotVisualPromptingBatchDataEntity</span><span class="p">,</span>
+        <span class="n">ZeroShotVisualPromptingBatchPredEntity</span><span class="p">,</span>
+    <span class="p">],</span>
+<span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Zero-shot visual prompting model compatible for OpenVINO IR inference.</span>
 
 <span class="sd">    It can only consume OpenVINO IR model path and create the OTX zero-shot visual prompting model compatible</span>
@@ -1047,10 +1031,26 @@
         <span class="n">use_throughput_mode</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">model_api_configuration</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">metric</span><span class="p">:</span> <span class="n">MetricCallable</span> <span class="o">=</span> <span class="n">VisualPromptingMetricCallable</span><span class="p">,</span>
-        <span class="n">root_reference_info</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;vpm_zsl_reference_infos&quot;</span><span class="p">,</span>
+        <span class="n">reference_info_dir</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;reference_infos&quot;</span><span class="p">,</span>
+        <span class="n">infer_reference_info_root</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;../.latest/train&quot;</span><span class="p">,</span>
         <span class="n">save_outputs</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">async_inference</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                <span class="p">(</span>
+                    <span class="s2">&quot;Async inference is not supported for zero-shot visual prompting models. &quot;</span>
+                    <span class="s2">&quot;Setting async_inference to False.&quot;</span><span class="p">,</span>
+                <span class="p">),</span>
+            <span class="p">)</span>
+            <span class="n">async_inference</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="n">basename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">model_name</span><span class="p">)</span><span class="o">.</span><span class="n">name</span>
+        <span class="n">model_type_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;_&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">basename</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">)[:</span><span class="mi">2</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model_names</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">module</span><span class="p">:</span> <span class="n">model_name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">basename</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">model_type_name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">module</span><span class="si">}</span><span class="s2">.xml&quot;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">module</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;image_encoder&quot;</span><span class="p">,</span> <span class="s2">&quot;decoder&quot;</span><span class="p">]</span>
+        <span class="p">}</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="n">model_name</span><span class="o">=</span><span class="n">model_name</span><span class="p">,</span>
             <span class="n">model_type</span><span class="o">=</span><span class="n">model_type</span><span class="p">,</span>
@@ -1060,13 +1060,37 @@
             <span class="n">model_api_configuration</span><span class="o">=</span><span class="n">model_api_configuration</span><span class="p">,</span>
             <span class="n">metric</span><span class="o">=</span><span class="n">metric</span><span class="p">,</span>
         <span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">root_reference_info</span><span class="p">:</span> <span class="n">Path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">root_reference_info</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reference_info_dir</span><span class="p">:</span> <span class="n">Path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">reference_info_dir</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">infer_reference_info_root</span><span class="p">:</span> <span class="n">Path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">infer_reference_info_root</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">save_outputs</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">save_outputs</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">point_labels_box</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">has_mask_inputs</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.0</span><span class="p">]]),</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">1.0</span><span class="p">]])]</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">initialize_reference_info</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_create_model</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Model</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a OV model with help of Model API.&quot;&quot;&quot;</span>
+        <span class="kn">from</span> <span class="nn">openvino.model_api.adapters</span> <span class="kn">import</span> <span class="n">OpenvinoAdapter</span><span class="p">,</span> <span class="n">create_core</span><span class="p">,</span> <span class="n">get_user_config</span>
+        <span class="kn">from</span> <span class="nn">openvino.model_api.models</span> <span class="kn">import</span> <span class="n">Model</span>
+
+        <span class="n">ov_models</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Model</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="n">plugin_config</span> <span class="o">=</span> <span class="n">get_user_config</span><span class="p">(</span><span class="s2">&quot;AUTO&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_requests</span><span class="p">),</span> <span class="s2">&quot;AUTO&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_throughput_mode</span><span class="p">:</span>
+            <span class="n">plugin_config</span><span class="p">[</span><span class="s2">&quot;PERFORMANCE_HINT&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;THROUGHPUT&quot;</span>
+
+        <span class="n">model_parameters</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;decoder&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;input_layouts&quot;</span><span class="p">:</span> <span class="s2">&quot;image_embeddings:NCHW&quot;</span><span class="p">}}</span>
+        <span class="k">for</span> <span class="n">module</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;image_encoder&quot;</span><span class="p">,</span> <span class="s2">&quot;decoder&quot;</span><span class="p">]:</span>
+            <span class="n">model_adapter</span> <span class="o">=</span> <span class="n">OpenvinoAdapter</span><span class="p">(</span>
+                <span class="n">core</span><span class="o">=</span><span class="n">create_core</span><span class="p">(),</span>
+                <span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model_names</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">module</span><span class="p">),</span>
+                <span class="n">model_parameters</span><span class="o">=</span><span class="n">model_parameters</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="p">{}),</span>
+                <span class="n">max_num_requests</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">num_requests</span><span class="p">,</span>
+                <span class="n">plugin_config</span><span class="o">=</span><span class="n">plugin_config</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">ov_models</span><span class="p">[</span><span class="n">module</span><span class="p">]</span> <span class="o">=</span> <span class="n">Model</span><span class="o">.</span><span class="n">create_model</span><span class="p">(</span><span class="n">model_adapter</span><span class="p">,</span> <span class="n">module</span><span class="p">,</span> <span class="n">configuration</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model_api_configuration</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ov_models</span>
 
 <div class="viewcode-block" id="OVZeroShotVisualPromptingModel.learn">
 <a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.model.visual_prompting.html#otx.core.model.visual_prompting.OVZeroShotVisualPromptingModel.learn">[docs]</a>
@@ -1212,7 +1236,7 @@
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span>  <span class="c1"># type: ignore[override]</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">inputs</span><span class="p">:</span> <span class="n">ZeroShotVisualPromptingBatchDataEntity</span><span class="p">,</span>  <span class="c1"># type: ignore[override]</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ZeroShotVisualPromptingBatchPredEntity</span> <span class="o">|</span> <span class="n">OTXBatchLossEntity</span><span class="p">:</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ZeroShotVisualPromptingBatchPredEntity</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Model forward function.&quot;&quot;&quot;</span>
         <span class="n">kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="n">fn</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">learn</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">training</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">infer</span>
@@ -1227,7 +1251,7 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">async_inference</span><span class="p">:</span>
             <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
                 <span class="p">(</span>
-                    <span class="s2">&quot;Async inference is not supported for visual prompting models yet. &quot;</span>
+                    <span class="s2">&quot;Async inference is not supported for zero-shot visual prompting models yet. &quot;</span>
                     <span class="s2">&quot;Running synchronous inference instead.&quot;</span><span class="p">,</span>
                 <span class="p">),</span>
             <span class="p">)</span>
@@ -1284,7 +1308,7 @@
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">outputs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>  <span class="c1"># noqa: ANN401</span>
         <span class="n">inputs</span><span class="p">:</span> <span class="n">ZeroShotVisualPromptingBatchDataEntity</span><span class="p">,</span>  <span class="c1"># type: ignore[override]</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ZeroShotVisualPromptingBatchPredEntity</span> <span class="o">|</span> <span class="n">OTXBatchLossEntity</span><span class="p">:</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ZeroShotVisualPromptingBatchPredEntity</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Customize OTX output batch data entity if needed for model.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">training</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">outputs</span>
@@ -1324,6 +1348,93 @@
             <span class="n">polygons</span><span class="o">=</span><span class="p">[],</span>
             <span class="n">labels</span><span class="o">=</span><span class="n">labels</span><span class="p">,</span>
         <span class="p">)</span>
+
+<div class="viewcode-block" id="OVZeroShotVisualPromptingModel.optimize">
+<a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.model.visual_prompting.html#otx.core.model.visual_prompting.OVZeroShotVisualPromptingModel.optimize">[docs]</a>
+    <span class="k">def</span> <span class="nf">optimize</span><span class="p">(</span>  <span class="c1"># type: ignore[override]</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">output_dir</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span>
+        <span class="n">data_module</span><span class="p">:</span> <span class="n">OTXDataModule</span><span class="p">,</span>
+        <span class="n">ptq_config</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Runs NNCF quantization.&quot;&quot;&quot;</span>
+        <span class="kn">import</span> <span class="nn">nncf</span>
+        <span class="kn">import</span> <span class="nn">openvino</span>
+
+        <span class="k">def</span> <span class="nf">check_if_quantized</span><span class="p">(</span><span class="n">model</span><span class="p">:</span> <span class="n">openvino</span><span class="o">.</span><span class="n">Model</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;Checks if OpenVINO model is already quantized.&quot;&quot;&quot;</span>
+            <span class="n">nodes</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">get_ops</span><span class="p">()</span>
+            <span class="k">return</span> <span class="nb">any</span><span class="p">(</span><span class="n">op</span><span class="o">.</span><span class="n">get_type_name</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;FakeQuantize&quot;</span> <span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="n">nodes</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">transform_fn</span><span class="p">(</span>
+            <span class="n">data_batch</span><span class="p">:</span> <span class="n">ZeroShotVisualPromptingBatchDataEntity</span><span class="p">,</span>
+            <span class="n">module</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;image_encoder&quot;</span><span class="p">,</span> <span class="s2">&quot;decoder&quot;</span><span class="p">],</span>
+        <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+            <span class="n">images</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">prompts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_customize_inputs</span><span class="p">(</span><span class="n">data_batch</span><span class="p">)</span>  <span class="c1"># type: ignore[arg-type]</span>
+
+            <span class="n">image</span> <span class="o">=</span> <span class="n">images</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;images&quot;</span><span class="p">]</span>  <span class="c1"># use only the first image</span>
+            <span class="k">if</span> <span class="n">module</span> <span class="o">==</span> <span class="s2">&quot;image_encoder&quot;</span><span class="p">:</span>
+                <span class="c1"># resize</span>
+                <span class="n">resized_image</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">[</span><span class="s2">&quot;image_encoder&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">resize</span><span class="p">(</span>
+                    <span class="n">image</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                    <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">[</span><span class="s2">&quot;image_encoder&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">w</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">[</span><span class="s2">&quot;image_encoder&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">h</span><span class="p">),</span>
+                <span class="p">)</span>
+
+                <span class="c1"># pad image if necessary because `fit_to_window` resize for python in modelapi doesn&#39;t support pad</span>
+                <span class="n">pad_w</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">[</span><span class="s2">&quot;image_encoder&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">w</span> <span class="o">-</span> <span class="n">resized_image</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+                <span class="n">pad_h</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">[</span><span class="s2">&quot;image_encoder&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">h</span> <span class="o">-</span> <span class="n">resized_image</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+                <span class="n">resized_image</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span>
+                    <span class="n">resized_image</span><span class="p">,</span>
+                    <span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="n">pad_h</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">pad_w</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)),</span>
+                    <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;constant&quot;</span><span class="p">,</span>
+                    <span class="n">constant_values</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                <span class="p">)</span>
+
+                <span class="c1"># normalization</span>
+                <span class="n">resized_image</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">[</span><span class="s2">&quot;image_encoder&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">input_transform</span><span class="p">(</span><span class="n">resized_image</span><span class="p">)</span>
+
+                <span class="c1"># change layout from HWC to NCHW</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">[</span><span class="s2">&quot;image_encoder&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">_change_layout</span><span class="p">(</span><span class="n">resized_image</span><span class="p">)</span>  <span class="c1"># noqa: SLF001</span>
+
+            <span class="c1"># obtain image embeddings from image encoder</span>
+            <span class="n">image_embeddings</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">[</span><span class="s2">&quot;image_encoder&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">infer_sync</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+            <span class="c1"># use only the first prompt</span>
+            <span class="n">prompt_for_optim</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="n">prompts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">()))[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">prompts</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">dict</span><span class="p">)</span> <span class="k">else</span> <span class="n">prompts</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>  <span class="c1"># type: ignore[attr-defined]</span>
+            <span class="n">prompt_for_optim</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;label&quot;</span><span class="p">)</span>
+            <span class="n">prompt_for_optim</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="o">**</span><span class="n">image_embeddings</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">prompt_for_optim</span>
+
+        <span class="n">output_model_paths</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">module</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;image_encoder&quot;</span><span class="p">,</span> <span class="s2">&quot;decoder&quot;</span><span class="p">]:</span>
+            <span class="n">output_model_path</span> <span class="o">=</span> <span class="n">output_dir</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_OPTIMIZED_MODEL_BASE_NAME</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;_</span><span class="si">{</span><span class="n">module</span><span class="si">}</span><span class="s2">.xml&quot;</span><span class="p">)</span>
+
+            <span class="n">ov_model</span> <span class="o">=</span> <span class="n">openvino</span><span class="o">.</span><span class="n">Core</span><span class="p">()</span><span class="o">.</span><span class="n">read_model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_names</span><span class="p">[</span><span class="n">module</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">check_if_quantized</span><span class="p">(</span><span class="n">ov_model</span><span class="p">):</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Model is already optimized by PTQ&quot;</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+            <span class="n">train_dataset</span> <span class="o">=</span> <span class="n">data_module</span><span class="o">.</span><span class="n">train_dataloader</span><span class="p">()</span>
+
+            <span class="n">ptq_config_from_ir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_ptq_config_from_ir</span><span class="p">(</span><span class="n">ov_model</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">ptq_config</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">ptq_config_from_ir</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">ptq_config</span><span class="p">)</span>
+                <span class="n">ptq_config</span> <span class="o">=</span> <span class="n">ptq_config_from_ir</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">ptq_config</span> <span class="o">=</span> <span class="n">ptq_config_from_ir</span>
+
+            <span class="n">quantization_dataset</span> <span class="o">=</span> <span class="n">nncf</span><span class="o">.</span><span class="n">Dataset</span><span class="p">(</span><span class="n">train_dataset</span><span class="p">,</span> <span class="n">partial</span><span class="p">(</span><span class="n">transform_fn</span><span class="p">,</span> <span class="n">module</span><span class="o">=</span><span class="n">module</span><span class="p">))</span>  <span class="c1"># type: ignore[attr-defined]</span>
+
+            <span class="n">compressed_model</span> <span class="o">=</span> <span class="n">nncf</span><span class="o">.</span><span class="n">quantize</span><span class="p">(</span>  <span class="c1"># type: ignore[attr-defined]</span>
+                <span class="n">ov_model</span><span class="p">,</span>
+                <span class="n">quantization_dataset</span><span class="p">,</span>
+                <span class="o">**</span><span class="n">ptq_config</span><span class="p">,</span>
+            <span class="p">)</span>
+
+            <span class="n">openvino</span><span class="o">.</span><span class="n">save_model</span><span class="p">(</span><span class="n">compressed_model</span><span class="p">,</span> <span class="n">output_model_path</span><span class="p">)</span>
+            <span class="n">output_model_paths</span><span class="p">[</span><span class="n">module</span><span class="p">]</span> <span class="o">=</span> <span class="n">output_model_path</span>
+
+        <span class="k">return</span> <span class="n">output_model_paths</span></div>
+
 
     <span class="c1">######################################</span>
     <span class="c1">#             Preprocess             #</span>
@@ -1451,6 +1562,23 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">reference_feats</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reference_feats</span><span class="p">,</span> <span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="n">diff</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)),</span> <span class="n">constant_values</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span></div>
 
 
+<div class="viewcode-block" id="OVZeroShotVisualPromptingModel.save_reference_info">
+<a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.model.visual_prompting.html#otx.core.model.visual_prompting.OVZeroShotVisualPromptingModel.save_reference_info">[docs]</a>
+    <span class="k">def</span> <span class="nf">save_reference_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">default_root_dir</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Save reference info.&quot;&quot;&quot;</span>
+        <span class="n">reference_info</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;reference_feats&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">reference_feats</span><span class="p">,</span>
+            <span class="s2">&quot;used_indices&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">used_indices</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="c1"># save reference info</span>
+        <span class="n">path_reference_info</span><span class="p">:</span> <span class="n">Path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">default_root_dir</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">reference_info_dir</span> <span class="o">/</span> <span class="s2">&quot;reference_info.pt&quot;</span>
+        <span class="n">path_reference_info</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="c1"># TODO (sungchul): ticket no. 139210</span>
+        <span class="n">torch</span><span class="o">.</span><span class="n">save</span><span class="p">({</span><span class="n">k</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">reference_info</span><span class="o">.</span><span class="n">items</span><span class="p">()},</span> <span class="n">path_reference_info</span><span class="p">)</span>
+        <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">reference_info</span><span class="p">,</span> <span class="n">path_reference_info</span><span class="o">.</span><span class="n">with_suffix</span><span class="p">(</span><span class="s2">&quot;.pickle&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s2">&quot;wb&quot;</span><span class="p">))</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Saved reference info at </span><span class="si">{</span><span class="n">path_reference_info</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span></div>
+
+
     <span class="k">def</span> <span class="nf">_generate_masked_features</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">feats</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
@@ -1503,27 +1631,26 @@
     <span class="c1">######################################</span>
     <span class="c1">#               Infer                #</span>
     <span class="c1">######################################</span>
-    <span class="k">def</span> <span class="nf">_find_latest_reference_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">root</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Find latest reference info to be used.&quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">Path</span><span class="o">.</span><span class="n">is_dir</span><span class="p">(</span><span class="n">root</span><span class="p">):</span>
-            <span class="k">return</span> <span class="kc">None</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">stamps</span> <span class="o">:=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">root</span><span class="p">),</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">stamps</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="k">return</span> <span class="kc">None</span>
-
-<div class="viewcode-block" id="OVZeroShotVisualPromptingModel.load_latest_reference_info">
-<a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.model.visual_prompting.html#otx.core.model.visual_prompting.OVZeroShotVisualPromptingModel.load_latest_reference_info">[docs]</a>
-    <span class="k">def</span> <span class="nf">load_latest_reference_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<div class="viewcode-block" id="OVZeroShotVisualPromptingModel.load_reference_info">
+<a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.model.visual_prompting.html#otx.core.model.visual_prompting.OVZeroShotVisualPromptingModel.load_reference_info">[docs]</a>
+    <span class="k">def</span> <span class="nf">load_reference_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">default_root_dir</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Load latest reference info to be used.&quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="p">(</span><span class="n">latest_stamp</span> <span class="o">:=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_find_latest_reference_info</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root_reference_info</span><span class="p">))</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">latest_reference_info</span><span class="p">:</span> <span class="n">Path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">root_reference_info</span> <span class="o">/</span> <span class="n">latest_stamp</span> <span class="o">/</span> <span class="s2">&quot;reference_info.pickle&quot;</span>
-            <span class="n">reference_info</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">Path</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">latest_reference_info</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">))</span>  <span class="c1"># noqa: S301</span>
+        <span class="n">_infer_reference_info_root</span><span class="p">:</span> <span class="n">Path</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">infer_reference_info_root</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">infer_reference_info_root</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">infer_reference_info_root</span><span class="o">.</span><span class="n">absolute</span><span class="p">()</span>
+            <span class="k">else</span> <span class="n">Path</span><span class="p">(</span><span class="n">default_root_dir</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">infer_reference_info_root</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="n">path_reference_info</span> <span class="o">:=</span> <span class="n">_infer_reference_info_root</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">reference_info_dir</span> <span class="o">/</span> <span class="s2">&quot;reference_info.pickle&quot;</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
+            <span class="n">reference_info</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">path_reference_info</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s2">&quot;rb&quot;</span><span class="p">))</span>  <span class="c1"># noqa: S301</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">reference_feats</span> <span class="o">=</span> <span class="n">reference_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
                 <span class="s2">&quot;reference_feats&quot;</span><span class="p">,</span>
                 <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">[</span><span class="s2">&quot;decoder&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">embed_dim</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span>
             <span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">used_indices</span> <span class="o">=</span> <span class="n">reference_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;used_indices&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">))</span>
-            <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;reference info saved at </span><span class="si">{</span><span class="n">latest_reference_info</span><span class="si">}</span><span class="s2"> was successfully loaded.&quot;</span><span class="p">)</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;reference info saved at </span><span class="si">{</span><span class="n">path_reference_info</span><span class="si">}</span><span class="s2"> was successfully loaded.&quot;</span><span class="p">)</span>
             <span class="k">return</span> <span class="kc">True</span>
         <span class="k">return</span> <span class="kc">False</span></div>
 
@@ -1702,6 +1829,92 @@
     <span class="k">def</span> <span class="nf">_reset_prediction_layer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_classes</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">return</span>
 
+    <span class="c1">######################################</span>
+    <span class="c1">#            Lit Module              #</span>
+    <span class="c1">######################################</span>
+<div class="viewcode-block" id="OVZeroShotVisualPromptingModel.on_train_start">
+<a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.model.visual_prompting.html#otx.core.model.visual_prompting.OVZeroShotVisualPromptingModel.on_train_start">[docs]</a>
+    <span class="k">def</span> <span class="nf">on_train_start</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize reference infos before learn.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">initialize_reference_info</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="OVZeroShotVisualPromptingModel.on_test_start">
+<a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.model.visual_prompting.html#otx.core.model.visual_prompting.OVZeroShotVisualPromptingModel.on_test_start">[docs]</a>
+    <span class="k">def</span> <span class="nf">on_test_start</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Load previously saved reference info.&quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">on_test_start</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_reference_info</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">default_root_dir</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">):</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;No reference info found. `Learn` will be automatically executed first.&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">lightning_module</span><span class="o">.</span><span class="n">automatic_optimization</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">fit_loop</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+            <span class="c1"># to use infer logic</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">training</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="c1"># to set _combined_loader</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">_evaluation_loop</span><span class="o">.</span><span class="n">setup_data</span><span class="p">()</span>  <span class="c1"># noqa: SLF001</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">_evaluation_loop</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>  <span class="c1"># noqa: SLF001</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">load_reference_info</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">default_root_dir</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="OVZeroShotVisualPromptingModel.on_predict_start">
+<a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.model.visual_prompting.html#otx.core.model.visual_prompting.OVZeroShotVisualPromptingModel.on_predict_start">[docs]</a>
+    <span class="k">def</span> <span class="nf">on_predict_start</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Load previously saved reference info.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_reference_info</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">default_root_dir</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">):</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;No reference info found. `Learn` will be automatically executed first.&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">lightning_module</span><span class="o">.</span><span class="n">automatic_optimization</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">fit_loop</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+            <span class="c1"># to use infer logic</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">training</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="c1"># to set _combined_loader</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">_evaluation_loop</span><span class="o">.</span><span class="n">setup_data</span><span class="p">()</span>  <span class="c1"># noqa: SLF001</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">_evaluation_loop</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>  <span class="c1"># noqa: SLF001</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">load_reference_info</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">default_root_dir</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="OVZeroShotVisualPromptingModel.on_train_epoch_start">
+<a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.model.visual_prompting.html#otx.core.model.visual_prompting.OVZeroShotVisualPromptingModel.on_train_epoch_start">[docs]</a>
+    <span class="k">def</span> <span class="nf">on_train_epoch_start</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Skip on_train_epoch_start unused in zero-shot visual prompting.&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="OVZeroShotVisualPromptingModel.on_train_epoch_end">
+<a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.model.visual_prompting.html#otx.core.model.visual_prompting.OVZeroShotVisualPromptingModel.on_train_epoch_end">[docs]</a>
+    <span class="k">def</span> <span class="nf">on_train_epoch_end</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Skip on_train_epoch_end unused in zero-shot visual prompting.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">save_outputs</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">save_reference_info</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">default_root_dir</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="OVZeroShotVisualPromptingModel.on_validation_epoch_start">
+<a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.model.visual_prompting.html#otx.core.model.visual_prompting.OVZeroShotVisualPromptingModel.on_validation_epoch_start">[docs]</a>
+    <span class="k">def</span> <span class="nf">on_validation_epoch_start</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Skip on_validation_epoch_start unused in zero-shot visual prompting.&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="OVZeroShotVisualPromptingModel.on_validation_epoch_end">
+<a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.model.visual_prompting.html#otx.core.model.visual_prompting.OVZeroShotVisualPromptingModel.on_validation_epoch_end">[docs]</a>
+    <span class="k">def</span> <span class="nf">on_validation_epoch_end</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Skip on_validation_epoch_end unused in zero-shot visual prompting.&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="OVZeroShotVisualPromptingModel.configure_optimizers">
+<a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.model.visual_prompting.html#otx.core.model.visual_prompting.OVZeroShotVisualPromptingModel.configure_optimizers">[docs]</a>
+    <span class="k">def</span> <span class="nf">configure_optimizers</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># type: ignore[override]</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Skip configure_optimizers unused in zero-shot visual prompting.&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="OVZeroShotVisualPromptingModel.training_step">
+<a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.model.visual_prompting.html#otx.core.model.visual_prompting.OVZeroShotVisualPromptingModel.training_step">[docs]</a>
+    <span class="k">def</span> <span class="nf">training_step</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">inputs</span><span class="p">:</span> <span class="n">ZeroShotVisualPromptingBatchDataEntity</span><span class="p">,</span>  <span class="c1"># type: ignore[override]</span>
+        <span class="n">batch_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Skip training_step unused in zero-shot visual prompting.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span></div>
+
+
 <div class="viewcode-block" id="OVZeroShotVisualPromptingModel.validation_step">
 <a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.model.visual_prompting.html#otx.core.model.visual_prompting.OVZeroShotVisualPromptingModel.validation_step">[docs]</a>
     <span class="k">def</span> <span class="nf">validation_step</span><span class="p">(</span>
@@ -1722,11 +1935,11 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Perform a single test step on a batch of data from the test set.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            inputs (VisualPromptingBatchDataEntity): The input data for the test step.</span>
+<span class="sd">            inputs (ZeroShotVisualPromptingBatchDataEntity): The input data for the test step.</span>
 <span class="sd">            batch_idx (int): The index of the current batch.</span>
 
 <span class="sd">        Raises:</span>
-<span class="sd">            TypeError: If the predictions are not of type VisualPromptingBatchPredEntity.</span>
+<span class="sd">            TypeError: If the predictions are not of type ZeroShotVisualPromptingBatchPredEntity.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">_inference_step_for_zero_shot</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">metric</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">metric</span><span class="p">,</span> <span class="n">inputs</span><span class="o">=</span><span class="n">inputs</span><span class="p">)</span></div>
 
