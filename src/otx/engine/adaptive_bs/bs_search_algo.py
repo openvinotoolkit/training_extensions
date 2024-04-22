@@ -8,12 +8,11 @@ from __future__ import annotations
 import logging
 import multiprocessing as mp
 import queue
-from typing import Callable, Any
+from typing import Any, Callable
 
 import torch
 
 from otx.utils.utils import is_xpu_available
-
 
 logger = logging.getLogger(__name__)
 
@@ -22,21 +21,23 @@ class BsSearchAlgo:
     """Algorithm class to find optimal batch size.
 
     Args:
-        train_func (Callable[[int], None]): Training function with single arugment to set batch size.
+        train_func (Callable[[int], Any]): Training function with single arugment to set batch size.
         default_bs (int): Default batch size. It should be bigger than 0.
         max_bs (int): Maximum batch size. It should be bigger than 0.
     """
 
     def __init__(
         self,
-        train_func,
+        train_func: Callable[[int], Any],
         default_bs: int,
         max_bs: int,
     ):
         if default_bs <= 0:
-            raise ValueError("Batch size should be bigger than 0.")
+            msg = "Batch size should be bigger than 0."
+            raise ValueError(msg)
         if max_bs <= 0:
-            raise ValueError("train data set size should be bigger than 0.")
+            msg = "train data set size should be bigger than 0."
+            raise ValueError(msg)
 
         if max_bs < default_bs:
             default_bs = max_bs
@@ -74,7 +75,7 @@ class BsSearchAlgo:
 
         logger.debug(
             f"Adapting Batch size => bs : {bs}, OOM : {oom}, "
-            f"memory usage : {max_memory_reserved / self._total_mem}%"
+            f"memory usage : {max_memory_reserved / self._total_mem}%",
         )
 
         return oom, max_memory_reserved
@@ -112,7 +113,8 @@ class BsSearchAlgo:
                 break
 
         if available_bs == 0:
-            raise RuntimeError("Current device can't train model even with 2.")
+            msg = "Current device can't train model even with 2."
+            raise RuntimeError(msg)
 
         return available_bs
 
@@ -140,7 +142,8 @@ class BsSearchAlgo:
         if oom or bs_mem_usage > self._mem_upper_bound:
             self._default_bs -= 2
             if self._default_bs <= 0:
-                raise RuntimeError("Current device can't train model even with 2.")
+                msg = "Current device can't train model even with 2."
+                raise RuntimeError(msg)
 
             return self.auto_decrease_batch_size()
 
@@ -177,19 +180,19 @@ class BsSearchAlgo:
 
     def _estimate_batch_size(self, estimation_pct: float) -> int:
         if len(self._bs_try_history) < 2:
-            raise RuntimeError("At least two trials should be done without OOM to estimate batch size.")
+            msg = "At least two trials should be done without OOM to estimate batch size."
+            raise RuntimeError(msg)
 
-        def distance_from_bound(val):
+        def distance_from_bound(val: tuple[int, int | float]) -> float:
             if val[1] < self._mem_lower_bound:
                 # if memory usage is same, then higher batch size is preferred
                 return self._mem_lower_bound - val[1] - val[0] / 10000
-            elif self._mem_upper_bound < val[1]:
+            if self._mem_upper_bound < val[1]:
                 # if memory usage is same, then lower batch size is preferred
                 return val[1] - self._mem_upper_bound + val[0] / 10000
-            else:
-                return min(abs(self._mem_lower_bound - val[1], abs(val[1] - self._mem_upper_bound)))
+            return min(abs(self._mem_lower_bound - val[1]), abs(val[1] - self._mem_upper_bound))
 
-        bs_arr = sorted([(bs, mem_usage) for bs, mem_usage in self._bs_try_history.items()], key=lambda x: x[0])
+        bs_arr = sorted(self._bs_try_history.items(), key=lambda x: x[0])
         for idx in range(len(bs_arr) - 1, -1, -1):
             if bs_arr[idx][1] < self._mem_upper_bound:
                 cur_max_bs_idx = idx
@@ -198,7 +201,7 @@ class BsSearchAlgo:
             logger.warning("All batch size tried used more memory size than upper bound.")
             return bs_arr[0][0]
 
-        def check_bs_suitable(estimated_bs) -> bool:
+        def check_bs_suitable(estimated_bs: int) -> bool:
             # Check batch size is between largest bs which uses lower memory than uppper bound
             # and smallest bs which uses higher memory than upper bound.
             if estimated_bs >= bs_arr[cur_max_bs_idx][0]:
@@ -241,25 +244,25 @@ def _run_trial(train_func: Callable[[int], Any], bs: int, trial_queue: mp.Queue)
 
     oom = False
     try:
-        train_func(bs=bs)
+        train_func(bs)
     except RuntimeError as e:
         if str(e).startswith("CUDA out of memory.") or str(e).startswith(  # CUDA OOM
-            "Allocation is out of device memory on current platform."  # XPU OOM
+            "Allocation is out of device memory on current platform.",  # XPU OOM
         ):
             oom = True
         else:
-            raise e
+            raise
     except AttributeError as e:
         if str(e).startswith("'NoneType' object has no attribute 'best_model_path'"):
             pass
         else:
-            raise e
+            raise
 
     trial_queue.put(
         {
             "oom": oom,
             "max_memory_reserved": _get_max_memory_reserved(),
-        }
+        },
     )
 
 

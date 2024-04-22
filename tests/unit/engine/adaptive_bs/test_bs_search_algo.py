@@ -1,7 +1,6 @@
 from unittest.mock import MagicMock
 
 import pytest
-
 from otx.engine.adaptive_bs import bs_search_algo as target_file
 from otx.engine.adaptive_bs.bs_search_algo import BsSearchAlgo
 
@@ -19,16 +18,16 @@ class TestBsSearchAlgo:
 
     @pytest.mark.parametrize("default_bs", [-2, 0])
     def test_init_w_wrong_default_bs(self, mocker, default_bs):
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="Batch size should be bigger than 0."):
             BsSearchAlgo(mocker.MagicMock(), default_bs=default_bs, max_bs=10)
 
     @pytest.mark.parametrize("max_bs", [-2, 0])
-    def test_init_w_wrong_default_bs(self, mocker, max_bs):
-        with pytest.raises(ValueError):
+    def test_init_w_wrong_max_bs(self, mocker, max_bs):
+        with pytest.raises(ValueError, match="train data set size should be bigger than 0."):
             BsSearchAlgo(mocker.MagicMock(), default_bs=4, max_bs=max_bs)
 
     def set_mp_process(self, train_func):
-        def mock_process(target, args):
+        def mock_process(target, args) -> MagicMock:  # noqa: ARG001
             batch_size = args[-2]
             oom = False
             mem_usage = 0
@@ -46,11 +45,12 @@ class TestBsSearchAlgo:
         self.mock_mp.get_context.return_value.Process.side_effect = mock_process
 
     def get_mock_train_func(self, cuda_oom_bound: int, max_runnable_bs: int):
-        def mock_train_func(batch_size):
+        def mock_train_func(batch_size) -> int:
             if batch_size > cuda_oom_bound:
                 mem_usage = 10000
-                raise RuntimeError("CUDA out of memory.")
-            elif batch_size > max_runnable_bs:
+                msg = "CUDA out of memory."
+                raise RuntimeError(msg)
+            if batch_size > max_runnable_bs:
                 mem_usage = 8500 + 1500 * batch_size / (cuda_oom_bound - max_runnable_bs)
             else:
                 mem_usage = 8500 * batch_size / max_runnable_bs
@@ -97,7 +97,7 @@ class TestBsSearchAlgo:
             bs_search_algo.auto_decrease_batch_size()
 
     @pytest.mark.parametrize(
-        "max_runnable_bs,max_bs,expected_bs",
+        ("max_runnable_bs", "max_bs", "expected_bs"),
         [
             (100, 1000, None),
             (32, 1000, None),
@@ -124,14 +124,12 @@ class TestBsSearchAlgo:
             bs_search_algo.find_big_enough_batch_size()
 
     def test_find_big_enough_batch_size_gradient_zero(self):
-        def mock_train_func(batch_size):
+        def mock_train_func(batch_size) -> int:
             if batch_size > 1000:
                 mem_usage = 10000
-                raise RuntimeError("CUDA out of memory.")
-            elif batch_size > 100:
-                mem_usage = 9000
-            else:
-                mem_usage = 1000
+                msg = "CUDA out of memory."
+                raise RuntimeError(msg)
+            mem_usage = 9000 if batch_size > 100 else 1000
             self.mock_torch.cuda.max_memory_reserved.return_value = mem_usage
             return mem_usage
 
@@ -143,14 +141,12 @@ class TestBsSearchAlgo:
         assert adapted_bs == 100
 
     def test_find_big_enough_batch_size_not_exceed_upper_bound(self):
-        def mock_train_func(batch_size):
+        def mock_train_func(batch_size) -> int:
             if batch_size > 1000:
                 mem_usage = 10000
-                raise RuntimeError("CUDA out of memory.")
-            elif batch_size > 100:
-                mem_usage = 9000
-            else:
-                mem_usage = 1000 + batch_size / 1000
+                msg = "CUDA out of memory."
+                raise RuntimeError(msg)
+            mem_usage = 9000 if batch_size > 100 else 1000 + batch_size / 1000
             self.mock_torch.cuda.max_memory_reserved.return_value = mem_usage
             return mem_usage
 

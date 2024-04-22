@@ -30,8 +30,8 @@ from otx.core.types.task import OTXTaskType
 from otx.core.utils.cache import TrainerArgumentsCache
 from otx.utils.utils import is_xpu_available
 
-from .hpo import execute_hpo, update_hyper_parameter
 from .adaptive_bs import adapt_batch_size
+from .hpo import execute_hpo, update_hyper_parameter
 from .utils.auto_configurator import DEFAULT_CONFIG_PER_TASK, AutoConfigurator
 
 if TYPE_CHECKING:
@@ -246,7 +246,7 @@ class Engine:
         checkpoint = checkpoint if checkpoint is not None else self.checkpoint
 
         if adaptive_bs != "None":
-            adapt_batch_size(engine=self, **locals(), not_increase=(adaptive_bs!="Full"))
+            adapt_batch_size(engine=self, **locals(), not_increase=(adaptive_bs != "Full"))
 
         if run_hpo:
             best_config, best_trial_weight = execute_hpo(engine=self, **locals())

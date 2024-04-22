@@ -5,23 +5,22 @@
 
 from __future__ import annotations
 
-import os
 import logging
+import os
+from functools import partial
 from math import sqrt
 from typing import TYPE_CHECKING, Any
-from functools import partial
 
-from torch.cuda import is_available as is_cuda_available
 from lightning import Callback
 from lightning.pytorch.loggers.logger import DummyLogger
+from torch.cuda import is_available as is_cuda_available
 
 from otx.utils.utils import is_xpu_available
+
 from .bs_search_algo import BsSearchAlgo
 
-
 if TYPE_CHECKING:
-    from lightning import Trainer
-    from lightning import LightningModule
+    from lightning import LightningModule, Trainer
 
     from otx.engine.engine import Engine
 
@@ -46,7 +45,6 @@ def adapt_batch_size(
         not_increase (bool) : Whether adapting batch size to larger value than default value or not.
         callbacks (list[Callback] | Callback | None, optional): callbacks used during training. Defaults to None.
     """
-
     if not (is_cuda_available() or is_xpu_available()):
         msg = "Adaptive batch size supports CUDA or XPU."
         raise RuntimeError(msg)
@@ -54,8 +52,8 @@ def adapt_batch_size(
     engine.model.make_optimizer_and_scheduler_picklable()
     default_bs = engine.datamodule.config.train_subset.batch_size
 
-    if (new_batch_size := os.environ.get("ADAPTIVE_BS_FOR_DIST")) is not None:
-        new_batch_size = int(new_batch_size)
+    if "ADAPTIVE_BS_FOR_DIST" in os.environ:
+        new_batch_size = int(os.environ["ADAPTIVE_BS_FOR_DIST"])
         if default_bs != new_batch_size:
             _apply_new_batch_size(engine, new_batch_size)
         return
@@ -95,14 +93,14 @@ def _adjust_train_args(train_args: dict[str, Any]) -> dict[str, Any]:
     train_args.pop("run_hpo", None)
     train_args.pop("adaptive_bs")
     return train_args
-    
+
 
 def _train_model(bs: int, engine: Engine, callbacks: list[Callback] | Callback | None = None, **train_args) -> None:
     if bs <= 0:
         msg = f"Batch size should be greater than 0, but {bs} is given."
         raise ValueError(msg)
-    if engine.device.devices != 1:
-        engine._cache.update(devices=1)
+    if engine.device.devices != 1:  # TODO(Eunwoo): Need to change after device api is updated
+        engine._cache.update(devices=1)  # noqa: SLF001
 
     engine.datamodule.config.train_subset.batch_size = bs
     engine.train(callbacks=_register_callback(callbacks), **train_args)
@@ -118,7 +116,7 @@ def _register_callback(callbacks: list[Callback] | Callback | None = None) -> li
 
 
 class BatchSizeFinder(Callback):
-    """BatchSizeFinder
+    """This callback makes trainer run specified iteration and exit.
 
     Args:
         steps_per_trial: number of steps to run with a given batch size.
@@ -132,18 +130,22 @@ class BatchSizeFinder(Callback):
         self._steps_per_trial = steps_per_trial
 
     def setup(self, trainer: Trainer, pl_module: LightningModule, stage: str | None = None) -> None:
+        """Check current stage is fit."""
         if stage != "fit":
             msg = "Adaptive batch size supports only training."
             raise RuntimeError(msg)
 
     def on_fit_start(self, trainer: Trainer, pl_module: LightningModule) -> None:
+        """Run steps_per_trial iteration and exit."""
         _scale_batch_reset_params(trainer, self._steps_per_trial)
         _try_loop_run(trainer)
 
 
 def _try_loop_run(trainer: Trainer) -> None:
-    loop = trainer._active_loop
-    assert loop is not None
+    loop = trainer._active_loop  # noqa: SLF001
+    if loop is None:
+        msg = "There is no active loop."
+        raise RuntimeError(msg)
     loop.restarting = False
     loop.run()
 
@@ -152,8 +154,10 @@ def _scale_batch_reset_params(trainer: Trainer, steps_per_trial: int) -> None:
     trainer.logger = DummyLogger() if trainer.logger is not None else None
     trainer.callbacks = []
 
-    loop = trainer._active_loop
-    assert loop is not None
+    loop = trainer._active_loop  # noqa: SLF001
+    if loop is None:
+        msg = "There is no active loop."
+        raise RuntimeError(msg)
     trainer.limit_train_batches = 1.0
     if trainer.limit_val_batches != 0:
         trainer.limit_val_batches = steps_per_trial
