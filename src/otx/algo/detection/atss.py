@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING, Literal
 
 from otx.algo.detection.backbones.fpn import FPN
 from otx.algo.detection.backbones.pytorchcv_backbones import _build_pytorchcv_model
+from otx.algo.detection.backbones.resnext import ResNeXt
 from otx.algo.detection.heads.custom_atss_head import ATSSHead
 from otx.algo.detection.ssd import SingleStageDetector
 from otx.algo.utils.mmconfig import read_mmconfig
@@ -49,7 +50,11 @@ class TorchATSS(SingleStageDetector):
     ) -> None:
         super(SingleStageDetector, self).__init__()
         self._is_init = False
-        self.backbone = _build_pytorchcv_model(**backbone)
+        if backbone["type"] == "ResNeXt":
+            backbone.pop("type")
+            self.backbone = ResNeXt(**backbone)
+        else:
+            self.backbone = _build_pytorchcv_model(**backbone)
         neck.pop("type")
         self.neck = FPN(**neck)
         bbox_head.update(train_cfg=train_cfg)
