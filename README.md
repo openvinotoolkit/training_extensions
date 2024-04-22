@@ -98,13 +98,19 @@ You can find more details with examples in the [CLI command intro](https://openv
 
 ## Updates
 
-### v1.6.0 (2Q24)
+### v1.6.1 (2Q24)
 
-- Add zero-shot visual prompting (<https://github.com/openvinotoolkit/training_extensions/pull/2616>, <https://github.com/openvinotoolkit/training_extensions/pull/2706>, <https://github.com/openvinotoolkit/training_extensions/pull/2753>)
-- Add support for the training and validation on the Intel Max GPU devices (https://github.com/openvinotoolkit/training_extensions/pull/3058)
-- Upgrade OpenVINO to 2023.3 (<https://github.com/openvinotoolkit/training_extensions/pull/2879>)
-- Automate performance benchmark (<https://github.com/openvinotoolkit/training_extensions/pull/2742>)
-- Bump ONNX version to 1.16.0 to resolve CVE-2022-25882 (<https://github.com/openvinotoolkit/training_extensions/
+- Use torchvision in MRCNN on CUDA (<https://github.com/openvinotoolkit/training_extensions/pull/3347>)
+- Update IPEX version in installation guide documentation (<https://github.com/openvinotoolkit/training_extensions/pull/3343>)
+- Update benchmark (<https://github.com/openvinotoolkit/training_extensions/pull/3338>)
+- Bump idan version to 3.7 (<https://github.com/openvinotoolkit/training_extensions/pull/3332>)
+- Support benchmark history summary (<https://github.com/openvinotoolkit/training_extensions/pull/3307>)
+- Pin pymongo version to 4.5.0 (<https://github.com/openvinotoolkit/training_extensions/pull/3316>)
+- Upgrade MAPI (<https://github.com/openvinotoolkit/training_extensions/pull/3304>)
+- Add NMS iou threshold configurable parameter (<https://github.com/openvinotoolkit/training_extensions/pull/3287>)
+- Remedy some medium/low severity bandit issues (<https://github.com/openvinotoolkit/training_extensions/pull/3208>)
+- Update documentations (<https://github.com/openvinotoolkit/training_extensions/pull/3280>)
+- Add perf benchmark test cases for action and visual prompting (<https://github.com/openvinotoolkit/training_extensions/pull/3292>)
 
 ### Release History
 

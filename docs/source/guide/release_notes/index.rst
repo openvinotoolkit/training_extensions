@@ -4,6 +4,26 @@ Releases
 .. toctree::
    :maxdepth: 1
 
+v1.6.1 (2Q24)
+-------------
+
+- Use torchvision in MRCNN on CUDA
+- Update IPEX version in installation guide documentation
+- Update benchmark
+- Bump idan version to 3.7
+- Support benchmark history summary
+- Pin pymongo version to 4.5.0
+- Upgrade MAPI
+- Add NMS iou threshold configurable parameter
+- Remedy some medium/low severity bandit issues
+- Update documentations
+- Add perf benchmark test cases for action and visual prompting
+- [NNCF] Dynamic shape datasets WA
+- [Hotfix] :fire: Fixing detection oriented OV inferencer
+- Revert adaptive batch size
+- Fix e2e tests for XPU
+- Remove torch.xpu.optimize for semantic_segmentation task
+
 
 v1.6.0 (2Q24)
 -------------
