@@ -1,7 +1,11 @@
-from otx.algo.modules import ConvModule, DepthwiseSeparableConvModule
+from __future__ import annotations
+
 import torch
-import torch.nn as nn
+from torch import nn
 from torch.nn import functional as f
+
+from otx.algo.modules import ConvModule, DepthwiseSeparableConvModule
+
 from .utils import normalize
 
 

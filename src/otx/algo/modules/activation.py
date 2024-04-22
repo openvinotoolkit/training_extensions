@@ -59,7 +59,8 @@ def build_activation_layer(cfg: dict) -> nn.Module:
     Returns:
         nn.Module: Created activation layer.
     """
-    activation_type = cfg.pop("type", None)
+    _cfg = cfg.copy()
+    activation_type = _cfg.pop("type", None)
     if activation_type is None:
         msg = "The cfg dict must contain the key 'type'"
         raise KeyError(msg)
@@ -67,4 +68,4 @@ def build_activation_layer(cfg: dict) -> nn.Module:
         msg = f"Cannot find {activation_type} in {ACTIVATION_DICT.keys()}"
         raise KeyError(msg)
 
-    return ACTIVATION_DICT[activation_type](**cfg)
+    return ACTIVATION_DICT[activation_type](**_cfg)

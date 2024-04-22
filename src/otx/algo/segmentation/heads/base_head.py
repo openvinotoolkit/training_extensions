@@ -1,12 +1,13 @@
+from __future__ import annotations
 
-from future import __annotations__
-
-from typing import Dict
+from abc import ABCMeta, abstractmethod
+from pathlib import Path
 
 import torch
-import torch.nn as nn
+from torch import nn
+
 from otx.algo.segmentation.modules import resize
-from abc import ABCMeta, abstractmethod
+from otx.algo.utils.mmengine_utils import load_checkpoint_to_model, load_from_http
 
 
 class BaseSegmHead(nn.Module, metaclass=ABCMeta):
@@ -18,13 +19,14 @@ class BaseSegmHead(nn.Module, metaclass=ABCMeta):
         channels: int,
         num_classes: int,
         dropout_ratio: float = 0.1,
-        conv_cfg: Dict[str, str] | None = None,
-        norm_cfg: Dict[str, str] | None = None,
-        act_cfg: Dict[str, str] = dict(type='ReLU'),
+        conv_cfg: dict[str, str] | None = None,
+        norm_cfg: dict[str, str] | None = None,
+        act_cfg: dict[str, str] = dict(type="ReLU"),
         in_index: int = -1,
         input_transform: str | None = None,
         ignore_index: int = 255,
         align_corners: bool = False,
+        pretrained_weights: str | None = None,
     ) -> None:
         """Initialize the BaseSegmHead.
 
@@ -46,7 +48,6 @@ class BaseSegmHead(nn.Module, metaclass=ABCMeta):
             align_corners (bool, optional): Whether to align corners. Defaults to False.
         """
         super().__init__()
-        self.in_channels = in_channels
         self.channels = channels
         self.num_classes = num_classes
         self.input_transform = input_transform
@@ -58,12 +59,19 @@ class BaseSegmHead(nn.Module, metaclass=ABCMeta):
         self.ignore_index = ignore_index
         self.align_corners = align_corners
 
-        self.conv_seg = nn.Conv2d(
-            channels, self.num_classes, kernel_size=1)
+        if input_transform == "resize_concat":
+            self.in_channels = sum(in_channels)
+        else:
+            self.in_channels = in_channels
+
+        self.conv_seg = nn.Conv2d(channels, self.num_classes, kernel_size=1)
         if dropout_ratio > 0:
             self.dropout = nn.Dropout2d(dropout_ratio)
         else:
             self.dropout = None
+
+        if pretrained_weights is not None:
+            self.load_pretrained_weights(pretrained_weights)
 
     def _transform_inputs(self, inputs):
         """Transform inputs for decoder.
@@ -74,18 +82,14 @@ class BaseSegmHead(nn.Module, metaclass=ABCMeta):
         Returns:
             Tensor: The transformed inputs
         """
-
-        if self.input_transform == 'resize_concat':
+        if self.input_transform == "resize_concat":
             inputs = [inputs[i] for i in self.in_index]
             upsampled_inputs = [
-                resize(
-                    input=x,
-                    size=inputs[0].shape[2:],
-                    mode='bilinear',
-                    align_corners=self.align_corners) for x in inputs
+                resize(input=x, size=inputs[0].shape[2:], mode="bilinear", align_corners=self.align_corners)
+                for x in inputs
             ]
             inputs = torch.cat(upsampled_inputs, dim=1)
-        elif self.input_transform == 'multiple_select':
+        elif self.input_transform == "multiple_select":
             inputs = [inputs[i] for i in self.in_index]
         else:
             inputs = inputs[self.in_index]
@@ -95,7 +99,6 @@ class BaseSegmHead(nn.Module, metaclass=ABCMeta):
     @abstractmethod
     def forward(self, inputs):
         """Placeholder of forward function."""
-        pass
 
     def cls_seg(self, feat):
         """Classify each pixel."""
@@ -103,3 +106,15 @@ class BaseSegmHead(nn.Module, metaclass=ABCMeta):
             feat = self.dropout(feat)
         output = self.conv_seg(feat)
         return output
+
+    def load_pretrained_weights(self, pretrained: str | bool | None = None, prefix: str = "") -> None:
+        """Initialize weights."""
+        checkpoint = None
+        if isinstance(pretrained, str) and Path(pretrained).exists():
+            checkpoint = torch.load(pretrained, None)
+            print(f"init weight - {pretrained}")
+        elif pretrained is not None:
+            checkpoint = load_from_http(pretrained)
+            print(f"init weight - {pretrained}")
+        if checkpoint is not None:
+            load_checkpoint_to_model(self, checkpoint, prefix=prefix)

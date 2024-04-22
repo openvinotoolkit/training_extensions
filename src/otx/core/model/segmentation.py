@@ -9,10 +9,13 @@ import json
 from collections.abc import Sequence
 from typing import TYPE_CHECKING, Any
 
+import torch
 from torchvision import tv_tensors
 
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.segmentation import SegBatchDataEntity, SegBatchPredEntity
+from otx.core.exporter.base import OTXModelExporter
+from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.metrics import MetricInput
 from otx.core.metrics.dice import SegmCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable, OTXModel, OVModel
@@ -20,11 +23,6 @@ from otx.core.schedulers import LRSchedulerListCallable
 from otx.core.types.export import TaskLevelExportParameters
 from otx.core.types.label import LabelInfo, LabelInfoTypes, SegLabelInfo
 from otx.core.utils.config import inplace_num_classes
-import torch
-from otx.core.exporter.base import OTXModelExporter
-from otx.core.exporter.native import OTXNativeModelExporter
-from otx.core.utils.utils import get_mean_std_from_data_processing
-
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
@@ -46,19 +44,16 @@ class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity]):
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = SegmCallable,  # type: ignore[assignment]
         torch_compile: bool = False,
-        pretrained_weights: str | None = None,
         backbone_configuration: dict[str, Any] = {},
         decode_head_configuration: dict[str, Any] = {},
-        criterion_configuration: dict[str, Any] = {}
+        criterion_configuration: list[dict[str, Any]] = [{}],
     ):
-
         self.backbone_configuration = backbone_configuration
         self.decode_head_configuration = decode_head_configuration
         self.criterion_configuration = criterion_configuration
-        self.pretrained_weights = pretrained_weights
-        self.mean = decode_head_configuration.get("mean",  [0.485, 0.456, 0.406])
-        self.std = decode_head_configuration.get("std", [0.229, 0.224, 0.225])
-        self.image_size = decode_head_configuration.get("image_size", (512,512))
+        self.mean = decode_head_configuration.get("mean", [123.675, 116.28, 103.53])
+        self.std = decode_head_configuration.get("std", [58.395, 57.12, 57.375])
+        self.image_size = decode_head_configuration.get("image_size", (1, 3, 512, 512))
 
         super().__init__(
             label_info=label_info,
@@ -69,8 +64,13 @@ class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity]):
         )
 
     def _customize_inputs(self, entity: SegBatchDataEntity) -> dict[str, Any]:
+        if self.training:
+            mode = "loss"
+        else:
+            mode = "predict"
+
         masks = torch.stack(entity.masks).long()
-        inputs = {"images": entity.images, "masks" : masks}
+        inputs = {"images": entity.images, "masks": masks, "img_metas": entity.imgs_info, "mode": mode}
         return inputs
 
     @property
@@ -94,23 +94,21 @@ class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity]):
         outputs: Any,  # noqa: ANN401
         inputs: SegBatchDataEntity,
     ) -> SegBatchPredEntity | OTXBatchLossEntity:
-
         if self.training:
+            if not isinstance(outputs, dict):
+                raise TypeError(outputs)
+
             losses = OTXBatchLossEntity()
-            losses["loss"] = outputs
+            for k, v in outputs.items():
+                losses[k] = v
             return losses
-
-        masks = []
-
-        for output in outputs:
-            masks.append(output.argmax(dim=0))
 
         return SegBatchPredEntity(
             batch_size=len(outputs),
             images=inputs.images,
             imgs_info=inputs.imgs_info,
             scores=[],
-            masks=masks,
+            masks=outputs,
         )
 
     @property
@@ -147,6 +145,10 @@ class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity]):
             return label_info
 
         raise TypeError(label_info)
+
+    def forward_for_tracing(self, image: Tensor) -> Tensor | dict[str, Tensor]:
+        """Model forward function used for the model tracing during model exportation."""
+        return self.model(images=image, mode="tensor")
 
 
 class MMSegCompatibleModel(OTXSegmentationModel):

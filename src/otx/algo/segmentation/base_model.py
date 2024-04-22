@@ -1,10 +1,11 @@
-from torch import nn
-import torch
-import math
-from torch.utils.model_zoo import load_url
+from __future__ import annotations
+
+from typing import Any
+
 import torch.nn.functional as f
+from torch import nn
+
 from otx.algo.segmentation.losses import create_criterion
-from typing import Dict, Any
 
 
 class BaseSegmNNModel(nn.Module):
@@ -12,11 +13,11 @@ class BaseSegmNNModel(nn.Module):
         self,
         backbone: nn.Module,
         decode_head: nn.Module,
-        criterion_configuration: Dict[str, str | Any] = {"type": "CrossEntropyLoss", "ignore_index": 255},
-        pretrained_weights: str | None = None,
+        criterion_configuration: list[dict[str, str | Any]] = [
+            {"type": "CrossEntropyLoss", "params": {"ignore_index": 255}},
+        ],
     ) -> None:
-        """
-        Initializes a SegNext model.
+        """Initializes a SegNext model.
 
         Args:
             backbone (MSCAN): The backbone of the model.
@@ -33,32 +34,26 @@ class BaseSegmNNModel(nn.Module):
 
         self.backbone = backbone
         self.decode_head = decode_head
-        self.criterion = create_criterion(**criterion_configuration)
-        self.init_weights()
+        self.criterions = create_criterion(criterion_configuration)
 
-        if pretrained_weights:
-            # load pretrained weights
-            pretrained_weights = load_url(pretrained_weights)
-            self.load_state_dict(pretrained_weights['state_dict'], strict=False)
-
-    def init_weights(self):
-        for m in self.modules():
-            if isinstance(m, nn.Linear):
-                nn.init.normal_(m.weight, mean=0.0, std=0.02)
-            if isinstance(m, nn.LayerNorm) or isinstance(m, nn.BatchNorm2d):
-                nn.init.constant_(m.weight, val=1.0)
-                nn.init.constant_(m.bias, val=0.0)
-            if isinstance(m, nn.Conv2d):
-                fan_out = m.kernel_size[0] * m.kernel_size[1] * m.out_channels
-                fan_out //= m.groups
-                nn.init.normal_(m.weight, std=math.sqrt(2.0/fan_out), mean=0)
-
-    def forward(self, images, masks):
+    def forward(self, images, masks=None, img_metas=None, mode="tensor"):
         enc_feats = self.backbone(images)
         outputs = self.decode_head(enc_feats)
-        outputs = f.interpolate(outputs, size=images.size()[-2:], mode='bilinear', align_corners=True)
 
-        if self.training:
-            return self.criterion(outputs, masks)
+        if mode == "tensor":
+            return outputs
+
+        outputs = f.interpolate(outputs, size=images.size()[-2:], mode="bilinear", align_corners=True)
+        if mode == "loss":
+            if masks is None:
+                msg = "The masks must be provided for training."
+                raise ValueError(msg)
+            output_losses = {}
+            for criterion in self.criterions:
+                output_losses.update({criterion.name: criterion(outputs, masks, img_metas=img_metas)})
+            return output_losses
+
+        if mode == "predict":
+            return outputs.argmax(dim=1)
 
         return outputs

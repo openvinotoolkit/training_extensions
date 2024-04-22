@@ -9,7 +9,6 @@ from typing import Any
 from torch import nn
 
 from otx.algo.segmentation.backbones import MSCAN
-
 from otx.algo.segmentation.heads import LightHamHead
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.model.segmentation import OTXSegmentationModel
@@ -22,12 +21,10 @@ class OTXSegNext(OTXSegmentationModel):
 
     def _create_model(self) -> nn.Module:
         backbone = MSCAN(**self.backbone_configuration)
-        breakpoint()
         decode_head = LightHamHead(num_classes=self.num_classes, **self.decode_head_configuration)
         return BaseSegmNNModel(
             backbone=backbone,
             decode_head=decode_head,
-            pretrained_weights=self.pretrained_weights,
             criterion_configuration=self.criterion_configuration,
         )
 

@@ -21,12 +21,13 @@ class CrossEntropyLossWithIgnore(CrossEntropyLoss):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._loss_name = "loss_ce_ignore"
+        self.name = "loss_ce_ignore"
 
     def forward(
         self,
         cls_score: torch.Tensor,
         label: torch.Tensor,
+        img_metas: dict | None = None,
         weight: torch.Tensor | None = None,
         avg_factor: int | None = None,
         reduction_override: str = "mean",

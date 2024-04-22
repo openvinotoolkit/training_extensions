@@ -9,6 +9,7 @@
 from __future__ import annotations
 
 import inspect
+
 from torch import nn
 from torch.nn import SyncBatchNorm
 from torch.nn.modules.batchnorm import _BatchNorm
@@ -90,6 +91,7 @@ def build_norm_layer(cfg: dict, num_features: int, postfix: int | str = "") -> t
         num_features (int): Number of input channels.
         postfix (int | str): The postfix to be appended into norm abbreviation
             to create named layer.
+
     Returns:
         created norm layer.
     """

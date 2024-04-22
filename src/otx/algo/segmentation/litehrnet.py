@@ -9,7 +9,7 @@ from typing import Any
 
 from torch import nn
 
-from otx.algo.segmentation.backbones import LiteHRNet as _LiteHRNet
+from otx.algo.segmentation.backbones import LiteHRNet
 from otx.algo.segmentation.heads import CustomFCNHead
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.model.segmentation import OTXSegmentationModel
@@ -19,13 +19,13 @@ from .base_model import BaseSegmNNModel
 
 class OTXLiteHRNet(OTXSegmentationModel):
     """LiteHRNet Model."""
+
     def _create_model(self) -> nn.Module:
-        backbone = _LiteHRNet(**self.backbone_configuration)
+        backbone = LiteHRNet(**self.backbone_configuration)
         decode_head = CustomFCNHead(num_classes=self.num_classes, **self.decode_head_configuration)
         return BaseSegmNNModel(
             backbone=backbone,
             decode_head=decode_head,
-            pretrained_weights=self.pretrained_weights,
             criterion_configuration=self.criterion_configuration,
         )
 

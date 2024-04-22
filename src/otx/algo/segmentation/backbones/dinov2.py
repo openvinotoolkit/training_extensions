@@ -6,10 +6,13 @@
 from __future__ import annotations
 
 from functools import partial
+from pathlib import Path
 
 import torch
 from mmengine.model import BaseModule
 from torch import nn
+
+from otx.algo.utils.mmengine_utils import load_checkpoint_to_model, load_from_http
 
 
 class DinoVisionTransformer(BaseModule):
@@ -21,6 +24,7 @@ class DinoVisionTransformer(BaseModule):
         freeze_backbone: bool,
         out_index: list[int],
         init_cfg: dict | None = None,
+        pretrained_weights: str | None = None,
     ):
         super().__init__(init_cfg)
         torch.hub._validate_not_a_forked_repo = lambda a, b, c: True  # noqa: SLF001, ARG005
@@ -34,6 +38,9 @@ class DinoVisionTransformer(BaseModule):
             n=out_index,
             reshape=True,
         )
+
+        if pretrained_weights is not None:
+            self.load_pretrained_weights(pretrained_weights)
 
     def _freeze_backbone(self, backbone: nn.Module) -> None:
         """Freeze the backbone."""
@@ -51,3 +58,15 @@ class DinoVisionTransformer(BaseModule):
     def forward(self, imgs: torch.Tensor) -> torch.Tensor:
         """Forward function."""
         return self.backbone(imgs)
+
+    def load_pretrained_weights(self, pretrained: str | bool | None = None, prefix: str = "") -> None:
+        """Initialize weights."""
+        checkpoint = None
+        if isinstance(pretrained, str) and Path(pretrained).exists():
+            checkpoint = torch.load(pretrained, None)
+            print(f"init weight - {pretrained}")
+        elif pretrained is not None:
+            checkpoint = load_from_http(pretrained)
+            print(f"init weight - {pretrained}")
+        if checkpoint is not None:
+            load_checkpoint_to_model(self, checkpoint, prefix=prefix)

@@ -20,6 +20,7 @@ CONV_DICT = {
 
 def build_conv_layer(cfg: dict | None, *args, **kwargs) -> nn.Module:
     """Build convolution layer.
+
     Args:
         cfg (None or dict): The conv layer config, which should contain:
             - type (str): Layer type.
@@ -28,6 +29,7 @@ def build_conv_layer(cfg: dict | None, *args, **kwargs) -> nn.Module:
             method of the corresponding conv layer.
         kwargs (keyword arguments): Keyword arguments passed to the `__init__`
             method of the corresponding conv layer.
+
     Returns:
         nn.Module: Created conv layer.
     """

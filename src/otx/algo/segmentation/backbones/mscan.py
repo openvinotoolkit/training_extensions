@@ -1,26 +1,28 @@
+from __future__ import annotations
+
+from pathlib import Path
+
 import torch
-import torch.nn as nn
 from mmengine.model import BaseModule
-from typing import Dict, List
-from otx.algo.modules import build_norm_layer, build_activation_layer
+from torch import nn
+
+from otx.algo.modules import build_activation_layer, build_norm_layer
+from otx.algo.utils.mmengine_utils import load_checkpoint_to_model, load_from_http
 
 
-def drop_path(x: torch.Tensor,
-              drop_prob: float = 0.,
-              training: bool = False) -> torch.Tensor:
+def drop_path(x: torch.Tensor, drop_prob: float = 0.0, training: bool = False) -> torch.Tensor:
     """Drop paths (Stochastic Depth) per sample (when applied in main path of
     residual blocks).
 
     We follow the implementation
     https://github.com/rwightman/pytorch-image-models/blob/a2727c1bf78ba0d7b5727f5f95e37fb7f8866b1f/timm/models/layers/drop.py  # noqa: E501
     """
-    if drop_prob == 0. or not training:
+    if drop_prob == 0.0 or not training:
         return x
     keep_prob = 1 - drop_prob
     # handle tensors with different dimensions, not just 4D tensors.
-    shape = (x.shape[0], ) + (1, ) * (x.ndim - 1)
-    random_tensor = keep_prob + torch.rand(
-        shape, dtype=x.dtype, device=x.device)
+    shape = (x.shape[0],) + (1,) * (x.ndim - 1)
+    random_tensor = keep_prob + torch.rand(shape, dtype=x.dtype, device=x.device)
     output = x.div(keep_prob) * random_tensor.floor()
     return output
 
@@ -59,31 +61,18 @@ class Mlp(BaseModule):
             Defaults: 0.0.
     """
 
-    def __init__(self,
-                 in_features,
-                 hidden_features=None,
-                 out_features=None,
-                 act_cfg=dict(type='GELU'),
-                 drop=0.):
+    def __init__(self, in_features, hidden_features=None, out_features=None, act_cfg=dict(type="GELU"), drop=0.0):
         super().__init__()
         out_features = out_features or in_features
         hidden_features = hidden_features or in_features
         self.fc1 = nn.Conv2d(in_features, hidden_features, 1)
-        self.dwconv = nn.Conv2d(
-            hidden_features,
-            hidden_features,
-            3,
-            1,
-            1,
-            bias=True,
-            groups=hidden_features)
+        self.dwconv = nn.Conv2d(hidden_features, hidden_features, 3, 1, 1, bias=True, groups=hidden_features)
         self.act = build_activation_layer(act_cfg)
         self.fc2 = nn.Conv2d(hidden_features, out_features, 1)
         self.drop = nn.Dropout(drop)
 
     def forward(self, x):
         """Forward function."""
-
         x = self.fc1(x)
 
         x = self.dwconv(x)
@@ -107,34 +96,25 @@ class StemConv(BaseModule):
             Defaults: dict(type='SyncBN', requires_grad=True).
     """
 
-    def __init__(self,
-                 in_channels,
-                 out_channels,
-                 act_cfg=dict(type='GELU'),
-                 norm_cfg=dict(type='SyncBN', requires_grad=True)):
+    def __init__(
+        self,
+        in_channels,
+        out_channels,
+        act_cfg=dict(type="GELU"),
+        norm_cfg=dict(type="SyncBN", requires_grad=True),
+    ):
         super().__init__()
 
         self.proj = nn.Sequential(
-            nn.Conv2d(
-                in_channels,
-                out_channels // 2,
-                kernel_size=(3, 3),
-                stride=(2, 2),
-                padding=(1, 1)),
+            nn.Conv2d(in_channels, out_channels // 2, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1)),
             build_norm_layer(norm_cfg, out_channels // 2)[1],
             build_activation_layer(act_cfg),
-            nn.Conv2d(
-                out_channels // 2,
-                out_channels,
-                kernel_size=(3, 3),
-                stride=(2, 2),
-                padding=(1, 1)),
+            nn.Conv2d(out_channels // 2, out_channels, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1)),
             build_norm_layer(norm_cfg, out_channels)[1],
         )
 
     def forward(self, x):
         """Forward function."""
-
         x = self.proj(x)
         _, _, H, W = x.size()
         x = x.flatten(2).transpose(1, 2)
@@ -153,37 +133,19 @@ class MSCAAttention(BaseModule):
             Defaults: [2, [0, 3], [0, 5], [0, 10]].
     """
 
-    def __init__(self,
-                 channels,
-                 kernel_sizes=[5, [1, 7], [1, 11], [1, 21]],
-                 paddings=[2, [0, 3], [0, 5], [0, 10]]):
+    def __init__(self, channels, kernel_sizes=[5, [1, 7], [1, 11], [1, 21]], paddings=[2, [0, 3], [0, 5], [0, 10]]):
         super().__init__()
-        self.conv0 = nn.Conv2d(
-            channels,
-            channels,
-            kernel_size=kernel_sizes[0],
-            padding=paddings[0],
-            groups=channels)
-        for i, (kernel_size,
-                padding) in enumerate(zip(kernel_sizes[1:], paddings[1:])):
+        self.conv0 = nn.Conv2d(channels, channels, kernel_size=kernel_sizes[0], padding=paddings[0], groups=channels)
+        for i, (kernel_size, padding) in enumerate(zip(kernel_sizes[1:], paddings[1:])):
             kernel_size_ = [kernel_size, kernel_size[::-1]]
             padding_ = [padding, padding[::-1]]
-            conv_name = [f'conv{i}_1', f'conv{i}_2']
-            for i_kernel, i_pad, i_conv in zip(kernel_size_, padding_,
-                                               conv_name):
-                self.add_module(
-                    i_conv,
-                    nn.Conv2d(
-                        channels,
-                        channels,
-                        tuple(i_kernel),
-                        padding=i_pad,
-                        groups=channels))
+            conv_name = [f"conv{i}_1", f"conv{i}_2"]
+            for i_kernel, i_pad, i_conv in zip(kernel_size_, padding_, conv_name):
+                self.add_module(i_conv, nn.Conv2d(channels, channels, tuple(i_kernel), padding=i_pad, groups=channels))
         self.conv3 = nn.Conv2d(channels, channels, 1)
 
     def forward(self, x):
         """Forward function."""
-
         u = x.clone()
 
         attn = self.conv0(x)
@@ -223,22 +185,21 @@ class MSCASpatialAttention(BaseModule):
             Default: dict(type='GELU').
     """
 
-    def __init__(self,
-                 in_channels,
-                 attention_kernel_sizes=[5, [1, 7], [1, 11], [1, 21]],
-                 attention_kernel_paddings=[2, [0, 3], [0, 5], [0, 10]],
-                 act_cfg=dict(type='GELU')):
+    def __init__(
+        self,
+        in_channels,
+        attention_kernel_sizes=[5, [1, 7], [1, 11], [1, 21]],
+        attention_kernel_paddings=[2, [0, 3], [0, 5], [0, 10]],
+        act_cfg=dict(type="GELU"),
+    ):
         super().__init__()
         self.proj_1 = nn.Conv2d(in_channels, in_channels, 1)
         self.activation = build_activation_layer(act_cfg)
-        self.spatial_gating_unit = MSCAAttention(in_channels,
-                                                 attention_kernel_sizes,
-                                                 attention_kernel_paddings)
+        self.spatial_gating_unit = MSCAAttention(in_channels, attention_kernel_sizes, attention_kernel_paddings)
         self.proj_2 = nn.Conv2d(in_channels, in_channels, 1)
 
     def forward(self, x):
         """Forward function."""
-
         shorcut = x.clone()
         x = self.proj_1(x)
         x = self.activation(x)
@@ -274,45 +235,34 @@ class MSCABlock(BaseModule):
             Defaults: dict(type='SyncBN', requires_grad=True).
     """
 
-    def __init__(self,
-                 channels,
-                 attention_kernel_sizes=[5, [1, 7], [1, 11], [1, 21]],
-                 attention_kernel_paddings=[2, [0, 3], [0, 5], [0, 10]],
-                 mlp_ratio=4.,
-                 drop=0.,
-                 drop_path=0.,
-                 act_cfg=dict(type='GELU'),
-                 norm_cfg=dict(type='SyncBN', requires_grad=True)):
+    def __init__(
+        self,
+        channels,
+        attention_kernel_sizes=[5, [1, 7], [1, 11], [1, 21]],
+        attention_kernel_paddings=[2, [0, 3], [0, 5], [0, 10]],
+        mlp_ratio=4.0,
+        drop=0.0,
+        drop_path=0.0,
+        act_cfg=dict(type="GELU"),
+        norm_cfg=dict(type="SyncBN", requires_grad=True),
+    ):
         super().__init__()
         self.norm1 = build_norm_layer(norm_cfg, channels)[1]
-        self.attn = MSCASpatialAttention(channels, attention_kernel_sizes,
-                                         attention_kernel_paddings, act_cfg)
-        self.drop_path = DropPath(
-            drop_path) if drop_path > 0. else nn.Identity()
+        self.attn = MSCASpatialAttention(channels, attention_kernel_sizes, attention_kernel_paddings, act_cfg)
+        self.drop_path = DropPath(drop_path) if drop_path > 0.0 else nn.Identity()
         self.norm2 = build_norm_layer(norm_cfg, channels)[1]
         mlp_hidden_channels = int(channels * mlp_ratio)
-        self.mlp = Mlp(
-            in_features=channels,
-            hidden_features=mlp_hidden_channels,
-            act_cfg=act_cfg,
-            drop=drop)
+        self.mlp = Mlp(in_features=channels, hidden_features=mlp_hidden_channels, act_cfg=act_cfg, drop=drop)
         layer_scale_init_value = 1e-2
-        self.layer_scale_1 = nn.Parameter(
-            layer_scale_init_value * torch.ones(channels), requires_grad=True)
-        self.layer_scale_2 = nn.Parameter(
-            layer_scale_init_value * torch.ones(channels), requires_grad=True)
+        self.layer_scale_1 = nn.Parameter(layer_scale_init_value * torch.ones(channels), requires_grad=True)
+        self.layer_scale_2 = nn.Parameter(layer_scale_init_value * torch.ones(channels), requires_grad=True)
 
     def forward(self, x, H, W):
         """Forward function."""
-
         B, N, C = x.shape
         x = x.permute(0, 2, 1).view(B, C, H, W)
-        x = x + self.drop_path(
-            self.layer_scale_1.unsqueeze(-1).unsqueeze(-1) *
-            self.attn(self.norm1(x)))
-        x = x + self.drop_path(
-            self.layer_scale_2.unsqueeze(-1).unsqueeze(-1) *
-            self.mlp(self.norm2(x)))
+        x = x + self.drop_path(self.layer_scale_1.unsqueeze(-1).unsqueeze(-1) * self.attn(self.norm1(x)))
+        x = x + self.drop_path(self.layer_scale_2.unsqueeze(-1).unsqueeze(-1) * self.mlp(self.norm2(x)))
         x = x.view(B, C, N).permute(0, 2, 1)
         return x
 
@@ -333,25 +283,21 @@ class OverlapPatchEmbed(BaseModule):
             Defaults: dict(type='SyncBN', requires_grad=True).
     """
 
-    def __init__(self,
-                 patch_size=7,
-                 stride=4,
-                 in_channels=3,
-                 embed_dim=768,
-                 norm_cfg=dict(type='SyncBN', requires_grad=True)):
+    def __init__(
+        self,
+        patch_size=7,
+        stride=4,
+        in_channels=3,
+        embed_dim=768,
+        norm_cfg=dict(type="SyncBN", requires_grad=True),
+    ):
         super().__init__()
 
-        self.proj = nn.Conv2d(
-            in_channels,
-            embed_dim,
-            kernel_size=patch_size,
-            stride=stride,
-            padding=patch_size // 2)
+        self.proj = nn.Conv2d(in_channels, embed_dim, kernel_size=patch_size, stride=stride, padding=patch_size // 2)
         self.norm = build_norm_layer(norm_cfg, embed_dim)[1]
 
     def forward(self, x):
         """Forward function."""
-
         x = self.proj(x)
         _, _, H, W = x.shape
         x = self.norm(x)
@@ -393,22 +339,22 @@ class MSCAN(BaseModule):
     """
 
     def __init__(
-            self,
-            in_channels: int = 3,
-            embed_dims: List[int] = [64, 128, 256, 512],
-            mlp_ratios: List[int] = [4, 4, 4, 4],
-            drop_rate: float = 0.0,
-            drop_path_rate: float = 0.0,
-            depths: List[int] = [3, 4, 6, 3],
-            num_stages: int = 4,
-            attention_kernel_sizes: List[int | List[int]] = [5, [1, 7], [1, 11], [1, 21]],
-            attention_kernel_paddings: List[int | List[int]] = [2, [0, 3], [0, 5], [0, 10]],
-            act_cfg: Dict[str, str] = dict(type='GELU'),
-            norm_cfg: Dict[str, str | bool] = dict(type='SyncBN', requires_grad=True),
-            init_cfg: Dict[str, str] | List[Dict[str, str]] = None
+        self,
+        in_channels: int = 3,
+        embed_dims: list[int] = [64, 128, 256, 512],
+        mlp_ratios: list[int] = [4, 4, 4, 4],
+        drop_rate: float = 0.0,
+        drop_path_rate: float = 0.0,
+        depths: list[int] = [3, 4, 6, 3],
+        num_stages: int = 4,
+        attention_kernel_sizes: list[int | list[int]] = [5, [1, 7], [1, 11], [1, 21]],
+        attention_kernel_paddings: list[int | list[int]] = [2, [0, 3], [0, 5], [0, 10]],
+        act_cfg: dict[str, str] = dict(type="GELU"),
+        norm_cfg: dict[str, str | bool] = dict(type="SyncBN", requires_grad=True),
+        init_cfg: dict[str, str] | list[dict[str, str]] = None,
+        pretrained_weights: str | None = None,
     ) -> None:
-        """
-        Initialize a MSCAN backbone.
+        """Initialize a MSCAN backbone.
 
         Args:
             in_channels (int): The number of input channels. Defaults to 3.
@@ -433,9 +379,7 @@ class MSCAN(BaseModule):
         self.depths = depths
         self.num_stages = num_stages
 
-        dpr = [
-            x.item() for x in torch.linspace(0, drop_path_rate, sum(depths))
-        ]  # stochastic depth decay rule
+        dpr = [x.item() for x in torch.linspace(0, drop_path_rate, sum(depths))]  # stochastic depth decay rule
         cur = 0
 
         for i in range(num_stages):
@@ -447,36 +391,42 @@ class MSCAN(BaseModule):
                     stride=4 if i == 0 else 2,
                     in_channels=in_channels if i == 0 else embed_dims[i - 1],
                     embed_dim=embed_dims[i],
-                    norm_cfg=norm_cfg)
-            block = nn.ModuleList([
-                MSCABlock(
-                    channels=embed_dims[i],
-                    attention_kernel_sizes=attention_kernel_sizes,
-                    attention_kernel_paddings=attention_kernel_paddings,
-                    mlp_ratio=mlp_ratios[i],
-                    drop=drop_rate,
-                    drop_path=dpr[cur + j],
-                    act_cfg=act_cfg,
-                    norm_cfg=norm_cfg
-                ) for j in range(depths[i])
-            ])
+                    norm_cfg=norm_cfg,
+                )
+            block = nn.ModuleList(
+                [
+                    MSCABlock(
+                        channels=embed_dims[i],
+                        attention_kernel_sizes=attention_kernel_sizes,
+                        attention_kernel_paddings=attention_kernel_paddings,
+                        mlp_ratio=mlp_ratios[i],
+                        drop=drop_rate,
+                        drop_path=dpr[cur + j],
+                        act_cfg=act_cfg,
+                        norm_cfg=norm_cfg,
+                    )
+                    for j in range(depths[i])
+                ],
+            )
             norm = nn.LayerNorm(embed_dims[i])
             cur += depths[i]
 
-            setattr(self, f'patch_embed{i + 1}', patch_embed)
-            setattr(self, f'block{i + 1}', block)
-            setattr(self, f'norm{i + 1}', norm)
+            setattr(self, f"patch_embed{i + 1}", patch_embed)
+            setattr(self, f"block{i + 1}", block)
+            setattr(self, f"norm{i + 1}", norm)
+
+        if pretrained_weights is not None:
+            self.load_pretrained_weights(pretrained_weights)
 
     def forward(self, x):
         """Forward function."""
-
         B = x.shape[0]
         outs = []
 
         for i in range(self.num_stages):
-            patch_embed = getattr(self, f'patch_embed{i + 1}')
-            block = getattr(self, f'block{i + 1}')
-            norm = getattr(self, f'norm{i + 1}')
+            patch_embed = getattr(self, f"patch_embed{i + 1}")
+            block = getattr(self, f"block{i + 1}")
+            norm = getattr(self, f"norm{i + 1}")
             x, H, W = patch_embed(x)
             for blk in block:
                 x = blk(x, H, W)
@@ -485,3 +435,15 @@ class MSCAN(BaseModule):
             outs.append(x)
 
         return outs
+
+    def load_pretrained_weights(self, pretrained: str | bool | None = None, prefix: str = "") -> None:
+        """Initialize weights."""
+        checkpoint = None
+        if isinstance(pretrained, str) and Path(pretrained).exists():
+            checkpoint = torch.load(pretrained, None)
+            print(f"init weight - {pretrained}")
+        elif pretrained is not None:
+            checkpoint = load_from_http(pretrained)
+            print(f"init weight - {pretrained}")
+        if checkpoint is not None:
+            load_checkpoint_to_model(self, checkpoint, prefix=prefix)

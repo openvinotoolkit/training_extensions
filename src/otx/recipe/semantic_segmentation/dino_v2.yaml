@@ -2,11 +2,11 @@ model:
   class_path: otx.algo.segmentation.dino_v2_seg.OTXDinoV2Seg
   init_args:
     label_info: 2
-    pretrained_weights: "https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/custom_semantic_segmentation/litehrnet18_imagenet1k_rsc.pth"
 
     criterion_configuration:
-      type: CrossEntropyLoss
-      ignore_index: 255
+      - type: CrossEntropyLoss
+        params:
+          ignore_index: 255
 
     backbone_configuration:
       name: dinov2_vits14_reg
@@ -16,13 +16,11 @@ model:
         - 9
         - 10
         - 11
-      type: DinoVisionTransformer
 
     decode_head_configuration:
-      init_cfg:
-        checkpoint: https://dl.fbaipublicfiles.com/dinov2/dinov2_vits14/dinov2_vits14_ade20k_linear_head.pth
-        type: Pretrained
-        prefix: decode_head
+      norm_cfg:
+        type: SyncBN
+        requires_grad: true
       in_channels:
         - 384
         - 384
@@ -39,11 +37,8 @@ model:
       num_convs: 1
       concat_input: false
       dropout_ratio: -1
-      num_classes: 2
-      norm_cfg:
-        type: SyncBN
-        requires_grad: true
       align_corners: false
+      pretrained_weights: https://dl.fbaipublicfiles.com/dinov2/dinov2_vits14/dinov2_vits14_ade20k_linear_head.pth
 
     optimizer:
       class_path: torch.optim.AdamW
@@ -73,45 +68,61 @@ overrides:
     config:
       train_subset:
         transforms:
-          - type: LoadImageFromFile
-          - reduce_zero_label: true
-            type: LoadAnnotations
-          - keep_ratio: false
-            ratio_range:
-              - 0.5
-              - 2.0
-            scale:
-              - 640
-              - 640
-            type: RandomResize
-          - cat_max_ratio: 0.75
-            crop_size:
-              - 560
-              - 560
-            type: RandomCrop
-          - prob: 0.5
-            type: RandomFlip
-          - type: PhotoMetricDistortion
-          - type: PackSegInputs
+          - class_path: torchvision.transforms.v2.RandomResizedCrop
+            init_args:
+              size:
+                - 560
+                - 560
+              scale:
+                - 0.2
+                - 1.0
+              ratio:
+                - 0.5
+                - 2.0
+              antialias: True
+          - class_path: torchvision.transforms.v2.RandomPhotometricDistort
+            init_args:
+              p: 0.8
+          - class_path: torchvision.transforms.v2.RandomHorizontalFlip
+            init_args:
+              p: 0.5
+          - class_path: torchvision.transforms.v2.ToDtype
+            init_args:
+              dtype: ${as_torch_dtype:torch.float32}
+              scale: False
+          - class_path: torchvision.transforms.v2.Normalize
+            init_args:
+              mean: [123.675, 116.28, 103.53]
+              std: [58.395, 57.12, 57.375]
+
       val_subset:
         transforms:
-          - type: LoadImageFromFile
-          - keep_ratio: false
-            scale:
-              - 560
-              - 560
-            type: Resize
-          - reduce_zero_label: true
-            type: LoadAnnotations
-          - type: PackSegInputs
+          - class_path: torchvision.transforms.v2.Resize
+            init_args:
+              size:
+                - 560
+                - 560
+          - class_path: torchvision.transforms.v2.ToDtype
+            init_args:
+              dtype: ${as_torch_dtype:torch.float32}
+              scale: False
+          - class_path: torchvision.transforms.v2.Normalize
+            init_args:
+              mean: [123.675, 116.28, 103.53]
+              std: [58.395, 57.12, 57.375]
+
       test_subset:
         transforms:
-          - type: LoadImageFromFile
-          - keep_ratio: false
-            scale:
-              - 560
-              - 560
-            type: Resize
-          - reduce_zero_label: true
-            type: LoadAnnotations
-          - type: PackSegInputs
+          - class_path: torchvision.transforms.v2.Resize
+            init_args:
+              size:
+                - 560
+                - 560
+          - class_path: torchvision.transforms.v2.ToDtype
+            init_args:
+              dtype: ${as_torch_dtype:torch.float32}
+              scale: False
+          - class_path: torchvision.transforms.v2.Normalize
+            init_args:
+              mean: [123.675, 116.28, 103.53]
+              std: [58.395, 57.12, 57.375]

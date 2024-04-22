@@ -3,18 +3,17 @@
 #
 """Implementation of HamburgerNet head."""
 
-from mmengine.device import get_device
-# from mmseg.registry import MODELS
-
-from .custom_fcn_head import ClassIncrementalMixin
-
 import torch
-import torch.nn as nn
 import torch.nn.functional as f
-# from otx.algo.modules import ConvModule
+from mmengine.device import get_device
+from torch import nn
+
+from otx.algo.modules import ConvModule
 from otx.algo.segmentation.modules import resize
+
 from .base_head import BaseSegmHead
-from mmcv.cnn import ConvModule
+
+# from mmseg.registry import MODELS
 
 
 class Hamburger(nn.Module):
@@ -27,20 +26,14 @@ class Hamburger(nn.Module):
         norm_cfg (dict | None): Config of norm layers.
     """
 
-    def __init__(self,
-                 ham_channels=512,
-                 ham_kwargs=dict(),
-                 norm_cfg=None,
-                 **kwargs):
+    def __init__(self, ham_channels=512, ham_kwargs=dict(), norm_cfg=None, **kwargs):
         super().__init__()
 
-        self.ham_in = ConvModule(
-            ham_channels, ham_channels, 1, norm_cfg=None, act_cfg=None)
+        self.ham_in = ConvModule(ham_channels, ham_channels, 1, norm_cfg=None, act_cfg=None)
 
         self.ham = NMF2D(ham_channels=ham_channels, **ham_kwargs)
 
-        self.ham_out = ConvModule(
-            ham_channels, ham_channels, 1, norm_cfg=norm_cfg, act_cfg=None)
+        self.ham_out = ConvModule(ham_channels, ham_channels, 1, norm_cfg=norm_cfg, act_cfg=None)
 
     def forward(self, x):
         enjoy = self.ham_in(x)
@@ -71,7 +64,7 @@ class LightHamHead(BaseSegmHead):
     """
 
     def __init__(self, ham_channels=512, ham_kwargs=dict(), **kwargs):
-        super().__init__(input_transform='multiple_select', **kwargs)
+        super().__init__(input_transform="multiple_select", **kwargs)
         self.ham_channels = ham_channels
 
         self.squeeze = ConvModule(
@@ -80,7 +73,8 @@ class LightHamHead(BaseSegmHead):
             1,
             conv_cfg=self.conv_cfg,
             norm_cfg=self.norm_cfg,
-            act_cfg=self.act_cfg)
+            act_cfg=self.act_cfg,
+        )
 
         self.hamburger = Hamburger(ham_channels, ham_kwargs, **kwargs)
 
@@ -90,18 +84,16 @@ class LightHamHead(BaseSegmHead):
             1,
             conv_cfg=self.conv_cfg,
             norm_cfg=self.norm_cfg,
-            act_cfg=self.act_cfg)
+            act_cfg=self.act_cfg,
+        )
 
     def forward(self, inputs):
         """Forward function."""
         inputs = self._transform_inputs(inputs)
 
         inputs = [
-            resize(
-                level,
-                size=inputs[0].shape[2:],
-                mode='bilinear',
-                align_corners=self.align_corners) for level in inputs
+            resize(level, size=inputs[0].shape[2:], mode="bilinear", align_corners=self.align_corners)
+            for level in inputs
         ]
 
         inputs = torch.cat(inputs, dim=1)
@@ -121,14 +113,17 @@ class NMF2D(nn.Module):
 
     It is modified version from mmsegmentation to avoid randomness in inference.
     """
-    def __init__(self,
-                 ham_channels: int = 512,
-                 MD_S=1,
-                 MD_R=64,
-                 train_steps=6,
-                 eval_steps=7,
-                 inv_t=100,
-                 rand_init=True):
+
+    def __init__(
+        self,
+        ham_channels: int = 512,
+        MD_S=1,
+        MD_R=64,
+        train_steps=6,
+        eval_steps=7,
+        inv_t=100,
+        rand_init=True,
+    ):
         super().__init__()
 
         self.S = MD_S

@@ -15,8 +15,7 @@ import torch
 # from mmseg.models.utils import resize
 from torch import Tensor, nn
 
-from mmcv.cnn import ConvModule
-# from otx.algo.modules import ConvModule
+from otx.algo.modules import ConvModule
 from otx.algo.segmentation.modules import IterativeAggregator
 
 from .base_head import BaseSegmHead

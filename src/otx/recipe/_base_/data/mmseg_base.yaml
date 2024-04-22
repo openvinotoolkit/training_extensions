@@ -31,9 +31,6 @@ config:
       - class_path: torchvision.transforms.v2.RandomHorizontalFlip
         init_args:
           p: 0.5
-      - class_path: torchvision.transforms.v2.RandomRotation
-        init_args:
-          degrees: 10
       - class_path: torchvision.transforms.v2.ToDtype
         init_args:
           dtype: ${as_torch_dtype:torch.float32}

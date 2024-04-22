@@ -1,8 +1,9 @@
-import torch
 import warnings
-from .blocks import OnnxLpNormalization
 
+import torch
 from torch.nn import functional as f
+
+from .blocks import OnnxLpNormalization
 
 
 def resize(input, size=None, scale_factor=None, mode="nearest", align_corners=None, warning=True):
@@ -24,12 +25,12 @@ def resize(input, size=None, scale_factor=None, mode="nearest", align_corners=No
                     )
     return f.interpolate(input, size, scale_factor, mode, align_corners)
 
+
 def normalize(x: torch.Tensor, dim: int, p: int = 2, eps: float = 1e-12) -> torch.Tensor:
     """Normalize method."""
     if torch.onnx.is_in_onnx_export():
         return OnnxLpNormalization.apply(x, dim, p, eps)
     return torch.nn.functional.normalize(x, dim=dim, p=p, eps=eps)
-
 
 
 def channel_shuffle(x, groups):
@@ -46,10 +47,8 @@ def channel_shuffle(x, groups):
     Returns:
         Tensor: The output tensor after channel shuffle operation.
     """
-
     batch_size, num_channels, height, width = x.size()
-    assert (num_channels % groups == 0), ('num_channels should be '
-                                          'divisible by groups')
+    assert num_channels % groups == 0, "num_channels should be divisible by groups"
     channels_per_group = num_channels // groups
 
     x = x.view(batch_size, groups, channels_per_group, height, width)

@@ -2,11 +2,11 @@ model:
   class_path: otx.algo.segmentation.litehrnet.OTXLiteHRNet
   init_args:
     label_info: 2
-    pretrained_weights: "https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/custom_semantic_segmentation/litehrnetsv2_imagenet1k_rsc.pth"
 
     criterion_configuration:
-      type: CrossEntropyLoss
-      ignore_index: 255
+      - type: CrossEntropyLoss
+        params:
+          ignore_index: 255
 
     backbone_configuration:
       norm_cfg:
@@ -67,6 +67,7 @@ model:
         out_aggregator:
           enable: false
         add_input: false
+      pretrained_weights: "https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/custom_semantic_segmentation/litehrnetsv2_imagenet1k_rsc.pth"
 
     decode_head_configuration:
       norm_cfg:

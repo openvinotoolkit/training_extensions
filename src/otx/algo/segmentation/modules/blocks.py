@@ -1,16 +1,18 @@
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
-"""Blocks/modules for semantic segmentation """
+"""Blocks/modules for semantic segmentation"""
 
 from __future__ import annotations
 
-import torch
-from torch import nn
-import torch.nn.functional as f
 from typing import Callable, ClassVar
-from otx.algo.modules import ConvModule
+
+import torch
+import torch.nn.functional as f
+from torch import nn
 from torch.nn import AdaptiveAvgPool2d, AdaptiveMaxPool2d
+
+from otx.algo.modules import ConvModule
 
 
 class PSPModule(nn.Module):
@@ -418,4 +420,3 @@ class LocalAttentionModule(nn.Module):
 #         x = self.act(x)
 
 #         return x
-
