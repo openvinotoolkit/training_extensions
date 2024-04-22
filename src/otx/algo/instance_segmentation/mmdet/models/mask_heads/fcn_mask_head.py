@@ -30,7 +30,6 @@ from otx.algo.instance_segmentation.mmdet.models.utils import (
 from otx.algo.instance_segmentation.mmdet.structures.mask import mask_target
 from otx.algo.modules.conv import build_conv_layer
 from otx.algo.modules.conv_module import ConvModule
-from otx.algo.modules.upsample import build_upsample_layer
 
 BYTES_PER_FLOAT = 4
 #  determine it based on available resources.
@@ -71,9 +70,6 @@ class FCNMaskHead(BaseModule):
         self.in_channels = in_channels
         self.conv_kernel_size = conv_kernel_size
         self.conv_out_channels = conv_out_channels
-        self.upsample_cfg = {"type": "deconv", "scale_factor": 2}
-        self.upsample_method = self.upsample_cfg.get("type")
-        self.scale_factor = self.upsample_cfg.pop("scale_factor", None)
         self.num_classes = num_classes
         self.class_agnostic = class_agnostic
         self.conv_cfg = conv_cfg
@@ -96,18 +92,17 @@ class FCNMaskHead(BaseModule):
                 ),
             )
         upsample_in_channels = self.conv_out_channels if self.num_convs > 0 else in_channels
-        upsample_cfg_ = self.upsample_cfg.copy()
 
-        upsample_cfg_.update(
-            in_channels=upsample_in_channels,
-            out_channels=self.conv_out_channels,
-            kernel_size=self.scale_factor,
-            stride=self.scale_factor,
-        )
-        self.upsample = build_upsample_layer(upsample_cfg_)
-
+        _scale_factor = 2
+        upsample_cfg = {
+            "in_channels": upsample_in_channels,
+            "out_channels": self.conv_out_channels,
+            "kernel_size": _scale_factor,
+            "stride": _scale_factor,
+        }
+        self.upsample = nn.ConvTranspose2d(**upsample_cfg)
         out_channels = 1 if self.class_agnostic else self.num_classes
-        logits_in_channel = self.conv_out_channels if self.upsample_method == "deconv" else upsample_in_channels
+        logits_in_channel = self.conv_out_channels
         self.conv_logits = build_conv_layer(self.predictor_cfg, logits_in_channel, out_channels, 1)
         self.relu = nn.ReLU(inplace=True)
         self.debug_imgs = None
