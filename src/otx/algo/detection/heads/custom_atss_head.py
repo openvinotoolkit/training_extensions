@@ -8,11 +8,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import torch
-from mmcv.cnn import ConvModule, Scale
-from mmdet.models.utils.misc import multi_apply
-from mmdet.registry import MODELS
-from mmdet.structures.bbox.bbox_overlaps import bbox_overlaps
-from mmdet.utils.dist_utils import reduce_mean
+from mmcv.cnn import ConvModule
 from mmengine.structures import InstanceData
 from torch import Tensor, nn
 
@@ -20,21 +16,22 @@ from otx.algo.detection.heads.anchor_head import AnchorHead
 from otx.algo.detection.heads.class_incremental_mixin import (
     ClassIncrementalMixin,
 )
+from otx.algo.detection.losses.cross_entropy_loss import CrossEntropyLoss
 from otx.algo.detection.losses.cross_focal_loss import (
     CrossSigmoidFocalLoss,
 )
-from otx.algo.detection.utils.utils import anchor_inside_flags, unmap
+from otx.algo.detection.utils.bbox_overlaps import bbox_overlaps
+from otx.algo.detection.utils.utils import anchor_inside_flags, multi_apply, reduce_mean, unmap
+from otx.algo.utils.mmcv_utils import Scale
 
 if TYPE_CHECKING:
-    from mmdet.utils import InstanceList, OptInstanceList
     from mmengine import ConfigDict
 
 
 EPS = 1e-12
 
 
-@MODELS.register_module()
-class CustomATSSHead(ClassIncrementalMixin, AnchorHead):
+class ATSSHead(ClassIncrementalMixin, AnchorHead):
     """Detection Head of `ATSS <https://arxiv.org/abs/1912.02424>`_.
 
     ATSS head structure is similar with FCOS, however ATSS use anchor boxes
@@ -100,8 +97,10 @@ class CustomATSSHead(ClassIncrementalMixin, AnchorHead):
 
         self.sampling = False
         if loss_centerness is None:
-            loss_centerness = {"type": "CrossEntropyLoss", "use_sigmoid": True, "loss_weight": 1.0}
-        self.loss_centerness = MODELS.build(loss_centerness)
+            loss_centerness = {"use_sigmoid": True, "loss_weight": 1.0}
+        else:
+            loss_centerness.pop("type")
+        self.loss_centerness = CrossEntropyLoss(**loss_centerness)
 
         if use_qfl:
             kwargs["loss_cls"] = (
@@ -167,7 +166,7 @@ class CustomATSSHead(ClassIncrementalMixin, AnchorHead):
         )
         self.scales = nn.ModuleList([Scale(1.0) for _ in self.prior_generator.strides])
 
-    def forward(self, x: tuple[Tensor]) -> tuple[list[Tensor]]:
+    def forward(self, x: tuple[Tensor]) -> tuple[list[Tensor], ...]:
         """Forward features from the upstream network.
 
         Args:
@@ -219,9 +218,9 @@ class CustomATSSHead(ClassIncrementalMixin, AnchorHead):
         cls_scores: list[Tensor],
         bbox_preds: list[Tensor],
         centernesses: list[Tensor],
-        batch_gt_instances: InstanceList,
-        batch_img_metas: InstanceList,
-        batch_gt_instances_ignore: InstanceList | None = None,
+        batch_gt_instances: list[InstanceData],
+        batch_img_metas: list[InstanceData],
+        batch_gt_instances_ignore: list[InstanceData] | None = None,
     ) -> dict[str, Tensor]:
         """Compute losses of the head.
 
@@ -453,9 +452,9 @@ class CustomATSSHead(ClassIncrementalMixin, AnchorHead):
         self,
         anchor_list: list[list[Tensor]],
         valid_flag_list: list[list[Tensor]],
-        batch_gt_instances: InstanceList,
+        batch_gt_instances: list[InstanceData],
         batch_img_metas: list[dict],
-        batch_gt_instances_ignore: OptInstanceList = None,
+        batch_gt_instances_ignore: list[InstanceData] | None = None,
         unmap_outputs: bool = True,
     ) -> tuple:
         """Get targets for Detection head.
