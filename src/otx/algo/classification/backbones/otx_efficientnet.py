@@ -7,8 +7,8 @@ import math
 import os
 
 import torch.nn.functional as F
-from mmcv.cnn import build_activation_layer
-from mmcv.cnn.bricks import ConvModule
+from otx.algo.modules.activation import build_activation_layer
+from otx.algo.modules.conv_module import ConvModule
 from mmengine.runner import load_checkpoint
 from mmpretrain.registry import MODELS
 from pytorchcv.models.model_store import download_model

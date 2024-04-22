@@ -1,7 +1,7 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
-"""Load Checkpoint functions."""
+"""This implementation replaces the functionality of mmengine utils."""
 # TODO(someone): Revisit mypy errors after deprecation of mmlab
 # mypy: ignore-errors
 
@@ -9,12 +9,12 @@ from __future__ import annotations
 
 import os
 import re
-from collections import OrderedDict, namedtuple
+from collections import OrderedDict, abc, namedtuple
 from typing import Any
 from warnings import warn
 
+from torch import Tensor, nn
 from torch import distributed as torch_dist
-from torch import nn
 from torch.utils.model_zoo import load_url
 
 
@@ -190,6 +190,8 @@ def load_checkpoint_to_model(
 def normal_init(module: nn.Module, mean: float = 0, std: float = 1, bias: float = 0) -> None:
     """Initialize the weights and biases of a module using a normal distribution.
 
+    Copied from mmengine.model.weight_init.normal_init
+
     Args:
         module (nn.Module): The module to initialize.
         mean (float): The mean of the normal distribution. Default is 0.
@@ -205,6 +207,8 @@ def normal_init(module: nn.Module, mean: float = 0, std: float = 1, bias: float 
 def constant_init(module: nn.Module, val: float, bias: float = 0) -> None:
     """Initialize the weights and biases of a module with constant values.
 
+    Copied from mmengine.model.weight_init.constant_init
+
     Args:
         module (nn.Module): The module to initialize.
         val (float): The constant value to initialize the weights with.
@@ -214,3 +218,81 @@ def constant_init(module: nn.Module, val: float, bias: float = 0) -> None:
         nn.init.constant_(module.weight, val)
     if hasattr(module, "bias") and module.bias is not None:
         nn.init.constant_(module.bias, bias)
+
+
+def kaiming_init(
+    module: nn.Module,
+    a: float = 0,
+    mode: str = "fan_out",
+    nonlinearity: str = "relu",
+    bias: float = 0,
+    distribution: str = "normal",
+) -> Tensor:
+    """Initialize the weights and biases of a module using the Kaiming initialization method.
+
+    Copied from mmengine.model.weight_init.kaiming_init
+
+    Args:
+        module (nn.Module): The module to initialize.
+        a (float): The negative slope of the rectifier used after this layer (only used with 'leaky_relu' nonlinearity).
+            Default is 0.
+        mode (str): Either 'fan_in' (default) or 'fan_out'. Choosing 'fan_in' preserves the magnitude of the variance
+            of the weights in the forward pass. Choosing 'fan_out' preserves the magnitudes in the backward pass.
+            Default is 'fan_out'.
+        nonlinearity (str): The non-linear function (nn.functional name), recommended to use 'relu' or 'leaky_relu'.
+            Default is 'relu'.
+        bias (float): The bias value. Default is 0.
+        distribution (str): The type of distribution to use for weight initialization,
+            either 'normal' (default) or 'uniform'.
+
+    Returns:
+        Tensor: The initialized tensor.
+    """
+    if hasattr(module, "weight") and module.weight is not None:
+        if distribution == "uniform":
+            nn.init.kaiming_uniform_(module.weight, a=a, mode=mode, nonlinearity=nonlinearity)
+        else:
+            nn.init.kaiming_normal_(module.weight, a=a, mode=mode, nonlinearity=nonlinearity)
+    if hasattr(module, "bias") and module.bias is not None:
+        nn.init.constant_(module.bias, bias)
+
+
+def is_seq_of(
+    seq: Any,  # noqa: ANN401
+    expected_type: type | tuple,
+    seq_type: type | None = None,
+) -> bool:
+    """Check whether it is a sequence of some type.
+
+    Copied from mmengine.utils.misc.is_seq_of
+
+    Args:
+        seq (Sequence): The sequence to be checked.
+        expected_type (type or tuple): Expected type of sequence items.
+        seq_type (type, optional): Expected sequence type. Defaults to None.
+
+    Returns:
+        bool: Return True if ``seq`` is valid else False.
+
+    Examples:
+        >>> from mmengine.utils import is_seq_of
+        >>> seq = ['a', 'b', 'c']
+        >>> is_seq_of(seq, str)
+        True
+        >>> is_seq_of(seq, int)
+        False
+    """
+    exp_seq_type = abc.Sequence if seq_type is None else seq_type
+    if not isinstance(seq, exp_seq_type):
+        return False
+    return all(isinstance(item, expected_type) for item in seq)
+
+
+def is_tuple_of(seq: Any, expected_type: type | tuple) -> bool:  # noqa: ANN401
+    """Check whether it is a tuple of some type.
+
+    Copied from mmengine.utils.misc.is_tuple_of
+
+    A partial method of :func:`is_seq_of`.
+    """
+    return is_seq_of(seq, expected_type, seq_type=tuple)
