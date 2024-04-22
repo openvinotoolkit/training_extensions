@@ -1,12 +1,5 @@
-from .conv import build_conv_layer
-from .norm import build_norm_layer
-from .act import build_activation_layer
-from .conv_module import ConvModule, DepthwiseSeparableConvModule
+# Copyright (C) 2024 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+# Copyright (c) OpenMMLab. All rights reserved.
 
-__all__ = [
-    "build_conv_layer",
-    "build_norm_layer",
-    "build_activation_layer",
-    "ConvModule",
-    "DepthwiseSeparableConvModule"
-]
+"""This module implementation is a code implementation copied or replaced from mmcv.cnn.bricks."""

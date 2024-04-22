@@ -17,7 +17,7 @@ from otx.core.model.classification import (
 )
 from otx.core.model.utils.mmpretrain import ExplainableMixInMMPretrainModel
 from otx.core.schedulers import LRSchedulerListCallable
-from otx.core.types.label import HLabelInfo
+from otx.core.types.label import HLabelInfo, LabelInfoTypes
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
@@ -30,7 +30,7 @@ class EfficientNetV2ForHLabelCls(ExplainableMixInMMPretrainModel, MMPretrainHlab
 
     def __init__(
         self,
-        hlabel_info: HLabelInfo,
+        label_info: HLabelInfo,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = HLabelClsMetricCallble,
@@ -39,7 +39,7 @@ class EfficientNetV2ForHLabelCls(ExplainableMixInMMPretrainModel, MMPretrainHlab
         config = read_mmconfig("efficientnet_v2_light", subdir_name="hlabel_classification")
 
         super().__init__(
-            hlabel_info=hlabel_info,
+            label_info=label_info,
             config=config,
             optimizer=optimizer,
             scheduler=scheduler,
@@ -57,7 +57,7 @@ class EfficientNetV2ForMulticlassCls(ExplainableMixInMMPretrainModel, MMPretrain
 
     def __init__(
         self,
-        num_classes: int,
+        label_info: LabelInfoTypes,
         light: bool = False,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
@@ -67,7 +67,7 @@ class EfficientNetV2ForMulticlassCls(ExplainableMixInMMPretrainModel, MMPretrain
         model_name = "efficientnet_v2_light" if light else "efficientnet_v2"
         config = read_mmconfig(model_name=model_name, subdir_name="multiclass_classification")
         super().__init__(
-            num_classes=num_classes,
+            label_info=label_info,
             config=config,
             optimizer=optimizer,
             scheduler=scheduler,
@@ -85,7 +85,7 @@ class EfficientNetV2ForMultilabelCls(ExplainableMixInMMPretrainModel, MMPretrain
 
     def __init__(
         self,
-        num_classes: int,
+        label_info: LabelInfoTypes,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MultiLabelClsMetricCallable,
@@ -93,7 +93,7 @@ class EfficientNetV2ForMultilabelCls(ExplainableMixInMMPretrainModel, MMPretrain
     ) -> None:
         config = read_mmconfig("efficientnet_v2_light", subdir_name="multilabel_classification")
         super().__init__(
-            num_classes=num_classes,
+            label_info=label_info,
             config=config,
             optimizer=optimizer,
             scheduler=scheduler,

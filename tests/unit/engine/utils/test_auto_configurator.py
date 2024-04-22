@@ -7,7 +7,7 @@ from pathlib import Path
 import pytest
 from otx.core.data.module import OTXDataModule
 from otx.core.model.base import OTXModel
-from otx.core.types.label import LabelInfo
+from otx.core.types.label import LabelInfo, SegLabelInfo
 from otx.core.types.task import OTXTaskType
 from otx.core.types.transformer_libs import TransformLibType
 from otx.engine.utils.auto_configurator import (
@@ -15,6 +15,7 @@ from otx.engine.utils.auto_configurator import (
     AutoConfigurator,
     configure_task,
 )
+from otx.utils.utils import should_pass_label_info
 
 
 @pytest.fixture()
@@ -80,7 +81,7 @@ class TestAutoConfigurator:
 
         # OTX-Mobilenet-v2
         # new_config
-        model_name = "otx_mobilenet_v3_large"
+        model_name = "otx_deit_tiny"
         new_config = auto_configurator._load_default_config(model_name=model_name)
         new_path = str(target_config).split("/")
         new_path[-1] = f"{model_name}.yaml"
@@ -112,15 +113,21 @@ class TestAutoConfigurator:
 
         auto_configurator = AutoConfigurator(task=fxt_task)
 
-        # Default Model
-        model = auto_configurator.get_model()
-        assert isinstance(model, OTXModel)
-
         # With label_info
         label_names = ["class1", "class2", "class3"]
-        label_info = LabelInfo(label_names=label_names, label_groups=[label_names])
+        label_info = (
+            LabelInfo(label_names=label_names, label_groups=[label_names])
+            if fxt_task != OTXTaskType.SEMANTIC_SEGMENTATION
+            else SegLabelInfo(label_names=label_names, label_groups=[label_names])
+        )
         model = auto_configurator.get_model(label_info=label_info)
         assert isinstance(model, OTXModel)
+
+        model_cls = model.__class__
+
+        if should_pass_label_info(model_cls):
+            with pytest.raises(ValueError, match="Given model class (.*) requires a valid label_info to instantiate."):
+                _ = auto_configurator.get_model(label_info=None)
 
     def test_get_optimizer(self, fxt_task: OTXTaskType) -> None:
         if fxt_task in {

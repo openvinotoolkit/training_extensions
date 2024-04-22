@@ -1,7 +1,7 @@
 model:
   class_path: otx.algo.segmentation.litehrnet.OTXLiteHRNet
   init_args:
-    num_classes: 2
+    label_info: 2
     pretrained_weights: "https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/custom_semantic_segmentation/litehrnetsv2_imagenet1k_rsc.pth"
 
     criterion_configuration:

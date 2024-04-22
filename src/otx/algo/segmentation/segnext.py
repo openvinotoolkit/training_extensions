@@ -22,6 +22,7 @@ class OTXSegNext(OTXSegmentationModel):
 
     def _create_model(self) -> nn.Module:
         backbone = MSCAN(**self.backbone_configuration)
+        breakpoint()
         decode_head = LightHamHead(num_classes=self.num_classes, **self.decode_head_configuration)
         return BaseSegmNNModel(
             backbone=backbone,
@@ -40,7 +41,7 @@ class OTXSegNext(OTXSegmentationModel):
         # TODO(Kirill): check PTQ removing hamburger from ignored_scope
         return {
             "ignored_scope": {
-                "patterns": ["__module.decode_head.hamburger*"],
+                "patterns": ["__module.model.decode_head.hamburger*"],
                 "types": [
                     "Add",
                     "MVN",

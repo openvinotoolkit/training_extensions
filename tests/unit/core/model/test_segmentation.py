@@ -26,8 +26,11 @@ class TestOTXSegmentationModel:
 
     @pytest.fixture()
     def model(self, config) -> MMSegCompatibleModel:
-        model = MMSegCompatibleModel(num_classes=2, config=config)
-        model.label_info = SegLabelInfo(label_names=["Background", "label_1"], label_groups=[["Background", "label_1"]])
+        model = MMSegCompatibleModel(label_info=3, config=config)
+        model.label_info = SegLabelInfo(
+            label_names=["Background", "label_0", "label_1"],
+            label_groups=[["Background", "label_0", "label_1"]],
+        )
         return model
 
     def test_create_model(self, model) -> None:

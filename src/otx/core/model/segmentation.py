@@ -6,6 +6,7 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Sequence
 from typing import TYPE_CHECKING, Any
 
 from torchvision import tv_tensors
@@ -17,7 +18,7 @@ from otx.core.metrics.dice import SegmCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable, OTXModel, OVModel
 from otx.core.schedulers import LRSchedulerListCallable
 from otx.core.types.export import TaskLevelExportParameters
-from otx.core.types.label import SegLabelInfo
+from otx.core.types.label import LabelInfo, LabelInfoTypes, SegLabelInfo
 from otx.core.utils.config import inplace_num_classes
 import torch
 from otx.core.exporter.base import OTXModelExporter
@@ -30,7 +31,7 @@ if TYPE_CHECKING:
     from mmseg.models.data_preprocessor import SegDataPreProcessor
     from omegaconf import DictConfig
     from openvino.model_api.models.utils import ImageResultWithSoftPrediction
-    from torch import nn
+    from torch import Tensor, nn
 
     from otx.core.metrics import MetricCallable
 
@@ -40,7 +41,7 @@ class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity]):
 
     def __init__(
         self,
-        num_classes: int,
+        label_info: LabelInfoTypes,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = SegmCallable,  # type: ignore[assignment]
@@ -60,7 +61,7 @@ class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity]):
         self.image_size = decode_head_configuration.get("image_size", (512,512))
 
         super().__init__(
-            num_classes=num_classes,
+            label_info=label_info,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
@@ -136,6 +137,17 @@ class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity]):
             for pred_mask, target_mask in zip(preds.masks, inputs.masks)
         ]
 
+    @staticmethod
+    def _dispatch_label_info(label_info: LabelInfoTypes) -> LabelInfo:
+        if isinstance(label_info, int):
+            return SegLabelInfo.from_num_classes(num_classes=label_info)
+        if isinstance(label_info, Sequence) and all(isinstance(name, str) for name in label_info):
+            return SegLabelInfo(label_names=label_info, label_groups=[label_info])
+        if isinstance(label_info, SegLabelInfo):
+            return label_info
+
+        raise TypeError(label_info)
+
 
 class MMSegCompatibleModel(OTXSegmentationModel):
     """Segmentation model compatible for MMSeg.
@@ -147,19 +159,19 @@ class MMSegCompatibleModel(OTXSegmentationModel):
 
     def __init__(
         self,
-        num_classes: int,
+        label_info: LabelInfoTypes,
         config: DictConfig,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = SegmCallable,  # type: ignore[assignment]
         torch_compile: bool = False,
     ) -> None:
-        config = inplace_num_classes(cfg=config, num_classes=num_classes)
+        config = inplace_num_classes(cfg=config, num_classes=self._dispatch_label_info(label_info).num_classes)
         self.config = config
         self.load_from = self.config.pop("load_from", None)
         self.image_size = (1, 3, 544, 544)
         super().__init__(
-            num_classes=num_classes,
+            label_info=label_info,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
@@ -234,6 +246,10 @@ class MMSegCompatibleModel(OTXSegmentationModel):
             scores=[],
             masks=masks,
         )
+
+    def forward_for_tracing(self, image: Tensor) -> Tensor | dict[str, Tensor]:
+        """Model forward function used for the model tracing during model exportation."""
+        return self.model(inputs=image, mode="tensor")
 
 
 class OVSegmentationModel(OVModel[SegBatchDataEntity, SegBatchPredEntity]):

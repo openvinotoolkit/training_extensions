@@ -9,12 +9,12 @@
 from __future__ import annotations
 
 import inspect
-from collections import abc
-from typing import Any
 from torch import nn
 from torch.nn import SyncBatchNorm
 from torch.nn.modules.batchnorm import _BatchNorm
 from torch.nn.modules.instancenorm import _InstanceNorm
+
+from otx.algo.utils.mmengine_utils import is_tuple_of
 
 NORM_DICT = {
     "BN": nn.BatchNorm2d,
@@ -31,47 +31,13 @@ NORM_DICT = {
 }
 
 
-
-def is_seq_of(
-    seq: Any,  # noqa: ANN401
-    expected_type: type | tuple,
-    seq_type: type | None = None,
-) -> bool:
-    """Check whether it is a sequence of some type.
-    Copied from mmengine.utils.misc.is_seq_of
-    Args:
-        seq (Sequence): The sequence to be checked.
-        expected_type (type or tuple): Expected type of sequence items.
-        seq_type (type, optional): Expected sequence type. Defaults to None.
-    Returns:
-        bool: Return True if ``seq`` is valid else False.
-    Examples:
-        >>> from mmengine.utils import is_seq_of
-        >>> seq = ['a', 'b', 'c']
-        >>> is_seq_of(seq, str)
-        True
-        >>> is_seq_of(seq, int)
-        False
-    """
-    exp_seq_type = abc.Sequence if seq_type is None else seq_type
-    if not isinstance(seq, exp_seq_type):
-        return False
-    return all(isinstance(item, expected_type) for item in seq)
-
-
-def is_tuple_of(seq: Any, expected_type: type | tuple) -> bool:  # noqa: ANN401
-    """Check whether it is a tuple of some type.
-    Copied from mmengine.utils.misc.is_tuple_of
-    A partial method of :func:`is_seq_of`.
-    """
-    return is_seq_of(seq, expected_type, seq_type=tuple)
-
-
 def infer_abbr(class_type: type) -> str:
     """Infer abbreviation from the class name.
+
     When we build a norm layer with `build_norm_layer()`, we want to preserve
     the norm type in variable names, e.g, self.bn1, self.gn. This method will
     infer the abbreviation to map class types to abbreviations.
+
     Rule 1: If the class has the property "_abbr_", return the property.
     Rule 2: If the parent class is _BatchNorm, GroupNorm, LayerNorm or
     InstanceNorm, the abbreviation of this layer will be "bn", "gn", "ln" and
@@ -80,8 +46,10 @@ def infer_abbr(class_type: type) -> str:
     the abbreviation of this layer will be "bn", "gn", "ln" and "in"
     respectively.
     Rule 4: Otherwise, the abbreviation falls back to "norm".
+
     Args:
         class_type (type): The norm layer type.
+
     Returns:
         str: The inferred abbreviation.
     """
@@ -112,8 +80,10 @@ def infer_abbr(class_type: type) -> str:
 
 def build_norm_layer(cfg: dict, num_features: int, postfix: int | str = "") -> tuple[str, nn.Module]:
     """Build normalization layer.
+
     Args:
         cfg (dict): The norm layer config, which should contain:
+
             - type (str): Layer type.
             - layer args: Args needed to instantiate a norm layer.
             - requires_grad (bool, optional): Whether stop gradient updates.
@@ -121,8 +91,6 @@ def build_norm_layer(cfg: dict, num_features: int, postfix: int | str = "") -> t
         postfix (int | str): The postfix to be appended into norm abbreviation
             to create named layer.
     Returns:
-        tuple[str, nn.Module]: The first element is the layer name consisting
-        of abbreviation and postfix, e.g., bn1, gn. The second element is the
         created norm layer.
     """
     if not isinstance(cfg, dict):
@@ -166,9 +134,11 @@ def build_norm_layer(cfg: dict, num_features: int, postfix: int | str = "") -> t
 
 def is_norm(layer: nn.Module, exclude: type | tuple | None = None) -> bool:
     """Check if a layer is a normalization layer.
+
     Args:
         layer (nn.Module): The layer to be checked.
         exclude (type | tuple[type]): Types to be excluded.
+
     Returns:
         bool: Whether the layer is a norm layer.
     """

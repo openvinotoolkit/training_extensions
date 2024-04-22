@@ -50,10 +50,10 @@ class TestPerfVisualPrompting(PerfTestBase):
     BENCHMARK_CRITERIA = [  # noqa: RUF012
         Benchmark.Criterion(name="train/epoch", summary="max", compare="<", margin=0.1),
         Benchmark.Criterion(name="train/e2e_time", summary="max", compare="<", margin=0.1),
-        Benchmark.Criterion(name="val/Dice", summary="max", compare=">", margin=0.1),
-        Benchmark.Criterion(name="test/Dice", summary="max", compare=">", margin=0.1),
-        Benchmark.Criterion(name="export/Dice", summary="max", compare=">", margin=0.1),
-        Benchmark.Criterion(name="optimize/Dice", summary="max", compare=">", margin=0.1),
+        Benchmark.Criterion(name="val/dice", summary="max", compare=">", margin=0.1),
+        Benchmark.Criterion(name="test/dice", summary="max", compare=">", margin=0.1),
+        Benchmark.Criterion(name="export/dice", summary="max", compare=">", margin=0.1),
+        Benchmark.Criterion(name="optimize/dice", summary="max", compare=">", margin=0.1),
         Benchmark.Criterion(name="train/iter_time", summary="mean", compare="<", margin=0.1),
         Benchmark.Criterion(name="test/iter_time", summary="mean", compare="<", margin=0.1),
         Benchmark.Criterion(name="export/iter_time", summary="mean", compare="<", margin=0.1),
@@ -96,21 +96,25 @@ class TestPerfZeroShotVisualPrompting(PerfTestBase):
 
     DATASET_TEST_CASES = [  # noqa: RUF012
         Benchmark.Dataset(
-            name="coco_car_person_medium_datumaro",
-            path=Path("zero_shot_visual_prompting/coco_car_person_medium_datumaro"),
+            name="coco_car_person_medium",
+            path=Path("zero_shot_visual_prompting/coco_car_person_medium"),
             group="medium",
             num_repeat=5,
-            extra_overrides={"max_epochs": "1"},
+            extra_overrides={
+                "train": {
+                    "max_epochs": "1",
+                },
+            },
         ),
     ]
 
     BENCHMARK_CRITERIA = [  # noqa: RUF012
         Benchmark.Criterion(name="train/epoch", summary="max", compare="<", margin=0.1),
         Benchmark.Criterion(name="train/e2e_time", summary="max", compare="<", margin=0.1),
-        Benchmark.Criterion(name="val/Dice", summary="max", compare=">", margin=0.1),
-        Benchmark.Criterion(name="test/Dice", summary="max", compare=">", margin=0.1),
-        Benchmark.Criterion(name="export/Dice", summary="max", compare=">", margin=0.1),
-        Benchmark.Criterion(name="optimize/Dice", summary="max", compare=">", margin=0.1),
+        Benchmark.Criterion(name="val/dice", summary="max", compare=">", margin=0.1),
+        Benchmark.Criterion(name="test/dice", summary="max", compare=">", margin=0.1),
+        Benchmark.Criterion(name="export/dice", summary="max", compare=">", margin=0.1),
+        Benchmark.Criterion(name="optimize/dice", summary="max", compare=">", margin=0.1),
         Benchmark.Criterion(name="train/iter_time", summary="mean", compare="<", margin=0.1),
         Benchmark.Criterion(name="test/iter_time", summary="mean", compare="<", margin=0.1),
         Benchmark.Criterion(name="export/iter_time", summary="mean", compare="<", margin=0.1),

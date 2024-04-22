@@ -1,7 +1,7 @@
 model:
   class_path: otx.algo.classification.otx_dino_v2.DINOv2RegisterClassifier
   init_args:
-    num_classes: 1000
+    label_info: 1000
     freeze_backbone: true
 
     optimizer:

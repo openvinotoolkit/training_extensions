@@ -159,14 +159,14 @@ def fxt_multiclass_cls_batch_data_entity() -> MulticlassClsBatchDataEntity:
 @pytest.fixture()
 def fxt_multilabel_cls_batch_data_entity(
     fxt_multiclass_cls_batch_data_entity,
-    fxt_hlabel_data,
+    fxt_multilabel_labelinfo,
 ) -> MultilabelClsBatchDataEntity:
     return MultilabelClsBatchDataEntity(
         batch_size=2,
         images=fxt_multiclass_cls_batch_data_entity.images,
         imgs_info=fxt_multiclass_cls_batch_data_entity.imgs_info,
         labels=[
-            torch.nn.functional.one_hot(label, num_classes=fxt_hlabel_data.num_classes).flatten()
+            torch.nn.functional.one_hot(label, num_classes=fxt_multilabel_labelinfo.num_classes).flatten()
             for label in fxt_multiclass_cls_batch_data_entity.labels
         ],
     )
