@@ -386,6 +386,13 @@ class OTXCLI:
             warn(warning_msg, stacklevel=0)
             skip.add("label_info")
 
+        # NOTE: Workaround for jsonargparse cannot parse lambda default with unknown reasons
+        optimizer_arg, scheduler_arg = model_config.init_args.get("optimizer"), model_config.init_args.get("scheduler")
+        if isinstance(optimizer_arg, str) and optimizer_arg.endswith("<lambda>"):
+            model_config.init_args.pop("optimizer")
+        if isinstance(scheduler_arg, str) and scheduler_arg.endswith("<lambda>"):
+            model_config.init_args.pop("scheduler")
+
         # Parses the OTXModel separately to update num_classes.
         model_parser = ArgumentParser()
         model_parser.add_subclass_arguments(OTXModel, "model", skip=skip, required=False, fail_untyped=False)
