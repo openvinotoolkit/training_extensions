@@ -9,7 +9,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Callable, Literal
 
 import torch
-from torch import nn
+from torch import Tensor, nn
 
 from otx.algo.classification.backbones import OTXMobileNetV3
 from otx.algo.classification.classifier.base_classifier import ImageClassifier
@@ -32,7 +32,7 @@ from otx.core.metrics.accuracy import HLabelClsMetricCallble, MultiClassClsMetri
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
 from otx.core.model.classification import OTXHlabelClsModel, OTXMulticlassClsModel, OTXMultilabelClsModel
 from otx.core.schedulers import LRSchedulerListCallable
-from otx.core.types.label import HLabelInfo
+from otx.core.types.label import HLabelInfo, LabelInfoTypes
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
@@ -57,7 +57,7 @@ class MobileNetV3ForMulticlassCls(OTXMulticlassClsModel):
 
     def __init__(
         self,
-        num_classes: int,
+        label_info: LabelInfoTypes,
         mode: Literal["large", "small"] = "large",
         loss_callable: Callable[[], nn.Module] = nn.CrossEntropyLoss,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
@@ -69,7 +69,7 @@ class MobileNetV3ForMulticlassCls(OTXMulticlassClsModel):
         self.head_config = {"loss_callable": loss_callable}
 
         super().__init__(
-            num_classes=num_classes,
+            label_info=label_info,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
@@ -158,14 +158,12 @@ class MobileNetV3ForMulticlassCls(OTXMulticlassClsModel):
             feature_vector=outputs["feature_vector"],
         )
 
-    def _reset_model_forward(self) -> None:
-        # TODO(vinnamkim): This will be revisited by the export refactoring
-        self.__orig_model_forward = self.model.forward
-        self.model.forward = self.model._forward_explain  # type: ignore[assignment] # noqa: SLF001
+    def forward_for_tracing(self, image: Tensor) -> Tensor | dict[str, Tensor]:
+        """Model forward function used for the model tracing during model exportation."""
+        if self.explain_mode:
+            return self.model(images=image, mode="explain")
 
-    def _restore_model_forward(self) -> None:
-        # TODO(vinnamkim): This will be revisited by the export refactoring
-        self.model.forward = self.__orig_model_forward  # type: ignore[method-assign]
+        return self.model(images=image, mode="tensor")
 
 
 class MobileNetV3ForMultilabelCls(OTXMultilabelClsModel):
@@ -173,7 +171,7 @@ class MobileNetV3ForMultilabelCls(OTXMultilabelClsModel):
 
     def __init__(
         self,
-        num_classes: int,
+        label_info: LabelInfoTypes,
         mode: Literal["large", "small"] = "large",
         loss_callable: Callable[[], nn.Module] = nn.CrossEntropyLoss,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
@@ -185,7 +183,7 @@ class MobileNetV3ForMultilabelCls(OTXMultilabelClsModel):
         self.head_config = {"loss_callable": loss_callable}
 
         super().__init__(
-            num_classes=num_classes,
+            label_info=label_info,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
@@ -277,14 +275,12 @@ class MobileNetV3ForMultilabelCls(OTXMultilabelClsModel):
             feature_vector=outputs["feature_vector"],
         )
 
-    def _reset_model_forward(self) -> None:
-        # TODO(vinnamkim): This will be revisited by the export refactoring
-        self.__orig_model_forward = self.model.forward
-        self.model.forward = self.model._forward_explain  # type: ignore[assignment] # noqa: SLF001
+    def forward_for_tracing(self, image: Tensor) -> Tensor | dict[str, Tensor]:
+        """Model forward function used for the model tracing during model exportation."""
+        if self.explain_mode:
+            return self.model(images=image, mode="explain")
 
-    def _restore_model_forward(self) -> None:
-        # TODO(vinnamkim): This will be revisited by the export refactoring
-        self.model.forward = self.__orig_model_forward  # type: ignore[method-assign]
+        return self.model(images=image, mode="tensor")
 
 
 class MobileNetV3ForHLabelCls(OTXHlabelClsModel):
@@ -292,7 +288,7 @@ class MobileNetV3ForHLabelCls(OTXHlabelClsModel):
 
     def __init__(
         self,
-        hlabel_info: HLabelInfo,
+        label_info: HLabelInfo,
         mode: Literal["large", "small"] = "large",
         multiclass_loss_callable: Callable[[], nn.Module] = nn.CrossEntropyLoss,
         multilabel_loss_callable: Callable[[], nn.Module] = nn.CrossEntropyLoss,
@@ -306,10 +302,9 @@ class MobileNetV3ForHLabelCls(OTXHlabelClsModel):
             "multiclass_loss_callable": multiclass_loss_callable,
             "multilabel_loss_callable": multilabel_loss_callable,
         }
-        self.hlabel_info = hlabel_info
 
         super().__init__(
-            hlabel_info=hlabel_info,
+            label_info=label_info,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
@@ -319,6 +314,9 @@ class MobileNetV3ForHLabelCls(OTXHlabelClsModel):
     def _create_model(self) -> nn.Module:
         multiclass_loss = self.head_config["multiclass_loss_callable"]
         multilabel_loss = self.head_config["multilabel_loss_callable"]
+        if not isinstance(self.label_info, HLabelInfo):
+            raise TypeError(self.label_info)
+
         return ImageClassifier(
             backbone=OTXMobileNetV3(mode=self.mode),
             neck=GlobalAveragePooling(dim=2),
@@ -326,7 +324,7 @@ class MobileNetV3ForHLabelCls(OTXHlabelClsModel):
                 in_channels=960,
                 multiclass_loss=multiclass_loss if isinstance(multiclass_loss, nn.Module) else multiclass_loss(),
                 multilabel_loss=multilabel_loss if isinstance(multilabel_loss, nn.Module) else multilabel_loss(),
-                **self.hlabel_info.as_head_config_dict(),
+                **self.label_info.as_head_config_dict(),
             ),
         )
 
@@ -423,11 +421,9 @@ class MobileNetV3ForHLabelCls(OTXHlabelClsModel):
             feature_vector=outputs["feature_vector"],
         )
 
-    def _reset_model_forward(self) -> None:
-        # TODO(vinnamkim): This will be revisited by the export refactoring
-        self.__orig_model_forward = self.model.forward
-        self.model.forward = self.model._forward_explain  # type: ignore[assignment] # noqa: SLF001
+    def forward_for_tracing(self, image: Tensor) -> Tensor | dict[str, Tensor]:
+        """Model forward function used for the model tracing during model exportation."""
+        if self.explain_mode:
+            return self.model(images=image, mode="explain")
 
-    def _restore_model_forward(self) -> None:
-        # TODO(vinnamkim): This will be revisited by the export refactoring
-        self.model.forward = self.__orig_model_forward  # type: ignore[method-assign]
+        return self.model(images=image, mode="tensor")

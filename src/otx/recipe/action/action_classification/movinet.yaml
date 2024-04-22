@@ -1,7 +1,7 @@
 model:
   class_path: otx.algo.action_classification.movinet.MoViNet
   init_args:
-    num_classes: 400
+    label_info: 400
 
     optimizer:
       class_path: torch.optim.AdamW

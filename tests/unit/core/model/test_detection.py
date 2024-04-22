@@ -13,7 +13,7 @@ import torch
 from importlib_resources import files
 from lightning.pytorch.cli import ReduceLROnPlateau
 from omegaconf import OmegaConf
-from otx.algo.explain.explain_algo import get_feature_vector
+from otx.algo.explain.explain_algo import feature_vector_fn
 from otx.core.metrics.fmeasure import FMeasureCallable
 from otx.core.model.detection import MMDetCompatibleModel, OTXDetectionModel
 from otx.core.types.export import TaskLevelExportParameters
@@ -55,7 +55,7 @@ class TestOTXDetectionModel:
 
     @pytest.fixture()
     def otx_model(self, config) -> MMDetCompatibleModel:
-        return MMDetCompatibleModel(num_classes=1, config=config)
+        return MMDetCompatibleModel(label_info=1, config=config)
 
     def test_configure_metric_with_ckpt(
         self,
@@ -64,7 +64,7 @@ class TestOTXDetectionModel:
         mock_ckpt,
     ) -> None:
         model = OTXDetectionModel(
-            num_classes=1,
+            label_info=1,
             torch_compile=False,
             optimizer=mock_optimizer,
             scheduler=mock_scheduler,
@@ -92,7 +92,7 @@ class TestOTXDetectionModel:
 
     def test_forward_explain_detection(self, otx_model, fxt_data_sample):
         inputs = torch.randn(1, 3, 224, 224)
-        otx_model.model.feature_vector_fn = get_feature_vector
+        otx_model.model.feature_vector_fn = feature_vector_fn
         otx_model.model.explain_fn = otx_model.get_explain_fn()
         result = otx_model._forward_explain_detection(otx_model.model, inputs, fxt_data_sample, mode="predict")
 

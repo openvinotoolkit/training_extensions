@@ -25,7 +25,7 @@ USER non-root
 
 ENV PATH=${PATH}:${NON_ROOT_HOME}/.local/bin
 
-RUN pip install --no-cache-dir --require-hashes --no-deps -r src_dir/.ci/piptools-deps.txt && \
+RUN pip install --no-cache-dir --require-hashes --no-deps -r src_dir/.ci/requirements/piptools/requirements.txt && \
     pip-compile --generate-hashes -o /tmp/requirements.txt src_dir/pyproject.toml && \
     pip install --no-cache-dir --no-deps -e src_dir/ && \
     pip install --no-cache-dir --require-hashes --no-deps -r /tmp/requirements.txt && \

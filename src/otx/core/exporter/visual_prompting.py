@@ -8,7 +8,7 @@ from __future__ import annotations
 import logging as log
 import tempfile
 from pathlib import Path
-from typing import Any, Literal
+from typing import TYPE_CHECKING, Any, Literal
 
 import onnx
 import openvino
@@ -18,13 +18,16 @@ from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.types.export import OTXExportFormatType
 from otx.core.types.precision import OTXPrecisionType
 
+if TYPE_CHECKING:
+    from otx.core.model.base import OTXModel
+
 
 class OTXVisualPromptingModelExporter(OTXNativeModelExporter):
     """Exporter for visual prompting models that uses native torch and OpenVINO conversion tools."""
 
     def export(  # type: ignore[override]
         self,
-        model: torch.nn.Module,
+        model: OTXModel,
         output_dir: Path,
         base_model_name: str = "exported_model",
         export_format: OTXExportFormatType = OTXExportFormatType.OPENVINO,
@@ -33,7 +36,7 @@ class OTXVisualPromptingModelExporter(OTXNativeModelExporter):
         """Exports input model to the specified deployable format, such as OpenVINO IR or ONNX.
 
         Args:
-            model (torch.nn.Module): pytorch model top export
+            model (OTXModel): OTXModel to be exported
             output_dir (Path): path to the directory to store export artifacts
             base_model_name (str, optional): exported model name
             format (OTXExportFormatType): final format of the exported model
@@ -42,9 +45,11 @@ class OTXVisualPromptingModelExporter(OTXNativeModelExporter):
         Returns:
             dict[str, Path]: paths to the exported models
         """
+        # NOTE: Rather than using OTXModel.forward_for_tracing()
+        # Use the nested `image_encoder` and `decoder` models' forward functions directly
         models: dict[str, torch.nn.Module] = {
-            "image_encoder": model.image_encoder,
-            "decoder": model,
+            "image_encoder": model.model.image_encoder,
+            "decoder": model.model,
         }
 
         if export_format == OTXExportFormatType.OPENVINO:
@@ -65,7 +70,7 @@ class OTXVisualPromptingModelExporter(OTXNativeModelExporter):
 
     def to_openvino(
         self,
-        model: torch.nn.Module,
+        model: OTXModel,
         output_dir: Path,
         base_model_name: str = "exported_model",
         precision: OTXPrecisionType = OTXPrecisionType.FP32,
@@ -99,7 +104,7 @@ class OTXVisualPromptingModelExporter(OTXNativeModelExporter):
 
     def to_onnx(
         self,
-        model: torch.nn.Module,
+        model: OTXModel,
         output_dir: Path,
         base_model_name: str = "exported_model",
         precision: OTXPrecisionType = OTXPrecisionType.FP32,
@@ -108,7 +113,7 @@ class OTXVisualPromptingModelExporter(OTXNativeModelExporter):
         """Export the given PyTorch model to ONNX format and save it to the specified output directory.
 
         Args:
-            model (torch.nn.Module): The PyTorch model to be exported.
+            model (OTXModel): OTXModel to be exported.
             output_dir (Path): The directory where the ONNX model will be saved.
             base_model_name (str, optional): The base name for the exported model. Defaults to "exported_model".
             precision (OTXPrecisionType, optional): The precision type for the exported model.

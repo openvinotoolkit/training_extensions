@@ -18,12 +18,14 @@ from otx.algo.detection.backbones.pytorchcv_backbones import _build_pytorchcv_mo
 from otx.algo.detection.heads.custom_ssd_head import SSDHead
 from otx.algo.utils.mmconfig import read_mmconfig
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
+from otx.core.config.data import TileConfig
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.mmdeploy import MMdeployExporter
 from otx.core.metrics.mean_ap import MeanAPCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
 from otx.core.model.detection import MMDetCompatibleModel
 from otx.core.schedulers import LRSchedulerListCallable
+from otx.core.types.label import LabelInfoTypes
 from otx.core.utils.build import modify_num_classes
 from otx.core.utils.config import convert_conf_to_mmconfig_dict
 from otx.core.utils.utils import get_mean_std_from_data_processing
@@ -348,22 +350,24 @@ class SSD(MMDetCompatibleModel):
 
     def __init__(
         self,
-        num_classes: int,
+        label_info: LabelInfoTypes,
         variant: Literal["mobilenetv2"],
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MeanAPCallable,
         torch_compile: bool = False,
+        tile_config: TileConfig = TileConfig(enable_tiler=False),
     ) -> None:
         model_name = f"ssd_{variant}"
         config = read_mmconfig(model_name=model_name)
         super().__init__(
-            num_classes=num_classes,
+            label_info=label_info,
             config=config,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
             torch_compile=torch_compile,
+            tile_config=tile_config,
         )
         self.image_size = (1, 3, 864, 864)
         self.tile_image_size = self.image_size
@@ -572,20 +576,21 @@ class SSD(MMDetCompatibleModel):
 
         mean, std = get_mean_std_from_data_processing(self.config)
 
-        return MMdeployExporter(
-            model_builder=self._create_model,
-            model_cfg=deepcopy(self.config),
-            deploy_cfg="otx.algo.detection.mmdeploy.ssd_mobilenetv2",
-            test_pipeline=self._make_fake_test_pipeline(),
-            task_level_export_parameters=self._export_parameters,
-            input_size=self.image_size,
-            mean=mean,
-            std=std,
-            resize_mode="standard",
-            pad_value=0,
-            swap_rgb=False,
-            output_names=["feature_vector", "saliency_map"] if self.explain_mode else None,
-        )
+        with self.export_model_forward_context():
+            return MMdeployExporter(
+                model_builder=self._create_model,
+                model_cfg=deepcopy(self.config),
+                deploy_cfg="otx.algo.detection.mmdeploy.ssd_mobilenetv2",
+                test_pipeline=self._make_fake_test_pipeline(),
+                task_level_export_parameters=self._export_parameters,
+                input_size=self.image_size,
+                mean=mean,
+                std=std,
+                resize_mode="standard",
+                pad_value=0,
+                swap_rgb=False,
+                output_names=["feature_vector", "saliency_map"] if self.explain_mode else None,
+            )
 
     def on_load_checkpoint(self, checkpoint: dict[str, Any]) -> None:
         """Callback on load checkpoint."""

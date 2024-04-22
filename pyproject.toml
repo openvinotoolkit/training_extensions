@@ -234,6 +234,12 @@ ignore = [
 
     "E731",     # Do not assign a `lambda` expression, use a `def`
     "TD003",    # Missing issue link on the line following this TODO
+
+    # TODO (someone): Update legacy np.random.{method_name} call with np.random.Generator
+    # Legacy (MT19964) and new (PCG64) random generators use different pseudo-random number generators.
+    # (https://numpy.org/doc/stable/reference/random/legacy.html#legacy)
+    # For now, remaining legacy random methods is required until numpy version is explicitly updated in OTX.
+    "NPY002",   # Replace legacy np.random.{method_name} call with np.random.Generator
 ]
 
 # Allow autofix for all enabled rules (when `--fix`) is provided.
@@ -291,6 +297,20 @@ target-version = "py38"
 
 # Enumerate all fixed violations.
 show-fixes = true
+
+[tool.ruff.lint.flake8-bugbear]
+# Allow default arguments like, e.g., `data: List[str] = fastapi.Query(None)`.
+extend-immutable-calls = [
+    # Label info objects
+    "otx.core.types.label.LabelInfo",
+    "otx.core.types.label.HLabelInfo",
+    "otx.core.types.label.SegLabelInfo",
+    "otx.core.types.label.NullLabelInfo",
+    "otx.core.types.label.AnomalyLabelInfo",
+
+    # Config objects
+    "otx.core.config.data.TileConfig",
+]
 
 [tool.ruff.mccabe]
 # Unlike Flake8, default to a complexity level of 10.

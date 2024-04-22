@@ -8,7 +8,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 import torch
-from torch import nn
+from torch import Tensor, nn
 
 from otx.algo.utils.mmconfig import read_mmconfig
 from otx.core.data.entity.base import OTXBatchLossEntity
@@ -22,6 +22,7 @@ from otx.core.metrics.accuracy import MultiClassClsMetricCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
 from otx.core.model.classification import OTXMulticlassClsModel
 from otx.core.schedulers import LRSchedulerListCallable
+from otx.core.types.label import LabelInfoTypes
 from otx.core.utils.config import inplace_num_classes
 
 if TYPE_CHECKING:
@@ -76,7 +77,7 @@ class DINOv2RegisterClassifier(OTXMulticlassClsModel):
 
     def __init__(
         self,
-        num_classes: int,
+        label_info: LabelInfoTypes,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MultiClassClsMetricCallable,
@@ -84,13 +85,13 @@ class DINOv2RegisterClassifier(OTXMulticlassClsModel):
         freeze_backbone: bool = False,
     ) -> None:
         config = read_mmconfig(model_name="dino_v2", subdir_name="multiclass_classification")
-        config = inplace_num_classes(cfg=config, num_classes=num_classes)
+        config = inplace_num_classes(cfg=config, num_classes=self._dispatch_label_info(label_info).num_classes)
         config.backbone.frozen = freeze_backbone
 
         self.config = config
 
         super().__init__(
-            num_classes=num_classes,
+            label_info=label_info,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
@@ -162,3 +163,7 @@ class DINOv2RegisterClassifier(OTXMulticlassClsModel):
     def _optimization_config(self) -> dict[str, Any]:
         """PTQ config for DinoV2Cls."""
         return {"model_type": "transformer"}
+
+    def forward_for_tracing(self, image: Tensor) -> Tensor | dict[str, Tensor]:
+        """Model forward function used for the model tracing during model exportation."""
+        return self.model(image)

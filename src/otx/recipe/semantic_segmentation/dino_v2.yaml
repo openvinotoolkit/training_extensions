@@ -1,7 +1,7 @@
 model:
   class_path: otx.algo.segmentation.dino_v2_seg.DinoV2Seg
   init_args:
-    num_classes: 2
+    label_info: 2
 
     optimizer:
       class_path: torch.optim.AdamW

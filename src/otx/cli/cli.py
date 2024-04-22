@@ -6,7 +6,6 @@
 
 from __future__ import annotations
 
-import dataclasses
 import sys
 from copy import deepcopy
 from pathlib import Path
@@ -22,13 +21,13 @@ from otx.cli.utils import absolute_path
 from otx.cli.utils.help_formatter import CustomHelpFormatter
 from otx.cli.utils.jsonargparse import get_short_docstring, patch_update_configs
 from otx.cli.utils.workspace import Workspace
-from otx.core.types.label import HLabelInfo
 from otx.core.types.task import OTXTaskType
 from otx.core.utils.imports import get_otx_root_path
 
 if TYPE_CHECKING:
     from jsonargparse._actions import _ActionSubCommands
 
+    from otx.core.data.module import OTXDataModule
     from otx.core.model.base import OTXModel
 
 
@@ -44,6 +43,8 @@ except ImportError:
 
 class OTXCLI:
     """OTX CLI entrypoint."""
+
+    datamodule: OTXDataModule
 
     def __init__(self, args: list[str] | None = None, run: bool = True) -> None:
         """Initialize OTX CLI."""
@@ -365,43 +366,49 @@ class OTXCLI:
         Returns:
             tuple: The model and optimizer and scheduler.
         """
-        from otx.core.model.base import OTXModel, OVModel
+        from otx.core.model.base import OTXModel
+        from otx.utils.utils import can_pass_tile_config, get_model_cls_from_config, should_pass_label_info
 
         skip = set()
 
-        # Update num_classes
-        if not self.get_config_value(self.config_init, "disable_infer_num_classes", False):
-            num_classes = self.datamodule.label_info.num_classes
-            if hasattr(model_config.init_args, "num_classes") and num_classes != model_config.init_args.num_classes:
-                warning_msg = (
-                    f"The `num_classes` in dataset is {num_classes} "
-                    f"but, the `num_classes` of model is {model_config.init_args.num_classes}. "
-                    f"So, Update `model.num_classes` to {num_classes}."
-                )
-                warn(warning_msg, stacklevel=0)
-                model_config.init_args.num_classes = num_classes
+        # Update label_info
+        model_cls = get_model_cls_from_config(model_config)
 
-            if isinstance(self.datamodule.label_info, HLabelInfo):
-                hlabel_info = self.datamodule.label_info
-                model_config.init_args.hlabel_info = hlabel_info
-                skip.add("hlabel_info")
+        if should_pass_label_info(model_cls) and not self.get_config_value(
+            self.config_init,
+            "disable_infer_num_classes",
+            False,
+        ):
+            model_config.init_args.label_info = self.datamodule.label_info
+            warning_msg = (
+                "Automatically infer label_info from the given dataset. "
+                "Then, giving it to the OTXModel.__init__() argument. "
+                "If you don't want this behavior, please use `--disable-infer-num-classes` option."
+            )
+            warn(warning_msg, stacklevel=0)
+            skip.add("label_info")
+
+        # Update tile config due to adaptive tiling
+        if can_pass_tile_config(model_cls):
+            model_config.init_args.tile_config = self.datamodule.tile_config
+            skip.add("tile_config")
+
+        # NOTE: Workaround for jsonargparse cannot parse lambda default with unknown reasons
+        optimizer_arg, scheduler_arg = model_config.init_args.get("optimizer"), model_config.init_args.get("scheduler")
+        if isinstance(optimizer_arg, str) and optimizer_arg.endswith("<lambda>"):
+            model_config.init_args.pop("optimizer")
+        if isinstance(scheduler_arg, str) and scheduler_arg.endswith("<lambda>"):
+            model_config.init_args.pop("scheduler")
 
         # Parses the OTXModel separately to update num_classes.
         model_parser = ArgumentParser()
         model_parser.add_subclass_arguments(OTXModel, "model", skip=skip, required=False, fail_untyped=False)
-        model = model_parser.instantiate_classes(Namespace(model=model_config)).get("model")
+        model: OTXModel = model_parser.instantiate_classes(Namespace(model=model_config)).get("model")
         self.config_init[self.subcommand]["model"] = model
 
         # Update tile config due to adaptive tiling
-        if not isinstance(model, OVModel) and self.datamodule.config.tile_config.enable_tiler:
-            if not hasattr(model, "tile_config"):
-                msg = "The model does not have a tile_config attribute. Please check if the model supports tiling."
-                raise AttributeError(msg)
-            model.tile_config = self.datamodule.config.tile_config
-            self.config[self.subcommand].data.config.tile_config.update(
-                Namespace(dataclasses.asdict(model.tile_config)),
-            )
-            # TODO(Eugene): Need to find a better way to configure image size for OV Models
+        if model.tile_config.enable_tiler:
+            # TODO(Eugene): Ticket no. 139000: Need to find a better way to configure image size for OV Models
             # https://github.com/openvinotoolkit/training_extensions/pull/2925
             model.image_size = model.tile_image_size
 
@@ -459,7 +466,8 @@ class OTXCLI:
         cfg = deepcopy(self.config.get(str(self.subcommand), self.config))
         cfg.model.init_args.pop("optimizer")
         cfg.model.init_args.pop("scheduler")
-        cfg.model.init_args.pop("hlabel_info")
+        cfg.model.init_args.pop("label_info")
+        cfg.model.init_args.pop("tile_config")
 
         self.get_subcommand_parser(self.subcommand).save(
             cfg=cfg,

@@ -1,7 +1,7 @@
 model:
   class_path: otx.core.model.classification.OVMultilabelClassificationModel
   init_args:
-    num_classes: 1000
+    label_info: 1000
     model_name: openvino.xml
     async_inference: True
     use_throughput_mode: False

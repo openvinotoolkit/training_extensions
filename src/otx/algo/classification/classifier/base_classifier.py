@@ -200,9 +200,9 @@ class ImageClassifier(BaseModel):
         x = self.backbone(images)
         backbone_feat = x
 
-        from otx.algo.explain.explain_algo import get_feature_vector
+        from otx.algo.explain.explain_algo import feature_vector_fn
 
-        feature_vector = get_feature_vector(backbone_feat)
+        feature_vector = feature_vector_fn(backbone_feat)
         saliency_map = self.explainer.func(backbone_feat)
 
         if hasattr(self, "neck") and self.neck is not None:
