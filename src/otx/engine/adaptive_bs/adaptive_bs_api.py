@@ -37,8 +37,6 @@ def adapt_batch_size(
 
     If not_increase is True, check current batch size is available to GPU and if not, decrease batch size.
     If not_increase is False, increase batch size to use most of GPU memory.
-    This function just setup for single iteration training to reduce time for adapting.
-    The core part of adapting batch size is done in adapt_batch_size in the torch.utils package.
 
     Args:
         engine (Engine): engine instnace.
@@ -52,7 +50,7 @@ def adapt_batch_size(
     engine.model.make_optimizer_and_scheduler_picklable()
     default_bs = engine.datamodule.config.train_subset.batch_size
 
-    if "ADAPTIVE_BS_FOR_DIST" in os.environ:
+    if "ADAPTIVE_BS_FOR_DIST" in os.environ:  # main process of distributed training already executes adapt_batch_size
         new_batch_size = int(os.environ["ADAPTIVE_BS_FOR_DIST"])
         if default_bs != new_batch_size:
             _apply_new_batch_size(engine, new_batch_size)
@@ -75,12 +73,12 @@ def adapt_batch_size(
         os.environ["ADAPTIVE_BS_FOR_DIST"] = str(new_batch_size)
 
     if default_bs != new_batch_size:
-        origin_lr = engine.model.optimizer_callable.optimizer_kwargs["lr"]
+        origin_lr = engine.model.optimizer_callable.optimizer_kwargs["lr"]  # type: ignore[attr-defined]
         _apply_new_batch_size(engine, new_batch_size)
         msg = (
             "Adapting batch size is done.\n"
             f"Batch size is adapted : {default_bs} -> {new_batch_size}\n"
-            f"learning rate is adapted : {origin_lr} -> {engine.model.optimizer_callable.optimizer_kwargs['lr']}"
+            f"learning rate is adapted : {origin_lr} -> {engine.model.optimizer_callable.optimizer_kwargs['lr']}"  # type: ignore[attr-defined]
         )
         logger.info(msg)
     else:
@@ -136,7 +134,7 @@ class BatchSizeFinder(Callback):
             raise RuntimeError(msg)
 
     def on_fit_start(self, trainer: Trainer, pl_module: LightningModule) -> None:
-        """Run steps_per_trial iteration and exit."""
+        """Run steps_per_trial iterations and exit."""
         _scale_batch_reset_params(trainer, self._steps_per_trial)
         _try_loop_run(trainer)
 
@@ -169,4 +167,4 @@ def _apply_new_batch_size(engine: Engine, new_batch_size: int) -> None:
     if new_batch_size == origin_bs:
         return
     engine.datamodule.config.train_subset.batch_size = new_batch_size
-    engine.model.optimizer_callable.optimizer_kwargs["lr"] *= sqrt(new_batch_size / origin_bs)
+    engine.model.optimizer_callable.optimizer_kwargs["lr"] *= sqrt(new_batch_size / origin_bs)  # type: ignore[attr-defined]
