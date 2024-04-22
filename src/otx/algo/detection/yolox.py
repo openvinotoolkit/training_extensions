@@ -7,7 +7,9 @@ from __future__ import annotations
 
 from copy import deepcopy
 from typing import TYPE_CHECKING, Literal
+from torch import nn
 
+from otx.algo.detection.ssd import SingleStageDetector
 from otx.algo.utils.mmconfig import read_mmconfig
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.exporter.base import OTXModelExporter
@@ -16,13 +18,53 @@ from otx.core.metrics.mean_ap import MeanAPCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
 from otx.core.model.detection import MMDetCompatibleModel
 from otx.core.schedulers import LRSchedulerListCallable
+from otx.core.utils.build import modify_num_classes
 from otx.core.types.label import LabelInfoTypes
+from otx.core.utils.config import convert_conf_to_mmconfig_dict
 from otx.core.utils.utils import get_mean_std_from_data_processing
+from otx.core.model.utils.mmdet import DetDataPreprocessor
+
+# mmdet models
+from mmdet.models.backbones.csp_darknet import CSPDarknet
+from mmdet.models.necks.yolox_pafpn import YOLOXPAFPN
+from mmdet.models.dense_heads.yolox_head import YOLOXHead
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
+    from mmengine import ConfigDict
 
     from otx.core.metrics import MetricCallable
+    from omegaconf import DictConfig
+
+
+class YOLOX(SingleStageDetector):
+    """YOLOX implementation from mmdet."""
+
+    def __init__(self, neck: ConfigDict | dict, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self.neck = self.build_neck(neck)
+
+    def build_backbone(self, cfg: ConfigDict | dict) -> nn.Module:
+        """Build backbone."""
+        cfg.pop("type")  # TODO (sungchul): remove `type` in recipe
+        return CSPDarknet(**cfg)
+
+    def build_neck(self, cfg: ConfigDict | dict) -> nn.Module:
+        """Build backbone."""
+        cfg.pop("type")  # TODO (sungchul): remove `type` in recipe
+        return YOLOXPAFPN(**cfg)
+
+    def build_bbox_head(self, cfg: ConfigDict | dict) -> nn.Module:
+        """Build bbox head."""
+        return YOLOXHead(**cfg)
+
+    def build_det_data_preprocessor(self, cfg: ConfigDict | dict) -> nn.Module:
+        """Build DetDataPreprocessor.
+
+        TODO (sungchul): DetDataPreprocessor will be removed.
+        """
+        cfg.pop("type")  # TODO (sungchul): remove `type` in recipe
+        return DetDataPreprocessor(**cfg)
 
 
 class OTXYOLOX(MMDetCompatibleModel):
@@ -49,6 +91,58 @@ class OTXYOLOX(MMDetCompatibleModel):
         )
         self.image_size = (1, 3, 640, 640)
         self.tile_image_size = self.image_size
+
+    def _create_model(self) -> nn.Module:
+        from mmengine.runner import load_checkpoint
+
+        config = deepcopy(self.config)
+        self.classification_layers = self.get_classification_layers(config, "model.")
+        config.pop("type")  # TODO (sungchul): remove `type` in recipe
+        detector = YOLOX(**convert_conf_to_mmconfig_dict(config))
+        detector.init_weights()
+        if self.load_from is not None:
+            load_checkpoint(detector, self.load_from, map_location="cpu")
+        return detector
+
+    @staticmethod
+    def get_classification_layers(
+        config: DictConfig,
+        prefix: str = "",
+    ) -> dict[str, dict[str, int]]:
+        """Return classification layer names by comparing two different number of classes models.
+
+        TODO (sungchul): it can be merged to otx.core.utils.build.get_classification_layers.
+
+        Args:
+            config (DictConfig): Config for building model.
+            prefix (str): Prefix of model param name.
+                Normally it is "model." since OTXModel set it's nn.Module model as self.model
+
+        Return:
+            dict[str, dict[str, int]]
+            A dictionary contain classification layer's name and information.
+            Stride means dimension of each classes, normally stride is 1, but sometimes it can be 4
+            if the layer is related bbox regression for object detection.
+            Extra classes is default class except class from data.
+            Normally it is related with background classes.
+        """
+        sample_config = deepcopy(config)
+        sample_config.pop("type")  # TODO (sungchul): remove `type` in recipe
+        modify_num_classes(sample_config, 5)
+        sample_model_dict = YOLOX(**convert_conf_to_mmconfig_dict(sample_config)).state_dict()
+
+        modify_num_classes(sample_config, 6)
+        incremental_model_dict = YOLOX(**convert_conf_to_mmconfig_dict(sample_config)).state_dict()
+
+        classification_layers = {}
+        for key in sample_model_dict:
+            if sample_model_dict[key].shape != incremental_model_dict[key].shape:
+                sample_model_dim = sample_model_dict[key].shape[0]
+                incremental_model_dim = incremental_model_dict[key].shape[0]
+                stride = incremental_model_dim - sample_model_dim
+                num_extra_classes = 6 * sample_model_dim - 5 * incremental_model_dim
+                classification_layers[prefix + key] = {"stride": stride, "num_extra_classes": num_extra_classes}
+        return classification_layers
 
     @property
     def _exporter(self) -> OTXModelExporter:
