@@ -3,7 +3,7 @@
 #
 """Backbone modules for OTX custom model."""
 
-from .otx_efficientnet import OTXEfficientNet
+from .efficientnet import OTXEfficientNet
 from .otx_efficientnet_v2 import OTXEfficientNetV2
 from .mobilenet_v3 import OTXMobileNetV3
 

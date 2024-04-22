@@ -6,14 +6,16 @@
 import math
 import os
 
+import torch
 import torch.nn.functional as F
 from otx.algo.modules.activation import build_activation_layer
 from otx.algo.modules.conv_module import ConvModule
-from mmengine.runner import load_checkpoint
-from mmpretrain.registry import MODELS
+from otx.algo.utils.mmengine_utils import load_checkpoint_to_model
 from pytorchcv.models.model_store import download_model
 from torch import nn
 from torch.nn import init
+
+from typing import Literal
 
 PRETRAINED_ROOT = "https://github.com/osmr/imgclsmob/releases/download/v0.0.364/"
 pretrained_urls = {
@@ -307,7 +309,7 @@ class EffiInvResUnit(nn.Module):
         self.residual = (in_channels == out_channels) and (stride == 1)
         self.use_se = se_factor > 0
         mid_channels = in_channels * exp_factor
-        dwconv_block_fn = dwconv3x3_block if kernel_size == 3 else (dwconv5x5_block if kernel_size == 5 else None)
+        dwconv_block_fn = dwconv3x3_block if kernel_size == 3 else dwconv5x5_block
 
         self.conv1 = conv1x1_block(
             in_channels=in_channels,
@@ -538,7 +540,9 @@ class EfficientNet(nn.Module):
         return tuple(out_data)
 
 
-@MODELS.register_module()
+EFFICIENTNET_VERSION = Literal["b0", "b1", "b2", "b3", "b4", "b5", "b6", "b7", "b8"]
+
+
 class OTXEfficientNet(EfficientNet):
     """Create EfficientNet model with specific parameters.
 
@@ -547,7 +551,7 @@ class OTXEfficientNet(EfficientNet):
         in_size : tuple of two ints. Spatial size of the expected input image.
     """
 
-    def __init__(self, version, **kwargs):
+    def __init__(self, version: EFFICIENTNET_VERSION, **kwargs):
         self.model_name = "efficientnet_" + version
 
         if version == "b0":
@@ -653,7 +657,8 @@ class OTXEfficientNet(EfficientNet):
     def init_weights(self, pretrained=None):
         """Initialize weights."""
         if isinstance(pretrained, str) and os.path.exists(pretrained):
-            load_checkpoint(self, pretrained)
+            checkpoint = torch.load(pretrained, None)
+            load_checkpoint_to_model(self, checkpoint)
             print(f"init weight - {pretrained}")
         elif pretrained is not None:
             download_model(net=self, model_name=self.model_name)
