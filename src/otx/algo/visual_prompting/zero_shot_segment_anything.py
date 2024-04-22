@@ -888,6 +888,7 @@ class OTXZeroShotSegmentAnything(OTXZeroShotVisualPromptingModel):
         # save reference info
         path_reference_info: Path = Path(default_root_dir) / self.reference_info_dir / "reference_info.pt"
         path_reference_info.parent.mkdir(parents=True, exist_ok=True)
+        # TODO (sungchul): ticket no. 139210
         torch.save(reference_info, path_reference_info)
         pickle.dump(
             {k: v.numpy() for k, v in reference_info.items()},

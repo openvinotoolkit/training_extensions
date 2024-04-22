@@ -1254,6 +1254,7 @@ class OVZeroShotVisualPromptingModel(
         # save reference info
         path_reference_info: Path = Path(default_root_dir) / self.reference_info_dir / "reference_info.pt"
         path_reference_info.parent.mkdir(parents=True, exist_ok=True)
+        # TODO (sungchul): ticket no. 139210
         torch.save({k: torch.as_tensor(v) for k, v in reference_info.items()}, path_reference_info)
         pickle.dump(reference_info, path_reference_info.with_suffix(".pickle").open("wb"))
         log.info(f"Saved reference info at {path_reference_info}.")
