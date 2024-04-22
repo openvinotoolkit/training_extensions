@@ -1,8 +1,9 @@
-"""API for OTX Entry-Point User."""
+"""API for adaptive batch size."""
 
-# Copyright (C) 2023 Intel Corporation
+# Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
-from .tuning import Tuner
 
-__all__ = ["Tuner"]
+from .adaptive_bs_api import adapt_batch_size
+
+__all__ = ["adapt_batch_size"]

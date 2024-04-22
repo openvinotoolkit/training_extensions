@@ -31,8 +31,7 @@ from otx.core.utils.cache import TrainerArgumentsCache
 from otx.utils.utils import is_xpu_available
 
 from .hpo import execute_hpo, update_hyper_parameter
-from .adaptive_bs.automatic_bs import adapt_batch_size
-from .adaptive_bs.bs_search_algo import _get_max_memory_reserved
+from .adaptive_bs import adapt_batch_size
 from .utils.auto_configurator import DEFAULT_CONFIG_PER_TASK, AutoConfigurator
 
 if TYPE_CHECKING:
