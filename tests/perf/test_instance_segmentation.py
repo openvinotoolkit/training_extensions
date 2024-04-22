@@ -29,10 +29,15 @@ class TestPerfInstanceSegmentation(PerfTestBase):
             group="small",
             num_repeat=5,
             extra_overrides={
-                "deterministic": "True",
-                "metric": "otx.core.metrics.fmeasure.FMeasureCallable",
-                "callback_monitor": "val/f1-score",
-                "scheduler.monitor": "val/f1-score",
+                "train": {
+                    "deterministic": "True",
+                    "metric": "otx.core.metrics.fmeasure.FMeasureCallable",
+                    "callback_monitor": "val/f1-score",
+                    "model.scheduler.monitor": "val/f1-score",
+                },
+                "test": {
+                    "metric": "otx.core.metrics.fmeasure.FMeasureCallable",
+                },
             },
         )
         for idx in (1, 2, 3)
@@ -43,10 +48,15 @@ class TestPerfInstanceSegmentation(PerfTestBase):
             group="medium",
             num_repeat=5,
             extra_overrides={
-                "deterministic": "True",
-                "metric": "otx.core.metrics.fmeasure.FMeasureCallable",
-                "callback_monitor": "val/f1-score",
-                "scheduler.monitor": "val/f1-score",
+                "train": {
+                    "deterministic": "True",
+                    "metric": "otx.core.metrics.fmeasure.FMeasureCallable",
+                    "callback_monitor": "val/f1-score",
+                    "model.scheduler.monitor": "val/f1-score",
+                },
+                "test": {
+                    "metric": "otx.core.metrics.fmeasure.FMeasureCallable",
+                },
             },
         ),
         Benchmark.Dataset(
@@ -55,10 +65,15 @@ class TestPerfInstanceSegmentation(PerfTestBase):
             group="large",
             num_repeat=5,
             extra_overrides={
-                "deterministic": "True",
-                "metric": "otx.core.metrics.fmeasure.FMeasureCallable",
-                "callback_monitor": "val/f1-score",
-                "scheduler.monitor": "val/f1-score",
+                "train": {
+                    "deterministic": "True",
+                    "metric": "otx.core.metrics.fmeasure.FMeasureCallable",
+                    "callback_monitor": "val/f1-score",
+                    "model.scheduler.monitor": "val/f1-score",
+                },
+                "test": {
+                    "metric": "otx.core.metrics.fmeasure.FMeasureCallable",
+                },
             },
         ),
     ]
@@ -118,10 +133,15 @@ class TestPerfTilingInstanceSegmentation(PerfTestBase):
             group="small",
             num_repeat=5,
             extra_overrides={
-                "deterministic": "True",
-                "metric": "otx.core.metrics.fmeasure.FMeasureCallable",
-                "callback_monitor": "val/f1-score",
-                "scheduler.monitor": "val/f1-score",
+                "train": {
+                    "deterministic": "True",
+                    "metric": "otx.core.metrics.fmeasure.FMeasureCallable",
+                    "callback_monitor": "val/f1-score",
+                    "model.scheduler.monitor": "val/f1-score",
+                },
+                "test": {
+                    "metric": "otx.core.metrics.fmeasure.FMeasureCallable",
+                },
             },
         )
         for idx in (1, 2, 3)
@@ -132,10 +152,15 @@ class TestPerfTilingInstanceSegmentation(PerfTestBase):
             group="medium",
             num_repeat=5,
             extra_overrides={
-                "deterministic": "True",
-                "metric": "otx.core.metrics.fmeasure.FMeasureCallable",
-                "callback_monitor": "val/f1-score",
-                "scheduler.monitor": "val/f1-score",
+                "train": {
+                    "deterministic": "True",
+                    "metric": "otx.core.metrics.fmeasure.FMeasureCallable",
+                    "callback_monitor": "val/f1-score",
+                    "model.scheduler.monitor": "val/f1-score",
+                },
+                "test": {
+                    "metric": "otx.core.metrics.fmeasure.FMeasureCallable",
+                },
             },
         ),
         # Add large dataset

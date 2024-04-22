@@ -22,7 +22,8 @@ from otx.core.types.precision import OTXPrecisionType
 if TYPE_CHECKING:
     import onnx
     import openvino
-    import torch
+
+    from otx.core.model.base import OTXModel
 
 
 class OTXModelExporter:
@@ -74,7 +75,7 @@ class OTXModelExporter:
 
     def export(
         self,
-        model: torch.nn.Module,
+        model: OTXModel,
         output_dir: Path,
         base_model_name: str = "exported_model",
         export_format: OTXExportFormatType = OTXExportFormatType.OPENVINO,
@@ -83,7 +84,7 @@ class OTXModelExporter:
         """Exports input model to the specified deployable format, such as OpenVINO IR or ONNX.
 
         Args:
-            model (torch.nn.Module): pytorch model top export
+            model (OTXModel): OTXModel to be exported
             output_dir (Path): path to the directory to store export artifacts
             base_model_name (str, optional): exported model name
             format (OTXExportFormatType): final format of the exported model
@@ -110,7 +111,7 @@ class OTXModelExporter:
     @abstractmethod
     def to_openvino(
         self,
-        model: torch.nn.Module,
+        model: OTXModel,
         output_dir: Path,
         base_model_name: str = "exported_model",
         precision: OTXPrecisionType = OTXPrecisionType.FP32,
@@ -118,7 +119,7 @@ class OTXModelExporter:
         """Export to OpenVINO Intermediate Representation format.
 
         Args:
-            model (torch.nn.Module): pytorch model top export
+            model (OTXModel): OTXModel to be exported
             output_dir (Path): path to the directory to store export artifacts
             base_model_name (str, optional): exported model name
             precision (OTXExportPrecisionType, optional): precision of the exported model's weights
@@ -130,7 +131,7 @@ class OTXModelExporter:
     @abstractmethod
     def to_onnx(
         self,
-        model: torch.nn.Module,
+        model: OTXModel,
         output_dir: Path,
         base_model_name: str = "exported_model",
         precision: OTXPrecisionType = OTXPrecisionType.FP32,
@@ -141,7 +142,7 @@ class OTXModelExporter:
         Converts the given torch model to ONNX format and saves it to the specified output directory.
 
         Args:
-            model (torch.nn.Module): The input PyTorch model to be converted.
+            model (OTXModel): The input PyTorch model to be converted.
             output_dir (Path): The directory where the ONNX model will be saved.
             base_model_name (str, optional): The name of the exported ONNX model. Defaults to "exported_model".
             precision (OTXPrecisionType, optional): The precision type for the exported model.
@@ -154,7 +155,7 @@ class OTXModelExporter:
 
     def to_exportable_code(
         self,
-        model: torch.nn.Module,
+        model: OTXModel,
         output_dir: Path,
         base_model_name: str = "exported_model",
         precision: OTXPrecisionType = OTXPrecisionType.FP32,
@@ -162,7 +163,7 @@ class OTXModelExporter:
         """Export to zip folder final OV IR model with runable demo.
 
         Args:
-            model (torch.nn.Module): pytorch model top export
+            model (OTXModel): OTXModel to be exported
             output_dir (Path): path to the directory to store export artifacts
             base_model_name (str, optional): exported model name
             precision (OTXExportPrecisionType, optional): precision of the exported model's weights

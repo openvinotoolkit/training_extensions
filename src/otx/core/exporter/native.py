@@ -8,7 +8,7 @@ from __future__ import annotations
 import logging as log
 import tempfile
 from pathlib import Path
-from typing import Any, Literal
+from typing import TYPE_CHECKING, Any, Literal
 
 import onnx
 import openvino
@@ -17,6 +17,9 @@ import torch
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.types.export import TaskLevelExportParameters
 from otx.core.types.precision import OTXPrecisionType
+
+if TYPE_CHECKING:
+    from otx.core.model.base import OTXModel
 
 
 class OTXNativeModelExporter(OTXModelExporter):
@@ -52,7 +55,7 @@ class OTXNativeModelExporter(OTXModelExporter):
 
     def to_openvino(
         self,
-        model: torch.nn.Module,
+        model: OTXModel,
         output_dir: Path,
         base_model_name: str = "exported_model",
         precision: OTXPrecisionType = OTXPrecisionType.FP32,
@@ -94,7 +97,7 @@ class OTXNativeModelExporter(OTXModelExporter):
 
     def to_onnx(
         self,
-        model: torch.nn.Module,
+        model: OTXModel,
         output_dir: Path,
         base_model_name: str = "exported_model",
         precision: OTXPrecisionType = OTXPrecisionType.FP32,
@@ -103,7 +106,7 @@ class OTXNativeModelExporter(OTXModelExporter):
         """Export the given PyTorch model to ONNX format and save it to the specified output directory.
 
         Args:
-            model (torch.nn.Module): The PyTorch model to be exported.
+            model (OTXModel): The PyTorch model to be exported.
             output_dir (Path): The directory where the ONNX model will be saved.
             base_model_name (str, optional): The base name for the exported model. Defaults to "exported_model".
             precision (OTXPrecisionType, optional): The precision type for the exported model.

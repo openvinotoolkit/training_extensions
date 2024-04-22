@@ -6,12 +6,10 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-import torch
-from lightning.pytorch.cli import ReduceLROnPlateau
-
 from otx.algo.utils.mmconfig import read_mmconfig
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.metrics.accuracy import HLabelClsMetricCallble, MultiClassClsMetricCallable, MultiLabelClsMetricCallable
+from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
 from otx.core.model.classification import (
     MMPretrainHlabelClsModel,
     MMPretrainMulticlassClsModel,
@@ -19,7 +17,7 @@ from otx.core.model.classification import (
 )
 from otx.core.model.utils.mmpretrain import ExplainableMixInMMPretrainModel
 from otx.core.schedulers import LRSchedulerListCallable
-from otx.core.types.label import HLabelInfo
+from otx.core.types.label import HLabelInfo, LabelInfoTypes
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
@@ -32,25 +30,16 @@ class EfficientNetB0ForHLabelCls(ExplainableMixInMMPretrainModel, MMPretrainHlab
 
     def __init__(
         self,
-        hlabel_info: HLabelInfo,
-        optimizer: OptimizerCallable = lambda params: torch.optim.SGD(
-            params=params,
-            lr=0.0049,
-        ),
-        scheduler: LRSchedulerCallable | LRSchedulerListCallable = lambda optimizer: ReduceLROnPlateau(
-            optimizer,
-            mode="max",
-            factor=0.1,
-            patience=1,
-            monitor="val/accuracy",
-        ),
+        label_info: HLabelInfo,
+        optimizer: OptimizerCallable = DefaultOptimizerCallable,
+        scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = HLabelClsMetricCallble,
         torch_compile: bool = False,
     ) -> None:
         config = read_mmconfig(model_name="efficientnet_b0_light", subdir_name="hlabel_classification")
 
         super().__init__(
-            hlabel_info=hlabel_info,
+            label_info=label_info,
             config=config,
             optimizer=optimizer,
             scheduler=scheduler,
@@ -68,28 +57,17 @@ class EfficientNetB0ForMulticlassCls(ExplainableMixInMMPretrainModel, MMPretrain
 
     def __init__(
         self,
-        num_classes: int,
+        label_info: LabelInfoTypes,
         light: bool = False,
-        optimizer: OptimizerCallable = lambda params: torch.optim.SGD(
-            params=params,
-            lr=0.0049,
-            momentum=0.9,
-            weight_decay=0.0001,
-        ),
-        scheduler: LRSchedulerCallable | LRSchedulerListCallable = lambda optimizer: ReduceLROnPlateau(
-            optimizer,
-            mode="max",
-            factor=0.1,
-            patience=1,
-            monitor="val/accuracy",
-        ),
+        optimizer: OptimizerCallable = DefaultOptimizerCallable,
+        scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MultiClassClsMetricCallable,
         torch_compile: bool = False,
     ) -> None:
         model_name = "efficientnet_b0_light" if light else "efficientnet_b0"
         config = read_mmconfig(model_name=model_name, subdir_name="multiclass_classification")
         super().__init__(
-            num_classes=num_classes,
+            label_info=label_info,
             config=config,
             optimizer=optimizer,
             scheduler=scheduler,
@@ -110,24 +88,15 @@ class EfficientNetB0ForMultilabelCls(ExplainableMixInMMPretrainModel, MMPretrain
 
     def __init__(
         self,
-        num_classes: int,
-        optimizer: OptimizerCallable = lambda params: torch.optim.SGD(
-            params=params,
-            lr=0.0049,
-        ),
-        scheduler: LRSchedulerCallable | LRSchedulerListCallable = lambda optimizer: ReduceLROnPlateau(
-            optimizer,
-            mode="max",
-            factor=0.1,
-            patience=1,
-            monitor="val/accuracy",
-        ),
+        label_info: LabelInfoTypes,
+        optimizer: OptimizerCallable = DefaultOptimizerCallable,
+        scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MultiLabelClsMetricCallable,
         torch_compile: bool = False,
     ) -> None:
         config = read_mmconfig(model_name="efficientnet_b0_light", subdir_name="multilabel_classification")
         super().__init__(
-            num_classes=num_classes,
+            label_info=label_info,
             config=config,
             optimizer=optimizer,
             scheduler=scheduler,

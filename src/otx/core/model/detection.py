@@ -7,7 +7,8 @@ from __future__ import annotations
 
 import logging as log
 import types
-from typing import TYPE_CHECKING, Any, Callable, Literal
+from contextlib import contextmanager
+from typing import TYPE_CHECKING, Any, Callable, Iterator, Literal
 
 import torch
 from model_api.models import Model
@@ -23,6 +24,7 @@ from otx.core.metrics.mean_ap import MeanAPCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable, OTXModel, OVModel
 from otx.core.schedulers import LRSchedulerListCallable
 from otx.core.types.export import TaskLevelExportParameters
+from otx.core.types.label import LabelInfoTypes
 from otx.core.utils.config import inplace_num_classes
 from otx.core.utils.tile_merge import DetectionTileMerge
 
@@ -42,20 +44,21 @@ class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity]):
 
     def __init__(
         self,
-        num_classes: int,
+        label_info: LabelInfoTypes,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MeanAPCallable,
         torch_compile: bool = False,
+        tile_config: TileConfig = TileConfig(enable_tiler=False),
     ) -> None:
         super().__init__(
-            num_classes=num_classes,
+            label_info=label_info,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
             torch_compile=torch_compile,
+            tile_config=tile_config,
         )
-        self._tile_config = TileConfig()
 
     def forward_tiles(self, inputs: OTXTileBatchDataEntity[DetBatchDataEntity]) -> DetBatchPredEntity:
         """Unpack detection tiles.
@@ -174,33 +177,34 @@ class ExplainableOTXDetModel(OTXDetectionModel):
 
     def __init__(
         self,
-        num_classes: int,
+        label_info: LabelInfoTypes,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MeanAPCallable,
         torch_compile: bool = False,
+        tile_config: TileConfig = TileConfig(enable_tiler=False),
     ) -> None:
+        from otx.algo.explain.explain_algo import feature_vector_fn
+
         super().__init__(
-            num_classes=num_classes,
+            label_info=label_info,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
             torch_compile=torch_compile,
+            tile_config=tile_config,
         )
-
-        from otx.algo.explain.explain_algo import get_feature_vector
-
-        self.model.feature_vector_fn = get_feature_vector
+        self.model.feature_vector_fn = feature_vector_fn
         self.model.explain_fn = self.get_explain_fn()
 
     def forward_explain(self, inputs: DetBatchDataEntity) -> DetBatchPredEntity:
         """Model forward function."""
-        from otx.algo.explain.explain_algo import get_feature_vector
+        from otx.algo.explain.explain_algo import feature_vector_fn
 
         if isinstance(inputs, OTXTileBatchDataEntity):
             return self.forward_tiles(inputs)
 
-        self.model.feature_vector_fn = get_feature_vector
+        self.model.feature_vector_fn = feature_vector_fn
         self.model.explain_fn = self.get_explain_fn()
 
         # If customize_inputs is overridden
@@ -273,6 +277,19 @@ class ExplainableOTXDetModel(OTXDetectionModel):
         )
         return explainer.func
 
+    @contextmanager
+    def export_model_forward_context(self) -> Iterator[None]:
+        """A context manager for managing the model's forward function during model exportation.
+
+        It temporarily modifies the model's forward function to generate output sinks
+        for explain results during the model graph tracing.
+        """
+        try:
+            self._reset_model_forward()
+            yield
+        finally:
+            self._restore_model_forward()
+
     def _reset_model_forward(self) -> None:
         if not self.explain_mode:
             return
@@ -321,23 +338,25 @@ class MMDetCompatibleModel(ExplainableOTXDetModel):
 
     def __init__(
         self,
-        num_classes: int,
+        label_info: LabelInfoTypes,
         config: DictConfig,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MeanAPCallable,
         torch_compile: bool = False,
+        tile_config: TileConfig = TileConfig(enable_tiler=False),
     ) -> None:
-        config = inplace_num_classes(cfg=config, num_classes=num_classes)
+        config = inplace_num_classes(cfg=config, num_classes=self._dispatch_label_info(label_info).num_classes)
         self.config = config
         self.load_from = config.pop("load_from", None)
         self.image_size: tuple[int, int, int, int] | None = None
         super().__init__(
-            num_classes=num_classes,
+            label_info=label_info,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
             torch_compile=torch_compile,
+            tile_config=tile_config,
         )
 
     def _create_model(self) -> nn.Module:

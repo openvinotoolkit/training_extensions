@@ -10,7 +10,7 @@ from otx.core.exporter.base import OTXModelExporter
 class TestDinoV2Seg:
     @pytest.fixture(scope="class")
     def fxt_dino_v2_seg(self) -> DinoV2Seg:
-        return DinoV2Seg(num_classes=10)
+        return DinoV2Seg(label_info=10)
 
     def test_dino_v2_seg_init(self, fxt_dino_v2_seg):
         assert isinstance(fxt_dino_v2_seg, DinoV2Seg)

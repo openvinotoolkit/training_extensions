@@ -38,7 +38,7 @@ TEMPLATE_ID_DICT = {
     },
     "Custom_Image_Classification_MobileNet-V3-large-1x": {
         "task": OTXTaskType.MULTI_CLASS_CLS,
-        "model_name": "mobilenet_v3_large_light",
+        "model_name": "mobilenet_v3_large",
     },
     # DETECTION
     "Custom_Object_Detection_Gen3_ATSS": {
@@ -376,14 +376,12 @@ class ConfigConverter:
             ),
         )
 
-        num_classes = datamodule.label_info.num_classes
-
         # Update num_classes & Instantiate Model
         model_config = config.pop("model")
-        model_config["init_args"]["num_classes"] = num_classes
+        model_config["init_args"]["label_info"] = datamodule.label_info
 
         model_parser = ArgumentParser()
-        model_parser.add_subclass_arguments(OTXModel, "model", required=False, fail_untyped=False)
+        model_parser.add_subclass_arguments(OTXModel, "model", required=False, fail_untyped=False, skip={"label_info"})
         model = model_parser.instantiate_classes(Namespace(model=model_config)).get("model")
 
         # Instantiate Engine

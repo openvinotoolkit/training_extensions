@@ -15,6 +15,7 @@ from otx.core.metrics import MetricInput
 from otx.core.metrics.mean_ap import MeanAPCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable, OTXModel
 from otx.core.schedulers import LRSchedulerListCallable
+from otx.core.types.label import LabelInfoTypes
 from otx.core.utils.config import inplace_num_classes
 
 if TYPE_CHECKING:
@@ -30,14 +31,14 @@ class OTXActionDetModel(OTXModel[ActionDetBatchDataEntity, ActionDetBatchPredEnt
 
     def __init__(
         self,
-        num_classes: int,
+        label_info: LabelInfoTypes,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MeanAPCallable,
         torch_compile: bool = False,
     ) -> None:
         super().__init__(
-            num_classes=num_classes,
+            label_info=label_info,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
@@ -84,18 +85,18 @@ class MMActionCompatibleModel(OTXActionDetModel):
 
     def __init__(
         self,
-        num_classes: int,
+        label_info: LabelInfoTypes,
         config: DictConfig,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MeanAPCallable,
         torch_compile: bool = False,
     ) -> None:
-        config = inplace_num_classes(cfg=config, num_classes=num_classes)
+        config = inplace_num_classes(cfg=config, num_classes=self._dispatch_label_info(label_info).num_classes)
         self.config = config
         self.load_from = config.pop("load_from", None)
         super().__init__(
-            num_classes=num_classes,
+            label_info=label_info,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,

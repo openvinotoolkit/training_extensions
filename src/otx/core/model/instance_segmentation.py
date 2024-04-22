@@ -7,7 +7,8 @@ from __future__ import annotations
 
 import logging as log
 import types
-from typing import TYPE_CHECKING, Any, Callable, Literal
+from contextlib import contextmanager
+from typing import TYPE_CHECKING, Any, Callable, Iterator, Literal
 
 import numpy as np
 import torch
@@ -16,7 +17,7 @@ from model_api.models import Model
 from model_api.tilers import InstanceSegmentationTiler
 from torchvision import tv_tensors
 
-from otx.algo.explain.explain_algo import get_feature_vector
+from otx.algo.explain.explain_algo import feature_vector_fn
 from otx.core.config.data import TileConfig
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.instance_segmentation import InstanceSegBatchDataEntity, InstanceSegBatchPredEntity
@@ -26,6 +27,7 @@ from otx.core.metrics.mean_ap import MaskRLEMeanAPCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable, OTXModel, OVModel
 from otx.core.schedulers import LRSchedulerListCallable
 from otx.core.types.export import TaskLevelExportParameters
+from otx.core.types.label import LabelInfoTypes
 from otx.core.utils.config import inplace_num_classes
 from otx.core.utils.mask_util import encode_rle, polygon_to_rle
 from otx.core.utils.tile_merge import InstanceSegTileMerge
@@ -48,20 +50,21 @@ class OTXInstanceSegModel(OTXModel[InstanceSegBatchDataEntity, InstanceSegBatchP
 
     def __init__(
         self,
-        num_classes: int,
+        label_info: LabelInfoTypes,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MaskRLEMeanAPCallable,
         torch_compile: bool = False,
+        tile_config: TileConfig = TileConfig(enable_tiler=False),
     ) -> None:
         super().__init__(
-            num_classes=num_classes,
+            label_info=label_info,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
             torch_compile=torch_compile,
+            tile_config=tile_config,
         )
-        self._tile_config = TileConfig()
 
     def forward_tiles(self, inputs: OTXTileBatchDataEntity[InstanceSegBatchDataEntity]) -> InstanceSegBatchPredEntity:
         """Unpack instance segmentation tiles.
@@ -210,23 +213,25 @@ class ExplainableOTXInstanceSegModel(OTXInstanceSegModel):
 
     def __init__(
         self,
-        num_classes: int,
+        label_info: LabelInfoTypes,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MaskRLEMeanAPCallable,
         torch_compile: bool = False,
+        tile_config: TileConfig = TileConfig(enable_tiler=False),
     ) -> None:
         super().__init__(
-            num_classes=num_classes,
+            label_info=label_info,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
             torch_compile=torch_compile,
+            tile_config=tile_config,
         )
 
-        from otx.algo.explain.explain_algo import get_feature_vector
+        from otx.algo.explain.explain_algo import feature_vector_fn
 
-        self.model.feature_vector_fn = get_feature_vector
+        self.model.feature_vector_fn = feature_vector_fn
         self.model.explain_fn = self.get_explain_fn()
 
     def forward_explain(self, inputs: InstanceSegBatchDataEntity) -> InstanceSegBatchPredEntity:
@@ -234,7 +239,7 @@ class ExplainableOTXInstanceSegModel(OTXInstanceSegModel):
         if isinstance(inputs, OTXTileBatchDataEntity):
             return self.forward_tiles(inputs)
 
-        self.model.feature_vector_fn = get_feature_vector
+        self.model.feature_vector_fn = feature_vector_fn
         self.model.explain_fn = self.get_explain_fn()
 
         # If customize_inputs is overridden
@@ -296,6 +301,19 @@ class ExplainableOTXInstanceSegModel(OTXInstanceSegModel):
         explainer = MaskRCNNExplainAlgo(num_classes=self.num_classes)
         return explainer.func
 
+    @contextmanager
+    def export_model_forward_context(self) -> Iterator[None]:
+        """A context manager for managing the model's forward function during model exportation.
+
+        It temporarily modifies the model's forward function to generate output sinks
+        for explain results during the model graph tracing.
+        """
+        try:
+            self._reset_model_forward()
+            yield
+        finally:
+            self._restore_model_forward()
+
     def _reset_model_forward(self) -> None:
         if not self.explain_mode:
             return
@@ -328,23 +346,25 @@ class MMDetInstanceSegCompatibleModel(ExplainableOTXInstanceSegModel):
 
     def __init__(
         self,
-        num_classes: int,
+        label_info: LabelInfoTypes,
         config: DictConfig,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MaskRLEMeanAPCallable,
         torch_compile: bool = False,
+        tile_config: TileConfig = TileConfig(enable_tiler=False),
     ) -> None:
-        config = inplace_num_classes(cfg=config, num_classes=num_classes)
+        config = inplace_num_classes(cfg=config, num_classes=self._dispatch_label_info(label_info).num_classes)
         self.config = config
         self.load_from = self.config.pop("load_from", None)
         self.image_size: tuple[int, int, int, int] | None = None
         super().__init__(
-            num_classes=num_classes,
+            label_info=label_info,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
             torch_compile=torch_compile,
+            tile_config=tile_config,
         )
 
     def _create_model(self) -> nn.Module:
