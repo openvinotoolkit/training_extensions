@@ -14,10 +14,6 @@ from typing import TYPE_CHECKING
 import torch
 import torch.nn.functional
 
-# TODO(Eugene): replace mmcv.ConvModule with torchvision
-# https://github.com/openvinotoolkit/training_extensions/pull/3281
-from mmcv.cnn import ConvModule
-
 # TODO(Eugene): replace mmcv.batched_nms with torchvision
 # https://github.com/openvinotoolkit/training_extensions/pull/3281
 from mmcv.ops import batched_nms
@@ -31,6 +27,7 @@ from otx.algo.instance_segmentation.mmdet.structures.bbox import (
     empty_box_as,
     get_box_wh,
 )
+from otx.algo.modules.conv_module import ConvModule
 
 # ruff: noqa: PLW2901
 

@@ -7,12 +7,12 @@
 """MMDet ResLayer."""
 from __future__ import annotations
 
-# TODO(Eugene): replace mmcv with torchvision
-from mmcv.cnn import build_conv_layer, build_norm_layer
 from mmengine.model import BaseModule, Sequential
 from torch import nn
 
 from otx.algo.instance_segmentation.mmdet.models.utils import OptConfigType
+from otx.algo.modules.conv import build_conv_layer
+from otx.algo.modules.norm import build_norm_layer
 
 
 class ResLayer(Sequential):

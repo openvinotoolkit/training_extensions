@@ -13,10 +13,6 @@ from typing import TYPE_CHECKING
 import numpy as np
 import torch
 import torch.nn.functional
-
-# TODO(Eugene): replace mmcv with generic PyTorch modules
-# https://github.com/openvinotoolkit/training_extensions/pull/3281
-from mmcv.cnn import ConvModule, build_conv_layer, build_upsample_layer
 from mmengine.model import BaseModule, ModuleList
 from mmengine.registry import MODELS
 from torch import Tensor, nn
@@ -32,6 +28,9 @@ from otx.algo.instance_segmentation.mmdet.models.utils import (
     empty_instances,
 )
 from otx.algo.instance_segmentation.mmdet.structures.mask import mask_target
+from otx.algo.modules.conv import build_conv_layer
+from otx.algo.modules.conv_module import ConvModule
+from otx.algo.modules.upsample import build_upsample_layer
 
 BYTES_PER_FLOAT = 4
 #  determine it based on available resources.

@@ -10,10 +10,11 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import torch.nn.functional
-from mmcv.cnn import ConvModule
 from mmengine.model import BaseModule
 from mmengine.registry import MODELS
 from torch import Tensor, nn
+
+from otx.algo.modules.conv_module import ConvModule
 
 if TYPE_CHECKING:
     from otx.algo.instance_segmentation.mmdet.models.utils import OptConfigType
