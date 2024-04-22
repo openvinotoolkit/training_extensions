@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, Literal
 
 from torch.optim.lr_scheduler import LambdaLR, LRScheduler
 
-from otx.core.schedulers.callable import SchedulerCallableSupportHPO
+from otx.core.schedulers.callable import SchedulerCallableSupportPickle
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, ReduceLROnPlateau
@@ -67,7 +67,7 @@ class LinearWarmupSchedulerCallable:
         warmup_interval: Literal["step", "epoch"] = "step",
         monitor: str | None = None,
     ):
-        self.main_scheduler_callable = SchedulerCallableSupportHPO.from_callable(main_scheduler_callable)
+        self.main_scheduler_callable = SchedulerCallableSupportPickle.from_callable(main_scheduler_callable)
         self.num_warmup_steps = num_warmup_steps
         self.warmup_interval = warmup_interval
         self.monitor = monitor
