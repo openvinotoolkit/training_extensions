@@ -192,8 +192,8 @@ class BaseDenseHead(BaseModule):
         self,
         cls_scores: list[Tensor],
         bbox_preds: list[Tensor],
-        batch_img_metas: list[dict],
         score_factors: list[Tensor] | None = None,
+        batch_img_metas: list[dict] | None = None,
         cfg: ConfigDict | None = None,
         rescale: bool = False,
         with_nms: bool = True,
@@ -235,6 +235,9 @@ class BaseDenseHead(BaseModule):
                 - bboxes (Tensor): Has a shape (num_instances, 4),
                   the last dimension 4 arrange as (x1, y1, x2, y2).
         """
+        if batch_img_metas is None:
+            batch_img_metas = []
+
         num_levels = len(cls_scores)
 
         featmap_sizes = [cls_scores[i].shape[-2:] for i in range(num_levels)]
@@ -380,7 +383,7 @@ class BaseDenseHead(BaseModule):
             mlvl_scores.append(scores)
             mlvl_labels.append(labels)
 
-            if mlvl_score_factors:
+            if mlvl_score_factors is not None:
                 mlvl_score_factors.append(score_factor)
 
         bbox_pred = torch.cat(mlvl_bbox_preds)

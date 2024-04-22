@@ -123,7 +123,7 @@ class AnchorHead(BaseDenseHead):
         reg_dim = self.bbox_coder.encode_size
         self.conv_reg = nn.Conv2d(self.in_channels, self.num_base_priors * reg_dim, 1)
 
-    def forward_single(self, x: Tensor) -> tuple[Tensor, Tensor]:
+    def forward_single(self, x: Tensor) -> tuple[Tensor, ...]:
         """Forward feature of a single scale level.
 
         Args:
