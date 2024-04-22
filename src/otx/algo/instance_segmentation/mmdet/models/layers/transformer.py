@@ -8,23 +8,19 @@
 
 # Copyright (c) OpenMMLab. All rights reserved.
 
-from __future__  import annotations
+from __future__ import annotations
 
 import math
 
-from torch import nn
 import torch
-
+import torch.nn.functional
 from mmengine.model import BaseModule
 from mmengine.utils import to_2tuple
-import torch.nn.functional
+from torch import nn
 
 from otx.algo.instance_segmentation.mmdet.models.utils import (
-    InstanceList,
     OptConfigType,
-    OptMultiConfig,
 )
-
 from otx.algo.modules.conv import build_conv_layer
 from otx.algo.modules.norm import build_norm_layer
 
@@ -43,6 +39,7 @@ class AdaptivePadding(nn.Module):
         padding (str): Support "same" and "corner", "corner" mode
             would pad zero to bottom right, and "same" mode would
             pad zero around input. Default: "corner".
+
     Example:
         >>> kernel_size = 16
         >>> stride = 16
@@ -60,11 +57,10 @@ class AdaptivePadding(nn.Module):
         >>> assert (out.shape[2], out.shape[3]) == (16, 32)
     """
 
-    def __init__(self, kernel_size=1, stride=1, dilation=1, padding='corner'):
-
+    def __init__(self, kernel_size=1, stride=1, dilation=1, padding="corner"):
         super().__init__()
 
-        assert padding in ('same', 'corner')
+        assert padding in ("same", "corner")
 
         kernel_size = to_2tuple(kernel_size)
         stride = to_2tuple(stride)
@@ -82,25 +78,26 @@ class AdaptivePadding(nn.Module):
         stride_h, stride_w = self.stride
         output_h = math.ceil(input_h / stride_h)
         output_w = math.ceil(input_w / stride_w)
-        pad_h = max((output_h - 1) * stride_h +
-                    (kernel_h - 1) * self.dilation[0] + 1 - input_h, 0)
-        pad_w = max((output_w - 1) * stride_w +
-                    (kernel_w - 1) * self.dilation[1] + 1 - input_w, 0)
+        pad_h = max((output_h - 1) * stride_h + (kernel_h - 1) * self.dilation[0] + 1 - input_h, 0)
+        pad_w = max((output_w - 1) * stride_w + (kernel_w - 1) * self.dilation[1] + 1 - input_w, 0)
         return pad_h, pad_w
 
     def forward(self, x):
         pad_h, pad_w = self.get_pad_shape(x.size()[-2:])
         if pad_h > 0 or pad_w > 0:
-            if self.padding == 'corner':
+            if self.padding == "corner":
                 x = torch.nn.functional.pad(x, [0, pad_w, 0, pad_h])
-            elif self.padding == 'same':
-                x = torch.nn.functional.pad(x, [
-                    pad_w // 2, pad_w - pad_w // 2, pad_h // 2,
-                    pad_h - pad_h // 2
-                ])
+            elif self.padding == "same":
+                x = torch.nn.functional.pad(
+                    x,
+                    [
+                        pad_w // 2,
+                        pad_w - pad_w // 2,
+                        pad_h // 2,
+                        pad_h - pad_h // 2,
+                    ],
+                )
         return x
-
-
 
 
 class PatchEmbed(BaseModule):
@@ -131,18 +128,20 @@ class PatchEmbed(BaseModule):
             initialization. Default: None.
     """
 
-    def __init__(self,
-                 in_channels: int = 3,
-                 embed_dims: int = 768,
-                 conv_type: str = 'Conv2d',
-                 kernel_size: int = 16,
-                 stride: int = 16,
-                 padding: int | tuple | str = 'corner',
-                 dilation: int = 1,
-                 bias: bool = True,
-                 norm_cfg: OptConfigType = None,
-                 input_size: int | tuple | None = None,
-                 init_cfg: OptConfigType = None) -> None:
+    def __init__(
+        self,
+        in_channels: int = 3,
+        embed_dims: int = 768,
+        conv_type: str = "Conv2d",
+        kernel_size: int = 16,
+        stride: int = 16,
+        padding: int | tuple | str = "corner",
+        dilation: int = 1,
+        bias: bool = True,
+        norm_cfg: OptConfigType = None,
+        input_size: int | tuple | None = None,
+        init_cfg: OptConfigType = None,
+    ) -> None:
         super().__init__(init_cfg=init_cfg)
 
         self.embed_dims = embed_dims
@@ -158,7 +157,8 @@ class PatchEmbed(BaseModule):
                 kernel_size=kernel_size,
                 stride=stride,
                 dilation=dilation,
-                padding=padding)
+                padding=padding,
+            )
             # disable the padding of conv
             padding = 0
         else:
@@ -173,7 +173,8 @@ class PatchEmbed(BaseModule):
             stride=stride,
             padding=padding,
             dilation=dilation,
-            bias=bias)
+            bias=bias,
+        )
 
         if norm_cfg is not None:
             self.norm = build_norm_layer(norm_cfg, embed_dims)[1]
@@ -194,18 +195,15 @@ class PatchEmbed(BaseModule):
                 input_size = (input_h, input_w)
 
             # https://pytorch.org/docs/stable/generated/torch.nn.Conv2d.html
-            h_out = (input_size[0] + 2 * padding[0] - dilation[0] *
-                     (kernel_size[0] - 1) - 1) // stride[0] + 1
-            w_out = (input_size[1] + 2 * padding[1] - dilation[1] *
-                     (kernel_size[1] - 1) - 1) // stride[1] + 1
+            h_out = (input_size[0] + 2 * padding[0] - dilation[0] * (kernel_size[0] - 1) - 1) // stride[0] + 1
+            w_out = (input_size[1] + 2 * padding[1] - dilation[1] * (kernel_size[1] - 1) - 1) // stride[1] + 1
             self.init_out_size = (h_out, w_out)
         else:
             self.init_input_size = None
             self.init_out_size = None
 
     def forward(self, x: torch.Tensor) -> tuple[torch.Tensor, tuple[int, int]]:
-        """
-        Args:
+        """Args:
             x (Tensor): Has shape (B, C, H, W). In most case, C is 3.
 
         Returns:
@@ -215,7 +213,6 @@ class PatchEmbed(BaseModule):
                 - out_size (tuple[int]): Spatial shape of x, arrange as
                     (out_h, out_w).
         """
-
         if self.adap_padding:
             x = self.adap_padding(x)
 
@@ -225,7 +222,6 @@ class PatchEmbed(BaseModule):
         if self.norm is not None:
             x = self.norm(x)
         return x, out_size
-
 
 
 class PatchMerging(BaseModule):
@@ -259,16 +255,18 @@ class PatchMerging(BaseModule):
             Default: None.
     """
 
-    def __init__(self,
-                 in_channels: int,
-                 out_channels: int,
-                 kernel_size: int | tuple = 2,
-                 stride: int | tuple | None = None,
-                 padding: int | tuple | str = 'corner',
-                 dilation: int | tuple = 1,
-                 bias: bool = False,
-                 norm_cfg: OptConfigType = dict(type='LN'),
-                 init_cfg: OptConfigType = None) -> None:
+    def __init__(
+        self,
+        in_channels: int,
+        out_channels: int,
+        kernel_size: int | tuple = 2,
+        stride: int | tuple | None = None,
+        padding: int | tuple | str = "corner",
+        dilation: int | tuple = 1,
+        bias: bool = False,
+        norm_cfg: OptConfigType = dict(type="LN"),
+        init_cfg: OptConfigType = None,
+    ) -> None:
         super().__init__(init_cfg=init_cfg)
         self.in_channels = in_channels
         self.out_channels = out_channels
@@ -286,18 +284,15 @@ class PatchMerging(BaseModule):
                 kernel_size=kernel_size,
                 stride=stride,
                 dilation=dilation,
-                padding=padding)
+                padding=padding,
+            )
             # disable the padding of unfold
             padding = 0
         else:
             self.adap_padding = None
 
         padding = to_2tuple(padding)
-        self.sampler = nn.Unfold(
-            kernel_size=kernel_size,
-            dilation=dilation,
-            padding=padding,
-            stride=stride)
+        self.sampler = nn.Unfold(kernel_size=kernel_size, dilation=dilation, padding=padding, stride=stride)
 
         sample_dim = kernel_size[0] * kernel_size[1] * in_channels
 
@@ -309,8 +304,7 @@ class PatchMerging(BaseModule):
         self.reduction = nn.Linear(sample_dim, out_channels, bias=bias)
 
     def forward(self, x: torch.Tensor, input_size: tuple[int, int]) -> tuple[torch.Tensor, tuple[int, int]]:
-        """
-        Args:
+        """Args:
             x (Tensor): Has shape (B, H*W, C_in).
             input_size (tuple[int]): The spatial shape of x, arrange as (H, W).
                 Default: None.
@@ -323,13 +317,10 @@ class PatchMerging(BaseModule):
                     (Merged_H, Merged_W).
         """
         B, L, C = x.shape
-        assert isinstance(input_size, Sequence), f'Expect ' \
-                                                 f'input_size is ' \
-                                                 f'`Sequence` ' \
-                                                 f'but get {input_size}'
+        assert isinstance(input_size, Sequence), f"Expect input_size is `Sequence` but get {input_size}"
 
         H, W = input_size
-        assert L == H * W, 'input feature has wrong size'
+        assert H * W == L, "input feature has wrong size"
 
         x = x.view(B, H, W, C).permute([0, 3, 1, 2])  # B, C, H, W
         # Use nn.Unfold to merge patch. About 25% faster than original method,
@@ -342,16 +333,15 @@ class PatchMerging(BaseModule):
         x = self.sampler(x)
         # if kernel_size=2 and stride=2, x should has shape (B, 4*C, H/2*W/2)
 
-        out_h = (H + 2 * self.sampler.padding[0] - self.sampler.dilation[0] *
-                 (self.sampler.kernel_size[0] - 1) -
-                 1) // self.sampler.stride[0] + 1
-        out_w = (W + 2 * self.sampler.padding[1] - self.sampler.dilation[1] *
-                 (self.sampler.kernel_size[1] - 1) -
-                 1) // self.sampler.stride[1] + 1
+        out_h = (
+            H + 2 * self.sampler.padding[0] - self.sampler.dilation[0] * (self.sampler.kernel_size[0] - 1) - 1
+        ) // self.sampler.stride[0] + 1
+        out_w = (
+            W + 2 * self.sampler.padding[1] - self.sampler.dilation[1] * (self.sampler.kernel_size[1] - 1) - 1
+        ) // self.sampler.stride[1] + 1
 
         output_size = (out_h, out_w)
         x = x.transpose(1, 2)  # B, H/2*W/2, 4*C
         x = self.norm(x) if self.norm else x
         x = self.reduction(x)
         return x, output_size
-
