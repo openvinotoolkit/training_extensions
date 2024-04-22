@@ -74,7 +74,7 @@ base = [
     "timm",
     "openvino==2024.0",
     "openvino-dev==2024.0",
-    "openvino-model-api@git+https://github.com/sovrasov/model_api.git@0d3e633fae21639a0feb666f01caacdfec3733de#subdirectory=model_api/python",
+    "openvino-model-api==0.2.0",
     "onnx==1.16.0",
     "onnxconverter-common==1.14.0",
     "nncf==2.9",
