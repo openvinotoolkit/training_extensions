@@ -9,7 +9,6 @@ from typing import Any, Callable
 
 import numpy as np
 import torch
-from packaging import version
 from torch import Tensor
 from torch.onnx import symbolic_helper as sym_help
 from torchvision.ops.boxes import nms as torch_nms
@@ -242,8 +241,6 @@ def multiclass_nms(
     shape (N, num_bboxes, num_classes) and the boxes is of shape (N, num_boxes,
     4).
     """
-    if version.parse(torch.__version__) < version.parse("1.13.0"):
-        max_output_boxes_per_class = torch.LongTensor([max_output_boxes_per_class])
     iou_threshold = torch.tensor([iou_threshold], dtype=torch.float32)
     score_threshold = torch.tensor([score_threshold], dtype=torch.float32)
     batch_size = scores.shape[0]
@@ -377,8 +374,6 @@ class ONNXNMSop(torch.autograd.Function):
             (num_selected_indices, 3) with each row of
             [batch_index, class_index, box_index].
         """
-        from mmcv.ops import nms
-
         batch_size, num_class, _ = scores.shape
 
         score_threshold = float(score_threshold)
