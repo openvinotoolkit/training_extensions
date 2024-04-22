@@ -130,8 +130,7 @@ class FCNMaskHead(BaseModule):
             x = conv(x)
         if self.upsample is not None:
             x = self.upsample(x)
-            if self.upsample_method == "deconv":
-                x = self.relu(x)
+            x = self.relu(x)
         return self.conv_logits(x)
 
     def get_targets(
