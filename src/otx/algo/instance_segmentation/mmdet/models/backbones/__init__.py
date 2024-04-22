@@ -6,7 +6,9 @@
 
 """MMDet backbones."""
 from .resnet import ResNet
+from .swin import SwinTransformer
 
 __all__ = [
     "ResNet",
+    "SwinTransformer",
 ]

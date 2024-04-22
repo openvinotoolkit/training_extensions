@@ -8,8 +8,11 @@
 
 from .bbox_nms import multiclass_nms
 from .res_layer import ResLayer
+from .transformer import PatchEmbed, PatchMerging
 
 __all__ = [
     "multiclass_nms",
     "ResLayer",
+    "PatchEmbed",
+    "PatchMerging",
 ]
