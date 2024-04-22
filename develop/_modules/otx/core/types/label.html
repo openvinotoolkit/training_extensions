@@ -289,7 +289,7 @@
 <span class="sd">                label_groups=[[&quot;label_0&quot;, ...]]</span>
 <span class="sd">            )</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">num_classes</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">num_classes</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">NullLabelInfo</span><span class="p">()</span>
 
         <span class="n">label_names</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;label_</span><span class="si">{</span><span class="n">idx</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_classes</span><span class="p">)]</span>
@@ -577,6 +577,10 @@
 <span class="sd">                label_groups=[[&quot;Background&quot;, &quot;label_0&quot;, ..., &quot;label_{num_classes - 1}&quot;]]</span>
 <span class="sd">            )</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">num_classes</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">label_names</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Background&quot;</span><span class="p">]</span>
+            <span class="k">return</span> <span class="n">SegLabelInfo</span><span class="p">(</span><span class="n">label_names</span><span class="o">=</span><span class="n">label_names</span><span class="p">,</span> <span class="n">label_groups</span><span class="o">=</span><span class="p">[</span><span class="n">label_names</span><span class="p">])</span>
+
         <span class="c1"># NOTE: It should have &quot;Background&quot; label at the first place.</span>
         <span class="c1"># To consider it, we need to decrease num_classes by one.</span>
         <span class="n">num_classes</span> <span class="o">=</span> <span class="n">num_classes</span> <span class="o">-</span> <span class="mi">1</span>

@@ -344,6 +344,7 @@
         <span class="n">scheduler</span><span class="p">:</span> <span class="n">LRSchedulerCallable</span> <span class="o">|</span> <span class="n">LRSchedulerListCallable</span> <span class="o">=</span> <span class="n">DefaultSchedulerCallable</span><span class="p">,</span>
         <span class="n">metric</span><span class="p">:</span> <span class="n">MetricCallable</span> <span class="o">=</span> <span class="n">NullMetricCallable</span><span class="p">,</span>
         <span class="n">torch_compile</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">tile_config</span><span class="p">:</span> <span class="n">TileConfig</span> <span class="o">=</span> <span class="n">TileConfig</span><span class="p">(</span><span class="n">enable_tiler</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
 
@@ -359,10 +360,13 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">torch_compile</span> <span class="o">=</span> <span class="n">torch_compile</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_explain_mode</span> <span class="o">=</span> <span class="kc">False</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_tile_config</span> <span class="o">=</span> <span class="n">TileConfig</span><span class="p">(</span><span class="n">enable_tiler</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="c1"># NOTE: To guarantee immutablility of the default value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_tile_config</span> <span class="o">=</span> <span class="n">tile_config</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span>
 
         <span class="c1"># this line allows to access init params with &#39;self.hparams&#39; attribute</span>
         <span class="c1"># also ensures init params will be stored in ckpt</span>
+        <span class="c1"># TODO(vinnamki): Ticket no. 138995: MetricCallable should be saved in the checkpoint</span>
+        <span class="c1"># so that it can retrieve it from the checkpoint</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">save_hyperparameters</span><span class="p">(</span><span class="n">logger</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">ignore</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;optimizer&quot;</span><span class="p">,</span> <span class="s2">&quot;scheduler&quot;</span><span class="p">,</span> <span class="s2">&quot;metric&quot;</span><span class="p">])</span>
 
 <div class="viewcode-block" id="OTXModel.training_step">
@@ -1080,15 +1084,19 @@
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">tile_config</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TileConfig</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get tiling configurations.&quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tile_config</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;This task type does not support tiling.&quot;</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
-
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tile_config</span>
 
     <span class="nd">@tile_config</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span> <span class="nf">tile_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tile_config</span><span class="p">:</span> <span class="n">TileConfig</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set tiling configurations.&quot;&quot;&quot;</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="s2">&quot;Assign new tile_config to the model. &quot;</span>
+            <span class="s2">&quot;It is usually not recommended. &quot;</span>
+            <span class="s2">&quot;Please create a new model instance by giving tile_config to its initializer &quot;</span>
+            <span class="s2">&quot;such as `OTXModel(..., tile_config=tile_config)`.&quot;</span>
+        <span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">_tile_config</span> <span class="o">=</span> <span class="n">tile_config</span>
 
     <span class="nd">@staticmethod</span>
