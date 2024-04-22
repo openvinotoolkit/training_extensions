@@ -1,5 +1,5 @@
 model:
-  class_path: otx.algo.detection.yolox.YoloXTiny
+  class_path: otx.algo.detection.yolox.OTXYOLOXTiny
   init_args:
     label_info: 80
 

@@ -25,8 +25,8 @@ if TYPE_CHECKING:
     from otx.core.metrics import MetricCallable
 
 
-class YoloX(MMDetCompatibleModel):
-    """YoloX Model."""
+class OTXYOLOX(MMDetCompatibleModel):
+    """OTX Detection model class for YOLOX."""
 
     def __init__(
         self,
@@ -79,8 +79,8 @@ class YoloX(MMDetCompatibleModel):
         return OTXv1Helper.load_det_ckpt(state_dict, add_prefix)
 
 
-class YoloXTiny(MMDetCompatibleModel):
-    """YoloX tiny Model."""
+class OTXYOLOXTiny(MMDetCompatibleModel):
+    """OTX Detection model class for YOLOX tiny."""
 
     def __init__(
         self,
