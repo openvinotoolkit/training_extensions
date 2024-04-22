@@ -48,7 +48,7 @@ class LabelInfo:
                 label_groups=[["label_0", ...]]
             )
         """
-        if num_classes < 0:
+        if num_classes <= 0:
             return NullLabelInfo()
 
         label_names = [f"label_{idx}" for idx in range(num_classes)]
@@ -306,6 +306,10 @@ class SegLabelInfo(LabelInfo):
                 label_groups=[["Background", "label_0", ..., "label_{num_classes - 1}"]]
             )
         """
+        if num_classes == 1:
+            label_names = ["Background"]
+            return SegLabelInfo(label_names=label_names, label_groups=[label_names])
+
         # NOTE: It should have "Background" label at the first place.
         # To consider it, we need to decrease num_classes by one.
         num_classes = num_classes - 1
