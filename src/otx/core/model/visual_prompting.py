@@ -1506,17 +1506,6 @@ class OVZeroShotVisualPromptingModel(
     def _reset_prediction_layer(self, num_classes: int) -> None:
         return
 
-    def _create_label_info_from_ov_ir(self) -> LabelInfo:
-        """Create NullLabelInfo since Visual Prompting tasks has no use of label information."""
-        return NullLabelInfo()
-
-    def _set_label_info(self, label_info: LabelInfo | list[str]) -> None:
-        """Visual prompting task does not check label_info equivalance.
-
-        This is because it always has NullLabelInfo.
-        """
-        return
-
     ######################################
     #            Lit Module              #
     ######################################
