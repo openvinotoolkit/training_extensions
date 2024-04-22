@@ -244,8 +244,8 @@
 <span class="kn">import</span> <span class="nn">os</span>
 
 <span class="kn">import</span> <span class="nn">torch.nn.functional</span> <span class="k">as</span> <span class="nn">F</span>
-<span class="kn">from</span> <span class="nn">mmcv.cnn</span> <span class="kn">import</span> <span class="n">build_activation_layer</span>
-<span class="kn">from</span> <span class="nn">mmcv.cnn.bricks</span> <span class="kn">import</span> <span class="n">ConvModule</span>
+<span class="kn">from</span> <span class="nn">otx.algo.modules.activation</span> <span class="kn">import</span> <span class="n">build_activation_layer</span>
+<span class="kn">from</span> <span class="nn">otx.algo.modules.conv_module</span> <span class="kn">import</span> <span class="n">ConvModule</span>
 <span class="kn">from</span> <span class="nn">mmengine.runner</span> <span class="kn">import</span> <span class="n">load_checkpoint</span>
 <span class="kn">from</span> <span class="nn">mmpretrain.registry</span> <span class="kn">import</span> <span class="n">MODELS</span>
 <span class="kn">from</span> <span class="nn">pytorchcv.models.model_store</span> <span class="kn">import</span> <span class="n">download_model</span>
