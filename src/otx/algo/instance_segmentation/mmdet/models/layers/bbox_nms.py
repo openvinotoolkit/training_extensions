@@ -9,12 +9,9 @@
 from __future__ import annotations
 
 import torch
-
-# TODO(Eugene): replace mmcv.batched_nms with torchvision
-# https://github.com/openvinotoolkit/training_extensions/pull/3281
-from mmcv.ops import batched_nms
 from torch import Tensor
 
+from otx.algo.detection.ops.nms import batched_nms
 from otx.algo.instance_segmentation.mmdet.models.utils import ConfigType
 
 

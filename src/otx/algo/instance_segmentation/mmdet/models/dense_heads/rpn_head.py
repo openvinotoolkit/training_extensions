@@ -13,16 +13,13 @@ from typing import TYPE_CHECKING
 
 import torch
 import torch.nn.functional
-
-# TODO(Eugene): replace mmcv.batched_nms with torchvision
-# https://github.com/openvinotoolkit/training_extensions/pull/3281
-from mmcv.ops import batched_nms
 from mmengine.registry import MODELS
 from mmengine.structures import InstanceData
 from torch import Tensor, nn
 
 from otx.algo.detection.deployment import is_mmdeploy_enabled
 from otx.algo.detection.heads.anchor_head import AnchorHead
+from otx.algo.detection.ops.nms import batched_nms
 from otx.algo.instance_segmentation.mmdet.structures.bbox import (
     empty_box_as,
     get_box_wh,
