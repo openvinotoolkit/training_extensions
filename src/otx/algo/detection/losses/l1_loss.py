@@ -3,11 +3,10 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 """Implementations copied from mmdet.models.losses.smooth_l1_loss.py."""
 
-from typing import Optional
+from __future__ import annotations
 
 import torch
-from torch import nn
-from torch import Tensor
+from torch import Tensor, nn
 
 from .weighted_loss import weighted_loss
 
@@ -26,9 +25,8 @@ def l1_loss(pred: Tensor, target: Tensor) -> Tensor:
     if target.numel() == 0:
         return pred.sum() * 0
 
-    assert pred.size() == target.size()
-    loss = torch.abs(pred - target)
-    return loss
+    assert pred.size() == target.size()  # noqa: S101
+    return torch.abs(pred - target)
 
 
 class L1Loss(nn.Module):
@@ -49,9 +47,9 @@ class L1Loss(nn.Module):
         self,
         pred: Tensor,
         target: Tensor,
-        weight: Optional[Tensor] = None,
-        avg_factor: Optional[int] = None,
-        reduction_override: Optional[str] = None,
+        weight: Tensor | None = None,
+        avg_factor: int | None = None,
+        reduction_override: str | None = None,
     ) -> Tensor:
         """Forward function.
 
@@ -73,7 +71,6 @@ class L1Loss(nn.Module):
             if pred.dim() == weight.dim() + 1:
                 weight = weight.unsqueeze(1)
             return (pred * weight).sum()
-        assert reduction_override in (None, "none", "mean", "sum")
+        assert reduction_override in (None, "none", "mean", "sum")  # noqa: S101
         reduction = reduction_override if reduction_override else self.reduction
-        loss_bbox = self.loss_weight * l1_loss(pred, target, weight, reduction=reduction, avg_factor=avg_factor)
-        return loss_bbox
+        return self.loss_weight * l1_loss(pred, target, weight, reduction=reduction, avg_factor=avg_factor)

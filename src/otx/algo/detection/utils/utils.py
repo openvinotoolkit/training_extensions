@@ -6,9 +6,9 @@ from __future__ import annotations
 
 from functools import partial
 from typing import TYPE_CHECKING, Callable
-import torch.distributed as dist
 
 import torch
+import torch.distributed as dist
 from torch import Tensor
 
 if TYPE_CHECKING:

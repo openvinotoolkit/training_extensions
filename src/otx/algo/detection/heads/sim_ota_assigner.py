@@ -3,16 +3,20 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 """Implementations copied from mmdet.models.task_modules.assigners.sim_ota_assigner.py."""
 
-from typing import Optional, Tuple
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 import torch
 import torch.nn.functional as F  # noqa: N812
-from mmengine.config import ConfigDict  # TODO (sungchul): remove
-from mmengine.structures import InstanceData  # TODO (sungchul): remove
 from torch import Tensor
 
 from otx.algo.detection.heads.iou2d_calculator import BboxOverlaps2D
 from otx.algo.detection.utils.structures import AssignResult
+
+if TYPE_CHECKING:
+    from mmengine.config import ConfigDict
+    from mmengine.structures import InstanceData
 
 INF = 100000.0
 EPS = 1.0e-7
@@ -40,8 +44,10 @@ class SimOTAAssigner:
         candidate_topk: int = 10,
         iou_weight: float = 3.0,
         cls_weight: float = 1.0,
-        iou_calculator: ConfigDict | dict = dict(type="BboxOverlaps2D"),
+        iou_calculator: ConfigDict | dict = None,
     ):
+        if iou_calculator is None:
+            iou_calculator = {"type": "BboxOverlaps2D"}
         self.center_radius = center_radius
         self.candidate_topk = candidate_topk
         self.iou_weight = iou_weight
@@ -52,7 +58,7 @@ class SimOTAAssigner:
         self,
         pred_instances: InstanceData,
         gt_instances: InstanceData,
-        gt_instances_ignore: Optional[InstanceData] = None,
+        gt_instances_ignore: InstanceData | None = None,
         **kwargs,
     ) -> AssignResult:
         """Assign gt to priors using SimOTA.
@@ -72,6 +78,7 @@ class SimOTAAssigner:
                 to be ignored during training. It includes ``bboxes``
                 attribute data that is ignored during training and testing.
                 Defaults to None.
+
         Returns:
             obj:`AssignResult`: The assigned result.
         """
@@ -134,9 +141,8 @@ class SimOTAAssigner:
         max_overlaps[valid_mask] = matched_pred_ious
         return AssignResult(num_gt, assigned_gt_inds, max_overlaps, labels=assigned_labels)
 
-    def get_in_gt_and_in_center_info(self, priors: Tensor, gt_bboxes: Tensor) -> Tuple[Tensor, Tensor]:
-        """Get the information of which prior is in gt bboxes and gt center
-        priors."""
+    def get_in_gt_and_in_center_info(self, priors: Tensor, gt_bboxes: Tensor) -> tuple[Tensor, Tensor]:
+        """Get the information of which prior is in gt bboxes and gt center priors."""
         num_gt = gt_bboxes.size(0)
 
         repeated_x = priors[:, 0].unsqueeze(1).repeat(1, num_gt)
@@ -151,7 +157,7 @@ class SimOTAAssigner:
         b_ = gt_bboxes[:, 3] - repeated_y
 
         deltas = torch.stack([l_, t_, r_, b_], dim=1)
-        is_in_gts = deltas.min(dim=1).values > 0
+        is_in_gts = deltas.min(dim=1).to_numpy() > 0
         is_in_gts_all = is_in_gts.sum(dim=1) > 0
 
         # is prior centers in gt centers
@@ -168,7 +174,7 @@ class SimOTAAssigner:
         cb_ = ct_box_b - repeated_y
 
         ct_deltas = torch.stack([cl_, ct_, cr_, cb_], dim=1)
-        is_in_cts = ct_deltas.min(dim=1).values > 0
+        is_in_cts = ct_deltas.min(dim=1).to_numpy() > 0
         is_in_cts_all = is_in_cts.sum(dim=1) > 0
 
         # in boxes or in centers, shape: [num_priors]
@@ -179,10 +185,13 @@ class SimOTAAssigner:
         return is_in_gts_or_centers, is_in_boxes_and_centers
 
     def dynamic_k_matching(
-        self, cost: Tensor, pairwise_ious: Tensor, num_gt: int, valid_mask: Tensor
-    ) -> Tuple[Tensor, Tensor]:
-        """Use IoU and matching cost to calculate the dynamic top-k positive
-        targets."""
+        self,
+        cost: Tensor,
+        pairwise_ious: Tensor,
+        num_gt: int,
+        valid_mask: Tensor,
+    ) -> tuple[Tensor, Tensor]:
+        """Use IoU and matching cost to calculate the dynamic top-k positive targets."""
         matching_matrix = torch.zeros_like(cost, dtype=torch.uint8)
         # select candidate topk ious for dynamic-k calculation
         candidate_topk = min(self.candidate_topk, pairwise_ious.size(0))

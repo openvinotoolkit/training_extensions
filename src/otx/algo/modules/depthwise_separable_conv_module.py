@@ -4,9 +4,9 @@
 
 """This implementation of DepthwiseSeparableConvModule copied from mmcv.cnn.bricks.depthwise_separable_conv_module."""
 
-import torch
-from torch import nn
-from typing import Any
+from __future__ import annotations
+
+from torch import Tensor, nn
 
 from .conv_module import ConvModule
 
@@ -41,13 +41,13 @@ class DepthwiseSeparableConvModule(nn.Module):
         act_cfg (dict): Default activation config for both depthwise ConvModule
             and pointwise ConvModule. Default: dict(type='ReLU').
         dw_norm_cfg (dict): Norm config of depthwise ConvModule. If it is
-            'default', it will be the same as `norm_cfg`. Default: 'default'.
+            None, it will be the same as `norm_cfg`. Default: None.
         dw_act_cfg (dict): Activation config of depthwise ConvModule. If it is
-            'default', it will be the same as `act_cfg`. Default: 'default'.
+            None, it will be the same as `act_cfg`. Default: None.
         pw_norm_cfg (dict): Norm config of pointwise ConvModule. If it is
-            'default', it will be the same as `norm_cfg`. Default: 'default'.
+            None, it will be the same as `norm_cfg`. Default: None.
         pw_act_cfg (dict): Activation config of pointwise ConvModule. If it is
-            'default', it will be the same as `act_cfg`. Default: 'default'.
+            None, it will be the same as `act_cfg`. Default: None.
         kwargs (optional): Other shared arguments for depthwise and pointwise
             ConvModule. See ConvModule for ref.
     """
@@ -60,22 +60,25 @@ class DepthwiseSeparableConvModule(nn.Module):
         stride: int | tuple[int, int] = 1,
         padding: int | tuple[int, int] = 0,
         dilation: int | tuple[int, int] = 1,
-        norm_cfg: dict[str, Any] | None = None,
-        act_cfg: dict[str, Any] = dict(type="ReLU"),
-        dw_norm_cfg: dict[str, Any] | str = "default",
-        dw_act_cfg: dict[str, Any] | str = "default",
-        pw_norm_cfg: dict[str, Any] | str = "default",
-        pw_act_cfg: dict[str, Any] | str = "default",
+        norm_cfg: dict | None = None,
+        act_cfg: dict | None = None,
+        dw_norm_cfg: dict | None = None,
+        dw_act_cfg: dict | None = None,
+        pw_norm_cfg: dict | None = None,
+        pw_act_cfg: dict | None = None,
         **kwargs,
     ):
         super().__init__()
-        assert "groups" not in kwargs, "groups should not be specified"
+        assert "groups" not in kwargs, "groups should not be specified"  # noqa: S101
+
+        if act_cfg is None:
+            act_cfg = {"type": "ReLU"}
 
         # if norm/activation config of depthwise/pointwise ConvModule is not
         # specified, use default config.
-        dw_norm_cfg = dw_norm_cfg if dw_norm_cfg != "default" else norm_cfg  # type: ignore # noqa E501
+        dw_norm_cfg = dw_norm_cfg if dw_norm_cfg != "default" else norm_cfg
         dw_act_cfg = dw_act_cfg if dw_act_cfg != "default" else act_cfg
-        pw_norm_cfg = pw_norm_cfg if pw_norm_cfg != "default" else norm_cfg  # type: ignore # noqa E501
+        pw_norm_cfg = pw_norm_cfg if pw_norm_cfg != "default" else norm_cfg
         pw_act_cfg = pw_act_cfg if pw_act_cfg != "default" else act_cfg
 
         # depthwise convolution
@@ -87,8 +90,8 @@ class DepthwiseSeparableConvModule(nn.Module):
             padding=padding,
             dilation=dilation,
             groups=in_channels,
-            norm_cfg=dw_norm_cfg,  # type: ignore
-            act_cfg=dw_act_cfg,  # type: ignore
+            norm_cfg=dw_norm_cfg,
+            act_cfg=dw_act_cfg,
             **kwargs,
         )
 
@@ -96,12 +99,12 @@ class DepthwiseSeparableConvModule(nn.Module):
             in_channels,
             out_channels,
             1,
-            norm_cfg=pw_norm_cfg,  # type: ignore
-            act_cfg=pw_act_cfg,  # type: ignore
+            norm_cfg=pw_norm_cfg,
+            act_cfg=pw_act_cfg,
             **kwargs,
         )
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: Tensor) -> Tensor:
+        """Forward."""
         x = self.depthwise_conv(x)
-        x = self.pointwise_conv(x)
-        return x
+        return self.pointwise_conv(x)

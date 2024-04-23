@@ -3,17 +3,18 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 """Implementations copied from mmdet.models.dense_heads.yolox_head.py."""
 
+from __future__ import annotations
+
 import copy
 import math
-from typing import List, Optional, Sequence, Tuple, Union
+from typing import TYPE_CHECKING, Sequence
 
-import numpy as np
 import torch
 import torch.nn.functional as F  # noqa: N812
-from mmengine.config import ConfigDict
 from mmengine.structures import InstanceData  # TODO (sungchul): remove
 from torch import Tensor, nn
 
+from otx.algo.detection.heads.base_head import BaseDenseHead
 from otx.algo.detection.heads.base_sampler import PseudoSampler
 from otx.algo.detection.heads.point_generator import MlvlPointGenerator
 from otx.algo.detection.heads.sim_ota_assigner import SimOTAAssigner
@@ -22,7 +23,9 @@ from otx.algo.detection.ops.nms import batched_nms
 from otx.algo.detection.utils.utils import multi_apply, reduce_mean
 from otx.algo.modules.conv_module import ConvModule
 from otx.algo.modules.depthwise_separable_conv_module import DepthwiseSeparableConvModule
-from otx.algo.detection.heads.base_head import BaseDenseHead
+
+if TYPE_CHECKING:
+    from mmengine.config import ConfigDict
 
 
 def bbox_xyxy_to_cxcywh(bbox: Tensor) -> Tensor:
@@ -91,31 +94,30 @@ class YOLOXHead(BaseDenseHead):
         strides: Sequence[int] = (8, 16, 32),
         use_depthwise: bool = False,
         dcn_on_last_conv: bool = False,
-        conv_bias: Union[bool, str] = "auto",
-        conv_cfg: Optional[Union[ConfigDict, dict]] = None,
-        norm_cfg: Union[ConfigDict, dict] = dict(type="BN", momentum=0.03, eps=0.001),
-        act_cfg: Union[ConfigDict, dict] = dict(type="Swish"),
-        loss_cls: Union[ConfigDict, dict] = dict(
-            type="CrossEntropyLoss", use_sigmoid=True, reduction="sum", loss_weight=1.0
-        ),
-        loss_bbox: Union[ConfigDict, dict] = dict(
-            type="IoULoss", mode="square", eps=1e-16, reduction="sum", loss_weight=5.0
-        ),
-        loss_obj: Union[ConfigDict, dict] = dict(
-            type="CrossEntropyLoss", use_sigmoid=True, reduction="sum", loss_weight=1.0
-        ),
-        loss_l1: Union[ConfigDict, dict] = dict(type="L1Loss", reduction="sum", loss_weight=1.0),
-        train_cfg: Optional[Union[ConfigDict, dict]] = None,
-        test_cfg: Optional[Union[ConfigDict, dict]] = None,
-        init_cfg: Optional[Union[Union[ConfigDict, dict], List[Union[ConfigDict, dict]]]] = dict(
-            type="Kaiming",
-            layer="Conv2d",
-            a=math.sqrt(5),
-            distribution="uniform",
-            mode="fan_in",
-            nonlinearity="leaky_relu",
-        ),
+        conv_bias: bool | str = "auto",
+        conv_cfg: ConfigDict | dict | None = None,
+        norm_cfg: ConfigDict | dict = None,
+        act_cfg: ConfigDict | dict = None,
+        train_cfg: ConfigDict | dict | None = None,
+        test_cfg: ConfigDict | dict | None = None,
+        init_cfg: ConfigDict | dict | list[ConfigDict | dict] | None = None,
     ) -> None:
+        if norm_cfg is None:
+            norm_cfg = {"type": "BN", "momentum": 0.03, "eps": 0.001}
+
+        if act_cfg is None:
+            act_cfg = {"type": "Swish"}
+
+        if init_cfg is None:
+            init_cfg = {
+                "type": "Kaiming",
+                "layer": "Conv2d",
+                "a": math.sqrt(5),
+                "distribution": "uniform",
+                "mode": "fan_in",
+                "nonlinearity": "leaky_relu",
+            }
+
         super().__init__()
         # from BaseModule
         self._is_init = False
@@ -132,7 +134,7 @@ class YOLOXHead(BaseDenseHead):
         self.strides = strides
         self.use_depthwise = use_depthwise
         self.dcn_on_last_conv = dcn_on_last_conv
-        assert conv_bias == "auto" or isinstance(conv_bias, bool)
+        assert conv_bias == "auto" or isinstance(conv_bias, bool)  # noqa: S101
         self.conv_bias = conv_bias
         self.use_sigmoid_cls = True
 
@@ -147,7 +149,7 @@ class YOLOXHead(BaseDenseHead):
         self.use_l1 = False  # This flag will be modified by hooks.
         self.loss_l1 = L1Loss(reduction="sum", loss_weight=1.0)
 
-        self.prior_generator = MlvlPointGenerator(strides, offset=0)
+        self.prior_generator = MlvlPointGenerator(strides, offset=0)  # type: ignore[arg-type]
 
         self.test_cfg = test_cfg
         self.train_cfg = train_cfg
@@ -155,7 +157,7 @@ class YOLOXHead(BaseDenseHead):
         if self.train_cfg:
             self.assigner = SimOTAAssigner(center_radius=2.5)
             # YOLOX does not support sampling
-            self.sampler = PseudoSampler()
+            self.sampler = PseudoSampler()  # type: ignore[no-untyped-call]
 
         self._init_layers()
 
@@ -180,10 +182,7 @@ class YOLOXHead(BaseDenseHead):
         stacked_convs = []
         for i in range(self.stacked_convs):
             chn = self.in_channels if i == 0 else self.feat_channels
-            if self.dcn_on_last_conv and i == self.stacked_convs - 1:
-                conv_cfg = dict(type="DCNv2")
-            else:
-                conv_cfg = self.conv_cfg
+            conv_cfg = {"type": "DCNv2"} if self.dcn_on_last_conv and i == self.stacked_convs - 1 else self.conv_cfg
             stacked_convs.append(
                 conv(
                     chn,
@@ -195,11 +194,11 @@ class YOLOXHead(BaseDenseHead):
                     norm_cfg=self.norm_cfg,
                     act_cfg=self.act_cfg,
                     bias=self.conv_bias,
-                )
+                ),
             )
         return nn.Sequential(*stacked_convs)
 
-    def _build_predictor(self) -> Tuple[nn.Module, nn.Module, nn.Module]:
+    def _build_predictor(self) -> tuple[nn.Module, nn.Module, nn.Module]:
         """Initialize predictor layers of a single level head."""
         conv_cls = nn.Conv2d(self.feat_channels, self.cls_out_channels, 1)
         conv_reg = nn.Conv2d(self.feat_channels, 4, 1)
@@ -214,9 +213,8 @@ class YOLOXHead(BaseDenseHead):
         conv_cls: nn.Module,
         conv_reg: nn.Module,
         conv_obj: nn.Module,
-    ) -> Tuple[Tensor, Tensor, Tensor]:
+    ) -> tuple[Tensor, Tensor, Tensor]:
         """Forward feature of a single scale level."""
-
         cls_feat = cls_convs(x)
         reg_feat = reg_convs(x)
 
@@ -226,17 +224,17 @@ class YOLOXHead(BaseDenseHead):
 
         return cls_score, bbox_pred, objectness
 
-    def forward(self, x: Tuple[Tensor]) -> Tuple[List]:
+    def forward(self, x: tuple[Tensor]) -> tuple:
         """Forward features from the upstream network.
 
         Args:
             x (Tuple[Tensor]): Features from the upstream network, each is
                 a 4D-tensor.
+
         Returns:
             Tuple[List]: A tuple of multi-level classification scores, bbox
             predictions, and objectnesses.
         """
-
         return multi_apply(
             self.forward_single,
             x,
@@ -247,18 +245,18 @@ class YOLOXHead(BaseDenseHead):
             self.multi_level_conv_obj,
         )
 
-    def predict_by_feat(
+    def predict_by_feat(  # type: ignore[override]
         self,
-        cls_scores: List[Tensor],
-        bbox_preds: List[Tensor],
-        objectnesses: Optional[List[Tensor]],
-        batch_img_metas: Optional[List[dict]] = None,
-        cfg: Optional[ConfigDict] = None,
+        cls_scores: list[Tensor],
+        bbox_preds: list[Tensor],
+        objectnesses: list[Tensor] | None,
+        batch_img_metas: list[dict] | None = None,
+        cfg: ConfigDict | None = None,
         rescale: bool = False,
         with_nms: bool = True,
-    ) -> List[InstanceData]:
-        """Transform a batch of output features extracted by the head into
-        bbox results.
+    ) -> list[InstanceData]:
+        """Transform a batch of output features extracted by the head into bbox results.
+
         Args:
             cls_scores (list[Tensor]): Classification scores for all
                 scale levels, each is a 4D-tensor, has shape
@@ -290,13 +288,16 @@ class YOLOXHead(BaseDenseHead):
             - bboxes (Tensor): Has a shape (num_instances, 4),
               the last dimension 4 arrange as (x1, y1, x2, y2).
         """
-        assert len(cls_scores) == len(bbox_preds) == len(objectnesses)
+        assert len(cls_scores) == len(bbox_preds) == len(objectnesses)  # type: ignore[arg-type] # noqa: S101
         cfg = self.test_cfg if cfg is None else cfg
 
-        num_imgs = len(batch_img_metas)
+        num_imgs = len(batch_img_metas)  # type: ignore[arg-type]
         featmap_sizes = [cls_score.shape[2:] for cls_score in cls_scores]
         mlvl_priors = self.prior_generator.grid_priors(
-            featmap_sizes, dtype=cls_scores[0].dtype, device=cls_scores[0].device, with_stride=True
+            featmap_sizes,
+            dtype=cls_scores[0].dtype,
+            device=cls_scores[0].device,
+            with_stride=True,
         )
 
         # flatten cls_scores, bbox_preds and objectness
@@ -304,7 +305,7 @@ class YOLOXHead(BaseDenseHead):
             cls_score.permute(0, 2, 3, 1).reshape(num_imgs, -1, self.cls_out_channels) for cls_score in cls_scores
         ]
         flatten_bbox_preds = [bbox_pred.permute(0, 2, 3, 1).reshape(num_imgs, -1, 4) for bbox_pred in bbox_preds]
-        flatten_objectness = [objectness.permute(0, 2, 3, 1).reshape(num_imgs, -1) for objectness in objectnesses]
+        flatten_objectness = [objectness.permute(0, 2, 3, 1).reshape(num_imgs, -1) for objectness in objectnesses]  # type: ignore[union-attr]
 
         flatten_cls_scores = torch.cat(flatten_cls_scores, dim=1).sigmoid()
         flatten_bbox_preds = torch.cat(flatten_bbox_preds, dim=1)
@@ -314,9 +315,9 @@ class YOLOXHead(BaseDenseHead):
         flatten_bboxes = self._bbox_decode(flatten_priors, flatten_bbox_preds)
 
         result_list = []
-        for img_id, img_meta in enumerate(batch_img_metas):
+        for img_id, img_meta in enumerate(batch_img_metas):  # type: ignore[arg-type]
             max_scores, labels = torch.max(flatten_cls_scores[img_id], 1)
-            valid_mask = flatten_objectness[img_id] * max_scores >= cfg.score_thr
+            valid_mask = flatten_objectness[img_id] * max_scores >= cfg.score_thr  # type: ignore[union-attr]
             results = InstanceData(
                 bboxes=flatten_bboxes[img_id][valid_mask],
                 scores=max_scores[valid_mask] * flatten_objectness[img_id][valid_mask],
@@ -324,14 +325,19 @@ class YOLOXHead(BaseDenseHead):
             )
 
             result_list.append(
-                self._bbox_post_process(results=results, cfg=cfg, rescale=rescale, with_nms=with_nms, img_meta=img_meta)
+                self._bbox_post_process(
+                    results=results,
+                    cfg=cfg,
+                    rescale=rescale,
+                    with_nms=with_nms,
+                    img_meta=img_meta,
+                ),
             )
 
         return result_list
 
     def _bbox_decode(self, priors: Tensor, bbox_preds: Tensor) -> Tensor:
-        """Decode regression results (delta_x, delta_x, w, h) to bboxes (tl_x,
-        tl_y, br_x, br_y).
+        """Decode regression results (delta_x, delta_x, w, h) to bboxes (tl_x, tl_y, br_x, br_y).
 
         Args:
             priors (Tensor): Center proiors of an image, has shape
@@ -351,18 +357,17 @@ class YOLOXHead(BaseDenseHead):
         br_x = xys[..., 0] + whs[..., 0] / 2
         br_y = xys[..., 1] + whs[..., 1] / 2
 
-        decoded_bboxes = torch.stack([tl_x, tl_y, br_x, br_y], -1)
-        return decoded_bboxes
+        return torch.stack([tl_x, tl_y, br_x, br_y], -1)
 
-    def _bbox_post_process(
+    def _bbox_post_process(  # type: ignore[override]
         self,
         results: InstanceData,
         cfg: ConfigDict,
         rescale: bool = False,
         with_nms: bool = True,
-        img_meta: Optional[dict] = None,
+        img_meta: dict | None = None,
     ) -> InstanceData:
-        """bbox post-processing method.
+        """Bbox post-processing method.
 
         The boxes would be rescaled to the original image scale and do
         the nms operation. Usually `with_nms` is False is used for aug test.
@@ -390,10 +395,9 @@ class YOLOXHead(BaseDenseHead):
             - bboxes (Tensor): Has a shape (num_instances, 4),
               the last dimension 4 arrange as (x1, y1, x2, y2).
         """
-
         if rescale:
-            assert img_meta.get("scale_factor") is not None
-            results.bboxes /= results.bboxes.new_tensor(img_meta["scale_factor"]).repeat((1, 2))
+            assert img_meta.get("scale_factor") is not None  # type: ignore[union-attr] # noqa: S101
+            results.bboxes /= results.bboxes.new_tensor(img_meta["scale_factor"]).repeat((1, 2))  # type: ignore[index]
 
         if with_nms and results.bboxes.numel() > 0:
             det_bboxes, keep_idxs = batched_nms(results.bboxes, results.scores, results.labels, cfg.nms)
@@ -402,17 +406,16 @@ class YOLOXHead(BaseDenseHead):
             results.scores = det_bboxes[:, -1]
         return results
 
-    def loss_by_feat(
+    def loss_by_feat(  # type: ignore[override]
         self,
         cls_scores: Sequence[Tensor],
         bbox_preds: Sequence[Tensor],
         objectnesses: Sequence[Tensor],
         batch_gt_instances: Sequence[InstanceData],
         batch_img_metas: Sequence[dict],
-        batch_gt_instances_ignore: Optional[List[InstanceData]] = None,
+        batch_gt_instances_ignore: Sequence[InstanceData] | None = None,
     ) -> dict:
-        """Calculate the loss based on the features extracted by the detection
-        head.
+        """Calculate the loss based on the features extracted by the detection head.
 
         Args:
             cls_scores (Sequence[Tensor]): Box scores for each scale level,
@@ -433,6 +436,7 @@ class YOLOXHead(BaseDenseHead):
                 Batch of gt_instances_ignore. It includes ``bboxes`` attribute
                 data that is ignored during training and testing.
                 Defaults to None.
+
         Returns:
             dict[str, Tensor]: A dictionary of losses.
         """
@@ -442,18 +446,24 @@ class YOLOXHead(BaseDenseHead):
 
         featmap_sizes = [cls_score.shape[2:] for cls_score in cls_scores]
         mlvl_priors = self.prior_generator.grid_priors(
-            featmap_sizes, dtype=cls_scores[0].dtype, device=cls_scores[0].device, with_stride=True
+            featmap_sizes,
+            dtype=cls_scores[0].dtype,
+            device=cls_scores[0].device,
+            with_stride=True,
         )
 
-        flatten_cls_preds = [
-            cls_pred.permute(0, 2, 3, 1).reshape(num_imgs, -1, self.cls_out_channels) for cls_pred in cls_scores
-        ]
-        flatten_bbox_preds = [bbox_pred.permute(0, 2, 3, 1).reshape(num_imgs, -1, 4) for bbox_pred in bbox_preds]
-        flatten_objectness = [objectness.permute(0, 2, 3, 1).reshape(num_imgs, -1) for objectness in objectnesses]
-
-        flatten_cls_preds = torch.cat(flatten_cls_preds, dim=1)
-        flatten_bbox_preds = torch.cat(flatten_bbox_preds, dim=1)
-        flatten_objectness = torch.cat(flatten_objectness, dim=1)
+        flatten_cls_preds = torch.cat(
+            [cls_pred.permute(0, 2, 3, 1).reshape(num_imgs, -1, self.cls_out_channels) for cls_pred in cls_scores],
+            dim=1,
+        )
+        flatten_bbox_preds = torch.cat(
+            [bbox_pred.permute(0, 2, 3, 1).reshape(num_imgs, -1, 4) for bbox_pred in bbox_preds],
+            dim=1,
+        )
+        flatten_objectness = torch.cat(
+            [objectness.permute(0, 2, 3, 1).reshape(num_imgs, -1) for objectness in objectnesses],
+            dim=1,
+        )
         flatten_priors = torch.cat(mlvl_priors)
         flatten_bboxes = self._bbox_decode(flatten_priors, flatten_bbox_preds)
 
@@ -494,7 +504,7 @@ class YOLOXHead(BaseDenseHead):
             loss_cls = flatten_cls_preds.sum() * 0
             loss_bbox = flatten_bboxes.sum() * 0
 
-        loss_dict = dict(loss_cls=loss_cls, loss_bbox=loss_bbox, loss_obj=loss_obj)
+        loss_dict = {"loss_cls": loss_cls, "loss_bbox": loss_bbox, "loss_obj": loss_obj}
 
         if self.use_l1:
             if num_pos > 0:
@@ -518,10 +528,9 @@ class YOLOXHead(BaseDenseHead):
         objectness: Tensor,
         gt_instances: InstanceData,
         img_meta: dict,
-        gt_instances_ignore: Optional[InstanceData] = None,
+        gt_instances_ignore: InstanceData | None = None,
     ) -> tuple:
-        """Compute classification, regression, and objectness targets for
-        priors in a single image.
+        """Compute classification, regression, and objectness targets for priors in a single image.
 
         Args:
             priors (Tensor): All priors of one image, a 2D-Tensor with shape
@@ -541,6 +550,7 @@ class YOLOXHead(BaseDenseHead):
                 to be ignored during training. It includes ``bboxes`` attribute
                 data that is ignored during training and testing.
                 Defaults to None.
+
         Returns:
             tuple:
                 foreground_mask (list[Tensor]): Binary mask of foreground
@@ -551,7 +561,6 @@ class YOLOXHead(BaseDenseHead):
                 l1_target (int): BBox L1 targets of an image.
                 num_pos_per_img (int): Number of positive samples in an image.
         """
-
         num_priors = priors.size(0)
         num_gts = len(gt_instances)
         # No target
@@ -570,7 +579,9 @@ class YOLOXHead(BaseDenseHead):
         scores = cls_preds.sigmoid() * objectness.unsqueeze(1).sigmoid()
         pred_instances = InstanceData(bboxes=decoded_bboxes, scores=scores.sqrt_(), priors=offset_priors)
         assign_result = self.assigner.assign(
-            pred_instances=pred_instances, gt_instances=gt_instances, gt_instances_ignore=gt_instances_ignore
+            pred_instances=pred_instances,
+            gt_instances=gt_instances,
+            gt_instances_ignore=gt_instances_ignore,
         )
 
         sampling_result = self.sampler.sample(assign_result, pred_instances, gt_instances)

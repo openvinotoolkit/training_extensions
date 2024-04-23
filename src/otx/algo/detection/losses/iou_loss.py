@@ -3,8 +3,9 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 """Implementations copied from mmdet.models.losses.iou_loss.py."""
 
+from __future__ import annotations
+
 import warnings
-from typing import Optional
 
 import torch
 from torch import Tensor, nn
@@ -34,13 +35,12 @@ def iou_loss(pred: Tensor, target: Tensor, linear: bool = False, mode: str = "lo
     Return:
         Tensor: Loss tensor.
     """
-    assert mode in ["linear", "square", "log"]
+    assert mode in ["linear", "square", "log"]  # noqa: S101
     if linear:
         mode = "linear"
         warnings.warn(
-            'DeprecationWarning: Setting "linear=True" in '
-            'iou_loss is deprecated, please use "mode=`linear`" '
-            "instead."
+            "DeprecationWarning: Setting linear=True in iou_loss is deprecated, please use mode='linear' instead.",
+            stacklevel=2,
         )
     # avoid fp16 overflow
     if pred.dtype == torch.float16:
@@ -89,13 +89,12 @@ class IoULoss(nn.Module):
         mode: str = "log",
     ) -> None:
         super().__init__()
-        assert mode in ["linear", "square", "log"]
+        assert mode in ["linear", "square", "log"]  # noqa: S101
         if linear:
             mode = "linear"
             warnings.warn(
-                'DeprecationWarning: Setting "linear=True" in '
-                'IOULoss is deprecated, please use "mode=`linear`" '
-                "instead."
+                "DeprecationWarning: Setting linear=True in IOULoss is deprecated, please use mode='linear' instead.",
+                stacklevel=2,
             )
         self.mode = mode
         self.linear = linear
@@ -107,9 +106,9 @@ class IoULoss(nn.Module):
         self,
         pred: Tensor,
         target: Tensor,
-        weight: Optional[Tensor] = None,
-        avg_factor: Optional[int] = None,
-        reduction_override: Optional[str] = None,
+        weight: Tensor | None = None,
+        avg_factor: int | None = None,
+        reduction_override: str | None = None,
         **kwargs,
     ) -> Tensor:
         """Forward function.
@@ -130,19 +129,25 @@ class IoULoss(nn.Module):
         Return:
             Tensor: Loss tensor.
         """
-        assert reduction_override in (None, "none", "mean", "sum")
+        assert reduction_override in (None, "none", "mean", "sum")  # noqa: S101
         reduction = reduction_override if reduction_override else self.reduction
         if (weight is not None) and (not torch.any(weight > 0)) and (reduction != "none"):
             if pred.dim() == weight.dim() + 1:
                 weight = weight.unsqueeze(1)
             return (pred * weight).sum()  # 0
         if weight is not None and weight.dim() > 1:
-            # TODO: remove this in the future
+            # TODO (mmdet): remove this in the future
             # reduce the weight of shape (n, 4) to (n,) to match the
             # iou_loss of shape (n,)
-            assert weight.shape == pred.shape
+            assert weight.shape == pred.shape  # noqa: S101
             weight = weight.mean(-1)
-        loss = self.loss_weight * iou_loss(
-            pred, target, weight, mode=self.mode, eps=self.eps, reduction=reduction, avg_factor=avg_factor, **kwargs
+        return self.loss_weight * iou_loss(
+            pred,
+            target,
+            weight,
+            mode=self.mode,
+            eps=self.eps,
+            reduction=reduction,
+            avg_factor=avg_factor,
+            **kwargs,
         )
-        return loss

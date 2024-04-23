@@ -48,10 +48,16 @@ class DarknetBottleneck(nn.Module):
         add_identity: bool = True,
         use_depthwise: bool = False,
         conv_cfg: OptConfigType = None,
-        norm_cfg: ConfigType = dict(type="BN", momentum=0.03, eps=0.001),
-        act_cfg: ConfigType = dict(type="Swish"),
+        norm_cfg: ConfigType = None,
+        act_cfg: ConfigType = None,
         init_cfg: OptMultiConfig = None,
     ) -> None:
+        if norm_cfg is None:
+            norm_cfg = {"type": "BN", "momentum": 0.03, "eps": 0.001}
+
+        if act_cfg is None:
+            act_cfg = {"type": "Swish"}
+
         super().__init__()
         # from mmengine.model.BaseModule
         self._is_init = False
@@ -61,7 +67,14 @@ class DarknetBottleneck(nn.Module):
         conv = DepthwiseSeparableConvModule if use_depthwise else ConvModule
         self.conv1 = ConvModule(in_channels, hidden_channels, 1, conv_cfg=conv_cfg, norm_cfg=norm_cfg, act_cfg=act_cfg)
         self.conv2 = conv(
-            hidden_channels, out_channels, 3, stride=1, padding=1, conv_cfg=conv_cfg, norm_cfg=norm_cfg, act_cfg=act_cfg
+            hidden_channels,
+            out_channels,
+            3,
+            stride=1,
+            padding=1,
+            conv_cfg=conv_cfg,
+            norm_cfg=norm_cfg,
+            act_cfg=act_cfg,
         )
         self.add_identity = add_identity and in_channels == out_channels
 
@@ -73,8 +86,7 @@ class DarknetBottleneck(nn.Module):
 
         if self.add_identity:
             return out + identity
-        else:
-            return out
+        return out
 
 
 class CSPNeXtBlock(nn.Module):
@@ -110,10 +122,16 @@ class CSPNeXtBlock(nn.Module):
         use_depthwise: bool = False,
         kernel_size: int = 5,
         conv_cfg: OptConfigType = None,
-        norm_cfg: ConfigType = dict(type="BN", momentum=0.03, eps=0.001),
-        act_cfg: ConfigType = dict(type="SiLU"),
+        norm_cfg: ConfigType = None,
+        act_cfg: ConfigType = None,
         init_cfg: OptMultiConfig = None,
     ) -> None:
+        if norm_cfg is None:
+            norm_cfg = {"type": "BN", "momentum": 0.03, "eps": 0.001}
+
+        if act_cfg is None:
+            act_cfg = {"type": "SiLU"}
+
         super().__init__()
         # from mmengine.model.BaseModule
         self._is_init = False
@@ -142,8 +160,7 @@ class CSPNeXtBlock(nn.Module):
 
         if self.add_identity:
             return out + identity
-        else:
-            return out
+        return out
 
 
 class CSPLayer(nn.Module):
@@ -185,10 +202,16 @@ class CSPLayer(nn.Module):
         use_cspnext_block: bool = False,
         channel_attention: bool = False,
         conv_cfg: OptConfigType = None,
-        norm_cfg: ConfigType = dict(type="BN", momentum=0.03, eps=0.001),
-        act_cfg: ConfigType = dict(type="Swish"),
+        norm_cfg: ConfigType = None,
+        act_cfg: ConfigType = None,
         init_cfg: OptMultiConfig = None,
     ) -> None:
+        if norm_cfg is None:
+            norm_cfg = {"type": "BN", "momentum": 0.03, "eps": 0.001}
+
+        if act_cfg is None:
+            act_cfg = {"type": "Swish"}
+
         super().__init__()
         # from mmengine.model.BaseModule
         self._is_init = False
@@ -199,10 +222,20 @@ class CSPLayer(nn.Module):
         self.channel_attention = channel_attention
         self.main_conv = ConvModule(in_channels, mid_channels, 1, conv_cfg=conv_cfg, norm_cfg=norm_cfg, act_cfg=act_cfg)
         self.short_conv = ConvModule(
-            in_channels, mid_channels, 1, conv_cfg=conv_cfg, norm_cfg=norm_cfg, act_cfg=act_cfg
+            in_channels,
+            mid_channels,
+            1,
+            conv_cfg=conv_cfg,
+            norm_cfg=norm_cfg,
+            act_cfg=act_cfg,
         )
         self.final_conv = ConvModule(
-            2 * mid_channels, out_channels, 1, conv_cfg=conv_cfg, norm_cfg=norm_cfg, act_cfg=act_cfg
+            2 * mid_channels,
+            out_channels,
+            1,
+            conv_cfg=conv_cfg,
+            norm_cfg=norm_cfg,
+            act_cfg=act_cfg,
         )
 
         self.blocks = nn.Sequential(
@@ -218,7 +251,7 @@ class CSPLayer(nn.Module):
                     act_cfg=act_cfg,
                 )
                 for _ in range(num_blocks)
-            ]
+            ],
         )
         if channel_attention:
             self.attention = ChannelAttention(2 * mid_channels)

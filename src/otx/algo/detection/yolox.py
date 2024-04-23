@@ -7,8 +7,10 @@ from __future__ import annotations
 
 from copy import deepcopy
 from typing import TYPE_CHECKING, Literal
-from torch import nn
 
+from otx.algo.detection.backbones.csp_darknet import CSPDarknet
+from otx.algo.detection.heads.yolox_head import YOLOXHead
+from otx.algo.detection.necks.yolox_pafpn import YOLOXPAFPN
 from otx.algo.detection.ssd import SingleStageDetector
 from otx.algo.utils.mmconfig import read_mmconfig
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
@@ -17,23 +19,20 @@ from otx.core.exporter.mmdeploy import MMdeployExporter
 from otx.core.metrics.mean_ap import MeanAPCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
 from otx.core.model.detection import MMDetCompatibleModel
+from otx.core.model.utils.mmdet import DetDataPreprocessor
 from otx.core.schedulers import LRSchedulerListCallable
-from otx.core.utils.build import modify_num_classes
 from otx.core.types.label import LabelInfoTypes
+from otx.core.utils.build import modify_num_classes
 from otx.core.utils.config import convert_conf_to_mmconfig_dict
 from otx.core.utils.utils import get_mean_std_from_data_processing
-from otx.core.model.utils.mmdet import DetDataPreprocessor
-
-from otx.algo.detection.backbones.csp_darknet import CSPDarknet
-from otx.algo.detection.necks.yolox_pafpn import YOLOXPAFPN
-from otx.algo.detection.heads.yolox_head import YOLOXHead
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
     from mmengine import ConfigDict
+    from omegaconf import DictConfig
+    from torch import nn
 
     from otx.core.metrics import MetricCallable
-    from omegaconf import DictConfig
 
 
 class YOLOX(SingleStageDetector):

@@ -3,14 +3,18 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 """Implementations copied from mmdet.models.necks.yolox_pafpn.py."""
 
+from __future__ import annotations
+
+import copy
 import math
+from typing import Any
 
 import torch
+from torch import Tensor, nn
+
 from otx.algo.detection.layers import CSPLayer
 from otx.algo.modules.conv_module import ConvModule
 from otx.algo.modules.depthwise_separable_conv_module import DepthwiseSeparableConvModule
-from torch import nn
-import copy
 
 
 class YOLOXPAFPN(nn.Module):
@@ -36,24 +40,36 @@ class YOLOXPAFPN(nn.Module):
 
     def __init__(
         self,
-        in_channels,
-        out_channels,
-        num_csp_blocks=3,
-        use_depthwise=False,
-        upsample_cfg=dict(scale_factor=2, mode="nearest"),
-        conv_cfg=None,
-        norm_cfg=dict(type="BN", momentum=0.03, eps=0.001),
-        act_cfg=dict(type="Swish"),
-        init_cfg=dict(
-            type="Kaiming",
-            layer="Conv2d",
-            a=math.sqrt(5),
-            distribution="uniform",
-            mode="fan_in",
-            nonlinearity="leaky_relu",
-        ),
+        in_channels: list[int],
+        out_channels: int,
+        num_csp_blocks: int = 3,
+        use_depthwise: bool = False,
+        upsample_cfg: dict | None = None,
+        conv_cfg: dict | None = None,
+        norm_cfg: dict | None = None,
+        act_cfg: dict | None = None,
+        init_cfg: dict | list[dict] | None = None,
     ):
-        super(YOLOXPAFPN, self).__init__()
+        if upsample_cfg is None:
+            upsample_cfg = {"scale_factor": 2, "mode": "nearest"}
+
+        if norm_cfg is None:
+            norm_cfg = {"type": "BN", "momentum": 0.03, "eps": 0.001}
+
+        if act_cfg is None:
+            act_cfg = {"type": "Swish"}
+
+        if init_cfg is None:
+            init_cfg = {
+                "type": "Kaiming",
+                "layer": "Conv2d",
+                "a": math.sqrt(5),
+                "distribution": "uniform",
+                "mode": "fan_in",
+                "nonlinearity": "leaky_relu",
+            }
+
+        super().__init__()
         # from mmengine.model.BaseModule
         self._is_init = False
         self.init_cfg = copy.deepcopy(init_cfg)
@@ -70,8 +86,13 @@ class YOLOXPAFPN(nn.Module):
         for idx in range(len(in_channels) - 1, 0, -1):
             self.reduce_layers.append(
                 ConvModule(
-                    in_channels[idx], in_channels[idx - 1], 1, conv_cfg=conv_cfg, norm_cfg=norm_cfg, act_cfg=act_cfg
-                )
+                    in_channels[idx],
+                    in_channels[idx - 1],
+                    1,
+                    conv_cfg=conv_cfg,
+                    norm_cfg=norm_cfg,
+                    act_cfg=act_cfg,
+                ),
             )
             self.top_down_blocks.append(
                 CSPLayer(
@@ -83,7 +104,7 @@ class YOLOXPAFPN(nn.Module):
                     conv_cfg=conv_cfg,
                     norm_cfg=norm_cfg,
                     act_cfg=act_cfg,
-                )
+                ),
             )
 
         # build bottom-up blocks
@@ -100,7 +121,7 @@ class YOLOXPAFPN(nn.Module):
                     conv_cfg=conv_cfg,
                     norm_cfg=norm_cfg,
                     act_cfg=act_cfg,
-                )
+                ),
             )
             self.bottom_up_blocks.append(
                 CSPLayer(
@@ -112,24 +133,25 @@ class YOLOXPAFPN(nn.Module):
                     conv_cfg=conv_cfg,
                     norm_cfg=norm_cfg,
                     act_cfg=act_cfg,
-                )
+                ),
             )
 
         self.out_convs = nn.ModuleList()
         for i in range(len(in_channels)):
             self.out_convs.append(
-                ConvModule(in_channels[i], out_channels, 1, conv_cfg=conv_cfg, norm_cfg=norm_cfg, act_cfg=act_cfg)
+                ConvModule(in_channels[i], out_channels, 1, conv_cfg=conv_cfg, norm_cfg=norm_cfg, act_cfg=act_cfg),
             )
 
-    def forward(self, inputs):
-        """
+    def forward(self, inputs: tuple[Tensor]) -> tuple[Any, ...]:
+        """Forward.
+
         Args:
             inputs (tuple[Tensor]): input features.
 
         Returns:
             tuple[Tensor]: YOLOXPAFPN features.
         """
-        assert len(inputs) == len(self.in_channels)
+        assert len(inputs) == len(self.in_channels)  # noqa: S101
 
         # top-down path
         inner_outs = [inputs[-1]]

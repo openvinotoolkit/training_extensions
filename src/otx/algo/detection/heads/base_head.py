@@ -11,7 +11,6 @@ from typing import TYPE_CHECKING
 
 import torch
 from mmcv.ops import batched_nms
-from mmengine.model import constant_init
 from mmengine.structures import InstanceData
 from torch import Tensor, nn
 
@@ -186,7 +185,7 @@ class BaseDenseHead(nn.Module):
 
         outs = self(x)
 
-        return self.predict_by_feat(*outs, batch_img_metas=batch_img_metas, rescale=rescale)
+        return self.predict_by_feat(*outs, batch_img_metas=batch_img_metas, rescale=rescale)  # type: ignore[misc]
 
     def predict_by_feat(
         self,

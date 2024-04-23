@@ -3,11 +3,14 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 """Implementations copied from mmdet.models.backbones.csp_darknet.py."""
 
+from __future__ import annotations
+
 import copy
 import math
+from typing import Any, ClassVar, Sequence
 
 import torch
-from torch import nn
+from torch import Tensor, nn
 from torch.nn.modules.batchnorm import _BatchNorm
 
 from otx.algo.detection.layers import CSPLayer
@@ -33,14 +36,18 @@ class Focus(nn.Module):
 
     def __init__(
         self,
-        in_channels,
-        out_channels,
-        kernel_size=1,
-        stride=1,
-        conv_cfg=None,
-        norm_cfg=dict(type="BN", momentum=0.03, eps=0.001),
-        act_cfg=dict(type="Swish"),
+        in_channels: int,
+        out_channels: int,
+        kernel_size: int = 1,
+        stride: int = 1,
+        conv_cfg: dict | None = None,
+        norm_cfg: dict | None = None,
+        act_cfg: dict | None = None,
     ):
+        if norm_cfg is None:
+            norm_cfg = {"type": "BN", "momentum": 0.03, "eps": 0.001}
+        if act_cfg is None:
+            act_cfg = {"type": "Swish"}
         super().__init__()
         self.conv = ConvModule(
             in_channels * 4,
@@ -53,7 +60,8 @@ class Focus(nn.Module):
             act_cfg=act_cfg,
         )
 
-    def forward(self, x):
+    def forward(self, x: Tensor) -> Tensor:
+        """Forward."""
         # shape of x (b,c,w,h) -> y(b,4c,w/2,h/2)
         patch_top_left = x[..., ::2, ::2]
         patch_top_right = x[..., ::2, 1::2]
@@ -91,14 +99,18 @@ class SPPBottleneck(nn.Module):
 
     def __init__(
         self,
-        in_channels,
-        out_channels,
-        kernel_sizes=(5, 9, 13),
-        conv_cfg=None,
-        norm_cfg=dict(type="BN", momentum=0.03, eps=0.001),
-        act_cfg=dict(type="Swish"),
-        init_cfg=None,
+        in_channels: int,
+        out_channels: int,
+        kernel_sizes: tuple[int, ...] = (5, 9, 13),
+        conv_cfg: dict | None = None,
+        norm_cfg: dict | None = None,
+        act_cfg: dict | None = None,
+        init_cfg: dict | list[dict] | None = None,
     ):
+        if norm_cfg is None:
+            norm_cfg = {"type": "BN", "momentum": 0.03, "eps": 0.001}
+        if act_cfg is None:
+            act_cfg = {"type": "Swish"}
         super().__init__()
         # from mmengine.model.BaseModule
         self._is_init = False
@@ -106,18 +118,24 @@ class SPPBottleneck(nn.Module):
 
         mid_channels = in_channels // 2
         self.conv1 = ConvModule(
-            in_channels, mid_channels, 1, stride=1, conv_cfg=conv_cfg, norm_cfg=norm_cfg, act_cfg=act_cfg
+            in_channels,
+            mid_channels,
+            1,
+            stride=1,
+            conv_cfg=conv_cfg,
+            norm_cfg=norm_cfg,
+            act_cfg=act_cfg,
         )
         self.poolings = nn.ModuleList([nn.MaxPool2d(kernel_size=ks, stride=1, padding=ks // 2) for ks in kernel_sizes])
         conv2_channels = mid_channels * (len(kernel_sizes) + 1)
         self.conv2 = ConvModule(conv2_channels, out_channels, 1, conv_cfg=conv_cfg, norm_cfg=norm_cfg, act_cfg=act_cfg)
 
-    def forward(self, x):
+    def forward(self, x: Tensor) -> Tensor:
+        """Forward."""
         x = self.conv1(x)
         with torch.cuda.amp.autocast(enabled=False):
             x = torch.cat([x] + [pooling(x) for pooling in self.poolings], dim=1)
-        x = self.conv2(x)
-        return x
+        return self.conv2(x)
 
 
 class CSPDarknet(nn.Module):
@@ -149,6 +167,7 @@ class CSPDarknet(nn.Module):
             and its variants only.
         init_cfg (dict or list[dict], optional): Initialization config dict.
             Default: None.
+
     Example:
         >>> from mmdet.models import CSPDarknet
         >>> import torch
@@ -166,7 +185,7 @@ class CSPDarknet(nn.Module):
 
     # From left to right:
     # in_channels, out_channels, num_blocks, add_identity, use_spp
-    arch_settings = {
+    arch_settings: ClassVar = {
         "P5": [
             [64, 128, 3, True, False],
             [128, 256, 9, True, False],
@@ -184,27 +203,33 @@ class CSPDarknet(nn.Module):
 
     def __init__(
         self,
-        arch="P5",
-        deepen_factor=1.0,
-        widen_factor=1.0,
-        out_indices=(2, 3, 4),
-        frozen_stages=-1,
-        use_depthwise=False,
-        arch_ovewrite=None,
-        spp_kernal_sizes=(5, 9, 13),
-        conv_cfg=None,
-        norm_cfg=dict(type="BN", momentum=0.03, eps=0.001),
-        act_cfg=dict(type="Swish"),
-        norm_eval=False,
-        init_cfg=dict(
-            type="Kaiming",
-            layer="Conv2d",
-            a=math.sqrt(5),
-            distribution="uniform",
-            mode="fan_in",
-            nonlinearity="leaky_relu",
-        ),
+        arch: str = "P5",
+        deepen_factor: float = 1.0,
+        widen_factor: float = 1.0,
+        out_indices: Sequence[int] = (2, 3, 4),
+        frozen_stages: int = -1,
+        use_depthwise: bool = False,
+        arch_ovewrite: list | None = None,
+        spp_kernal_sizes: tuple[int, ...] = (5, 9, 13),
+        conv_cfg: dict | None = None,
+        norm_cfg: dict | None = None,
+        act_cfg: dict | None = None,
+        norm_eval: bool = False,
+        init_cfg: dict | list[dict] | None = None,
     ):
+        if norm_cfg is None:
+            norm_cfg = {"type": "BN", "momentum": 0.03, "eps": 0.001}
+        if act_cfg is None:
+            act_cfg = {"type": "Swish"}
+        if init_cfg is None:
+            init_cfg = {
+                "type": "Kaiming",
+                "layer": "Conv2d",
+                "a": math.sqrt(5),
+                "distribution": "uniform",
+                "mode": "fan_in",
+                "nonlinearity": "leaky_relu",
+            }
         super().__init__()
         # from mmengine.model.BaseModule
         self._is_init = False
@@ -213,11 +238,10 @@ class CSPDarknet(nn.Module):
         arch_setting = self.arch_settings[arch]
         if arch_ovewrite:
             arch_setting = arch_ovewrite
-        assert set(out_indices).issubset(i for i in range(len(arch_setting) + 1))
+        assert set(out_indices).issubset(i for i in range(len(arch_setting) + 1))  # noqa: S101
         if frozen_stages not in range(-1, len(arch_setting) + 1):
-            raise ValueError(
-                "frozen_stages must be in range(-1, " "len(arch_setting) + 1). But received " f"{frozen_stages}"
-            )
+            msg = f"frozen_stages must be in range(-1, len(arch_setting) + 1). But received {frozen_stages}"
+            raise ValueError(msg)
 
         self.out_indices = out_indices
         self.frozen_stages = frozen_stages
@@ -236,12 +260,19 @@ class CSPDarknet(nn.Module):
         self.layers = ["stem"]
 
         for i, (in_channels, out_channels, num_blocks, add_identity, use_spp) in enumerate(arch_setting):
-            in_channels = int(in_channels * widen_factor)
-            out_channels = int(out_channels * widen_factor)
-            num_blocks = max(round(num_blocks * deepen_factor), 1)
+            in_channels = int(in_channels * widen_factor)  # noqa: PLW2901
+            out_channels = int(out_channels * widen_factor)  # noqa: PLW2901
+            num_blocks = max(round(num_blocks * deepen_factor), 1)  # noqa: PLW2901
             stage = []
             conv_layer = conv(
-                in_channels, out_channels, 3, stride=2, padding=1, conv_cfg=conv_cfg, norm_cfg=norm_cfg, act_cfg=act_cfg
+                in_channels,
+                out_channels,
+                3,
+                stride=2,
+                padding=1,
+                conv_cfg=conv_cfg,
+                norm_cfg=norm_cfg,
+                act_cfg=act_cfg,
             )
             stage.append(conv_layer)
             if use_spp:
@@ -268,7 +299,7 @@ class CSPDarknet(nn.Module):
             self.add_module(f"stage{i + 1}", nn.Sequential(*stage))
             self.layers.append(f"stage{i + 1}")
 
-    def _freeze_stages(self):
+    def _freeze_stages(self) -> None:
         if self.frozen_stages >= 0:
             for i in range(self.frozen_stages + 1):
                 m = getattr(self, self.layers[i])
@@ -276,15 +307,17 @@ class CSPDarknet(nn.Module):
                 for param in m.parameters():
                     param.requires_grad = False
 
-    def train(self, mode=True):
-        super(CSPDarknet, self).train(mode)
+    def train(self, mode: bool = True) -> None:
+        """Make the model trainable."""
+        super().train(mode)
         self._freeze_stages()
         if mode and self.norm_eval:
             for m in self.modules():
                 if isinstance(m, _BatchNorm):
                     m.eval()
 
-    def forward(self, x):
+    def forward(self, x: Tensor) -> tuple[Any, ...]:
+        """Forward."""
         outs = []
         for i, layer_name in enumerate(self.layers):
             layer = getattr(self, layer_name)
