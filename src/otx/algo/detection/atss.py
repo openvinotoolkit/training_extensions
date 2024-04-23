@@ -57,13 +57,10 @@ class TorchATSS(SingleStageDetector):
             self.backbone = ResNeXt(**backbone)
         else:
             self.backbone = _build_pytorchcv_model(**backbone)
-        neck.pop("type")
         self.neck = FPN(**neck)
         bbox_head.update(train_cfg=train_cfg)
         bbox_head.update(test_cfg=test_cfg)
-        bbox_head.pop("type")
         self.bbox_head = ATSSHead(**bbox_head)
-        data_preprocessor.pop("type")
         self.data_preprocessor = DetDataPreprocessor(**data_preprocessor)
         self.init_cfg = init_cfg
         self.train_cfg = train_cfg
@@ -102,7 +99,6 @@ class ATSS(MMDetCompatibleModel):
         from mmengine.runner import load_checkpoint
 
         config = deepcopy(self.config)
-        config.pop("type")
         self.classification_layers = self.get_classification_layers()
         model = TorchATSS(**convert_conf_to_mmconfig_dict(config))
         model.init_weights()
@@ -115,7 +111,6 @@ class ATSS(MMDetCompatibleModel):
         from otx.core.utils.build import modify_num_classes
 
         sample_config = deepcopy(self.config)
-        sample_config.pop("type")
         modify_num_classes(sample_config, 5)
         sample_model_dict = TorchATSS(**convert_conf_to_mmconfig_dict(sample_config)).state_dict()
         modify_num_classes(sample_config, 6)

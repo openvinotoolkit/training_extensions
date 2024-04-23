@@ -98,8 +98,6 @@ class ATSSHead(ClassIncrementalMixin, AnchorHead):
         self.sampling = False
         if loss_centerness is None:
             loss_centerness = {"use_sigmoid": True, "loss_weight": 1.0}
-        else:
-            loss_centerness.pop("type")
         self.loss_centerness = CrossEntropyLoss(**loss_centerness)
 
         if use_qfl:
@@ -539,7 +537,7 @@ class ATSSHead(ClassIncrementalMixin, AnchorHead):
 
         num_level_anchors_inside = self.get_num_level_anchors_inside(num_level_anchors, inside_flags)
         pred_instances = InstanceData(priors=anchors)
-        assign_result = self.assigner.assign(
+        assign_result = self.assigner.assign(  # type: ignore[call-arg]
             pred_instances,
             num_level_anchors_inside,
             gt_instances,

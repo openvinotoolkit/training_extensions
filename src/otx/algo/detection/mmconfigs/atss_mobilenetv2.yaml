@@ -1,7 +1,6 @@
 load_from: https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/object_detection/v2/mobilenet_v2-atss.pth
 train_cfg:
   assigner:
-    type: ATSSAssigner
     topk: 9
   allowed_border: -1
   pos_weight: -1
@@ -25,7 +24,6 @@ backbone:
   norm_eval: false
   pretrained: true
 data_preprocessor:
-  type: DetDataPreprocessor
   mean:
     - 0
     - 0
@@ -37,9 +35,7 @@ data_preprocessor:
   bgr_to_rgb: false
   pad_size_divisor: 32
   non_blocking: true
-type: ATSS
 neck:
-  type: FPN
   in_channels:
     - 24
     - 32
@@ -51,13 +47,11 @@ neck:
   num_outs: 5
   relu_before_extra_convs: true
 bbox_head:
-  type: ATSSHead
   num_classes: 2
   in_channels: 64
   stacked_convs: 4
   feat_channels: 64
   anchor_generator:
-    type: AnchorGenerator
     ratios:
       - 1.0
     octave_base_scale: 8
@@ -69,7 +63,6 @@ bbox_head:
       - 64
       - 128
   bbox_coder:
-    type: DeltaXYWHBBoxCoder
     target_means:
       - 0.0
       - 0.0
@@ -81,15 +74,12 @@ bbox_head:
       - 0.2
       - 0.2
   loss_cls:
-    type: CrossSigmoidFocalLoss
     use_sigmoid: true
     gamma: 2.0
     alpha: 0.25
     loss_weight: 1.0
   loss_bbox:
-    type: GIoULoss
     loss_weight: 2.0
   loss_centerness:
-    type: CrossEntropyLoss
     use_sigmoid: true
     loss_weight: 1.0
