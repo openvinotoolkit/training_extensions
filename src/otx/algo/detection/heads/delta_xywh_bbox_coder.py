@@ -108,6 +108,45 @@ class DeltaXYWHBBoxCoder:
             self.ctr_clamp,
         )
 
+    def decode_export(
+        self,
+        bboxes: Tensor,
+        pred_bboxes: Tensor,
+        max_shape: tuple[int, ...] | Tensor | tuple[tuple[int, ...], ...] | None = None,
+        wh_ratio_clip: float = 16 / 1000,
+    ) -> Tensor:
+        """Apply transformation `pred_bboxes` to `boxes`.
+
+        Args:
+            bboxes (torch.Tensor): Basic boxes. Shape
+                (B, N, 4) or (N, 4)
+            pred_bboxes (Tensor): Encoded offsets with respect to each roi.
+               Has shape (B, N, num_classes * 4) or (B, N, 4) or
+               (N, num_classes * 4) or (N, 4). Note N = num_anchors * W * H
+               when rois is a grid of anchors.Offset encoding follows [1]_.
+            max_shape (Sequence[int] or torch.Tensor or Sequence[
+               Sequence[int]],optional): Maximum bounds for boxes, specifies
+               (H, W, C) or (H, W). If bboxes shape is (B, N, 4), then
+               the max_shape should be a Sequence[Sequence[int]]
+               and the length of max_shape should also be B.
+            wh_ratio_clip (float, optional): The allowed ratio between
+                width and height.
+
+        Returns:
+            torch.Tensor: Decoded boxes.
+        """
+        return delta2bbox_export(
+            bboxes,
+            pred_bboxes,
+            self.means,
+            self.stds,
+            max_shape,
+            wh_ratio_clip,
+            self.clip_border,
+            self.add_ctr_clamp,
+            self.ctr_clamp,
+        )
+
 
 def bbox2delta(
     proposals: Tensor,
@@ -384,3 +423,139 @@ if is_mmdeploy_enabled():
             x1, y1, x2, y2 = clip_bboxes(x1, y1, x2, y2, max_shape)
 
         return torch.stack([x1, y1, x2, y2], dim=-1).view(deltas.size())
+# Funtions below come from mmdeploy and modified for OTX usage.
+# https://github.com/open-mmlab/mmdeploy/tree/bc75c9d6c8940aa03d0e1e5b5962bd930478ba77/mmdeploy/codebase/mmdet
+def delta2bbox_export(
+    rois: Tensor,
+    deltas: Tensor,
+    means: tuple[float, ...] = (0.0, 0.0, 0.0, 0.0),
+    stds: tuple[float, ...] = (1.0, 1.0, 1.0, 1.0),
+    max_shape: tuple[int, ...] | Tensor | tuple[tuple[int, ...], ...] | None = None,
+    wh_ratio_clip: float = 16 / 1000,
+    clip_border: bool = True,
+    add_ctr_clamp: bool = False,
+    ctr_clamp: int = 32,
+) -> Tensor:
+    """Rewrite `delta2bbox` for default backend.
+
+    Since the need of clip op with dynamic min and max, this function uses
+    clip_bboxes function to support dynamic shape.
+
+    Args:
+        ctx (ContextCaller): The context with additional information.
+        rois (Tensor): Boxes to be transformed. Has shape (N, 4).
+        deltas (Tensor): Encoded offsets relative to each roi.
+            Has shape (N, num_classes * 4) or (N, 4). Note
+            N = num_base_anchors * W * H, when rois is a grid of
+            anchors. Offset encoding follows [1]_.
+        means (Sequence[float]): Denormalizing means for delta coordinates.
+            Default (0., 0., 0., 0.).
+        stds (Sequence[float]): Denormalizing standard deviation for delta
+            coordinates. Default (1., 1., 1., 1.).
+        max_shape (tuple[int, int]): Maximum bounds for boxes, specifies
+           (H, W). Default None.
+        wh_ratio_clip (float): Maximum aspect ratio for boxes. Default
+            16 / 1000.
+        clip_border (bool, optional): Whether clip the objects outside the
+            border of the image. Default True.
+        add_ctr_clamp (bool): Whether to add center clamp. When set to True,
+            the center of the prediction bounding box will be clamped to
+            avoid being too far away from the center of the anchor.
+            Only used by YOLOF. Default False.
+        ctr_clamp (int): the maximum pixel shift to clamp. Only used by YOLOF.
+            Default 32.
+
+    Return:
+        bboxes (Tensor): Boxes with shape (N, num_classes * 4) or (N, 4),
+            where 4 represent tl_x, tl_y, br_x, br_y.
+    """
+    means = deltas.new_tensor(means).view(1, -1)
+    stds = deltas.new_tensor(stds).view(1, -1)
+    delta_shape = deltas.shape
+    reshaped_deltas = deltas.view(delta_shape[:-1] + (-1, 4))
+    denorm_deltas = reshaped_deltas * stds + means
+
+    dxy = denorm_deltas[..., :2]
+    dwh = denorm_deltas[..., 2:]
+
+    # fix openvino on torch1.13
+    xy1 = rois[..., :2].unsqueeze(2)
+    xy2 = rois[..., 2:].unsqueeze(2)
+
+    pxy = (xy1 + xy2) * 0.5
+    pwh = xy2 - xy1
+    dxy_wh = pwh * dxy
+
+    max_ratio = np.abs(np.log(wh_ratio_clip))
+    if add_ctr_clamp:
+        dxy_wh = torch.clamp(dxy_wh, max=ctr_clamp, min=-ctr_clamp)
+        dwh = torch.clamp(dwh, max=max_ratio)
+    else:
+        dwh = dwh.clamp(min=-max_ratio, max=max_ratio)
+
+    # Use exp(network energy) to enlarge/shrink each roi
+    half_gwh = pwh * dwh.exp() * 0.5
+    # Use network energy to shift the center of each roi
+    gxy = pxy + dxy_wh
+
+    # Convert center-xy/width/height to top-left, bottom-right
+    xy1 = gxy - half_gwh
+    xy2 = gxy + half_gwh
+
+    x1 = xy1[..., 0]
+    y1 = xy1[..., 1]
+    x2 = xy2[..., 0]
+    y2 = xy2[..., 1]
+
+    if clip_border and max_shape is not None:
+        x1, y1, x2, y2 = clip_bboxes(x1, y1, x2, y2, max_shape)
+
+    return torch.stack([x1, y1, x2, y2], dim=-1).view(deltas.size())
+
+
+def clip_bboxes(
+    x1: Tensor,
+    y1: Tensor,
+    x2: Tensor,
+    y2: Tensor,
+    max_shape: Tensor | tuple[int, ...],
+) -> tuple[Tensor, ...]:
+    """Clip bboxes for onnx.
+
+    Since torch.clamp cannot have dynamic `min` and `max`, we scale the
+      boxes by 1/max_shape and clamp in the range [0, 1] if necessary.
+
+    Args:
+        x1 (Tensor): The x1 for bounding boxes.
+        y1 (Tensor): The y1 for bounding boxes.
+        x2 (Tensor): The x2 for bounding boxes.
+        y2 (Tensor): The y2 for bounding boxes.
+        max_shape (Tensor | Sequence[int]): The (H,W) of original image.
+
+    Returns:
+        tuple(Tensor): The clipped x1, y1, x2, y2.
+    """
+    if isinstance(max_shape, torch.Tensor):
+        # scale by 1/max_shape
+        x1 = x1 / max_shape[1]
+        y1 = y1 / max_shape[0]
+        x2 = x2 / max_shape[1]
+        y2 = y2 / max_shape[0]
+
+        # clamp [0, 1]
+        x1 = torch.clamp(x1, 0, 1)
+        y1 = torch.clamp(y1, 0, 1)
+        x2 = torch.clamp(x2, 0, 1)
+        y2 = torch.clamp(y2, 0, 1)
+
+        # scale back
+        x1 = x1 * max_shape[1]
+        y1 = y1 * max_shape[0]
+        x2 = x2 * max_shape[1]
+        y2 = y2 * max_shape[0]
+    else:
+        x1 = torch.clamp(x1, 0, max_shape[1])
+        y1 = torch.clamp(y1, 0, max_shape[0])
+        x2 = torch.clamp(x2, 0, max_shape[1])
+        y2 = torch.clamp(y2, 0, max_shape[0])
+    return x1, y1, x2, y2

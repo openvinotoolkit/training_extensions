@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING, Any, Literal
 
 import numpy as np
 from datumaro.components.annotation import Bbox
-from mmdet.registry import MODELS
+from mmengine.structures import InstanceData
 from torch import nn
 
 from otx.algo.detection.backbones.pytorchcv_backbones import _build_pytorchcv_model
@@ -20,10 +20,11 @@ from otx.algo.utils.mmconfig import read_mmconfig
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.config.data import TileConfig
 from otx.core.exporter.base import OTXModelExporter
-from otx.core.exporter.mmdeploy import MMdeployExporter
+from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.metrics.mean_ap import MeanAPCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
 from otx.core.model.detection import MMDetCompatibleModel
+from otx.core.model.utils.mmdet import DetDataPreprocessor
 from otx.core.schedulers import LRSchedulerListCallable
 from otx.core.types.label import LabelInfoTypes
 from otx.core.utils.build import modify_num_classes
@@ -34,9 +35,8 @@ if TYPE_CHECKING:
     import torch
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
     from mmengine import ConfigDict
-    from mmengine.structures import InstanceData
     from omegaconf import DictConfig
-    from torch import Tensor, device
+    from torch import Tensor
 
     from otx.algo.detection.heads.custom_anchor_generator import SSDAnchorGeneratorClustered
     from otx.core.data.dataset.base import OTXDataset
@@ -55,9 +55,9 @@ class SingleStageDetector(nn.Module):
         self,
         backbone: ConfigDict | dict,
         bbox_head: ConfigDict | dict,
+        data_preprocessor: ConfigDict | dict,
         train_cfg: ConfigDict | dict | None = None,
         test_cfg: ConfigDict | dict | None = None,
-        data_preprocessor: ConfigDict | dict | None = None,
         init_cfg: ConfigDict | list[ConfigDict] | dict | list[dict] = None,
     ) -> None:
         super().__init__()
@@ -65,12 +65,8 @@ class SingleStageDetector(nn.Module):
         self.backbone = _build_pytorchcv_model(**backbone)
         bbox_head.update(train_cfg=train_cfg)
         bbox_head.update(test_cfg=test_cfg)
-        bbox_head.pop("type")
         self.bbox_head = SSDHead(**bbox_head)
-        if isinstance(data_preprocessor, nn.Module):
-            self.data_preprocessor = data_preprocessor
-        elif isinstance(data_preprocessor, dict):
-            self.data_preprocessor = MODELS.build(data_preprocessor)
+        self.data_preprocessor = DetDataPreprocessor(**data_preprocessor)
         self.init_cfg = init_cfg
         self.train_cfg = train_cfg
         self.test_cfg = test_cfg
@@ -253,6 +249,38 @@ class SingleStageDetector(nn.Module):
         results_list = self.bbox_head.predict(x, batch_data_samples, rescale=rescale)
         return self.add_pred_to_datasample(batch_data_samples, results_list)
 
+    def export(
+        self,
+        batch_inputs: Tensor,
+        batch_data_samples: list[InstanceData],
+        rescale: bool = True,
+    ) -> list[InstanceData]:
+        """Predict results from a batch of inputs and data samples with post-processing.
+
+        Args:
+            batch_inputs (Tensor): Inputs with shape (N, C, H, W).
+            batch_data_samples (List[:obj:`InstanceData`]): The Data
+                Samples. It usually includes information such as
+                `gt_instance`, `gt_panoptic_seg` and `gt_sem_seg`.
+            rescale (bool): Whether to rescale the results.
+                Defaults to True.
+
+        Returns:
+            list[:obj:`InstanceData`]: Detection results of the
+            input images. Each InstanceData usually contain
+            'pred_instances'. And the ``pred_instances`` usually
+            contains following keys.
+
+                - scores (Tensor): Classification scores, has a shape
+                    (num_instance, )
+                - labels (Tensor): Labels of bboxes, has a shape
+                    (num_instances, ).
+                - bboxes (Tensor): Has a shape (num_instances, 4),
+                    the last dimension 4 arrange as (x1, y1, x2, y2).
+        """
+        x = self.extract_feat(batch_inputs)
+        return self.bbox_head.export(x, batch_data_samples, rescale=rescale)
+
     def _forward(
         self,
         batch_inputs: Tensor,
@@ -373,28 +401,10 @@ class SSD(MMDetCompatibleModel):
         self.tile_image_size = self.image_size
 
     def _create_model(self) -> nn.Module:
-        from mmdet.models.data_preprocessors import (
-            DetDataPreprocessor as _DetDataPreprocessor,
-        )
-        from mmdet.registry import MODELS
         from mmengine.runner import load_checkpoint
-
-        # NOTE: For the history of this monkey patching, please see
-        # https://github.com/openvinotoolkit/training_extensions/issues/2743
-        @MODELS.register_module(force=True)
-        class DetDataPreprocessor(_DetDataPreprocessor):
-            @property
-            def device(self) -> device:
-                try:
-                    buf = next(self.buffers())
-                except StopIteration:
-                    return super().device
-                else:
-                    return buf.device
 
         config = deepcopy(self.config)
         self.classification_layers = self.get_classification_layers(config, "model.")
-        config.pop("type")
         detector = SingleStageDetector(**convert_conf_to_mmconfig_dict(config))
         if self.load_from is not None:
             load_checkpoint(detector, self.load_from, map_location="cpu")
@@ -516,7 +526,6 @@ class SSD(MMDetCompatibleModel):
             so we have to update every anchors.
         """
         sample_config = deepcopy(config)
-        sample_config.pop("type")
         modify_num_classes(sample_config, 3)
         sample_model_dict = SingleStageDetector(**convert_conf_to_mmconfig_dict(sample_config)).state_dict()
 
@@ -576,21 +585,42 @@ class SSD(MMDetCompatibleModel):
 
         mean, std = get_mean_std_from_data_processing(self.config)
 
-        with self.export_model_forward_context():
-            return MMdeployExporter(
-                model_builder=self._create_model,
-                model_cfg=deepcopy(self.config),
-                deploy_cfg="otx.algo.detection.mmdeploy.ssd_mobilenetv2",
-                test_pipeline=self._make_fake_test_pipeline(),
-                task_level_export_parameters=self._export_parameters,
-                input_size=self.image_size,
-                mean=mean,
-                std=std,
-                resize_mode="standard",
-                pad_value=0,
-                swap_rgb=False,
-                output_names=["feature_vector", "saliency_map"] if self.explain_mode else None,
-            )
+        return OTXNativeModelExporter(
+            task_level_export_parameters=self._export_parameters,
+            input_size=self.image_size,
+            mean=mean,
+            std=std,
+            resize_mode="standard",
+            pad_value=0,
+            swap_rgb=False,
+            via_onnx=True,  # Currently SSD should be exported through ONNX
+            onnx_export_configuration={
+                "input_names": ["image"],
+                "output_names": ["boxes", "labels"],
+                "dynamic_axes": {
+                    "image": {0: "batch", 2: "height", 3: "width"},
+                    "boxes": {0: "batch", 1: "num_dets"},
+                    "labels": {0: "batch", 1: "num_dets"},
+                },
+                "autograd_inlining": False,
+            },
+            output_names=["feature_vector", "saliency_map"] if self.explain_mode else None,
+        )
+
+    def forward_for_tracing(self, inputs: Tensor) -> list[InstanceData]:
+        """Forward function for export."""
+        shape = (int(inputs.shape[2]), int(inputs.shape[3]))
+        meta_info = {
+            "pad_shape": shape,
+            "batch_input_shape": shape,
+            "img_shape": shape,
+            "scale_factor": (1.0, 1.0),
+        }
+        sample = InstanceData(
+            metainfo=meta_info,
+        )
+        data_samples = [sample] * len(inputs)
+        return self.model.export(inputs, data_samples)
 
     def on_load_checkpoint(self, checkpoint: dict[str, Any]) -> None:
         """Callback on load checkpoint."""

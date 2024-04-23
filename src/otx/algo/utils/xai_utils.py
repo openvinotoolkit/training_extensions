@@ -96,6 +96,10 @@ def convert_maps_to_dict_all(saliency_map: list[np.ndarray]) -> list[dict[Any, n
     """Convert salincy maps to dict for TargetExplainGroup.ALL."""
     processed_saliency_maps = []
     for maps_per_image in saliency_map:
+        if maps_per_image.size == 0:
+            processed_saliency_maps.append({0: np.zeros((1, 1, 1))})
+            continue
+
         if maps_per_image.ndim != 3:
             msg = "Shape mismatch."
             raise ValueError(msg)

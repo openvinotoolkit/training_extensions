@@ -59,7 +59,6 @@ class SSDHead(AnchorHead):
         anchor_generator: ConfigDict | dict,
         bbox_coder: ConfigDict | dict,
         init_cfg: ConfigDict | dict | list[ConfigDict] | list[dict],
-        act_cfg: ConfigDict | dict,
         train_cfg: ConfigDict | dict,
         num_classes: int = 80,
         in_channels: tuple[int, ...] | int = (512, 1024, 512, 256, 256, 256),
@@ -75,10 +74,8 @@ class SSDHead(AnchorHead):
         self.stacked_convs = stacked_convs
         self.feat_channels = feat_channels
         self.use_depthwise = use_depthwise
-        self.act_cfg = act_cfg  # TODO(Jaeguk): act_cfg will be deprecated after implementing export.
 
         self.cls_out_channels = num_classes + 1  # add background class
-        anchor_generator.pop("type")
         self.prior_generator = SSDAnchorGeneratorClustered(**anchor_generator)
 
         # Usually the numbers of anchors for each level are the same
@@ -90,7 +87,6 @@ class SSDHead(AnchorHead):
 
         self._init_layers()
 
-        bbox_coder.pop("type")
         self.bbox_coder = DeltaXYWHBBoxCoder(**bbox_coder)
         self.reg_decoded_bbox = reg_decoded_bbox
         self.use_sigmoid_cls = False
@@ -99,7 +95,6 @@ class SSDHead(AnchorHead):
         self.test_cfg = test_cfg
         if self.train_cfg:
             assigner_args = self.train_cfg["assigner"]
-            assigner_args.pop("type")
             self.assigner = MaxIoUAssigner(**assigner_args)
             self.sampler = PseudoSampler(context=self)  # type: ignore[no-untyped-call]
 

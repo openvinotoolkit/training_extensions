@@ -29,11 +29,10 @@ def test_list_models_pattern() -> None:
     models = list_models(pattern="efficient")
 
     target = [
-        "efficientnet_v2_light",
         "efficientnet_b0_light",
+        "efficientnet_v2",
         "maskrcnn_efficientnetb2b",
         "maskrcnn_efficientnetb2b_tile",
-        "otx_efficientnet_v2",
         "otx_efficientnet_b0",
         "tv_efficientnet_b0",
         "tv_efficientnet_b1",
@@ -52,4 +51,3 @@ def test_list_models_print_table(capfd: pytest.CaptureFixture) -> None:
     assert "Model Name" in out
     assert "Recipe Path" in out
     assert "otx_efficientnet_b0" in out
-    assert "otx_efficientnet_v2" in out
