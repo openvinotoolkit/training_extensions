@@ -6,13 +6,13 @@ import pytest
 from lightning.pytorch.cli import ReduceLROnPlateau
 from otx.core.metrics import NullMetricCallable
 from otx.core.model.base import DefaultOptimizerCallable, OTXModel
-from otx.core.schedulers import SchedulerCallableSupportPickle
+from otx.core.schedulers import SchedulerCallableSupportHPO
 from torch import nn
 from torch.optim import SGD
 from torch.optim.lr_scheduler import CosineAnnealingLR, StepLR
 
 
-class TestSchedulerCallableSupportPickle:
+class TestSchedulerCallableSupportHPO:
     @pytest.fixture()
     def fxt_optimizer(self):
         model = nn.Linear(10, 10)
@@ -32,7 +32,7 @@ class TestSchedulerCallableSupportPickle:
 
     def test_succeed(self, fxt_scheduler_cls_and_kwargs, fxt_optimizer):
         scheduler_cls, scheduler_kwargs = fxt_scheduler_cls_and_kwargs
-        scheduler_callable = SchedulerCallableSupportPickle(
+        scheduler_callable = SchedulerCallableSupportHPO(
             scheduler_cls=scheduler_cls,
             scheduler_kwargs=scheduler_kwargs,
         )
@@ -48,7 +48,7 @@ class TestSchedulerCallableSupportPickle:
 
     def test_from_callable(self, fxt_scheduler_cls_and_kwargs, fxt_optimizer):
         scheduler_cls, scheduler_kwargs = fxt_scheduler_cls_and_kwargs
-        scheduler_callable = SchedulerCallableSupportPickle.from_callable(
+        scheduler_callable = SchedulerCallableSupportHPO.from_callable(
             func=lambda optimizer: scheduler_cls(optimizer, **scheduler_kwargs),
         )
         scheduler = scheduler_callable(fxt_optimizer)
@@ -63,7 +63,7 @@ class TestSchedulerCallableSupportPickle:
 
     def test_picklable(self, fxt_scheduler_cls_and_kwargs, fxt_optimizer):
         scheduler_cls, scheduler_kwargs = fxt_scheduler_cls_and_kwargs
-        scheduler_callable = SchedulerCallableSupportPickle(
+        scheduler_callable = SchedulerCallableSupportHPO(
             scheduler_cls=scheduler_cls,
             scheduler_kwargs=scheduler_kwargs,
         )
@@ -80,7 +80,7 @@ class TestSchedulerCallableSupportPickle:
 
     def test_lazy_instance(self, fxt_scheduler_cls_and_kwargs):
         scheduler_cls, scheduler_kwargs = fxt_scheduler_cls_and_kwargs
-        default_scheduler_callable = SchedulerCallableSupportPickle(
+        default_scheduler_callable = SchedulerCallableSupportHPO(
             scheduler_cls=scheduler_cls,
             scheduler_kwargs=scheduler_kwargs,
         ).to_lazy_instance()
@@ -107,7 +107,7 @@ class TestSchedulerCallableSupportPickle:
 
     def test_lazy_instance_picklable(self, fxt_scheduler_cls_and_kwargs, fxt_optimizer):
         scheduler_cls, scheduler_kwargs = fxt_scheduler_cls_and_kwargs
-        lazy_instance = SchedulerCallableSupportPickle(
+        lazy_instance = SchedulerCallableSupportHPO(
             scheduler_cls=scheduler_cls,
             scheduler_kwargs=scheduler_kwargs,
         ).to_lazy_instance()

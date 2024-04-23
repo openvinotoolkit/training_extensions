@@ -16,7 +16,7 @@ from typing import TYPE_CHECKING, Any, Callable
 import torch
 
 from otx.core.config.hpo import HpoConfig
-from otx.core.optimizer.callable import OptimizerCallableSupportPickle
+from otx.core.optimizer.callable import OptimizerCallableSupportHPO
 from otx.core.types.task import OTXTaskType
 from otx.hpo import HyperBand, run_hpo_loop
 from otx.utils.utils import get_decimal_point, get_using_dot_delimited_key, remove_matched_files
@@ -235,7 +235,7 @@ class HPOConfigurator:
 
     @staticmethod
     def _make_lr_search_space(optimizer_callable: OptimizerCallable) -> dict[str, Any]:
-        if not isinstance(optimizer_callable, OptimizerCallableSupportPickle):
+        if not isinstance(optimizer_callable, OptimizerCallableSupportHPO):
             raise TypeError(optimizer_callable)
 
         cur_lr = optimizer_callable.lr  # type: ignore[attr-defined]
