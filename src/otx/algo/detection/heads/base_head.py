@@ -486,16 +486,16 @@ class BaseDenseHead(BaseModule):
         """
         batch_img_metas = [data_samples.metainfo for data_samples in batch_data_samples]
 
-        cls_scores, bbox_preds = self(x)
+        outs = self(x)
 
-        return self.export_by_feat(cls_scores, bbox_preds, batch_img_metas=batch_img_metas, rescale=rescale)
+        return self.export_by_feat(*outs, batch_img_metas=batch_img_metas, rescale=rescale)  # type: ignore[misc]
 
     def export_by_feat(
         self,
         cls_scores: list[Tensor],
         bbox_preds: list[Tensor],
-        batch_img_metas: list[dict],
         score_factors: list[Tensor] | None = None,
+        batch_img_metas: list[dict] | None = None,
         cfg: ConfigDict | None = None,
         rescale: bool = False,
         with_nms: bool = True,
@@ -537,6 +537,9 @@ class BaseDenseHead(BaseModule):
                 - bboxes (Tensor): Has a shape (num_instances, 4),
                   the last dimension 4 arrange as (x1, y1, x2, y2).
         """
+        if batch_img_metas is None:
+            batch_img_metas = []
+
         num_levels = len(cls_scores)
 
         featmap_sizes = [featmap.size()[-2:] for featmap in cls_scores]

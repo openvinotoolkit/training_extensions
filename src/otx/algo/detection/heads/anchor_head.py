@@ -9,13 +9,16 @@ import warnings
 from typing import TYPE_CHECKING
 
 import torch
-from mmdet.registry import MODELS, TASK_UTILS
+from mmdet.models.losses.iou_loss import GIoULoss
+from mmdet.registry import TASK_UTILS
 from mmengine.structures import InstanceData
 from torch import Tensor, nn
 
 from otx.algo.detection.heads.base_head import BaseDenseHead
 from otx.algo.detection.heads.base_sampler import PseudoSampler
 from otx.algo.detection.heads.custom_anchor_generator import AnchorGenerator
+from otx.algo.detection.heads.delta_xywh_bbox_coder import DeltaXYWHBBoxCoder
+from otx.algo.detection.losses.cross_focal_loss import CrossSigmoidFocalLoss
 from otx.algo.detection.utils.utils import anchor_inside_flags, images_to_levels, multi_apply, unmap
 
 if TYPE_CHECKING:
@@ -75,9 +78,12 @@ class AnchorHead(BaseDenseHead):
             raise ValueError(msg)
         self.reg_decoded_bbox = reg_decoded_bbox
 
-        self.bbox_coder = TASK_UTILS.build(bbox_coder)
-        self.loss_cls = MODELS.build(loss_cls)
-        self.loss_bbox = MODELS.build(loss_bbox)
+        bbox_coder.pop("type")
+        loss_cls.pop("type")
+        loss_bbox.pop("type")
+        self.bbox_coder = DeltaXYWHBBoxCoder(**bbox_coder)
+        self.loss_cls = CrossSigmoidFocalLoss(**loss_cls)
+        self.loss_bbox = GIoULoss(**loss_bbox)
         self.train_cfg = train_cfg
         self.test_cfg = test_cfg
         if self.train_cfg:

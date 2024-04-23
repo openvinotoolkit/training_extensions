@@ -8,6 +8,8 @@ from __future__ import annotations
 from copy import deepcopy
 from typing import TYPE_CHECKING, Literal
 
+from mmengine.structures import InstanceData
+
 from otx.algo.detection.backbones.fpn import FPN
 from otx.algo.detection.backbones.pytorchcv_backbones import _build_pytorchcv_model
 from otx.algo.detection.backbones.resnext import ResNeXt
@@ -17,7 +19,7 @@ from otx.algo.utils.mmconfig import read_mmconfig
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.config.data import TileConfig
 from otx.core.exporter.base import OTXModelExporter
-from otx.core.exporter.mmdeploy import MMdeployExporter
+from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.metrics.mean_ap import MeanAPCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
 from otx.core.model.detection import MMDetCompatibleModel
@@ -30,7 +32,7 @@ from otx.core.utils.utils import get_mean_std_from_data_processing
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
     from mmengine import ConfigDict
-    from torch import nn
+    from torch import Tensor, nn
 
     from otx.core.metrics import MetricCallable
 
@@ -132,21 +134,42 @@ class ATSS(MMDetCompatibleModel):
 
         mean, std = get_mean_std_from_data_processing(self.config)
 
-        with self.export_model_forward_context():
-            return MMdeployExporter(
-                model_builder=self._create_model,
-                model_cfg=deepcopy(self.config),
-                deploy_cfg="otx.algo.detection.mmdeploy.atss",
-                test_pipeline=self._make_fake_test_pipeline(),
-                task_level_export_parameters=self._export_parameters,
-                input_size=self.image_size,
-                mean=mean,
-                std=std,
-                resize_mode="standard",
-                pad_value=0,
-                swap_rgb=False,
-                output_names=["feature_vector", "saliency_map"] if self.explain_mode else None,
-            )
+        return OTXNativeModelExporter(
+            task_level_export_parameters=self._export_parameters,
+            input_size=self.image_size,
+            mean=mean,
+            std=std,
+            resize_mode="standard",
+            pad_value=0,
+            swap_rgb=False,
+            via_onnx=True,  # Currently SSD should be exported through ONNX
+            onnx_export_configuration={
+                "input_names": ["image"],
+                "output_names": ["boxes", "labels"],
+                "dynamic_axes": {
+                    "image": {0: "batch", 2: "height", 3: "width"},
+                    "boxes": {0: "batch", 1: "num_dets"},
+                    "labels": {0: "batch", 1: "num_dets"},
+                },
+                "autograd_inlining": False,
+            },
+            output_names=["feature_vector", "saliency_map"] if self.explain_mode else None,
+        )
+
+    def forward_for_tracing(self, inputs: Tensor) -> list[InstanceData]:
+        """Forward function for export."""
+        shape = (int(inputs.shape[2]), int(inputs.shape[3]))
+        meta_info = {
+            "pad_shape": shape,
+            "batch_input_shape": shape,
+            "img_shape": shape,
+            "scale_factor": (1.0, 1.0),
+        }
+        sample = InstanceData(
+            metainfo=meta_info,
+        )
+        data_samples = [sample] * len(inputs)
+        return self.model.export(inputs, data_samples)
 
     def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.model.") -> dict:
         """Load the previous OTX ckpt according to OTX2.0."""
