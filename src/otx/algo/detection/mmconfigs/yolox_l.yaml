@@ -9,9 +9,7 @@ test_cfg:
     type: nms
     iou_threshold: 0.65
   max_per_img: 100
-type: YOLOX
 data_preprocessor:
-  type: DetDataPreprocessor
   non_blocking: true
   mean:
     - 0.0
@@ -25,7 +23,6 @@ data_preprocessor:
   bgr_to_rgb: false
   pad_size_divisor: 32
 backbone:
-  type: CSPDarknet
   deepen_factor: 1.0
   widen_factor: 1.0
   out_indices:
@@ -33,7 +30,6 @@ backbone:
     - 3
     - 4
 neck:
-  type: YOLOXPAFPN
   in_channels:
     - 256
     - 512
@@ -41,7 +37,6 @@ neck:
   out_channels: 256
   num_csp_blocks: 3
 bbox_head:
-  type: YOLOXHead
   num_classes: 80
   in_channels: 256
   feat_channels: 256
