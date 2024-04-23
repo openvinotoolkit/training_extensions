@@ -124,7 +124,7 @@ based on the used model:
 - ``ViT Recipro-CAM`` - for transformer-based classification models
 
 - ``DetClassProbabilityMap`` - for single-stage detector models
-- ``MaskRCNNExplainAlgo`` - for MaskRCNN instance segmentation models
+- ``InstSegExplainAlgo`` - for MaskRCNN and RTMDetInst instance segmentation models
 
 .. note::
 
