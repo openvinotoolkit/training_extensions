@@ -15,6 +15,7 @@ import torch
 from mmengine.registry import MODELS
 from torch import Tensor
 
+from otx.algo.detection.backbones.pytorchcv_backbones import _build_pytorchcv_model
 from otx.algo.detection.deployment import is_mmdeploy_enabled
 from otx.algo.instance_segmentation.mmdet.models.custom_roi_head import CustomRoIHead
 from otx.algo.instance_segmentation.mmdet.models.dense_heads import RPNHead
@@ -29,7 +30,6 @@ if TYPE_CHECKING:
     from otx.algo.instance_segmentation.mmdet.models.detectors.base import ForwardResults
 
 
-@MODELS.register_module()
 class TwoStageDetector(BaseDetector):
     """Base class for two-stage detectors.
 
@@ -47,9 +47,13 @@ class TwoStageDetector(BaseDetector):
         test_cfg: ConfigDict | dict,
         data_preprocessor: ConfigDict | dict | None = None,
         init_cfg: ConfigDict | dict | list[ConfigDict | dict] | None = None,
+        **kwargs,
     ) -> None:
         super().__init__(data_preprocessor=data_preprocessor, init_cfg=init_cfg)
-        self.backbone = MODELS.build(backbone)
+        try:
+            self.backbone = MODELS.build(backbone)
+        except KeyError:
+            self.backbone = _build_pytorchcv_model(**backbone)
 
         if neck["type"] != FPN.__name__:
             msg = f"neck type must be {FPN.__name__}, but got {neck['type']}"
