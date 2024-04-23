@@ -70,7 +70,7 @@ def execute_hpo(
         msg = "Padim doesn't need HPO."
         raise RuntimeError(msg)
 
-    engine.model.make_optimizer_and_scheduler_hpo()
+    engine.model.patch_optimizer_and_scheduler_for_hpo()
 
     hpo_workdir = Path(engine.work_dir) / "hpo"
     hpo_workdir.mkdir(exist_ok=True)
