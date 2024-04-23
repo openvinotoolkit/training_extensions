@@ -772,8 +772,8 @@ class OVZeroShotVisualPromptingModel(
 
     def _create_model(self) -> dict[str, Model]:
         """Create a OV model with help of Model API."""
-        from openvino.model_api.adapters import OpenvinoAdapter, create_core, get_user_config
-        from openvino.model_api.models import Model
+        from model_api.adapters import OpenvinoAdapter, create_core, get_user_config
+        from model_api.models import Model
 
         ov_models: dict[str, Model] = {}
 
