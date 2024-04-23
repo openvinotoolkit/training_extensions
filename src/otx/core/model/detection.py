@@ -49,6 +49,7 @@ class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity]):
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MeanAPCallable,
         torch_compile: bool = False,
+        tile_config: TileConfig = TileConfig(enable_tiler=False),
     ) -> None:
         super().__init__(
             label_info=label_info,
@@ -56,8 +57,8 @@ class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity]):
             scheduler=scheduler,
             metric=metric,
             torch_compile=torch_compile,
+            tile_config=tile_config,
         )
-        self._tile_config = TileConfig()
 
     def forward_tiles(self, inputs: OTXTileBatchDataEntity[DetBatchDataEntity]) -> DetBatchPredEntity:
         """Unpack detection tiles.
@@ -181,6 +182,7 @@ class ExplainableOTXDetModel(OTXDetectionModel):
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MeanAPCallable,
         torch_compile: bool = False,
+        tile_config: TileConfig = TileConfig(enable_tiler=False),
     ) -> None:
         from otx.algo.explain.explain_algo import feature_vector_fn
 
@@ -190,6 +192,7 @@ class ExplainableOTXDetModel(OTXDetectionModel):
             scheduler=scheduler,
             metric=metric,
             torch_compile=torch_compile,
+            tile_config=tile_config,
         )
         self.model.feature_vector_fn = feature_vector_fn
         self.model.explain_fn = self.get_explain_fn()
@@ -341,6 +344,7 @@ class MMDetCompatibleModel(ExplainableOTXDetModel):
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MeanAPCallable,
         torch_compile: bool = False,
+        tile_config: TileConfig = TileConfig(enable_tiler=False),
     ) -> None:
         config = inplace_num_classes(cfg=config, num_classes=self._dispatch_label_info(label_info).num_classes)
         self.config = config
@@ -352,6 +356,7 @@ class MMDetCompatibleModel(ExplainableOTXDetModel):
             scheduler=scheduler,
             metric=metric,
             torch_compile=torch_compile,
+            tile_config=tile_config,
         )
 
     def _create_model(self) -> nn.Module:

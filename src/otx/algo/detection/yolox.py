@@ -14,6 +14,7 @@ from otx.algo.detection.necks.yolox_pafpn import YOLOXPAFPN
 from otx.algo.detection.ssd import SingleStageDetector
 from otx.algo.utils.mmconfig import read_mmconfig
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
+from otx.core.config.data import TileConfig
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.mmdeploy import MMdeployExporter
 from otx.core.metrics.mean_ap import MeanAPCallable
@@ -54,6 +55,7 @@ class YOLOX(SingleStageDetector):
 
     def build_bbox_head(self, cfg: ConfigDict | dict) -> nn.Module:
         """Build bbox head."""
+        cfg.pop("type")  # TODO (sungchul): remove `type` in recipe
         return YOLOXHead(**cfg)
 
     def build_det_data_preprocessor(self, cfg: ConfigDict | dict) -> nn.Module:
@@ -76,6 +78,7 @@ class OTXYOLOX(MMDetCompatibleModel):
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MeanAPCallable,
         torch_compile: bool = False,
+        tile_config: TileConfig = TileConfig(enable_tiler=False),
     ) -> None:
         self.variant = variant
         model_name = f"yolox_{self.variant}"
@@ -87,6 +90,7 @@ class OTXYOLOX(MMDetCompatibleModel):
             scheduler=scheduler,
             metric=metric,
             torch_compile=torch_compile,
+            tile_config=tile_config,
         )
         self.image_size = (1, 3, 416, 416) if self.variant == "tiny" else (1, 3, 640, 640)
         self.tile_image_size = self.image_size

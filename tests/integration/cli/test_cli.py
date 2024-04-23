@@ -112,6 +112,15 @@ def test_otx_e2e(
         "--checkpoint",
         str(ckpt_file),
     ]
+    # Zero-shot visual prompting needs to specify `infer_reference_info_root`
+    if task in ["zero_shot_visual_prompting"]:
+        idx_task = str(ckpt_file).split("/").index(f"otx_train_{model_name}")
+        command_cfg.extend(
+            [
+                "--model.init_args.infer_reference_info_root",
+                str(ckpt_file.parents[-idx_task] / f"otx_train_{model_name}/outputs/.latest/train"),
+            ],
+        )
 
     run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)
 
@@ -187,7 +196,11 @@ def test_otx_e2e(
         (p for p in ov_output_dir.iterdir() if p.is_dir() and p.name != ".latest"),
         key=lambda p: p.stat().st_mtime,
     )
-    exported_model_path = str(ov_latest_dir / "exported_model.xml")
+    if task in ("visual_prompting", "zero_shot_visual_prompting"):
+        exported_model_path = str(ov_latest_dir / "exported_model_decoder.xml")
+        recipe = str(Path(recipe).parents[0] / "openvino_model.yaml")
+    else:
+        exported_model_path = str(ov_latest_dir / "exported_model.xml")
 
     overrides = fxt_cli_override_command_per_task[task]
     if "anomaly" in task:
@@ -208,6 +221,15 @@ def test_otx_e2e(
         "--checkpoint",
         exported_model_path,
     ]
+    # Zero-shot visual prompting needs to specify `infer_reference_info_root`
+    if task in ["zero_shot_visual_prompting"]:
+        idx_task = str(ckpt_file).split("/").index(f"otx_train_{model_name}")
+        command_cfg.extend(
+            [
+                "--model.init_args.infer_reference_info_root",
+                str(ckpt_file.parents[-idx_task] / f"otx_train_{model_name}/outputs/.latest/train"),
+            ],
+        )
 
     run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)
 
@@ -222,8 +244,8 @@ def test_otx_e2e(
     if ("_cls" not in task) and (task not in ["detection", "instance_segmentation"]):
         return  # Supported only for classification, detection and instance segmentation task.
 
-    if "dino" in model_name or "rtmdet_inst_tiny" in model_name:
-        return  # DINO and Rtmdet_tiny are not supported.
+    if "dino" in model_name:
+        return  # DINO is not supported.
 
     format_to_file = {
         "ONNX": "exported_model.onnx",
@@ -294,8 +316,8 @@ def test_otx_explain_e2e(
     if ("_cls" not in task) and (task not in ["detection", "instance_segmentation"]):
         pytest.skip("Supported only for classification, detection and instance segmentation task.")
 
-    if "dino" in model_name or "rtmdet_inst_tiny" in model_name:
-        pytest.skip("DINO and Rtmdet_tiny are not supported.")
+    if "dino" in model_name:
+        pytest.skip("DINO is not supported.")
 
     # otx explain
     tmp_path_explain = tmp_path / f"otx_explain_{model_name}"

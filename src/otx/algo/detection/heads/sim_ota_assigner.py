@@ -157,7 +157,7 @@ class SimOTAAssigner:
         b_ = gt_bboxes[:, 3] - repeated_y
 
         deltas = torch.stack([l_, t_, r_, b_], dim=1)
-        is_in_gts = deltas.min(dim=1).to_numpy() > 0
+        is_in_gts = deltas.min(dim=1).values > 0  # noqa: PD011
         is_in_gts_all = is_in_gts.sum(dim=1) > 0
 
         # is prior centers in gt centers
@@ -174,7 +174,7 @@ class SimOTAAssigner:
         cb_ = ct_box_b - repeated_y
 
         ct_deltas = torch.stack([cl_, ct_, cr_, cb_], dim=1)
-        is_in_cts = ct_deltas.min(dim=1).to_numpy() > 0
+        is_in_cts = ct_deltas.min(dim=1).values > 0  # noqa: PD011
         is_in_cts_all = is_in_cts.sum(dim=1) > 0
 
         # in boxes or in centers, shape: [num_priors]
