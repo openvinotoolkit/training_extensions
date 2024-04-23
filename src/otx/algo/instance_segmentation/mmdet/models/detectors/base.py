@@ -8,20 +8,18 @@
 from __future__ import annotations
 
 from abc import ABCMeta, abstractmethod
-from typing import TypeAlias
+from typing import TYPE_CHECKING, TypeAlias
 
 import torch
 from mmdet.structures.det_data_sample import DetDataSample
 from mmengine.model import BaseModel
 from torch import Tensor
 
-from otx.algo.instance_segmentation.mmdet.models.utils import (
-    InstanceList,
-    OptConfigType,
-    OptMultiConfig,
-)
-
 ForwardResults: TypeAlias = dict[str, torch.Tensor] | list[DetDataSample] | tuple[torch.Tensor] | torch.Tensor
+
+if TYPE_CHECKING:
+    from mmengine.config import ConfigDict
+    from mmengine.structures import InstanceData
 
 
 class BaseDetector(BaseModel, metaclass=ABCMeta):
@@ -35,7 +33,11 @@ class BaseDetector(BaseModel, metaclass=ABCMeta):
            initialization. Defaults to None.
     """
 
-    def __init__(self, data_preprocessor: OptConfigType = None, init_cfg: OptMultiConfig = None):
+    def __init__(
+        self,
+        data_preprocessor: ConfigDict | dict | None = None,
+        init_cfg: ConfigDict | dict | list[ConfigDict | dict] | None = None,
+    ):
         super().__init__(data_preprocessor=data_preprocessor, init_cfg=init_cfg)
 
     @property
@@ -110,7 +112,7 @@ class BaseDetector(BaseModel, metaclass=ABCMeta):
     def add_pred_to_datasample(
         self,
         data_samples: list[DetDataSample],
-        results_list: InstanceList,
+        results_list: list[InstanceData],
     ) -> list[DetDataSample]:
         """Add predictions to `DetDataSample`.
 

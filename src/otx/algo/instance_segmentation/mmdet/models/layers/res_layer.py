@@ -7,12 +7,16 @@
 """MMDet ResLayer."""
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from mmengine.model import BaseModule, Sequential
 from torch import nn
 
-from otx.algo.instance_segmentation.mmdet.models.utils import OptConfigType
 from otx.algo.modules.conv import build_conv_layer
 from otx.algo.modules.norm import build_norm_layer
+
+if TYPE_CHECKING:
+    from mmengine.config import ConfigDict
 
 
 class ResLayer(Sequential):
@@ -43,7 +47,7 @@ class ResLayer(Sequential):
         norm_cfg: dict,
         stride: int = 1,
         avg_down: bool = False,
-        conv_cfg: OptConfigType = None,
+        conv_cfg: ConfigDict | dict | None = None,
         downsample_first: bool = True,
         **kwargs,
     ) -> None:

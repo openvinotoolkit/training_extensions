@@ -19,12 +19,8 @@ from torch import Tensor, nn
 from torch.nn.modules.utils import _pair
 
 from otx.algo.detection.deployment import is_mmdeploy_enabled
+from otx.algo.detection.utils.utils import empty_instances
 from otx.algo.instance_segmentation.mmdet.models.layers import multiclass_nms
-from otx.algo.instance_segmentation.mmdet.models.utils import (
-    InstanceList,
-    OptMultiConfig,
-    empty_instances,
-)
 from otx.algo.instance_segmentation.mmdet.structures.bbox import scale_boxes
 
 if TYPE_CHECKING:
@@ -48,7 +44,7 @@ class BBoxHead(BaseModule):
         predict_box_type: str = "hbox",
         reg_class_agnostic: bool = False,
         reg_decoded_bbox: bool = False,
-        init_cfg: OptMultiConfig = None,
+        init_cfg: ConfigDict | dict | list[ConfigDict | dict] | None = None,
     ) -> None:
         super().__init__(init_cfg=init_cfg)
         if not with_cls and not with_reg:
@@ -185,7 +181,7 @@ class BBoxHead(BaseModule):
         batch_img_metas: list[dict],
         rcnn_test_cfg: ConfigDict,
         rescale: bool = False,
-    ) -> InstanceList:
+    ) -> list[InstanceData]:
         """Transform a batch of output features extracted from the head into bbox results.
 
         Args:

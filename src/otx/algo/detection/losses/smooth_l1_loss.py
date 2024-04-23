@@ -11,7 +11,7 @@ import torch
 from mmengine.registry import MODELS
 from torch import Tensor, nn
 
-from .utils import weighted_loss
+from otx.algo.detection.losses.weighted_loss import weighted_loss
 
 
 @weighted_loss

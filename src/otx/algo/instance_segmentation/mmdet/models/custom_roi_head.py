@@ -19,15 +19,9 @@ from otx.algo.detection.heads.class_incremental_mixin import (
 )
 from otx.algo.detection.losses import CrossSigmoidFocalLoss, accuracy
 from otx.algo.detection.utils.structures import SamplingResult
+from otx.algo.detection.utils.utils import empty_instances, multi_apply, unpack_gt_instances
 from otx.algo.instance_segmentation.mmdet.models.bbox_heads.convfc_bbox_head import Shared2FCBBoxHead
 from otx.algo.instance_segmentation.mmdet.models.mask_heads.fcn_mask_head import FCNMaskHead
-from otx.algo.instance_segmentation.mmdet.models.utils import (
-    ConfigType,
-    InstanceList,
-    empty_instances,
-    multi_apply,
-    unpack_gt_instances,
-)
 from otx.algo.instance_segmentation.mmdet.structures.bbox import bbox2roi
 
 from .base_roi_head import BaseRoIHead
@@ -36,6 +30,7 @@ from .roi_extractors import SingleRoIExtractor
 if TYPE_CHECKING:
     from mmdet.structures.det_data_sample import DetDataSample
     from mmengine.config import ConfigDict
+    from mmengine.structures import InstanceData
 
 
 @MODELS.register_module()
@@ -47,7 +42,7 @@ class StandardRoIHead(BaseRoIHead):
         self.bbox_assigner = TASK_UTILS.build(self.train_cfg["assigner"])
         self.bbox_sampler = TASK_UTILS.build(self.train_cfg["sampler"], default_args={"context": self})
 
-    def init_bbox_head(self, bbox_roi_extractor: ConfigType, bbox_head: ConfigType) -> None:
+    def init_bbox_head(self, bbox_roi_extractor: ConfigDict | dict, bbox_head: ConfigDict | dict) -> None:
         """Initialize box head and box roi extractor.
 
         Args:
@@ -69,7 +64,7 @@ class StandardRoIHead(BaseRoIHead):
         self.bbox_roi_extractor = SingleRoIExtractor(**bbox_roi_extractor)
         self.bbox_head = CustomConvFCBBoxHead(**bbox_head)
 
-    def init_mask_head(self, mask_roi_extractor: ConfigType, mask_head: ConfigType) -> None:
+    def init_mask_head(self, mask_roi_extractor: ConfigDict | dict, mask_head: ConfigDict | dict) -> None:
         """Initialize mask head and mask roi extractor.
 
         Args:
@@ -93,7 +88,7 @@ class StandardRoIHead(BaseRoIHead):
     def forward(
         self,
         x: tuple[Tensor],
-        rpn_results_list: InstanceList,
+        rpn_results_list: list[InstanceData],
         batch_data_samples: list[DetDataSample] | None = None,
     ) -> tuple:
         """Network forward process. Usually includes backbone, neck and head forward without any post-processing.
@@ -140,7 +135,7 @@ class StandardRoIHead(BaseRoIHead):
         x: tuple[Tensor],
         sampling_results: list[SamplingResult],
         bbox_feats: Tensor,
-        batch_gt_instances: InstanceList,
+        batch_gt_instances: list[InstanceData],
     ) -> dict:
         """Perform forward propagation and loss calculation of the mask head on the features of the upstream network.
 
@@ -217,10 +212,10 @@ class StandardRoIHead(BaseRoIHead):
         self,
         x: tuple[Tensor],
         batch_img_metas: list[dict],
-        rpn_results_list: InstanceList,
-        rcnn_test_cfg: ConfigType,
+        rpn_results_list: list[InstanceData],
+        rcnn_test_cfg: ConfigDict | dict,
         rescale: bool = False,
-    ) -> InstanceList:
+    ) -> list[InstanceData]:
         """Forward the bbox head and predict detection results on the features of the upstream network.
 
         Args:
@@ -288,9 +283,9 @@ class StandardRoIHead(BaseRoIHead):
         self,
         x: tuple[Tensor],
         batch_img_metas: list[dict],
-        results_list: InstanceList,
+        results_list: list[InstanceData],
         rescale: bool = False,
-    ) -> InstanceList:
+    ) -> list[InstanceData]:
         """Forward the mask head and predict detection results on the features of the upstream network.
 
         Args:
@@ -345,7 +340,12 @@ class StandardRoIHead(BaseRoIHead):
 class CustomRoIHead(StandardRoIHead):
     """CustomRoIHead class for OTX."""
 
-    def loss(self, x: tuple[Tensor], rpn_results_list: InstanceList, batch_data_samples: list[DetDataSample]) -> dict:
+    def loss(
+        self,
+        x: tuple[Tensor],
+        rpn_results_list: list[InstanceData],
+        batch_data_samples: list[DetDataSample],
+    ) -> dict:
         """Perform forward propagation and loss calculation of the detection roi on the features.
 
         Args:
@@ -629,7 +629,7 @@ if is_mmdeploy_enabled():
         x: tuple[Tensor],
         batch_img_metas: list[dict],
         rpn_results_list: list[Tensor],
-        rcnn_test_cfg: ConfigType,
+        rcnn_test_cfg: ConfigDict | dict,
         rescale: bool = False,
     ) -> list[Tensor]:
         """Rewrite `predict_bbox` of `StandardRoIHead` for default backend.

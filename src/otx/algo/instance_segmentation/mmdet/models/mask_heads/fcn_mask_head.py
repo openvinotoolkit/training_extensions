@@ -21,12 +21,7 @@ from torch.nn.modules.utils import _pair
 from otx.algo.detection.deployment import is_mmdeploy_enabled
 from otx.algo.detection.losses.cross_entropy_loss import CrossEntropyLoss
 from otx.algo.detection.utils.structures import SamplingResult
-from otx.algo.instance_segmentation.mmdet.models.utils import (
-    InstanceList,
-    OptConfigType,
-    OptMultiConfig,
-    empty_instances,
-)
+from otx.algo.detection.utils.utils import empty_instances
 from otx.algo.instance_segmentation.mmdet.structures.mask import mask_target
 from otx.algo.modules.conv import build_conv_layer
 from otx.algo.modules.conv_module import ConvModule
@@ -54,10 +49,10 @@ class FCNMaskHead(BaseModule):
         conv_out_channels: int = 256,
         num_classes: int = 80,
         class_agnostic: int = False,
-        conv_cfg: OptConfigType = None,
-        norm_cfg: OptConfigType = None,
-        loss_mask: OptConfigType = None,
-        init_cfg: OptMultiConfig = None,
+        conv_cfg: ConfigDict | dict | None = None,
+        norm_cfg: ConfigDict | dict | None = None,
+        loss_mask: ConfigDict | dict | None = None,
+        init_cfg: ConfigDict | dict | list[ConfigDict | dict] | None = None,
     ) -> None:
         if init_cfg is not None:
             msg = "To prevent abnormal initialization behavior, init_cfg is not allowed to be set"
@@ -136,7 +131,7 @@ class FCNMaskHead(BaseModule):
     def get_targets(
         self,
         sampling_results: list[SamplingResult],
-        batch_gt_instances: InstanceList,
+        batch_gt_instances: list[InstanceData],
         rcnn_train_cfg: ConfigDict,
     ) -> Tensor:
         """Calculate the ground truth for all samples in a batch according to the sampling_results.
@@ -161,7 +156,7 @@ class FCNMaskHead(BaseModule):
         self,
         mask_preds: Tensor,
         sampling_results: list[SamplingResult],
-        batch_gt_instances: InstanceList,
+        batch_gt_instances: list[InstanceData],
         rcnn_train_cfg: ConfigDict,
     ) -> dict:
         """Calculate the loss based on the features extracted by the mask head.
@@ -205,7 +200,7 @@ class FCNMaskHead(BaseModule):
         rcnn_test_cfg: ConfigDict,
         rescale: bool = False,
         activate_map: bool = False,
-    ) -> InstanceList:
+    ) -> list[InstanceData]:
         """Transform a batch of output features extracted from the head into mask results.
 
         Args:

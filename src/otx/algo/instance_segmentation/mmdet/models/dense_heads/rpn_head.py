@@ -31,8 +31,6 @@ from otx.algo.modules.conv_module import ConvModule
 if TYPE_CHECKING:
     from mmengine.config import ConfigDict
 
-    from otx.algo.instance_segmentation.mmdet.models.utils import InstanceList, OptInstanceList
-
 
 @MODELS.register_module()
 class RPNHead(AnchorHead):
@@ -105,9 +103,9 @@ class RPNHead(AnchorHead):
         self,
         cls_scores: list[Tensor],
         bbox_preds: list[Tensor],
-        batch_gt_instances: InstanceList,
+        batch_gt_instances: list[InstanceData],
         batch_img_metas: list[dict],
-        batch_gt_instances_ignore: OptInstanceList = None,
+        batch_gt_instances_ignore: list[InstanceData] | None = None,
     ) -> dict:
         """Calculate the loss based on the features extracted by the detection head.
 

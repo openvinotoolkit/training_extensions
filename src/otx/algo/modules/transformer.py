@@ -1,56 +1,26 @@
+"""MMCV Transformer modules."""
+
+# Copyright (C) 2024 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+#
+# This class and its supporting functions are adapted from the mmdet.
+# Please refer to https://github.com/open-mmlab/mmdetection/
 
 # Copyright (c) OpenMMLab. All rights reserved.
 
 from __future__ import annotations
 
+import copy
+
 import torch
-import torch.nn as nn
 import torch.nn.functional
 from mmengine.model import BaseModule, Sequential
-from mmengine.registry import MODELS
-
+from timm.models.layers import DropPath
+from torch import nn
 
 from otx.algo.modules.activation import build_activation_layer
-from otx.algo.modules.drop import build_dropout
 
 
-class LayerScale(nn.Module):
-    """LayerScale layer.
-
-    Args:
-        dim (int): Dimension of input features.
-        inplace (bool): Whether performs operation in-place.
-            Default: `False`.
-        data_format (str): The input data format, could be 'channels_last'
-            or 'channels_first', representing (B, C, H, W) and
-            (B, N, C) format data respectively. Default: 'channels_last'.
-        scale (float): Initial value of scale factor. Default: 1.0
-    """
-
-    def __init__(self,
-                 dim: int,
-                 inplace: bool = False,
-                 data_format: str = 'channels_last',
-                 scale: float = 1e-5):
-        super().__init__()
-        assert data_format in ('channels_last', 'channels_first'), \
-            "'data_format' could only be channels_last or channels_first."
-        self.inplace = inplace
-        self.data_format = data_format
-        self.weight = nn.Parameter(torch.ones(dim) * scale)
-
-    def forward(self, x) -> torch.Tensor:
-        if self.data_format == 'channels_first':
-            shape = tuple((1, -1, *(1 for _ in range(x.dim() - 2))))
-        else:
-            shape = tuple((*(1 for _ in range(x.dim() - 1)), -1))
-        if self.inplace:
-            return x.mul_(self.weight.view(*shape))
-        else:
-            return x * self.weight.view(*shape)
-
-
-@MODELS.register_module()
 class FFN(BaseModule):
     """Implements feed-forward networks (FFNs) with identity connection.
 
@@ -75,22 +45,27 @@ class FFN(BaseModule):
             LayerScale. Default: 1.0
     """
 
-    def __init__(self,
-                 embed_dims=256,
-                 feedforward_channels=1024,
-                 num_fcs=2,
-                 act_cfg=dict(type='ReLU', inplace=True),
-                 ffn_drop=0.,
-                 dropout_layer=None,
-                 add_identity=True,
-                 init_cfg=None,
-                 layer_scale_init_value=0.):
+    def __init__(
+        self,
+        embed_dims: int = 256,
+        feedforward_channels: int = 1024,
+        num_fcs: int = 2,
+        act_cfg: dict | None = None,
+        ffn_drop: float = 0.0,
+        dropout_layer: dict | None = None,
+        add_identity: bool = True,
+        init_cfg: dict | None = None,
+    ):
         super().__init__(init_cfg)
-        assert num_fcs >= 2, 'num_fcs should be no less ' \
-            f'than 2. got {num_fcs}.'
+        if num_fcs < 2:
+            msg = "The number of fully-connected layers in FFNs should be at least 2."
+            raise ValueError(msg)
         self.embed_dims = embed_dims
         self.feedforward_channels = feedforward_channels
         self.num_fcs = num_fcs
+
+        if act_cfg is None:
+            act_cfg = {"type": "ReLU", "inplace": True}
 
         layers = []
         in_channels = embed_dims
@@ -98,21 +73,29 @@ class FFN(BaseModule):
             layers.append(
                 Sequential(
                     nn.Linear(in_channels, feedforward_channels),
-                    build_activation_layer(act_cfg), nn.Dropout(ffn_drop)))
+                    build_activation_layer(act_cfg),
+                    nn.Dropout(ffn_drop),
+                ),
+            )
             in_channels = feedforward_channels
         layers.append(nn.Linear(feedforward_channels, embed_dims))
         layers.append(nn.Dropout(ffn_drop))
         self.layers = Sequential(*layers)
-        self.dropout_layer = build_dropout(
-            dropout_layer) if dropout_layer else torch.nn.Identity()
-        self.add_identity = add_identity
 
-        if layer_scale_init_value > 0:
-            self.gamma2 = LayerScale(embed_dims, scale=layer_scale_init_value)
+        if dropout_layer:
+            _dropout_layer = copy.deepcopy(dropout_layer)
+            dropout_type = _dropout_layer.pop("type")
+            if dropout_type != "DropPath":
+                msg = f"Unsupported dropout type {dropout_type}"
+                raise NotImplementedError(msg)
+            self.dropout_layer = DropPath(**_dropout_layer)
         else:
-            self.gamma2 = nn.Identity()
+            self.dropout_layer = torch.nn.Identity()
 
-    def forward(self, x, identity=None):
+        self.add_identity = add_identity
+        self.gamma2 = nn.Identity()
+
+    def forward(self, x: torch.Tensor, identity: torch.Tensor | None = None) -> torch.Tensor:
         """Forward function for `FFN`.
 
         The function would add x to the output tensor if residue is None.

@@ -17,7 +17,7 @@ from torch import Tensor, nn
 from otx.algo.modules.conv_module import ConvModule
 
 if TYPE_CHECKING:
-    from otx.algo.instance_segmentation.mmdet.models.utils import OptConfigType
+    from mmengine.config import ConfigDict
 
 
 @MODELS.register_module()
@@ -70,9 +70,9 @@ class FPN(BaseModule):
         end_level: int = -1,
         relu_before_extra_convs: bool = False,
         no_norm_on_lateral: bool = False,
-        conv_cfg: OptConfigType = None,
-        norm_cfg: OptConfigType = None,
-        act_cfg: OptConfigType = None,
+        conv_cfg: ConfigDict | dict | None = None,
+        norm_cfg: ConfigDict | dict | None = None,
+        act_cfg: ConfigDict | dict | None = None,
         upsample_cfg: dict | None = None,
         init_cfg: dict | None = None,
     ) -> None:

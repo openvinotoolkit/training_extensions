@@ -16,7 +16,7 @@ import torch.nn.functional
 # https://github.com/openvinotoolkit/training_extensions/pull/3281
 from mmcv.ops import sigmoid_focal_loss as _sigmoid_focal_loss
 
-from .utils import weight_reduce_loss
+from otx.algo.detection.losses.weighted_loss import weight_reduce_loss
 
 if TYPE_CHECKING:
     from torch import Tensor

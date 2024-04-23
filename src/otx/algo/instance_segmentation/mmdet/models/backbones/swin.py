@@ -8,6 +8,8 @@
 
 # Copyright (c) OpenMMLab. All rights reserved.
 
+from __future__ import annotations
+
 import warnings
 from collections import OrderedDict
 from copy import deepcopy
@@ -15,21 +17,21 @@ from copy import deepcopy
 import torch
 import torch.nn.functional
 import torch.utils.checkpoint as cp
-from mmcv.cnn.bricks.transformer import FFN, build_dropout
 from mmengine.model import BaseModule, ModuleList
 from mmengine.model.weight_init import constant_init, trunc_normal_, trunc_normal_init
 from mmengine.registry import MODELS
 from mmengine.runner.checkpoint import CheckpointLoader
 from mmengine.utils import to_2tuple
+from timm.models.layers import DropPath
 from torch import nn
 
 from otx.algo.instance_segmentation.mmdet.models.layers import PatchEmbed, PatchMerging
 from otx.algo.modules.norm import build_norm_layer
+from otx.algo.modules.transformer import FFN
 
 
 class WindowMSA(BaseModule):
-    """Window based multi-head self-attention (W-MSA) module with relative
-    position bias.
+    """Window based multi-head self-attention (W-MSA) module with relative position bias.
 
     Args:
         embed_dims (int): Number of input channels.
@@ -48,14 +50,14 @@ class WindowMSA(BaseModule):
 
     def __init__(
         self,
-        embed_dims,
-        num_heads,
-        window_size,
-        qkv_bias=True,
-        qk_scale=None,
-        attn_drop_rate=0.0,
-        proj_drop_rate=0.0,
-        init_cfg=None,
+        embed_dims: int,
+        num_heads: int,
+        window_size: tuple[int, int],
+        qkv_bias: bool = True,
+        qk_scale: float | None = None,
+        attn_drop_rate: float = 0.0,
+        proj_drop_rate: float = 0.0,
+        init_cfg: None = None,
     ):
         super().__init__()
         self.embed_dims = embed_dims
@@ -71,8 +73,8 @@ class WindowMSA(BaseModule):
         )  # 2*Wh-1 * 2*Ww-1, nH
 
         # About 2x faster than original impl
-        Wh, Ww = self.window_size
-        rel_index_coords = self.double_step_seq(2 * Ww - 1, Wh, 1, Ww)
+        wh, ww = self.window_size
+        rel_index_coords = self.double_step_seq(2 * ww - 1, wh, 1, ww)
         rel_position_index = rel_index_coords + rel_index_coords.T
         rel_position_index = rel_position_index.flip(1).contiguous()
         self.register_buffer("relative_position_index", rel_position_index)
@@ -84,17 +86,23 @@ class WindowMSA(BaseModule):
 
         self.softmax = nn.Softmax(dim=-1)
 
-    def init_weights(self):
+    def init_weights(self) -> None:
+        """Initialize the weights."""
         trunc_normal_(self.relative_position_bias_table, std=0.02)
 
-    def forward(self, x, mask=None):
-        """Args:
-        x (tensor): input features with shape of (num_windows*B, N, C)
-        mask (tensor | None, Optional): mask with shape of (num_windows,
-        Wh*Ww, Wh*Ww), value should be between (-inf, 0].
+    def forward(self, x: torch.Tensor, mask: torch.Tensor | None = None) -> torch.Tensor:
+        """Swin Transformer layer computation.
+
+        Args:
+            x (tensor): input features with shape of (num_windows*B, N, C)
+            mask (tensor | None, Optional): mask with shape of (num_windows, Wh*Ww, Wh*Ww), value between (-inf, 0].
         """
-        B, N, C = x.shape
-        qkv = self.qkv(x).reshape(B, N, 3, self.num_heads, C // self.num_heads).permute(2, 0, 3, 1, 4)
+        batch_size, num_pred, channels = x.shape
+        qkv = (
+            self.qkv(x)
+            .reshape(batch_size, num_pred, 3, self.num_heads, channels // self.num_heads)
+            .permute(2, 0, 3, 1, 4)
+        )
         # make torchscript happy (cannot use tensor as tuple)
         q, k, v = qkv[0], qkv[1], qkv[2]
 
@@ -110,20 +118,20 @@ class WindowMSA(BaseModule):
         attn = attn + relative_position_bias.unsqueeze(0)
 
         if mask is not None:
-            nW = mask.shape[0]
-            attn = attn.view(B // nW, nW, self.num_heads, N, N) + mask.unsqueeze(1).unsqueeze(0)
-            attn = attn.view(-1, self.num_heads, N, N)
+            nw = mask.shape[0]
+            attn = attn.view(batch_size // nw, nw, self.num_heads, num_pred, num_pred) + mask.unsqueeze(1).unsqueeze(0)
+            attn = attn.view(-1, self.num_heads, num_pred, num_pred)
         attn = self.softmax(attn)
 
         attn = self.attn_drop(attn)
 
-        x = (attn @ v).transpose(1, 2).reshape(B, N, C)
+        x = (attn @ v).transpose(1, 2).reshape(batch_size, num_pred, channels)
         x = self.proj(x)
-        x = self.proj_drop(x)
-        return x
+        return self.proj_drop(x)
 
     @staticmethod
-    def double_step_seq(step1, len1, step2, len2):
+    def double_step_seq(step1: int, len1: int, step2: int, len2: int) -> torch.Tensor:
+        """Generate double step sequence."""
         seq1 = torch.arange(0, step1 * len1, step1)
         seq2 = torch.arange(0, step2 * len2, step2)
         return (seq1[:, None] + seq2[None, :]).reshape(1, -1)
@@ -154,22 +162,24 @@ class ShiftWindowMSA(BaseModule):
 
     def __init__(
         self,
-        embed_dims,
-        num_heads,
-        window_size,
-        shift_size=0,
-        qkv_bias=True,
-        qk_scale=None,
-        attn_drop_rate=0,
-        proj_drop_rate=0,
-        dropout_layer=dict(type="DropPath", drop_prob=0.0),
-        init_cfg=None,
+        embed_dims: int,
+        num_heads: int,
+        window_size: int,
+        shift_size: int = 0,
+        qkv_bias: bool = True,
+        qk_scale: float | None = None,
+        attn_drop_rate: float = 0,
+        proj_drop_rate: float = 0,
+        dropout_layer: dict = dict(type="DropPath", drop_prob=0.0),
+        init_cfg: None = None,
     ):
         super().__init__(init_cfg)
 
         self.window_size = window_size
         self.shift_size = shift_size
-        assert 0 <= self.shift_size < self.window_size
+        if self.shift_size < 0 or self.shift_size >= self.window_size:
+            msg = "shift_size must be in [0, window_size)"
+            raise ValueError(msg)
 
         self.w_msa = WindowMSA(
             embed_dims=embed_dims,
@@ -182,26 +192,34 @@ class ShiftWindowMSA(BaseModule):
             init_cfg=None,
         )
 
-        self.drop = build_dropout(dropout_layer)
+        _dropout_layer = deepcopy(dropout_layer)
+        dropout_type = _dropout_layer.pop("type")
+        if dropout_type != "DropPath":
+            msg = "Only support `DropPath` dropout layer."
+            raise ValueError(msg)
+        self.drop = DropPath(**_dropout_layer)
 
-    def forward(self, query, hw_shape):
-        B, L, C = query.shape
-        H, W = hw_shape
-        assert H * W == L, "input feature has wrong size"
-        query = query.view(B, H, W, C)
+    def forward(self, query: torch.Tensor, hw_shape: tuple[int, int]) -> torch.Tensor:
+        """Forward function."""
+        b, length, c = query.shape
+        h, w = hw_shape
+        if h * w != length:
+            msg = "The length of query should be equal to H*W."
+            raise ValueError(msg)
+        query = query.view(b, h, w, c)
 
         # pad feature maps to multiples of window size
-        pad_r = (self.window_size - W % self.window_size) % self.window_size
-        pad_b = (self.window_size - H % self.window_size) % self.window_size
+        pad_r = (self.window_size - w % self.window_size) % self.window_size
+        pad_b = (self.window_size - h % self.window_size) % self.window_size
         query = torch.nn.functional.pad(query, (0, 0, 0, pad_r, 0, pad_b))
-        H_pad, W_pad = query.shape[1], query.shape[2]
+        h_pad, w_pad = query.shape[1], query.shape[2]
 
         # cyclic shift
         if self.shift_size > 0:
             shifted_query = torch.roll(query, shifts=(-self.shift_size, -self.shift_size), dims=(1, 2))
 
             # calculate attention mask for SW-MSA
-            img_mask = torch.zeros((1, H_pad, W_pad, 1), device=query.device)
+            img_mask = torch.zeros((1, h_pad, w_pad, 1), device=query.device)
             h_slices = (
                 slice(0, -self.window_size),
                 slice(-self.window_size, -self.shift_size),
@@ -213,9 +231,9 @@ class ShiftWindowMSA(BaseModule):
                 slice(-self.shift_size, None),
             )
             cnt = 0
-            for h in h_slices:
-                for w in w_slices:
-                    img_mask[:, h, w, :] = cnt
+            for _h in h_slices:
+                for _w in w_slices:
+                    img_mask[:, _h, _w, :] = cnt
                     cnt += 1
 
             # nW, window_size, window_size, 1
@@ -230,16 +248,16 @@ class ShiftWindowMSA(BaseModule):
         # nW*B, window_size, window_size, C
         query_windows = self.window_partition(shifted_query)
         # nW*B, window_size*window_size, C
-        query_windows = query_windows.view(-1, self.window_size**2, C)
+        query_windows = query_windows.view(-1, self.window_size**2, c)
 
         # W-MSA/SW-MSA (nW*B, window_size*window_size, C)
         attn_windows = self.w_msa(query_windows, mask=attn_mask)
 
         # merge windows
-        attn_windows = attn_windows.view(-1, self.window_size, self.window_size, C)
+        attn_windows = attn_windows.view(-1, self.window_size, self.window_size, c)
 
         # B H' W' C
-        shifted_x = self.window_reverse(attn_windows, H_pad, W_pad)
+        shifted_x = self.window_reverse(attn_windows, h_pad, w_pad)
         # reverse cyclic shift
         if self.shift_size > 0:
             x = torch.roll(shifted_x, shifts=(self.shift_size, self.shift_size), dims=(1, 2))
@@ -247,15 +265,16 @@ class ShiftWindowMSA(BaseModule):
             x = shifted_x
 
         if pad_r > 0 or pad_b:
-            x = x[:, :H, :W, :].contiguous()
+            x = x[:, :h, :w, :].contiguous()
 
-        x = x.view(B, H * W, C)
+        x = x.view(b, h * w, c)
 
-        x = self.drop(x)
-        return x
+        return self.drop(x)
 
-    def window_reverse(self, windows, H, W):
-        """Args:
+    def window_reverse(self, windows: torch.Tensor, h: int, w: int) -> torch.Tensor:
+        """Reverse the window partition process.
+
+        Args:
             windows: (num_windows*B, window_size, window_size, C)
             H (int): Height of image
             W (int): Width of image
@@ -263,28 +282,29 @@ class ShiftWindowMSA(BaseModule):
             x: (B, H, W, C)
         """
         window_size = self.window_size
-        B = int(windows.shape[0] / (H * W / window_size / window_size))
-        x = windows.view(B, H // window_size, W // window_size, window_size, window_size, -1)
-        x = x.permute(0, 1, 3, 2, 4, 5).contiguous().view(B, H, W, -1)
-        return x
+        batch_size = int(windows.shape[0] / (h * w / window_size / window_size))
+        x = windows.view(batch_size, h // window_size, w // window_size, window_size, window_size, -1)
+        return x.permute(0, 1, 3, 2, 4, 5).contiguous().view(batch_size, h, w, -1)
 
-    def window_partition(self, x):
-        """Args:
+    def window_partition(self, x: torch.Tensor) -> torch.Tensor:
+        """Split x into multi windows.
+
+        Args:
             x: (B, H, W, C)
 
         Returns:
             windows: (num_windows*B, window_size, window_size, C)
         """
-        B, H, W, C = x.shape
+        batch_size, h, w, c = x.shape
         window_size = self.window_size
-        x = x.view(B, H // window_size, window_size, W // window_size, window_size, C)
+        x = x.view(batch_size, h // window_size, window_size, w // window_size, window_size, c)
         windows = x.permute(0, 1, 3, 2, 4, 5).contiguous()
-        windows = windows.view(-1, window_size, window_size, C)
-        return windows
+        return windows.view(-1, window_size, window_size, c)
 
 
 class SwinBlock(BaseModule):
-    """ "
+    """Basic Swin Transformer block.
+
     Args:
         embed_dims (int): The feature dimension.
         num_heads (int): Parallel attention heads.
@@ -310,22 +330,22 @@ class SwinBlock(BaseModule):
 
     def __init__(
         self,
-        embed_dims,
-        num_heads,
-        feedforward_channels,
-        window_size=7,
-        shift=False,
-        qkv_bias=True,
-        qk_scale=None,
-        drop_rate=0.0,
-        attn_drop_rate=0.0,
-        drop_path_rate=0.0,
-        act_cfg=dict(type="GELU"),
-        norm_cfg=dict(type="LN"),
-        with_cp=False,
-        init_cfg=None,
+        embed_dims: int,
+        num_heads: int,
+        feedforward_channels: int,
+        window_size: int = 7,
+        shift: bool = False,
+        qkv_bias: bool = True,
+        qk_scale: float | None = None,
+        drop_rate: float = 0.0,
+        attn_drop_rate: float = 0.0,
+        drop_path_rate: float = 0.0,
+        act_cfg: dict = dict(type="GELU"),
+        norm_cfg: dict = dict(type="LN"),
+        with_cp: bool = False,
+        init_cfg: None = None,
     ):
-        super(SwinBlock, self).__init__()
+        super().__init__()
 
         self.init_cfg = init_cfg
         self.with_cp = with_cp
@@ -356,8 +376,11 @@ class SwinBlock(BaseModule):
             init_cfg=None,
         )
 
-    def forward(self, x, hw_shape):
-        def _inner_forward(x):
+    def forward(self, x: torch.Tensor, hw_shape: torch.Tensor) -> torch.Tensor:
+        """Forward function."""
+
+        def _inner_forward(x: torch.Tensor) -> torch.Tensor:
+            """Inner forward function."""
             identity = x
             x = self.norm1(x)
             x = self.attn(x, hw_shape)
@@ -366,16 +389,9 @@ class SwinBlock(BaseModule):
 
             identity = x
             x = self.norm2(x)
-            x = self.ffn(x, identity=identity)
+            return self.ffn(x, identity=identity)
 
-            return x
-
-        if self.with_cp and x.requires_grad:
-            x = cp.checkpoint(_inner_forward, x)
-        else:
-            x = _inner_forward(x)
-
-        return x
+        return cp.checkpoint(_inner_forward, x) if self.with_cp and x.requires_grad else _inner_forward(x)
 
 
 class SwinBlockSequence(BaseModule):
@@ -409,27 +425,29 @@ class SwinBlockSequence(BaseModule):
 
     def __init__(
         self,
-        embed_dims,
-        num_heads,
-        feedforward_channels,
-        depth,
-        window_size=7,
-        qkv_bias=True,
-        qk_scale=None,
-        drop_rate=0.0,
-        attn_drop_rate=0.0,
-        drop_path_rate=0.0,
-        downsample=None,
-        act_cfg=dict(type="GELU"),
-        norm_cfg=dict(type="LN"),
-        with_cp=False,
-        init_cfg=None,
+        embed_dims: int,
+        num_heads: int,
+        feedforward_channels: int,
+        depth: int,
+        window_size: int = 7,
+        qkv_bias: bool = True,
+        qk_scale: float | None = None,
+        drop_rate: float = 0.0,
+        attn_drop_rate: float = 0.0,
+        drop_path_rate: list[float] | float = 0.0,
+        downsample: BaseModule | None = None,
+        act_cfg: dict = dict(type="GELU"),
+        norm_cfg: dict = dict(type="LN"),
+        with_cp: bool = False,
+        init_cfg: None = None,
     ):
         super().__init__(init_cfg=init_cfg)
 
         if isinstance(drop_path_rate, list):
             drop_path_rates = drop_path_rate
-            assert len(drop_path_rates) == depth
+            if len(drop_path_rates) != depth:
+                msg = "The length of drop_path_rate should be equal to depth."
+                raise ValueError(msg)
         else:
             drop_path_rates = [deepcopy(drop_path_rate) for _ in range(depth)]
 
@@ -440,7 +458,7 @@ class SwinBlockSequence(BaseModule):
                 num_heads=num_heads,
                 feedforward_channels=feedforward_channels,
                 window_size=window_size,
-                shift=False if i % 2 == 0 else True,
+                shift=i % 2 != 0,
                 qkv_bias=qkv_bias,
                 qk_scale=qk_scale,
                 drop_rate=drop_rate,
@@ -455,20 +473,21 @@ class SwinBlockSequence(BaseModule):
 
         self.downsample = downsample
 
-    def forward(self, x, hw_shape):
+    def forward(self, x: torch.Tensor, hw_shape: tuple[int, int]) -> torch.Tensor:
+        """Forward function."""
         for block in self.blocks:
             x = block(x, hw_shape)
 
         if self.downsample:
             x_down, down_hw_shape = self.downsample(x, hw_shape)
             return x_down, down_hw_shape, x, hw_shape
-        else:
-            return x, hw_shape, x, hw_shape
+        return x, hw_shape, x, hw_shape
 
 
 @MODELS.register_module()
 class SwinTransformer(BaseModule):
-    """Swin Transformer
+    """Swin Transformer.
+
     A PyTorch implement of : `Swin Transformer:
     Hierarchical Vision Transformer using Shifted Windows`  -
         https://arxiv.org/abs/2103.14030
@@ -526,30 +545,29 @@ class SwinTransformer(BaseModule):
 
     def __init__(
         self,
-        pretrain_img_size=224,
-        in_channels=3,
-        embed_dims=96,
-        patch_size=4,
-        window_size=7,
-        mlp_ratio=4,
-        depths=(2, 2, 6, 2),
-        num_heads=(3, 6, 12, 24),
-        strides=(4, 2, 2, 2),
-        out_indices=(0, 1, 2, 3),
-        qkv_bias=True,
-        qk_scale=None,
-        patch_norm=True,
-        drop_rate=0.0,
-        attn_drop_rate=0.0,
-        drop_path_rate=0.1,
-        use_abs_pos_embed=False,
-        act_cfg=dict(type="GELU"),
-        norm_cfg=dict(type="LN"),
-        with_cp=False,
-        pretrained=None,
-        convert_weights=False,
-        frozen_stages=-1,
-        init_cfg=None,
+        pretrain_img_size: int = 224,
+        in_channels: int = 3,
+        embed_dims: int = 96,
+        patch_size: int = 4,
+        window_size: int = 7,
+        mlp_ratio: int = 4,
+        depths: tuple[int, ...] = (2, 2, 6, 2),
+        num_heads: tuple[int, ...] = (3, 6, 12, 24),
+        strides: tuple[int, ...] = (4, 2, 2, 2),
+        out_indices: tuple[int, ...] = (0, 1, 2, 3),
+        qkv_bias: bool = True,
+        qk_scale: float | None = None,
+        patch_norm: bool = True,
+        drop_rate: float = 0.0,
+        attn_drop_rate: float = 0.0,
+        drop_path_rate: float = 0.1,
+        act_cfg: dict = dict(type="GELU"),
+        norm_cfg: dict = dict(type="LN"),
+        with_cp: bool = False,
+        pretrained: str | None = None,
+        convert_weights: bool = False,
+        frozen_stages: int = -1,
+        init_cfg: dict | None = None,
     ):
         self.convert_weights = convert_weights
         self.frozen_stages = frozen_stages
@@ -558,26 +576,33 @@ class SwinTransformer(BaseModule):
         elif isinstance(pretrain_img_size, tuple):
             if len(pretrain_img_size) == 1:
                 pretrain_img_size = to_2tuple(pretrain_img_size[0])
-            assert (
-                len(pretrain_img_size) == 2
-            ), f"The size of image should have length 1 or 2, but got {len(pretrain_img_size)}"
 
-        assert not (init_cfg and pretrained), "init_cfg and pretrained cannot be specified at the same time"
+            if len(pretrain_img_size) != 2:
+                msg = f"The size of image should have length 1 or 2, but got {len(pretrain_img_size)}"
+                raise ValueError(msg)
+
+        if init_cfg and pretrained:
+            msg = "init_cfg and pretrained cannot be set simultaneously"
+            raise ValueError(msg)
+
+        init_cfg = {} if init_cfg is None else init_cfg
         if isinstance(pretrained, str):
-            warnings.warn("DeprecationWarning: pretrained is deprecated, " 'please use "init_cfg" instead')
-            self.init_cfg = dict(type="Pretrained", checkpoint=pretrained)
+            warnings.warn("DeprecationWarning: pretrained is deprecated, please use init_cfg instead", stacklevel=2)
+            self.init_cfg = {"type": "Pretrained", "checkpoint": pretrained}
         elif pretrained is None:
             self.init_cfg = init_cfg
         else:
-            raise TypeError("pretrained must be a str or None")
+            msg = "pretrained must be a str or None"
+            raise TypeError(msg)
 
-        super(SwinTransformer, self).__init__(init_cfg=init_cfg)
+        super().__init__(init_cfg=init_cfg)
 
         num_layers = len(depths)
         self.out_indices = out_indices
-        self.use_abs_pos_embed = use_abs_pos_embed
 
-        assert strides[0] == patch_size, "Use non-overlapping patch embed."
+        if strides[0] != patch_size:
+            msg = "Use non-overlapping patch embed."
+            raise ValueError(msg)
 
         self.patch_embed = PatchEmbed(
             in_channels=in_channels,
@@ -588,12 +613,6 @@ class SwinTransformer(BaseModule):
             norm_cfg=norm_cfg if patch_norm else None,
             init_cfg=None,
         )
-
-        if self.use_abs_pos_embed:
-            patch_row = pretrain_img_size[0] // patch_size
-            patch_col = pretrain_img_size[1] // patch_size
-            num_patches = patch_row * patch_col
-            self.absolute_pos_embed = nn.Parameter(torch.zeros((1, num_patches, embed_dims)))
 
         self.drop_after_pos = nn.Dropout(p=drop_rate)
 
@@ -643,18 +662,17 @@ class SwinTransformer(BaseModule):
             layer_name = f"norm{i}"
             self.add_module(layer_name, layer)
 
-    def train(self, mode=True):
+    def train(self, mode: bool = True) -> None:
         """Convert the model into training mode while keep layers freezed."""
-        super(SwinTransformer, self).train(mode)
+        super().train(mode)
         self._freeze_stages()
 
-    def _freeze_stages(self):
+    def _freeze_stages(self) -> None:
+        """Freeze stages when training."""
         if self.frozen_stages >= 0:
             self.patch_embed.eval()
             for param in self.patch_embed.parameters():
                 param.requires_grad = False
-            if self.use_abs_pos_embed:
-                self.absolute_pos_embed.requires_grad = False
             self.drop_after_pos.eval()
 
         for i in range(1, self.frozen_stages + 1):
@@ -669,20 +687,19 @@ class SwinTransformer(BaseModule):
             for param in m.parameters():
                 param.requires_grad = False
 
-    def init_weights(self):
+    def init_weights(self) -> None:
+        """Initialize the weights."""
         if self.init_cfg is None:
-            if self.use_abs_pos_embed:
-                trunc_normal_(self.absolute_pos_embed, std=0.02)
             for m in self.modules():
                 if isinstance(m, nn.Linear):
                     trunc_normal_init(m, std=0.02, bias=0.0)
                 elif isinstance(m, nn.LayerNorm):
                     constant_init(m, 1.0)
         else:
-            assert (
-                "checkpoint" in self.init_cfg
-            ), f"Only support specify `Pretrained` in `init_cfg` in {self.__class__.__name__} "
-            ckpt = CheckpointLoader.load_checkpoint(self.init_cfg.checkpoint, map_location="cpu")
+            if "checkpoint" not in self.init_cfg:
+                msg = "The checkpoint is not in the init_cfg."
+                raise ValueError(msg)
+            ckpt = CheckpointLoader.load_checkpoint(self.init_cfg["checkpoint"], map_location="cpu")
             if "state_dict" in ckpt:
                 _state_dict = ckpt["state_dict"]
             elif "model" in ckpt:
@@ -693,56 +710,53 @@ class SwinTransformer(BaseModule):
                 # supported loading weight from original repo,
                 _state_dict = swin_converter(_state_dict)
 
-            state_dict = OrderedDict()
+            state_dict = {}
             for k, v in _state_dict.items():
                 if k.startswith("backbone."):
                     state_dict[k[9:]] = v
 
             # strip prefix of state_dict
-            if list(state_dict.keys())[0].startswith("module."):
+            if next(iter(state_dict.keys())).startswith("module."):
                 state_dict = {k[7:]: v for k, v in state_dict.items()}
 
             # reshape absolute position embedding
             if state_dict.get("absolute_pos_embed") is not None:
                 absolute_pos_embed = state_dict["absolute_pos_embed"]
-                N1, L, C1 = absolute_pos_embed.size()
-                N2, C2, H, W = self.absolute_pos_embed.size()
-                if N1 != N2 or C1 != C2 or H * W != L:
-                    warnings.warn("Error in loading absolute_pos_embed, pass")
+                n1, length, c1 = absolute_pos_embed.size()
+                n2, c2, h, w = self.absolute_pos_embed.size()
+                if n1 != n2 or c1 != c2 or h * w != length:
+                    warnings.warn("Error in loading absolute_pos_embed, pass", stacklevel=2)
                 else:
                     state_dict["absolute_pos_embed"] = (
-                        absolute_pos_embed.view(N2, H, W, C2).permute(0, 3, 1, 2).contiguous()
+                        absolute_pos_embed.view(n2, h, w, c2).permute(0, 3, 1, 2).contiguous()
                     )
 
             # interpolate position bias table if needed
-            relative_position_bias_table_keys = [k for k in state_dict.keys() if "relative_position_bias_table" in k]
+            relative_position_bias_table_keys = [k for k in state_dict if "relative_position_bias_table" in k]
             for table_key in relative_position_bias_table_keys:
                 table_pretrained = state_dict[table_key]
                 table_current = self.state_dict()[table_key]
-                L1, nH1 = table_pretrained.size()
-                L2, nH2 = table_current.size()
-                if nH1 != nH2:
-                    warnings.warn(f"Error in loading {table_key}, pass")
-                elif L1 != L2:
-                    S1 = int(L1**0.5)
-                    S2 = int(L2**0.5)
+                l1, n_h1 = table_pretrained.size()
+                l2, n_h2 = table_current.size()
+                if n_h1 != n_h2:
+                    warnings.warn(f"Error in loading {table_key}, pass", stacklevel=2)
+                elif l1 != l2:
+                    s1 = int(l1**0.5)
+                    s2 = int(l2**0.5)
                     table_pretrained_resized = torch.nn.functional.interpolate(
-                        table_pretrained.permute(1, 0).reshape(1, nH1, S1, S1),
-                        size=(S2, S2),
+                        table_pretrained.permute(1, 0).reshape(1, n_h1, s1, s1),
+                        size=(s2, s2),
                         mode="bicubic",
                     )
-                    state_dict[table_key] = table_pretrained_resized.view(nH2, L2).permute(1, 0).contiguous()
+                    state_dict[table_key] = table_pretrained_resized.view(n_h2, l2).permute(1, 0).contiguous()
 
             # load state_dict
             self.load_state_dict(state_dict, False)
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> list[torch.Tensor]:
+        """Forward function."""
         x, hw_shape = self.patch_embed(x)
-
-        if self.use_abs_pos_embed:
-            x = x + self.absolute_pos_embed
         x = self.drop_after_pos(x)
-
         outs = []
         for i, stage in enumerate(self.stages):
             x, hw_shape, out, out_hw_shape = stage(x, hw_shape)
@@ -755,25 +769,24 @@ class SwinTransformer(BaseModule):
         return outs
 
 
-def swin_converter(ckpt):
+def swin_converter(ckpt: dict) -> OrderedDict:
+    """Convert the key of pre-trained model from original repo."""
     new_ckpt = OrderedDict()
 
-    def correct_unfold_reduction_order(x):
+    def correct_unfold_reduction_order(x: torch.Tensor) -> torch.Tensor:
         out_channel, in_channel = x.shape
         x = x.reshape(out_channel, 4, in_channel // 4)
-        x = x[:, [0, 2, 1, 3], :].transpose(1, 2).reshape(out_channel, in_channel)
-        return x
+        return x[:, [0, 2, 1, 3], :].transpose(1, 2).reshape(out_channel, in_channel)
 
-    def correct_unfold_norm_order(x):
+    def correct_unfold_norm_order(x: torch.Tensor) -> torch.Tensor:
         in_channel = x.shape[0]
         x = x.reshape(4, in_channel // 4)
-        x = x[[0, 2, 1, 3], :].transpose(0, 1).reshape(in_channel)
-        return x
+        return x[[0, 2, 1, 3], :].transpose(0, 1).reshape(in_channel)
 
     for k, v in ckpt.items():
         if k.startswith("head"):
             continue
-        elif k.startswith("layers"):
+        if k.startswith("layers"):
             new_v = v
             if "attn." in k:
                 new_k = k.replace("attn.", "attn.w_msa.")
@@ -795,10 +808,7 @@ def swin_converter(ckpt):
             new_k = new_k.replace("layers", "stages", 1)
         elif k.startswith("patch_embed"):
             new_v = v
-            if "proj" in k:
-                new_k = k.replace("proj", "projection")
-            else:
-                new_k = k
+            new_k = k.replace("proj", "projection") if "proj" in k else k
         else:
             new_v = v
             new_k = k

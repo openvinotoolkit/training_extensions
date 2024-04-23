@@ -15,8 +15,6 @@ from .two_stage import TwoStageDetector
 if TYPE_CHECKING:
     from mmengine.config import ConfigDict
 
-    from otx.algo.instance_segmentation.mmdet.models.utils import OptConfigType, OptMultiConfig
-
 
 @MODELS.register_module()
 class MaskRCNN(TwoStageDetector):
@@ -29,9 +27,9 @@ class MaskRCNN(TwoStageDetector):
         roi_head: ConfigDict,
         train_cfg: ConfigDict,
         test_cfg: ConfigDict,
-        neck: OptConfigType = None,
-        data_preprocessor: OptConfigType = None,
-        init_cfg: OptMultiConfig = None,
+        neck: ConfigDict | dict | None = None,
+        data_preprocessor: ConfigDict | dict | None = None,
+        init_cfg: ConfigDict | dict | list[ConfigDict | dict] | None = None,
     ) -> None:
         super().__init__(
             backbone=backbone,

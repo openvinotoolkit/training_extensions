@@ -8,14 +8,19 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import torch
 from mmengine.registry import MODELS
 from torch import Tensor
 
 from otx.algo.detection.deployment import is_mmdeploy_enabled
-from otx.algo.instance_segmentation.mmdet.models.utils import ConfigType, OptMultiConfig
 
 from .base_roi_extractor import BaseRoIExtractor
+
+if TYPE_CHECKING:
+    from mmengine.config import ConfigDict
+
 
 # ruff: noqa: ARG004
 
@@ -41,11 +46,11 @@ class SingleRoIExtractor(BaseRoIExtractor):
 
     def __init__(
         self,
-        roi_layer: ConfigType,
+        roi_layer: ConfigDict | dict,
         out_channels: int,
         featmap_strides: list[int],
         finest_scale: int = 56,
-        init_cfg: OptMultiConfig = None,
+        init_cfg: ConfigDict | dict | list[ConfigDict | dict] | None = None,
     ) -> None:
         super().__init__(
             roi_layer=roi_layer,

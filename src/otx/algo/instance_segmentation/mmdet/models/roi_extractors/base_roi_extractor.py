@@ -8,6 +8,7 @@
 from __future__ import annotations
 
 from abc import ABCMeta, abstractmethod
+from typing import TYPE_CHECKING
 
 import torch
 
@@ -17,7 +18,8 @@ from mmcv.ops import RoIAlign
 from mmengine.model import BaseModule
 from torch import Tensor, nn
 
-from otx.algo.instance_segmentation.mmdet.models.utils import ConfigType, OptMultiConfig
+if TYPE_CHECKING:
+    from mmengine.config import ConfigDict
 
 
 class BaseRoIExtractor(BaseModule, metaclass=ABCMeta):
@@ -34,10 +36,10 @@ class BaseRoIExtractor(BaseModule, metaclass=ABCMeta):
 
     def __init__(
         self,
-        roi_layer: ConfigType,
+        roi_layer: ConfigDict | dict,
         out_channels: int,
         featmap_strides: list[int],
-        init_cfg: OptMultiConfig = None,
+        init_cfg: ConfigDict | dict | list[ConfigDict | dict] | None = None,
     ) -> None:
         super().__init__(init_cfg=init_cfg)
         self.roi_layers = self.build_roi_layers(roi_layer, featmap_strides)
@@ -49,7 +51,7 @@ class BaseRoIExtractor(BaseModule, metaclass=ABCMeta):
         """int: Number of input feature maps."""
         return len(self.featmap_strides)
 
-    def build_roi_layers(self, layer_cfg: ConfigType, featmap_strides: list[int]) -> nn.ModuleList:
+    def build_roi_layers(self, layer_cfg: ConfigDict | dict, featmap_strides: list[int]) -> nn.ModuleList:
         """Build RoI operator to extract feature from each level feature map.
 
         Args:

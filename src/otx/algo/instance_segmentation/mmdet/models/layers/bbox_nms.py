@@ -8,18 +8,22 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import torch
 from torch import Tensor
 
 from otx.algo.detection.ops.nms import batched_nms
-from otx.algo.instance_segmentation.mmdet.models.utils import ConfigType
+
+if TYPE_CHECKING:
+    from mmengine.config import ConfigDict
 
 
 def multiclass_nms(
     multi_bboxes: Tensor,
     multi_scores: Tensor,
     score_thr: float,
-    nms_cfg: ConfigType,
+    nms_cfg: ConfigDict | dict,
     max_num: int = -1,
     score_factors: Tensor | None = None,
     return_inds: bool = False,

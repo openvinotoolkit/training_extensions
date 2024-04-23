@@ -19,12 +19,12 @@ from otx.algo.detection.deployment import is_mmdeploy_enabled
 from otx.algo.instance_segmentation.mmdet.models.custom_roi_head import CustomRoIHead
 from otx.algo.instance_segmentation.mmdet.models.dense_heads import RPNHead
 from otx.algo.instance_segmentation.mmdet.models.necks import FPN
-from otx.algo.instance_segmentation.mmdet.models.utils import ConfigType, OptConfigType, OptMultiConfig
 
 from .base import BaseDetector
 
 if TYPE_CHECKING:
     from mmdet.structures.det_data_sample import DetDataSample
+    from mmengine.config import ConfigDict
 
     from otx.algo.instance_segmentation.mmdet.models.detectors.base import ForwardResults
 
@@ -39,14 +39,14 @@ class TwoStageDetector(BaseDetector):
 
     def __init__(
         self,
-        backbone: ConfigType,
-        neck: ConfigType,
-        rpn_head: ConfigType,
-        roi_head: ConfigType,
-        train_cfg: ConfigType,
-        test_cfg: ConfigType,
-        data_preprocessor: OptConfigType = None,
-        init_cfg: OptMultiConfig = None,
+        backbone: ConfigDict | dict,
+        neck: ConfigDict | dict,
+        rpn_head: ConfigDict | dict,
+        roi_head: ConfigDict | dict,
+        train_cfg: ConfigDict | dict,
+        test_cfg: ConfigDict | dict,
+        data_preprocessor: ConfigDict | dict | None = None,
+        init_cfg: ConfigDict | dict | list[ConfigDict | dict] | None = None,
     ) -> None:
         super().__init__(data_preprocessor=data_preprocessor, init_cfg=init_cfg)
         self.backbone = MODELS.build(backbone)
