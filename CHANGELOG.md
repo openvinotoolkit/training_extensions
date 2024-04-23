@@ -20,6 +20,8 @@ All notable changes to this project will be documented in this file.
 
 ### Bug fixes
 
+- Update QAT configs for rotated detection (<https://github.com/openvinotoolkit/training_extensions/pull/3375>)
+- Hotfix :wrench: Bypass ClsIncrSampler for tiling (<https://github.com/openvinotoolkit/training_extensions/pull/3374>)
 - [NNCF] Dynamic shape datasets WA (<https://github.com/openvinotoolkit/training_extensions/pull/3355>)
 - [Hotfix] :fire: Fixing detection oriented OV inferencer (<https://github.com/openvinotoolkit/training_extensions/pull/3351>)
 - Revert adaptive batch size (<https://github.com/openvinotoolkit/training_extensions/pull/3340>)
