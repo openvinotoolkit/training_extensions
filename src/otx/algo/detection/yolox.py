@@ -104,7 +104,6 @@ class OTXYOLOX(MMDetCompatibleModel):
         self.classification_layers = self.get_classification_layers(config, "model.")
         config.pop("type")  # TODO (sungchul): remove `type` in recipe
         detector = YOLOX(**convert_conf_to_mmconfig_dict(config))
-        detector.init_weights()  # TODO (sungchul): remove init_weights for now
         if self.load_from is not None:
             load_checkpoint(detector, self.load_from, map_location="cpu")
         return detector

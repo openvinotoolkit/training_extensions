@@ -25,19 +25,6 @@ from otx.algo.modules.depthwise_separable_conv_module import DepthwiseSeparableC
 from otx.algo.detection.heads.base_head import BaseDenseHead
 
 
-def bias_init_with_prob(prior_prob: float) -> float:
-    """Initialize conv/fc bias value according to a given probability value.
-
-    Reference : https://github.com/open-mmlab/mmengine/blob/v0.10.3/mmengine/model/weight_init.py#L121-L124
-
-    TODO (sungchul): is there the same function in otx?
-
-    Args:
-        prior_prob (float): Prior probability.
-    """
-    return float(-np.log((1 - prior_prob) / prior_prob))
-
-
 def bbox_xyxy_to_cxcywh(bbox: Tensor) -> Tensor:
     """Convert bbox coordinates from (x1, y1, x2, y2) to (cx, cy, w, h).
 
