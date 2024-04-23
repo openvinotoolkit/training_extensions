@@ -6,12 +6,25 @@ from __future__ import annotations
 
 from functools import partial
 from typing import TYPE_CHECKING, Callable
+import torch.distributed as dist
 
 import torch
 from torch import Tensor
 
 if TYPE_CHECKING:
     from mmengine.structures import InstanceData
+
+
+def reduce_mean(tensor: Tensor) -> Tensor:
+    """Obtain the mean of tensor on different GPUs.
+
+    Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/utils/dist_utils.py#L59-L65
+    """
+    if not (dist.is_available() and dist.is_initialized()):
+        return tensor
+    tensor = tensor.clone()
+    dist.all_reduce(tensor.div_(dist.get_world_size()), op=dist.ReduceOp.SUM)
+    return tensor
 
 
 # Methods below come from mmdet.utils and slightly modified.

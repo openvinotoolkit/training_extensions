@@ -71,15 +71,6 @@ class BaseDenseHead(nn.Module):
         # can get positive information.
         self._raw_positive_infos: dict = {}
 
-    def init_weights(self) -> None:
-        """Initialize the weights."""
-        super().init_weights()
-        # avoid init_cfg overwrite the initialization of `conv_offset`
-        for m in self.modules():
-            # DeformConv2dPack, ModulatedDeformConv2dPack
-            if hasattr(m, "conv_offset"):
-                constant_init(m.conv_offset, 0)
-
     def get_positive_infos(self) -> list[InstanceData] | None:
         """Get positive information from sampling results.
 
@@ -193,9 +184,9 @@ class BaseDenseHead(nn.Module):
         """
         batch_img_metas = [data_samples.metainfo for data_samples in batch_data_samples]
 
-        cls_scores, bbox_preds = self(x)
+        outs = self(x)
 
-        return self.predict_by_feat(cls_scores, bbox_preds, batch_img_metas=batch_img_metas, rescale=rescale)
+        return self.predict_by_feat(*outs, batch_img_metas=batch_img_metas, rescale=rescale)
 
     def predict_by_feat(
         self,

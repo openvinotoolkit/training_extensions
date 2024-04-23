@@ -27,11 +27,12 @@ from otx.core.model.utils.mmdet import DetDataPreprocessor
 # mmdet models
 # from mmdet.models.backbones.csp_darknet import CSPDarknet
 # from mmdet.models.necks.yolox_pafpn import YOLOXPAFPN
-from mmdet.models.dense_heads.yolox_head import YOLOXHead
+# from mmdet.models.dense_heads.yolox_head import YOLOXHead
 
 # otx models
 from otx.algo.detection.backbones.csp_darknet import CSPDarknet
 from otx.algo.detection.necks.yolox_pafpn import YOLOXPAFPN
+from otx.algo.detection.heads.yolox_head import YOLOXHead
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
@@ -103,7 +104,7 @@ class OTXYOLOX(MMDetCompatibleModel):
         self.classification_layers = self.get_classification_layers(config, "model.")
         config.pop("type")  # TODO (sungchul): remove `type` in recipe
         detector = YOLOX(**convert_conf_to_mmconfig_dict(config))
-        detector.init_weights()
+        detector.init_weights()  # TODO (sungchul): remove init_weights for now
         if self.load_from is not None:
             load_checkpoint(detector, self.load_from, map_location="cpu")
         return detector
