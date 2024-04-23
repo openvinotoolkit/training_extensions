@@ -99,10 +99,15 @@ class ATSS(MMDetCompatibleModel):
         self._classification_layers: dict[str, dict[str, int]] | None = None
 
     def _create_model(self) -> nn.Module:
+        from mmengine.runner import load_checkpoint
+
         config = deepcopy(self.config)
         config.pop("type")
-        model = TorchATSS(**convert_conf_to_mmconfig_dict(config))
         self.classification_layers = self.get_classification_layers()
+        model = TorchATSS(**convert_conf_to_mmconfig_dict(config))
+        model.init_weights()
+        if self.load_from is not None:
+            load_checkpoint(model, self.load_from, map_location="cpu")
         return model
 
     def get_classification_layers(self, prefix: str = "model.") -> dict[str, dict[str, int]]:

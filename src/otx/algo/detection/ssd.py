@@ -421,6 +421,7 @@ class SSD(MMDetCompatibleModel):
         config = deepcopy(self.config)
         self.classification_layers = self.get_classification_layers(config, "model.")
         detector = SingleStageDetector(**convert_conf_to_mmconfig_dict(config))
+        detector.init_weights()
         if self.load_from is not None:
             load_checkpoint(detector, self.load_from, map_location="cpu")
         return detector
