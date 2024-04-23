@@ -101,7 +101,6 @@ class ATSS(MMDetCompatibleModel):
         config = deepcopy(self.config)
         self.classification_layers = self.get_classification_layers()
         model = TorchATSS(**convert_conf_to_mmconfig_dict(config))
-        model.init_weights()
         if self.load_from is not None:
             load_checkpoint(model, self.load_from, map_location="cpu")
         return model

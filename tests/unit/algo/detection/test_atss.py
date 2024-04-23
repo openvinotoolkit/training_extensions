@@ -5,7 +5,7 @@
 import pytest
 from otx.algo.detection.atss import ATSS
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
-from otx.core.exporter.mmdeploy import MMdeployExporter
+from otx.core.exporter.native import OTXModelExporter
 from otx.core.types.export import TaskLevelExportParameters
 
 
@@ -18,4 +18,4 @@ class TestATSS:
         mock_load_ckpt.assert_called_once_with({}, "model.model.")
 
         assert isinstance(model._export_parameters, TaskLevelExportParameters)
-        assert isinstance(model._exporter, MMdeployExporter)
+        assert isinstance(model._exporter, OTXModelExporter)
