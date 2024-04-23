@@ -61,13 +61,13 @@ jobs:
       timeout-minutes: 120
       upload-artifact: true
       artifact-prefix: "unit-test-results"
-      runs-on: "['otx-gpu-v100-1']"
+      runs-on: "['otx-gpu-v100-1-test']"
   Coverage-Test:
     needs: Code-Quality-Checks
     concurrency:
       group: ${{ github.workflow }}-Coverage-${{ github.event.pull_request.number || github.ref }}}
       cancel-in-progress: true
-    runs-on: ["otx-gpu-v100-1"]
+    runs-on: ["otx-gpu-v100-1-test"]
     container:
       image: 219678651685.dkr.ecr.eu-central-1.amazonaws.com/ote-ci:pr-365-9ea2e4cf457becf07cc88ad38b5f1b92c6058995
       options: --runtime=nvidia --env-file=/home/runner/.nvidia.env --shm-size=24g
