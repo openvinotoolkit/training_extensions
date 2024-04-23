@@ -236,10 +236,11 @@ class PatchMerging(BaseModule):
         padding: int | tuple | str = "corner",
         dilation: int | tuple = 1,
         bias: bool = False,
-        norm_cfg: ConfigDict | dict | None = dict(type="LN"),
+        norm_cfg: ConfigDict | dict | None = None,
         init_cfg: ConfigDict | dict | None = None,
     ) -> None:
         super().__init__(init_cfg=init_cfg)
+        norm_cfg = norm_cfg if norm_cfg is not None else {"type": "LN"}
         self.in_channels = in_channels
         self.out_channels = out_channels
         stride = stride if stride else kernel_size

@@ -29,6 +29,8 @@ from otx.algo.instance_segmentation.mmdet.models.layers import PatchEmbed, Patch
 from otx.algo.modules.norm import build_norm_layer
 from otx.algo.modules.transformer import FFN
 
+# ruff: noqa: PLR0913
+
 
 class WindowMSA(BaseModule):
     """Window based multi-head self-attention (W-MSA) module with relative position bias.
@@ -170,7 +172,7 @@ class ShiftWindowMSA(BaseModule):
         qk_scale: float | None = None,
         attn_drop_rate: float = 0,
         proj_drop_rate: float = 0,
-        dropout_layer: dict = dict(type="DropPath", drop_prob=0.0),
+        dropout_layer: dict | None = None,
         init_cfg: None = None,
     ):
         super().__init__(init_cfg)
@@ -192,6 +194,7 @@ class ShiftWindowMSA(BaseModule):
             init_cfg=None,
         )
 
+        dropout_layer = {"type": "DropPath", "drop_prob": 0.0} if dropout_layer is None else dropout_layer
         _dropout_layer = deepcopy(dropout_layer)
         dropout_type = _dropout_layer.pop("type")
         if dropout_type != "DropPath":
@@ -340,8 +343,8 @@ class SwinBlock(BaseModule):
         drop_rate: float = 0.0,
         attn_drop_rate: float = 0.0,
         drop_path_rate: float = 0.0,
-        act_cfg: dict = dict(type="GELU"),
-        norm_cfg: dict = dict(type="LN"),
+        act_cfg: dict | None = None,
+        norm_cfg: dict | None = None,
         with_cp: bool = False,
         init_cfg: None = None,
     ):
@@ -349,6 +352,9 @@ class SwinBlock(BaseModule):
 
         self.init_cfg = init_cfg
         self.with_cp = with_cp
+
+        act_cfg = act_cfg if act_cfg is not None else {"type": "GELU"}
+        norm_cfg = norm_cfg if norm_cfg is not None else {"type": "LN"}
 
         self.norm1 = build_norm_layer(norm_cfg, embed_dims)[1]
         self.attn = ShiftWindowMSA(
@@ -360,7 +366,7 @@ class SwinBlock(BaseModule):
             qk_scale=qk_scale,
             attn_drop_rate=attn_drop_rate,
             proj_drop_rate=drop_rate,
-            dropout_layer=dict(type="DropPath", drop_prob=drop_path_rate),
+            dropout_layer={"type": "DropPath", "drop_prob": drop_path_rate},
             init_cfg=None,
         )
 
@@ -370,7 +376,7 @@ class SwinBlock(BaseModule):
             feedforward_channels=feedforward_channels,
             num_fcs=2,
             ffn_drop=drop_rate,
-            dropout_layer=dict(type="DropPath", drop_prob=drop_path_rate),
+            dropout_layer={"type": "DropPath", "drop_prob": drop_path_rate},
             act_cfg=act_cfg,
             add_identity=True,
             init_cfg=None,
@@ -436,12 +442,15 @@ class SwinBlockSequence(BaseModule):
         attn_drop_rate: float = 0.0,
         drop_path_rate: list[float] | float = 0.0,
         downsample: BaseModule | None = None,
-        act_cfg: dict = dict(type="GELU"),
-        norm_cfg: dict = dict(type="LN"),
+        act_cfg: dict | None = None,
+        norm_cfg: dict | None = None,
         with_cp: bool = False,
         init_cfg: None = None,
     ):
         super().__init__(init_cfg=init_cfg)
+
+        act_cfg = act_cfg if act_cfg is not None else {"type": "GELU"}
+        norm_cfg = norm_cfg if norm_cfg is not None else {"type": "LN"}
 
         if isinstance(drop_path_rate, list):
             drop_path_rates = drop_path_rate
@@ -561,14 +570,16 @@ class SwinTransformer(BaseModule):
         drop_rate: float = 0.0,
         attn_drop_rate: float = 0.0,
         drop_path_rate: float = 0.1,
-        act_cfg: dict = dict(type="GELU"),
-        norm_cfg: dict = dict(type="LN"),
+        act_cfg: dict | None = None,
+        norm_cfg: dict | None = None,
         with_cp: bool = False,
         pretrained: str | None = None,
         convert_weights: bool = False,
         frozen_stages: int = -1,
         init_cfg: dict | None = None,
     ):
+        act_cfg = act_cfg if act_cfg is not None else {"type": "GELU"}
+        norm_cfg = norm_cfg if norm_cfg is not None else {"type": "LN"}
         self.convert_weights = convert_weights
         self.frozen_stages = frozen_stages
         if isinstance(pretrain_img_size, int):
