@@ -78,13 +78,14 @@ class OTXYOLOX(MMDetCompatibleModel):
     def __init__(
         self,
         label_info: LabelInfoTypes,
-        variant: Literal["l", "s", "x"],
+        variant: Literal["tiny", "l", "s", "x"],
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MeanAPCallable,
         torch_compile: bool = False,
     ) -> None:
-        model_name = f"yolox_{variant}"
+        self.variant = variant
+        model_name = f"yolox_{self.variant}"
         config = read_mmconfig(model_name=model_name)
         super().__init__(
             label_info=label_info,
@@ -94,7 +95,7 @@ class OTXYOLOX(MMDetCompatibleModel):
             metric=metric,
             torch_compile=torch_compile,
         )
-        self.image_size = (1, 3, 640, 640)
+        self.image_size = (1, 3, 416, 416) if self.variant == "tiny" else (1, 3, 640, 640)
         self.tile_image_size = self.image_size
 
     def _create_model(self) -> nn.Module:
@@ -156,11 +157,17 @@ class OTXYOLOX(MMDetCompatibleModel):
 
         mean, std = get_mean_std_from_data_processing(self.config)
 
+        deploy_cfg = "otx.algo.detection.mmdeploy.yolox"
+        swap_rgb = True
+        if self.variant == "tiny":
+            deploy_cfg += "_tiny"
+            swap_rgb = False
+
         with self.export_model_forward_context():
             return MMdeployExporter(
                 model_builder=self._create_model,
                 model_cfg=deepcopy(self.config),
-                deploy_cfg="otx.algo.detection.mmdeploy.yolox",
+                deploy_cfg=deploy_cfg,
                 test_pipeline=self._make_fake_test_pipeline(),
                 task_level_export_parameters=self._export_parameters,
                 input_size=self.image_size,
@@ -168,59 +175,10 @@ class OTXYOLOX(MMDetCompatibleModel):
                 std=std,
                 resize_mode="fit_to_window_letterbox",
                 pad_value=114,
-                swap_rgb=True,
+                swap_rgb=swap_rgb,
                 output_names=["feature_vector", "saliency_map"] if self.explain_mode else None,
             )
 
     def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.model.") -> dict:
         """Load the previous OTX ckpt according to OTX2.0."""
         return OTXv1Helper.load_det_ckpt(state_dict, add_prefix)
-
-
-class OTXYOLOXTiny(MMDetCompatibleModel):
-    """OTX Detection model class for YOLOX tiny."""
-
-    def __init__(
-        self,
-        label_info: LabelInfoTypes,
-        optimizer: OptimizerCallable = DefaultOptimizerCallable,
-        scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
-        metric: MetricCallable = MeanAPCallable,
-        torch_compile: bool = False,
-    ) -> None:
-        model_name = "yolox_tiny"
-        config = read_mmconfig(model_name=model_name)
-        super().__init__(
-            label_info=label_info,
-            config=config,
-            optimizer=optimizer,
-            scheduler=scheduler,
-            metric=metric,
-            torch_compile=torch_compile,
-        )
-        self.image_size = (1, 3, 416, 416)
-        self.tile_image_size = self.image_size
-
-    @property
-    def _exporter(self) -> OTXModelExporter:
-        """Creates OTXModelExporter object that can export the model."""
-        if self.image_size is None:
-            raise ValueError(self.image_size)
-
-        mean, std = get_mean_std_from_data_processing(self.config)
-
-        with self.export_model_forward_context():
-            return MMdeployExporter(
-                model_builder=self._create_model,
-                model_cfg=deepcopy(self.config),
-                deploy_cfg="otx.algo.detection.mmdeploy.yolox_tiny",
-                test_pipeline=self._make_fake_test_pipeline(),
-                task_level_export_parameters=self._export_parameters,
-                input_size=self.image_size,
-                mean=mean,
-                std=std,
-                resize_mode="fit_to_window_letterbox",
-                pad_value=114,
-                swap_rgb=False,
-                output_names=["feature_vector", "saliency_map"] if self.explain_mode else None,
-            )
