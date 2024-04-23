@@ -9,7 +9,6 @@ import warnings
 from typing import TYPE_CHECKING
 
 import torch
-from mmdet.models.losses.iou_loss import GIoULoss
 from mmdet.registry import TASK_UTILS
 from mmengine.structures import InstanceData
 from torch import Tensor, nn
@@ -19,6 +18,7 @@ from otx.algo.detection.heads.base_sampler import PseudoSampler
 from otx.algo.detection.heads.custom_anchor_generator import AnchorGenerator
 from otx.algo.detection.heads.delta_xywh_bbox_coder import DeltaXYWHBBoxCoder
 from otx.algo.detection.losses.cross_focal_loss import CrossSigmoidFocalLoss
+from otx.algo.detection.losses.iou_loss import GIoULoss
 from otx.algo.detection.utils.utils import anchor_inside_flags, images_to_levels, multi_apply, unmap
 
 if TYPE_CHECKING:
