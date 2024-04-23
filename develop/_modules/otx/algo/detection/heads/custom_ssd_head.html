@@ -298,7 +298,6 @@
         <span class="n">anchor_generator</span><span class="p">:</span> <span class="n">ConfigDict</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">,</span>
         <span class="n">bbox_coder</span><span class="p">:</span> <span class="n">ConfigDict</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">,</span>
         <span class="n">init_cfg</span><span class="p">:</span> <span class="n">ConfigDict</span> <span class="o">|</span> <span class="nb">dict</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n">ConfigDict</span><span class="p">]</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">],</span>
-        <span class="n">act_cfg</span><span class="p">:</span> <span class="n">ConfigDict</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">,</span>
         <span class="n">train_cfg</span><span class="p">:</span> <span class="n">ConfigDict</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">,</span>
         <span class="n">num_classes</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">80</span><span class="p">,</span>
         <span class="n">in_channels</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">512</span><span class="p">,</span> <span class="mi">1024</span><span class="p">,</span> <span class="mi">512</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">256</span><span class="p">),</span>
@@ -314,10 +313,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">stacked_convs</span> <span class="o">=</span> <span class="n">stacked_convs</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">feat_channels</span> <span class="o">=</span> <span class="n">feat_channels</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">use_depthwise</span> <span class="o">=</span> <span class="n">use_depthwise</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">act_cfg</span> <span class="o">=</span> <span class="n">act_cfg</span>  <span class="c1"># TODO(Jaeguk): act_cfg will be deprecated after implementing export.</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">cls_out_channels</span> <span class="o">=</span> <span class="n">num_classes</span> <span class="o">+</span> <span class="mi">1</span>  <span class="c1"># add background class</span>
-        <span class="n">anchor_generator</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;type&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">prior_generator</span> <span class="o">=</span> <span class="n">SSDAnchorGeneratorClustered</span><span class="p">(</span><span class="o">**</span><span class="n">anchor_generator</span><span class="p">)</span>
 
         <span class="c1"># Usually the numbers of anchors for each level are the same</span>
@@ -329,7 +326,6 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_init_layers</span><span class="p">()</span>
 
-        <span class="n">bbox_coder</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;type&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">bbox_coder</span> <span class="o">=</span> <span class="n">DeltaXYWHBBoxCoder</span><span class="p">(</span><span class="o">**</span><span class="n">bbox_coder</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">reg_decoded_bbox</span> <span class="o">=</span> <span class="n">reg_decoded_bbox</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">use_sigmoid_cls</span> <span class="o">=</span> <span class="kc">False</span>
@@ -338,7 +334,6 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">test_cfg</span> <span class="o">=</span> <span class="n">test_cfg</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">train_cfg</span><span class="p">:</span>
             <span class="n">assigner_args</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">train_cfg</span><span class="p">[</span><span class="s2">&quot;assigner&quot;</span><span class="p">]</span>
-            <span class="n">assigner_args</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;type&quot;</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">assigner</span> <span class="o">=</span> <span class="n">MaxIoUAssigner</span><span class="p">(</span><span class="o">**</span><span class="n">assigner_args</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">sampler</span> <span class="o">=</span> <span class="n">PseudoSampler</span><span class="p">(</span><span class="n">context</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>  <span class="c1"># type: ignore[no-untyped-call]</span>
 

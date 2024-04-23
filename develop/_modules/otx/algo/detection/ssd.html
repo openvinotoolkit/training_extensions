@@ -248,7 +248,7 @@
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">datumaro.components.annotation</span> <span class="kn">import</span> <span class="n">Bbox</span>
-<span class="kn">from</span> <span class="nn">mmdet.registry</span> <span class="kn">import</span> <span class="n">MODELS</span>
+<span class="kn">from</span> <span class="nn">mmengine.structures</span> <span class="kn">import</span> <span class="n">InstanceData</span>
 <span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">nn</span>
 
 <span class="kn">from</span> <span class="nn">otx.algo.detection.backbones.pytorchcv_backbones</span> <span class="kn">import</span> <span class="n">_build_pytorchcv_model</span>
@@ -257,10 +257,11 @@
 <span class="kn">from</span> <span class="nn">otx.algo.utils.support_otx_v1</span> <span class="kn">import</span> <span class="n">OTXv1Helper</span>
 <span class="kn">from</span> <span class="nn">otx.core.config.data</span> <span class="kn">import</span> <span class="n">TileConfig</span>
 <span class="kn">from</span> <span class="nn">otx.core.exporter.base</span> <span class="kn">import</span> <span class="n">OTXModelExporter</span>
-<span class="kn">from</span> <span class="nn">otx.core.exporter.mmdeploy</span> <span class="kn">import</span> <span class="n">MMdeployExporter</span>
+<span class="kn">from</span> <span class="nn">otx.core.exporter.native</span> <span class="kn">import</span> <span class="n">OTXNativeModelExporter</span>
 <span class="kn">from</span> <span class="nn">otx.core.metrics.mean_ap</span> <span class="kn">import</span> <span class="n">MeanAPCallable</span>
 <span class="kn">from</span> <span class="nn">otx.core.model.base</span> <span class="kn">import</span> <span class="n">DefaultOptimizerCallable</span><span class="p">,</span> <span class="n">DefaultSchedulerCallable</span>
 <span class="kn">from</span> <span class="nn">otx.core.model.detection</span> <span class="kn">import</span> <span class="n">MMDetCompatibleModel</span>
+<span class="kn">from</span> <span class="nn">otx.core.model.utils.mmdet</span> <span class="kn">import</span> <span class="n">DetDataPreprocessor</span>
 <span class="kn">from</span> <span class="nn">otx.core.schedulers</span> <span class="kn">import</span> <span class="n">LRSchedulerListCallable</span>
 <span class="kn">from</span> <span class="nn">otx.core.types.label</span> <span class="kn">import</span> <span class="n">LabelInfoTypes</span>
 <span class="kn">from</span> <span class="nn">otx.core.utils.build</span> <span class="kn">import</span> <span class="n">modify_num_classes</span>
@@ -271,9 +272,8 @@
     <span class="kn">import</span> <span class="nn">torch</span>
     <span class="kn">from</span> <span class="nn">lightning.pytorch.cli</span> <span class="kn">import</span> <span class="n">LRSchedulerCallable</span><span class="p">,</span> <span class="n">OptimizerCallable</span>
     <span class="kn">from</span> <span class="nn">mmengine</span> <span class="kn">import</span> <span class="n">ConfigDict</span>
-    <span class="kn">from</span> <span class="nn">mmengine.structures</span> <span class="kn">import</span> <span class="n">InstanceData</span>
     <span class="kn">from</span> <span class="nn">omegaconf</span> <span class="kn">import</span> <span class="n">DictConfig</span>
-    <span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">device</span>
+    <span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">Tensor</span>
 
     <span class="kn">from</span> <span class="nn">otx.algo.detection.heads.custom_anchor_generator</span> <span class="kn">import</span> <span class="n">SSDAnchorGeneratorClustered</span>
     <span class="kn">from</span> <span class="nn">otx.core.data.dataset.base</span> <span class="kn">import</span> <span class="n">OTXDataset</span>
@@ -292,9 +292,9 @@
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">backbone</span><span class="p">:</span> <span class="n">ConfigDict</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">,</span>
         <span class="n">bbox_head</span><span class="p">:</span> <span class="n">ConfigDict</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">,</span>
+        <span class="n">data_preprocessor</span><span class="p">:</span> <span class="n">ConfigDict</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">,</span>
         <span class="n">train_cfg</span><span class="p">:</span> <span class="n">ConfigDict</span> <span class="o">|</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">test_cfg</span><span class="p">:</span> <span class="n">ConfigDict</span> <span class="o">|</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">data_preprocessor</span><span class="p">:</span> <span class="n">ConfigDict</span> <span class="o">|</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">init_cfg</span><span class="p">:</span> <span class="n">ConfigDict</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n">ConfigDict</span><span class="p">]</span> <span class="o">|</span> <span class="nb">dict</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
@@ -302,12 +302,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">backbone</span> <span class="o">=</span> <span class="n">_build_pytorchcv_model</span><span class="p">(</span><span class="o">**</span><span class="n">backbone</span><span class="p">)</span>
         <span class="n">bbox_head</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">train_cfg</span><span class="o">=</span><span class="n">train_cfg</span><span class="p">)</span>
         <span class="n">bbox_head</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">test_cfg</span><span class="o">=</span><span class="n">test_cfg</span><span class="p">)</span>
-        <span class="n">bbox_head</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;type&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">bbox_head</span> <span class="o">=</span> <span class="n">SSDHead</span><span class="p">(</span><span class="o">**</span><span class="n">bbox_head</span><span class="p">)</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data_preprocessor</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">data_preprocessor</span> <span class="o">=</span> <span class="n">data_preprocessor</span>
-        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data_preprocessor</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">data_preprocessor</span> <span class="o">=</span> <span class="n">MODELS</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">data_preprocessor</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_preprocessor</span> <span class="o">=</span> <span class="n">DetDataPreprocessor</span><span class="p">(</span><span class="o">**</span><span class="n">data_preprocessor</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">init_cfg</span> <span class="o">=</span> <span class="n">init_cfg</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">train_cfg</span> <span class="o">=</span> <span class="n">train_cfg</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">test_cfg</span> <span class="o">=</span> <span class="n">test_cfg</span>
@@ -490,6 +486,38 @@
         <span class="n">results_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bbox_head</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">batch_data_samples</span><span class="p">,</span> <span class="n">rescale</span><span class="o">=</span><span class="n">rescale</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">add_pred_to_datasample</span><span class="p">(</span><span class="n">batch_data_samples</span><span class="p">,</span> <span class="n">results_list</span><span class="p">)</span>
 
+    <span class="k">def</span> <span class="nf">export</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">batch_inputs</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">batch_data_samples</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">InstanceData</span><span class="p">],</span>
+        <span class="n">rescale</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">InstanceData</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Predict results from a batch of inputs and data samples with post-processing.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            batch_inputs (Tensor): Inputs with shape (N, C, H, W).</span>
+<span class="sd">            batch_data_samples (List[:obj:`InstanceData`]): The Data</span>
+<span class="sd">                Samples. It usually includes information such as</span>
+<span class="sd">                `gt_instance`, `gt_panoptic_seg` and `gt_sem_seg`.</span>
+<span class="sd">            rescale (bool): Whether to rescale the results.</span>
+<span class="sd">                Defaults to True.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            list[:obj:`InstanceData`]: Detection results of the</span>
+<span class="sd">            input images. Each InstanceData usually contain</span>
+<span class="sd">            &#39;pred_instances&#39;. And the ``pred_instances`` usually</span>
+<span class="sd">            contains following keys.</span>
+
+<span class="sd">                - scores (Tensor): Classification scores, has a shape</span>
+<span class="sd">                    (num_instance, )</span>
+<span class="sd">                - labels (Tensor): Labels of bboxes, has a shape</span>
+<span class="sd">                    (num_instances, ).</span>
+<span class="sd">                - bboxes (Tensor): Has a shape (num_instances, 4),</span>
+<span class="sd">                    the last dimension 4 arrange as (x1, y1, x2, y2).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">extract_feat</span><span class="p">(</span><span class="n">batch_inputs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">bbox_head</span><span class="o">.</span><span class="n">export</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">batch_data_samples</span><span class="p">,</span> <span class="n">rescale</span><span class="o">=</span><span class="n">rescale</span><span class="p">)</span>
+
     <span class="k">def</span> <span class="nf">_forward</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">batch_inputs</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
@@ -612,28 +640,10 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">tile_image_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">image_size</span>
 
     <span class="k">def</span> <span class="nf">_create_model</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">:</span>
-        <span class="kn">from</span> <span class="nn">mmdet.models.data_preprocessors</span> <span class="kn">import</span> <span class="p">(</span>
-            <span class="n">DetDataPreprocessor</span> <span class="k">as</span> <span class="n">_DetDataPreprocessor</span><span class="p">,</span>
-        <span class="p">)</span>
-        <span class="kn">from</span> <span class="nn">mmdet.registry</span> <span class="kn">import</span> <span class="n">MODELS</span>
         <span class="kn">from</span> <span class="nn">mmengine.runner</span> <span class="kn">import</span> <span class="n">load_checkpoint</span>
-
-        <span class="c1"># NOTE: For the history of this monkey patching, please see</span>
-        <span class="c1"># https://github.com/openvinotoolkit/training_extensions/issues/2743</span>
-        <span class="nd">@MODELS</span><span class="o">.</span><span class="n">register_module</span><span class="p">(</span><span class="n">force</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-        <span class="k">class</span> <span class="nc">DetDataPreprocessor</span><span class="p">(</span><span class="n">_DetDataPreprocessor</span><span class="p">):</span>
-            <span class="nd">@property</span>
-            <span class="k">def</span> <span class="nf">device</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">device</span><span class="p">:</span>
-                <span class="k">try</span><span class="p">:</span>
-                    <span class="n">buf</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">buffers</span><span class="p">())</span>
-                <span class="k">except</span> <span class="ne">StopIteration</span><span class="p">:</span>
-                    <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">device</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="k">return</span> <span class="n">buf</span><span class="o">.</span><span class="n">device</span>
 
         <span class="n">config</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">classification_layers</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_classification_layers</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="s2">&quot;model.&quot;</span><span class="p">)</span>
-        <span class="n">config</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;type&quot;</span><span class="p">)</span>
         <span class="n">detector</span> <span class="o">=</span> <span class="n">SingleStageDetector</span><span class="p">(</span><span class="o">**</span><span class="n">convert_conf_to_mmconfig_dict</span><span class="p">(</span><span class="n">config</span><span class="p">))</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_from</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">load_checkpoint</span><span class="p">(</span><span class="n">detector</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_from</span><span class="p">,</span> <span class="n">map_location</span><span class="o">=</span><span class="s2">&quot;cpu&quot;</span><span class="p">)</span>
@@ -760,7 +770,6 @@
 <span class="sd">            so we have to update every anchors.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">sample_config</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
-        <span class="n">sample_config</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;type&quot;</span><span class="p">)</span>
         <span class="n">modify_num_classes</span><span class="p">(</span><span class="n">sample_config</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
         <span class="n">sample_model_dict</span> <span class="o">=</span> <span class="n">SingleStageDetector</span><span class="p">(</span><span class="o">**</span><span class="n">convert_conf_to_mmconfig_dict</span><span class="p">(</span><span class="n">sample_config</span><span class="p">))</span><span class="o">.</span><span class="n">state_dict</span><span class="p">()</span>
 
@@ -824,21 +833,45 @@
 
         <span class="n">mean</span><span class="p">,</span> <span class="n">std</span> <span class="o">=</span> <span class="n">get_mean_std_from_data_processing</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">)</span>
 
-        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">export_model_forward_context</span><span class="p">():</span>
-            <span class="k">return</span> <span class="n">MMdeployExporter</span><span class="p">(</span>
-                <span class="n">model_builder</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_create_model</span><span class="p">,</span>
-                <span class="n">model_cfg</span><span class="o">=</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">),</span>
-                <span class="n">deploy_cfg</span><span class="o">=</span><span class="s2">&quot;otx.algo.detection.mmdeploy.ssd_mobilenetv2&quot;</span><span class="p">,</span>
-                <span class="n">test_pipeline</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_make_fake_test_pipeline</span><span class="p">(),</span>
-                <span class="n">task_level_export_parameters</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_export_parameters</span><span class="p">,</span>
-                <span class="n">input_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">image_size</span><span class="p">,</span>
-                <span class="n">mean</span><span class="o">=</span><span class="n">mean</span><span class="p">,</span>
-                <span class="n">std</span><span class="o">=</span><span class="n">std</span><span class="p">,</span>
-                <span class="n">resize_mode</span><span class="o">=</span><span class="s2">&quot;standard&quot;</span><span class="p">,</span>
-                <span class="n">pad_value</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
-                <span class="n">swap_rgb</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-                <span class="n">output_names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;feature_vector&quot;</span><span class="p">,</span> <span class="s2">&quot;saliency_map&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">explain_mode</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">OTXNativeModelExporter</span><span class="p">(</span>
+            <span class="n">task_level_export_parameters</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_export_parameters</span><span class="p">,</span>
+            <span class="n">input_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">image_size</span><span class="p">,</span>
+            <span class="n">mean</span><span class="o">=</span><span class="n">mean</span><span class="p">,</span>
+            <span class="n">std</span><span class="o">=</span><span class="n">std</span><span class="p">,</span>
+            <span class="n">resize_mode</span><span class="o">=</span><span class="s2">&quot;standard&quot;</span><span class="p">,</span>
+            <span class="n">pad_value</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+            <span class="n">swap_rgb</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">via_onnx</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>  <span class="c1"># Currently SSD should be exported through ONNX</span>
+            <span class="n">onnx_export_configuration</span><span class="o">=</span><span class="p">{</span>
+                <span class="s2">&quot;input_names&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;image&quot;</span><span class="p">],</span>
+                <span class="s2">&quot;output_names&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;boxes&quot;</span><span class="p">,</span> <span class="s2">&quot;labels&quot;</span><span class="p">],</span>
+                <span class="s2">&quot;dynamic_axes&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;image&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="s2">&quot;batch&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">:</span> <span class="s2">&quot;height&quot;</span><span class="p">,</span> <span class="mi">3</span><span class="p">:</span> <span class="s2">&quot;width&quot;</span><span class="p">},</span>
+                    <span class="s2">&quot;boxes&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="s2">&quot;batch&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span> <span class="s2">&quot;num_dets&quot;</span><span class="p">},</span>
+                    <span class="s2">&quot;labels&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="s2">&quot;batch&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span> <span class="s2">&quot;num_dets&quot;</span><span class="p">},</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;autograd_inlining&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+            <span class="p">},</span>
+            <span class="n">output_names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;feature_vector&quot;</span><span class="p">,</span> <span class="s2">&quot;saliency_map&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">explain_mode</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="p">)</span>
+
+<div class="viewcode-block" id="SSD.forward_for_tracing">
+<a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.algo.detection.html#otx.algo.detection.SSD.forward_for_tracing">[docs]</a>
+    <span class="k">def</span> <span class="nf">forward_for_tracing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">InstanceData</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Forward function for export.&quot;&quot;&quot;</span>
+        <span class="n">shape</span> <span class="o">=</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">inputs</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]),</span> <span class="nb">int</span><span class="p">(</span><span class="n">inputs</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">3</span><span class="p">]))</span>
+        <span class="n">meta_info</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;pad_shape&quot;</span><span class="p">:</span> <span class="n">shape</span><span class="p">,</span>
+            <span class="s2">&quot;batch_input_shape&quot;</span><span class="p">:</span> <span class="n">shape</span><span class="p">,</span>
+            <span class="s2">&quot;img_shape&quot;</span><span class="p">:</span> <span class="n">shape</span><span class="p">,</span>
+            <span class="s2">&quot;scale_factor&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">),</span>
+        <span class="p">}</span>
+        <span class="n">sample</span> <span class="o">=</span> <span class="n">InstanceData</span><span class="p">(</span>
+            <span class="n">metainfo</span><span class="o">=</span><span class="n">meta_info</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">data_samples</span> <span class="o">=</span> <span class="p">[</span><span class="n">sample</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">export</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">data_samples</span><span class="p">)</span></div>
+
 
 <div class="viewcode-block" id="SSD.on_load_checkpoint">
 <a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.algo.detection.html#otx.algo.detection.SSD.on_load_checkpoint">[docs]</a>
