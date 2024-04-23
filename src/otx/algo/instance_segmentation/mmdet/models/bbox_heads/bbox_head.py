@@ -20,7 +20,7 @@ from torch.nn.modules.utils import _pair
 
 from otx.algo.detection.deployment import is_mmdeploy_enabled
 from otx.algo.detection.utils.utils import empty_instances
-from otx.algo.instance_segmentation.mmdet.models.layers import multiclass_nms
+from otx.algo.instance_segmentation.mmdet.models.layers import multiclass_nms_torch
 from otx.algo.instance_segmentation.mmdet.structures.bbox import scale_boxes
 
 if TYPE_CHECKING:
@@ -296,7 +296,7 @@ class BBoxHead(BaseModule):
         box_dim = bboxes.size(-1)
         bboxes = bboxes.view(num_rois, -1)
 
-        det_bboxes, det_labels = multiclass_nms(  # type: ignore [misc]
+        det_bboxes, det_labels = multiclass_nms_torch(  # type: ignore [misc]
             bboxes,
             scores,
             rcnn_test_cfg.score_thr,
@@ -313,7 +313,8 @@ class BBoxHead(BaseModule):
 if is_mmdeploy_enabled():
     from mmdeploy.codebase.mmdet.deploy import get_post_processing_params
     from mmdeploy.core import FUNCTION_REWRITER, mark
-    from mmdeploy.mmcv.ops import multiclass_nms as multiclass_nms_ops
+
+    from otx.algo.detection.ops.nms import multiclass_nms
 
     @FUNCTION_REWRITER.register_rewriter(
         "otx.algo.instance_segmentation.mmdet.models.bbox_heads.bbox_head.BBoxHead.forward",
@@ -356,7 +357,7 @@ if is_mmdeploy_enabled():
         batch_img_metas: list[dict],
         rcnn_test_cfg: dict,
         rescale: bool = False,
-    ) -> tuple[Tensor]:
+    ) -> tuple[torch.Tensor, torch.Tensor] | tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         """Rewrite `predict_by_feat` of `BBoxHead` for default backend.
 
         Transform network output for a batch into bbox predictions. Support
@@ -430,12 +431,10 @@ if is_mmdeploy_enabled():
             # For two stage partition post processing
             pre_top_k = -1 if post_params.pre_top_k >= bboxes.shape[1] else post_params.pre_top_k
         keep_top_k = rcnn_test_cfg.get("max_per_img", post_params.keep_top_k)
-        nms_type = rcnn_test_cfg["nms"].get("type")
-        return multiclass_nms_ops(
+        return multiclass_nms(
             bboxes,
             scores,
             max_output_boxes_per_class,
-            nms_type=nms_type,
             iou_threshold=iou_threshold,
             score_threshold=score_threshold,
             pre_top_k=pre_top_k,

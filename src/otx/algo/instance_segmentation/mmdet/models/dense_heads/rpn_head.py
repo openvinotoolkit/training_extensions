@@ -301,8 +301,9 @@ class RPNHead(AnchorHead):
 if is_mmdeploy_enabled():
     from mmdeploy.codebase.mmdet.deploy import gather_topk, get_post_processing_params, pad_with_value_if_necessary
     from mmdeploy.core import FUNCTION_REWRITER
-    from mmdeploy.mmcv.ops import multiclass_nms as multiclass_nms_ops
     from mmdeploy.utils import is_dynamic_shape
+
+    from otx.algo.detection.ops.nms import multiclass_nms
 
     @FUNCTION_REWRITER.register_rewriter(
         func_name="otx.algo.instance_segmentation.mmdet.models.dense_heads.rpn_head.RPNHead.predict_by_feat",
@@ -461,12 +462,10 @@ if is_mmdeploy_enabled():
         keep_top_k = cfg.get("max_per_img", post_params.keep_top_k)
         # only one class in rpn
         max_output_boxes_per_class = keep_top_k
-        nms_type = cfg["nms"].get("type")
-        return multiclass_nms_ops(
+        return multiclass_nms(
             batch_mlvl_bboxes,
             batch_mlvl_scores,
             max_output_boxes_per_class,
-            nms_type=nms_type,
             iou_threshold=iou_threshold,
             score_threshold=score_threshold,
             pre_top_k=pre_top_k,

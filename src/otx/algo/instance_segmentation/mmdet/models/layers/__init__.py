@@ -6,12 +6,12 @@
 
 """MMDet Layers."""
 
-from .bbox_nms import multiclass_nms
+from .bbox_nms import multiclass_nms_torch
 from .res_layer import ResLayer
 from .transformer import PatchEmbed, PatchMerging
 
 __all__ = [
-    "multiclass_nms",
+    "multiclass_nms_torch",
     "ResLayer",
     "PatchEmbed",
     "PatchMerging",

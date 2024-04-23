@@ -19,7 +19,7 @@ if TYPE_CHECKING:
     from mmengine.config import ConfigDict
 
 
-def multiclass_nms(
+def multiclass_nms_torch(
     multi_bboxes: Tensor,
     multi_scores: Tensor,
     score_thr: float,
