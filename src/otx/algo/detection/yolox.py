@@ -24,12 +24,6 @@ from otx.core.utils.config import convert_conf_to_mmconfig_dict
 from otx.core.utils.utils import get_mean_std_from_data_processing
 from otx.core.model.utils.mmdet import DetDataPreprocessor
 
-# mmdet models
-# from mmdet.models.backbones.csp_darknet import CSPDarknet
-# from mmdet.models.necks.yolox_pafpn import YOLOXPAFPN
-# from mmdet.models.dense_heads.yolox_head import YOLOXHead
-
-# otx models
 from otx.algo.detection.backbones.csp_darknet import CSPDarknet
 from otx.algo.detection.necks.yolox_pafpn import YOLOXPAFPN
 from otx.algo.detection.heads.yolox_head import YOLOXHead
