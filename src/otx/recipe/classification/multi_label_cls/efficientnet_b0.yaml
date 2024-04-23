@@ -52,9 +52,6 @@ overrides:
             init_args:
               scale: 224
               backend: cv2
-          - class_path: otx.core.data.transform_libs.torchvision.RandomFlip
-            init_args:
-              prob: 0.5
           - class_path: torchvision.transforms.v2.ToDtype
             init_args:
               dtype: ${as_torch_dtype:torch.float32}
@@ -68,10 +65,12 @@ overrides:
       val_subset:
         batch_size: 64
         transforms:
-          - class_path: otx.core.data.transform_libs.torchvision.Resize
+          - class_path: otx.core.data.transform_libs.torchvision.ResizetoShortEdge
             init_args:
-              scale: 224
-              transform_bbox: false
+              size: 256
+          - class_path: torchvision.transforms.v2.CenterCrop
+            init_args:
+              size: 224
           - class_path: torchvision.transforms.v2.ToDtype
             init_args:
               dtype: ${as_torch_dtype:torch.float32}
