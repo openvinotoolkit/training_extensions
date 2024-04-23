@@ -1,5 +1,5 @@
 model:
-  class_path: otx.algo.classification.efficientnet_b0.EfficientNetForMulticlassCls
+  class_path: otx.algo.classification.efficientnet.EfficientNetForMulticlassCls
   init_args:
     label_info: 1000
     version: b0

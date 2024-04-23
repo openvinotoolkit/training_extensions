@@ -4,7 +4,7 @@
 from pathlib import Path
 
 import pytest
-from otx.algo.classification.efficientnet_b0 import EfficientNetForMulticlassCls
+from otx.algo.classification.efficientnet import EfficientNetForMulticlassCls
 from otx.algo.classification.torchvision_model import OTXTVModel
 from otx.core.model.base import OTXModel, OVModel
 from otx.core.types.export import OTXExportFormatType
