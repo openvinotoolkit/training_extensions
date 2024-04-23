@@ -54,7 +54,6 @@ model:
         MD_R: 16
         MD_S: 1
         eval_steps: 7
-        inv_t: 100
         rand_init: true
         train_steps: 6
       norm_cfg:

@@ -64,14 +64,11 @@ class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity]):
         )
 
     def _customize_inputs(self, entity: SegBatchDataEntity) -> dict[str, Any]:
-        if self.training:
-            mode = "loss"
-        else:
-            mode = "predict"
+        mode = "loss" if self.training else "predict"
 
         masks = torch.stack(entity.masks).long()
-        inputs = {"images": entity.images, "masks": masks, "img_metas": entity.imgs_info, "mode": mode}
-        return inputs
+
+        return {"images": entity.images, "masks": masks, "img_metas": entity.imgs_info, "mode": mode}
 
     @property
     def _exporter(self) -> OTXModelExporter:

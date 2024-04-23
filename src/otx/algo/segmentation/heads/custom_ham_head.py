@@ -3,6 +3,8 @@
 #
 """Implementation of HamburgerNet head."""
 
+from typing import Any, Dict, List, Tuple
+
 import torch
 import torch.nn.functional as f
 from mmengine.device import get_device
@@ -12,8 +14,6 @@ from otx.algo.modules import ConvModule
 from otx.algo.segmentation.modules import resize
 
 from .base_head import BaseSegmHead
-
-# from mmseg.registry import MODELS
 
 
 class Hamburger(nn.Module):
@@ -26,7 +26,20 @@ class Hamburger(nn.Module):
         norm_cfg (dict | None): Config of norm layers.
     """
 
-    def __init__(self, ham_channels=512, ham_kwargs=dict(), norm_cfg=None, **kwargs):
+    def __init__(
+        self,
+        ham_channels: int = 512,
+        ham_kwargs: Dict[str, Any] = dict(),
+        norm_cfg: Dict[str, Any] | None = None,
+        **kwargs: Any,
+    ) -> None:
+        """Initialize Hamburger Module.
+
+        Args:
+            ham_channels (int): Input and output channels of feature.
+            ham_kwargs (Dict[str, Any]): Config of matrix decomposition module.
+            norm_cfg (Optional[Dict[str, Any]]): Config of norm layers.
+        """
         super().__init__()
 
         self.ham_in = ConvModule(ham_channels, ham_channels, 1, norm_cfg=None, act_cfg=None)
@@ -46,26 +59,40 @@ class Hamburger(nn.Module):
 
 
 class LightHamHead(BaseSegmHead):
-    """SegNeXt decode head.
+    """SegNeXt decode head."""
 
-    This decode head is the implementation of `SegNeXt: Rethinking
-    Convolutional Attention Design for Semantic
-    Segmentation <https://arxiv.org/abs/2209.08575>`_.
-    Inspiration from https://github.com/visual-attention-network/segnext.
+    def __init__(
+        self,
+        ham_channels: int = 512,
+        ham_kwargs: Dict[str, Any] = dict(),
+        **kwargs: Any,
+    ) -> None:
+        """SegNeXt decode head.
 
-    Specifically, LightHamHead is inspired by HamNet from
-    `Is Attention Better Than Matrix Decomposition?
-    <https://arxiv.org/abs/2109.04553>`.
+        This decode head is the implementation of `SegNeXt: Rethinking
+        Convolutional Attention Design for Semantic
+        Segmentation <https://arxiv.org/abs/2209.08575>`_.
+        Inspiration from https://github.com/visual-attention-network/segnext.
 
-    Args:
-        ham_channels (int): input channels for Hamburger.
-            Defaults: 512.
-        ham_kwargs (int): kwagrs for Ham. Defaults: dict().
-    """
+        Specifically, LightHamHead is inspired by HamNet from
+        `Is Attention Better Than Matrix Decomposition?
+        <https://arxiv.org/abs/2109.04553>`.
 
-    def __init__(self, ham_channels=512, ham_kwargs=dict(), **kwargs):
+        Args:
+            ham_channels (int): input channels for Hamburger.
+                Defaults to 512.
+            ham_kwargs (Dict[str, Any]): kwagrs for Ham. Defaults to an empty dictionary.
+
+        Returns:
+            None
+        """
         super().__init__(input_transform="multiple_select", **kwargs)
-        self.ham_channels = ham_channels
+        if not isinstance(self.in_channels, list):
+            msg = f"Input channels type must be list, but got {type(self.in_channels)}"
+            raise TypeError(msg)
+
+        self.ham_channels: int = ham_channels
+        self.ham_kwargs: Dict[str, Any] = ham_kwargs
 
         self.squeeze = ConvModule(
             sum(self.in_channels),
@@ -76,7 +103,7 @@ class LightHamHead(BaseSegmHead):
             act_cfg=self.act_cfg,
         )
 
-        self.hamburger = Hamburger(ham_channels, ham_kwargs, **kwargs)
+        self.hamburger = Hamburger(self.ham_channels, self.ham_kwargs, **kwargs)
 
         self.align = ConvModule(
             self.ham_channels,
@@ -87,23 +114,23 @@ class LightHamHead(BaseSegmHead):
             act_cfg=self.act_cfg,
         )
 
-    def forward(self, inputs):
+    def forward(self, inputs: List[torch.Tensor]) -> torch.Tensor:
         """Forward function."""
         inputs = self._transform_inputs(inputs)
 
         inputs = [
-            resize(level, size=inputs[0].shape[2:], mode="bilinear", align_corners=self.align_corners)
-            for level in inputs
+            resize(level, size=inputs[0].shape[2:], mode="bilinear", align_corners=self.align_corners)  # type: ignore[assignment]
+            for level in inputs  # type: ignore[assignment]
         ]
 
         inputs = torch.cat(inputs, dim=1)
         # apply a conv block to squeeze feature map
-        x = self.squeeze(inputs)
+        x = self.squeeze(inputs)  # type: ignore[has-type]
         # apply hamburger module
-        x = self.hamburger(x)
+        x = self.hamburger(x)  # type: ignore[has-type]
 
         # apply a conv block to align feature map
-        output = self.align(x)
+        output = self.align(x)  # type: ignore[has-type]
         output = self.cls_seg(output)
         return output
 
@@ -121,7 +148,7 @@ class NMF2D(nn.Module):
         MD_R=64,
         train_steps=6,
         eval_steps=7,
-        inv_t=100,
+        inv_t=1,
         rand_init=True,
     ):
         super().__init__()
@@ -137,7 +164,8 @@ class NMF2D(nn.Module):
         self.bases = torch.nn.parameter.Parameter(bases, requires_grad=False)
         self.inv_t = 1
 
-    def local_inference(self, x, bases):
+    def local_inference(self, x: torch.Tensor, bases: torch.Tensor) -> torch.Tensor:
+        """Local inference."""
         # (B * S, D, N)^T @ (B * S, D, R) -> (B * S, N, R)
         coef = torch.bmm(x.transpose(1, 2), bases)
         coef = f.softmax(self.inv_t * coef, dim=-1)
@@ -173,8 +201,19 @@ class NMF2D(nn.Module):
         # (B * S, D, N) -> (B, C, H, W)
         return x.view(batch, channels, height, width)
 
-    def _build_bases(self, B, S, D, R, device=None):
-        """Build bases in initialization."""
+    def _build_bases(self, B: int, S: int, D: int, R: int, device: torch.device | None = None) -> torch.Tensor:
+        """Build bases in initialization.
+
+        Args:
+            B (int): Batch size.
+            S (int): Number of segmentations.
+            D (int): Number of input channels.
+            R (int): Number of basis vectors.
+            device (Optional[torch.device]): Device to place the tensor on. Defaults to None.
+
+        Returns:
+            torch.Tensor: Tensor of shape (B * S, D, R) containing the built bases.
+        """
         if device is None:
             device = get_device()
         bases = torch.rand((B * S, D, R)).to(device)
@@ -182,8 +221,17 @@ class NMF2D(nn.Module):
 
         return bases
 
-    def local_step(self, x, bases, coef):
-        """Local step in iteration to renew bases and coefficient."""
+    def local_step(self, x: torch.Tensor, bases: torch.Tensor, coef: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
+        """Local step in iteration to renew bases and coefficient.
+
+        Args:
+            x (torch.Tensor): Input tensor of shape (B * S, D, N).
+            bases (torch.Tensor): Basis tensor of shape (B * S, D, R).
+            coef (torch.Tensor): Coefficient tensor of shape (B * S, N, R).
+
+        Returns:
+            Tuple[torch.Tensor, torch.Tensor]: Renewed bases and coefficients.
+        """
         # (B * S, D, N)^T @ (B * S, D, R) -> (B * S, N, R)
         numerator = torch.bmm(x.transpose(1, 2), bases)
         # (B * S, N, R) @ [(B * S, D, R)^T @ (B * S, D, R)] -> (B * S, N, R)
@@ -200,8 +248,17 @@ class NMF2D(nn.Module):
 
         return bases, coef
 
-    def compute_coef(self, x, bases, coef):
-        """Compute coefficient."""
+    def compute_coef(self, x: torch.Tensor, bases: torch.Tensor, coef: torch.Tensor) -> torch.Tensor:
+        """Compute coefficient.
+
+        Args:
+            x (torch.Tensor): Input tensor of shape (B * S, D, N).
+            bases (torch.Tensor): Basis tensor of shape (B * S, D, R).
+            coef (torch.Tensor): Coefficient tensor of shape (B * S, N, R).
+
+        Returns:
+            torch.Tensor: Tensor of shape (B * S, N, R) containing the computed coefficients.
+        """
         # (B * S, D, N)^T @ (B * S, D, R) -> (B * S, N, R)
         numerator = torch.bmm(x.transpose(1, 2), bases)
         # (B * S, N, R) @ (B * S, D, R)^T @ (B * S, D, R) -> (B * S, N, R)

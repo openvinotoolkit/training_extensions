@@ -59,7 +59,7 @@ class DinoVisionTransformer(BaseModule):
         """Forward function."""
         return self.backbone(imgs)
 
-    def load_pretrained_weights(self, pretrained: str | bool | None = None, prefix: str = "") -> None:
+    def load_pretrained_weights(self, pretrained: str | None = None, prefix: str = "") -> None:
         """Initialize weights."""
         checkpoint = None
         if isinstance(pretrained, str) and Path(pretrained).exists():

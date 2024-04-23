@@ -408,10 +408,10 @@ class DepthwiseSeparableConvModule(nn.Module):
         dilation: int | tuple[int, int] = 1,
         norm_cfg: dict | None = None,
         act_cfg: dict = dict(type="ReLU"),
-        dw_norm_cfg: dict | str = "default",
-        dw_act_cfg: dict | str = "default",
-        pw_norm_cfg: dict | str = "default",
-        pw_act_cfg: dict | str = "default",
+        dw_norm_cfg: dict | str | None = "default",
+        dw_act_cfg: dict | str | None = "default",
+        pw_norm_cfg: dict | str | None = "default",
+        pw_act_cfg: dict | str | None = "default",
         **kwargs,
     ):
         super().__init__()

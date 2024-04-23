@@ -5,9 +5,14 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING, Any
+
 import torch
 import torch.nn.functional as F  # noqa: N812
 from torch.nn import CrossEntropyLoss
+
+if TYPE_CHECKING:
+    from torch import Tensor
 
 
 class CrossEntropyLossWithIgnore(CrossEntropyLoss):
@@ -19,8 +24,31 @@ class CrossEntropyLossWithIgnore(CrossEntropyLoss):
     CrossEntropyLossWithIgnore can be used to ignore the unseen classes.
     """
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(
+        self,
+        weight: Tensor | None = None,
+        size_average: Any | None = None,
+        ignore_index: int = -100,
+        reduce: Any | None = None,
+        reduction: str = "mean",
+        label_smoothing: float = 0.0,
+    ) -> None:
+        """Initialize the CrossEntropyLossWithIgnore.
+
+        Args:
+            weight (Tensor, optional): Sample-wise loss weight. Defaults to None.
+            size_average (Optional[Any], optional): Deprecated (see `reduction`).
+                Defaults to None.
+            ignore_index (int, optional): Specifies a target value that is ignored
+                and does not contribute to the input gradients. Defaults to -100.
+            reduce (Optional[Any], optional): Deprecated (see `reduction`).
+                Defaults to None.
+            reduction (str, optional): Specifies the reduction to apply to the
+                output. Defaults to 'mean'.
+            label_smoothing (float, optional): The amount of label smoothing to
+                apply. Defaults to 0.0.
+        """
+        super().__init__(weight, size_average, ignore_index, reduce, reduction, label_smoothing)
         self.name = "loss_ce_ignore"
 
     def forward(
@@ -121,7 +149,7 @@ def weight_reduce_loss(loss, weight=None, reduction="mean", avg_factor=None) -> 
     return loss
 
 
-def reduce_loss(loss, reduction) -> torch.Tensor:
+def reduce_loss(loss, reduction: str) -> torch.Tensor:
     """Reduce loss as specified.
 
     Args:
@@ -133,9 +161,9 @@ def reduce_loss(loss, reduction) -> torch.Tensor:
     """
     reduction_enum = F._Reduction.get_enum(reduction)
     # none: 0, elementwise_mean:1, sum: 2
-    if reduction_enum == 0:
-        return loss
-    elif reduction_enum == 1:
+    if reduction_enum == 1:
         return loss.mean()
-    elif reduction_enum == 2:
+    if reduction_enum == 2:
         return loss.sum()
+
+    return loss

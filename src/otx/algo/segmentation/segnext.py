@@ -4,9 +4,7 @@
 """SegNext model implementations."""
 from __future__ import annotations
 
-from typing import Any
-
-from torch import nn
+from typing import TYPE_CHECKING, Any
 
 from otx.algo.segmentation.backbones import MSCAN
 from otx.algo.segmentation.heads import LightHamHead
@@ -14,6 +12,9 @@ from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.model.segmentation import OTXSegmentationModel
 
 from .base_model import BaseSegmNNModel
+
+if TYPE_CHECKING:
+    from torch import nn
 
 
 class OTXSegNext(OTXSegmentationModel):

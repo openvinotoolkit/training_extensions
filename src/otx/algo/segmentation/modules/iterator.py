@@ -51,8 +51,10 @@ class IterativeAggregator(nn.Module):
 
         min_channels = min_channels if min_channels is not None else 0
 
-        projects, expanders = [], []
-        fuse_layers: list[ConvModule] = []
+        projects: list[DepthwiseSeparableConvModule | None] = []
+        expanders: list[ConvModule | None] = []
+        fuse_layers: list[ConvModule | None] = []
+
         for i in range(num_branches):
             if not self.use_concat or i == 0:
                 fuse_layers.append(None)

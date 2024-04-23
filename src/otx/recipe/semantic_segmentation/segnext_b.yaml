@@ -54,7 +54,6 @@ model:
         MD_R: 16
         MD_S: 1
         eval_steps: 7
-        inv_t: 1
         train_steps: 6
       in_channels:
         - 128

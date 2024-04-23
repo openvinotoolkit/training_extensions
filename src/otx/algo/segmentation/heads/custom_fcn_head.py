@@ -5,23 +5,15 @@
 
 from __future__ import annotations
 
-import typing
-from typing import TYPE_CHECKING
+from typing import Any
 
 import torch
-
-# from mmseg.models.decode_heads.fcn_head import FCNHead
-# from mmseg.models.losses import accuracy
-# from mmseg.models.utils import resize
 from torch import Tensor, nn
 
 from otx.algo.modules import ConvModule
 from otx.algo.segmentation.modules import IterativeAggregator
 
 from .base_head import BaseSegmHead
-
-if TYPE_CHECKING:
-    from mmseg.utils import SampleList
 
 
 class FCNHead(BaseSegmHead):
@@ -37,7 +29,23 @@ class FCNHead(BaseSegmHead):
         dilation (int): The dilation rate for convs in the head. Default: 1.
     """
 
-    def __init__(self, num_convs=2, kernel_size=3, concat_input=True, dilation=1, **kwargs):
+    def __init__(
+        self,
+        num_convs: int = 2,
+        kernel_size: int = 3,
+        concat_input: bool = True,
+        dilation: int = 1,
+        **kwargs: Any,
+    ) -> None:
+        """Initialize a Fully Convolution Networks head.
+
+        Args:
+            num_convs (int): Number of convs in the head.
+            kernel_size (int): The kernel size for convs in the head.
+            concat_input (bool): Whether to concat input and output of convs.
+            dilation (int): The dilation rate for convs in the head.
+            **kwargs: Additional arguments.
+        """
         assert num_convs >= 0 and dilation > 0 and isinstance(dilation, int)
         self.num_convs = num_convs
         self.concat_input = concat_input
@@ -109,76 +117,79 @@ class FCNHead(BaseSegmHead):
         output = self.cls_seg(output)
         return output
 
+    # class ClassIncrementalMixin:
+    #     """Mixin for class incremental learning."""
 
-class ClassIncrementalMixin:
-    """Mixin for class incremental learning."""
+    #     def loss_by_feat(
+    #         self,
+    #         seg_logits: Tensor,
+    #         batch_data_samples: SampleList,
+    #     ) -> dict:
+    #         """Compute segmentation loss.
 
-    @typing.no_type_check
-    def loss_by_feat(
-        self,
-        seg_logits: Tensor,
-        batch_data_samples: SampleList,
-    ) -> dict:
-        """Compute segmentation loss.
+    #         Args:
+    #             seg_logits (Tensor): The output from decode head forward function.
+    #             batch_data_samples (List[:obj:`SegDataSample`]): The seg
+    #                 data samples. It usually includes information such
+    #                 as `metainfo` and `gt_sem_seg`.
 
-        Args:
-            seg_logits (Tensor): The output from decode head forward function.
-            batch_data_samples (List[:obj:`SegDataSample`]): The seg
-                data samples. It usually includes information such
-                as `metainfo` and `gt_sem_seg`.
+    #         Returns:
+    #             dict[str, Tensor]: a dictionary of loss components
+    #         """
+    #         img_metas = [data_sample.metainfo for data_sample in batch_data_samples]
+    #         valid_label_mask = self.get_valid_label_mask(img_metas)
+    #         seg_label = self._stack_batch_gt(batch_data_samples)
+    #         loss = {}
+    #         seg_logits = resize(
+    #             input=seg_logits,
+    #             size=seg_label.shape[2:],
+    #             mode="bilinear",
+    #             align_corners=self.align_corners,
+    #         )
+    #         seg_weight = self.sampler.sample(seg_logits, seg_label) if self.sampler is not None else None
+    #         seg_label = seg_label.squeeze(1)
 
-        Returns:
-            dict[str, Tensor]: a dictionary of loss components
-        """
-        img_metas = [data_sample.metainfo for data_sample in batch_data_samples]
-        valid_label_mask = self.get_valid_label_mask(img_metas)
-        seg_label = self._stack_batch_gt(batch_data_samples)
-        loss = {}
-        seg_logits = resize(
-            input=seg_logits,
-            size=seg_label.shape[2:],
-            mode="bilinear",
-            align_corners=self.align_corners,
-        )
-        seg_weight = self.sampler.sample(seg_logits, seg_label) if self.sampler is not None else None
-        seg_label = seg_label.squeeze(1)
+    #         losses_decode = [self.loss_decode] if not isinstance(self.loss_decode, nn.ModuleList) else self.loss_decode
+    #         for loss_decode in losses_decode:
+    #             valid_label_mask_cfg = {}
+    #             if loss_decode.loss_name == "loss_ce_ignore":
+    #                 valid_label_mask_cfg["valid_label_mask"] = valid_label_mask
+    #             if loss_decode.loss_name not in loss:
+    #                 loss[loss_decode.loss_name] = loss_decode(
+    #                     seg_logits,
+    #                     seg_label,
+    #                     weight=seg_weight,
+    #                     ignore_index=self.ignore_index,
+    #                     **valid_label_mask_cfg,
+    #                 )
+    #             else:
+    #                 loss[loss_decode.loss_name] += loss_decode(
+    #                     seg_logits,
+    #                     seg_label,
+    #                     weight=seg_weight,
+    #                     ignore_index=self.ignore_index,
+    #                     valid_label_mask=valid_label_mask,
+    #                     **valid_label_mask_cfg,
+    #                 )
 
-        losses_decode = [self.loss_decode] if not isinstance(self.loss_decode, nn.ModuleList) else self.loss_decode
-        for loss_decode in losses_decode:
-            valid_label_mask_cfg = {}
-            if loss_decode.loss_name == "loss_ce_ignore":
-                valid_label_mask_cfg["valid_label_mask"] = valid_label_mask
-            if loss_decode.loss_name not in loss:
-                loss[loss_decode.loss_name] = loss_decode(
-                    seg_logits,
-                    seg_label,
-                    weight=seg_weight,
-                    ignore_index=self.ignore_index,
-                    **valid_label_mask_cfg,
-                )
-            else:
-                loss[loss_decode.loss_name] += loss_decode(
-                    seg_logits,
-                    seg_label,
-                    weight=seg_weight,
-                    ignore_index=self.ignore_index,
-                    valid_label_mask=valid_label_mask,
-                    **valid_label_mask_cfg,
-                )
+    #         return loss
 
-        loss["acc_seg"] = accuracy(seg_logits, seg_label, ignore_index=self.ignore_index)
-        return loss
+    # def get_valid_label_mask(self, img_metas: list[dict]) -> list[torch.Tensor]:
+    #     """Get valid label mask removing ignored classes to zero mask in a batch.
 
-    @typing.no_type_check
-    def get_valid_label_mask(self, img_metas: list[dict]) -> list[torch.Tensor]:
-        """Get valid label mask removing ignored classes to zero mask in a batch."""
-        valid_label_mask = []
-        for meta in img_metas:
-            mask = torch.Tensor([1 for _ in range(self.num_classes)])
-            if "ignored_labels" in meta and meta["ignored_labels"]:
-                mask[meta["ignored_labels"]] = 0
-            valid_label_mask.append(mask)
-        return valid_label_mask
+    #     Args:
+    #         img_metas (List[dict]): List of image metadata.
+
+    #     Returns:
+    #         List[torch.Tensor]: List of valid label masks.
+    #     """
+    #     valid_label_mask = []  # type: List[torch.Tensor]
+    #     for meta in img_metas:  # type: dict
+    #         mask = torch.Tensor([1 for _ in range(self.num_classes)])  # type: torch.Tensor
+    #         if "ignored_labels" in meta and meta["ignored_labels"]:  # type: ignore
+    #             mask[meta["ignored_labels"]] = 0  # type: ignore
+    #         valid_label_mask.append(mask)
+    #     return valid_label_mask
 
 
 class CustomFCNHead(FCNHead):
@@ -196,12 +207,25 @@ class CustomFCNHead(FCNHead):
         aggregator_use_concat: bool = False,
         in_channels: list[int] | int | None = None,
         in_index: list[int] | int | None = None,
-        norm_cfg: dict | None = None,
-        conv_cfg: dict | None = None,
+        norm_cfg: dict[str, Any] | None = None,
+        conv_cfg: dict[str, Any] | None = None,
         input_transform: list | None = None,
-        *args,
-        **kwargs,
-    ):
+        *args: Any,
+        **kwargs: Any,
+    ) -> None:
+        """Custom FCNHead initialization.
+
+        Args:
+            enable_aggregator (bool, optional): Enable lite-HRNet aggregator. Defaults to False.
+            aggregator_min_channels (int, optional): Minimum channels for aggregator. Defaults to 0.
+            aggregator_merge_norm (str | None, optional): Aggregator merge normalization. Defaults to None.
+            aggregator_use_concat (bool, optional): Use concatenation in aggregator. Defaults to False.
+            in_channels (list[int] | int | None, optional): Input channels. Defaults to None.
+            in_index (list[int] | int | None, optional): Input index. Defaults to None.
+            norm_cfg (dict[str, Any] | None, optional): Normalization configuration. Defaults to None.
+            conv_cfg (dict[str, Any] | None, optional): Convolution configuration. Defaults to None.
+            input_transform (list | None, optional): Input transform. Defaults to None.
+        """
         if enable_aggregator:  # Lite-HRNet aggregator
             if in_channels is None or isinstance(in_channels, int):
                 msg = "'in_channels' should be List[int]."
@@ -236,9 +260,9 @@ class CustomFCNHead(FCNHead):
 
         self.aggregator = aggregator
         # re-define variables
-        self.in_channels = in_channels
-        self.input_transform = input_transform
-        self.in_index = in_index
+        self.in_channels = in_channels  # type: ignore[assignment]
+        self.input_transform = input_transform  # type: ignore[assignment]
+        self.in_index = in_index  # type: ignore[assignment]
 
         if self.act_cfg:
             self.convs[-1].act = None  # why we delete last activation?

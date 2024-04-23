@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import TYPE_CHECKING, Any
 
 import torch
 from mmengine.model import BaseModule
@@ -9,8 +10,11 @@ from torch import nn
 from otx.algo.modules import build_activation_layer, build_norm_layer
 from otx.algo.utils.mmengine_utils import load_checkpoint_to_model, load_from_http
 
+if TYPE_CHECKING:
+    from torch import Tensor
 
-def drop_path(x: torch.Tensor, drop_prob: float = 0.0, training: bool = False) -> torch.Tensor:
+
+def drop_path(x: Tensor, drop_prob: float = 0.0, training: bool = False) -> torch.Tensor:
     """Drop paths (Stochastic Depth) per sample (when applied in main path of
     residual blocks).
 
@@ -61,7 +65,27 @@ class Mlp(BaseModule):
             Defaults: 0.0.
     """
 
-    def __init__(self, in_features, hidden_features=None, out_features=None, act_cfg=dict(type="GELU"), drop=0.0):
+    def __init__(
+        self,
+        in_features: int,
+        hidden_features: int | None = None,
+        out_features: int | None = None,
+        act_cfg: dict[str, str] = {"type": "GELU"},
+        drop: float = 0.0,
+    ) -> None:
+        """Initializes the MLP module.
+
+        Args:
+            in_features (int): The dimension of the input features.
+            hidden_features (Optional[int]): The dimension of the hidden features.
+                Defaults to None.
+            out_features (Optional[int]): The dimension of the output features.
+                Defaults to None.
+            act_cfg (Dict[str, str]): Config dict for the activation layer in the block.
+                Defaults to {"type": "GELU"}.
+            drop (float): The dropout rate in the MLP block.
+                Defaults to 0.0.
+        """
         super().__init__()
         out_features = out_features or in_features
         hidden_features = hidden_features or in_features
@@ -98,11 +122,21 @@ class StemConv(BaseModule):
 
     def __init__(
         self,
-        in_channels,
-        out_channels,
-        act_cfg=dict(type="GELU"),
-        norm_cfg=dict(type="SyncBN", requires_grad=True),
-    ):
+        in_channels: int,
+        out_channels: int,
+        act_cfg: dict[str, str] = {"type": "GELU"},
+        norm_cfg: dict[str, str | bool] = {"type": "SyncBN", "requires_grad": True},
+    ) -> None:
+        """Stem Block at the beginning of Semantic Branch.
+
+        Args:
+            in_channels (int): The dimension of input channels.
+            out_channels (int): The dimension of output channels.
+            act_cfg (Dict[str, str]): Config dict for activation layer in block.
+                Default: dict(type='GELU').
+            norm_cfg (Dict[str, Union[str, bool]]): Config dict for normalization layer.
+                Defaults: dict(type='SyncBN', requires_grad=True).
+        """
         super().__init__()
 
         self.proj = nn.Sequential(
@@ -122,18 +156,24 @@ class StemConv(BaseModule):
 
 
 class MSCAAttention(BaseModule):
-    """Attention Module in Multi-Scale Convolutional Attention Module (MSCA).
+    """Attention Module in Multi-Scale Convolutional Attention Module (MSCA)."""
 
-    Args:
-        channels (int): The dimension of channels.
-        kernel_sizes (list): The size of attention
-            kernel. Defaults: [5, [1, 7], [1, 11], [1, 21]].
-        paddings (list): The number of
-            corresponding padding value in attention module.
-            Defaults: [2, [0, 3], [0, 5], [0, 10]].
-    """
+    def __init__(
+        self,
+        channels: int,
+        kernel_sizes: list[Any] = [5, [1, 7], [1, 11], [1, 21]],
+        paddings: list[Any] = [2, [0, 3], [0, 5], [0, 10]],
+    ) -> None:
+        """Attention Module in Multi-Scale Convolutional Attention Module (MSCA).
 
-    def __init__(self, channels, kernel_sizes=[5, [1, 7], [1, 11], [1, 21]], paddings=[2, [0, 3], [0, 5], [0, 10]]):
+        Args:
+            channels (int): The dimension of channels.
+            kernel_sizes (List[Union[int, List[int]]]): The size of attention kernel.
+                Defaults: [5, [1, 7], [1, 11], [1, 21]].
+            paddings (List[Union[int, List[int]]]): The number of
+                corresponding padding value in attention module.
+                Defaults: [2, [0, 3], [0, 5], [0, 10]].
+        """
         super().__init__()
         self.conv0 = nn.Conv2d(channels, channels, kernel_size=kernel_sizes[0], padding=paddings[0], groups=channels)
         for i, (kernel_size, padding) in enumerate(zip(kernel_sizes[1:], paddings[1:])):
@@ -173,30 +213,28 @@ class MSCAAttention(BaseModule):
 class MSCASpatialAttention(BaseModule):
     """Spatial Attention Module in Multi-Scale Convolutional Attention Module
     (MSCA).
-
-    Args:
-        in_channels (int): The dimension of channels.
-        attention_kernel_sizes (list): The size of attention
-            kernel. Defaults: [5, [1, 7], [1, 11], [1, 21]].
-        attention_kernel_paddings (list): The number of
-            corresponding padding value in attention module.
-            Defaults: [2, [0, 3], [0, 5], [0, 10]].
-        act_cfg (dict): Config dict for activation layer in block.
-            Default: dict(type='GELU').
     """
 
     def __init__(
         self,
-        in_channels,
-        attention_kernel_sizes=[5, [1, 7], [1, 11], [1, 21]],
-        attention_kernel_paddings=[2, [0, 3], [0, 5], [0, 10]],
-        act_cfg=dict(type="GELU"),
-    ):
+        in_channels: int,
+        attention_kernel_sizes: list[int | list[int]] = [5, [1, 7], [1, 11], [1, 21]],
+        attention_kernel_paddings: list[int | list[int]] = [2, [0, 3], [0, 5], [0, 10]],
+        act_cfg: dict[str, str] = {"type": "GELU"},
+    ) -> None:
+        """Init the MSCASpatialAttention module.
+
+        Args:
+            in_channels (int): The number of input channels.
+            attention_kernel_sizes (List[Union[int, List[int]]]): The size of attention kernels.
+            attention_kernel_paddings (List[Union[int, List[int]]]): The paddings of attention kernels.
+            act_cfg (Dict[str, str]): The config of activation layer.
+        """
         super().__init__()
-        self.proj_1 = nn.Conv2d(in_channels, in_channels, 1)
-        self.activation = build_activation_layer(act_cfg)
-        self.spatial_gating_unit = MSCAAttention(in_channels, attention_kernel_sizes, attention_kernel_paddings)
-        self.proj_2 = nn.Conv2d(in_channels, in_channels, 1)
+        self.proj_1 = nn.Conv2d(in_channels, in_channels, 1)  # type: nn.Conv2d
+        self.activation = build_activation_layer(act_cfg)  # type: nn.Module
+        self.spatial_gating_unit = MSCAAttention(in_channels, attention_kernel_sizes, attention_kernel_paddings)  # type: MSCAAttention
+        self.proj_2 = nn.Conv2d(in_channels, in_channels, 1)  # type: nn.Conv2d
 
     def forward(self, x):
         """Forward function."""
@@ -210,52 +248,47 @@ class MSCASpatialAttention(BaseModule):
 
 
 class MSCABlock(BaseModule):
-    """Basic Multi-Scale Convolutional Attention Block. It leverage the large-
-    kernel attention (LKA) mechanism to build both channel and spatial
+    """Basic Multi-Scale Convolutional Attention Block.
+
+    It leverage the large kernel attention (LKA) mechanism to build both channel and spatial
     attention. In each branch, it uses two depth-wise strip convolutions to
     approximate standard depth-wise convolutions with large kernels. The kernel
     size for each branch is set to 7, 11, and 21, respectively.
-
-    Args:
-        channels (int): The dimension of channels.
-        attention_kernel_sizes (list): The size of attention
-            kernel. Defaults: [5, [1, 7], [1, 11], [1, 21]].
-        attention_kernel_paddings (list): The number of
-            corresponding padding value in attention module.
-            Defaults: [2, [0, 3], [0, 5], [0, 10]].
-        mlp_ratio (float): The ratio of multiple input dimension to
-            calculate hidden feature in MLP layer. Defaults: 4.0.
-        drop (float): The number of dropout rate in MLP block.
-            Defaults: 0.0.
-        drop_path (float): The ratio of drop paths.
-            Defaults: 0.0.
-        act_cfg (dict): Config dict for activation layer in block.
-            Default: dict(type='GELU').
-        norm_cfg (dict): Config dict for normalization layer.
-            Defaults: dict(type='SyncBN', requires_grad=True).
     """
 
     def __init__(
         self,
-        channels,
-        attention_kernel_sizes=[5, [1, 7], [1, 11], [1, 21]],
-        attention_kernel_paddings=[2, [0, 3], [0, 5], [0, 10]],
-        mlp_ratio=4.0,
-        drop=0.0,
-        drop_path=0.0,
-        act_cfg=dict(type="GELU"),
-        norm_cfg=dict(type="SyncBN", requires_grad=True),
-    ):
+        channels: int,
+        attention_kernel_sizes: list[int | list[int]] = [5, [1, 7], [1, 11], [1, 21]],
+        attention_kernel_paddings: list[int | list[int]] = [2, [0, 3], [0, 5], [0, 10]],
+        mlp_ratio: float = 4.0,
+        drop: float = 0.0,
+        drop_path: float = 0.0,
+        act_cfg: dict[str, str] = {"type": "GELU"},
+        norm_cfg: dict[str, str | bool] = dict(type="SyncBN", requires_grad=True),
+    ) -> None:
+        """Initialize a MSCABlock.
+
+        Args:
+            channels (int): The number of input channels.
+            attention_kernel_sizes (List[Union[int, List[int]]]): The size of attention kernels.
+            attention_kernel_paddings (List[Union[int, List[int]]]): The paddings of attention kernels.
+            mlp_ratio (float): The ratio of the number of hidden units in the MLP to the number of input channels.
+            drop (float): The dropout rate.
+            drop_path (float): The dropout rate for the path.
+            act_cfg (Dict[str, str]): The config of activation layer.
+            norm_cfg (Dict[str, Union[str, bool]]): The config of normalization layer.
+        """
         super().__init__()
-        self.norm1 = build_norm_layer(norm_cfg, channels)[1]
-        self.attn = MSCASpatialAttention(channels, attention_kernel_sizes, attention_kernel_paddings, act_cfg)
-        self.drop_path = DropPath(drop_path) if drop_path > 0.0 else nn.Identity()
-        self.norm2 = build_norm_layer(norm_cfg, channels)[1]
-        mlp_hidden_channels = int(channels * mlp_ratio)
-        self.mlp = Mlp(in_features=channels, hidden_features=mlp_hidden_channels, act_cfg=act_cfg, drop=drop)
-        layer_scale_init_value = 1e-2
-        self.layer_scale_1 = nn.Parameter(layer_scale_init_value * torch.ones(channels), requires_grad=True)
-        self.layer_scale_2 = nn.Parameter(layer_scale_init_value * torch.ones(channels), requires_grad=True)
+        self.norm1 = build_norm_layer(norm_cfg, channels)[1]  # type: nn.Module
+        self.attn = MSCASpatialAttention(channels, attention_kernel_sizes, attention_kernel_paddings, act_cfg)  # type: MSCAAttention
+        self.drop_path = DropPath(drop_path) if drop_path > 0.0 else nn.Identity()  # type: nn.Module
+        self.norm2 = build_norm_layer(norm_cfg, channels)[1]  # type: nn.Module
+        mlp_hidden_channels = int(channels * mlp_ratio)  # type: int
+        self.mlp = Mlp(in_features=channels, hidden_features=mlp_hidden_channels, act_cfg=act_cfg, drop=drop)  # type: Mlp
+        layer_scale_init_value = 1e-2  # type: float
+        self.layer_scale_1 = nn.Parameter(layer_scale_init_value * torch.ones(channels), requires_grad=True)  # type: nn.Parameter
+        self.layer_scale_2 = nn.Parameter(layer_scale_init_value * torch.ones(channels), requires_grad=True)  # type: nn.Parameter
 
     def forward(self, x, H, W):
         """Forward function."""
@@ -285,10 +318,10 @@ class OverlapPatchEmbed(BaseModule):
 
     def __init__(
         self,
-        patch_size=7,
-        stride=4,
-        in_channels=3,
-        embed_dim=768,
+        patch_size: int = 7,
+        stride: int = 4,
+        in_channels: int = 3,
+        embed_dim: int = 768,
         norm_cfg=dict(type="SyncBN", requires_grad=True),
     ):
         super().__init__()
@@ -314,28 +347,6 @@ class MSCAN(BaseModule):
     Convolutional Attention Design for Semantic
     Segmentation <https://arxiv.org/abs/2209.08575>`_.
     Inspiration from https://github.com/visual-attention-network/segnext.
-
-    Args:
-        in_channels (int): The number of input channels. Defaults: 3.
-        embed_dims (list[int]): Embedding dimension.
-            Defaults: [64, 128, 256, 512].
-        mlp_ratios (list[int]): Ratio of mlp hidden dim to embedding dim.
-            Defaults: [4, 4, 4, 4].
-        drop_rate (float): Dropout rate. Defaults: 0.
-        drop_path_rate (float): Stochastic depth rate. Defaults: 0.
-        depths (list[int]): Depths of each Swin Transformer stage.
-            Default: [3, 4, 6, 3].
-        num_stages (int): MSCAN stages. Default: 4.
-        attention_kernel_sizes (list): Size of attention kernel in
-            Attention Module (Figure 2(b) of original paper).
-            Defaults: [5, [1, 7], [1, 11], [1, 21]].
-        attention_kernel_paddings (list): Size of attention paddings
-            in Attention Module (Figure 2(b) of original paper).
-            Defaults: [2, [0, 3], [0, 5], [0, 10]].
-        norm_cfg (dict): Config of norm layers.
-            Defaults: dict(type='SyncBN', requires_grad=True).
-        init_cfg (dict or list[dict], optional): Initialization config dict.
-            Default: None.
     """
 
     def __init__(
@@ -349,9 +360,9 @@ class MSCAN(BaseModule):
         num_stages: int = 4,
         attention_kernel_sizes: list[int | list[int]] = [5, [1, 7], [1, 11], [1, 21]],
         attention_kernel_paddings: list[int | list[int]] = [2, [0, 3], [0, 5], [0, 10]],
-        act_cfg: dict[str, str] = dict(type="GELU"),
-        norm_cfg: dict[str, str | bool] = dict(type="SyncBN", requires_grad=True),
-        init_cfg: dict[str, str] | list[dict[str, str]] = None,
+        act_cfg: dict[str, str] = {"type": "GELU"},
+        norm_cfg: dict[str, str | bool] = {"type": "SyncBN", "requires_grad": True},
+        init_cfg: dict[str, str] | list[dict[str, str]] | None = None,
         pretrained_weights: str | None = None,
     ) -> None:
         """Initialize a MSCAN backbone.
@@ -436,7 +447,7 @@ class MSCAN(BaseModule):
 
         return outs
 
-    def load_pretrained_weights(self, pretrained: str | bool | None = None, prefix: str = "") -> None:
+    def load_pretrained_weights(self, pretrained: str | None = None, prefix: str = "") -> None:
         """Initialize weights."""
         checkpoint = None
         if isinstance(pretrained, str) and Path(pretrained).exists():
