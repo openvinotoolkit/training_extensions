@@ -56,8 +56,8 @@ model:
         requires_grad: true
         type: GN
       ham_kwargs:
-        MD_R: 16
-        MD_S: 1
+        md_r: 16
+        md_s: 1
         eval_steps: 7
         rand_init: true
         train_steps: 6

@@ -52,8 +52,8 @@ model:
 
     decode_head_configuration:
       ham_kwargs:
-        MD_R: 16
-        MD_S: 1
+        md_r: 16
+        md_s: 1
         eval_steps: 7
         train_steps: 6
       in_channels:

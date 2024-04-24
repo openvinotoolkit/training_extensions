@@ -29,7 +29,7 @@ if TYPE_CHECKING:
     from mmseg.models.data_preprocessor import SegDataPreProcessor
     from omegaconf import DictConfig
     from openvino.model_api.models.utils import ImageResultWithSoftPrediction
-    from torch import nn
+    from torch import Tensor, nn
 
     from otx.core.metrics import MetricCallable
 
@@ -45,8 +45,7 @@ class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity]):
         metric: MetricCallable = SegmCallable,  # type: ignore[assignment]
         torch_compile: bool = False,
     ):
-        """
-        Base semantic segmentation model.
+        """Base semantic segmentation model.
 
         Args:
             label_info (LabelInfoTypes): The label information for the segmentation model.
@@ -102,9 +101,14 @@ class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity]):
 
         raise TypeError(label_info)
 
+    def forward_for_tracing(self, image: Tensor) -> Tensor | dict[str, Tensor]:
+        """Model forward function used for the model tracing during model exportation."""
+        return self.model(inputs=image, mode="tensor")
+
 
 class TorchVisionCompatibleModel(OTXSegmentationModel):
     """Segmentation model compatible with torchvision data pipeline."""
+
     def __init__(
         self,
         label_info: LabelInfoTypes,
@@ -158,7 +162,7 @@ class TorchVisionCompatibleModel(OTXSegmentationModel):
 
         masks = torch.stack(entity.masks).long()
 
-        return {"images": entity.images, "masks": masks, "img_metas": entity.imgs_info, "mode": mode}
+        return {"inputs": entity.images, "img_metas": entity.imgs_info, "masks": masks, "mode": mode}
 
     def _customize_outputs(
         self,
@@ -216,8 +220,7 @@ class MMSegCompatibleModel(OTXSegmentationModel):
         metric: MetricCallable = SegmCallable,  # type: ignore[assignment]
         torch_compile: bool = False,
     ) -> None:
-        """
-        MMSeg compatible model.
+        """MMSeg compatible model.
 
         Args:
             label_info (LabelInfoTypes): The label information for the segmentation model.

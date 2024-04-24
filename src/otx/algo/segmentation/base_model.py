@@ -5,12 +5,15 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import torch.nn.functional as f
 from torch import Tensor, nn
 
 from otx.algo.segmentation.losses import create_criterion
+
+if TYPE_CHECKING:
+    from otx.core.data.entity.base import ImageInfo
 
 
 class BaseSegmNNModel(nn.Module):
@@ -43,17 +46,17 @@ class BaseSegmNNModel(nn.Module):
 
     def forward(
         self,
-        images: Tensor,
+        inputs: Tensor,
+        img_metas: list[ImageInfo] | None = None,
         masks: Tensor | None = None,
-        img_metas: dict[str, Any] | None = None,
         mode: str = "tensor",
     ) -> Tensor:
         """Performs the forward pass of the model.
 
         Args:
-            images: Input images to the model.
-            masks: Ground truth masks for training. Defaults to None.
+            inputs: Input images to the model.
             img_metas: Image meta information. Defaults to None.
+            masks: Ground truth masks for training. Defaults to None.
             mode: The mode of operation. Defaults to "tensor".
 
         Returns:
@@ -63,23 +66,59 @@ class BaseSegmNNModel(nn.Module):
                 - If mode is "predict", returns the predicted outputs.
                 - Otherwise, returns the model outputs after interpolation.
         """
-        enc_feats = self.backbone(images)
+        enc_feats = self.backbone(inputs)
         outputs = self.decode_head(enc_feats)
 
         if mode == "tensor":
             return outputs
 
-        outputs = f.interpolate(outputs, size=images.size()[-2:], mode="bilinear", align_corners=True)
+        outputs = f.interpolate(outputs, size=inputs.size()[-2:], mode="bilinear", align_corners=True)
         if mode == "loss":
             if masks is None:
                 msg = "The masks must be provided for training."
                 raise ValueError(msg)
+            if img_metas is None:
+                msg = "The image meta information must be provided for training."
+                raise ValueError(msg)
+            # class incremental training
+            valid_label_mask = self.get_valid_label_mask(img_metas)
             output_losses = {}
             for criterion in self.criterions:
-                output_losses.update({criterion.name: criterion(outputs, masks, img_metas=img_metas)})
+                valid_label_mask_cfg = {}
+                if criterion.name == "loss_ce_ignore":
+                    valid_label_mask_cfg["valid_label_mask"] = valid_label_mask
+                if criterion.name not in output_losses:
+                    output_losses[criterion.name] = criterion(
+                        outputs,
+                        masks,
+                        **valid_label_mask_cfg,
+                    )
+                else:
+                    output_losses[criterion.name] += criterion(
+                        outputs,
+                        masks,
+                        **valid_label_mask_cfg,
+                    )
             return output_losses
 
         if mode == "predict":
             return outputs.argmax(dim=1)
 
         return outputs
+
+    def get_valid_label_mask(self, img_metas: list[ImageInfo]) -> list[Tensor]:
+        """Get valid label mask removing ignored classes to zero mask in a batch.
+
+        Args:
+            img_metas (List[dict]): List of image metadata.
+
+        Returns:
+            List[torch.Tensor]: List of valid label masks.
+        """
+        valid_label_mask = []
+        for meta in img_metas:
+            mask = Tensor([1 for _ in range(self.decode_head.num_classes)])
+            if hasattr(meta, "ignored_labels") and meta.ignored_labels:
+                mask[meta.ignored_labels] = 0
+            valid_label_mask.append(mask)
+        return valid_label_mask

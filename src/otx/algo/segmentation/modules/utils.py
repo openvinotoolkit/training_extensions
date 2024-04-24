@@ -53,7 +53,7 @@ def resize(
                 f"out size {(output_h, output_w)} is `nx+1`",
                 stacklevel=1,
             )
-    return f.interpolate(input, size, scale_factor, mode, align_corners)
+    return f.interpolate(input_tensor, size, scale_factor, mode, align_corners)
 
 
 def normalize(x: torch.Tensor, dim: int, p: int = 2, eps: float = 1e-12) -> torch.Tensor:
