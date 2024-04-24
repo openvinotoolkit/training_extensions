@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import torch
 from otx.algo.detection.backbones.pytorchcv_backbones import (
-    _build_pytorchcv_model,
+    _build_model_including_pytorchcv,
     multioutput_forward,
     replace_activation,
     replace_norm,
@@ -97,7 +97,7 @@ def test_train() -> None:
 
 def test_generate_backbones() -> None:
     cfg = {"type": "alexnet", "out_indices": [-1]}
-    model = _build_pytorchcv_model(cfg)
+    model = _build_model_including_pytorchcv(cfg)
 
     assert "alexnet" in model.__class__.__name__.lower()
     assert model.out_indices == [-1]
