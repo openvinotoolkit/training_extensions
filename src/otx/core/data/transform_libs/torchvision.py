@@ -160,19 +160,6 @@ class ResizetoLongestEdge(tvt_v2.Transform):
         return (newh, neww)
 
 
-class ResizetoShortEdge(ResizetoLongestEdge):
-    """Resize image along with the Short edge."""
-
-    def _get_preprocess_shape(self, oldh: int, oldw: int, long_side_length: int) -> tuple[int, int]:
-        if oldw < oldh:
-            neww = self.size
-            newh = int(self.size * oldh / oldw)
-        else:
-            newh = self.size
-            neww = int(self.size * oldw / oldh)
-        return (newh, neww)
-
-
 class DecodeVideo(tvt_v2.Transform):
     """Sample video frames from original data video."""
 
