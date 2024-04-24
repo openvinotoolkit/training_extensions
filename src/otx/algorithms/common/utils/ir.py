@@ -1,13 +1,17 @@
 """Collections of IR-related utils for common OTX algorithms."""
 
-# Copyright (C) 2022 Intel Corporation
+# Copyright (C) 2022-2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 
 from pathlib import Path
 from typing import Any, Dict, Tuple
 
+from openvino import Type
+from openvino.preprocess import PrePostProcessor
 from openvino.runtime import Core, save_model
+
+from otx.algorithms.common.utils.utils import is_xpu_available
 
 
 def check_if_quantized(model: Any) -> bool:
@@ -31,6 +35,14 @@ def embed_ir_model_data(xml_file: str, data_items: Dict[Tuple[str, str], Any]) -
     model = core.read_model(xml_file)
     for k, data in data_items.items():
         model.set_rt_info(data, list(k))
+
+    # workaround for CVS-138901
+    if is_xpu_available():
+        ppp = PrePostProcessor(model)
+        for o in model.outputs:
+            if "labels" in o.get_names() and o.get_element_type() == Type.f32:
+                ppp.output("labels").tensor().set_element_type(Type.i64)
+        model = ppp.build()
 
     # workaround for CVS-110054
     tmp_xml_path = Path(Path(xml_file).parent) / "tmp.xml"
