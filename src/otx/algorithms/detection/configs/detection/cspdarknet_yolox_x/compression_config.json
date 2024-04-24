@@ -17,7 +17,16 @@
     "nncf_config": {
       "compression": [
         {
-          "algorithm": "quantization"
+          "algorithm": "quantization",
+          "initializer": {
+            "range": {
+              "type": "percentile",
+              "params": {
+                "min_percentile": 0,
+                "max_percentile": 100
+              }
+            }
+          }
         }
       ],
       "accuracy_aware_training": {
