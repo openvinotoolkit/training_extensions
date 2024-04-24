@@ -14,7 +14,6 @@ from torch import nn
 from otx.algo.segmentation.modules import resize
 from otx.algo.utils.mmengine_utils import load_checkpoint_to_model, load_from_http
 
-from mmseg.models.decode_heads.decode_head import BaseDecodeHead
 
 class BaseSegmHead(nn.Module, metaclass=ABCMeta):
     """Base class for segmentation heads."""
