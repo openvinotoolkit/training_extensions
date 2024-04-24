@@ -35,7 +35,7 @@ if TYPE_CHECKING:
 
 
 class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity]):
-    """Base class for the detection models used in OTX."""
+    """Base class for the semantic segmentation models used in OTX."""
 
     def __init__(
         self,
@@ -47,13 +47,35 @@ class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity]):
         backbone_configuration: dict[str, Any] | None = None,
         decode_head_configuration: dict[str, Any] | None = None,
         criterion_configuration: list[dict[str, Any]] | None = None,
+        name_base_model: str = "semantic_segmentation_model",
     ):
+        """Initializes an instance of the OTXSegmentationModel.
+
+        Args:
+            label_info (LabelInfoTypes): The label information for the segmentation model.
+            optimizer (OptimizerCallable, optional): The optimizer callable for the model.
+                Defaults to DefaultOptimizerCallable.
+            scheduler (LRSchedulerCallable | LRSchedulerListCallable, optional):
+                The learning rate scheduler callable for the model. Defaults to DefaultSchedulerCallable.
+            metric (MetricCallable, optional): The metric callable for the model.
+                Defaults to SegmCallable.
+            torch_compile (bool, optional): Whether to compile the model using Torch. Defaults to False.
+            backbone_configuration (dict[str, Any] | None, optional):
+                The configuration for the backbone of the model. Defaults to None.
+            decode_head_configuration (dict[str, Any] | None, optional):
+                The configuration for the decode head of the model. Defaults to None.
+            criterion_configuration (list[dict[str, Any]] | None, optional):
+                The configuration for the criterion of the model. Defaults to None.
+            name_base_model (str, optional): The name of the base model used for trainig.
+                Defaults to "semantic_segmentation_model".
+        """
         self.backbone_configuration = backbone_configuration if backbone_configuration is not None else {}
         self.decode_head_configuration = decode_head_configuration if decode_head_configuration is not None else {}
         self.criterion_configuration = criterion_configuration
         self.mean = self.decode_head_configuration.pop("mean", [123.675, 116.28, 103.53])
         self.std = self.decode_head_configuration.pop("std", [58.395, 57.12, 57.375])
         self.image_size = self.decode_head_configuration.pop("image_size", (1, 3, 512, 512))
+        self.name_base_model = name_base_model
 
         super().__init__(
             label_info=label_info,

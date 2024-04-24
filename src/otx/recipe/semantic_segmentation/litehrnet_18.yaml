@@ -2,6 +2,7 @@ model:
   class_path: otx.algo.segmentation.litehrnet.OTXLiteHRNet
   init_args:
     label_info: 2
+    name_base_model: LiteHRNet18
 
     criterion_configuration:
       - type: CrossEntropyLoss

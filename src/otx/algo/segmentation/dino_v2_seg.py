@@ -17,13 +17,17 @@ if TYPE_CHECKING:
     from torch import nn
 
 
+class DinoV2Seg(BaseSegmNNModel):
+    """DinoV2Seg Model."""
+
+
 class OTXDinoV2Seg(OTXSegmentationModel):
     """DinoV2Seg Model."""
 
     def _create_model(self) -> nn.Module:
         backbone = DinoVisionTransformer(**self.backbone_configuration)
         decode_head = CustomFCNHead(num_classes=self.num_classes, **self.decode_head_configuration)
-        return BaseSegmNNModel(
+        return DinoV2Seg(
             backbone=backbone,
             decode_head=decode_head,
             criterion_configuration=self.criterion_configuration,

@@ -25,9 +25,9 @@ class BaseSegmNNModel(nn.Module):
         """Initializes a SegNext model.
 
         Args:
-            backbone (MSCAN): The backbone of the model.
-            decode_head (LightHamHead): The decode head of the model.
-            criterion (Dict[str, Union[str, int]]): The criterion of the model.
+            backbone (nn.Module): The backbone of the segmentation model.
+            decode_head (nn.Module): The decode head of the segmentation model.
+            criterion_configuration (Dict[str, str | Any]): The criterion of the model.
                 If None, use CrossEntropyLoss with ignore_index=255.
 
         Returns:

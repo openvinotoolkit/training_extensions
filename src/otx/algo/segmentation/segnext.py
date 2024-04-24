@@ -17,13 +17,32 @@ if TYPE_CHECKING:
     from torch import nn
 
 
+class SegNextB(BaseSegmNNModel):
+    """SegNextB Model."""
+
+
+class SegNextS(BaseSegmNNModel):
+    """SegNextS Model."""
+
+
+class SegNextT(BaseSegmNNModel):
+    """SegNextT Model."""
+
+
+SEGNEXT_VARIANTS = {
+    "SegNextB": SegNextB,
+    "SegNextS": SegNextS,
+    "SegNextT": SegNextT,
+}
+
+
 class OTXSegNext(OTXSegmentationModel):
     """SegNext Model."""
 
     def _create_model(self) -> nn.Module:
         backbone = MSCAN(**self.backbone_configuration)
         decode_head = LightHamHead(num_classes=self.num_classes, **self.decode_head_configuration)
-        return BaseSegmNNModel(
+        return SEGNEXT_VARIANTS[self.name_base_model](
             backbone=backbone,
             decode_head=decode_head,
             criterion_configuration=self.criterion_configuration,
