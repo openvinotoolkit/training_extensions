@@ -41,7 +41,7 @@ def list_models(task: OTXTaskType | None = None, pattern: str | None = None, pri
         # Return all available model list that matches the pattern.
         >>> models = list_models(task="MULTI_CLASS_CLS", pattern="*efficient")
         >>> models
-        ['otx_efficientnet_b0', 'efficientnet_v2_light', 'efficientnet_b0_light', ...]
+        ['efficientnet_v2', 'efficientnet_b0', ...]
 
         # Print the recipe information as a Rich.Table (include task, model name, recipe path)
         >>> models = list_models(task="MULTI_CLASS_CLS", pattern="*efficient", print_table=True)
