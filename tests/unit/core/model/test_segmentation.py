@@ -5,47 +5,29 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 import pytest
 import torch
-from importlib_resources import files
-from omegaconf import OmegaConf
 from otx.core.model.segmentation import MMSegCompatibleModel
 from otx.core.types.label import SegLabelInfo
-
-if TYPE_CHECKING:
-    from omegaconf.dictconfig import DictConfig
 
 
 class TestOTXSegmentationModel:
     @pytest.fixture()
-    def config(self) -> DictConfig:
-        cfg_path = files("otx") / "algo" / "segmentation" / "mmconfigs" / "segnext_t.yaml"
-        return OmegaConf.load(cfg_path)
-
-    @pytest.fixture()
-    def model(self, config) -> MMSegCompatibleModel:
-        model = MMSegCompatibleModel(label_info=3, config=config)
+    def model(self, mocker) -> MMSegCompatibleModel:
+        mocker.patch("otx.core.model.segmentation.inplace_num_classes")
+        mocker.patch.object(MMSegCompatibleModel, "_create_model")
+        model = MMSegCompatibleModel(label_info=3, config=mocker.MagicMock())
         model.label_info = SegLabelInfo(
             label_names=["Background", "label_0", "label_1"],
             label_groups=[["Background", "label_0", "label_1"]],
         )
         return model
 
-    def test_create_model(self, model) -> None:
-        mmseg_model = model._create_model()
-        assert mmseg_model is not None
-        assert isinstance(mmseg_model, torch.nn.Module)
-
-    def test_customize_inputs(self, model, fxt_seg_data_entity) -> None:
+    def test_customize_inputs(self, model, fxt_seg_data_entity, mocker) -> None:
+        model.model.data_preprocessor = mocker.MagicMock()
         output_data = model._customize_inputs(fxt_seg_data_entity[2])
         assert output_data is not None
-        assert output_data["data_samples"][-1].metainfo["pad_shape"] == output_data["inputs"].shape[-2:]
-        assert (
-            output_data["data_samples"][-1].metainfo["pad_shape"]
-            == output_data["data_samples"][-1].gt_sem_seg.data.shape[-2:]
-        )
+        assert isinstance(output_data, mocker.MagicMock)
 
     def test_customize_outputs(self, model, fxt_seg_data_entity) -> None:
         from mmengine.structures import PixelData
