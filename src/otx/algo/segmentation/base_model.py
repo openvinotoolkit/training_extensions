@@ -1,21 +1,26 @@
+# Copyright (C) 2023 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+#
+"""Base segmentation model."""
+
 from __future__ import annotations
 
 from typing import Any
 
 import torch.nn.functional as f
-from torch import nn
+from torch import Tensor, nn
 
 from otx.algo.segmentation.losses import create_criterion
 
 
 class BaseSegmNNModel(nn.Module):
+    """Base Segmentation Model."""
+
     def __init__(
         self,
         backbone: nn.Module,
         decode_head: nn.Module,
-        criterion_configuration: list[dict[str, str | Any]] = [
-            {"type": "CrossEntropyLoss", "params": {"ignore_index": 255}},
-        ],
+        criterion_configuration: list[dict[str, str | Any]] | None = None,
     ) -> None:
         """Initializes a SegNext model.
 
@@ -23,20 +28,41 @@ class BaseSegmNNModel(nn.Module):
             backbone (MSCAN): The backbone of the model.
             decode_head (LightHamHead): The decode head of the model.
             criterion (Dict[str, Union[str, int]]): The criterion of the model.
-                Defaults to {"type": "CrossEntropyLoss", "ignore_index": 255}.
-            pretrained_weights (Optional[str]): The path to the pretrained weights.
-                Defaults to None.
+                If None, use CrossEntropyLoss with ignore_index=255.
 
         Returns:
             None
         """
         super().__init__()
 
+        if criterion_configuration is None:
+            criterion_configuration = [{"type": "CrossEntropyLoss", "params": {"ignore_index": 255}}]
         self.backbone = backbone
         self.decode_head = decode_head
         self.criterions = create_criterion(criterion_configuration)
 
-    def forward(self, images, masks=None, img_metas=None, mode="tensor"):
+    def forward(
+        self,
+        images: Tensor,
+        masks: Tensor | None = None,
+        img_metas: dict[str, Any] | None = None,
+        mode: str = "tensor",
+    ) -> Tensor:
+        """Performs the forward pass of the model.
+
+        Args:
+            images: Input images to the model.
+            masks: Ground truth masks for training. Defaults to None.
+            img_metas: Image meta information. Defaults to None.
+            mode: The mode of operation. Defaults to "tensor".
+
+        Returns:
+            Depending on the mode:
+                - If mode is "tensor", returns the model outputs.
+                - If mode is "loss", returns a dictionary of output losses.
+                - If mode is "predict", returns the predicted outputs.
+                - Otherwise, returns the model outputs after interpolation.
+        """
         enc_feats = self.backbone(images)
         outputs = self.decode_head(enc_feats)
 

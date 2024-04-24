@@ -1,3 +1,8 @@
+# Copyright (C) 2024 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+#
+"""Base head for OTX segmentation models."""
+
 from __future__ import annotations
 
 from abc import ABCMeta, abstractmethod
@@ -21,7 +26,7 @@ class BaseSegmHead(nn.Module, metaclass=ABCMeta):
         dropout_ratio: float = 0.1,
         conv_cfg: dict[str, str] | None = None,
         norm_cfg: dict[str, str] | None = None,
-        act_cfg: dict[str, str] = dict(type="ReLU"),
+        act_cfg: dict[str, str] | None = None,
         in_index: int | list[int] = -1,
         input_transform: str | None = None,
         ignore_index: int = 255,
@@ -48,6 +53,8 @@ class BaseSegmHead(nn.Module, metaclass=ABCMeta):
             align_corners (bool, optional): Whether to align corners. Defaults to False.
         """
         super().__init__()
+        if act_cfg is None:
+            act_cfg = {"type": "ReLU"}
         self.channels = channels
         self.num_classes = num_classes
         self.input_transform = input_transform

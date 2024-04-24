@@ -1,7 +1,7 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
-"""Modules for semantic segmentation"""
+"""Modules for semantic segmentation."""
 
 
 from .blocks import AsymmetricPositionAttentionModule, LocalAttentionModule

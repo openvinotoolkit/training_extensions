@@ -1,3 +1,8 @@
+# Copyright (C) 2024 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+#
+"""Utils for semantic segmentation."""
+
 from __future__ import annotations
 
 import warnings
@@ -33,22 +38,21 @@ def resize(
         torch.Tensor: The resized input tensor.
 
     """
-    if warning:
-        if size is not None and align_corners:
-            input_h, input_w = tuple(int(x) for x in input_tensor.shape[2:])
-            output_h, output_w = tuple(int(x) for x in size)
-            if (output_h > input_h or output_w > output_h) and (
-                (output_h > 1 and output_w > 1 and input_h > 1 and input_w > 1)
-                and (output_h - 1) % (input_h - 1)
-                and (output_w - 1) % (input_w - 1)
-            ):
-                warnings.warn(
-                    f"When align_corners={align_corners}, "
-                    "the output would more aligned if "
-                    f"input size {(input_h, input_w)} is `x+1` and "
-                    f"out size {(output_h, output_w)} is `nx+1`",
-                    stacklevel=1,
-                )
+    if warning and size is not None and align_corners:
+        input_h, input_w = tuple(int(x) for x in input_tensor.shape[2:])
+        output_h, output_w = tuple(int(x) for x in size)
+        if (output_h > input_h or output_w > output_h) and (
+            (output_h > 1 and output_w > 1 and input_h > 1 and input_w > 1)
+            and (output_h - 1) % (input_h - 1)
+            and (output_w - 1) % (input_w - 1)
+        ):
+            warnings.warn(
+                f"When align_corners={align_corners}, "
+                "the output would more aligned if "
+                f"input size {(input_h, input_w)} is `x+1` and "
+                f"out size {(output_h, output_w)} is `nx+1`",
+                stacklevel=1,
+            )
     return f.interpolate(input, size, scale_factor, mode, align_corners)
 
 

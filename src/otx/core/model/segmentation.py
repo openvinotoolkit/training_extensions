@@ -44,16 +44,16 @@ class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity]):
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = SegmCallable,  # type: ignore[assignment]
         torch_compile: bool = False,
-        backbone_configuration: dict[str, Any] = {},
-        decode_head_configuration: dict[str, Any] = {},
-        criterion_configuration: list[dict[str, Any]] = [{}],
+        backbone_configuration: dict[str, Any] | None = None,
+        decode_head_configuration: dict[str, Any] | None = None,
+        criterion_configuration: list[dict[str, Any]] | None = None,
     ):
-        self.backbone_configuration = backbone_configuration
-        self.decode_head_configuration = decode_head_configuration
+        self.backbone_configuration = backbone_configuration if backbone_configuration is not None else {}
+        self.decode_head_configuration = decode_head_configuration if decode_head_configuration is not None else {}
         self.criterion_configuration = criterion_configuration
-        self.mean = decode_head_configuration.get("mean", [123.675, 116.28, 103.53])
-        self.std = decode_head_configuration.get("std", [58.395, 57.12, 57.375])
-        self.image_size = decode_head_configuration.get("image_size", (1, 3, 512, 512))
+        self.mean = self.decode_head_configuration.pop("mean", [123.675, 116.28, 103.53])
+        self.std = self.decode_head_configuration.pop("std", [58.395, 57.12, 57.375])
+        self.image_size = self.decode_head_configuration.pop("image_size", (1, 3, 512, 512))
 
         super().__init__(
             label_info=label_info,

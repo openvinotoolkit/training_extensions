@@ -35,7 +35,7 @@ class FCNHead(BaseSegmHead):
         kernel_size: int = 3,
         concat_input: bool = True,
         dilation: int = 1,
-        **kwargs: Any,
+        **kwargs: Any,  # noqa: ANN401
     ) -> None:
         """Initialize a Fully Convolution Networks head.
 
@@ -46,17 +46,23 @@ class FCNHead(BaseSegmHead):
             dilation (int): The dilation rate for convs in the head.
             **kwargs: Additional arguments.
         """
-        assert num_convs >= 0 and dilation > 0 and isinstance(dilation, int)
+        if not isinstance(dilation, int):
+            msg = f"dilation should be int, but got {type(dilation)}"
+            raise TypeError(msg)
+        if num_convs < 0 and dilation <= 0:
+            msg = "num_convs and dilation should be larger than 0"
+            raise ValueError(msg)
+
         self.num_convs = num_convs
         self.concat_input = concat_input
         self.kernel_size = kernel_size
         super().__init__(**kwargs)
-        if num_convs == 0:
-            assert self.in_channels == self.channels
+        if num_convs == 0 and (self.in_channels != self.channels):
+            msg = "in_channels and channels should be equal when num_convs is 0"
+            raise ValueError(msg)
 
         conv_padding = (kernel_size // 2) * dilation
-        convs = []
-        convs.append(
+        convs = [
             ConvModule(
                 self.in_channels,
                 self.channels,
@@ -66,9 +72,9 @@ class FCNHead(BaseSegmHead):
                 norm_cfg=self.norm_cfg,
                 act_cfg=self.act_cfg,
             ),
-        )
-        for _ in range(num_convs - 1):
-            convs.append(
+        ]
+        convs.extend(
+            [
                 ConvModule(
                     self.channels,
                     self.channels,
@@ -77,8 +83,10 @@ class FCNHead(BaseSegmHead):
                     dilation=dilation,
                     norm_cfg=self.norm_cfg,
                     act_cfg=self.act_cfg,
-                ),
-            )
+                )
+                for _ in range(num_convs - 1)
+            ],
+        )
         if num_convs == 0:
             self.convs = nn.Identity()
         else:
@@ -94,9 +102,8 @@ class FCNHead(BaseSegmHead):
                 act_cfg=self.act_cfg,
             )
 
-    def _forward_feature(self, inputs):
-        """Forward function for feature maps before classifying each pixel with
-        ``self.cls_seg`` fc.
+    def _forward_feature(self, inputs: Tensor) -> Tensor:
+        """Forward function for feature maps.
 
         Args:
             inputs (list[Tensor]): List of multi-level img features.
@@ -111,11 +118,10 @@ class FCNHead(BaseSegmHead):
             feats = self.conv_cat(torch.cat([x, feats], dim=1))
         return feats
 
-    def forward(self, inputs):
+    def forward(self, inputs: Tensor) -> Tensor:
         """Forward function."""
         output = self._forward_feature(inputs)
-        output = self.cls_seg(output)
-        return output
+        return self.cls_seg(output)
 
     # class ClassIncrementalMixin:
     #     """Mixin for class incremental learning."""
@@ -186,8 +192,8 @@ class FCNHead(BaseSegmHead):
     #     valid_label_mask = []  # type: List[torch.Tensor]
     #     for meta in img_metas:  # type: dict
     #         mask = torch.Tensor([1 for _ in range(self.num_classes)])  # type: torch.Tensor
-    #         if "ignored_labels" in meta and meta["ignored_labels"]:  # type: ignore
-    #             mask[meta["ignored_labels"]] = 0  # type: ignore
+    #         if "ignored_labels" in meta and meta["ignored_labels"]:
+    #             mask[meta["ignored_labels"]] = 0
     #         valid_label_mask.append(mask)
     #     return valid_label_mask
 
@@ -210,8 +216,8 @@ class CustomFCNHead(FCNHead):
         norm_cfg: dict[str, Any] | None = None,
         conv_cfg: dict[str, Any] | None = None,
         input_transform: list | None = None,
-        *args: Any,
-        **kwargs: Any,
+        *args: Any,  # noqa: ANN401
+        **kwargs: Any,  # noqa: ANN401
     ) -> None:
         """Custom FCNHead initialization.
 

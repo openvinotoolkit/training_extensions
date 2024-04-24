@@ -1,3 +1,8 @@
+# Copyright (C) 2023 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+#
+"""MSCAN backbone for SegNext model."""
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -15,11 +20,12 @@ if TYPE_CHECKING:
 
 
 def drop_path(x: Tensor, drop_prob: float = 0.0, training: bool = False) -> torch.Tensor:
-    """Drop paths (Stochastic Depth) per sample (when applied in main path of
-    residual blocks).
+    """Drop paths (Stochastic Depth) per sample.
 
-    We follow the implementation
-    https://github.com/rwightman/pytorch-image-models/blob/a2727c1bf78ba0d7b5727f5f95e37fb7f8866b1f/timm/models/layers/drop.py  # noqa: E501
+    Args:
+        x (Tensor): The input tensor.
+        drop_prob (float): Probability of the path to be zeroed. Default: 0.0
+        training (bool): The running mode. Default: False
     """
     if drop_prob == 0.0 or not training:
         return x
@@ -27,26 +33,23 @@ def drop_path(x: Tensor, drop_prob: float = 0.0, training: bool = False) -> torc
     # handle tensors with different dimensions, not just 4D tensors.
     shape = (x.shape[0],) + (1,) * (x.ndim - 1)
     random_tensor = keep_prob + torch.rand(shape, dtype=x.dtype, device=x.device)
-    output = x.div(keep_prob) * random_tensor.floor()
-    return output
+    return x.div(keep_prob) * random_tensor.floor()
 
 
 class DropPath(nn.Module):
-    """Drop paths (Stochastic Depth) per sample  (when applied in main path of
-    residual blocks).
-
-    We follow the implementation
-    https://github.com/rwightman/pytorch-image-models/blob/a2727c1bf78ba0d7b5727f5f95e37fb7f8866b1f/timm/models/layers/drop.py  # noqa: E501
-
-    Args:
-        drop_prob (float): Probability of the path to be zeroed. Default: 0.1
-    """
+    """DropPath."""
 
     def __init__(self, drop_prob: float = 0.1):
+        """Drop paths (Stochastic Depth) per sample.
+
+        Args:
+            drop_prob (float): Probability of the path to be zeroed. Default: 0.1
+        """
         super().__init__()
         self.drop_prob = drop_prob
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """Forward function."""
         return drop_path(x, self.drop_prob, self.training)
 
 
@@ -70,7 +73,7 @@ class Mlp(BaseModule):
         in_features: int,
         hidden_features: int | None = None,
         out_features: int | None = None,
-        act_cfg: dict[str, str] = {"type": "GELU"},
+        act_cfg: dict[str, str] | None = None,
         drop: float = 0.0,
     ) -> None:
         """Initializes the MLP module.
@@ -81,12 +84,14 @@ class Mlp(BaseModule):
                 Defaults to None.
             out_features (Optional[int]): The dimension of the output features.
                 Defaults to None.
-            act_cfg (Dict[str, str]): Config dict for the activation layer in the block.
-                Defaults to {"type": "GELU"}.
+            act_cfg (Dict[str, str] | None): Config dict for the activation layer in the block.
+                Defaults to {"type": "GELU"} if None.
             drop (float): The dropout rate in the MLP block.
                 Defaults to 0.0.
         """
         super().__init__()
+        if act_cfg is None:
+            act_cfg = {"type": "GELU"}
         out_features = out_features or in_features
         hidden_features = hidden_features or in_features
         self.fc1 = nn.Conv2d(in_features, hidden_features, 1)
@@ -95,7 +100,7 @@ class Mlp(BaseModule):
         self.fc2 = nn.Conv2d(hidden_features, out_features, 1)
         self.drop = nn.Dropout(drop)
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Forward function."""
         x = self.fc1(x)
 
@@ -103,9 +108,8 @@ class Mlp(BaseModule):
         x = self.act(x)
         x = self.drop(x)
         x = self.fc2(x)
-        x = self.drop(x)
 
-        return x
+        return self.drop(x)
 
 
 class StemConv(BaseModule):
@@ -124,20 +128,24 @@ class StemConv(BaseModule):
         self,
         in_channels: int,
         out_channels: int,
-        act_cfg: dict[str, str] = {"type": "GELU"},
-        norm_cfg: dict[str, str | bool] = {"type": "SyncBN", "requires_grad": True},
+        act_cfg: dict[str, str] | None = None,
+        norm_cfg: dict[str, str | bool] | None = None,
     ) -> None:
         """Stem Block at the beginning of Semantic Branch.
 
         Args:
             in_channels (int): The dimension of input channels.
             out_channels (int): The dimension of output channels.
-            act_cfg (Dict[str, str]): Config dict for activation layer in block.
-                Default: dict(type='GELU').
-            norm_cfg (Dict[str, Union[str, bool]]): Config dict for normalization layer.
-                Defaults: dict(type='SyncBN', requires_grad=True).
+            act_cfg (Dict[str, str] | None): Config dict for activation layer in block.
+                Default: dict(type='GELU') if None.
+            norm_cfg (Dict[str, Union[str, bool]] | None): Config dict for normalization layer.
+                Defaults: dict(type='SyncBN', requires_grad=True) if None.
         """
         super().__init__()
+        if act_cfg is None:
+            act_cfg = {"type": "GELU"}
+        if norm_cfg is None:
+            norm_cfg = {"type": "SyncBN", "requires_grad": True}
 
         self.proj = nn.Sequential(
             nn.Conv2d(in_channels, out_channels // 2, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1)),
@@ -147,12 +155,12 @@ class StemConv(BaseModule):
             build_norm_layer(norm_cfg, out_channels)[1],
         )
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> tuple[torch.Tensor, int, int]:
         """Forward function."""
         x = self.proj(x)
-        _, _, H, W = x.size()
+        _, _, h, w = x.size()
         x = x.flatten(2).transpose(1, 2)
-        return x, H, W
+        return x, h, w
 
 
 class MSCAAttention(BaseModule):
@@ -161,8 +169,8 @@ class MSCAAttention(BaseModule):
     def __init__(
         self,
         channels: int,
-        kernel_sizes: list[Any] = [5, [1, 7], [1, 11], [1, 21]],
-        paddings: list[Any] = [2, [0, 3], [0, 5], [0, 10]],
+        kernel_sizes: list[Any] = [5, [1, 7], [1, 11], [1, 21]],  # noqa: B006
+        paddings: list[Any] = [2, [0, 3], [0, 5], [0, 10]],  # noqa: B006
     ) -> None:
         """Attention Module in Multi-Scale Convolutional Attention Module (MSCA).
 
@@ -184,7 +192,7 @@ class MSCAAttention(BaseModule):
                 self.add_module(i_conv, nn.Conv2d(channels, channels, tuple(i_kernel), padding=i_pad, groups=channels))
         self.conv3 = nn.Conv2d(channels, channels, 1)
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Forward function."""
         u = x.clone()
 
@@ -205,22 +213,19 @@ class MSCAAttention(BaseModule):
         attn = self.conv3(attn)
 
         # Convolutional Attention
-        x = attn * u
 
-        return x
+        return attn * u
 
 
 class MSCASpatialAttention(BaseModule):
-    """Spatial Attention Module in Multi-Scale Convolutional Attention Module
-    (MSCA).
-    """
+    """Spatial Attention Module in Multi-Scale Convolutional Attention Module (MSCA)."""
 
     def __init__(
         self,
         in_channels: int,
-        attention_kernel_sizes: list[int | list[int]] = [5, [1, 7], [1, 11], [1, 21]],
-        attention_kernel_paddings: list[int | list[int]] = [2, [0, 3], [0, 5], [0, 10]],
-        act_cfg: dict[str, str] = {"type": "GELU"},
+        attention_kernel_sizes: list[int | list[int]] = [5, [1, 7], [1, 11], [1, 21]],  # noqa: B006
+        attention_kernel_paddings: list[int | list[int]] = [2, [0, 3], [0, 5], [0, 10]],  # noqa: B006
+        act_cfg: dict[str, str] | None = None,
     ) -> None:
         """Init the MSCASpatialAttention module.
 
@@ -228,23 +233,24 @@ class MSCASpatialAttention(BaseModule):
             in_channels (int): The number of input channels.
             attention_kernel_sizes (List[Union[int, List[int]]]): The size of attention kernels.
             attention_kernel_paddings (List[Union[int, List[int]]]): The paddings of attention kernels.
-            act_cfg (Dict[str, str]): The config of activation layer.
+            act_cfg (Dict[str, str] | None): The config of activation layer.
         """
         super().__init__()
+        if act_cfg is None:
+            act_cfg = {"type": "GELU"}
         self.proj_1 = nn.Conv2d(in_channels, in_channels, 1)  # type: nn.Conv2d
         self.activation = build_activation_layer(act_cfg)  # type: nn.Module
         self.spatial_gating_unit = MSCAAttention(in_channels, attention_kernel_sizes, attention_kernel_paddings)  # type: MSCAAttention
         self.proj_2 = nn.Conv2d(in_channels, in_channels, 1)  # type: nn.Conv2d
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Forward function."""
         shorcut = x.clone()
         x = self.proj_1(x)
         x = self.activation(x)
         x = self.spatial_gating_unit(x)
         x = self.proj_2(x)
-        x = x + shorcut
-        return x
+        return x + shorcut
 
 
 class MSCABlock(BaseModule):
@@ -259,13 +265,13 @@ class MSCABlock(BaseModule):
     def __init__(
         self,
         channels: int,
-        attention_kernel_sizes: list[int | list[int]] = [5, [1, 7], [1, 11], [1, 21]],
-        attention_kernel_paddings: list[int | list[int]] = [2, [0, 3], [0, 5], [0, 10]],
+        attention_kernel_sizes: list[int | list[int]] = [5, [1, 7], [1, 11], [1, 21]],  # noqa: B006
+        attention_kernel_paddings: list[int | list[int]] = [2, [0, 3], [0, 5], [0, 10]],  # noqa: B006
         mlp_ratio: float = 4.0,
         drop: float = 0.0,
         drop_path: float = 0.0,
-        act_cfg: dict[str, str] = {"type": "GELU"},
-        norm_cfg: dict[str, str | bool] = dict(type="SyncBN", requires_grad=True),
+        act_cfg: dict[str, str] | None = None,
+        norm_cfg: dict[str, str | bool] | None = None,
     ) -> None:
         """Initialize a MSCABlock.
 
@@ -276,10 +282,14 @@ class MSCABlock(BaseModule):
             mlp_ratio (float): The ratio of the number of hidden units in the MLP to the number of input channels.
             drop (float): The dropout rate.
             drop_path (float): The dropout rate for the path.
-            act_cfg (Dict[str, str]): The config of activation layer.
-            norm_cfg (Dict[str, Union[str, bool]]): The config of normalization layer.
+            act_cfg (Dict[str, str] | None): The config of activation layer.
+            norm_cfg (Dict[str, Union[str, bool]] | None): The config of normalization layer.
         """
         super().__init__()
+        if act_cfg is None:
+            act_cfg = {"type": "GELU"}
+        if norm_cfg is None:
+            norm_cfg = {"type": "SyncBN", "requires_grad": True}
         self.norm1 = build_norm_layer(norm_cfg, channels)[1]  # type: nn.Module
         self.attn = MSCASpatialAttention(channels, attention_kernel_sizes, attention_kernel_paddings, act_cfg)  # type: MSCAAttention
         self.drop_path = DropPath(drop_path) if drop_path > 0.0 else nn.Identity()  # type: nn.Module
@@ -290,31 +300,17 @@ class MSCABlock(BaseModule):
         self.layer_scale_1 = nn.Parameter(layer_scale_init_value * torch.ones(channels), requires_grad=True)  # type: nn.Parameter
         self.layer_scale_2 = nn.Parameter(layer_scale_init_value * torch.ones(channels), requires_grad=True)  # type: nn.Parameter
 
-    def forward(self, x, H, W):
+    def forward(self, x: torch.Tensor, h: int, w: int) -> torch.Tensor:
         """Forward function."""
-        B, N, C = x.shape
-        x = x.permute(0, 2, 1).view(B, C, H, W)
+        b, n, c = x.shape
+        x = x.permute(0, 2, 1).view(b, c, h, w)
         x = x + self.drop_path(self.layer_scale_1.unsqueeze(-1).unsqueeze(-1) * self.attn(self.norm1(x)))
         x = x + self.drop_path(self.layer_scale_2.unsqueeze(-1).unsqueeze(-1) * self.mlp(self.norm2(x)))
-        x = x.view(B, C, N).permute(0, 2, 1)
-        return x
+        return x.view(b, c, n).permute(0, 2, 1)
 
 
 class OverlapPatchEmbed(BaseModule):
-    """Image to Patch Embedding.
-
-    Args:
-        patch_size (int): The patch size.
-            Defaults: 7.
-        stride (int): Stride of the convolutional layer.
-            Default: 4.
-        in_channels (int): The number of input channels.
-            Defaults: 3.
-        embed_dims (int): The dimensions of embedding.
-            Defaults: 768.
-        norm_cfg (dict): Config dict for normalization layer.
-            Defaults: dict(type='SyncBN', requires_grad=True).
-    """
+    """Image to Patch Embedding."""
 
     def __init__(
         self,
@@ -322,22 +318,34 @@ class OverlapPatchEmbed(BaseModule):
         stride: int = 4,
         in_channels: int = 3,
         embed_dim: int = 768,
-        norm_cfg=dict(type="SyncBN", requires_grad=True),
+        norm_cfg: dict[str, Any] | None = None,
     ):
+        """Initializes the OverlapPatchEmbed module.
+
+        Args:
+            patch_size (int, optional): The patch size. Defaults to 7.
+            stride (int, optional): Stride of the convolutional layer. Defaults to 4.
+            in_channels (int, optional): The number of input channels. Defaults to 3.
+            embed_dim (int, optional): The dimensions of embedding. Defaults to 768.
+            norm_cfg (dict[str, Any] | None, optional): Config dict for normalization layer.
+                Defaults to None. If None, {"type": "SyncBN", "requires_grad": True} is used.
+        """
         super().__init__()
+        if norm_cfg is None:
+            norm_cfg = {"type": "SyncBN", "requires_grad": True}
 
         self.proj = nn.Conv2d(in_channels, embed_dim, kernel_size=patch_size, stride=stride, padding=patch_size // 2)
         self.norm = build_norm_layer(norm_cfg, embed_dim)[1]
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> tuple[torch.Tensor, int, int]:
         """Forward function."""
         x = self.proj(x)
-        _, _, H, W = x.shape
+        _, _, h, w = x.shape
         x = self.norm(x)
 
         x = x.flatten(2).transpose(1, 2)
 
-        return x, H, W
+        return x, h, w
 
 
 class MSCAN(BaseModule):
@@ -352,16 +360,16 @@ class MSCAN(BaseModule):
     def __init__(
         self,
         in_channels: int = 3,
-        embed_dims: list[int] = [64, 128, 256, 512],
-        mlp_ratios: list[int] = [4, 4, 4, 4],
+        embed_dims: list[int] = [64, 128, 256, 512],  # noqa: B006
+        mlp_ratios: list[int] = [4, 4, 4, 4],  # noqa: B006
         drop_rate: float = 0.0,
         drop_path_rate: float = 0.0,
-        depths: list[int] = [3, 4, 6, 3],
+        depths: list[int] = [3, 4, 6, 3],  # noqa: B006
         num_stages: int = 4,
-        attention_kernel_sizes: list[int | list[int]] = [5, [1, 7], [1, 11], [1, 21]],
-        attention_kernel_paddings: list[int | list[int]] = [2, [0, 3], [0, 5], [0, 10]],
-        act_cfg: dict[str, str] = {"type": "GELU"},
-        norm_cfg: dict[str, str | bool] = {"type": "SyncBN", "requires_grad": True},
+        attention_kernel_sizes: list[int | list[int]] = [5, [1, 7], [1, 11], [1, 21]],  # noqa: B006
+        attention_kernel_paddings: list[int | list[int]] = [2, [0, 3], [0, 5], [0, 10]],  # noqa: B006
+        act_cfg: dict[str, str] | None = None,
+        norm_cfg: dict[str, str | bool] | None = None,
         init_cfg: dict[str, str] | list[dict[str, str]] | None = None,
         pretrained_weights: str | None = None,
     ) -> None:
@@ -379,13 +387,18 @@ class MSCAN(BaseModule):
                 Attention Module (Figure 2(b) of original paper). Defaults to [5, [1, 7], [1, 11], [1, 21]].
             attention_kernel_paddings (List[Union[int, List[int]]]): Size of attention paddings
                 in Attention Module (Figure 2(b) of original paper). Defaults to [2, [0, 3], [0, 5], [0, 10]].
-            act_cfg (Dict[str, str]): Config dict for activation layer in block. Defaults to dict(type='GELU').
-            norm_cfg (Dict[str, Union[str, bool]]): Config dict for normalization layer.
-                Defaults to dict(type='SyncBN', requires_grad=True).
+            act_cfg (Dict[str, str] | None): Config dict for activation layer in block.
+                Defaults to dict(type='GELU') if None.
+            norm_cfg (Dict[str, Union[str, bool]] | None): Config dict for normalization layer.
+                Defaults to dict(type='SyncBN', requires_grad=True) if None.
             init_cfg (Optional[Union[Dict[str, str], List[Dict[str, str]]]]): Initialization config dict.
                 Defaults to None.
         """
         super().__init__(init_cfg=init_cfg)
+        if act_cfg is None:
+            act_cfg = {"type": "GELU"}
+        if norm_cfg is None:
+            norm_cfg = {"type": "SyncBN", "requires_grad": True}
 
         self.depths = depths
         self.num_stages = num_stages
@@ -429,20 +442,20 @@ class MSCAN(BaseModule):
         if pretrained_weights is not None:
             self.load_pretrained_weights(pretrained_weights)
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> list[torch.Tensor]:
         """Forward function."""
-        B = x.shape[0]
+        b = x.shape[0]
         outs = []
 
         for i in range(self.num_stages):
             patch_embed = getattr(self, f"patch_embed{i + 1}")
             block = getattr(self, f"block{i + 1}")
             norm = getattr(self, f"norm{i + 1}")
-            x, H, W = patch_embed(x)
+            x, h, w = patch_embed(x)
             for blk in block:
-                x = blk(x, H, W)
+                x = blk(x, h, w)
             x = norm(x)
-            x = x.reshape(B, H, W, -1).permute(0, 3, 1, 2).contiguous()
+            x = x.reshape(b, h, w, -1).permute(0, 3, 1, 2).contiguous()
             outs.append(x)
 
         return outs

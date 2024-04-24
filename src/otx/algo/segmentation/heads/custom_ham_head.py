@@ -3,7 +3,9 @@
 #
 """Implementation of HamburgerNet head."""
 
-from typing import Any, Dict, List, Tuple
+from __future__ import annotations
+
+from typing import Any
 
 import torch
 import torch.nn.functional as f
@@ -17,7 +19,9 @@ from .base_head import BaseSegmHead
 
 
 class Hamburger(nn.Module):
-    """Hamburger Module. It consists of one slice of "ham" (matrix
+    """Hamburger Module.
+
+    It consists of one slice of "ham" (matrix
     decomposition) and two slices of "bread" (linear transformation).
 
     Args:
@@ -28,10 +32,10 @@ class Hamburger(nn.Module):
 
     def __init__(
         self,
-        ham_channels: int = 512,
-        ham_kwargs: Dict[str, Any] = dict(),
-        norm_cfg: Dict[str, Any] | None = None,
-        **kwargs: Any,
+        ham_channels: int,
+        ham_kwargs: dict[str, Any],
+        norm_cfg: dict[str, Any] | None = None,
+        **kwargs: Any,  # noqa: ANN401
     ) -> None:
         """Initialize Hamburger Module.
 
@@ -48,14 +52,14 @@ class Hamburger(nn.Module):
 
         self.ham_out = ConvModule(ham_channels, ham_channels, 1, norm_cfg=norm_cfg, act_cfg=None)
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """Forward."""
         enjoy = self.ham_in(x)
         enjoy = f.relu(enjoy, inplace=True)
         enjoy = self.ham(enjoy)
         enjoy = self.ham_out(enjoy)
-        ham = f.relu(x + enjoy, inplace=True)
 
-        return ham
+        return f.relu(x + enjoy, inplace=True)
 
 
 class LightHamHead(BaseSegmHead):
@@ -64,8 +68,8 @@ class LightHamHead(BaseSegmHead):
     def __init__(
         self,
         ham_channels: int = 512,
-        ham_kwargs: Dict[str, Any] = dict(),
-        **kwargs: Any,
+        ham_kwargs: dict[str, Any] | None = None,
+        **kwargs: Any,  # noqa: ANN401
     ) -> None:
         """SegNeXt decode head.
 
@@ -92,7 +96,7 @@ class LightHamHead(BaseSegmHead):
             raise TypeError(msg)
 
         self.ham_channels: int = ham_channels
-        self.ham_kwargs: Dict[str, Any] = ham_kwargs
+        self.ham_kwargs: dict[str, Any] = ham_kwargs if ham_kwargs is not None else {}
 
         self.squeeze = ConvModule(
             sum(self.in_channels),
@@ -103,7 +107,7 @@ class LightHamHead(BaseSegmHead):
             act_cfg=self.act_cfg,
         )
 
-        self.hamburger = Hamburger(self.ham_channels, self.ham_kwargs, **kwargs)
+        self.hamburger = Hamburger(self.ham_channels, ham_kwargs=self.ham_kwargs, **kwargs)
 
         self.align = ConvModule(
             self.ham_channels,
@@ -114,7 +118,7 @@ class LightHamHead(BaseSegmHead):
             act_cfg=self.act_cfg,
         )
 
-    def forward(self, inputs: List[torch.Tensor]) -> torch.Tensor:
+    def forward(self, inputs: list[torch.Tensor]) -> torch.Tensor:
         """Forward function."""
         inputs = self._transform_inputs(inputs)
 
@@ -131,8 +135,7 @@ class LightHamHead(BaseSegmHead):
 
         # apply a conv block to align feature map
         output = self.align(x)  # type: ignore[has-type]
-        output = self.cls_seg(output)
-        return output
+        return self.cls_seg(output)
 
 
 class NMF2D(nn.Module):
@@ -143,24 +146,37 @@ class NMF2D(nn.Module):
 
     def __init__(
         self,
-        ham_channels: int = 512,
-        MD_S=1,
-        MD_R=64,
-        train_steps=6,
-        eval_steps=7,
-        inv_t=1,
-        rand_init=True,
-    ):
+        ham_channels: int,
+        md_s: int = 1,
+        md_r: int = 64,
+        train_steps: int = 6,
+        eval_steps: int = 7,
+        inv_t: int = 1,
+        rand_init: bool = True,
+    ) -> None:
+        """Initialize Non-negative Matrix Factorization (NMF) module.
+
+        Args:
+            ham_channels (int): Number of input channels.
+            md_s (int): Number of spatial coefficients in Matrix Decomposition.
+            md_r (int): Number of latent dimensions R in Matrix Decomposition.
+            train_steps (int): Number of iteration steps in Multiplicative Update (MU)
+                rule to solve Non-negative Matrix Factorization (NMF) in training.
+            eval_steps (int): Number of iteration steps in Multiplicative Update (MU)
+                rule to solve Non-negative Matrix Factorization (NMF) in evaluation.
+            inv_t (int): Inverted multiple number to make coefficient smaller in softmax.
+            rand_init (bool): Whether to initialize randomly.
+        """
         super().__init__()
 
-        self.S = MD_S
-        self.R = MD_R
+        self.s = md_s
+        self.r = md_r
 
         self.train_steps = train_steps
         self.eval_steps = eval_steps
 
         self.rand_init = rand_init
-        bases = f.normalize(torch.rand((self.S, ham_channels // self.S, self.R)))
+        bases = f.normalize(torch.rand((self.s, ham_channels // self.s, self.r)))
         self.bases = torch.nn.parameter.Parameter(bases, requires_grad=False)
         self.inv_t = 1
 
@@ -181,12 +197,12 @@ class NMF2D(nn.Module):
         batch, channels, height, width = x.shape
 
         # (B, C, H, W) -> (B * S, D, N)
-        scale = channels // self.S
-        x = x.view(batch * self.S, scale, height * width)
+        scale = channels // self.s
+        x = x.view(batch * self.s, scale, height * width)
 
         # (S, D, R) -> (B * S, D, R)
         if self.training:
-            bases = self._build_bases(batch, self.S, scale, self.R, device=x.device)
+            bases = self._build_bases(batch, self.s, scale, self.r, device=x.device)
         else:
             bases = self.bases.repeat(batch, 1, 1)
 
@@ -201,27 +217,33 @@ class NMF2D(nn.Module):
         # (B * S, D, N) -> (B, C, H, W)
         return x.view(batch, channels, height, width)
 
-    def _build_bases(self, B: int, S: int, D: int, R: int, device: torch.device | None = None) -> torch.Tensor:
+    def _build_bases(
+        self,
+        batch_size: int,
+        segments: int,
+        channels: int,
+        basis_vectors: int,
+        device: torch.device | None = None,
+    ) -> torch.Tensor:
         """Build bases in initialization.
 
         Args:
-            B (int): Batch size.
-            S (int): Number of segmentations.
-            D (int): Number of input channels.
-            R (int): Number of basis vectors.
+            batch_size (int): Batch size.
+            segments (int): Number of segmentations.
+            channels (int): Number of input channels.
+            basis_vectors (int): Number of basis vectors.
             device (Optional[torch.device]): Device to place the tensor on. Defaults to None.
 
         Returns:
-            torch.Tensor: Tensor of shape (B * S, D, R) containing the built bases.
+            torch.Tensor: Tensor of shape (batch_size * segments, channels, basis_vectors) containing the built bases.
         """
         if device is None:
             device = get_device()
-        bases = torch.rand((B * S, D, R)).to(device)
-        bases = f.normalize(bases, dim=1)
+        bases = torch.rand((batch_size * segments, channels, basis_vectors)).to(device)
 
-        return bases
+        return f.normalize(bases, dim=1)
 
-    def local_step(self, x: torch.Tensor, bases: torch.Tensor, coef: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
+    def local_step(self, x: torch.Tensor, bases: torch.Tensor, coef: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
         """Local step in iteration to renew bases and coefficient.
 
         Args:
@@ -264,6 +286,5 @@ class NMF2D(nn.Module):
         # (B * S, N, R) @ (B * S, D, R)^T @ (B * S, D, R) -> (B * S, N, R)
         denominator = coef.bmm(bases.transpose(1, 2).bmm(bases))
         # multiplication update
-        coef = coef * numerator / (denominator + 1e-6)
 
-        return coef
+        return coef * numerator / (denominator + 1e-6)
