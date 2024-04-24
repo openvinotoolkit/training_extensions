@@ -23,6 +23,9 @@ if TYPE_CHECKING:
 class SchedulerCallableSupportHPO:
     """LR scheduler callable supports OTX hyper-parameter optimization (HPO) algorithm.
 
+    It makes SchedulerCallable pickelable and accessible to parameters.
+    It is used for HPO and adaptive batch size.
+
     Args:
         scheduler_cls: `LRScheduler` class type or string class import path. See examples for details.
         scheduler_kwargs: Keyword arguments used for the initialization of the given `scheduler_cls`.
