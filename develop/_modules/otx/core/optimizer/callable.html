@@ -259,6 +259,9 @@
 <span class="k">class</span> <span class="nc">OptimizerCallableSupportHPO</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Optimizer callable supports OTX hyper-parameter optimization (HPO) algorithm.</span>
 
+<span class="sd">    It makes OptimizerCallable pickelable and accessible to parameters.</span>
+<span class="sd">    It is used for HPO and adaptive batch size.</span>
+
 <span class="sd">    Args:</span>
 <span class="sd">        optimizer_cls: Optimizer class type or string class import path. See examples for details.</span>
 <span class="sd">        optimizer_kwargs: Keyword arguments used for the initialization of the given `optimizer_cls`.</span>

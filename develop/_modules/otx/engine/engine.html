@@ -267,6 +267,7 @@
 <span class="kn">from</span> <span class="nn">otx.core.utils.cache</span> <span class="kn">import</span> <span class="n">TrainerArgumentsCache</span>
 <span class="kn">from</span> <span class="nn">otx.utils.utils</span> <span class="kn">import</span> <span class="n">is_xpu_available</span>
 
+<span class="kn">from</span> <span class="nn">.adaptive_bs</span> <span class="kn">import</span> <span class="n">adapt_batch_size</span>
 <span class="kn">from</span> <span class="nn">.hpo</span> <span class="kn">import</span> <span class="n">execute_hpo</span><span class="p">,</span> <span class="n">update_hyper_parameter</span>
 <span class="kn">from</span> <span class="nn">.utils.auto_configurator</span> <span class="kn">import</span> <span class="n">DEFAULT_CONFIG_PER_TASK</span><span class="p">,</span> <span class="n">AutoConfigurator</span>
 
@@ -424,6 +425,7 @@
         <span class="n">run_hpo</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">hpo_config</span><span class="p">:</span> <span class="n">HpoConfig</span> <span class="o">=</span> <span class="n">HpoConfig</span><span class="p">(),</span>  <span class="c1"># noqa: B008 https://github.com/omni-us/jsonargparse/issues/423</span>
         <span class="n">checkpoint</span><span class="p">:</span> <span class="n">PathLike</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">adaptive_bs</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;None&quot;</span><span class="p">,</span> <span class="s2">&quot;Safe&quot;</span><span class="p">,</span> <span class="s2">&quot;Full&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;None&quot;</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Trains the model using the provided LightningModule and OTXDataModule.</span>
@@ -444,6 +446,9 @@
 <span class="sd">            run_hpo (bool, optional): If True, optimizer hyper parameters before training a model.</span>
 <span class="sd">            hpo_config (HpoConfig | None, optional): Configuration for HPO.</span>
 <span class="sd">            checkpoint (PathLike | None, optional): Path to the checkpoint file. Defaults to None.</span>
+<span class="sd">            adaptive_bs (Literal[&quot;None&quot;, &quot;Safe&quot;, &quot;Full&quot;]):</span>
+<span class="sd">                Change the actual batch size depending on the current GPU status.</span>
+<span class="sd">                Safe =&gt; Prevent GPU out of memory. Full =&gt; Find a batch size using most of GPU memory.</span>
 <span class="sd">            **kwargs: Additional keyword arguments for pl.Trainer configuration.</span>
 
 <span class="sd">        Returns:</span>
@@ -480,6 +485,9 @@
 <span class="sd">                ```</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">checkpoint</span> <span class="o">=</span> <span class="n">checkpoint</span> <span class="k">if</span> <span class="n">checkpoint</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">checkpoint</span>
+
+        <span class="k">if</span> <span class="n">adaptive_bs</span> <span class="o">!=</span> <span class="s2">&quot;None&quot;</span><span class="p">:</span>
+            <span class="n">adapt_batch_size</span><span class="p">(</span><span class="n">engine</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="nb">locals</span><span class="p">(),</span> <span class="n">not_increase</span><span class="o">=</span><span class="p">(</span><span class="n">adaptive_bs</span> <span class="o">!=</span> <span class="s2">&quot;Full&quot;</span><span class="p">))</span>
 
         <span class="k">if</span> <span class="n">run_hpo</span><span class="p">:</span>
             <span class="n">best_config</span><span class="p">,</span> <span class="n">best_trial_weight</span> <span class="o">=</span> <span class="n">execute_hpo</span><span class="p">(</span><span class="n">engine</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="nb">locals</span><span class="p">())</span>
