@@ -8,8 +8,8 @@ from typing import TYPE_CHECKING, Any, Callable
 
 import numpy as np
 import torch
-from mmpretrain.models.utils import resize_pos_embed
 
+from otx.algo.classification.utils.embed import resize_pos_embed
 from otx.algo.explain.explain_algo import ViTReciproCAM
 from otx.algo.utils.mmconfig import read_mmconfig
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
