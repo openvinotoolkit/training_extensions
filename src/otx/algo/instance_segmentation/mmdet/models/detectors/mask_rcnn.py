@@ -30,6 +30,7 @@ class MaskRCNN(TwoStageDetector):
         neck: ConfigDict | dict | None = None,
         data_preprocessor: ConfigDict | dict | None = None,
         init_cfg: ConfigDict | dict | list[ConfigDict | dict] | None = None,
+        **kwargs,
     ) -> None:
         super().__init__(
             backbone=backbone,

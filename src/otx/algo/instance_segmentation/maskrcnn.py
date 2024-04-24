@@ -8,7 +8,7 @@ from __future__ import annotations
 from copy import deepcopy
 from typing import TYPE_CHECKING, Literal
 
-from otx.algo.instance_segmentation.mmdet.models.detectors.two_stage import TwoStageDetector
+from otx.algo.instance_segmentation.mmdet.models.detectors import MaskRCNN
 from otx.algo.utils.mmconfig import read_mmconfig
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.config.data import TileConfig
@@ -31,7 +31,7 @@ if TYPE_CHECKING:
     from otx.core.metrics import MetricCallable
 
 
-class MaskRCNN(MMDetInstanceSegCompatibleModel):
+class MMDetMaskRCNN(MMDetInstanceSegCompatibleModel):
     """MaskRCNN Model."""
 
     def __init__(
@@ -77,10 +77,12 @@ class MaskRCNN(MMDetInstanceSegCompatibleModel):
         """
         sample_config = deepcopy(config)
         modify_num_classes(sample_config, 5)
-        sample_model_dict = TwoStageDetector(**convert_conf_to_mmconfig_dict(sample_config, to="list")).state_dict()
+        sample_model_dict = MaskRCNN(
+            **convert_conf_to_mmconfig_dict(sample_config, to="list"),
+        ).state_dict()
 
         modify_num_classes(sample_config, 6)
-        incremental_model_dict = TwoStageDetector(
+        incremental_model_dict = MaskRCNN(
             **convert_conf_to_mmconfig_dict(sample_config, to="list"),
         ).state_dict()
 
@@ -99,7 +101,7 @@ class MaskRCNN(MMDetInstanceSegCompatibleModel):
 
         config = deepcopy(self.config)
         self.classification_layers = self.get_classification_layers(config, "model.")
-        detector = TwoStageDetector(**convert_conf_to_mmconfig_dict(config, to="list"))
+        detector = MaskRCNN(**convert_conf_to_mmconfig_dict(config, to="list"))
         if self.load_from is not None:
             load_checkpoint(detector, self.load_from, map_location="cpu")
         return detector
@@ -178,10 +180,10 @@ class MaskRCNNSwinT(MMDetInstanceSegCompatibleModel):
         """
         sample_config = deepcopy(config)
         modify_num_classes(sample_config, 5)
-        sample_model_dict = TwoStageDetector(**convert_conf_to_mmconfig_dict(sample_config, to="list")).state_dict()
+        sample_model_dict = MaskRCNN(**convert_conf_to_mmconfig_dict(sample_config, to="list")).state_dict()
 
         modify_num_classes(sample_config, 6)
-        incremental_model_dict = TwoStageDetector(
+        incremental_model_dict = MaskRCNN(
             **convert_conf_to_mmconfig_dict(sample_config, to="list"),
         ).state_dict()
 
@@ -200,7 +202,7 @@ class MaskRCNNSwinT(MMDetInstanceSegCompatibleModel):
 
         config = deepcopy(self.config)
         self.classification_layers = self.get_classification_layers(config, "model.")
-        detector = TwoStageDetector(**convert_conf_to_mmconfig_dict(config, to="list"))
+        detector = MaskRCNN(**convert_conf_to_mmconfig_dict(config, to="list"))
         if self.load_from is not None:
             load_checkpoint(detector, self.load_from, map_location="cpu")
         return detector
