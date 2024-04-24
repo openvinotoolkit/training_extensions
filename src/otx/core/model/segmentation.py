@@ -119,6 +119,7 @@ class TorchVisionCompatibleModel(OTXSegmentationModel):
         backbone_configuration: dict[str, Any] | None = None,
         decode_head_configuration: dict[str, Any] | None = None,
         criterion_configuration: list[dict[str, Any]] | None = None,
+        export_image_configuration: dict[str, Any] | None = None,
         name_base_model: str = "semantic_segmentation_model",
     ):
         """Torchvision compatible model.
@@ -138,15 +139,18 @@ class TorchVisionCompatibleModel(OTXSegmentationModel):
                 The configuration for the decode head of the model. Defaults to None.
             criterion_configuration (list[dict[str, Any]] | None, optional):
                 The configuration for the criterion of the model. Defaults to None.
+            export_image_configuration (dict[str, Any] | None, optional):
+                The configuration for the export of the model like mean, scale and image_size. Defaults to None.
             name_base_model (str, optional): The name of the base model used for trainig.
                 Defaults to "semantic_segmentation_model".
         """
         self.backbone_configuration = backbone_configuration if backbone_configuration is not None else {}
         self.decode_head_configuration = decode_head_configuration if decode_head_configuration is not None else {}
+        export_image_configuration = export_image_configuration if export_image_configuration is not None else {}
         self.criterion_configuration = criterion_configuration
-        self.mean = self.decode_head_configuration.pop("mean", [123.675, 116.28, 103.53])
-        self.std = self.decode_head_configuration.pop("std", [58.395, 57.12, 57.375])
-        self.image_size = self.decode_head_configuration.pop("image_size", (1, 3, 512, 512))
+        self.image_size = tuple(export_image_configuration.get("image_size", (1, 3, 512, 512)))
+        self.mean = export_image_configuration.get("mean", [123.675, 116.28, 103.53])
+        self.scale = export_image_configuration.get("std", [58.395, 57.12, 57.375])
         self.name_base_model = name_base_model
 
         super().__init__(
@@ -193,7 +197,7 @@ class TorchVisionCompatibleModel(OTXSegmentationModel):
             task_level_export_parameters=self._export_parameters,
             input_size=self.image_size,
             mean=self.mean,
-            std=self.std,
+            std=self.scale,
             resize_mode="standard",
             pad_value=0,
             swap_rgb=False,

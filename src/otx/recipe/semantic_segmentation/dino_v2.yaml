@@ -49,6 +49,13 @@ model:
           - 0.999
         weight_decay: 0.0001
 
+    export_image_configuration:
+      image_size:
+        - 1
+        - 3
+        - 560
+        - 560
+
     scheduler:
       class_path: torch.optim.lr_scheduler.PolynomialLR
       init_args:
@@ -73,16 +80,11 @@ overrides:
               size:
                 - 560
                 - 560
-              scale:
-                - 0.2
-                - 1.0
               ratio:
                 - 0.5
                 - 2.0
               antialias: True
           - class_path: torchvision.transforms.v2.RandomPhotometricDistort
-            init_args:
-              p: 0.8
           - class_path: torchvision.transforms.v2.RandomHorizontalFlip
             init_args:
               p: 0.5

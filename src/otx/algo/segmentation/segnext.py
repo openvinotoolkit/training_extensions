@@ -4,7 +4,7 @@
 """SegNext model implementations."""
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from otx.algo.segmentation.backbones import MSCAN
 from otx.algo.segmentation.heads import LightHamHead
@@ -20,13 +20,82 @@ if TYPE_CHECKING:
 class SegNextB(BaseSegmNNModel):
     """SegNextB Model."""
 
+    default_backbone_configuration: ClassVar[dict[str, Any]] = {
+        "act_cfg": {"type": "GELU"},
+        "attention_kernel_paddings": [2, [0, 3], [0, 5], [0, 10]],
+        "attention_kernel_sizes": [5, [1, 7], [1, 11], [1, 21]],
+        "depths": [3, 3, 12, 3],
+        "drop_path_rate": 0.1,
+        "drop_rate": 0.0,
+        "embed_dims": [64, 128, 320, 512],
+        "mlp_ratios": [8, 8, 4, 4],
+        "norm_cfg": {"requires_grad": True, "type": "BN"},
+        "pretrained_weights": "https://download.openmmlab.com/mmsegmentation/v0.5/pretrain/segnext/mscan_b_20230227-3ab7d230.pth",
+    }
+    default_decode_head_configuration: ClassVar[dict[str, Any]] = {
+        "ham_kwargs": {"md_r": 16, "md_s": 1, "eval_steps": 7, "train_steps": 6},
+        "in_channels": [128, 320, 512],
+        "in_index": [1, 2, 3],
+        "norm_cfg": {"num_groups": 32, "requires_grad": True, "type": "GN"},
+        "align_corners": False,
+        "channels": 512,
+        "dropout_ratio": 0.1,
+        "ham_channels": 512,
+    }
+
 
 class SegNextS(BaseSegmNNModel):
     """SegNextS Model."""
 
+    default_backbone_configuration: ClassVar[dict[str, Any]] = {
+        "act_cfg": {"type": "GELU"},
+        "attention_kernel_paddings": [2, [0, 3], [0, 5], [0, 10]],
+        "attention_kernel_sizes": [5, [1, 7], [1, 11], [1, 21]],
+        "depths": [2, 2, 4, 2],
+        "drop_path_rate": 0.1,
+        "drop_rate": 0.0,
+        "embed_dims": [64, 128, 320, 512],
+        "mlp_ratios": [8, 8, 4, 4],
+        "norm_cfg": {"requires_grad": True, "type": "BN"},
+        "pretrained_weights": "https://download.openmmlab.com/mmsegmentation/v0.5/pretrain/segnext/mscan_s_20230227-f33ccdf2.pth",
+    }
+    default_decode_head_configuration: ClassVar[dict[str, Any]] = {
+        "norm_cfg": {"num_groups": 32, "requires_grad": True, "type": "GN"},
+        "ham_kwargs": {"md_r": 16, "md_s": 1, "eval_steps": 7, "rand_init": True, "train_steps": 6},
+        "in_channels": [128, 320, 512],
+        "in_index": [1, 2, 3],
+        "align_corners": False,
+        "channels": 256,
+        "dropout_ratio": 0.1,
+        "ham_channels": 256,
+    }
+
 
 class SegNextT(BaseSegmNNModel):
     """SegNextT Model."""
+
+    default_backbone_configuration: ClassVar[dict[str, Any]] = {
+        "act_cfg": {"type": "GELU"},
+        "attention_kernel_paddings": [2, [0, 3], [0, 5], [0, 10]],
+        "attention_kernel_sizes": [5, [1, 7], [1, 11], [1, 21]],
+        "depths": [3, 3, 5, 2],
+        "drop_path_rate": 0.1,
+        "drop_rate": 0.0,
+        "embed_dims": [32, 64, 160, 256],
+        "mlp_ratios": [8, 8, 4, 4],
+        "norm_cfg": {"requires_grad": True, "type": "BN"},
+        "pretrained_weights": "https://download.openmmlab.com/mmsegmentation/v0.5/pretrain/segnext/mscan_t_20230227-119e8c9f.pth",
+    }
+    default_decode_head_configuration: ClassVar[dict[str, Any]] = {
+        "ham_kwargs": {"md_r": 16, "md_s": 1, "eval_steps": 7, "rand_init": True, "train_steps": 6},
+        "norm_cfg": {"num_groups": 32, "requires_grad": True, "type": "GN"},
+        "in_channels": [64, 160, 256],
+        "in_index": [1, 2, 3],
+        "align_corners": False,
+        "channels": 256,
+        "dropout_ratio": 0.1,
+        "ham_channels": 256,
+    }
 
 
 SEGNEXT_VARIANTS = {
@@ -40,9 +109,16 @@ class OTXSegNext(TorchVisionCompatibleModel):
     """SegNext Model."""
 
     def _create_model(self) -> nn.Module:
-        backbone = MSCAN(**self.backbone_configuration)
-        decode_head = LightHamHead(num_classes=self.num_classes, **self.decode_head_configuration)
-        return SEGNEXT_VARIANTS[self.name_base_model](
+        segnext_model_class = SEGNEXT_VARIANTS[self.name_base_model]
+        # merge configurations with defaults overriding them
+        backbone_configuration = self.backbone_configuration | segnext_model_class.default_backbone_configuration
+        decode_head_configuration = (
+            self.decode_head_configuration | segnext_model_class.default_decode_head_configuration
+        )
+        # initialize backbones
+        backbone = MSCAN(**backbone_configuration)
+        decode_head = LightHamHead(num_classes=self.num_classes, **decode_head_configuration)
+        return segnext_model_class(
             backbone=backbone,
             decode_head=decode_head,
             criterion_configuration=self.criterion_configuration,

@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 __all__ = ["CrossEntropyLossWithIgnore", "create_criterion"]
 
 
-def create_criterion(losses: list | str, params: dict | None = None) -> list[nn.Module]:
+def create_criterion(losses: list | str, params: dict | None = None) -> nn.Module:
     """Create loss function by name."""
     if isinstance(losses, list):
         creterions: list = []
@@ -27,7 +27,7 @@ def create_criterion(losses: list | str, params: dict | None = None) -> list[nn.
     if isinstance(losses, str):
         params = {} if params is None else params
         if losses == "CrossEntropyLoss":
-            return [CrossEntropyLossWithIgnore(**params)]
+            return CrossEntropyLossWithIgnore(**params)
 
         msg = f"Unknown loss type: {losses}"
         raise ValueError(msg)

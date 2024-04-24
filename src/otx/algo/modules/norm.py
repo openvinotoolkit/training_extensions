@@ -93,6 +93,8 @@ def build_norm_layer(cfg: dict, num_features: int, postfix: int | str = "") -> t
             to create named layer.
 
     Returns:
+        tuple[str, nn.Module]: The first element is the layer name consisting
+        of abbreviation and postfix, e.g., bn1, gn. The second element is the
         created norm layer.
     """
     if not isinstance(cfg, dict):
