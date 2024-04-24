@@ -101,6 +101,9 @@ def test_predict_with_explain(
     if "yolox" in model_name:
         # TODO(sungchul): [RuntimeError] number of output names provided (4) exceeded number of outputs (2)
         pytest.skip("There's issue with YOLOX model. Skip for now.")
+    if "atss" in model_name:
+        # TODO(Jaeguk): ATSS returns dynamic output for saliency map
+        pytest.skip("There's issue with ATSS model. Skip for now.")
 
     tmp_path = tmp_path / f"otx_xai_{model_name}"
     engine = Engine.from_config(

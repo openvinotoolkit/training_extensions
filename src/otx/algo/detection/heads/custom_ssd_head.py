@@ -276,6 +276,8 @@ class SSDHead(AnchorHead):
 
         if isinstance(self.in_channels, int):
             self.in_channels = (self.in_channels,)
+        if isinstance(self.num_base_priors, int):
+            self.num_base_priors = [self.num_base_priors]
 
         for in_channel, num_base_priors in zip(self.in_channels, self.num_base_priors):
             if self.use_depthwise:

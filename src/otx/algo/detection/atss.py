@@ -56,7 +56,7 @@ class TorchATSS(SingleStageDetector):
             backbone.pop("type")
             self.backbone = ResNeXt(**backbone)
         else:
-            self.backbone = _build_pytorchcv_model(**backbone)
+            self.backbone = _build_pytorchcv_model(backbone)
         self.neck = FPN(**neck)
         bbox_head.update(train_cfg=train_cfg)
         bbox_head.update(test_cfg=test_cfg)
