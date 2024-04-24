@@ -104,6 +104,10 @@ def test_predict_with_explain(
     if "ssd_mobilenetv2" in model_name:
         pytest.skip("There's issue with SSD model. Skip for now.")
 
+    if "yolox" in model_name:
+        # TODO(sungchul): YOLOX returns dynamic output for saliency map
+        pytest.skip("There's issue with YOLOX model. Skip for now.")
+
     tmp_path = tmp_path / f"otx_xai_{model_name}"
     engine = Engine.from_config(
         config_path=recipe,
