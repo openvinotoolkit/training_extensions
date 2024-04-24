@@ -15,7 +15,7 @@ from mmengine.structures import InstanceData
 from torch import nn
 
 from otx.algo.detection.backbones.pytorchcv_backbones import _build_model_including_pytorchcv
-from otx.algo.detection.heads.custom_ssd_head import SSDHead
+from otx.algo.detection.heads.ssd_head import SSDHead
 from otx.algo.utils.mmconfig import read_mmconfig
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.config.data import TileConfig

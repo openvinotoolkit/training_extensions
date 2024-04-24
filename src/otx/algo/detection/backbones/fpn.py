@@ -1,4 +1,5 @@
-# Copyright (c) OpenMMLab. All rights reserved.
+# Copyright (C) 2024 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
 """FPN implementation."""
 
 from __future__ import annotations
@@ -12,6 +13,8 @@ if TYPE_CHECKING:
     from mmengine import ConfigDict
 
 
+# This class come from mmdet and is slightly modified
+# https://github.com/open-mmlab/mmdetection/blob/ecac3a77becc63f23d9f6980b2a36f86acd00a8a/mmdet/models/necks/fpn.py
 class FPN(nn.Module):
     r"""Feature Pyramid Network.
 

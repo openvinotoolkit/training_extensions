@@ -13,7 +13,7 @@ from mmengine.structures import InstanceData
 from otx.algo.detection.backbones.fpn import FPN
 from otx.algo.detection.backbones.pytorchcv_backbones import _build_model_including_pytorchcv
 from otx.algo.detection.backbones.resnext import ResNeXt
-from otx.algo.detection.heads.custom_atss_head import ATSSHead
+from otx.algo.detection.heads.atss_head import ATSSHead
 from otx.algo.detection.ssd import SingleStageDetector
 from otx.algo.utils.mmconfig import read_mmconfig
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
@@ -141,7 +141,7 @@ class ATSS(MMDetCompatibleModel):
             resize_mode="standard",
             pad_value=0,
             swap_rgb=False,
-            via_onnx=True,  # Currently SSD should be exported through ONNX
+            via_onnx=True,  # Currently ATSS should be exported through ONNX
             onnx_export_configuration={
                 "input_names": ["image"],
                 "output_names": ["boxes", "labels"],

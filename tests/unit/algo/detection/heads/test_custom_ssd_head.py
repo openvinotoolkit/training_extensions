@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 """Test of CustomSSDHead."""
 
-from otx.algo.detection.heads.custom_ssd_head import SSDHead
+from otx.algo.detection.heads.ssd_head import SSDHead
 from otx.algo.detection.losses.cross_entropy_loss import CrossEntropyLoss
 
 

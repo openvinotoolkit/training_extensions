@@ -538,7 +538,7 @@ class BaseDenseHead(BaseModule):
                   the last dimension 4 arrange as (x1, y1, x2, y2).
         """
         if batch_img_metas is None:
-            batch_img_metas = []
+            batch_img_metas = [{}]
 
         num_levels = len(cls_scores)
 
