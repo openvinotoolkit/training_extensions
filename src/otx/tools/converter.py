@@ -30,7 +30,7 @@ TEMPLATE_ID_DICT = {
     },
     "Custom_Image_Classification_EfficinetNet-B0": {
         "task": OTXTaskType.MULTI_CLASS_CLS,
-        "model_name": "efficientnet_b0_light",
+        "model_name": "efficientnet_b0",
     },
     "Custom_Image_Classification_EfficientNet-V2-S": {
         "task": OTXTaskType.MULTI_CLASS_CLS,

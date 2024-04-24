@@ -19,9 +19,8 @@ def fxt_mm_config() -> DictConfig:
     return DictConfig(
         {
             "backbone": {
-                "version": "b0",
-                "pretrained": True,
-                "type": "OTXEfficientNet",
+                "arch": "b0",
+                "type": "EfficientNet",
             },
             "head": {
                 "in_channels": 1280,
