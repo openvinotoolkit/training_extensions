@@ -13,7 +13,7 @@ from torch import Tensor, nn
 from otx.algo.modules import ConvModule
 from otx.algo.segmentation.modules import IterativeAggregator
 
-from .base_head import BaseSegmHead
+from .base_segm_head import BaseSegmHead
 
 
 class FCNHead(BaseSegmHead):

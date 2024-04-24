@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING, Any
 from otx.algo.segmentation.backbones import MSCAN
 from otx.algo.segmentation.heads import LightHamHead
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
-from otx.core.model.segmentation import OTXSegmentationModel
+from otx.core.model.segmentation import TorchVisionCompatibleModel
 
 from .base_model import BaseSegmNNModel
 
@@ -36,7 +36,7 @@ SEGNEXT_VARIANTS = {
 }
 
 
-class OTXSegNext(OTXSegmentationModel):
+class OTXSegNext(TorchVisionCompatibleModel):
     """SegNext Model."""
 
     def _create_model(self) -> nn.Module:

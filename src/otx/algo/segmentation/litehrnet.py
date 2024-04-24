@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING, Any
 from otx.algo.segmentation.backbones import LiteHRNet
 from otx.algo.segmentation.heads import CustomFCNHead
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
-from otx.core.model.segmentation import OTXSegmentationModel
+from otx.core.model.segmentation import TorchVisionCompatibleModel
 
 from .base_model import BaseSegmNNModel
 
@@ -368,7 +368,7 @@ LITEHRNET_VARIANTS = {
 }
 
 
-class OTXLiteHRNet(OTXSegmentationModel):
+class OTXLiteHRNet(TorchVisionCompatibleModel):
     """LiteHRNet Model."""
 
     def _create_model(self) -> nn.Module:

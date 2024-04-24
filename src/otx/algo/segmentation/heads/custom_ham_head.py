@@ -15,7 +15,7 @@ from torch import nn
 from otx.algo.modules import ConvModule
 from otx.algo.segmentation.modules import resize
 
-from .base_head import BaseSegmHead
+from .base_segm_head import BaseSegmHead
 
 
 class Hamburger(nn.Module):

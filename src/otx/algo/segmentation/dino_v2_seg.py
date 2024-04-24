@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING, Any
 
 from otx.algo.segmentation.backbones import DinoVisionTransformer
 from otx.algo.segmentation.heads import CustomFCNHead
-from otx.core.model.segmentation import OTXSegmentationModel
+from otx.core.model.segmentation import TorchVisionCompatibleModel
 
 from .base_model import BaseSegmNNModel
 
@@ -21,7 +21,7 @@ class DinoV2Seg(BaseSegmNNModel):
     """DinoV2Seg Model."""
 
 
-class OTXDinoV2Seg(OTXSegmentationModel):
+class OTXDinoV2Seg(TorchVisionCompatibleModel):
     """DinoV2Seg Model."""
 
     def _create_model(self) -> nn.Module:
