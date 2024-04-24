@@ -14,7 +14,7 @@ from datumaro.components.annotation import Bbox
 from mmengine.structures import InstanceData
 from torch import nn
 
-from otx.algo.detection.backbones.pytorchcv_backbones import _build_pytorchcv_model
+from otx.algo.detection.backbones.pytorchcv_backbones import _build_model_including_pytorchcv
 from otx.algo.detection.heads.custom_ssd_head import SSDHead
 from otx.algo.utils.mmconfig import read_mmconfig
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
@@ -73,7 +73,7 @@ class SingleStageDetector(nn.Module):
 
     def build_backbone(self, cfg: ConfigDict | dict) -> nn.Module:
         """Build backbone."""
-        return _build_pytorchcv_model(**cfg)
+        return _build_model_including_pytorchcv(cfg)
 
     def build_bbox_head(self, cfg: ConfigDict | dict) -> nn.Module:
         """Build bbox head."""

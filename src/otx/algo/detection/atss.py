@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING, Literal
 from mmengine.structures import InstanceData
 
 from otx.algo.detection.backbones.fpn import FPN
-from otx.algo.detection.backbones.pytorchcv_backbones import _build_pytorchcv_model
+from otx.algo.detection.backbones.pytorchcv_backbones import _build_model_including_pytorchcv
 from otx.algo.detection.backbones.resnext import ResNeXt
 from otx.algo.detection.heads.custom_atss_head import ATSSHead
 from otx.algo.detection.ssd import SingleStageDetector
@@ -56,7 +56,7 @@ class TorchATSS(SingleStageDetector):
             backbone.pop("type")
             self.backbone = ResNeXt(**backbone)
         else:
-            self.backbone = _build_pytorchcv_model(backbone)
+            self.backbone = _build_model_including_pytorchcv(backbone)
         self.neck = FPN(**neck)
         bbox_head.update(train_cfg=train_cfg)
         bbox_head.update(test_cfg=test_cfg)
