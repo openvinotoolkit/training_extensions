@@ -101,8 +101,8 @@ class OTXYOLOX(MMDetCompatibleModel):
             load_checkpoint(detector, self.load_from, map_location="cpu")
         return detector
 
-    @staticmethod
     def get_classification_layers(
+        self,
         config: DictConfig,
         prefix: str = "",
     ) -> dict[str, dict[str, int]]:
