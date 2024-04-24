@@ -45,21 +45,25 @@ class YOLOX(SingleStageDetector):
 
     def build_backbone(self, cfg: ConfigDict | dict) -> nn.Module:
         """Build backbone."""
+        cfg.pop("type")  # TODO (sungchul): remove `type` in recipe
         return CSPDarknet(**cfg)
 
     def build_neck(self, cfg: ConfigDict | dict) -> nn.Module:
         """Build backbone."""
+        cfg.pop("type")  # TODO (sungchul): remove `type` in recipe
         return YOLOXPAFPN(**cfg)
 
     def build_bbox_head(self, cfg: ConfigDict | dict) -> nn.Module:
         """Build bbox head."""
+        cfg.pop("type")  # TODO (sungchul): remove `type` in recipe
         return YOLOXHead(**cfg)
 
     def build_det_data_preprocessor(self, cfg: ConfigDict | dict) -> nn.Module:
         """Build DetDataPreprocessor.
 
-        TODO (someone): DetDataPreprocessor will be removed.
+        TODO (sungchul): DetDataPreprocessor will be removed.
         """
+        cfg.pop("type")  # TODO (sungchul): remove `type` in recipe
         return DetDataPreprocessor(**cfg)
 
 
@@ -96,6 +100,7 @@ class OTXYOLOX(MMDetCompatibleModel):
 
         config = deepcopy(self.config)
         self.classification_layers = self.get_classification_layers(config, "model.")
+        config.pop("type")  # TODO (sungchul): remove `type` in recipe
         detector = YOLOX(**convert_conf_to_mmconfig_dict(config))
         if self.load_from is not None:
             load_checkpoint(detector, self.load_from, map_location="cpu")
@@ -124,6 +129,7 @@ class OTXYOLOX(MMDetCompatibleModel):
             Normally it is related with background classes.
         """
         sample_config = deepcopy(config)
+        sample_config.pop("type")  # TODO (sungchul): remove `type` in recipe
         modify_num_classes(sample_config, 5)
         sample_model_dict = YOLOX(**convert_conf_to_mmconfig_dict(sample_config)).state_dict()
 
