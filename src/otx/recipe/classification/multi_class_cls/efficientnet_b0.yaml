@@ -61,13 +61,10 @@ overrides:
       val_subset:
         batch_size: 64
         transforms:
+          # TODO(harimkang): Need to revisit validation pipeline
           - class_path: otx.core.data.transform_libs.torchvision.Resize
             init_args:
-              scale: 256
-              keep_ratio: True
-          - class_path: torchvision.transforms.v2.CenterCrop
-            init_args:
-              size: 224
+              scale: 224
           - class_path: torchvision.transforms.v2.ToDtype
             init_args:
               dtype: ${as_torch_dtype:torch.float32}
