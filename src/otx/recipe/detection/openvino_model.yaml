@@ -2,7 +2,7 @@ model:
   class_path: otx.core.model.detection.OVDetectionModel
   init_args:
     label_info: 80
-    model_name: ssd300
+    model_name: ssd-resnet34-1200-onnx
     use_throughput_mode: True
     model_type: "SSD"
     async_inference: True
