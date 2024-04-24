@@ -56,10 +56,10 @@ class TestOTXDetectionModel:
 
     @pytest.fixture()
     def otx_model(self, config) -> MMDetCompatibleModel:
-        # TODO (someone): it needs to be fixed
-        MMDetCompatibleModel._create_model = OTXYOLOX._create_model
-        MMDetCompatibleModel.get_classification_layers = OTXYOLOX.get_classification_layers
-        return MMDetCompatibleModel(label_info=1, config=config)
+        # TODO (someone): revert to MMDetCompatibleModel
+        # MMDetCompatibleModel._create_model still calls build_mm_model
+        # return MMDetCompatibleModel(label_info=1, config=config)  # noqa: ERA001
+        return OTXYOLOX(label_info=1, variant="tiny")
 
     def test_configure_metric_with_ckpt(
         self,
