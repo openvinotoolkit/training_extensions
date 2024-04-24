@@ -5,6 +5,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 from mmengine.model import BaseModule, ModuleList
+from mmengine.registry import MODELS
 
 from otx.algo.modules.norm import build_norm_layer
 from otx.algo.modules.transformer import FFN, PatchEmbed
@@ -50,14 +51,15 @@ class TransformerEncoderLayer(BaseModule):
                  num_fcs=2,
                  qkv_bias=True,
                  ffn_type='origin',
-                 act_cfg=dict(type='GELU'),
-                 norm_cfg=dict(type='LN'),
+                 act_cfg=None,
+                 norm_cfg={"type": "LN"},
                  init_cfg=None):
         super(TransformerEncoderLayer, self).__init__(init_cfg=init_cfg)
 
+        act_cfg = act_cfg if act_cfg else {'type': 'GELU'}
         self.embed_dims = embed_dims
 
-        self.ln1 = build_norm_layer(norm_cfg, self.embed_dims)
+        _, self.ln1 = build_norm_layer(norm_cfg, self.embed_dims)
 
         self.attn = MultiheadAttention(
             embed_dims=embed_dims,
@@ -67,16 +69,17 @@ class TransformerEncoderLayer(BaseModule):
             dropout_layer=dict(type='DropPath', drop_prob=drop_path_rate),
             qkv_bias=qkv_bias)
 
-        self.ln2 = build_norm_layer(norm_cfg, self.embed_dims)
+        _, self.ln2 = build_norm_layer(norm_cfg, self.embed_dims)
 
         if ffn_type == 'origin':
             self.ffn = FFN(
                 embed_dims=embed_dims,
                 feedforward_channels=feedforward_channels,
                 num_fcs=num_fcs,
+                act_cfg=act_cfg,
                 ffn_drop=drop_rate,
                 dropout_layer=dict(type='DropPath', drop_prob=drop_path_rate),
-                act_cfg=act_cfg)
+                )
         elif ffn_type == 'swiglu_fused':
             self.ffn = SwiGLUFFNFused(
                 embed_dims=embed_dims,
@@ -105,7 +108,8 @@ class TransformerEncoderLayer(BaseModule):
         return x
 
 
-class VisionTransformer(BaseModule):
+@MODELS.register_module()
+class OTXVisionTransformer(BaseModule):
     """Vision Transformer.
 
     A PyTorch implement of : `An Image is Worth 16x16 Words: Transformers
@@ -259,7 +263,7 @@ class VisionTransformer(BaseModule):
                  layer_cfgs=dict(),
                  pre_norm=False,
                  init_cfg=None):
-        super(VisionTransformer, self).__init__(init_cfg)
+        super(OTXVisionTransformer, self).__init__(init_cfg)
 
         if isinstance(arch, str):
             arch = arch.lower()
@@ -344,7 +348,6 @@ class VisionTransformer(BaseModule):
                 num_heads=self.arch_settings['num_heads'],
                 feedforward_channels=self.
                 arch_settings['feedforward_channels'],
-                layer_scale_init_value=layer_scale_init_value,
                 drop_rate=drop_rate,
                 drop_path_rate=dpr[i],
                 qkv_bias=qkv_bias,
@@ -360,9 +363,9 @@ class VisionTransformer(BaseModule):
 
         self.final_norm = final_norm
         if final_norm:
-            self.ln1 = build_norm_layer(norm_cfg, self.embed_dims)
+            _, self.ln1 = build_norm_layer(norm_cfg, self.embed_dims)
         if self.out_type == 'avg_featmap':
-            self.ln2 = build_norm_layer(norm_cfg, self.embed_dims)
+            _, self.ln2 = build_norm_layer(norm_cfg, self.embed_dims)
 
         # freeze stages only when self.frozen_stages > 0
         if self.frozen_stages > 0:
@@ -377,7 +380,7 @@ class VisionTransformer(BaseModule):
         return self.ln2
 
     def init_weights(self):
-        super(VisionTransformer, self).init_weights()
+        super(OTXVisionTransformer, self).init_weights()
 
         if not (isinstance(self.init_cfg, dict)
                 and self.init_cfg['type'] == 'Pretrained'):

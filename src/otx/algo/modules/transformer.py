@@ -51,9 +51,9 @@ class AdaptivePadding(nn.Module):
         super().__init__()
         assert padding in ('same', 'corner')
 
-        kernel_size = (kernel_size, kernel_size)
-        stride = (stride, stride)
-        dilation = (dilation, dilation)
+        kernel_size = kernel_size if isinstance(kernel_size, tuple) else (kernel_size, kernel_size)
+        stride = stride if isinstance(stride, tuple) else (stride, stride)
+        dilation = (dilation, dilation) if isinstance(dilation, int) else dilation
 
         self.padding = padding
         self.kernel_size = kernel_size
@@ -148,9 +148,9 @@ class PatchEmbed(BaseModule):
         if stride is None:
             stride = kernel_size
 
-        kernel_size = (kernel_size, kernel_size)
-        stride = (stride, stride)
-        dilation = (dilation, dilation)
+        kernel_size = kernel_size if isinstance(kernel_size, tuple) else (kernel_size, kernel_size)
+        stride = stride if isinstance(stride, tuple) else (stride, stride)
+        dilation = (dilation, dilation) if isinstance(dilation, int) else dilation
 
         if isinstance(padding, str):
             self.adaptive_padding = AdaptivePadding(
@@ -162,7 +162,7 @@ class PatchEmbed(BaseModule):
             padding = 0
         else:
             self.adaptive_padding = None
-        padding = (padding, padding)
+        padding = padding if isinstance(padding, tuple) else (padding, padding)
 
         self.projection = build_conv_layer(
             {'type': conv_type},
@@ -251,7 +251,7 @@ class FFN(BaseModule):
                  embed_dims=256,
                  feedforward_channels=1024,
                  num_fcs=2,
-                 act_cfg=dict(type='ReLU', inplace=True),
+                 act_cfg={'type': 'ReLU', 'inplace': True},
                  ffn_drop=0.,
                  dropout_layer=None,
                  add_identity=True,

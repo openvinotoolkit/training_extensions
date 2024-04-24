@@ -62,8 +62,8 @@ class Dropout(nn.Dropout):
 
 
 DROPOUT_DICT = {
-    # "DropPath": DropPath,
-    # "Dropout": Dropout,
+    "DropPath": DropPath,
+    "Dropout": Dropout,
 }
 
 def build_dropout(cfg: dict, default_args: dict | None = None) -> Any:  # noqa: ANN401
