@@ -4,7 +4,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>otx.algo.classification.backbones.otx_efficientnet &#8212; OpenVINO™ Training Extensions 2.1.0rc0 documentation</title>
+    <title>otx.algo.classification.backbones.efficientnet &#8212; OpenVINO™ Training Extensions 2.1.0rc0 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
     <script src="../../../../../_static/copybutton.js?v=f281be69"></script>
     <script src="../../../../../_static/tabs.js?v=3030b3cb"></script>
     <script src="../../../../../_static/design-tabs.js?v=36754332"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/otx/algo/classification/backbones/otx_efficientnet';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/otx/algo/classification/backbones/efficientnet';</script>
     <link rel="index" title="Index" href="../../../../../genindex.html" />
     <link rel="search" title="Search" href="../../../../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -234,7 +234,7 @@
             
             <article class="bd-article" role="main">
               
-  <h1>Source code for otx.algo.classification.backbones.otx_efficientnet</h1><div class="highlight"><pre>
+  <h1>Source code for otx.algo.classification.backbones.efficientnet</h1><div class="highlight"><pre>
 <span></span><span class="c1"># Copyright (C) 2023 Intel Corporation</span>
 <span class="c1"># SPDX-License-Identifier: Apache-2.0</span>
 <span class="c1">#</span>
@@ -243,14 +243,16 @@
 <span class="kn">import</span> <span class="nn">math</span>
 <span class="kn">import</span> <span class="nn">os</span>
 
+<span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">import</span> <span class="nn">torch.nn.functional</span> <span class="k">as</span> <span class="nn">F</span>
 <span class="kn">from</span> <span class="nn">otx.algo.modules.activation</span> <span class="kn">import</span> <span class="n">build_activation_layer</span>
 <span class="kn">from</span> <span class="nn">otx.algo.modules.conv_module</span> <span class="kn">import</span> <span class="n">ConvModule</span>
-<span class="kn">from</span> <span class="nn">mmengine.runner</span> <span class="kn">import</span> <span class="n">load_checkpoint</span>
-<span class="kn">from</span> <span class="nn">mmpretrain.registry</span> <span class="kn">import</span> <span class="n">MODELS</span>
+<span class="kn">from</span> <span class="nn">otx.algo.utils.mmengine_utils</span> <span class="kn">import</span> <span class="n">load_checkpoint_to_model</span>
 <span class="kn">from</span> <span class="nn">pytorchcv.models.model_store</span> <span class="kn">import</span> <span class="n">download_model</span>
 <span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">nn</span>
 <span class="kn">from</span> <span class="nn">torch.nn</span> <span class="kn">import</span> <span class="n">init</span>
+
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Literal</span>
 
 <span class="n">PRETRAINED_ROOT</span> <span class="o">=</span> <span class="s2">&quot;https://github.com/osmr/imgclsmob/releases/download/v0.0.364/&quot;</span>
 <span class="n">pretrained_urls</span> <span class="o">=</span> <span class="p">{</span>
@@ -259,16 +261,16 @@
 
 
 <span class="k">def</span> <span class="nf">conv1x1_block</span><span class="p">(</span>
-    <span class="n">in_channels</span><span class="p">,</span>
-    <span class="n">out_channels</span><span class="p">,</span>
-    <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-    <span class="n">padding</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
-    <span class="n">groups</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-    <span class="n">bias</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-    <span class="n">use_bn</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="n">bn_eps</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">,</span>
-    <span class="n">activation</span><span class="o">=</span><span class="s2">&quot;ReLU&quot;</span><span class="p">,</span>
-<span class="p">):</span>
+    <span class="n">in_channels</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">out_channels</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">stride</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="n">padding</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="n">groups</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="n">bias</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">use_bn</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">bn_eps</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-5</span><span class="p">,</span>
+    <span class="n">activation</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="s2">&quot;ReLU&quot;</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ConvModule</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Conv block.&quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">ConvModule</span><span class="p">(</span>
         <span class="n">in_channels</span><span class="o">=</span><span class="n">in_channels</span><span class="p">,</span>
@@ -284,18 +286,18 @@
 
 
 <span class="k">def</span> <span class="nf">conv3x3_block</span><span class="p">(</span>
-    <span class="n">in_channels</span><span class="p">,</span>
-    <span class="n">out_channels</span><span class="p">,</span>
-    <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-    <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-    <span class="n">dilation</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-    <span class="n">groups</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-    <span class="n">bias</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-    <span class="n">use_bn</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="n">bn_eps</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">,</span>
-    <span class="n">activation</span><span class="o">=</span><span class="s2">&quot;ReLU&quot;</span><span class="p">,</span>
-    <span class="n">IN_conv</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-<span class="p">):</span>
+    <span class="n">in_channels</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">out_channels</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">stride</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="n">padding</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="n">dilation</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="n">groups</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="n">bias</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">use_bn</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">bn_eps</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-5</span><span class="p">,</span>
+    <span class="n">activation</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="s2">&quot;ReLU&quot;</span><span class="p">,</span>
+    <span class="n">IN_conv</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ConvModule</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Conv block.&quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">ConvModule</span><span class="p">(</span>
         <span class="n">in_channels</span><span class="o">=</span><span class="n">in_channels</span><span class="p">,</span>
@@ -312,16 +314,16 @@
 
 
 <span class="k">def</span> <span class="nf">dwconv3x3_block</span><span class="p">(</span>
-    <span class="n">in_channels</span><span class="p">,</span>
-    <span class="n">out_channels</span><span class="p">,</span>
-    <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-    <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-    <span class="n">dilation</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-    <span class="n">bias</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-    <span class="n">use_bn</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="n">bn_eps</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">,</span>
-    <span class="n">activation</span><span class="o">=</span><span class="s2">&quot;ReLU&quot;</span><span class="p">,</span>
-<span class="p">):</span>
+    <span class="n">in_channels</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">out_channels</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">stride</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="n">padding</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="n">dilation</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="n">bias</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">use_bn</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">bn_eps</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-5</span><span class="p">,</span>
+    <span class="n">activation</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="s2">&quot;ReLU&quot;</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ConvModule</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Conv block.&quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">ConvModule</span><span class="p">(</span>
         <span class="n">in_channels</span><span class="o">=</span><span class="n">in_channels</span><span class="p">,</span>
@@ -338,16 +340,16 @@
 
 
 <span class="k">def</span> <span class="nf">dwconv5x5_block</span><span class="p">(</span>
-    <span class="n">in_channels</span><span class="p">,</span>
-    <span class="n">out_channels</span><span class="p">,</span>
-    <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-    <span class="n">padding</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
-    <span class="n">dilation</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-    <span class="n">bias</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-    <span class="n">use_bn</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="n">bn_eps</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">,</span>
-    <span class="n">activation</span><span class="o">=</span><span class="s2">&quot;ReLU&quot;</span><span class="p">,</span>
-<span class="p">):</span>
+    <span class="n">in_channels</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">out_channels</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">stride</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="n">padding</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
+    <span class="n">dilation</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="n">bias</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">use_bn</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">bn_eps</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-5</span><span class="p">,</span>
+    <span class="n">activation</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="s2">&quot;ReLU&quot;</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ConvModule</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Conv block.&quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">ConvModule</span><span class="p">(</span>
         <span class="n">in_channels</span><span class="o">=</span><span class="n">in_channels</span><span class="p">,</span>
@@ -363,7 +365,7 @@
     <span class="p">)</span>
 
 
-<span class="k">def</span> <span class="nf">round_channels</span><span class="p">(</span><span class="n">channels</span><span class="p">,</span> <span class="n">divisor</span><span class="o">=</span><span class="mi">8</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">round_channels</span><span class="p">(</span><span class="n">channels</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">divisor</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">8</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Round weighted channel number (make divisible operation).</span>
 
 <span class="sd">    Args:</span>
@@ -376,7 +378,7 @@
     <span class="k">return</span> <span class="n">rounded_channels</span>
 
 
-<span class="k">def</span> <span class="nf">calc_tf_padding</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">kernel_size</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">dilation</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">calc_tf_padding</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">kernel_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">stride</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">dilation</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculate TF-same like padding size.</span>
 
 <span class="sd">    Args:</span>
@@ -410,13 +412,13 @@
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">channels</span><span class="p">,</span>
-        <span class="n">reduction</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span>
-        <span class="n">mid_channels</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-        <span class="n">round_mid</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-        <span class="n">use_conv</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-        <span class="n">mid_activation</span><span class="o">=</span><span class="s2">&quot;ReLU&quot;</span><span class="p">,</span>
-        <span class="n">out_activation</span><span class="o">=</span><span class="s2">&quot;Sigmoid&quot;</span><span class="p">,</span>
+        <span class="n">channels</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">reduction</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">16</span><span class="p">,</span>
+        <span class="n">mid_channels</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">round_mid</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">use_conv</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">mid_activation</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="s2">&quot;ReLU&quot;</span><span class="p">,</span>
+        <span class="n">out_activation</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="s2">&quot;Sigmoid&quot;</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">use_conv</span> <span class="o">=</span> <span class="n">use_conv</span>
@@ -449,7 +451,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">fc2</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">in_features</span><span class="o">=</span><span class="n">mid_channels</span><span class="p">,</span> <span class="n">out_features</span><span class="o">=</span><span class="n">channels</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">sigmoid</span> <span class="o">=</span> <span class="n">build_activation_layer</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="n">out_activation</span><span class="p">))</span>
 
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Forward.&quot;&quot;&quot;</span>
         <span class="n">w</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pool</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_conv</span><span class="p">:</span>
@@ -476,7 +478,7 @@
 <span class="sd">        tf_mode : bool. Whether to use TF-like mode.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">in_channels</span><span class="p">,</span> <span class="n">out_channels</span><span class="p">,</span> <span class="n">stride</span><span class="p">,</span> <span class="n">bn_eps</span><span class="p">,</span> <span class="n">activation</span><span class="p">,</span> <span class="n">tf_mode</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">in_channels</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">out_channels</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">stride</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="n">bn_eps</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">activation</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">tf_mode</span><span class="p">:</span> <span class="nb">bool</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">tf_mode</span> <span class="o">=</span> <span class="n">tf_mode</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">residual</span> <span class="o">=</span> <span class="p">(</span><span class="n">in_channels</span> <span class="o">==</span> <span class="n">out_channels</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">stride</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span>
@@ -496,7 +498,7 @@
             <span class="n">activation</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Forward.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">residual</span><span class="p">:</span>
             <span class="n">identity</span> <span class="o">=</span> <span class="n">x</span>
@@ -527,15 +529,15 @@
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">in_channels</span><span class="p">,</span>
-        <span class="n">out_channels</span><span class="p">,</span>
-        <span class="n">kernel_size</span><span class="p">,</span>
-        <span class="n">stride</span><span class="p">,</span>
-        <span class="n">exp_factor</span><span class="p">,</span>
-        <span class="n">se_factor</span><span class="p">,</span>
-        <span class="n">bn_eps</span><span class="p">,</span>
-        <span class="n">activation</span><span class="p">,</span>
-        <span class="n">tf_mode</span><span class="p">,</span>
+        <span class="n">in_channels</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">out_channels</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">kernel_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">stride</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
+        <span class="n">exp_factor</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">se_factor</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">bn_eps</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">activation</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">tf_mode</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">kernel_size</span> <span class="o">=</span> <span class="n">kernel_size</span>
@@ -544,7 +546,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">residual</span> <span class="o">=</span> <span class="p">(</span><span class="n">in_channels</span> <span class="o">==</span> <span class="n">out_channels</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">stride</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">use_se</span> <span class="o">=</span> <span class="n">se_factor</span> <span class="o">&gt;</span> <span class="mi">0</span>
         <span class="n">mid_channels</span> <span class="o">=</span> <span class="n">in_channels</span> <span class="o">*</span> <span class="n">exp_factor</span>
-        <span class="n">dwconv_block_fn</span> <span class="o">=</span> <span class="n">dwconv3x3_block</span> <span class="k">if</span> <span class="n">kernel_size</span> <span class="o">==</span> <span class="mi">3</span> <span class="k">else</span> <span class="p">(</span><span class="n">dwconv5x5_block</span> <span class="k">if</span> <span class="n">kernel_size</span> <span class="o">==</span> <span class="mi">5</span> <span class="k">else</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">dwconv_block_fn</span> <span class="o">=</span> <span class="n">dwconv3x3_block</span> <span class="k">if</span> <span class="n">kernel_size</span> <span class="o">==</span> <span class="mi">3</span> <span class="k">else</span> <span class="n">dwconv5x5_block</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">conv1</span> <span class="o">=</span> <span class="n">conv1x1_block</span><span class="p">(</span>
             <span class="n">in_channels</span><span class="o">=</span><span class="n">in_channels</span><span class="p">,</span>
@@ -573,7 +575,7 @@
             <span class="n">activation</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Forward.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">residual</span><span class="p">:</span>
             <span class="n">identity</span> <span class="o">=</span> <span class="n">x</span>
@@ -603,7 +605,7 @@
 <span class="sd">        tf_mode : bool. Whether to use TF-like mode.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">in_channels</span><span class="p">,</span> <span class="n">out_channels</span><span class="p">,</span> <span class="n">bn_eps</span><span class="p">,</span> <span class="n">activation</span><span class="p">,</span> <span class="n">tf_mode</span><span class="p">,</span> <span class="n">IN_conv1</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">in_channels</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">out_channels</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">bn_eps</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">activation</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">tf_mode</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">IN_conv1</span><span class="p">:</span> <span class="nb">bool</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">tf_mode</span> <span class="o">=</span> <span class="n">tf_mode</span>
 
@@ -617,7 +619,7 @@
             <span class="n">IN_conv</span><span class="o">=</span><span class="n">IN_conv1</span><span class="p">,</span>
         <span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Forward.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">tf_mode</span><span class="p">:</span>
             <span class="n">x</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">pad</span><span class="o">=</span><span class="n">calc_tf_padding</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
@@ -645,23 +647,23 @@
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">channels</span><span class="p">,</span>
-        <span class="n">init_block_channels</span><span class="p">,</span>
-        <span class="n">final_block_channels</span><span class="p">,</span>
-        <span class="n">kernel_sizes</span><span class="p">,</span>
-        <span class="n">strides_per_stage</span><span class="p">,</span>
-        <span class="n">expansion_factors</span><span class="p">,</span>
-        <span class="n">tf_mode</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-        <span class="n">bn_eps</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">,</span>
-        <span class="n">in_channels</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
-        <span class="n">in_size</span><span class="o">=</span><span class="p">(</span><span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">),</span>
-        <span class="n">dropout_cls</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-        <span class="n">pooling_type</span><span class="o">=</span><span class="s2">&quot;avg&quot;</span><span class="p">,</span>
-        <span class="n">bn_eval</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-        <span class="n">bn_frozen</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-        <span class="n">IN_first</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-        <span class="n">IN_conv1</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-        <span class="n">pretrained</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">channels</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]],</span>
+        <span class="n">init_block_channels</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">final_block_channels</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">kernel_sizes</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]],</span>
+        <span class="n">strides_per_stage</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
+        <span class="n">expansion_factors</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]],</span>
+        <span class="n">tf_mode</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">bn_eps</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-5</span><span class="p">,</span>
+        <span class="n">in_channels</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
+        <span class="n">in_size</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">),</span>
+        <span class="n">dropout_cls</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">pooling_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="s2">&quot;avg&quot;</span><span class="p">,</span>
+        <span class="n">bn_eval</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">bn_frozen</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">IN_first</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">IN_conv1</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
     <span class="p">):</span>
 
@@ -734,14 +736,14 @@
         <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_init_params</span><span class="p">()</span>
 
-    <span class="k">def</span> <span class="nf">_init_params</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_init_params</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">for</span> <span class="n">module</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">named_modules</span><span class="p">():</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">):</span>
                 <span class="n">init</span><span class="o">.</span><span class="n">kaiming_uniform_</span><span class="p">(</span><span class="n">module</span><span class="o">.</span><span class="n">weight</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">module</span><span class="o">.</span><span class="n">bias</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                     <span class="n">init</span><span class="o">.</span><span class="n">constant_</span><span class="p">(</span><span class="n">module</span><span class="o">.</span><span class="n">bias</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">return_featuremaps</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">get_embeddings</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">return_featuremaps</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">get_embeddings</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Forward.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_IN</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_IN</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
@@ -775,9 +777,11 @@
         <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">out_data</span><span class="p">)</span>
 
 
+<span class="n">EFFICIENTNET_VERSION</span> <span class="o">=</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;b0&quot;</span><span class="p">,</span> <span class="s2">&quot;b1&quot;</span><span class="p">,</span> <span class="s2">&quot;b2&quot;</span><span class="p">,</span> <span class="s2">&quot;b3&quot;</span><span class="p">,</span> <span class="s2">&quot;b4&quot;</span><span class="p">,</span> <span class="s2">&quot;b5&quot;</span><span class="p">,</span> <span class="s2">&quot;b6&quot;</span><span class="p">,</span> <span class="s2">&quot;b7&quot;</span><span class="p">,</span> <span class="s2">&quot;b8&quot;</span><span class="p">]</span>
+
+
 <div class="viewcode-block" id="OTXEfficientNet">
 <a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.classification.backbones.html#otx.algo.classification.backbones.OTXEfficientNet">[docs]</a>
-<span class="nd">@MODELS</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
 <span class="k">class</span> <span class="nc">OTXEfficientNet</span><span class="p">(</span><span class="n">EfficientNet</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Create EfficientNet model with specific parameters.</span>
 
@@ -786,7 +790,7 @@
 <span class="sd">        in_size : tuple of two ints. Spatial size of the expected input image.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">version</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">version</span><span class="p">:</span> <span class="n">EFFICIENTNET_VERSION</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">model_name</span> <span class="o">=</span> <span class="s2">&quot;efficientnet_&quot;</span> <span class="o">+</span> <span class="n">version</span>
 
         <span class="k">if</span> <span class="n">version</span> <span class="o">==</span> <span class="s2">&quot;b0&quot;</span><span class="p">:</span>
@@ -834,7 +838,7 @@
         <span class="n">channels_per_layers</span> <span class="o">=</span> <span class="p">[</span><span class="mi">16</span><span class="p">,</span> <span class="mi">24</span><span class="p">,</span> <span class="mi">40</span><span class="p">,</span> <span class="mi">80</span><span class="p">,</span> <span class="mi">112</span><span class="p">,</span> <span class="mi">192</span><span class="p">,</span> <span class="mi">320</span><span class="p">]</span>
         <span class="n">expansion_factors_per_layers</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">6</span><span class="p">]</span>
         <span class="n">kernel_sizes_per_layers</span> <span class="o">=</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
-        <span class="n">strides_per_stage</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="n">_strides_per_stage</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
         <span class="n">final_block_channels</span> <span class="o">=</span> <span class="mi">1280</span>
 
         <span class="n">layers</span> <span class="o">=</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">li</span> <span class="o">*</span> <span class="n">depth_factor</span><span class="p">))</span> <span class="k">for</span> <span class="n">li</span> <span class="ow">in</span> <span class="n">layers</span><span class="p">]</span>
@@ -842,24 +846,24 @@
 
         <span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">reduce</span>
 
-        <span class="n">channels</span> <span class="o">=</span> <span class="n">reduce</span><span class="p">(</span>
+        <span class="n">channels</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="n">reduce</span><span class="p">(</span>
             <span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">x</span> <span class="o">+</span> <span class="p">[[</span><span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">*</span> <span class="n">y</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span> <span class="k">if</span> <span class="n">y</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">x</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">*</span> <span class="n">y</span><span class="p">[</span><span class="mi">1</span><span class="p">]],</span>
             <span class="nb">zip</span><span class="p">(</span><span class="n">channels_per_layers</span><span class="p">,</span> <span class="n">layers</span><span class="p">,</span> <span class="n">downsample</span><span class="p">),</span>
             <span class="p">[],</span>
         <span class="p">)</span>
-        <span class="n">kernel_sizes</span> <span class="o">=</span> <span class="n">reduce</span><span class="p">(</span>
+        <span class="n">kernel_sizes</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="n">reduce</span><span class="p">(</span>
             <span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">x</span> <span class="o">+</span> <span class="p">[[</span><span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">*</span> <span class="n">y</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span> <span class="k">if</span> <span class="n">y</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">x</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">*</span> <span class="n">y</span><span class="p">[</span><span class="mi">1</span><span class="p">]],</span>
             <span class="nb">zip</span><span class="p">(</span><span class="n">kernel_sizes_per_layers</span><span class="p">,</span> <span class="n">layers</span><span class="p">,</span> <span class="n">downsample</span><span class="p">),</span>
             <span class="p">[],</span>
         <span class="p">)</span>
-        <span class="n">expansion_factors</span> <span class="o">=</span> <span class="n">reduce</span><span class="p">(</span>
+        <span class="n">expansion_factors</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="n">reduce</span><span class="p">(</span>
             <span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">x</span> <span class="o">+</span> <span class="p">[[</span><span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">*</span> <span class="n">y</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span> <span class="k">if</span> <span class="n">y</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">x</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">*</span> <span class="n">y</span><span class="p">[</span><span class="mi">1</span><span class="p">]],</span>
             <span class="nb">zip</span><span class="p">(</span><span class="n">expansion_factors_per_layers</span><span class="p">,</span> <span class="n">layers</span><span class="p">,</span> <span class="n">downsample</span><span class="p">),</span>
             <span class="p">[],</span>
         <span class="p">)</span>
-        <span class="n">strides_per_stage</span> <span class="o">=</span> <span class="n">reduce</span><span class="p">(</span>
+        <span class="n">strides_per_stage</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="n">reduce</span><span class="p">(</span>
             <span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">x</span> <span class="o">+</span> <span class="p">[[</span><span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">*</span> <span class="n">y</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span> <span class="k">if</span> <span class="n">y</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">x</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">*</span> <span class="n">y</span><span class="p">[</span><span class="mi">1</span><span class="p">]],</span>
-            <span class="nb">zip</span><span class="p">(</span><span class="n">strides_per_stage</span><span class="p">,</span> <span class="n">layers</span><span class="p">,</span> <span class="n">downsample</span><span class="p">),</span>
+            <span class="nb">zip</span><span class="p">(</span><span class="n">_strides_per_stage</span><span class="p">,</span> <span class="n">layers</span><span class="p">,</span> <span class="n">downsample</span><span class="p">),</span>
             <span class="p">[],</span>
         <span class="p">)</span>
         <span class="n">strides_per_stage</span> <span class="o">=</span> <span class="p">[</span><span class="n">si</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">si</span> <span class="ow">in</span> <span class="n">strides_per_stage</span><span class="p">]</span>
@@ -887,17 +891,18 @@
 
 <div class="viewcode-block" id="OTXEfficientNet.forward">
 <a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.classification.backbones.html#otx.algo.classification.backbones.OTXEfficientNet.forward">[docs]</a>
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">return_featuremaps</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">get_embeddings</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Forward.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">return_featuremaps</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">return_featuremaps</span><span class="o">=</span><span class="n">return_featuremaps</span><span class="p">,</span> <span class="n">get_embeddings</span><span class="o">=</span><span class="n">get_embeddings</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="OTXEfficientNet.init_weights">
 <a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.classification.backbones.html#otx.algo.classification.backbones.OTXEfficientNet.init_weights">[docs]</a>
-    <span class="k">def</span> <span class="nf">init_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pretrained</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">init_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize weights.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">pretrained</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">pretrained</span><span class="p">):</span>
-            <span class="n">load_checkpoint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pretrained</span><span class="p">)</span>
+            <span class="n">checkpoint</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">pretrained</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="n">load_checkpoint_to_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">checkpoint</span><span class="p">)</span>
             <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;init weight - </span><span class="si">{</span><span class="n">pretrained</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">pretrained</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">download_model</span><span class="p">(</span><span class="n">net</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model_name</span><span class="p">)</span>
