@@ -294,10 +294,10 @@ def test_otx_explain_e2e_cli(
         "explain",
         "--config",
         recipe,
-        "--model.label_info",
+        "--model.num_classes",
         "1000",
         "--data_root",
-        str(fxt_target_dataset_per_task[task]),
+        fxt_target_dataset_per_task[task],
         "--work_dir",
         str(tmp_path_explain / "outputs"),
         "--engine.device",
@@ -318,8 +318,8 @@ def test_otx_explain_e2e_cli(
         (p for p in outputs_dir.iterdir() if p.is_dir() and p.name != ".latest"),
         key=lambda p: p.stat().st_mtime,
     )
-    assert (latest_dir / "saliency_map").exists()
-    saliency_maps = sorted((latest_dir / "saliency_map").glob(pattern="*.png"))
+    assert (latest_dir / "saliency_maps").exists()
+    saliency_maps = sorted((latest_dir / "saliency_maps").glob(pattern="*.png"))
     sal_map = cv2.imread(str(saliency_maps[0]))
     assert sal_map.shape[0] > 0
     assert sal_map.shape[1] > 0
@@ -356,7 +356,7 @@ def test_otx_explain_e2e_cli(
     }
     test_case_name = task + "_" + model_name
     if test_case_name in reference_sal_vals:
-        actual_sal_vals = cv2.imread(str(latest_dir / "saliency_map" / reference_sal_vals[test_case_name][1]))
+        actual_sal_vals = cv2.imread(str(latest_dir / "saliency_maps" / reference_sal_vals[test_case_name][1]))
         if test_case_name == "instance_segmentation_maskrcnn_efficientnetb2b":
             # Take lower corner values due to map sparsity of InstSeg
             actual_sal_vals = (actual_sal_vals[-10:, -1, 0]).astype(np.uint16)
