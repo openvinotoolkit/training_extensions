@@ -17,7 +17,7 @@ from model_api.models import Model
 from model_api.tilers import InstanceSegmentationTiler
 from torchvision import tv_tensors
 
-from otx.algo.explain.explain_algo import feature_vector_fn
+from otx.algo.explain.explain_algo import InstSegExplainAlgo, feature_vector_fn
 from otx.core.config.data import TileConfig
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.instance_segmentation import InstanceSegBatchDataEntity, InstanceSegBatchPredEntity
@@ -35,7 +35,7 @@ from otx.core.utils.tile_merge import InstanceSegTileMerge
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
     from mmdet.models.data_preprocessors import DetDataPreprocessor
-    from mmdet.models.detectors.two_stage import TwoStageDetector
+    from mmdet.models.detectors import TwoStageDetector
     from mmdet.structures import OptSampleList
     from model_api.models.utils import InstanceSegmentationResult
     from omegaconf import DictConfig
@@ -229,10 +229,9 @@ class ExplainableOTXInstanceSegModel(OTXInstanceSegModel):
             tile_config=tile_config,
         )
 
-        from otx.algo.explain.explain_algo import feature_vector_fn
-
         self.model.feature_vector_fn = feature_vector_fn
         self.model.explain_fn = self.get_explain_fn()
+        self.model.get_results_from_head = self.get_results_from_head
 
     def forward_explain(self, inputs: InstanceSegBatchDataEntity) -> InstanceSegBatchPredEntity:
         """Model forward function."""
@@ -271,22 +270,17 @@ class ExplainableOTXInstanceSegModel(OTXInstanceSegModel):
         x = self.extract_feat(inputs)
 
         feature_vector = self.feature_vector_fn(x)
+        predictions = self.get_results_from_head(x, data_samples)
 
-        rpn_results_list = self.rpn_head.predict(x, data_samples, rescale=False)
-        results_list = self.roi_head.predict(x, rpn_results_list, data_samples, rescale=True)
-
-        if isinstance(results_list, tuple) and isinstance(results_list[0], torch.Tensor):  # rewrite
+        if isinstance(predictions, tuple) and isinstance(predictions[0], torch.Tensor):
             # Export case, consists of tensors
-            predictions = results_list
             # For OV task saliency map are generated on MAPI side
             saliency_map = torch.empty(1, dtype=torch.uint8)
 
-        elif isinstance(results_list, list) and isinstance(results_list[0], InstanceData):  # rewrite
+        elif isinstance(predictions, list) and isinstance(predictions[0], InstanceData):
             # Predict case, consists of InstanceData
-            predictions = self.add_pred_to_datasample(data_samples, results_list)
-
-            features_for_sal_map = [data_sample.pred_instances for data_sample in data_samples]
-            saliency_map = self.explain_fn(features_for_sal_map)
+            saliency_map = self.explain_fn(predictions)
+            predictions = self.add_pred_to_datasample(data_samples, predictions)
 
         return {
             "predictions": predictions,
@@ -294,11 +288,31 @@ class ExplainableOTXInstanceSegModel(OTXInstanceSegModel):
             "saliency_map": saliency_map,
         }
 
+    def get_results_from_head(
+        self,
+        x: tuple[torch.Tensor],
+        data_samples: OptSampleList | None,
+    ) -> tuple[torch.Tensor] | list[InstanceData]:
+        """Get the results from the head of the instance segmentation model.
+
+        Args:
+            x (tuple[torch.Tensor]): The features from backbone and neck.
+            data_samples (OptSampleList | None): A list of data samples.
+
+        Returns:
+            tuple[torch.Tensor] | list[InstanceData]: The predicted results from the head of the model.
+            Tuple for the Export case, list for the Predict case.
+        """
+        from otx.algo.instance_segmentation.rtmdet_inst import RTMDetInst
+
+        if isinstance(self, RTMDetInst):
+            return self.model.bbox_head.predict(x, data_samples, rescale=False)
+        rpn_results_list = self.model.rpn_head.predict(x, data_samples, rescale=False)
+        return self.model.roi_head.predict(x, rpn_results_list, data_samples, rescale=True)
+
     def get_explain_fn(self) -> Callable:
         """Returns explain function."""
-        from otx.algo.explain.explain_algo import MaskRCNNExplainAlgo
-
-        explainer = MaskRCNNExplainAlgo(num_classes=self.num_classes)
+        explainer = InstSegExplainAlgo(num_classes=self.num_classes)
         return explainer.func
 
     @contextmanager

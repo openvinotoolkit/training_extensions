@@ -245,7 +245,8 @@ class OTXCLI:
 
             parser_kwargs = self._set_default_config()
             sub_parser, added_arguments = self.engine_subcommand_parser(subcommand=subcommand, **parser_kwargs)
-            if "checkpoint" in added_arguments and self.cache_dir.exists():
+            if "--config" not in sys.argv and "checkpoint" in added_arguments and self.cache_dir.exists():
+                # If the user specifies the config directly, not set the cache ckpt as default.
                 self._load_cache_ckpt(parser=sub_parser)
 
             fn = getattr(Engine, subcommand)
@@ -269,7 +270,7 @@ class OTXCLI:
 
     def _set_default_config(self) -> dict:
         parser_kwargs = {}
-        if (self.cache_dir / "configs.yaml").exists():
+        if "--config" not in sys.argv and (self.cache_dir / "configs.yaml").exists():
             parser_kwargs["default_config_files"] = [str(self.cache_dir / "configs.yaml")]
             if "--print_config" not in sys.argv:
                 warn(f"Load default config from {self.cache_dir / 'configs.yaml'}.", stacklevel=0)
