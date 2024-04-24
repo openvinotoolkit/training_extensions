@@ -1,7 +1,6 @@
-"""Algorithm to find a proper batch size which is fit to current GPU device for tasks using mmcv."""
-
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
+"""Algorithm to find a proper batch size which is fit to current GPU device for tasks using mmcv."""
 
 from __future__ import annotations
 

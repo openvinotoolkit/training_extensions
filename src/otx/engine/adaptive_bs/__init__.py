@@ -1,7 +1,6 @@
-"""API for adaptive batch size."""
-
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
+"""API for adaptive batch size."""
 
 
 from .adaptive_bs_api import adapt_batch_size

@@ -1,7 +1,6 @@
-"""Algorithm to find a proper batch size which is fit to current device."""
-
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
+"""Algorithm to find a proper batch size which is fit to current device."""
 
 from __future__ import annotations
 
