@@ -519,7 +519,7 @@
 <a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.model.detection.html#otx.core.model.detection.ExplainableOTXDetModel.get_explain_fn">[docs]</a>
     <span class="k">def</span> <span class="nf">get_explain_fn</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns explain function.&quot;&quot;&quot;</span>
-        <span class="kn">from</span> <span class="nn">otx.algo.detection.heads.custom_ssd_head</span> <span class="kn">import</span> <span class="n">SSDHead</span>
+        <span class="kn">from</span> <span class="nn">otx.algo.detection.heads.ssd_head</span> <span class="kn">import</span> <span class="n">SSDHead</span>
         <span class="kn">from</span> <span class="nn">otx.algo.explain.explain_algo</span> <span class="kn">import</span> <span class="n">DetClassProbabilityMap</span>
 
         <span class="c1"># SSD-like heads also have background class</span>

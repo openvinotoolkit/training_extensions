@@ -17,9 +17,6 @@ otx.algo.detection.heads
 
    .. autosummary::
    
-      SSDAnchorGeneratorClustered
-      CustomATSSHead
-      SSDHead
       YOLOXHead
    
    

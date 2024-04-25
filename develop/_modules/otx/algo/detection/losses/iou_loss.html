@@ -394,6 +394,98 @@
         <span class="p">)</span></div>
 </div>
 
+
+
+<span class="k">class</span> <span class="nc">GIoULoss</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;`Generalized Intersection over Union.</span>
+
+<span class="sd">    A Metric and A Loss for Bounding Box Regression &lt;https://arxiv.org/abs/1902.09630&gt;`_.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        eps (float): Epsilon to avoid log(0).</span>
+<span class="sd">        reduction (str): Options are &quot;none&quot;, &quot;mean&quot; and &quot;sum&quot;.</span>
+<span class="sd">        loss_weight (float): Weight of loss.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eps</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-6</span><span class="p">,</span> <span class="n">reduction</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;mean&quot;</span><span class="p">,</span> <span class="n">loss_weight</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">eps</span> <span class="o">=</span> <span class="n">eps</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reduction</span> <span class="o">=</span> <span class="n">reduction</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">loss_weight</span> <span class="o">=</span> <span class="n">loss_weight</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">pred</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">target</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">weight</span><span class="p">:</span> <span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">avg_factor</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">reduction_override</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Forward function.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            pred (Tensor): Predicted bboxes of format (x1, y1, x2, y2),</span>
+<span class="sd">                shape (n, 4).</span>
+<span class="sd">            target (Tensor): The learning target of the prediction,</span>
+<span class="sd">                shape (n, 4).</span>
+<span class="sd">            weight (Tensor | None): The weight of loss for each</span>
+<span class="sd">                prediction. Defaults to None.</span>
+<span class="sd">            avg_factor (int | None): Average factor that is used</span>
+<span class="sd">                to average the loss. Defaults to None.</span>
+<span class="sd">            reduction_override (str | None): The reduction method</span>
+<span class="sd">                used to override the original reduction method of the loss.</span>
+<span class="sd">                Defaults to None. Options are &quot;none&quot;, &quot;mean&quot; and &quot;sum&quot;.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Tensor: Loss tensor.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">weight</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">torch</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">weight</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">pred</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span> <span class="o">==</span> <span class="n">weight</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">weight</span> <span class="o">=</span> <span class="n">weight</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+            <span class="k">return</span> <span class="p">(</span><span class="n">pred</span> <span class="o">*</span> <span class="n">weight</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>  <span class="c1"># 0</span>
+        <span class="n">reduction</span> <span class="o">=</span> <span class="n">reduction_override</span> <span class="k">if</span> <span class="n">reduction_override</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">reduction</span>
+        <span class="k">if</span> <span class="n">weight</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">weight</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">weight</span> <span class="o">=</span> <span class="n">weight</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">loss_weight</span> <span class="o">*</span> <span class="n">giou_loss</span><span class="p">(</span>
+            <span class="n">pred</span><span class="p">,</span>
+            <span class="n">target</span><span class="p">,</span>
+            <span class="n">weight</span><span class="p">,</span>
+            <span class="n">eps</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">eps</span><span class="p">,</span>
+            <span class="n">reduction</span><span class="o">=</span><span class="n">reduction</span><span class="p">,</span>
+            <span class="n">avg_factor</span><span class="o">=</span><span class="n">avg_factor</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+        <span class="p">)</span>
+
+
+<span class="nd">@weighted_loss</span>
+<span class="k">def</span> <span class="nf">giou_loss</span><span class="p">(</span><span class="n">pred</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">eps</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-7</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;`Generalized Intersection over Union.</span>
+
+<span class="sd">    A Metric and A Loss for Bounding Box Regression &lt;https://arxiv.org/abs/1902.09630&gt;`_.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        pred (Tensor): Predicted bboxes of format (x1, y1, x2, y2),</span>
+<span class="sd">            shape (n, 4).</span>
+<span class="sd">        target (Tensor): Corresponding gt bboxes, shape (n, 4).</span>
+<span class="sd">        eps (float): Epsilon to avoid log(0).</span>
+
+<span class="sd">    Return:</span>
+<span class="sd">        Tensor: Loss tensor.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># avoid fp16 overflow</span>
+    <span class="k">if</span> <span class="n">pred</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="n">torch</span><span class="o">.</span><span class="n">float16</span><span class="p">:</span>
+        <span class="n">fp16</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">pred</span> <span class="o">=</span> <span class="n">pred</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">fp16</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="n">gious</span> <span class="o">=</span> <span class="n">bbox_overlaps</span><span class="p">(</span><span class="n">pred</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;giou&quot;</span><span class="p">,</span> <span class="n">is_aligned</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="n">eps</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">fp16</span><span class="p">:</span>
+        <span class="n">gious</span> <span class="o">=</span> <span class="n">gious</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">float16</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">gious</span>
 </pre></div>
 
             </article>
