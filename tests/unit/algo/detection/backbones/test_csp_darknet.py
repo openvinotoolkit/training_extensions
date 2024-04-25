@@ -34,7 +34,7 @@ def is_norm(modules):
 class TestCSPDarknet:
     def test_init_with_large_frozen_stages(self) -> None:
         """Test __init__ with large frozen_stages."""
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError):  # noqa: PT011
             # frozen_stages must in range(-1, len(arch_setting) + 1)
             CSPDarknet(frozen_stages=6)
 
@@ -82,7 +82,7 @@ class TestCSPDarknet:
         assert feat[4].shape == torch.Size((1, 256, 2, 2))
 
         # Test CSPDarknet-P6 forward with widen_factor=0.5
-        model = CSPDarknet(arch="P6", widen_factor=0.25, out_indices=range(0, 6), spp_kernal_sizes=(3, 5, 7))
+        model = CSPDarknet(arch="P6", widen_factor=0.25, out_indices=range(6), spp_kernal_sizes=(3, 5, 7))
         model.train()
 
         imgs = torch.randn(1, 3, 128, 128)

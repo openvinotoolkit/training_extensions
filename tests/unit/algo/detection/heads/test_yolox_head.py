@@ -21,15 +21,21 @@ class TestYOLOXHead:
             {
                 "img_shape": (s, s, 3),
                 "scale_factor": (1.0, 1.0),
-            }
+            },
         ]
-        test_cfg = Config({"score_thr": 0.01, "nms": dict(type="nms", iou_threshold=0.65)})
+        test_cfg = Config({"score_thr": 0.01, "nms": {"type": "nms", "iou_threshold": 0.65}})
         head = YOLOXHead(num_classes=4, in_channels=1, stacked_convs=1, use_depthwise=False, test_cfg=test_cfg)
         feat = [torch.rand(1, 1, s // feat_size, s // feat_size) for feat_size in [4, 8, 16]]
         cls_scores, bbox_preds, objectnesses = head.forward(feat)
         head.predict_by_feat(cls_scores, bbox_preds, objectnesses, img_metas, cfg=test_cfg, rescale=True, with_nms=True)
         head.predict_by_feat(
-            cls_scores, bbox_preds, objectnesses, img_metas, cfg=test_cfg, rescale=False, with_nms=False
+            cls_scores,
+            bbox_preds,
+            objectnesses,
+            img_metas,
+            cfg=test_cfg,
+            rescale=False,
+            with_nms=False,
         )
 
     def test_loss_by_feat(self):
@@ -38,7 +44,7 @@ class TestYOLOXHead:
             {
                 "img_shape": (s, s, 3),
                 "scale_factor": 1,
-            }
+            },
         ]
         train_cfg = Config(
             {
@@ -78,7 +84,8 @@ class TestYOLOXHead:
         assert isinstance(head.multi_level_cls_convs[0][0], DepthwiseSeparableConvModule)
         head.use_l1 = True
         gt_instances = InstanceData(
-            bboxes=torch.Tensor([[23.6667, 23.8757, 238.6326, 151.8874]]), labels=torch.LongTensor([2])
+            bboxes=torch.Tensor([[23.6667, 23.8757, 238.6326, 151.8874]]),
+            labels=torch.LongTensor([2]),
         )
 
         one_gt_losses = head.loss_by_feat(cls_scores, bbox_preds, objectnesses, [gt_instances], img_metas)
@@ -93,7 +100,8 @@ class TestYOLOXHead:
 
         # Test groud truth out of bound
         gt_instances = InstanceData(
-            bboxes=torch.Tensor([[s * 4, s * 4, s * 4 + 10, s * 4 + 10]]), labels=torch.LongTensor([2])
+            bboxes=torch.Tensor([[s * 4, s * 4, s * 4 + 10, s * 4 + 10]]),
+            labels=torch.LongTensor([2]),
         )
         empty_gt_losses = head.loss_by_feat(cls_scores, bbox_preds, objectnesses, [gt_instances], img_metas)
         # When gt_bboxes out of bound, the assign results should be empty,

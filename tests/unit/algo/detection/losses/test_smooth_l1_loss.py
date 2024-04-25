@@ -45,11 +45,11 @@ class TestL1Loss:
         loss = L1Loss()(pred, target, avg_factor=10)
         assert isinstance(loss, torch.Tensor)
 
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError):  # noqa: PT011
             # loss can evaluate with avg_factor only if reduction is None, 'none' or 'mean'.
             L1Loss()(pred, target, avg_factor=10, reduction_override="sum")
 
         # Test loss forward with avg_factor and reduction
         for reduction_override in [None, "none", "mean"]:
-            L1Loss()(pred, target, avg_factor=10, reduction_override=reduction_override)
+            loss = L1Loss()(pred, target, avg_factor=10, reduction_override=reduction_override)
             assert isinstance(loss, torch.Tensor)
