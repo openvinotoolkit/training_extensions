@@ -360,6 +360,7 @@ class MMDetCompatibleModel(ExplainableOTXDetModel):
         )
 
     def _create_model(self) -> nn.Module:
+        # TODO (someone): change to abstractmethod
         from .utils.mmdet import create_model
 
         model, self.classification_layers = create_model(self.config, self.load_from)

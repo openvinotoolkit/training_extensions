@@ -1,7 +1,8 @@
 model:
-  class_path: otx.algo.detection.yolox.YoloXTiny
+  class_path: otx.algo.detection.yolox.OTXYOLOX
   init_args:
     label_info: 80
+    variant: tiny
 
     optimizer:
       class_path: torch.optim.SGD

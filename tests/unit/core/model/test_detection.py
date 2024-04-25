@@ -13,6 +13,7 @@ import torch
 from importlib_resources import files
 from lightning.pytorch.cli import ReduceLROnPlateau
 from omegaconf import OmegaConf
+from otx.algo.detection.yolox import OTXYOLOX
 from otx.algo.explain.explain_algo import feature_vector_fn
 from otx.core.metrics.fmeasure import FMeasureCallable
 from otx.core.model.detection import MMDetCompatibleModel, OTXDetectionModel
@@ -55,7 +56,10 @@ class TestOTXDetectionModel:
 
     @pytest.fixture()
     def otx_model(self, config) -> MMDetCompatibleModel:
-        return MMDetCompatibleModel(label_info=1, config=config)
+        # TODO (someone): revert to MMDetCompatibleModel
+        # MMDetCompatibleModel._create_model still calls build_mm_model
+        # return MMDetCompatibleModel(label_info=1, config=config)  # noqa: ERA001
+        return OTXYOLOX(label_info=1, variant="tiny")
 
     def test_configure_metric_with_ckpt(
         self,
