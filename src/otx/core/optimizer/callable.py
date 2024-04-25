@@ -20,6 +20,9 @@ if TYPE_CHECKING:
 class OptimizerCallableSupportHPO:
     """Optimizer callable supports OTX hyper-parameter optimization (HPO) algorithm.
 
+    It makes OptimizerCallable pickelable and accessible to parameters.
+    It is used for HPO and adaptive batch size.
+
     Args:
         optimizer_cls: Optimizer class type or string class import path. See examples for details.
         optimizer_kwargs: Keyword arguments used for the initialization of the given `optimizer_cls`.

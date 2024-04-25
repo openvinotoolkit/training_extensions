@@ -97,6 +97,8 @@ def to_np_image(img: Tensor) -> np.ndarray:
     TODO (sungchul): move it into base data entity?
 
     """
+    if isinstance(img, np.ndarray):
+        return img
     return np.ascontiguousarray(img.numpy().transpose(1, 2, 0))
 
 

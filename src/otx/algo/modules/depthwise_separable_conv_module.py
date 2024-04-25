@@ -68,18 +68,18 @@ class DepthwiseSeparableConvModule(nn.Module):
         pw_act_cfg: dict | None = None,
         **kwargs,
     ):
-        super().__init__()
-        assert "groups" not in kwargs, "groups should not be specified"  # noqa: S101
-
         if act_cfg is None:
             act_cfg = {"type": "ReLU"}
 
+        super().__init__()
+        assert "groups" not in kwargs, "groups should not be specified"  # noqa: S101
+
         # if norm/activation config of depthwise/pointwise ConvModule is not
         # specified, use default config.
-        dw_norm_cfg = dw_norm_cfg if dw_norm_cfg != "default" else norm_cfg
-        dw_act_cfg = dw_act_cfg if dw_act_cfg != "default" else act_cfg
-        pw_norm_cfg = pw_norm_cfg if pw_norm_cfg != "default" else norm_cfg
-        pw_act_cfg = pw_act_cfg if pw_act_cfg != "default" else act_cfg
+        dw_norm_cfg = dw_norm_cfg or norm_cfg
+        dw_act_cfg = dw_act_cfg or act_cfg
+        pw_norm_cfg = pw_norm_cfg or norm_cfg
+        pw_act_cfg = pw_act_cfg or act_cfg
 
         # depthwise convolution
         self.depthwise_conv = ConvModule(

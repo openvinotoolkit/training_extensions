@@ -3,8 +3,16 @@
 #
 """Custom OTX Losses for Object Detection."""
 
+from .accuracy import accuracy
 from .cross_entropy_loss import CrossEntropyLoss
+from .cross_focal_loss import CrossSigmoidFocalLoss
 from .iou_loss import IoULoss
-from .l1_loss import L1Loss
+from .smooth_l1_loss import L1Loss
 
-__all__ = ["CrossSigmoidFocalLoss, OrdinaryFocalLoss", "CrossEntropyLoss", "IoULoss", "L1Loss"]
+__all__ = [
+    "CrossEntropyLoss",
+    "CrossSigmoidFocalLoss",
+    "accuracy",
+    "L1Loss",
+    "IoULoss",
+]
