@@ -81,7 +81,7 @@ class TestAutoConfigurator:
 
         # OTX-Mobilenet-v2
         # new_config
-        model_name = "otx_deit_tiny"
+        model_name = "deit_tiny"
         new_config = auto_configurator._load_default_config(model_name=model_name)
         new_path = str(target_config).split("/")
         new_path[-1] = f"{model_name}.yaml"

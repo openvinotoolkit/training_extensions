@@ -62,7 +62,7 @@ V1_V2_NAME_MAP = {
     "Custom_Image_Classification_EfficientNet-V2-S": "efficientnet_v2",
     "Custom_Image_Classification_EfficinetNet-B0": "efficientnet_b0",
     "Custom_Image_Classification_MobileNet-V3-large-1x": "mobilenet_v3_large",
-    "Custom_Image_Classification_DeiT-Tiny": "otx_deit_tiny",
+    "Custom_Image_Classification_DeiT-Tiny": "deit_tiny",
     "Custom_Object_Detection_Gen3_ATSS": "atss_mobilenetv2",
     "Custom_Object_Detection_Gen3_SSD": "ssd_mobilenetv2",
     "Custom_Object_Detection_YOLOX": "yolox_tiny",
