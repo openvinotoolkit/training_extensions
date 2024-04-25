@@ -99,7 +99,7 @@ def test_predict_with_explain(
         pytest.skip("There's issue with SSD model. Skip for now.")
 
     if "yolox" in model_name:
-        # TODO(sungchul): YOLOX returns dynamic output for saliency map
+        # TODO(sungchul): [RuntimeError] number of output names provided (4) exceeded number of outputs (2)
         pytest.skip("There's issue with YOLOX model. Skip for now.")
 
     tmp_path = tmp_path / f"otx_xai_{model_name}"
