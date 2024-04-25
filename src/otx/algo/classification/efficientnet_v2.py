@@ -127,7 +127,7 @@ class EfficientNetV2ForMulticlassCls(OTXMulticlassClsModel):
             resize_mode="standard",
             pad_value=0,
             swap_rgb=False,
-            via_onnx=True,  # NOTE: This should be done via onnx
+            via_onnx=False,
             onnx_export_configuration=None,
             output_names=["logits", "feature_vector", "saliency_map"] if self.explain_mode else None,
         )
@@ -240,7 +240,7 @@ class EfficientNetV2ForMultilabelCls(OTXMultilabelClsModel):
             resize_mode="standard",
             pad_value=0,
             swap_rgb=False,
-            via_onnx=True,  # NOTE: This should be done via onnx
+            via_onnx=False,
             onnx_export_configuration=None,
             output_names=["logits", "feature_vector", "saliency_map"] if self.explain_mode else None,
         )
@@ -383,7 +383,7 @@ class EfficientNetV2ForHLabelCls(OTXHlabelClsModel):
             resize_mode="standard",
             pad_value=0,
             swap_rgb=False,
-            via_onnx=True,  # NOTE: This should be done via onnx
+            via_onnx=False,
             onnx_export_configuration=None,
             output_names=["logits", "feature_vector", "saliency_map"] if self.explain_mode else None,
         )
