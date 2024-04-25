@@ -8,6 +8,7 @@ from . import (
     action_classification,
     classification,
     detection,
+    instance_segmentation,
     plugins,
     segmentation,
     strategies,
@@ -23,4 +24,5 @@ __all__ = [
     "strategies",
     "accelerators",
     "plugins",
+    "instance_segmentation",
 ]

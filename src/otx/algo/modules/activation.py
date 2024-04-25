@@ -4,6 +4,8 @@
 
 """This implementation replaces the functionality of mmcv.cnn.bricks.activation.build_activation_layer."""
 
+import copy
+
 import torch
 from torch import nn
 
@@ -59,7 +61,7 @@ def build_activation_layer(cfg: dict) -> nn.Module:
     Returns:
         nn.Module: Created activation layer.
     """
-    _cfg = cfg.copy()
+    _cfg = copy.deepcopy(cfg)
     activation_type = _cfg.pop("type", None)
     if activation_type is None:
         msg = "The cfg dict must contain the key 'type'"

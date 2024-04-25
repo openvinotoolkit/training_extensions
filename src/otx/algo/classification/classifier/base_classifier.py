@@ -220,10 +220,10 @@ class ImageClassifier(BaseModel):
 
         return {
             "logits": logits,
-            "preds": preds,
-            "scores": scores,
-            "saliency_map": saliency_map,
             "feature_vector": feature_vector,
+            "saliency_map": saliency_map,
+            "scores": scores,
+            "preds": preds,
         }
 
     @torch.no_grad()

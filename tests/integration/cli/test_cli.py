@@ -1,6 +1,7 @@
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
+from __future__ import annotations
 
 from pathlib import Path
 
@@ -244,8 +245,8 @@ def test_otx_e2e(
     if ("_cls" not in task) and (task not in ["detection", "instance_segmentation"]):
         return  # Supported only for classification, detection and instance segmentation task.
 
-    if "dino" in model_name or "rtmdet_inst_tiny" in model_name:
-        return  # DINO and Rtmdet_tiny are not supported.
+    if "dino" in model_name:
+        return  # DINO is not supported.
 
     format_to_file = {
         "ONNX": "exported_model.onnx",
@@ -316,8 +317,8 @@ def test_otx_explain_e2e(
     if ("_cls" not in task) and (task not in ["detection", "instance_segmentation"]):
         pytest.skip("Supported only for classification, detection and instance segmentation task.")
 
-    if "dino" in model_name or "rtmdet_inst_tiny" in model_name:
-        pytest.skip("DINO and Rtmdet_tiny are not supported.")
+    if "dino" in model_name:
+        pytest.skip("DINO is not supported.")
 
     # otx explain
     tmp_path_explain = tmp_path / f"otx_explain_{model_name}"
@@ -500,3 +501,59 @@ def test_otx_hpo_e2e(
         return
 
     assert len([val for val in hpo_work_dor.rglob("*.json") if str(val.stem).isdigit()]) == 2
+
+
+@pytest.mark.parametrize("task", pytest.TASK_LIST)
+@pytest.mark.parametrize("bs_adapt_type", ["Safe", "Full"])
+def test_otx_adaptive_bs_e2e(
+    task: OTXTaskType,
+    tmp_path: Path,
+    fxt_accelerator: str,
+    fxt_target_dataset_per_task: dict,
+    fxt_cli_override_command_per_task: dict,
+    fxt_open_subprocess: bool,
+    fxt_xpu_support_task: list[OTXTaskType],
+    bs_adapt_type: str,
+) -> None:
+    """
+    Test adaptive batch size e2e commands with default template of each task.
+
+    Args:
+        task (OTXTaskType): The task to run adaptive batch size with.
+        tmp_path (Path): The temporary path for storing the training outputs.
+
+    Returns:
+        None
+    """
+    if fxt_accelerator not in ["gpu", "xpu"]:
+        pytest.skip("Adaptive batch size only supports GPU and XPU.")
+    if fxt_accelerator == "xpu" and task not in fxt_xpu_support_task:
+        pytest.skip(f"{task} doesn't support XPU.")
+    if task not in DEFAULT_CONFIG_PER_TASK:
+        pytest.skip(f"Task {task} is not supported in the auto-configuration.")
+    if task == OTXTaskType.ZERO_SHOT_VISUAL_PROMPTING:
+        pytest.skip("ZERO_SHOT_VISUAL_PROMPTING doesn't support adaptive batch size.")
+
+    task = task.lower()
+    tmp_path_adap_bs = tmp_path / f"otx_adaptive_bs_{task}"
+    tmp_path_adap_bs.mkdir(parents=True)
+
+    command_cfg = [
+        "otx",
+        "train",
+        "--task",
+        task.upper(),
+        "--data_root",
+        fxt_target_dataset_per_task[task],
+        "--work_dir",
+        str(tmp_path_adap_bs),
+        "--engine.device",
+        fxt_accelerator,
+        "--adaptive_bs",
+        bs_adapt_type,
+        "--max_epoch",
+        "1",
+        *fxt_cli_override_command_per_task[task],
+    ]
+
+    run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)

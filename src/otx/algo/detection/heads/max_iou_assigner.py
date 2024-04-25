@@ -8,6 +8,7 @@ import copy
 from typing import TYPE_CHECKING, Callable
 
 import torch
+from mmengine.registry import TASK_UTILS
 from torch import Tensor
 
 from otx.algo.detection.heads.iou2d_calculator import BboxOverlaps2D
@@ -19,6 +20,7 @@ if TYPE_CHECKING:
 
 # This class and its supporting functions below lightly adapted from the mmdet MaxIoUAssigner available at:
 # https://github.com/open-mmlab/mmdetection/blob/cfd5d3a985b0249de009b67d04f37263e11cdf3d/mmdet/models/task_modules/assigners/max_iou_assigner.py
+@TASK_UTILS.register_module()
 class MaxIoUAssigner:
     """Assign a corresponding gt bbox or background to each bbox.
 

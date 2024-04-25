@@ -368,3 +368,19 @@ def fxt_hlabel_multilabel_info() -> HLabelInfo:
             ["Spade_King", "Spade"],
         ],
     )
+
+
+@pytest.fixture()
+def fxt_xpu_support_task() -> list[OTXTaskType]:
+    return [
+        OTXTaskType.ANOMALY_CLASSIFICATION,
+        OTXTaskType.ANOMALY_DETECTION,
+        OTXTaskType.ANOMALY_SEGMENTATION,
+        OTXTaskType.MULTI_CLASS_CLS,
+        OTXTaskType.MULTI_LABEL_CLS,
+        OTXTaskType.H_LABEL_CLS,
+        OTXTaskType.DETECTION,
+        OTXTaskType.ROTATED_DETECTION,
+        OTXTaskType.DETECTION_SEMI_SL,
+        OTXTaskType.SEMANTIC_SEGMENTATION,
+    ]
