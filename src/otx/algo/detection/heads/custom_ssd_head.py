@@ -61,7 +61,7 @@ class SSDHead(AnchorHead):
         init_cfg: ConfigDict | dict | list[ConfigDict] | list[dict],
         train_cfg: ConfigDict | dict,
         num_classes: int = 80,
-        in_channels: tuple[int, ...] = (512, 1024, 512, 256, 256, 256),
+        in_channels: tuple[int, ...] | int = (512, 1024, 512, 256, 256, 256),
         stacked_convs: int = 0,
         feat_channels: int = 256,
         use_depthwise: bool = False,
@@ -273,6 +273,9 @@ class SSDHead(AnchorHead):
         """
         self.cls_convs = nn.ModuleList()
         self.reg_convs = nn.ModuleList()
+
+        if isinstance(self.in_channels, int):
+            self.in_channels = (self.in_channels,)
 
         for in_channel, num_base_priors in zip(self.in_channels, self.num_base_priors):
             if self.use_depthwise:
