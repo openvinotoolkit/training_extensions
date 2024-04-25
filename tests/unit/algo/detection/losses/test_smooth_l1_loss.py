@@ -19,7 +19,7 @@ class TestL1Loss:
         target = (torch.rand((10, 4)),)
         weight = None
 
-        with pytest.raises(AssertionError):
+        with pytest.raises(NotImplementedError):
             # only reduction_override from [None, 'none', 'mean', 'sum'] is not allowed
             L1Loss()(pred, target, weight, reduction_override=True)
 
