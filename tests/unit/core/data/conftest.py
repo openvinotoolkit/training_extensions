@@ -8,7 +8,7 @@ from unittest.mock import MagicMock
 import cv2
 import numpy as np
 import pytest
-from datumaro.components.annotation import Bbox, Label, Mask, Polygon
+from datumaro.components.annotation import Bbox, Label, LabelCategories, Mask, Polygon
 from datumaro.components.dataset import DatasetSubset
 from datumaro.components.dataset_base import DatasetItem
 from datumaro.components.media import Image
@@ -55,6 +55,8 @@ if TYPE_CHECKING:
     from otx.core.data.mem_cache import MemCacheHandlerBase
     from pytest_mock import MockerFixture
 
+_LABEL_NAMES = ["Non-Rigid", "Rigid", "Rectangle", "Triangle", "Circle", "Lion", "Panda"]
+
 
 @pytest.fixture()
 def fxt_mem_cache_handler(monkeypatch) -> MemCacheHandlerBase:
@@ -97,8 +99,10 @@ def fxt_dm_item(request) -> DatasetItem:
 def fxt_mock_dm_subset(mocker: MockerFixture, fxt_dm_item: DatasetItem) -> MagicMock:
     mock_dm_subset = mocker.MagicMock(spec=DatasetSubset)
     mock_dm_subset.name = fxt_dm_item.subset
-    mock_dm_subset.get.return_value = fxt_dm_item
-    mock_dm_subset.__iter__.return_value = iter([fxt_dm_item])
+    mock_dm_subset.as_dataset().__getitem__.return_value = fxt_dm_item
+    mock_dm_subset.__iter__ = lambda _: iter([fxt_dm_item])  # avoid `return_value` here to allow multiple iterations
+    mock_dm_subset.__len__.return_value = 1
+    mock_dm_subset.categories().__getitem__.return_value = LabelCategories.from_iterable(_LABEL_NAMES)
     return mock_dm_subset
 
 
@@ -141,7 +145,7 @@ def fxt_mock_hlabelinfo():
     mock_dict = MagicMock()
     mock_dict.__getitem__.return_value = (0, 0)
     return HLabelInfo(
-        label_names=["Non-Rigid", "Rigid", "Rectangle", "Triangle", "Circle", "Lion", "Panda"],
+        label_names=_LABEL_NAMES,
         label_groups=[["Non-Rigid", "Rigid"], ["Rectangle", "Triangle"], ["Circle"], ["Lion"], ["Panda"]],
         num_multiclass_heads=2,
         num_multilabel_classes=3,

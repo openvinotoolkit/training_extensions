@@ -163,7 +163,7 @@ class OTXSegmentationDataset(OTXDataset[SegDataEntity]):
         self.ignore_index = ignore_index
 
     def _get_item_impl(self, index: int) -> SegDataEntity | None:
-        item = self.dm_subset.get(id=self.ids[index], subset=self.dm_subset.name)
+        item = self.dm_subset.as_dataset()[index]
         img = item.media_as(Image)
         ignored_labels: list[int] = []
         img_data, img_shape = self._get_img_data_and_shape(img)

@@ -77,7 +77,6 @@ class OTXDataset(Dataset, Generic[T_OTXDataEntity]):
         stack_images: bool = True,
     ) -> None:
         self.dm_subset = dm_subset
-        self.ids = [item.id for item in dm_subset]
         self.transforms = transforms
         self.mem_cache_handler = mem_cache_handler
         self.mem_cache_img_max_size = mem_cache_img_max_size
@@ -87,7 +86,7 @@ class OTXDataset(Dataset, Generic[T_OTXDataEntity]):
         self.label_info = LabelInfo.from_dm_label_groups(self.dm_subset.categories()[AnnotationType.label])
 
     def __len__(self) -> int:
-        return len(self.ids)
+        return len(self.dm_subset)
 
     def _sample_another_idx(self) -> int:
         return np.random.default_rng().integers(0, len(self))
