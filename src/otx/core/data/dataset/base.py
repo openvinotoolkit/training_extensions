@@ -13,7 +13,8 @@ import cv2
 import numpy as np
 from datumaro.components.annotation import AnnotationType
 from datumaro.components.media import ImageFromFile
-from datumaro.util.image import _IMAGE_BACKEND, _IMAGE_BACKENDS, IMAGE_COLOR_SCALE, ImageColorScale
+from datumaro.util.image import IMAGE_BACKEND, IMAGE_COLOR_CHANNEL, ImageBackend
+from datumaro.util.image import ImageColorChannel as DatumaroImageColorChannel
 from torch.utils.data import Dataset
 from torchvision.transforms.v2 import Compose
 
@@ -37,16 +38,16 @@ def image_decode_context() -> Iterator[None]:
     Use PIL Image decode because of performance issues.
     With this context, `dm.Image.data` will return BGR numpy image tensor.
     """
-    ori_image_backend = _IMAGE_BACKEND.get()
-    ori_image_color_scale = IMAGE_COLOR_SCALE.get()
+    ori_image_backend = IMAGE_BACKEND.get()
+    ori_image_color_scale = IMAGE_COLOR_CHANNEL.get()
 
-    _IMAGE_BACKEND.set(_IMAGE_BACKENDS.PIL)
-    IMAGE_COLOR_SCALE.set(ImageColorScale.COLOR)
+    IMAGE_BACKEND.set(ImageBackend.PIL)
+    IMAGE_COLOR_CHANNEL.set(DatumaroImageColorChannel.UNCHANGED)
 
     yield
 
-    _IMAGE_BACKEND.set(ori_image_backend)
-    IMAGE_COLOR_SCALE.set(ori_image_color_scale)
+    IMAGE_BACKEND.set(ori_image_backend)
+    IMAGE_COLOR_CHANNEL.set(ori_image_color_scale)
 
 
 class OTXDataset(Dataset, Generic[T_OTXDataEntity]):
