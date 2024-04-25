@@ -499,7 +499,7 @@ class BaseDenseHead(BaseModule):
         cfg: ConfigDict | None = None,
         rescale: bool = False,
         with_nms: bool = True,
-    ) -> list[InstanceData]:
+    ) -> list[InstanceData] | tuple:
         """Transform a batch of output features extracted from the head into bbox results.
 
         Note: When score_factors is not None, the cls_scores are
