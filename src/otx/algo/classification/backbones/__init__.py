@@ -4,8 +4,9 @@
 """Backbone modules for OTX custom model."""
 
 # from .otx_efficientnet import OTXEfficientNet
+from .efficientnet import OTXEfficientNet
 from .timm import TimmBackbone
 from .mobilenet_v3 import OTXMobileNetV3
 from .vision_transformer import OTXVisionTransformer
 
-__all__ = ["OTXVisionTransformer", "TimmBackbone", "OTXMobileNetV3"]
+__all__ = ["OTXEfficientNet", "TimmBackbone", "OTXMobileNetV3", "OTXVisionTransformer"]

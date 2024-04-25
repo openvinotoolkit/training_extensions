@@ -8,12 +8,13 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import torch
-from mmdet.models.utils.misc import images_to_levels, multi_apply
 from mmdet.registry import MODELS
 from torch import Tensor
 
+from otx.algo.detection.utils.utils import images_to_levels, multi_apply
+
 if TYPE_CHECKING:
-    from mmdet.utils import InstanceList, OptInstanceList
+    from mmengine.structures import InstanceData
 
 
 @MODELS.register_module()
@@ -24,9 +25,9 @@ class ClassIncrementalMixin:
         self,
         anchor_list: list,
         valid_flag_list: list[list[Tensor]],
-        batch_gt_instances: InstanceList,
+        batch_gt_instances: list[InstanceData],
         batch_img_metas: list[dict],
-        batch_gt_instances_ignore: OptInstanceList = None,
+        batch_gt_instances_ignore: list[InstanceData] | None = None,
         unmap_outputs: bool = True,
     ) -> tuple:
         """Get targets for ATSS head.

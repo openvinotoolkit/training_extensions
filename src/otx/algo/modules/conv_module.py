@@ -122,7 +122,7 @@ class ConvModule(nn.Module):
 
     def __init__(
         self,
-        in_channels: int,
+        in_channels: int | tuple[int, ...],
         out_channels: int,
         kernel_size: int | tuple[int, int],
         stride: int | tuple[int, int] = 1,

@@ -9,12 +9,13 @@ import warnings
 
 import numpy as np
 import torch
-from mmdet.registry import TASK_UTILS
+from mmengine.registry import TASK_UTILS
 from torch.nn.modules.utils import _pair
 
 
 # This class and its supporting functions below lightly adapted from the mmdet AnchorGenerator available at:
 # https://github.com/open-mmlab/mmdetection/blob/cfd5d3a985b0249de009b67d04f37263e11cdf3d/mmdet/models/task_modules/prior_generators/anchor_generator.py
+@TASK_UTILS.register_module()
 class AnchorGenerator:
     """Standard anchor generator for 2D anchor-based detectors.
 

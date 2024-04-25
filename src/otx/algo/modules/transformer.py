@@ -1,4 +1,7 @@
+"""MMCV Transformer modules."""
+
 # Copyright (c) OpenMMLab. All rights reserved.
+from __future__ import annotations
 
 import math
 
@@ -247,18 +250,21 @@ class FFN(BaseModule):
         init_cfg (obj:`mmcv.ConfigDict`): The Config for initialization.
             Default: None.
     """
-    def __init__(self,
-                 embed_dims=256,
-                 feedforward_channels=1024,
-                 num_fcs=2,
-                 act_cfg={'type': 'ReLU', 'inplace': True},
-                 ffn_drop=0.,
-                 dropout_layer=None,
-                 add_identity=True,
-                 init_cfg=None):
+    def __init__(
+        self,
+        embed_dims: int = 256,
+        feedforward_channels: int = 1024,
+        num_fcs: int = 2,
+        act_cfg: dict = {"type": "ReLU", "inplace": True},  # noqa: B006
+        ffn_drop: float = 0.0,
+        dropout_layer: dict | None = None,
+        add_identity: bool = True,
+        init_cfg: dict | None = None,
+    ):
         super().__init__(init_cfg)
-        assert num_fcs >= 2, 'num_fcs should be no less ' \
-            f'than 2. got {num_fcs}.'
+        if num_fcs < 2:
+            msg = "The number of fully-connected layers in FFNs should be at least 2."
+            raise ValueError(msg)
         self.embed_dims = embed_dims
         self.feedforward_channels = feedforward_channels
         self.num_fcs = num_fcs
@@ -269,18 +275,21 @@ class FFN(BaseModule):
             layers.append(
                 Sequential(
                     nn.Linear(in_channels, feedforward_channels),
-                    build_activation_layer(act_cfg), nn.Dropout(ffn_drop)))
+                    build_activation_layer(act_cfg),
+                    nn.Dropout(ffn_drop),
+                ),
+            )
             in_channels = feedforward_channels
         layers.append(nn.Linear(feedforward_channels, embed_dims))
         layers.append(nn.Dropout(ffn_drop))
         self.layers = Sequential(*layers)
-        self.dropout_layer = build_dropout(
-            dropout_layer) if dropout_layer else torch.nn.Identity()
+
+        self.dropout_layer = build_dropout(dropout_layer) if dropout_layer else torch.nn.Identity()
         self.add_identity = add_identity
 
         self.gamma2 = nn.Identity()
 
-    def forward(self, x, identity=None):
+    def forward(self, x: torch.Tensor, identity: torch.Tensor | None = None) -> torch.Tensor:
         """Forward function for `FFN`.
 
         The function would add x to the output tensor if residue is None.

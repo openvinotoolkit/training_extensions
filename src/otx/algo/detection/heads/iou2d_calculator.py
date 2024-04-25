@@ -5,12 +5,14 @@
 from __future__ import annotations
 
 import torch
+from mmengine.registry import TASK_UTILS
 
 from otx.algo.detection.utils.bbox_overlaps import bbox_overlaps
 
 
 # This class and its supporting functions below lightly adapted from the mmdet BboxOverlaps2D available at:
 # https://github.com/open-mmlab/mmdetection/blob/cfd5d3a985b0249de009b67d04f37263e11cdf3d/mmdet/models/task_modules/assigners/iou2d_calculator.py
+@TASK_UTILS.register_module()
 class BboxOverlaps2D:
     """2D Overlaps (e.g. IoUs, GIoUs) Calculator."""
 
