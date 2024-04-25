@@ -13,7 +13,6 @@ import torch
 from importlib_resources import files
 from lightning.pytorch.cli import ReduceLROnPlateau
 from omegaconf import OmegaConf
-from otx.algo.detection.yolox import OTXYOLOX
 from otx.algo.explain.explain_algo import feature_vector_fn
 from otx.core.metrics.fmeasure import FMeasureCallable
 from otx.core.model.detection import MMDetCompatibleModel, OTXDetectionModel
