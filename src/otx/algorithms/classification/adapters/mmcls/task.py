@@ -555,8 +555,10 @@ class MMClassificationTask(OTXClassificationTask):
                     output_names.append("saliency_map")
         export_options["model_builder"] = getattr(self, "model_builder", build_classifier)
 
-        if precision == ModelPrecision.FP16:
-            export_options["deploy_cfg"]["backend_config"]["mo_options"]["flags"].append("--compress_to_fp16")
+        if self._precision[0] == ModelPrecision.FP16:
+            export_options["deploy_cfg"]["backend_config"]["mo_options"]["flags"].append("--compress_to_fp16=True")
+        else:
+            export_options["deploy_cfg"]["backend_config"]["mo_options"]["flags"].append("--compress_to_fp16=False")
 
         backend_cfg_backup = {}
         if export_format == ExportType.ONNX:
