@@ -65,7 +65,7 @@ class ImageClassifier(BaseModel):
         mean: list[float] | None = None,
         std: list[float] | None = None,
         to_rgb: bool = False,
-        init_cfg: dict | None = None,
+        init_cfg: dict | list[dict] | None = None,
     ):
         if pretrained is not None:
             init_cfg = {"type": "Pretrained", "checkpoint": pretrained}
@@ -213,8 +213,8 @@ class ImageClassifier(BaseModel):
         pred_results = self.head._get_predictions(logits)  # noqa: SLF001
         # H-Label Classification Case
         if isinstance(pred_results, dict):
-            scores = pred_results["pred_scores"]
-            preds = pred_results["pred_labels"]
+            scores = pred_results["scores"]
+            preds = pred_results["labels"]
         else:
             scores = pred_results.unbind(0)
             preds = logits.argmax(-1, keepdim=True).unbind(0)

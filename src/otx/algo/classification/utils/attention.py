@@ -1,4 +1,10 @@
+# Copyright (C) 2024 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
 # Copyright (c) OpenMMLab. All rights reserved.
+
+"""Copy from mmpretrain/models/utils/attention.py."""
+from __future__ import annotations
+
 from functools import partial
 
 import torch
@@ -39,18 +45,20 @@ class MultiheadAttention(BaseModule):
             Defaults to None.
     """
 
-    def __init__(self,
-                 embed_dims,
-                 num_heads,
-                 input_dims=None,
-                 attn_drop=0.,
-                 proj_drop=0.,
-                 dropout_layer=dict(type='Dropout', drop_prob=0.),
-                 qkv_bias=True,
-                 qk_scale=None,
-                 proj_bias=True,
-                 v_shortcut=False,
-                 init_cfg=None):
+    def __init__(
+        self,
+        embed_dims: int,
+        num_heads: int,
+        input_dims: int | None = None,
+        attn_drop: float = 0.0,
+        proj_drop: float = 0.0,
+        dropout_layer: dict = {"type": "Dropout", "drop_prob": 0.0},  # noqa: B006
+        qkv_bias: bool = True,
+        qk_scale: float | None = None,
+        proj_bias: bool = True,
+        v_shortcut: bool = False,
+        init_cfg: dict | None = None,
+    ):
         super().__init__(init_cfg=init_cfg)
 
         self.input_dims = input_dims or embed_dims
@@ -62,7 +70,8 @@ class MultiheadAttention(BaseModule):
         if qk_scale is not None:
             self.scaled_dot_product_attention = partial(
                 nn.functional.scaled_dot_product_attention,
-                scale=self.head_dims**-0.5)
+                scale=self.head_dims**-0.5,
+            )
         else:
             self.scaled_dot_product_attention = nn.functional.scaled_dot_product_attention
 
@@ -76,12 +85,19 @@ class MultiheadAttention(BaseModule):
         self.gamma1 = nn.Identity()
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """Forward pass of the MultiheadAttention module.
+
+        Args:
+            x (torch.Tensor): The input tensor.
+
+        Returns:
+            torch.Tensor: The output tensor.
+        """
         B, N, _ = x.shape  # noqa: N806
-        qkv = self.qkv(x).reshape(B, N, 3, self.num_heads,
-                                  self.head_dims).permute(2, 0, 3, 1, 4)
+        qkv = self.qkv(x).reshape(B, N, 3, self.num_heads, self.head_dims).permute(2, 0, 3, 1, 4)
         q, k, v = qkv[0], qkv[1], qkv[2]
 
-        attn_drop = self.attn_drop if self.training else 0.
+        attn_drop = self.attn_drop if self.training else 0.0
         x = self.scaled_dot_product_attention(q, k, v, dropout_p=attn_drop)
         x = x.transpose(1, 2).reshape(B, N, self.embed_dims)
 

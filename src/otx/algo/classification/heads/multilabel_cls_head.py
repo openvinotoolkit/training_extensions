@@ -12,7 +12,7 @@ you can refer https://github.com/open-mmlab/mmpretrain/blob/main/mmpretrain/mode
 from __future__ import annotations
 
 import inspect
-from typing import Callable
+from typing import Callable, Sequence
 
 import torch
 from mmengine.model import BaseModule
@@ -85,6 +85,7 @@ class MultiLabelClsHead(BaseModule):
         self.normalized = normalized
         self.scale = scale
         self.loss_module = loss
+        self.loss_args = inspect.getargspec(self.loss_module).args
         self.is_ignored_label_loss = "valid_label_mask" in inspect.getfullargspec(self.loss_module.forward).args
 
         if thr is None and topk is None:
@@ -112,7 +113,9 @@ class MultiLabelClsHead(BaseModule):
         imgs_info = kwargs.pop("imgs_info", None)
         if imgs_info is not None and self.is_ignored_label_loss:
             kwargs["valid_label_mask"] = self.get_valid_label_mask(imgs_info).to(cls_score.device)
-        loss = self.loss_module(cls_score, labels, avg_factor=cls_score.size(0), **kwargs)
+        if "avg_factor" in self.loss_args:
+            kwargs["avg_factor"] = cls_score.size(0)
+        loss = self.loss_module(cls_score, labels, **kwargs)
         return loss / self.scale
 
     def get_valid_label_mask(self, img_metas: list[ImageInfo]) -> torch.Tensor:
@@ -167,7 +170,7 @@ class MultiLabelClsHead(BaseModule):
         """
         # The obtain the MultiLabelLinearClsHead doesn't have other module,
         # just return after unpacking.
-        if isinstance(feats, tuple):
+        if isinstance(feats, Sequence):
             return feats[-1]
         return feats
 

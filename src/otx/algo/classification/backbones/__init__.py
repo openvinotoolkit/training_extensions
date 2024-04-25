@@ -7,6 +7,6 @@
 from .efficientnet import OTXEfficientNet
 from .timm import TimmBackbone
 from .mobilenet_v3 import OTXMobileNetV3
-from .vision_transformer import OTXVisionTransformer
+from .vision_transformer import VisionTransformer
 
-__all__ = ["OTXEfficientNet", "TimmBackbone", "OTXMobileNetV3", "OTXVisionTransformer"]
+__all__ = ["OTXEfficientNet", "TimmBackbone", "OTXMobileNetV3", "VisionTransformer"]

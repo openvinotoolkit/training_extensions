@@ -1,13 +1,19 @@
+# Copyright (C) 2024 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
 # Copyright (c) OpenMMLab. All rights reserved.
+
+"""Copy from mmpretrain/models/utils/embed.py."""
 import torch
 from torch.nn import functional
 
 
-def resize_pos_embed(pos_embed,
-                     src_shape,
-                     dst_shape,
-                     mode='bicubic',
-                     num_extra_tokens=1):
+def resize_pos_embed(
+    pos_embed: torch.Tensor,
+    src_shape: tuple,
+    dst_shape: tuple,
+    mode: str = "bicubic",
+    num_extra_tokens: int = 1,
+) -> torch.Tensor:
     """Resize pos_embed weights.
 
     Args:
@@ -28,13 +34,13 @@ def resize_pos_embed(pos_embed,
     """
     if src_shape[0] == dst_shape[0] and src_shape[1] == dst_shape[1]:
         return pos_embed
-    assert pos_embed.ndim == 3, 'shape of pos_embed must be [1, L, C]'  # noqa: S101
+    assert pos_embed.ndim == 3, "shape of pos_embed must be [1, L, C]"  # noqa: S101
     _, L, C = pos_embed.shape  # noqa: N806
     src_h, src_w = src_shape
     assert src_h * src_w + num_extra_tokens == L, (  # noqa: S101
         f"The length of `pos_embed` ({L}) doesn't match the expected "
-        f'shape ({src_h}*{src_w}+{num_extra_tokens}). Please check the '
-        '`img_size` argument.'
+        f"shape ({src_h}*{src_w}+{num_extra_tokens}). Please check the "
+        "`img_size` argument."
     )
     extra_tokens = pos_embed[:, :num_extra_tokens]
 
@@ -42,8 +48,7 @@ def resize_pos_embed(pos_embed,
     src_weight = src_weight.reshape(1, src_h, src_w, C).permute(0, 3, 1, 2)
 
     # The cubic interpolate algorithm only accepts float32
-    dst_weight = functional.interpolate(
-        src_weight.float(), size=dst_shape, align_corners=False, mode=mode)
+    dst_weight = functional.interpolate(src_weight.float(), size=dst_shape, align_corners=False, mode=mode)
     dst_weight = torch.flatten(dst_weight, 2).transpose(1, 2)
     dst_weight = dst_weight.to(src_weight.dtype)
 

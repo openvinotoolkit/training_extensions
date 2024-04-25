@@ -1,4 +1,8 @@
+# Copyright (C) 2024 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
 # Copyright (c) OpenMMLab. All rights reserved.
+
+"""Copy from mmpretrain/models/utils/swiglu_ffn.py."""
 from __future__ import annotations
 
 import torch
@@ -39,13 +43,19 @@ class SwiGLUFFN(nn.Module):
         self.w3 = nn.Linear(hidden_dims, self.out_dims, bias=bias)
         self.gamma2 = nn.Identity()
 
-        self.dropout_layer = build_dropout(
-            dropout_layer) if dropout_layer else torch.nn.Identity()
+        self.dropout_layer = build_dropout(dropout_layer) if dropout_layer else torch.nn.Identity()
         self.add_identity = add_identity
 
-    def forward(self,
-                x: torch.Tensor,
-                identity: torch.Tensor | None = None) -> torch.Tensor:
+    def forward(self, x: torch.Tensor, identity: torch.Tensor | None = None) -> torch.Tensor:
+        """Forward pass of the SwiGLUFFN module.
+
+        Args:
+            x (torch.Tensor): Input tensor.
+            identity (torch.Tensor, optional): Identity tensor for residual connection. Defaults to None.
+
+        Returns:
+            torch.Tensor: Output tensor.
+        """
         x12 = self.w12(x)
         x1, x2 = x12.chunk(2, dim=-1)
         hidden = nn.functional.silu(x1) * x2

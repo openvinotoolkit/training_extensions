@@ -338,8 +338,8 @@ class EfficientNetV2ForHLabelCls(OTXHlabelClsModel):
 
         # To list, batch-wise
         if isinstance(outputs, dict):
-            scores = outputs["pred_scores"]
-            labels = outputs["pred_labels"]
+            scores = outputs["scores"]
+            labels = outputs["labels"]
         else:
             scores = outputs
             labels = outputs.argmax(-1, keepdim=True)

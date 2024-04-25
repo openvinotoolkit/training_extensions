@@ -1,12 +1,15 @@
+# Copyright (C) 2024 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Sequence
+
+"""Copy from mmpretrain/models/backbones/vision_transformer.py."""
+
+from typing import Sequence, Literal
 
 import numpy as np
 import torch
 import torch.nn as nn
 from mmengine.model import BaseModule, ModuleList
-from mmengine.registry import MODELS
-
 from otx.algo.modules.norm import build_norm_layer
 from otx.algo.modules.transformer import FFN, PatchEmbed
 from otx.algo.utils.mmengine_utils import trunc_normal_
@@ -42,18 +45,18 @@ class TransformerEncoderLayer(BaseModule):
     """
 
     def __init__(self,
-                 embed_dims,
-                 num_heads,
-                 feedforward_channels,
-                 drop_rate=0.,
-                 attn_drop_rate=0.,
-                 drop_path_rate=0.,
-                 num_fcs=2,
-                 qkv_bias=True,
-                 ffn_type='origin',
-                 act_cfg=None,
-                 norm_cfg={"type": "LN"},
-                 init_cfg=None):
+                 embed_dims: int,
+                 num_heads: int,
+                 feedforward_channels: int,
+                 drop_rate: float = 0.,
+                 attn_drop_rate: float = 0.,
+                 drop_path_rate: float = 0.,
+                 num_fcs: int = 2,
+                 qkv_bias: bool = True,
+                 ffn_type: str = 'origin',
+                 act_cfg: dict = {'type': 'GELU'},
+                 norm_cfg: dict = {"type": "LN"},
+                 init_cfg: dict | None=None):
         super(TransformerEncoderLayer, self).__init__(init_cfg=init_cfg)
 
         act_cfg = act_cfg if act_cfg else {'type': 'GELU'}
@@ -108,8 +111,20 @@ class TransformerEncoderLayer(BaseModule):
         return x
 
 
-@MODELS.register_module()
-class OTXVisionTransformer(BaseModule):
+VIT_ARCH_TYPE = Literal[
+    "small",
+    "base",
+    'large',
+    'huge',
+    'eva-g', 'eva-giant',
+    'deit-t', 'deit-tiny',
+    'deit-s', 'deit-small', 'dinov2-s', 'dinov2-small',
+    'deit-b', 'deit-base',
+    'dinov2-g', 'dinov2-giant',
+]
+
+
+class VisionTransformer(BaseModule):
     """Vision Transformer.
 
     A PyTorch implement of : `An Image is Worth 16x16 Words: Transformers
@@ -244,29 +259,28 @@ class OTXVisionTransformer(BaseModule):
     OUT_TYPES = {'raw', 'cls_token', 'featmap', 'avg_featmap'}
 
     def __init__(self,
-                 arch='base',
-                 img_size=224,
-                 patch_size=16,
-                 in_channels=3,
-                 out_indices=-1,
-                 drop_rate=0.,
-                 drop_path_rate=0.,
-                 qkv_bias=True,
-                 norm_cfg=dict(type='LN', eps=1e-6),
-                 final_norm=True,
-                 out_type='cls_token',
-                 with_cls_token=True,
-                 frozen_stages=-1,
-                 interpolate_mode='bicubic',
-                 layer_scale_init_value=0.,
-                 patch_cfg=dict(),
-                 layer_cfgs=dict(),
-                 pre_norm=False,
-                 init_cfg=None):
-        super(OTXVisionTransformer, self).__init__(init_cfg)
+                 arch: VIT_ARCH_TYPE = 'base',
+                 img_size: int = 224,
+                 patch_size: int = 16,
+                 in_channels: int = 3,
+                 out_indices: int | list[int] = -1,
+                 drop_rate: float = 0.,
+                 drop_path_rate: float = 0.,
+                 qkv_bias: bool = True,
+                 norm_cfg: dict = dict(type='LN', eps=1e-6),
+                 final_norm: bool = True,
+                 out_type: str = 'cls_token',
+                 with_cls_token: bool = True,
+                 frozen_stages: int = -1,
+                 interpolate_mode: str = 'bicubic',
+                 patch_cfg: dict = dict(),
+                 layer_cfgs: dict | list[dict] = dict(),
+                 pre_norm: bool = False,
+                 init_cfg: dict | None = None):
+        super(VisionTransformer, self).__init__(init_cfg)
 
+        self.arch = arch
         if isinstance(arch, str):
-            arch = arch.lower()
             assert arch in set(self.arch_zoo), \
                 f'Arch {arch} is not in default archs {set(self.arch_zoo)}'
             self.arch_settings = self.arch_zoo[arch]
@@ -280,8 +294,7 @@ class OTXVisionTransformer(BaseModule):
 
         self.embed_dims = self.arch_settings['embed_dims']
         self.num_layers = self.arch_settings['num_layers']
-        # self.img_size = to_2tuple(img_size)
-        self.img_size = (img_size, img_size)
+        self.img_size = img_size if isinstance(img_size, tuple) else (img_size, img_size)
 
         # Set patch embedding
         _patch_cfg = dict(
@@ -294,7 +307,7 @@ class OTXVisionTransformer(BaseModule):
             bias=not pre_norm,  # disable bias if pre_norm is used(e.g., CLIP)
         )
         _patch_cfg.update(patch_cfg)
-        self.patch_embed = PatchEmbed(**_patch_cfg)
+        self.patch_embed = PatchEmbed(**_patch_cfg)  # type: ignore [arg-type]
         self.patch_resolution = self.patch_embed.init_out_size
         num_patches = self.patch_resolution[0] * self.patch_resolution[1]
 
@@ -353,11 +366,12 @@ class OTXVisionTransformer(BaseModule):
                 qkv_bias=qkv_bias,
                 norm_cfg=norm_cfg)
             _layer_cfg.update(layer_cfgs[i])
-            self.layers.append(TransformerEncoderLayer(**_layer_cfg))
+            self.layers.append(TransformerEncoderLayer(**_layer_cfg))  # type: ignore [arg-type]
 
         self.frozen_stages = frozen_stages
+        self.pre_norm: nn.Module
         if pre_norm:
-            self.pre_norm = build_norm_layer(norm_cfg, self.embed_dims)
+            _, self.pre_norm = build_norm_layer(norm_cfg, self.embed_dims)
         else:
             self.pre_norm = nn.Identity()
 
@@ -380,7 +394,7 @@ class OTXVisionTransformer(BaseModule):
         return self.ln2
 
     def init_weights(self):
-        super(OTXVisionTransformer, self).init_weights()
+        super(VisionTransformer, self).init_weights()
 
         if not (isinstance(self.init_cfg, dict)
                 and self.init_cfg['type'] == 'Pretrained'):
@@ -417,7 +431,7 @@ class OTXVisionTransformer(BaseModule):
         """Interface for backward-compatibility."""
         return resize_pos_embed(*args, **kwargs)
 
-    def _freeze_stages(self):
+    def _freeze_stages(self) -> None:
         # freeze position embedding
         if self.pos_embed is not None:
             self.pos_embed.requires_grad = False

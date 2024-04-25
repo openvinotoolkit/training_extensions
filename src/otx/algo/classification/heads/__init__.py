@@ -10,6 +10,7 @@ from .custom_multilabel_non_linear_cls_head import CustomMultiLabelNonLinearClsH
 from .hlabel_cls_head import HierarchicalLinearClsHead, HierarchicalNonLinearClsHead
 from .linear_head import LinearClsHead
 from .multilabel_cls_head import MultiLabelLinearClsHead, MultiLabelNonLinearClsHead
+from .vision_transformer_head import VisionTransformerClsHead
 
 __all__ = [
     "CustomMultiLabelLinearClsHead",
@@ -21,4 +22,5 @@ __all__ = [
     "MultiLabelNonLinearClsHead",
     "HierarchicalLinearClsHead",
     "HierarchicalNonLinearClsHead",
+    "VisionTransformerClsHead",
 ]

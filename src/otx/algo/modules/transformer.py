@@ -1,6 +1,8 @@
-"""MMCV Transformer modules."""
-
+# Copyright (C) 2024 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
 # Copyright (c) OpenMMLab. All rights reserved.
+
+"""This implementation replaces the functionality of mmcv.cnn.bricks.transformer."""
 from __future__ import annotations
 
 import math
@@ -50,9 +52,15 @@ class AdaptivePadding(nn.Module):
         >>> assert (out.shape[2], out.shape[3]) == (16, 32)
     """
 
-    def __init__(self, kernel_size=1, stride=1, dilation=1, padding='corner'):
+    def __init__(
+        self,
+        kernel_size: int | tuple[int, int] = 1,
+        stride: int | tuple[int, int] = 1,
+        dilation: int | tuple[int, int] = 1,
+        padding: str = "corner",
+    ):
         super().__init__()
-        assert padding in ('same', 'corner')
+        assert padding in ("same", "corner")  # noqa: S101
 
         kernel_size = kernel_size if isinstance(kernel_size, tuple) else (kernel_size, kernel_size)
         stride = stride if isinstance(stride, tuple) else (stride, stride)
@@ -63,7 +71,7 @@ class AdaptivePadding(nn.Module):
         self.stride = stride
         self.dilation = dilation
 
-    def get_pad_shape(self, input_shape):
+    def get_pad_shape(self, input_shape: tuple[int, int]) -> tuple[int, int]:
         """Calculate the padding size of input.
 
         Args:
@@ -78,13 +86,11 @@ class AdaptivePadding(nn.Module):
         stride_h, stride_w = self.stride
         output_h = math.ceil(input_h / stride_h)
         output_w = math.ceil(input_w / stride_w)
-        pad_h = max((output_h - 1) * stride_h +
-                    (kernel_h - 1) * self.dilation[0] + 1 - input_h, 0)
-        pad_w = max((output_w - 1) * stride_w +
-                    (kernel_w - 1) * self.dilation[1] + 1 - input_w, 0)
+        pad_h = max((output_h - 1) * stride_h + (kernel_h - 1) * self.dilation[0] + 1 - input_h, 0)
+        pad_w = max((output_w - 1) * stride_w + (kernel_w - 1) * self.dilation[1] + 1 - input_w, 0)
         return pad_h, pad_w
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Add padding to `x`.
 
         Args:
@@ -95,13 +101,18 @@ class AdaptivePadding(nn.Module):
         """
         pad_h, pad_w = self.get_pad_shape(x.size()[-2:])
         if pad_h > 0 or pad_w > 0:
-            if self.padding == 'corner':
+            if self.padding == "corner":
                 x = nn.functional.pad(x, [0, pad_w, 0, pad_h])
-            elif self.padding == 'same':
-                x = nn.functional.pad(x, [
-                    pad_w // 2, pad_w - pad_w // 2, pad_h // 2,
-                    pad_h - pad_h // 2
-                ])
+            elif self.padding == "same":
+                x = nn.functional.pad(
+                    x,
+                    [
+                        pad_w // 2,
+                        pad_w - pad_w // 2,
+                        pad_h // 2,
+                        pad_h - pad_h // 2,
+                    ],
+                )
         return x
 
 
@@ -133,18 +144,20 @@ class PatchEmbed(BaseModule):
             Default: None.
     """
 
-    def __init__(self,
-                 in_channels=3,
-                 embed_dims=768,
-                 conv_type='Conv2d',
-                 kernel_size=16,
-                 stride=16,
-                 padding='corner',
-                 dilation=1,
-                 bias=True,
-                 norm_cfg=None,
-                 input_size=None,
-                 init_cfg=None):
+    def __init__(
+        self,
+        in_channels: int = 3,
+        embed_dims: int = 768,
+        conv_type: str = "Conv2d",
+        kernel_size: int | tuple[int, int] = 16,
+        stride: int | tuple[int, int] = 16,
+        padding: str | int | tuple[int, int] = "corner",
+        dilation: int | tuple[int, int] = 1,
+        bias: bool = True,
+        norm_cfg: dict | None = None,
+        input_size: int | tuple[int, int] | None = None,
+        init_cfg: dict | None = None,
+    ):
         super().__init__(init_cfg=init_cfg)
 
         self.embed_dims = embed_dims
@@ -155,12 +168,14 @@ class PatchEmbed(BaseModule):
         stride = stride if isinstance(stride, tuple) else (stride, stride)
         dilation = (dilation, dilation) if isinstance(dilation, int) else dilation
 
+        self.adaptive_padding: AdaptivePadding | None
         if isinstance(padding, str):
             self.adaptive_padding = AdaptivePadding(
                 kernel_size=kernel_size,
                 stride=stride,
                 dilation=dilation,
-                padding=padding)
+                padding=padding,
+            )
             # disable the padding of conv
             padding = 0
         else:
@@ -168,22 +183,26 @@ class PatchEmbed(BaseModule):
         padding = padding if isinstance(padding, tuple) else (padding, padding)
 
         self.projection = build_conv_layer(
-            {'type': conv_type},
+            {"type": conv_type},
             in_channels=in_channels,
             out_channels=embed_dims,
             kernel_size=kernel_size,
             stride=stride,
             padding=padding,
             dilation=dilation,
-            bias=bias)
+            bias=bias,
+        )
 
+        self.norm: nn.Module | None
         if norm_cfg is not None:
             self.norm = build_norm_layer(norm_cfg, embed_dims)[1]
         else:
             self.norm = None
 
+        self.init_input_size: tuple[int, int]
+        self.init_out_size: tuple[int, int]
         if input_size:
-            input_size = (input_size, input_size)
+            input_size = input_size if isinstance(input_size, tuple) else (input_size, input_size)
             # `init_out_size` would be used outside to
             # calculate the num_patches
             # e.g. when `use_abs_pos_embed` outside
@@ -196,17 +215,13 @@ class PatchEmbed(BaseModule):
                 input_size = (input_h, input_w)
 
             # https://pytorch.org/docs/stable/generated/torch.nn.Conv2d.html
-            h_out = (input_size[0] + 2 * padding[0] - dilation[0] *
-                     (kernel_size[0] - 1) - 1) // stride[0] + 1
-            w_out = (input_size[1] + 2 * padding[1] - dilation[1] *
-                     (kernel_size[1] - 1) - 1) // stride[1] + 1
+            h_out = (input_size[0] + 2 * padding[0] - dilation[0] * (kernel_size[0] - 1) - 1) // stride[0] + 1
+            w_out = (input_size[1] + 2 * padding[1] - dilation[1] * (kernel_size[1] - 1) - 1) // stride[1] + 1
             self.init_out_size = (h_out, w_out)
-        else:
-            self.init_input_size = None
-            self.init_out_size = None
 
-    def forward(self, x):
-        """
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """Forward function for `PatchEmbed`.
+
         Args:
             x (Tensor): Has shape (B, C, H, W). In most case, C is 3.
 
@@ -217,7 +232,6 @@ class PatchEmbed(BaseModule):
             - out_size (tuple[int]): Spatial shape of x, arrange as
               (out_h, out_w).
         """
-
         if self.adaptive_padding:
             x = self.adaptive_padding(x)
 
@@ -250,6 +264,7 @@ class FFN(BaseModule):
         init_cfg (obj:`mmcv.ConfigDict`): The Config for initialization.
             Default: None.
     """
+
     def __init__(
         self,
         embed_dims: int = 256,

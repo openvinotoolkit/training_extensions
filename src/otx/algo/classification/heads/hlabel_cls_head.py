@@ -6,7 +6,7 @@
 from __future__ import annotations
 
 import inspect
-from typing import Callable
+from typing import Callable, Sequence
 
 import torch
 from mmengine.model import BaseModule
@@ -61,7 +61,7 @@ class HierarchicalClsHead(BaseModule):
 
     def pre_logits(self, feats: tuple[torch.Tensor] | torch.Tensor) -> torch.Tensor:
         """The process before the final classification head."""
-        if isinstance(feats, tuple):
+        if isinstance(feats, Sequence):
             return feats[-1]
         return feats
 
@@ -201,8 +201,8 @@ class HierarchicalClsHead(BaseModule):
             pred_labels = multiclass_pred_labels
 
         return {
-            "pred_scores": pred_scores,
-            "pred_labels": pred_labels,
+            "scores": pred_scores,
+            "labels": pred_labels,
         }
 
 
