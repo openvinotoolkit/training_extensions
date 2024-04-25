@@ -4,8 +4,8 @@
 """Modules for semantic segmentation."""
 
 
-from .blocks import AsymmetricPositionAttentionModule, LocalAttentionModule
 from .aggregators import IterativeAggregator
+from .blocks import AsymmetricPositionAttentionModule, LocalAttentionModule
 from .utils import channel_shuffle, normalize, resize
 
 __all__ = [

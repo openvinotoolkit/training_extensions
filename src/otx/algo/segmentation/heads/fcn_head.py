@@ -88,12 +88,14 @@ class FCNHead(BaseSegmHead):
         else:
             aggregator = None
 
-        super().__init__(in_index=in_index,
-                        norm_cfg=norm_cfg,
-                        conv_cfg=conv_cfg,
-                        input_transform=input_transform,
-                        in_channels=in_channels,
-                        **kwargs)
+        super().__init__(
+            in_index=in_index,
+            norm_cfg=norm_cfg,
+            conv_cfg=conv_cfg,
+            input_transform=input_transform,
+            in_channels=in_channels,
+            **kwargs,
+        )
 
         self.aggregator = aggregator
 
