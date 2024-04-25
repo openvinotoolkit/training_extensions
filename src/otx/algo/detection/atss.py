@@ -10,10 +10,10 @@ from typing import TYPE_CHECKING, Literal
 
 from mmengine.structures import InstanceData
 
-from otx.algo.detection.backbones.fpn import FPN
 from otx.algo.detection.backbones.pytorchcv_backbones import _build_model_including_pytorchcv
 from otx.algo.detection.backbones.resnext import ResNeXt
 from otx.algo.detection.heads.atss_head import ATSSHead
+from otx.algo.detection.necks.fpn import FPN
 from otx.algo.detection.ssd import SingleStageDetector
 from otx.algo.utils.mmconfig import read_mmconfig
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
@@ -23,7 +23,6 @@ from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.metrics.mean_ap import MeanAPCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
 from otx.core.model.detection import MMDetCompatibleModel
-from otx.core.model.utils.mmdet import DetDataPreprocessor
 from otx.core.schedulers import LRSchedulerListCallable
 from otx.core.types.label import LabelInfoTypes
 from otx.core.utils.config import convert_conf_to_mmconfig_dict
@@ -40,31 +39,24 @@ if TYPE_CHECKING:
 class TorchATSS(SingleStageDetector):
     """ATSS torch implementation."""
 
-    def __init__(
-        self,
-        backbone: ConfigDict | dict,
-        neck: ConfigDict | dict,
-        bbox_head: ConfigDict | dict,
-        data_preprocessor: ConfigDict | dict,
-        train_cfg: ConfigDict | dict | None = None,
-        test_cfg: ConfigDict | dict | None = None,
-        init_cfg: ConfigDict | list[ConfigDict] | dict | list[dict] = None,
-    ) -> None:
-        super(SingleStageDetector, self).__init__()
-        self._is_init = False
-        if backbone["type"] == "ResNeXt":
-            backbone.pop("type")
-            self.backbone = ResNeXt(**backbone)
-        else:
-            self.backbone = _build_model_including_pytorchcv(backbone)
-        self.neck = FPN(**neck)
-        bbox_head.update(train_cfg=train_cfg)
-        bbox_head.update(test_cfg=test_cfg)
-        self.bbox_head = ATSSHead(**bbox_head)
-        self.data_preprocessor = DetDataPreprocessor(**data_preprocessor)
-        self.init_cfg = init_cfg
-        self.train_cfg = train_cfg
-        self.test_cfg = test_cfg
+    def __init__(self, neck: ConfigDict | dict, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self.neck = self.build_neck(neck)
+
+    def build_backbone(self, cfg: ConfigDict | dict) -> nn.Module:
+        """Build backbone."""
+        if cfg["type"] == "ResNeXt":
+            cfg.pop("type")
+            return ResNeXt(**cfg)
+        return _build_model_including_pytorchcv(cfg)
+
+    def build_neck(self, cfg: ConfigDict | dict) -> nn.Module:
+        """Build backbone."""
+        return FPN(**cfg)
+
+    def build_bbox_head(self, cfg: ConfigDict | dict) -> nn.Module:
+        """Build bbox head."""
+        return ATSSHead(**cfg)
 
 
 class ATSS(MMDetCompatibleModel):
