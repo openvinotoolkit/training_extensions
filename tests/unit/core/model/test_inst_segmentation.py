@@ -6,7 +6,7 @@
 import pytest
 import torch
 from otx.algo.explain.explain_algo import feature_vector_fn
-from otx.algo.instance_segmentation.maskrcnn import MaskRCNN
+from otx.algo.instance_segmentation.maskrcnn import MMDetMaskRCNN
 from otx.core.model.instance_segmentation import MMDetInstanceSegCompatibleModel
 from otx.core.types.export import TaskLevelExportParameters
 
@@ -14,7 +14,7 @@ from otx.core.types.export import TaskLevelExportParameters
 class TestOTXInstanceSegModel:
     @pytest.fixture()
     def otx_model(self) -> MMDetInstanceSegCompatibleModel:
-        return MaskRCNN(label_info=1, variant="efficientnetb2b")
+        return MMDetMaskRCNN(label_info=1, variant="efficientnetb2b")
 
     def test_create_model(self, otx_model) -> None:
         mmdet_model = otx_model._create_model()
