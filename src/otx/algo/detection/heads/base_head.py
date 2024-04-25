@@ -10,7 +10,7 @@ from abc import abstractmethod
 from typing import TYPE_CHECKING
 
 import torch
-from mmengine.model import BaseModule, constant_init
+from mmengine.model import BaseModule
 from mmengine.structures import InstanceData
 from torch import Tensor
 
@@ -70,15 +70,6 @@ class BaseDenseHead(BaseModule):
         # `_raw_positive_infos` will be used in `get_positive_infos`, which
         # can get positive information.
         self._raw_positive_infos: dict = {}
-
-    def init_weights(self) -> None:
-        """Initialize the weights."""
-        super().init_weights()
-        # avoid init_cfg overwrite the initialization of `conv_offset`
-        for m in self.modules():
-            # DeformConv2dPack, ModulatedDeformConv2dPack
-            if hasattr(m, "conv_offset"):
-                constant_init(m.conv_offset, 0)
 
     def get_positive_infos(self) -> list[InstanceData] | None:
         """Get positive information from sampling results.
@@ -193,16 +184,16 @@ class BaseDenseHead(BaseModule):
         """
         batch_img_metas = [data_samples.metainfo for data_samples in batch_data_samples]
 
-        cls_scores, bbox_preds = self(x)
+        outs = self(x)
 
-        return self.predict_by_feat(cls_scores, bbox_preds, batch_img_metas=batch_img_metas, rescale=rescale)
+        return self.predict_by_feat(*outs, batch_img_metas=batch_img_metas, rescale=rescale)  # type: ignore[misc]
 
     def predict_by_feat(
         self,
         cls_scores: list[Tensor],
         bbox_preds: list[Tensor],
-        batch_img_metas: list[dict],
         score_factors: list[Tensor] | None = None,
+        batch_img_metas: list[dict] | None = None,
         cfg: ConfigDict | None = None,
         rescale: bool = False,
         with_nms: bool = True,
@@ -244,6 +235,9 @@ class BaseDenseHead(BaseModule):
                 - bboxes (Tensor): Has a shape (num_instances, 4),
                   the last dimension 4 arrange as (x1, y1, x2, y2).
         """
+        if batch_img_metas is None:
+            batch_img_metas = []
+
         num_levels = len(cls_scores)
 
         featmap_sizes = [cls_scores[i].shape[-2:] for i in range(num_levels)]
@@ -389,7 +383,7 @@ class BaseDenseHead(BaseModule):
             mlvl_scores.append(scores)
             mlvl_labels.append(labels)
 
-            if mlvl_score_factors:
+            if mlvl_score_factors is not None:
                 mlvl_score_factors.append(score_factor)
 
         bbox_pred = torch.cat(mlvl_bbox_preds)
@@ -492,16 +486,16 @@ class BaseDenseHead(BaseModule):
         """
         batch_img_metas = [data_samples.metainfo for data_samples in batch_data_samples]
 
-        cls_scores, bbox_preds = self(x)
+        outs = self(x)
 
-        return self.export_by_feat(cls_scores, bbox_preds, batch_img_metas=batch_img_metas, rescale=rescale)
+        return self.export_by_feat(*outs, batch_img_metas=batch_img_metas, rescale=rescale)  # type: ignore[misc]
 
     def export_by_feat(
         self,
         cls_scores: list[Tensor],
         bbox_preds: list[Tensor],
-        batch_img_metas: list[dict],
         score_factors: list[Tensor] | None = None,
+        batch_img_metas: list[dict] | None = None,
         cfg: ConfigDict | None = None,
         rescale: bool = False,
         with_nms: bool = True,
@@ -543,6 +537,9 @@ class BaseDenseHead(BaseModule):
                 - bboxes (Tensor): Has a shape (num_instances, 4),
                   the last dimension 4 arrange as (x1, y1, x2, y2).
         """
+        if batch_img_metas is None:
+            batch_img_metas = [{}]
+
         num_levels = len(cls_scores)
 
         featmap_sizes = [featmap.size()[-2:] for featmap in cls_scores]

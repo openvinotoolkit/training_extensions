@@ -266,7 +266,7 @@ class ExplainableOTXDetModel(OTXDetectionModel):
 
     def get_explain_fn(self) -> Callable:
         """Returns explain function."""
-        from otx.algo.detection.heads.custom_ssd_head import SSDHead
+        from otx.algo.detection.heads.ssd_head import SSDHead
         from otx.algo.explain.explain_algo import DetClassProbabilityMap
 
         # SSD-like heads also have background class
@@ -360,6 +360,7 @@ class MMDetCompatibleModel(ExplainableOTXDetModel):
         )
 
     def _create_model(self) -> nn.Module:
+        # TODO (someone): change to abstractmethod
         from .utils.mmdet import create_model
 
         model, self.classification_layers = create_model(self.config, self.load_from)

@@ -1,5 +1,6 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
+# Copyright (c) OpenMMLab. All rights reserved.
 """Utils for otx detection algo."""
 
 from __future__ import annotations
@@ -8,12 +9,25 @@ from functools import partial
 from typing import Callable
 
 import torch
+import torch.distributed as dist
 from mmengine.structures import InstanceData
 from torch import Tensor
 
-
 # Methods below come from mmdet.utils and slightly modified.
 # https://github.com/open-mmlab/mmdetection/blob/3.x/mmdet/models/utils/misc.py
+
+def reduce_mean(tensor: Tensor) -> Tensor:
+    """Obtain the mean of tensor on different GPUs.
+
+    Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/utils/dist_utils.py#L59-L65
+    """
+    if not (dist.is_available() and dist.is_initialized()):
+        return tensor
+    tensor = tensor.clone()
+    dist.all_reduce(tensor.div_(dist.get_world_size()), op=dist.ReduceOp.SUM)
+    return tensor
+
+
 def multi_apply(func: Callable, *args, **kwargs) -> tuple:
     """Apply function to a list of arguments.
 

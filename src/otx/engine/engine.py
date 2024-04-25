@@ -30,6 +30,7 @@ from otx.core.types.task import OTXTaskType
 from otx.core.utils.cache import TrainerArgumentsCache
 from otx.utils.utils import is_xpu_available
 
+from .adaptive_bs import adapt_batch_size
 from .hpo import execute_hpo, update_hyper_parameter
 from .utils.auto_configurator import DEFAULT_CONFIG_PER_TASK, AutoConfigurator
 
@@ -183,6 +184,7 @@ class Engine:
         run_hpo: bool = False,
         hpo_config: HpoConfig = HpoConfig(),  # noqa: B008 https://github.com/omni-us/jsonargparse/issues/423
         checkpoint: PathLike | None = None,
+        adaptive_bs: Literal["None", "Safe", "Full"] = "None",
         **kwargs,
     ) -> dict[str, Any]:
         """Trains the model using the provided LightningModule and OTXDataModule.
@@ -203,6 +205,9 @@ class Engine:
             run_hpo (bool, optional): If True, optimizer hyper parameters before training a model.
             hpo_config (HpoConfig | None, optional): Configuration for HPO.
             checkpoint (PathLike | None, optional): Path to the checkpoint file. Defaults to None.
+            adaptive_bs (Literal["None", "Safe", "Full"]):
+                Change the actual batch size depending on the current GPU status.
+                Safe => Prevent GPU out of memory. Full => Find a batch size using most of GPU memory.
             **kwargs: Additional keyword arguments for pl.Trainer configuration.
 
         Returns:
@@ -239,6 +244,9 @@ class Engine:
                 ```
         """
         checkpoint = checkpoint if checkpoint is not None else self.checkpoint
+
+        if adaptive_bs != "None":
+            adapt_batch_size(engine=self, **locals(), not_increase=(adaptive_bs != "Full"))
 
         if run_hpo:
             best_config, best_trial_weight = execute_hpo(engine=self, **locals())

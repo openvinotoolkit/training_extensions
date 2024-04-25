@@ -6,14 +6,16 @@
 import math
 import os
 
+import torch
 import torch.nn.functional as F
 from otx.algo.modules.activation import build_activation_layer
 from otx.algo.modules.conv_module import ConvModule
-from mmengine.runner import load_checkpoint
-from mmpretrain.registry import MODELS
+from otx.algo.utils.mmengine_utils import load_checkpoint_to_model
 from pytorchcv.models.model_store import download_model
 from torch import nn
 from torch.nn import init
+
+from typing import Literal
 
 PRETRAINED_ROOT = "https://github.com/osmr/imgclsmob/releases/download/v0.0.364/"
 pretrained_urls = {
@@ -22,16 +24,16 @@ pretrained_urls = {
 
 
 def conv1x1_block(
-    in_channels,
-    out_channels,
-    stride=1,
-    padding=0,
-    groups=1,
-    bias=False,
-    use_bn=True,
-    bn_eps=1e-5,
-    activation="ReLU",
-):
+    in_channels: int,
+    out_channels: int,
+    stride: int | tuple[int, int] = 1,
+    padding: int | tuple[int, int] = 0,
+    groups: int = 1,
+    bias: bool = False,
+    use_bn: bool = True,
+    bn_eps: float = 1e-5,
+    activation: str | None = "ReLU",
+) -> ConvModule:
     """Conv block."""
     return ConvModule(
         in_channels=in_channels,
@@ -47,18 +49,18 @@ def conv1x1_block(
 
 
 def conv3x3_block(
-    in_channels,
-    out_channels,
-    stride=1,
-    padding=1,
-    dilation=1,
-    groups=1,
-    bias=False,
-    use_bn=True,
-    bn_eps=1e-5,
-    activation="ReLU",
-    IN_conv=False,
-):
+    in_channels: int,
+    out_channels: int,
+    stride: int | tuple[int, int] = 1,
+    padding: int | tuple[int, int] = 1,
+    dilation: int = 1,
+    groups: int = 1,
+    bias: bool = False,
+    use_bn: bool = True,
+    bn_eps: float = 1e-5,
+    activation: str | None = "ReLU",
+    IN_conv: bool = False,
+) -> ConvModule:
     """Conv block."""
     return ConvModule(
         in_channels=in_channels,
@@ -75,16 +77,16 @@ def conv3x3_block(
 
 
 def dwconv3x3_block(
-    in_channels,
-    out_channels,
-    stride=1,
-    padding=1,
-    dilation=1,
-    bias=False,
-    use_bn=True,
-    bn_eps=1e-5,
-    activation="ReLU",
-):
+    in_channels: int,
+    out_channels: int,
+    stride: int | tuple[int, int] = 1,
+    padding: int | tuple[int, int] = 1,
+    dilation: int = 1,
+    bias: bool = False,
+    use_bn: bool = True,
+    bn_eps: float = 1e-5,
+    activation: str | None = "ReLU",
+) -> ConvModule:
     """Conv block."""
     return ConvModule(
         in_channels=in_channels,
@@ -101,16 +103,16 @@ def dwconv3x3_block(
 
 
 def dwconv5x5_block(
-    in_channels,
-    out_channels,
-    stride=1,
-    padding=2,
-    dilation=1,
-    bias=False,
-    use_bn=True,
-    bn_eps=1e-5,
-    activation="ReLU",
-):
+    in_channels: int,
+    out_channels: int,
+    stride: int | tuple[int, int] = 1,
+    padding: int | tuple[int, int] = 2,
+    dilation: int = 1,
+    bias: bool = False,
+    use_bn: bool = True,
+    bn_eps: float = 1e-5,
+    activation: str | None = "ReLU",
+) -> ConvModule:
     """Conv block."""
     return ConvModule(
         in_channels=in_channels,
@@ -126,7 +128,7 @@ def dwconv5x5_block(
     )
 
 
-def round_channels(channels, divisor=8):
+def round_channels(channels: float, divisor: int = 8) -> int:
     """Round weighted channel number (make divisible operation).
 
     Args:
@@ -139,7 +141,7 @@ def round_channels(channels, divisor=8):
     return rounded_channels
 
 
-def calc_tf_padding(x, kernel_size, stride=1, dilation=1):
+def calc_tf_padding(x: torch.Tensor, kernel_size: int, stride: int | tuple[int, int] = 1, dilation: int = 1) -> tuple:
     """Calculate TF-same like padding size.
 
     Args:
@@ -173,13 +175,13 @@ class SEBlock(nn.Module):
 
     def __init__(
         self,
-        channels,
-        reduction=16,
-        mid_channels=None,
-        round_mid=False,
-        use_conv=True,
-        mid_activation="ReLU",
-        out_activation="Sigmoid",
+        channels: int,
+        reduction: int = 16,
+        mid_channels: int | None = None,
+        round_mid: bool = False,
+        use_conv: bool = True,
+        mid_activation: str | None = "ReLU",
+        out_activation: str | None = "Sigmoid",
     ):
         super().__init__()
         self.use_conv = use_conv
@@ -212,7 +214,7 @@ class SEBlock(nn.Module):
             self.fc2 = nn.Linear(in_features=mid_channels, out_features=channels)
         self.sigmoid = build_activation_layer(dict(type=out_activation))
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Forward."""
         w = self.pool(x)
         if not self.use_conv:
@@ -239,7 +241,7 @@ class EffiDwsConvUnit(nn.Module):
         tf_mode : bool. Whether to use TF-like mode.
     """
 
-    def __init__(self, in_channels, out_channels, stride, bn_eps, activation, tf_mode):
+    def __init__(self, in_channels: int, out_channels: int, stride: int | tuple[int, int], bn_eps: float, activation: str, tf_mode: bool):
         super().__init__()
         self.tf_mode = tf_mode
         self.residual = (in_channels == out_channels) and (stride == 1)
@@ -259,7 +261,7 @@ class EffiDwsConvUnit(nn.Module):
             activation=None,
         )
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Forward."""
         if self.residual:
             identity = x
@@ -290,15 +292,15 @@ class EffiInvResUnit(nn.Module):
 
     def __init__(
         self,
-        in_channels,
-        out_channels,
-        kernel_size,
-        stride,
-        exp_factor,
-        se_factor,
-        bn_eps,
-        activation,
-        tf_mode,
+        in_channels: int,
+        out_channels: int,
+        kernel_size: int,
+        stride: int | tuple[int, int],
+        exp_factor: int,
+        se_factor: int,
+        bn_eps: float,
+        activation: str | None,
+        tf_mode: bool,
     ):
         super().__init__()
         self.kernel_size = kernel_size
@@ -307,7 +309,7 @@ class EffiInvResUnit(nn.Module):
         self.residual = (in_channels == out_channels) and (stride == 1)
         self.use_se = se_factor > 0
         mid_channels = in_channels * exp_factor
-        dwconv_block_fn = dwconv3x3_block if kernel_size == 3 else (dwconv5x5_block if kernel_size == 5 else None)
+        dwconv_block_fn = dwconv3x3_block if kernel_size == 3 else dwconv5x5_block
 
         self.conv1 = conv1x1_block(
             in_channels=in_channels,
@@ -336,7 +338,7 @@ class EffiInvResUnit(nn.Module):
             activation=None,
         )
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Forward."""
         if self.residual:
             identity = x
@@ -366,7 +368,7 @@ class EffiInitBlock(nn.Module):
         tf_mode : bool. Whether to use TF-like mode.
     """
 
-    def __init__(self, in_channels, out_channels, bn_eps, activation, tf_mode, IN_conv1):
+    def __init__(self, in_channels: int, out_channels: int, bn_eps: float, activation: str | None, tf_mode: bool, IN_conv1: bool):
         super().__init__()
         self.tf_mode = tf_mode
 
@@ -380,7 +382,7 @@ class EffiInitBlock(nn.Module):
             IN_conv=IN_conv1,
         )
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Forward."""
         if self.tf_mode:
             x = F.pad(x, pad=calc_tf_padding(x, kernel_size=3, stride=2))
@@ -408,23 +410,23 @@ class EfficientNet(nn.Module):
 
     def __init__(
         self,
-        channels,
-        init_block_channels,
-        final_block_channels,
-        kernel_sizes,
-        strides_per_stage,
-        expansion_factors,
-        tf_mode=False,
-        bn_eps=1e-5,
-        in_channels=3,
-        in_size=(224, 224),
-        dropout_cls=None,
-        pooling_type="avg",
-        bn_eval=False,
-        bn_frozen=False,
-        IN_first=False,
-        IN_conv1=False,
-        pretrained=False,
+        channels: list[list[int]],
+        init_block_channels: int,
+        final_block_channels: int,
+        kernel_sizes: list[list[int]],
+        strides_per_stage: list[int],
+        expansion_factors: list[list[int]],
+        tf_mode: bool = False,
+        bn_eps: float = 1e-5,
+        in_channels: int = 3,
+        in_size: tuple[int, int] = (224, 224),
+        dropout_cls: dict | None = None,
+        pooling_type: str | None = "avg",
+        bn_eval: bool = False,
+        bn_frozen: bool = False,
+        IN_first: bool = False,
+        IN_conv1: bool = False,
+        pretrained: bool = False,
         **kwargs,
     ):
 
@@ -497,14 +499,14 @@ class EfficientNet(nn.Module):
         )
         self._init_params()
 
-    def _init_params(self):
+    def _init_params(self) -> None:
         for module in self.named_modules():
             if isinstance(module, nn.Conv2d):
                 init.kaiming_uniform_(module.weight)
                 if module.bias is not None:
                     init.constant_(module.bias, 0)
 
-    def forward(self, x, return_featuremaps=False, get_embeddings=False):
+    def forward(self, x: torch.Tensor, return_featuremaps: bool = False, get_embeddings: bool = False):
         """Forward."""
         if self.input_IN is not None:
             x = self.input_IN(x)
@@ -538,7 +540,9 @@ class EfficientNet(nn.Module):
         return tuple(out_data)
 
 
-@MODELS.register_module()
+EFFICIENTNET_VERSION = Literal["b0", "b1", "b2", "b3", "b4", "b5", "b6", "b7", "b8"]
+
+
 class OTXEfficientNet(EfficientNet):
     """Create EfficientNet model with specific parameters.
 
@@ -547,7 +551,7 @@ class OTXEfficientNet(EfficientNet):
         in_size : tuple of two ints. Spatial size of the expected input image.
     """
 
-    def __init__(self, version, **kwargs):
+    def __init__(self, version: EFFICIENTNET_VERSION, **kwargs):
         self.model_name = "efficientnet_" + version
 
         if version == "b0":
@@ -595,7 +599,7 @@ class OTXEfficientNet(EfficientNet):
         channels_per_layers = [16, 24, 40, 80, 112, 192, 320]
         expansion_factors_per_layers = [1, 6, 6, 6, 6, 6, 6]
         kernel_sizes_per_layers = [3, 3, 5, 3, 5, 5, 3]
-        strides_per_stage = [1, 2, 2, 2, 1, 2, 1]
+        _strides_per_stage = [1, 2, 2, 2, 1, 2, 1]
         final_block_channels = 1280
 
         layers = [int(math.ceil(li * depth_factor)) for li in layers]
@@ -603,24 +607,24 @@ class OTXEfficientNet(EfficientNet):
 
         from functools import reduce
 
-        channels = reduce(
+        channels: list = reduce(
             lambda x, y: x + [[y[0]] * y[1]] if y[2] != 0 else x[:-1] + [x[-1] + [y[0]] * y[1]],
             zip(channels_per_layers, layers, downsample),
             [],
         )
-        kernel_sizes = reduce(
+        kernel_sizes: list = reduce(
             lambda x, y: x + [[y[0]] * y[1]] if y[2] != 0 else x[:-1] + [x[-1] + [y[0]] * y[1]],
             zip(kernel_sizes_per_layers, layers, downsample),
             [],
         )
-        expansion_factors = reduce(
+        expansion_factors: list = reduce(
             lambda x, y: x + [[y[0]] * y[1]] if y[2] != 0 else x[:-1] + [x[-1] + [y[0]] * y[1]],
             zip(expansion_factors_per_layers, layers, downsample),
             [],
         )
-        strides_per_stage = reduce(
+        strides_per_stage: list = reduce(
             lambda x, y: x + [[y[0]] * y[1]] if y[2] != 0 else x[:-1] + [x[-1] + [y[0]] * y[1]],
-            zip(strides_per_stage, layers, downsample),
+            zip(_strides_per_stage, layers, downsample),
             [],
         )
         strides_per_stage = [si[0] for si in strides_per_stage]
@@ -646,14 +650,15 @@ class OTXEfficientNet(EfficientNet):
         )
         self.init_weights(self.pretrained)
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor, return_featuremaps: bool = True, get_embeddings: bool = False) -> torch.Tensor:
         """Forward."""
-        return super().forward(x, return_featuremaps=True)
+        return super().forward(x, return_featuremaps=return_featuremaps, get_embeddings=get_embeddings)
 
-    def init_weights(self, pretrained=None):
+    def init_weights(self, pretrained: bool | str | None = None):
         """Initialize weights."""
         if isinstance(pretrained, str) and os.path.exists(pretrained):
-            load_checkpoint(self, pretrained)
+            checkpoint = torch.load(pretrained, None)
+            load_checkpoint_to_model(self, checkpoint)
             print(f"init weight - {pretrained}")
         elif pretrained is not None:
             download_model(net=self, model_name=self.model_name)

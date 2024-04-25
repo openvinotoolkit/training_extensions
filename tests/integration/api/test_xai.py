@@ -95,14 +95,15 @@ def test_predict_with_explain(
     if "dino" in model_name:
         pytest.skip("DINO is not supported.")
 
-    # TODO(GalyaZalesskaya): https://jira.devtools.intel.com/browse/CVS-138604 -> mobilenet_v3_large, efficientnet_v2
-    if "mobilenet_v3_large" in model_name:
-        pytest.skip("There's issue with mobilenet_v3_large model. Skip for now.")
-    if "efficientnet_v2" in model_name:
-        pytest.skip("There's issue with efficientnet_v2 model. Skip for now.")
-
     if "ssd_mobilenetv2" in model_name:
         pytest.skip("There's issue with SSD model. Skip for now.")
+
+    if "yolox" in model_name:
+        # TODO(sungchul): [RuntimeError] number of output names provided (4) exceeded number of outputs (2)
+        pytest.skip("There's issue with YOLOX model. Skip for now.")
+    if "atss" in model_name:
+        # TODO(Jaeguk): ATSS returns dynamic output for saliency map
+        pytest.skip("There's issue with ATSS model. Skip for now.")
 
     tmp_path = tmp_path / f"otx_xai_{model_name}"
     engine = Engine.from_config(

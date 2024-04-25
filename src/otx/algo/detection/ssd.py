@@ -14,8 +14,8 @@ from datumaro.components.annotation import Bbox
 from mmengine.structures import InstanceData
 from torch import nn
 
-from otx.algo.detection.backbones.pytorchcv_backbones import _build_pytorchcv_model
-from otx.algo.detection.heads.custom_ssd_head import SSDHead
+from otx.algo.detection.backbones.pytorchcv_backbones import _build_model_including_pytorchcv
+from otx.algo.detection.heads.ssd_head import SSDHead
 from otx.algo.utils.mmconfig import read_mmconfig
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.config.data import TileConfig
@@ -62,14 +62,29 @@ class SingleStageDetector(nn.Module):
     ) -> None:
         super().__init__()
         self._is_init = False
-        self.backbone = _build_pytorchcv_model(**backbone)
+        self.backbone = self.build_backbone(backbone)
         bbox_head.update(train_cfg=train_cfg)
         bbox_head.update(test_cfg=test_cfg)
-        self.bbox_head = SSDHead(**bbox_head)
-        self.data_preprocessor = DetDataPreprocessor(**data_preprocessor)
+        self.bbox_head = self.build_bbox_head(bbox_head)
+        self.data_preprocessor = self.build_det_data_preprocessor(data_preprocessor)
         self.init_cfg = init_cfg
         self.train_cfg = train_cfg
         self.test_cfg = test_cfg
+
+    def build_backbone(self, cfg: ConfigDict | dict) -> nn.Module:
+        """Build backbone."""
+        return _build_model_including_pytorchcv(cfg)
+
+    def build_bbox_head(self, cfg: ConfigDict | dict) -> nn.Module:
+        """Build bbox head."""
+        return SSDHead(**cfg)
+
+    def build_det_data_preprocessor(self, cfg: ConfigDict | dict | nn.Module) -> nn.Module:
+        """Build DetDataPreprocessor.
+
+        TODO (someone): DetDataPreprocessor will be removed.
+        """
+        return DetDataPreprocessor(**cfg)
 
     def _load_from_state_dict(
         self,
