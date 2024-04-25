@@ -22,7 +22,7 @@ not fully covered by unit tests or manual testing can be complicated. -->
 
 - [ ] I have added unit tests to cover my changes.​
 - [ ] I have added integration tests to cover my changes.​
-- [ ] I have added e2e tests for validation.
+- [ ] I have ran e2e tests and there is no issues.
 - [ ] I have added the description of my changes into CHANGELOG in my target branch (e.g., [CHANGELOG](https://github.com/openvinotoolkit/training_extensions/blob/develop/CHANGELOG.md) in develop).​
 - [ ] I have updated the documentation in my target branch accordingly (e.g., [documentation](https://github.com/openvinotoolkit/training_extensions/tree/develop/docs) in develop).
 - [ ] I have [linked related issues](https://help.github.com/en/github/managing-your-work-on-github/linking-a-pull-request-to-an-issue#linking-a-pull-request-to-an-issue-using-a-keyword).
