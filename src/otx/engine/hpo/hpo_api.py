@@ -17,6 +17,7 @@ import torch
 
 from otx.core.config.hpo import HpoConfig
 from otx.core.optimizer.callable import OptimizerCallableSupportHPO
+from otx.core.schedulers import LinearWarmupSchedulerCallable, SchedulerCallableSupportHPO
 from otx.core.types.task import OTXTaskType
 from otx.hpo import HyperBand, run_hpo_loop
 from otx.utils.utils import get_decimal_point, get_using_dot_delimited_key, remove_matched_files
@@ -32,12 +33,6 @@ if TYPE_CHECKING:
     from otx.hpo.hpo_base import HpoBase
 
 logger = logging.getLogger(__name__)
-
-AVAILABLE_HP_NAME_MAP = {
-    "data.config.train_subset.batch_size": "datamodule.config.train_subset.batch_size",
-    "optimizer": "optimizer_callable.optimizer_kwargs",
-    # "scheduler": "scheduler.keywords",  NOTE need to revisit after SchedulerCallableSupportHPO is implemted
-}
 
 
 def execute_hpo(
@@ -247,20 +242,49 @@ class HPOConfigurator:
             "step": 10 ** -get_decimal_point(min_lr),
         }
 
-    @staticmethod
-    def _align_hp_name(search_space: dict[str, Any]) -> None:
+    def _align_hp_name(self, search_space: dict[str, Any]) -> None:
+        available_hp_name_map: dict[str, Callable[[str], None]] = {
+            "data.config.train_subset.batch_size": lambda hp_name: self._replace_hp_name(
+                hp_name,
+                "data.config.train_subset.batch_size",
+                "datamodule.config.train_subset.batch_size",
+            ),
+            "optimizer": lambda hp_name: self._replace_hp_name(
+                hp_name,
+                "optimizer",
+                "optimizer_callable.optimizer_kwargs",
+            ),
+            "scheduler": self._align_scheduler_name,
+        }
+
         for hp_name in list(search_space.keys()):
-            for valid_hp in AVAILABLE_HP_NAME_MAP:
+            for valid_hp in available_hp_name_map:
                 if valid_hp in hp_name:
-                    new_hp_name = hp_name.replace(valid_hp, AVAILABLE_HP_NAME_MAP[valid_hp])
-                    search_space[new_hp_name] = search_space.pop(hp_name)
+                    available_hp_name_map[valid_hp](hp_name)
                     break
             else:
                 error_msg = (
                     "Given hyper parameter can't be optimized by HPO. "
-                    f"Please choose one from {','.join(AVAILABLE_HP_NAME_MAP)}."
+                    f"Please choose one from {','.join(available_hp_name_map)}."
                 )
                 raise ValueError(error_msg)
+
+    def _align_scheduler_name(self, hp_name: str) -> None:
+        if isinstance(self._engine.model.scheduler_callable, LinearWarmupSchedulerCallable):
+            if "main_scheduler_callable" in hp_name:
+                self._replace_hp_name(
+                    hp_name,
+                    "scheduler.main_scheduler_callable",
+                    "scheduler_callable.main_scheduler_callable.scheduler_kwargs",
+                )
+            else:
+                self._replace_hp_name(hp_name, "scheduler", "scheduler_callable")
+        elif isinstance(self._engine.model.scheduler_callable, SchedulerCallableSupportHPO):
+            self._replace_hp_name(hp_name, "scheduler", "scheduler_callable.scheduler_kwargs")
+
+    def _replace_hp_name(self, ori_hp_name: str, old: str, new: str) -> None:
+        new_hp_name = ori_hp_name.replace(old, new)
+        self._hpo_config["search_space"][new_hp_name] = self._hpo_config["search_space"].pop(ori_hp_name)
 
     @staticmethod
     def _remove_wrong_search_space(search_space: dict[str, dict[str, Any]]) -> None:
