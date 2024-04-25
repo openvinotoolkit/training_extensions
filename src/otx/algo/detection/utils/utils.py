@@ -6,14 +6,12 @@
 from __future__ import annotations
 
 from functools import partial
-from typing import TYPE_CHECKING, Callable
+from typing import Callable
 
 import torch
 import torch.distributed as dist
+from mmengine.structures import InstanceData
 from torch import Tensor
-
-if TYPE_CHECKING:
-    from mmengine.structures import InstanceData
 
 
 def reduce_mean(tensor: Tensor) -> Tensor:
@@ -224,3 +222,77 @@ def unpack_gt_instances(batch_data_samples: list[InstanceData]) -> tuple:
             batch_gt_instances_ignore.append(None)
 
     return batch_gt_instances, batch_gt_instances_ignore, batch_img_metas
+
+
+def empty_instances(
+    batch_img_metas: list[dict],
+    device: torch.device,
+    task_type: str,
+    instance_results: list[InstanceData] | None = None,
+    mask_thr_binary: int | float = 0,
+    num_classes: int = 80,
+    score_per_cls: bool = False,
+) -> list[InstanceData]:
+    """Handle predicted instances when RoI is empty.
+
+    Note: If ``instance_results`` is not None, it will be modified
+    in place internally, and then return ``instance_results``
+
+    Args:
+        batch_img_metas (list[dict]): List of image information.
+        device (torch.device): Device of tensor.
+        task_type (str): Expected returned task type. it currently
+            supports bbox and mask.
+        instance_results (list[:obj:`InstanceData`]): List of instance
+            results.
+        mask_thr_binary (int, float): mask binarization threshold.
+            Defaults to 0.
+        box_type (str or type): The empty box type. Defaults to `hbox`.
+        use_box_type (bool): Whether to warp boxes with the box type.
+            Defaults to False.
+        num_classes (int): num_classes of bbox_head. Defaults to 80.
+        score_per_cls (bool):  Whether to generate classwise score for
+            the empty instance. ``score_per_cls`` will be True when the model
+            needs to produce raw results without nms. Defaults to False.
+
+    Returns:
+        list[:obj:`InstanceData`]: Detection results of each image
+    """
+    if task_type not in ("bbox", "mask"):
+        msg = f"Only support bbox and mask, but got {task_type}"
+        raise ValueError(msg)
+
+    if instance_results is not None and len(instance_results) != len(batch_img_metas):
+        msg = "The length of instance_results should be the same as batch_img_metas"
+        raise ValueError(msg)
+
+    results_list = []
+    for img_id in range(len(batch_img_metas)):
+        if instance_results is not None:
+            results = instance_results[img_id]
+            if not isinstance(results, InstanceData):
+                msg = f"instance_results should be InstanceData, but got {type(results)}"
+                raise TypeError(msg)
+        else:
+            results = InstanceData()
+
+        if task_type == "bbox":
+            bboxes = torch.zeros(0, 4, device=device)
+            results.bboxes = bboxes
+            score_shape = (0, num_classes + 1) if score_per_cls else (0,)
+            results.scores = torch.zeros(score_shape, device=device)
+            results.labels = torch.zeros((0,), device=device, dtype=torch.long)
+        else:
+            img_h, img_w = batch_img_metas[img_id]["ori_shape"][:2]
+            # the type of `im_mask` will be torch.bool or torch.uint8,
+            # where uint8 if for visualization and debugging.
+            im_mask = torch.zeros(
+                0,
+                img_h,
+                img_w,
+                device=device,
+                dtype=torch.bool if mask_thr_binary >= 0 else torch.uint8,
+            )
+            results.masks = im_mask
+        results_list.append(results)
+    return results_list

@@ -6,11 +6,15 @@ from __future__ import annotations
 
 import numpy as np
 import torch
+from mmengine.registry import TASK_UTILS
 from torch import Tensor
+
+from otx.algo.detection.deployment import is_mmdeploy_enabled
 
 
 # This class and its supporting functions below lightly adapted from the mmdet DeltaXYWHBBoxCoder available at:
 # https://github.com/open-mmlab/mmdetection/blob/cfd5d3a985b0249de009b67d04f37263e11cdf3d/mmdet/models/task_modules/coders/delta_xywh_bbox_coder.py
+@TASK_UTILS.register_module()
 class DeltaXYWHBBoxCoder:
     """Delta XYWH BBox coder.
 
@@ -236,21 +240,6 @@ def delta2bbox(
 
     References:
         .. [1] https://arxiv.org/abs/1311.2524
-
-    Example:
-        >>> rois = torch.Tensor([[ 0.,  0.,  1.,  1.],
-        >>>                      [ 0.,  0.,  1.,  1.],
-        >>>                      [ 0.,  0.,  1.,  1.],
-        >>>                      [ 5.,  5.,  5.,  5.]])
-        >>> deltas = torch.Tensor([[  0.,   0.,   0.,   0.],
-        >>>                        [  1.,   1.,   1.,   1.],
-        >>>                        [  0.,   0.,   2.,  -1.],
-        >>>                        [ 0.7, -1.9, -0.5,  0.3]])
-        >>> delta2bbox(rois, deltas, max_shape=(32, 32, 3))
-        tensor([[0.0000, 0.0000, 1.0000, 1.0000],
-                [0.1409, 0.1409, 2.8591, 2.8591],
-                [0.0000, 0.3161, 4.1945, 0.6839],
-                [5.0000, 5.0000, 5.0000, 5.0000]])
     """
     num_bboxes, num_classes = deltas.size(0), deltas.size(1) // 4
     if num_bboxes == 0:
@@ -426,3 +415,57 @@ def clip_bboxes(
         x2 = torch.clamp(x2, 0, max_shape[1])
         y2 = torch.clamp(y2, 0, max_shape[0])
     return x1, y1, x2, y2
+
+
+if is_mmdeploy_enabled():
+    from mmdeploy.core import FUNCTION_REWRITER
+
+    @FUNCTION_REWRITER.register_rewriter(
+        func_name="otx.algo.detection.heads.delta_xywh_bbox_coder.DeltaXYWHBBoxCoder.decode",
+        backend="default",
+    )
+    def deltaxywhbboxcoder__decode(
+        self: DeltaXYWHBBoxCoder,
+        bboxes: Tensor,
+        pred_bboxes: Tensor,
+        max_shape: Tensor | None = None,
+        wh_ratio_clip: float = 16 / 1000,
+    ) -> Tensor:
+        """Rewrite `decode` of `DeltaXYWHBBoxCoder` for default backend.
+
+        Rewrite this func to call `delta2bbox` directly.
+
+        Args:
+            bboxes (torch.Tensor): Basic boxes. Shape (B, N, 4) or (N, 4)
+            pred_bboxes (Tensor): Encoded offsets with respect to each roi.
+            Has shape (B, N, num_classes * 4) or (B, N, 4) or
+            (N, num_classes * 4) or (N, 4). Note N = num_anchors * W * H
+            when rois is a grid of anchors.Offset encoding follows [1]_.
+            max_shape (Sequence[int] or torch.Tensor or Sequence[
+            Sequence[int]],optional): Maximum bounds for boxes, specifies
+            (H, W, C) or (H, W). If bboxes shape is (B, N, 4), then
+            the max_shape should be a Sequence[Sequence[int]]
+            and the length of max_shape should also be B.
+            wh_ratio_clip (float, optional): The allowed ratio between
+                width and height.
+
+        Returns:
+            torch.Tensor: Decoded boxes.
+        """
+        if pred_bboxes.size(0) != bboxes.size(0):
+            msg = "The batch size of pred_bboxes and bboxes should be equal."
+            raise ValueError(msg)
+        if pred_bboxes.ndim == 3 and pred_bboxes.size(1) != bboxes.size(1):
+            msg = "The number of bboxes should be equal."
+            raise ValueError(msg)
+        return delta2bbox_export(
+            bboxes,
+            pred_bboxes,
+            self.means,
+            self.stds,
+            max_shape,
+            wh_ratio_clip,
+            self.clip_border,
+            self.add_ctr_clamp,
+            self.ctr_clamp,
+        )
