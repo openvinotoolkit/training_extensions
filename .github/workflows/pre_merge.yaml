@@ -86,7 +86,7 @@ jobs:
     runs-on: [otx-gpu-a10g-1]
     container:
       image: 219678651685.dkr.ecr.eu-central-1.amazonaws.com/ote-ci:11.7.1.1-devel-ubuntu20.04
-      options: "--runtime=nvidia --env-file=/home/runner/.nvidia.env --shm-size=24g"
+      options: "--runtime=nvidia --env-file=/home/runner/.nvidia.env --ipc=host"
     needs: Unit-Test
     strategy:
       fail-fast: false
