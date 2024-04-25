@@ -309,21 +309,21 @@ class VisionTransformerForMulticlassCls(ForwardExplainMixInForViT, OTXMulticlass
         if self.training:
             return OTXBatchLossEntity(loss=outputs)
 
-        # To list, batch-wise
-        logits = outputs if isinstance(outputs, torch.Tensor) else outputs["logits"]
-        scores = torch.unbind(logits, 0)
-        preds = logits.argmax(-1, keepdim=True).unbind(0)
-
         if self.explain_mode:
             return MulticlassClsBatchPredEntity(
                 batch_size=inputs.batch_size,
                 images=inputs.images,
                 imgs_info=inputs.imgs_info,
-                scores=scores,
-                labels=preds,
+                scores=outputs["scores"],
+                labels=outputs["labels"],
                 saliency_map=outputs["saliency_map"],
                 feature_vector=outputs["feature_vector"],
             )
+
+        # To list, batch-wise
+        logits = outputs if isinstance(outputs, torch.Tensor) else outputs["logits"]
+        scores = torch.unbind(logits, 0)
+        preds = logits.argmax(-1, keepdim=True).unbind(0)
 
         return MulticlassClsBatchPredEntity(
             batch_size=inputs.batch_size,
@@ -427,21 +427,21 @@ class VisionTransformerForMultilabelCls(ForwardExplainMixInForViT, OTXMultilabel
         if self.training:
             return OTXBatchLossEntity(loss=outputs)
 
-        # To list, batch-wise
-        logits = outputs if isinstance(outputs, torch.Tensor) else outputs["logits"]
-        scores = torch.unbind(logits, 0)
-        preds = logits.argmax(-1, keepdim=True).unbind(0)
-
         if self.explain_mode:
             return MultilabelClsBatchPredEntity(
                 batch_size=inputs.batch_size,
                 images=inputs.images,
                 imgs_info=inputs.imgs_info,
-                scores=scores,
-                labels=preds,
+                scores=outputs["scores"],
+                labels=outputs["labels"],
                 saliency_map=outputs["saliency_map"],
                 feature_vector=outputs["feature_vector"],
             )
+
+        # To list, batch-wise
+        logits = outputs if isinstance(outputs, torch.Tensor) else outputs["logits"]
+        scores = torch.unbind(logits, 0)
+        preds = logits.argmax(-1, keepdim=True).unbind(0)
 
         return MultilabelClsBatchPredEntity(
             batch_size=inputs.batch_size,
