@@ -59,7 +59,7 @@ class ImageClassifier(BaseModel):
     def __init__(
         self,
         backbone: nn.Module,
-        neck: nn.Module,
+        neck: nn.Module | None,
         head: nn.Module,
         pretrained: str | None = None,
         mean: list[float] | None = None,
@@ -149,7 +149,8 @@ class ImageClassifier(BaseModel):
         if stage == "backbone":
             return x
 
-        x = self.neck(x)
+        if self.neck is not None:
+            x = self.neck(x)
 
         if stage == "neck":
             return x
