@@ -3,6 +3,6 @@
 #
 """Module for OTX instance segmentation models."""
 
-from . import heads
+from . import heads, mmdet
 
-__all__ = ["heads"]
+__all__ = ["heads", "mmdet"]

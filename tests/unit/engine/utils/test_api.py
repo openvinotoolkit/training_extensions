@@ -29,12 +29,10 @@ def test_list_models_pattern() -> None:
     models = list_models(pattern="efficient")
 
     target = [
-        "efficientnet_v2_light",
-        "efficientnet_b0_light",
+        "efficientnet_b0",
+        "efficientnet_v2",
         "maskrcnn_efficientnetb2b",
         "maskrcnn_efficientnetb2b_tile",
-        "otx_efficientnet_v2",
-        "otx_efficientnet_b0",
         "tv_efficientnet_b0",
         "tv_efficientnet_b1",
         "tv_efficientnet_b3",
@@ -45,11 +43,10 @@ def test_list_models_pattern() -> None:
 
 
 def test_list_models_print_table(capfd: pytest.CaptureFixture) -> None:
-    list_models(pattern="otx_efficient", print_table=True)
+    list_models(pattern="efficient", print_table=True)
 
     out, _ = capfd.readouterr()
     assert "Task" in out
     assert "Model Name" in out
     assert "Recipe Path" in out
-    assert "otx_efficientnet_b0" in out
-    assert "otx_efficientnet_v2" in out
+    assert "efficientnet_b0" in out

@@ -22,7 +22,7 @@ from otx.core.types.label import LabelInfo, LabelInfoTypes
 from otx.core.types.task import OTXTaskType
 from otx.core.utils.imports import get_otx_root_path
 from otx.core.utils.instantiators import partial_instantiate_class
-from otx.utils.utils import get_model_cls_from_config, should_pass_label_info
+from otx.utils.utils import can_pass_tile_config, get_model_cls_from_config, should_pass_label_info
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
@@ -33,9 +33,9 @@ logger = logging.getLogger()
 RECIPE_PATH = get_otx_root_path() / "recipe"
 
 DEFAULT_CONFIG_PER_TASK = {
-    OTXTaskType.MULTI_CLASS_CLS: RECIPE_PATH / "classification" / "multi_class_cls" / "otx_efficientnet_b0.yaml",
-    OTXTaskType.MULTI_LABEL_CLS: RECIPE_PATH / "classification" / "multi_label_cls" / "efficientnet_b0_light.yaml",
-    OTXTaskType.H_LABEL_CLS: RECIPE_PATH / "classification" / "h_label_cls" / "efficientnet_b0_light.yaml",
+    OTXTaskType.MULTI_CLASS_CLS: RECIPE_PATH / "classification" / "multi_class_cls" / "efficientnet_b0.yaml",
+    OTXTaskType.MULTI_LABEL_CLS: RECIPE_PATH / "classification" / "multi_label_cls" / "efficientnet_b0.yaml",
+    OTXTaskType.H_LABEL_CLS: RECIPE_PATH / "classification" / "h_label_cls" / "efficientnet_b0.yaml",
     OTXTaskType.DETECTION: RECIPE_PATH / "detection" / "atss_mobilenetv2.yaml",
     OTXTaskType.ROTATED_DETECTION: RECIPE_PATH / "rotated_detection" / "maskrcnn_r50.yaml",
     OTXTaskType.SEMANTIC_SEGMENTATION: RECIPE_PATH / "semantic_segmentation" / "litehrnet_18.yaml",
@@ -259,14 +259,7 @@ class AutoConfigurator:
         if model_name is not None:
             self._config = self._load_default_config(self.model_name)
 
-        model_parser = ArgumentParser()
-        model_parser.add_subclass_arguments(
-            OTXModel,
-            "model",
-            skip={"label_info"},
-            required=False,
-            fail_untyped=False,
-        )
+        skip = set()
 
         model_config = deepcopy(self.config["model"])
 
@@ -278,6 +271,20 @@ class AutoConfigurator:
                 raise ValueError(msg)
 
             model_config["init_args"]["label_info"] = label_info
+            skip.add("label_info")
+
+        if can_pass_tile_config(model_cls) and (datamodule := self.get_datamodule()) is not None:
+            model_config["init_args"]["tile_config"] = datamodule.tile_config
+            skip.add("tile_config")
+
+        model_parser = ArgumentParser()
+        model_parser.add_subclass_arguments(
+            OTXModel,
+            "model",
+            skip=skip,
+            required=False,
+            fail_untyped=False,
+        )
 
         return model_parser.instantiate_classes(Namespace(model=model_config)).get("model")
 

@@ -3,8 +3,8 @@
 #
 """Backbone modules for OTX custom model."""
 
-from .otx_efficientnet import OTXEfficientNet
-from .otx_efficientnet_v2 import OTXEfficientNetV2
+from .efficientnet import OTXEfficientNet
+from .timm import TimmBackbone
 from .mobilenet_v3 import OTXMobileNetV3
 
-__all__ = ["OTXEfficientNet", "OTXEfficientNetV2", "OTXMobileNetV3"]
+__all__ = ["OTXEfficientNet", "TimmBackbone", "OTXMobileNetV3"]

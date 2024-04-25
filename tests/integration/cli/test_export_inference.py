@@ -142,6 +142,21 @@ def test_otx_export_infer(
             "--checkpoint",
             checkpoint_path,
         ]
+
+        # Zero-shot visual prompting needs to specify `infer_reference_info_root`
+        if task in ["zero_shot_visual_prompting"]:
+            try:
+                idx_task = checkpoint_path.split("/").index(f"otx_train_{model_name}")
+            except ValueError:
+                idx_task = checkpoint_path.split("/").index(f"otx_test_{model_name}")
+
+            command_cfg.extend(
+                [
+                    "--model.init_args.infer_reference_info_root",
+                    str(Path(checkpoint_path).parents[-idx_task] / f"otx_train_{model_name}/outputs/.latest/train"),
+                ],
+            )
+
         run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)
 
         return tmp_path_test

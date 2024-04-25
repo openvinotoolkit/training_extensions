@@ -105,6 +105,7 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = NullMetricCallable,
         torch_compile: bool = False,
+        tile_config: TileConfig = TileConfig(enable_tiler=False),
     ) -> None:
         super().__init__()
 
@@ -120,10 +121,13 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
         self.torch_compile = torch_compile
         self._explain_mode = False
 
-        self._tile_config = TileConfig(enable_tiler=False)
+        # NOTE: To guarantee immutablility of the default value
+        self._tile_config = tile_config.clone()
 
         # this line allows to access init params with 'self.hparams' attribute
         # also ensures init params will be stored in ckpt
+        # TODO(vinnamki): Ticket no. 138995: MetricCallable should be saved in the checkpoint
+        # so that it can retrieve it from the checkpoint
         self.save_hyperparameters(logger=False, ignore=["optimizer", "scheduler", "metric"])
 
     def training_step(self, batch: T_OTXBatchDataEntity, batch_idx: int) -> Tensor:
@@ -733,7 +737,7 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
         return super().lr_scheduler_step(scheduler=scheduler, metric=metric)
 
     def patch_optimizer_and_scheduler_for_hpo(self) -> None:
-        """Patch optimizer and scheduler for hyperparameter optimization.
+        """Patch optimizer and scheduler for hyperparameter optimization and adaptive batch size.
 
         This is inplace function changing inner states (`optimizer_callable` and `scheduler_callable`).
         Both will be changed to be picklable. In addition, `optimizer_callable` is changed
@@ -751,15 +755,19 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
     @property
     def tile_config(self) -> TileConfig:
         """Get tiling configurations."""
-        if self._tile_config is None:
-            msg = "This task type does not support tiling."
-            raise RuntimeError(msg)
-
         return self._tile_config
 
     @tile_config.setter
     def tile_config(self, tile_config: TileConfig) -> None:
         """Set tiling configurations."""
+        msg = (
+            "Assign new tile_config to the model. "
+            "It is usually not recommended. "
+            "Please create a new model instance by giving tile_config to its initializer "
+            "such as `OTXModel(..., tile_config=tile_config)`."
+        )
+        logger.warning(msg, stacklevel=0)
+
         self._tile_config = tile_config
 
     @staticmethod
