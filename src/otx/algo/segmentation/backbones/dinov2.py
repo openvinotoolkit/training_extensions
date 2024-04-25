@@ -63,10 +63,10 @@ class DinoVisionTransformer(BaseModule):
         """Initialize weights."""
         checkpoint = None
         if isinstance(pretrained, str) and Path(pretrained).exists():
-            checkpoint = torch.load(pretrained, None)
+            checkpoint = torch.load(pretrained, "cpu")
             print(f"init weight - {pretrained}")
         elif pretrained is not None:
-            checkpoint = load_from_http(pretrained)
+            checkpoint = load_from_http(pretrained, "cpu")
             print(f"init weight - {pretrained}")
         if checkpoint is not None:
             load_checkpoint_to_model(self, checkpoint, prefix=prefix)

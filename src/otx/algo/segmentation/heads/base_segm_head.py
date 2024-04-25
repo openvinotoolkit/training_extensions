@@ -164,7 +164,7 @@ class BaseSegmHead(nn.Module, metaclass=ABCMeta):
             checkpoint = torch.load(pretrained, map_location=torch.device("cpu"))
             print(f"Init weights - {pretrained}")
         elif pretrained is not None:
-            checkpoint = load_from_http(pretrained)
+            checkpoint = load_from_http(pretrained, "cpu")
             print(f"Init weights - {pretrained}")
         if checkpoint is not None:
             load_checkpoint_to_model(self, checkpoint, prefix=prefix)
