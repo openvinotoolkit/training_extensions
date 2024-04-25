@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Enhancements
 
+- Update pymongo version to 4.6.3 for resolving CVE-2024-21506 (<https://github.com/openvinotoolkit/training_extensions/pull/3396>)
 - Use torchvision in MRCNN on CUDA (<https://github.com/openvinotoolkit/training_extensions/pull/3347>)
 - Update IPEX version in installation guide documentation (<https://github.com/openvinotoolkit/training_extensions/pull/3343>)
 - Update benchmark (<https://github.com/openvinotoolkit/training_extensions/pull/3338>)
