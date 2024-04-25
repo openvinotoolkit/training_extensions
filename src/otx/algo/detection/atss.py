@@ -211,44 +211,18 @@ class OTXATSS(ExplainableOTXDetModel):
         return model
 
     def _customize_inputs(self, entity: DetBatchDataEntity) -> dict[str, Any]:
-        from mmdet.structures import DetDataSample
-
         mmdet_inputs: dict[str, Any] = {}
 
-        mmdet_inputs["inputs"] = entity.images  # B x C x H x W PyTorch tensor
-        mmdet_inputs["data_samples"] = [
-            DetDataSample(
-                metainfo={
-                    "img_id": img_info.img_idx,
-                    "img_shape": img_info.img_shape,
-                    "ori_shape": img_info.ori_shape,
-                    "pad_shape": img_info.pad_shape,
-                    "scale_factor": img_info.scale_factor,
-                    "ignored_labels": img_info.ignored_labels,
-                },
-                gt_instances=InstanceData(
-                    bboxes=bboxes,
-                    labels=labels,
-                ),
-            )
-            for img_info, bboxes, labels in zip(
-                entity.imgs_info,
-                entity.bboxes,
-                entity.labels,
-            )
-        ]
-
+        mmdet_inputs["entity"] = entity
         mmdet_inputs["mode"] = "loss" if self.training else "predict"
 
         return mmdet_inputs
 
     def _customize_outputs(
         self,
-        outputs: dict[str, Any],
+        outputs: list[InstanceData],
         inputs: DetBatchDataEntity,
     ) -> DetBatchPredEntity | OTXBatchLossEntity:
-        from mmdet.structures import DetDataSample
-
         if self.training:
             if not isinstance(outputs, dict):
                 raise TypeError(outputs)
@@ -267,20 +241,18 @@ class OTXATSS(ExplainableOTXDetModel):
         scores = []
         bboxes = []
         labels = []
-
-        predictions = outputs["predictions"] if isinstance(outputs, dict) else outputs
-        for output in predictions:
-            if not isinstance(output, DetDataSample):
+        for img_info, output in zip(inputs.imgs_info, outputs):
+            if not isinstance(output, InstanceData):
                 raise TypeError(output)
-            scores.append(output.pred_instances.scores)
+            scores.append(output.scores)
             bboxes.append(
                 tv_tensors.BoundingBoxes(
-                    output.pred_instances.bboxes,
+                    output.bboxes,
                     format="XYXY",
-                    canvas_size=output.ori_shape,
+                    canvas_size=img_info.ori_shape,
                 ),
             )
-            labels.append(output.pred_instances.labels)
+            labels.append(output.labels)
 
         if self.explain_mode:
             if not isinstance(outputs, dict):
@@ -299,7 +271,7 @@ class OTXATSS(ExplainableOTXDetModel):
             feature_vector = outputs["feature_vector"].detach().cpu().numpy()
 
             return DetBatchPredEntity(
-                batch_size=len(predictions),
+                batch_size=len(outputs),
                 images=inputs.images,
                 imgs_info=inputs.imgs_info,
                 scores=scores,
@@ -310,7 +282,7 @@ class OTXATSS(ExplainableOTXDetModel):
             )
 
         return DetBatchPredEntity(
-            batch_size=len(predictions),
+            batch_size=len(outputs),
             images=inputs.images,
             imgs_info=inputs.imgs_info,
             scores=scores,
@@ -377,11 +349,8 @@ class OTXATSS(ExplainableOTXDetModel):
             "img_shape": shape,
             "scale_factor": (1.0, 1.0),
         }
-        sample = InstanceData(
-            metainfo=meta_info,
-        )
-        data_samples = [sample] * len(inputs)
-        return self.model.export(inputs, data_samples)
+        meta_info_list = [meta_info] * len(inputs)
+        return self.model.export(inputs, meta_info_list)
 
     def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.model.") -> dict:
         """Load the previous OTX ckpt according to OTX2.0."""

@@ -19,6 +19,7 @@ from otx.algo.detection.heads.ssd_head import SSDHead
 from otx.algo.utils.mmconfig import read_mmconfig
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.config.data import TileConfig
+from otx.core.data.entity.detection import DetBatchDataEntity
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.metrics.mean_ap import MeanAPCallable
@@ -168,8 +169,7 @@ class SingleStageDetector(nn.Module):
 
     def forward(
         self,
-        inputs: torch.Tensor,
-        data_samples: list[InstanceData],
+        entity: DetBatchDataEntity,
         mode: str = "tensor",
     ) -> dict[str, torch.Tensor] | list[InstanceData] | tuple[torch.Tensor] | torch.Tensor:
         """The unified entry for a forward process in both training and test.
@@ -202,19 +202,18 @@ class SingleStageDetector(nn.Module):
             - If ``mode="loss"``, return a dict of tensor.
         """
         if mode == "loss":
-            return self.loss(inputs, data_samples)
+            return self.loss(entity)
         if mode == "predict":
-            return self.predict(inputs, data_samples)
+            return self.predict(entity)
         if mode == "tensor":
-            return self._forward(inputs, data_samples)
+            return self._forward(entity)
 
         msg = f"Invalid mode {mode}. Only supports loss, predict and tensor mode"
         raise RuntimeError(msg)
 
     def loss(
         self,
-        batch_inputs: Tensor,
-        batch_data_samples: list[InstanceData],
+        entity: DetBatchDataEntity,
     ) -> dict | list:
         """Calculate losses from a batch of inputs and data samples.
 
@@ -228,13 +227,12 @@ class SingleStageDetector(nn.Module):
         Returns:
             dict: A dictionary of loss components.
         """
-        x = self.extract_feat(batch_inputs)
-        return self.bbox_head.loss(x, batch_data_samples)
+        x = self.extract_feat(entity.images)
+        return self.bbox_head.loss(x, entity)
 
     def predict(
         self,
-        batch_inputs: Tensor,
-        batch_data_samples: list[InstanceData],
+        entity: DetBatchDataEntity,
         rescale: bool = True,
     ) -> list[InstanceData]:
         """Predict results from a batch of inputs and data samples with post-processing.
@@ -260,14 +258,13 @@ class SingleStageDetector(nn.Module):
                 - bboxes (Tensor): Has a shape (num_instances, 4),
                     the last dimension 4 arrange as (x1, y1, x2, y2).
         """
-        x = self.extract_feat(batch_inputs)
-        results_list = self.bbox_head.predict(x, batch_data_samples, rescale=rescale)
-        return self.add_pred_to_datasample(batch_data_samples, results_list)
+        x = self.extract_feat(entity.images)
+        return self.bbox_head.predict(x, entity, rescale=rescale)
 
     def export(
         self,
         batch_inputs: Tensor,
-        batch_data_samples: list[InstanceData],
+        batch_img_metas: list[dict],
         rescale: bool = True,
     ) -> list[InstanceData]:
         """Predict results from a batch of inputs and data samples with post-processing.
@@ -294,7 +291,7 @@ class SingleStageDetector(nn.Module):
                     the last dimension 4 arrange as (x1, y1, x2, y2).
         """
         x = self.extract_feat(batch_inputs)
-        return self.bbox_head.export(x, batch_data_samples, rescale=rescale)
+        return self.bbox_head.export(x, batch_img_metas, rescale=rescale)
 
     def _forward(
         self,
@@ -329,39 +326,6 @@ class SingleStageDetector(nn.Module):
         if self.with_neck:
             x = self.neck(x)
         return x
-
-    def add_pred_to_datasample(
-        self,
-        data_samples: list[InstanceData],
-        results_list: list[InstanceData],
-    ) -> list[InstanceData]:
-        """Add predictions to `InstanceData`.
-
-        Args:
-            data_samples (list[:obj:`InstanceData`], optional): A batch of
-                data samples that contain annotations and predictions.
-            results_list (list[:obj:`InstanceData`]): Detection results of
-                each image.
-
-        Returns:
-            list[:obj:`InstanceData`]: Detection results of the
-            input images. Each InstanceData usually contain
-            'pred_instances'. And the ``pred_instances`` usually
-            contains following keys.
-
-                - scores (Tensor): Classification scores, has a shape
-                    (num_instance, )
-                - labels (Tensor): Labels of bboxes, has a shape
-                    (num_instances, ).
-                - bboxes (Tensor): Has a shape (num_instances, 4),
-                    the last dimension 4 arrange as (x1, y1, x2, y2).
-        """
-        from mmdet.models.utils import samplelist_boxtype2tensor
-
-        for data_sample, pred_instances in zip(data_samples, results_list):
-            data_sample.pred_instances = pred_instances
-        samplelist_boxtype2tensor(data_samples)
-        return data_samples
 
     @property
     def with_neck(self) -> bool:
