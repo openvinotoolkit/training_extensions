@@ -8,16 +8,16 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, ClassVar
 
 from otx.algo.segmentation.backbones import DinoVisionTransformer
-from otx.algo.segmentation.heads import CustomFCNHead
+from otx.algo.segmentation.heads import FCNHead
 from otx.core.model.segmentation import TorchVisionCompatibleModel
 
-from .base_model import BaseSegmNNModel
+from .base_model import BaseSegmModel
 
 if TYPE_CHECKING:
     from torch import nn
 
 
-class DinoV2Seg(BaseSegmNNModel):
+class DinoV2Seg(BaseSegmModel):
     """DinoV2Seg Model."""
 
     default_backbone_configuration: ClassVar[dict[str, Any]] = {
@@ -49,7 +49,7 @@ class OTXDinoV2Seg(TorchVisionCompatibleModel):
         decode_head_configuration = self.decode_head_configuration | DinoV2Seg.default_decode_head_configuration
         # initialize backbones
         backbone = DinoVisionTransformer(**backbone_configuration)
-        decode_head = CustomFCNHead(num_classes=self.num_classes, **decode_head_configuration)
+        decode_head = FCNHead(num_classes=self.num_classes, **decode_head_configuration)
         return DinoV2Seg(
             backbone=backbone,
             decode_head=decode_head,

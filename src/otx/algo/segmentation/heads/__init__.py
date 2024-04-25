@@ -3,7 +3,7 @@
 #
 """Head modules for OTX segmentation model."""
 
-from .custom_fcn_head import CustomFCNHead
-from .custom_ham_head import LightHamHead
+from .fcn_head import FCNHead
+from .ham_head import LightHamHead
 
-__all__ = ["CustomFCNHead", "LightHamHead"]
+__all__ = ["FCNHead", "LightHamHead"]

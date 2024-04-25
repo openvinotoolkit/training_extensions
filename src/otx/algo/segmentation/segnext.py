@@ -11,13 +11,13 @@ from otx.algo.segmentation.heads import LightHamHead
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.model.segmentation import TorchVisionCompatibleModel
 
-from .base_model import BaseSegmNNModel
+from .base_model import BaseSegmModel
 
 if TYPE_CHECKING:
     from torch import nn
 
 
-class SegNextB(BaseSegmNNModel):
+class SegNextB(BaseSegmModel):
     """SegNextB Model."""
 
     default_backbone_configuration: ClassVar[dict[str, Any]] = {
@@ -44,7 +44,7 @@ class SegNextB(BaseSegmNNModel):
     }
 
 
-class SegNextS(BaseSegmNNModel):
+class SegNextS(BaseSegmModel):
     """SegNextS Model."""
 
     default_backbone_configuration: ClassVar[dict[str, Any]] = {
@@ -71,7 +71,7 @@ class SegNextS(BaseSegmNNModel):
     }
 
 
-class SegNextT(BaseSegmNNModel):
+class SegNextT(BaseSegmModel):
     """SegNextT Model."""
 
     default_backbone_configuration: ClassVar[dict[str, Any]] = {

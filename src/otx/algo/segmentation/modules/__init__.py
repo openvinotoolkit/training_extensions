@@ -5,7 +5,7 @@
 
 
 from .blocks import AsymmetricPositionAttentionModule, LocalAttentionModule
-from .iterator import IterativeAggregator
+from .aggregators import IterativeAggregator
 from .utils import channel_shuffle, normalize, resize
 
 __all__ = [

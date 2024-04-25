@@ -8,17 +8,17 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, ClassVar
 
 from otx.algo.segmentation.backbones import LiteHRNet
-from otx.algo.segmentation.heads import CustomFCNHead
+from otx.algo.segmentation.heads import FCNHead
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.model.segmentation import TorchVisionCompatibleModel
 
-from .base_model import BaseSegmNNModel
+from .base_model import BaseSegmModel
 
 if TYPE_CHECKING:
     from torch import nn
 
 
-class LiteHRNetS(BaseSegmNNModel):
+class LiteHRNetS(BaseSegmModel):
     """LiteHRNetS Model."""
 
     default_backbone_configuration: ClassVar[dict[str, Any]] = {
@@ -141,7 +141,7 @@ class LiteHRNetS(BaseSegmNNModel):
         }
 
 
-class LiteHRNet18(BaseSegmNNModel):
+class LiteHRNet18(BaseSegmModel):
     """LiteHRNet18 Model."""
 
     default_backbone_configuration: ClassVar[dict[str, Any]] = {
@@ -282,7 +282,7 @@ class LiteHRNet18(BaseSegmNNModel):
         }
 
 
-class LiteHRNetX(BaseSegmNNModel):
+class LiteHRNetX(BaseSegmModel):
     """LiteHRNetX Model."""
 
     default_backbone_configuration: ClassVar[dict[str, Any]] = {
@@ -523,7 +523,7 @@ class OTXLiteHRNet(TorchVisionCompatibleModel):
         )
         # initialize backbones
         backbone = LiteHRNet(**backbone_configuration)
-        decode_head = CustomFCNHead(num_classes=self.num_classes, **decode_head_configuration)
+        decode_head = FCNHead(num_classes=self.num_classes, **decode_head_configuration)
 
         return litehrnet_model_class(
             backbone=backbone,
