@@ -1,0 +1,29 @@
+otx.algo.instance\_segmentation.mmdet
+=====================================
+
+.. automodule:: otx.algo.instance_segmentation.mmdet
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      MaskRCNN
+   
+   
+
+   
+   
+   
+
+
+

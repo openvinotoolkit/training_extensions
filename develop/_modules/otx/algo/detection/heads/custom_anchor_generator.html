@@ -246,12 +246,13 @@
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">torch</span>
-<span class="kn">from</span> <span class="nn">mmdet.registry</span> <span class="kn">import</span> <span class="n">TASK_UTILS</span>
+<span class="kn">from</span> <span class="nn">mmengine.registry</span> <span class="kn">import</span> <span class="n">TASK_UTILS</span>
 <span class="kn">from</span> <span class="nn">torch.nn.modules.utils</span> <span class="kn">import</span> <span class="n">_pair</span>
 
 
 <span class="c1"># This class and its supporting functions below lightly adapted from the mmdet AnchorGenerator available at:</span>
 <span class="c1"># https://github.com/open-mmlab/mmdetection/blob/cfd5d3a985b0249de009b67d04f37263e11cdf3d/mmdet/models/task_modules/prior_generators/anchor_generator.py</span>
+<span class="nd">@TASK_UTILS</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
 <span class="k">class</span> <span class="nc">AnchorGenerator</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Standard anchor generator for 2D anchor-based detectors.</span>
 

@@ -1,0 +1,29 @@
+otx.algo.instance\_segmentation.heads
+=====================================
+
+.. automodule:: otx.algo.instance_segmentation.heads
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      CustomRTMDetInsSepBNHead
+   
+   
+
+   
+   
+   
+
+
+

@@ -9,9 +9,23 @@ otx.algo.detection.losses
 
    
    
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      accuracy
+   
    
 
    
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      CrossEntropyLoss
+      CrossSigmoidFocalLoss
+      L1Loss
    
    
 

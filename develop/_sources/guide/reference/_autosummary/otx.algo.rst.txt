@@ -35,4 +35,5 @@ otx.algo
    otx.algo.strategies
    otx.algo.accelerators
    otx.algo.plugins
+   otx.algo.instance_segmentation
 

@@ -1,0 +1,32 @@
+otx.algo.instance\_segmentation
+===============================
+
+.. automodule:: otx.algo.instance_segmentation
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   otx.algo.instance_segmentation.heads
+   otx.algo.instance_segmentation.mmdet
+
