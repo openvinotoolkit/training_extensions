@@ -38,11 +38,11 @@ def embed_ir_model_data(xml_file: str, data_items: Dict[Tuple[str, str], Any]) -
 
     # workaround for CVS-138901
     if is_xpu_available():
-        ppp = PrePostProcessor(model)
-        for o in model.outputs:
-            if "labels" in o.get_names() and o.get_element_type() == Type.f32:
-                ppp.output("labels").tensor().set_element_type(Type.i64)
-        model = ppp.build()
+        pre_post_processor = PrePostProcessor(model)
+        for output in model.outputs:
+            if "labels" in output.get_names() and output.get_element_type() == Type.f32:
+                pre_post_processor.output("labels").tensor().set_element_type(Type.i64)
+        model = pre_post_processor.build()
 
     # workaround for CVS-110054
     tmp_xml_path = Path(Path(xml_file).parent) / "tmp.xml"
