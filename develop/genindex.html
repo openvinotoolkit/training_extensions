@@ -260,6 +260,7 @@
  | <a href="#V"><strong>V</strong></a>
  | <a href="#W"><strong>W</strong></a>
  | <a href="#X"><strong>X</strong></a>
+ | <a href="#Y"><strong>Y</strong></a>
  | <a href="#Z"><strong>Z</strong></a>
  
 </div>
@@ -413,6 +414,8 @@
       <li><a href="guide/reference/_autosummary/otx.algo.segmentation.losses.html#otx.algo.segmentation.losses.CrossEntropyLossWithIgnore">CrossEntropyLossWithIgnore (class in otx.algo.segmentation.losses)</a>
 </li>
       <li><a href="guide/reference/_autosummary/otx.algo.detection.losses.html#otx.algo.detection.losses.CrossSigmoidFocalLoss">CrossSigmoidFocalLoss (class in otx.algo.detection.losses)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.algo.detection.backbones.html#otx.algo.detection.backbones.CSPDarknet">CSPDarknet (class in otx.algo.detection.backbones)</a>
 </li>
       <li><a href="guide/reference/_autosummary/otx.algo.detection.heads.html#otx.algo.detection.heads.CustomATSSHead">CustomATSSHead (class in otx.algo.detection.heads)</a>
 </li>
@@ -577,11 +580,17 @@
 </li>
         <li><a href="guide/reference/_autosummary/otx.algo.classification.losses.html#otx.algo.classification.losses.AsymmetricAngularLossWithIgnore.forward">(otx.algo.classification.losses.AsymmetricAngularLossWithIgnore method)</a>
 </li>
+        <li><a href="guide/reference/_autosummary/otx.algo.detection.backbones.html#otx.algo.detection.backbones.CSPDarknet.forward">(otx.algo.detection.backbones.CSPDarknet method)</a>
+</li>
         <li><a href="guide/reference/_autosummary/otx.algo.detection.heads.html#otx.algo.detection.heads.SSDHead.forward">(otx.algo.detection.heads.SSDHead method)</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.algo.detection.heads.html#otx.algo.detection.heads.YOLOXHead.forward">(otx.algo.detection.heads.YOLOXHead method)</a>
 </li>
         <li><a href="guide/reference/_autosummary/otx.algo.detection.losses.html#otx.algo.detection.losses.CrossEntropyLoss.forward">(otx.algo.detection.losses.CrossEntropyLoss method)</a>
 </li>
         <li><a href="guide/reference/_autosummary/otx.algo.detection.losses.html#otx.algo.detection.losses.CrossSigmoidFocalLoss.forward">(otx.algo.detection.losses.CrossSigmoidFocalLoss method)</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.algo.detection.losses.html#otx.algo.detection.losses.IoULoss.forward">(otx.algo.detection.losses.IoULoss method)</a>
 </li>
         <li><a href="guide/reference/_autosummary/otx.algo.detection.losses.html#otx.algo.detection.losses.L1Loss.forward">(otx.algo.detection.losses.L1Loss method)</a>
 </li>
@@ -653,6 +662,8 @@
 </li>
       </ul></li>
       <li><a href="guide/reference/_autosummary/otx.algo.visual_prompting.html#otx.algo.visual_prompting.SegmentAnything.forward_inference">forward_inference() (otx.algo.visual_prompting.SegmentAnything method)</a>
+</li>
+      <li><a href="guide/reference/_autosummary/otx.algo.detection.heads.html#otx.algo.detection.heads.YOLOXHead.forward_single">forward_single() (otx.algo.detection.heads.YOLOXHead method)</a>
 </li>
       <li><a href="guide/reference/_autosummary/otx.core.model.base.html#otx.core.model.base.OTXModel.forward_tiles">forward_tiles() (otx.core.model.base.OTXModel method)</a>
 
@@ -892,6 +903,8 @@
 </li>
       <li><a href="guide/reference/_autosummary/otx.core.utils.instantiators.html#otx.core.utils.instantiators.instantiate_sampler">instantiate_sampler() (in module otx.core.utils.instantiators)</a>
 </li>
+      <li><a href="guide/reference/_autosummary/otx.algo.detection.losses.html#otx.algo.detection.losses.IoULoss">IoULoss (class in otx.algo.detection.losses)</a>
+</li>
       <li><a href="guide/reference/_autosummary/otx.algo.accelerators.html#otx.algo.accelerators.XPUAccelerator.is_available">is_available() (otx.algo.accelerators.XPUAccelerator static method)</a>
 </li>
       <li><a href="guide/reference/_autosummary/otx.core.utils.utils.html#otx.core.utils.utils.is_ckpt_for_finetuning">is_ckpt_for_finetuning() (in module otx.core.utils.utils)</a>
@@ -950,8 +963,6 @@
         <li><a href="guide/reference/_autosummary/otx.core.model.visual_prompting.html#otx.core.model.visual_prompting.OVZeroShotVisualPromptingModel.load_reference_info">(otx.core.model.visual_prompting.OVZeroShotVisualPromptingModel method)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="guide/reference/_autosummary/otx.algo.plugins.html#otx.algo.plugins.MixedPrecisionXPUPlugin.load_state_dict">load_state_dict() (otx.algo.plugins.MixedPrecisionXPUPlugin method)</a>
 
       <ul>
@@ -962,6 +973,8 @@
         <li><a href="guide/reference/_autosummary/otx.core.model.instance_segmentation.html#otx.core.model.instance_segmentation.OTXInstanceSegModel.load_state_dict">(otx.core.model.instance_segmentation.OTXInstanceSegModel method)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="guide/reference/_autosummary/otx.core.model.base.html#otx.core.model.base.OTXModel.load_state_dict_incrementally">load_state_dict_incrementally() (otx.core.model.base.OTXModel method)</a>
 </li>
       <li><a href="guide/reference/_autosummary/otx.algo.action_classification.html#otx.algo.action_classification.MoViNetRecognizer.load_state_dict_pre_hook">load_state_dict_pre_hook() (otx.algo.action_classification.MoViNetRecognizer static method)</a>
@@ -988,6 +1001,8 @@
 
       <ul>
         <li><a href="guide/reference/_autosummary/otx.algo.detection.heads.html#otx.algo.detection.heads.SSDHead.loss_by_feat">(otx.algo.detection.heads.SSDHead method)</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.algo.detection.heads.html#otx.algo.detection.heads.YOLOXHead.loss_by_feat">(otx.algo.detection.heads.YOLOXHead method)</a>
 </li>
       </ul></li>
       <li><a href="guide/reference/_autosummary/otx.algo.detection.heads.html#otx.algo.detection.heads.CustomATSSHead.loss_by_feat_single">loss_by_feat_single() (otx.algo.detection.heads.CustomATSSHead method)</a>
@@ -2115,10 +2130,10 @@
       </ul></li>
       <li><a href="guide/reference/_autosummary/otx.algo.visual_prompting.html#otx.algo.visual_prompting.SegmentAnything.postprocess_masks">postprocess_masks() (otx.algo.visual_prompting.SegmentAnything class method)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="guide/reference/_autosummary/otx.algo.plugins.html#otx.algo.plugins.MixedPrecisionXPUPlugin.pre_backward">pre_backward() (otx.algo.plugins.MixedPrecisionXPUPlugin method)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="guide/reference/_autosummary/otx.algo.classification.heads.html#otx.algo.classification.heads.CustomHierarchicalLinearClsHead.pre_logits">pre_logits() (otx.algo.classification.heads.CustomHierarchicalLinearClsHead method)</a>
 
       <ul>
@@ -2135,6 +2150,8 @@
         <li><a href="guide/reference/_autosummary/otx.engine.html#otx.engine.Engine.predict">(otx.engine.Engine method)</a>
 </li>
       </ul></li>
+      <li><a href="guide/reference/_autosummary/otx.algo.detection.heads.html#otx.algo.detection.heads.YOLOXHead.predict_by_feat">predict_by_feat() (otx.algo.detection.heads.YOLOXHead method)</a>
+</li>
       <li><a href="guide/reference/_autosummary/otx.core.data.html#otx.core.data.OTXDataModule.predict_dataloader">predict_dataloader() (otx.core.data.OTXDataModule method)</a>
 </li>
       <li><a href="guide/reference/_autosummary/otx.algo.visual_prompting.decoders.html#otx.algo.visual_prompting.decoders.SAMMaskDecoder.predict_masks">predict_masks() (otx.algo.visual_prompting.decoders.SAMMaskDecoder method)</a>
@@ -2350,6 +2367,8 @@
       <li><a href="guide/reference/_autosummary/otx.algo.detection.backbones.pytorchcv_backbones.html#otx.algo.detection.backbones.pytorchcv_backbones.train">train() (in module otx.algo.detection.backbones.pytorchcv_backbones)</a>
 
       <ul>
+        <li><a href="guide/reference/_autosummary/otx.algo.detection.backbones.html#otx.algo.detection.backbones.CSPDarknet.train">(otx.algo.detection.backbones.CSPDarknet method)</a>
+</li>
         <li><a href="guide/reference/_autosummary/otx.engine.html#otx.engine.Engine.train">(otx.engine.Engine method)</a>
 </li>
       </ul></li>
@@ -2458,6 +2477,14 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="guide/reference/_autosummary/otx.algo.accelerators.html#otx.algo.accelerators.XPUAccelerator">XPUAccelerator (class in otx.algo.accelerators)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="Y">Y</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="guide/reference/_autosummary/otx.algo.detection.heads.html#otx.algo.detection.heads.YOLOXHead">YOLOXHead (class in otx.algo.detection.heads)</a>
 </li>
   </ul></td>
 </tr></table>

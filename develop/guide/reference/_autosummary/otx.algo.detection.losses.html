@@ -401,6 +401,9 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#otx.algo.detection.losses.L1Loss" title="otx.algo.detection.losses.L1Loss"><code class="xref py py-obj docutils literal notranslate"><span class="pre">L1Loss</span></code></a>([reduction, loss_weight])</p></td>
 <td><p>L1 loss.</p></td>
 </tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#otx.algo.detection.losses.IoULoss" title="otx.algo.detection.losses.IoULoss"><code class="xref py py-obj docutils literal notranslate"><span class="pre">IoULoss</span></code></a>([linear, eps, reduction, ...])</p></td>
+<td><p>IoULoss.</p></td>
+</tr>
 </tbody>
 </table>
 <dl class="py class">
@@ -471,6 +474,57 @@ Default: -100.</p></li>
 <dt class="sig sig-object py" id="otx.algo.detection.losses.CrossSigmoidFocalLoss.forward">
 <span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pred</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">targets</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weight</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reduction_override</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">avg_factor</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">valid_label_mask</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tensor</span></span></span><a class="reference internal" href="../../../_modules/otx/algo/detection/losses/cross_focal_loss.html#CrossSigmoidFocalLoss.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algo.detection.losses.CrossSigmoidFocalLoss.forward" title="Link to this definition">#</a></dt>
 <dd><p>Forward funtion of CrossSigmoidFocalLoss.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.algo.detection.losses.IoULoss">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.algo.detection.losses.</span></span><span class="sig-name descname"><span class="pre">IoULoss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">linear</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eps</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1e-06</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reduction</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'mean'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loss_weight</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'log'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algo/detection/losses/iou_loss.html#IoULoss"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algo.detection.losses.IoULoss" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>IoULoss.</p>
+<p>Computing the IoU loss between a set of predicted bboxes and target bboxes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>linear</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a>) – If True, use linear scale of loss else determined
+by mode. Default: False.</p></li>
+<li><p><strong>eps</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – Epsilon to avoid log(0).</p></li>
+<li><p><strong>reduction</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – Options are “none”, “mean” and “sum”.</p></li>
+<li><p><strong>loss_weight</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – Weight of loss.</p></li>
+<li><p><strong>mode</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – Loss scaling mode, including “linear”, “square”, and “log”.
+Default: ‘log’</p></li>
+</ul>
+</dd>
+</dl>
+<p>Initializes internal Module state, shared by both nn.Module and ScriptModule.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algo.detection.losses.IoULoss.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pred</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weight</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">avg_factor</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reduction_override</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tensor</span></span></span><a class="reference internal" href="../../../_modules/otx/algo/detection/losses/iou_loss.html#IoULoss.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algo.detection.losses.IoULoss.forward" title="Link to this definition">#</a></dt>
+<dd><p>Forward function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pred</strong> (<em>Tensor</em>) – Predicted bboxes of format (x1, y1, x2, y2),
+shape (n, 4).</p></li>
+<li><p><strong>target</strong> (<em>Tensor</em>) – The learning target of the prediction,
+shape (n, 4).</p></li>
+<li><p><strong>weight</strong> (<em>Tensor</em><em>, </em><em>optional</em>) – The weight of loss for each
+prediction. Defaults to None.</p></li>
+<li><p><strong>avg_factor</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a><em>, </em><em>optional</em>) – Average factor that is used to average
+the loss. Defaults to None.</p></li>
+<li><p><strong>reduction_override</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a><em>, </em><em>optional</em>) – The reduction method used to
+override the original reduction method of the loss.
+Defaults to None. Options are “none”, “mean” and “sum”.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Loss tensor.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tensor</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
@@ -634,6 +688,26 @@ each <code class="docutils literal notranslate"><span class="pre">topk</span></c
      <code class="docutils literal notranslate">
       <span class="pre">
        CrossSigmoidFocalLoss.forward()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.algo.detection.losses.IoULoss">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     IoULoss
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algo.detection.losses.IoULoss.forward">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       IoULoss.forward()
       </span>
      </code>
     </a>

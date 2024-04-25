@@ -26,6 +26,7 @@ otx.algo.detection.losses
       CrossEntropyLoss
       CrossSigmoidFocalLoss
       L1Loss
+      IoULoss
    
    
 

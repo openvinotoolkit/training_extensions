@@ -381,6 +381,80 @@
   <section id="module-otx.algo.detection.backbones">
 <span id="otx-algo-detection-backbones"></span><h1>otx.algo.detection.backbones<a class="headerlink" href="#module-otx.algo.detection.backbones" title="Link to this heading">#</a></h1>
 <p>Custom backbone implementations for detection task.</p>
+<p class="rubric">Classes</p>
+<table class="autosummary longtable table autosummary">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.algo.detection.backbones.CSPDarknet" title="otx.algo.detection.backbones.CSPDarknet"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CSPDarknet</span></code></a>([arch, deepen_factor, ...])</p></td>
+<td><p>CSP-Darknet backbone used in YOLOv5 and YOLOX.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.algo.detection.backbones.CSPDarknet">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.algo.detection.backbones.</span></span><span class="sig-name descname"><span class="pre">CSPDarknet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'P5'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deepen_factor</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">widen_factor</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_indices</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Sequence" title="(in Python v3.12)"><span class="pre">Sequence</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(2,</span> <span class="pre">3,</span> <span class="pre">4)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frozen_stages</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_depthwise</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arch_ovewrite</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.12)"><span class="pre">list</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spp_kernal_sizes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(5,</span> <span class="pre">9,</span> <span class="pre">13)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">conv_cfg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><span class="pre">dict</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">norm_cfg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><span class="pre">dict</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">act_cfg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><span class="pre">dict</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">norm_eval</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init_cfg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><span class="pre">dict</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.12)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><span class="pre">dict</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algo/detection/backbones/csp_darknet.html#CSPDarknet"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algo.detection.backbones.CSPDarknet" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>CSP-Darknet backbone used in YOLOv5 and YOLOX.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>arch</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – Architecture of CSP-Darknet, from {P5, P6}.
+Default: P5.</p></li>
+<li><p><strong>deepen_factor</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – Depth multiplier, multiply number of
+blocks in CSP layer by this amount. Default: 1.0.</p></li>
+<li><p><strong>widen_factor</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – Width multiplier, multiply number of
+channels in each layer by this amount. Default: 1.0.</p></li>
+<li><p><strong>out_indices</strong> (<em>Sequence</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a><em>]</em>) – Output from which stages.
+Default: (2, 3, 4).</p></li>
+<li><p><strong>frozen_stages</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – Stages to be frozen (stop grad and set eval
+mode). -1 means not freezing any parameters. Default: -1.</p></li>
+<li><p><strong>use_depthwise</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a>) – Whether to use depthwise separable convolution.
+Default: False.</p></li>
+<li><p><strong>arch_ovewrite</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.12)"><em>list</em></a>) – Overwrite default arch settings. Default: None.</p></li>
+<li><p><strong>spp_kernal_sizes</strong> – (tuple[int]): Sequential of kernel sizes of SPP
+layers. Default: (5, 9, 13).</p></li>
+<li><p><strong>conv_cfg</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><em>dict</em></a>) – Config dict for convolution layer. Default: None.</p></li>
+<li><p><strong>norm_cfg</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><em>dict</em></a>) – Dictionary to construct and config norm layer.
+Default: dict(type=’BN’, requires_grad=True).</p></li>
+<li><p><strong>act_cfg</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><em>dict</em></a>) – Config dict for activation layer.
+Default: dict(type=’LeakyReLU’, negative_slope=0.1).</p></li>
+<li><p><strong>norm_eval</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a>) – Whether to set norm layers to eval mode, namely,
+freeze running stats (mean and var). Note: Effect on Batch Norm
+and its variants only.</p></li>
+<li><p><strong>init_cfg</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><em>dict</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.12)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><em>dict</em></a><em>]</em><em>, </em><em>optional</em>) – Initialization config dict.
+Default: None.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">mmdet.models</span> <span class="kn">import</span> <span class="n">CSPDarknet</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="bp">self</span> <span class="o">=</span> <span class="n">CSPDarknet</span><span class="p">(</span><span class="n">depth</span><span class="o">=</span><span class="mi">53</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="bp">self</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">inputs</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">416</span><span class="p">,</span> <span class="mi">416</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">level_outputs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">level_out</span> <span class="ow">in</span> <span class="n">level_outputs</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="n">level_out</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
+<span class="gp">...</span>
+<span class="go">(1, 256, 52, 52)</span>
+<span class="go">(1, 512, 26, 26)</span>
+<span class="go">(1, 1024, 13, 13)</span>
+</pre></div>
+</div>
+<p>Initializes internal Module state, shared by both nn.Module and ScriptModule.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algo.detection.backbones.CSPDarknet.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.12)"><span class="pre">Any</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/otx/algo/detection/backbones/csp_darknet.html#CSPDarknet.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algo.detection.backbones.CSPDarknet.forward" title="Link to this definition">#</a></dt>
+<dd><p>Forward.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algo.detection.backbones.CSPDarknet.train">
+<span class="sig-name descname"><span class="pre">train</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../_modules/otx/algo/detection/backbones/csp_darknet.html#CSPDarknet.train"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algo.detection.backbones.CSPDarknet.train" title="Link to this definition">#</a></dt>
+<dd><p>Make the model trainable.</p>
+</dd></dl>
+
+</dd></dl>
+
 <p class="rubric">Modules</p>
 <table class="autosummary longtable table autosummary">
 <tbody>
@@ -422,6 +496,47 @@
           
             <div class="bd-sidebar-secondary bd-toc">
               
+<div class="toc-item">
+  
+<div class="tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+</div>
+<nav id="bd-toc-nav" class="page-toc">
+    <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.algo.detection.backbones.CSPDarknet">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     CSPDarknet
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algo.detection.backbones.CSPDarknet.forward">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       CSPDarknet.forward()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algo.detection.backbones.CSPDarknet.train">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       CSPDarknet.train()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+</ul>
+
+</nav>
+</div>
+
 <div class="toc-item">
   
 <div id="searchbox"></div>

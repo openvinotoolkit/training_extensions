@@ -393,6 +393,9 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#otx.algo.detection.heads.SSDHead" title="otx.algo.detection.heads.SSDHead"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SSDHead</span></code></a>(anchor_generator, bbox_coder, ...[, ...])</p></td>
 <td><p>Implementation of <a class="reference external" href="https://arxiv.org/abs/1512.02325">SSD head</a>.</p></td>
 </tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#otx.algo.detection.heads.YOLOXHead" title="otx.algo.detection.heads.YOLOXHead"><code class="xref py py-obj docutils literal notranslate"><span class="pre">YOLOXHead</span></code></a>(num_classes, in_channels[, ...])</p></td>
+<td><p>YOLOXHead head used in <a class="reference external" href="https://arxiv.org/abs/2107.08430">YOLOX</a>.</p></td>
+</tr>
 </tbody>
 </table>
 <dl class="py class">
@@ -656,6 +659,160 @@ feature map.</p>
 
 </dd></dl>
 
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.algo.detection.heads.YOLOXHead">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.algo.detection.heads.</span></span><span class="sig-name descname"><span class="pre">YOLOXHead</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_classes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">in_channels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">feat_channels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">256</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stacked_convs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strides</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(8,</span> <span class="pre">16,</span> <span class="pre">32)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_depthwise</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dcn_on_last_conv</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">conv_bias</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'auto'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">conv_cfg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ConfigDict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><span class="pre">dict</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">norm_cfg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ConfigDict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><span class="pre">dict</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">act_cfg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ConfigDict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><span class="pre">dict</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">train_cfg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ConfigDict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><span class="pre">dict</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_cfg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ConfigDict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><span class="pre">dict</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init_cfg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ConfigDict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><span class="pre">dict</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.12)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><span class="pre">ConfigDict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><span class="pre">dict</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algo/detection/heads/yolox_head.html#YOLOXHead"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algo.detection.heads.YOLOXHead" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">BaseDenseHead</span></code></p>
+<p>YOLOXHead head used in <a class="reference external" href="https://arxiv.org/abs/2107.08430">YOLOX</a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>num_classes</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – Number of categories excluding the background
+category.</p></li>
+<li><p><strong>in_channels</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – Number of channels in the input feature map.</p></li>
+<li><p><strong>feat_channels</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – Number of hidden channels in stacking convs.
+Defaults to 256</p></li>
+<li><p><strong>stacked_convs</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – Number of stacking convs of the head.
+Defaults to (8, 16, 32).</p></li>
+<li><p><strong>strides</strong> (<em>Sequence</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a><em>]</em>) – Downsample factor of each feature map.
+Defaults to None.</p></li>
+<li><p><strong>use_depthwise</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a>) – Whether to depthwise separable convolution in
+blocks. Defaults to False.</p></li>
+<li><p><strong>dcn_on_last_conv</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a>) – If true, use dcn in the last layer of
+towers. Defaults to False.</p></li>
+<li><p><strong>conv_bias</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – If specified as <cite>auto</cite>, it will be decided by
+the norm_cfg. Bias of conv will be set as True if <cite>norm_cfg</cite> is
+None, otherwise False. Defaults to “auto”.</p></li>
+<li><p><strong>conv_cfg</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">ConfigDict</span></code> or dict, optional) – Config dict for
+convolution layer. Defaults to None.</p></li>
+<li><p><strong>norm_cfg</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">ConfigDict</span></code> or dict) – Config dict for normalization
+layer. Defaults to dict(type=’BN’, momentum=0.03, eps=0.001).</p></li>
+<li><p><strong>act_cfg</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">ConfigDict</span></code> or dict) – Config dict for activation layer.
+Defaults to None.</p></li>
+<li><p><strong>loss_cls</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">ConfigDict</span></code> or dict) – Config of classification loss.</p></li>
+<li><p><strong>loss_bbox</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">ConfigDict</span></code> or dict) – Config of localization loss.</p></li>
+<li><p><strong>loss_obj</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">ConfigDict</span></code> or dict) – Config of objectness loss.</p></li>
+<li><p><strong>loss_l1</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">ConfigDict</span></code> or dict) – Config of L1 loss.</p></li>
+<li><p><strong>train_cfg</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">ConfigDict</span></code> or dict, optional) – Training config of
+anchor head. Defaults to None.</p></li>
+<li><p><strong>test_cfg</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">ConfigDict</span></code> or dict, optional) – Testing config of
+anchor head. Defaults to None.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="simple">
+<dt>:param init_cfg (<code class="xref py py-obj docutils literal notranslate"><span class="pre">ConfigDict</span></code> or list[<code class="xref py py-obj docutils literal notranslate"><span class="pre">ConfigDict</span></code>] or dict or: list[dict], optional): Initialization config dict.</dt><dd><p>Defaults to None.</p>
+</dd>
+</dl>
+<p>Initialize BaseModule, inherited from <cite>torch.nn.Module</cite></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algo.detection.heads.YOLOXHead.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><span class="pre">tuple</span></a></span></span><a class="reference internal" href="../../../_modules/otx/algo/detection/heads/yolox_head.html#YOLOXHead.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algo.detection.heads.YOLOXHead.forward" title="Link to this definition">#</a></dt>
+<dd><p>Forward features from the upstream network.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>Tuple</em><em>[</em><em>Tensor</em><em>]</em>) – Features from the upstream network, each is
+a 4D-tensor.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A tuple of multi-level classification scores, bbox
+predictions, and objectnesses.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tuple[List]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algo.detection.heads.YOLOXHead.forward_single">
+<span class="sig-name descname"><span class="pre">forward_single</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cls_convs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Module</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reg_convs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Module</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">conv_cls</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Module</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">conv_reg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Module</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">conv_obj</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Module</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/otx/algo/detection/heads/yolox_head.html#YOLOXHead.forward_single"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algo.detection.heads.YOLOXHead.forward_single" title="Link to this definition">#</a></dt>
+<dd><p>Forward feature of a single scale level.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algo.detection.heads.YOLOXHead.loss_by_feat">
+<span class="sig-name descname"><span class="pre">loss_by_feat</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cls_scores</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Sequence" title="(in Python v3.12)"><span class="pre">Sequence</span></a><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bbox_preds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Sequence" title="(in Python v3.12)"><span class="pre">Sequence</span></a><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">objectnesses</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Sequence" title="(in Python v3.12)"><span class="pre">Sequence</span></a><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_gt_instances</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Sequence" title="(in Python v3.12)"><span class="pre">Sequence</span></a><span class="p"><span class="pre">[</span></span><span class="pre">InstanceData</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_img_metas</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Sequence" title="(in Python v3.12)"><span class="pre">Sequence</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><span class="pre">dict</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_gt_instances_ignore</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Sequence" title="(in Python v3.12)"><span class="pre">Sequence</span></a><span class="p"><span class="pre">[</span></span><span class="pre">InstanceData</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><span class="pre">dict</span></a></span></span><a class="reference internal" href="../../../_modules/otx/algo/detection/heads/yolox_head.html#YOLOXHead.loss_by_feat"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algo.detection.heads.YOLOXHead.loss_by_feat" title="Link to this definition">#</a></dt>
+<dd><p>Calculate the loss based on the features extracted by the detection head.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cls_scores</strong> (<em>Sequence</em><em>[</em><em>Tensor</em><em>]</em>) – Box scores for each scale level,
+each is a 4D-tensor, the channel number is
+num_priors * num_classes.</p></li>
+<li><p><strong>bbox_preds</strong> (<em>Sequence</em><em>[</em><em>Tensor</em><em>]</em>) – Box energies / deltas for each scale
+level, each is a 4D-tensor, the channel number is
+num_priors * 4.</p></li>
+<li><p><strong>objectnesses</strong> (<em>Sequence</em><em>[</em><em>Tensor</em><em>]</em>) – Score factor for
+all scale level, each is a 4D-tensor, has shape
+(batch_size, 1, H, W).</p></li>
+<li><p><strong>batch_gt_instances</strong> (list[<code class="xref py py-obj docutils literal notranslate"><span class="pre">InstanceData</span></code>]) – Batch of
+gt_instance. It usually includes <code class="docutils literal notranslate"><span class="pre">bboxes</span></code> and <code class="docutils literal notranslate"><span class="pre">labels</span></code>
+attributes.</p></li>
+<li><p><strong>batch_img_metas</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.12)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><em>dict</em></a><em>]</em>) – Meta information of each image, e.g.,
+image size, scaling factor, etc.</p></li>
+<li><p><strong>batch_gt_instances_ignore</strong> (list[<code class="xref py py-obj docutils literal notranslate"><span class="pre">InstanceData</span></code>], optional) – Batch of gt_instances_ignore. It includes <code class="docutils literal notranslate"><span class="pre">bboxes</span></code> attribute
+data that is ignored during training and testing.
+Defaults to None.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A dictionary of losses.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)">dict</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)">str</a>, Tensor]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algo.detection.heads.YOLOXHead.predict_by_feat">
+<span class="sig-name descname"><span class="pre">predict_by_feat</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cls_scores</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.12)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bbox_preds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.12)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">objectnesses</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.12)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_img_metas</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.12)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><span class="pre">dict</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cfg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ConfigDict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rescale</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">with_nms</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.12)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><span class="pre">InstanceData</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/otx/algo/detection/heads/yolox_head.html#YOLOXHead.predict_by_feat"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algo.detection.heads.YOLOXHead.predict_by_feat" title="Link to this definition">#</a></dt>
+<dd><p>Transform a batch of output features extracted by the head into bbox results.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cls_scores</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.12)"><em>list</em></a><em>[</em><em>Tensor</em><em>]</em>) – Classification scores for all
+scale levels, each is a 4D-tensor, has shape
+(batch_size, num_priors * num_classes, H, W).</p></li>
+<li><p><strong>bbox_preds</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.12)"><em>list</em></a><em>[</em><em>Tensor</em><em>]</em>) – Box energies / deltas for all
+scale levels, each is a 4D-tensor, has shape
+(batch_size, num_priors * 4, H, W).</p></li>
+<li><p><strong>objectnesses</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.12)"><em>list</em></a><em>[</em><em>Tensor</em><em>]</em><em>, </em><em>Optional</em>) – Score factor for
+all scale level, each is a 4D-tensor, has shape
+(batch_size, 1, H, W).</p></li>
+<li><p><strong>batch_img_metas</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.12)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><em>dict</em></a><em>]</em><em>, </em><em>Optional</em>) – Batch image meta info.
+Defaults to None.</p></li>
+<li><p><strong>cfg</strong> (<em>ConfigDict</em><em>, </em><em>optional</em>) – Test / postprocessing
+configuration, if None, test_cfg would be used.
+Defaults to None.</p></li>
+<li><p><strong>rescale</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a>) – If True, return boxes in original image space.
+Defaults to False.</p></li>
+<li><p><strong>with_nms</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a>) – If True, do nms before return boxes.
+Defaults to True.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><p>Object detection results of each image
+after the post process. Each item usually contains following keys.</p>
+<ul class="simple">
+<li><p>scores (Tensor): Classification scores, has a shape
+(num_instance, )</p></li>
+<li><p>labels (Tensor): Labels of bboxes, has a shape
+(num_instances, ).</p></li>
+<li><p>bboxes (Tensor): Has a shape (num_instances, 4),
+the last dimension 4 arrange as (x1, y1, x2, y2).</p></li>
+</ul>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list[<code class="xref py py-obj docutils literal notranslate"><span class="pre">InstanceData</span></code>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 </section>
 
 
@@ -795,6 +952,53 @@ feature map.</p>
      <code class="docutils literal notranslate">
       <span class="pre">
        SSDHead.loss_by_feat_single()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.algo.detection.heads.YOLOXHead">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     YOLOXHead
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algo.detection.heads.YOLOXHead.forward">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       YOLOXHead.forward()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algo.detection.heads.YOLOXHead.forward_single">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       YOLOXHead.forward_single()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algo.detection.heads.YOLOXHead.loss_by_feat">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       YOLOXHead.loss_by_feat()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algo.detection.heads.YOLOXHead.predict_by_feat">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       YOLOXHead.predict_by_feat()
       </span>
      </code>
     </a>
