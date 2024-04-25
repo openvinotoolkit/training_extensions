@@ -42,6 +42,7 @@ def test_configure_task_with_unsupported_data_format(tmp_path: Path) -> None:
     # Create a temporary directory for testing
     data_root = tmp_path / "data"
     data_root.mkdir()
+    (data_root / "1.jpg").open("a").close()  # Dummy image file
 
     # Test the configure_task function with an unsupported data format
     with pytest.raises(ValueError, match="Can't find proper task."):

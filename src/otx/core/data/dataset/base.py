@@ -42,7 +42,7 @@ def image_decode_context() -> Iterator[None]:
     ori_image_color_scale = IMAGE_COLOR_CHANNEL.get()
 
     IMAGE_BACKEND.set(ImageBackend.PIL)
-    IMAGE_COLOR_CHANNEL.set(DatumaroImageColorChannel.UNCHANGED)
+    IMAGE_COLOR_CHANNEL.set(DatumaroImageColorChannel.COLOR_BGR)
 
     yield
 

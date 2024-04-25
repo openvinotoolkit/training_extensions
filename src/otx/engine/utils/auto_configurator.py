@@ -102,11 +102,14 @@ def configure_task(data_root: PathLike) -> OTXTaskType:
     data_root = Path(data_root).resolve()
 
     data_format = datumaro.Environment().detect_dataset(str(data_root))
+    if not len(data_format):
+        msg = "Unable to detect data format."
+        raise ValueError(msg)
     if len(data_format) > 1:
         logger.warning(f"Found multiple data formats: {data_format}. We will use the first one.")
     data_format = data_format[0]
     if data_format not in TASK_PER_DATA_FORMAT:
-        msg = f"Can't find proper task. we are not support {data_format} format, yet."
+        msg = f"Can't find proper task. We do not support {data_format} format, yet."
         raise ValueError(msg)
     if len(TASK_PER_DATA_FORMAT[data_format]) > 1:
         logger.warning(
