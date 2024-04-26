@@ -5,8 +5,16 @@
 
 import pytest
 import json
+from unittest.mock import MagicMock
 
-from otx.engine.hpo.utils import find_trial_file, get_best_hpo_weight, get_hpo_weight_dir
+from lightning.pytorch.callbacks.model_checkpoint import ModelCheckpoint
+from otx.engine.hpo.utils import (
+    find_trial_file,
+    get_best_hpo_weight,
+    get_hpo_weight_dir,
+    get_callable_args_name,
+    get_metric
+)
 
 
 @pytest.fixture
@@ -65,3 +73,43 @@ def test_get_absent_hpo_weight_dir(tmp_path, hpo_weight_dir, trial_id):
     hpo_weight_dir.rmdir()
     assert hpo_weight_dir == get_hpo_weight_dir(tmp_path, trial_id)
     assert hpo_weight_dir.exists()
+
+
+def test_get_callable_args_name():
+    def func(arg1, arg2):
+        pass
+    assert get_callable_args_name(func) == ["arg1", "arg2"]
+
+
+def test_get_callable_args_name_no_args():
+    def func():
+        pass
+    assert get_callable_args_name(func) == []
+
+
+@pytest.fixture
+def mock_model_ckpt_hook() -> MagicMock:
+    model_ckpt_hook = MagicMock(spec=ModelCheckpoint)
+    model_ckpt_hook.monitor = "val/accuracy"
+    return model_ckpt_hook
+
+
+def test_get_metric(mock_model_ckpt_hook):
+    assert  get_metric(mock_model_ckpt_hook) == "val/accuracy"
+
+
+def test_get_metric_list_callback(mock_model_ckpt_hook):
+    callbacks = [mock_model_ckpt_hook]
+    assert  get_metric(callbacks) == "val/accuracy"
+
+
+def test_get_metric_no_model_ckpt_callback():
+    callbacks = [MagicMock()]
+    with pytest.raises(RuntimeError, match="Failed to find a metric"):
+        get_metric(callbacks)
+
+
+def test_get_metric_list_monitor_value_none(mock_model_ckpt_hook):
+    mock_model_ckpt_hook.monitor = None
+    with pytest.raises(ValueError, match="Failed to find a metric"):
+        get_metric(mock_model_ckpt_hook)
