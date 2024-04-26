@@ -9,8 +9,6 @@ import copy
 import math
 from typing import TYPE_CHECKING, Sequence
 
-from mmengine import ConfigDict
-from otx.algo.detection.ops.nms import multiclass_nms
 import torch
 import torch.nn.functional as F  # noqa: N812
 from mmengine.structures import InstanceData  # TODO (sungchul): remove
@@ -21,7 +19,7 @@ from otx.algo.detection.heads.base_sampler import PseudoSampler
 from otx.algo.detection.heads.point_generator import MlvlPointGenerator
 from otx.algo.detection.heads.sim_ota_assigner import SimOTAAssigner
 from otx.algo.detection.losses import CrossEntropyLoss, IoULoss, L1Loss
-from otx.algo.detection.ops.nms import batched_nms
+from otx.algo.detection.ops.nms import batched_nms, multiclass_nms
 from otx.algo.detection.utils.utils import multi_apply, reduce_mean
 from otx.algo.modules.conv_module import ConvModule
 from otx.algo.modules.depthwise_separable_conv_module import DepthwiseSeparableConvModule
@@ -338,16 +336,16 @@ class YOLOXHead(BaseDenseHead):
 
         return result_list
 
-    def export_by_feat(
+    def export_by_feat(  # type: ignore[override]
         self,
         cls_scores: list[Tensor],
         bbox_preds: list[Tensor],
-        objectnesses: list[Tensor] | None = None,
+        objectnesses: list[Tensor],
         batch_img_metas: list[dict] | None = None,
         cfg: ConfigDict | None = None,
-        rescale: TYPE_CHECKING = False,
-        with_nms: TYPE_CHECKING = True,
-    ) -> list[InstanceData]:
+        rescale: bool = False,
+        with_nms: bool = True,
+    ) -> tuple[Tensor, Tensor] | tuple[Tensor, Tensor, Tensor]:
         """Transform network output for a batch into bbox predictions.
 
         Reference : https://github.com/open-mmlab/mmdeploy/blob/v1.3.1/mmdeploy/codebase/mmdet/models/dense_heads/yolox_head.py#L18-L118
@@ -406,10 +404,10 @@ class YOLOXHead(BaseDenseHead):
             bboxes,
             scores,
             max_output_boxes_per_class=200,
-            iou_threshold=cfg.nms.iou_threshold,
-            score_threshold=cfg.score_thr,
+            iou_threshold=cfg.nms.iou_threshold,  # type: ignore[union-attr]
+            score_threshold=cfg.score_thr,  # type: ignore[union-attr]
             pre_top_k=5000,
-            keep_top_k=cfg.max_per_img,
+            keep_top_k=cfg.max_per_img,  # type: ignore[union-attr]
         )
 
     def _bbox_decode(self, priors: Tensor, bbox_preds: Tensor) -> Tensor:
