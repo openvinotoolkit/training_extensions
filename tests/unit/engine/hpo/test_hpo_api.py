@@ -31,7 +31,7 @@ HPO_NAME_MAP: dict[str, str] = {
 
 
 @pytest.fixture()
-def engine_work_dir(tmp_path: target_file.Path) -> Path:
+def engine_work_dir(tmp_path: Path) -> Path:
     return tmp_path
 
 
@@ -51,7 +51,7 @@ def default_lr() -> float:
 
 
 @pytest.fixture()
-def mock_engine(engine_work_dir: target_file.Path, dataset_size: int, default_bs: int, default_lr: float) -> MagicMock:
+def mock_engine(engine_work_dir: Path, dataset_size: int, default_bs: int, default_lr: float) -> MagicMock:
     engine = MagicMock()
     engine.work_dir = engine_work_dir
     engine.datamodule.subsets = {engine.datamodule.config.train_subset.subset_name: range(dataset_size)}
@@ -110,7 +110,7 @@ def mock_progress_update_callback() -> MagicMock:
 def test_execute_hpo(
     mock_engine: MagicMock,
     hpo_config: HpoConfig,
-    engine_work_dir: target_file.Path,
+    engine_work_dir: Path,
     mock_run_hpo_loop: MagicMock,
     mock_thread: MagicMock,
     mock_hpo_configurator: HPOConfigurator,  # noqa: ARG001
@@ -266,12 +266,7 @@ class TestHPOConfigurator:
         hpo_configurator._remove_wrong_search_space(wrong_search_space)
         assert wrong_search_space == {}
 
-    def test_get_hpo_algo(
-        self,
-        mocker,
-        mock_engine: MagicMock,
-        hpo_config: HpoConfig,
-    ):
+    def test_get_hpo_algo(self, mocker, mock_engine: MagicMock, hpo_config: HpoConfig):
         hpo_configurator = HPOConfigurator(mock_engine, 10, hpo_config)
         mock_hyper_band = mocker.patch.object(target_file, "HyperBand")
         hpo_configurator.get_hpo_algo()
@@ -314,7 +309,7 @@ def test_adjust_train_args():
 
 
 @pytest.fixture()
-def mock_hpo_workdir(tmp_path: Path):
+def mock_hpo_workdir(tmp_path: Path) -> Path:
     (tmp_path / "1.ckpt").touch()
     sub_dir = tmp_path / "a"
     sub_dir.mkdir()
@@ -322,7 +317,7 @@ def mock_hpo_workdir(tmp_path: Path):
     return tmp_path
 
 
-def test_remove_unused_model_weights(mock_hpo_workdir):
+def test_remove_unused_model_weights(mock_hpo_workdir: Path):
     best_weight = mock_hpo_workdir / "3.ckpt"
     best_weight.touch()
 
