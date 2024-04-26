@@ -3,7 +3,7 @@ import pytest
 import torch
 from lightning import Trainer
 from lightning.pytorch.utilities.types import LRSchedulerConfig
-from openvino.model_api.models.utils import ClassificationResult
+from model_api.models.utils import ClassificationResult
 from otx.core.data.entity.base import OTXBatchDataEntity
 from otx.core.model.base import OTXModel, OVModel
 from otx.core.schedulers.warmup_schedulers import LinearWarmupScheduler

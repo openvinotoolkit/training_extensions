@@ -11,8 +11,8 @@ from contextlib import contextmanager
 from typing import TYPE_CHECKING, Any, Callable, Iterator, Literal
 
 import torch
-from openvino.model_api.models import Model
-from openvino.model_api.tilers import DetectionTiler
+from model_api.models import Model
+from model_api.tilers import DetectionTiler
 from torchvision import tv_tensors
 
 from otx.core.config.data import TileConfig
@@ -33,8 +33,8 @@ if TYPE_CHECKING:
     from mmdet.models.data_preprocessors import DetDataPreprocessor
     from mmdet.models.detectors import SingleStageDetector
     from mmdet.structures import OptSampleList
+    from model_api.models.utils import DetectionResult
     from omegaconf import DictConfig
-    from openvino.model_api.models.utils import DetectionResult
     from torch import nn
     from torchmetrics import Metric
 
@@ -531,7 +531,7 @@ class OVDetectionModel(OVModel[DetBatchDataEntity, DetBatchPredEntity]):
 
     def _create_model(self) -> Model:
         """Create a OV model with help of Model API."""
-        from openvino.model_api.adapters import OpenvinoAdapter, create_core, get_user_config
+        from model_api.adapters import OpenvinoAdapter, create_core, get_user_config
 
         plugin_config = get_user_config("AUTO", str(self.num_requests), "AUTO")
         if self.use_throughput_mode:

@@ -24,8 +24,8 @@ from otx.core.utils.utils import get_mean_std_from_data_processing
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
+    from model_api.models.utils import ClassificationResult
     from omegaconf import DictConfig
-    from openvino.model_api.models.utils import ClassificationResult
     from torch import Tensor, nn
 
     from otx.core.exporter.base import OTXModelExporter

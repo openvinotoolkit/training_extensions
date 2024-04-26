@@ -13,7 +13,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, Literal
 from zipfile import ZipFile
 
-from openvino.model_api.models import Model
+from model_api.models import Model
 
 from otx.core.exporter.exportable_code import demo
 from otx.core.types.export import OTXExportFormatType, TaskLevelExportParameters
