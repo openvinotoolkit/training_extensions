@@ -394,12 +394,12 @@ class SSD(ExplainableOTXDetModel):
         return detector
 
     def _customize_inputs(self, entity: DetBatchDataEntity) -> dict[str, Any]:
-        mmdet_inputs: dict[str, Any] = {}
+        inputs: dict[str, Any] = {}
 
-        mmdet_inputs["entity"] = entity
-        mmdet_inputs["mode"] = "loss" if self.training else "predict"
+        inputs["entity"] = entity
+        inputs["mode"] = "loss" if self.training else "predict"
 
-        return mmdet_inputs
+        return inputs
 
     def _customize_outputs(
         self,

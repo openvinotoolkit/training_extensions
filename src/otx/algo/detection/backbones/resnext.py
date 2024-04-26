@@ -7,9 +7,10 @@ import math
 from typing import ClassVar
 
 from mmcv.cnn import build_conv_layer, build_norm_layer
-from mmdet.models.backbones.resnet import Bottleneck as _Bottleneck
-from mmdet.models.backbones.resnet import ResNet
-from mmdet.models.layers import ResLayer
+
+from otx.algo.instance_segmentation.mmdet.models.backbones import ResNet
+from otx.algo.instance_segmentation.mmdet.models.backbones.resnet import Bottleneck as _Bottleneck
+from otx.algo.instance_segmentation.mmdet.models.layers import ResLayer
 
 
 class Bottleneck(_Bottleneck):
