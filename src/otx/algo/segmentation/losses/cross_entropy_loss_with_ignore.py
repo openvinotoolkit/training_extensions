@@ -5,14 +5,16 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import torch
 import torch.nn.functional as F  # noqa: N812
-from mmseg.models.losses import CrossEntropyLoss
-from mmseg.models.losses.utils import weight_reduce_loss
-from mmseg.registry import MODELS
+from torch.nn import CrossEntropyLoss
+
+if TYPE_CHECKING:
+    from torch import Tensor
 
 
-@MODELS.register_module()
 class CrossEntropyLossWithIgnore(CrossEntropyLoss):
     """CrossEntropyLossWithIgnore with Ignore Mode Support for Class Incremental Learning.
 
@@ -22,18 +24,41 @@ class CrossEntropyLossWithIgnore(CrossEntropyLoss):
     CrossEntropyLossWithIgnore can be used to ignore the unseen classes.
     """
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self._loss_name = "loss_ce_ignore"
+    def __init__(
+        self,
+        weight: Tensor | None = None,
+        size_average: str | None = None,
+        ignore_index: int = -100,
+        reduce: bool | None = None,
+        reduction: str = "mean",
+        label_smoothing: float = 0.0,
+    ) -> None:
+        """Initialize the CrossEntropyLossWithIgnore.
+
+        Args:
+            weight (Tensor, optional): Sample-wise loss weight. Defaults to None.
+            size_average (Optional[str], optional): Deprecated (see `reduction`).
+                Defaults to None.
+            ignore_index (int, optional): Specifies a target value that is ignored
+                and does not contribute to the input gradients. Defaults to -100.
+            reduce (Optional[bool], optional): Deprecated (see `reduction`).
+                Defaults to None.
+            reduction (str, optional): Specifies the reduction to apply to the
+                output. Defaults to 'mean'.
+            label_smoothing (float, optional): The amount of label smoothing to
+                apply. Defaults to 0.0.
+        """
+        super().__init__(weight, size_average, ignore_index, reduce, reduction, label_smoothing)
+        self.name = "loss_ce_ignore"
 
     def forward(
         self,
         cls_score: torch.Tensor,
         label: torch.Tensor,
+        img_metas: dict | None = None,
         weight: torch.Tensor | None = None,
         avg_factor: int | None = None,
         reduction_override: str = "mean",
-        ignore_index: int = 255,
         valid_label_mask: torch.Tensor | None = None,
         **kwargs,
     ) -> torch.Tensor:
@@ -50,11 +75,6 @@ class CrossEntropyLossWithIgnore(CrossEntropyLoss):
                 the loss. Default: None.
             reduction_override (str, optional): The method used to reduce the loss.
                 Options are 'none', 'mean' and 'sum'. Default: 'mean'.
-            ignore_index (int): Specifies a target value that is ignored and
-                does not contribute to the input gradients. When
-                ``avg_non_ignore `` is ``True``, and the ``reduction`` is
-                ``''mean''``, the loss is averaged over non-ignored targets.
-                Defaults: 255.
             valid_label_mask (torch.Tensor, optional): The valid labels with
                 shape (N, num_classes).
                 If the value in the valid_label_mask is 0, mask label of the
@@ -63,7 +83,7 @@ class CrossEntropyLossWithIgnore(CrossEntropyLoss):
             **kwargs (Any): Additional keyword arguments.
         """
         if valid_label_mask is None:
-            return super().forward(cls_score, label, weight, avg_factor, reduction_override, ignore_index, **kwargs)
+            return super().forward(cls_score, label)
         reduction = reduction_override if reduction_override else self.reduction
         batch_size = label.shape[0]
         for i in range(batch_size):
@@ -72,7 +92,7 @@ class CrossEntropyLossWithIgnore(CrossEntropyLoss):
             for inv_l in invalid_labels:
                 cls_score = torch.cat((cls_score[:, :inv_l], cls_score[:, inv_l + 1 :]), dim=1)
 
-        losses = F.cross_entropy(cls_score, label, reduction="none", ignore_index=ignore_index)
+        losses = F.cross_entropy(cls_score, label, reduction="none", ignore_index=self.ignore_index)
 
         if weight is not None:
             weight = weight.float()
@@ -92,3 +112,65 @@ class CrossEntropyLossWithIgnore(CrossEntropyLoss):
             str: The name of this loss item.
         """
         return self._loss_name
+
+
+def weight_reduce_loss(
+    loss: torch.Tensor,
+    weight: torch.Tensor | None = None,
+    reduction: str = "mean",
+    avg_factor: float | None = None,
+) -> torch.Tensor:
+    """Apply element-wise weight and reduce loss.
+
+    Args:
+        loss (torch.Tensor): Element-wise loss.
+        weight (torch.Tensor, optional): Element-wise weights.
+        reduction (str): Same as built-in losses of PyTorch.
+        avg_factor (float, optional): Average factor when computing the mean of losses.
+
+    Returns:
+        torch.Tensor: Processed loss values.
+    """
+    # if weight is specified, apply element-wise weight
+    if weight is not None:
+        if weight.dim() != loss.dim():
+            msg = f"weight` dim {weight.dim()} does not match loss dim {loss.dim()}."
+            raise ValueError(msg)
+        if weight.dim() > 1 and not (weight.size(1) == 1 or weight.size(1) == loss.size(1)):
+            msg = "In weight dimension, the dim 1 must be 1 or the same as the loss."
+            raise ValueError(msg)
+        loss = loss * weight
+
+    # if avg_factor is not specified, just reduce the loss
+    if avg_factor is None:
+        loss = reduce_loss(loss, reduction)
+    elif reduction == "mean":
+        # Avoid causing ZeroDivisionError when avg_factor is 0.0,
+        # i.e., all labels of an image belong to ignore index.
+        eps = torch.finfo(torch.float32).eps
+        loss = loss.sum() / (avg_factor + eps)
+    # if reduction is 'none', then do nothing, otherwise raise an error
+    elif reduction != "none":
+        msg = 'avg_factor can not be used with reduction="sum"'
+        raise ValueError(msg)
+    return loss
+
+
+def reduce_loss(loss: torch.Tensor, reduction: str) -> torch.Tensor:
+    """Reduce loss as specified.
+
+    Args:
+        loss (Tensor): Elementwise loss tensor.
+        reduction (str): Options are "none", "mean" and "sum".
+
+    Return:
+        Tensor: Reduced loss tensor.
+    """
+    reduction_enum = F._Reduction.get_enum(reduction)  # noqa: SLF001
+    # none: 0, elementwise_mean:1, sum: 2
+    if reduction_enum == 1:
+        return loss.mean()
+    if reduction_enum == 2:
+        return loss.sum()
+
+    return loss

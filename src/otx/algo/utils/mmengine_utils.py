@@ -159,6 +159,7 @@ def load_checkpoint_to_model(
     model: nn.Module,
     checkpoint: dict,
     strict: bool = False,
+    prefix: str = "",
 ) -> None:
     """Loads a checkpoint dictionary into a PyTorch model.
 
@@ -178,8 +179,9 @@ def load_checkpoint_to_model(
 
     # strip prefix of state_dict
     metadata = getattr(state_dict, "_metadata", OrderedDict())
-    for p, r in [(r"^module\.", "")]:
+    for p, r in [(r"^module\.", ""), (rf"^{prefix}\.", "")]:
         state_dict = OrderedDict({re.sub(p, r, k): v for k, v in state_dict.items()})
+
     # Keep metadata in state_dict
     state_dict._metadata = metadata  # noqa: SLF001
 

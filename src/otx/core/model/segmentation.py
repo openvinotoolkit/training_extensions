@@ -9,10 +9,13 @@ import json
 from collections.abc import Sequence
 from typing import TYPE_CHECKING, Any
 
+import torch
 from torchvision import tv_tensors
 
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.segmentation import SegBatchDataEntity, SegBatchPredEntity
+from otx.core.exporter.base import OTXModelExporter
+from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.metrics import MetricInput
 from otx.core.metrics.dice import SegmCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable, OTXModel, OVModel
@@ -32,7 +35,7 @@ if TYPE_CHECKING:
 
 
 class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity]):
-    """Base class for the detection models used in OTX."""
+    """Base class for the semantic segmentation models used in OTX."""
 
     def __init__(
         self,
@@ -42,6 +45,19 @@ class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity]):
         metric: MetricCallable = SegmCallable,  # type: ignore[assignment]
         torch_compile: bool = False,
     ):
+        """Base semantic segmentation model.
+
+        Args:
+            label_info (LabelInfoTypes): The label information for the segmentation model.
+            optimizer (OptimizerCallable, optional): The optimizer to use for training.
+                Defaults to DefaultOptimizerCallable.
+            scheduler (LRSchedulerCallable | LRSchedulerListCallable, optional):
+                The scheduler to use for learning rate adjustment. Defaults to DefaultSchedulerCallable.
+            metric (MetricCallable, optional): The metric to use for evaluation.
+                Defaults to SegmCallable.
+            torch_compile (bool, optional): Whether to compile the model using TorchScript.
+                Defaults to False.
+        """
         super().__init__(
             label_info=label_info,
             optimizer=optimizer,
@@ -85,6 +101,111 @@ class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity]):
 
         raise TypeError(label_info)
 
+    def forward_for_tracing(self, image: Tensor) -> Tensor | dict[str, Tensor]:
+        """Model forward function used for the model tracing during model exportation."""
+        return self.model(inputs=image, mode="tensor")
+
+
+class TorchVisionCompatibleModel(OTXSegmentationModel):
+    """Segmentation model compatible with torchvision data pipeline."""
+
+    def __init__(
+        self,
+        label_info: LabelInfoTypes,
+        optimizer: OptimizerCallable = DefaultOptimizerCallable,
+        scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
+        metric: MetricCallable = SegmCallable,  # type: ignore[assignment]
+        torch_compile: bool = False,
+        backbone_configuration: dict[str, Any] | None = None,
+        decode_head_configuration: dict[str, Any] | None = None,
+        criterion_configuration: list[dict[str, Any]] | None = None,
+        export_image_configuration: dict[str, Any] | None = None,
+        name_base_model: str = "semantic_segmentation_model",
+    ):
+        """Torchvision compatible model.
+
+        Args:
+            label_info (LabelInfoTypes): The label information for the segmentation model.
+            optimizer (OptimizerCallable, optional): The optimizer callable for the model.
+                Defaults to DefaultOptimizerCallable.
+            scheduler (LRSchedulerCallable | LRSchedulerListCallable, optional):
+                The learning rate scheduler callable for the model. Defaults to DefaultSchedulerCallable.
+            metric (MetricCallable, optional): The metric callable for the model.
+                Defaults to SegmCallable.
+            torch_compile (bool, optional): Whether to compile the model using Torch. Defaults to False.
+            backbone_configuration (dict[str, Any] | None, optional):
+                The configuration for the backbone of the model. Defaults to None.
+            decode_head_configuration (dict[str, Any] | None, optional):
+                The configuration for the decode head of the model. Defaults to None.
+            criterion_configuration (list[dict[str, Any]] | None, optional):
+                The configuration for the criterion of the model. Defaults to None.
+            export_image_configuration (dict[str, Any] | None, optional):
+                The configuration for the export of the model like mean, scale and image_size. Defaults to None.
+            name_base_model (str, optional): The name of the base model used for trainig.
+                Defaults to "semantic_segmentation_model".
+        """
+        self.backbone_configuration = backbone_configuration if backbone_configuration is not None else {}
+        self.decode_head_configuration = decode_head_configuration if decode_head_configuration is not None else {}
+        export_image_configuration = export_image_configuration if export_image_configuration is not None else {}
+        self.criterion_configuration = criterion_configuration
+        self.image_size = tuple(export_image_configuration.get("image_size", (1, 3, 512, 512)))
+        self.mean = export_image_configuration.get("mean", [123.675, 116.28, 103.53])
+        self.scale = export_image_configuration.get("std", [58.395, 57.12, 57.375])
+        self.name_base_model = name_base_model
+
+        super().__init__(
+            label_info=label_info,
+            optimizer=optimizer,
+            scheduler=scheduler,
+            metric=metric,
+            torch_compile=torch_compile,
+        )
+
+    def _customize_inputs(self, entity: SegBatchDataEntity) -> dict[str, Any]:
+        mode = "loss" if self.training else "predict"
+
+        masks = torch.stack(entity.masks).long()
+
+        return {"inputs": entity.images, "img_metas": entity.imgs_info, "masks": masks, "mode": mode}
+
+    def _customize_outputs(
+        self,
+        outputs: Any,  # noqa: ANN401
+        inputs: SegBatchDataEntity,
+    ) -> SegBatchPredEntity | OTXBatchLossEntity:
+        if self.training:
+            if not isinstance(outputs, dict):
+                raise TypeError(outputs)
+
+            losses = OTXBatchLossEntity()
+            for k, v in outputs.items():
+                losses[k] = v
+            return losses
+
+        return SegBatchPredEntity(
+            batch_size=len(outputs),
+            images=inputs.images,
+            imgs_info=inputs.imgs_info,
+            scores=[],
+            masks=outputs,
+        )
+
+    @property
+    def _exporter(self) -> OTXModelExporter:
+        """Creates OTXModelExporter object that can export the model."""
+        return OTXNativeModelExporter(
+            task_level_export_parameters=self._export_parameters,
+            input_size=self.image_size,
+            mean=self.mean,
+            std=self.scale,
+            resize_mode="standard",
+            pad_value=0,
+            swap_rgb=False,
+            via_onnx=False,
+            onnx_export_configuration=None,
+            output_names=None,
+        )
+
 
 class MMSegCompatibleModel(OTXSegmentationModel):
     """Segmentation model compatible for MMSeg.
@@ -103,6 +224,24 @@ class MMSegCompatibleModel(OTXSegmentationModel):
         metric: MetricCallable = SegmCallable,  # type: ignore[assignment]
         torch_compile: bool = False,
     ) -> None:
+        """MMSeg compatible model.
+
+        Args:
+            label_info (LabelInfoTypes): The label information for the segmentation model.
+            config (DictConfig): The configuration for the segmentation model.
+            optimizer (OptimizerCallable, optional): The optimizer to use for training.
+                Defaults to DefaultOptimizerCallable.
+            scheduler (LRSchedulerCallable | LRSchedulerListCallable, optional):
+                The scheduler to use for learning rate adjustment.
+                    Defaults to DefaultSchedulerCallable.
+            metric (MetricCallable, optional): The metric to use for evaluation.
+                Defaults to SegmCallable.
+            torch_compile (bool, optional): Whether to compile the model using TorchScript.
+                Defaults to False.
+
+        Returns:
+            None
+        """
         config = inplace_num_classes(cfg=config, num_classes=self._dispatch_label_info(label_info).num_classes)
         self.config = config
         self.load_from = self.config.pop("load_from", None)
@@ -183,10 +322,6 @@ class MMSegCompatibleModel(OTXSegmentationModel):
             scores=[],
             masks=masks,
         )
-
-    def forward_for_tracing(self, image: Tensor) -> Tensor | dict[str, Tensor]:
-        """Model forward function used for the model tracing during model exportation."""
-        return self.model(inputs=image, mode="tensor")
 
 
 class OVSegmentationModel(OVModel[SegBatchDataEntity, SegBatchPredEntity]):

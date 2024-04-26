@@ -630,7 +630,6 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
 
         orig_forward = self.forward
         orig_trainer = self._trainer  # type: ignore[has-type]
-
         try:
             if self._trainer is None:  # type: ignore[has-type]
                 self._trainer = Trainer()
