@@ -6,11 +6,11 @@ from __future__ import annotations
 import math
 from typing import ClassVar
 
-from mmcv.cnn import build_conv_layer, build_norm_layer
-
 from otx.algo.instance_segmentation.mmdet.models.backbones import ResNet
 from otx.algo.instance_segmentation.mmdet.models.backbones.resnet import Bottleneck as _Bottleneck
 from otx.algo.instance_segmentation.mmdet.models.layers import ResLayer
+from otx.algo.modules.conv import build_conv_layer
+from otx.algo.modules.norm import build_norm_layer
 
 
 class Bottleneck(_Bottleneck):
@@ -49,49 +49,20 @@ class Bottleneck(_Bottleneck):
             bias=False,
         )
         self.add_module(self.norm1_name, norm1)
-        fallback_on_stride = False
-        self.with_modulated_dcn = False
-        if self.with_dcn:
-            fallback_on_stride = self.dcn.pop("fallback_on_stride", False)
-        if not self.with_dcn or fallback_on_stride:
-            self.conv2 = build_conv_layer(
-                self.conv_cfg,
-                width,
-                width,
-                kernel_size=3,
-                stride=self.conv2_stride,
-                padding=self.dilation,
-                dilation=self.dilation,
-                groups=groups,
-                bias=False,
-            )
-        else:
-            self.conv2 = build_conv_layer(
-                self.dcn,
-                width,
-                width,
-                kernel_size=3,
-                stride=self.conv2_stride,
-                padding=self.dilation,
-                dilation=self.dilation,
-                groups=groups,
-                bias=False,
-            )
-
+        self.conv2 = build_conv_layer(
+            self.conv_cfg,
+            width,
+            width,
+            kernel_size=3,
+            stride=self.conv2_stride,
+            padding=self.dilation,
+            dilation=self.dilation,
+            groups=groups,
+            bias=False,
+        )
         self.add_module(self.norm2_name, norm2)
         self.conv3 = build_conv_layer(self.conv_cfg, width, self.planes * self.expansion, kernel_size=1, bias=False)
         self.add_module(self.norm3_name, norm3)
-
-        if self.with_plugins:
-            self._del_block_plugins(
-                self.after_conv1_plugin_names + self.after_conv2_plugin_names + self.after_conv3_plugin_names,  # type: ignore[has-type]
-            )
-            self.after_conv1_plugin_names = self.make_block_plugins(width, self.after_conv1_plugins)
-            self.after_conv2_plugin_names = self.make_block_plugins(width, self.after_conv2_plugins)
-            self.after_conv3_plugin_names = self.make_block_plugins(
-                self.planes * self.expansion,
-                self.after_conv3_plugins,
-            )
 
     def _del_block_plugins(self, plugin_names: list[str]) -> None:
         """Delete plugins for block if exist.

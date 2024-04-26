@@ -213,7 +213,6 @@ class ExplainableOTXDetModel(OTXDetectionModel):
             if self._customize_inputs != ExplainableOTXDetModel._customize_inputs
             else self._forward_explain_detection(self.model, inputs)
         )
-
         return (
             self._customize_outputs(outputs, inputs)
             if self._customize_outputs != ExplainableOTXDetModel._customize_outputs
