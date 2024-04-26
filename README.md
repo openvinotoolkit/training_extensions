@@ -100,6 +100,7 @@ You can find more details with examples in the [CLI command intro](https://openv
 
 ### v1.6.1 (2Q24)
 
+- Update pymongo version to 4.6.3 for resolving CVE-2024-21506 (<https://github.com/openvinotoolkit/training_extensions/pull/3396>)
 - Use torchvision in MRCNN on CUDA (<https://github.com/openvinotoolkit/training_extensions/pull/3347>)
 - Update IPEX version in installation guide documentation (<https://github.com/openvinotoolkit/training_extensions/pull/3343>)
 - Update benchmark (<https://github.com/openvinotoolkit/training_extensions/pull/3338>)
