@@ -12,7 +12,7 @@ you can refer https://github.com/open-mmlab/mmpretrain/blob/main/mmpretrain/mode
 from __future__ import annotations
 
 import inspect
-from typing import Callable
+from typing import Callable, Sequence
 
 import torch
 from mmengine.model import BaseModule
@@ -167,7 +167,7 @@ class MultiLabelClsHead(BaseModule):
         """
         # The obtain the MultiLabelLinearClsHead doesn't have other module,
         # just return after unpacking.
-        if isinstance(feats, tuple):
+        if isinstance(feats, Sequence):
             return feats[-1]
         return feats
 

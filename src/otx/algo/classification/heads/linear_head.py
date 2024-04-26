@@ -44,12 +44,9 @@ class LinearClsHead(BaseModule):
         in_channels: int,
         loss: nn.Module,
         topk: int | tuple = (1,),
-        init_cfg: dict | None = None,
+        init_cfg: dict = {"type": "Normal", "layer": "Linear", "std": 0.01},  # noqa: B006
         **kwargs,
     ):
-        if init_cfg is None:
-            init_cfg = {"type": "Normal", "layer": "Linear", "std": 0.01}
-
         super().__init__(init_cfg=init_cfg)
         self._is_init = False
 
