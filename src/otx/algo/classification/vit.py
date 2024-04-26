@@ -298,6 +298,7 @@ class VisionTransformerForMulticlassCls(ForwardExplainMixInForViT, OTXMulticlass
         return {
             "images": inputs.stacked_images,
             "labels": torch.cat(inputs.labels, dim=0),
+            "imgs_info": inputs.imgs_info,
             "mode": mode,
         }
 
