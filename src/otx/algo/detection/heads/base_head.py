@@ -468,7 +468,7 @@ class BaseDenseHead(BaseModule):
         x: tuple[Tensor],
         batch_data_samples: list[InstanceData],
         rescale: bool = False,
-    ) -> list[InstanceData]:
+    ) -> tuple:
         """Perform forward propagation of the detection head and predict detection results.
 
         Args:
@@ -494,12 +494,12 @@ class BaseDenseHead(BaseModule):
         self,
         cls_scores: list[Tensor],
         bbox_preds: list[Tensor],
+        batch_img_metas: list[dict],
         score_factors: list[Tensor] | None = None,
-        batch_img_metas: list[dict] | None = None,
         cfg: ConfigDict | None = None,
         rescale: bool = False,
         with_nms: bool = True,
-    ) -> list[InstanceData] | tuple:
+    ) -> tuple:
         """Transform a batch of output features extracted from the head into bbox results.
 
         Note: When score_factors is not None, the cls_scores are

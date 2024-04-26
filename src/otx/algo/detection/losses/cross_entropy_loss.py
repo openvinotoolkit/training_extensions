@@ -5,7 +5,6 @@
 from __future__ import annotations
 
 import torch
-from mmengine.registry import MODELS
 from torch import nn
 
 from otx.algo.detection.losses.weighted_loss import weight_reduce_loss
@@ -182,7 +181,6 @@ def mask_cross_entropy(
     )[None]
 
 
-@MODELS.register_module()
 class CrossEntropyLoss(nn.Module):
     """Base Cross Entropy Loss implementation from mmdet."""
 

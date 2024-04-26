@@ -13,12 +13,15 @@ from typing import TYPE_CHECKING
 import torch
 import torch.nn.functional
 from mmengine.model import BaseModule
-from mmengine.registry import MODELS, TASK_UTILS
 from mmengine.structures import InstanceData
 from torch import Tensor, nn
 from torch.nn.modules.utils import _pair
 
-from otx.algo.detection.deployment import is_mmdeploy_enabled
+from otx.algo.detection.heads.delta_xywh_bbox_coder import DeltaXYWHBBoxCoder
+from otx.algo.detection.losses.cross_entropy_loss import CrossEntropyLoss
+from otx.algo.detection.losses.cross_focal_loss import CrossSigmoidFocalLoss
+from otx.algo.detection.losses.smooth_l1_loss import L1Loss
+from otx.algo.detection.ops.nms import multiclass_nms
 from otx.algo.detection.utils.utils import empty_instances
 from otx.algo.instance_segmentation.mmdet.models.layers import multiclass_nms_torch
 from otx.algo.instance_segmentation.mmdet.structures.bbox import scale_boxes
@@ -61,9 +64,29 @@ class BBoxHead(BaseModule):
         self.reg_class_agnostic = reg_class_agnostic
         self.reg_decoded_bbox = reg_decoded_bbox
 
-        self.bbox_coder = TASK_UTILS.build(bbox_coder)
-        self.loss_cls = MODELS.build(loss_cls)
-        self.loss_bbox = MODELS.build(loss_bbox)
+        if bbox_coder.get("type") == "DeltaXYWHBBoxCoder":
+            bbox_coder.pop("type")
+            self.bbox_coder = DeltaXYWHBBoxCoder(**bbox_coder)
+        else:
+            msg = f"Unsupported bbox_coder type: {bbox_coder.get('type')}"
+            raise ValueError(msg)
+
+        if loss_cls.get("type") == CrossEntropyLoss.__name__:
+            loss_cls.pop("type")
+            self.loss_cls = CrossEntropyLoss(**loss_cls)
+        elif loss_cls.get("type") == CrossSigmoidFocalLoss.__name__:
+            loss_cls.pop("type")
+            self.loss_cls = CrossSigmoidFocalLoss(**loss_cls)
+        else:
+            msg = f"Unsupported loss_cls type: {loss_cls.get('type')}"
+            raise ValueError(msg)
+
+        if loss_bbox.get("type") == "L1Loss":
+            loss_bbox.pop("type")
+            self.loss_bbox = L1Loss(**loss_bbox)
+        else:
+            msg = f"Unsupported loss_bbox type: {loss_bbox.get('type')}"
+            raise ValueError(msg)
 
         in_channels = self.in_channels
         if self.with_avg_pool:
@@ -309,48 +332,8 @@ class BBoxHead(BaseModule):
         results.labels = det_labels
         return results
 
-
-if is_mmdeploy_enabled():
-    from mmdeploy.codebase.mmdet.deploy import get_post_processing_params
-    from mmdeploy.core import FUNCTION_REWRITER, mark
-
-    from otx.algo.detection.ops.nms import multiclass_nms
-
-    @FUNCTION_REWRITER.register_rewriter(
-        "otx.algo.instance_segmentation.mmdet.models.bbox_heads.bbox_head.BBoxHead.forward",
-    )
-    @FUNCTION_REWRITER.register_rewriter(
-        "otx.algo.instance_segmentation.mmdet.models.custom_roi_head.CustomConvFCBBoxHead.forward",
-    )
-    def bbox_head__forward(self: BBoxHead, x: Tensor) -> tuple[Tensor]:
-        """Rewrite `forward` for default backend.
-
-        This function uses the specific `forward` function for the BBoxHead
-        or ConvFCBBoxHead after adding marks.
-
-        Args:
-            ctx (ContextCaller): The context with additional information.
-            self: The instance of the original class.
-            x (Tensor): Input image tensor.
-
-        Returns:
-            tuple(Tensor, Tensor): The (cls_score, bbox_pred). The cls_score
-            has shape (N, num_det, num_cls) and the bbox_pred has shape
-            (N, num_det, 4).
-        """
-        ctx = FUNCTION_REWRITER.get_context()
-
-        @mark("bbox_head_forward", inputs=["bbox_feats"], outputs=["cls_score", "bbox_pred"])
-        def __forward(self: BBoxHead, x: Tensor) -> tuple[Tensor]:
-            return ctx.origin_func(self, x)
-
-        return __forward(self, x)
-
-    @FUNCTION_REWRITER.register_rewriter(
-        "otx.algo.instance_segmentation.mmdet.models.bbox_heads.bbox_head.BBoxHead.predict_by_feat",
-    )
-    def bbox_head__predict_by_feat(
-        self: BBoxHead,
+    def export_by_feat(
+        self,
         rois: Tensor,
         cls_scores: tuple[Tensor],
         bbox_preds: tuple[Tensor],
@@ -384,7 +367,6 @@ if is_mmdeploy_enabled():
                     (num_instances, ).
         """
         warnings.warn(f"rescale: {rescale} is not supported in ONNX export. Ignored.", stacklevel=2)
-        ctx = FUNCTION_REWRITER.get_context()
         if rois.ndim != 3:
             msg = "Only support export two stage model to ONNX with batch dimension."
             raise ValueError(msg)
@@ -399,7 +381,7 @@ if is_mmdeploy_enabled():
             # num_classes = 1 if self.reg_class_agnostic else self.num_classes
             # if num_classes > 1:
             #     rois = rois.repeat_interleave(num_classes, dim=1)
-            bboxes = self.bbox_coder.decode(rois[..., 1:], bbox_preds, max_shape=img_shape)
+            bboxes = self.bbox_coder.decode_export(rois[..., 1:], bbox_preds, max_shape=img_shape)
         else:
             bboxes = rois[..., 1:].clone()
             if img_shape is not None:
@@ -420,17 +402,14 @@ if is_mmdeploy_enabled():
             bboxes = bboxes.reshape(-1, self.num_classes, encode_size)
             dim0_inds = torch.arange(bboxes.shape[0], device=device).unsqueeze(-1)
             bboxes = bboxes[dim0_inds, max_inds].reshape(batch_size, -1, encode_size)
+
         # get nms params
-        post_params = get_post_processing_params(ctx.cfg)
-        max_output_boxes_per_class = post_params.max_output_boxes_per_class
-        iou_threshold = rcnn_test_cfg["nms"].get("iou_threshold", post_params.iou_threshold)
-        score_threshold = rcnn_test_cfg.get("score_thr", post_params.score_threshold)
-        if torch.onnx.is_in_onnx_export():
-            pre_top_k = post_params.pre_top_k
-        else:
-            # For two stage partition post processing
-            pre_top_k = -1 if post_params.pre_top_k >= bboxes.shape[1] else post_params.pre_top_k
-        keep_top_k = rcnn_test_cfg.get("max_per_img", post_params.keep_top_k)
+        # TODO(Eugene): maybe not hard-code this IDK ¯\_(ツ)_/¯
+        max_output_boxes_per_class = 200
+        pre_top_k = 5000
+        iou_threshold = rcnn_test_cfg["nms"].get("iou_threshold")
+        score_threshold = rcnn_test_cfg.get("score_thr", 0.05)
+        keep_top_k = rcnn_test_cfg.get("max_per_img", 100)
         return multiclass_nms(
             bboxes,
             scores,

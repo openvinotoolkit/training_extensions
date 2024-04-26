@@ -8,12 +8,15 @@ from __future__ import annotations
 from copy import deepcopy
 from typing import TYPE_CHECKING, Literal
 
+from mmengine.structures import InstanceData
+
 from otx.algo.instance_segmentation.mmdet.models.detectors import MaskRCNN
 from otx.algo.utils.mmconfig import read_mmconfig
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.config.data import TileConfig
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.mmdeploy import MMdeployExporter
+from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.metrics.mean_ap import MaskRLEMeanAPCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
 from otx.core.model.instance_segmentation import MMDetInstanceSegCompatibleModel
@@ -24,6 +27,7 @@ from otx.core.utils.config import convert_conf_to_mmconfig_dict
 from otx.core.utils.utils import get_mean_std_from_data_processing
 
 if TYPE_CHECKING:
+    import torch
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
     from omegaconf import DictConfig
     from torch.nn.modules import Module
@@ -114,21 +118,66 @@ class MMDetMaskRCNN(MMDetInstanceSegCompatibleModel):
 
         mean, std = get_mean_std_from_data_processing(self.config)
 
-        with self.export_model_forward_context():
-            return MMdeployExporter(
-                model_builder=self._create_model,
-                model_cfg=deepcopy(self.config),
-                deploy_cfg="otx.algo.instance_segmentation.mmdeploy.maskrcnn",
-                test_pipeline=self._make_fake_test_pipeline(),
-                task_level_export_parameters=self._export_parameters,
-                input_size=self.image_size,
-                mean=mean,
-                std=std,
-                resize_mode="standard",  # [TODO](@Eunwoo): need to revert it to fit_to_window after resolving
-                pad_value=0,
-                swap_rgb=False,
-                output_names=["feature_vector", "saliency_map"] if self.explain_mode else None,
-            )
+        # with self.export_model_forward_context():
+        #     return MMdeployExporter(
+        #         model_builder=self._create_model,
+        #         model_cfg=deepcopy(self.config),
+        #         deploy_cfg="otx.algo.instance_segmentation.mmdeploy.maskrcnn",
+        #         test_pipeline=self._make_fake_test_pipeline(),
+        #         task_level_export_parameters=self._export_parameters,
+        #         input_size=self.image_size,
+        #         mean=mean,
+        #         std=std,
+        #         resize_mode="standard",  # [TODO](@Eunwoo): need to revert it to fit_to_window after resolving
+        #         pad_value=0,
+        #         swap_rgb=False,
+        #         output_names=["feature_vector", "saliency_map"] if self.explain_mode else None,
+        #     )
+
+        return OTXNativeModelExporter(
+            task_level_export_parameters=self._export_parameters,
+            input_size=self.image_size,
+            mean=mean,
+            std=std,
+            resize_mode="standard",
+            pad_value=0,
+            swap_rgb=False,
+            via_onnx=True,
+            onnx_export_configuration={
+                "input_names": ["image"],
+                "output_names": ["boxes", "labels", "masks"],
+                "dynamic_axes": {
+                    "image": {0: "batch", 2: "height", 3: "width"},
+                    "boxes": {0: "batch", 1: "num_dets"},
+                    "labels": {0: "batch", 1: "num_dets"},
+                    "masks": {0: "batch", 1: "num_dets", 2: "height", 3: "width"},
+                },
+                "opset_version": 11,
+                "autograd_inlining": False,
+            },
+            output_names=["feature_vector", "saliency_map"] if self.explain_mode else None,
+        )
+
+    def forward_for_tracing(
+        self,
+        inputs: torch.Tensor,
+    ) -> list[InstanceData]:
+        """Forward function for export."""
+        shape = (int(inputs.shape[2]), int(inputs.shape[3]))
+        meta_info = {
+            "pad_shape": shape,
+            "batch_input_shape": shape,
+            "img_shape": shape,
+            "scale_factor": (1.0, 1.0),
+        }
+        sample = InstanceData(
+            metainfo=meta_info,
+        )
+        data_samples = [sample] * len(inputs)
+        return self.model.export(
+            inputs,
+            data_samples,
+        )
 
     def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.model.") -> dict:
         """Load the previous OTX ckpt according to OTX2.0."""

@@ -14,7 +14,6 @@ data_preprocessor:
     - 1.0
     - 1.0
 type: MaskRCNN
-_scope_: mmengine
 backbone:
   type: efficientnet_b2b
   out_indices:

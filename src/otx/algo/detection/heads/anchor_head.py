@@ -14,12 +14,14 @@ from torch import Tensor, nn
 
 from otx.algo.detection.heads.atss_assigner import ATSSAssigner
 from otx.algo.detection.heads.base_head import BaseDenseHead
-from otx.algo.detection.heads.base_sampler import PseudoSampler
+from otx.algo.detection.heads.base_sampler import PseudoSampler, RandomSampler
 from otx.algo.detection.heads.custom_anchor_generator import AnchorGenerator
 from otx.algo.detection.heads.delta_xywh_bbox_coder import DeltaXYWHBBoxCoder
 from otx.algo.detection.heads.max_iou_assigner import MaxIoUAssigner
+from otx.algo.detection.losses.cross_entropy_loss import CrossEntropyLoss
 from otx.algo.detection.losses.cross_focal_loss import CrossSigmoidFocalLoss
 from otx.algo.detection.losses.iou_loss import GIoULoss
+from otx.algo.detection.losses.smooth_l1_loss import L1Loss
 from otx.algo.detection.utils.utils import anchor_inside_flags, images_to_levels, multi_apply, unmap
 
 if TYPE_CHECKING:
@@ -78,19 +80,53 @@ class AnchorHead(BaseDenseHead):
             msg = f"num_classes={num_classes} is too small"
             raise ValueError(msg)
         self.reg_decoded_bbox = reg_decoded_bbox
+        # TODO[EUGENE]: merge Jaeguk's PR work
+        if bbox_coder.get("type") == "DeltaXYWHBBoxCoder":
+            bbox_coder.pop("type")
+            self.bbox_coder = DeltaXYWHBBoxCoder(**bbox_coder)
+        else:
+            self.bbox_coder = DeltaXYWHBBoxCoder(**bbox_coder)
 
-        self.bbox_coder = DeltaXYWHBBoxCoder(**bbox_coder)
-        self.loss_cls = CrossSigmoidFocalLoss(**loss_cls)
-        self.loss_bbox = GIoULoss(**loss_bbox)
+        if loss_cls.get("type") == CrossSigmoidFocalLoss.__name__:
+            loss_cls.pop("type")
+            self.loss_cls = CrossSigmoidFocalLoss(**loss_cls)
+        elif loss_cls.get("type") == CrossEntropyLoss.__name__:
+            loss_cls.pop("type")
+            self.loss_cls = CrossEntropyLoss(**loss_cls)
+        else:
+            self.loss_cls = CrossSigmoidFocalLoss(**loss_cls)
+
+        if loss_bbox["type"] == "L1Loss":
+            loss_bbox.pop("type")
+            self.loss_bbox = L1Loss(**loss_bbox)
+        else:
+            self.loss_bbox = GIoULoss(**loss_bbox)
+
         self.train_cfg = train_cfg
         self.test_cfg = test_cfg
+
+        self.assigner: ATSSAssigner | MaxIoUAssigner
+        self.sampler: PseudoSampler | RandomSampler
         if self.train_cfg:
-            self.assigner: MaxIoUAssigner | ATSSAssigner = ATSSAssigner(**self.train_cfg["assigner"])
-            self.sampler = PseudoSampler(context=self)  # type: ignore[no-untyped-call]
+            if self.train_cfg["assigner"].get("type") == "MaxIoUAssigner":
+                self.train_cfg["assigner"].pop("type")
+                self.assigner = MaxIoUAssigner(**self.train_cfg["assigner"])
+            else:
+                self.assigner = ATSSAssigner(**self.train_cfg["assigner"])
+
+            if self.train_cfg["sampler"].get("type") == "RandomSampler":
+                self.train_cfg["sampler"].pop("type")
+                self.sampler = RandomSampler(**self.train_cfg["sampler"], context=self)
+            else:
+                self.sampler = PseudoSampler(context=self)  # type: ignore[no-untyped-call]
 
         self.fp16_enabled = False
 
-        self.prior_generator = AnchorGenerator(**anchor_generator)
+        if anchor_generator.get("type") == "AnchorGenerator":
+            anchor_generator.pop("type")
+            self.prior_generator = AnchorGenerator(**anchor_generator)
+        else:
+            self.prior_generator = AnchorGenerator(**anchor_generator)
 
         # Usually the numbers of anchors for each level are the same
         # except SSD detectors. So it is an int in the most dense

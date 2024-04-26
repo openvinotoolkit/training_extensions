@@ -1,6 +1,5 @@
 load_from: https://download.openmmlab.com/mmdetection/v2.0/swin/mask_rcnn_swin-t-p4-w7_fpn_fp16_ms-crop-3x_coco/mask_rcnn_swin-t-p4-w7_fpn_fp16_ms-crop-3x_coco_20210908_165006-90a4008c.pth
 type: MaskRCNN
-_scope_: mmengine
 backbone:
   attn_drop_rate: 0.0
   convert_weights: true

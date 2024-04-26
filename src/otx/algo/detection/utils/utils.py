@@ -16,6 +16,7 @@ from torch import Tensor
 # Methods below come from mmdet.utils and slightly modified.
 # https://github.com/open-mmlab/mmdetection/blob/3.x/mmdet/models/utils/misc.py
 
+
 def reduce_mean(tensor: Tensor) -> Tensor:
     """Obtain the mean of tensor on different GPUs.
 
