@@ -115,7 +115,7 @@ def get_metric(callbacks: list[Callback] | Callback) -> str:
     for callback in callbacks:
         if isinstance(callback, ModelCheckpoint):
             if (metric := callback.monitor) is None:
-                msg = "Failed to find a metric. Monitor value of ModelCheckpoint callback is set to None."
+                msg = "Failed to find a metric. 'monitor' value of ModelCheckpoint callback is set to None."
                 raise ValueError(msg)
             return metric
     msg = "Failed to find a metric. There is no ModelCheckpoint in callback list."
