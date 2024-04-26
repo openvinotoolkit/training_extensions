@@ -591,8 +591,9 @@ WEIGHT_INITIALIZERS = {
 
 
 def _initialize(module: nn.Module, cfg: dict, wholemodule: bool = False) -> None:
-    initialize_type = cfg.pop("type", None)
-    func = WEIGHT_INITIALIZERS[initialize_type](**cfg)
+    cfg_copy = copy.deepcopy(cfg)
+    initialize_type = cfg_copy.pop("type")
+    func = WEIGHT_INITIALIZERS[initialize_type](**cfg_copy)
     # wholemodule flag is for override mode, there is no layer key in override
     # and initializer will give init values for the whole module with the name
     # in override.
