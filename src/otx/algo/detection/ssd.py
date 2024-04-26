@@ -268,7 +268,8 @@ class SingleStageDetector(nn.Module):
         batch_inputs: Tensor,
         batch_img_metas: list[dict],
         rescale: bool = True,
-    ) -> list[InstanceData]:
+        explain_mode: bool = False,
+    ) -> list[InstanceData] | dict:
         """Predict results from a batch of inputs and data samples with post-processing.
 
         Args:
@@ -292,6 +293,18 @@ class SingleStageDetector(nn.Module):
                 - bboxes (Tensor): Has a shape (num_instances, 4),
                     the last dimension 4 arrange as (x1, y1, x2, y2).
         """
+        if explain_mode:
+            backbone_feat = self.extract_feat(batch_inputs)
+            bbox_head_feat = self.bbox_head.forward(backbone_feat)
+            feature_vector = self.feature_vector_fn(backbone_feat)
+            saliency_map = self.explain_fn(bbox_head_feat[0])
+            bboxes, labels = self.bbox_head.export(backbone_feat, batch_img_metas, rescale=rescale)
+            return {
+                "bboxes": bboxes,
+                "labels": labels,
+                "feature_vector": feature_vector,
+                "saliency_map": saliency_map,
+            }
         x = self.extract_feat(batch_inputs)
         return self.bbox_head.export(x, batch_img_metas, rescale=rescale)
 
@@ -403,7 +416,7 @@ class SSD(ExplainableOTXDetModel):
 
     def _customize_outputs(
         self,
-        outputs: list[InstanceData],
+        outputs: list[InstanceData] | dict,
         inputs: DetBatchDataEntity,
     ) -> DetBatchPredEntity | OTXBatchLossEntity:
         if self.training:
@@ -424,18 +437,19 @@ class SSD(ExplainableOTXDetModel):
         scores = []
         bboxes = []
         labels = []
-        for img_info, output in zip(inputs.imgs_info, outputs):
-            if not isinstance(output, InstanceData):
-                raise TypeError(output)
-            scores.append(output.scores)
+        predictions = outputs["predictions"] if isinstance(outputs, dict) else outputs
+        for img_info, prediction in zip(inputs.imgs_info, predictions):
+            if not isinstance(prediction, InstanceData):
+                raise TypeError(prediction)
+            scores.append(prediction.scores)
             bboxes.append(
                 tv_tensors.BoundingBoxes(
-                    output.bboxes,
+                    prediction.bboxes,
                     format="XYXY",
                     canvas_size=img_info.ori_shape,
                 ),
             )
-            labels.append(output.labels)
+            labels.append(prediction.labels)
 
         if self.explain_mode:
             if not isinstance(outputs, dict):
@@ -667,7 +681,7 @@ class SSD(ExplainableOTXDetModel):
                 },
                 "autograd_inlining": False,
             },
-            output_names=["feature_vector", "saliency_map"] if self.explain_mode else None,
+            output_names=["bboxes", "labels", "feature_vector", "saliency_map"] if self.explain_mode else None,
         )
 
     def forward_for_tracing(self, inputs: Tensor) -> list[InstanceData]:
@@ -679,11 +693,8 @@ class SSD(ExplainableOTXDetModel):
             "img_shape": shape,
             "scale_factor": (1.0, 1.0),
         }
-        sample = InstanceData(
-            metainfo=meta_info,
-        )
-        data_samples = [sample] * len(inputs)
-        return self.model.export(inputs, data_samples)
+        meta_info_list = [meta_info] * len(inputs)
+        return self.model.export(inputs, meta_info_list, explain_mode=self.explain_mode)
 
     def on_load_checkpoint(self, checkpoint: dict[str, Any]) -> None:
         """Callback on load checkpoint."""

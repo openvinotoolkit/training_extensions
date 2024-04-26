@@ -112,7 +112,7 @@ class ATSS(ExplainableOTXDetModel):
 
     def _customize_outputs(
         self,
-        outputs: list[InstanceData],
+        outputs: list[InstanceData] | dict,
         inputs: DetBatchDataEntity,
     ) -> DetBatchPredEntity | OTXBatchLossEntity:
         if self.training:
@@ -133,18 +133,19 @@ class ATSS(ExplainableOTXDetModel):
         scores = []
         bboxes = []
         labels = []
-        for img_info, output in zip(inputs.imgs_info, outputs):
-            if not isinstance(output, InstanceData):
-                raise TypeError(output)
-            scores.append(output.scores)
+        predictions = outputs["predictions"] if isinstance(outputs, dict) else outputs
+        for img_info, prediction in zip(inputs.imgs_info, predictions):
+            if not isinstance(prediction, InstanceData):
+                raise TypeError(prediction)
+            scores.append(prediction.scores)
             bboxes.append(
                 tv_tensors.BoundingBoxes(
-                    output.bboxes,
+                    prediction.bboxes,
                     format="XYXY",
                     canvas_size=img_info.ori_shape,
                 ),
             )
-            labels.append(output.labels)
+            labels.append(prediction.labels)
 
         if self.explain_mode:
             if not isinstance(outputs, dict):
@@ -229,7 +230,7 @@ class ATSS(ExplainableOTXDetModel):
                 },
                 "autograd_inlining": False,
             },
-            output_names=["feature_vector", "saliency_map"] if self.explain_mode else None,
+            output_names=["bboxes", "labels", "feature_vector", "saliency_map"] if self.explain_mode else None,
         )
 
     def forward_for_tracing(self, inputs: Tensor) -> list[InstanceData]:
@@ -242,7 +243,7 @@ class ATSS(ExplainableOTXDetModel):
             "scale_factor": (1.0, 1.0),
         }
         meta_info_list = [meta_info] * len(inputs)
-        return self.model.export(inputs, meta_info_list)
+        return self.model.export(inputs, meta_info_list, explain_mode=self.explain_mode)
 
     def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.model.") -> dict:
         """Load the previous OTX ckpt according to OTX2.0."""
