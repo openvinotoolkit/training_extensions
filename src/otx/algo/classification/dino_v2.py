@@ -5,12 +5,11 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Literal
 
 import torch
 from torch import Tensor, nn
 
-from otx.algo.utils.mmconfig import read_mmconfig
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.classification import (
     MulticlassClsBatchDataEntity,
@@ -23,7 +22,6 @@ from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallab
 from otx.core.model.classification import OTXMulticlassClsModel
 from otx.core.schedulers import LRSchedulerListCallable
 from otx.core.types.label import LabelInfoTypes
-from otx.core.utils.config import inplace_num_classes
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
@@ -31,12 +29,16 @@ if TYPE_CHECKING:
     from otx.core.metrics import MetricCallable
 
 
+# TODO(harimkang): Add more types of DINOv2 models. https://github.com/facebookresearch/dinov2/blob/main/MODEL_CARD.md
+DINO_BACKBONE_TYPE = Literal["dinov2_vits14_reg"]
+
+
 class DINOv2(nn.Module):
     """DINO-v2 Model."""
 
     def __init__(
         self,
-        backbone_name: str,
+        backbone: DINO_BACKBONE_TYPE,
         freeze_backbone: bool,
         head_in_channels: int,
         num_classes: int,
@@ -44,7 +46,7 @@ class DINOv2(nn.Module):
         super().__init__()
         self.backbone = torch.hub.load(
             repo_or_dir="facebookresearch/dinov2",
-            model=backbone_name,
+            model=backbone,
         )
 
         if freeze_backbone:
@@ -63,7 +65,7 @@ class DINOv2(nn.Module):
         for _, v in backbone.named_parameters():
             v.requires_grad = False
 
-    def forward(self, imgs: torch.Tensor, labels: torch.Tensor = None) -> torch.Tensor:
+    def forward(self, imgs: torch.Tensor, labels: torch.Tensor | None = None) -> torch.Tensor:
         """Forward function."""
         feats = self.backbone(imgs)
         logits = self.head(feats)
@@ -78,17 +80,15 @@ class DINOv2RegisterClassifier(OTXMulticlassClsModel):
     def __init__(
         self,
         label_info: LabelInfoTypes,
+        backbone: DINO_BACKBONE_TYPE = "dinov2_vits14_reg",
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MultiClassClsMetricCallable,
         torch_compile: bool = False,
         freeze_backbone: bool = False,
     ) -> None:
-        config = read_mmconfig(model_name="dino_v2", subdir_name="multiclass_classification")
-        config = inplace_num_classes(cfg=config, num_classes=self._dispatch_label_info(label_info).num_classes)
-        config.backbone.frozen = freeze_backbone
-
-        self.config = config
+        self.backbone = backbone
+        self.freeze_backbone = freeze_backbone
 
         super().__init__(
             label_info=label_info,
@@ -101,10 +101,11 @@ class DINOv2RegisterClassifier(OTXMulticlassClsModel):
     def _create_model(self) -> nn.Module:
         """Create the model."""
         return DINOv2(
-            backbone_name=self.config.backbone.name,
-            freeze_backbone=self.config.backbone.frozen,
-            head_in_channels=self.config.head.in_channels,
-            num_classes=self.config.head.num_classes,
+            backbone=self.backbone,
+            freeze_backbone=self.freeze_backbone,
+            # TODO(harimkang): A feature should be added to allow in_channels to adjust based on the arch.
+            head_in_channels=384,
+            num_classes=self.label_info.num_classes,
         )
 
     def _customize_inputs(self, entity: MulticlassClsBatchDataEntity) -> dict[str, Any]:
@@ -112,6 +113,7 @@ class DINOv2RegisterClassifier(OTXMulticlassClsModel):
         return {
             "imgs": entity.stacked_images,
             "labels": torch.cat(entity.labels),
+            "imgs_info": entity.imgs_info,
         }
 
     def _customize_outputs(
