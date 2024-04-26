@@ -44,3 +44,4 @@ jobs:
         with:
           name: ${{ matrix.task }}-py310
           path: .tox/e2e-test-${{ matrix.task }}.csv
+        if: ${{ always() }}
