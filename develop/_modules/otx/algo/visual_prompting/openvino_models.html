@@ -246,11 +246,11 @@
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Any</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">from</span> <span class="nn">openvino.model_api.models</span> <span class="kn">import</span> <span class="n">ImageModel</span><span class="p">,</span> <span class="n">SegmentationModel</span>
-<span class="kn">from</span> <span class="nn">openvino.model_api.models.types</span> <span class="kn">import</span> <span class="n">BooleanValue</span><span class="p">,</span> <span class="n">NumericalValue</span><span class="p">,</span> <span class="n">StringValue</span>
+<span class="kn">from</span> <span class="nn">model_api.models</span> <span class="kn">import</span> <span class="n">ImageModel</span><span class="p">,</span> <span class="n">SegmentationModel</span>
+<span class="kn">from</span> <span class="nn">model_api.models.types</span> <span class="kn">import</span> <span class="n">BooleanValue</span><span class="p">,</span> <span class="n">NumericalValue</span><span class="p">,</span> <span class="n">StringValue</span>
 
 <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
-    <span class="kn">from</span> <span class="nn">openvino.model_api.adapters.inference_adapter</span> <span class="kn">import</span> <span class="n">InferenceAdapter</span>
+    <span class="kn">from</span> <span class="nn">model_api.adapters.inference_adapter</span> <span class="kn">import</span> <span class="n">InferenceAdapter</span>
 
 
 <div class="viewcode-block" id="VisualPromptingImageEncoder">
