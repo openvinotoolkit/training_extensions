@@ -10,12 +10,12 @@ from abc import abstractmethod
 from typing import TYPE_CHECKING
 
 import torch
-from mmengine.model import BaseModule
 from mmengine.structures import InstanceData
 from torch import Tensor
 
 from otx.algo.detection.ops.nms import batched_nms, multiclass_nms
 from otx.algo.detection.utils.utils import filter_scores_and_topk, select_single_mlvl, unpack_gt_instances
+from otx.algo.modules.base_module import BaseModule
 
 if TYPE_CHECKING:
     from mmengine import ConfigDict

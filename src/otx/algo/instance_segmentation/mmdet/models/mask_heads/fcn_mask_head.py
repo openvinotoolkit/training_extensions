@@ -21,6 +21,7 @@ from otx.algo.detection.losses.cross_entropy_loss import CrossEntropyLoss
 from otx.algo.detection.utils.structures import SamplingResult
 from otx.algo.detection.utils.utils import empty_instances
 from otx.algo.instance_segmentation.mmdet.structures.mask import mask_target
+from otx.algo.modules.base_module import BaseModule, ModuleList
 from otx.algo.modules.conv import build_conv_layer
 from otx.algo.modules.conv_module import ConvModule
 

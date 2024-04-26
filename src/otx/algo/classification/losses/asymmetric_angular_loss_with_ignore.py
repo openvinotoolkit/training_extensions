@@ -6,9 +6,6 @@
 from __future__ import annotations
 
 import torch
-
-# TODO(harimkang): Remove the following import after decoupling mmpretrain
-from mmpretrain.registry import MODELS
 from torch import nn
 
 
@@ -142,7 +139,6 @@ def asymmetric_angular_loss_with_ignore(
     return weight_reduce_loss(loss, weight, reduction, avg_factor)
 
 
-@MODELS.register_module()
 class AsymmetricAngularLossWithIgnore(nn.Module):
     """Asymmetric angular loss.
 

@@ -10,7 +10,7 @@ from __future__ import annotations
 from abc import ABCMeta, abstractmethod
 from typing import TYPE_CHECKING
 
-from mmengine.model import BaseModule
+from otx.algo.modules.base_module import BaseModule
 
 if TYPE_CHECKING:
     from mmdet.structures import DetDataSample

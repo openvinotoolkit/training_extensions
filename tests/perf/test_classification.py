@@ -20,7 +20,7 @@ class TestPerfSingleLabelClassification(PerfTestBase):
         Benchmark.Model(task="classification/multi_class_cls", name="efficientnet_b0", category="speed"),
         Benchmark.Model(task="classification/multi_class_cls", name="efficientnet_v2", category="balance"),
         Benchmark.Model(task="classification/multi_class_cls", name="mobilenet_v3_large", category="accuracy"),
-        Benchmark.Model(task="classification/multi_class_cls", name="otx_deit_tiny", category="other"),
+        Benchmark.Model(task="classification/multi_class_cls", name="deit_tiny", category="other"),
         Benchmark.Model(task="classification/multi_class_cls", name="otx_dino_v2", category="other"),
     ]
 
@@ -96,7 +96,7 @@ class TestPerfMultiLabelClassification(PerfTestBase):
         Benchmark.Model(task="classification/multi_label_cls", name="efficientnet_b0", category="speed"),
         Benchmark.Model(task="classification/multi_label_cls", name="efficientnet_v2", category="balance"),
         Benchmark.Model(task="classification/multi_label_cls", name="mobilenet_v3_large", category="accuracy"),
-        Benchmark.Model(task="classification/multi_label_cls", name="otx_deit_tiny", category="other"),
+        Benchmark.Model(task="classification/multi_label_cls", name="deit_tiny", category="other"),
     ]
 
     DATASET_TEST_CASES = [
@@ -171,7 +171,7 @@ class TestPerfHierarchicalLabelClassification(PerfTestBase):
         Benchmark.Model(task="classification/h_label_cls", name="efficientnet_b0", category="speed"),
         Benchmark.Model(task="classification/h_label_cls", name="efficientnet_v2", category="balance"),
         Benchmark.Model(task="classification/h_label_cls", name="mobilenet_v3_large", category="accuracy"),
-        Benchmark.Model(task="classification/h_label_cls", name="otx_deit_tiny", category="other"),
+        Benchmark.Model(task="classification/h_label_cls", name="deit_tiny", category="other"),
     ]
 
     DATASET_TEST_CASES = [

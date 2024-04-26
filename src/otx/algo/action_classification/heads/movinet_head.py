@@ -6,10 +6,10 @@ from __future__ import annotations
 
 from mmaction.models import MODELS
 from mmaction.models.heads.base import BaseHead
-from mmengine.model import normal_init
 from torch import Tensor, nn
 
 from otx.algo.action_classification.backbones.movinet import ConvBlock3D
+from otx.algo.utils.weight_init import normal_init
 
 
 @MODELS.register_module()

@@ -15,16 +15,15 @@ import copy
 from typing import TYPE_CHECKING
 
 import torch
-from mmengine.model.base_model import BaseModel
 
 from otx.algo.explain.explain_algo import ReciproCAM
-from otx.core.model.utils.mmpretrain import ClsDataPreprocessor
+from otx.algo.modules.base_module import BaseModule
 
 if TYPE_CHECKING:
     from torch import nn
 
 
-class ImageClassifier(BaseModel):
+class ImageClassifier(BaseModule):
     """Image classifiers for supervised classification task.
 
     Args:
@@ -59,24 +58,18 @@ class ImageClassifier(BaseModel):
     def __init__(
         self,
         backbone: nn.Module,
-        neck: nn.Module,
+        neck: nn.Module | None,
         head: nn.Module,
         pretrained: str | None = None,
         mean: list[float] | None = None,
         std: list[float] | None = None,
         to_rgb: bool = False,
-        init_cfg: dict | None = None,
+        init_cfg: dict | list[dict] | None = None,
     ):
         if pretrained is not None:
             init_cfg = {"type": "Pretrained", "checkpoint": pretrained}
 
-        data_preprocessor = ClsDataPreprocessor(
-            mean=[123.675, 116.28, 103.53] if mean is None else mean,
-            std=[58.395, 57.12, 57.375] if std is None else std,
-            to_rgb=to_rgb,
-        )
-
-        super().__init__(data_preprocessor=data_preprocessor, init_cfg=init_cfg)
+        super().__init__(init_cfg=init_cfg)
 
         self._is_init = False
         self.init_cfg = copy.deepcopy(init_cfg)
@@ -149,7 +142,8 @@ class ImageClassifier(BaseModel):
         if stage == "backbone":
             return x
 
-        x = self.neck(x)
+        if self.neck is not None:
+            x = self.neck(x)
 
         if stage == "neck":
             return x
@@ -212,8 +206,8 @@ class ImageClassifier(BaseModel):
         pred_results = self.head._get_predictions(logits)  # noqa: SLF001
         # H-Label Classification Case
         if isinstance(pred_results, dict):
-            scores = pred_results["pred_scores"]
-            preds = pred_results["pred_labels"]
+            scores = pred_results["scores"]
+            preds = pred_results["labels"]
         else:
             scores = pred_results.unbind(0)
             preds = logits.argmax(-1, keepdim=True).unbind(0)

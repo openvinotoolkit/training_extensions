@@ -13,8 +13,8 @@ from typing import TYPE_CHECKING, Any, Callable, Iterator, Literal
 import numpy as np
 import torch
 from mmengine.structures.instance_data import InstanceData
-from openvino.model_api.models import Model
-from openvino.model_api.tilers import InstanceSegmentationTiler
+from model_api.models import Model
+from model_api.tilers import InstanceSegmentationTiler
 from torchvision import tv_tensors
 
 from otx.algo.explain.explain_algo import InstSegExplainAlgo, feature_vector_fn
@@ -37,8 +37,8 @@ if TYPE_CHECKING:
     from mmdet.models.data_preprocessors import DetDataPreprocessor
     from mmdet.models.detectors import TwoStageDetector
     from mmdet.structures import OptSampleList
+    from model_api.models.utils import InstanceSegmentationResult
     from omegaconf import DictConfig
-    from openvino.model_api.models.utils import InstanceSegmentationResult
     from torch import nn
     from torchmetrics import Metric
 
@@ -580,7 +580,7 @@ class OVInstanceSegmentationModel(
 
     def _create_model(self) -> Model:
         """Create a OV model with help of Model API."""
-        from openvino.model_api.adapters import OpenvinoAdapter, create_core, get_user_config
+        from model_api.adapters import OpenvinoAdapter, create_core, get_user_config
 
         plugin_config = get_user_config("AUTO", str(self.num_requests), "AUTO")
         if self.use_throughput_mode:

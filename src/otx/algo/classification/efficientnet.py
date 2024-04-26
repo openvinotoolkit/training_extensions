@@ -95,6 +95,7 @@ class EfficientNetForMulticlassCls(OTXMulticlassClsModel):
         return {
             "images": inputs.stacked_images,
             "labels": torch.cat(inputs.labels, dim=0),
+            "imgs_info": inputs.imgs_info,
             "mode": mode,
         }
 
@@ -346,8 +347,8 @@ class EfficientNetForHLabelCls(OTXHlabelClsModel):
 
         # To list, batch-wise
         if isinstance(outputs, dict):
-            scores = outputs["pred_scores"]
-            labels = outputs["pred_labels"]
+            scores = outputs["scores"]
+            labels = outputs["labels"]
         else:
             scores = outputs
             labels = outputs.argmax(-1, keepdim=True)

@@ -111,6 +111,9 @@ class ConvFCBBoxHead(BBoxHead):
             # after `super(ConvFCBBoxHead, self).__init__()`
             # we only need to append additional configuration
             # for `shared_fcs`, `cls_fcs` and `reg_fcs`
+            if not isinstance(self.init_cfg, list):
+                msg = "init_cfg must be a list"
+                raise TypeError(msg)
             self.init_cfg += [
                 {
                     "type": "Xavier",

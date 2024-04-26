@@ -13,8 +13,8 @@ from collections import OrderedDict, abc, namedtuple
 from typing import Any
 from warnings import warn
 
-from torch import Tensor, nn
 from torch import distributed as torch_dist
+from torch import nn
 from torch.utils.model_zoo import load_url
 
 
@@ -159,6 +159,7 @@ def load_checkpoint_to_model(
     model: nn.Module,
     checkpoint: dict,
     strict: bool = False,
+    prefix: str = "",
 ) -> None:
     """Loads a checkpoint dictionary into a PyTorch model.
 
@@ -178,83 +179,14 @@ def load_checkpoint_to_model(
 
     # strip prefix of state_dict
     metadata = getattr(state_dict, "_metadata", OrderedDict())
-    for p, r in [(r"^module\.", "")]:
+    for p, r in [(r"^module\.", ""), (rf"^{prefix}\.", "")]:
         state_dict = OrderedDict({re.sub(p, r, k): v for k, v in state_dict.items()})
+
     # Keep metadata in state_dict
     state_dict._metadata = metadata  # noqa: SLF001
 
     # load state_dict
     load_state_dict(model, state_dict, strict)
-
-
-def normal_init(module: nn.Module, mean: float = 0, std: float = 1, bias: float = 0) -> None:
-    """Initialize the weights and biases of a module using a normal distribution.
-
-    Copied from mmengine.model.weight_init.normal_init
-
-    Args:
-        module (nn.Module): The module to initialize.
-        mean (float): The mean of the normal distribution. Default is 0.
-        std (float): The standard deviation of the normal distribution. Default is 1.
-        bias (float): The bias value. Default is 0.
-    """
-    if hasattr(module, "weight") and module.weight is not None:
-        nn.init.normal_(module.weight, mean, std)
-    if hasattr(module, "bias") and module.bias is not None:
-        nn.init.constant_(module.bias, bias)
-
-
-def constant_init(module: nn.Module, val: float, bias: float = 0) -> None:
-    """Initialize the weights and biases of a module with constant values.
-
-    Copied from mmengine.model.weight_init.constant_init
-
-    Args:
-        module (nn.Module): The module to initialize.
-        val (float): The constant value to initialize the weights with.
-        bias (float, optional): The constant value to initialize the biases with. Defaults to 0.
-    """
-    if hasattr(module, "weight") and module.weight is not None:
-        nn.init.constant_(module.weight, val)
-    if hasattr(module, "bias") and module.bias is not None:
-        nn.init.constant_(module.bias, bias)
-
-
-def kaiming_init(
-    module: nn.Module,
-    a: float = 0,
-    mode: str = "fan_out",
-    nonlinearity: str = "relu",
-    bias: float = 0,
-    distribution: str = "normal",
-) -> Tensor:
-    """Initialize the weights and biases of a module using the Kaiming initialization method.
-
-    Copied from mmengine.model.weight_init.kaiming_init
-
-    Args:
-        module (nn.Module): The module to initialize.
-        a (float): The negative slope of the rectifier used after this layer (only used with 'leaky_relu' nonlinearity).
-            Default is 0.
-        mode (str): Either 'fan_in' (default) or 'fan_out'. Choosing 'fan_in' preserves the magnitude of the variance
-            of the weights in the forward pass. Choosing 'fan_out' preserves the magnitudes in the backward pass.
-            Default is 'fan_out'.
-        nonlinearity (str): The non-linear function (nn.functional name), recommended to use 'relu' or 'leaky_relu'.
-            Default is 'relu'.
-        bias (float): The bias value. Default is 0.
-        distribution (str): The type of distribution to use for weight initialization,
-            either 'normal' (default) or 'uniform'.
-
-    Returns:
-        Tensor: The initialized tensor.
-    """
-    if hasattr(module, "weight") and module.weight is not None:
-        if distribution == "uniform":
-            nn.init.kaiming_uniform_(module.weight, a=a, mode=mode, nonlinearity=nonlinearity)
-        else:
-            nn.init.kaiming_normal_(module.weight, a=a, mode=mode, nonlinearity=nonlinearity)
-    if hasattr(module, "bias") and module.bias is not None:
-        nn.init.constant_(module.bias, bias)
 
 
 def is_seq_of(

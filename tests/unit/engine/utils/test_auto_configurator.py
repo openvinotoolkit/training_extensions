@@ -42,6 +42,7 @@ def test_configure_task_with_unsupported_data_format(tmp_path: Path) -> None:
     # Create a temporary directory for testing
     data_root = tmp_path / "data"
     data_root.mkdir()
+    (data_root / "1.jpg").open("a").close()  # Dummy image file
 
     # Test the configure_task function with an unsupported data format
     with pytest.raises(ValueError, match="Can't find proper task."):
@@ -81,7 +82,7 @@ class TestAutoConfigurator:
 
         # OTX-Mobilenet-v2
         # new_config
-        model_name = "otx_deit_tiny"
+        model_name = "deit_tiny"
         new_config = auto_configurator._load_default_config(model_name=model_name)
         new_path = str(target_config).split("/")
         new_path[-1] = f"{model_name}.yaml"
