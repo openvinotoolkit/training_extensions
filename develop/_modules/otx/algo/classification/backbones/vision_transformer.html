@@ -246,10 +246,10 @@
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
-<span class="kn">from</span> <span class="nn">mmengine.model</span> <span class="kn">import</span> <span class="n">BaseModule</span><span class="p">,</span> <span class="n">ModuleList</span>
+<span class="kn">from</span> <span class="nn">otx.algo.modules.base_module</span> <span class="kn">import</span> <span class="n">BaseModule</span><span class="p">,</span> <span class="n">ModuleList</span>
 <span class="kn">from</span> <span class="nn">otx.algo.modules.norm</span> <span class="kn">import</span> <span class="n">build_norm_layer</span>
 <span class="kn">from</span> <span class="nn">otx.algo.modules.transformer</span> <span class="kn">import</span> <span class="n">FFN</span><span class="p">,</span> <span class="n">PatchEmbed</span>
-<span class="kn">from</span> <span class="nn">otx.algo.utils.mmengine_utils</span> <span class="kn">import</span> <span class="n">trunc_normal_</span>
+<span class="kn">from</span> <span class="nn">otx.algo.utils.weight_init</span> <span class="kn">import</span> <span class="n">trunc_normal_</span>
 <span class="kn">from</span> <span class="nn">otx.algo.classification.utils.attention</span> <span class="kn">import</span> <span class="n">MultiheadAttention</span>
 <span class="kn">from</span> <span class="nn">otx.algo.classification.utils.embed</span> <span class="kn">import</span> <span class="n">resize_pos_embed</span>
 <span class="kn">from</span> <span class="nn">otx.algo.classification.utils.swiglu_ffn</span> <span class="kn">import</span> <span class="n">SwiGLUFFNFused</span>

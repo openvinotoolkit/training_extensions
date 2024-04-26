@@ -251,12 +251,12 @@
 
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">import</span> <span class="nn">torch.utils.checkpoint</span> <span class="k">as</span> <span class="nn">cp</span>
-<span class="kn">from</span> <span class="nn">mmengine.model</span> <span class="kn">import</span> <span class="n">BaseModule</span>
 <span class="kn">from</span> <span class="nn">mmengine.utils</span> <span class="kn">import</span> <span class="n">is_tuple_of</span>
 <span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">nn</span>
 <span class="kn">from</span> <span class="nn">torch.nn</span> <span class="kn">import</span> <span class="n">functional</span>
 
 <span class="kn">from</span> <span class="nn">otx.algo.modules</span> <span class="kn">import</span> <span class="n">ConvModule</span><span class="p">,</span> <span class="n">build_conv_layer</span><span class="p">,</span> <span class="n">build_norm_layer</span>
+<span class="kn">from</span> <span class="nn">otx.algo.modules.base_module</span> <span class="kn">import</span> <span class="n">BaseModule</span>
 <span class="kn">from</span> <span class="nn">otx.algo.segmentation.modules</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">AsymmetricPositionAttentionModule</span><span class="p">,</span>
     <span class="n">IterativeAggregator</span><span class="p">,</span>

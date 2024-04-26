@@ -243,10 +243,10 @@
 
 <span class="kn">from</span> <span class="nn">mmaction.models</span> <span class="kn">import</span> <span class="n">MODELS</span>
 <span class="kn">from</span> <span class="nn">mmaction.models.heads.base</span> <span class="kn">import</span> <span class="n">BaseHead</span>
-<span class="kn">from</span> <span class="nn">mmengine.model</span> <span class="kn">import</span> <span class="n">normal_init</span>
 <span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">nn</span>
 
 <span class="kn">from</span> <span class="nn">otx.algo.action_classification.backbones.movinet</span> <span class="kn">import</span> <span class="n">ConvBlock3D</span>
+<span class="kn">from</span> <span class="nn">otx.algo.utils.weight_init</span> <span class="kn">import</span> <span class="n">normal_init</span>
 
 
 <div class="viewcode-block" id="MoViNetHead">
