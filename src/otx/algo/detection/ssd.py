@@ -10,30 +10,32 @@ from copy import deepcopy
 from typing import TYPE_CHECKING, Any, Literal
 
 import numpy as np
+import torch
 from datumaro.components.annotation import Bbox
 from mmengine.structures import InstanceData
 from torch import nn
+from torchvision import tv_tensors
 
 from otx.algo.detection.backbones.pytorchcv_backbones import _build_model_including_pytorchcv
 from otx.algo.detection.heads.ssd_head import SSDHead
 from otx.algo.utils.mmconfig import read_mmconfig
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.config.data import TileConfig
-from otx.core.data.entity.detection import DetBatchDataEntity
+from otx.core.data.entity.base import OTXBatchLossEntity
+from otx.core.data.entity.detection import DetBatchDataEntity, DetBatchPredEntity
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.metrics.mean_ap import MeanAPCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
-from otx.core.model.detection import MMDetCompatibleModel
+from otx.core.model.detection import ExplainableOTXDetModel
 from otx.core.model.utils.mmdet import DetDataPreprocessor
 from otx.core.schedulers import LRSchedulerListCallable
 from otx.core.types.label import LabelInfoTypes
 from otx.core.utils.build import modify_num_classes
-from otx.core.utils.config import convert_conf_to_mmconfig_dict
+from otx.core.utils.config import convert_conf_to_mmconfig_dict, inplace_num_classes
 from otx.core.utils.utils import get_mean_std_from_data_processing
 
 if TYPE_CHECKING:
-    import torch
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
     from mmengine import ConfigDict
     from omegaconf import DictConfig
@@ -352,7 +354,7 @@ class SingleStageDetector(nn.Module):
         )
 
 
-class SSD(MMDetCompatibleModel):
+class SSD(ExplainableOTXDetModel):
     """Detecion model class for SSD."""
 
     def __init__(
@@ -367,9 +369,11 @@ class SSD(MMDetCompatibleModel):
     ) -> None:
         model_name = f"ssd_{variant}"
         config = read_mmconfig(model_name=model_name)
+        config = inplace_num_classes(cfg=config, num_classes=self._dispatch_label_info(label_info).num_classes)
+        self.config = config
+        self.load_from = config.pop("load_from", None)
         super().__init__(
             label_info=label_info,
-            config=config,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
@@ -388,6 +392,86 @@ class SSD(MMDetCompatibleModel):
         if self.load_from is not None:
             load_checkpoint(detector, self.load_from, map_location="cpu")
         return detector
+
+    def _customize_inputs(self, entity: DetBatchDataEntity) -> dict[str, Any]:
+        mmdet_inputs: dict[str, Any] = {}
+
+        mmdet_inputs["entity"] = entity
+        mmdet_inputs["mode"] = "loss" if self.training else "predict"
+
+        return mmdet_inputs
+
+    def _customize_outputs(
+        self,
+        outputs: list[InstanceData],
+        inputs: DetBatchDataEntity,
+    ) -> DetBatchPredEntity | OTXBatchLossEntity:
+        if self.training:
+            if not isinstance(outputs, dict):
+                raise TypeError(outputs)
+
+            losses = OTXBatchLossEntity()
+            for k, v in outputs.items():
+                if isinstance(v, list):
+                    losses[k] = sum(v)
+                elif isinstance(v, torch.Tensor):
+                    losses[k] = v
+                else:
+                    msg = "Loss output should be list or torch.tensor but got {type(v)}"
+                    raise TypeError(msg)
+            return losses
+
+        scores = []
+        bboxes = []
+        labels = []
+        for img_info, output in zip(inputs.imgs_info, outputs):
+            if not isinstance(output, InstanceData):
+                raise TypeError(output)
+            scores.append(output.scores)
+            bboxes.append(
+                tv_tensors.BoundingBoxes(
+                    output.bboxes,
+                    format="XYXY",
+                    canvas_size=img_info.ori_shape,
+                ),
+            )
+            labels.append(output.labels)
+
+        if self.explain_mode:
+            if not isinstance(outputs, dict):
+                msg = f"Model output should be a dict, but got {type(outputs)}."
+                raise ValueError(msg)
+
+            if "feature_vector" not in outputs:
+                msg = "No feature vector in the model output."
+                raise ValueError(msg)
+
+            if "saliency_map" not in outputs:
+                msg = "No saliency maps in the model output."
+                raise ValueError(msg)
+
+            saliency_map = outputs["saliency_map"].detach().cpu().numpy()
+            feature_vector = outputs["feature_vector"].detach().cpu().numpy()
+
+            return DetBatchPredEntity(
+                batch_size=len(outputs),
+                images=inputs.images,
+                imgs_info=inputs.imgs_info,
+                scores=scores,
+                bboxes=bboxes,
+                labels=labels,
+                saliency_map=saliency_map,
+                feature_vector=feature_vector,
+            )
+
+        return DetBatchPredEntity(
+            batch_size=len(outputs),
+            images=inputs.images,
+            imgs_info=inputs.imgs_info,
+            scores=scores,
+            bboxes=bboxes,
+            labels=labels,
+        )
 
     def setup(self, stage: str) -> None:
         """Callback for setup OTX SSD Model.
