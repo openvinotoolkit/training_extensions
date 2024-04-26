@@ -516,11 +516,13 @@ class SSD(ExplainableOTXDetModel):
 
     def _get_new_anchors(self, dataset: OTXDataset, anchor_generator: SSDAnchorGeneratorClustered) -> tuple | None:
         """Get new anchors for SSD from OTXDataset."""
-        from mmdet.datasets.transforms import Resize
+        from torchvision.transforms.v2._container import Compose
+
+        from otx.core.data.transform_libs.torchvision import Resize
 
         target_wh = None
-        if isinstance(dataset.transforms, list):
-            for transform in dataset.transforms:
+        if isinstance(dataset.transforms, Compose):
+            for transform in dataset.transforms.transforms:
                 if isinstance(transform, Resize):
                     target_wh = transform.scale
         if target_wh is None:
