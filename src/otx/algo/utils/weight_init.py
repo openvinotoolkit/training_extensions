@@ -580,13 +580,13 @@ class PretrainedInit:
 
 
 WEIGHT_INITIALIZERS = {
-    "ConstantInit": ConstantInit,
-    "XavierInit": XavierInit,
-    "NormalInit": NormalInit,
-    "TruncNormalInit": TruncNormalInit,
-    "UniformInit": UniformInit,
-    "KaimingInit": KaimingInit,
-    "PretrainedInit": PretrainedInit,
+    "Constant": ConstantInit,
+    "Xavier": XavierInit,
+    "Normal": NormalInit,
+    "TruncNormal": TruncNormalInit,
+    "Uniform": UniformInit,
+    "Kaiming": KaimingInit,
+    "Pretrained": PretrainedInit,
 }
 
 
