@@ -404,7 +404,6 @@ class BBoxHead(BaseModule):
             bboxes = bboxes[dim0_inds, max_inds].reshape(batch_size, -1, encode_size)
 
         # get nms params
-        # TODO(Eugene): maybe not hard-code this IDK ¯\_(ツ)_/¯
         max_output_boxes_per_class = 200
         pre_top_k = 5000
         iou_threshold = rcnn_test_cfg["nms"].get("iou_threshold")

@@ -398,7 +398,6 @@ class RPNHead(AnchorHead):
         if not with_nms:
             return batch_mlvl_bboxes, batch_mlvl_scores
 
-        # TODO(Eugene): maybe not hard code this value ¯\_(ツ)_/¯
         pre_top_k = 5000
         iou_threshold = cfg["nms"].get("iou_threshold")
         score_threshold = cfg.get("score_thr", 0.05)

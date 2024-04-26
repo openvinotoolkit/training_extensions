@@ -80,7 +80,8 @@ class AnchorHead(BaseDenseHead):
             msg = f"num_classes={num_classes} is too small"
             raise ValueError(msg)
         self.reg_decoded_bbox = reg_decoded_bbox
-        # TODO[EUGENE]: merge Jaeguk's PR work
+        # TODO(Eugene): merge Jaeguk's PR work
+        # https://github.com/openvinotoolkit/training_extensions/pull/3412
         if bbox_coder.get("type") == "DeltaXYWHBBoxCoder":
             bbox_coder.pop("type")
             self.bbox_coder = DeltaXYWHBBoxCoder(**bbox_coder)
