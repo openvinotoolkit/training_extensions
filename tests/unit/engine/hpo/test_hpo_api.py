@@ -10,7 +10,7 @@ from unittest.mock import MagicMock
 
 import pytest
 from otx.engine.hpo import hpo_api as target_file
-from otx.engine.hpo.hpo_api import execute_hpo, HPOConfigurator, _update_hpo_progress
+from otx.engine.hpo.hpo_api import execute_hpo, HPOConfigurator, _update_hpo_progress, _adjust_train_args, _remove_unused_model_weights
 from otx.core.config.hpo import HpoConfig
 
 if TYPE_CHECKING:
@@ -163,11 +163,50 @@ class TestHPOConfigurator:
         assert mock_hyper_band.call_args.kwargs == hpo_configurator.hpo_config
 
 
-def test_update_hpo_progress():
-    pass
+def test_update_hpo_progress(mocker):
+    mock_hpo_algo = MagicMock()
+    mock_hpo_algo.is_done.side_effect = [False, False, False, True]
+    progress_arr = [0.3, 0.6, 1]
+    mock_hpo_algo.get_progress.side_effect = progress_arr
+    mock_progress_update_callback = MagicMock()
+    mocker.patch.object(target_file, "time")
+
+    _update_hpo_progress(mock_progress_update_callback, mock_hpo_algo)
+
+    mock_progress_update_callback.assert_called()
+    for i in range(3):
+        mock_progress_update_callback.call_args_list[i].args[0] == pytest.approx(progress_arr[i] * 100)
+
 
 def test_adjust_train_args():
-    pass
+    train_args = {
+        "self" : "self",
+        "run_hpo" : "run_hpo",
+        "kwargs" : {
+            "kwargs_1" : "kwargs_1",
+            "kwargs_2" : "kwargs_2",
+        }
+    }
+
+    new_train_args = _adjust_train_args(train_args)
+
+    assert "self" not in new_train_args
+    assert "run_hpo" not in new_train_args
+    assert "kwargs" not in new_train_args
+    assert "kwargs_1" in new_train_args
+    assert "kwargs_2" in new_train_args
     
-def test_remove_unused_model_weights():
-    pass
+
+def test_remove_unused_model_weights(tmp_path):
+    (tmp_path / "1.ckpt").touch()
+    sub_dir = tmp_path / "a"
+    sub_dir.mkdir()
+    (sub_dir / "2.ckpt").touch()
+    best_weight = sub_dir / "3.ckpt"
+    best_weight.touch()
+
+    _remove_unused_model_weights(tmp_path, best_weight)
+
+    ckpt_files = list(tmp_path.rglob("*.ckpt"))
+    assert len(ckpt_files) == 1
+    assert ckpt_files[0] == best_weight
