@@ -9,10 +9,10 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 import torch
-from mmengine.model import BaseModule
 from torch import nn
 
 from otx.algo.modules import build_activation_layer, build_norm_layer
+from otx.algo.modules.base_module import BaseModule
 from otx.algo.utils.mmengine_utils import load_checkpoint_to_model, load_from_http
 
 if TYPE_CHECKING:

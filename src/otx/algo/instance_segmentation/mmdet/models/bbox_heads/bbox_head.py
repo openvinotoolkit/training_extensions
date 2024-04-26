@@ -12,7 +12,6 @@ from typing import TYPE_CHECKING
 
 import torch
 import torch.nn.functional
-from mmengine.model import BaseModule
 from mmengine.registry import MODELS, TASK_UTILS
 from mmengine.structures import InstanceData
 from torch import Tensor, nn
@@ -22,6 +21,7 @@ from otx.algo.detection.deployment import is_mmdeploy_enabled
 from otx.algo.detection.utils.utils import empty_instances
 from otx.algo.instance_segmentation.mmdet.models.layers import multiclass_nms_torch
 from otx.algo.instance_segmentation.mmdet.structures.bbox import scale_boxes
+from otx.algo.modules.base_module import BaseModule
 
 if TYPE_CHECKING:
     from mmengine.config import ConfigDict

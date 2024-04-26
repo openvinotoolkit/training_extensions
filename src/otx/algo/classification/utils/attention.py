@@ -8,9 +8,9 @@ from __future__ import annotations
 from functools import partial
 
 import torch
-from mmengine.model import BaseModule
 from torch import nn
 
+from otx.algo.modules.base_module import BaseModule
 from otx.algo.modules.drop import build_dropout
 
 

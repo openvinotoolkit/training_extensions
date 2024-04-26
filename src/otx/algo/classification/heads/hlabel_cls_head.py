@@ -9,10 +9,10 @@ import inspect
 from typing import Callable, Sequence
 
 import torch
-from mmengine.model import BaseModule
 from torch import nn
 
-from otx.algo.utils.mmengine_utils import constant_init, normal_init
+from otx.algo.modules.base_module import BaseModule
+from otx.algo.utils.weight_init import constant_init, normal_init
 from otx.core.data.entity.base import ImageInfo
 
 

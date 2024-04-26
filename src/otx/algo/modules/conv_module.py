@@ -16,7 +16,7 @@ from torch import nn
 from torch.nn.modules.batchnorm import _BatchNorm as BatchNorm
 from torch.nn.modules.instancenorm import _InstanceNorm as InstanceNorm
 
-from otx.algo.utils.mmengine_utils import constant_init, kaiming_init
+from otx.algo.utils.weight_init import constant_init, kaiming_init
 
 from .activation import build_activation_layer
 from .conv import build_conv_layer

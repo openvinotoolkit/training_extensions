@@ -14,12 +14,12 @@ from pathlib import Path
 
 import torch
 import torch.utils.checkpoint as cp
-from mmengine.model import BaseModule
 from mmengine.utils import is_tuple_of
 from torch import nn
 from torch.nn import functional
 
 from otx.algo.modules import ConvModule, build_conv_layer, build_norm_layer
+from otx.algo.modules.base_module import BaseModule
 from otx.algo.segmentation.modules import (
     AsymmetricPositionAttentionModule,
     IterativeAggregator,

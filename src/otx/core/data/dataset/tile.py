@@ -211,7 +211,7 @@ class OTXTileDataset(OTXDataset):
         self._dataset = dataset
 
     def __len__(self) -> int:
-        return len(self._dataset.ids)
+        return len(self._dataset)
 
     @property
     def collate_fn(self) -> Callable:
@@ -286,7 +286,6 @@ class OTXTileTrainDataset(OTXTileDataset):
         dm_dataset.update(dataset.dm_subset.as_dataset())
         dm_subset = DatasetSubset(dm_dataset, dataset.dm_subset.name)
         dataset.dm_subset = dm_subset
-        dataset.ids = [item.id for item in dm_subset]
         super().__init__(dataset, tile_config)
 
 
@@ -325,7 +324,7 @@ class OTXTileDetTestDataset(OTXTileDataset):
             the return of OTXDataEntity. Nevertheless, in instances involving tiling, it becomes
             imperative to encapsulate tiles within a unified entity, namely TileDetDataEntity.
         """
-        item = self.dm_subset.get(id=self.ids[index], subset=self.dm_subset.name)
+        item = self.dm_subset.as_dataset()[index]
         img = item.media_as(Image)
         img_data, img_shape = self._get_img_data_and_shape(img)
 
@@ -416,7 +415,7 @@ class OTXTileInstSegTestDataset(OTXTileDataset):
             the return of OTXDataEntity. Nevertheless, in instances involving tiling, it becomes
             imperative to encapsulate tiles within a unified entity, namely TileInstSegDataEntity.
         """
-        item = self.dm_subset.get(id=self.ids[index], subset=self.dm_subset.name)
+        item = self.dm_subset.as_dataset()[index]
         img = item.media_as(Image)
         img_data, img_shape = self._get_img_data_and_shape(img)
 
