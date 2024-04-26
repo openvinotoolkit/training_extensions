@@ -20,6 +20,7 @@ otx.algo.classification.backbones
       OTXEfficientNet
       TimmBackbone
       OTXMobileNetV3
+      VisionTransformer
    
    
 

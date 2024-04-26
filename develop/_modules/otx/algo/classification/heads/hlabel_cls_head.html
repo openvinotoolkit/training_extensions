@@ -243,7 +243,7 @@
 <span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
 
 <span class="kn">import</span> <span class="nn">inspect</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Callable</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Sequence</span>
 
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">from</span> <span class="nn">mmengine.model</span> <span class="kn">import</span> <span class="n">BaseModule</span>
@@ -298,7 +298,7 @@
 
     <span class="k">def</span> <span class="nf">pre_logits</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">feats</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;The process before the final classification head.&quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">feats</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">feats</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">):</span>
             <span class="k">return</span> <span class="n">feats</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
         <span class="k">return</span> <span class="n">feats</span>
 
@@ -438,8 +438,8 @@
             <span class="n">pred_labels</span> <span class="o">=</span> <span class="n">multiclass_pred_labels</span>
 
         <span class="k">return</span> <span class="p">{</span>
-            <span class="s2">&quot;pred_scores&quot;</span><span class="p">:</span> <span class="n">pred_scores</span><span class="p">,</span>
-            <span class="s2">&quot;pred_labels&quot;</span><span class="p">:</span> <span class="n">pred_labels</span><span class="p">,</span>
+            <span class="s2">&quot;scores&quot;</span><span class="p">:</span> <span class="n">pred_scores</span><span class="p">,</span>
+            <span class="s2">&quot;labels&quot;</span><span class="p">:</span> <span class="n">pred_labels</span><span class="p">,</span>
         <span class="p">}</span>
 
 

@@ -4,7 +4,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>otx.algo.classification.heads.linear_head &#8212; OpenVINO™ Training Extensions 2.1.0rc0 documentation</title>
+    <title>otx.algo.classification.heads.vision_transformer_head &#8212; OpenVINO™ Training Extensions 2.1.0rc0 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
     <script src="../../../../../_static/copybutton.js?v=f281be69"></script>
     <script src="../../../../../_static/tabs.js?v=3030b3cb"></script>
     <script src="../../../../../_static/design-tabs.js?v=36754332"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/otx/algo/classification/heads/linear_head';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/otx/algo/classification/heads/vision_transformer_head';</script>
     <link rel="index" title="Index" href="../../../../../genindex.html" />
     <link rel="search" title="Search" href="../../../../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -234,47 +234,41 @@
             
             <article class="bd-article" role="main">
               
-  <h1>Source code for otx.algo.classification.heads.linear_head</h1><div class="highlight"><pre>
+  <h1>Source code for otx.algo.classification.heads.vision_transformer_head</h1><div class="highlight"><pre>
 <span></span><span class="c1"># Copyright (C) 2024 Intel Corporation</span>
 <span class="c1"># SPDX-License-Identifier: Apache-2.0</span>
 <span class="c1"># Copyright (c) OpenMMLab. All rights reserved.</span>
 
-<span class="sd">&quot;&quot;&quot;Linear Head Implementation.</span>
-
-<span class="sd">The original source code is mmpretrain.models.heads.linear_head.LinearClsHead.</span>
-<span class="sd">you can refer https://github.com/open-mmlab/mmpretrain/blob/main/mmpretrain/models/heads/linear_head.py</span>
-
-<span class="sd">&quot;&quot;&quot;</span>
-
+<span class="sd">&quot;&quot;&quot;Copy from mmpretrain/models/heads/vision_transformer_head.py.&quot;&quot;&quot;</span>
 
 <span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
 
-<span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">OrderedDict</span>
 
 <span class="kn">import</span> <span class="nn">torch</span>
-<span class="kn">from</span> <span class="nn">mmengine.model</span> <span class="kn">import</span> <span class="n">BaseModule</span>
+<span class="kn">from</span> <span class="nn">mmengine.model</span> <span class="kn">import</span> <span class="n">BaseModule</span><span class="p">,</span> <span class="n">Sequential</span>
 <span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">nn</span>
 <span class="kn">from</span> <span class="nn">torch.nn</span> <span class="kn">import</span> <span class="n">functional</span>
 
+<span class="kn">from</span> <span class="nn">otx.algo.utils.mmengine_utils</span> <span class="kn">import</span> <span class="n">trunc_normal_</span>
 
-<div class="viewcode-block" id="LinearClsHead">
-<a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.classification.heads.html#otx.algo.classification.heads.LinearClsHead">[docs]</a>
-<span class="k">class</span> <span class="nc">LinearClsHead</span><span class="p">(</span><span class="n">BaseModule</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Linear classifier head.</span>
+
+<div class="viewcode-block" id="VisionTransformerClsHead">
+<a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.classification.heads.html#otx.algo.classification.heads.VisionTransformerClsHead">[docs]</a>
+<span class="k">class</span> <span class="nc">VisionTransformerClsHead</span><span class="p">(</span><span class="n">BaseModule</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Vision Transformer classifier head.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        num_classes (int): Number of categories excluding the background</span>
 <span class="sd">            category.</span>
 <span class="sd">        in_channels (int): Number of channels in the input feature map.</span>
-<span class="sd">        loss (dict): Config of classification loss. Defaults to</span>
-<span class="sd">            ``dict(type=&#39;CrossEntropyLoss&#39;, loss_weight=1.0)``.</span>
-<span class="sd">        topk (int | Tuple[int]): Top-k accuracy. Defaults to ``(1, )``.</span>
-<span class="sd">        cal_acc (bool): Whether to calculate accuracy during training.</span>
-<span class="sd">            If you use batch augmentations like Mixup and CutMix during</span>
-<span class="sd">            training, it is pointless to calculate accuracy.</span>
-<span class="sd">            Defaults to False.</span>
-<span class="sd">        init_cfg (dict, optional): the config to control the initialization.</span>
-<span class="sd">            Defaults to ``dict(type=&#39;Normal&#39;, layer=&#39;Linear&#39;, std=0.01)``.</span>
+<span class="sd">        hidden_dim (int, optional): Number of the dimensions for hidden layer.</span>
+<span class="sd">            Defaults to None, which means no extra hidden layer.</span>
+<span class="sd">        act_cfg (dict): The activation config. Only available during</span>
+<span class="sd">            pre-training. Defaults to ``dict(type=&#39;Tanh&#39;)``.</span>
+<span class="sd">        init_cfg (dict): The extra initialization configs. Defaults to</span>
+<span class="sd">            ``dict(type=&#39;Constant&#39;, layer=&#39;Linear&#39;, val=0)``.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
@@ -283,42 +277,79 @@
         <span class="n">in_channels</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">loss</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span>
         <span class="n">topk</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">tuple</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,),</span>
-        <span class="n">init_cfg</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;Normal&quot;</span><span class="p">,</span> <span class="s2">&quot;layer&quot;</span><span class="p">:</span> <span class="s2">&quot;Linear&quot;</span><span class="p">,</span> <span class="s2">&quot;std&quot;</span><span class="p">:</span> <span class="mf">0.01</span><span class="p">},</span>  <span class="c1"># noqa: B006</span>
+        <span class="n">hidden_dim</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">init_cfg</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;Constant&quot;</span><span class="p">,</span> <span class="s2">&quot;layer&quot;</span><span class="p">:</span> <span class="s2">&quot;Linear&quot;</span><span class="p">,</span> <span class="s2">&quot;val&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">},</span>  <span class="c1"># noqa: B006</span>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
     <span class="p">):</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">init_cfg</span><span class="o">=</span><span class="n">init_cfg</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_is_init</span> <span class="o">=</span> <span class="kc">False</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">init_cfg</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">init_cfg</span><span class="p">)</span>
-
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">init_cfg</span><span class="o">=</span><span class="n">init_cfg</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">topk</span> <span class="o">=</span> <span class="n">topk</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">loss_module</span> <span class="o">=</span> <span class="n">loss</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">in_channels</span> <span class="o">=</span> <span class="n">in_channels</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">num_classes</span> <span class="o">=</span> <span class="n">num_classes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hidden_dim</span> <span class="o">=</span> <span class="n">hidden_dim</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_classes</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;num_classes=</span><span class="si">{</span><span class="n">num_classes</span><span class="si">}</span><span class="s2"> must be a positive integer&quot;</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">fc</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">in_channels</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_classes</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_init_layers</span><span class="p">()</span>
 
-<div class="viewcode-block" id="LinearClsHead.forward">
-<a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.classification.heads.html#otx.algo.classification.heads.LinearClsHead.forward">[docs]</a>
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">feats</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">_init_layers</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Init hidden layer if exists.&quot;&quot;&quot;</span>
+        <span class="n">layers</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hidden_dim</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">layers</span> <span class="o">=</span> <span class="p">[(</span><span class="s2">&quot;head&quot;</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">in_channels</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_classes</span><span class="p">))]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">layers</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="p">(</span><span class="s2">&quot;pre_logits&quot;</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">in_channels</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">hidden_dim</span><span class="p">)),</span>
+                <span class="p">(</span><span class="s2">&quot;act&quot;</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Tanh</span><span class="p">()),</span>
+                <span class="p">(</span><span class="s2">&quot;head&quot;</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hidden_dim</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_classes</span><span class="p">)),</span>
+            <span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">layers</span> <span class="o">=</span> <span class="n">Sequential</span><span class="p">(</span><span class="n">OrderedDict</span><span class="p">(</span><span class="n">layers</span><span class="p">))</span>
+
+<div class="viewcode-block" id="VisionTransformerClsHead.init_weights">
+<a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.classification.heads.html#otx.algo.classification.heads.VisionTransformerClsHead.init_weights">[docs]</a>
+    <span class="k">def</span> <span class="nf">init_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Init weights of hidden layer if exists.&quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">init_weights</span><span class="p">()</span>
+        <span class="c1"># Modified from ClassyVision</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">layers</span><span class="p">,</span> <span class="s2">&quot;pre_logits&quot;</span><span class="p">):</span>
+            <span class="c1"># Lecun norm</span>
+            <span class="n">trunc_normal_</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">pre_logits</span><span class="o">.</span><span class="n">weight</span><span class="p">,</span> <span class="n">std</span><span class="o">=</span><span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">pre_logits</span><span class="o">.</span><span class="n">in_features</span><span class="p">))</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">init</span><span class="o">.</span><span class="n">zeros_</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">pre_logits</span><span class="o">.</span><span class="n">bias</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="VisionTransformerClsHead.pre_logits">
+<a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.classification.heads.html#otx.algo.classification.heads.VisionTransformerClsHead.pre_logits">[docs]</a>
+    <span class="k">def</span> <span class="nf">pre_logits</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">feats</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The process before the final classification head.</span>
+
+<span class="sd">        The input ``feats`` is a tuple of list of tensor, and each tensor is</span>
+<span class="sd">        the feature of a backbone stage. In ``VisionTransformerClsHead``, we</span>
+<span class="sd">        obtain the feature of the last stage and forward in hidden layer if</span>
+<span class="sd">        exists.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">feat</span> <span class="o">=</span> <span class="n">feats</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>  <span class="c1"># Obtain feature of the last scale.</span>
+        <span class="c1"># For backward-compatibility with the previous ViT output</span>
+        <span class="n">cls_token</span> <span class="o">=</span> <span class="n">feat</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">feat</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="k">else</span> <span class="n">feat</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hidden_dim</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">cls_token</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">pre_logits</span><span class="p">(</span><span class="n">cls_token</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">act</span><span class="p">(</span><span class="n">x</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="VisionTransformerClsHead.forward">
+<a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.classification.heads.html#otx.algo.classification.heads.VisionTransformerClsHead.forward">[docs]</a>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">feats</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;The forward process.&quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">feats</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
-            <span class="n">feats</span> <span class="o">=</span> <span class="n">feats</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">pre_logits</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pre_logits</span><span class="p">(</span><span class="n">feats</span><span class="p">)</span>
         <span class="c1"># The final classification head.</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">fc</span><span class="p">(</span><span class="n">feats</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="n">pre_logits</span><span class="p">)</span></div>
 
 
-    <span class="c1">########################################################</span>
-    <span class="c1"># Copy from mmpretrain.models.heads.cls_head.ClsHead</span>
-    <span class="c1">########################################################</span>
-
-<div class="viewcode-block" id="LinearClsHead.loss">
-<a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.classification.heads.html#otx.algo.classification.heads.LinearClsHead.loss">[docs]</a>
+<div class="viewcode-block" id="VisionTransformerClsHead.loss">
+<a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.classification.heads.html#otx.algo.classification.heads.VisionTransformerClsHead.loss">[docs]</a>
     <span class="k">def</span> <span class="nf">loss</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">feats</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">labels</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate losses from the classification score.</span>
 
@@ -338,8 +369,8 @@
         <span class="k">return</span> <span class="n">loss</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span> <span class="n">cls_score</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="LinearClsHead.predict">
-<a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.classification.heads.html#otx.algo.classification.heads.LinearClsHead.predict">[docs]</a>
+<div class="viewcode-block" id="VisionTransformerClsHead.predict">
+<a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.classification.heads.html#otx.algo.classification.heads.VisionTransformerClsHead.predict">[docs]</a>
     <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">feats</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span>
