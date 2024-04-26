@@ -9,6 +9,8 @@ import copy
 import math
 from typing import TYPE_CHECKING, Sequence
 
+from mmengine import ConfigDict
+from otx.algo.detection.ops.nms import multiclass_nms
 import torch
 import torch.nn.functional as F  # noqa: N812
 from mmengine.structures import InstanceData  # TODO (sungchul): remove
@@ -335,6 +337,80 @@ class YOLOXHead(BaseDenseHead):
             )
 
         return result_list
+
+    def export_by_feat(
+        self,
+        cls_scores: list[Tensor],
+        bbox_preds: list[Tensor],
+        objectnesses: list[Tensor] | None = None,
+        batch_img_metas: list[dict] | None = None,
+        cfg: ConfigDict | None = None,
+        rescale: TYPE_CHECKING = False,
+        with_nms: TYPE_CHECKING = True,
+    ) -> list[InstanceData]:
+        """Transform network output for a batch into bbox predictions.
+
+        Reference : https://github.com/open-mmlab/mmdeploy/blob/v1.3.1/mmdeploy/codebase/mmdet/models/dense_heads/yolox_head.py#L18-L118
+
+        Args:
+            cls_scores (list[Tensor]): Classification scores for all
+                scale levels, each is a 4D-tensor, has shape
+                (batch_size, num_priors * num_classes, H, W).
+            bbox_preds (list[Tensor]): Box energies / deltas for all
+                scale levels, each is a 4D-tensor, has shape
+                (batch_size, num_priors * 4, H, W).
+            objectnesses (list[Tensor], Optional): Score factor for
+                all scale level, each is a 4D-tensor, has shape
+                (batch_size, 1, H, W).
+            batch_img_metas (list[dict], Optional): Batch image meta info.
+                Defaults to None.
+            cfg (ConfigDict, optional): Test / postprocessing
+                configuration, if None, test_cfg would be used.
+                Defaults to None.
+            rescale (bool): If True, return boxes in original image space.
+                Defaults to False.
+            with_nms (bool): If True, do nms before return boxes.
+                Defaults to True.
+
+        Returns:
+            tuple[Tensor, Tensor]: The first item is an (N, num_box, 5) tensor,
+                where 5 represent (tl_x, tl_y, br_x, br_y, score), N is batch
+                size and the score between 0 and 1. The shape of the second
+                tensor in the tuple is (N, num_box), and each element
+                represents the class label of the corresponding box.
+        """
+        device = cls_scores[0].device
+        cfg = self.test_cfg if cfg is None else cfg
+        batch_size = bbox_preds[0].shape[0]
+        featmap_sizes = [cls_score.shape[2:] for cls_score in cls_scores]
+        mlvl_priors = self.prior_generator.grid_priors(featmap_sizes, device=device, with_stride=True)
+
+        flatten_cls_scores = [
+            cls_score.permute(0, 2, 3, 1).reshape(batch_size, -1, self.cls_out_channels) for cls_score in cls_scores
+        ]
+        flatten_bbox_preds = [bbox_pred.permute(0, 2, 3, 1).reshape(batch_size, -1, 4) for bbox_pred in bbox_preds]
+        flatten_objectness = [objectness.permute(0, 2, 3, 1).reshape(batch_size, -1) for objectness in objectnesses]
+
+        cls_scores = torch.cat(flatten_cls_scores, dim=1).sigmoid()
+        score_factor = torch.cat(flatten_objectness, dim=1).sigmoid()
+        flatten_bbox_preds = torch.cat(flatten_bbox_preds, dim=1)
+        flatten_priors = torch.cat(mlvl_priors)
+        bboxes = self._bbox_decode(flatten_priors, flatten_bbox_preds)
+        # directly multiply score factor and feed to nms
+        scores = cls_scores * (score_factor.unsqueeze(-1))
+
+        if not with_nms:
+            return bboxes, scores
+
+        return multiclass_nms(
+            bboxes,
+            scores,
+            max_output_boxes_per_class=200,
+            iou_threshold=cfg.nms.iou_threshold,
+            score_threshold=cfg.score_thr,
+            pre_top_k=5000,
+            keep_top_k=cfg.max_per_img,
+        )
 
     def _bbox_decode(self, priors: Tensor, bbox_preds: Tensor) -> Tensor:
         """Decode regression results (delta_x, delta_x, w, h) to bboxes (tl_x, tl_y, br_x, br_y).
