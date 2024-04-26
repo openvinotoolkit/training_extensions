@@ -17,10 +17,6 @@ otx.algo.classification.heads
 
    .. autosummary::
    
-      CustomMultiLabelLinearClsHead
-      CustomMultiLabelNonLinearClsHead
-      CustomHierarchicalLinearClsHead
-      CustomHierarchicalNonLinearClsHead
       LinearClsHead
       MultiLabelLinearClsHead
       MultiLabelNonLinearClsHead
