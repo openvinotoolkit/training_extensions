@@ -45,7 +45,7 @@ def test_otx_e2e_cli(
     model_name = recipe.split("/")[-1].split(".")[0]
 
     if task == OTXTaskType.ACTION_DETECTION:
-        pytest.xfail('Fix for action detection issue will be low priority. Refer to issue #3267.')
+        pytest.xfail("Fix for action detection issue will be low priority. Refer to issue #3267.")
 
     # 1) otx train
     tmp_path_train = tmp_path / f"otx_train_{model_name}"
@@ -405,7 +405,9 @@ def test_otx_ov_test_cli(
         # TODO(Kirill):  Need to change this test when export enabled
         pytest.skip("OMZ doesn't have proper model for these types of tasks.")
 
-    pytest.xfail("ValueError: To launch a test pipeline w/ OMZ, the label information should be same between the training and testing datasets.")
+    pytest.xfail(
+        "ValueError: To launch a test pipeline w/ OMZ, the label information should be same between the training and testing datasets."
+    )
 
     # otx test
     tmp_path_test = tmp_path / f"otx_test_{task}_{model_name}"
@@ -460,7 +462,7 @@ def test_otx_hpo_e2e_cli(
     if task == OTXTaskType.ZERO_SHOT_VISUAL_PROMPTING:
         pytest.skip("ZERO_SHOT_VISUAL_PROMPTING doesn't support HPO.")
     if task == OTXTaskType.ACTION_DETECTION:
-        pytest.xfail('Fix for action detection issue will be low priority. Refer to issue #3267.')
+        pytest.xfail("Fix for action detection issue will be low priority. Refer to issue #3267.")
 
     # Need to change model to stfpm because default anomaly model is 'padim' which doesn't support HPO
     model_cfg = []
