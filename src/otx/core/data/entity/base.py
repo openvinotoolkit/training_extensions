@@ -628,6 +628,7 @@ class OTXBatchDataEntity(Generic[T_OTXDataEntity]):
         return tv_tensors.wrap(stack(self.images), like=like)
 
     @staticmethod
+    # TODO(someone): Pad size divisior and pad value should be configurable
     def stack_batch(
         tensor_list: list[torch.Tensor],
         pad_size_divisor: int = 1,
