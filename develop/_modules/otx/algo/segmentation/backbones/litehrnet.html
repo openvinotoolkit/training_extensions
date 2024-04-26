@@ -247,21 +247,23 @@
 
 <span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
 
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">import</span> <span class="nn">torch.utils.checkpoint</span> <span class="k">as</span> <span class="nn">cp</span>
-<span class="kn">from</span> <span class="nn">mmcv.cnn</span> <span class="kn">import</span> <span class="n">ConvModule</span><span class="p">,</span> <span class="n">build_conv_layer</span><span class="p">,</span> <span class="n">build_norm_layer</span>
 <span class="kn">from</span> <span class="nn">mmengine.model</span> <span class="kn">import</span> <span class="n">BaseModule</span>
 <span class="kn">from</span> <span class="nn">mmengine.utils</span> <span class="kn">import</span> <span class="n">is_tuple_of</span>
-<span class="kn">from</span> <span class="nn">mmseg.registry</span> <span class="kn">import</span> <span class="n">MODELS</span>
 <span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">nn</span>
 <span class="kn">from</span> <span class="nn">torch.nn</span> <span class="kn">import</span> <span class="n">functional</span>
 
-<span class="kn">from</span> <span class="nn">otx.algo.utils.segmentation</span> <span class="kn">import</span> <span class="p">(</span>
+<span class="kn">from</span> <span class="nn">otx.algo.modules</span> <span class="kn">import</span> <span class="n">ConvModule</span><span class="p">,</span> <span class="n">build_conv_layer</span><span class="p">,</span> <span class="n">build_norm_layer</span>
+<span class="kn">from</span> <span class="nn">otx.algo.segmentation.modules</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">AsymmetricPositionAttentionModule</span><span class="p">,</span>
     <span class="n">IterativeAggregator</span><span class="p">,</span>
     <span class="n">LocalAttentionModule</span><span class="p">,</span>
     <span class="n">channel_shuffle</span><span class="p">,</span>
 <span class="p">)</span>
+<span class="kn">from</span> <span class="nn">otx.algo.utils.mmengine_utils</span> <span class="kn">import</span> <span class="n">load_checkpoint_to_model</span><span class="p">,</span> <span class="n">load_from_http</span>
 
 
 <span class="k">class</span> <span class="nc">NeighbourSupport</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
@@ -1500,7 +1502,6 @@
 
 <div class="viewcode-block" id="LiteHRNet">
 <a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.segmentation.backbones.html#otx.algo.segmentation.backbones.LiteHRNet">[docs]</a>
-<span class="nd">@MODELS</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
 <span class="k">class</span> <span class="nc">LiteHRNet</span><span class="p">(</span><span class="n">BaseModule</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Lite-HRNet backbone.</span>
 
@@ -1532,12 +1533,15 @@
         <span class="n">zero_init_residual</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">dropout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">init_cfg</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">pretrained_weights</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Init.&quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">init_cfg</span><span class="o">=</span><span class="n">init_cfg</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">norm_cfg</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">norm_cfg</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;BN&quot;</span><span class="p">}</span>
+        <span class="k">if</span> <span class="n">conv_cfg</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">conv_cfg</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;Conv2d&quot;</span><span class="p">}</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">extra</span> <span class="o">=</span> <span class="n">extra</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">conv_cfg</span> <span class="o">=</span> <span class="n">conv_cfg</span>
@@ -1545,7 +1549,6 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">norm_eval</span> <span class="o">=</span> <span class="n">norm_eval</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">with_cp</span> <span class="o">=</span> <span class="n">with_cp</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">zero_init_residual</span> <span class="o">=</span> <span class="n">zero_init_residual</span>
-
         <span class="bp">self</span><span class="o">.</span><span class="n">stem</span> <span class="o">=</span> <span class="n">Stem</span><span class="p">(</span>
             <span class="n">in_channels</span><span class="p">,</span>
             <span class="n">input_norm</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">extra</span><span class="p">[</span><span class="s2">&quot;stem&quot;</span><span class="p">][</span><span class="s2">&quot;input_norm&quot;</span><span class="p">],</span>
@@ -1666,6 +1669,9 @@
                 <span class="n">conv_cfg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">conv_cfg</span><span class="p">,</span>
                 <span class="n">norm_cfg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">norm_cfg</span><span class="p">,</span>
             <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">pretrained_weights</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">load_pretrained_weights</span><span class="p">(</span><span class="n">pretrained_weights</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="s2">&quot;backbone&quot;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_make_transition_layer</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -1841,6 +1847,21 @@
             <span class="n">out</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="o">*</span><span class="n">out</span><span class="p">]</span>
 
         <span class="k">return</span> <span class="n">out</span></div>
+
+
+<div class="viewcode-block" id="LiteHRNet.load_pretrained_weights">
+<a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.segmentation.backbones.html#otx.algo.segmentation.backbones.LiteHRNet.load_pretrained_weights">[docs]</a>
+    <span class="k">def</span> <span class="nf">load_pretrained_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pretrained</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize weights.&quot;&quot;&quot;</span>
+        <span class="n">checkpoint</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">pretrained</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">Path</span><span class="p">(</span><span class="n">pretrained</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="n">checkpoint</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">pretrained</span><span class="p">,</span> <span class="s2">&quot;cpu&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;init weight - </span><span class="si">{</span><span class="n">pretrained</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">pretrained</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">checkpoint</span> <span class="o">=</span> <span class="n">load_from_http</span><span class="p">(</span><span class="n">pretrained</span><span class="p">,</span> <span class="s2">&quot;cpu&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;init weight - </span><span class="si">{</span><span class="n">pretrained</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">checkpoint</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">load_checkpoint_to_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">checkpoint</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="n">prefix</span><span class="p">)</span></div>
 </div>
 
 </pre></div>

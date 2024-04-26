@@ -19,6 +19,7 @@ otx.algo.segmentation.backbones
    
       LiteHRNet
       DinoVisionTransformer
+      MSCAN
    
    
 

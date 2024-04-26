@@ -20,6 +20,7 @@ otx.core.model.segmentation
       MMSegCompatibleModel
       OTXSegmentationModel
       OVSegmentationModel
+      TorchVisionCompatibleModel
    
    
 

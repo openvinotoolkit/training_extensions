@@ -4,7 +4,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>otx.algo.segmentation.heads.custom_fcn_head &#8212; OpenVINO™ Training Extensions 2.1.0rc0 documentation</title>
+    <title>otx.algo.segmentation.heads.fcn_head &#8212; OpenVINO™ Training Extensions 2.1.0rc0 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
     <script src="../../../../../_static/copybutton.js?v=f281be69"></script>
     <script src="../../../../../_static/tabs.js?v=3030b3cb"></script>
     <script src="../../../../../_static/design-tabs.js?v=36754332"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/otx/algo/segmentation/heads/custom_fcn_head';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/otx/algo/segmentation/heads/fcn_head';</script>
     <link rel="index" title="Index" href="../../../../../genindex.html" />
     <link rel="search" title="Search" href="../../../../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -234,7 +234,7 @@
             
             <article class="bd-article" role="main">
               
-  <h1>Source code for otx.algo.segmentation.heads.custom_fcn_head</h1><div class="highlight"><pre>
+  <h1>Source code for otx.algo.segmentation.heads.fcn_head</h1><div class="highlight"><pre>
 <span></span><span class="c1"># Copyright (C) 2024 Intel Corporation</span>
 <span class="c1"># SPDX-License-Identifier: Apache-2.0</span>
 <span class="c1">#</span>
@@ -242,116 +242,69 @@
 
 <span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
 
-<span class="kn">import</span> <span class="nn">typing</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TYPE_CHECKING</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span>
 
 <span class="kn">import</span> <span class="nn">torch</span>
-<span class="kn">from</span> <span class="nn">mmseg.models.decode_heads.fcn_head</span> <span class="kn">import</span> <span class="n">FCNHead</span>
-<span class="kn">from</span> <span class="nn">mmseg.models.losses</span> <span class="kn">import</span> <span class="n">accuracy</span>
-<span class="kn">from</span> <span class="nn">mmseg.models.utils</span> <span class="kn">import</span> <span class="n">resize</span>
-<span class="kn">from</span> <span class="nn">mmseg.registry</span> <span class="kn">import</span> <span class="n">MODELS</span>
 <span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">nn</span>
 
-<span class="kn">from</span> <span class="nn">otx.algo.utils</span> <span class="kn">import</span> <span class="n">IterativeAggregator</span>
+<span class="kn">from</span> <span class="nn">otx.algo.modules</span> <span class="kn">import</span> <span class="n">ConvModule</span>
+<span class="kn">from</span> <span class="nn">otx.algo.segmentation.modules</span> <span class="kn">import</span> <span class="n">IterativeAggregator</span>
 
-<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
-    <span class="kn">from</span> <span class="nn">mmseg.utils</span> <span class="kn">import</span> <span class="n">SampleList</span>
-
-
-<span class="k">class</span> <span class="nc">ClassIncrementalMixin</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Mixin for class incremental learning.&quot;&quot;&quot;</span>
-
-    <span class="nd">@typing</span><span class="o">.</span><span class="n">no_type_check</span>
-    <span class="k">def</span> <span class="nf">loss_by_feat</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
-        <span class="n">seg_logits</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
-        <span class="n">batch_data_samples</span><span class="p">:</span> <span class="n">SampleList</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute segmentation loss.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            seg_logits (Tensor): The output from decode head forward function.</span>
-<span class="sd">            batch_data_samples (List[:obj:`SegDataSample`]): The seg</span>
-<span class="sd">                data samples. It usually includes information such</span>
-<span class="sd">                as `metainfo` and `gt_sem_seg`.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            dict[str, Tensor]: a dictionary of loss components</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">img_metas</span> <span class="o">=</span> <span class="p">[</span><span class="n">data_sample</span><span class="o">.</span><span class="n">metainfo</span> <span class="k">for</span> <span class="n">data_sample</span> <span class="ow">in</span> <span class="n">batch_data_samples</span><span class="p">]</span>
-        <span class="n">valid_label_mask</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_valid_label_mask</span><span class="p">(</span><span class="n">img_metas</span><span class="p">)</span>
-        <span class="n">seg_label</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stack_batch_gt</span><span class="p">(</span><span class="n">batch_data_samples</span><span class="p">)</span>
-        <span class="n">loss</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="n">seg_logits</span> <span class="o">=</span> <span class="n">resize</span><span class="p">(</span>
-            <span class="nb">input</span><span class="o">=</span><span class="n">seg_logits</span><span class="p">,</span>
-            <span class="n">size</span><span class="o">=</span><span class="n">seg_label</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">:],</span>
-            <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;bilinear&quot;</span><span class="p">,</span>
-            <span class="n">align_corners</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">align_corners</span><span class="p">,</span>
-        <span class="p">)</span>
-        <span class="n">seg_weight</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sampler</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">seg_logits</span><span class="p">,</span> <span class="n">seg_label</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sampler</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
-        <span class="n">seg_label</span> <span class="o">=</span> <span class="n">seg_label</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-
-        <span class="n">losses_decode</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">loss_decode</span><span class="p">]</span> <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">loss_decode</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">ModuleList</span><span class="p">)</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">loss_decode</span>
-        <span class="k">for</span> <span class="n">loss_decode</span> <span class="ow">in</span> <span class="n">losses_decode</span><span class="p">:</span>
-            <span class="n">valid_label_mask_cfg</span> <span class="o">=</span> <span class="p">{}</span>
-            <span class="k">if</span> <span class="n">loss_decode</span><span class="o">.</span><span class="n">loss_name</span> <span class="o">==</span> <span class="s2">&quot;loss_ce_ignore&quot;</span><span class="p">:</span>
-                <span class="n">valid_label_mask_cfg</span><span class="p">[</span><span class="s2">&quot;valid_label_mask&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">valid_label_mask</span>
-            <span class="k">if</span> <span class="n">loss_decode</span><span class="o">.</span><span class="n">loss_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">loss</span><span class="p">:</span>
-                <span class="n">loss</span><span class="p">[</span><span class="n">loss_decode</span><span class="o">.</span><span class="n">loss_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">loss_decode</span><span class="p">(</span>
-                    <span class="n">seg_logits</span><span class="p">,</span>
-                    <span class="n">seg_label</span><span class="p">,</span>
-                    <span class="n">weight</span><span class="o">=</span><span class="n">seg_weight</span><span class="p">,</span>
-                    <span class="n">ignore_index</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ignore_index</span><span class="p">,</span>
-                    <span class="o">**</span><span class="n">valid_label_mask_cfg</span><span class="p">,</span>
-                <span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">loss</span><span class="p">[</span><span class="n">loss_decode</span><span class="o">.</span><span class="n">loss_name</span><span class="p">]</span> <span class="o">+=</span> <span class="n">loss_decode</span><span class="p">(</span>
-                    <span class="n">seg_logits</span><span class="p">,</span>
-                    <span class="n">seg_label</span><span class="p">,</span>
-                    <span class="n">weight</span><span class="o">=</span><span class="n">seg_weight</span><span class="p">,</span>
-                    <span class="n">ignore_index</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ignore_index</span><span class="p">,</span>
-                    <span class="n">valid_label_mask</span><span class="o">=</span><span class="n">valid_label_mask</span><span class="p">,</span>
-                    <span class="o">**</span><span class="n">valid_label_mask_cfg</span><span class="p">,</span>
-                <span class="p">)</span>
-
-        <span class="n">loss</span><span class="p">[</span><span class="s2">&quot;acc_seg&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">accuracy</span><span class="p">(</span><span class="n">seg_logits</span><span class="p">,</span> <span class="n">seg_label</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ignore_index</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">loss</span>
-
-    <span class="nd">@typing</span><span class="o">.</span><span class="n">no_type_check</span>
-    <span class="k">def</span> <span class="nf">get_valid_label_mask</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">img_metas</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get valid label mask removing ignored classes to zero mask in a batch.&quot;&quot;&quot;</span>
-        <span class="n">valid_label_mask</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">meta</span> <span class="ow">in</span> <span class="n">img_metas</span><span class="p">:</span>
-            <span class="n">mask</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">([</span><span class="mi">1</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_classes</span><span class="p">)])</span>
-            <span class="k">if</span> <span class="s2">&quot;ignored_labels&quot;</span> <span class="ow">in</span> <span class="n">meta</span> <span class="ow">and</span> <span class="n">meta</span><span class="p">[</span><span class="s2">&quot;ignored_labels&quot;</span><span class="p">]:</span>
-                <span class="n">mask</span><span class="p">[</span><span class="n">meta</span><span class="p">[</span><span class="s2">&quot;ignored_labels&quot;</span><span class="p">]]</span> <span class="o">=</span> <span class="mi">0</span>
-            <span class="n">valid_label_mask</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">valid_label_mask</span>
+<span class="kn">from</span> <span class="nn">.base_segm_head</span> <span class="kn">import</span> <span class="n">BaseSegmHead</span>
 
 
-<div class="viewcode-block" id="CustomFCNHead">
-<a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.segmentation.heads.html#otx.algo.segmentation.heads.CustomFCNHead">[docs]</a>
-<span class="nd">@MODELS</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
-<span class="k">class</span> <span class="nc">CustomFCNHead</span><span class="p">(</span><span class="n">ClassIncrementalMixin</span><span class="p">,</span> <span class="n">FCNHead</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Custom FCNHead implementation.</span>
+<div class="viewcode-block" id="FCNHead">
+<a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.segmentation.heads.html#otx.algo.segmentation.heads.FCNHead">[docs]</a>
+<span class="k">class</span> <span class="nc">FCNHead</span><span class="p">(</span><span class="n">BaseSegmHead</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Fully Convolution Networks for Semantic Segmentation with aggregation.</span>
 
-<span class="sd">    Custom FCNHead supports ignored label for class incremental learning cases.</span>
+<span class="sd">    This head is implemented of `FCNNet &lt;https://arxiv.org/abs/1411.4038&gt;`_.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        num_convs (int): Number of convs in the head. Default: 2.</span>
+<span class="sd">        kernel_size (int): The kernel size for convs in the head. Default: 3.</span>
+<span class="sd">        concat_input (bool): Whether concat the input and output of convs</span>
+<span class="sd">            before classification layer.</span>
+<span class="sd">        dilation (int): The dilation rate for convs in the head. Default: 1.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
+        <span class="n">in_channels</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">in_index</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">norm_cfg</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">conv_cfg</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">input_transform</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">num_convs</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
+        <span class="n">kernel_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
+        <span class="n">concat_input</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">dilation</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
         <span class="n">enable_aggregator</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">aggregator_min_channels</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
         <span class="n">aggregator_merge_norm</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">aggregator_use_concat</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-        <span class="n">in_channels</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">in_index</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">norm_cfg</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">conv_cfg</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">input_transform</span><span class="p">:</span> <span class="nb">list</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="o">*</span><span class="n">args</span><span class="p">,</span>
-        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
-    <span class="p">):</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>  <span class="c1"># noqa: ANN401</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize a Fully Convolution Networks head.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            num_convs (int): Number of convs in the head.</span>
+<span class="sd">            kernel_size (int): The kernel size for convs in the head.</span>
+<span class="sd">            concat_input (bool): Whether to concat input and output of convs.</span>
+<span class="sd">            dilation (int): The dilation rate for convs in the head.</span>
+<span class="sd">            **kwargs: Additional arguments.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">dilation</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;dilation should be int, but got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">dilation</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">num_convs</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">dilation</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;num_convs and dilation should be larger than 0&quot;</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_convs</span> <span class="o">=</span> <span class="n">num_convs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">concat_input</span> <span class="o">=</span> <span class="n">concat_input</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kernel_size</span> <span class="o">=</span> <span class="n">kernel_size</span>
+
         <span class="k">if</span> <span class="n">enable_aggregator</span><span class="p">:</span>  <span class="c1"># Lite-HRNet aggregator</span>
             <span class="k">if</span> <span class="n">in_channels</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">in_channels</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
                 <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;&#39;in_channels&#39; should be List[int].&quot;</span>
@@ -375,7 +328,6 @@
             <span class="n">aggregator</span> <span class="o">=</span> <span class="kc">None</span>
 
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
-            <span class="o">*</span><span class="n">args</span><span class="p">,</span>
             <span class="n">in_index</span><span class="o">=</span><span class="n">in_index</span><span class="p">,</span>
             <span class="n">norm_cfg</span><span class="o">=</span><span class="n">norm_cfg</span><span class="p">,</span>
             <span class="n">conv_cfg</span><span class="o">=</span><span class="n">conv_cfg</span><span class="p">,</span>
@@ -385,14 +337,79 @@
         <span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">aggregator</span> <span class="o">=</span> <span class="n">aggregator</span>
-        <span class="c1"># re-define variables</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">in_channels</span> <span class="o">=</span> <span class="n">in_channels</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">input_transform</span> <span class="o">=</span> <span class="n">input_transform</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">in_index</span> <span class="o">=</span> <span class="n">in_index</span>
+
+        <span class="k">if</span> <span class="n">num_convs</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">in_channels</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">channels</span><span class="p">):</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;in_channels and channels should be equal when num_convs is 0&quot;</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+        <span class="n">conv_padding</span> <span class="o">=</span> <span class="p">(</span><span class="n">kernel_size</span> <span class="o">//</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">dilation</span>
+        <span class="n">convs</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">ConvModule</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">in_channels</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">channels</span><span class="p">,</span>
+                <span class="n">kernel_size</span><span class="o">=</span><span class="n">kernel_size</span><span class="p">,</span>
+                <span class="n">padding</span><span class="o">=</span><span class="n">conv_padding</span><span class="p">,</span>
+                <span class="n">dilation</span><span class="o">=</span><span class="n">dilation</span><span class="p">,</span>
+                <span class="n">norm_cfg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">norm_cfg</span><span class="p">,</span>
+                <span class="n">act_cfg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">act_cfg</span><span class="p">,</span>
+            <span class="p">),</span>
+        <span class="p">]</span>
+        <span class="n">convs</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="n">ConvModule</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">channels</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">channels</span><span class="p">,</span>
+                    <span class="n">kernel_size</span><span class="o">=</span><span class="n">kernel_size</span><span class="p">,</span>
+                    <span class="n">padding</span><span class="o">=</span><span class="n">conv_padding</span><span class="p">,</span>
+                    <span class="n">dilation</span><span class="o">=</span><span class="n">dilation</span><span class="p">,</span>
+                    <span class="n">norm_cfg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">norm_cfg</span><span class="p">,</span>
+                    <span class="n">act_cfg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">act_cfg</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_convs</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="p">],</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">num_convs</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">convs</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Identity</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">convs</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span><span class="o">*</span><span class="n">convs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">concat_input</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">conv_cat</span> <span class="o">=</span> <span class="n">ConvModule</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">in_channels</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">channels</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">channels</span><span class="p">,</span>
+                <span class="n">kernel_size</span><span class="o">=</span><span class="n">kernel_size</span><span class="p">,</span>
+                <span class="n">padding</span><span class="o">=</span><span class="n">kernel_size</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span>
+                <span class="n">conv_cfg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">conv_cfg</span><span class="p">,</span>
+                <span class="n">norm_cfg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">norm_cfg</span><span class="p">,</span>
+                <span class="n">act_cfg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">act_cfg</span><span class="p">,</span>
+            <span class="p">)</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">act_cfg</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">convs</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">with_activation</span> <span class="o">=</span> <span class="kc">False</span>
-            <span class="nb">delattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">convs</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="s2">&quot;activate&quot;</span><span class="p">)</span>
+            <span class="nb">delattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">convs</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="s2">&quot;activate&quot;</span><span class="p">)</span>  <span class="c1"># why we delete last activation?</span>
+
+    <span class="k">def</span> <span class="nf">_forward_feature</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Forward function for feature maps.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            inputs (list[Tensor]): List of multi-level img features.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            feats (Tensor): A tensor of shape (batch_size, self.channels,</span>
+<span class="sd">                H, W) which is feature map for last layer of decoder head.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transform_inputs</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
+        <span class="n">feats</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">convs</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">concat_input</span><span class="p">:</span>
+            <span class="n">feats</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">conv_cat</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">x</span><span class="p">,</span> <span class="n">feats</span><span class="p">],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">feats</span>
+
+<div class="viewcode-block" id="FCNHead.forward">
+<a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.segmentation.heads.html#otx.algo.segmentation.heads.FCNHead.forward">[docs]</a>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Forward function.&quot;&quot;&quot;</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_forward_feature</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">cls_seg</span><span class="p">(</span><span class="n">output</span><span class="p">)</span></div>
+
 
     <span class="k">def</span> <span class="nf">_transform_inputs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Tensor</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Tensor</span> <span class="o">|</span> <span class="nb">list</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Transform inputs for decoder.</span>

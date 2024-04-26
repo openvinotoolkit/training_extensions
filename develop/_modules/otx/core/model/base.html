@@ -952,7 +952,6 @@
 
         <span class="n">orig_forward</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">forward</span>
         <span class="n">orig_trainer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trainer</span>  <span class="c1"># type: ignore[has-type]</span>
-
         <span class="k">try</span><span class="p">:</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trainer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># type: ignore[has-type]</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_trainer</span> <span class="o">=</span> <span class="n">Trainer</span><span class="p">()</span>

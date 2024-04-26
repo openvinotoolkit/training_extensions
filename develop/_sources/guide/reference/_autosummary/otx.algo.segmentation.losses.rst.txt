@@ -9,6 +9,12 @@ otx.algo.segmentation.losses
 
    
    
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      create_criterion
+   
    
 
    

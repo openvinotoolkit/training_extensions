@@ -17,8 +17,8 @@ otx.algo.segmentation.heads
 
    .. autosummary::
    
-      CustomFCNHead
-      CustomLightHamHead
+      FCNHead
+      LightHamHead
    
    
 

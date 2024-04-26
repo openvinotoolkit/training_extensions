@@ -246,10 +246,13 @@
 <span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">Sequence</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Any</span>
 
+<span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">from</span> <span class="nn">torchvision</span> <span class="kn">import</span> <span class="n">tv_tensors</span>
 
 <span class="kn">from</span> <span class="nn">otx.core.data.entity.base</span> <span class="kn">import</span> <span class="n">OTXBatchLossEntity</span>
 <span class="kn">from</span> <span class="nn">otx.core.data.entity.segmentation</span> <span class="kn">import</span> <span class="n">SegBatchDataEntity</span><span class="p">,</span> <span class="n">SegBatchPredEntity</span>
+<span class="kn">from</span> <span class="nn">otx.core.exporter.base</span> <span class="kn">import</span> <span class="n">OTXModelExporter</span>
+<span class="kn">from</span> <span class="nn">otx.core.exporter.native</span> <span class="kn">import</span> <span class="n">OTXNativeModelExporter</span>
 <span class="kn">from</span> <span class="nn">otx.core.metrics</span> <span class="kn">import</span> <span class="n">MetricInput</span>
 <span class="kn">from</span> <span class="nn">otx.core.metrics.dice</span> <span class="kn">import</span> <span class="n">SegmCallable</span>
 <span class="kn">from</span> <span class="nn">otx.core.model.base</span> <span class="kn">import</span> <span class="n">DefaultOptimizerCallable</span><span class="p">,</span> <span class="n">DefaultSchedulerCallable</span><span class="p">,</span> <span class="n">OTXModel</span><span class="p">,</span> <span class="n">OVModel</span>
@@ -271,7 +274,7 @@
 <div class="viewcode-block" id="OTXSegmentationModel">
 <a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.model.segmentation.html#otx.core.model.segmentation.OTXSegmentationModel">[docs]</a>
 <span class="k">class</span> <span class="nc">OTXSegmentationModel</span><span class="p">(</span><span class="n">OTXModel</span><span class="p">[</span><span class="n">SegBatchDataEntity</span><span class="p">,</span> <span class="n">SegBatchPredEntity</span><span class="p">]):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Base class for the detection models used in OTX.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Base class for the semantic segmentation models used in OTX.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -281,6 +284,19 @@
         <span class="n">metric</span><span class="p">:</span> <span class="n">MetricCallable</span> <span class="o">=</span> <span class="n">SegmCallable</span><span class="p">,</span>  <span class="c1"># type: ignore[assignment]</span>
         <span class="n">torch_compile</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Base semantic segmentation model.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            label_info (LabelInfoTypes): The label information for the segmentation model.</span>
+<span class="sd">            optimizer (OptimizerCallable, optional): The optimizer to use for training.</span>
+<span class="sd">                Defaults to DefaultOptimizerCallable.</span>
+<span class="sd">            scheduler (LRSchedulerCallable | LRSchedulerListCallable, optional):</span>
+<span class="sd">                The scheduler to use for learning rate adjustment. Defaults to DefaultSchedulerCallable.</span>
+<span class="sd">            metric (MetricCallable, optional): The metric to use for evaluation.</span>
+<span class="sd">                Defaults to SegmCallable.</span>
+<span class="sd">            torch_compile (bool, optional): Whether to compile the model using TorchScript.</span>
+<span class="sd">                Defaults to False.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="n">label_info</span><span class="o">=</span><span class="n">label_info</span><span class="p">,</span>
             <span class="n">optimizer</span><span class="o">=</span><span class="n">optimizer</span><span class="p">,</span>
@@ -322,7 +338,118 @@
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">label_info</span><span class="p">,</span> <span class="n">SegLabelInfo</span><span class="p">):</span>
             <span class="k">return</span> <span class="n">label_info</span>
 
-        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">label_info</span><span class="p">)</span></div>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">label_info</span><span class="p">)</span>
+
+<div class="viewcode-block" id="OTXSegmentationModel.forward_for_tracing">
+<a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.model.segmentation.html#otx.core.model.segmentation.OTXSegmentationModel.forward_for_tracing">[docs]</a>
+    <span class="k">def</span> <span class="nf">forward_for_tracing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Model forward function used for the model tracing during model exportation.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">(</span><span class="n">inputs</span><span class="o">=</span><span class="n">image</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;tensor&quot;</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="TorchVisionCompatibleModel">
+<a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.model.segmentation.html#otx.core.model.segmentation.TorchVisionCompatibleModel">[docs]</a>
+<span class="k">class</span> <span class="nc">TorchVisionCompatibleModel</span><span class="p">(</span><span class="n">OTXSegmentationModel</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Segmentation model compatible with torchvision data pipeline.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">label_info</span><span class="p">:</span> <span class="n">LabelInfoTypes</span><span class="p">,</span>
+        <span class="n">optimizer</span><span class="p">:</span> <span class="n">OptimizerCallable</span> <span class="o">=</span> <span class="n">DefaultOptimizerCallable</span><span class="p">,</span>
+        <span class="n">scheduler</span><span class="p">:</span> <span class="n">LRSchedulerCallable</span> <span class="o">|</span> <span class="n">LRSchedulerListCallable</span> <span class="o">=</span> <span class="n">DefaultSchedulerCallable</span><span class="p">,</span>
+        <span class="n">metric</span><span class="p">:</span> <span class="n">MetricCallable</span> <span class="o">=</span> <span class="n">SegmCallable</span><span class="p">,</span>  <span class="c1"># type: ignore[assignment]</span>
+        <span class="n">torch_compile</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">backbone_configuration</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">decode_head_configuration</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">criterion_configuration</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">export_image_configuration</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">name_base_model</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;semantic_segmentation_model&quot;</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Torchvision compatible model.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            label_info (LabelInfoTypes): The label information for the segmentation model.</span>
+<span class="sd">            optimizer (OptimizerCallable, optional): The optimizer callable for the model.</span>
+<span class="sd">                Defaults to DefaultOptimizerCallable.</span>
+<span class="sd">            scheduler (LRSchedulerCallable | LRSchedulerListCallable, optional):</span>
+<span class="sd">                The learning rate scheduler callable for the model. Defaults to DefaultSchedulerCallable.</span>
+<span class="sd">            metric (MetricCallable, optional): The metric callable for the model.</span>
+<span class="sd">                Defaults to SegmCallable.</span>
+<span class="sd">            torch_compile (bool, optional): Whether to compile the model using Torch. Defaults to False.</span>
+<span class="sd">            backbone_configuration (dict[str, Any] | None, optional):</span>
+<span class="sd">                The configuration for the backbone of the model. Defaults to None.</span>
+<span class="sd">            decode_head_configuration (dict[str, Any] | None, optional):</span>
+<span class="sd">                The configuration for the decode head of the model. Defaults to None.</span>
+<span class="sd">            criterion_configuration (list[dict[str, Any]] | None, optional):</span>
+<span class="sd">                The configuration for the criterion of the model. Defaults to None.</span>
+<span class="sd">            export_image_configuration (dict[str, Any] | None, optional):</span>
+<span class="sd">                The configuration for the export of the model like mean, scale and image_size. Defaults to None.</span>
+<span class="sd">            name_base_model (str, optional): The name of the base model used for trainig.</span>
+<span class="sd">                Defaults to &quot;semantic_segmentation_model&quot;.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">backbone_configuration</span> <span class="o">=</span> <span class="n">backbone_configuration</span> <span class="k">if</span> <span class="n">backbone_configuration</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">decode_head_configuration</span> <span class="o">=</span> <span class="n">decode_head_configuration</span> <span class="k">if</span> <span class="n">decode_head_configuration</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">{}</span>
+        <span class="n">export_image_configuration</span> <span class="o">=</span> <span class="n">export_image_configuration</span> <span class="k">if</span> <span class="n">export_image_configuration</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">criterion_configuration</span> <span class="o">=</span> <span class="n">criterion_configuration</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">image_size</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">export_image_configuration</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;image_size&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">512</span><span class="p">,</span> <span class="mi">512</span><span class="p">)))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mean</span> <span class="o">=</span> <span class="n">export_image_configuration</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;mean&quot;</span><span class="p">,</span> <span class="p">[</span><span class="mf">123.675</span><span class="p">,</span> <span class="mf">116.28</span><span class="p">,</span> <span class="mf">103.53</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scale</span> <span class="o">=</span> <span class="n">export_image_configuration</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;std&quot;</span><span class="p">,</span> <span class="p">[</span><span class="mf">58.395</span><span class="p">,</span> <span class="mf">57.12</span><span class="p">,</span> <span class="mf">57.375</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name_base_model</span> <span class="o">=</span> <span class="n">name_base_model</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">label_info</span><span class="o">=</span><span class="n">label_info</span><span class="p">,</span>
+            <span class="n">optimizer</span><span class="o">=</span><span class="n">optimizer</span><span class="p">,</span>
+            <span class="n">scheduler</span><span class="o">=</span><span class="n">scheduler</span><span class="p">,</span>
+            <span class="n">metric</span><span class="o">=</span><span class="n">metric</span><span class="p">,</span>
+            <span class="n">torch_compile</span><span class="o">=</span><span class="n">torch_compile</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_customize_inputs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entity</span><span class="p">:</span> <span class="n">SegBatchDataEntity</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+        <span class="n">mode</span> <span class="o">=</span> <span class="s2">&quot;loss&quot;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">training</span> <span class="k">else</span> <span class="s2">&quot;predict&quot;</span>
+
+        <span class="n">masks</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">entity</span><span class="o">.</span><span class="n">masks</span><span class="p">)</span><span class="o">.</span><span class="n">long</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;inputs&quot;</span><span class="p">:</span> <span class="n">entity</span><span class="o">.</span><span class="n">images</span><span class="p">,</span> <span class="s2">&quot;img_metas&quot;</span><span class="p">:</span> <span class="n">entity</span><span class="o">.</span><span class="n">imgs_info</span><span class="p">,</span> <span class="s2">&quot;masks&quot;</span><span class="p">:</span> <span class="n">masks</span><span class="p">,</span> <span class="s2">&quot;mode&quot;</span><span class="p">:</span> <span class="n">mode</span><span class="p">}</span>
+
+    <span class="k">def</span> <span class="nf">_customize_outputs</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">outputs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>  <span class="c1"># noqa: ANN401</span>
+        <span class="n">inputs</span><span class="p">:</span> <span class="n">SegBatchDataEntity</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SegBatchPredEntity</span> <span class="o">|</span> <span class="n">OTXBatchLossEntity</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">training</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">outputs</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">outputs</span><span class="p">)</span>
+
+            <span class="n">losses</span> <span class="o">=</span> <span class="n">OTXBatchLossEntity</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">outputs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">losses</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+            <span class="k">return</span> <span class="n">losses</span>
+
+        <span class="k">return</span> <span class="n">SegBatchPredEntity</span><span class="p">(</span>
+            <span class="n">batch_size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">outputs</span><span class="p">),</span>
+            <span class="n">images</span><span class="o">=</span><span class="n">inputs</span><span class="o">.</span><span class="n">images</span><span class="p">,</span>
+            <span class="n">imgs_info</span><span class="o">=</span><span class="n">inputs</span><span class="o">.</span><span class="n">imgs_info</span><span class="p">,</span>
+            <span class="n">scores</span><span class="o">=</span><span class="p">[],</span>
+            <span class="n">masks</span><span class="o">=</span><span class="n">outputs</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">_exporter</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OTXModelExporter</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Creates OTXModelExporter object that can export the model.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">OTXNativeModelExporter</span><span class="p">(</span>
+            <span class="n">task_level_export_parameters</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_export_parameters</span><span class="p">,</span>
+            <span class="n">input_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">image_size</span><span class="p">,</span>
+            <span class="n">mean</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">mean</span><span class="p">,</span>
+            <span class="n">std</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">scale</span><span class="p">,</span>
+            <span class="n">resize_mode</span><span class="o">=</span><span class="s2">&quot;standard&quot;</span><span class="p">,</span>
+            <span class="n">pad_value</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+            <span class="n">swap_rgb</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">via_onnx</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">onnx_export_configuration</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">output_names</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="p">)</span></div>
 
 
 
@@ -345,6 +472,24 @@
         <span class="n">metric</span><span class="p">:</span> <span class="n">MetricCallable</span> <span class="o">=</span> <span class="n">SegmCallable</span><span class="p">,</span>  <span class="c1"># type: ignore[assignment]</span>
         <span class="n">torch_compile</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;MMSeg compatible model.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            label_info (LabelInfoTypes): The label information for the segmentation model.</span>
+<span class="sd">            config (DictConfig): The configuration for the segmentation model.</span>
+<span class="sd">            optimizer (OptimizerCallable, optional): The optimizer to use for training.</span>
+<span class="sd">                Defaults to DefaultOptimizerCallable.</span>
+<span class="sd">            scheduler (LRSchedulerCallable | LRSchedulerListCallable, optional):</span>
+<span class="sd">                The scheduler to use for learning rate adjustment.</span>
+<span class="sd">                    Defaults to DefaultSchedulerCallable.</span>
+<span class="sd">            metric (MetricCallable, optional): The metric to use for evaluation.</span>
+<span class="sd">                Defaults to SegmCallable.</span>
+<span class="sd">            torch_compile (bool, optional): Whether to compile the model using TorchScript.</span>
+<span class="sd">                Defaults to False.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">config</span> <span class="o">=</span> <span class="n">inplace_num_classes</span><span class="p">(</span><span class="n">cfg</span><span class="o">=</span><span class="n">config</span><span class="p">,</span> <span class="n">num_classes</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_dispatch_label_info</span><span class="p">(</span><span class="n">label_info</span><span class="p">)</span><span class="o">.</span><span class="n">num_classes</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">config</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">load_from</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;load_from&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
@@ -424,14 +569,7 @@
             <span class="n">imgs_info</span><span class="o">=</span><span class="n">inputs</span><span class="o">.</span><span class="n">imgs_info</span><span class="p">,</span>
             <span class="n">scores</span><span class="o">=</span><span class="p">[],</span>
             <span class="n">masks</span><span class="o">=</span><span class="n">masks</span><span class="p">,</span>
-        <span class="p">)</span>
-
-<div class="viewcode-block" id="MMSegCompatibleModel.forward_for_tracing">
-<a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.model.segmentation.html#otx.core.model.segmentation.MMSegCompatibleModel.forward_for_tracing">[docs]</a>
-    <span class="k">def</span> <span class="nf">forward_for_tracing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Model forward function used for the model tracing during model exportation.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">(</span><span class="n">inputs</span><span class="o">=</span><span class="n">image</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;tensor&quot;</span><span class="p">)</span></div>
-</div>
+        <span class="p">)</span></div>
 
 
 

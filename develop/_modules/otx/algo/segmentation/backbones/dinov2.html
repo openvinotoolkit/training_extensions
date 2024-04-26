@@ -243,16 +243,17 @@
 <span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
 
 <span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
 
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">from</span> <span class="nn">mmengine.model</span> <span class="kn">import</span> <span class="n">BaseModule</span>
-<span class="kn">from</span> <span class="nn">mmseg.models.builder</span> <span class="kn">import</span> <span class="n">BACKBONES</span>
 <span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">nn</span>
+
+<span class="kn">from</span> <span class="nn">otx.algo.utils.mmengine_utils</span> <span class="kn">import</span> <span class="n">load_checkpoint_to_model</span><span class="p">,</span> <span class="n">load_from_http</span>
 
 
 <div class="viewcode-block" id="DinoVisionTransformer">
 <a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.segmentation.backbones.html#otx.algo.segmentation.backbones.DinoVisionTransformer">[docs]</a>
-<span class="nd">@BACKBONES</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
 <span class="k">class</span> <span class="nc">DinoVisionTransformer</span><span class="p">(</span><span class="n">BaseModule</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;DINO-v2 Model.&quot;&quot;&quot;</span>
 
@@ -262,6 +263,7 @@
         <span class="n">freeze_backbone</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
         <span class="n">out_index</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
         <span class="n">init_cfg</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">pretrained_weights</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">init_cfg</span><span class="p">)</span>
         <span class="n">torch</span><span class="o">.</span><span class="n">hub</span><span class="o">.</span><span class="n">_validate_not_a_forked_repo</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">:</span> <span class="kc">True</span>  <span class="c1"># noqa: SLF001, ARG005</span>
@@ -275,6 +277,9 @@
             <span class="n">n</span><span class="o">=</span><span class="n">out_index</span><span class="p">,</span>
             <span class="n">reshape</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
         <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">pretrained_weights</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">load_pretrained_weights</span><span class="p">(</span><span class="n">pretrained_weights</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_freeze_backbone</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">backbone</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Freeze the backbone.&quot;&quot;&quot;</span>
@@ -297,6 +302,21 @@
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">imgs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Forward function.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">backbone</span><span class="p">(</span><span class="n">imgs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DinoVisionTransformer.load_pretrained_weights">
+<a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.segmentation.backbones.html#otx.algo.segmentation.backbones.DinoVisionTransformer.load_pretrained_weights">[docs]</a>
+    <span class="k">def</span> <span class="nf">load_pretrained_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pretrained</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize weights.&quot;&quot;&quot;</span>
+        <span class="n">checkpoint</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">pretrained</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">Path</span><span class="p">(</span><span class="n">pretrained</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="n">checkpoint</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">pretrained</span><span class="p">,</span> <span class="s2">&quot;cpu&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;init weight - </span><span class="si">{</span><span class="n">pretrained</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">pretrained</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">checkpoint</span> <span class="o">=</span> <span class="n">load_from_http</span><span class="p">(</span><span class="n">pretrained</span><span class="p">,</span> <span class="s2">&quot;cpu&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;init weight - </span><span class="si">{</span><span class="n">pretrained</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">checkpoint</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">load_checkpoint_to_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">checkpoint</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="n">prefix</span><span class="p">)</span></div>
 </div>
 
 </pre></div>
