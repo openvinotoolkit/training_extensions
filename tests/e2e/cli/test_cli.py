@@ -406,7 +406,7 @@ def test_otx_ov_test_cli(
         pytest.skip("OMZ doesn't have proper model for these types of tasks.")
 
     pytest.xfail(
-        "ValueError: To launch a test pipeline w/ OMZ, the label information should be same between the training and testing datasets."
+        "ValueError: To launch a test pipeline w/ OMZ, the label information should be same between the training and testing datasets.",
     )
 
     # otx test
