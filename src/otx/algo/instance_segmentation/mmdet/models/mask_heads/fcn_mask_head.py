@@ -13,7 +13,6 @@ from typing import TYPE_CHECKING
 import numpy as np
 import torch
 import torch.nn.functional
-from mmengine.model import BaseModule, ModuleList
 from torch import Tensor, nn
 from torch.nn.modules.utils import _pair
 

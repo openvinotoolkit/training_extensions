@@ -12,7 +12,6 @@ from typing import ClassVar
 
 import torch
 import torch.utils.checkpoint as cp
-from mmengine.model import BaseModule
 from torch import nn
 from torch.nn.modules.batchnorm import _BatchNorm
 
