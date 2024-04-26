@@ -60,7 +60,7 @@ class AnomalyDataset(OTXDataset):
         self,
         index: int,
     ) -> AnomalyClassificationDataItem | AnomalySegmentationDataBatch | AnomalyDetectionDataBatch:
-        datumaro_item = self.dm_subset.get(id=self.ids[index], subset=self.dm_subset.name)
+        datumaro_item = self.dm_subset.as_dataset()[index]
         img = datumaro_item.media_as(Image)
         # returns image in RGB format if self.image_color_channel is RGB
         img_data, img_shape = self._get_img_data_and_shape(img)
