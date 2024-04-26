@@ -10,10 +10,10 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import torch.nn.functional
-from mmengine.model import BaseModule
 from mmengine.registry import MODELS
 from torch import Tensor, nn
 
+from otx.algo.modules.base_module import BaseModule
 from otx.algo.modules.conv_module import ConvModule
 
 if TYPE_CHECKING:

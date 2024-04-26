@@ -15,10 +15,10 @@ from typing import TYPE_CHECKING, Sequence
 
 import torch
 import torch.nn.functional
-from mmengine.model import BaseModule
 from mmengine.utils import to_2tuple
 from torch import nn
 
+from otx.algo.modules.base_module import BaseModule
 from otx.algo.modules.conv import build_conv_layer
 from otx.algo.modules.norm import build_norm_layer
 

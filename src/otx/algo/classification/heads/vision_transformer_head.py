@@ -10,11 +10,11 @@ import math
 from collections import OrderedDict
 
 import torch
-from mmengine.model import BaseModule, Sequential
 from torch import nn
 from torch.nn import functional
 
-from otx.algo.utils.mmengine_utils import trunc_normal_
+from otx.algo.modules.base_module import BaseModule, Sequential
+from otx.algo.utils.weight_init import trunc_normal_
 
 
 class VisionTransformerClsHead(BaseModule):
