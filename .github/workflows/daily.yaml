@@ -39,3 +39,9 @@ jobs:
         run: python -m pip install --require-hashes --no-deps -r .ci/requirements/tox/requirements.txt
       - name: Run E2E Test
         run: tox -vv -e e2e-test-${{ matrix.task }}
+      - name: Upload test results
+        uses: actions/upload-artifact@1746f4ab65b179e0ea60a494b83293b640dd5bba # v4.3.2
+        with:
+          name: ${{ matrix.task }}-py310
+          path: .tox/e2e-test-${{ matrix.task }}.csv
+        if: ${{ always() }}
