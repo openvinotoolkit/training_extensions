@@ -15,16 +15,15 @@ import copy
 from typing import TYPE_CHECKING
 
 import torch
-from mmengine.model.base_model import BaseModel
 
 from otx.algo.explain.explain_algo import ReciproCAM
-from otx.core.model.utils.mmpretrain import ClsDataPreprocessor
+from otx.algo.modules.base_module import BaseModule
 
 if TYPE_CHECKING:
     from torch import nn
 
 
-class ImageClassifier(BaseModel):
+class ImageClassifier(BaseModule):
     """Image classifiers for supervised classification task.
 
     Args:
@@ -70,13 +69,7 @@ class ImageClassifier(BaseModel):
         if pretrained is not None:
             init_cfg = {"type": "Pretrained", "checkpoint": pretrained}
 
-        data_preprocessor = ClsDataPreprocessor(
-            mean=[123.675, 116.28, 103.53] if mean is None else mean,
-            std=[58.395, 57.12, 57.375] if std is None else std,
-            to_rgb=to_rgb,
-        )
-
-        super().__init__(data_preprocessor=data_preprocessor, init_cfg=init_cfg)
+        super().__init__(init_cfg=init_cfg)
 
         self._is_init = False
         self.init_cfg = copy.deepcopy(init_cfg)

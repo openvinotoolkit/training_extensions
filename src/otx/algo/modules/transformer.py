@@ -8,8 +8,9 @@ from __future__ import annotations
 import math
 
 import torch
-from mmengine.model import BaseModule, Sequential
 from torch import nn
+
+from otx.algo.modules.base_module import BaseModule, Sequential
 
 from .activation import build_activation_layer
 from .conv import build_conv_layer

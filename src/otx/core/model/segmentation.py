@@ -27,8 +27,8 @@ from otx.core.utils.config import inplace_num_classes
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
     from mmseg.models.data_preprocessor import SegDataPreProcessor
+    from model_api.models.utils import ImageResultWithSoftPrediction
     from omegaconf import DictConfig
-    from openvino.model_api.models.utils import ImageResultWithSoftPrediction
     from torch import Tensor, nn
 
     from otx.core.metrics import MetricCallable

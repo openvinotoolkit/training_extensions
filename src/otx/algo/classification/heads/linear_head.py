@@ -15,9 +15,10 @@ from __future__ import annotations
 import copy
 
 import torch
-from mmengine.model import BaseModule
 from torch import nn
 from torch.nn import functional
+
+from otx.algo.modules.base_module import BaseModule
 
 
 class LinearClsHead(BaseModule):

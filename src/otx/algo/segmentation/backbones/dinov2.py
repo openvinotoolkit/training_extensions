@@ -9,9 +9,9 @@ from functools import partial
 from pathlib import Path
 
 import torch
-from mmengine.model import BaseModule
 from torch import nn
 
+from otx.algo.modules.base_module import BaseModule
 from otx.algo.utils.mmengine_utils import load_checkpoint_to_model, load_from_http
 
 
