@@ -9,10 +9,10 @@ from typing import Sequence, Literal
 import numpy as np
 import torch
 import torch.nn as nn
-from mmengine.model import BaseModule, ModuleList
+from otx.algo.modules.base_module import BaseModule, ModuleList
 from otx.algo.modules.norm import build_norm_layer
 from otx.algo.modules.transformer import FFN, PatchEmbed
-from otx.algo.utils.mmengine_utils import trunc_normal_
+from otx.algo.utils.weight_init import trunc_normal_
 from otx.algo.classification.utils.attention import MultiheadAttention
 from otx.algo.classification.utils.embed import resize_pos_embed
 from otx.algo.classification.utils.swiglu_ffn import SwiGLUFFNFused

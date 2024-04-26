@@ -17,8 +17,6 @@ from copy import deepcopy
 import torch
 import torch.nn.functional
 import torch.utils.checkpoint as cp
-from mmengine.model import BaseModule, ModuleList
-from mmengine.model.weight_init import constant_init, trunc_normal_, trunc_normal_init
 from mmengine.registry import MODELS
 from mmengine.runner.checkpoint import CheckpointLoader
 from mmengine.utils import to_2tuple
@@ -26,8 +24,10 @@ from timm.models.layers import DropPath
 from torch import nn
 
 from otx.algo.instance_segmentation.mmdet.models.layers import PatchEmbed, PatchMerging
+from otx.algo.modules.base_module import BaseModule, ModuleList
 from otx.algo.modules.norm import build_norm_layer
 from otx.algo.modules.transformer import FFN
+from otx.algo.utils.weight_init import constant_init, trunc_normal_, trunc_normal_init
 
 # ruff: noqa: PLR0913
 
@@ -710,6 +710,9 @@ class SwinTransformer(BaseModule):
             if "checkpoint" not in self.init_cfg:
                 msg = "The checkpoint is not in the init_cfg."
                 raise ValueError(msg)
+            if not isinstance(self.init_cfg, dict):
+                msg = "init_cfg must be a dict"
+                raise TypeError(msg)
             ckpt = CheckpointLoader.load_checkpoint(self.init_cfg["checkpoint"], map_location="cpu")
             if "state_dict" in ckpt:
                 _state_dict = ckpt["state_dict"]

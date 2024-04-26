@@ -13,7 +13,6 @@ from typing import TYPE_CHECKING
 import numpy as np
 import torch
 import torch.nn.functional
-from mmengine.model import BaseModule, ModuleList
 from mmengine.registry import MODELS
 from torch import Tensor, nn
 from torch.nn.modules.utils import _pair
@@ -23,6 +22,7 @@ from otx.algo.detection.losses.cross_entropy_loss import CrossEntropyLoss
 from otx.algo.detection.utils.structures import SamplingResult
 from otx.algo.detection.utils.utils import empty_instances
 from otx.algo.instance_segmentation.mmdet.structures.mask import mask_target
+from otx.algo.modules.base_module import BaseModule, ModuleList
 from otx.algo.modules.conv import build_conv_layer
 from otx.algo.modules.conv_module import ConvModule
 
