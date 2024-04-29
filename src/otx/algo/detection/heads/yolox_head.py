@@ -148,7 +148,7 @@ class YOLOXHead(BaseDenseHead):
         self.train_cfg = train_cfg
 
         if self.train_cfg:
-            self.assigner = SimOTAAssigner(center_radius=2.5)
+            self.assigner = SimOTAAssigner(**self.train_cfg["assigner"])
             # YOLOX does not support sampling
             self.sampler = PseudoSampler()  # type: ignore[no-untyped-call]
 
