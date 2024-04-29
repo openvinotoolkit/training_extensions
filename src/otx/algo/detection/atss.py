@@ -43,10 +43,6 @@ if TYPE_CHECKING:
 class TorchATSS(SingleStageDetector):
     """ATSS torch implementation."""
 
-    def __init__(self, neck: ConfigDict | dict, *args, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
-        self.neck = self.build_neck(neck)
-
     def build_backbone(self, cfg: ConfigDict | dict) -> nn.Module:
         """Build backbone."""
         if cfg["type"] == "ResNeXt":
@@ -98,6 +94,7 @@ class ATSS(ExplainableOTXDetModel):
         config = deepcopy(self.config)
         self.classification_layers = self.get_classification_layers()
         model = TorchATSS(**convert_conf_to_mmconfig_dict(config))
+        model.init_weights()
         if self.load_from is not None:
             load_checkpoint(model, self.load_from, map_location="cpu")
         return model

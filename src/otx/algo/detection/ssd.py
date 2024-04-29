@@ -60,12 +60,15 @@ class SingleStageDetector(BaseModule):
         backbone: ConfigDict | dict,
         bbox_head: ConfigDict | dict,
         data_preprocessor: ConfigDict | dict,
+        neck: ConfigDict | dict | None = None,
         train_cfg: ConfigDict | dict | None = None,
         test_cfg: ConfigDict | dict | None = None,
         init_cfg: ConfigDict | list[ConfigDict] | dict | list[dict] = None,
     ) -> None:
         super().__init__(init_cfg=init_cfg)
         self.backbone = self.build_backbone(backbone)
+        if neck is not None:
+            self.neck = self.build_neck(neck)
         bbox_head.update(train_cfg=train_cfg)
         bbox_head.update(test_cfg=test_cfg)
         self.bbox_head = self.build_bbox_head(bbox_head)
@@ -76,6 +79,11 @@ class SingleStageDetector(BaseModule):
     def build_backbone(self, cfg: ConfigDict | dict) -> nn.Module:
         """Build backbone."""
         return _build_model_including_pytorchcv(cfg)
+
+    def build_neck(self, cfg: ConfigDict | dict) -> nn.Module:
+        """Build neck."""
+        msg = "build_neck is not implemented."
+        raise NotImplementedError(msg)
 
     def build_bbox_head(self, cfg: ConfigDict | dict) -> nn.Module:
         """Build bbox head."""
@@ -353,6 +361,7 @@ class SSD(ExplainableOTXDetModel):
         config = deepcopy(self.config)
         self.classification_layers = self.get_classification_layers(config, "model.")
         detector = SingleStageDetector(**convert_conf_to_mmconfig_dict(config))
+        detector.init_weights()
         if self.load_from is not None:
             load_checkpoint(detector, self.load_from, map_location="cpu")
         return detector

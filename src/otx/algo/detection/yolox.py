@@ -45,17 +45,13 @@ if TYPE_CHECKING:
 class YOLOX(SingleStageDetector):
     """YOLOX implementation from mmdet."""
 
-    def __init__(self, neck: ConfigDict | dict, *args, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
-        self.neck = self.build_neck(neck)
-
     def build_backbone(self, cfg: ConfigDict | dict) -> nn.Module:
         """Build backbone."""
         cfg.pop("type")  # TODO (sungchul): remove `type` in recipe
         return CSPDarknet(**cfg)
 
     def build_neck(self, cfg: ConfigDict | dict) -> nn.Module:
-        """Build backbone."""
+        """Build neck."""
         cfg.pop("type")  # TODO (sungchul): remove `type` in recipe
         return YOLOXPAFPN(**cfg)
 
@@ -110,6 +106,7 @@ class OTXYOLOX(ExplainableOTXDetModel):
         self.classification_layers = self.get_classification_layers(config, "model.")
         config.pop("type")  # TODO (sungchul): remove `type` in recipe
         detector = YOLOX(**convert_conf_to_mmconfig_dict(config))
+        detector.init_weights()
         if self.load_from is not None:
             load_checkpoint(detector, self.load_from, map_location="cpu")
         return detector
