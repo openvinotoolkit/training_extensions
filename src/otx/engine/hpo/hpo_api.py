@@ -13,8 +13,6 @@ from pathlib import Path
 from threading import Thread
 from typing import TYPE_CHECKING, Any, Callable
 
-import torch
-
 from otx.core.config.hpo import HpoConfig
 from otx.core.optimizer.callable import OptimizerCallableSupportHPO
 from otx.core.schedulers import LinearWarmupSchedulerCallable, SchedulerCallableSupportHPO
@@ -101,7 +99,7 @@ def execute_hpo(
             metric_name=hpo_config.metric_name,
             **_adjust_train_args(train_args),
         ),
-        "gpu" if torch.cuda.is_available() else "cpu",
+        engine.device.accelerator,
         num_parallel_trial=hpo_configurator.hpo_config["num_workers"],
     )
 
