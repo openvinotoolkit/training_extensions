@@ -11,14 +11,17 @@ import time
 from functools import partial
 from pathlib import Path
 from threading import Thread
-from typing import TYPE_CHECKING, Any, Callable
+from typing import TYPE_CHECKING, Any, Callable, Literal
+
+import torch
 
 from otx.core.config.hpo import HpoConfig
 from otx.core.optimizer.callable import OptimizerCallableSupportHPO
 from otx.core.schedulers import LinearWarmupSchedulerCallable, SchedulerCallableSupportHPO
+from otx.core.types.device import DeviceType
 from otx.core.types.task import OTXTaskType
 from otx.hpo import HyperBand, run_hpo_loop
-from otx.utils.utils import get_decimal_point, get_using_dot_delimited_key, remove_matched_files
+from otx.utils.utils import get_decimal_point, get_using_dot_delimited_key, remove_matched_files, is_xpu_available
 
 from .hpo_trial import run_hpo_trial
 from .utils import find_trial_file, get_best_hpo_weight, get_callable_args_name, get_hpo_weight_dir, get_metric
@@ -99,7 +102,7 @@ def execute_hpo(
             metric_name=hpo_config.metric_name,
             **_adjust_train_args(train_args),
         ),
-        engine.device.accelerator,
+        _get_resource_type() if engine.device.accelerator == DeviceType.auto else engine.device.accelerator,
         num_parallel_trial=hpo_configurator.hpo_config["num_workers"],
     )
 
@@ -324,3 +327,11 @@ def _adjust_train_args(train_args: dict[str, Any]) -> dict[str, Any]:
 
 def _remove_unused_model_weights(hpo_workdir: Path, best_hpo_weight: Path | None = None) -> None:
     remove_matched_files(hpo_workdir, "*.ckpt", best_hpo_weight)
+
+
+def _get_resource_type() -> Literal[DeviceType.cpu, DeviceType.gpu, DeviceType.xpu]:
+    if torch.cuda.is_available():
+        return DeviceType.gpu
+    if is_xpu_available():
+        return DeviceType.xpu
+    return DeviceType.cpu

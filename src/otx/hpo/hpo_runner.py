@@ -16,6 +16,7 @@ from dataclasses import dataclass
 from functools import partial
 from typing import TYPE_CHECKING, Callable, Literal
 
+from otx.core.types.device import DeviceType
 from otx.hpo.hpo_base import HpoBase, Trial, TrialStatus
 from otx.hpo.resource_manager import get_resource_manager
 from otx.utils import append_main_proc_signal_handler
@@ -42,7 +43,7 @@ class HpoLoop:
     Args:
         hpo_algo (HpoBase): HPO algorithms.
         train_func (Callable): Function to train a model.
-        resource_type (Literal['cpu', 'gpu', 'xpu], optional):
+        resource_type (Literal[DeviceType.cpu, DeviceType.gpu, DeviceType.xpu], optional):
             Which type of resource to use. It can be changed depending on environment. Defaults to "gpu".
         num_parallel_trial (int | None, optional): How many trials to run in parallel.
                                                    It's used for CPUResourceManager. Defaults to None.
@@ -53,7 +54,7 @@ class HpoLoop:
         self,
         hpo_algo: HpoBase,
         train_func: Callable,
-        resource_type: Literal["cpu", "gpu", "xpu"] = "gpu",
+        resource_type: Literal[DeviceType.cpu, DeviceType.gpu, DeviceType.xpu] = DeviceType.gpu,
         num_parallel_trial: int | None = None,
         num_devices_per_trial: int = 1,
     ) -> None:
@@ -237,7 +238,7 @@ def _report_score(
 def run_hpo_loop(
     hpo_algo: HpoBase,
     train_func: Callable,
-    resource_type: Literal["cpu", "gpu", "xpu"] = "gpu",
+    resource_type: Literal[DeviceType.cpu, DeviceType.gpu, DeviceType.xpu] = DeviceType.gpu,
     num_parallel_trial: int | None = None,
     num_devices_per_trial: int = 1,
 ) -> None:
@@ -246,8 +247,8 @@ def run_hpo_loop(
     Args:
         hpo_algo (HpoBase): HPO algorithms.
         train_func (Callable): Function to train a model.
-        resource_type ('cpu' | 'gpu' | 'xpu', optional): Which type of resource to use.
-                                                         If can be changed depending on environment. Defaults to "gpu".
+        resource_type (DeviceType.cpu | DeviceType.gpu | DeviceType.gpu, optional):
+            Which type of resource to use. If can be changed depending on environment. Defaults to DeviceType.gpu.
         num_parallel_trial (int | None, optional): How many trials to run in parallel.
                                                    It's used for CPUResourceManager. Defaults to None.
         num_devices_per_trial (int, optional): How many GPUs are used for a single trial.

@@ -12,6 +12,7 @@ from typing import TYPE_CHECKING, Any, Literal
 
 import torch
 
+from otx.core.types.device import DeviceType
 from otx.utils.utils import is_xpu_available
 from otx.hpo.utils import check_positive
 
@@ -190,15 +191,15 @@ class XPUResourceManager(AcceleratorManager):
 
 
 def get_resource_manager(
-    resource_type: Literal["cpu", "gpu", "xpu"],
+    resource_type: Literal[DeviceType.cpu, DeviceType.gpu, DeviceType.xpu],
     num_parallel_trial: int | None = None,
     num_devices_per_trial: int = 1,
 ) -> BaseResourceManager:
     """Get an appropriate resource manager depending on current environment.
 
     Args:
-        resource_type (Literal["cpu", "gpu", "xpu]): Which type of resource to use.
-                                                     If can be changed depending on environment.
+        resource_type (Literal[DeviceType.cpu, DeviceType.gpu, DeviceType.xpu]):
+            Which type of resource to use. It can be changed depending on environment.
         num_parallel_trial (int, optional): How many trials to run in parallel. Defaults to None.
         num_devices_per_trial (int, optinal): How many accelerators is used for a single trial.
                                               It's used for AcceleratorManager. Defaults to 1.
@@ -209,25 +210,25 @@ def get_resource_manager(
     Returns:
         BaseResourceManager: Resource manager to use.
     """
-    if (resource_type == "gpu" and not torch.cuda.is_available()) or (
-        resource_type == "xpu" and not is_xpu_available()
+    if (resource_type == DeviceType.gpu and not torch.cuda.is_available()) or (
+        resource_type == DeviceType.xpu and not is_xpu_available()
     ):
         logger.warning("{} can't be used now. resource type is modified to cpu.".format(resource_type))
-        resource_type = "cpu"
+        resource_type = DeviceType.cpu
 
-    if resource_type == "cpu":
+    if resource_type == DeviceType.cpu:
         args = {"num_parallel_trial": num_parallel_trial}
         args = _remove_none_from_dict(args)
         return CPUResourceManager(**args)  # type: ignore[arg-type]
-    if resource_type == "gpu":
+    if resource_type == DeviceType.gpu:
         args = {"num_devices_per_trial": num_devices_per_trial, "num_parallel_trial": num_parallel_trial}  # type: ignore[dict-item]
         args = _remove_none_from_dict(args)
         return GPUResourceManager(**args)  # type: ignore[arg-type]
-    if resource_type == "xpu":
+    if resource_type == DeviceType.xpu:
         args = {"num_devices_per_trial": num_devices_per_trial, "num_parallel_trial": num_parallel_trial}  # type: ignore[dict-item]
         args = _remove_none_from_dict(args)
         return XPUResourceManager(**args)  # type: ignore[arg-type]
-    msg = f"Available resource type is cpu, gpu. Your value is {resource_type}."
+    msg = f"Available resource type is cpu, gpu or xpu. Your value is {resource_type}."
     raise ValueError(msg)
 
 
