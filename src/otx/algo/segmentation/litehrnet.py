@@ -12,9 +12,9 @@ from torch.onnx import OperatorExportTypes
 from otx.algo.segmentation.backbones import LiteHRNet
 from otx.algo.segmentation.heads import FCNHead
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
-from otx.core.model.segmentation import TorchVisionCompatibleModel
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter
+from otx.core.model.segmentation import TorchVisionCompatibleModel
 
 from .base_model import BaseSegmModel
 
