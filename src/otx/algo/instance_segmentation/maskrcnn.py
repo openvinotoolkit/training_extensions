@@ -256,6 +256,27 @@ class MaskRCNNSwinT(MMDetInstanceSegCompatibleModel):
             load_checkpoint(detector, self.load_from, map_location="cpu")
         return detector
 
+    def forward_for_tracing(
+        self,
+        inputs: torch.Tensor,
+    ) -> list[InstanceData]:
+        """Forward function for export."""
+        shape = (int(inputs.shape[2]), int(inputs.shape[3]))
+        meta_info = {
+            "pad_shape": shape,
+            "batch_input_shape": shape,
+            "img_shape": shape,
+            "scale_factor": (1.0, 1.0),
+        }
+        sample = InstanceData(
+            metainfo=meta_info,
+        )
+        data_samples = [sample] * len(inputs)
+        return self.model.export(
+            inputs,
+            data_samples,
+        )
+
     @property
     def _exporter(self) -> OTXModelExporter:
         """Creates OTXModelExporter object that can export the model."""
@@ -264,18 +285,42 @@ class MaskRCNNSwinT(MMDetInstanceSegCompatibleModel):
 
         mean, std = get_mean_std_from_data_processing(self.config)
 
-        with self.export_model_forward_context():
-            return MMdeployExporter(
-                model_builder=self._create_model,
-                model_cfg=deepcopy(self.config),
-                deploy_cfg="otx.algo.instance_segmentation.mmdeploy.maskrcnn_swint",
-                test_pipeline=self._make_fake_test_pipeline(),
-                task_level_export_parameters=self._export_parameters,
-                input_size=self.image_size,
-                mean=mean,
-                std=std,
-                resize_mode="standard",  # [TODO](@Eunwoo): need to revert it to fit_to_window after resolving
-                pad_value=0,
-                swap_rgb=False,
-                output_names=["feature_vector", "saliency_map"] if self.explain_mode else None,
-            )
+        # with self.export_model_forward_context():
+        #     return MMdeployExporter(
+        #         model_builder=self._create_model,
+        #         model_cfg=deepcopy(self.config),
+        #         deploy_cfg="otx.algo.instance_segmentation.mmdeploy.maskrcnn",
+        #         test_pipeline=self._make_fake_test_pipeline(),
+        #         task_level_export_parameters=self._export_parameters,
+        #         input_size=self.image_size,
+        #         mean=mean,
+        #         std=std,
+        #         resize_mode="standard",  # [TODO](@Eunwoo): need to revert it to fit_to_window after resolving
+        #         pad_value=0,
+        #         swap_rgb=False,
+        #         output_names=["feature_vector", "saliency_map"] if self.explain_mode else None,
+        #     )
+
+        return OTXNativeModelExporter(
+            task_level_export_parameters=self._export_parameters,
+            input_size=self.image_size,
+            mean=mean,
+            std=std,
+            resize_mode="standard",
+            pad_value=0,
+            swap_rgb=False,
+            via_onnx=True,
+            onnx_export_configuration={
+                "input_names": ["image"],
+                "output_names": ["boxes", "labels", "masks"],
+                "dynamic_axes": {
+                    "image": {0: "batch", 2: "height", 3: "width"},
+                    "boxes": {0: "batch", 1: "num_dets"},
+                    "labels": {0: "batch", 1: "num_dets"},
+                    "masks": {0: "batch", 1: "num_dets", 2: "height", 3: "width"},
+                },
+                "opset_version": 11,
+                "autograd_inlining": False,
+            },
+            output_names=["feature_vector", "saliency_map"] if self.explain_mode else None,
+        )
