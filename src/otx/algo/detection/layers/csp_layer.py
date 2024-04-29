@@ -9,13 +9,14 @@ import torch
 from mmdet.utils import ConfigType, OptConfigType, OptMultiConfig  # TODO (sungchul): remove types
 from torch import Tensor, nn
 
+from otx.algo.modules.base_module import BaseModule
 from otx.algo.modules.conv_module import ConvModule
 from otx.algo.modules.depthwise_separable_conv_module import DepthwiseSeparableConvModule
 
 from .channel_attention_layer import ChannelAttention
 
 
-class DarknetBottleneck(nn.Module):
+class DarknetBottleneck(BaseModule):
     """The basic bottleneck block used in Darknet.
 
     Each ResBlock consists of two ConvModules and the input is added to the
@@ -89,7 +90,7 @@ class DarknetBottleneck(nn.Module):
         return out
 
 
-class CSPNeXtBlock(nn.Module):
+class CSPNeXtBlock(BaseModule):
     """The basic bottleneck block used in CSPNeXt.
 
     Args:
@@ -163,7 +164,7 @@ class CSPNeXtBlock(nn.Module):
         return out
 
 
-class CSPLayer(nn.Module):
+class CSPLayer(BaseModule):
     """Cross Stage Partial Layer.
 
     Args:
