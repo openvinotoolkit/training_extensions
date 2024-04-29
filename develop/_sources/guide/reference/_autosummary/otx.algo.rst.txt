@@ -28,7 +28,6 @@ otx.algo
    :recursive:
 
    otx.algo.action_classification
-   otx.algo.classification
    otx.algo.detection
    otx.algo.segmentation
    otx.algo.visual_prompting
