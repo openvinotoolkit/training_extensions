@@ -6,7 +6,7 @@ from otx.algo.detection.backbones.csp_darknet import CSPDarknet
 from otx.algo.detection.heads.yolox_head import YOLOXHead
 from otx.algo.detection.necks.yolox_pafpn import YOLOXPAFPN
 from otx.algo.detection.yolox import OTXYOLOX
-from otx.core.exporter.mmdeploy import MMdeployExporter
+from otx.core.exporter.native import OTXNativeModelExporter
 
 
 class TestOTXYOLOX:
@@ -25,12 +25,10 @@ class TestOTXYOLOX:
     def test_exporter(self) -> None:
         otx_yolox_l = OTXYOLOX(label_info=3, variant="l")
         otx_yolox_l_exporter = otx_yolox_l._exporter
-        assert isinstance(otx_yolox_l_exporter, MMdeployExporter)
+        assert isinstance(otx_yolox_l_exporter, OTXNativeModelExporter)
         assert otx_yolox_l_exporter.swap_rgb is True
-        assert "yolox.py" in otx_yolox_l_exporter._deploy_cfg.filename
 
         otx_yolox_tiny = OTXYOLOX(label_info=3, variant="tiny")
         otx_yolox_tiny_exporter = otx_yolox_tiny._exporter
-        assert isinstance(otx_yolox_tiny_exporter, MMdeployExporter)
+        assert isinstance(otx_yolox_tiny_exporter, OTXNativeModelExporter)
         assert otx_yolox_tiny_exporter.swap_rgb is False
-        assert "yolox_tiny.py" in otx_yolox_tiny_exporter._deploy_cfg.filename

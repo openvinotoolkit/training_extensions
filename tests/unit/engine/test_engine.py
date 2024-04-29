@@ -16,7 +16,7 @@ from pytest_mock import MockerFixture
 
 @pytest.fixture()
 def fxt_engine(tmp_path) -> Engine:
-    recipe_path = "src/otx/recipe/classification/multi_class_cls/tv_resnet_50.yaml"
+    recipe_path = "src/otx/recipe/classification/multi_class_cls/tv_mobilenet_v3_small.yaml"
     data_root = "tests/assets/classification_dataset"
     task_type = "MULTI_CLASS_CLS"
 
@@ -330,7 +330,7 @@ class TestEngine:
             )
 
     def test_from_config(self, tmp_path) -> None:
-        recipe_path = "src/otx/recipe/classification/multi_class_cls/tv_resnet_50.yaml"
+        recipe_path = "src/otx/recipe/classification/multi_class_cls/tv_mobilenet_v3_small.yaml"
         data_root = "tests/assets/classification_dataset"
         task_type = "MULTI_CLASS_CLS"
 

@@ -3,11 +3,16 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 """Implementation of ChannelAttention copied from mmdet.models.layers.se_layer.py."""
 
+from __future__ import annotations
+
 import copy
+from typing import TYPE_CHECKING
 
 import torch
-from mmdet.utils import OptMultiConfig  # TODO (sungchul): remove types
 from torch import Tensor, nn
+
+if TYPE_CHECKING:
+    from mmengine import ConfigDict
 
 
 class ChannelAttention(nn.Module):
@@ -19,7 +24,11 @@ class ChannelAttention(nn.Module):
             Defaults to None
     """
 
-    def __init__(self, channels: int, init_cfg: OptMultiConfig = None) -> None:
+    def __init__(
+        self,
+        channels: int,
+        init_cfg: ConfigDict | dict | list[ConfigDict] | list[dict] | None = None,
+    ) -> None:
         super().__init__()
         # from mmengine.model.BaseModule
         self._is_init = False
