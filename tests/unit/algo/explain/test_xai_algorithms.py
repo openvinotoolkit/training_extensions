@@ -5,7 +5,7 @@ from datumaro import Polygon
 from otx.algo.explain.explain_algo import (
     ActivationMap,
     DetClassProbabilityMap,
-    MaskRCNNExplainAlgo,
+    InstSegExplainAlgo,
     ReciproCAM,
     ViTReciproCAM,
 )
@@ -80,9 +80,9 @@ def test_detclassprob() -> None:
     assert saliency_maps.size() == torch.Size([5, 2, 2, 2])
 
 
-def test_maskrcnn() -> None:
+def test_instseg() -> None:
     num_classes = 2
-    explain_algo = MaskRCNNExplainAlgo(
+    explain_algo = InstSegExplainAlgo(
         num_classes=num_classes,
     )
 

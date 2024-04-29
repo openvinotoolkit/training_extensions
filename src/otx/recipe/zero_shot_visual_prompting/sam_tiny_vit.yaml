@@ -2,14 +2,15 @@ model:
   class_path: otx.algo.visual_prompting.zero_shot_segment_anything.OTXZeroShotSegmentAnything
   init_args:
     backbone: tiny_vit
-    num_classes: 0
+    label_info: 0
     freeze_image_encoder: True
     freeze_prompt_encoder: True
     freeze_mask_decoder: True
     default_threshold_reference: 0.3
     default_threshold_target: 0.65
     save_outputs: True
-    root_reference_info: vpm_zsl_reference_infos
+    reference_info_dir: reference_infos
+    infer_reference_info_root: ../.latest/train # set absolute path for using reference_info saved in other location
     # options
     use_stability_score: False
     return_single_mask: False

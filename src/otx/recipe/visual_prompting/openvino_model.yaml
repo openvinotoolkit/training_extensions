@@ -1,7 +1,7 @@
 model:
   class_path: otx.core.model.visual_prompting.OVVisualPromptingModel
   init_args:
-    num_classes: 0
+    label_info: 0
     model_name: segment_anything
     model_type: Visual_Prompting
     async_inference: False

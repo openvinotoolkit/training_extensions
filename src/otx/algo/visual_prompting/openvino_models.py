@@ -9,11 +9,11 @@ from copy import deepcopy
 from typing import TYPE_CHECKING, Any
 
 import numpy as np
-from openvino.model_api.models import ImageModel, SegmentationModel
-from openvino.model_api.models.types import BooleanValue, NumericalValue, StringValue
+from model_api.models import ImageModel, SegmentationModel
+from model_api.models.types import BooleanValue, NumericalValue, StringValue
 
 if TYPE_CHECKING:
-    from openvino.model_api.adapters.inference_adapter import InferenceAdapter
+    from model_api.adapters.inference_adapter import InferenceAdapter
 
 
 class VisualPromptingImageEncoder(ImageModel):

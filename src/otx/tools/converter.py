@@ -26,15 +26,15 @@ TEMPLATE_ID_DICT = {
     # MULTI_CLASS_CLS
     "Custom_Image_Classification_DeiT-Tiny": {
         "task": OTXTaskType.MULTI_CLASS_CLS,
-        "model_name": "otx_deit_tiny",
+        "model_name": "deit_tiny",
     },
     "Custom_Image_Classification_EfficinetNet-B0": {
         "task": OTXTaskType.MULTI_CLASS_CLS,
-        "model_name": "efficientnet_b0_light",
+        "model_name": "efficientnet_b0",
     },
     "Custom_Image_Classification_EfficientNet-V2-S": {
         "task": OTXTaskType.MULTI_CLASS_CLS,
-        "model_name": "efficientnet_v2_light",
+        "model_name": "efficientnet_v2",
     },
     "Custom_Image_Classification_MobileNet-V3-large-1x": {
         "task": OTXTaskType.MULTI_CLASS_CLS,
@@ -376,14 +376,12 @@ class ConfigConverter:
             ),
         )
 
-        num_classes = datamodule.label_info.num_classes
-
         # Update num_classes & Instantiate Model
         model_config = config.pop("model")
-        model_config["init_args"]["num_classes"] = num_classes
+        model_config["init_args"]["label_info"] = datamodule.label_info
 
         model_parser = ArgumentParser()
-        model_parser.add_subclass_arguments(OTXModel, "model", required=False, fail_untyped=False)
+        model_parser.add_subclass_arguments(OTXModel, "model", required=False, fail_untyped=False, skip={"label_info"})
         model = model_parser.instantiate_classes(Namespace(model=model_config)).get("model")
 
         # Instantiate Engine

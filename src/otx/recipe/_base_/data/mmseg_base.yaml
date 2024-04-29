@@ -11,68 +11,70 @@ config:
     subset_name: train
     batch_size: 8
     num_workers: 4
-    transform_lib_type: MMSEG
+    transform_lib_type: TORCHVISION
     transforms:
-      - type: LoadImageFromFile
-      - reduce_zero_label: true
-        type: LoadAnnotations
-      - keep_ratio: false
-        ratio_range:
-          - 0.5
-          - 2.0
-        scale:
-          - 544
-          - 544
-        type: RandomResize
-      - cat_max_ratio: 0.75
-        crop_size:
-          - 512
-          - 512
-        type: RandomCrop
-      - prob: 0.5
-        type: RandomFlip
-      - type: PhotoMetricDistortion
-      - type: Pad
-        size:
-          - 512
-          - 512
-        pad_val:
-          img: 0
-          seg: 255
-      - type: PackSegInputs
+      - class_path: torchvision.transforms.v2.RandomResizedCrop
+        init_args:
+          size:
+            - 512
+            - 512
+          ratio:
+            - 0.5
+            - 2.0
+          antialias: True
+      - class_path: torchvision.transforms.v2.RandomPhotometricDistort
+      - class_path: torchvision.transforms.v2.RandomHorizontalFlip
+        init_args:
+          p: 0.5
+      - class_path: torchvision.transforms.v2.ToDtype
+        init_args:
+          dtype: ${as_torch_dtype:torch.float32}
+          scale: False
+      - class_path: torchvision.transforms.v2.Normalize
+        init_args:
+          mean: [123.675, 116.28, 103.53]
+          std: [58.395, 57.12, 57.375]
     sampler:
       class_path: torch.utils.data.RandomSampler
   val_subset:
     subset_name: val
-    num_workers: 4
     batch_size: 8
-    transform_lib_type: MMSEG
+    num_workers: 4
+    transform_lib_type: TORCHVISION
     transforms:
-      - type: LoadImageFromFile
-      - keep_ratio: false
-        scale:
-          - 544
-          - 544
-        type: Resize
-      - reduce_zero_label: true
-        type: LoadAnnotations
-      - type: PackSegInputs
+      - class_path: torchvision.transforms.v2.Resize
+        init_args:
+          size:
+            - 512
+            - 512
+      - class_path: torchvision.transforms.v2.ToDtype
+        init_args:
+          dtype: ${as_torch_dtype:torch.float32}
+          scale: False
+      - class_path: torchvision.transforms.v2.Normalize
+        init_args:
+          mean: [123.675, 116.28, 103.53]
+          std: [58.395, 57.12, 57.375]
     sampler:
       class_path: torch.utils.data.RandomSampler
   test_subset:
     subset_name: test
     num_workers: 4
     batch_size: 8
-    transform_lib_type: MMSEG
+    transform_lib_type: TORCHVISION
     transforms:
-      - type: LoadImageFromFile
-      - keep_ratio: false
-        scale:
-          - 544
-          - 544
-        type: Resize
-      - reduce_zero_label: true
-        type: LoadAnnotations
-      - type: PackSegInputs
+      - class_path: torchvision.transforms.v2.Resize
+        init_args:
+          size:
+            - 512
+            - 512
+      - class_path: torchvision.transforms.v2.ToDtype
+        init_args:
+          dtype: ${as_torch_dtype:torch.float32}
+          scale: False
+      - class_path: torchvision.transforms.v2.Normalize
+        init_args:
+          mean: [123.675, 116.28, 103.53]
+          std: [58.395, 57.12, 57.375]
     sampler:
       class_path: torch.utils.data.RandomSampler

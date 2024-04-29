@@ -8,46 +8,103 @@ from __future__ import annotations
 from copy import deepcopy
 from typing import TYPE_CHECKING, Literal
 
+from otx.algo.instance_segmentation.mmdet.models.detectors import MaskRCNN
 from otx.algo.utils.mmconfig import read_mmconfig
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
+from otx.core.config.data import TileConfig
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.mmdeploy import MMdeployExporter
 from otx.core.metrics.mean_ap import MaskRLEMeanAPCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
 from otx.core.model.instance_segmentation import MMDetInstanceSegCompatibleModel
 from otx.core.schedulers import LRSchedulerListCallable
+from otx.core.types.label import LabelInfoTypes
+from otx.core.utils.build import modify_num_classes
+from otx.core.utils.config import convert_conf_to_mmconfig_dict
 from otx.core.utils.utils import get_mean_std_from_data_processing
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
+    from omegaconf import DictConfig
+    from torch.nn.modules import Module
 
     from otx.core.metrics import MetricCallable
 
 
-class MaskRCNN(MMDetInstanceSegCompatibleModel):
+class MMDetMaskRCNN(MMDetInstanceSegCompatibleModel):
     """MaskRCNN Model."""
 
     def __init__(
         self,
-        num_classes: int,
+        label_info: LabelInfoTypes,
         variant: Literal["efficientnetb2b", "r50"],
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MaskRLEMeanAPCallable,
         torch_compile: bool = False,
+        tile_config: TileConfig = TileConfig(enable_tiler=False),
     ) -> None:
         model_name = f"maskrcnn_{variant}"
         config = read_mmconfig(model_name=model_name)
         super().__init__(
-            num_classes=num_classes,
+            label_info=label_info,
             config=config,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
             torch_compile=torch_compile,
+            tile_config=tile_config,
         )
         self.image_size = (1, 3, 1024, 1024)
         self.tile_image_size = (1, 3, 512, 512)
+
+    def get_classification_layers(self, config: DictConfig, prefix: str = "") -> dict[str, dict[str, int]]:
+        """Return classification layer names by comparing two different number of classes models.
+
+        Args:
+            config (DictConfig): Config for building model.
+            model_registry (Registry): Registry for building model.
+            prefix (str): Prefix of model param name.
+                Normally it is "model." since OTXModel set it's nn.Module model as self.model
+
+        Return:
+            dict[str, dict[str, int]]
+            A dictionary contain classification layer's name and information.
+            Stride means dimension of each classes, normally stride is 1, but sometimes it can be 4
+            if the layer is related bbox regression for object detection.
+            Extra classes is default class except class from data.
+            Normally it is related with background classes.
+        """
+        sample_config = deepcopy(config)
+        modify_num_classes(sample_config, 5)
+        sample_model_dict = MaskRCNN(
+            **convert_conf_to_mmconfig_dict(sample_config, to="list"),
+        ).state_dict()
+
+        modify_num_classes(sample_config, 6)
+        incremental_model_dict = MaskRCNN(
+            **convert_conf_to_mmconfig_dict(sample_config, to="list"),
+        ).state_dict()
+
+        classification_layers = {}
+        for key in sample_model_dict:
+            if sample_model_dict[key].shape != incremental_model_dict[key].shape:
+                sample_model_dim = sample_model_dict[key].shape[0]
+                incremental_model_dim = incremental_model_dict[key].shape[0]
+                stride = incremental_model_dim - sample_model_dim
+                num_extra_classes = 6 * sample_model_dim - 5 * incremental_model_dim
+                classification_layers[prefix + key] = {"stride": stride, "num_extra_classes": num_extra_classes}
+        return classification_layers
+
+    def _create_model(self) -> Module:
+        from mmengine.runner import load_checkpoint
+
+        config = deepcopy(self.config)
+        self.classification_layers = self.get_classification_layers(config, "model.")
+        detector = MaskRCNN(**convert_conf_to_mmconfig_dict(config, to="list"))
+        if self.load_from is not None:
+            load_checkpoint(detector, self.load_from, map_location="cpu")
+        return detector
 
     @property
     def _exporter(self) -> OTXModelExporter:
@@ -83,24 +140,72 @@ class MaskRCNNSwinT(MMDetInstanceSegCompatibleModel):
 
     def __init__(
         self,
-        num_classes: int,
+        label_info: LabelInfoTypes,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MaskRLEMeanAPCallable,
         torch_compile: bool = False,
+        tile_config: TileConfig = TileConfig(enable_tiler=False),
     ) -> None:
         model_name = "maskrcnn_swint"
         config = read_mmconfig(model_name=model_name)
         super().__init__(
-            num_classes=num_classes,
+            label_info=label_info,
             config=config,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
             torch_compile=torch_compile,
+            tile_config=tile_config,
         )
         self.image_size = (1, 3, 1344, 1344)
         self.tile_image_size = (1, 3, 512, 512)
+
+    def get_classification_layers(self, config: DictConfig, prefix: str = "") -> dict[str, dict[str, int]]:
+        """Return classification layer names by comparing two different number of classes models.
+
+        Args:
+            config (DictConfig): Config for building model.
+            model_registry (Registry): Registry for building model.
+            prefix (str): Prefix of model param name.
+                Normally it is "model." since OTXModel set it's nn.Module model as self.model
+
+        Return:
+            dict[str, dict[str, int]]
+            A dictionary contain classification layer's name and information.
+            Stride means dimension of each classes, normally stride is 1, but sometimes it can be 4
+            if the layer is related bbox regression for object detection.
+            Extra classes is default class except class from data.
+            Normally it is related with background classes.
+        """
+        sample_config = deepcopy(config)
+        modify_num_classes(sample_config, 5)
+        sample_model_dict = MaskRCNN(**convert_conf_to_mmconfig_dict(sample_config, to="list")).state_dict()
+
+        modify_num_classes(sample_config, 6)
+        incremental_model_dict = MaskRCNN(
+            **convert_conf_to_mmconfig_dict(sample_config, to="list"),
+        ).state_dict()
+
+        classification_layers = {}
+        for key in sample_model_dict:
+            if sample_model_dict[key].shape != incremental_model_dict[key].shape:
+                sample_model_dim = sample_model_dict[key].shape[0]
+                incremental_model_dim = incremental_model_dict[key].shape[0]
+                stride = incremental_model_dim - sample_model_dim
+                num_extra_classes = 6 * sample_model_dim - 5 * incremental_model_dim
+                classification_layers[prefix + key] = {"stride": stride, "num_extra_classes": num_extra_classes}
+        return classification_layers
+
+    def _create_model(self) -> Module:
+        from mmengine.runner import load_checkpoint
+
+        config = deepcopy(self.config)
+        self.classification_layers = self.get_classification_layers(config, "model.")
+        detector = MaskRCNN(**convert_conf_to_mmconfig_dict(config, to="list"))
+        if self.load_from is not None:
+            load_checkpoint(detector, self.load_from, map_location="cpu")
+        return detector
 
     @property
     def _exporter(self) -> OTXModelExporter:

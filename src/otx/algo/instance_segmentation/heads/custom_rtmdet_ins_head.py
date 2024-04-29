@@ -9,7 +9,7 @@ import math
 from typing import TYPE_CHECKING
 
 import torch
-import torch.nn.functional as F  # noqa: N812
+import torch.nn.functional
 from mmcv.ops import RoIAlign, batched_nms
 from mmdeploy.codebase.mmdet import get_post_processing_params
 from mmdeploy.codebase.mmdet.models.dense_heads.rtmdet_ins_head import _parse_dynamic_params
@@ -73,7 +73,7 @@ class CustomRTMDetInsSepBNHead(RTMDetInsSepBNHead):
         mask_logits = mask_logits.sigmoid()
         for inds in chunks:
             masks[:, inds] = (
-                F.interpolate(
+                torch.nn.functional.interpolate(
                     mask_logits[:, inds],
                     size=[
                         img_h,
@@ -171,7 +171,11 @@ class CustomRTMDetInsSepBNHead(RTMDetInsSepBNHead):
 
             # process masks
             mask_logits = self._mask_predict_by_feat_single(mask_feat, results.kernels, results.priors)
-            mask_logits = F.interpolate(mask_logits.unsqueeze(0), scale_factor=stride, mode="bilinear")
+            mask_logits = torch.nn.functional.interpolate(
+                mask_logits.unsqueeze(0),
+                scale_factor=stride,
+                mode="bilinear",
+            )
 
             if rescale:
                 ori_h, ori_w = img_meta["ori_shape"][:2]
@@ -296,7 +300,7 @@ def _custom_nms_with_mask_static(
     priors = priors[batch_inds, inds, :]
     mask_logits = _custom_mask_predict_by_feat_single(self, mask_feats, kernels, priors)
     stride = self.prior_generator.strides[0][0]
-    mask_logits = F.interpolate(mask_logits, scale_factor=stride, mode="bilinear")
+    mask_logits = torch.nn.functional.interpolate(mask_logits, scale_factor=stride, mode="bilinear")
     masks = mask_logits.sigmoid()
 
     batch_index = (

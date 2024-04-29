@@ -33,7 +33,7 @@ from torchvision import tv_tensors
 @pytest.fixture()
 def otx_visual_prompting_model(mocker) -> OTXVisualPromptingModel:
     mocker.patch.object(OTXVisualPromptingModel, "_create_model")
-    model = OTXVisualPromptingModel(num_classes=1)
+    model = OTXVisualPromptingModel(label_info=1)
     model.model.image_size = 1024
     return model
 
@@ -41,7 +41,7 @@ def otx_visual_prompting_model(mocker) -> OTXVisualPromptingModel:
 @pytest.fixture()
 def otx_zero_shot_visual_prompting_model(mocker) -> OTXZeroShotVisualPromptingModel:
     mocker.patch.object(OTXZeroShotVisualPromptingModel, "_create_model")
-    model = OTXZeroShotVisualPromptingModel(num_classes=1)
+    model = OTXZeroShotVisualPromptingModel(label_info=1)
     model.model.image_size = 1024
     return model
 
@@ -221,7 +221,7 @@ class TestOTXZeroShotVisualPromptingModel:
 
     def test_on_test_start(self, mocker, otx_zero_shot_visual_prompting_model) -> None:
         """Test on_test_start."""
-        otx_zero_shot_visual_prompting_model.load_latest_reference_info = Mock(return_value=False)
+        otx_zero_shot_visual_prompting_model.load_reference_info = Mock(return_value=False)
         otx_zero_shot_visual_prompting_model.trainer = Mock()
         mocker_run = mocker.patch.object(otx_zero_shot_visual_prompting_model.trainer.fit_loop, "run")
         mocker_setup_data = mocker.patch.object(
@@ -238,7 +238,7 @@ class TestOTXZeroShotVisualPromptingModel:
 
     def test_on_predict_start(self, mocker, otx_zero_shot_visual_prompting_model) -> None:
         """Test on_predict_start."""
-        otx_zero_shot_visual_prompting_model.load_latest_reference_info = Mock(return_value=False)
+        otx_zero_shot_visual_prompting_model.load_reference_info = Mock(return_value=False)
         otx_zero_shot_visual_prompting_model.trainer = Mock()
         mocker_run = mocker.patch.object(otx_zero_shot_visual_prompting_model.trainer.fit_loop, "run")
         mocker_setup_data = mocker.patch.object(
@@ -256,19 +256,11 @@ class TestOTXZeroShotVisualPromptingModel:
     def test_on_train_epoch_end(self, mocker, tmpdir, otx_zero_shot_visual_prompting_model) -> None:
         """Test on_train_epoch_end."""
         otx_zero_shot_visual_prompting_model.save_outputs = True
-        otx_zero_shot_visual_prompting_model.root_reference_info = tmpdir
-        otx_zero_shot_visual_prompting_model.reference_feats = torch.tensor(1)
-        otx_zero_shot_visual_prompting_model.used_indices = torch.tensor(1)
-        mocker_mkdir = mocker.patch("otx.core.model.visual_prompting.Path.mkdir")
-        mocker.patch("otx.core.model.visual_prompting.Path.open")
-        mocker_torch_save = mocker.patch("otx.core.model.visual_prompting.torch.save")
-        mocker_pickle_dump = mocker.patch("otx.core.model.visual_prompting.pickle.dump")
+        otx_zero_shot_visual_prompting_model.save_reference_info = Mock()
+        otx_zero_shot_visual_prompting_model.trainer = Mock()
+        mocker.patch.object(otx_zero_shot_visual_prompting_model.trainer, "default_root_dir")
 
         otx_zero_shot_visual_prompting_model.on_train_epoch_end()
-
-        mocker_mkdir.assert_called_once()
-        mocker_torch_save.assert_called_once()
-        mocker_pickle_dump.assert_called_once()
 
 
 class TestOVVisualPromptingModel:
@@ -276,10 +268,10 @@ class TestOVVisualPromptingModel:
     def set_ov_visual_prompting_model(self, mocker, tmpdir):
         def ov_visual_prompting_model(for_create_model: bool = False) -> OVVisualPromptingModel:
             if for_create_model:
-                mocker.patch("openvino.model_api.adapters.create_core")
-                mocker.patch("openvino.model_api.adapters.get_user_config")
-                mocker.patch("openvino.model_api.adapters.OpenvinoAdapter")
-                mocker.patch("openvino.model_api.models.Model.create_model")
+                mocker.patch("model_api.adapters.create_core")
+                mocker.patch("model_api.adapters.get_user_config")
+                mocker.patch("model_api.adapters.OpenvinoAdapter")
+                mocker.patch("model_api.models.Model.create_model")
             else:
                 mocker.patch.object(
                     OVVisualPromptingModel,
@@ -647,51 +639,28 @@ class TestOVZeroShotVisualPromptingModel:
         assert result[8:, :8].sum() == 0
         assert result[8:, 8:].sum() == 0
 
-    def test_find_latest_reference_info(self, mocker, ov_zero_shot_visual_prompting_model) -> None:
-        """Test _find_latest_reference_info."""
-        mocker.patch(
-            "otx.core.model.visual_prompting.os.path.isdir",
-            return_value=True,
-        )
-
-        # there are some saved reference info
-        mocker.patch(
-            "otx.core.model.visual_prompting.os.listdir",
-            return_value=["1", "2"],
-        )
-        results = ov_zero_shot_visual_prompting_model._find_latest_reference_info(Path())
-        assert results == "2"
-
-        # there are no saved reference info
-        mocker.patch(
-            "otx.core.model.visual_prompting.os.listdir",
-            return_value=[],
-        )
-        results = ov_zero_shot_visual_prompting_model._find_latest_reference_info(Path())
-        assert results is None
-
-    def test_load_latest_reference_info(self, mocker, ov_zero_shot_visual_prompting_model) -> None:
+    def test_load_reference_info(self, mocker, ov_zero_shot_visual_prompting_model) -> None:
         """Test load_latest_reference_info."""
         ov_zero_shot_visual_prompting_model.model["decoder"].embed_dim = 256
 
         # get previously saved reference info
-        mocker.patch.object(ov_zero_shot_visual_prompting_model, "_find_latest_reference_info", return_value="1")
         mocker.patch(
-            "otx.core.model.visual_prompting.pickle.load",
+            "pickle.load",
             return_value={"reference_feats": np.zeros((1, 1, 256)), "used_indices": np.array([0])},
         )
-        mocker.patch("otx.core.model.visual_prompting.Path.open", return_value="Mocked data")
+        mocker.patch("pathlib.Path.is_file", return_value=True)
+        mocker.patch("pathlib.Path.open", return_value="Mocked data")
 
-        ov_zero_shot_visual_prompting_model.load_latest_reference_info()
+        ov_zero_shot_visual_prompting_model.load_reference_info(".")
         assert ov_zero_shot_visual_prompting_model.reference_feats.shape == (1, 1, 256)
         assert ov_zero_shot_visual_prompting_model.used_indices.shape == (1,)
 
         # no saved reference info
-        mocker.patch.object(ov_zero_shot_visual_prompting_model, "_find_latest_reference_info", return_value=None)
+        mocker.patch("pathlib.Path.is_file", return_value=False)
 
         ov_zero_shot_visual_prompting_model.reference_feats = np.zeros((0, 1, 256), dtype=np.float32)
         ov_zero_shot_visual_prompting_model.used_indices = np.array([], dtype=np.int64)
-        ov_zero_shot_visual_prompting_model.load_latest_reference_info()
+        ov_zero_shot_visual_prompting_model.load_reference_info(".")
 
         assert ov_zero_shot_visual_prompting_model.reference_feats.shape == (0, 1, 256)
         assert ov_zero_shot_visual_prompting_model.used_indices.shape == (0,)

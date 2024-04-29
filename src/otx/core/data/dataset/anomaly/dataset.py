@@ -26,7 +26,7 @@ from otx.core.data.entity.anomaly import (
 from otx.core.data.entity.base import ImageInfo
 from otx.core.data.mem_cache import NULL_MEM_CACHE_HANDLER, MemCacheHandlerBase
 from otx.core.types.image import ImageColorChannel
-from otx.core.types.label import LabelInfo
+from otx.core.types.label import AnomalyLabelInfo
 from otx.core.types.task import OTXTaskType
 
 
@@ -54,13 +54,13 @@ class AnomalyDataset(OTXDataset):
             image_color_channel,
             stack_images,
         )
-        self.label_info = LabelInfo(label_names=["Normal", "Anomaly"], label_groups=[["Normal", "Anomaly"]])
+        self.label_info = AnomalyLabelInfo()
 
     def _get_item_impl(
         self,
         index: int,
     ) -> AnomalyClassificationDataItem | AnomalySegmentationDataBatch | AnomalyDetectionDataBatch:
-        datumaro_item = self.dm_subset.get(id=self.ids[index], subset=self.dm_subset.name)
+        datumaro_item = self.dm_subset.as_dataset()[index]
         img = datumaro_item.media_as(Image)
         # returns image in RGB format if self.image_color_channel is RGB
         img_data, img_shape = self._get_img_data_and_shape(img)

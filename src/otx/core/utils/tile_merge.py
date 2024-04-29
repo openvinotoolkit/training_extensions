@@ -15,6 +15,7 @@ import torch
 from torchvision import tv_tensors
 from torchvision.ops import batched_nms
 
+from otx.algo.explain.explain_algo import InstSegExplainAlgo
 from otx.core.config.data import TileConfig
 from otx.core.data.entity.base import ImageInfo, T_OTXBatchPredEntity, T_OTXDataEntity
 from otx.core.data.entity.detection import DetBatchPredEntity, DetPredEntity
@@ -431,10 +432,8 @@ class InstanceSegTileMerge(TileMerge):
         Returns:
             np.array: Class-wise Saliency Maps. One saliency map per each class - [class_id, H, W]
         """
-        from otx.algo.explain.explain_algo import MaskRCNNExplainAlgo
-
         if masks is None:
             return np.ndarray([])
 
         pred = {"labels": labels, "scores": scores, "masks": masks}
-        return MaskRCNNExplainAlgo.average_and_normalize(pred, num_classes)
+        return InstSegExplainAlgo.average_and_normalize(pred, num_classes)

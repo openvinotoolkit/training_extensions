@@ -18,10 +18,11 @@ from otx.core.config.data import DataModuleConfig, SamplerConfig, SubsetConfig, 
 from otx.core.data.module import OTXDataModule
 from otx.core.model.base import OTXModel, OVModel
 from otx.core.types import PathLike
-from otx.core.types.label import LabelInfo
+from otx.core.types.label import LabelInfo, LabelInfoTypes
 from otx.core.types.task import OTXTaskType
 from otx.core.utils.imports import get_otx_root_path
 from otx.core.utils.instantiators import partial_instantiate_class
+from otx.utils.utils import can_pass_tile_config, get_model_cls_from_config, should_pass_label_info
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
@@ -32,9 +33,9 @@ logger = logging.getLogger()
 RECIPE_PATH = get_otx_root_path() / "recipe"
 
 DEFAULT_CONFIG_PER_TASK = {
-    OTXTaskType.MULTI_CLASS_CLS: RECIPE_PATH / "classification" / "multi_class_cls" / "otx_efficientnet_b0.yaml",
-    OTXTaskType.MULTI_LABEL_CLS: RECIPE_PATH / "classification" / "multi_label_cls" / "efficientnet_b0_light.yaml",
-    OTXTaskType.H_LABEL_CLS: RECIPE_PATH / "classification" / "h_label_cls" / "efficientnet_b0_light.yaml",
+    OTXTaskType.MULTI_CLASS_CLS: RECIPE_PATH / "classification" / "multi_class_cls" / "efficientnet_b0.yaml",
+    OTXTaskType.MULTI_LABEL_CLS: RECIPE_PATH / "classification" / "multi_label_cls" / "efficientnet_b0.yaml",
+    OTXTaskType.H_LABEL_CLS: RECIPE_PATH / "classification" / "h_label_cls" / "efficientnet_b0.yaml",
     OTXTaskType.DETECTION: RECIPE_PATH / "detection" / "atss_mobilenetv2.yaml",
     OTXTaskType.ROTATED_DETECTION: RECIPE_PATH / "rotated_detection" / "maskrcnn_r50.yaml",
     OTXTaskType.SEMANTIC_SEGMENTATION: RECIPE_PATH / "semantic_segmentation" / "litehrnet_18.yaml",
@@ -101,11 +102,14 @@ def configure_task(data_root: PathLike) -> OTXTaskType:
     data_root = Path(data_root).resolve()
 
     data_format = datumaro.Environment().detect_dataset(str(data_root))
+    if not len(data_format):
+        msg = "Unable to detect data format."
+        raise ValueError(msg)
     if len(data_format) > 1:
         logger.warning(f"Found multiple data formats: {data_format}. We will use the first one.")
     data_format = data_format[0]
     if data_format not in TASK_PER_DATA_FORMAT:
-        msg = f"Can't find proper task. we are not support {data_format} format, yet."
+        msg = f"Can't find proper task. We do not support {data_format} format, yet."
         raise ValueError(msg)
     if len(TASK_PER_DATA_FORMAT[data_format]) > 1:
         logger.warning(
@@ -229,13 +233,13 @@ class AutoConfigurator:
             ),
         )
 
-    def get_model(self, model_name: str | None = None, label_info: LabelInfo | None = None) -> OTXModel:
+    def get_model(self, model_name: str | None = None, label_info: LabelInfoTypes | None = None) -> OTXModel:
         """Retrieves the OTXModel instance based on the provided model name and meta information.
 
         Args:
             model_name (str | None): The name of the model to retrieve. If None, the default model will be used.
-            label_info (LabelInfo | None): The meta information about the labels. If provided, the number of classes
-                will be updated in the model's configuration.
+            label_info (LabelInfoTypes | None): The meta information about the labels.
+                If provided, the number of classes will be updated in the model's configuration.
 
         Returns:
             OTXModel: The instantiated OTXModel instance.
@@ -258,20 +262,32 @@ class AutoConfigurator:
         if model_name is not None:
             self._config = self._load_default_config(self.model_name)
 
-        skip = {} if self.task != OTXTaskType.H_LABEL_CLS else {"hlabel_info"}
-
-        model_parser = ArgumentParser()
-        model_parser.add_subclass_arguments(OTXModel, "model", skip=skip, required=False, fail_untyped=False)
+        skip = set()
 
         model_config = deepcopy(self.config["model"])
 
-        if label_info is not None and self.task != OTXTaskType.H_LABEL_CLS:
-            model_config["init_args"]["num_classes"] = label_info.num_classes
-        elif label_info is not None and self.task == OTXTaskType.H_LABEL_CLS:
-            model_config["init_args"]["hlabel_info"] = label_info
-        elif label_info is None and self.task == OTXTaskType.H_LABEL_CLS:
-            msg = "You should explicitly give label_info for `OTXTaskType.H_LABEL_CLS` task."
-            raise ValueError(msg)
+        model_cls = get_model_cls_from_config(Namespace(model_config))
+
+        if should_pass_label_info(model_cls):
+            if label_info is None:
+                msg = f"Given model class {model_cls} requires a valid label_info to instantiate."
+                raise ValueError(msg)
+
+            model_config["init_args"]["label_info"] = label_info
+            skip.add("label_info")
+
+        if can_pass_tile_config(model_cls) and (datamodule := self.get_datamodule()) is not None:
+            model_config["init_args"]["tile_config"] = datamodule.tile_config
+            skip.add("tile_config")
+
+        model_parser = ArgumentParser()
+        model_parser.add_subclass_arguments(
+            OTXModel,
+            "model",
+            skip=skip,
+            required=False,
+            fail_untyped=False,
+        )
 
         return model_parser.instantiate_classes(Namespace(model=model_config)).get("model")
 
