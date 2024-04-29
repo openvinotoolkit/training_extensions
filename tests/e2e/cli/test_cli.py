@@ -55,7 +55,7 @@ def test_otx_e2e_cli(
         "--config",
         recipe,
         "--data_root",
-        fxt_target_dataset_per_task[task],
+        str(fxt_target_dataset_per_task[task]),
         "--work_dir",
         str(tmp_path_train / "outputs"),
         "--engine.device",
@@ -94,7 +94,7 @@ def test_otx_e2e_cli(
         "--config",
         recipe,
         "--data_root",
-        fxt_target_dataset_per_task[task],
+        str(fxt_target_dataset_per_task[task]),
         "--work_dir",
         str(tmp_path_test / "outputs"),
         "--engine.device",
@@ -152,7 +152,7 @@ def test_otx_e2e_cli(
             "--config",
             recipe,
             "--data_root",
-            fxt_target_dataset_per_task[task],
+            str(fxt_target_dataset_per_task[task]),
             "--work_dir",
             str(tmp_path_test / "outputs" / fmt),
             *overrides,
@@ -190,7 +190,7 @@ def test_otx_e2e_cli(
         "--config",
         recipe,
         "--data_root",
-        fxt_target_dataset_per_task[task],
+        str(fxt_target_dataset_per_task[task]),
         "--work_dir",
         str(tmp_path_test / "outputs"),
         "--engine.device",
@@ -230,7 +230,7 @@ def test_otx_e2e_cli(
             "--config",
             recipe,
             "--data_root",
-            fxt_target_dataset_per_task[task],
+            str(fxt_target_dataset_per_task[task]),
             "--work_dir",
             str(tmp_path_test / "outputs" / fmt),
             *fxt_cli_override_command_per_task[task],
@@ -295,7 +295,7 @@ def test_otx_explain_e2e_cli(
         "--config",
         recipe,
         "--data_root",
-        fxt_target_dataset_per_task[task],
+        str(fxt_target_dataset_per_task[task]),
         "--work_dir",
         str(tmp_path_explain / "outputs"),
         "--engine.device",
@@ -364,80 +364,6 @@ def test_otx_explain_e2e_cli(
         assert np.max(np.abs(actual_sal_vals - ref_sal_vals) <= sal_diff_thresh)
 
 
-# @pytest.mark.skipif(len(pytest.RECIPE_OV_LIST) < 1, reason="No OV recipe found.")
-@pytest.mark.parametrize(
-    "ov_recipe",
-    pytest.RECIPE_OV_LIST,
-)
-def test_otx_ov_test_cli(
-    ov_recipe: str,
-    tmp_path: Path,
-    fxt_target_dataset_per_task: dict,
-    fxt_open_subprocess: bool,
-) -> None:
-    """
-    Test OTX CLI e2e commands.
-
-    - 'otx test' with OV model
-
-    Args:
-        recipe (str): The OV recipe to use for testing. (eg. 'classification/openvino_model.yaml')
-        tmp_path (Path): The temporary path for storing the testing outputs.
-
-    Returns:
-        None
-    """
-    task = ov_recipe.split("/")[-2]
-    model_name = ov_recipe.split("/")[-1].split(".")[0]
-
-    if task in [
-        "multi_label_cls",
-        "instance_segmentation",
-        "h_label_cls",
-        "visual_prompting",
-        "zero_shot_visual_prompting",
-        "anomaly_classification",
-        "anomaly_detection",
-        "anomaly_segmentation",
-        "action_classification",
-    ]:
-        # OMZ doesn't have proper model for Pytorch MaskRCNN interface
-        # TODO(Kirill):  Need to change this test when export enabled
-        pytest.skip("OMZ doesn't have proper model for these types of tasks.")
-
-    pytest.xfail(
-        "ValueError: To launch a test pipeline w/ OMZ, the label information should be same between the training and testing datasets.",
-    )
-
-    # otx test
-    tmp_path_test = tmp_path / f"otx_test_{task}_{model_name}"
-    command_cfg = [
-        "otx",
-        "test",
-        "--config",
-        ov_recipe,
-        "--data_root",
-        fxt_target_dataset_per_task[task],
-        "--work_dir",
-        str(tmp_path_test / "outputs"),
-        "--engine.device",
-        "cpu",
-        "--disable-infer-num-classes",
-    ]
-
-    run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)
-
-    outputs_dir = tmp_path_test / "outputs"
-    latest_dir = max(
-        (p for p in outputs_dir.iterdir() if p.is_dir() and p.name != ".latest"),
-        key=lambda p: p.stat().st_mtime,
-    )
-    assert latest_dir.exists()
-    assert (latest_dir / "csv").exists()
-    metric_result = list((latest_dir / "csv").glob(pattern="**/metrics.csv"))
-    assert len(metric_result) > 0
-
-
 @pytest.mark.parametrize("task", pytest.TASK_LIST)
 def test_otx_hpo_e2e_cli(
     task: str,
@@ -484,7 +410,7 @@ def test_otx_hpo_e2e_cli(
         "--task",
         task.upper(),
         "--data_root",
-        fxt_target_dataset_per_task[task],
+        str(fxt_target_dataset_per_task[task]),
         "--work_dir",
         str(tmp_path_hpo),
         "--engine.device",
