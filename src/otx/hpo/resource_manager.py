@@ -13,8 +13,8 @@ from typing import TYPE_CHECKING, Any, Literal
 import torch
 
 from otx.core.types.device import DeviceType
-from otx.utils.utils import is_xpu_available
 from otx.hpo.utils import check_positive
+from otx.utils.utils import is_xpu_available
 
 if TYPE_CHECKING:
     from collections.abc import Hashable
@@ -165,7 +165,7 @@ class GPUResourceManager(AcceleratorManager):
         else:
             available_gpu_arr = list(range(torch.cuda.device_count()))
         if num_parallel_trial is not None:
-            available_gpu_arr = available_gpu_arr[:num_parallel_trial * self._num_devices_per_trial]
+            available_gpu_arr = available_gpu_arr[: num_parallel_trial * self._num_devices_per_trial]
 
         return available_gpu_arr
 
@@ -177,12 +177,13 @@ class XPUResourceManager(AcceleratorManager):
     """Resource manager class for XPU."""
 
     def _get_available_devices(self, num_parallel_trial: int | None = None) -> list[int]:
-        if (visible_devices := os.getenv("ONEAPI_DEVICE_SELECTOR", "").split(":")) is not None:
-            available_devices_arr = _cvt_comma_delimited_str_to_list(visible_devices[1])
+        visible_devices = os.getenv("ONEAPI_DEVICE_SELECTOR")
+        if isinstance(visible_devices, str) and "level_zero:" in visible_devices:
+            available_devices_arr = _cvt_comma_delimited_str_to_list(visible_devices.split("level_zero:")[1])
         else:
             available_devices_arr = list(range(torch.xpu.device_count()))
         if num_parallel_trial is not None:
-            available_devices_arr = available_devices_arr[:num_parallel_trial * self._num_devices_per_trial]
+            available_devices_arr = available_devices_arr[: num_parallel_trial * self._num_devices_per_trial]
 
         return available_devices_arr
 
@@ -213,7 +214,7 @@ def get_resource_manager(
     if (resource_type == DeviceType.gpu and not torch.cuda.is_available()) or (
         resource_type == DeviceType.xpu and not is_xpu_available()
     ):
-        logger.warning("{} can't be used now. resource type is modified to cpu.".format(resource_type))
+        logger.warning(f"{resource_type} can't be used now. resource type is modified to cpu.")
         resource_type = DeviceType.cpu
 
     if resource_type == DeviceType.cpu:
@@ -242,9 +243,6 @@ def _remove_none_from_dict(dict_val: dict) -> dict:
 def _cvt_comma_delimited_str_to_list(string: str) -> list[int]:
     for val in string.split(","):
         if not val.isnumeric():
-            msg = (
-                "Wrong format is given. String should have numbers delimited by ','.\n"
-                f"your value is {string}"
-            )
+            msg = f"Wrong format is given. String should have numbers delimited by ','.\nyour value is {string}"
             raise ValueError(msg)
     return [int(val) for val in string.split(",")]

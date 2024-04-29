@@ -21,7 +21,7 @@ from otx.core.schedulers import LinearWarmupSchedulerCallable, SchedulerCallable
 from otx.core.types.device import DeviceType
 from otx.core.types.task import OTXTaskType
 from otx.hpo import HyperBand, run_hpo_loop
-from otx.utils.utils import get_decimal_point, get_using_dot_delimited_key, remove_matched_files, is_xpu_available
+from otx.utils.utils import get_decimal_point, get_using_dot_delimited_key, is_xpu_available, remove_matched_files
 
 from .hpo_trial import run_hpo_trial
 from .utils import find_trial_file, get_best_hpo_weight, get_callable_args_name, get_hpo_weight_dir, get_metric
@@ -102,7 +102,7 @@ def execute_hpo(
             metric_name=hpo_config.metric_name,
             **_adjust_train_args(train_args),
         ),
-        _get_resource_type() if engine.device.accelerator == DeviceType.auto else engine.device.accelerator,
+        _get_resource_type() if engine.device.accelerator == DeviceType.auto else engine.device.accelerator,  # type: ignore[arg-type]
         num_parallel_trial=hpo_configurator.hpo_config["num_workers"],
     )
 
