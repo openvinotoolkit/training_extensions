@@ -20,7 +20,7 @@ from otx.core.data.dataset.action_detection import (
     ActionDetDataEntity,
     OTXActionDetDataset,
 )
-from otx.core.data.dataset.anomaly.dataset import (
+from otx.core.data.dataset.anomaly import (
     AnomalyClassificationDataItem,
     AnomalyDataset,
     AnomalyDetectionDataItem,
