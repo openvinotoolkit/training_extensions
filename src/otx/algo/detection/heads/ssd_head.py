@@ -11,7 +11,7 @@ from torch import Tensor, nn
 
 from otx.algo.detection.heads.anchor_head import AnchorHead
 from otx.algo.detection.heads.base_sampler import PseudoSampler
-from otx.algo.detection.heads.custom_anchor_generator import SSDAnchorGeneratorClustered
+from otx.algo.detection.heads.custom_anchor_generator import AnchorGenerator
 from otx.algo.detection.heads.delta_xywh_bbox_coder import DeltaXYWHBBoxCoder
 from otx.algo.detection.heads.max_iou_assigner import MaxIoUAssigner
 from otx.algo.detection.losses.cross_entropy_loss import CrossEntropyLoss
@@ -19,7 +19,8 @@ from otx.algo.detection.losses.weighted_loss import smooth_l1_loss
 from otx.algo.detection.utils.utils import multi_apply
 
 if TYPE_CHECKING:
-    from mmengine.config import ConfigDict, InstanceData
+    from mmengine.config import InstanceData
+    from omegaconf import DictConfig
 
 
 # This class and its supporting functions below lightly adapted from the mmdet SSDHead available at:
@@ -56,17 +57,17 @@ class SSDHead(AnchorHead):
 
     def __init__(
         self,
-        anchor_generator: ConfigDict | dict,
-        bbox_coder: ConfigDict | dict,
-        init_cfg: ConfigDict | dict | list[ConfigDict] | list[dict],
-        train_cfg: ConfigDict | dict,
+        anchor_generator: AnchorGenerator,
+        bbox_coder: DeltaXYWHBBoxCoder,
+        init_cfg: DictConfig | list[DictConfig],
+        train_cfg: DictConfig,
         num_classes: int = 80,
         in_channels: tuple[int, ...] | int = (512, 1024, 512, 256, 256, 256),
         stacked_convs: int = 0,
         feat_channels: int = 256,
         use_depthwise: bool = False,
         reg_decoded_bbox: bool = False,
-        test_cfg: ConfigDict | dict | None = None,
+        test_cfg: DictConfig | None = None,
     ) -> None:
         super(AnchorHead, self).__init__(init_cfg=init_cfg)
         self.num_classes = num_classes
@@ -76,7 +77,7 @@ class SSDHead(AnchorHead):
         self.use_depthwise = use_depthwise
 
         self.cls_out_channels = num_classes + 1  # add background class
-        self.prior_generator = SSDAnchorGeneratorClustered(**anchor_generator)
+        self.prior_generator = anchor_generator
 
         # Usually the numbers of anchors for each level are the same
         # except SSD detectors. So it is an int in the most dense
@@ -87,7 +88,7 @@ class SSDHead(AnchorHead):
 
         self._init_layers()
 
-        self.bbox_coder = DeltaXYWHBBoxCoder(**bbox_coder)
+        self.bbox_coder = bbox_coder
         self.reg_decoded_bbox = reg_decoded_bbox
         self.use_sigmoid_cls = False
         self.cls_focal_loss = False

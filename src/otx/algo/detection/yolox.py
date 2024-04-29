@@ -27,7 +27,6 @@ from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.metrics.mean_ap import MeanAPCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
 from otx.core.model.detection import ExplainableOTXDetModel
-from otx.core.model.utils.mmdet import DetDataPreprocessor
 from otx.core.schedulers import LRSchedulerListCallable
 from otx.core.types.label import LabelInfoTypes
 from otx.core.utils.build import modify_num_classes
@@ -57,13 +56,6 @@ class YOLOX(SingleStageDetector):
     def build_bbox_head(self, cfg: ConfigDict | dict) -> nn.Module:
         """Build bbox head."""
         return YOLOXHead(**cfg)
-
-    def build_det_data_preprocessor(self, cfg: ConfigDict | dict) -> nn.Module:
-        """Build DetDataPreprocessor.
-
-        TODO (sungchul): DetDataPreprocessor will be removed.
-        """
-        return DetDataPreprocessor(**cfg)
 
 
 class OTXYOLOX(ExplainableOTXDetModel):
@@ -243,32 +235,31 @@ class OTXYOLOX(ExplainableOTXDetModel):
             deploy_cfg += "_tiny"
             swap_rgb = False
 
-        with self.export_model_forward_context():
-            return OTXNativeModelExporter(
-                via_onnx=True,
-                onnx_export_configuration={
-                    "input_names": ["image"],
-                    "output_names": ["boxes", "labels"],
-                    "export_params": True,
-                    "opset_version": 11,
-                    "dynamic_axes": {
-                        "image": {0: "batch", 2: "height", 3: "width"},
-                        "boxes": {0: "batch", 1: "num_dets"},
-                        "labels": {0: "batch", 1: "num_dets"},
-                    },
-                    "keep_initializers_as_inputs": False,
-                    "verbose": False,
-                    "autograd_inlining": False,
+        return OTXNativeModelExporter(
+            via_onnx=True,
+            onnx_export_configuration={
+                "input_names": ["image"],
+                "output_names": ["boxes", "labels"],
+                "export_params": True,
+                "opset_version": 11,
+                "dynamic_axes": {
+                    "image": {0: "batch", 2: "height", 3: "width"},
+                    "boxes": {0: "batch", 1: "num_dets"},
+                    "labels": {0: "batch", 1: "num_dets"},
                 },
-                task_level_export_parameters=self._export_parameters,
-                input_size=self.image_size,
-                mean=mean,
-                std=std,
-                resize_mode="fit_to_window_letterbox",
-                pad_value=114,
-                swap_rgb=swap_rgb,
-                output_names=["feature_vector", "saliency_map"] if self.explain_mode else None,
-            )
+                "keep_initializers_as_inputs": False,
+                "verbose": False,
+                "autograd_inlining": False,
+            },
+            task_level_export_parameters=self._export_parameters,
+            input_size=self.image_size,
+            mean=mean,
+            std=std,
+            resize_mode="fit_to_window_letterbox",
+            pad_value=114,
+            swap_rgb=swap_rgb,
+            output_names=["bboxes", "labels", "feature_vector", "saliency_map"] if self.explain_mode else None,
+        )
 
     def forward_for_tracing(self, inputs: Tensor) -> list[InstanceData]:
         """Forward function for export."""
@@ -279,11 +270,9 @@ class OTXYOLOX(ExplainableOTXDetModel):
             "img_shape": shape,
             "scale_factor": (1.0, 1.0),
         }
-        sample = InstanceData(
-            metainfo=meta_info,
-        )
-        data_samples = [sample] * len(inputs)
-        return self.model.export(inputs, data_samples)
+
+        meta_info_list = [meta_info] * len(inputs)
+        return self.model.export(inputs, meta_info_list, explain_mode=self.explain_mode)
 
     def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.model.") -> dict:
         """Load the previous OTX ckpt according to OTX2.0."""
