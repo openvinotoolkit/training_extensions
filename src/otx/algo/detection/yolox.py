@@ -12,8 +12,6 @@ import torch
 from mmengine.structures import InstanceData
 from torchvision import tv_tensors
 
-from mmengine.structures import InstanceData
-
 from otx.algo.detection.backbones.csp_darknet import CSPDarknet
 from otx.algo.detection.heads.yolox_head import YOLOXHead
 from otx.algo.detection.necks.yolox_pafpn import YOLOXPAFPN
