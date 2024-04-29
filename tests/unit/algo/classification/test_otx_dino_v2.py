@@ -7,7 +7,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 import torch
-from otx.algo.classification import DINOv2
+from otx.algo.classification.dino_v2 import DINOv2
 
 
 class TestDINOv2:
@@ -20,7 +20,7 @@ class TestDINOv2:
             mock_load.return_value = mock_backbone
 
             return DINOv2(
-                backbone_name="dinov2_vits14_reg",
+                backbone="dinov2_vits14_reg",
                 freeze_backbone=True,
                 head_in_channels=12,
                 num_classes=2,
