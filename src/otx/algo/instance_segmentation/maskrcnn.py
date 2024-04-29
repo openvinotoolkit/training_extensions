@@ -15,7 +15,6 @@ from otx.algo.utils.mmconfig import read_mmconfig
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.config.data import TileConfig
 from otx.core.exporter.base import OTXModelExporter
-from otx.core.exporter.mmdeploy import MMdeployExporter
 from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.metrics.mean_ap import MaskRLEMeanAPCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
@@ -117,22 +116,6 @@ class MMDetMaskRCNN(MMDetInstanceSegCompatibleModel):
             raise ValueError(self.image_size)
 
         mean, std = get_mean_std_from_data_processing(self.config)
-
-        # with self.export_model_forward_context():
-        #     return MMdeployExporter(
-        #         model_builder=self._create_model,
-        #         model_cfg=deepcopy(self.config),
-        #         deploy_cfg="otx.algo.instance_segmentation.mmdeploy.maskrcnn",
-        #         test_pipeline=self._make_fake_test_pipeline(),
-        #         task_level_export_parameters=self._export_parameters,
-        #         input_size=self.image_size,
-        #         mean=mean,
-        #         std=std,
-        #         resize_mode="standard",  # [TODO](@Eunwoo): need to revert it to fit_to_window after resolving
-        #         pad_value=0,
-        #         swap_rgb=False,
-        #         output_names=["feature_vector", "saliency_map"] if self.explain_mode else None,
-        #     )
 
         return OTXNativeModelExporter(
             task_level_export_parameters=self._export_parameters,
@@ -284,22 +267,6 @@ class MaskRCNNSwinT(MMDetInstanceSegCompatibleModel):
             raise ValueError(self.image_size)
 
         mean, std = get_mean_std_from_data_processing(self.config)
-
-        # with self.export_model_forward_context():
-        #     return MMdeployExporter(
-        #         model_builder=self._create_model,
-        #         model_cfg=deepcopy(self.config),
-        #         deploy_cfg="otx.algo.instance_segmentation.mmdeploy.maskrcnn",
-        #         test_pipeline=self._make_fake_test_pipeline(),
-        #         task_level_export_parameters=self._export_parameters,
-        #         input_size=self.image_size,
-        #         mean=mean,
-        #         std=std,
-        #         resize_mode="standard",  # [TODO](@Eunwoo): need to revert it to fit_to_window after resolving
-        #         pad_value=0,
-        #         swap_rgb=False,
-        #         output_names=["feature_vector", "saliency_map"] if self.explain_mode else None,
-        #     )
 
         return OTXNativeModelExporter(
             task_level_export_parameters=self._export_parameters,

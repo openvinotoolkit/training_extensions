@@ -11,7 +11,6 @@ from typing import TYPE_CHECKING
 
 import torch
 from torch import Tensor
-from otx.algo.detection.utils.utils import unpack_gt_instances
 
 from otx.algo.detection.heads.base_sampler import RandomSampler
 from otx.algo.detection.heads.class_incremental_mixin import (
@@ -20,7 +19,7 @@ from otx.algo.detection.heads.class_incremental_mixin import (
 from otx.algo.detection.heads.max_iou_assigner import MaxIoUAssigner
 from otx.algo.detection.losses import CrossSigmoidFocalLoss, accuracy
 from otx.algo.detection.utils.structures import SamplingResult
-from otx.algo.detection.utils.utils import empty_instances, multi_apply
+from otx.algo.detection.utils.utils import empty_instances, multi_apply, unpack_gt_instances
 from otx.algo.instance_segmentation.mmdet.models.bbox_heads.convfc_bbox_head import Shared2FCBBoxHead
 from otx.algo.instance_segmentation.mmdet.models.mask_heads.fcn_mask_head import FCNMaskHead
 from otx.algo.instance_segmentation.mmdet.structures.bbox import bbox2roi

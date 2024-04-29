@@ -16,9 +16,10 @@ import torch.nn.functional
 from mmengine.structures import InstanceData
 from torch import Tensor, nn
 
-from otx.algo.detection.deployment import gather_topk_, topk
+from otx.algo.detection.deployment import gather_topk_
 from otx.algo.detection.heads.anchor_head import AnchorHead
 from otx.algo.detection.ops.nms import batched_nms, multiclass_nms
+from otx.algo.detection.utils.utils import dynamic_topk, unpack_gt_instances
 from otx.algo.instance_segmentation.mmdet.structures.bbox import (
     empty_box_as,
     get_box_wh,
@@ -28,6 +29,7 @@ from otx.algo.modules.conv_module import ConvModule
 # ruff: noqa: PLW2901
 
 if TYPE_CHECKING:
+    from mmdet.structures.det_data_sample import DetDataSample
     from mmengine.config import ConfigDict
 
 
@@ -96,6 +98,68 @@ class RPNHead(AnchorHead):
         rpn_cls_score = self.rpn_cls(x)
         rpn_bbox_pred = self.rpn_reg(x)
         return rpn_cls_score, rpn_bbox_pred
+
+    def loss_and_predict(
+        self,
+        x: tuple[Tensor],
+        batch_data_samples: list[DetDataSample],
+        proposal_cfg: ConfigDict | None = None,
+    ) -> tuple[dict, list[InstanceData]]:
+        """Forward propagation of the head, then calculate loss and predictions from the features and data samples.
+
+        Args:
+            x (tuple[Tensor]): Features from FPN.
+            batch_data_samples (list[:obj:`DetDataSample`]): Each item contains
+                the meta information of each image and corresponding
+                annotations.
+            proposal_cfg (ConfigDict, optional): Test / postprocessing
+                configuration, if None, test_cfg would be used.
+                Defaults to None.
+
+        Returns:
+            tuple: the return value is a tuple contains:
+
+                - losses: (dict[str, Tensor]): A dictionary of loss components.
+                - predictions (list[:obj:`InstanceData`]): Detection
+                  results of each image after the post process.
+        """
+        outputs = unpack_gt_instances(batch_data_samples)
+        (batch_gt_instances, batch_gt_instances_ignore, batch_img_metas) = outputs
+
+        outs = self(x)
+
+        loss_inputs = (*outs, batch_gt_instances, batch_img_metas, batch_gt_instances_ignore)
+        losses = self.loss_by_feat(*loss_inputs)
+
+        predictions = self.predict_by_feat(*outs, batch_img_metas=batch_img_metas, cfg=proposal_cfg)
+        return losses, predictions
+
+    def predict(
+        self,
+        x: tuple[Tensor, ...],
+        batch_data_samples: list[DetDataSample],
+        rescale: bool = False,
+    ) -> list[InstanceData]:
+        """Forward-prop of the detection head and predict detection results on the features of the upstream network.
+
+        Args:
+            x (tuple[Tensor]): Multi-level features from the
+                upstream network, each is a 4D-tensor.
+            batch_data_samples (List[:obj:`DetDataSample`]): The Data
+                Samples. It usually includes information such as
+                `gt_instance`, `gt_panoptic_seg` and `gt_sem_seg`.
+            rescale (bool, optional): Whether to rescale the results.
+                Defaults to False.
+
+        Returns:
+            list[obj:`InstanceData`]: Detection results of each image
+            after the post process.
+        """
+        batch_img_metas = [data_samples.metainfo for data_samples in batch_data_samples]
+
+        outs = self(x)
+
+        return self.predict_by_feat(*outs, batch_img_metas=batch_img_metas, rescale=rescale)
 
     def loss_by_feat(
         self,
@@ -366,7 +430,7 @@ class RPNHead(AnchorHead):
             anchors = anchors.unsqueeze(0)
 
             if pre_topk > 0:
-                _, topk_inds = topk(scores.squeeze(2), pre_topk)
+                _, topk_inds = dynamic_topk(scores.squeeze(2), pre_topk)
                 bbox_pred, scores = gather_topk_(
                     bbox_pred,
                     scores,

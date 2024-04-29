@@ -10,30 +10,6 @@ import torch
 # ruff: noqa: A002
 
 
-def topk(
-    input: torch.Tensor,
-    k: int,
-    dim: int | None = None,
-    largest: bool = True,
-    sorted: bool = True,
-) -> torch.Tensor:
-    """Rewrite `topk` for default backend.
-
-    Cast k to tensor and make sure k is smaller than input.shape[dim].
-    """
-    if dim is None:
-        dim = int(input.ndim - 1)
-    size = input.shape[dim]
-    if not isinstance(k, torch.Tensor):
-        k = torch.tensor(k, device=input.device, dtype=torch.long)
-    # Always keep topk op for dynamic input
-    if isinstance(size, torch.Tensor):
-        # size would be treated as cpu tensor, trick to avoid that.
-        size = k.new_zeros(()) + size
-    k = torch.where(k < size, k, size)
-    return torch.topk(input, k, dim=dim, largest=largest, sorted=sorted)
-
-
 def gather_topk_(
     *inputs: tuple[torch.Tensor],
     inds: torch.Tensor,
