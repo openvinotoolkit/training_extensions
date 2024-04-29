@@ -7,10 +7,14 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, ClassVar
 
+from torch.onnx import OperatorExportTypes
+
 from otx.algo.segmentation.backbones import LiteHRNet
 from otx.algo.segmentation.heads import FCNHead
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.model.segmentation import TorchVisionCompatibleModel
+from otx.core.exporter.base import OTXModelExporter
+from otx.core.exporter.native import OTXNativeModelExporter
 
 from .base_model import BaseSegmModel
 
@@ -550,3 +554,19 @@ class OTXLiteHRNet(TorchVisionCompatibleModel):
         }
         optim_config.update(ignored_scope)
         return optim_config
+
+    @property
+    def _exporter(self) -> OTXModelExporter:
+        """Creates OTXModelExporter object that can export the model."""
+        return OTXNativeModelExporter(
+            task_level_export_parameters=self._export_parameters,
+            input_size=self.image_size,
+            mean=self.mean,
+            std=self.scale,
+            resize_mode="standard",
+            pad_value=0,
+            swap_rgb=False,
+            via_onnx=False,
+            onnx_export_configuration={"operator_export_type": OperatorExportTypes.ONNX_ATEN_FALLBACK},
+            output_names=None,
+        )
