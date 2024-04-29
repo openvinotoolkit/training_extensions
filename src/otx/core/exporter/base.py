@@ -6,6 +6,7 @@
 from __future__ import annotations
 
 import json
+import logging as log
 import os
 import tempfile
 from abc import abstractmethod
@@ -42,7 +43,8 @@ class OTXModelExporter:
         pad_value (int, optional): Padding value. Defaults to 0.
         swap_rgb (bool, optional): Whether to convert the image from BGR to RGB Defaults to False.
         output_names (list[str] | None, optional): Names for model's outputs, which would be
-        embedded into resulting model.
+        embedded into resulting model. Note, that order of the output names should be the same,
+        as in the target model.
     """
 
     def __init__(
@@ -283,7 +285,30 @@ class OTXModelExporter:
         # name assignment process is similar to torch onnx export
         if self.output_names is not None:
             if len(exported_model.outputs) >= len(self.output_names):
+                if len(exported_model.outputs) != len(self.output_names):
+                    msg = (
+                        "Number of model outputs is greater than the number"
+                        " of output names to assign. Please check output_names"
+                        " argument of the exporter's constructor."
+                    )
+                    log.warning(msg)
+
                 for i, name in enumerate(self.output_names):
+                    traced_names = exported_model.outputs[i].get_names()
+                    name_found = False
+                    for traced_name in traced_names:
+                        if name in traced_name:
+                            name_found = True
+                            break
+                    name_found = name_found and bool(len(traced_names))
+
+                    if not name_found:
+                        msg = (
+                            f"{name} is not matched with the converted model's traced output names: {traced_names}."
+                            " Please check output_names argument of the exporter's constructor."
+                        )
+                        log.warning(msg)
+
                     exported_model.outputs[i].tensor.set_names({name})
             else:
                 msg = (
