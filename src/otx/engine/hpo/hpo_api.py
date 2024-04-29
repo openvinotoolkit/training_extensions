@@ -106,10 +106,10 @@ def execute_hpo(
     )
 
     best_trial = hpo_algo.get_best_config()
-    if best_trial is None:
-        best_config = None
-        best_hpo_weight = None
-    else:
+
+    best_config = None
+    best_hpo_weight = None
+    if best_trial is not None:
         best_config = best_trial["configuration"]
         if (trial_file := find_trial_file(hpo_workdir, best_trial["id"])) is not None:
             best_hpo_weight = get_best_hpo_weight(get_hpo_weight_dir(hpo_workdir, best_trial["id"]), trial_file)
