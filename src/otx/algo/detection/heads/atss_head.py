@@ -5,8 +5,6 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 import torch
 from mmengine.structures import InstanceData
 from torch import Tensor, nn
@@ -15,7 +13,6 @@ from otx.algo.detection.heads.anchor_head import AnchorHead
 from otx.algo.detection.heads.class_incremental_mixin import (
     ClassIncrementalMixin,
 )
-from otx.algo.detection.losses.cross_entropy_loss import CrossEntropyLoss
 from otx.algo.detection.losses.cross_focal_loss import (
     CrossSigmoidFocalLoss,
 )
@@ -23,10 +20,6 @@ from otx.algo.detection.utils.bbox_overlaps import bbox_overlaps
 from otx.algo.detection.utils.utils import anchor_inside_flags, multi_apply, reduce_mean, unmap
 from otx.algo.modules.conv_module import ConvModule
 from otx.algo.utils.mmcv_utils import Scale
-
-if TYPE_CHECKING:
-    from mmengine import ConfigDict
-
 
 EPS = 1e-12
 
@@ -64,13 +57,13 @@ class ATSSHead(ClassIncrementalMixin, AnchorHead):
         self,
         num_classes: int,
         in_channels: int,
+        loss_centerness: nn.Module,
         pred_kernel_size: int = 3,
         stacked_convs: int = 4,
-        conv_cfg: ConfigDict | dict | None = None,
-        norm_cfg: ConfigDict | dict | None = None,
+        conv_cfg: dict | None = None,
+        norm_cfg: dict | None = None,
         reg_decoded_bbox: bool = True,
-        loss_centerness: ConfigDict | dict | None = None,
-        init_cfg: ConfigDict | dict | list[ConfigDict] | list[dict] | None = None,
+        init_cfg: dict | None = None,
         bg_loss_weight: float = -1.0,
         use_qfl: bool = False,
         qfl_cfg: dict | None = None,
@@ -96,9 +89,7 @@ class ATSSHead(ClassIncrementalMixin, AnchorHead):
         )
 
         self.sampling = False
-        if loss_centerness is None:
-            loss_centerness = {"use_sigmoid": True, "loss_weight": 1.0}
-        self.loss_centerness = CrossEntropyLoss(**loss_centerness)
+        self.loss_centerness = loss_centerness
 
         if use_qfl:
             kwargs["loss_cls"] = (

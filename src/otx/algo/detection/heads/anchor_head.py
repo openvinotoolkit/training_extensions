@@ -18,12 +18,10 @@ from otx.algo.detection.heads.base_sampler import PseudoSampler
 from otx.algo.detection.heads.custom_anchor_generator import AnchorGenerator
 from otx.algo.detection.heads.delta_xywh_bbox_coder import DeltaXYWHBBoxCoder
 from otx.algo.detection.heads.max_iou_assigner import MaxIoUAssigner
-from otx.algo.detection.losses.cross_focal_loss import CrossSigmoidFocalLoss
-from otx.algo.detection.losses.iou_loss import GIoULoss
 from otx.algo.detection.utils.utils import anchor_inside_flags, images_to_levels, multi_apply, unmap
 
 if TYPE_CHECKING:
-    from mmengine import ConfigDict
+    from omegaconf import DictConfig
 
 
 # This class and its supporting functions below lightly adapted from the mmdet AnchorHead available at:
@@ -54,21 +52,21 @@ class AnchorHead(BaseDenseHead):
         self,
         num_classes: int,
         in_channels: tuple[int, ...] | int,
-        anchor_generator: dict,
-        bbox_coder: dict,
-        loss_cls: dict,
-        loss_bbox: dict,
-        train_cfg: ConfigDict | dict,
+        anchor_generator: AnchorGenerator,
+        bbox_coder: DeltaXYWHBBoxCoder,
+        loss_cls: nn.Module,
+        loss_bbox: nn.Module,
+        train_cfg: DictConfig,
         feat_channels: int = 256,
         reg_decoded_bbox: bool = False,
-        test_cfg: ConfigDict | dict | None = None,
-        init_cfg: ConfigDict | dict | list[ConfigDict] | list[dict] | None = None,
+        test_cfg: DictConfig | None = None,
+        init_cfg: dict | list[dict] | None = None,
     ) -> None:
         super().__init__(init_cfg=init_cfg)
         self.in_channels = in_channels
         self.num_classes = num_classes
         self.feat_channels = feat_channels
-        self.use_sigmoid_cls = loss_cls.get("use_sigmoid", False)
+        self.use_sigmoid_cls = loss_cls.use_sigmoid
         if self.use_sigmoid_cls:
             self.cls_out_channels = num_classes
         else:
@@ -79,9 +77,9 @@ class AnchorHead(BaseDenseHead):
             raise ValueError(msg)
         self.reg_decoded_bbox = reg_decoded_bbox
 
-        self.bbox_coder = DeltaXYWHBBoxCoder(**bbox_coder)
-        self.loss_cls = CrossSigmoidFocalLoss(**loss_cls)
-        self.loss_bbox = GIoULoss(**loss_bbox)
+        self.bbox_coder = bbox_coder
+        self.loss_cls = loss_cls
+        self.loss_bbox = loss_bbox
         self.train_cfg = train_cfg
         self.test_cfg = test_cfg
         if self.train_cfg:
@@ -90,7 +88,7 @@ class AnchorHead(BaseDenseHead):
 
         self.fp16_enabled = False
 
-        self.prior_generator = AnchorGenerator(**anchor_generator)
+        self.prior_generator = anchor_generator
 
         # Usually the numbers of anchors for each level are the same
         # except SSD detectors. So it is an int in the most dense

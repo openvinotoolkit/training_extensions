@@ -310,10 +310,6 @@ class SSD(ExplainableOTXDetModel):
         torch_compile: bool = False,
         tile_config: TileConfig = TileConfig(enable_tiler=False),
     ) -> None:
-        # model_name = f"ssd_{variant}"
-        # config = read_mmconfig(model_name=model_name)
-        # config = inplace_num_classes(cfg=config, num_classes=self._dispatch_label_info(label_info).num_classes)
-        # self.config = config
         self.load_from = (
             "https://storage.openvinotoolkit.org/repositories/openvino_training_extensions"
             "/models/object_detection/v2/mobilenet_v2-2s_ssd-992x736.pth"
