@@ -6,8 +6,9 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from mmcv.cnn import ConvModule
 from torch import Tensor, nn
+
+from otx.algo.modules.conv_module import ConvModule
 
 if TYPE_CHECKING:
     from mmengine import ConfigDict

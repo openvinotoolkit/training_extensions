@@ -13,6 +13,8 @@ import torch.distributed as dist
 from mmengine.structures import InstanceData
 from torch import Tensor
 
+from otx.core.data.entity.detection import DetBatchDataEntity
+
 
 def reduce_mean(tensor: Tensor) -> Tensor:
     """Obtain the mean of tensor on different GPUs.
@@ -189,13 +191,11 @@ def select_single_mlvl(mlvl_tensors: list[Tensor], batch_id: int, detach: bool =
     return mlvl_tensor_list
 
 
-def unpack_gt_instances(batch_data_samples: list[InstanceData]) -> tuple:
+def unpack_det_entity(entity: DetBatchDataEntity) -> tuple:
     """Unpack gt_instances, gt_instances_ignore and img_metas based on batch_data_samples.
 
     Args:
-        batch_data_samples (List[:obj:`DetDataSample`]): The Data
-            Samples. It usually includes information such as
-            `gt_instance`, `gt_panoptic_seg` and `gt_sem_seg`.
+        batch_data_samples (DetBatchDataEntity): Data entity from dataset.
 
     Returns:
         tuple:
@@ -203,25 +203,24 @@ def unpack_gt_instances(batch_data_samples: list[InstanceData]) -> tuple:
             - batch_gt_instances (list[:obj:`InstanceData`]): Batch of
                 gt_instance. It usually includes ``bboxes`` and ``labels``
                 attributes.
-            - batch_gt_instances_ignore (list[:obj:`InstanceData`]):
-                Batch of gt_instances_ignore. It includes ``bboxes`` attribute
-                data that is ignored during training and testing.
-                Defaults to None.
             - batch_img_metas (list[dict]): Meta information of each image,
                 e.g., image size, scaling factor, etc.
     """
     batch_gt_instances = []
-    batch_gt_instances_ignore = []
     batch_img_metas = []
-    for data_sample in batch_data_samples:
-        batch_img_metas.append(data_sample.metainfo)
-        batch_gt_instances.append(data_sample.gt_instances)
-        if "ignored_instances" in data_sample:
-            batch_gt_instances_ignore.append(data_sample.ignored_instances)
-        else:
-            batch_gt_instances_ignore.append(None)
+    for img_info, bboxes, labels in zip(entity.imgs_info, entity.bboxes, entity.labels):
+        metainfo = {
+            "img_id": img_info.img_idx,
+            "img_shape": img_info.img_shape,
+            "ori_shape": img_info.ori_shape,
+            "pad_shape": img_info.pad_shape,
+            "scale_factor": img_info.scale_factor,
+            "ignored_labels": img_info.ignored_labels,
+        }
+        batch_img_metas.append(metainfo)
+        batch_gt_instances.append(InstanceData(bboxes=bboxes, labels=labels))
 
-    return batch_gt_instances, batch_gt_instances_ignore, batch_img_metas
+    return batch_gt_instances, batch_img_metas
 
 
 def empty_instances(

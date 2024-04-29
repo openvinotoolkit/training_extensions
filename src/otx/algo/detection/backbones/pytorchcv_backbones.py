@@ -9,13 +9,15 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 import torch
-from mmcv.cnn import build_activation_layer, build_norm_layer
 from mmdet.registry import MODELS
 from mmengine.dist import get_dist_info
 from pytorchcv.model_provider import _models
 from pytorchcv.models.model_store import download_model
 from torch import distributed, nn
 from torch.nn.modules.batchnorm import _BatchNorm
+
+from otx.algo.modules.activation import build_activation_layer
+from otx.algo.modules.norm import build_norm_layer
 
 if TYPE_CHECKING:
     from mmdet.registry import Registry
