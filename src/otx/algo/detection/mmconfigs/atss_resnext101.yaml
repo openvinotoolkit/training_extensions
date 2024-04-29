@@ -40,7 +40,6 @@ backbone:
   norm_cfg:
     type: BN
     requires_grad: true
-  style: pytorch
   init_cfg:
     type: Pretrained
     checkpoint: open-mmlab://resnext101_64x4d

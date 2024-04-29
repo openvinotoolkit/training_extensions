@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING, Generic, Sequence
 
 from otx.core.types.task import OTXTaskType
 
-from .base import ImageInfo, T_OTXBatchDataEntity, T_OTXDataEntity
+from .base import ImageInfo, OTXBatchDataEntity, T_OTXBatchDataEntity, T_OTXDataEntity
 from .detection import DetBatchDataEntity, DetDataEntity
 from .instance_segmentation import InstanceSegBatchDataEntity, InstanceSegDataEntity
 
@@ -112,7 +112,7 @@ class TileBatchDetDataEntity(OTXTileBatchDataEntity):
         batch_data_entities = [
             DetBatchDataEntity(
                 batch_size=self.batch_size,
-                images=tiles[i : i + self.batch_size],
+                images=OTXBatchDataEntity.stack_batch(tiles[i : i + self.batch_size]),
                 imgs_info=tile_infos[i : i + self.batch_size],
                 bboxes=[[] for _ in range(self.batch_size)],
                 labels=[[] for _ in range(self.batch_size)],

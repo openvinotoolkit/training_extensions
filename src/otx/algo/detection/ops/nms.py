@@ -13,6 +13,8 @@ from torch import Tensor
 from torch.onnx import symbolic_helper as sym_help
 from torchvision.ops.boxes import nms as torch_nms
 
+from otx.algo.detection.utils.utils import dynamic_topk
+
 
 # This class is from NMSop in mmcv and slightly modified
 # https://github.com/open-mmlab/mmcv/blob/265531fa9fe9e071c7d80df549d680ed257d9a16/mmcv/ops/nms.py
@@ -247,7 +249,7 @@ def multiclass_nms(
     topk_inds = None
     if pre_top_k > 0:
         max_scores, _ = scores.max(-1)
-        _, topk_inds = max_scores.topk(pre_top_k)
+        _, topk_inds = dynamic_topk(max_scores, pre_top_k)
         batch_inds = torch.arange(batch_size, device=scores.device).view(-1, 1).long()
         boxes = boxes[batch_inds, topk_inds, :]
         scores = scores[batch_inds, topk_inds, :]
@@ -327,7 +329,7 @@ def _select_nms_index(
     # sort
     is_use_topk = keep_top_k > 0 and (torch.onnx.is_in_onnx_export() or keep_top_k < batched_dets.shape[1])
     if is_use_topk:
-        _, topk_inds = batched_dets[:, :, -1].topk(keep_top_k, dim=1)
+        _, topk_inds = dynamic_topk(batched_dets[:, :, -1], keep_top_k, dim=1)
     else:
         _, topk_inds = batched_dets[:, :, -1].sort(dim=1, descending=True)
     topk_batch_inds = torch.arange(batch_size, dtype=topk_inds.dtype, device=topk_inds.device).view(-1, 1)
