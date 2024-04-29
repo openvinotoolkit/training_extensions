@@ -403,7 +403,7 @@ class YOLOXHead(BaseDenseHead):
         return multiclass_nms(
             bboxes,
             scores,
-            max_output_boxes_per_class=200,
+            max_output_boxes_per_class=200,  # TODO (sungchul): temporarily set to mmdeploy cfg, will be updated
             iou_threshold=cfg.nms.iou_threshold,  # type: ignore[union-attr]
             score_threshold=cfg.score_thr,  # type: ignore[union-attr]
             pre_top_k=5000,

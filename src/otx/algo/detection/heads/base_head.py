@@ -637,7 +637,7 @@ class BaseDenseHead(BaseModule):
         return multiclass_nms(
             bboxes,
             scores,
-            max_output_boxes_per_class=cfg.max_per_img,
+            max_output_boxes_per_class=200,  # TODO (sungchul): temporarily set to mmdeploy cfg, will be updated
             iou_threshold=cfg.nms.iou_threshold,
             score_threshold=cfg.score_thr,
             pre_top_k=5000,
