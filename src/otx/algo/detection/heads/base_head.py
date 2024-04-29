@@ -62,12 +62,7 @@ class BaseDenseHead(BaseModule):
     """
 
     def __init__(self, init_cfg: ConfigDict | list[ConfigDict] | dict | list[dict] | None = None) -> None:
-        super().__init__()
-
-        self._is_init = False
-
-        self.init_cfg = copy.deepcopy(init_cfg)
-
+        super().__init__(init_cfg=init_cfg)
         # `_raw_positive_infos` will be used in `get_positive_infos`, which
         # can get positive information.
         self._raw_positive_infos: dict = {}

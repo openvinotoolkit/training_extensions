@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING
 
 from torch import Tensor, nn
 
+from otx.algo.modules.base_module import BaseModule
 from otx.algo.modules.conv_module import ConvModule
 
 if TYPE_CHECKING:
@@ -16,7 +17,7 @@ if TYPE_CHECKING:
 
 # This class come from mmdet and is slightly modified
 # https://github.com/open-mmlab/mmdetection/blob/ecac3a77becc63f23d9f6980b2a36f86acd00a8a/mmdet/models/necks/fpn.py
-class FPN(nn.Module):
+class FPN(BaseModule):
     r"""Feature Pyramid Network.
 
     This is an implementation of paper `Feature Pyramid Networks for Object
@@ -87,16 +88,9 @@ class FPN(nn.Module):
         upsample_cfg: ConfigDict | dict | None = None,
         init_cfg: ConfigDict | dict | list[ConfigDict] | list[dict] | None = None,
     ) -> None:
-        super().__init__()
-        self.init_cfg = (
-            init_cfg
-            if init_cfg is not None
-            else {
-                "type": "Xavier",
-                "layer": "Conv2d",
-                "distribution": "uniform",
-            }
-        )
+        if init_cfg is None:
+            init_cfg = {"type": "Xavier", "layer": "Conv2d", "distribution": "uniform"}
+        super().__init__(init_cfg=init_cfg)
         self.in_channels = in_channels
         self.out_channels = out_channels
         self.num_ins = len(in_channels)

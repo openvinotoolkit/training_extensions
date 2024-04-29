@@ -5,7 +5,6 @@
 
 from __future__ import annotations
 
-import copy
 import math
 from typing import TYPE_CHECKING, Sequence
 
@@ -118,13 +117,7 @@ class YOLOXHead(BaseDenseHead):
                 "nonlinearity": "leaky_relu",
             }
 
-        super().__init__()
-        # from BaseModule
-        self._is_init = False
-        self.init_cfg = copy.deepcopy(init_cfg)
-
-        # from BaseDenseHead
-        self._raw_positive_infos = {}
+        super().__init__(init_cfg=init_cfg)
 
         self.num_classes = num_classes
         self.cls_out_channels = num_classes

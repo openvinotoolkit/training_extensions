@@ -5,17 +5,18 @@
 
 from __future__ import annotations
 
-import copy
 from typing import TYPE_CHECKING
 
 import torch
 from torch import Tensor, nn
 
+from otx.algo.modules.base_module import BaseModule
+
 if TYPE_CHECKING:
     from mmengine import ConfigDict
 
 
-class ChannelAttention(nn.Module):
+class ChannelAttention(BaseModule):
     """Channel attention Module.
 
     Args:
@@ -29,10 +30,7 @@ class ChannelAttention(nn.Module):
         channels: int,
         init_cfg: ConfigDict | dict | list[ConfigDict] | list[dict] | None = None,
     ) -> None:
-        super().__init__()
-        # from mmengine.model.BaseModule
-        self._is_init = False
-        self.init_cfg = copy.deepcopy(init_cfg)
+        super().__init__(init_cfg=init_cfg)
 
         self.global_avgpool = nn.AdaptiveAvgPool2d(1)
         self.fc = nn.Conv2d(channels, channels, 1, 1, 0, bias=True)

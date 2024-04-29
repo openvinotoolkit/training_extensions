@@ -18,6 +18,7 @@ from torchvision import tv_tensors
 
 from otx.algo.detection.backbones.pytorchcv_backbones import _build_model_including_pytorchcv
 from otx.algo.detection.heads.ssd_head import SSDHead
+from otx.algo.modules.base_module import BaseModule
 from otx.algo.utils.mmconfig import read_mmconfig
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.config.data import TileConfig
@@ -51,7 +52,7 @@ logger = logging.getLogger()
 
 # This class and its supporting functions below lightly adapted from the mmdet SingleStageDetector available at:
 # https://github.com/open-mmlab/mmdetection/blob/cfd5d3a985b0249de009b67d04f37263e11cdf3d/mmdet/models/detectors/single_stage.py
-class SingleStageDetector(nn.Module):
+class SingleStageDetector(BaseModule):
     """Single stage detector implementation from mmdet."""
 
     def __init__(
@@ -63,14 +64,12 @@ class SingleStageDetector(nn.Module):
         test_cfg: ConfigDict | dict | None = None,
         init_cfg: ConfigDict | list[ConfigDict] | dict | list[dict] = None,
     ) -> None:
-        super().__init__()
-        self._is_init = False
+        super().__init__(init_cfg=init_cfg)
         self.backbone = self.build_backbone(backbone)
         bbox_head.update(train_cfg=train_cfg)
         bbox_head.update(test_cfg=test_cfg)
         self.bbox_head = self.build_bbox_head(bbox_head)
         self.data_preprocessor = self.build_det_data_preprocessor(data_preprocessor)
-        self.init_cfg = init_cfg
         self.train_cfg = train_cfg
         self.test_cfg = test_cfg
 
@@ -120,54 +119,6 @@ class SingleStageDetector(nn.Module):
             unexpected_keys,
             error_msgs,
         )
-
-    def init_weights(self) -> None:
-        """Initialize the weights."""
-        from mmengine.logging import print_log
-        from mmengine.model.weight_init import PretrainedInit, initialize
-        from mmengine.model.wrappers.utils import is_model_wrapper
-
-        module_name = self.__class__.__name__
-        if not self._is_init:
-            if self.init_cfg:
-                print_log(
-                    f"initialize {module_name} with init_cfg {self.init_cfg}",
-                    logger="current",
-                    level=logging.DEBUG,
-                )
-
-                init_cfgs = self.init_cfg
-                if isinstance(self.init_cfg, dict):
-                    init_cfgs = [self.init_cfg]
-
-                # PretrainedInit has higher priority than any other init_cfg.
-                # Therefore we initialize `pretrained_cfg` last to overwrite
-                # the previous initialized weights.
-                # See details in https://github.com/open-mmlab/mmengine/issues/691 # E501
-                other_cfgs = []
-                pretrained_cfg = []
-                for init_cfg in init_cfgs:
-                    if init_cfg["type"] == "Pretrained" or init_cfg["type"] is PretrainedInit:
-                        pretrained_cfg.append(init_cfg)
-                    else:
-                        other_cfgs.append(init_cfg)
-
-                initialize(self, other_cfgs)
-
-            for m in self.children():
-                if is_model_wrapper(m) and not hasattr(m, "init_weights"):
-                    m = m.module  # noqa: PLW2901
-                if hasattr(m, "init_weights") and not getattr(m, "is_init", False):
-                    m.init_weights()
-            if self.init_cfg and pretrained_cfg:
-                initialize(self, pretrained_cfg)
-            self._is_init = True
-        else:
-            print_log(
-                f"init_weights of {self.__class__.__name__} has been called more than once.",
-                logger="current",
-                level=logging.WARNING,
-            )
 
     def forward(
         self,

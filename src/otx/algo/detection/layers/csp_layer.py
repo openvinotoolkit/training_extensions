@@ -5,7 +5,6 @@
 
 from __future__ import annotations
 
-import copy
 from typing import TYPE_CHECKING
 
 import torch
@@ -64,10 +63,7 @@ class DarknetBottleneck(BaseModule):
         if act_cfg is None:
             act_cfg = {"type": "Swish"}
 
-        super().__init__()
-        # from mmengine.model.BaseModule
-        self._is_init = False
-        self.init_cfg = copy.deepcopy(init_cfg)
+        super().__init__(init_cfg=init_cfg)
 
         hidden_channels = int(out_channels * expansion)
         conv = DepthwiseSeparableConvModule if use_depthwise else ConvModule
@@ -138,10 +134,7 @@ class CSPNeXtBlock(BaseModule):
         if act_cfg is None:
             act_cfg = {"type": "SiLU"}
 
-        super().__init__()
-        # from mmengine.model.BaseModule
-        self._is_init = False
-        self.init_cfg = copy.deepcopy(init_cfg)
+        super().__init__(init_cfg=init_cfg)
 
         hidden_channels = int(out_channels * expansion)
         conv = DepthwiseSeparableConvModule if use_depthwise else ConvModule
@@ -218,10 +211,7 @@ class CSPLayer(BaseModule):
         if act_cfg is None:
             act_cfg = {"type": "Swish"}
 
-        super().__init__()
-        # from mmengine.model.BaseModule
-        self._is_init = False
-        self.init_cfg = copy.deepcopy(init_cfg)
+        super().__init__(init_cfg=init_cfg)
 
         block = CSPNeXtBlock if use_cspnext_block else DarknetBottleneck
         mid_channels = int(out_channels * expand_ratio)

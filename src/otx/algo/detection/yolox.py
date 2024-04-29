@@ -294,15 +294,3 @@ class OTXYOLOX(ExplainableOTXDetModel):
     def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.model.") -> dict:
         """Load the previous OTX ckpt according to OTX2.0."""
         return OTXv1Helper.load_det_ckpt(state_dict, add_prefix)
-
-    # TODO(Sungchul): Remove below functions after changing exporter
-    def _make_fake_test_pipeline(self) -> list[dict[str, Any]]:
-        return [
-            {"type": "LoadImageFromFile"},
-            {"type": "Resize", "scale": [self.image_size[3], self.image_size[2]], "keep_ratio": True},  # type: ignore[index]
-            {"type": "LoadAnnotations", "with_bbox": True},
-            {
-                "type": "PackDetInputs",
-                "meta_keys": ["ori_filenamescale_factor", "ori_shape", "filename", "img_shape", "pad_shape"],
-            },
-        ]
