@@ -8,7 +8,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Generic, Sequence
 
-from otx.algo.utils.mmengine_utils import stack_batch
+from otx.core.data.entity.utils import stack_batch
 from otx.core.types.task import OTXTaskType
 
 from .base import ImageInfo, T_OTXBatchDataEntity, T_OTXDataEntity

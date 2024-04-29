@@ -17,11 +17,11 @@ from otx.algo.detection.heads.yolox_head import YOLOXHead
 from otx.algo.detection.necks.yolox_pafpn import YOLOXPAFPN
 from otx.algo.detection.ssd import SingleStageDetector
 from otx.algo.utils.mmconfig import read_mmconfig
-from otx.algo.utils.mmengine_utils import stack_batch
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.config.data import TileConfig
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.detection import DetBatchDataEntity, DetBatchPredEntity
+from otx.core.data.entity.utils import stack_batch
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.mmdeploy import MMdeployExporter
 from otx.core.metrics.mean_ap import MeanAPCallable

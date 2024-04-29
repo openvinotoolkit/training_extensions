@@ -13,7 +13,6 @@ from collections import OrderedDict, abc, namedtuple
 from typing import Any
 from warnings import warn
 
-import torch
 from torch import distributed as torch_dist
 from torch import nn
 from torch.utils.model_zoo import load_url
@@ -229,48 +228,3 @@ def is_tuple_of(seq: Any, expected_type: type | tuple) -> bool:  # noqa: ANN401
     A partial method of :func:`is_seq_of`.
     """
     return is_seq_of(seq, expected_type, seq_type=tuple)
-
-
-def stack_batch(
-    tensor_list: list[torch.Tensor],
-    pad_size_divisor: int = 1,
-    pad_value: int | float = 0,
-) -> torch.Tensor:
-    """Stack multiple tensors to form a batch.
-
-    Pad the tensor to the max shape use the right bottom padding mode in these images.
-    If ``pad_size_divisor > 0``, add padding to ensure the shape of each dim is
-    divisible by ``pad_size_divisor``.
-
-    Args:
-        tensor_list (List[Tensor]): A list of tensors with the same dim.
-        pad_size_divisor (int): If ``pad_size_divisor > 0``, add padding
-            to ensure the shape of each dim is divisible by
-            ``pad_size_divisor``. This depends on the model, and many
-            models need to be divisible by 32. Defaults to 1
-        pad_value (int, float): The padding value. Defaults to 0.
-
-    Returns:
-        Tensor: The n dim tensor.
-    """
-    dim = tensor_list[0].dim()
-    num_img = len(tensor_list)
-    all_sizes: torch.Tensor = torch.Tensor([tensor.shape for tensor in tensor_list])
-    max_sizes = torch.ceil(torch.max(all_sizes, dim=0)[0] / pad_size_divisor) * pad_size_divisor
-    padded_sizes = max_sizes - all_sizes
-    # The first dim normally means channel,  which should not be padded.
-    padded_sizes[:, 0] = 0
-    if padded_sizes.sum() == 0:
-        return torch.stack(tensor_list)
-    # `pad` is the second arguments of `F.pad`. If pad is (1, 2, 3, 4),
-    # it means that padding the last dim with 1(left) 2(right), padding the
-    # penultimate dim to 3(top) 4(bottom). The order of `pad` is opposite of
-    # the `padded_sizes`. Therefore, the `padded_sizes` needs to be reversed,
-    # and only odd index of pad should be assigned to keep padding "right" and
-    # "bottom".
-    pad = torch.zeros(num_img, 2 * dim, dtype=torch.int)
-    pad[:, 1::2] = padded_sizes[:, range(dim - 1, -1, -1)]
-    batch_tensor = []
-    for idx, tensor in enumerate(tensor_list):
-        batch_tensor.append(torch.nn.functional.pad(tensor, tuple(pad[idx].tolist()), value=pad_value))
-    return torch.stack(batch_tensor)
