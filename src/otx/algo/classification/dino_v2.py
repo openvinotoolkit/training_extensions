@@ -65,7 +65,7 @@ class DINOv2(nn.Module):
         for _, v in backbone.named_parameters():
             v.requires_grad = False
 
-    def forward(self, imgs: torch.Tensor, labels: torch.Tensor | None = None) -> torch.Tensor:
+    def forward(self, imgs: torch.Tensor, labels: torch.Tensor | None = None, **kwargs) -> torch.Tensor:
         """Forward function."""
         feats = self.backbone(imgs)
         logits = self.head(feats)
