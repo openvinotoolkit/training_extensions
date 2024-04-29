@@ -222,9 +222,6 @@ class SpatialWeighting(nn.Module):
         if len(act_cfg) != 2:
             msg = "act_cfg must be a dict or a tuple of dicts of length 2."
             raise ValueError(msg)
-        if not is_tuple_of(act_cfg, dict):
-            msg = "act_cfg must be a dict or a tuple of dicts."
-            raise TypeError(msg)
 
         self.global_avgpool = nn.AdaptiveAvgPool2d(1)
         self.conv1 = ConvModule(
