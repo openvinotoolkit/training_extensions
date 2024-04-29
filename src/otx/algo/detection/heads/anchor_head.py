@@ -9,13 +9,17 @@ import warnings
 from typing import TYPE_CHECKING
 
 import torch
-from mmdet.registry import MODELS, TASK_UTILS
 from mmengine.structures import InstanceData
 from torch import Tensor, nn
 
+from otx.algo.detection.heads.atss_assigner import ATSSAssigner
 from otx.algo.detection.heads.base_head import BaseDenseHead
 from otx.algo.detection.heads.base_sampler import PseudoSampler
 from otx.algo.detection.heads.custom_anchor_generator import AnchorGenerator
+from otx.algo.detection.heads.delta_xywh_bbox_coder import DeltaXYWHBBoxCoder
+from otx.algo.detection.heads.max_iou_assigner import MaxIoUAssigner
+from otx.algo.detection.losses.cross_focal_loss import CrossSigmoidFocalLoss
+from otx.algo.detection.losses.iou_loss import GIoULoss
 from otx.algo.detection.utils.utils import anchor_inside_flags, images_to_levels, multi_apply, unmap
 
 if TYPE_CHECKING:
@@ -49,7 +53,7 @@ class AnchorHead(BaseDenseHead):
     def __init__(
         self,
         num_classes: int,
-        in_channels: tuple[int, ...],
+        in_channels: tuple[int, ...] | int,
         anchor_generator: dict,
         bbox_coder: dict,
         loss_cls: dict,
@@ -75,26 +79,23 @@ class AnchorHead(BaseDenseHead):
             raise ValueError(msg)
         self.reg_decoded_bbox = reg_decoded_bbox
 
-        self.bbox_coder = TASK_UTILS.build(bbox_coder)
-        self.loss_cls = MODELS.build(loss_cls)
-        self.loss_bbox = MODELS.build(loss_bbox)
+        self.bbox_coder = DeltaXYWHBBoxCoder(**bbox_coder)
+        self.loss_cls = CrossSigmoidFocalLoss(**loss_cls)
+        self.loss_bbox = GIoULoss(**loss_bbox)
         self.train_cfg = train_cfg
         self.test_cfg = test_cfg
         if self.train_cfg:
-            self.assigner = TASK_UTILS.build(self.train_cfg["assigner"])
-            if train_cfg.get("sampler", None) is not None:
-                self.sampler = TASK_UTILS.build(self.train_cfg["sampler"], default_args={"context": self})
-            else:
-                self.sampler = PseudoSampler(context=self)  # type: ignore[no-untyped-call]
+            self.assigner: MaxIoUAssigner | ATSSAssigner = ATSSAssigner(**self.train_cfg["assigner"])
+            self.sampler = PseudoSampler(context=self)  # type: ignore[no-untyped-call]
 
         self.fp16_enabled = False
 
-        self.prior_generator = TASK_UTILS.build(anchor_generator)
+        self.prior_generator = AnchorGenerator(**anchor_generator)
 
         # Usually the numbers of anchors for each level are the same
         # except SSD detectors. So it is an int in the most dense
         # heads but a list of int in SSDHead
-        self.num_base_priors = self.prior_generator.num_base_priors[0]
+        self.num_base_priors: list[int] | int = self.prior_generator.num_base_priors[0]
         self._init_layers()
 
     @property
@@ -123,7 +124,7 @@ class AnchorHead(BaseDenseHead):
         reg_dim = self.bbox_coder.encode_size
         self.conv_reg = nn.Conv2d(self.in_channels, self.num_base_priors * reg_dim, 1)
 
-    def forward_single(self, x: Tensor) -> tuple[Tensor, Tensor]:
+    def forward_single(self, x: Tensor) -> tuple[Tensor, ...]:
         """Forward feature of a single scale level.
 
         Args:
@@ -161,7 +162,7 @@ class AnchorHead(BaseDenseHead):
 
     def get_anchors(
         self,
-        featmap_sizes: list[tuple],
+        featmap_sizes: list[tuple[int, int]],
         batch_img_metas: list[dict],
         device: torch.device | str = "cuda",
     ) -> tuple[list[list[Tensor]], list[list[Tensor]]]:

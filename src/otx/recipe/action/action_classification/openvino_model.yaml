@@ -1,7 +1,7 @@
 model:
   class_path: otx.core.model.action_classification.OVActionClsModel
   init_args:
-    num_classes: 400
+    label_info: 400
     model_name: x3d
     async_inference: True
     use_throughput_mode: True

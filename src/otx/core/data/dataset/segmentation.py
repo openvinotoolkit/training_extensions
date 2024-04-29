@@ -97,7 +97,6 @@ def _extract_class_mask(item: DatasetItem, img_shape: tuple[int, int], ignore_in
         raise ValueError(msg, ignore_index)
 
     class_mask = np.full(shape=img_shape[:2], fill_value=ignore_index, dtype=np.uint8)
-
     for mask in sorted(
         [ann for ann in item.annotations if isinstance(ann, Mask)],
         key=lambda ann: ann.z_order,
@@ -163,7 +162,7 @@ class OTXSegmentationDataset(OTXDataset[SegDataEntity]):
         self.ignore_index = ignore_index
 
     def _get_item_impl(self, index: int) -> SegDataEntity | None:
-        item = self.dm_subset.get(id=self.ids[index], subset=self.dm_subset.name)
+        item = self.dm_subset.as_dataset()[index]
         img = item.media_as(Image)
         ignored_labels: list[int] = []
         img_data, img_shape = self._get_img_data_and_shape(img)

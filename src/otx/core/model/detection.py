@@ -11,8 +11,8 @@ from contextlib import contextmanager
 from typing import TYPE_CHECKING, Any, Callable, Iterator, Literal
 
 import torch
-from openvino.model_api.models import Model
-from openvino.model_api.tilers import DetectionTiler
+from model_api.models import Model
+from model_api.tilers import DetectionTiler
 from torchvision import tv_tensors
 
 from otx.core.config.data import TileConfig
@@ -24,6 +24,7 @@ from otx.core.metrics.mean_ap import MeanAPCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable, OTXModel, OVModel
 from otx.core.schedulers import LRSchedulerListCallable
 from otx.core.types.export import TaskLevelExportParameters
+from otx.core.types.label import LabelInfoTypes
 from otx.core.utils.config import inplace_num_classes
 from otx.core.utils.tile_merge import DetectionTileMerge
 
@@ -32,8 +33,8 @@ if TYPE_CHECKING:
     from mmdet.models.data_preprocessors import DetDataPreprocessor
     from mmdet.models.detectors import SingleStageDetector
     from mmdet.structures import OptSampleList
+    from model_api.models.utils import DetectionResult
     from omegaconf import DictConfig
-    from openvino.model_api.models.utils import DetectionResult
     from torch import nn
     from torchmetrics import Metric
 
@@ -43,20 +44,21 @@ class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity]):
 
     def __init__(
         self,
-        num_classes: int,
+        label_info: LabelInfoTypes,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MeanAPCallable,
         torch_compile: bool = False,
+        tile_config: TileConfig = TileConfig(enable_tiler=False),
     ) -> None:
         super().__init__(
-            num_classes=num_classes,
+            label_info=label_info,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
             torch_compile=torch_compile,
+            tile_config=tile_config,
         )
-        self._tile_config = TileConfig()
 
     def forward_tiles(self, inputs: OTXTileBatchDataEntity[DetBatchDataEntity]) -> DetBatchPredEntity:
         """Unpack detection tiles.
@@ -175,20 +177,22 @@ class ExplainableOTXDetModel(OTXDetectionModel):
 
     def __init__(
         self,
-        num_classes: int,
+        label_info: LabelInfoTypes,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MeanAPCallable,
         torch_compile: bool = False,
+        tile_config: TileConfig = TileConfig(enable_tiler=False),
     ) -> None:
         from otx.algo.explain.explain_algo import feature_vector_fn
 
         super().__init__(
-            num_classes=num_classes,
+            label_info=label_info,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
             torch_compile=torch_compile,
+            tile_config=tile_config,
         )
         self.model.feature_vector_fn = feature_vector_fn
         self.model.explain_fn = self.get_explain_fn()
@@ -262,7 +266,7 @@ class ExplainableOTXDetModel(OTXDetectionModel):
 
     def get_explain_fn(self) -> Callable:
         """Returns explain function."""
-        from otx.algo.detection.heads.custom_ssd_head import SSDHead
+        from otx.algo.detection.heads.ssd_head import SSDHead
         from otx.algo.explain.explain_algo import DetClassProbabilityMap
 
         # SSD-like heads also have background class
@@ -334,26 +338,29 @@ class MMDetCompatibleModel(ExplainableOTXDetModel):
 
     def __init__(
         self,
-        num_classes: int,
+        label_info: LabelInfoTypes,
         config: DictConfig,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MeanAPCallable,
         torch_compile: bool = False,
+        tile_config: TileConfig = TileConfig(enable_tiler=False),
     ) -> None:
-        config = inplace_num_classes(cfg=config, num_classes=num_classes)
+        config = inplace_num_classes(cfg=config, num_classes=self._dispatch_label_info(label_info).num_classes)
         self.config = config
         self.load_from = config.pop("load_from", None)
         self.image_size: tuple[int, int, int, int] | None = None
         super().__init__(
-            num_classes=num_classes,
+            label_info=label_info,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
             torch_compile=torch_compile,
+            tile_config=tile_config,
         )
 
     def _create_model(self) -> nn.Module:
+        # TODO (someone): change to abstractmethod
         from .utils.mmdet import create_model
 
         model, self.classification_layers = create_model(self.config, self.load_from)
@@ -524,7 +531,7 @@ class OVDetectionModel(OVModel[DetBatchDataEntity, DetBatchPredEntity]):
 
     def _create_model(self) -> Model:
         """Create a OV model with help of Model API."""
-        from openvino.model_api.adapters import OpenvinoAdapter, create_core, get_user_config
+        from model_api.adapters import OpenvinoAdapter, create_core, get_user_config
 
         plugin_config = get_user_config("AUTO", str(self.num_requests), "AUTO")
         if self.use_throughput_mode:

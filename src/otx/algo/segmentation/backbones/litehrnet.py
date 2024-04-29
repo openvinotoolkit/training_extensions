@@ -10,21 +10,23 @@ Modified from:
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import torch
 import torch.utils.checkpoint as cp
-from mmcv.cnn import ConvModule, build_conv_layer, build_norm_layer
-from mmengine.model import BaseModule
 from mmengine.utils import is_tuple_of
-from mmseg.registry import MODELS
 from torch import nn
 from torch.nn import functional
 
-from otx.algo.utils.segmentation import (
+from otx.algo.modules import ConvModule, build_conv_layer, build_norm_layer
+from otx.algo.modules.base_module import BaseModule
+from otx.algo.segmentation.modules import (
     AsymmetricPositionAttentionModule,
     IterativeAggregator,
     LocalAttentionModule,
     channel_shuffle,
 )
+from otx.algo.utils.mmengine_utils import load_checkpoint_to_model, load_from_http
 
 
 class NeighbourSupport(nn.Module):
@@ -1261,7 +1263,6 @@ class LiteHRModule(nn.Module):
         return out
 
 
-@MODELS.register_module()
 class LiteHRNet(BaseModule):
     """Lite-HRNet backbone.
 
@@ -1293,12 +1294,15 @@ class LiteHRNet(BaseModule):
         zero_init_residual: bool = False,
         dropout: float | None = None,
         init_cfg: dict | None = None,
+        pretrained_weights: str | None = None,
     ) -> None:
         """Init."""
         super().__init__(init_cfg=init_cfg)
 
         if norm_cfg is None:
             norm_cfg = {"type": "BN"}
+        if conv_cfg is None:
+            conv_cfg = {"type": "Conv2d"}
 
         self.extra = extra
         self.conv_cfg = conv_cfg
@@ -1306,7 +1310,6 @@ class LiteHRNet(BaseModule):
         self.norm_eval = norm_eval
         self.with_cp = with_cp
         self.zero_init_residual = zero_init_residual
-
         self.stem = Stem(
             in_channels,
             input_norm=self.extra["stem"]["input_norm"],
@@ -1427,6 +1430,9 @@ class LiteHRNet(BaseModule):
                 conv_cfg=self.conv_cfg,
                 norm_cfg=self.norm_cfg,
             )
+
+        if pretrained_weights is not None:
+            self.load_pretrained_weights(pretrained_weights, prefix="backbone")
 
     def _make_transition_layer(
         self,
@@ -1600,3 +1606,15 @@ class LiteHRNet(BaseModule):
             out = [x, *out]
 
         return out
+
+    def load_pretrained_weights(self, pretrained: str | None = None, prefix: str = "") -> None:
+        """Initialize weights."""
+        checkpoint = None
+        if isinstance(pretrained, str) and Path(pretrained).exists():
+            checkpoint = torch.load(pretrained, "cpu")
+            print(f"init weight - {pretrained}")
+        elif pretrained is not None:
+            checkpoint = load_from_http(pretrained, "cpu")
+            print(f"init weight - {pretrained}")
+        if checkpoint is not None:
+            load_checkpoint_to_model(self, checkpoint, prefix=prefix)

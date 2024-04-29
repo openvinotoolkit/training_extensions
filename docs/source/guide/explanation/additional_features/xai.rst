@@ -100,7 +100,7 @@ XAI algorithms for instance segmentation
 
 For instance segmentation networks the following algorithm is used to generate saliency maps:
 
-- **MaskRCNNExplainAlgo​** - in this approach the predicted object masks are combined and aggregated per class to generate the saliency maps for each class.
+- **InstSegExplainAlgo​** - in this approach the predicted object masks are combined and aggregated per class to generate the saliency maps for each class.
 
 
 .. tab-set::

@@ -27,7 +27,7 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
 ]
 dependencies = [
-    "datumaro==1.6.0rc1",
+    "datumaro==1.6.1rc3",
     "omegaconf==2.3.0",
     "rich==13.7.1",
     "jsonargparse==4.27.1",
@@ -72,12 +72,12 @@ base = [
     "lightning==2.1.2",
     "pytorchcv",
     "timm",
-    "openvino==2023.3.0",
-    "openvino-dev==2023.3.0",
-    "openvino-model-api==0.1.9",
+    "openvino==2024.1.0",
+    "openvino-dev==2024.1.0",
+    "openvino-model-api==0.2.0",
     "onnx==1.16.0",
     "onnxconverter-common==1.14.0",
-    "nncf==2.8.1",
+    "nncf==2.10.0",
 ]
 mmlab = [
     "mmdet==3.2.0",
@@ -297,6 +297,20 @@ target-version = "py38"
 
 # Enumerate all fixed violations.
 show-fixes = true
+
+[tool.ruff.lint.flake8-bugbear]
+# Allow default arguments like, e.g., `data: List[str] = fastapi.Query(None)`.
+extend-immutable-calls = [
+    # Label info objects
+    "otx.core.types.label.LabelInfo",
+    "otx.core.types.label.HLabelInfo",
+    "otx.core.types.label.SegLabelInfo",
+    "otx.core.types.label.NullLabelInfo",
+    "otx.core.types.label.AnomalyLabelInfo",
+
+    # Config objects
+    "otx.core.config.data.TileConfig",
+]
 
 [tool.ruff.mccabe]
 # Unlike Flake8, default to a complexity level of 10.

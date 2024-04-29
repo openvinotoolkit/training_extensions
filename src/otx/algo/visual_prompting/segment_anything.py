@@ -21,6 +21,7 @@ from otx.core.metrics.visual_prompting import VisualPromptingMetricCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
 from otx.core.model.visual_prompting import OTXVisualPromptingModel
 from otx.core.schedulers import LRSchedulerListCallable
+from otx.core.types.label import LabelInfoTypes, NullLabelInfo
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
@@ -492,7 +493,7 @@ class OTXSegmentAnything(OTXVisualPromptingModel):
     def __init__(
         self,
         backbone: Literal["tiny_vit", "vit_b"],
-        num_classes: int = 0,
+        label_info: LabelInfoTypes = NullLabelInfo(),
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = VisualPromptingMetricCallable,
@@ -517,7 +518,7 @@ class OTXSegmentAnything(OTXVisualPromptingModel):
             **DEFAULT_CONFIG_SEGMENT_ANYTHING[backbone],
         }
         super().__init__(
-            num_classes=num_classes,
+            label_info=label_info,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,

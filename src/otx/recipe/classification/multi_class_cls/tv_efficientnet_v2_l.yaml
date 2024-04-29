@@ -2,7 +2,7 @@ model:
   class_path: otx.algo.classification.torchvision_model.OTXTVModel
   init_args:
     backbone: efficientnet_v2_l
-    num_classes: 1000
+    label_info: 1000
 
     optimizer:
       class_path: torch.optim.SGD

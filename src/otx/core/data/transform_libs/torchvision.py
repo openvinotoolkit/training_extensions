@@ -546,6 +546,282 @@ class Resize(tvt_v2.Transform):
         return repr_str
 
 
+class RandomResizedCrop(tvt_v2.Transform):
+    """Crop the given image to random scale and aspect ratio.
+
+    This class implements mmpretrain.datasets.transforms.RandomResizedCrop reimplemented as torchvision.transform.
+    A crop of random size (default: of 0.08 to 1.0) of the original size and a
+    random aspect ratio (default: of 3/4 to 4/3) of the original aspect ratio
+    is made. This crop is finally resized to given size.
+
+    Args:
+        scale (sequence | int): Desired output scale of the crop. If size is an
+            int instead of sequence like (h, w), a square crop (size, size) is
+            made.
+        crop_ratio_range (tuple): Range of the random size of the cropped
+            image compared to the original image. Defaults to (0.08, 1.0).
+        aspect_ratio_range (tuple): Range of the random aspect ratio of the
+            cropped image compared to the original image.
+            Defaults to (3. / 4., 4. / 3.).
+        max_attempts (int): Maximum number of attempts before falling back to
+            Central Crop. Defaults to 10.
+        interpolation (str): Interpolation method, accepted values are
+            'nearest', 'bilinear', 'bicubic', 'area', 'lanczos'. Defaults to
+            'bilinear'.
+        backend (str): The image resize backend type, accepted values are
+            'cv2' and 'pillow'. Defaults to 'cv2'.
+    """
+
+    cv2_interp_codes: ClassVar = {
+        "nearest": cv2.INTER_NEAREST,
+        "bilinear": cv2.INTER_LINEAR,
+        "bicubic": cv2.INTER_CUBIC,
+        "area": cv2.INTER_AREA,
+        "lanczos": cv2.INTER_LANCZOS4,
+    }
+
+    def __init__(
+        self,
+        scale: Sequence | int,
+        crop_ratio_range: tuple[float, float] = (0.08, 1.0),
+        aspect_ratio_range: tuple[float, float] = (3.0 / 4.0, 4.0 / 3.0),
+        max_attempts: int = 10,
+        interpolation: str = "bilinear",
+        backend: str = "cv2",
+    ) -> None:
+        super().__init__()
+        if isinstance(scale, Sequence):
+            assert len(scale) == 2  # noqa: S101
+            assert scale[0] > 0  # noqa: S101
+            assert scale[1] > 0  # noqa: S101
+            self.scale = scale
+        else:
+            assert scale > 0  # noqa: S101
+            self.scale = (scale, scale)
+        if (crop_ratio_range[0] > crop_ratio_range[1]) or (aspect_ratio_range[0] > aspect_ratio_range[1]):
+            msg = (
+                "range should be of kind (min, max). "
+                f"But received crop_ratio_range {crop_ratio_range} "
+                f"and aspect_ratio_range {aspect_ratio_range}."
+            )
+            raise ValueError(msg)
+        assert isinstance(max_attempts, int)  # noqa: S101
+        assert max_attempts >= 0, "max_attempts mush be int and no less than 0."  # noqa: S101
+        assert interpolation in (  # noqa: S101
+            "nearest",
+            "bilinear",
+            "bicubic",
+            "area",
+            "lanczos",
+        )
+
+        self.crop_ratio_range = crop_ratio_range
+        self.aspect_ratio_range = aspect_ratio_range
+        self.max_attempts = max_attempts
+        self.interpolation = interpolation
+        self.backend = backend
+
+    @cache_randomness
+    def rand_crop_params(self, img: np.ndarray) -> tuple[int, int, int, int]:
+        """Get parameters for ``crop`` for a random sized crop.
+
+        Args:
+            img (ndarray): Image to be cropped.
+
+        Returns:
+            tuple: Params (offset_h, offset_w, target_h, target_w) to be
+                passed to `crop` for a random sized crop.
+        """
+        h, w = img.shape[:2]
+        area = h * w
+
+        for _ in range(self.max_attempts):
+            target_area = np.random.uniform(*self.crop_ratio_range) * area
+            log_ratio = (math.log(self.aspect_ratio_range[0]), math.log(self.aspect_ratio_range[1]))
+            aspect_ratio = math.exp(np.random.uniform(*log_ratio))
+            target_w = int(round(math.sqrt(target_area * aspect_ratio)))
+            target_h = int(round(math.sqrt(target_area / aspect_ratio)))
+
+            if 0 < target_w <= w and 0 < target_h <= h:
+                offset_h = np.random.randint(0, h - target_h + 1)
+                offset_w = np.random.randint(0, w - target_w + 1)
+
+                return offset_h, offset_w, target_h, target_w
+
+        # Fallback to central crop
+        in_ratio = float(w) / float(h)
+        if in_ratio < min(self.aspect_ratio_range):
+            target_w = w
+            target_h = int(round(target_w / min(self.aspect_ratio_range)))
+        elif in_ratio > max(self.aspect_ratio_range):
+            target_h = h
+            target_w = int(round(target_h * max(self.aspect_ratio_range)))
+        else:  # whole image
+            target_w = w
+            target_h = h
+        offset_h = (h - target_h) // 2
+        offset_w = (w - target_w) // 2
+        return offset_h, offset_w, target_h, target_w
+
+    def _bbox_clip(self, bboxes: np.ndarray, img_shape: tuple[int, int]) -> np.ndarray:
+        """Clip bboxes to fit the image shape.
+
+        Copy from mmcv.image.geometric.bbox_clip
+
+        Args:
+            bboxes (ndarray): Shape (..., 4*k)
+            img_shape (tuple[int]): (height, width) of the image.
+
+        Returns:
+            ndarray: Clipped bboxes.
+        """
+        cmin = np.empty(bboxes.shape[-1], dtype=bboxes.dtype)
+        cmin[0::2] = img_shape[1] - 1
+        cmin[1::2] = img_shape[0] - 1
+        return np.maximum(np.minimum(bboxes, cmin), 0)
+
+    def _bbox_scaling(self, bboxes: np.ndarray, scale: float, clip_shape: tuple[int, int] | None = None) -> np.ndarray:
+        """Scaling bboxes w.r.t the box center.
+
+        Copy from mmcv.image.geometric.bbox_scaling
+
+        Args:
+            bboxes (ndarray): Shape(..., 4).
+            scale (float): Scaling factor.
+            clip_shape (tuple[int], optional): If specified, bboxes that exceed the
+                boundary will be clipped according to the given shape (h, w).
+
+        Returns:
+            ndarray: Scaled bboxes.
+        """
+        if float(scale) == 1.0:
+            scaled_bboxes = bboxes.copy()
+        else:
+            w = bboxes[..., 2] - bboxes[..., 0] + 1
+            h = bboxes[..., 3] - bboxes[..., 1] + 1
+            dw = (w * (scale - 1)) * 0.5
+            dh = (h * (scale - 1)) * 0.5
+            scaled_bboxes = bboxes + np.stack((-dw, -dh, dw, dh), axis=-1)
+        if clip_shape is not None:
+            return self._bbox_clip(scaled_bboxes, clip_shape)
+        return scaled_bboxes
+
+    def _crop_img(
+        self,
+        img: np.ndarray,
+        bboxes: np.ndarray,
+        scale: float = 1.0,
+        pad_fill: float | list | None = None,
+    ) -> np.ndarray | list[np.ndarray]:
+        """Crop image patches.
+
+        Copy from mmcv.image.geometric.imcrop
+        3 steps: scale the bboxes -> clip bboxes -> crop and pad.
+
+        Args:
+            img (ndarray): Image to be cropped.
+            bboxes (ndarray): Shape (k, 4) or (4, ), location of cropped bboxes.
+            scale (float, optional): Scale ratio of bboxes, the default value
+                1.0 means no scaling.
+            pad_fill (Number | list[Number]): Value to be filled for padding.
+                Default: None, which means no padding.
+
+        Returns:
+            list[ndarray] | ndarray: The cropped image patches.
+        """
+        chn = 1 if img.ndim == 2 else img.shape[2]
+        if pad_fill is not None and isinstance(pad_fill, (int, float)):
+            pad_fill = [pad_fill for _ in range(chn)]
+
+        _bboxes = bboxes[None, ...] if bboxes.ndim == 1 else bboxes
+        scaled_bboxes = self._bbox_scaling(_bboxes, scale).astype(np.int32)
+        clipped_bbox = self._bbox_clip(scaled_bboxes, img.shape)
+
+        patches = []
+        for i in range(clipped_bbox.shape[0]):
+            x1, y1, x2, y2 = tuple(clipped_bbox[i, :])
+            if pad_fill is None:
+                patch = img[y1 : y2 + 1, x1 : x2 + 1, ...]
+            else:
+                _x1, _y1, _x2, _y2 = tuple(scaled_bboxes[i, :])
+                patch_h = _y2 - _y1 + 1
+                patch_w = _x2 - _x1 + 1
+                patch_shape = (patch_h, patch_w) if chn == 1 else (patch_h, patch_w, chn)
+                patch = np.array(pad_fill, dtype=img.dtype) * np.ones(patch_shape, dtype=img.dtype)
+                x_start = 0 if _x1 >= 0 else -_x1
+                y_start = 0 if _y1 >= 0 else -_y1
+                w = x2 - x1 + 1
+                h = y2 - y1 + 1
+                patch[y_start : y_start + h, x_start : x_start + w, ...] = img[y1 : y1 + h, x1 : x1 + w, ...]
+            patches.append(patch)
+
+        if bboxes.ndim == 1:
+            return patches[0]
+        return patches
+
+    def forward(self, *_inputs: T_OTXDataEntity) -> T_OTXDataEntity:
+        """Transform function to randomly resized crop images.
+
+        Args:
+            results (dict): Result dict from loading pipeline.
+
+        Returns:
+            dict: Randomly resized cropped results, 'img_shape'
+                key in result dict is updated according to crop size.
+        """
+        inputs = _inputs[0]
+        if (img := getattr(inputs, "image", None)) is not None:
+            img = to_np_image(img)
+            offset_h, offset_w, target_h, target_w = self.rand_crop_params(img)
+            bboxes = np.array(
+                [
+                    offset_w,
+                    offset_h,
+                    offset_w + target_w - 1,
+                    offset_h + target_h - 1,
+                ],
+            )
+            img = self._crop_img(img, bboxes=bboxes)
+            inputs.img_info = _crop_image_info(inputs.img_info, *img.shape[:2])
+
+            img = cv2.resize(
+                img,
+                tuple(self.scale[::-1]),
+                dst=None,
+                interpolation=self.cv2_interp_codes[self.interpolation],
+            )
+            if (masks := getattr(inputs, "gt_seg_map", None)) is not None:
+                masks = masks.numpy()
+                masks = self._crop_img(masks, bboxes=bboxes)
+                masks = cv2.resize(
+                    masks,
+                    tuple(self.scale[::-1]),
+                    dst=None,
+                    interpolation=self.cv2_interp_codes["nearest"],
+                )
+                inputs.gt_seg_map = torch.from_numpy(masks)  # type: ignore[attr-defined]
+
+            inputs.image = F.to_image(img)
+            inputs.img_info = _resize_image_info(inputs.img_info, img.shape[:2])
+        return inputs
+
+    def __repr__(self):
+        """Print the basic information of the transform.
+
+        Returns:
+            str: Formatted string.
+        """
+        repr_str = self.__class__.__name__ + f"(scale={self.scale}"
+        repr_str += ", crop_ratio_range="
+        repr_str += f"{tuple(round(s, 4) for s in self.crop_ratio_range)}"
+        repr_str += ", aspect_ratio_range="
+        repr_str += f"{tuple(round(r, 4) for r in self.aspect_ratio_range)}"
+        repr_str += f", max_attempts={self.max_attempts}"
+        repr_str += f", interpolation={self.interpolation}"
+        repr_str += f", backend={self.backend})"
+        return repr_str
+
+
 class RandomFlip(tvt_v2.Transform):
     """Implementation of mmdet.datasets.transforms.RandomFlip with torchvision format.
 

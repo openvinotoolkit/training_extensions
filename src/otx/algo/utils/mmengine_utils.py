@@ -1,7 +1,7 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
-"""Load Checkpoint functions."""
+"""This implementation replaces the functionality of mmengine utils."""
 # TODO(someone): Revisit mypy errors after deprecation of mmlab
 # mypy: ignore-errors
 
@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import os
 import re
-from collections import OrderedDict, namedtuple
+from collections import OrderedDict, abc, namedtuple
 from typing import Any
 from warnings import warn
 
@@ -159,6 +159,7 @@ def load_checkpoint_to_model(
     model: nn.Module,
     checkpoint: dict,
     strict: bool = False,
+    prefix: str = "",
 ) -> None:
     """Loads a checkpoint dictionary into a PyTorch model.
 
@@ -178,8 +179,9 @@ def load_checkpoint_to_model(
 
     # strip prefix of state_dict
     metadata = getattr(state_dict, "_metadata", OrderedDict())
-    for p, r in [(r"^module\.", "")]:
+    for p, r in [(r"^module\.", ""), (rf"^{prefix}\.", "")]:
         state_dict = OrderedDict({re.sub(p, r, k): v for k, v in state_dict.items()})
+
     # Keep metadata in state_dict
     state_dict._metadata = metadata  # noqa: SLF001
 
@@ -187,30 +189,42 @@ def load_checkpoint_to_model(
     load_state_dict(model, state_dict, strict)
 
 
-def normal_init(module: nn.Module, mean: float = 0, std: float = 1, bias: float = 0) -> None:
-    """Initialize the weights and biases of a module using a normal distribution.
+def is_seq_of(
+    seq: Any,  # noqa: ANN401
+    expected_type: type | tuple,
+    seq_type: type | None = None,
+) -> bool:
+    """Check whether it is a sequence of some type.
+
+    Copied from mmengine.utils.misc.is_seq_of
 
     Args:
-        module (nn.Module): The module to initialize.
-        mean (float): The mean of the normal distribution. Default is 0.
-        std (float): The standard deviation of the normal distribution. Default is 1.
-        bias (float): The bias value. Default is 0.
+        seq (Sequence): The sequence to be checked.
+        expected_type (type or tuple): Expected type of sequence items.
+        seq_type (type, optional): Expected sequence type. Defaults to None.
+
+    Returns:
+        bool: Return True if ``seq`` is valid else False.
+
+    Examples:
+        >>> from mmengine.utils import is_seq_of
+        >>> seq = ['a', 'b', 'c']
+        >>> is_seq_of(seq, str)
+        True
+        >>> is_seq_of(seq, int)
+        False
     """
-    if hasattr(module, "weight") and module.weight is not None:
-        nn.init.normal_(module.weight, mean, std)
-    if hasattr(module, "bias") and module.bias is not None:
-        nn.init.constant_(module.bias, bias)
+    exp_seq_type = abc.Sequence if seq_type is None else seq_type
+    if not isinstance(seq, exp_seq_type):
+        return False
+    return all(isinstance(item, expected_type) for item in seq)
 
 
-def constant_init(module: nn.Module, val: float, bias: float = 0) -> None:
-    """Initialize the weights and biases of a module with constant values.
+def is_tuple_of(seq: Any, expected_type: type | tuple) -> bool:  # noqa: ANN401
+    """Check whether it is a tuple of some type.
 
-    Args:
-        module (nn.Module): The module to initialize.
-        val (float): The constant value to initialize the weights with.
-        bias (float, optional): The constant value to initialize the biases with. Defaults to 0.
+    Copied from mmengine.utils.misc.is_tuple_of
+
+    A partial method of :func:`is_seq_of`.
     """
-    if hasattr(module, "weight") and module.weight is not None:
-        nn.init.constant_(module.weight, val)
-    if hasattr(module, "bias") and module.bias is not None:
-        nn.init.constant_(module.bias, bias)
+    return is_seq_of(seq, expected_type, seq_type=tuple)

@@ -4,5 +4,6 @@
 """Custom backbone implementations for detection task."""
 
 from . import pytorchcv_backbones
+from .csp_darknet import CSPDarknet
 
-__all__ = ["pytorchcv_backbones"]
+__all__ = ["pytorchcv_backbones", "CSPDarknet"]
