@@ -247,29 +247,32 @@
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Literal</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">from</span> <span class="nn">datumaro.components.annotation</span> <span class="kn">import</span> <span class="n">Bbox</span>
 <span class="kn">from</span> <span class="nn">mmengine.structures</span> <span class="kn">import</span> <span class="n">InstanceData</span>
 <span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">nn</span>
+<span class="kn">from</span> <span class="nn">torchvision</span> <span class="kn">import</span> <span class="n">tv_tensors</span>
 
 <span class="kn">from</span> <span class="nn">otx.algo.detection.backbones.pytorchcv_backbones</span> <span class="kn">import</span> <span class="n">_build_model_including_pytorchcv</span>
 <span class="kn">from</span> <span class="nn">otx.algo.detection.heads.ssd_head</span> <span class="kn">import</span> <span class="n">SSDHead</span>
 <span class="kn">from</span> <span class="nn">otx.algo.utils.mmconfig</span> <span class="kn">import</span> <span class="n">read_mmconfig</span>
 <span class="kn">from</span> <span class="nn">otx.algo.utils.support_otx_v1</span> <span class="kn">import</span> <span class="n">OTXv1Helper</span>
 <span class="kn">from</span> <span class="nn">otx.core.config.data</span> <span class="kn">import</span> <span class="n">TileConfig</span>
+<span class="kn">from</span> <span class="nn">otx.core.data.entity.base</span> <span class="kn">import</span> <span class="n">OTXBatchLossEntity</span>
+<span class="kn">from</span> <span class="nn">otx.core.data.entity.detection</span> <span class="kn">import</span> <span class="n">DetBatchDataEntity</span><span class="p">,</span> <span class="n">DetBatchPredEntity</span>
 <span class="kn">from</span> <span class="nn">otx.core.exporter.base</span> <span class="kn">import</span> <span class="n">OTXModelExporter</span>
 <span class="kn">from</span> <span class="nn">otx.core.exporter.native</span> <span class="kn">import</span> <span class="n">OTXNativeModelExporter</span>
 <span class="kn">from</span> <span class="nn">otx.core.metrics.mean_ap</span> <span class="kn">import</span> <span class="n">MeanAPCallable</span>
 <span class="kn">from</span> <span class="nn">otx.core.model.base</span> <span class="kn">import</span> <span class="n">DefaultOptimizerCallable</span><span class="p">,</span> <span class="n">DefaultSchedulerCallable</span>
-<span class="kn">from</span> <span class="nn">otx.core.model.detection</span> <span class="kn">import</span> <span class="n">MMDetCompatibleModel</span>
+<span class="kn">from</span> <span class="nn">otx.core.model.detection</span> <span class="kn">import</span> <span class="n">ExplainableOTXDetModel</span>
 <span class="kn">from</span> <span class="nn">otx.core.model.utils.mmdet</span> <span class="kn">import</span> <span class="n">DetDataPreprocessor</span>
 <span class="kn">from</span> <span class="nn">otx.core.schedulers</span> <span class="kn">import</span> <span class="n">LRSchedulerListCallable</span>
 <span class="kn">from</span> <span class="nn">otx.core.types.label</span> <span class="kn">import</span> <span class="n">LabelInfoTypes</span>
 <span class="kn">from</span> <span class="nn">otx.core.utils.build</span> <span class="kn">import</span> <span class="n">modify_num_classes</span>
-<span class="kn">from</span> <span class="nn">otx.core.utils.config</span> <span class="kn">import</span> <span class="n">convert_conf_to_mmconfig_dict</span>
+<span class="kn">from</span> <span class="nn">otx.core.utils.config</span> <span class="kn">import</span> <span class="n">convert_conf_to_mmconfig_dict</span><span class="p">,</span> <span class="n">inplace_num_classes</span>
 <span class="kn">from</span> <span class="nn">otx.core.utils.utils</span> <span class="kn">import</span> <span class="n">get_mean_std_from_data_processing</span>
 
 <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
-    <span class="kn">import</span> <span class="nn">torch</span>
     <span class="kn">from</span> <span class="nn">lightning.pytorch.cli</span> <span class="kn">import</span> <span class="n">LRSchedulerCallable</span><span class="p">,</span> <span class="n">OptimizerCallable</span>
     <span class="kn">from</span> <span class="nn">mmengine</span> <span class="kn">import</span> <span class="n">ConfigDict</span>
     <span class="kn">from</span> <span class="nn">omegaconf</span> <span class="kn">import</span> <span class="n">DictConfig</span>
@@ -405,8 +408,7 @@
 
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">inputs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
-        <span class="n">data_samples</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">InstanceData</span><span class="p">],</span>
+        <span class="n">entity</span><span class="p">:</span> <span class="n">DetBatchDataEntity</span><span class="p">,</span>
         <span class="n">mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;tensor&quot;</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n">InstanceData</span><span class="p">]</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;The unified entry for a forward process in both training and test.</span>
@@ -439,19 +441,18 @@
 <span class="sd">            - If ``mode=&quot;loss&quot;``, return a dict of tensor.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;loss&quot;</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">loss</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">data_samples</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">loss</span><span class="p">(</span><span class="n">entity</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;predict&quot;</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">data_samples</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">entity</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;tensor&quot;</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_forward</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">data_samples</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_forward</span><span class="p">(</span><span class="n">entity</span><span class="p">)</span>
 
         <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Invalid mode </span><span class="si">{</span><span class="n">mode</span><span class="si">}</span><span class="s2">. Only supports loss, predict and tensor mode&quot;</span>
         <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">loss</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">batch_inputs</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
-        <span class="n">batch_data_samples</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">InstanceData</span><span class="p">],</span>
+        <span class="n">entity</span><span class="p">:</span> <span class="n">DetBatchDataEntity</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span> <span class="o">|</span> <span class="nb">list</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate losses from a batch of inputs and data samples.</span>
 
@@ -465,13 +466,12 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            dict: A dictionary of loss components.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">extract_feat</span><span class="p">(</span><span class="n">batch_inputs</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">bbox_head</span><span class="o">.</span><span class="n">loss</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">batch_data_samples</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">extract_feat</span><span class="p">(</span><span class="n">entity</span><span class="o">.</span><span class="n">images</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">bbox_head</span><span class="o">.</span><span class="n">loss</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">entity</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">batch_inputs</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
-        <span class="n">batch_data_samples</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">InstanceData</span><span class="p">],</span>
+        <span class="n">entity</span><span class="p">:</span> <span class="n">DetBatchDataEntity</span><span class="p">,</span>
         <span class="n">rescale</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">InstanceData</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Predict results from a batch of inputs and data samples with post-processing.</span>
@@ -497,16 +497,16 @@
 <span class="sd">                - bboxes (Tensor): Has a shape (num_instances, 4),</span>
 <span class="sd">                    the last dimension 4 arrange as (x1, y1, x2, y2).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">extract_feat</span><span class="p">(</span><span class="n">batch_inputs</span><span class="p">)</span>
-        <span class="n">results_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bbox_head</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">batch_data_samples</span><span class="p">,</span> <span class="n">rescale</span><span class="o">=</span><span class="n">rescale</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">add_pred_to_datasample</span><span class="p">(</span><span class="n">batch_data_samples</span><span class="p">,</span> <span class="n">results_list</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">extract_feat</span><span class="p">(</span><span class="n">entity</span><span class="o">.</span><span class="n">images</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">bbox_head</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">entity</span><span class="p">,</span> <span class="n">rescale</span><span class="o">=</span><span class="n">rescale</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">export</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">batch_inputs</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
-        <span class="n">batch_data_samples</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">InstanceData</span><span class="p">],</span>
+        <span class="n">batch_img_metas</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">],</span>
         <span class="n">rescale</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">InstanceData</span><span class="p">]:</span>
+        <span class="n">explain_mode</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">InstanceData</span><span class="p">]</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Predict results from a batch of inputs and data samples with post-processing.</span>
 
 <span class="sd">        Args:</span>
@@ -530,8 +530,20 @@
 <span class="sd">                - bboxes (Tensor): Has a shape (num_instances, 4),</span>
 <span class="sd">                    the last dimension 4 arrange as (x1, y1, x2, y2).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">explain_mode</span><span class="p">:</span>
+            <span class="n">backbone_feat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">extract_feat</span><span class="p">(</span><span class="n">batch_inputs</span><span class="p">)</span>
+            <span class="n">bbox_head_feat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bbox_head</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="n">backbone_feat</span><span class="p">)</span>
+            <span class="n">feature_vector</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">feature_vector_fn</span><span class="p">(</span><span class="n">backbone_feat</span><span class="p">)</span>
+            <span class="n">saliency_map</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">explain_fn</span><span class="p">(</span><span class="n">bbox_head_feat</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">bboxes</span><span class="p">,</span> <span class="n">labels</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bbox_head</span><span class="o">.</span><span class="n">export</span><span class="p">(</span><span class="n">backbone_feat</span><span class="p">,</span> <span class="n">batch_img_metas</span><span class="p">,</span> <span class="n">rescale</span><span class="o">=</span><span class="n">rescale</span><span class="p">)</span>
+            <span class="k">return</span> <span class="p">{</span>
+                <span class="s2">&quot;bboxes&quot;</span><span class="p">:</span> <span class="n">bboxes</span><span class="p">,</span>
+                <span class="s2">&quot;labels&quot;</span><span class="p">:</span> <span class="n">labels</span><span class="p">,</span>
+                <span class="s2">&quot;feature_vector&quot;</span><span class="p">:</span> <span class="n">feature_vector</span><span class="p">,</span>
+                <span class="s2">&quot;saliency_map&quot;</span><span class="p">:</span> <span class="n">saliency_map</span><span class="p">,</span>
+            <span class="p">}</span>
         <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">extract_feat</span><span class="p">(</span><span class="n">batch_inputs</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">bbox_head</span><span class="o">.</span><span class="n">export</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">batch_data_samples</span><span class="p">,</span> <span class="n">rescale</span><span class="o">=</span><span class="n">rescale</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">bbox_head</span><span class="o">.</span><span class="n">export</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">batch_img_metas</span><span class="p">,</span> <span class="n">rescale</span><span class="o">=</span><span class="n">rescale</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_forward</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -567,39 +579,6 @@
             <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">neck</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">x</span>
 
-    <span class="k">def</span> <span class="nf">add_pred_to_datasample</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
-        <span class="n">data_samples</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">InstanceData</span><span class="p">],</span>
-        <span class="n">results_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">InstanceData</span><span class="p">],</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">InstanceData</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add predictions to `InstanceData`.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            data_samples (list[:obj:`InstanceData`], optional): A batch of</span>
-<span class="sd">                data samples that contain annotations and predictions.</span>
-<span class="sd">            results_list (list[:obj:`InstanceData`]): Detection results of</span>
-<span class="sd">                each image.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            list[:obj:`InstanceData`]: Detection results of the</span>
-<span class="sd">            input images. Each InstanceData usually contain</span>
-<span class="sd">            &#39;pred_instances&#39;. And the ``pred_instances`` usually</span>
-<span class="sd">            contains following keys.</span>
-
-<span class="sd">                - scores (Tensor): Classification scores, has a shape</span>
-<span class="sd">                    (num_instance, )</span>
-<span class="sd">                - labels (Tensor): Labels of bboxes, has a shape</span>
-<span class="sd">                    (num_instances, ).</span>
-<span class="sd">                - bboxes (Tensor): Has a shape (num_instances, 4),</span>
-<span class="sd">                    the last dimension 4 arrange as (x1, y1, x2, y2).</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="kn">from</span> <span class="nn">mmdet.models.utils</span> <span class="kn">import</span> <span class="n">samplelist_boxtype2tensor</span>
-
-        <span class="k">for</span> <span class="n">data_sample</span><span class="p">,</span> <span class="n">pred_instances</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">data_samples</span><span class="p">,</span> <span class="n">results_list</span><span class="p">):</span>
-            <span class="n">data_sample</span><span class="o">.</span><span class="n">pred_instances</span> <span class="o">=</span> <span class="n">pred_instances</span>
-        <span class="n">samplelist_boxtype2tensor</span><span class="p">(</span><span class="n">data_samples</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">data_samples</span>
-
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">with_neck</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;bool: whether the detector has a neck.&quot;&quot;&quot;</span>
@@ -627,7 +606,7 @@
 
 <div class="viewcode-block" id="SSD">
 <a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.algo.detection.html#otx.algo.detection.SSD">[docs]</a>
-<span class="k">class</span> <span class="nc">SSD</span><span class="p">(</span><span class="n">MMDetCompatibleModel</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">SSD</span><span class="p">(</span><span class="n">ExplainableOTXDetModel</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Detecion model class for SSD.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
@@ -642,9 +621,11 @@
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">model_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;ssd_</span><span class="si">{</span><span class="n">variant</span><span class="si">}</span><span class="s2">&quot;</span>
         <span class="n">config</span> <span class="o">=</span> <span class="n">read_mmconfig</span><span class="p">(</span><span class="n">model_name</span><span class="o">=</span><span class="n">model_name</span><span class="p">)</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="n">inplace_num_classes</span><span class="p">(</span><span class="n">cfg</span><span class="o">=</span><span class="n">config</span><span class="p">,</span> <span class="n">num_classes</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_dispatch_label_info</span><span class="p">(</span><span class="n">label_info</span><span class="p">)</span><span class="o">.</span><span class="n">num_classes</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">config</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">load_from</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;load_from&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="n">label_info</span><span class="o">=</span><span class="n">label_info</span><span class="p">,</span>
-            <span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">,</span>
             <span class="n">optimizer</span><span class="o">=</span><span class="n">optimizer</span><span class="p">,</span>
             <span class="n">scheduler</span><span class="o">=</span><span class="n">scheduler</span><span class="p">,</span>
             <span class="n">metric</span><span class="o">=</span><span class="n">metric</span><span class="p">,</span>
@@ -663,6 +644,87 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_from</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">load_checkpoint</span><span class="p">(</span><span class="n">detector</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_from</span><span class="p">,</span> <span class="n">map_location</span><span class="o">=</span><span class="s2">&quot;cpu&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">detector</span>
+
+    <span class="k">def</span> <span class="nf">_customize_inputs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entity</span><span class="p">:</span> <span class="n">DetBatchDataEntity</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+        <span class="n">inputs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="n">inputs</span><span class="p">[</span><span class="s2">&quot;entity&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">entity</span>
+        <span class="n">inputs</span><span class="p">[</span><span class="s2">&quot;mode&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;loss&quot;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">training</span> <span class="k">else</span> <span class="s2">&quot;predict&quot;</span>
+
+        <span class="k">return</span> <span class="n">inputs</span>
+
+    <span class="k">def</span> <span class="nf">_customize_outputs</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">outputs</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">InstanceData</span><span class="p">]</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">,</span>
+        <span class="n">inputs</span><span class="p">:</span> <span class="n">DetBatchDataEntity</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DetBatchPredEntity</span> <span class="o">|</span> <span class="n">OTXBatchLossEntity</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">training</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">outputs</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">outputs</span><span class="p">)</span>
+
+            <span class="n">losses</span> <span class="o">=</span> <span class="n">OTXBatchLossEntity</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">outputs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                    <span class="n">losses</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
+                    <span class="n">losses</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Loss output should be list or torch.tensor but got {type(v)}&quot;</span>
+                    <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">losses</span>
+
+        <span class="n">scores</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">bboxes</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">labels</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">predictions</span> <span class="o">=</span> <span class="n">outputs</span><span class="p">[</span><span class="s2">&quot;predictions&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">outputs</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="k">else</span> <span class="n">outputs</span>
+        <span class="k">for</span> <span class="n">img_info</span><span class="p">,</span> <span class="n">prediction</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">inputs</span><span class="o">.</span><span class="n">imgs_info</span><span class="p">,</span> <span class="n">predictions</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">prediction</span><span class="p">,</span> <span class="n">InstanceData</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">prediction</span><span class="p">)</span>
+            <span class="n">scores</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">prediction</span><span class="o">.</span><span class="n">scores</span><span class="p">)</span>
+            <span class="n">bboxes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">tv_tensors</span><span class="o">.</span><span class="n">BoundingBoxes</span><span class="p">(</span>
+                    <span class="n">prediction</span><span class="o">.</span><span class="n">bboxes</span><span class="p">,</span>
+                    <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;XYXY&quot;</span><span class="p">,</span>
+                    <span class="n">canvas_size</span><span class="o">=</span><span class="n">img_info</span><span class="o">.</span><span class="n">ori_shape</span><span class="p">,</span>
+                <span class="p">),</span>
+            <span class="p">)</span>
+            <span class="n">labels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">prediction</span><span class="o">.</span><span class="n">labels</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">explain_mode</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">outputs</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Model output should be a dict, but got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">outputs</span><span class="p">)</span><span class="si">}</span><span class="s2">.&quot;</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="s2">&quot;feature_vector&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">outputs</span><span class="p">:</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;No feature vector in the model output.&quot;</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="s2">&quot;saliency_map&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">outputs</span><span class="p">:</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;No saliency maps in the model output.&quot;</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+            <span class="n">saliency_map</span> <span class="o">=</span> <span class="n">outputs</span><span class="p">[</span><span class="s2">&quot;saliency_map&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+            <span class="n">feature_vector</span> <span class="o">=</span> <span class="n">outputs</span><span class="p">[</span><span class="s2">&quot;feature_vector&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+
+            <span class="k">return</span> <span class="n">DetBatchPredEntity</span><span class="p">(</span>
+                <span class="n">batch_size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">outputs</span><span class="p">),</span>
+                <span class="n">images</span><span class="o">=</span><span class="n">inputs</span><span class="o">.</span><span class="n">images</span><span class="p">,</span>
+                <span class="n">imgs_info</span><span class="o">=</span><span class="n">inputs</span><span class="o">.</span><span class="n">imgs_info</span><span class="p">,</span>
+                <span class="n">scores</span><span class="o">=</span><span class="n">scores</span><span class="p">,</span>
+                <span class="n">bboxes</span><span class="o">=</span><span class="n">bboxes</span><span class="p">,</span>
+                <span class="n">labels</span><span class="o">=</span><span class="n">labels</span><span class="p">,</span>
+                <span class="n">saliency_map</span><span class="o">=</span><span class="n">saliency_map</span><span class="p">,</span>
+                <span class="n">feature_vector</span><span class="o">=</span><span class="n">feature_vector</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">DetBatchPredEntity</span><span class="p">(</span>
+            <span class="n">batch_size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">outputs</span><span class="p">),</span>
+            <span class="n">images</span><span class="o">=</span><span class="n">inputs</span><span class="o">.</span><span class="n">images</span><span class="p">,</span>
+            <span class="n">imgs_info</span><span class="o">=</span><span class="n">inputs</span><span class="o">.</span><span class="n">imgs_info</span><span class="p">,</span>
+            <span class="n">scores</span><span class="o">=</span><span class="n">scores</span><span class="p">,</span>
+            <span class="n">bboxes</span><span class="o">=</span><span class="n">bboxes</span><span class="p">,</span>
+            <span class="n">labels</span><span class="o">=</span><span class="n">labels</span><span class="p">,</span>
+        <span class="p">)</span>
 
 <div class="viewcode-block" id="SSD.setup">
 <a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.algo.detection.html#otx.algo.detection.SSD.setup">[docs]</a>
@@ -696,11 +758,13 @@
 
     <span class="k">def</span> <span class="nf">_get_new_anchors</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">:</span> <span class="n">OTXDataset</span><span class="p">,</span> <span class="n">anchor_generator</span><span class="p">:</span> <span class="n">SSDAnchorGeneratorClustered</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get new anchors for SSD from OTXDataset.&quot;&quot;&quot;</span>
-        <span class="kn">from</span> <span class="nn">mmdet.datasets.transforms</span> <span class="kn">import</span> <span class="n">Resize</span>
+        <span class="kn">from</span> <span class="nn">torchvision.transforms.v2._container</span> <span class="kn">import</span> <span class="n">Compose</span>
+
+        <span class="kn">from</span> <span class="nn">otx.core.data.transform_libs.torchvision</span> <span class="kn">import</span> <span class="n">Resize</span>
 
         <span class="n">target_wh</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">dataset</span><span class="o">.</span><span class="n">transforms</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
-            <span class="k">for</span> <span class="n">transform</span> <span class="ow">in</span> <span class="n">dataset</span><span class="o">.</span><span class="n">transforms</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">dataset</span><span class="o">.</span><span class="n">transforms</span><span class="p">,</span> <span class="n">Compose</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">transform</span> <span class="ow">in</span> <span class="n">dataset</span><span class="o">.</span><span class="n">transforms</span><span class="o">.</span><span class="n">transforms</span><span class="p">:</span>
                 <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">transform</span><span class="p">,</span> <span class="n">Resize</span><span class="p">):</span>
                     <span class="n">target_wh</span> <span class="o">=</span> <span class="n">transform</span><span class="o">.</span><span class="n">scale</span>
         <span class="k">if</span> <span class="n">target_wh</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -867,7 +931,7 @@
                 <span class="p">},</span>
                 <span class="s2">&quot;autograd_inlining&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
             <span class="p">},</span>
-            <span class="n">output_names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;feature_vector&quot;</span><span class="p">,</span> <span class="s2">&quot;saliency_map&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">explain_mode</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">output_names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;bboxes&quot;</span><span class="p">,</span> <span class="s2">&quot;labels&quot;</span><span class="p">,</span> <span class="s2">&quot;feature_vector&quot;</span><span class="p">,</span> <span class="s2">&quot;saliency_map&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">explain_mode</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
         <span class="p">)</span>
 
 <div class="viewcode-block" id="SSD.forward_for_tracing">
@@ -881,11 +945,8 @@
             <span class="s2">&quot;img_shape&quot;</span><span class="p">:</span> <span class="n">shape</span><span class="p">,</span>
             <span class="s2">&quot;scale_factor&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">),</span>
         <span class="p">}</span>
-        <span class="n">sample</span> <span class="o">=</span> <span class="n">InstanceData</span><span class="p">(</span>
-            <span class="n">metainfo</span><span class="o">=</span><span class="n">meta_info</span><span class="p">,</span>
-        <span class="p">)</span>
-        <span class="n">data_samples</span> <span class="o">=</span> <span class="p">[</span><span class="n">sample</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">export</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">data_samples</span><span class="p">)</span></div>
+        <span class="n">meta_info_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">meta_info</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">export</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">meta_info_list</span><span class="p">,</span> <span class="n">explain_mode</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">explain_mode</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="SSD.on_load_checkpoint">

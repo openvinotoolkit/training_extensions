@@ -268,12 +268,12 @@
 <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
     <span class="kn">from</span> <span class="nn">lightning.pytorch.cli</span> <span class="kn">import</span> <span class="n">LRSchedulerCallable</span><span class="p">,</span> <span class="n">OptimizerCallable</span>
     <span class="kn">from</span> <span class="nn">mmdet.models.data_preprocessors</span> <span class="kn">import</span> <span class="n">DetDataPreprocessor</span>
-    <span class="kn">from</span> <span class="nn">mmdet.models.detectors</span> <span class="kn">import</span> <span class="n">SingleStageDetector</span>
-    <span class="kn">from</span> <span class="nn">mmdet.structures</span> <span class="kn">import</span> <span class="n">OptSampleList</span>
     <span class="kn">from</span> <span class="nn">model_api.models.utils</span> <span class="kn">import</span> <span class="n">DetectionResult</span>
     <span class="kn">from</span> <span class="nn">omegaconf</span> <span class="kn">import</span> <span class="n">DictConfig</span>
     <span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">nn</span>
     <span class="kn">from</span> <span class="nn">torchmetrics</span> <span class="kn">import</span> <span class="n">Metric</span>
+
+    <span class="kn">from</span> <span class="nn">otx.algo.detection.ssd</span> <span class="kn">import</span> <span class="n">SingleStageDetector</span>
 
 
 <div class="viewcode-block" id="OTXDetectionModel">
@@ -463,7 +463,6 @@
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_customize_inputs</span> <span class="o">!=</span> <span class="n">ExplainableOTXDetModel</span><span class="o">.</span><span class="n">_customize_inputs</span>
             <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">_forward_explain_detection</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">inputs</span><span class="p">)</span>
         <span class="p">)</span>
-
         <span class="k">return</span> <span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_customize_outputs</span><span class="p">(</span><span class="n">outputs</span><span class="p">,</span> <span class="n">inputs</span><span class="p">)</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_customize_outputs</span> <span class="o">!=</span> <span class="n">ExplainableOTXDetModel</span><span class="o">.</span><span class="n">_customize_outputs</span>
@@ -474,8 +473,7 @@
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_forward_explain_detection</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">:</span> <span class="n">SingleStageDetector</span><span class="p">,</span>
-        <span class="n">inputs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
-        <span class="n">data_samples</span><span class="p">:</span> <span class="n">OptSampleList</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">entity</span><span class="p">:</span> <span class="n">DetBatchDataEntity</span><span class="p">,</span>
         <span class="n">mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;tensor&quot;</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Forward func of the BaseDetector instance, which located in is in ExplainableOTXDetModel().model.&quot;&quot;&quot;</span>
@@ -484,7 +482,7 @@
         <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">():</span>
             <span class="n">param</span><span class="o">.</span><span class="n">requires_grad</span> <span class="o">=</span> <span class="kc">False</span>
 
-        <span class="n">backbone_feat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">extract_feat</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
+        <span class="n">backbone_feat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">extract_feat</span><span class="p">(</span><span class="n">entity</span><span class="o">.</span><span class="n">images</span><span class="p">)</span>
         <span class="n">bbox_head_feat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bbox_head</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="n">backbone_feat</span><span class="p">)</span>
 
         <span class="c1"># Process the first output form bbox detection head: classification scores</span>
@@ -492,19 +490,13 @@
         <span class="n">saliency_map</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">explain_fn</span><span class="p">(</span><span class="n">bbox_head_feat</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 
         <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;predict&quot;</span><span class="p">:</span>
-            <span class="n">results_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bbox_head</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">backbone_feat</span><span class="p">,</span> <span class="n">data_samples</span><span class="p">)</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">results_list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
-                <span class="c1"># Export case</span>
-                <span class="n">predictions</span> <span class="o">=</span> <span class="n">results_list</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="c1"># Predict case, InstanceData or List[InstanceData]</span>
-                <span class="n">predictions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">add_pred_to_datasample</span><span class="p">(</span><span class="n">data_samples</span><span class="p">,</span> <span class="n">results_list</span><span class="p">)</span>
+            <span class="n">predictions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bbox_head</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">backbone_feat</span><span class="p">,</span> <span class="n">entity</span><span class="p">)</span>
 
         <span class="k">elif</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;tensor&quot;</span><span class="p">:</span>
             <span class="n">predictions</span> <span class="o">=</span> <span class="n">bbox_head_feat</span>
         <span class="k">elif</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;loss&quot;</span><span class="p">:</span>
             <span class="c1"># Temporary condition to pass undetermined &quot;test_forward_train&quot; test, values aren&#39;t used</span>
-            <span class="n">predictions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bbox_head</span><span class="o">.</span><span class="n">loss</span><span class="p">(</span><span class="n">backbone_feat</span><span class="p">,</span> <span class="n">data_samples</span><span class="p">)[</span><span class="s2">&quot;loss_cls&quot;</span><span class="p">]</span>
+            <span class="n">predictions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bbox_head</span><span class="o">.</span><span class="n">loss</span><span class="p">(</span><span class="n">backbone_feat</span><span class="p">,</span> <span class="n">entity</span><span class="p">)[</span><span class="s2">&quot;loss_cls&quot;</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;Invalid mode &quot;</span><span class="si">{</span><span class="n">mode</span><span class="si">}</span><span class="s1">&quot;.&#39;</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
