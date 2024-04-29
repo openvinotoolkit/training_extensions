@@ -295,3 +295,21 @@ def empty_instances(
             results.masks = im_mask
         results_list.append(results)
     return results_list
+
+
+def dynamic_topk(input: Tensor, k: int, dim: int | None = None, largest: bool = True, sorted: bool = True) -> Tensor:  # noqa: A002
+    """Cast k to tensor and make sure k is smaller than input.shape[dim].
+
+    Reference : https://github.com/open-mmlab/mmdeploy/blob/v1.3.1/mmdeploy/pytorch/functions/topk.py#L13-L34
+    """
+    if dim is None:
+        dim = int(input.ndim - 1)
+    size = input.shape[dim]
+    if not isinstance(k, torch.Tensor):
+        k = torch.tensor(k, device=input.device, dtype=torch.long)
+    # Always keep topk op for dynamic input
+    if isinstance(size, torch.Tensor):
+        # size would be treated as cpu tensor, trick to avoid that.
+        size = k.new_zeros(()) + size
+    k = torch.where(k < size, k, size)
+    return torch.topk(input, k, dim=dim, largest=largest, sorted=sorted)

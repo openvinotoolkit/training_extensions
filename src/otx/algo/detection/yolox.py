@@ -22,7 +22,7 @@ from otx.core.config.data import TileConfig
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.detection import DetBatchDataEntity, DetBatchPredEntity
 from otx.core.exporter.base import OTXModelExporter
-from otx.core.exporter.mmdeploy import MMdeployExporter
+from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.metrics.mean_ap import MeanAPCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
 from otx.core.model.detection import ExplainableOTXDetModel
@@ -37,7 +37,7 @@ if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
     from mmengine import ConfigDict
     from omegaconf import DictConfig
-    from torch import nn
+    from torch import Tensor, nn
 
     from otx.core.metrics import MetricCallable
 
@@ -250,11 +250,22 @@ class OTXYOLOX(ExplainableOTXDetModel):
             swap_rgb = False
 
         with self.export_model_forward_context():
-            return MMdeployExporter(
-                model_builder=self._create_model,
-                model_cfg=deepcopy(self.config),
-                deploy_cfg=deploy_cfg,
-                test_pipeline=self._make_fake_test_pipeline(),
+            return OTXNativeModelExporter(
+                via_onnx=True,
+                onnx_export_configuration={
+                    "input_names": ["image"],
+                    "output_names": ["boxes", "labels"],
+                    "export_params": True,
+                    "opset_version": 11,
+                    "dynamic_axes": {
+                        "image": {0: "batch", 2: "height", 3: "width"},
+                        "boxes": {0: "batch", 1: "num_dets"},
+                        "labels": {0: "batch", 1: "num_dets"},
+                    },
+                    "keep_initializers_as_inputs": False,
+                    "verbose": False,
+                    "autograd_inlining": False,
+                },
                 task_level_export_parameters=self._export_parameters,
                 input_size=self.image_size,
                 mean=mean,
@@ -264,6 +275,21 @@ class OTXYOLOX(ExplainableOTXDetModel):
                 swap_rgb=swap_rgb,
                 output_names=["feature_vector", "saliency_map"] if self.explain_mode else None,
             )
+
+    def forward_for_tracing(self, inputs: Tensor) -> list[InstanceData]:
+        """Forward function for export."""
+        shape = (int(inputs.shape[2]), int(inputs.shape[3]))
+        meta_info = {
+            "pad_shape": shape,
+            "batch_input_shape": shape,
+            "img_shape": shape,
+            "scale_factor": (1.0, 1.0),
+        }
+        sample = InstanceData(
+            metainfo=meta_info,
+        )
+        data_samples = [sample] * len(inputs)
+        return self.model.export(inputs, data_samples)
 
     def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.model.") -> dict:
         """Load the previous OTX ckpt according to OTX2.0."""

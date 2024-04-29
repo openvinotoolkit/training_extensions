@@ -33,10 +33,7 @@ def test_list_models_pattern() -> None:
         "efficientnet_v2",
         "maskrcnn_efficientnetb2b",
         "maskrcnn_efficientnetb2b_tile",
-        "tv_efficientnet_b0",
-        "tv_efficientnet_b1",
         "tv_efficientnet_b3",
-        "tv_efficientnet_b4",
         "tv_efficientnet_v2_l",
     ]
     assert sorted(models) == sorted(target)

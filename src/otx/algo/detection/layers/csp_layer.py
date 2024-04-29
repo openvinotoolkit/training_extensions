@@ -11,6 +11,7 @@ from typing import TYPE_CHECKING
 import torch
 from torch import Tensor, nn
 
+from otx.algo.modules.base_module import BaseModule
 from otx.algo.modules.conv_module import ConvModule
 from otx.algo.modules.depthwise_separable_conv_module import DepthwiseSeparableConvModule
 
@@ -20,7 +21,7 @@ if TYPE_CHECKING:
     from mmengine import ConfigDict
 
 
-class DarknetBottleneck(nn.Module):
+class DarknetBottleneck(BaseModule):
     """The basic bottleneck block used in Darknet.
 
     Each ResBlock consists of two ConvModules and the input is added to the
@@ -94,7 +95,7 @@ class DarknetBottleneck(nn.Module):
         return out
 
 
-class CSPNeXtBlock(nn.Module):
+class CSPNeXtBlock(BaseModule):
     """The basic bottleneck block used in CSPNeXt.
 
     Args:
@@ -168,7 +169,7 @@ class CSPNeXtBlock(nn.Module):
         return out
 
 
-class CSPLayer(nn.Module):
+class CSPLayer(BaseModule):
     """Cross Stage Partial Layer.
 
     Args:
