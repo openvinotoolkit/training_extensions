@@ -412,7 +412,7 @@ class MinIoURandomCrop(tvt_v2.Transform):
 
                 # adjust the img no matter whether the gt is empty before crop
                 img = img[patch[1] : patch[3], patch[0] : patch[2]]
-                inputs.image = F.to_image(img)
+                inputs.image = img
                 inputs.img_info = _crop_image_info(inputs.img_info, *img.shape[:2])
                 return inputs
 
@@ -501,7 +501,7 @@ class Resize(tvt_v2.Transform):
 
             img = cv2.resize(img, scale, interpolation=self.cv2_interp_codes[self.interpolation])
 
-            inputs.image = F.to_image(img)
+            inputs.image = img
             inputs.img_info = _resize_image_info(inputs.img_info, img.shape[:2])
 
             scale_factor = (scale[0] / img_shape[1], scale[1] / img_shape[0])  # TODO (sungchul): ticket no. 138831
@@ -801,7 +801,7 @@ class RandomResizedCrop(tvt_v2.Transform):
                 )
                 inputs.gt_seg_map = torch.from_numpy(masks)  # type: ignore[attr-defined]
 
-            inputs.image = F.to_image(img)
+            inputs.image = img
             inputs.img_info = _resize_image_info(inputs.img_info, img.shape[:2])
         return inputs
 
@@ -918,7 +918,7 @@ class RandomFlip(tvt_v2.Transform):
             img = to_np_image(inputs.image)
             img = np.ascontiguousarray(flip_image(img, direction=cur_dir))
 
-            inputs.image = F.to_image(img)
+            inputs.image = img
 
             # flip bboxes
             if hasattr(inputs, "bboxes") and (bboxes := getattr(inputs, "bboxes", None)) is not None:
@@ -1072,7 +1072,7 @@ class PhotoMetricDistortion(tvt_v2.Transform):
             if swap_flag:
                 img = img[..., swap_value]
 
-            inputs.image = F.to_image(img)  # f32
+            inputs.image = img  # f32
         return inputs
 
     def __repr__(self) -> str:
@@ -1171,7 +1171,7 @@ class RandomAffine(tvt_v2.Transform):
         warp_matrix = self._get_random_homography_matrix(height, width)
 
         img = cv2.warpPerspective(img, warp_matrix, dsize=(width, height), borderValue=self.border_val)
-        inputs.image = F.to_image(img)
+        inputs.image = img
         inputs.img_info = _resize_image_info(inputs.img_info, img.shape[:2])
 
         bboxes = inputs.bboxes
@@ -1380,7 +1380,7 @@ class CachedMosaic(tvt_v2.Transform):
         mosaic_bboxes = mosaic_bboxes[inside_inds]
         mosaic_bboxes_labels = mosaic_bboxes_labels[inside_inds]
 
-        inputs.image = F.to_image(mosaic_img)
+        inputs.image = mosaic_img
         inputs.img_info = _resized_crop_image_info(
             inputs.img_info,
             mosaic_img.shape[:2],
@@ -1670,7 +1670,7 @@ class CachedMixUp(tvt_v2.Transform):
         mixup_gt_bboxes = mixup_gt_bboxes[inside_inds]
         mixup_gt_bboxes_labels = mixup_gt_bboxes_labels[inside_inds]
 
-        inputs.image = F.to_image(mixup_img.astype(np.uint8))
+        inputs.image = mixup_img.astype(np.uint8)
         inputs.img_info = _resized_crop_image_info(
             inputs.img_info,
             mixup_img.shape[:2],
@@ -1741,7 +1741,7 @@ class YOLOXHSVRandomAug(tvt_v2.Transform):
         img_hsv[..., 2] = np.clip(img_hsv[..., 2] + hsv_gains[2], 0, 255)
         cv2.cvtColor(img_hsv.astype(img.dtype), cv2.COLOR_HSV2BGR, dst=img)
 
-        inputs.image = F.to_image(img)
+        inputs.image = img
         return inputs
 
     def __repr__(self):
@@ -1862,7 +1862,7 @@ class Pad(tvt_v2.Transform):
             value=pad_val,
         )
 
-        inputs.image = F.to_image(padded_img)
+        inputs.image = padded_img
         inputs.img_info = _pad_image_info(inputs.img_info, padding)
         return inputs
 

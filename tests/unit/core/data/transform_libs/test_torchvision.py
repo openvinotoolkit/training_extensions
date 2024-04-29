@@ -28,6 +28,7 @@ from otx.core.data.transform_libs.torchvision import (
 from otx.core.data.transform_libs.utils import overlap_bboxes
 from torch import LongTensor, Tensor
 from torchvision import tv_tensors
+from torchvision.transforms.v2 import functional as F  # noqa: N812
 
 
 class MockFrame:
@@ -105,7 +106,7 @@ class TestMinIoURandomCrop:
             patch = tv_tensors.wrap(torch.tensor([[0, 0, *results.img_info.img_shape]]), like=results.bboxes)
             ious = overlap_bboxes(patch, results.bboxes)
             assert torch.all(ious >= mode)
-            assert results.image.shape[-2:] == results.img_info.img_shape
+            assert results.image.shape[:2] == results.img_info.img_shape
             assert results.img_info.scale_factor is None
 
 
@@ -130,11 +131,11 @@ class TestResize:
 
         assert results.img_info.ori_shape == (112, 224)
         if keep_ratio:
-            assert results.image.shape == (3, 224, 448)
+            assert results.image.shape == (224, 448, 3)
             assert results.img_info.img_shape == (224, 448)
             assert results.img_info.scale_factor == (2.0, 2.0)
         else:
-            assert results.image.shape == (3, 448, 448)
+            assert results.image.shape == (448, 448, 3)
             assert results.img_info.img_shape == (448, 448)
             assert results.img_info.scale_factor == (2.0, 4.0)
 
@@ -149,7 +150,7 @@ class TestResize:
         results = resize(deepcopy(det_data_entity))
 
         assert results.img_info.ori_shape == (112, 224)
-        assert results.image.shape == (3, 224, 448)
+        assert results.image.shape == (224, 448, 3)
         assert results.img_info.img_shape == (224, 448)
         assert results.img_info.scale_factor == (2.0, 2.0)
         assert torch.all(results.bboxes.data == det_data_entity.bboxes.data)
@@ -164,7 +165,7 @@ class TestRandomFlip:
         """Test forward."""
         results = random_flip.forward(deepcopy(det_data_entity))
 
-        assert torch.all(results.image.flip(-1) == det_data_entity.image)
+        assert torch.all(F.to_image(results.image).flip(-1) == det_data_entity.image)
 
         bboxes_results = results.bboxes.clone()
         bboxes_results[..., 0] = results.img_info.img_shape[1] - results.bboxes[..., 2]
@@ -181,7 +182,7 @@ class TestPhotoMetricDistortion:
         """Test forward."""
         results = photo_metric_distortion(deepcopy(det_data_entity))
 
-        assert results.image.dtype == torch.float32
+        assert results.image.dtype == np.float32
 
 
 class TestRandomAffine:
@@ -205,11 +206,11 @@ class TestRandomAffine:
         """Test forward."""
         results = random_affine(deepcopy(det_data_entity))
 
-        assert results.image.shape[-2:] == (112, 224)
+        assert results.image.shape[:2] == (112, 224)
         assert results.labels.shape[0] == results.bboxes.shape[0]
         assert results.labels.dtype == torch.int64
         assert results.bboxes.dtype == torch.float32
-        assert results.img_info.img_shape == results.image.shape[-2:]
+        assert results.img_info.img_shape == results.image.shape[:2]
 
 
 class TestCachedMosaic:
@@ -273,7 +274,7 @@ class TestYOLOXHSVRandomAug:
         """Test forward."""
         results = yolox_hsv_random_aug(deepcopy(det_data_entity))
 
-        assert results.image.shape[-2:] == (112, 224)
+        assert results.image.shape[:2] == (112, 224)
         assert results.labels.shape[0] == results.bboxes.shape[0]
         assert results.labels.dtype == torch.int64
         assert results.bboxes.dtype == torch.float32
@@ -286,25 +287,25 @@ class TestPad:
 
         results = transform(deepcopy(det_data_entity))
 
-        assert results.image.shape[-2:] == (200, 250)
+        assert results.image.shape[:2] == (200, 250)
 
         # test pad img/gt_masks with size_divisor
         transform = Pad(size_divisor=11)
 
         results = transform(deepcopy(det_data_entity))
 
-        assert results.image.shape[-2:] == (121, 231)
+        assert results.image.shape[:2] == (121, 231)
 
         # test pad img/gt_masks with pad_to_square
         transform = Pad(pad_to_square=True)
 
         results = transform(deepcopy(det_data_entity))
 
-        assert results.image.shape[-2:] == (224, 224)
+        assert results.image.shape[:2] == (224, 224)
 
         # test pad img/gt_masks with pad_to_square and size_divisor
         transform = Pad(pad_to_square=True, size_divisor=11)
 
         results = transform(deepcopy(det_data_entity))
 
-        assert results.image.shape[-2:] == (231, 231)
+        assert results.image.shape[:2] == (231, 231)
