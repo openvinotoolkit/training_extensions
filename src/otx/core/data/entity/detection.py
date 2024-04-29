@@ -8,6 +8,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
+import numpy as np
+import torch
 from torchvision import tv_tensors
 
 from otx.core.data.entity.base import (
@@ -81,6 +83,11 @@ class DetBatchDataEntity(OTXBatchDataEntity[DetDataEntity]):
             Collated `DetBatchDataEntity`
         """
         batch_data = super().collate_fn(entities, stack_images=stack_images)
+        batch_pad_shape = cls._get_pad_shape(batch_data)
+        batch_input_shape = tuple(batch_data.images[0].size()[-2:])
+        for info, pad_shape in zip(batch_data.imgs_info, batch_pad_shape):
+            info.pad_shape = pad_shape
+            info.batch_input_shape = batch_input_shape
         return DetBatchDataEntity(
             batch_size=batch_data.batch_size,
             images=batch_data.images,
@@ -99,6 +106,34 @@ class DetBatchDataEntity(OTXBatchDataEntity[DetDataEntity]):
                 labels=[label.pin_memory() for label in self.labels],
             )
         )
+
+    @staticmethod
+    def _get_pad_shape(
+        data: OTXBatchDataEntity,
+        pad_size_divisor: int = 1,
+    ) -> list[tuple[int, int]]:
+        """Get the pad_shape of each image based on data and pad_size_divisor."""
+        _batch_inputs = data.images
+        # Process data with `pseudo_collate`.
+        if isinstance(_batch_inputs, list):
+            batch_pad_shape = []
+            for ori_input in _batch_inputs:
+                pad_h = int(np.ceil(ori_input.shape[1] / pad_size_divisor)) * pad_size_divisor
+                pad_w = int(np.ceil(ori_input.shape[2] / pad_size_divisor)) * pad_size_divisor
+                batch_pad_shape.append((pad_h, pad_w))
+        # Process data with `default_collate`.
+        elif isinstance(_batch_inputs, torch.Tensor):
+            pad_h = int(np.ceil(_batch_inputs.shape[2] / pad_size_divisor)) * pad_size_divisor
+            pad_w = int(np.ceil(_batch_inputs.shape[3] / pad_size_divisor)) * pad_size_divisor
+            batch_pad_shape = [(pad_h, pad_w)] * _batch_inputs.shape[0]
+        else:
+            msg = (
+                "Output of `cast_data` should be a dict "
+                "or a tuple with inputs and data_samples, but got"
+                f"{type(data)}: {data}",
+            )
+            raise TypeError(msg)
+        return batch_pad_shape
 
 
 @dataclass

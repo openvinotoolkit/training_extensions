@@ -8,7 +8,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import torch
-from mmdet.registry import MODELS
 from torch import Tensor
 
 from otx.algo.detection.utils.utils import images_to_levels, multi_apply
@@ -17,7 +16,6 @@ if TYPE_CHECKING:
     from mmengine.structures import InstanceData
 
 
-@MODELS.register_module()
 class ClassIncrementalMixin:
     """Head class for Ignore labels."""
 
