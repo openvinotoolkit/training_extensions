@@ -3,10 +3,12 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 """Implementation of CSPLayer copied from mmdet.models.layers.csp_layer.py."""
 
+from __future__ import annotations
+
 import copy
+from typing import TYPE_CHECKING
 
 import torch
-from mmdet.utils import ConfigType, OptConfigType, OptMultiConfig  # TODO (sungchul): remove types
 from torch import Tensor, nn
 
 from otx.algo.modules.base_module import BaseModule
@@ -14,6 +16,9 @@ from otx.algo.modules.conv_module import ConvModule
 from otx.algo.modules.depthwise_separable_conv_module import DepthwiseSeparableConvModule
 
 from .channel_attention_layer import ChannelAttention
+
+if TYPE_CHECKING:
+    from mmengine import ConfigDict
 
 
 class DarknetBottleneck(BaseModule):
@@ -48,10 +53,10 @@ class DarknetBottleneck(BaseModule):
         expansion: float = 0.5,
         add_identity: bool = True,
         use_depthwise: bool = False,
-        conv_cfg: OptConfigType = None,
-        norm_cfg: ConfigType = None,
-        act_cfg: ConfigType = None,
-        init_cfg: OptMultiConfig = None,
+        conv_cfg: ConfigDict | dict | None = None,
+        norm_cfg: ConfigDict | dict | None = None,
+        act_cfg: ConfigDict | dict | None = None,
+        init_cfg: ConfigDict | dict | list[ConfigDict] | list[dict] | None = None,
     ) -> None:
         if norm_cfg is None:
             norm_cfg = {"type": "BN", "momentum": 0.03, "eps": 0.001}
@@ -122,10 +127,10 @@ class CSPNeXtBlock(BaseModule):
         add_identity: bool = True,
         use_depthwise: bool = False,
         kernel_size: int = 5,
-        conv_cfg: OptConfigType = None,
-        norm_cfg: ConfigType = None,
-        act_cfg: ConfigType = None,
-        init_cfg: OptMultiConfig = None,
+        conv_cfg: ConfigDict | dict | None = None,
+        norm_cfg: ConfigDict | dict | None = None,
+        act_cfg: ConfigDict | dict | None = None,
+        init_cfg: ConfigDict | dict | list[ConfigDict] | list[dict] | None = None,
     ) -> None:
         if norm_cfg is None:
             norm_cfg = {"type": "BN", "momentum": 0.03, "eps": 0.001}
@@ -202,10 +207,10 @@ class CSPLayer(BaseModule):
         use_depthwise: bool = False,
         use_cspnext_block: bool = False,
         channel_attention: bool = False,
-        conv_cfg: OptConfigType = None,
-        norm_cfg: ConfigType = None,
-        act_cfg: ConfigType = None,
-        init_cfg: OptMultiConfig = None,
+        conv_cfg: ConfigDict | dict | None = None,
+        norm_cfg: ConfigDict | dict | None = None,
+        act_cfg: ConfigDict | dict | None = None,
+        init_cfg: ConfigDict | dict | list[ConfigDict] | list[dict] | None = None,
     ) -> None:
         if norm_cfg is None:
             norm_cfg = {"type": "BN", "momentum": 0.03, "eps": 0.001}

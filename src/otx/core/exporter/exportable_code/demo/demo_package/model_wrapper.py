@@ -8,8 +8,8 @@ from __future__ import annotations
 from enum import Enum
 from typing import TYPE_CHECKING, Any, NamedTuple
 
-from openvino.model_api.adapters import OpenvinoAdapter, create_core
-from openvino.model_api.models import Model
+from model_api.adapters import OpenvinoAdapter, create_core
+from model_api.models import Model
 
 from .utils import get_model_path, get_parameters
 
@@ -17,7 +17,7 @@ if TYPE_CHECKING:
     from pathlib import Path
 
     import numpy as np
-    from openvino.model_api.tilers import DetectionTiler, InstanceSegmentationTiler
+    from model_api.tilers import DetectionTiler, InstanceSegmentationTiler
 
 
 class TaskType(str, Enum):

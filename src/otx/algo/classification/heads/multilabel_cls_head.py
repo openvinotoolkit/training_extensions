@@ -136,7 +136,7 @@ class MultiLabelClsHead(BaseModule):
     # Copy from mmpretrain.models.heads.MultiLabelClsHead
     # ------------------------------------------------------------------------ #
 
-    def predict(self, feats: tuple[torch.Tensor]) -> torch.Tensor:
+    def predict(self, feats: tuple[torch.Tensor], **kwargs) -> torch.Tensor:
         """Inference without augmentation.
 
         Args:

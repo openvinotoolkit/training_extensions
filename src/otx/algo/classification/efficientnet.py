@@ -95,6 +95,7 @@ class EfficientNetForMulticlassCls(OTXMulticlassClsModel):
         return {
             "images": inputs.stacked_images,
             "labels": torch.cat(inputs.labels, dim=0),
+            "imgs_info": inputs.imgs_info,
             "mode": mode,
         }
 

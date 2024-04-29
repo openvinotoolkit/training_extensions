@@ -147,7 +147,7 @@ class HierarchicalClsHead(BaseModule):
     def predict(
         self,
         feats: tuple[torch.Tensor],
-        # labels: list[torch.Tensor | None] | None = None,
+        **kwargs,
     ) -> dict[str, torch.Tensor]:
         """Inference without augmentation.
 
@@ -167,7 +167,6 @@ class HierarchicalClsHead(BaseModule):
     def _get_predictions(
         self,
         cls_scores: torch.Tensor,
-        # labels: list[torch.Tensor | None] | None = None,
     ) -> dict[str, torch.Tensor]:
         """Post-process the output of head.
 

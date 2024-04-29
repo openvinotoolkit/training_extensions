@@ -7,9 +7,9 @@ from typing import Any
 
 import numpy as np
 import pytest
-from openvino.model_api.adapters.openvino_adapter import OpenvinoAdapter
-from openvino.model_api.models import ImageModel, SegmentationModel
-from openvino.model_api.models.types import NumericalValue
+from model_api.adapters.openvino_adapter import OpenvinoAdapter
+from model_api.models import ImageModel, SegmentationModel
+from model_api.models.types import NumericalValue
 from otx.algo.visual_prompting.openvino_models import VisualPromptingDecoder, VisualPromptingImageEncoder
 
 
