@@ -21,11 +21,9 @@ from otx.algo.detection.losses import CrossSigmoidFocalLoss, accuracy
 from otx.algo.detection.utils.structures import SamplingResult
 from otx.algo.detection.utils.utils import empty_instances, multi_apply, unpack_gt_instances
 from otx.algo.instance_segmentation.mmdet.models.bbox_heads.convfc_bbox_head import Shared2FCBBoxHead
-from otx.algo.instance_segmentation.mmdet.models.mask_heads.fcn_mask_head import FCNMaskHead
 from otx.algo.instance_segmentation.mmdet.structures.bbox import bbox2roi
 
 from .base_roi_head import BaseRoIHead
-from .roi_extractors import SingleRoIExtractor
 
 if TYPE_CHECKING:
     from mmdet.structures.det_data_sample import DetDataSample
@@ -50,49 +48,6 @@ class StandardRoIHead(BaseRoIHead):
 
         self.train_cfg["sampler"].pop("type")
         self.bbox_sampler = RandomSampler(**self.train_cfg["sampler"], context=self)
-
-    def init_bbox_head(self, bbox_roi_extractor: ConfigDict | dict, bbox_head: ConfigDict | dict) -> None:
-        """Initialize box head and box roi extractor.
-
-        Args:
-            bbox_roi_extractor (dict or ConfigDict): Config of box
-                roi extractor.
-            bbox_head (dict or ConfigDict): Config of box in box head.
-        """
-        if bbox_roi_extractor["type"] != SingleRoIExtractor.__name__:
-            msg = f"bbox_roi_extractor should be SingleRoIExtractor, but got {bbox_roi_extractor['type']}"
-            raise ValueError(msg)
-
-        if bbox_head["type"] != CustomConvFCBBoxHead.__name__:
-            msg = f"bbox_head should be CustomConvFCBBoxHead, but got {bbox_head['type']}"
-            raise ValueError(msg)
-
-        bbox_roi_extractor.pop("type")
-        bbox_head.pop("type")
-
-        self.bbox_roi_extractor = SingleRoIExtractor(**bbox_roi_extractor)
-        self.bbox_head = CustomConvFCBBoxHead(**bbox_head)
-
-    def init_mask_head(self, mask_roi_extractor: ConfigDict | dict, mask_head: ConfigDict | dict) -> None:
-        """Initialize mask head and mask roi extractor.
-
-        Args:
-            mask_roi_extractor (dict or ConfigDict): Config of mask roi
-                extractor.
-            mask_head (dict or ConfigDict): Config of mask in mask head.
-        """
-        if mask_roi_extractor["type"] != SingleRoIExtractor.__name__:
-            msg = f"mask_roi_extractor should be SingleRoIExtractor, but got {mask_roi_extractor['type']}"
-            raise ValueError(msg)
-        mask_roi_extractor.pop("type")
-        self.mask_roi_extractor = SingleRoIExtractor(**mask_roi_extractor)
-
-        if mask_head["type"] != FCNMaskHead.__name__:
-            msg = f"mask_head should be FCNMaskHead, but got {mask_head['type']}"
-            raise ValueError(msg)
-
-        mask_head.pop("type")
-        self.mask_head = FCNMaskHead(**mask_head)
 
     def forward(
         self,

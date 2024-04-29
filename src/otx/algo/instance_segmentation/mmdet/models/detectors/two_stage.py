@@ -8,17 +8,13 @@
 from __future__ import annotations
 
 import copy
-import warnings
 from typing import TYPE_CHECKING
 
 import torch
-from torch import Tensor
+from torch import Tensor, nn
 
-from otx.algo.detection.backbones.pytorchcv_backbones import _build_pytorchcv_model
-from otx.algo.instance_segmentation.mmdet.models.backbones import ResNet, SwinTransformer
 from otx.algo.instance_segmentation.mmdet.models.custom_roi_head import CustomRoIHead
 from otx.algo.instance_segmentation.mmdet.models.dense_heads import RPNHead
-from otx.algo.instance_segmentation.mmdet.models.necks import FPN
 
 from .base import BaseDetector
 
@@ -36,10 +32,10 @@ class TwoStageDetector(BaseDetector):
 
     def __init__(
         self,
-        backbone: ConfigDict | dict,
-        neck: ConfigDict | dict,
-        rpn_head: ConfigDict | dict,
-        roi_head: ConfigDict | dict,
+        backbone: nn.Module,
+        neck: nn.Module,
+        rpn_head: RPNHead,
+        roi_head: CustomRoIHead,
         train_cfg: ConfigDict | dict,
         test_cfg: ConfigDict | dict,
         data_preprocessor: ConfigDict | dict | None = None,
@@ -48,52 +44,10 @@ class TwoStageDetector(BaseDetector):
     ) -> None:
         super().__init__(data_preprocessor=data_preprocessor, init_cfg=init_cfg)
 
-        backbone_type = backbone.pop("type")
-        if backbone_type == ResNet.__name__:
-            self.backbone = ResNet(**backbone)
-        elif backbone_type == SwinTransformer.__name__:
-            self.backbone = SwinTransformer(**backbone)
-        else:
-            self.backbone = _build_pytorchcv_model(backbone_type, **backbone)
-
-        if neck["type"] != FPN.__name__:
-            msg = f"neck type must be {FPN.__name__}, but got {neck['type']}"
-            raise ValueError(msg)
-        # pop out type for FPN
-        neck.pop("type")
-        self.neck = FPN(**neck)
-
-        rpn_train_cfg = train_cfg["rpn"]
-        rpn_head_ = rpn_head.copy()
-        rpn_head_.update(train_cfg=rpn_train_cfg, test_cfg=test_cfg["rpn"])
-        rpn_head_num_classes = rpn_head_.get("num_classes", None)
-        if rpn_head_num_classes is None:
-            rpn_head_.update(num_classes=1)
-        elif rpn_head_num_classes != 1:
-            warnings.warn(
-                "The `num_classes` should be 1 in RPN, but get "
-                f"{rpn_head_num_classes}, please set "
-                "rpn_head.num_classes = 1 in your config file.",
-                stacklevel=2,
-            )
-            rpn_head_.update(num_classes=1)
-        if rpn_head_["type"] != RPNHead.__name__:
-            msg = f"rpn_head type must be {RPNHead.__name__}, but got {rpn_head_['type']}"
-            raise ValueError(msg)
-        # pop out type for RPNHead
-        rpn_head_.pop("type")
-        self.rpn_head = RPNHead(**rpn_head_)
-
-        # update train and test cfg here for now
-        rcnn_train_cfg = train_cfg["rcnn"]
-        roi_head.update(train_cfg=rcnn_train_cfg)
-        roi_head.update(test_cfg=test_cfg["rcnn"])
-        if roi_head["type"] != CustomRoIHead.__name__:
-            msg = f"roi_head type must be {CustomRoIHead.__name__}, but got {roi_head['type']}"
-            raise ValueError(msg)
-        # pop out type for RoIHead
-        roi_head.pop("type")
-        self.roi_head = CustomRoIHead(**roi_head)
+        self.backbone = backbone
+        self.neck = neck
+        self.rpn_head = rpn_head
+        self.roi_head = roi_head
 
         self.train_cfg = train_cfg
         self.test_cfg = test_cfg

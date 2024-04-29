@@ -61,7 +61,12 @@ class RPNHead(AnchorHead):
         if num_classes != 1:
             msg = "num_classes must be 1 for RPNHead"
             raise ValueError(msg)
-        super().__init__(num_classes=num_classes, in_channels=in_channels, init_cfg=init_cfg, **kwargs)
+        super().__init__(
+            num_classes=num_classes,
+            in_channels=in_channels,
+            init_cfg=init_cfg,
+            **kwargs,
+        )
 
     def _init_layers(self) -> None:
         """Initialize layers of the head."""

@@ -16,10 +16,6 @@ from mmengine.structures import InstanceData
 from torch import Tensor, nn
 from torch.nn.modules.utils import _pair
 
-from otx.algo.detection.heads.delta_xywh_bbox_coder import DeltaXYWHBBoxCoder
-from otx.algo.detection.losses.cross_entropy_loss import CrossEntropyLoss
-from otx.algo.detection.losses.cross_focal_loss import CrossSigmoidFocalLoss
-from otx.algo.detection.losses.smooth_l1_loss import L1Loss
 from otx.algo.detection.ops.nms import multiclass_nms
 from otx.algo.detection.utils.utils import empty_instances
 from otx.algo.instance_segmentation.mmdet.models.layers import multiclass_nms_torch
@@ -38,9 +34,9 @@ class BBoxHead(BaseModule):
         in_channels: int,
         roi_feat_size: int,
         num_classes: int,
-        bbox_coder: dict,
-        loss_cls: dict,
-        loss_bbox: dict,
+        bbox_coder: nn.Module,
+        loss_cls: nn.Module,
+        loss_bbox: nn.Module,
         with_avg_pool: bool = False,
         with_cls: bool = True,
         with_reg: bool = True,
@@ -64,29 +60,9 @@ class BBoxHead(BaseModule):
         self.reg_class_agnostic = reg_class_agnostic
         self.reg_decoded_bbox = reg_decoded_bbox
 
-        if bbox_coder.get("type") == "DeltaXYWHBBoxCoder":
-            bbox_coder.pop("type")
-            self.bbox_coder = DeltaXYWHBBoxCoder(**bbox_coder)
-        else:
-            msg = f"Unsupported bbox_coder type: {bbox_coder.get('type')}"
-            raise ValueError(msg)
-
-        if loss_cls.get("type") == CrossEntropyLoss.__name__:
-            loss_cls.pop("type")
-            self.loss_cls = CrossEntropyLoss(**loss_cls)
-        elif loss_cls.get("type") == CrossSigmoidFocalLoss.__name__:
-            loss_cls.pop("type")
-            self.loss_cls = CrossSigmoidFocalLoss(**loss_cls)
-        else:
-            msg = f"Unsupported loss_cls type: {loss_cls.get('type')}"
-            raise ValueError(msg)
-
-        if loss_bbox.get("type") == "L1Loss":
-            loss_bbox.pop("type")
-            self.loss_bbox = L1Loss(**loss_bbox)
-        else:
-            msg = f"Unsupported loss_bbox type: {loss_bbox.get('type')}"
-            raise ValueError(msg)
+        self.bbox_coder = bbox_coder
+        self.loss_cls = loss_cls
+        self.loss_bbox = loss_bbox
 
         in_channels = self.in_channels
         if self.with_avg_pool:

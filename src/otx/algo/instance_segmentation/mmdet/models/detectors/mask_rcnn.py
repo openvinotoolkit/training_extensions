@@ -14,6 +14,7 @@ if TYPE_CHECKING:
     import torch
     from mmdet.structures.det_data_sample import DetDataSample
     from mmengine.config import ConfigDict
+    from torch import nn
 
 
 class MaskRCNN(TwoStageDetector):
@@ -21,12 +22,12 @@ class MaskRCNN(TwoStageDetector):
 
     def __init__(
         self,
-        backbone: ConfigDict,
-        rpn_head: ConfigDict,
-        roi_head: ConfigDict,
+        backbone: nn.Module,
+        neck: nn.Module,
+        rpn_head: nn.Module,
+        roi_head: nn.Module,
         train_cfg: ConfigDict,
         test_cfg: ConfigDict,
-        neck: ConfigDict | dict | None = None,
         data_preprocessor: ConfigDict | dict | None = None,
         init_cfg: ConfigDict | dict | list[ConfigDict | dict] | None = None,
         **kwargs,

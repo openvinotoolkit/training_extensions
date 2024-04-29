@@ -6,6 +6,7 @@
 from __future__ import annotations
 
 import warnings
+from copy import deepcopy
 from typing import TYPE_CHECKING
 
 import torch
@@ -18,14 +19,10 @@ from otx.algo.detection.heads.base_sampler import PseudoSampler, RandomSampler
 from otx.algo.detection.heads.custom_anchor_generator import AnchorGenerator
 from otx.algo.detection.heads.delta_xywh_bbox_coder import DeltaXYWHBBoxCoder
 from otx.algo.detection.heads.max_iou_assigner import MaxIoUAssigner
-from otx.algo.detection.losses.cross_entropy_loss import CrossEntropyLoss
-from otx.algo.detection.losses.cross_focal_loss import CrossSigmoidFocalLoss
-from otx.algo.detection.losses.iou_loss import GIoULoss
-from otx.algo.detection.losses.smooth_l1_loss import L1Loss
 from otx.algo.detection.utils.utils import anchor_inside_flags, images_to_levels, multi_apply, unmap
 
 if TYPE_CHECKING:
-    from mmengine import ConfigDict
+    from omegaconf import DictConfig
 
 
 # This class and its supporting functions below lightly adapted from the mmdet AnchorHead available at:
@@ -56,21 +53,21 @@ class AnchorHead(BaseDenseHead):
         self,
         num_classes: int,
         in_channels: tuple[int, ...] | int,
-        anchor_generator: dict,
-        bbox_coder: dict,
-        loss_cls: dict,
-        loss_bbox: dict,
-        train_cfg: ConfigDict | dict,
+        anchor_generator: AnchorGenerator,
+        bbox_coder: DeltaXYWHBBoxCoder,
+        loss_cls: nn.Module,
+        loss_bbox: nn.Module,
+        train_cfg: DictConfig,
         feat_channels: int = 256,
         reg_decoded_bbox: bool = False,
-        test_cfg: ConfigDict | dict | None = None,
-        init_cfg: ConfigDict | dict | list[ConfigDict] | list[dict] | None = None,
+        test_cfg: DictConfig | None = None,
+        init_cfg: dict | list[dict] | None = None,
     ) -> None:
         super().__init__(init_cfg=init_cfg)
         self.in_channels = in_channels
         self.num_classes = num_classes
         self.feat_channels = feat_channels
-        self.use_sigmoid_cls = loss_cls.get("use_sigmoid", False)
+        self.use_sigmoid_cls = loss_cls.use_sigmoid
         if self.use_sigmoid_cls:
             self.cls_out_channels = num_classes
         else:
@@ -80,54 +77,30 @@ class AnchorHead(BaseDenseHead):
             msg = f"num_classes={num_classes} is too small"
             raise ValueError(msg)
         self.reg_decoded_bbox = reg_decoded_bbox
-        # TODO(Eugene): merge Jaeguk's PR work
-        # https://github.com/openvinotoolkit/training_extensions/pull/3412
-        if bbox_coder.get("type") == "DeltaXYWHBBoxCoder":
-            bbox_coder.pop("type")
-            self.bbox_coder = DeltaXYWHBBoxCoder(**bbox_coder)
-        else:
-            self.bbox_coder = DeltaXYWHBBoxCoder(**bbox_coder)
 
-        if loss_cls.get("type") == CrossSigmoidFocalLoss.__name__:
-            loss_cls.pop("type")
-            self.loss_cls = CrossSigmoidFocalLoss(**loss_cls)
-        elif loss_cls.get("type") == CrossEntropyLoss.__name__:
-            loss_cls.pop("type")
-            self.loss_cls = CrossEntropyLoss(**loss_cls)
-        else:
-            self.loss_cls = CrossSigmoidFocalLoss(**loss_cls)
-
-        if loss_bbox["type"] == "L1Loss":
-            loss_bbox.pop("type")
-            self.loss_bbox = L1Loss(**loss_bbox)
-        else:
-            self.loss_bbox = GIoULoss(**loss_bbox)
-
+        self.bbox_coder = bbox_coder
+        self.loss_cls = loss_cls
+        self.loss_bbox = loss_bbox
         self.train_cfg = train_cfg
         self.test_cfg = test_cfg
-
-        self.assigner: ATSSAssigner | MaxIoUAssigner
-        self.sampler: PseudoSampler | RandomSampler
         if self.train_cfg:
             if self.train_cfg["assigner"].get("type") == "MaxIoUAssigner":
-                self.train_cfg["assigner"].pop("type")
-                self.assigner = MaxIoUAssigner(**self.train_cfg["assigner"])
+                assigner_cfg = deepcopy(self.train_cfg["assigner"])
+                assigner_cfg.pop("type")
+                self.assigner = MaxIoUAssigner(**assigner_cfg)
             else:
                 self.assigner = ATSSAssigner(**self.train_cfg["assigner"])
 
             if self.train_cfg["sampler"].get("type") == "RandomSampler":
-                self.train_cfg["sampler"].pop("type")
-                self.sampler = RandomSampler(**self.train_cfg["sampler"], context=self)
+                sampler_cfg = deepcopy(self.train_cfg["sampler"])
+                sampler_cfg.pop("type")
+                self.sampler = RandomSampler(**sampler_cfg, context=self)
             else:
                 self.sampler = PseudoSampler(context=self)  # type: ignore[no-untyped-call]
 
         self.fp16_enabled = False
 
-        if anchor_generator.get("type") == "AnchorGenerator":
-            anchor_generator.pop("type")
-            self.prior_generator = AnchorGenerator(**anchor_generator)
-        else:
-            self.prior_generator = AnchorGenerator(**anchor_generator)
+        self.prior_generator = anchor_generator
 
         # Usually the numbers of anchors for each level are the same
         # except SSD detectors. So it is an int in the most dense

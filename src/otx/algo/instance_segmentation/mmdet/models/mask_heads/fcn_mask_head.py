@@ -16,7 +16,6 @@ import torch.nn.functional
 from torch import Tensor, nn
 from torch.nn.modules.utils import _pair
 
-from otx.algo.detection.losses.cross_entropy_loss import CrossEntropyLoss
 from otx.algo.detection.utils.structures import SamplingResult
 from otx.algo.detection.utils.utils import empty_instances
 from otx.algo.instance_segmentation.mmdet.structures.mask import mask_target
@@ -39,6 +38,7 @@ class FCNMaskHead(BaseModule):
 
     def __init__(
         self,
+        loss_mask: nn.Module,
         num_convs: int = 4,
         roi_feat_size: int = 14,
         in_channels: int = 256,
@@ -48,7 +48,6 @@ class FCNMaskHead(BaseModule):
         class_agnostic: int = False,
         conv_cfg: ConfigDict | dict | None = None,
         norm_cfg: ConfigDict | dict | None = None,
-        loss_mask: ConfigDict | dict | None = None,
         init_cfg: ConfigDict | dict | list[ConfigDict | dict] | None = None,
     ) -> None:
         if init_cfg is not None:
@@ -68,13 +67,7 @@ class FCNMaskHead(BaseModule):
         self.norm_cfg = norm_cfg
         self.predictor_cfg = {"type": "Conv"}
 
-        if loss_mask is not None:
-            if loss_mask.get("type") == CrossEntropyLoss.__name__:
-                loss_mask.pop("type")
-                self.loss_mask = CrossEntropyLoss(**loss_mask)
-            else:
-                msg = f"Unsupported loss_mask type: {loss_mask.get('type')}"
-                raise ValueError(msg)
+        self.loss_mask = loss_mask
 
         self.convs = ModuleList()
         for i in range(self.num_convs):

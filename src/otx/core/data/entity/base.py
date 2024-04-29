@@ -607,9 +607,19 @@ class OTXBatchDataEntity(Generic[T_OTXDataEntity]):
         images = [entity.image for entity in entities]
         like = next(iter(images))
 
+        # TODO(Eugene): revert this changes as it caused accuracy drop on inst-seg in export
+        if stack_images and not all(like.shape == entity.image.shape for entity in entities):  # type: ignore[union-attr]
+            msg = (
+                "You set stack_images as True, but not all images in the batch has same shape. "
+                "In this case, we cannot stack images. Some tasks, e.g., detection, "
+                "can have different image shapes among samples in the batch. However, if it is not your intention, "
+                "consider setting stack_images as False in the config."
+            )
+            stack_images = False
+
         return OTXBatchDataEntity(
             batch_size=batch_size,
-            images=tv_tensors.wrap(cls.stack_batch(images), like=like) if stack_images else images,
+            images=tv_tensors.wrap(stack(images, dim=0), like=like) if stack_images else images,
             imgs_info=[entity.img_info for entity in entities],
         )
 
@@ -625,7 +635,8 @@ class OTXBatchDataEntity(Generic[T_OTXDataEntity]):
             return self.images
 
         like = next(iter(self.images))
-        return tv_tensors.wrap(stack(self.images), like=like)
+        # TODO(Eugene): revert this changes as it caused accuracy drop on inst-seg in export
+        return tv_tensors.wrap(stack(self.images, dim=0), like=like)
 
     @staticmethod
     # TODO(someone): Pad size divisior and pad value should be configurable
