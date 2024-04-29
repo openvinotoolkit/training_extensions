@@ -3,7 +3,7 @@
 """Test of ClassIncrementalMixin."""
 
 import torch
-from otx.algo.detection.atss import ATSS
+from otx.algo.detection.atss import MobileNetV2ATSS
 
 
 class MockGTInstance:
@@ -13,7 +13,7 @@ class MockGTInstance:
 
 class TestClassIncrementalMixin:
     def test_ignore_label(self) -> None:
-        atss = ATSS(3, "mobilenetv2")
+        atss = MobileNetV2ATSS(3)
         atss_head = atss.model.bbox_head
 
         cls_scores = [
