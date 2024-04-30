@@ -11,11 +11,8 @@ from abc import ABCMeta, abstractmethod
 from typing import TYPE_CHECKING
 
 import torch
-
-# TODO(Eugene): replace mmcv.sigmoid_focal_loss with torchvision
-# https://github.com/openvinotoolkit/training_extensions/pull/3281
-from mmcv.ops import RoIAlign
 from torch import Tensor, nn
+from torchvision.ops import RoIAlign
 
 from otx.algo.modules.base_module import BaseModule
 
@@ -77,6 +74,7 @@ class BaseRoIExtractor(BaseModule, metaclass=ABCMeta):
                     spatial_scale=1 / s,
                     output_size=roi_layer.output_size,
                     sampling_ratio=roi_layer.sampling_ratio,
+                    aligned=roi_layer.aligned,
                 )
                 for s in featmap_strides
             ],

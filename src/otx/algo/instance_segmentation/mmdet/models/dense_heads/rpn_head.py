@@ -130,18 +130,23 @@ class RPNHead(AnchorHead):
         outputs = unpack_gt_instances(batch_data_samples)
         (batch_gt_instances, batch_gt_instances_ignore, batch_img_metas) = outputs
 
-        outs = self(x)
+        cls_scores, bbox_preds = self(x)
 
-        loss_inputs = (*outs, batch_gt_instances, batch_img_metas, batch_gt_instances_ignore)
-        losses = self.loss_by_feat(*loss_inputs)
+        losses = self.loss_by_feat(
+            cls_scores,
+            bbox_preds,
+            batch_gt_instances,
+            batch_img_metas,
+            batch_gt_instances_ignore,
+        )
 
-        predictions = self.predict_by_feat(*outs, batch_img_metas=batch_img_metas, cfg=proposal_cfg)
+        predictions = self.predict_by_feat(cls_scores, bbox_preds, batch_img_metas=batch_img_metas, cfg=proposal_cfg)
         return losses, predictions
 
     def predict(
         self,
         x: tuple[Tensor, ...],
-        batch_data_samples: list[DetDataSample],
+        batch_data_samples: list[DetDataSample],  # type: ignore[override]
         rescale: bool = False,
     ) -> list[InstanceData]:
         """Forward-prop of the detection head and predict detection results on the features of the upstream network.
@@ -161,9 +166,9 @@ class RPNHead(AnchorHead):
         """
         batch_img_metas = [data_samples.metainfo for data_samples in batch_data_samples]
 
-        outs = self(x)
+        cls_scores, bbox_preds = self(x)
 
-        return self.predict_by_feat(*outs, batch_img_metas=batch_img_metas, rescale=rescale)
+        return self.predict_by_feat(cls_scores, bbox_preds, batch_img_metas=batch_img_metas, rescale=rescale)
 
     def loss_by_feat(
         self,
@@ -367,8 +372,8 @@ class RPNHead(AnchorHead):
         self,
         cls_scores: list[Tensor],
         bbox_preds: list[Tensor],
-        batch_img_metas: list[dict],
         score_factors: list[Tensor] | None = None,
+        batch_img_metas: list[dict] | None = None,
         cfg: ConfigDict | None = None,
         rescale: bool = False,
         with_nms: bool = True,
@@ -458,7 +463,7 @@ class RPNHead(AnchorHead):
         batch_mlvl_bboxes = self.bbox_coder.decode_export(
             batch_mlvl_anchors,
             batch_mlvl_bboxes,
-            max_shape=img_metas[0]["img_shape"],
+            max_shape=img_metas[0]["img_shape"],  # type: ignore[index]
         )
         # ignore background class
         if not self.use_sigmoid_cls:

@@ -147,7 +147,7 @@ class SingleRoIExtractor(BaseRoIExtractor):
         rois = rois.type_as(feats[0])
         out_size = self.roi_layers[0].output_size
         num_levels = len(feats)
-        roi_feats = feats[0].new_zeros(rois.size(0), self.out_channels, *out_size)
+        roi_feats = feats[0].new_zeros(rois.size(0), self.out_channels, out_size, out_size)
 
         if num_levels == 1:
             if len(rois) == 0:
@@ -189,7 +189,8 @@ class SingleRoIExtractor(BaseRoIExtractor):
         SingleRoIExtractorOpenVINO.origin_output = origin_output
         torch._C._set_tracing_state(state)  # noqa: SLF001
 
-        output_size = self.roi_layers[0].output_size[0]
+        # output_size = self.roi_layers[0].output_size[0]
+        output_size = self.roi_layers[0].output_size
         featmap_strides = self.featmap_strides
         sample_num = self.roi_layers[0].sampling_ratio
 

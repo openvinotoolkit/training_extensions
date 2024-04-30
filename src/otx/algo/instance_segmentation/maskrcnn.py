@@ -7,9 +7,9 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from mmcv.ops import RoIAlign
 from mmengine.structures import InstanceData
 from omegaconf import DictConfig
+from torchvision.ops import RoIAlign
 
 from otx.algo.detection.backbones.pytorchcv_backbones import _build_model_including_pytorchcv
 from otx.algo.detection.heads.anchor_generator import AnchorGenerator
@@ -295,7 +295,12 @@ class MaskRCNNResNet50(MMDetMaskRCNN):
             bbox_roi_extractor=SingleRoIExtractor(
                 featmap_strides=[4, 8, 16, 32],
                 out_channels=256,
-                roi_layer=RoIAlign(output_size=7, sampling_ratio=0),
+                roi_layer=RoIAlign(
+                    output_size=7,
+                    sampling_ratio=0,
+                    aligned=True,
+                    spatial_scale=1.0,
+                ),
             ),
             bbox_head=CustomConvFCBBoxHead(
                 num_classes=num_classes,
@@ -313,7 +318,12 @@ class MaskRCNNResNet50(MMDetMaskRCNN):
             mask_roi_extractor=SingleRoIExtractor(
                 featmap_strides=[4, 8, 16, 32],
                 out_channels=256,
-                roi_layer=RoIAlign(output_size=14, sampling_ratio=0),
+                roi_layer=RoIAlign(
+                    output_size=14,
+                    sampling_ratio=0,
+                    aligned=True,
+                    spatial_scale=1.0,
+                ),
             ),
             mask_head=FCNMaskHead(
                 conv_out_channels=256,
@@ -471,7 +481,12 @@ class MaskRCNNEfficientNet(MMDetMaskRCNN):
             bbox_roi_extractor=SingleRoIExtractor(
                 featmap_strides=[4, 8, 16, 32],
                 out_channels=80,
-                roi_layer=RoIAlign(output_size=7, sampling_ratio=0),
+                roi_layer=RoIAlign(
+                    output_size=7,
+                    sampling_ratio=0,
+                    aligned=True,
+                    spatial_scale=1.0,
+                ),
             ),
             bbox_head=CustomConvFCBBoxHead(
                 num_classes=num_classes,
@@ -489,7 +504,12 @@ class MaskRCNNEfficientNet(MMDetMaskRCNN):
             mask_roi_extractor=SingleRoIExtractor(
                 featmap_strides=[4, 8, 16, 32],
                 out_channels=80,
-                roi_layer=RoIAlign(output_size=14, sampling_ratio=0),
+                roi_layer=RoIAlign(
+                    output_size=14,
+                    sampling_ratio=0,
+                    aligned=True,
+                    spatial_scale=1.0,
+                ),
             ),
             mask_head=FCNMaskHead(
                 conv_out_channels=80,
@@ -670,7 +690,12 @@ class MaskRCNNSwinT(MMDetMaskRCNN):
             bbox_roi_extractor=SingleRoIExtractor(
                 featmap_strides=[4, 8, 16, 32],
                 out_channels=256,
-                roi_layer=RoIAlign(output_size=7, sampling_ratio=0),
+                roi_layer=RoIAlign(
+                    output_size=7,
+                    sampling_ratio=0,
+                    aligned=True,
+                    spatial_scale=1.0,
+                ),
             ),
             bbox_head=CustomConvFCBBoxHead(
                 num_classes=num_classes,
@@ -688,7 +713,12 @@ class MaskRCNNSwinT(MMDetMaskRCNN):
             mask_roi_extractor=SingleRoIExtractor(
                 featmap_strides=[4, 8, 16, 32],
                 out_channels=256,
-                roi_layer=RoIAlign(output_size=14, sampling_ratio=0),
+                roi_layer=RoIAlign(
+                    output_size=14,
+                    sampling_ratio=0,
+                    aligned=True,
+                    spatial_scale=1.0,
+                ),
             ),
             mask_head=FCNMaskHead(
                 conv_out_channels=256,
