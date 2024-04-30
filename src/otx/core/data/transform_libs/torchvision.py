@@ -85,6 +85,20 @@ def custom_query_size(flat_inputs: list[Any]) -> tuple[int, int]:  # noqa: D103
 tvt_v2._utils.query_size = custom_query_size  # noqa: SLF001
 
 
+class NumpytoTVTensorMixin:
+    """Convert numpy to tv tensors."""
+
+    def convert(self, inputs: T_OTXDataEntity) -> T_OTXDataEntity:
+        """Convert numpy to tv tensors."""
+        if self.is_numpy_to_tvtensor:
+            if (image := getattr(inputs, "image", None)) is not None and isinstance(image, np.ndarray):
+                inputs.image = F.to_image(image)
+            if (bboxes := getattr(inputs, "bboxes", None)) is not None and isinstance(bboxes, np.ndarray):
+                inputs.bboxes = tv_tensors.BoundingBoxes(bboxes, format="xyxy", canvas_size=inputs.img_info.img_shape)
+            # TODO (sungchul): set masks
+        return inputs
+
+
 class PerturbBoundingBoxes(tvt_v2.Transform):
     """Perturb bounding boxes with random offset value."""
 
@@ -311,20 +325,16 @@ class PackVideo(tvt_v2.Transform):
         return inputs[0].wrap(image=inputs[0].video, video=[])
 
 
-class MinIoURandomCrop(tvt_v2.Transform):
+class MinIoURandomCrop(tvt_v2.Transform, NumpytoTVTensorMixin):
     """Implementation of mmdet.datasets.transforms.MinIoURandomCrop with torchvision format.
 
     Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/datasets/transforms/transforms.py#L1338-L1490
 
     Args:
-        min_scale (float, optional): Minimum factors to scale the input size.
-        max_scale (float, optional): Maximum factors to scale the input size.
-        min_aspect_ratio (float, optional): Minimum aspect ratio for the cropped image or video.
-        max_aspect_ratio (float, optional): Maximum aspect ratio for the cropped image or video.
-        sampler_options (list of float, optional): List of minimal IoU (Jaccard) overlap between all the boxes and
-            a cropped image or video. Default, ``None`` which corresponds to ``[0.0, 0.1, 0.3, 0.5, 0.7, 0.9, 1.0]``
-        trials (int, optional): Number of trials to find a crop for a given value of minimal IoU (Jaccard) overlap.
-            Default, 50.
+        min_ious (Sequence[float]): minimum IoU threshold for all intersections with bounding boxes.
+        min_crop_size (float): minimum crop's size (i.e. h,w := a*h, a*w, where a >= min_crop_size).
+        bbox_clip_border (bool, optional): Whether clip the objects outside the border of the image. Defaults to True.
+        is_numpy_to_tvtensor(bool): Whether convert outputs to tensor. Defaults to False.
     """
 
     def __init__(
@@ -332,12 +342,14 @@ class MinIoURandomCrop(tvt_v2.Transform):
         min_ious: Sequence[float] = (0.1, 0.3, 0.5, 0.7, 0.9),
         min_crop_size: float = 0.3,
         bbox_clip_border: bool = True,
+        is_numpy_to_tvtensor: bool = False,
     ) -> None:
         super().__init__()
         self.min_ious = min_ious
         self.sample_mode = (1, *min_ious, 0)
         self.min_crop_size = min_crop_size
         self.bbox_clip_border = bbox_clip_border
+        self.is_numpy_to_tvtensor = is_numpy_to_tvtensor
 
     @cache_randomness
     def _random_mode(self) -> int | float:
@@ -415,7 +427,7 @@ class MinIoURandomCrop(tvt_v2.Transform):
                 img = img[patch[1] : patch[3], patch[0] : patch[2]]
                 inputs.image = img
                 inputs.img_info = _crop_image_info(inputs.img_info, *img.shape[:2])
-                return inputs
+                return self.convert(inputs)
 
     def __repr__(self) -> str:
         repr_str = self.__class__.__name__
