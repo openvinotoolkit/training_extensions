@@ -5,23 +5,29 @@
 
 from __future__ import annotations
 
-from copy import deepcopy
-from typing import TYPE_CHECKING, Any, Literal
+from typing import TYPE_CHECKING, Any
 
 import torch
-from mmengine.structures import InstanceData
+from omegaconf import DictConfig
 from torchvision import tv_tensors
 
 from otx.algo.detection.backbones.pytorchcv_backbones import _build_model_including_pytorchcv
 from otx.algo.detection.backbones.resnext import ResNeXt
+from otx.algo.detection.heads.anchor_generator import AnchorGenerator
+from otx.algo.detection.heads.atss_assigner import ATSSAssigner
 from otx.algo.detection.heads.atss_head import ATSSHead
+from otx.algo.detection.heads.delta_xywh_bbox_coder import DeltaXYWHBBoxCoder
+from otx.algo.detection.losses.cross_entropy_loss import CrossEntropyLoss
+from otx.algo.detection.losses.cross_focal_loss import CrossSigmoidFocalLoss
+from otx.algo.detection.losses.iou_loss import GIoULoss
 from otx.algo.detection.necks.fpn import FPN
 from otx.algo.detection.ssd import SingleStageDetector
-from otx.algo.utils.mmconfig import read_mmconfig
+from otx.algo.utils.mmengine_utils import InstanceData, load_checkpoint
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.config.data import TileConfig
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.detection import DetBatchDataEntity, DetBatchPredEntity
+from otx.core.data.entity.utils import stack_batch
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.metrics.mean_ap import MeanAPCallable
@@ -29,38 +35,12 @@ from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallab
 from otx.core.model.detection import ExplainableOTXDetModel
 from otx.core.schedulers import LRSchedulerListCallable
 from otx.core.types.label import LabelInfoTypes
-from otx.core.utils.config import convert_conf_to_mmconfig_dict, inplace_num_classes
-from otx.core.utils.utils import get_mean_std_from_data_processing
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
-    from mmengine import ConfigDict
     from torch import Tensor, nn
 
     from otx.core.metrics import MetricCallable
-
-
-class TorchATSS(SingleStageDetector):
-    """ATSS torch implementation."""
-
-    def __init__(self, neck: ConfigDict | dict, *args, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
-        self.neck = self.build_neck(neck)
-
-    def build_backbone(self, cfg: ConfigDict | dict) -> nn.Module:
-        """Build backbone."""
-        if cfg["type"] == "ResNeXt":
-            cfg.pop("type")
-            return ResNeXt(**cfg)
-        return _build_model_including_pytorchcv(cfg)
-
-    def build_neck(self, cfg: ConfigDict | dict) -> nn.Module:
-        """Build backbone."""
-        return FPN(**cfg)
-
-    def build_bbox_head(self, cfg: ConfigDict | dict) -> nn.Module:
-        """Build bbox head."""
-        return ATSSHead(**cfg)
 
 
 class ATSS(ExplainableOTXDetModel):
@@ -69,18 +49,12 @@ class ATSS(ExplainableOTXDetModel):
     def __init__(
         self,
         label_info: LabelInfoTypes,
-        variant: Literal["mobilenetv2", "resnext101"],
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MeanAPCallable,
         torch_compile: bool = False,
         tile_config: TileConfig = TileConfig(enable_tiler=False),
     ) -> None:
-        model_name = f"atss_{variant}"
-        config = read_mmconfig(model_name=model_name)
-        config = inplace_num_classes(cfg=config, num_classes=self._dispatch_label_info(label_info).num_classes)
-        self.config = config
-        self.load_from = config.pop("load_from", None)
         super().__init__(
             label_info=label_info,
             optimizer=optimizer,
@@ -93,16 +67,19 @@ class ATSS(ExplainableOTXDetModel):
         self.tile_image_size = self.image_size
 
     def _create_model(self) -> nn.Module:
-        from mmengine.runner import load_checkpoint
-
-        config = deepcopy(self.config)
-        self.classification_layers = self.get_classification_layers()
-        model = TorchATSS(**convert_conf_to_mmconfig_dict(config))
+        detector = self._build_model(num_classes=self.label_info.num_classes)
+        detector.init_weights()
+        self.classification_layers = self.get_classification_layers(prefix="model.")
         if self.load_from is not None:
-            load_checkpoint(model, self.load_from, map_location="cpu")
-        return model
+            load_checkpoint(detector, self.load_from, map_location="cpu")
+        return detector
+
+    def _build_model(self, num_classes: int) -> SingleStageDetector:
+        raise NotImplementedError
 
     def _customize_inputs(self, entity: DetBatchDataEntity) -> dict[str, Any]:
+        if isinstance(entity.images, list):
+            entity.images = stack_batch(entity.images, pad_size_divisor=32)
         inputs: dict[str, Any] = {}
 
         inputs["entity"] = entity
@@ -137,15 +114,15 @@ class ATSS(ExplainableOTXDetModel):
         for img_info, prediction in zip(inputs.imgs_info, predictions):
             if not isinstance(prediction, InstanceData):
                 raise TypeError(prediction)
-            scores.append(prediction.scores)
+            scores.append(prediction.scores)  # type: ignore[attr-defined]
             bboxes.append(
                 tv_tensors.BoundingBoxes(
-                    prediction.bboxes,
+                    prediction.bboxes,  # type: ignore[attr-defined]
                     format="XYXY",
                     canvas_size=img_info.ori_shape,
                 ),
             )
-            labels.append(prediction.labels)
+            labels.append(prediction.labels)  # type: ignore[attr-defined]
 
         if self.explain_mode:
             if not isinstance(outputs, dict):
@@ -185,13 +162,8 @@ class ATSS(ExplainableOTXDetModel):
 
     def get_classification_layers(self, prefix: str = "model.") -> dict[str, dict[str, int]]:
         """Get final classification layer information for incremental learning case."""
-        from otx.core.utils.build import modify_num_classes
-
-        sample_config = deepcopy(self.config)
-        modify_num_classes(sample_config, 5)
-        sample_model_dict = TorchATSS(**convert_conf_to_mmconfig_dict(sample_config)).state_dict()
-        modify_num_classes(sample_config, 6)
-        incremental_model_dict = TorchATSS(**convert_conf_to_mmconfig_dict(sample_config)).state_dict()
+        sample_model_dict = self._build_model(num_classes=5).state_dict()
+        incremental_model_dict = self._build_model(num_classes=6).state_dict()
 
         classification_layers = {}
         for key in sample_model_dict:
@@ -209,7 +181,7 @@ class ATSS(ExplainableOTXDetModel):
         if self.image_size is None:
             raise ValueError(self.image_size)
 
-        mean, std = get_mean_std_from_data_processing(self.config)
+        mean, std = (0.0, 0.0, 0.0), (255.0, 255.0, 255.0)
 
         return OTXNativeModelExporter(
             task_level_export_parameters=self._export_parameters,
@@ -248,3 +220,146 @@ class ATSS(ExplainableOTXDetModel):
     def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.model.") -> dict:
         """Load the previous OTX ckpt according to OTX2.0."""
         return OTXv1Helper.load_det_ckpt(state_dict, add_prefix)
+
+
+class MobileNetV2ATSS(ATSS):
+    """ATSS detector with MobileNetV2 backbone."""
+
+    load_from = (
+        "https://storage.openvinotoolkit.org/repositories/"
+        "openvino_training_extensions/models/object_detection/v2/mobilenet_v2-atss.pth"
+    )
+
+    def _build_model(self, num_classes: int) -> SingleStageDetector:
+        train_cfg = {
+            "assigner": ATSSAssigner(topk=9),
+            "allowed_border": -1,
+            "pos_weight": -1,
+            "debug": False,
+        }
+        test_cfg = DictConfig(
+            {
+                "nms": {"type": "nms", "iou_threshold": 0.6},
+                "min_bbox_size": 0,
+                "score_thr": 0.05,
+                "max_per_img": 100,
+                "nms_pre": 1000,
+            },
+        )
+        backbone = _build_model_including_pytorchcv(
+            cfg={
+                "type": "mobilenetv2_w1",
+                "out_indices": [2, 3, 4, 5],
+                "frozen_stages": -1,
+                "norm_eval": False,
+                "pretrained": True,
+            },
+        )
+        neck = FPN(
+            in_channels=[24, 32, 96, 320],
+            out_channels=64,
+            start_level=1,
+            add_extra_convs="on_output",
+            num_outs=5,
+            relu_before_extra_convs=True,
+        )
+        bbox_head = ATSSHead(
+            anchor_generator=AnchorGenerator(
+                ratios=[1.0],
+                octave_base_scale=8,
+                scales_per_octave=1,
+                strides=[8, 16, 32, 64, 128],
+            ),
+            bbox_coder=DeltaXYWHBBoxCoder(
+                target_means=(0.0, 0.0, 0.0, 0.0),
+                target_stds=(0.1, 0.1, 0.2, 0.2),
+            ),
+            loss_cls=CrossSigmoidFocalLoss(
+                use_sigmoid=True,
+                gamma=2.0,
+                alpha=0.25,
+                loss_weight=1.0,
+            ),
+            loss_bbox=GIoULoss(loss_weight=2.0),
+            loss_centerness=CrossEntropyLoss(use_sigmoid=True, loss_weight=1.0),
+            num_classes=num_classes,
+            in_channels=64,
+            stacked_convs=4,
+            feat_channels=64,
+            init_cfg={"type": "Xavier", "layer": "Conv2d", "distribution": "uniform"},
+            train_cfg=train_cfg,
+            test_cfg=test_cfg,
+        )
+        return SingleStageDetector(backbone, bbox_head, neck=neck, train_cfg=train_cfg, test_cfg=test_cfg)
+
+
+class ResNeXt101ATSS(ATSS):
+    """ATSS with ResNeXt101 backbone."""
+
+    load_from = (
+        "https://storage.openvinotoolkit.org/repositories/"
+        "openvino_training_extensions/models/object_detection/v2/resnext101_atss_070623.pth"
+    )
+
+    def _build_model(self, num_classes: int) -> SingleStageDetector:
+        train_cfg = {
+            "assigner": ATSSAssigner(topk=9),
+            "allowed_border": -1,
+            "pos_weight": -1,
+            "debug": False,
+        }
+        test_cfg = DictConfig(
+            {
+                "nms": {"type": "nms", "iou_threshold": 0.6},
+                "min_bbox_size": 0,
+                "score_thr": 0.05,
+                "max_per_img": 100,
+                "nms_pre": 1000,
+            },
+        )
+        backbone = ResNeXt(
+            depth=101,
+            groups=64,
+            base_width=4,
+            num_stages=4,
+            out_indices=[0, 1, 2, 3],
+            frozen_stages=1,
+            norm_cfg={"type": "BN", "requires_grad": True},
+            init_cfg={"type": "Pretrained", "checkpoint": "open-mmlab://resnext101_64x4d"},
+        )
+        neck = FPN(
+            in_channels=[256, 512, 1024, 2048],
+            out_channels=256,
+            start_level=1,
+            add_extra_convs="on_output",
+            num_outs=5,
+            relu_before_extra_convs=True,
+        )
+        bbox_head = ATSSHead(
+            anchor_generator=AnchorGenerator(
+                ratios=[1.0],
+                octave_base_scale=8,
+                scales_per_octave=1,
+                strides=[8, 16, 32, 64, 128],
+            ),
+            bbox_coder=DeltaXYWHBBoxCoder(
+                target_means=(0.0, 0.0, 0.0, 0.0),
+                target_stds=(0.1, 0.1, 0.2, 0.2),
+            ),
+            loss_cls=CrossSigmoidFocalLoss(
+                use_sigmoid=True,
+                gamma=2.0,
+                alpha=0.25,
+                loss_weight=1.0,
+            ),
+            loss_bbox=GIoULoss(loss_weight=2.0),
+            loss_centerness=CrossEntropyLoss(use_sigmoid=True, loss_weight=1.0),
+            num_classes=num_classes,
+            in_channels=256,
+            stacked_convs=4,
+            feat_channels=256,
+            init_cfg={"type": "Xavier", "layer": "Conv2d", "distribution": "uniform"},
+            train_cfg=train_cfg,
+            test_cfg=test_cfg,
+        )
+        return SingleStageDetector(backbone, bbox_head, neck=neck, train_cfg=train_cfg, test_cfg=test_cfg)

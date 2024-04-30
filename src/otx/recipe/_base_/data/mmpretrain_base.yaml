@@ -13,6 +13,7 @@ config:
     num_workers: 2
     batch_size: 64
     transform_lib_type: MMPRETRAIN
+    to_tv_image: False
     transforms:
       - type: LoadImageFromFile
       - backend: cv2
@@ -26,6 +27,7 @@ config:
     num_workers: 2
     batch_size: 64
     transform_lib_type: MMPRETRAIN
+    to_tv_image: False
     transforms:
       - type: LoadImageFromFile
       - backend: cv2
@@ -42,6 +44,7 @@ config:
     num_workers: 2
     batch_size: 64
     transform_lib_type: MMPRETRAIN
+    to_tv_image: False
     transforms:
       - type: LoadImageFromFile
       - backend: cv2

@@ -49,7 +49,6 @@ class TestYOLOXHead:
         train_cfg = Config(
             {
                 "assigner": {
-                    "type": "SimOTAAssigner",
                     "center_radius": 2.5,
                     "candidate_topk": 10,
                     "iou_weight": 3.0,

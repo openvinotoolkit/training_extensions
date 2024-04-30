@@ -61,6 +61,7 @@ class SubsetConfig:
     transform_lib_type: TransformLibType = TransformLibType.TORCHVISION
     num_workers: int = 2
     sampler: SamplerConfig = field(default_factory=lambda: SamplerConfig())
+    to_tv_image: bool = True
 
 
 @dataclass
