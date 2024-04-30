@@ -19,6 +19,7 @@ from torchvision import tv_tensors
 from otx.algo.detection.backbones.pytorchcv_backbones import _build_model_including_pytorchcv
 from otx.algo.detection.heads.anchor_generator import SSDAnchorGeneratorClustered
 from otx.algo.detection.heads.delta_xywh_bbox_coder import DeltaXYWHBBoxCoder
+from otx.algo.detection.heads.max_iou_assigner import MaxIoUAssigner
 from otx.algo.detection.heads.ssd_head import SSDHead
 from otx.algo.modules.base_module import BaseModule
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
@@ -55,7 +56,7 @@ class SingleStageDetector(BaseModule):
         backbone: nn.Module,
         bbox_head: nn.Module,
         neck: nn.Module | None = None,
-        train_cfg: DictConfig | None = None,
+        train_cfg: dict | None = None,
         test_cfg: DictConfig | None = None,
         init_cfg: DictConfig | list[DictConfig] = None,
     ) -> None:
@@ -336,24 +337,22 @@ class SSD(ExplainableOTXDetModel):
         return detector
 
     def _build_model(self, num_classes: int) -> SingleStageDetector:
-        train_cfg = DictConfig(
-            {
-                "assigner": {
-                    "min_pos_iou": 0.0,
-                    "ignore_iof_thr": -1,
-                    "gt_max_assign_all": False,
-                    "pos_iou_thr": 0.4,
-                    "neg_iou_thr": 0.4,
-                },
-                "smoothl1_beta": 1.0,
-                "allowed_border": -1,
-                "pos_weight": -1,
-                "neg_pos_ratio": 3,
-                "debug": False,
-                "use_giou": False,
-                "use_focal": False,
-            },
-        )
+        train_cfg = {
+            "assigner": MaxIoUAssigner(
+                min_pos_iou=0.0,
+                ignore_iof_thr=-1,
+                gt_max_assign_all=False,
+                pos_iou_thr=0.4,
+                neg_iou_thr=0.4,
+            ),
+            "smoothl1_beta": 1.0,
+            "allowed_border": -1,
+            "pos_weight": -1,
+            "neg_pos_ratio": 3,
+            "debug": False,
+            "use_giou": False,
+            "use_focal": False,
+        }
         test_cfg = DictConfig(
             {
                 "nms": {"type": "nms", "iou_threshold": 0.45},

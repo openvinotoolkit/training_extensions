@@ -226,7 +226,7 @@ class YOLOXTINY(YOLOX):
     std = (58.395, 57.12, 57.375)
 
     def _build_model(self, num_classes: int) -> SingleStageDetector:
-        train_cfg = DictConfig({})
+        train_cfg: dict[str, Any] = {}
         test_cfg = DictConfig(
             {
                 "nms": {"type": "nms", "iou_threshold": 0.65},

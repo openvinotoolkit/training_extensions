@@ -13,7 +13,6 @@ from otx.algo.detection.heads.anchor_generator import AnchorGenerator
 from otx.algo.detection.heads.anchor_head import AnchorHead
 from otx.algo.detection.heads.base_sampler import PseudoSampler
 from otx.algo.detection.heads.delta_xywh_bbox_coder import DeltaXYWHBBoxCoder
-from otx.algo.detection.heads.max_iou_assigner import MaxIoUAssigner
 from otx.algo.detection.losses.cross_entropy_loss import CrossEntropyLoss
 from otx.algo.detection.losses.weighted_loss import smooth_l1_loss
 from otx.algo.detection.utils.utils import multi_apply
@@ -60,7 +59,7 @@ class SSDHead(AnchorHead):
         anchor_generator: AnchorGenerator,
         bbox_coder: DeltaXYWHBBoxCoder,
         init_cfg: DictConfig | list[DictConfig],
-        train_cfg: DictConfig,
+        train_cfg: dict,
         num_classes: int = 80,
         in_channels: tuple[int, ...] | int = (512, 1024, 512, 256, 256, 256),
         stacked_convs: int = 0,
@@ -95,8 +94,7 @@ class SSDHead(AnchorHead):
         self.train_cfg = train_cfg
         self.test_cfg = test_cfg
         if self.train_cfg:
-            assigner_args = self.train_cfg["assigner"]
-            self.assigner = MaxIoUAssigner(**assigner_args)
+            self.assigner = self.train_cfg["assigner"]
             self.sampler = PseudoSampler(context=self)  # type: ignore[no-untyped-call]
 
     def forward(self, x: tuple[Tensor]) -> tuple[list[Tensor], list[Tensor]]:

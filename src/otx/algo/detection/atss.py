@@ -15,6 +15,7 @@ from torchvision import tv_tensors
 from otx.algo.detection.backbones.pytorchcv_backbones import _build_model_including_pytorchcv
 from otx.algo.detection.backbones.resnext import ResNeXt
 from otx.algo.detection.heads.anchor_generator import AnchorGenerator
+from otx.algo.detection.heads.atss_assigner import ATSSAssigner
 from otx.algo.detection.heads.atss_head import ATSSHead
 from otx.algo.detection.heads.delta_xywh_bbox_coder import DeltaXYWHBBoxCoder
 from otx.algo.detection.losses.cross_entropy_loss import CrossEntropyLoss
@@ -232,16 +233,12 @@ class MobileNetV2ATSS(ATSS):
     )
 
     def _build_model(self, num_classes: int) -> SingleStageDetector:
-        train_cfg = DictConfig(
-            {
-                "assigner": {
-                    "topk": 9,
-                },
-                "allowed_border": -1,
-                "pos_weight": -1,
-                "debug": False,
-            },
-        )
+        train_cfg = {
+            "assigner": ATSSAssigner(topk=9),
+            "allowed_border": -1,
+            "pos_weight": -1,
+            "debug": False,
+        }
         test_cfg = DictConfig(
             {
                 "nms": {"type": "nms", "iou_threshold": 0.6},

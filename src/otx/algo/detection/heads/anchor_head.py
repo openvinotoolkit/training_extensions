@@ -56,7 +56,7 @@ class AnchorHead(BaseDenseHead):
         bbox_coder: DeltaXYWHBBoxCoder,
         loss_cls: nn.Module,
         loss_bbox: nn.Module,
-        train_cfg: DictConfig,
+        train_cfg: dict,
         feat_channels: int = 256,
         reg_decoded_bbox: bool = False,
         test_cfg: DictConfig | None = None,
@@ -83,7 +83,7 @@ class AnchorHead(BaseDenseHead):
         self.train_cfg = train_cfg
         self.test_cfg = test_cfg
         if self.train_cfg:
-            self.assigner: MaxIoUAssigner | ATSSAssigner = ATSSAssigner(**self.train_cfg["assigner"])
+            self.assigner: MaxIoUAssigner | ATSSAssigner = self.train_cfg["assigner"]
             self.sampler = PseudoSampler(context=self)  # type: ignore[no-untyped-call]
 
         self.fp16_enabled = False
