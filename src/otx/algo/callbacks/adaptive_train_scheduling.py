@@ -29,11 +29,17 @@ class AdaptiveTrainScheduling(Callback):
             Defaults to -0.025.
     """
 
-    def __init__(self, max_interval: int = 5, decay: float = -0.025):
+    def __init__(
+        self,
+        max_interval: int = 5,
+        decay: float = -0.025,
+        min_earlystop_patience: int = 3,
+        min_lrschedule_patience: int = 2,
+    ):
         self.max_interval = max_interval
         self.decay = decay
-        self.min_earlystop_interval = 3
-        self.min_lrschedule_patience = 2
+        self.min_earlystop_patience = min_earlystop_patience
+        self.min_lrschedule_patience = min_lrschedule_patience
         self._saved_check_val_every_n_epoch: int | None = None
         self._saved_log_every_n_steps: int | None = None
         self._revert_lr_frequency: list = []
@@ -153,7 +159,7 @@ class AdaptiveTrainScheduling(Callback):
 
         for callback in callbacks:
             if isinstance(callback, EarlyStopping):
-                adjusted_patience = max(int(callback.patience / adaptive_interval), self.min_earlystop_interval)
+                adjusted_patience = max(int(callback.patience / adaptive_interval), self.min_earlystop_patience)
                 msg = (
                     "The patience of early stopping will be changed due to the effect of adaptive interval: "
                     f"{callback.patience} --> {adjusted_patience}."
