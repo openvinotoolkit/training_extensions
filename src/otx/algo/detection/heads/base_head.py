@@ -269,7 +269,7 @@ class BaseDenseHead(BaseModule):
                 when `with_stride=True`, otherwise it still has shape
                 (num_priors, 4).
             img_meta (dict): Image meta info.
-            cfg (mmengine.Config): Test / postprocessing configuration,
+            cfg (DictConfig): Test / postprocessing configuration,
                 if None, test_cfg would be used.
             rescale (bool): If True, return boxes in original image space.
                 Defaults to False.
@@ -563,7 +563,7 @@ class BaseDenseHead(BaseModule):
                 when `with_stride=True`, otherwise it still has shape
                 (num_priors, 4).
             img_meta (dict): Image meta info.
-            cfg (mmengine.Config): Test / postprocessing configuration,
+            cfg (DictConfig): Test / postprocessing configuration,
                 if None, test_cfg would be used.
             rescale (bool): If True, return boxes in original image space.
                 Defaults to False.

@@ -442,7 +442,7 @@ class YOLOXHead(BaseDenseHead):
         Args:
             results (:obj:`InstaceData`): Detection instance results,
                 each item has shape (num_bboxes, ).
-            cfg (mmengine.Config): Test / postprocessing configuration,
+            cfg (DictConfig): Test / postprocessing configuration,
                 if None, test_cfg would be used.
             rescale (bool): If True, return boxes in original image space.
                 Default to False.

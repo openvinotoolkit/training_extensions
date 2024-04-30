@@ -13,8 +13,8 @@ from otx.algo.detection.heads.iou2d_calculator import BboxOverlaps2D
 from otx.algo.detection.utils.structures import AssignResult
 
 if TYPE_CHECKING:
-    from mmengine import ConfigDict
     from mmengine.structures import InstanceData
+    from omegaconf import DictConfig
 
 
 def bbox_center_distance(bboxes: Tensor, priors: Tensor) -> Tensor:
@@ -54,7 +54,7 @@ class ATSSAssigner:
         topk (int): number of priors selected in each level
         alpha (float, optional): param of cost rate for each proposal only
             in DDOD. Defaults to None.
-        iou_calculator (:obj:`ConfigDict` or dict): Config dict for iou
+        iou_calculator (:obj:`DictConfig` or dict): Config dict for iou
             calculator. Defaults to ``dict(type='BboxOverlaps2D')``
         ignore_iof_thr (float): IoF threshold for ignoring bboxes (if
             `gt_bboxes_ignore` is specified). Negative values mean not
@@ -65,7 +65,7 @@ class ATSSAssigner:
         self,
         topk: int,
         alpha: float | None = None,
-        iou_calculator: ConfigDict | dict | None = None,
+        iou_calculator: DictConfig | dict | None = None,
         ignore_iof_thr: float = -1,
     ) -> None:
         self.topk = topk
