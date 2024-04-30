@@ -6,13 +6,13 @@
 from __future__ import annotations
 
 import inspect
-from typing import Callable
+from typing import Callable, Sequence
 
 import torch
-from mmengine.model import BaseModule
 from torch import nn
 
-from otx.algo.utils.mmengine_utils import constant_init, normal_init
+from otx.algo.modules.base_module import BaseModule
+from otx.algo.utils.weight_init import constant_init, normal_init
 from otx.core.data.entity.base import ImageInfo
 
 
@@ -61,7 +61,7 @@ class HierarchicalClsHead(BaseModule):
 
     def pre_logits(self, feats: tuple[torch.Tensor] | torch.Tensor) -> torch.Tensor:
         """The process before the final classification head."""
-        if isinstance(feats, tuple):
+        if isinstance(feats, Sequence):
             return feats[-1]
         return feats
 
@@ -147,7 +147,7 @@ class HierarchicalClsHead(BaseModule):
     def predict(
         self,
         feats: tuple[torch.Tensor],
-        # labels: list[torch.Tensor | None] | None = None,
+        **kwargs,
     ) -> dict[str, torch.Tensor]:
         """Inference without augmentation.
 
@@ -167,7 +167,6 @@ class HierarchicalClsHead(BaseModule):
     def _get_predictions(
         self,
         cls_scores: torch.Tensor,
-        # labels: list[torch.Tensor | None] | None = None,
     ) -> dict[str, torch.Tensor]:
         """Post-process the output of head.
 
@@ -201,8 +200,8 @@ class HierarchicalClsHead(BaseModule):
             pred_labels = multiclass_pred_labels
 
         return {
-            "pred_scores": pred_scores,
-            "pred_labels": pred_labels,
+            "scores": pred_scores,
+            "labels": pred_labels,
         }
 
 

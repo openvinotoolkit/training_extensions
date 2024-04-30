@@ -1,5 +1,6 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
+# Copyright (c) OpenMMLab. All rights reserved.
 """Utils for otx detection algo."""
 
 from __future__ import annotations
@@ -8,8 +9,23 @@ from functools import partial
 from typing import Callable
 
 import torch
+import torch.distributed as dist
 from mmengine.structures import InstanceData
 from torch import Tensor
+
+from otx.core.data.entity.detection import DetBatchDataEntity
+
+
+def reduce_mean(tensor: Tensor) -> Tensor:
+    """Obtain the mean of tensor on different GPUs.
+
+    Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/utils/dist_utils.py#L59-L65
+    """
+    if not (dist.is_available() and dist.is_initialized()):
+        return tensor
+    tensor = tensor.clone()
+    dist.all_reduce(tensor.div_(dist.get_world_size()), op=dist.ReduceOp.SUM)
+    return tensor
 
 
 # Methods below come from mmdet.utils and slightly modified.
@@ -175,13 +191,11 @@ def select_single_mlvl(mlvl_tensors: list[Tensor], batch_id: int, detach: bool =
     return mlvl_tensor_list
 
 
-def unpack_gt_instances(batch_data_samples: list[InstanceData]) -> tuple:
+def unpack_det_entity(entity: DetBatchDataEntity) -> tuple:
     """Unpack gt_instances, gt_instances_ignore and img_metas based on batch_data_samples.
 
     Args:
-        batch_data_samples (List[:obj:`DetDataSample`]): The Data
-            Samples. It usually includes information such as
-            `gt_instance`, `gt_panoptic_seg` and `gt_sem_seg`.
+        batch_data_samples (DetBatchDataEntity): Data entity from dataset.
 
     Returns:
         tuple:
@@ -189,25 +203,24 @@ def unpack_gt_instances(batch_data_samples: list[InstanceData]) -> tuple:
             - batch_gt_instances (list[:obj:`InstanceData`]): Batch of
                 gt_instance. It usually includes ``bboxes`` and ``labels``
                 attributes.
-            - batch_gt_instances_ignore (list[:obj:`InstanceData`]):
-                Batch of gt_instances_ignore. It includes ``bboxes`` attribute
-                data that is ignored during training and testing.
-                Defaults to None.
             - batch_img_metas (list[dict]): Meta information of each image,
                 e.g., image size, scaling factor, etc.
     """
     batch_gt_instances = []
-    batch_gt_instances_ignore = []
     batch_img_metas = []
-    for data_sample in batch_data_samples:
-        batch_img_metas.append(data_sample.metainfo)
-        batch_gt_instances.append(data_sample.gt_instances)
-        if "ignored_instances" in data_sample:
-            batch_gt_instances_ignore.append(data_sample.ignored_instances)
-        else:
-            batch_gt_instances_ignore.append(None)
+    for img_info, bboxes, labels in zip(entity.imgs_info, entity.bboxes, entity.labels):
+        metainfo = {
+            "img_id": img_info.img_idx,
+            "img_shape": img_info.img_shape,
+            "ori_shape": img_info.ori_shape,
+            "pad_shape": img_info.pad_shape,
+            "scale_factor": img_info.scale_factor,
+            "ignored_labels": img_info.ignored_labels,
+        }
+        batch_img_metas.append(metainfo)
+        batch_gt_instances.append(InstanceData(bboxes=bboxes, labels=labels))
 
-    return batch_gt_instances, batch_gt_instances_ignore, batch_img_metas
+    return batch_gt_instances, batch_img_metas
 
 
 def empty_instances(
@@ -282,3 +295,21 @@ def empty_instances(
             results.masks = im_mask
         results_list.append(results)
     return results_list
+
+
+def dynamic_topk(input: Tensor, k: int, dim: int | None = None, largest: bool = True, sorted: bool = True) -> Tensor:  # noqa: A002
+    """Cast k to tensor and make sure k is smaller than input.shape[dim].
+
+    Reference : https://github.com/open-mmlab/mmdeploy/blob/v1.3.1/mmdeploy/pytorch/functions/topk.py#L13-L34
+    """
+    if dim is None:
+        dim = int(input.ndim - 1)
+    size = input.shape[dim]
+    if not isinstance(k, torch.Tensor):
+        k = torch.tensor(k, device=input.device, dtype=torch.long)
+    # Always keep topk op for dynamic input
+    if isinstance(size, torch.Tensor):
+        # size would be treated as cpu tensor, trick to avoid that.
+        size = k.new_zeros(()) + size
+    k = torch.where(k < size, k, size)
+    return torch.topk(input, k, dim=dim, largest=largest, sorted=sorted)

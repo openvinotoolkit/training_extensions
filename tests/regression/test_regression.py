@@ -129,8 +129,8 @@ class BaseTest:
 class TestMultiClassCls(BaseTest):
     # Test case parametrization for model
     MODEL_TEST_CASES = [  # noqa: RUF012
-        ModelTestCase(task="classification/multi_class_cls", name="otx_deit_tiny"),
-        ModelTestCase(task="classification/multi_class_cls", name="otx_dino_v2"),
+        ModelTestCase(task="classification/multi_class_cls", name="deit_tiny"),
+        ModelTestCase(task="classification/multi_class_cls", name="dino_v2"),
         ModelTestCase(task="classification/multi_class_cls", name="efficientnet_b0"),
         ModelTestCase(task="classification/multi_class_cls", name="efficientnet_v2"),
         ModelTestCase(task="classification/multi_class_cls", name="mobilenet_v3_large"),
@@ -208,7 +208,7 @@ class TestMultilabelCls(BaseTest):
         ModelTestCase(task="classification/multi_label_cls", name="efficientnet_b0"),
         ModelTestCase(task="classification/multi_label_cls", name="efficientnet_v2"),
         ModelTestCase(task="classification/multi_label_cls", name="mobilenet_v3_large"),
-        ModelTestCase(task="classification/multi_label_cls", name="otx_deit_tiny"),
+        ModelTestCase(task="classification/multi_label_cls", name="deit_tiny"),
     ]
     # Test case parametrization for dataset
     DATASET_TEST_CASES = [  # noqa: RUF012
@@ -283,7 +283,7 @@ class TestHlabelCls(BaseTest):
         ModelTestCase(task="classification/h_label_cls", name="efficientnet_b0"),
         ModelTestCase(task="classification/h_label_cls", name="efficientnet_v2"),
         ModelTestCase(task="classification/h_label_cls", name="mobilenet_v3_large"),
-        ModelTestCase(task="classification/h_label_cls", name="otx_deit_tiny"),
+        ModelTestCase(task="classification/h_label_cls", name="deit_tiny"),
     ]
     # Test case parametrization for dataset
     DATASET_TEST_CASES = [  # noqa: RUF012

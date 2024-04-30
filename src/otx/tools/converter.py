@@ -26,7 +26,7 @@ TEMPLATE_ID_DICT = {
     # MULTI_CLASS_CLS
     "Custom_Image_Classification_DeiT-Tiny": {
         "task": OTXTaskType.MULTI_CLASS_CLS,
-        "model_name": "otx_deit_tiny",
+        "model_name": "deit_tiny",
     },
     "Custom_Image_Classification_EfficinetNet-B0": {
         "task": OTXTaskType.MULTI_CLASS_CLS,

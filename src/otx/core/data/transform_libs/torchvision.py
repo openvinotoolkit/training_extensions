@@ -790,6 +790,16 @@ class RandomResizedCrop(tvt_v2.Transform):
                 dst=None,
                 interpolation=self.cv2_interp_codes[self.interpolation],
             )
+            if (masks := getattr(inputs, "gt_seg_map", None)) is not None:
+                masks = masks.numpy()
+                masks = self._crop_img(masks, bboxes=bboxes)
+                masks = cv2.resize(
+                    masks,
+                    tuple(self.scale[::-1]),
+                    dst=None,
+                    interpolation=self.cv2_interp_codes["nearest"],
+                )
+                inputs.gt_seg_map = torch.from_numpy(masks)  # type: ignore[attr-defined]
 
             inputs.image = F.to_image(img)
             inputs.img_info = _resize_image_info(inputs.img_info, img.shape[:2])
