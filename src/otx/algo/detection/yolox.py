@@ -46,23 +46,16 @@ if TYPE_CHECKING:
 class YOLOX(SingleStageDetector):
     """YOLOX implementation from mmdet."""
 
-    def __init__(self, neck: ConfigDict | dict, *args, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
-        self.neck = self.build_neck(neck)
-
     def build_backbone(self, cfg: ConfigDict | dict) -> nn.Module:
         """Build backbone."""
-        cfg.pop("type")  # TODO (sungchul): remove `type` in recipe
         return CSPDarknet(**cfg)
 
     def build_neck(self, cfg: ConfigDict | dict) -> nn.Module:
-        """Build backbone."""
-        cfg.pop("type")  # TODO (sungchul): remove `type` in recipe
+        """Build neck."""
         return YOLOXPAFPN(**cfg)
 
     def build_bbox_head(self, cfg: ConfigDict | dict) -> nn.Module:
         """Build bbox head."""
-        cfg.pop("type")  # TODO (sungchul): remove `type` in recipe
         return YOLOXHead(**cfg)
 
     def build_det_data_preprocessor(self, cfg: ConfigDict | dict) -> nn.Module:
@@ -70,7 +63,6 @@ class YOLOX(SingleStageDetector):
 
         TODO (sungchul): DetDataPreprocessor will be removed.
         """
-        cfg.pop("type")  # TODO (sungchul): remove `type` in recipe
         return DetDataPreprocessor(**cfg)
 
 
@@ -109,8 +101,8 @@ class OTXYOLOX(ExplainableOTXDetModel):
 
         config = deepcopy(self.config)
         self.classification_layers = self.get_classification_layers(config, "model.")
-        config.pop("type")  # TODO (sungchul): remove `type` in recipe
         detector = YOLOX(**convert_conf_to_mmconfig_dict(config))
+        detector.init_weights()
         if self.load_from is not None:
             load_checkpoint(detector, self.load_from, map_location="cpu")
         return detector
@@ -221,7 +213,6 @@ class OTXYOLOX(ExplainableOTXDetModel):
             Normally it is related with background classes.
         """
         sample_config = deepcopy(config)
-        sample_config.pop("type")  # TODO (sungchul): remove `type` in recipe
         modify_num_classes(sample_config, 5)
         sample_model_dict = YOLOX(**convert_conf_to_mmconfig_dict(sample_config)).state_dict()
 
@@ -297,15 +288,3 @@ class OTXYOLOX(ExplainableOTXDetModel):
     def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.model.") -> dict:
         """Load the previous OTX ckpt according to OTX2.0."""
         return OTXv1Helper.load_det_ckpt(state_dict, add_prefix)
-
-    # TODO(Sungchul): Remove below functions after changing exporter
-    def _make_fake_test_pipeline(self) -> list[dict[str, Any]]:
-        return [
-            {"type": "LoadImageFromFile"},
-            {"type": "Resize", "scale": [self.image_size[3], self.image_size[2]], "keep_ratio": True},  # type: ignore[index]
-            {"type": "LoadAnnotations", "with_bbox": True},
-            {
-                "type": "PackDetInputs",
-                "meta_keys": ["ori_filenamescale_factor", "ori_shape", "filename", "img_shape", "pad_shape"],
-            },
-        ]

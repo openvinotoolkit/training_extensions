@@ -5,7 +5,6 @@
 
 from __future__ import annotations
 
-import copy
 import math
 from typing import Any, ClassVar, Sequence
 
@@ -14,6 +13,7 @@ from torch import Tensor, nn
 from torch.nn.modules.batchnorm import _BatchNorm
 
 from otx.algo.detection.layers import CSPLayer
+from otx.algo.modules.base_module import BaseModule
 from otx.algo.modules.conv_module import ConvModule
 from otx.algo.modules.depthwise_separable_conv_module import DepthwiseSeparableConvModule
 
@@ -79,7 +79,7 @@ class Focus(nn.Module):
         return self.conv(x)
 
 
-class SPPBottleneck(nn.Module):
+class SPPBottleneck(BaseModule):
     """Spatial pyramid pooling layer used in YOLOv3-SPP.
 
     Args:
@@ -111,10 +111,7 @@ class SPPBottleneck(nn.Module):
             norm_cfg = {"type": "BN", "momentum": 0.03, "eps": 0.001}
         if act_cfg is None:
             act_cfg = {"type": "Swish"}
-        super().__init__()
-        # from mmengine.model.BaseModule
-        self._is_init = False
-        self.init_cfg = copy.deepcopy(init_cfg)
+        super().__init__(init_cfg=init_cfg)
 
         mid_channels = in_channels // 2
         self.conv1 = ConvModule(
@@ -138,7 +135,7 @@ class SPPBottleneck(nn.Module):
         return self.conv2(x)
 
 
-class CSPDarknet(nn.Module):
+class CSPDarknet(BaseModule):
     """CSP-Darknet backbone used in YOLOv5 and YOLOX.
 
     Args:
@@ -230,10 +227,7 @@ class CSPDarknet(nn.Module):
                 "mode": "fan_in",
                 "nonlinearity": "leaky_relu",
             }
-        super().__init__()
-        # from mmengine.model.BaseModule
-        self._is_init = False
-        self.init_cfg = copy.deepcopy(init_cfg)
+        super().__init__(init_cfg=init_cfg)
 
         arch_setting = self.arch_settings[arch]
         if arch_ovewrite:
