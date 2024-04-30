@@ -361,10 +361,10 @@ class MMDetInstanceSegCompatibleModel(ExplainableOTXInstanceSegModel):
     def __init__(
         self,
         label_info: LabelInfoTypes,
+        config: DictConfig | None = None,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MaskRLEMeanAPCallable,
-        config: DictConfig | None = None,
         torch_compile: bool = False,
         tile_config: TileConfig = TileConfig(enable_tiler=False),
     ) -> None:
