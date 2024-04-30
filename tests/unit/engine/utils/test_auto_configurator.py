@@ -5,7 +5,6 @@
 from pathlib import Path
 
 import pytest
-import torch
 from otx.core.data.module import OTXDataModule
 from otx.core.model.base import OTXModel
 from otx.core.types.label import LabelInfo, SegLabelInfo
@@ -174,13 +173,10 @@ class TestAutoConfigurator:
                 "init_args": {"scale": [992, 736], "keep_ratio": False, "transform_bbox": False},
             },
             {
-                "class_path": "torchvision.transforms.v2.ToDtype",
-                "init_args": {"dtype": torch.float32, "scale": False},
+                "class_path": "otx.core.data.transform_libs.torchvision.Normalize",
+                "init_args": {"mean": [0.0, 0.0, 0.0], "std": [255.0, 255.0, 255.0], "to_rgb": False},
             },
-            {
-                "class_path": "torchvision.transforms.v2.Normalize",
-                "init_args": {"mean": [0.0, 0.0, 0.0], "std": [255.0, 255.0, 255.0]},
-            },
+            {"class_path": "otx.core.data.transform_libs.torchvision.NumpytoTVTensor"},
         ]
 
         assert datamodule.config.test_subset.transform_lib_type == TransformLibType.TORCHVISION
