@@ -342,9 +342,9 @@ def unpack_gt_instances(batch_data_samples: list[InstanceData]) -> tuple:
     batch_img_metas = []
     for data_sample in batch_data_samples:
         batch_img_metas.append(data_sample.metainfo)
-        batch_gt_instances.append(data_sample.gt_instances)
+        batch_gt_instances.append(data_sample.gt_instances)  # type: ignore[attr-defined]
         if "ignored_instances" in data_sample:
-            batch_gt_instances_ignore.append(data_sample.ignored_instances)
+            batch_gt_instances_ignore.append(data_sample.ignored_instances)  # type: ignore[attr-defined]
         else:
             batch_gt_instances_ignore.append(None)
 

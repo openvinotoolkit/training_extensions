@@ -4,16 +4,12 @@
 from __future__ import annotations
 
 from abc import ABCMeta, abstractmethod
-from typing import TYPE_CHECKING
 
 import numpy as np
 import torch
 
 from otx.algo.detection.utils.structures import AssignResult, SamplingResult
 from otx.algo.utils.mmengine_utils import InstanceData
-
-if TYPE_CHECKING:
-    from mmengine.structures import InstanceData
 
 
 def ensure_rng(rng: int | np.random.RandomState | None = None) -> np.random.RandomState:
@@ -328,9 +324,9 @@ class RandomSampler(BaseSampler):
         Returns:
             :obj:`SamplingResult`: Sampling result.
         """
-        gt_bboxes = gt_instances.bboxes
-        priors = pred_instances.priors
-        gt_labels = gt_instances.labels
+        gt_bboxes = gt_instances.bboxes  # type: ignore[attr-defined]
+        priors = pred_instances.priors  # type: ignore[attr-defined]
+        gt_labels = gt_instances.labels  # type: ignore[attr-defined]
         if len(priors.shape) < 2:
             priors = priors[None, :]
 

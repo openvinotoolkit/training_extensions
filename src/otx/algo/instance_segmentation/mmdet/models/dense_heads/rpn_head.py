@@ -377,7 +377,7 @@ class RPNHead(AnchorHead):
         cfg: ConfigDict | None = None,
         rescale: bool = False,
         with_nms: bool = True,
-    ) -> tuple:
+    ) -> tuple[torch.Tensor, torch.Tensor] | tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         """Rewrite `predict_by_feat` of `RPNHead` for default backend."""
         warnings.warn(f"score_factors: {score_factors} is not used in RPNHead.export", stacklevel=2)
         warnings.warn(f"rescale: {rescale} is not used in RPNHead.export", stacklevel=2)
