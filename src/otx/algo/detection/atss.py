@@ -22,6 +22,7 @@ from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.config.data import TileConfig
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.detection import DetBatchDataEntity, DetBatchPredEntity
+from otx.core.data.entity.utils import stack_batch
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.metrics.mean_ap import MeanAPCallable
@@ -103,6 +104,8 @@ class ATSS(ExplainableOTXDetModel):
         return model
 
     def _customize_inputs(self, entity: DetBatchDataEntity) -> dict[str, Any]:
+        if isinstance(entity.images, list):
+            entity.images = stack_batch(entity.images, pad_size_divisor=32)
         inputs: dict[str, Any] = {}
 
         inputs["entity"] = entity
