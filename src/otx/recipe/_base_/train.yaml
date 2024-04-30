@@ -24,7 +24,7 @@ callbacks:
   - class_path: otx.algo.callbacks.iteration_timer.IterationTimer
     init_args:
       prog_bar: true
-      on_step: true
+      on_step: false
       on_epoch: true
   - class_path: lightning.pytorch.callbacks.RichModelSummary
     init_args:
