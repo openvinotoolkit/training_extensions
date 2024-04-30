@@ -10,9 +10,9 @@ from typing import Callable
 
 import torch
 import torch.distributed as dist
-from mmengine.structures import InstanceData
 from torch import Tensor
 
+from otx.algo.utils.mmengine_utils import InstanceData
 from otx.core.data.entity.detection import DetBatchDataEntity
 
 

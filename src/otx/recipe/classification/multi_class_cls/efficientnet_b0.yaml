@@ -44,6 +44,7 @@ overrides:
       stack_images: True
       train_subset:
         batch_size: 64
+        to_tv_image: False
         transforms:
           - class_path: otx.core.data.transform_libs.torchvision.RandomResizedCrop
             init_args:
@@ -60,6 +61,7 @@ overrides:
           class_path: otx.algo.samplers.balanced_sampler.BalancedSampler
       val_subset:
         batch_size: 64
+        to_tv_image: False
         transforms:
           # TODO(harimkang): Need to revisit validation pipeline
           - class_path: otx.core.data.transform_libs.torchvision.Resize
@@ -75,6 +77,7 @@ overrides:
               std: [58.395, 57.12, 57.375]
       test_subset:
         batch_size: 64
+        to_tv_image: False
         transforms:
           - class_path: otx.core.data.transform_libs.torchvision.Resize
             init_args:

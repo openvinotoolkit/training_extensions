@@ -11,6 +11,7 @@ config:
   train_subset:
     subset_name: train
     transform_lib_type: MMACTION
+    to_tv_image: False
     batch_size: 8
     num_workers: 2
     transforms:
@@ -46,6 +47,7 @@ config:
   val_subset:
     subset_name: val
     transform_lib_type: MMACTION
+    to_tv_image: False
     batch_size: 8
     num_workers: 2
     transforms:
@@ -76,6 +78,7 @@ config:
   test_subset:
     subset_name: test
     transform_lib_type: MMACTION
+    to_tv_image: False
     batch_size: 8
     num_workers: 2
     transforms:

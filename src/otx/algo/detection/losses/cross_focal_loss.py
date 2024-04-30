@@ -10,7 +10,7 @@ import torch.nn.functional
 from torch import Tensor, nn
 from torch.cuda.amp import custom_fwd
 
-from otx.algo.detection.losses.focal_loss import py_sigmoid_focal_loss, sigmoid_focal_loss
+from otx.algo.detection.losses.focal_loss import py_sigmoid_focal_loss
 
 
 def cross_sigmoid_focal_loss(
@@ -35,13 +35,10 @@ def cross_sigmoid_focal_loss(
         avg_factor: average factors.
         valid_label_mask: ignore label mask.
     """
-    if torch.cuda.is_available() and inputs.is_cuda:
-        calculate_loss_func = sigmoid_focal_loss
-    else:
-        inputs_size = inputs.size(1)
-        targets = torch.nn.functional.one_hot(targets, num_classes=inputs_size + 1)
-        targets = targets[:, :inputs_size]
-        calculate_loss_func = py_sigmoid_focal_loss
+    inputs_size = inputs.size(1)
+    targets = torch.nn.functional.one_hot(targets, num_classes=inputs_size + 1)
+    targets = targets[:, :inputs_size]
+    calculate_loss_func = py_sigmoid_focal_loss
 
     loss = calculate_loss_func(
         inputs,
