@@ -26,20 +26,20 @@ jobs:
       - name: Install dependencies
         run: |
           pip install --require-hashes --no-deps -r requirements/gh-actions.txt
-          pip-compile --extra=full -o /tmp/${{ github.sha }}/requirements.txt setup.py
+          pip-compile --extra=full -o ${{ runner.temp }}/requirements.txt setup.py
       - name: Trivy Scanning (CSV)
         uses: aquasecurity/trivy-action@d710430a6722f083d3b36b8339ff66b32f22ee55 # 0.19.0
         with:
           trivy-config: ".ci/trivy-csv.yaml"
           scan-type: "fs"
-          scan-ref: /tmp/${{ github.sha }}/
+          scan-ref: ${{ runner.temp }}
           scanners: vuln,secret
       - name: Trivy Scanning (spdx.json)
         uses: aquasecurity/trivy-action@d710430a6722f083d3b36b8339ff66b32f22ee55 # 0.19.0
         with:
           trivy-config: ".ci/trivy-json.yaml"
           scan-type: "fs"
-          scan-ref: /tmp/${{ github.sha }}/
+          scan-ref: ${{ runner.temp }}
       - name: Upload Trivy results artifact
         uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
         with:
@@ -57,9 +57,8 @@ jobs:
       - name: Install dependencies
         run: |
           pip install --require-hashes --no-deps -r requirements/gh-actions.txt
-          pip-compile --generate-hashes -o /tmp/${{ github.sha }}/requirements.txt requirements/dev.txt
-          pip install --require-hashes --no-deps -r /tmp/${{ github.sha }}/requirements.txt
-          rm /tmp/otx-dev-requirements.txt
+          pip-compile --generate-hashes -o ${{ runner.temp }}/requirements.txt requirements/dev.txt
+          pip install --require-hashes --no-deps -r ${{ runner.temp }}/requirements.txt
       - name: Bandit Scanning
         run: tox -e bandit-scan
       - name: Upload Bandit artifact
