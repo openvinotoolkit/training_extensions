@@ -5,3 +5,4 @@
 !LICENSE
 !MANIFEST.in
 !docker/download_pretrained_weights.py
+!.ci
