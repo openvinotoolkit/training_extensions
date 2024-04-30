@@ -17,7 +17,7 @@ from torch import nn
 from torchvision import tv_tensors
 
 from otx.algo.detection.backbones.pytorchcv_backbones import _build_model_including_pytorchcv
-from otx.algo.detection.heads.custom_anchor_generator import SSDAnchorGeneratorClustered
+from otx.algo.detection.heads.anchor_generator import SSDAnchorGeneratorClustered
 from otx.algo.detection.heads.delta_xywh_bbox_coder import DeltaXYWHBBoxCoder
 from otx.algo.detection.heads.ssd_head import SSDHead
 from otx.algo.modules.base_module import BaseModule

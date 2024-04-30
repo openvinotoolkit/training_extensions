@@ -9,9 +9,9 @@ from typing import TYPE_CHECKING
 import torch
 from torch import Tensor, nn
 
+from otx.algo.detection.heads.anchor_generator import AnchorGenerator
 from otx.algo.detection.heads.anchor_head import AnchorHead
 from otx.algo.detection.heads.base_sampler import PseudoSampler
-from otx.algo.detection.heads.custom_anchor_generator import AnchorGenerator
 from otx.algo.detection.heads.delta_xywh_bbox_coder import DeltaXYWHBBoxCoder
 from otx.algo.detection.heads.max_iou_assigner import MaxIoUAssigner
 from otx.algo.detection.losses.cross_entropy_loss import CrossEntropyLoss

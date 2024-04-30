@@ -12,10 +12,10 @@ import torch
 from mmengine.structures import InstanceData
 from torch import Tensor, nn
 
+from otx.algo.detection.heads.anchor_generator import AnchorGenerator
 from otx.algo.detection.heads.atss_assigner import ATSSAssigner
 from otx.algo.detection.heads.base_head import BaseDenseHead
 from otx.algo.detection.heads.base_sampler import PseudoSampler
-from otx.algo.detection.heads.custom_anchor_generator import AnchorGenerator
 from otx.algo.detection.heads.delta_xywh_bbox_coder import DeltaXYWHBBoxCoder
 from otx.algo.detection.heads.max_iou_assigner import MaxIoUAssigner
 from otx.algo.detection.utils.utils import anchor_inside_flags, images_to_levels, multi_apply, unmap
