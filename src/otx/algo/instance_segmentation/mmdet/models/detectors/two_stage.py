@@ -13,9 +13,6 @@ from typing import TYPE_CHECKING
 import torch
 from torch import Tensor, nn
 
-from otx.algo.instance_segmentation.mmdet.models.custom_roi_head import CustomRoIHead
-from otx.algo.instance_segmentation.mmdet.models.dense_heads import RPNHead
-
 from .base import BaseDetector
 
 if TYPE_CHECKING:
@@ -34,8 +31,8 @@ class TwoStageDetector(BaseDetector):
         self,
         backbone: nn.Module,
         neck: nn.Module,
-        rpn_head: RPNHead,
-        roi_head: CustomRoIHead,
+        rpn_head: nn.Module,
+        roi_head: nn.Module,
         train_cfg: ConfigDict | dict,
         test_cfg: ConfigDict | dict,
         data_preprocessor: ConfigDict | dict | None = None,

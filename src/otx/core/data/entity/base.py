@@ -6,6 +6,7 @@
 
 from __future__ import annotations
 
+import warnings
 from collections.abc import Mapping
 from dataclasses import asdict, dataclass, field, fields
 from typing import TYPE_CHECKING, Any, Dict, Generic, Iterator, TypeVar
@@ -614,6 +615,7 @@ class OTXBatchDataEntity(Generic[T_OTXDataEntity]):
                 "can have different image shapes among samples in the batch. However, if it is not your intention, "
                 "consider setting stack_images as False in the config."
             )
+            warnings.warn(msg, stacklevel=1)
             stack_images = False
 
         return OTXBatchDataEntity(
