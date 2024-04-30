@@ -253,6 +253,7 @@
 <span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Literal</span>
 
+<span class="kn">from</span> <span class="nn">otx.core.types.device</span> <span class="kn">import</span> <span class="n">DeviceType</span>
 <span class="kn">from</span> <span class="nn">otx.hpo.hpo_base</span> <span class="kn">import</span> <span class="n">HpoBase</span><span class="p">,</span> <span class="n">Trial</span><span class="p">,</span> <span class="n">TrialStatus</span>
 <span class="kn">from</span> <span class="nn">otx.hpo.resource_manager</span> <span class="kn">import</span> <span class="n">get_resource_manager</span>
 <span class="kn">from</span> <span class="nn">otx.utils</span> <span class="kn">import</span> <span class="n">append_main_proc_signal_handler</span>
@@ -279,21 +280,20 @@
 <span class="sd">    Args:</span>
 <span class="sd">        hpo_algo (HpoBase): HPO algorithms.</span>
 <span class="sd">        train_func (Callable): Function to train a model.</span>
-<span class="sd">        resource_type (Literal[&#39;gpu&#39;, &#39;cpu&#39;], optional): Which type of resource to use.</span>
-<span class="sd">                                                         If can be changed depending on environment. Defaults to &quot;gpu&quot;.</span>
+<span class="sd">        resource_type (Literal[DeviceType.cpu, DeviceType.gpu, DeviceType.xpu], optional):</span>
+<span class="sd">            Which type of resource to use. It can be changed depending on environment. Defaults to &quot;gpu&quot;.</span>
 <span class="sd">        num_parallel_trial (int | None, optional): How many trials to run in parallel.</span>
 <span class="sd">                                                   It&#39;s used for CPUResourceManager. Defaults to None.</span>
-<span class="sd">        num_gpu_for_single_trial (int | None, optional): How many GPUs are used for a single trial.</span>
-<span class="sd">                                                         It&#39;s used for GPUResourceManager. Defaults to None.</span>
+<span class="sd">        num_devices_per_trial (int, optional): Number of devices used for a single trial. Defaults to 1.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">hpo_algo</span><span class="p">:</span> <span class="n">HpoBase</span><span class="p">,</span>
         <span class="n">train_func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span>
-        <span class="n">resource_type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;gpu&quot;</span><span class="p">,</span> <span class="s2">&quot;cpu&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;gpu&quot;</span><span class="p">,</span>
+        <span class="n">resource_type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="n">DeviceType</span><span class="o">.</span><span class="n">cpu</span><span class="p">,</span> <span class="n">DeviceType</span><span class="o">.</span><span class="n">gpu</span><span class="p">,</span> <span class="n">DeviceType</span><span class="o">.</span><span class="n">xpu</span><span class="p">]</span> <span class="o">=</span> <span class="n">DeviceType</span><span class="o">.</span><span class="n">gpu</span><span class="p">,</span>
         <span class="n">num_parallel_trial</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">num_gpu_for_single_trial</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">num_devices_per_trial</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_hpo_algo</span> <span class="o">=</span> <span class="n">hpo_algo</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_train_func</span> <span class="o">=</span> <span class="n">train_func</span>
@@ -304,7 +304,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_resource_manager</span> <span class="o">=</span> <span class="n">get_resource_manager</span><span class="p">(</span>
             <span class="n">resource_type</span><span class="p">,</span>
             <span class="n">num_parallel_trial</span><span class="p">,</span>
-            <span class="n">num_gpu_for_single_trial</span><span class="p">,</span>
+            <span class="n">num_devices_per_trial</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_main_pid</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getpid</span><span class="p">()</span>
 
@@ -477,23 +477,23 @@
 <span class="k">def</span> <span class="nf">run_hpo_loop</span><span class="p">(</span>
     <span class="n">hpo_algo</span><span class="p">:</span> <span class="n">HpoBase</span><span class="p">,</span>
     <span class="n">train_func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span>
-    <span class="n">resource_type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;gpu&quot;</span><span class="p">,</span> <span class="s2">&quot;cpu&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;gpu&quot;</span><span class="p">,</span>
+    <span class="n">resource_type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="n">DeviceType</span><span class="o">.</span><span class="n">cpu</span><span class="p">,</span> <span class="n">DeviceType</span><span class="o">.</span><span class="n">gpu</span><span class="p">,</span> <span class="n">DeviceType</span><span class="o">.</span><span class="n">xpu</span><span class="p">]</span> <span class="o">=</span> <span class="n">DeviceType</span><span class="o">.</span><span class="n">gpu</span><span class="p">,</span>
     <span class="n">num_parallel_trial</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">num_gpu_for_single_trial</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">num_devices_per_trial</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Run the HPO loop.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        hpo_algo (HpoBase): HPO algorithms.</span>
 <span class="sd">        train_func (Callable): Function to train a model.</span>
-<span class="sd">        resource_type (&#39;gpu&#39; | &#39;cpu&#39;, optional): Which type of resource to use.</span>
-<span class="sd">                                                         If can be changed depending on environment. Defaults to &quot;gpu&quot;.</span>
+<span class="sd">        resource_type (DeviceType.cpu | DeviceType.gpu | DeviceType.gpu, optional):</span>
+<span class="sd">            Which type of resource to use. If can be changed depending on environment. Defaults to DeviceType.gpu.</span>
 <span class="sd">        num_parallel_trial (int | None, optional): How many trials to run in parallel.</span>
 <span class="sd">                                                   It&#39;s used for CPUResourceManager. Defaults to None.</span>
-<span class="sd">        num_gpu_for_single_trial (int | None, optional): How many GPUs are used for a single trial.</span>
-<span class="sd">                                                         It&#39;s used for GPUResourceManager. Defaults to None.</span>
+<span class="sd">        num_devices_per_trial (int, optional): How many GPUs are used for a single trial.</span>
+<span class="sd">                                               It&#39;s used for GPUResourceManager. Defaults to 1.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">hpo_loop</span> <span class="o">=</span> <span class="n">HpoLoop</span><span class="p">(</span><span class="n">hpo_algo</span><span class="p">,</span> <span class="n">train_func</span><span class="p">,</span> <span class="n">resource_type</span><span class="p">,</span> <span class="n">num_parallel_trial</span><span class="p">,</span> <span class="n">num_gpu_for_single_trial</span><span class="p">)</span>
+    <span class="n">hpo_loop</span> <span class="o">=</span> <span class="n">HpoLoop</span><span class="p">(</span><span class="n">hpo_algo</span><span class="p">,</span> <span class="n">train_func</span><span class="p">,</span> <span class="n">resource_type</span><span class="p">,</span> <span class="n">num_parallel_trial</span><span class="p">,</span> <span class="n">num_devices_per_trial</span><span class="p">)</span>
     <span class="n">hpo_loop</span><span class="o">.</span><span class="n">run</span><span class="p">()</span></div>
 
 </pre></div>
