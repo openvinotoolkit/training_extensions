@@ -80,8 +80,8 @@ class AnchorHead(BaseDenseHead):
         self.train_cfg = train_cfg
         self.test_cfg = test_cfg
         if self.train_cfg:
-            self.assigner = self.train_cfg["assigner"]
-            self.sampler = self.train_cfg["sampler"]
+            self.assigner = self.train_cfg.get("assigner", None)
+            self.sampler = self.train_cfg.get("sampler", None)
 
         self.fp16_enabled = False
 
