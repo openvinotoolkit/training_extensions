@@ -86,14 +86,12 @@ overrides:
             init_args:
               pad_to_square: true
               pad_val: 114
-          - class_path: torchvision.transforms.v2.ToDtype
-            init_args:
-              dtype: ${as_torch_dtype:torch.float32}
-              scale: False
-          - class_path: torchvision.transforms.v2.Normalize
+          - class_path: otx.core.data.transform_libs.torchvision.Normalize
             init_args:
               mean: [0.0, 0.0, 0.0]
               std: [1.0, 1.0, 1.0]
+              to_rgb: false
+          - class_path: otx.core.data.transform_libs.torchvision.NumpytoTVTensor
         sampler:
           class_path: otx.algo.samplers.balanced_sampler.BalancedSampler
       val_subset:
@@ -110,14 +108,12 @@ overrides:
             init_args:
               pad_to_square: true
               pad_val: 114
-          - class_path: torchvision.transforms.v2.ToDtype
-            init_args:
-              dtype: ${as_torch_dtype:torch.float32}
-              scale: False
-          - class_path: torchvision.transforms.v2.Normalize
+          - class_path: otx.core.data.transform_libs.torchvision.Normalize
             init_args:
               mean: [0.0, 0.0, 0.0]
               std: [1.0, 1.0, 1.0]
+              to_rgb: false
+          - class_path: otx.core.data.transform_libs.torchvision.NumpytoTVTensor
       test_subset:
         batch_size: 8
         transforms:
@@ -132,11 +128,9 @@ overrides:
             init_args:
               pad_to_square: true
               pad_val: 114
-          - class_path: torchvision.transforms.v2.ToDtype
-            init_args:
-              dtype: ${as_torch_dtype:torch.float32}
-              scale: False
-          - class_path: torchvision.transforms.v2.Normalize
+          - class_path: otx.core.data.transform_libs.torchvision.Normalize
             init_args:
               mean: [0.0, 0.0, 0.0]
               std: [1.0, 1.0, 1.0]
+              to_rgb: false
+          - class_path: otx.core.data.transform_libs.torchvision.NumpytoTVTensor

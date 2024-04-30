@@ -27,6 +27,7 @@ from otx.core.data.entity.action_classification import ActionClsDataEntity
 from otx.core.data.entity.base import (
     Points,
     _crop_image_info,
+    _normalize_image_info,
     _pad_image_info,
     _resize_image_info,
     _resized_crop_image_info,
@@ -1867,11 +1868,87 @@ class Pad(tvt_v2.Transform):
         return inputs
 
     def forward(self, *_inputs: T_OTXDataEntity) -> T_OTXDataEntity:
-        """Call function to pad images."""
+        """Forward function to pad images."""
         assert len(_inputs) == 1, "[tmp] Multiple entity is not supported yet."  # noqa: S101
         inputs = _inputs[0]
 
         return self._pad_img(inputs)
+
+
+class Normalize(tvt_v2.Transform):
+    """Implementation of mmcv.transforms.Normalize with torchvision format.
+
+    Reference : https://github.com/open-mmlab/mmcv/blob/v2.1.0/mmcv/transforms/processing.py#L22-L79
+
+    TODO : update masks for instance segmentation
+    TODO : optimize logic to torcivision pipeline
+
+    Args:
+        mean (sequence): Mean values of 3 channels.
+        std (sequence): Std values of 3 channels.
+        to_rgb (bool): Whether to convert the image from BGR to RGB before
+            normlizing the image. If ``to_rgb=True``, the order of mean and std
+            should be RGB. If ``to_rgb=False``, the order of mean and std
+            should be the same order of the image. Defaults to True.
+    """
+
+    def __init__(self, mean: Sequence[int | float], std: Sequence[int | float], to_rgb: bool = True) -> None:
+        super().__init__()
+        self.mean = np.array(mean, dtype=np.float32)
+        self.std = np.array(std, dtype=np.float32)
+        self.to_rgb = to_rgb
+
+    def _normalize_img(self, inputs: T_OTXDataEntity) -> T_OTXDataEntity:
+        img = to_np_image(inputs.image)
+        if img.dtype != np.float32:
+            img = img.astype(np.float32)
+
+        mean = np.float64(self.mean.reshape(1, -1))
+        stdinv = 1 / np.float64(self.std.reshape(1, -1))
+        if self.to_rgb:
+            cv2.cvtColor(img, cv2.COLOR_BGR2RGB, img)  # inplace
+        cv2.subtract(img, mean, img)  # inplace
+        cv2.multiply(img, stdinv, img)  # inplace
+
+        inputs.image = img
+        inputs.img_info = _normalize_image_info(inputs.img_info, list(self.mean), list(self.std))
+        return inputs
+
+    def forward(self, *_inputs: T_OTXDataEntity) -> T_OTXDataEntity:
+        """Forward function to normalize images."""
+        assert len(_inputs) == 1, "[tmp] Multiple entity is not supported yet."  # noqa: S101
+        inputs = _inputs[0]
+
+        return self._normalize_img(inputs)
+
+    def __repr__(self) -> str:
+        repr_str = self.__class__.__name__
+        repr_str += f"(mean={self.mean}, std={self.std}, to_rgb={self.to_rgb})"
+        return repr_str
+
+
+class NumpytoTVTensor(tvt_v2.Transform):
+    """Convert ndarray to tv_tensors.
+
+    TODO : update masks for instance segmentation
+    TODO : optimize logic to torcivision pipeline
+    """
+
+    def forward(self, *_inputs: T_OTXDataEntity) -> T_OTXDataEntity:
+        """Forward function to convert ndarrays.
+
+        Args:
+            _inputs (T_OTXDataEntity): Data entity.
+
+        Returns:
+            (T_OTXDataEntity): Data entity after converting ndarrays to tv_tensors.
+        """
+        assert len(_inputs) == 1, "[tmp] Multiple entity is not supported yet."  # noqa: S101
+        inputs = _inputs[0]
+
+        if isinstance(image := inputs.image, np.ndarray):
+            inputs.image = F.to_image(image)
+        return inputs
 
 
 tvt_v2.PerturbBoundingBoxes = PerturbBoundingBoxes

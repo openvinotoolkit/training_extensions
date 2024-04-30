@@ -1,5 +1,6 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
+# Copyright (c) OpenMMLab. All rights reserved.
 """Unit tests of detection data transform."""
 
 from __future__ import annotations
@@ -17,6 +18,8 @@ from otx.core.data.transform_libs.torchvision import (
     CachedMosaic,
     DecodeVideo,
     MinIoURandomCrop,
+    Normalize,
+    NumpytoTVTensor,
     PackVideo,
     Pad,
     PhotoMetricDistortion,
@@ -25,7 +28,7 @@ from otx.core.data.transform_libs.torchvision import (
     Resize,
     YOLOXHSVRandomAug,
 )
-from otx.core.data.transform_libs.utils import overlap_bboxes
+from otx.core.data.transform_libs.utils import overlap_bboxes, to_np_image
 from torch import LongTensor, Tensor
 from torchvision import tv_tensors
 from torchvision.transforms.v2 import functional as F  # noqa: N812
@@ -308,4 +311,49 @@ class TestPad:
 
         results = transform(deepcopy(det_data_entity))
 
+        # TODO (sungchul): check type
         assert results.image.shape[:2] == (231, 231)
+
+
+class TestNormalize:
+    def test_normalize(self, det_data_entity) -> None:
+        det_data_entity.image = torch.ones((3, 2, 2)) * 2
+        det_data_entity.image[1] *= 2
+        det_data_entity.image[2] *= 3
+
+        # test normalize
+        img_norm_cfg = {"mean": [1, 2, 3], "std": [2, 2, 2], "to_rgb": False}
+        transform = Normalize(**img_norm_cfg)
+
+        results = transform(deepcopy(det_data_entity))
+
+        assert np.all(
+            results.image == np.array([[[0.5, 1.0, 1.5], [0.5, 1.0, 1.5]], [[0.5, 1.0, 1.5], [0.5, 1.0, 1.5]]]),
+        )
+
+        # test to_rgb=True
+        img_norm_cfg = {"mean": [3, 2, 1], "std": [2, 2, 2], "to_rgb": True}
+        transform = Normalize(**img_norm_cfg)
+
+        results = transform(deepcopy(det_data_entity))
+
+        assert np.all(
+            results.image == np.array([[[1.5, 1.0, 0.5], [1.5, 1.0, 0.5]], [[1.5, 1.0, 0.5], [1.5, 1.0, 0.5]]]),
+        )
+
+    def test_repr(self):
+        img_norm_cfg = {"mean": [123.675, 116.28, 103.53], "std": [58.395, 57.12, 57.375], "to_rgb": True}
+        transform = Normalize(**img_norm_cfg)
+        assert repr(transform) == ("Normalize(mean=[123.675 116.28  103.53 ], std=[58.395 57.12  57.375], to_rgb=True)")
+
+
+class TestNumpytoTVTensor:
+    def test_numpy_to_tvtensor(self, det_data_entity) -> None:
+        det_data_entity.image = to_np_image(det_data_entity.image)
+
+        # test
+        transform = NumpytoTVTensor()
+
+        results = transform(deepcopy(det_data_entity))
+
+        assert isinstance(results.image, tv_tensors.Image)
