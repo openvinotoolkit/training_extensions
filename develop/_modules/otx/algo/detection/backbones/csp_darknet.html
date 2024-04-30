@@ -242,7 +242,6 @@
 
 <span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
 
-<span class="kn">import</span> <span class="nn">copy</span>
 <span class="kn">import</span> <span class="nn">math</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">ClassVar</span><span class="p">,</span> <span class="n">Sequence</span>
 
@@ -251,6 +250,7 @@
 <span class="kn">from</span> <span class="nn">torch.nn.modules.batchnorm</span> <span class="kn">import</span> <span class="n">_BatchNorm</span>
 
 <span class="kn">from</span> <span class="nn">otx.algo.detection.layers</span> <span class="kn">import</span> <span class="n">CSPLayer</span>
+<span class="kn">from</span> <span class="nn">otx.algo.modules.base_module</span> <span class="kn">import</span> <span class="n">BaseModule</span>
 <span class="kn">from</span> <span class="nn">otx.algo.modules.conv_module</span> <span class="kn">import</span> <span class="n">ConvModule</span>
 <span class="kn">from</span> <span class="nn">otx.algo.modules.depthwise_separable_conv_module</span> <span class="kn">import</span> <span class="n">DepthwiseSeparableConvModule</span>
 
@@ -316,7 +316,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">conv</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
 
 
-<span class="k">class</span> <span class="nc">SPPBottleneck</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">SPPBottleneck</span><span class="p">(</span><span class="n">BaseModule</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Spatial pyramid pooling layer used in YOLOv3-SPP.</span>
 
 <span class="sd">    Args:</span>
@@ -348,10 +348,7 @@
             <span class="n">norm_cfg</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;BN&quot;</span><span class="p">,</span> <span class="s2">&quot;momentum&quot;</span><span class="p">:</span> <span class="mf">0.03</span><span class="p">,</span> <span class="s2">&quot;eps&quot;</span><span class="p">:</span> <span class="mf">0.001</span><span class="p">}</span>
         <span class="k">if</span> <span class="n">act_cfg</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">act_cfg</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;Swish&quot;</span><span class="p">}</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
-        <span class="c1"># from mmengine.model.BaseModule</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_is_init</span> <span class="o">=</span> <span class="kc">False</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">init_cfg</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">init_cfg</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">init_cfg</span><span class="o">=</span><span class="n">init_cfg</span><span class="p">)</span>
 
         <span class="n">mid_channels</span> <span class="o">=</span> <span class="n">in_channels</span> <span class="o">//</span> <span class="mi">2</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">conv1</span> <span class="o">=</span> <span class="n">ConvModule</span><span class="p">(</span>
@@ -377,7 +374,7 @@
 
 <div class="viewcode-block" id="CSPDarknet">
 <a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.detection.backbones.html#otx.algo.detection.backbones.CSPDarknet">[docs]</a>
-<span class="k">class</span> <span class="nc">CSPDarknet</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">CSPDarknet</span><span class="p">(</span><span class="n">BaseModule</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;CSP-Darknet backbone used in YOLOv5 and YOLOX.</span>
 
 <span class="sd">    Args:</span>
@@ -469,10 +466,7 @@
                 <span class="s2">&quot;mode&quot;</span><span class="p">:</span> <span class="s2">&quot;fan_in&quot;</span><span class="p">,</span>
                 <span class="s2">&quot;nonlinearity&quot;</span><span class="p">:</span> <span class="s2">&quot;leaky_relu&quot;</span><span class="p">,</span>
             <span class="p">}</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
-        <span class="c1"># from mmengine.model.BaseModule</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_is_init</span> <span class="o">=</span> <span class="kc">False</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">init_cfg</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">init_cfg</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">init_cfg</span><span class="o">=</span><span class="n">init_cfg</span><span class="p">)</span>
 
         <span class="n">arch_setting</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">arch_settings</span><span class="p">[</span><span class="n">arch</span><span class="p">]</span>
         <span class="k">if</span> <span class="n">arch_ovewrite</span><span class="p">:</span>
