@@ -10,12 +10,13 @@ from abc import abstractmethod
 from typing import TYPE_CHECKING
 
 import torch
-from mmengine.model import BaseModule
 from mmengine.structures import InstanceData
 from torch import Tensor
 
 from otx.algo.detection.ops.nms import batched_nms, multiclass_nms
-from otx.algo.detection.utils.utils import filter_scores_and_topk, select_single_mlvl, unpack_gt_instances
+from otx.algo.detection.utils.utils import filter_scores_and_topk, select_single_mlvl, unpack_det_entity
+from otx.algo.modules.base_module import BaseModule
+from otx.core.data.entity.detection import DetBatchDataEntity
 
 if TYPE_CHECKING:
     from mmengine import ConfigDict
@@ -61,12 +62,7 @@ class BaseDenseHead(BaseModule):
     """
 
     def __init__(self, init_cfg: ConfigDict | list[ConfigDict] | dict | list[dict] | None = None) -> None:
-        super().__init__()
-
-        self._is_init = False
-
-        self.init_cfg = copy.deepcopy(init_cfg)
-
+        super().__init__(init_cfg=init_cfg)
         # `_raw_positive_infos` will be used in `get_positive_infos`, which
         # can get positive information.
         self._raw_positive_infos: dict = {}
@@ -94,7 +90,7 @@ class BaseDenseHead(BaseModule):
             positive_infos.append(pos_info)
         return positive_infos
 
-    def loss(self, x: tuple[Tensor], batch_data_samples: list[InstanceData]) -> dict:
+    def loss(self, x: tuple[Tensor], entity: DetBatchDataEntity) -> dict:
         """Perform forward propagation and loss calculation of the detection head.
 
         Args:
@@ -109,10 +105,9 @@ class BaseDenseHead(BaseModule):
         """
         outs = self(x)
 
-        outputs = unpack_gt_instances(batch_data_samples)
-        (batch_gt_instances, batch_gt_instances_ignore, batch_img_metas) = outputs
+        batch_gt_instances, batch_img_metas = unpack_det_entity(entity)
 
-        loss_inputs = (*outs, batch_gt_instances, batch_img_metas, batch_gt_instances_ignore)
+        loss_inputs = (*outs, batch_gt_instances, batch_img_metas)
         return self.loss_by_feat(*loss_inputs)
 
     @abstractmethod
@@ -126,45 +121,10 @@ class BaseDenseHead(BaseModule):
     ) -> dict:
         """Calculate the loss based on the features extracted by the detection head."""
 
-    def loss_and_predict(
-        self,
-        x: tuple[Tensor],
-        batch_data_samples: list[InstanceData],
-        proposal_cfg: ConfigDict | None = None,
-    ) -> tuple[dict, list[InstanceData]]:
-        """Perform forward propagation of the head, then calculate loss and predictions.
-
-        Args:
-            x (tuple[Tensor]): Features from FPN.
-            batch_data_samples (list[:obj:`DetDataSample`]): Each item contains
-                the meta information of each image and corresponding
-                annotations.
-            proposal_cfg (ConfigDict, optional): Test / postprocessing
-                configuration, if None, test_cfg would be used.
-                Defaults to None.
-
-        Returns:
-            tuple: the return value is a tuple contains:
-
-                - losses: (dict[str, Tensor]): A dictionary of loss components.
-                - predictions (list[:obj:`InstanceData`]): Detection
-                  results of each image after the post process.
-        """
-        outputs = unpack_gt_instances(batch_data_samples)
-        (batch_gt_instances, batch_gt_instances_ignore, batch_img_metas) = outputs
-
-        cls_scores, bbox_preds = self(x)
-
-        loss_inputs = (cls_scores, bbox_preds, batch_gt_instances, batch_img_metas, batch_gt_instances_ignore)
-        losses = self.loss_by_feat(*loss_inputs)
-
-        predictions = self.predict_by_feat(cls_scores, bbox_preds, batch_img_metas=batch_img_metas, cfg=proposal_cfg)
-        return losses, predictions
-
     def predict(
         self,
         x: tuple[Tensor],
-        batch_data_samples: list[InstanceData],
+        entity: DetBatchDataEntity,
         rescale: bool = False,
     ) -> list[InstanceData]:
         """Perform forward propagation of the detection head and predict detection results.
@@ -172,9 +132,7 @@ class BaseDenseHead(BaseModule):
         Args:
             x (tuple[Tensor]): Multi-level features from the
                 upstream network, each is a 4D-tensor.
-            batch_data_samples (List[:obj:`DetDataSample`]): The Data
-                Samples. It usually includes information such as
-                `gt_instance`, `gt_panoptic_seg` and `gt_sem_seg`.
+            entity (DetBatchDataEntity): Entity from OTX dataset.
             rescale (bool, optional): Whether to rescale the results.
                 Defaults to False.
 
@@ -182,7 +140,17 @@ class BaseDenseHead(BaseModule):
             list[obj:`InstanceData`]: Detection results of each image
             after the post process.
         """
-        batch_img_metas = [data_samples.metainfo for data_samples in batch_data_samples]
+        batch_img_metas = [
+            {
+                "img_id": img_info.img_idx,
+                "img_shape": img_info.img_shape,
+                "ori_shape": img_info.ori_shape,
+                "pad_shape": img_info.pad_shape,
+                "scale_factor": img_info.scale_factor,
+                "ignored_labels": img_info.ignored_labels,
+            }
+            for img_info in entity.imgs_info
+        ]
 
         outs = self(x)
 
@@ -192,8 +160,8 @@ class BaseDenseHead(BaseModule):
         self,
         cls_scores: list[Tensor],
         bbox_preds: list[Tensor],
-        batch_img_metas: list[dict],
         score_factors: list[Tensor] | None = None,
+        batch_img_metas: list[dict] | None = None,
         cfg: ConfigDict | None = None,
         rescale: bool = False,
         with_nms: bool = True,
@@ -235,6 +203,9 @@ class BaseDenseHead(BaseModule):
                 - bboxes (Tensor): Has a shape (num_instances, 4),
                   the last dimension 4 arrange as (x1, y1, x2, y2).
         """
+        if batch_img_metas is None:
+            batch_img_metas = []
+
         num_levels = len(cls_scores)
 
         featmap_sizes = [cls_scores[i].shape[-2:] for i in range(num_levels)]
@@ -380,7 +351,7 @@ class BaseDenseHead(BaseModule):
             mlvl_scores.append(scores)
             mlvl_labels.append(labels)
 
-            if mlvl_score_factors:
+            if mlvl_score_factors is not None:
                 mlvl_score_factors.append(score_factor)
 
         bbox_pred = torch.cat(mlvl_bbox_preds)
@@ -463,7 +434,7 @@ class BaseDenseHead(BaseModule):
     def export(
         self,
         x: tuple[Tensor],
-        batch_data_samples: list[InstanceData],
+        batch_img_metas: list[dict],
         rescale: bool = False,
     ) -> list[InstanceData]:
         """Perform forward propagation of the detection head and predict detection results.
@@ -481,18 +452,16 @@ class BaseDenseHead(BaseModule):
             list[obj:`InstanceData`]: Detection results of each image
             after the post process.
         """
-        batch_img_metas = [data_samples.metainfo for data_samples in batch_data_samples]
+        outs = self(x)
 
-        cls_scores, bbox_preds = self(x)
-
-        return self.export_by_feat(cls_scores, bbox_preds, batch_img_metas=batch_img_metas, rescale=rescale)
+        return self.export_by_feat(*outs, batch_img_metas=batch_img_metas, rescale=rescale)  # type: ignore[misc]
 
     def export_by_feat(
         self,
         cls_scores: list[Tensor],
         bbox_preds: list[Tensor],
-        batch_img_metas: list[dict],
         score_factors: list[Tensor] | None = None,
+        batch_img_metas: list[dict] | None = None,
         cfg: ConfigDict | None = None,
         rescale: bool = False,
         with_nms: bool = True,
@@ -534,6 +503,9 @@ class BaseDenseHead(BaseModule):
                 - bboxes (Tensor): Has a shape (num_instances, 4),
                   the last dimension 4 arrange as (x1, y1, x2, y2).
         """
+        if batch_img_metas is None:
+            batch_img_metas = [{}]
+
         num_levels = len(cls_scores)
 
         featmap_sizes = [featmap.size()[-2:] for featmap in cls_scores]
@@ -660,9 +632,9 @@ class BaseDenseHead(BaseModule):
         return multiclass_nms(
             bboxes,
             scores,
-            cfg.max_per_img,
+            max_output_boxes_per_class=200,  # TODO (sungchul): temporarily set to mmdeploy cfg, will be updated
             iou_threshold=cfg.nms.iou_threshold,
             score_threshold=cfg.score_thr,
             pre_top_k=5000,
-            keep_top_k=-1,
+            keep_top_k=cfg.max_per_img,
         )

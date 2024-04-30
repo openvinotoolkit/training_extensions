@@ -13,10 +13,10 @@ import torch
 from importlib_resources import files
 from lightning.pytorch.cli import ReduceLROnPlateau
 from omegaconf import OmegaConf
-from otx.algo.detection.yolox import OTXYOLOX
+from otx.algo.detection.atss import ATSS
 from otx.algo.explain.explain_algo import feature_vector_fn
 from otx.core.metrics.fmeasure import FMeasureCallable
-from otx.core.model.detection import MMDetCompatibleModel, OTXDetectionModel
+from otx.core.model.detection import OTXDetectionModel
 from otx.core.types.export import TaskLevelExportParameters
 from torch.optim import Optimizer
 
@@ -55,11 +55,8 @@ class TestOTXDetectionModel:
         return OmegaConf.load(cfg_path)
 
     @pytest.fixture()
-    def otx_model(self, config) -> MMDetCompatibleModel:
-        # TODO (someone): revert to MMDetCompatibleModel
-        # MMDetCompatibleModel._create_model still calls build_mm_model
-        # return MMDetCompatibleModel(label_info=1, config=config)  # noqa: ERA001
-        return OTXYOLOX(label_info=1, variant="tiny")
+    def otx_model(self) -> ATSS:
+        return ATSS(label_info=1, variant="mobilenetv2")
 
     def test_configure_metric_with_ckpt(
         self,
@@ -94,11 +91,12 @@ class TestOTXDetectionModel:
         explain_fn = otx_model.get_explain_fn()
         assert callable(explain_fn)
 
-    def test_forward_explain_detection(self, otx_model, fxt_data_sample):
-        inputs = torch.randn(1, 3, 224, 224)
+    def test_forward_explain_detection(self, otx_model, fxt_det_data_entity):
         otx_model.model.feature_vector_fn = feature_vector_fn
         otx_model.model.explain_fn = otx_model.get_explain_fn()
-        result = otx_model._forward_explain_detection(otx_model.model, inputs, fxt_data_sample, mode="predict")
+        inputs = fxt_det_data_entity[2]
+        inputs.images = torch.randn(1, 3, 64, 64)
+        result = otx_model._forward_explain_detection(otx_model.model, inputs, mode="predict")
 
         assert "predictions" in result
         assert "feature_vector" in result
@@ -106,10 +104,8 @@ class TestOTXDetectionModel:
 
     def test_customize_inputs(self, otx_model, fxt_det_data_entity) -> None:
         output_data = otx_model._customize_inputs(fxt_det_data_entity[2])
-        assert output_data is not None
-        assert "gt_instances" in output_data["data_samples"][-1]
-        assert "bboxes" in output_data["data_samples"][-1].gt_instances
-        assert output_data["data_samples"][-1].metainfo["pad_shape"] == output_data["inputs"].shape[-2:]
+        assert output_data["mode"] == "loss"
+        assert output_data["entity"] == fxt_det_data_entity[2]
 
     def test_forward_explain(self, otx_model, fxt_det_data_entity):
         inputs = fxt_det_data_entity[2]

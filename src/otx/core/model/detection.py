@@ -11,8 +11,8 @@ from contextlib import contextmanager
 from typing import TYPE_CHECKING, Any, Callable, Iterator, Literal
 
 import torch
-from openvino.model_api.models import Model
-from openvino.model_api.tilers import DetectionTiler
+from model_api.models import Model
+from model_api.tilers import DetectionTiler
 from torchvision import tv_tensors
 
 from otx.core.config.data import TileConfig
@@ -31,12 +31,12 @@ from otx.core.utils.tile_merge import DetectionTileMerge
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
     from mmdet.models.data_preprocessors import DetDataPreprocessor
-    from mmdet.models.detectors import SingleStageDetector
-    from mmdet.structures import OptSampleList
+    from model_api.models.utils import DetectionResult
     from omegaconf import DictConfig
-    from openvino.model_api.models.utils import DetectionResult
     from torch import nn
     from torchmetrics import Metric
+
+    from otx.algo.detection.ssd import SingleStageDetector
 
 
 class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity]):
@@ -213,7 +213,6 @@ class ExplainableOTXDetModel(OTXDetectionModel):
             if self._customize_inputs != ExplainableOTXDetModel._customize_inputs
             else self._forward_explain_detection(self.model, inputs)
         )
-
         return (
             self._customize_outputs(outputs, inputs)
             if self._customize_outputs != ExplainableOTXDetModel._customize_outputs
@@ -223,8 +222,7 @@ class ExplainableOTXDetModel(OTXDetectionModel):
     @staticmethod
     def _forward_explain_detection(
         self: SingleStageDetector,
-        inputs: torch.Tensor,
-        data_samples: OptSampleList | None = None,
+        entity: DetBatchDataEntity,
         mode: str = "tensor",
     ) -> dict[str, torch.Tensor]:
         """Forward func of the BaseDetector instance, which located in is in ExplainableOTXDetModel().model."""
@@ -233,7 +231,7 @@ class ExplainableOTXDetModel(OTXDetectionModel):
         for param in self.parameters():
             param.requires_grad = False
 
-        backbone_feat = self.extract_feat(inputs)
+        backbone_feat = self.extract_feat(entity.images)
         bbox_head_feat = self.bbox_head.forward(backbone_feat)
 
         # Process the first output form bbox detection head: classification scores
@@ -241,19 +239,13 @@ class ExplainableOTXDetModel(OTXDetectionModel):
         saliency_map = self.explain_fn(bbox_head_feat[0])
 
         if mode == "predict":
-            results_list = self.bbox_head.predict(backbone_feat, data_samples)
-            if isinstance(results_list, tuple):
-                # Export case
-                predictions = results_list
-            else:
-                # Predict case, InstanceData or List[InstanceData]
-                predictions = self.add_pred_to_datasample(data_samples, results_list)
+            predictions = self.bbox_head.predict(backbone_feat, entity)
 
         elif mode == "tensor":
             predictions = bbox_head_feat
         elif mode == "loss":
             # Temporary condition to pass undetermined "test_forward_train" test, values aren't used
-            predictions = self.bbox_head.loss(backbone_feat, data_samples)["loss_cls"]
+            predictions = self.bbox_head.loss(backbone_feat, entity)["loss_cls"]
         else:
             msg = f'Invalid mode "{mode}".'
             raise RuntimeError(msg)
@@ -266,7 +258,7 @@ class ExplainableOTXDetModel(OTXDetectionModel):
 
     def get_explain_fn(self) -> Callable:
         """Returns explain function."""
-        from otx.algo.detection.heads.custom_ssd_head import SSDHead
+        from otx.algo.detection.heads.ssd_head import SSDHead
         from otx.algo.explain.explain_algo import DetClassProbabilityMap
 
         # SSD-like heads also have background class
@@ -531,7 +523,7 @@ class OVDetectionModel(OVModel[DetBatchDataEntity, DetBatchPredEntity]):
 
     def _create_model(self) -> Model:
         """Create a OV model with help of Model API."""
-        from openvino.model_api.adapters import OpenvinoAdapter, create_core, get_user_config
+        from model_api.adapters import OpenvinoAdapter, create_core, get_user_config
 
         plugin_config = get_user_config("AUTO", str(self.num_requests), "AUTO")
         if self.use_throughput_mode:

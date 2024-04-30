@@ -8,6 +8,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Generic, Sequence
 
+from otx.core.data.entity.utils import stack_batch
 from otx.core.types.task import OTXTaskType
 
 from .base import ImageInfo, T_OTXBatchDataEntity, T_OTXDataEntity
@@ -112,7 +113,7 @@ class TileBatchDetDataEntity(OTXTileBatchDataEntity):
         batch_data_entities = [
             DetBatchDataEntity(
                 batch_size=self.batch_size,
-                images=tiles[i : i + self.batch_size],
+                images=stack_batch(tiles[i : i + self.batch_size]),
                 imgs_info=tile_infos[i : i + self.batch_size],
                 bboxes=[[] for _ in range(self.batch_size)],
                 labels=[[] for _ in range(self.batch_size)],

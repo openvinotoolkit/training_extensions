@@ -6,7 +6,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
-from openvino.model_api.tilers import Tiler
+from model_api.tilers import Tiler
 from otx.algo.classification.efficientnet import EfficientNetForMulticlassCls
 from otx.core.config.hpo import HpoConfig
 from otx.core.data.module import OTXDataModule
@@ -185,7 +185,19 @@ def test_otx_hpo(
         pytest.xfail(reason=reason)
 
     model = EfficientNetForMulticlassCls(label_info=2)
-    hpo_config = HpoConfig(metric_name=METRIC_NAME[task], expected_time_ratio=2, num_workers=1)
+    hpo_config = HpoConfig(
+        search_space={
+            "model.scheduler.factor": {
+                "type": "uniform",
+                "min": 0.05,
+                "max": 0.15,
+                "step": 0.01,
+            },
+        },
+        metric_name=METRIC_NAME[task],
+        expected_time_ratio=2,
+        num_workers=1,
+    )
     work_dir = str(tmp_path)
     engine = Engine(
         data_root=fxt_target_dataset_per_task[task.lower()],

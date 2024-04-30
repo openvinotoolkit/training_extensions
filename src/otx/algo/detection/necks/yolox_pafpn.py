@@ -5,7 +5,6 @@
 
 from __future__ import annotations
 
-import copy
 import math
 from typing import Any
 
@@ -13,11 +12,12 @@ import torch
 from torch import Tensor, nn
 
 from otx.algo.detection.layers import CSPLayer
+from otx.algo.modules.base_module import BaseModule
 from otx.algo.modules.conv_module import ConvModule
 from otx.algo.modules.depthwise_separable_conv_module import DepthwiseSeparableConvModule
 
 
-class YOLOXPAFPN(nn.Module):
+class YOLOXPAFPN(BaseModule):
     """Path Aggregation Network used in YOLOX.
 
     Args:
@@ -69,10 +69,7 @@ class YOLOXPAFPN(nn.Module):
                 "nonlinearity": "leaky_relu",
             }
 
-        super().__init__()
-        # from mmengine.model.BaseModule
-        self._is_init = False
-        self.init_cfg = copy.deepcopy(init_cfg)
+        super().__init__(init_cfg=init_cfg)
 
         self.in_channels = in_channels
         self.out_channels = out_channels

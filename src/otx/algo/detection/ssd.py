@@ -10,29 +10,34 @@ from copy import deepcopy
 from typing import TYPE_CHECKING, Any, Literal
 
 import numpy as np
+import torch
 from datumaro.components.annotation import Bbox
 from mmengine.structures import InstanceData
 from torch import nn
+from torchvision import tv_tensors
 
-from otx.algo.detection.backbones.pytorchcv_backbones import _build_pytorchcv_model
-from otx.algo.detection.heads.custom_ssd_head import SSDHead
+from otx.algo.detection.backbones.pytorchcv_backbones import _build_model_including_pytorchcv
+from otx.algo.detection.heads.ssd_head import SSDHead
+from otx.algo.modules.base_module import BaseModule
 from otx.algo.utils.mmconfig import read_mmconfig
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.config.data import TileConfig
+from otx.core.data.entity.base import OTXBatchLossEntity
+from otx.core.data.entity.detection import DetBatchDataEntity, DetBatchPredEntity
+from otx.core.data.entity.utils import stack_batch
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.metrics.mean_ap import MeanAPCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
-from otx.core.model.detection import MMDetCompatibleModel
+from otx.core.model.detection import ExplainableOTXDetModel
 from otx.core.model.utils.mmdet import DetDataPreprocessor
 from otx.core.schedulers import LRSchedulerListCallable
 from otx.core.types.label import LabelInfoTypes
 from otx.core.utils.build import modify_num_classes
-from otx.core.utils.config import convert_conf_to_mmconfig_dict
+from otx.core.utils.config import convert_conf_to_mmconfig_dict, inplace_num_classes
 from otx.core.utils.utils import get_mean_std_from_data_processing
 
 if TYPE_CHECKING:
-    import torch
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
     from mmengine import ConfigDict
     from omegaconf import DictConfig
@@ -48,7 +53,7 @@ logger = logging.getLogger()
 
 # This class and its supporting functions below lightly adapted from the mmdet SingleStageDetector available at:
 # https://github.com/open-mmlab/mmdetection/blob/cfd5d3a985b0249de009b67d04f37263e11cdf3d/mmdet/models/detectors/single_stage.py
-class SingleStageDetector(nn.Module):
+class SingleStageDetector(BaseModule):
     """Single stage detector implementation from mmdet."""
 
     def __init__(
@@ -56,24 +61,30 @@ class SingleStageDetector(nn.Module):
         backbone: ConfigDict | dict,
         bbox_head: ConfigDict | dict,
         data_preprocessor: ConfigDict | dict,
+        neck: ConfigDict | dict | None = None,
         train_cfg: ConfigDict | dict | None = None,
         test_cfg: ConfigDict | dict | None = None,
         init_cfg: ConfigDict | list[ConfigDict] | dict | list[dict] = None,
     ) -> None:
-        super().__init__()
-        self._is_init = False
+        super().__init__(init_cfg=init_cfg)
         self.backbone = self.build_backbone(backbone)
+        if neck is not None:
+            self.neck = self.build_neck(neck)
         bbox_head.update(train_cfg=train_cfg)
         bbox_head.update(test_cfg=test_cfg)
         self.bbox_head = self.build_bbox_head(bbox_head)
         self.data_preprocessor = self.build_det_data_preprocessor(data_preprocessor)
-        self.init_cfg = init_cfg
         self.train_cfg = train_cfg
         self.test_cfg = test_cfg
 
     def build_backbone(self, cfg: ConfigDict | dict) -> nn.Module:
         """Build backbone."""
-        return _build_pytorchcv_model(**cfg)
+        return _build_model_including_pytorchcv(cfg)
+
+    def build_neck(self, cfg: ConfigDict | dict) -> nn.Module:
+        """Build neck."""
+        msg = "build_neck is not implemented."
+        raise NotImplementedError(msg)
 
     def build_bbox_head(self, cfg: ConfigDict | dict) -> nn.Module:
         """Build bbox head."""
@@ -118,58 +129,9 @@ class SingleStageDetector(nn.Module):
             error_msgs,
         )
 
-    def init_weights(self) -> None:
-        """Initialize the weights."""
-        from mmengine.logging import print_log
-        from mmengine.model.weight_init import PretrainedInit, initialize
-        from mmengine.model.wrappers.utils import is_model_wrapper
-
-        module_name = self.__class__.__name__
-        if not self._is_init:
-            if self.init_cfg:
-                print_log(
-                    f"initialize {module_name} with init_cfg {self.init_cfg}",
-                    logger="current",
-                    level=logging.DEBUG,
-                )
-
-                init_cfgs = self.init_cfg
-                if isinstance(self.init_cfg, dict):
-                    init_cfgs = [self.init_cfg]
-
-                # PretrainedInit has higher priority than any other init_cfg.
-                # Therefore we initialize `pretrained_cfg` last to overwrite
-                # the previous initialized weights.
-                # See details in https://github.com/open-mmlab/mmengine/issues/691 # E501
-                other_cfgs = []
-                pretrained_cfg = []
-                for init_cfg in init_cfgs:
-                    if init_cfg["type"] == "Pretrained" or init_cfg["type"] is PretrainedInit:
-                        pretrained_cfg.append(init_cfg)
-                    else:
-                        other_cfgs.append(init_cfg)
-
-                initialize(self, other_cfgs)
-
-            for m in self.children():
-                if is_model_wrapper(m) and not hasattr(m, "init_weights"):
-                    m = m.module  # noqa: PLW2901
-                if hasattr(m, "init_weights") and not getattr(m, "is_init", False):
-                    m.init_weights()
-            if self.init_cfg and pretrained_cfg:
-                initialize(self, pretrained_cfg)
-            self._is_init = True
-        else:
-            print_log(
-                f"init_weights of {self.__class__.__name__} has been called more than once.",
-                logger="current",
-                level=logging.WARNING,
-            )
-
     def forward(
         self,
-        inputs: torch.Tensor,
-        data_samples: list[InstanceData],
+        entity: DetBatchDataEntity,
         mode: str = "tensor",
     ) -> dict[str, torch.Tensor] | list[InstanceData] | tuple[torch.Tensor] | torch.Tensor:
         """The unified entry for a forward process in both training and test.
@@ -202,19 +164,18 @@ class SingleStageDetector(nn.Module):
             - If ``mode="loss"``, return a dict of tensor.
         """
         if mode == "loss":
-            return self.loss(inputs, data_samples)
+            return self.loss(entity)
         if mode == "predict":
-            return self.predict(inputs, data_samples)
+            return self.predict(entity)
         if mode == "tensor":
-            return self._forward(inputs, data_samples)
+            return self._forward(entity)
 
         msg = f"Invalid mode {mode}. Only supports loss, predict and tensor mode"
         raise RuntimeError(msg)
 
     def loss(
         self,
-        batch_inputs: Tensor,
-        batch_data_samples: list[InstanceData],
+        entity: DetBatchDataEntity,
     ) -> dict | list:
         """Calculate losses from a batch of inputs and data samples.
 
@@ -228,13 +189,12 @@ class SingleStageDetector(nn.Module):
         Returns:
             dict: A dictionary of loss components.
         """
-        x = self.extract_feat(batch_inputs)
-        return self.bbox_head.loss(x, batch_data_samples)
+        x = self.extract_feat(entity.images)
+        return self.bbox_head.loss(x, entity)
 
     def predict(
         self,
-        batch_inputs: Tensor,
-        batch_data_samples: list[InstanceData],
+        entity: DetBatchDataEntity,
         rescale: bool = True,
     ) -> list[InstanceData]:
         """Predict results from a batch of inputs and data samples with post-processing.
@@ -260,16 +220,16 @@ class SingleStageDetector(nn.Module):
                 - bboxes (Tensor): Has a shape (num_instances, 4),
                     the last dimension 4 arrange as (x1, y1, x2, y2).
         """
-        x = self.extract_feat(batch_inputs)
-        results_list = self.bbox_head.predict(x, batch_data_samples, rescale=rescale)
-        return self.add_pred_to_datasample(batch_data_samples, results_list)
+        x = self.extract_feat(entity.images)
+        return self.bbox_head.predict(x, entity, rescale=rescale)
 
     def export(
         self,
         batch_inputs: Tensor,
-        batch_data_samples: list[InstanceData],
+        batch_img_metas: list[dict],
         rescale: bool = True,
-    ) -> list[InstanceData]:
+        explain_mode: bool = False,
+    ) -> list[InstanceData] | dict:
         """Predict results from a batch of inputs and data samples with post-processing.
 
         Args:
@@ -293,8 +253,20 @@ class SingleStageDetector(nn.Module):
                 - bboxes (Tensor): Has a shape (num_instances, 4),
                     the last dimension 4 arrange as (x1, y1, x2, y2).
         """
+        if explain_mode:
+            backbone_feat = self.extract_feat(batch_inputs)
+            bbox_head_feat = self.bbox_head.forward(backbone_feat)
+            feature_vector = self.feature_vector_fn(backbone_feat)
+            saliency_map = self.explain_fn(bbox_head_feat[0])
+            bboxes, labels = self.bbox_head.export(backbone_feat, batch_img_metas, rescale=rescale)
+            return {
+                "bboxes": bboxes,
+                "labels": labels,
+                "feature_vector": feature_vector,
+                "saliency_map": saliency_map,
+            }
         x = self.extract_feat(batch_inputs)
-        return self.bbox_head.export(x, batch_data_samples, rescale=rescale)
+        return self.bbox_head.export(x, batch_img_metas, rescale=rescale)
 
     def _forward(
         self,
@@ -330,39 +302,6 @@ class SingleStageDetector(nn.Module):
             x = self.neck(x)
         return x
 
-    def add_pred_to_datasample(
-        self,
-        data_samples: list[InstanceData],
-        results_list: list[InstanceData],
-    ) -> list[InstanceData]:
-        """Add predictions to `InstanceData`.
-
-        Args:
-            data_samples (list[:obj:`InstanceData`], optional): A batch of
-                data samples that contain annotations and predictions.
-            results_list (list[:obj:`InstanceData`]): Detection results of
-                each image.
-
-        Returns:
-            list[:obj:`InstanceData`]: Detection results of the
-            input images. Each InstanceData usually contain
-            'pred_instances'. And the ``pred_instances`` usually
-            contains following keys.
-
-                - scores (Tensor): Classification scores, has a shape
-                    (num_instance, )
-                - labels (Tensor): Labels of bboxes, has a shape
-                    (num_instances, ).
-                - bboxes (Tensor): Has a shape (num_instances, 4),
-                    the last dimension 4 arrange as (x1, y1, x2, y2).
-        """
-        from mmdet.models.utils import samplelist_boxtype2tensor
-
-        for data_sample, pred_instances in zip(data_samples, results_list):
-            data_sample.pred_instances = pred_instances
-        samplelist_boxtype2tensor(data_samples)
-        return data_samples
-
     @property
     def with_neck(self) -> bool:
         """bool: whether the detector has a neck."""
@@ -388,7 +327,7 @@ class SingleStageDetector(nn.Module):
         )
 
 
-class SSD(MMDetCompatibleModel):
+class SSD(ExplainableOTXDetModel):
     """Detecion model class for SSD."""
 
     def __init__(
@@ -403,9 +342,11 @@ class SSD(MMDetCompatibleModel):
     ) -> None:
         model_name = f"ssd_{variant}"
         config = read_mmconfig(model_name=model_name)
+        config = inplace_num_classes(cfg=config, num_classes=self._dispatch_label_info(label_info).num_classes)
+        self.config = config
+        self.load_from = config.pop("load_from", None)
         super().__init__(
             label_info=label_info,
-            config=config,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
@@ -421,9 +362,93 @@ class SSD(MMDetCompatibleModel):
         config = deepcopy(self.config)
         self.classification_layers = self.get_classification_layers(config, "model.")
         detector = SingleStageDetector(**convert_conf_to_mmconfig_dict(config))
+        detector.init_weights()
         if self.load_from is not None:
             load_checkpoint(detector, self.load_from, map_location="cpu")
         return detector
+
+    def _customize_inputs(self, entity: DetBatchDataEntity) -> dict[str, Any]:
+        if isinstance(entity.images, list):
+            entity.images = stack_batch(entity.images, pad_size_divisor=32)
+        inputs: dict[str, Any] = {}
+
+        inputs["entity"] = entity
+        inputs["mode"] = "loss" if self.training else "predict"
+
+        return inputs
+
+    def _customize_outputs(
+        self,
+        outputs: list[InstanceData] | dict,
+        inputs: DetBatchDataEntity,
+    ) -> DetBatchPredEntity | OTXBatchLossEntity:
+        if self.training:
+            if not isinstance(outputs, dict):
+                raise TypeError(outputs)
+
+            losses = OTXBatchLossEntity()
+            for k, v in outputs.items():
+                if isinstance(v, list):
+                    losses[k] = sum(v)
+                elif isinstance(v, torch.Tensor):
+                    losses[k] = v
+                else:
+                    msg = "Loss output should be list or torch.tensor but got {type(v)}"
+                    raise TypeError(msg)
+            return losses
+
+        scores = []
+        bboxes = []
+        labels = []
+        predictions = outputs["predictions"] if isinstance(outputs, dict) else outputs
+        for img_info, prediction in zip(inputs.imgs_info, predictions):
+            if not isinstance(prediction, InstanceData):
+                raise TypeError(prediction)
+            scores.append(prediction.scores)
+            bboxes.append(
+                tv_tensors.BoundingBoxes(
+                    prediction.bboxes,
+                    format="XYXY",
+                    canvas_size=img_info.ori_shape,
+                ),
+            )
+            labels.append(prediction.labels)
+
+        if self.explain_mode:
+            if not isinstance(outputs, dict):
+                msg = f"Model output should be a dict, but got {type(outputs)}."
+                raise ValueError(msg)
+
+            if "feature_vector" not in outputs:
+                msg = "No feature vector in the model output."
+                raise ValueError(msg)
+
+            if "saliency_map" not in outputs:
+                msg = "No saliency maps in the model output."
+                raise ValueError(msg)
+
+            saliency_map = outputs["saliency_map"].detach().cpu().numpy()
+            feature_vector = outputs["feature_vector"].detach().cpu().numpy()
+
+            return DetBatchPredEntity(
+                batch_size=len(outputs),
+                images=inputs.images,
+                imgs_info=inputs.imgs_info,
+                scores=scores,
+                bboxes=bboxes,
+                labels=labels,
+                saliency_map=saliency_map,
+                feature_vector=feature_vector,
+            )
+
+        return DetBatchPredEntity(
+            batch_size=len(outputs),
+            images=inputs.images,
+            imgs_info=inputs.imgs_info,
+            scores=scores,
+            bboxes=bboxes,
+            labels=labels,
+        )
 
     def setup(self, stage: str) -> None:
         """Callback for setup OTX SSD Model.
@@ -454,11 +479,13 @@ class SSD(MMDetCompatibleModel):
 
     def _get_new_anchors(self, dataset: OTXDataset, anchor_generator: SSDAnchorGeneratorClustered) -> tuple | None:
         """Get new anchors for SSD from OTXDataset."""
-        from mmdet.datasets.transforms import Resize
+        from torchvision.transforms.v2._container import Compose
+
+        from otx.core.data.transform_libs.torchvision import Resize
 
         target_wh = None
-        if isinstance(dataset.transforms, list):
-            for transform in dataset.transforms:
+        if isinstance(dataset.transforms, Compose):
+            for transform in dataset.transforms.transforms:
                 if isinstance(transform, Resize):
                     target_wh = transform.scale
         if target_wh is None:
@@ -619,7 +646,7 @@ class SSD(MMDetCompatibleModel):
                 },
                 "autograd_inlining": False,
             },
-            output_names=["feature_vector", "saliency_map"] if self.explain_mode else None,
+            output_names=["bboxes", "labels", "feature_vector", "saliency_map"] if self.explain_mode else None,
         )
 
     def forward_for_tracing(self, inputs: Tensor) -> list[InstanceData]:
@@ -631,11 +658,8 @@ class SSD(MMDetCompatibleModel):
             "img_shape": shape,
             "scale_factor": (1.0, 1.0),
         }
-        sample = InstanceData(
-            metainfo=meta_info,
-        )
-        data_samples = [sample] * len(inputs)
-        return self.model.export(inputs, data_samples)
+        meta_info_list = [meta_info] * len(inputs)
+        return self.model.export(inputs, meta_info_list, explain_mode=self.explain_mode)
 
     def on_load_checkpoint(self, checkpoint: dict[str, Any]) -> None:
         """Callback on load checkpoint."""

@@ -6,27 +6,61 @@
 from __future__ import annotations
 
 from copy import deepcopy
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING, Any, Literal
 
+import torch
+from mmengine.structures import InstanceData
+from torchvision import tv_tensors
+
+from otx.algo.detection.backbones.pytorchcv_backbones import _build_model_including_pytorchcv
+from otx.algo.detection.backbones.resnext import ResNeXt
+from otx.algo.detection.heads.atss_head import ATSSHead
+from otx.algo.detection.necks.fpn import FPN
+from otx.algo.detection.ssd import SingleStageDetector
 from otx.algo.utils.mmconfig import read_mmconfig
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.config.data import TileConfig
+from otx.core.data.entity.base import OTXBatchLossEntity
+from otx.core.data.entity.detection import DetBatchDataEntity, DetBatchPredEntity
+from otx.core.data.entity.utils import stack_batch
 from otx.core.exporter.base import OTXModelExporter
-from otx.core.exporter.mmdeploy import MMdeployExporter
+from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.metrics.mean_ap import MeanAPCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
-from otx.core.model.detection import MMDetCompatibleModel
+from otx.core.model.detection import ExplainableOTXDetModel
 from otx.core.schedulers import LRSchedulerListCallable
 from otx.core.types.label import LabelInfoTypes
+from otx.core.utils.config import convert_conf_to_mmconfig_dict, inplace_num_classes
 from otx.core.utils.utils import get_mean_std_from_data_processing
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
+    from mmengine import ConfigDict
+    from torch import Tensor, nn
 
     from otx.core.metrics import MetricCallable
 
 
-class ATSS(MMDetCompatibleModel):
+class TorchATSS(SingleStageDetector):
+    """ATSS torch implementation."""
+
+    def build_backbone(self, cfg: ConfigDict | dict) -> nn.Module:
+        """Build backbone."""
+        if cfg["type"] == "ResNeXt":
+            cfg.pop("type")
+            return ResNeXt(**cfg)
+        return _build_model_including_pytorchcv(cfg)
+
+    def build_neck(self, cfg: ConfigDict | dict) -> nn.Module:
+        """Build backbone."""
+        return FPN(**cfg)
+
+    def build_bbox_head(self, cfg: ConfigDict | dict) -> nn.Module:
+        """Build bbox head."""
+        return ATSSHead(**cfg)
+
+
+class ATSS(ExplainableOTXDetModel):
     """ATSS Model."""
 
     def __init__(
@@ -41,9 +75,11 @@ class ATSS(MMDetCompatibleModel):
     ) -> None:
         model_name = f"atss_{variant}"
         config = read_mmconfig(model_name=model_name)
+        config = inplace_num_classes(cfg=config, num_classes=self._dispatch_label_info(label_info).num_classes)
+        self.config = config
+        self.load_from = config.pop("load_from", None)
         super().__init__(
             label_info=label_info,
-            config=config,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
@@ -53,6 +89,120 @@ class ATSS(MMDetCompatibleModel):
         self.image_size = (1, 3, 736, 992)
         self.tile_image_size = self.image_size
 
+    def _create_model(self) -> nn.Module:
+        from mmengine.runner import load_checkpoint
+
+        config = deepcopy(self.config)
+        self.classification_layers = self.get_classification_layers()
+        model = TorchATSS(**convert_conf_to_mmconfig_dict(config))
+        model.init_weights()
+        if self.load_from is not None:
+            load_checkpoint(model, self.load_from, map_location="cpu")
+        return model
+
+    def _customize_inputs(self, entity: DetBatchDataEntity) -> dict[str, Any]:
+        if isinstance(entity.images, list):
+            entity.images = stack_batch(entity.images, pad_size_divisor=32)
+        inputs: dict[str, Any] = {}
+
+        inputs["entity"] = entity
+        inputs["mode"] = "loss" if self.training else "predict"
+
+        return inputs
+
+    def _customize_outputs(
+        self,
+        outputs: list[InstanceData] | dict,
+        inputs: DetBatchDataEntity,
+    ) -> DetBatchPredEntity | OTXBatchLossEntity:
+        if self.training:
+            if not isinstance(outputs, dict):
+                raise TypeError(outputs)
+
+            losses = OTXBatchLossEntity()
+            for k, v in outputs.items():
+                if isinstance(v, list):
+                    losses[k] = sum(v)
+                elif isinstance(v, torch.Tensor):
+                    losses[k] = v
+                else:
+                    msg = "Loss output should be list or torch.tensor but got {type(v)}"
+                    raise TypeError(msg)
+            return losses
+
+        scores = []
+        bboxes = []
+        labels = []
+        predictions = outputs["predictions"] if isinstance(outputs, dict) else outputs
+        for img_info, prediction in zip(inputs.imgs_info, predictions):
+            if not isinstance(prediction, InstanceData):
+                raise TypeError(prediction)
+            scores.append(prediction.scores)
+            bboxes.append(
+                tv_tensors.BoundingBoxes(
+                    prediction.bboxes,
+                    format="XYXY",
+                    canvas_size=img_info.ori_shape,
+                ),
+            )
+            labels.append(prediction.labels)
+
+        if self.explain_mode:
+            if not isinstance(outputs, dict):
+                msg = f"Model output should be a dict, but got {type(outputs)}."
+                raise ValueError(msg)
+
+            if "feature_vector" not in outputs:
+                msg = "No feature vector in the model output."
+                raise ValueError(msg)
+
+            if "saliency_map" not in outputs:
+                msg = "No saliency maps in the model output."
+                raise ValueError(msg)
+
+            saliency_map = outputs["saliency_map"].detach().cpu().numpy()
+            feature_vector = outputs["feature_vector"].detach().cpu().numpy()
+
+            return DetBatchPredEntity(
+                batch_size=len(outputs),
+                images=inputs.images,
+                imgs_info=inputs.imgs_info,
+                scores=scores,
+                bboxes=bboxes,
+                labels=labels,
+                saliency_map=saliency_map,
+                feature_vector=feature_vector,
+            )
+
+        return DetBatchPredEntity(
+            batch_size=len(outputs),
+            images=inputs.images,
+            imgs_info=inputs.imgs_info,
+            scores=scores,
+            bboxes=bboxes,
+            labels=labels,
+        )
+
+    def get_classification_layers(self, prefix: str = "model.") -> dict[str, dict[str, int]]:
+        """Get final classification layer information for incremental learning case."""
+        from otx.core.utils.build import modify_num_classes
+
+        sample_config = deepcopy(self.config)
+        modify_num_classes(sample_config, 5)
+        sample_model_dict = TorchATSS(**convert_conf_to_mmconfig_dict(sample_config)).state_dict()
+        modify_num_classes(sample_config, 6)
+        incremental_model_dict = TorchATSS(**convert_conf_to_mmconfig_dict(sample_config)).state_dict()
+
+        classification_layers = {}
+        for key in sample_model_dict:
+            if sample_model_dict[key].shape != incremental_model_dict[key].shape:
+                sample_model_dim = sample_model_dict[key].shape[0]
+                incremental_model_dim = incremental_model_dict[key].shape[0]
+                stride = incremental_model_dim - sample_model_dim
+                num_extra_classes = 6 * sample_model_dim - 5 * incremental_model_dim
+                classification_layers[prefix + key] = {"stride": stride, "num_extra_classes": num_extra_classes}
+        return classification_layers
+
     @property
     def _exporter(self) -> OTXModelExporter:
         """Creates OTXModelExporter object that can export the model."""
@@ -61,21 +211,39 @@ class ATSS(MMDetCompatibleModel):
 
         mean, std = get_mean_std_from_data_processing(self.config)
 
-        with self.export_model_forward_context():
-            return MMdeployExporter(
-                model_builder=self._create_model,
-                model_cfg=deepcopy(self.config),
-                deploy_cfg="otx.algo.detection.mmdeploy.atss",
-                test_pipeline=self._make_fake_test_pipeline(),
-                task_level_export_parameters=self._export_parameters,
-                input_size=self.image_size,
-                mean=mean,
-                std=std,
-                resize_mode="standard",
-                pad_value=0,
-                swap_rgb=False,
-                output_names=["feature_vector", "saliency_map"] if self.explain_mode else None,
-            )
+        return OTXNativeModelExporter(
+            task_level_export_parameters=self._export_parameters,
+            input_size=self.image_size,
+            mean=mean,
+            std=std,
+            resize_mode="standard",
+            pad_value=0,
+            swap_rgb=False,
+            via_onnx=True,  # Currently ATSS should be exported through ONNX
+            onnx_export_configuration={
+                "input_names": ["image"],
+                "output_names": ["boxes", "labels"],
+                "dynamic_axes": {
+                    "image": {0: "batch", 2: "height", 3: "width"},
+                    "boxes": {0: "batch", 1: "num_dets"},
+                    "labels": {0: "batch", 1: "num_dets"},
+                },
+                "autograd_inlining": False,
+            },
+            output_names=["bboxes", "labels", "feature_vector", "saliency_map"] if self.explain_mode else None,
+        )
+
+    def forward_for_tracing(self, inputs: Tensor) -> list[InstanceData]:
+        """Forward function for export."""
+        shape = (int(inputs.shape[2]), int(inputs.shape[3]))
+        meta_info = {
+            "pad_shape": shape,
+            "batch_input_shape": shape,
+            "img_shape": shape,
+            "scale_factor": (1.0, 1.0),
+        }
+        meta_info_list = [meta_info] * len(inputs)
+        return self.model.export(inputs, meta_info_list, explain_mode=self.explain_mode)
 
     def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.model.") -> dict:
         """Load the previous OTX ckpt according to OTX2.0."""

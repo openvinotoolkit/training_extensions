@@ -15,8 +15,9 @@ import torch
 # TODO(Eugene): replace mmcv.sigmoid_focal_loss with torchvision
 # https://github.com/openvinotoolkit/training_extensions/pull/3281
 from mmcv.ops import RoIAlign
-from mmengine.model import BaseModule
 from torch import Tensor, nn
+
+from otx.algo.modules.base_module import BaseModule
 
 if TYPE_CHECKING:
     from mmengine.config import ConfigDict

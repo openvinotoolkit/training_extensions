@@ -1,7 +1,6 @@
 load_from: https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/object_detection/v2/resnext101_atss_070623.pth
 train_cfg:
   assigner:
-    type: ATSSAssigner
     topk: 9
   allowed_border: -1
   pos_weight: -1
@@ -14,9 +13,7 @@ test_cfg:
     type: nms
     iou_threshold: 0.6
   max_per_img: 100
-type: ATSS
 data_preprocessor:
-  type: DetDataPreprocessor
   non_blocking: true
   mean:
     - 0
@@ -43,12 +40,10 @@ backbone:
   norm_cfg:
     type: BN
     requires_grad: true
-  style: pytorch
   init_cfg:
     type: Pretrained
     checkpoint: open-mmlab://resnext101_64x4d
 neck:
-  type: FPN
   in_channels:
     - 256
     - 512
@@ -60,13 +55,11 @@ neck:
   num_outs: 5
   relu_before_extra_convs: true
 bbox_head:
-  type: CustomATSSHead
   num_classes: 2
   in_channels: 256
   stacked_convs: 4
   feat_channels: 256
   anchor_generator:
-    type: AnchorGenerator
     ratios:
       - 1.0
     octave_base_scale: 8
@@ -78,7 +71,6 @@ bbox_head:
       - 64
       - 128
   bbox_coder:
-    type: DeltaXYWHBBoxCoder
     target_means:
       - 0.0
       - 0.0
@@ -90,15 +82,12 @@ bbox_head:
       - 0.2
       - 0.2
   loss_cls:
-    type: CrossSigmoidFocalLoss
     use_sigmoid: true
     gamma: 2.0
     alpha: 0.25
     loss_weight: 1.0
   loss_bbox:
-    type: GIoULoss
     loss_weight: 2.0
   loss_centerness:
-    type: CrossEntropyLoss
     use_sigmoid: true
     loss_weight: 1.0

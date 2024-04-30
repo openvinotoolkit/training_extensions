@@ -12,14 +12,14 @@ you can refer https://github.com/open-mmlab/mmpretrain/blob/main/mmpretrain/mode
 from __future__ import annotations
 
 import inspect
-from typing import Callable
+from typing import Callable, Sequence
 
 import torch
-from mmengine.model import BaseModule
 from torch import nn
 from torch.nn import functional
 
-from otx.algo.utils.mmengine_utils import constant_init, normal_init
+from otx.algo.modules.base_module import BaseModule
+from otx.algo.utils.weight_init import constant_init, normal_init
 from otx.core.data.entity.base import ImageInfo
 
 
@@ -136,7 +136,7 @@ class MultiLabelClsHead(BaseModule):
     # Copy from mmpretrain.models.heads.MultiLabelClsHead
     # ------------------------------------------------------------------------ #
 
-    def predict(self, feats: tuple[torch.Tensor]) -> torch.Tensor:
+    def predict(self, feats: tuple[torch.Tensor], **kwargs) -> torch.Tensor:
         """Inference without augmentation.
 
         Args:
@@ -167,7 +167,7 @@ class MultiLabelClsHead(BaseModule):
         """
         # The obtain the MultiLabelLinearClsHead doesn't have other module,
         # just return after unpacking.
-        if isinstance(feats, tuple):
+        if isinstance(feats, Sequence):
             return feats[-1]
         return feats
 

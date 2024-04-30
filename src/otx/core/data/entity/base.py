@@ -620,7 +620,7 @@ class OTXBatchDataEntity(Generic[T_OTXDataEntity]):
 
         return OTXBatchDataEntity(
             batch_size=batch_size,
-            images=tv_tensors.wrap(stack(images, dim=0), like=like) if stack_images else images,
+            images=tv_tensors.wrap(torch.stack(images), like=like) if stack_images else images,
             imgs_info=[entity.img_info for entity in entities],
         )
 
@@ -636,7 +636,7 @@ class OTXBatchDataEntity(Generic[T_OTXDataEntity]):
             return self.images
 
         like = next(iter(self.images))
-        return tv_tensors.wrap(stack(self.images, dim=0), like=like)
+        return tv_tensors.wrap(stack(self.images), like=like)
 
     def pin_memory(self: T_OTXBatchDataEntity) -> T_OTXBatchDataEntity:
         """Pin memory for member tensor variables."""
