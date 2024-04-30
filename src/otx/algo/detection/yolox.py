@@ -16,6 +16,7 @@ from otx.algo.detection.backbones.csp_darknet import CSPDarknet
 from otx.algo.detection.heads.yolox_head import YOLOXHead
 from otx.algo.detection.necks.yolox_pafpn import YOLOXPAFPN
 from otx.algo.detection.ssd import SingleStageDetector
+from otx.algo.utils.mmengine_utils import load_checkpoint
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.detection import DetBatchDataEntity, DetBatchPredEntity
@@ -32,8 +33,6 @@ class YOLOX(ExplainableOTXDetModel):
     """OTX Detection model class for YOLOX."""
 
     def _create_model(self) -> nn.Module:
-        from mmengine.runner import load_checkpoint
-
         detector = self._build_model(num_classes=self.label_info.num_classes)
         detector.init_weights()
         self.classification_layers = self.get_classification_layers(prefix="model.")

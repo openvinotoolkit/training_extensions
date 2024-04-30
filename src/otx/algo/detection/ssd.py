@@ -22,6 +22,7 @@ from otx.algo.detection.heads.delta_xywh_bbox_coder import DeltaXYWHBBoxCoder
 from otx.algo.detection.heads.max_iou_assigner import MaxIoUAssigner
 from otx.algo.detection.heads.ssd_head import SSDHead
 from otx.algo.modules.base_module import BaseModule
+from otx.algo.utils.mmengine_utils import load_checkpoint
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.config.data import TileConfig
 from otx.core.data.entity.base import OTXBatchLossEntity
@@ -327,8 +328,6 @@ class SSD(ExplainableOTXDetModel):
         self.tile_image_size = self.image_size
 
     def _create_model(self) -> nn.Module:
-        from mmengine.runner import load_checkpoint
-
         detector = self._build_model(num_classes=self.label_info.num_classes)
         detector.init_weights()
         self.classification_layers = self.get_classification_layers(prefix="model.")

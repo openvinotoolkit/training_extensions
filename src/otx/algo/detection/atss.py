@@ -23,6 +23,7 @@ from otx.algo.detection.losses.cross_focal_loss import CrossSigmoidFocalLoss
 from otx.algo.detection.losses.iou_loss import GIoULoss
 from otx.algo.detection.necks.fpn import FPN
 from otx.algo.detection.ssd import SingleStageDetector
+from otx.algo.utils.mmengine_utils import load_checkpoint
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.config.data import TileConfig
 from otx.core.data.entity.base import OTXBatchLossEntity
@@ -67,8 +68,6 @@ class ATSS(ExplainableOTXDetModel):
         self.tile_image_size = self.image_size
 
     def _create_model(self) -> nn.Module:
-        from mmengine.runner import load_checkpoint
-
         detector = self._build_model(num_classes=self.label_info.num_classes)
         detector.init_weights()
         self.classification_layers = self.get_classification_layers(prefix="model.")

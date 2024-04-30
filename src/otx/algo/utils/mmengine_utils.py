@@ -10,9 +10,11 @@ from __future__ import annotations
 import os
 import re
 from collections import OrderedDict, abc, namedtuple
+from pathlib import Path
 from typing import Any
 from warnings import warn
 
+import torch
 from torch import distributed as torch_dist
 from torch import nn
 from torch.utils.model_zoo import load_url
@@ -39,6 +41,30 @@ def get_dist_info() -> tuple[int, int]:
         world_size = 1
         rank = 0
     return rank, world_size
+
+
+def load_checkpoint(
+    model: nn.Module,
+    checkpoint: str,
+    map_location: str = "cpu",
+    strict: bool = False,
+    prefix: str = "",
+) -> None:
+    """Load state dict from path of checkpoint and dump to model."""
+    if Path(checkpoint).exists():
+        load_checkpoint_to_model(
+            model,
+            torch.load(checkpoint, map_location),
+            strict=strict,
+            prefix=prefix,
+        )
+    else:
+        load_checkpoint_to_model(
+            model,
+            load_from_http(checkpoint, map_location),
+            strict=strict,
+            prefix=prefix,
+        )
 
 
 def load_from_http(
