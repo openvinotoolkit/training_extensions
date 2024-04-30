@@ -94,9 +94,9 @@ class OTXDataset(Dataset, Generic[T_OTXDataEntity]):
         return np.random.default_rng().integers(0, len(self))
 
     def _apply_transforms(self, entity: T_OTXDataEntity) -> T_OTXDataEntity | None:
-        if self.to_tv_image:
-            entity = entity.to_tv_image()
         if isinstance(self.transforms, Compose):
+            if self.to_tv_image:
+                entity = entity.to_tv_image()
             return self.transforms(entity)
         if isinstance(self.transforms, Iterable):
             return self._iterable_transforms(entity)
