@@ -481,9 +481,9 @@ class SSDAnchorGeneratorClustered(AnchorGenerator):
 
     def __init__(
         self,
-        strides: tuple[int],
-        widths: list[list[int]],
-        heights: list[list[int]],
+        strides: list[int],
+        widths: list[list[float]],
+        heights: list[list[float]],
     ) -> None:
         """Initialize SSDAnchorGeneratorClustered.
 
