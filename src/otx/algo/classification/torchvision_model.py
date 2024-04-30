@@ -184,6 +184,7 @@ class TVModelWithLossComputation(nn.Module):
 
         return self.softmax(logits)
 
+    @torch.no_grad()
     def _forward_explain(self, images: torch.Tensor) -> dict[str, torch.Tensor | list[torch.Tensor]]:
         backbone_feat = self.feature_extractor(images)
 
@@ -195,13 +196,17 @@ class TVModelWithLossComputation(nn.Module):
             x = x.view(x.size(0), -1)
         logits = self.head(x)
 
-        return {
+        outputs = {
             "logits": logits,
-            "preds": logits.argmax(-1, keepdim=False),
-            "scores": self.softmax(logits),
-            "saliency_map": saliency_map,
             "feature_vector": feature_vector,
+            "saliency_map": saliency_map,
         }
+
+        if not torch.jit.is_tracing():
+            outputs["scores"] = self.softmax(logits)
+            outputs["preds"] = logits.argmax(-1, keepdim=False)
+
+        return outputs
 
     @torch.no_grad()
     def _head_forward_fn(self, x: torch.Tensor) -> torch.Tensor:

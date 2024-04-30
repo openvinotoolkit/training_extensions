@@ -16,7 +16,8 @@ from torch import Tensor, nn
 from otx.algo.detection.heads.atss_assigner import ATSSAssigner
 from otx.algo.detection.heads.base_head import BaseDenseHead
 from otx.algo.detection.heads.base_sampler import PseudoSampler, RandomSampler
-from otx.algo.detection.heads.custom_anchor_generator import AnchorGenerator
+from otx.algo.detection.heads.anchor_generator import AnchorGenerator
+from otx.algo.detection.heads.base_sampler import PseudoSampler
 from otx.algo.detection.heads.delta_xywh_bbox_coder import DeltaXYWHBBoxCoder
 from otx.algo.detection.heads.max_iou_assigner import MaxIoUAssigner
 from otx.algo.detection.utils.utils import anchor_inside_flags, images_to_levels, multi_apply, unmap
@@ -57,7 +58,7 @@ class AnchorHead(BaseDenseHead):
         bbox_coder: DeltaXYWHBBoxCoder,
         loss_cls: nn.Module,
         loss_bbox: nn.Module,
-        train_cfg: DictConfig,
+        train_cfg: dict,
         feat_channels: int = 256,
         reg_decoded_bbox: bool = False,
         test_cfg: DictConfig | None = None,
@@ -84,19 +85,8 @@ class AnchorHead(BaseDenseHead):
         self.train_cfg = train_cfg
         self.test_cfg = test_cfg
         if self.train_cfg:
-            if self.train_cfg["assigner"].get("type") == "MaxIoUAssigner":
-                assigner_cfg = deepcopy(self.train_cfg["assigner"])
-                assigner_cfg.pop("type")
-                self.assigner = MaxIoUAssigner(**assigner_cfg)
-            else:
-                self.assigner = ATSSAssigner(**self.train_cfg["assigner"])
-
-            if self.train_cfg["sampler"].get("type") == "RandomSampler":
-                sampler_cfg = deepcopy(self.train_cfg["sampler"])
-                sampler_cfg.pop("type")
-                self.sampler = RandomSampler(**sampler_cfg, context=self)
-            else:
-                self.sampler = PseudoSampler(context=self)  # type: ignore[no-untyped-call]
+            self.assigner: MaxIoUAssigner | ATSSAssigner = self.train_cfg["assigner"]
+            self.sampler = PseudoSampler(context=self)  # type: ignore[no-untyped-call]
 
         self.fp16_enabled = False
 

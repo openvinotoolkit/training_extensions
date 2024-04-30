@@ -5,116 +5,48 @@
 
 from __future__ import annotations
 
-from copy import deepcopy
-from typing import TYPE_CHECKING, Any, Literal
+from typing import TYPE_CHECKING, Any
 
 import torch
 from mmengine.structures import InstanceData
+from omegaconf import DictConfig
 from torchvision import tv_tensors
 
 from otx.algo.detection.backbones.csp_darknet import CSPDarknet
 from otx.algo.detection.heads.yolox_head import YOLOXHead
 from otx.algo.detection.necks.yolox_pafpn import YOLOXPAFPN
 from otx.algo.detection.ssd import SingleStageDetector
-from otx.algo.utils.mmconfig import read_mmconfig
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
-from otx.core.config.data import TileConfig
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.detection import DetBatchDataEntity, DetBatchPredEntity
+from otx.core.data.entity.utils import stack_batch
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter
-from otx.core.metrics.mean_ap import MeanAPCallable
-from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
 from otx.core.model.detection import ExplainableOTXDetModel
-from otx.core.model.utils.mmdet import DetDataPreprocessor
-from otx.core.schedulers import LRSchedulerListCallable
-from otx.core.types.label import LabelInfoTypes
-from otx.core.utils.build import modify_num_classes
-from otx.core.utils.config import convert_conf_to_mmconfig_dict, inplace_num_classes
-from otx.core.utils.utils import get_mean_std_from_data_processing
 
 if TYPE_CHECKING:
-    from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
-    from mmengine import ConfigDict
-    from omegaconf import DictConfig
     from torch import Tensor, nn
 
-    from otx.core.metrics import MetricCallable
 
-
-class YOLOX(SingleStageDetector):
-    """YOLOX implementation from mmdet."""
-
-    def __init__(self, neck: ConfigDict | dict, *args, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
-        self.neck = self.build_neck(neck)
-
-    def build_backbone(self, cfg: ConfigDict | dict) -> nn.Module:
-        """Build backbone."""
-        cfg.pop("type")  # TODO (sungchul): remove `type` in recipe
-        return CSPDarknet(**cfg)
-
-    def build_neck(self, cfg: ConfigDict | dict) -> nn.Module:
-        """Build backbone."""
-        cfg.pop("type")  # TODO (sungchul): remove `type` in recipe
-        return YOLOXPAFPN(**cfg)
-
-    def build_bbox_head(self, cfg: ConfigDict | dict) -> nn.Module:
-        """Build bbox head."""
-        cfg.pop("type")  # TODO (sungchul): remove `type` in recipe
-        return YOLOXHead(**cfg)
-
-    def build_det_data_preprocessor(self, cfg: ConfigDict | dict) -> nn.Module:
-        """Build DetDataPreprocessor.
-
-        TODO (sungchul): DetDataPreprocessor will be removed.
-        """
-        cfg.pop("type")  # TODO (sungchul): remove `type` in recipe
-        return DetDataPreprocessor(**cfg)
-
-
-class OTXYOLOX(ExplainableOTXDetModel):
+class YOLOX(ExplainableOTXDetModel):
     """OTX Detection model class for YOLOX."""
-
-    def __init__(
-        self,
-        label_info: LabelInfoTypes,
-        variant: Literal["tiny", "l", "s", "x"],
-        optimizer: OptimizerCallable = DefaultOptimizerCallable,
-        scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
-        metric: MetricCallable = MeanAPCallable,
-        torch_compile: bool = False,
-        tile_config: TileConfig = TileConfig(enable_tiler=False),
-    ) -> None:
-        self.variant = variant
-        model_name = f"yolox_{self.variant}"
-        config = read_mmconfig(model_name=model_name)
-        config = inplace_num_classes(cfg=config, num_classes=self._dispatch_label_info(label_info).num_classes)
-        self.config = config
-        self.load_from = config.pop("load_from", None)
-        super().__init__(
-            label_info=label_info,
-            optimizer=optimizer,
-            scheduler=scheduler,
-            metric=metric,
-            torch_compile=torch_compile,
-            tile_config=tile_config,
-        )
-        self.image_size = (1, 3, 416, 416) if self.variant == "tiny" else (1, 3, 640, 640)
-        self.tile_image_size = self.image_size
 
     def _create_model(self) -> nn.Module:
         from mmengine.runner import load_checkpoint
 
-        config = deepcopy(self.config)
-        self.classification_layers = self.get_classification_layers(config, "model.")
-        config.pop("type")  # TODO (sungchul): remove `type` in recipe
-        detector = YOLOX(**convert_conf_to_mmconfig_dict(config))
+        detector = self._build_model(num_classes=self.label_info.num_classes)
+        detector.init_weights()
+        self.classification_layers = self.get_classification_layers(prefix="model.")
         if self.load_from is not None:
             load_checkpoint(detector, self.load_from, map_location="cpu")
         return detector
 
+    def _build_model(self, num_classes: int) -> nn.Module:
+        raise NotImplementedError
+
     def _customize_inputs(self, entity: DetBatchDataEntity) -> dict[str, Any]:
+        if isinstance(entity.images, list):
+            entity.images = stack_batch(entity.images, pad_size_divisor=32, pad_value=114)
         inputs: dict[str, Any] = {}
 
         inputs["entity"] = entity
@@ -197,7 +129,6 @@ class OTXYOLOX(ExplainableOTXDetModel):
 
     def get_classification_layers(
         self,
-        config: DictConfig,
         prefix: str = "",
     ) -> dict[str, dict[str, int]]:
         """Return classification layer names by comparing two different number of classes models.
@@ -217,13 +148,8 @@ class OTXYOLOX(ExplainableOTXDetModel):
             Extra classes is default class except class from data.
             Normally it is related with background classes.
         """
-        sample_config = deepcopy(config)
-        sample_config.pop("type")  # TODO (sungchul): remove `type` in recipe
-        modify_num_classes(sample_config, 5)
-        sample_model_dict = YOLOX(**convert_conf_to_mmconfig_dict(sample_config)).state_dict()
-
-        modify_num_classes(sample_config, 6)
-        incremental_model_dict = YOLOX(**convert_conf_to_mmconfig_dict(sample_config)).state_dict()
+        sample_model_dict = self._build_model(num_classes=5).state_dict()
+        incremental_model_dict = self._build_model(num_classes=6).state_dict()
 
         classification_layers = {}
         for key in sample_model_dict:
@@ -241,40 +167,33 @@ class OTXYOLOX(ExplainableOTXDetModel):
         if self.image_size is None:
             raise ValueError(self.image_size)
 
-        mean, std = get_mean_std_from_data_processing(self.config)
+        swap_rgb = not isinstance(self, YOLOXTINY)
 
-        deploy_cfg = "otx.algo.detection.mmdeploy.yolox"
-        swap_rgb = True
-        if self.variant == "tiny":
-            deploy_cfg += "_tiny"
-            swap_rgb = False
-
-        with self.export_model_forward_context():
-            return OTXNativeModelExporter(
-                via_onnx=True,
-                onnx_export_configuration={
-                    "input_names": ["image"],
-                    "output_names": ["boxes", "labels"],
-                    "export_params": True,
-                    "opset_version": 11,
-                    "dynamic_axes": {
-                        "image": {0: "batch", 2: "height", 3: "width"},
-                        "boxes": {0: "batch", 1: "num_dets"},
-                        "labels": {0: "batch", 1: "num_dets"},
-                    },
-                    "keep_initializers_as_inputs": False,
-                    "verbose": False,
-                    "autograd_inlining": False,
+        return OTXNativeModelExporter(
+            via_onnx=True,
+            onnx_export_configuration={
+                "input_names": ["image"],
+                "output_names": ["boxes", "labels"],
+                "export_params": True,
+                "opset_version": 11,
+                "dynamic_axes": {
+                    "image": {0: "batch", 2: "height", 3: "width"},
+                    "boxes": {0: "batch", 1: "num_dets"},
+                    "labels": {0: "batch", 1: "num_dets"},
                 },
-                task_level_export_parameters=self._export_parameters,
-                input_size=self.image_size,
-                mean=mean,
-                std=std,
-                resize_mode="fit_to_window_letterbox",
-                pad_value=114,
-                swap_rgb=swap_rgb,
-                output_names=["feature_vector", "saliency_map"] if self.explain_mode else None,
-            )
+                "keep_initializers_as_inputs": False,
+                "verbose": False,
+                "autograd_inlining": False,
+            },
+            task_level_export_parameters=self._export_parameters,
+            input_size=self.image_size,
+            mean=self.mean,
+            std=self.std,
+            resize_mode="fit_to_window_letterbox",
+            pad_value=114,
+            swap_rgb=swap_rgb,
+            output_names=["bboxes", "labels", "feature_vector", "saliency_map"] if self.explain_mode else None,
+        )
 
     def forward_for_tracing(self, inputs: Tensor) -> list[InstanceData]:
         """Forward function for export."""
@@ -285,24 +204,174 @@ class OTXYOLOX(ExplainableOTXDetModel):
             "img_shape": shape,
             "scale_factor": (1.0, 1.0),
         }
-        sample = InstanceData(
-            metainfo=meta_info,
-        )
-        data_samples = [sample] * len(inputs)
-        return self.model.export(inputs, data_samples)
+
+        meta_info_list = [meta_info] * len(inputs)
+        return self.model.export(inputs, meta_info_list, explain_mode=self.explain_mode)
 
     def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.model.") -> dict:
         """Load the previous OTX ckpt according to OTX2.0."""
         return OTXv1Helper.load_det_ckpt(state_dict, add_prefix)
 
-    # TODO(Sungchul): Remove below functions after changing exporter
-    def _make_fake_test_pipeline(self) -> list[dict[str, Any]]:
-        return [
-            {"type": "LoadImageFromFile"},
-            {"type": "Resize", "scale": [self.image_size[3], self.image_size[2]], "keep_ratio": True},  # type: ignore[index]
-            {"type": "LoadAnnotations", "with_bbox": True},
+
+class YOLOXTINY(YOLOX):
+    """YOLOX-TINY detector."""
+
+    load_from = (
+        "https://storage.openvinotoolkit.org/repositories/"
+        "openvino_training_extensions/models/object_detection/v2/yolox_tiny_8x8.pth"
+    )
+    image_size = (1, 3, 416, 416)
+    tile_image_size = (1, 3, 416, 416)
+    mean = (123.675, 116.28, 103.53)
+    std = (58.395, 57.12, 57.375)
+
+    def _build_model(self, num_classes: int) -> SingleStageDetector:
+        train_cfg: dict[str, Any] = {}
+        test_cfg = DictConfig(
             {
-                "type": "PackDetInputs",
-                "meta_keys": ["ori_filenamescale_factor", "ori_shape", "filename", "img_shape", "pad_shape"],
+                "nms": {"type": "nms", "iou_threshold": 0.65},
+                "score_thr": 0.01,
+                "max_per_img": 100,
             },
-        ]
+        )
+        backbone = CSPDarknet(
+            deepen_factor=0.33,
+            widen_factor=0.375,
+            out_indices=[2, 3, 4],
+        )
+        neck = YOLOXPAFPN(
+            in_channels=[96, 192, 384],
+            out_channels=96,
+            num_csp_blocks=1,
+        )
+        bbox_head = YOLOXHead(
+            num_classes=num_classes,
+            in_channels=96,
+            feat_channels=96,
+            train_cfg=train_cfg,
+            test_cfg=test_cfg,
+        )
+        return SingleStageDetector(backbone, bbox_head, neck=neck, train_cfg=train_cfg, test_cfg=test_cfg)
+
+
+class YOLOXS(YOLOX):
+    """YOLOX-S detector."""
+
+    load_from = (
+        "https://download.openmmlab.com/mmdetection/v2.0/yolox/yolox_s_8x8_300e_coco/"
+        "yolox_s_8x8_300e_coco_20211121_095711-4592a793.pth"
+    )
+    image_size = (1, 3, 640, 640)
+    tile_image_size = (1, 3, 640, 640)
+    mean = (0.0, 0.0, 0.0)
+    std = (1.0, 1.0, 1.0)
+
+    def _build_model(self, num_classes: int) -> SingleStageDetector:
+        train_cfg: dict[str, Any] = {}
+        test_cfg = DictConfig(
+            {
+                "nms": {"type": "nms", "iou_threshold": 0.65},
+                "score_thr": 0.01,
+                "max_per_img": 100,
+            },
+        )
+        backbone = CSPDarknet(
+            deepen_factor=0.33,
+            widen_factor=0.5,
+            out_indices=[2, 3, 4],
+        )
+        neck = YOLOXPAFPN(
+            in_channels=[128, 256, 512],
+            out_channels=128,
+            num_csp_blocks=1,
+        )
+        bbox_head = YOLOXHead(
+            num_classes=num_classes,
+            in_channels=128,
+            feat_channels=128,
+            train_cfg=train_cfg,
+            test_cfg=test_cfg,
+        )
+        return SingleStageDetector(backbone, bbox_head, neck=neck, train_cfg=train_cfg, test_cfg=test_cfg)
+
+
+class YOLOXL(YOLOX):
+    """YOLOX-L detector."""
+
+    load_from = (
+        "https://download.openmmlab.com/mmdetection/v2.0/yolox/"
+        "yolox_l_8x8_300e_coco/yolox_l_8x8_300e_coco_20211126_140236-d3bd2b23.pth"
+    )
+    image_size = (1, 3, 640, 640)
+    tile_image_size = (1, 3, 640, 640)
+    mean = (0.0, 0.0, 0.0)
+    std = (1.0, 1.0, 1.0)
+
+    def _build_model(self, num_classes: int) -> SingleStageDetector:
+        train_cfg: dict[str, Any] = {}
+        test_cfg = DictConfig(
+            {
+                "nms": {"type": "nms", "iou_threshold": 0.65},
+                "score_thr": 0.01,
+                "max_per_img": 100,
+            },
+        )
+        backbone = CSPDarknet(
+            deepen_factor=1.0,
+            widen_factor=1.0,
+            out_indices=[2, 3, 4],
+        )
+        neck = YOLOXPAFPN(
+            in_channels=[256, 512, 1024],
+            out_channels=256,
+            num_csp_blocks=3,
+        )
+        bbox_head = YOLOXHead(
+            num_classes=num_classes,
+            in_channels=256,
+            feat_channels=256,
+            train_cfg=train_cfg,
+            test_cfg=test_cfg,
+        )
+        return SingleStageDetector(backbone, bbox_head, neck=neck, train_cfg=train_cfg, test_cfg=test_cfg)
+
+
+class YOLOXX(YOLOX):
+    """YOLOX-X detector."""
+
+    load_from = (
+        "https://download.openmmlab.com/mmdetection/v2.0/yolox/"
+        "yolox_x_8x8_300e_coco/yolox_x_8x8_300e_coco_20211126_140254-1ef88d67.pth"
+    )
+    image_size = (1, 3, 640, 640)
+    tile_image_size = (1, 3, 640, 640)
+    mean = (0.0, 0.0, 0.0)
+    std = (1.0, 1.0, 1.0)
+
+    def _build_model(self, num_classes: int) -> SingleStageDetector:
+        train_cfg: dict[str, Any] = {}
+        test_cfg = DictConfig(
+            {
+                "nms": {"type": "nms", "iou_threshold": 0.65},
+                "score_thr": 0.01,
+                "max_per_img": 100,
+            },
+        )
+        backbone = CSPDarknet(
+            deepen_factor=1.33,
+            widen_factor=1.25,
+            out_indices=[2, 3, 4],
+        )
+        neck = YOLOXPAFPN(
+            in_channels=[320, 640, 1280],
+            out_channels=320,
+            num_csp_blocks=4,
+        )
+        bbox_head = YOLOXHead(
+            num_classes=num_classes,
+            in_channels=320,
+            feat_channels=320,
+            train_cfg=train_cfg,
+            test_cfg=test_cfg,
+        )
+        return SingleStageDetector(backbone, bbox_head, neck=neck, train_cfg=train_cfg, test_cfg=test_cfg)

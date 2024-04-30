@@ -19,7 +19,7 @@ from otx.algo.modules.base_module import BaseModule
 from otx.core.data.entity.detection import DetBatchDataEntity
 
 if TYPE_CHECKING:
-    from mmengine import ConfigDict
+    from omegaconf import DictConfig
 
 
 # This class and its supporting functions below lightly adapted from the mmdet BaseDenseHead available at:
@@ -61,13 +61,8 @@ class BaseDenseHead(BaseModule):
     loss_and_predict(): forward() -> loss_by_feat() -> predict_by_feat()
     """
 
-    def __init__(self, init_cfg: ConfigDict | list[ConfigDict] | dict | list[dict] | None = None) -> None:
-        super().__init__()
-
-        self._is_init = False
-
-        self.init_cfg = copy.deepcopy(init_cfg)
-
+    def __init__(self, init_cfg: DictConfig | list[DictConfig] | None = None) -> None:
+        super().__init__(init_cfg=init_cfg)
         # `_raw_positive_infos` will be used in `get_positive_infos`, which
         # can get positive information.
         self._raw_positive_infos: dict = {}
@@ -167,7 +162,7 @@ class BaseDenseHead(BaseModule):
         bbox_preds: list[Tensor],
         score_factors: list[Tensor] | None = None,
         batch_img_metas: list[dict] | None = None,
-        cfg: ConfigDict | None = None,
+        cfg: DictConfig | None = None,
         rescale: bool = False,
         with_nms: bool = True,
     ) -> list[InstanceData]:
@@ -189,7 +184,7 @@ class BaseDenseHead(BaseModule):
                 (batch_size, num_priors * 1, H, W). Defaults to None.
             batch_img_metas (list[dict], Optional): Batch image meta info.
                 Defaults to None.
-            cfg (ConfigDict, optional): Test / postprocessing
+            cfg (DictConfig, optional): Test / postprocessing
                 configuration, if None, test_cfg would be used.
                 Defaults to None.
             rescale (bool): If True, return boxes in original image space.
@@ -251,7 +246,7 @@ class BaseDenseHead(BaseModule):
         score_factor_list: list[Tensor],
         mlvl_priors: list[Tensor],
         img_meta: dict,
-        cfg: ConfigDict,
+        cfg: DictConfig,
         rescale: bool = False,
         with_nms: bool = True,
     ) -> InstanceData:
@@ -274,7 +269,7 @@ class BaseDenseHead(BaseModule):
                 when `with_stride=True`, otherwise it still has shape
                 (num_priors, 4).
             img_meta (dict): Image meta info.
-            cfg (mmengine.Config): Test / postprocessing configuration,
+            cfg (DictConfig): Test / postprocessing configuration,
                 if None, test_cfg would be used.
             rescale (bool): If True, return boxes in original image space.
                 Defaults to False.
@@ -375,7 +370,7 @@ class BaseDenseHead(BaseModule):
     def _bbox_post_process(
         self,
         results: InstanceData,
-        cfg: ConfigDict,
+        cfg: DictConfig,
         img_meta: dict,
         rescale: bool = False,
         with_nms: bool = True,
@@ -388,7 +383,7 @@ class BaseDenseHead(BaseModule):
         Args:
             results (:obj:`InstaceData`): Detection instance results,
                 each item has shape (num_bboxes, ).
-            cfg (ConfigDict): Test / postprocessing configuration,
+            cfg (DictConfig): Test / postprocessing configuration,
                 if None, test_cfg would be used.
             rescale (bool): If True, return boxes in original image space.
                 Default to False.
@@ -467,7 +462,8 @@ class BaseDenseHead(BaseModule):
         bbox_preds: list[Tensor],
         batch_img_metas: list[dict],
         score_factors: list[Tensor] | None = None,
-        cfg: ConfigDict | None = None,
+        batch_img_metas: list[dict] | None = None,
+        cfg: DictConfig | None = None,
         rescale: bool = False,
         with_nms: bool = True,
     ) -> tuple:
@@ -489,7 +485,7 @@ class BaseDenseHead(BaseModule):
                 (batch_size, num_priors * 1, H, W). Defaults to None.
             batch_img_metas (list[dict], Optional): Batch image meta info.
                 Defaults to None.
-            cfg (ConfigDict, optional): Test / postprocessing
+            cfg (DictConfig, optional): Test / postprocessing
                 configuration, if None, test_cfg would be used.
                 Defaults to None.
             rescale (bool): If True, return boxes in original image space.
@@ -545,7 +541,7 @@ class BaseDenseHead(BaseModule):
         score_factor_list: list[Tensor],
         mlvl_priors: list[Tensor],
         img_meta: dict,
-        cfg: ConfigDict,
+        cfg: DictConfig,
         rescale: bool = False,
         with_nms: bool = True,
     ) -> InstanceData:
@@ -568,7 +564,7 @@ class BaseDenseHead(BaseModule):
                 when `with_stride=True`, otherwise it still has shape
                 (num_priors, 4).
             img_meta (dict): Image meta info.
-            cfg (mmengine.Config): Test / postprocessing configuration,
+            cfg (DictConfig): Test / postprocessing configuration,
                 if None, test_cfg would be used.
             rescale (bool): If True, return boxes in original image space.
                 Defaults to False.
