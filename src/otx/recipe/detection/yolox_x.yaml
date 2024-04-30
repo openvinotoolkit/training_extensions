@@ -40,6 +40,7 @@ overrides:
       data_format: coco_instances
       train_subset:
         batch_size: 4
+        to_tv_image: False
         transforms:
           - class_path: otx.core.data.transform_libs.torchvision.CachedMosaic
             init_args:
@@ -98,6 +99,7 @@ overrides:
           class_path: otx.algo.samplers.balanced_sampler.BalancedSampler
       val_subset:
         batch_size: 4
+        to_tv_image: False
         transforms:
           - class_path: otx.core.data.transform_libs.torchvision.Resize
             init_args:
@@ -120,6 +122,7 @@ overrides:
               std: [1.0, 1.0, 1.0]
       test_subset:
         batch_size: 4
+        to_tv_image: False
         transforms:
           - class_path: otx.core.data.transform_libs.torchvision.Resize
             init_args:

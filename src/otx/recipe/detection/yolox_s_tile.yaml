@@ -44,6 +44,7 @@ overrides:
       train_subset:
         num_workers: 4
         batch_size: 8
+        to_tv_image: False
         transforms:
           - class_path: otx.core.data.transform_libs.torchvision.YOLOXHSVRandomAug
           - class_path: otx.core.data.transform_libs.torchvision.Resize
@@ -70,6 +71,7 @@ overrides:
       val_subset:
         num_workers: 4
         batch_size: 8
+        to_tv_image: False
         transforms:
           - class_path: otx.core.data.transform_libs.torchvision.Resize
             init_args:
@@ -93,6 +95,7 @@ overrides:
       test_subset:
         num_workers: 4
         batch_size: 8
+        to_tv_image: False
         transforms:
           - class_path: otx.core.data.transform_libs.torchvision.Resize
             init_args:

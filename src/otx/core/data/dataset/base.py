@@ -75,6 +75,7 @@ class OTXDataset(Dataset, Generic[T_OTXDataEntity]):
         max_refetch: int = 1000,
         image_color_channel: ImageColorChannel = ImageColorChannel.RGB,
         stack_images: bool = True,
+        to_tv_image: bool = True,
     ) -> None:
         self.dm_subset = dm_subset
         self.transforms = transforms
@@ -83,6 +84,7 @@ class OTXDataset(Dataset, Generic[T_OTXDataEntity]):
         self.max_refetch = max_refetch
         self.image_color_channel = image_color_channel
         self.stack_images = stack_images
+        self.to_tv_image = to_tv_image
         self.label_info = LabelInfo.from_dm_label_groups(self.dm_subset.categories()[AnnotationType.label])
 
     def __len__(self) -> int:
@@ -92,8 +94,9 @@ class OTXDataset(Dataset, Generic[T_OTXDataEntity]):
         return np.random.default_rng().integers(0, len(self))
 
     def _apply_transforms(self, entity: T_OTXDataEntity) -> T_OTXDataEntity | None:
-        if isinstance(self.transforms, Compose):
+        if self.to_tv_image:
             entity = entity.to_tv_image()
+        if isinstance(self.transforms, Compose):
             return self.transforms(entity)
         if isinstance(self.transforms, Iterable):
             return self._iterable_transforms(entity)

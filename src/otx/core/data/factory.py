@@ -82,6 +82,7 @@ class OTXDatasetFactory:
             "mem_cache_img_max_size": cfg_data_module.mem_cache_img_max_size,
             "image_color_channel": cfg_data_module.image_color_channel,
             "stack_images": cfg_data_module.stack_images,
+            "to_tv_image": cfg_subset.to_tv_image,
         }
 
         if task in (
