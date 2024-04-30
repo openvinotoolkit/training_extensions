@@ -258,7 +258,7 @@
 
 
 <div class="viewcode-block" id="DetDataPreprocessor">
-<a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.utils.mmdet.html#otx.core.model.utils.mmdet.DetDataPreprocessor">[docs]</a>
+<a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.utils.mmdet.html#otx.algo.instance_segmentation.DetDataPreprocessor">[docs]</a>
 <span class="nd">@MMENGINE_MODELS</span><span class="o">.</span><span class="n">register_module</span><span class="p">(</span><span class="n">force</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">class</span> <span class="nc">DetDataPreprocessor</span><span class="p">(</span><span class="n">_DetDataPreprocessor</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Class for monkey patching preprocessor.</span>
@@ -280,7 +280,7 @@
 
 
 <div class="viewcode-block" id="create_model">
-<a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.utils.mmdet.html#otx.core.model.utils.mmdet.create_model">[docs]</a>
+<a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.utils.mmdet.html#otx.algo.instance_segmentation.create_model">[docs]</a>
 <span class="k">def</span> <span class="nf">create_model</span><span class="p">(</span><span class="n">config</span><span class="p">:</span> <span class="n">DictConfig</span><span class="p">,</span> <span class="n">load_from</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Create a model from mmdet Model registry.</span>
 

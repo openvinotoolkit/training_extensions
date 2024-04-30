@@ -261,7 +261,7 @@
 <span class="kn">from</span> <span class="nn">otx.algo.modules.depthwise_separable_conv_module</span> <span class="kn">import</span> <span class="n">DepthwiseSeparableConvModule</span>
 
 <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
-    <span class="kn">from</span> <span class="nn">mmengine.config</span> <span class="kn">import</span> <span class="n">ConfigDict</span>
+    <span class="kn">from</span> <span class="nn">omegaconf</span> <span class="kn">import</span> <span class="n">DictConfig</span>
 
 
 <span class="k">def</span> <span class="nf">bbox_xyxy_to_cxcywh</span><span class="p">(</span><span class="n">bbox</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
@@ -304,21 +304,21 @@
 <span class="sd">        conv_bias (bool or str): If specified as `auto`, it will be decided by</span>
 <span class="sd">            the norm_cfg. Bias of conv will be set as True if `norm_cfg` is</span>
 <span class="sd">            None, otherwise False. Defaults to &quot;auto&quot;.</span>
-<span class="sd">        conv_cfg (:obj:`ConfigDict` or dict, optional): Config dict for</span>
+<span class="sd">        conv_cfg (:obj:`DictConfig` or dict, optional): Config dict for</span>
 <span class="sd">            convolution layer. Defaults to None.</span>
-<span class="sd">        norm_cfg (:obj:`ConfigDict` or dict): Config dict for normalization</span>
+<span class="sd">        norm_cfg (:obj:`DictConfig` or dict): Config dict for normalization</span>
 <span class="sd">            layer. Defaults to dict(type=&#39;BN&#39;, momentum=0.03, eps=0.001).</span>
-<span class="sd">        act_cfg (:obj:`ConfigDict` or dict): Config dict for activation layer.</span>
+<span class="sd">        act_cfg (:obj:`DictConfig` or dict): Config dict for activation layer.</span>
 <span class="sd">            Defaults to None.</span>
-<span class="sd">        loss_cls (:obj:`ConfigDict` or dict): Config of classification loss.</span>
-<span class="sd">        loss_bbox (:obj:`ConfigDict` or dict): Config of localization loss.</span>
-<span class="sd">        loss_obj (:obj:`ConfigDict` or dict): Config of objectness loss.</span>
-<span class="sd">        loss_l1 (:obj:`ConfigDict` or dict): Config of L1 loss.</span>
-<span class="sd">        train_cfg (:obj:`ConfigDict` or dict, optional): Training config of</span>
+<span class="sd">        loss_cls (:obj:`DictConfig` or dict): Config of classification loss.</span>
+<span class="sd">        loss_bbox (:obj:`DictConfig` or dict): Config of localization loss.</span>
+<span class="sd">        loss_obj (:obj:`DictConfig` or dict): Config of objectness loss.</span>
+<span class="sd">        loss_l1 (:obj:`DictConfig` or dict): Config of L1 loss.</span>
+<span class="sd">        train_cfg (:obj:`DictConfig` or dict, optional): Training config of</span>
 <span class="sd">            anchor head. Defaults to None.</span>
-<span class="sd">        test_cfg (:obj:`ConfigDict` or dict, optional): Testing config of</span>
+<span class="sd">        test_cfg (:obj:`DictConfig` or dict, optional): Testing config of</span>
 <span class="sd">            anchor head. Defaults to None.</span>
-<span class="sd">        init_cfg (:obj:`ConfigDict` or list[:obj:`ConfigDict`] or dict or</span>
+<span class="sd">        init_cfg (:obj:`DictConfig` or list[:obj:`DictConfig`] or dict or</span>
 <span class="sd">            list[dict], optional): Initialization config dict.</span>
 <span class="sd">            Defaults to None.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -333,12 +333,12 @@
         <span class="n">use_depthwise</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">dcn_on_last_conv</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">conv_bias</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;auto&quot;</span><span class="p">,</span>
-        <span class="n">conv_cfg</span><span class="p">:</span> <span class="n">ConfigDict</span> <span class="o">|</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">norm_cfg</span><span class="p">:</span> <span class="n">ConfigDict</span> <span class="o">|</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">act_cfg</span><span class="p">:</span> <span class="n">ConfigDict</span> <span class="o">|</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">train_cfg</span><span class="p">:</span> <span class="n">ConfigDict</span> <span class="o">|</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">test_cfg</span><span class="p">:</span> <span class="n">ConfigDict</span> <span class="o">|</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">init_cfg</span><span class="p">:</span> <span class="n">ConfigDict</span> <span class="o">|</span> <span class="nb">dict</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n">ConfigDict</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">conv_cfg</span><span class="p">:</span> <span class="n">DictConfig</span> <span class="o">|</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">norm_cfg</span><span class="p">:</span> <span class="n">DictConfig</span> <span class="o">|</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">act_cfg</span><span class="p">:</span> <span class="n">DictConfig</span> <span class="o">|</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">train_cfg</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">test_cfg</span><span class="p">:</span> <span class="n">DictConfig</span> <span class="o">|</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">init_cfg</span><span class="p">:</span> <span class="n">DictConfig</span> <span class="o">|</span> <span class="nb">dict</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n">DictConfig</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">norm_cfg</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">norm_cfg</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;BN&quot;</span><span class="p">,</span> <span class="s2">&quot;momentum&quot;</span><span class="p">:</span> <span class="mf">0.03</span><span class="p">,</span> <span class="s2">&quot;eps&quot;</span><span class="p">:</span> <span class="mf">0.001</span><span class="p">}</span>
@@ -386,8 +386,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">test_cfg</span> <span class="o">=</span> <span class="n">test_cfg</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">train_cfg</span> <span class="o">=</span> <span class="n">train_cfg</span>
 
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">train_cfg</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">assigner</span> <span class="o">=</span> <span class="n">SimOTAAssigner</span><span class="p">(</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">train_cfg</span><span class="p">[</span><span class="s2">&quot;assigner&quot;</span><span class="p">])</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">train_cfg</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">assigner</span> <span class="o">=</span> <span class="n">SimOTAAssigner</span><span class="p">(</span><span class="n">center_radius</span><span class="o">=</span><span class="mf">2.5</span><span class="p">)</span>
             <span class="c1"># YOLOX does not support sampling</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">sampler</span> <span class="o">=</span> <span class="n">PseudoSampler</span><span class="p">()</span>  <span class="c1"># type: ignore[no-untyped-call]</span>
 
@@ -491,7 +491,7 @@
         <span class="n">bbox_preds</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Tensor</span><span class="p">],</span>
         <span class="n">objectnesses</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">batch_img_metas</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">cfg</span><span class="p">:</span> <span class="n">ConfigDict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">cfg</span><span class="p">:</span> <span class="n">DictConfig</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">rescale</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">with_nms</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">InstanceData</span><span class="p">]:</span>
@@ -509,7 +509,7 @@
 <span class="sd">                (batch_size, 1, H, W).</span>
 <span class="sd">            batch_img_metas (list[dict], Optional): Batch image meta info.</span>
 <span class="sd">                Defaults to None.</span>
-<span class="sd">            cfg (ConfigDict, optional): Test / postprocessing</span>
+<span class="sd">            cfg (DictConfig, optional): Test / postprocessing</span>
 <span class="sd">                configuration, if None, test_cfg would be used.</span>
 <span class="sd">                Defaults to None.</span>
 <span class="sd">            rescale (bool): If True, return boxes in original image space.</span>
@@ -585,7 +585,7 @@
         <span class="n">bbox_preds</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Tensor</span><span class="p">],</span>
         <span class="n">objectnesses</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Tensor</span><span class="p">],</span>
         <span class="n">batch_img_metas</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">cfg</span><span class="p">:</span> <span class="n">ConfigDict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">cfg</span><span class="p">:</span> <span class="n">DictConfig</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">rescale</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">with_nms</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]:</span>
@@ -605,7 +605,7 @@
 <span class="sd">                (batch_size, 1, H, W).</span>
 <span class="sd">            batch_img_metas (list[dict], Optional): Batch image meta info.</span>
 <span class="sd">                Defaults to None.</span>
-<span class="sd">            cfg (ConfigDict, optional): Test / postprocessing</span>
+<span class="sd">            cfg (DictConfig, optional): Test / postprocessing</span>
 <span class="sd">                configuration, if None, test_cfg would be used.</span>
 <span class="sd">                Defaults to None.</span>
 <span class="sd">            rescale (bool): If True, return boxes in original image space.</span>
@@ -680,7 +680,7 @@
     <span class="k">def</span> <span class="nf">_bbox_post_process</span><span class="p">(</span>  <span class="c1"># type: ignore[override]</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">results</span><span class="p">:</span> <span class="n">InstanceData</span><span class="p">,</span>
-        <span class="n">cfg</span><span class="p">:</span> <span class="n">ConfigDict</span><span class="p">,</span>
+        <span class="n">cfg</span><span class="p">:</span> <span class="n">DictConfig</span><span class="p">,</span>
         <span class="n">rescale</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">with_nms</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">img_meta</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -693,7 +693,7 @@
 <span class="sd">        Args:</span>
 <span class="sd">            results (:obj:`InstaceData`): Detection instance results,</span>
 <span class="sd">                each item has shape (num_bboxes, ).</span>
-<span class="sd">            cfg (mmengine.Config): Test / postprocessing configuration,</span>
+<span class="sd">            cfg (DictConfig): Test / postprocessing configuration,</span>
 <span class="sd">                if None, test_cfg would be used.</span>
 <span class="sd">            rescale (bool): If True, return boxes in original image space.</span>
 <span class="sd">                Default to False.</span>
