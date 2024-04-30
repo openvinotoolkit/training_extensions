@@ -27,7 +27,6 @@ from otx.core.data.entity.action_classification import ActionClsDataEntity
 from otx.core.data.entity.base import (
     Points,
     _crop_image_info,
-    _normalize_image_info,
     _pad_image_info,
     _resize_image_info,
     _resized_crop_image_info,
@@ -88,13 +87,15 @@ tvt_v2._utils.query_size = custom_query_size  # noqa: SLF001
 class NumpytoTVTensorMixin:
     """Convert numpy to tv tensors."""
 
+    is_numpy_to_tvtensor: bool
+
     def convert(self, inputs: T_OTXDataEntity) -> T_OTXDataEntity:
         """Convert numpy to tv tensors."""
         if self.is_numpy_to_tvtensor:
             if (image := getattr(inputs, "image", None)) is not None and isinstance(image, np.ndarray):
                 inputs.image = F.to_image(image)
             if (bboxes := getattr(inputs, "bboxes", None)) is not None and isinstance(bboxes, np.ndarray):
-                inputs.bboxes = tv_tensors.BoundingBoxes(bboxes, format="xyxy", canvas_size=inputs.img_info.img_shape)
+                inputs.bboxes = tv_tensors.BoundingBoxes(bboxes, format="xyxy", canvas_size=inputs.img_info.img_shape)  # type: ignore[attr-defined]
             # TODO (sungchul): set masks
         return inputs
 
@@ -367,7 +368,7 @@ class MinIoURandomCrop(tvt_v2.Transform, NumpytoTVTensorMixin):
             mode = self._random_mode()
             self.mode = mode
             if mode == 1:
-                return inputs
+                return self.convert(inputs)
 
             min_iou = self.mode
             for _ in range(50):
@@ -437,7 +438,7 @@ class MinIoURandomCrop(tvt_v2.Transform, NumpytoTVTensorMixin):
         return repr_str
 
 
-class Resize(tvt_v2.Transform):
+class Resize(tvt_v2.Transform, NumpytoTVTensorMixin):
     """Implementation of mmdet.datasets.transforms.Resize with torchvision format.
 
     Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/datasets/transforms/transforms.py#L135-L246
@@ -456,6 +457,8 @@ class Resize(tvt_v2.Transform):
             bboxes are allowed to cross the border of images. Therefore, we
             don't need to clip the gt bboxes in these cases. Defaults to True.
         interpolation (str): Interpolation method for cv2. Defaults to 'bilinear'.
+        transform_bbox (bool): Whether to transform bounding boxes. Defaults to True.
+        is_numpy_to_tvtensor(bool): Whether convert outputs to tensor. Defaults to False.
     """
 
     cv2_interp_codes: ClassVar = {
@@ -474,6 +477,7 @@ class Resize(tvt_v2.Transform):
         clip_object_border: bool = True,
         interpolation: str = "bilinear",
         transform_bbox: bool = True,
+        is_numpy_to_tvtensor: bool = False,
     ) -> None:
         super().__init__()
 
@@ -499,6 +503,8 @@ class Resize(tvt_v2.Transform):
         else:
             msg = f"expect scale_factor is float or Tuple(float), butget {type(scale_factor)}"
             raise TypeError(msg)
+
+        self.is_numpy_to_tvtensor = is_numpy_to_tvtensor
 
     def _resize_img(self, inputs: T_OTXDataEntity) -> tuple[T_OTXDataEntity, tuple[float, float] | None]:
         """Resize images with inputs.img_info.img_shape."""
@@ -547,7 +553,7 @@ class Resize(tvt_v2.Transform):
         if self.transform_bbox:
             inputs = self._resize_bboxes(inputs, scale_factor)  # type: ignore[arg-type, assignment]
 
-        return inputs
+        return self.convert(inputs)
 
     def __repr__(self) -> str:
         repr_str = self.__class__.__name__
@@ -559,7 +565,7 @@ class Resize(tvt_v2.Transform):
         return repr_str
 
 
-class RandomResizedCrop(tvt_v2.Transform):
+class RandomResizedCrop(tvt_v2.Transform, NumpytoTVTensorMixin):
     """Crop the given image to random scale and aspect ratio.
 
     This class implements mmpretrain.datasets.transforms.RandomResizedCrop reimplemented as torchvision.transform.
@@ -583,6 +589,7 @@ class RandomResizedCrop(tvt_v2.Transform):
             'bilinear'.
         backend (str): The image resize backend type, accepted values are
             'cv2' and 'pillow'. Defaults to 'cv2'.
+        is_numpy_to_tvtensor(bool): Whether convert outputs to tensor. Defaults to False.
     """
 
     cv2_interp_codes: ClassVar = {
@@ -601,6 +608,7 @@ class RandomResizedCrop(tvt_v2.Transform):
         max_attempts: int = 10,
         interpolation: str = "bilinear",
         backend: str = "cv2",
+        is_numpy_to_tvtensor: bool = False,
     ) -> None:
         super().__init__()
         if isinstance(scale, Sequence):
@@ -633,6 +641,7 @@ class RandomResizedCrop(tvt_v2.Transform):
         self.max_attempts = max_attempts
         self.interpolation = interpolation
         self.backend = backend
+        self.is_numpy_to_tvtensor = is_numpy_to_tvtensor
 
     @cache_randomness
     def rand_crop_params(self, img: np.ndarray) -> tuple[int, int, int, int]:
@@ -816,7 +825,7 @@ class RandomResizedCrop(tvt_v2.Transform):
 
             inputs.image = img
             inputs.img_info = _resize_image_info(inputs.img_info, img.shape[:2])
-        return inputs
+        return self.convert(inputs)
 
     def __repr__(self):
         """Print the basic information of the transform.
@@ -835,7 +844,7 @@ class RandomResizedCrop(tvt_v2.Transform):
         return repr_str
 
 
-class RandomFlip(tvt_v2.Transform):
+class RandomFlip(tvt_v2.Transform, NumpytoTVTensorMixin):
     """Implementation of mmdet.datasets.transforms.RandomFlip with torchvision format.
 
     Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/datasets/transforms/transforms.py#L496-L596
@@ -844,35 +853,37 @@ class RandomFlip(tvt_v2.Transform):
     TODO : optimize logic to torcivision pipeline
 
      - ``prob`` is float, ``direction`` is string: the image will be
-         ``direction``ly flipped with probability of ``prob`` .
-         E.g., ``prob=0.5``, ``direction='horizontal'``,
-         then image will be horizontally flipped with probability of 0.5.
+        ``direction``ly flipped with probability of ``prob`` .
+        E.g., ``prob=0.5``, ``direction='horizontal'``,
+        then image will be horizontally flipped with probability of 0.5.
      - ``prob`` is float, ``direction`` is list of string: the image will
-         be ``direction[i]``ly flipped with probability of
-         ``prob/len(direction)``.
-         E.g., ``prob=0.5``, ``direction=['horizontal', 'vertical']``,
-         then image will be horizontally flipped with probability of 0.25,
-         vertically with probability of 0.25.
+        be ``direction[i]``ly flipped with probability of
+        ``prob/len(direction)``.
+        E.g., ``prob=0.5``, ``direction=['horizontal', 'vertical']``,
+        then image will be horizontally flipped with probability of 0.25,
+        vertically with probability of 0.25.
      - ``prob`` is list of float, ``direction`` is list of string:
-         given ``len(prob) == len(direction)``, the image will
-         be ``direction[i]``ly flipped with probability of ``prob[i]``.
-         E.g., ``prob=[0.3, 0.5]``, ``direction=['horizontal',
-         'vertical']``, then image will be horizontally flipped with
-         probability of 0.3, vertically with probability of 0.5.
+        given ``len(prob) == len(direction)``, the image will
+        be ``direction[i]``ly flipped with probability of ``prob[i]``.
+        E.g., ``prob=[0.3, 0.5]``, ``direction=['horizontal',
+        'vertical']``, then image will be horizontally flipped with
+        probability of 0.3, vertically with probability of 0.5.
 
     Args:
-         prob (float | list[float], optional): The flipping probability.
-             Defaults to None.
-         direction(str | list[str]): The flipping direction. Options
-             If input is a list, the length must equal ``prob``. Each
-             element in ``prob`` indicates the flip probability of
-             corresponding direction. Defaults to 'horizontal'.
+        prob (float | list[float], optional): The flipping probability.
+            Defaults to None.
+        direction(str | list[str]): The flipping direction. Options
+            If input is a list, the length must equal ``prob``. Each
+            element in ``prob`` indicates the flip probability of
+            corresponding direction. Defaults to 'horizontal'.
+        is_numpy_to_tvtensor(bool): Whether convert outputs to tensor. Defaults to False.
     """
 
     def __init__(
         self,
         prob: float | Iterable[float] | None = None,
         direction: str | Sequence[str | None] = "horizontal",
+        is_numpy_to_tvtensor: bool = False,
     ) -> None:
         super().__init__()
 
@@ -899,6 +910,8 @@ class RandomFlip(tvt_v2.Transform):
 
         if isinstance(prob, list):
             assert len(prob) == len(self.direction)  # noqa: S101
+
+        self.is_numpy_to_tvtensor = is_numpy_to_tvtensor
 
     @cache_randomness
     def _choose_direction(self) -> str:
@@ -938,7 +951,7 @@ class RandomFlip(tvt_v2.Transform):
                 bboxes = flip_bboxes(bboxes, inputs.img_info.img_shape, direction=cur_dir)
                 inputs.bboxes = tv_tensors.BoundingBoxes(bboxes, format="XYXY", canvas_size=img.shape[:2])
 
-        return inputs
+        return self.convert(inputs)
 
     def __repr__(self) -> str:
         repr_str = self.__class__.__name__
@@ -947,7 +960,7 @@ class RandomFlip(tvt_v2.Transform):
         return repr_str
 
 
-class PhotoMetricDistortion(tvt_v2.Transform):
+class PhotoMetricDistortion(tvt_v2.Transform, NumpytoTVTensorMixin):
     """Implementation of mmdet.datasets.transforms.PhotoMetricDistortion with torchvision format.
 
     Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/datasets/transforms/transforms.py#L1084-L1210
@@ -973,6 +986,7 @@ class PhotoMetricDistortion(tvt_v2.Transform):
         contrast_range (sequence): range of contrast.
         saturation_range (sequence): range of saturation.
         hue_delta (int): delta of hue.
+        is_numpy_to_tvtensor(bool): Whether convert outputs to tensor. Defaults to False.
     """
 
     def __init__(
@@ -981,6 +995,7 @@ class PhotoMetricDistortion(tvt_v2.Transform):
         contrast_range: Sequence[int | float] = (0.5, 1.5),
         saturation_range: Sequence[int | float] = (0.5, 1.5),
         hue_delta: int = 18,
+        is_numpy_to_tvtensor: bool = False,
     ) -> None:
         super().__init__()
 
@@ -988,6 +1003,7 @@ class PhotoMetricDistortion(tvt_v2.Transform):
         self.contrast_lower, self.contrast_upper = contrast_range
         self.saturation_lower, self.saturation_upper = saturation_range
         self.hue_delta = hue_delta
+        self.is_numpy_to_tvtensor = is_numpy_to_tvtensor
 
     @cache_randomness
     def _random_flags(self) -> Sequence[int | float]:
@@ -1086,7 +1102,7 @@ class PhotoMetricDistortion(tvt_v2.Transform):
                 img = img[..., swap_value]
 
             inputs.image = img  # f32
-        return inputs
+        return self.convert(inputs)
 
     def __repr__(self) -> str:
         repr_str = self.__class__.__name__
@@ -1099,7 +1115,7 @@ class PhotoMetricDistortion(tvt_v2.Transform):
         return repr_str
 
 
-class RandomAffine(tvt_v2.Transform):
+class RandomAffine(tvt_v2.Transform, NumpytoTVTensorMixin):
     """Implementation of mmdet.datasets.transforms.RandomAffine with torchvision format.
 
     Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/datasets/transforms/transforms.py#L2736-L2901
@@ -1125,6 +1141,7 @@ class RandomAffine(tvt_v2.Transform):
             the border of the image. In some dataset like MOT17, the gt bboxes
             are allowed to cross the border of images. Therefore, we don't
             need to clip the gt bboxes in these cases. Defaults to True.
+        is_numpy_to_tvtensor(bool): Whether convert outputs to tensor. Defaults to False.
     """
 
     def __init__(
@@ -1136,6 +1153,7 @@ class RandomAffine(tvt_v2.Transform):
         border: tuple[int, int] = (0, 0),
         border_val: tuple[int, int, int] = (114, 114, 114),
         bbox_clip_border: bool = True,
+        is_numpy_to_tvtensor: bool = False,
     ) -> None:
         super().__init__()
 
@@ -1149,6 +1167,7 @@ class RandomAffine(tvt_v2.Transform):
         self.border = border
         self.border_val = border_val
         self.bbox_clip_border = bbox_clip_border
+        self.is_numpy_to_tvtensor = is_numpy_to_tvtensor
 
     @cache_randomness
     def _get_random_homography_matrix(self, height: int, width: int) -> np.ndarray:
@@ -1198,7 +1217,7 @@ class RandomAffine(tvt_v2.Transform):
             inputs.bboxes = tv_tensors.BoundingBoxes(bboxes[valid_index], format="XYXY", canvas_size=(height, width))
             inputs.labels = inputs.labels[valid_index]
 
-        return inputs
+        return self.convert(inputs)
 
     def __repr__(self):
         repr_str = self.__class__.__name__
@@ -1237,7 +1256,7 @@ class RandomAffine(tvt_v2.Transform):
         return np.array([[1, 0.0, x], [0.0, 1, y], [0.0, 0.0, 1.0]], dtype=np.float32)
 
 
-class CachedMosaic(tvt_v2.Transform):
+class CachedMosaic(tvt_v2.Transform, NumpytoTVTensorMixin):
     """Implementation of mmdet.datasets.transforms.CachedMosaic with torchvision format.
 
     Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/datasets/transforms/transforms.py#L3342-L3573
@@ -1265,6 +1284,7 @@ class CachedMosaic(tvt_v2.Transform):
         random_pop (bool): Whether to randomly pop a result from the cache
             when the cache is full. If set to False, use FIFO popping method.
             Defaults to True.
+        is_numpy_to_tvtensor(bool): Whether convert outputs to tensor. Defaults to False.
     """
 
     def __init__(
@@ -1276,6 +1296,7 @@ class CachedMosaic(tvt_v2.Transform):
         prob: float = 1.0,
         max_cached_images: int = 40,
         random_pop: bool = True,
+        is_numpy_to_tvtensor: bool = False,
     ) -> None:
         super().__init__()
 
@@ -1294,6 +1315,7 @@ class CachedMosaic(tvt_v2.Transform):
         self.max_cached_images = max_cached_images
 
         self.cnt_cached_images = 0
+        self.is_numpy_to_tvtensor = is_numpy_to_tvtensor
 
     @cache_randomness
     def get_indexes(self, cache: list) -> list:
@@ -1318,10 +1340,10 @@ class CachedMosaic(tvt_v2.Transform):
             self.results_cache.pop(index)
 
         if len(self.results_cache) <= 4:
-            return inputs
+            return self.convert(inputs)
 
         if random.uniform(0, 1) > self.prob:
-            return inputs
+            return self.convert(inputs)
 
         indices = self.get_indexes(self.results_cache)
         mix_results = [copy.deepcopy(self.results_cache[i]) for i in indices]
@@ -1400,7 +1422,7 @@ class CachedMosaic(tvt_v2.Transform):
         )  # TODO (sungchul): need to add proper function
         inputs.bboxes = tv_tensors.BoundingBoxes(mosaic_bboxes, format="XYXY", canvas_size=mosaic_img.shape[:2])
         inputs.labels = mosaic_bboxes_labels
-        return inputs
+        return self.convert(inputs)
 
     def _mosaic_combine(
         self,
@@ -1490,7 +1512,7 @@ class CachedMosaic(tvt_v2.Transform):
         return repr_str
 
 
-class CachedMixUp(tvt_v2.Transform):
+class CachedMixUp(tvt_v2.Transform, NumpytoTVTensorMixin):
     """Implementation of mmdet.datasets.transforms.CachedMixup with torchvision format.
 
     Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/datasets/transforms/transforms.py#L3577-L3854
@@ -1522,6 +1544,7 @@ class CachedMixUp(tvt_v2.Transform):
             Defaults to True.
         prob (float): Probability of applying this transformation.
             Defaults to 1.0.
+        is_numpy_to_tvtensor(bool): Whether convert outputs to tensor. Defaults to False.
     """
 
     def __init__(
@@ -1535,6 +1558,7 @@ class CachedMixUp(tvt_v2.Transform):
         max_cached_images: int = 20,
         random_pop: bool = True,
         prob: float = 1.0,
+        is_numpy_to_tvtensor: bool = False,
     ) -> None:
         super().__init__()
 
@@ -1552,6 +1576,7 @@ class CachedMixUp(tvt_v2.Transform):
         self.max_cached_images = max_cached_images
         self.random_pop = random_pop
         self.prob = prob
+        self.is_numpy_to_tvtensor = is_numpy_to_tvtensor
 
     @cache_randomness
     def get_indexes(self, cache: list) -> int:
@@ -1589,10 +1614,10 @@ class CachedMixUp(tvt_v2.Transform):
             self.results_cache.pop(index)
 
         if len(self.results_cache) <= 1:
-            return inputs
+            return self.convert(inputs)
 
         if random.uniform(0, 1) > self.prob:
-            return inputs
+            return self.convert(inputs)
 
         index = self.get_indexes(self.results_cache)
         retrieve_results = copy.deepcopy(self.results_cache[index])
@@ -1601,7 +1626,7 @@ class CachedMixUp(tvt_v2.Transform):
         # https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/datasets/transforms/transforms.py#L3721
         if retrieve_results.bboxes.shape[0] == 0:
             # empty bbox
-            return inputs
+            return self.convert(inputs)
 
         retrieve_img = to_np_image(retrieve_results.image)
 
@@ -1690,7 +1715,7 @@ class CachedMixUp(tvt_v2.Transform):
         )  # TODO (sungchul): need to add proper function
         inputs.bboxes = tv_tensors.BoundingBoxes(mixup_gt_bboxes, format="XYXY", canvas_size=mixup_img.shape[:2])
         inputs.labels = mixup_gt_bboxes_labels
-        return inputs
+        return self.convert(inputs)
 
     def __repr__(self):
         repr_str = self.__class__.__name__
@@ -1706,7 +1731,7 @@ class CachedMixUp(tvt_v2.Transform):
         return repr_str
 
 
-class YOLOXHSVRandomAug(tvt_v2.Transform):
+class YOLOXHSVRandomAug(tvt_v2.Transform, NumpytoTVTensorMixin):
     """Implementation of mmdet.datasets.transforms.YOLOXHSVRandomAug with torchvision format.
 
     Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/datasets/transforms/transforms.py#L2905-L2961
@@ -1718,14 +1743,22 @@ class YOLOXHSVRandomAug(tvt_v2.Transform):
         hue_delta (int): delta of hue. Defaults to 5.
         saturation_delta (int): delta of saturation. Defaults to 30.
         value_delta (int): delat of value. Defaults to 30.
+        is_numpy_to_tvtensor(bool): Whether convert outputs to tensor. Defaults to False.
     """
 
-    def __init__(self, hue_delta: int = 5, saturation_delta: int = 30, value_delta: int = 30) -> None:
+    def __init__(
+        self,
+        hue_delta: int = 5,
+        saturation_delta: int = 30,
+        value_delta: int = 30,
+        is_numpy_to_tvtensor: bool = False,
+    ) -> None:
         super().__init__()
 
         self.hue_delta = hue_delta
         self.saturation_delta = saturation_delta
         self.value_delta = value_delta
+        self.is_numpy_to_tvtensor = is_numpy_to_tvtensor
 
     @cache_randomness
     def _get_hsv_gains(self) -> np.ndarray:
@@ -1755,7 +1788,7 @@ class YOLOXHSVRandomAug(tvt_v2.Transform):
         cv2.cvtColor(img_hsv.astype(img.dtype), cv2.COLOR_HSV2BGR, dst=img)
 
         inputs.image = img
-        return inputs
+        return self.convert(inputs)
 
     def __repr__(self):
         repr_str = self.__class__.__name__
@@ -1765,7 +1798,7 @@ class YOLOXHSVRandomAug(tvt_v2.Transform):
         return repr_str
 
 
-class Pad(tvt_v2.Transform):
+class Pad(tvt_v2.Transform, NumpytoTVTensorMixin):
     """Implementation of mmdet.datasets.transforms.Pad with torchvision format.
 
     Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/datasets/transforms/transforms.py#L705-L784
@@ -1803,6 +1836,7 @@ class Pad(tvt_v2.Transform):
               on the edge. For example, padding [1, 2, 3, 4] with 2 elements on
               both sides in symmetric mode will result in
               [2, 1, 1, 2, 3, 4, 4, 3]
+        is_numpy_to_tvtensor(bool): Whether convert outputs to tensor. Defaults to False.
     """
 
     border_type: ClassVar = {
@@ -1819,6 +1853,7 @@ class Pad(tvt_v2.Transform):
         pad_to_square: bool = False,
         pad_val: int | float | dict | None = None,
         padding_mode: str = "constant",
+        is_numpy_to_tvtensor: bool = False,
     ) -> None:
         super().__init__()
 
@@ -1838,6 +1873,7 @@ class Pad(tvt_v2.Transform):
             assert size is None or size_divisor is None  # noqa: S101
         assert padding_mode in ["constant", "edge", "reflect", "symmetric"]  # noqa: S101
         self.padding_mode = padding_mode
+        self.is_numpy_to_tvtensor = is_numpy_to_tvtensor
 
     def _pad_img(self, inputs: T_OTXDataEntity) -> T_OTXDataEntity:
         """Pad images according to ``self.size``."""
@@ -1877,7 +1913,7 @@ class Pad(tvt_v2.Transform):
 
         inputs.image = padded_img
         inputs.img_info = _pad_image_info(inputs.img_info, padding)
-        return inputs
+        return self.convert(inputs)
 
     def forward(self, *_inputs: T_OTXDataEntity) -> T_OTXDataEntity:
         """Forward function to pad images."""
@@ -1885,82 +1921,6 @@ class Pad(tvt_v2.Transform):
         inputs = _inputs[0]
 
         return self._pad_img(inputs)
-
-
-class Normalize(tvt_v2.Transform):
-    """Implementation of mmcv.transforms.Normalize with torchvision format.
-
-    Reference : https://github.com/open-mmlab/mmcv/blob/v2.1.0/mmcv/transforms/processing.py#L22-L79
-
-    TODO : update masks for instance segmentation
-    TODO : optimize logic to torcivision pipeline
-
-    Args:
-        mean (sequence): Mean values of 3 channels.
-        std (sequence): Std values of 3 channels.
-        to_rgb (bool): Whether to convert the image from BGR to RGB before
-            normlizing the image. If ``to_rgb=True``, the order of mean and std
-            should be RGB. If ``to_rgb=False``, the order of mean and std
-            should be the same order of the image. Defaults to True.
-    """
-
-    def __init__(self, mean: Sequence[int | float], std: Sequence[int | float], to_rgb: bool = True) -> None:
-        super().__init__()
-        self.mean = np.array(mean, dtype=np.float32)
-        self.std = np.array(std, dtype=np.float32)
-        self.to_rgb = to_rgb
-
-    def _normalize_img(self, inputs: T_OTXDataEntity) -> T_OTXDataEntity:
-        img = to_np_image(inputs.image)
-        if img.dtype != np.float32:
-            img = img.astype(np.float32)
-
-        mean = np.float64(self.mean.reshape(1, -1))
-        stdinv = 1 / np.float64(self.std.reshape(1, -1))
-        if self.to_rgb:
-            cv2.cvtColor(img, cv2.COLOR_BGR2RGB, img)  # inplace
-        cv2.subtract(img, mean, img)  # inplace
-        cv2.multiply(img, stdinv, img)  # inplace
-
-        inputs.image = img
-        inputs.img_info = _normalize_image_info(inputs.img_info, list(self.mean), list(self.std))
-        return inputs
-
-    def forward(self, *_inputs: T_OTXDataEntity) -> T_OTXDataEntity:
-        """Forward function to normalize images."""
-        assert len(_inputs) == 1, "[tmp] Multiple entity is not supported yet."  # noqa: S101
-        inputs = _inputs[0]
-
-        return self._normalize_img(inputs)
-
-    def __repr__(self) -> str:
-        repr_str = self.__class__.__name__
-        repr_str += f"(mean={self.mean}, std={self.std}, to_rgb={self.to_rgb})"
-        return repr_str
-
-
-class NumpytoTVTensor(tvt_v2.Transform):
-    """Convert ndarray to tv_tensors.
-
-    TODO : update masks for instance segmentation
-    TODO : optimize logic to torcivision pipeline
-    """
-
-    def forward(self, *_inputs: T_OTXDataEntity) -> T_OTXDataEntity:
-        """Forward function to convert ndarrays.
-
-        Args:
-            _inputs (T_OTXDataEntity): Data entity.
-
-        Returns:
-            (T_OTXDataEntity): Data entity after converting ndarrays to tv_tensors.
-        """
-        assert len(_inputs) == 1, "[tmp] Multiple entity is not supported yet."  # noqa: S101
-        inputs = _inputs[0]
-
-        if isinstance(image := inputs.image, np.ndarray):
-            inputs.image = F.to_image(image)
-        return inputs
 
 
 tvt_v2.PerturbBoundingBoxes = PerturbBoundingBoxes
