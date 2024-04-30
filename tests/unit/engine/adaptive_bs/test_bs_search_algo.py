@@ -5,12 +5,12 @@ from otx.engine.adaptive_bs import bs_search_algo as target_file
 from otx.engine.adaptive_bs.bs_search_algo import BsSearchAlgo, _get_max_memory_reserved, _get_total_memory_size
 
 
-@pytest.fixture
+@pytest.fixture()
 def mock_torch(mocker) -> MagicMock:
     return mocker.patch.object(target_file, "torch")
 
 
-@pytest.fixture
+@pytest.fixture()
 def mock_is_xpu_available(mocker) -> MagicMock:
     return mocker.patch.object(target_file, "is_xpu_available", return_value=False)
 
@@ -36,7 +36,7 @@ class TestBsSearchAlgo:
             BsSearchAlgo(mocker.MagicMock(), default_bs=4, max_bs=max_bs)
 
     def set_mp_process(self, train_func):
-        def mock_process(target, args) -> MagicMock:  # noqa: ARG001
+        def mock_process(target, args) -> MagicMock:
             batch_size = args[-2]
             oom = False
             mem_usage = 0
@@ -185,7 +185,7 @@ def test_get_max_xpu_memory_reserved(mock_torch, mock_is_xpu_available):
     _get_max_memory_reserved()
     mock_torch.xpu.max_memory_reserved.assert_called_once()
 
-    
+
 def test_get_total_memory_size(mock_torch, mock_is_xpu_available):
     total_mem = 100
     mock_torch.cuda.mem_get_info.return_value = (1, total_mem)
