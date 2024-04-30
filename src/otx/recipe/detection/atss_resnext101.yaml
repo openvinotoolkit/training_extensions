@@ -1,8 +1,7 @@
 model:
-  class_path: otx.algo.detection.atss.ATSS
+  class_path: otx.algo.detection.atss.ResNeXt101ATSS
   init_args:
     label_info: 1000
-    variant: resnext101
 
     optimizer:
       class_path: torch.optim.SGD

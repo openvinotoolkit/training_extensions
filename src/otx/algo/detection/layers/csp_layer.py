@@ -17,7 +17,7 @@ from otx.algo.modules.depthwise_separable_conv_module import DepthwiseSeparableC
 from .channel_attention_layer import ChannelAttention
 
 if TYPE_CHECKING:
-    from mmengine import ConfigDict
+    from omegaconf import DictConfig
 
 
 class DarknetBottleneck(BaseModule):
@@ -52,10 +52,10 @@ class DarknetBottleneck(BaseModule):
         expansion: float = 0.5,
         add_identity: bool = True,
         use_depthwise: bool = False,
-        conv_cfg: ConfigDict | dict | None = None,
-        norm_cfg: ConfigDict | dict | None = None,
-        act_cfg: ConfigDict | dict | None = None,
-        init_cfg: ConfigDict | dict | list[ConfigDict] | list[dict] | None = None,
+        conv_cfg: DictConfig | dict | None = None,
+        norm_cfg: DictConfig | dict | None = None,
+        act_cfg: DictConfig | dict | None = None,
+        init_cfg: DictConfig | dict | list[DictConfig] | list[dict] | None = None,
     ) -> None:
         if norm_cfg is None:
             norm_cfg = {"type": "BN", "momentum": 0.03, "eps": 0.001}
@@ -110,8 +110,8 @@ class CSPNeXtBlock(BaseModule):
             Defaults to dict(type='BN', momentum=0.03, eps=0.001).
         act_cfg (dict): Config dict for activation layer.
             Defaults to dict(type='SiLU').
-        init_cfg (:obj:`ConfigDict` or dict or list[dict] or
-            list[:obj:`ConfigDict`], optional): Initialization config dict.
+        init_cfg (:obj:`DictConfig` or dict or list[dict] or
+            list[:obj:`DictConfig`], optional): Initialization config dict.
             Defaults to None.
     """
 
@@ -123,10 +123,10 @@ class CSPNeXtBlock(BaseModule):
         add_identity: bool = True,
         use_depthwise: bool = False,
         kernel_size: int = 5,
-        conv_cfg: ConfigDict | dict | None = None,
-        norm_cfg: ConfigDict | dict | None = None,
-        act_cfg: ConfigDict | dict | None = None,
-        init_cfg: ConfigDict | dict | list[ConfigDict] | list[dict] | None = None,
+        conv_cfg: DictConfig | dict | None = None,
+        norm_cfg: DictConfig | dict | None = None,
+        act_cfg: DictConfig | dict | None = None,
+        init_cfg: DictConfig | dict | list[DictConfig] | list[dict] | None = None,
     ) -> None:
         if norm_cfg is None:
             norm_cfg = {"type": "BN", "momentum": 0.03, "eps": 0.001}
@@ -185,8 +185,8 @@ class CSPLayer(BaseModule):
             Defaults to dict(type='BN')
         act_cfg (dict): Config dict for activation layer.
             Defaults to dict(type='Swish')
-        init_cfg (:obj:`ConfigDict` or dict or list[dict] or
-            list[:obj:`ConfigDict`], optional): Initialization config dict.
+        init_cfg (:obj:`DictConfig` or dict or list[dict] or
+            list[:obj:`DictConfig`], optional): Initialization config dict.
             Defaults to None.
     """
 
@@ -200,10 +200,10 @@ class CSPLayer(BaseModule):
         use_depthwise: bool = False,
         use_cspnext_block: bool = False,
         channel_attention: bool = False,
-        conv_cfg: ConfigDict | dict | None = None,
-        norm_cfg: ConfigDict | dict | None = None,
-        act_cfg: ConfigDict | dict | None = None,
-        init_cfg: ConfigDict | dict | list[ConfigDict] | list[dict] | None = None,
+        conv_cfg: DictConfig | dict | None = None,
+        norm_cfg: DictConfig | dict | None = None,
+        act_cfg: DictConfig | dict | None = None,
+        init_cfg: DictConfig | dict | list[DictConfig] | list[dict] | None = None,
     ) -> None:
         if norm_cfg is None:
             norm_cfg = {"type": "BN", "momentum": 0.03, "eps": 0.001}

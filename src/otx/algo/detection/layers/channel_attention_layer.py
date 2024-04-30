@@ -13,7 +13,7 @@ from torch import Tensor, nn
 from otx.algo.modules.base_module import BaseModule
 
 if TYPE_CHECKING:
-    from mmengine import ConfigDict
+    from omegaconf import DictConfig
 
 
 class ChannelAttention(BaseModule):
@@ -28,7 +28,7 @@ class ChannelAttention(BaseModule):
     def __init__(
         self,
         channels: int,
-        init_cfg: ConfigDict | dict | list[ConfigDict] | list[dict] | None = None,
+        init_cfg: DictConfig | dict | list[DictConfig] | list[dict] | None = None,
     ) -> None:
         super().__init__(init_cfg=init_cfg)
 

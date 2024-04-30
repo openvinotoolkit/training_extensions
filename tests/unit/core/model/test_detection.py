@@ -13,7 +13,7 @@ import torch
 from importlib_resources import files
 from lightning.pytorch.cli import ReduceLROnPlateau
 from omegaconf import OmegaConf
-from otx.algo.detection.atss import ATSS
+from otx.algo.detection.atss import MobileNetV2ATSS
 from otx.algo.explain.explain_algo import feature_vector_fn
 from otx.core.metrics.fmeasure import FMeasureCallable
 from otx.core.model.detection import OTXDetectionModel
@@ -55,8 +55,8 @@ class TestOTXDetectionModel:
         return OmegaConf.load(cfg_path)
 
     @pytest.fixture()
-    def otx_model(self) -> ATSS:
-        return ATSS(label_info=1, variant="mobilenetv2")
+    def otx_model(self) -> MobileNetV2ATSS:
+        return MobileNetV2ATSS(label_info=1)
 
     def test_configure_metric_with_ckpt(
         self,
