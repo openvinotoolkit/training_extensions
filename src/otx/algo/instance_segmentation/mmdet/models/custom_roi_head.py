@@ -12,11 +12,9 @@ from typing import TYPE_CHECKING
 import torch
 from torch import Tensor
 
-from otx.algo.detection.heads.base_sampler import RandomSampler
 from otx.algo.detection.heads.class_incremental_mixin import (
     ClassIncrementalMixin,
 )
-from otx.algo.detection.heads.max_iou_assigner import MaxIoUAssigner
 from otx.algo.detection.losses import CrossSigmoidFocalLoss, accuracy
 from otx.algo.detection.utils.structures import SamplingResult
 from otx.algo.detection.utils.utils import empty_instances, multi_apply, unpack_gt_instances
@@ -36,18 +34,8 @@ class StandardRoIHead(BaseRoIHead):
 
     def init_assigner_sampler(self) -> None:
         """Initialize assigner and sampler."""
-        if self.train_cfg["assigner"]["type"] != MaxIoUAssigner.__name__:
-            msg = f"Invalid assigner type {self.train_cfg['assigner']['type']}"
-            raise ValueError(msg)
-        if self.train_cfg["sampler"]["type"] != RandomSampler.__name__:
-            msg = f"Invalid sampler type {self.train_cfg['sampler']['type']}"
-            raise ValueError(msg)
-
-        self.train_cfg["assigner"].pop("type")
-        self.bbox_assigner = MaxIoUAssigner(**self.train_cfg["assigner"])
-
-        self.train_cfg["sampler"].pop("type")
-        self.bbox_sampler = RandomSampler(**self.train_cfg["sampler"], context=self)
+        self.bbox_assigner = self.train_cfg["assigner"]
+        self.bbox_sampler = self.train_cfg["sampler"]
 
     def forward(
         self,

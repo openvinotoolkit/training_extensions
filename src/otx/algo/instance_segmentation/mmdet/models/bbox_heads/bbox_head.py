@@ -108,7 +108,7 @@ class BBoxHead(BaseModule):
         neg_priors: Tensor,
         pos_gt_bboxes: Tensor,
         pos_gt_labels: Tensor,
-        cfg: ConfigDict,
+        cfg: dict,
     ) -> tuple:
         """Calculate the ground truth for proposals in the single image according to the sampling results.
 
@@ -155,7 +155,7 @@ class BBoxHead(BaseModule):
         bbox_weights = pos_priors.new_zeros(num_samples, reg_dim)
         if num_pos > 0:
             labels[:num_pos] = pos_gt_labels
-            pos_weight = 1.0 if cfg.pos_weight <= 0 else cfg.pos_weight
+            pos_weight = 1.0 if cfg["pos_weight"] <= 0 else cfg["pos_weight"]
             label_weights[:num_pos] = pos_weight
             if not self.reg_decoded_bbox:
                 pos_bbox_targets = self.bbox_coder.encode(pos_priors, pos_gt_bboxes)

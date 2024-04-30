@@ -297,7 +297,7 @@ class RPNHead(AnchorHead):
     def _bbox_post_process(
         self,
         results: InstanceData,
-        cfg: ConfigDict,
+        cfg: dict,
         img_meta: dict,
         rescale: bool = False,
         with_nms: bool = True,
@@ -340,17 +340,17 @@ class RPNHead(AnchorHead):
         # filter small size bboxes
         if cfg.get("min_bbox_size", -1) >= 0:
             w, h = get_box_wh(results.bboxes)
-            valid_mask = (w > cfg.min_bbox_size) & (h > cfg.min_bbox_size)
+            valid_mask = (w > cfg["min_bbox_size"]) & (h > cfg["min_bbox_size"])
             if not valid_mask.all():
                 results = results[valid_mask]
 
         if results.bboxes.numel() > 0:
             bboxes = results.bboxes
-            det_bboxes, keep_idxs = batched_nms(bboxes, results.scores, results.level_ids, cfg.nms)
+            det_bboxes, keep_idxs = batched_nms(bboxes, results.scores, results.level_ids, cfg["nms"])
             results = results[keep_idxs]
             # some nms would reweight the score, such as softnms
             results.scores = det_bboxes[:, -1]
-            results = results[: cfg.max_per_img]
+            results = results[: cfg["max_per_img"]]
 
             #  in visualization
             results.labels = results.scores.new_zeros(len(results), dtype=torch.long)

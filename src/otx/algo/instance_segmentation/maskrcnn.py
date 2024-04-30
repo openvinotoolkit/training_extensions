@@ -13,8 +13,10 @@ from mmengine.structures import InstanceData
 from omegaconf import DictConfig
 
 from otx.algo.detection.backbones.pytorchcv_backbones import _build_pytorchcv_model
-from otx.algo.detection.heads.custom_anchor_generator import AnchorGenerator
+from otx.algo.detection.heads.anchor_generator import AnchorGenerator
+from otx.algo.detection.heads.base_sampler import RandomSampler
 from otx.algo.detection.heads.delta_xywh_bbox_coder import DeltaXYWHBBoxCoder
+from otx.algo.detection.heads.max_iou_assigner import MaxIoUAssigner
 from otx.algo.detection.losses.cross_entropy_loss import CrossEntropyLoss
 from otx.algo.detection.losses.cross_focal_loss import CrossSigmoidFocalLoss
 from otx.algo.detection.losses.smooth_l1_loss import L1Loss
@@ -161,59 +163,54 @@ class MaskRCNNResNet50(MMDetMaskRCNN):
         super().__init__(label_info, optimizer, scheduler, metric, torch_compile, tile_config)
 
     def _build_model(self, num_classes: int) -> MMDetMaskRCNN:
-        train_cfg = DictConfig(
-            {
-                "rpn": {
-                    "allowed_border": -1,
-                    "debug": False,
-                    "pos_weight": -1,
-                    "assigner": {
-                        "type": "MaxIoUAssigner",
-                        "ignore_iof_thr": -1,
-                        "match_low_quality": True,
-                        "pos_iou_thr": 0.7,
-                        "neg_iou_thr": 0.3,
-                        "min_pos_iou": 0.3,
-                    },
-                    "sampler": {
-                        "type": "RandomSampler",
-                        "add_gt_as_proposals": False,
-                        "neg_pos_ub": -1,
-                        "num": 256,
-                        "pos_fraction": 0.5,
-                    },
-                },
-                "rpn_proposal": {
-                    "max_per_img": 1000,
-                    "min_bbox_size": 0,
-                    "nms": {
-                        "type": "nms",
-                        "iou_threshold": 0.7,
-                    },
-                    "nms_pre": 2000,
-                },
-                "rcnn": {
-                    "assigner": {
-                        "type": "MaxIoUAssigner",
-                        "ignore_iof_thr": -1,
-                        "match_low_quality": True,
-                        "pos_iou_thr": 0.5,
-                        "neg_iou_thr": 0.5,
-                        "min_pos_iou": 0.5,
-                    },
-                    "sampler": {
-                        "type": "RandomSampler",
-                        "add_gt_as_proposals": True,
-                        "neg_pos_ub": -1,
-                        "num": 512,
-                        "pos_fraction": 0.25,
-                    },
-                    "debug": False,
-                    "mask_size": 28,
-                    "pos_weight": -1,
-                },
+        train_cfg = {
+            "rpn": {
+                "allowed_border": -1,
+                "debug": False,
+                "pos_weight": -1,
+                "assigner": MaxIoUAssigner(
+                    pos_iou_thr=0.7,
+                    neg_iou_thr=0.3,
+                    min_pos_iou=0.3,
+                    ignore_iof_thr=-1,
+                    match_low_quality=True,
+                ),
+                "sampler": RandomSampler(
+                    add_gt_as_proposals=False,
+                    num=256,
+                    pos_fraction=0.5,
+                    neg_pos_ub=-1,
+                ),
             },
-        )
+            "rpn_proposal": {
+                "max_per_img": 1000,
+                "min_bbox_size": 0,
+                "nms": {
+                    "type": "nms",
+                    "iou_threshold": 0.7,
+                },
+                "nms_pre": 2000,
+            },
+            "rcnn": {
+                "assigner": MaxIoUAssigner(
+                    pos_iou_thr=0.5,
+                    neg_iou_thr=0.5,
+                    min_pos_iou=0.5,
+                    ignore_iof_thr=-1,
+                    match_low_quality=True,
+                ),
+                "sampler": RandomSampler(
+                    add_gt_as_proposals=True,
+                    num=512,
+                    pos_fraction=0.25,
+                    neg_pos_ub=-1,
+                ),
+                "debug": False,
+                "mask_size": 28,
+                "pos_weight": -1,
+            },
+        }
+
         test_cfg = DictConfig(
             {
                 "rpn": {
@@ -275,8 +272,8 @@ class MaskRCNNResNet50(MMDetMaskRCNN):
             ),
             loss_bbox=L1Loss(loss_weight=1.0),
             loss_cls=CrossEntropyLoss(loss_weight=1.0, use_sigmoid=True),
-            train_cfg=train_cfg.rpn,
-            test_cfg=test_cfg.rpn,
+            train_cfg=train_cfg["rpn"],
+            test_cfg=test_cfg["rpn"],
         )
 
         roi_head = CustomRoIHead(
@@ -310,8 +307,8 @@ class MaskRCNNResNet50(MMDetMaskRCNN):
                 num_classes=num_classes,
                 num_convs=4,
             ),
-            train_cfg=train_cfg.rcnn,
-            test_cfg=test_cfg.rcnn,
+            train_cfg=train_cfg["rcnn"],
+            test_cfg=test_cfg["rcnn"],
         )
 
         return MaskRCNN(

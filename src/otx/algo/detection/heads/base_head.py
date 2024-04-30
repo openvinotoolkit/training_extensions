@@ -460,7 +460,6 @@ class BaseDenseHead(BaseModule):
         self,
         cls_scores: list[Tensor],
         bbox_preds: list[Tensor],
-        batch_img_metas: list[dict],
         score_factors: list[Tensor] | None = None,
         batch_img_metas: list[dict] | None = None,
         cfg: DictConfig | None = None,

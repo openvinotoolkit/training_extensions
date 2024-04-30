@@ -6,7 +6,6 @@
 
 from __future__ import annotations
 
-import warnings
 from collections.abc import Mapping
 from dataclasses import asdict, dataclass, field, fields
 from typing import TYPE_CHECKING, Any, Dict, Generic, Iterator, TypeVar
