@@ -8,7 +8,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 import torch
-from mmengine.structures import InstanceData
 from omegaconf import DictConfig
 from torchvision import tv_tensors
 
@@ -23,6 +22,7 @@ from otx.algo.detection.losses.cross_focal_loss import CrossSigmoidFocalLoss
 from otx.algo.detection.losses.iou_loss import GIoULoss
 from otx.algo.detection.necks.fpn import FPN
 from otx.algo.detection.ssd import SingleStageDetector
+from otx.algo.utils.mmengine_utils import InstanceData, load_checkpoint
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.config.data import TileConfig
 from otx.core.data.entity.base import OTXBatchLossEntity
@@ -67,8 +67,6 @@ class ATSS(ExplainableOTXDetModel):
         self.tile_image_size = self.image_size
 
     def _create_model(self) -> nn.Module:
-        from mmengine.runner import load_checkpoint
-
         detector = self._build_model(num_classes=self.label_info.num_classes)
         detector.init_weights()
         self.classification_layers = self.get_classification_layers(prefix="model.")
@@ -116,15 +114,15 @@ class ATSS(ExplainableOTXDetModel):
         for img_info, prediction in zip(inputs.imgs_info, predictions):
             if not isinstance(prediction, InstanceData):
                 raise TypeError(prediction)
-            scores.append(prediction.scores)
+            scores.append(prediction.scores)  # type: ignore[attr-defined]
             bboxes.append(
                 tv_tensors.BoundingBoxes(
-                    prediction.bboxes,
+                    prediction.bboxes,  # type: ignore[attr-defined]
                     format="XYXY",
                     canvas_size=img_info.ori_shape,
                 ),
             )
-            labels.append(prediction.labels)
+            labels.append(prediction.labels)  # type: ignore[attr-defined]
 
         if self.explain_mode:
             if not isinstance(outputs, dict):

@@ -9,7 +9,6 @@ import warnings
 from typing import TYPE_CHECKING
 
 import torch
-from mmengine.structures import InstanceData
 from torch import Tensor, nn
 
 from otx.algo.detection.heads.anchor_generator import AnchorGenerator
@@ -19,6 +18,7 @@ from otx.algo.detection.heads.base_sampler import PseudoSampler
 from otx.algo.detection.heads.delta_xywh_bbox_coder import DeltaXYWHBBoxCoder
 from otx.algo.detection.heads.max_iou_assigner import MaxIoUAssigner
 from otx.algo.detection.utils.utils import anchor_inside_flags, images_to_levels, multi_apply, unmap
+from otx.algo.utils.mmengine_utils import InstanceData
 
 if TYPE_CHECKING:
     from omegaconf import DictConfig
@@ -251,13 +251,13 @@ class AnchorHead(BaseDenseHead):
         anchors = flat_anchors[inside_flags]
 
         pred_instances = InstanceData(priors=anchors)
-        assign_result = self.assigner.assign(pred_instances, gt_instances, gt_instances_ignore)
+        assign_result = self.assigner.assign(pred_instances, gt_instances, gt_instances_ignore)  # type: ignore[arg-type]
         # No sampling is required except for RPN and
         # Guided Anchoring algorithms
         sampling_result = self.sampler.sample(assign_result, pred_instances, gt_instances)
 
         num_valid_anchors = anchors.shape[0]
-        target_dim = gt_instances.bboxes.size(-1) if self.reg_decoded_bbox else self.bbox_coder.encode_size
+        target_dim = gt_instances.bboxes.size(-1) if self.reg_decoded_bbox else self.bbox_coder.encode_size  # type: ignore[attr-defined]
         bbox_targets = anchors.new_zeros(num_valid_anchors, target_dim)
         bbox_weights = anchors.new_zeros(num_valid_anchors, target_dim)
 
@@ -352,7 +352,7 @@ class AnchorHead(BaseDenseHead):
             raise ValueError(msg)
 
         if batch_gt_instances_ignore is None:
-            batch_gt_instances_ignore = [None] * num_imgs
+            batch_gt_instances_ignore = [None] * num_imgs  # type: ignore[list-item]
 
         # anchor number of multi levels
         num_level_anchors = [anchors.size(0) for anchors in anchor_list[0]]

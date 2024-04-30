@@ -10,7 +10,6 @@ from typing import TYPE_CHECKING, Sequence
 
 import torch
 import torch.nn.functional as F  # noqa: N812
-from mmengine.structures import InstanceData  # TODO (sungchul): remove
 from torch import Tensor, nn
 
 from otx.algo.detection.heads.base_head import BaseDenseHead
@@ -22,6 +21,7 @@ from otx.algo.detection.ops.nms import batched_nms, multiclass_nms
 from otx.algo.detection.utils.utils import multi_apply, reduce_mean
 from otx.algo.modules.conv_module import ConvModule
 from otx.algo.modules.depthwise_separable_conv_module import DepthwiseSeparableConvModule
+from otx.algo.utils.mmengine_utils import InstanceData
 
 if TYPE_CHECKING:
     from omegaconf import DictConfig
@@ -464,10 +464,10 @@ class YOLOXHead(BaseDenseHead):
         """
         if rescale:
             assert img_meta.get("scale_factor") is not None  # type: ignore[union-attr] # noqa: S101
-            results.bboxes /= results.bboxes.new_tensor(img_meta["scale_factor"]).repeat((1, 2))  # type: ignore[index]
+            results.bboxes /= results.bboxes.new_tensor(img_meta["scale_factor"]).repeat((1, 2))  # type: ignore[attr-defined, index]
 
-        if with_nms and results.bboxes.numel() > 0:
-            det_bboxes, keep_idxs = batched_nms(results.bboxes, results.scores, results.labels, cfg.nms)
+        if with_nms and results.bboxes.numel() > 0:  # type: ignore[attr-defined]
+            det_bboxes, keep_idxs = batched_nms(results.bboxes, results.scores, results.labels, cfg.nms)  # type: ignore[attr-defined]
             results = results[keep_idxs]
             # some nms would reweight the score, such as softnms
             results.scores = det_bboxes[:, -1]
@@ -509,7 +509,7 @@ class YOLOXHead(BaseDenseHead):
         """
         num_imgs = len(batch_img_metas)
         if batch_gt_instances_ignore is None:
-            batch_gt_instances_ignore = [None] * num_imgs
+            batch_gt_instances_ignore = [None] * num_imgs  # type: ignore[list-item]
 
         featmap_sizes = [cls_score.shape[2:] for cls_score in cls_scores]
         mlvl_priors = self.prior_generator.grid_priors(
