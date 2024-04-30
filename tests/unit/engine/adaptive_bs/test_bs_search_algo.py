@@ -2,16 +2,25 @@ from unittest.mock import MagicMock
 
 import pytest
 from otx.engine.adaptive_bs import bs_search_algo as target_file
-from otx.engine.adaptive_bs.bs_search_algo import BsSearchAlgo
+from otx.engine.adaptive_bs.bs_search_algo import BsSearchAlgo, _get_max_memory_reserved, _get_total_memory_size
+
+
+@pytest.fixture
+def mock_torch(mocker) -> MagicMock:
+    return mocker.patch.object(target_file, "torch")
+
+
+@pytest.fixture
+def mock_is_xpu_available(mocker) -> MagicMock:
+    return mocker.patch.object(target_file, "is_xpu_available", return_value=False)
 
 
 class TestBsSearchAlgo:
     @pytest.fixture(autouse=True)
-    def setup_test(self, mocker):
-        self.mock_torch = mocker.patch.object(target_file, "torch")
+    def setup_test(self, mocker, mock_torch, mock_is_xpu_available):
+        self.mock_torch = mock_torch
         self.mock_torch.cuda.mem_get_info.return_value = (1, 10000)
         self.mock_mp = mocker.patch.object(target_file, "mp")
-        mocker.patch.object(target_file, "is_xpu_available", return_value=False)
 
     def test_init(self, mocker):
         BsSearchAlgo(mocker.MagicMock(), 4, 10)
@@ -164,3 +173,27 @@ class TestBsSearchAlgo:
         adapted_bs = bs_search_algo.find_big_enough_batch_size(True)
 
         assert adapted_bs == 100
+
+
+def test_get_max_memory_reserved(mock_torch, mock_is_xpu_available):
+    _get_max_memory_reserved()
+    mock_torch.cuda.max_memory_reserved.assert_called_once()
+
+
+def test_get_max_xpu_memory_reserved(mock_torch, mock_is_xpu_available):
+    mock_is_xpu_available.return_value = True
+    _get_max_memory_reserved()
+    mock_torch.xpu.max_memory_reserved.assert_called_once()
+
+    
+def test_get_total_memory_size(mock_torch, mock_is_xpu_available):
+    total_mem = 100
+    mock_torch.cuda.mem_get_info.return_value = (1, total_mem)
+    assert _get_total_memory_size() == total_mem
+
+
+def test_get_total_xpu_memory_size(mock_torch, mock_is_xpu_available):
+    mock_is_xpu_available.return_value = True
+    total_mem = 100
+    mock_torch.xpu.get_device_properties.return_value.total_memory = total_mem
+    assert _get_total_memory_size() == total_mem
