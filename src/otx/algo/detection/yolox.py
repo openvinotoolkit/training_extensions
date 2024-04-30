@@ -267,7 +267,7 @@ class YOLOXS(YOLOX):
     std = (1.0, 1.0, 1.0)
 
     def _build_model(self, num_classes: int) -> SingleStageDetector:
-        train_cfg = DictConfig({})
+        train_cfg: dict[str, Any] = {}
         test_cfg = DictConfig(
             {
                 "nms": {"type": "nms", "iou_threshold": 0.65},
@@ -308,7 +308,7 @@ class YOLOXL(YOLOX):
     std = (1.0, 1.0, 1.0)
 
     def _build_model(self, num_classes: int) -> SingleStageDetector:
-        train_cfg = DictConfig({})
+        train_cfg: dict[str, Any] = {}
         test_cfg = DictConfig(
             {
                 "nms": {"type": "nms", "iou_threshold": 0.65},
@@ -349,7 +349,7 @@ class YOLOXX(YOLOX):
     std = (1.0, 1.0, 1.0)
 
     def _build_model(self, num_classes: int) -> SingleStageDetector:
-        train_cfg = DictConfig({})
+        train_cfg: dict[str, Any] = {}
         test_cfg = DictConfig(
             {
                 "nms": {"type": "nms", "iou_threshold": 0.65},

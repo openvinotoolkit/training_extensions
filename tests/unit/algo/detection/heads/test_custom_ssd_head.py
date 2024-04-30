@@ -3,7 +3,7 @@
 """Test of CustomSSDHead."""
 
 from omegaconf import DictConfig
-from otx.algo.detection.heads.custom_anchor_generator import SSDAnchorGeneratorClustered
+from otx.algo.detection.heads.anchor_generator import SSDAnchorGeneratorClustered
 from otx.algo.detection.heads.delta_xywh_bbox_coder import DeltaXYWHBBoxCoder
 from otx.algo.detection.heads.ssd_head import SSDHead
 from otx.algo.detection.losses.cross_entropy_loss import CrossEntropyLoss

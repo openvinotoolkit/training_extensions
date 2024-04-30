@@ -304,16 +304,12 @@ class ResNeXt101ATSS(ATSS):
     )
 
     def _build_model(self, num_classes: int) -> SingleStageDetector:
-        train_cfg = DictConfig(
-            {
-                "assigner": {
-                    "topk": 9,
-                },
-                "allowed_border": -1,
-                "pos_weight": -1,
-                "debug": False,
-            },
-        )
+        train_cfg = {
+            "assigner": ATSSAssigner(topk=9),
+            "allowed_border": -1,
+            "pos_weight": -1,
+            "debug": False,
+        }
         test_cfg = DictConfig(
             {
                 "nms": {"type": "nms", "iou_threshold": 0.6},
