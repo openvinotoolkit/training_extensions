@@ -247,7 +247,6 @@
 
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">import</span> <span class="nn">torch.nn.functional</span> <span class="k">as</span> <span class="nn">F</span>  <span class="c1"># noqa: N812</span>
-<span class="kn">from</span> <span class="nn">mmengine.structures</span> <span class="kn">import</span> <span class="n">InstanceData</span>  <span class="c1"># TODO (sungchul): remove</span>
 <span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">nn</span>
 
 <span class="kn">from</span> <span class="nn">otx.algo.detection.heads.base_head</span> <span class="kn">import</span> <span class="n">BaseDenseHead</span>
@@ -259,6 +258,7 @@
 <span class="kn">from</span> <span class="nn">otx.algo.detection.utils.utils</span> <span class="kn">import</span> <span class="n">multi_apply</span><span class="p">,</span> <span class="n">reduce_mean</span>
 <span class="kn">from</span> <span class="nn">otx.algo.modules.conv_module</span> <span class="kn">import</span> <span class="n">ConvModule</span>
 <span class="kn">from</span> <span class="nn">otx.algo.modules.depthwise_separable_conv_module</span> <span class="kn">import</span> <span class="n">DepthwiseSeparableConvModule</span>
+<span class="kn">from</span> <span class="nn">otx.algo.utils.mmengine_utils</span> <span class="kn">import</span> <span class="n">InstanceData</span>
 
 <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
     <span class="kn">from</span> <span class="nn">omegaconf</span> <span class="kn">import</span> <span class="n">DictConfig</span>
@@ -715,10 +715,10 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">rescale</span><span class="p">:</span>
             <span class="k">assert</span> <span class="n">img_meta</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;scale_factor&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>  <span class="c1"># type: ignore[union-attr] # noqa: S101</span>
-            <span class="n">results</span><span class="o">.</span><span class="n">bboxes</span> <span class="o">/=</span> <span class="n">results</span><span class="o">.</span><span class="n">bboxes</span><span class="o">.</span><span class="n">new_tensor</span><span class="p">(</span><span class="n">img_meta</span><span class="p">[</span><span class="s2">&quot;scale_factor&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">repeat</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>  <span class="c1"># type: ignore[index]</span>
+            <span class="n">results</span><span class="o">.</span><span class="n">bboxes</span> <span class="o">/=</span> <span class="n">results</span><span class="o">.</span><span class="n">bboxes</span><span class="o">.</span><span class="n">new_tensor</span><span class="p">(</span><span class="n">img_meta</span><span class="p">[</span><span class="s2">&quot;scale_factor&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">repeat</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>  <span class="c1"># type: ignore[attr-defined, index]</span>
 
-        <span class="k">if</span> <span class="n">with_nms</span> <span class="ow">and</span> <span class="n">results</span><span class="o">.</span><span class="n">bboxes</span><span class="o">.</span><span class="n">numel</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">det_bboxes</span><span class="p">,</span> <span class="n">keep_idxs</span> <span class="o">=</span> <span class="n">batched_nms</span><span class="p">(</span><span class="n">results</span><span class="o">.</span><span class="n">bboxes</span><span class="p">,</span> <span class="n">results</span><span class="o">.</span><span class="n">scores</span><span class="p">,</span> <span class="n">results</span><span class="o">.</span><span class="n">labels</span><span class="p">,</span> <span class="n">cfg</span><span class="o">.</span><span class="n">nms</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">with_nms</span> <span class="ow">and</span> <span class="n">results</span><span class="o">.</span><span class="n">bboxes</span><span class="o">.</span><span class="n">numel</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># type: ignore[attr-defined]</span>
+            <span class="n">det_bboxes</span><span class="p">,</span> <span class="n">keep_idxs</span> <span class="o">=</span> <span class="n">batched_nms</span><span class="p">(</span><span class="n">results</span><span class="o">.</span><span class="n">bboxes</span><span class="p">,</span> <span class="n">results</span><span class="o">.</span><span class="n">scores</span><span class="p">,</span> <span class="n">results</span><span class="o">.</span><span class="n">labels</span><span class="p">,</span> <span class="n">cfg</span><span class="o">.</span><span class="n">nms</span><span class="p">)</span>  <span class="c1"># type: ignore[attr-defined]</span>
             <span class="n">results</span> <span class="o">=</span> <span class="n">results</span><span class="p">[</span><span class="n">keep_idxs</span><span class="p">]</span>
             <span class="c1"># some nms would reweight the score, such as softnms</span>
             <span class="n">results</span><span class="o">.</span><span class="n">scores</span> <span class="o">=</span> <span class="n">det_bboxes</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span>
@@ -762,7 +762,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">num_imgs</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">batch_img_metas</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">batch_gt_instances_ignore</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">batch_gt_instances_ignore</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">num_imgs</span>
+            <span class="n">batch_gt_instances_ignore</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">num_imgs</span>  <span class="c1"># type: ignore[list-item]</span>
 
         <span class="n">featmap_sizes</span> <span class="o">=</span> <span class="p">[</span><span class="n">cls_score</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">:]</span> <span class="k">for</span> <span class="n">cls_score</span> <span class="ow">in</span> <span class="n">cls_scores</span><span class="p">]</span>
         <span class="n">mlvl_priors</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prior_generator</span><span class="o">.</span><span class="n">grid_priors</span><span class="p">(</span>
