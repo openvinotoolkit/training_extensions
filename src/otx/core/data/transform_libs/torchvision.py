@@ -536,16 +536,7 @@ class Resize(tvt_v2.Transform, NumpytoTVTensorMixin):
         return inputs
 
     def forward(self, *_inputs: T_OTXDataEntity) -> T_OTXDataEntity:
-        """Transform function to resize images and bounding boxes.
-
-        Args:
-            results (dict): Result dict from loading pipeline.
-
-        Returns:
-            dict: Resized results, 'img', 'gt_bboxes', 'gt_seg_map',
-            'scale', 'scale_factor', 'height', 'width', and 'keep_ratio' keys
-            are updated in result dict.
-        """
+        """Transform function to resize images and bounding boxes."""
         assert len(_inputs) == 1, "[tmp] Multiple entity is not supported yet."  # noqa: S101
         inputs = _inputs[0]
 
@@ -1034,14 +1025,7 @@ class PhotoMetricDistortion(tvt_v2.Transform, NumpytoTVTensorMixin):
         )
 
     def forward(self, *_inputs: T_OTXDataEntity) -> T_OTXDataEntity:
-        """Transform function to perform photometric distortion on images.
-
-        Args:
-            results (dict): Result dict from loading pipeline.
-
-        Returns:
-            dict: Result dict with images distorted.
-        """
+        """Transform function to perform photometric distortion on images."""
         assert len(_inputs) == 1, "[tmp] Multiple entity is not supported yet."  # noqa: S101
         inputs = _inputs[0]
 
@@ -1596,14 +1580,7 @@ class CachedMixUp(tvt_v2.Transform, NumpytoTVTensorMixin):
         return index
 
     def forward(self, *_inputs: DetDataEntity) -> DetDataEntity:
-        """MixUp transform function.
-
-        Args:
-            results (dict): Result dict.
-
-        Returns:
-            dict: Updated result dict.
-        """
+        """MixUp transform function."""
         # cache and pop images
         assert len(_inputs) == 1, "[tmp] Multiple entity is not supported yet."  # noqa: S101
         inputs = _inputs[0]
