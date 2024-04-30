@@ -13,7 +13,7 @@ from torch import Tensor
 from otx.algo.detection.utils.utils import images_to_levels, multi_apply
 
 if TYPE_CHECKING:
-    from mmengine.structures import InstanceData
+    from otx.algo.utils.mmengine_utils import InstanceData
 
 
 class ClassIncrementalMixin:
@@ -54,7 +54,7 @@ class ClassIncrementalMixin:
 
         # compute targets for each image
         if batch_gt_instances_ignore is None:
-            batch_gt_instances_ignore = [None] * num_imgs
+            batch_gt_instances_ignore = [None] * num_imgs  # type: ignore[list-item]
         (
             all_anchors,
             all_labels,

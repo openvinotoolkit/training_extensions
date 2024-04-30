@@ -6,7 +6,6 @@
 from __future__ import annotations
 
 import torch
-from mmengine.structures import InstanceData
 from torch import Tensor, nn
 
 from otx.algo.detection.heads.anchor_head import AnchorHead
@@ -20,6 +19,7 @@ from otx.algo.detection.utils.bbox_overlaps import bbox_overlaps
 from otx.algo.detection.utils.utils import anchor_inside_flags, multi_apply, reduce_mean, unmap
 from otx.algo.modules.conv_module import ConvModule
 from otx.algo.utils.mmcv_utils import Scale
+from otx.algo.utils.mmengine_utils import InstanceData
 
 EPS = 1e-12
 
@@ -208,7 +208,7 @@ class ATSSHead(ClassIncrementalMixin, AnchorHead):
         bbox_preds: list[Tensor],
         centernesses: list[Tensor],
         batch_gt_instances: list[InstanceData],
-        batch_img_metas: list[InstanceData],
+        batch_img_metas: list[dict],
         batch_gt_instances_ignore: list[InstanceData] | None = None,
     ) -> dict[str, Tensor]:
         """Compute losses of the head.
@@ -530,7 +530,7 @@ class ATSSHead(ClassIncrementalMixin, AnchorHead):
         pred_instances = InstanceData(priors=anchors)
         assign_result = self.assigner.assign(  # type: ignore[call-arg]
             pred_instances,
-            num_level_anchors_inside,
+            num_level_anchors_inside,  # type: ignore[arg-type]
             gt_instances,
             gt_instances_ignore,
         )

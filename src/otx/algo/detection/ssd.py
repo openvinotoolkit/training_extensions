@@ -11,7 +11,6 @@ from typing import TYPE_CHECKING, Any
 import numpy as np
 import torch
 from datumaro.components.annotation import Bbox
-from mmengine.structures import InstanceData
 from omegaconf import DictConfig
 from torch import nn
 from torchvision import tv_tensors
@@ -22,7 +21,7 @@ from otx.algo.detection.heads.delta_xywh_bbox_coder import DeltaXYWHBBoxCoder
 from otx.algo.detection.heads.max_iou_assigner import MaxIoUAssigner
 from otx.algo.detection.heads.ssd_head import SSDHead
 from otx.algo.modules.base_module import BaseModule
-from otx.algo.utils.mmengine_utils import load_checkpoint
+from otx.algo.utils.mmengine_utils import InstanceData, load_checkpoint
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.config.data import TileConfig
 from otx.core.data.entity.base import OTXBatchLossEntity
@@ -431,15 +430,15 @@ class SSD(ExplainableOTXDetModel):
         for img_info, prediction in zip(inputs.imgs_info, predictions):
             if not isinstance(prediction, InstanceData):
                 raise TypeError(prediction)
-            scores.append(prediction.scores)
+            scores.append(prediction.scores)  # type: ignore[attr-defined]
             bboxes.append(
                 tv_tensors.BoundingBoxes(
-                    prediction.bboxes,
+                    prediction.bboxes,  # type: ignore[attr-defined]
                     format="XYXY",
                     canvas_size=img_info.ori_shape,
                 ),
             )
-            labels.append(prediction.labels)
+            labels.append(prediction.labels)  # type: ignore[attr-defined]
 
         if self.explain_mode:
             if not isinstance(outputs, dict):

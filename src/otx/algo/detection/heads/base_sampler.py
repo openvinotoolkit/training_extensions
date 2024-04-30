@@ -4,9 +4,9 @@
 from abc import ABCMeta, abstractmethod
 
 import torch
-from mmengine.structures import InstanceData
 
 from otx.algo.detection.utils.structures import AssignResult, SamplingResult
+from otx.algo.utils.mmengine_utils import InstanceData
 
 
 class BaseSampler(metaclass=ABCMeta):
@@ -72,9 +72,9 @@ class BaseSampler(metaclass=ABCMeta):
         Returns:
             :obj:`SamplingResult`: Sampling result.
         """
-        gt_bboxes = gt_instances.bboxes
-        priors = pred_instances.priors
-        gt_labels = gt_instances.labels
+        gt_bboxes = gt_instances.bboxes  # type: ignore[attr-defined]
+        priors = pred_instances.priors  # type: ignore[attr-defined]
+        gt_labels = gt_instances.labels  # type: ignore[attr-defined]
         if len(priors.shape) < 2:
             priors = priors[None, :]
 
@@ -158,8 +158,8 @@ class PseudoSampler(BaseSampler):
         Returns:
             :obj:`SamplingResult`: sampler results
         """
-        gt_bboxes = gt_instances.bboxes
-        priors = pred_instances.priors
+        gt_bboxes = gt_instances.bboxes  # type: ignore[attr-defined]
+        priors = pred_instances.priors  # type: ignore[attr-defined]
 
         pos_inds = torch.nonzero(assign_result.gt_inds > 0, as_tuple=False).squeeze(-1).unique()
         neg_inds = torch.nonzero(assign_result.gt_inds == 0, as_tuple=False).squeeze(-1).unique()

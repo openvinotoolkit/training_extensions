@@ -15,7 +15,7 @@ from otx.algo.detection.heads.iou2d_calculator import BboxOverlaps2D
 from otx.algo.detection.utils.structures import AssignResult
 
 if TYPE_CHECKING:
-    from mmengine.structures import InstanceData
+    from otx.algo.utils.mmengine_utils import InstanceData
 
 
 # This class and its supporting functions below lightly adapted from the mmdet MaxIoUAssigner available at:
@@ -122,7 +122,7 @@ class MaxIoUAssigner:
             :obj:`AssignResult`: The assign result.
 
         Example:
-            >>> from mmengine.structures import InstanceData
+            >>> from otx.algo.utils.mmengine_utils import InstanceData
             >>> self = MaxIoUAssigner(0.5, 0.5)
             >>> pred_instances = InstanceData()
             >>> pred_instances.priors = torch.Tensor([[0, 0, 10, 10],
@@ -134,10 +134,10 @@ class MaxIoUAssigner:
             >>> expected_gt_inds = torch.LongTensor([1, 0])
             >>> assert torch.all(assign_result.gt_inds == expected_gt_inds)
         """
-        gt_bboxes = gt_instances.bboxes
-        priors = pred_instances.priors
-        gt_labels = gt_instances.labels
-        gt_bboxes_ignore = gt_instances_ignore.bboxes if gt_instances_ignore is not None else None
+        gt_bboxes = gt_instances.bboxes  # type: ignore[attr-defined]
+        priors = pred_instances.priors  # type: ignore[attr-defined]
+        gt_labels = gt_instances.labels  # type: ignore[attr-defined]
+        gt_bboxes_ignore = gt_instances_ignore.bboxes if gt_instances_ignore is not None else None  # type: ignore[attr-defined]
 
         assign_on_cpu = (self.gpu_assign_thr > 0) and (gt_bboxes.shape[0] > self.gpu_assign_thr)
         # compute overlap and assign gt on CPU when number of GT is large
