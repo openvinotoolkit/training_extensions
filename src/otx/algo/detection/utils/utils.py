@@ -349,3 +349,32 @@ def unpack_gt_instances(batch_data_samples: list[InstanceData]) -> tuple:
             batch_gt_instances_ignore.append(None)
 
     return batch_gt_instances, batch_gt_instances_ignore, batch_img_metas
+
+
+def gather_topk(
+    *inputs: tuple[torch.Tensor],
+    inds: torch.Tensor,
+    batch_size: int,
+    is_batched: bool = True,
+) -> list[torch.Tensor] | torch.Tensor:
+    """Gather topk of each tensor.
+
+    Args:
+        inputs (tuple[torch.Tensor]): Tensors to be gathered.
+        inds (torch.Tensor): Topk index.
+        batch_size (int): batch_size.
+        is_batched (bool): Inputs is batched or not.
+
+    Returns:
+        Tuple[torch.Tensor]: Gathered tensors.
+    """
+    if is_batched:
+        batch_inds = torch.arange(batch_size, device=inds.device).unsqueeze(-1)
+        outputs = [x[batch_inds, inds, ...] if x is not None else None for x in inputs]  # type: ignore[call-overload]
+    else:
+        prior_inds = inds.new_zeros((1, 1))
+        outputs = [x[prior_inds, inds, ...] if x is not None else None for x in inputs]  # type: ignore[call-overload]
+
+    if len(outputs) == 1:
+        outputs = outputs[0]
+    return outputs

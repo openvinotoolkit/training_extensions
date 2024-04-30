@@ -16,10 +16,9 @@ import torch.nn.functional
 from mmengine.structures import InstanceData
 from torch import Tensor, nn
 
-from otx.algo.detection.deployment import gather_topk_
 from otx.algo.detection.heads.anchor_head import AnchorHead
 from otx.algo.detection.ops.nms import batched_nms, multiclass_nms
-from otx.algo.detection.utils.utils import dynamic_topk, unpack_gt_instances
+from otx.algo.detection.utils.utils import dynamic_topk, gather_topk, unpack_gt_instances
 from otx.algo.instance_segmentation.mmdet.structures.bbox import (
     empty_box_as,
     get_box_wh,
@@ -436,14 +435,14 @@ class RPNHead(AnchorHead):
 
             if pre_topk > 0:
                 _, topk_inds = dynamic_topk(scores.squeeze(2), pre_topk)
-                bbox_pred, scores = gather_topk_(
+                bbox_pred, scores = gather_topk(
                     bbox_pred,
                     scores,
                     inds=topk_inds,
                     batch_size=batch_size,
                     is_batched=True,
                 )
-                anchors = gather_topk_(
+                anchors = gather_topk(
                     anchors,
                     inds=topk_inds,
                     batch_size=batch_size,
