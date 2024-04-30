@@ -12,13 +12,12 @@ from mmcv.ops import RoIAlign
 from mmengine.structures import InstanceData
 from omegaconf import DictConfig
 
-from otx.algo.detection.backbones.pytorchcv_backbones import _build_pytorchcv_model
+from otx.algo.detection.backbones.pytorchcv_backbones import _build_model_including_pytorchcv
 from otx.algo.detection.heads.anchor_generator import AnchorGenerator
 from otx.algo.detection.heads.base_sampler import RandomSampler
 from otx.algo.detection.heads.delta_xywh_bbox_coder import DeltaXYWHBBoxCoder
 from otx.algo.detection.heads.max_iou_assigner import MaxIoUAssigner
 from otx.algo.detection.losses.cross_entropy_loss import CrossEntropyLoss
-from otx.algo.detection.losses.cross_focal_loss import CrossSigmoidFocalLoss
 from otx.algo.detection.losses.smooth_l1_loss import L1Loss
 from otx.algo.instance_segmentation.mmdet.models.backbones import ResNet
 from otx.algo.instance_segmentation.mmdet.models.custom_roi_head import CustomConvFCBBoxHead, CustomRoIHead
@@ -117,7 +116,33 @@ class MMDetMaskRCNN(MMDetInstanceSegCompatibleModel):
 
     @property
     def _exporter(self) -> OTXModelExporter:
-        raise NotImplementedError
+        """Creates OTXModelExporter object that can export the model."""
+        if self.image_size is None:
+            raise ValueError(self.image_size)
+
+        return OTXNativeModelExporter(
+            task_level_export_parameters=self._export_parameters,
+            input_size=self.image_size,
+            mean=self.mean,
+            std=self.std,
+            resize_mode="standard",
+            pad_value=0,
+            swap_rgb=False,
+            via_onnx=True,
+            onnx_export_configuration={
+                "input_names": ["image"],
+                "output_names": ["boxes", "labels", "masks"],
+                "dynamic_axes": {
+                    "image": {0: "batch", 2: "height", 3: "width"},
+                    "boxes": {0: "batch", 1: "num_dets"},
+                    "labels": {0: "batch", 1: "num_dets"},
+                    "masks": {0: "batch", 1: "num_dets", 2: "height", 3: "width"},
+                },
+                "opset_version": 11,
+                "autograd_inlining": False,
+            },
+            output_names=["bboxes", "labels", "masks", "feature_vector", "saliency_map"] if self.explain_mode else None,
+        )
 
     def forward_for_tracing(
         self,
@@ -146,6 +171,8 @@ class MMDetMaskRCNN(MMDetInstanceSegCompatibleModel):
 
 
 class MaskRCNNResNet50(MMDetMaskRCNN):
+    """MaskRCNN with ResNet50 backbone."""
+
     load_from = (
         "https://download.openmmlab.com/mmdetection/v2.0/mask_rcnn/mask_rcnn_r50_fpn_mstrain-poly_3x_coco/"
         "mask_rcnn_r50_fpn_mstrain-poly_3x_coco_20210524_201154-21b550bb.pth"
@@ -163,6 +190,9 @@ class MaskRCNNResNet50(MMDetMaskRCNN):
         super().__init__(label_info, optimizer, scheduler, metric, torch_compile, tile_config)
 
     def _build_model(self, num_classes: int) -> MMDetMaskRCNN:
+        self.mean = (123.675, 116.28, 103.53)
+        self.std = (58.395, 57.12, 57.375)
+
         train_cfg = {
             "rpn": {
                 "allowed_border": -1,
@@ -235,11 +265,11 @@ class MaskRCNNResNet50(MMDetMaskRCNN):
         )
 
         data_preprocessor = DetDataPreprocessor(
+            mean=self.mean,
+            std=self.std,
             bgr_to_rgb=False,
-            mean=[123.675, 116.28, 103.53],
             pad_mask=True,
             pad_size_divisor=32,
-            std=[58.395, 57.12, 57.375],
             non_blocking=True,
         )
 
@@ -293,7 +323,7 @@ class MaskRCNNResNet50(MMDetMaskRCNN):
                     target_stds=(0.1, 0.1, 0.2, 0.2),
                 ),
                 loss_bbox=L1Loss(loss_weight=1.0),
-                loss_cls=CrossSigmoidFocalLoss(loss_weight=1.0, use_sigmoid=False),
+                loss_cls=CrossEntropyLoss(loss_weight=1.0, use_sigmoid=False),
             ),
             mask_roi_extractor=SingleRoIExtractor(
                 featmap_strides=[4, 8, 16, 32],
@@ -321,42 +351,14 @@ class MaskRCNNResNet50(MMDetMaskRCNN):
             test_cfg=test_cfg,
         )
 
-    @property
-    def _exporter(self) -> OTXModelExporter:
-        """Creates OTXModelExporter object that can export the model."""
-        if self.image_size is None:
-            raise ValueError(self.image_size)
-
-        mean = (123.675, 116.28, 103.53)
-        std = (58.395, 57.12, 57.375)
-
-        return OTXNativeModelExporter(
-            task_level_export_parameters=self._export_parameters,
-            input_size=self.image_size,
-            mean=mean,
-            std=std,
-            resize_mode="standard",
-            pad_value=0,
-            swap_rgb=False,
-            via_onnx=True,
-            onnx_export_configuration={
-                "input_names": ["image"],
-                "output_names": ["boxes", "labels", "masks"],
-                "dynamic_axes": {
-                    "image": {0: "batch", 2: "height", 3: "width"},
-                    "boxes": {0: "batch", 1: "num_dets"},
-                    "labels": {0: "batch", 1: "num_dets"},
-                    "masks": {0: "batch", 1: "num_dets", 2: "height", 3: "width"},
-                },
-                "opset_version": 11,
-                "autograd_inlining": False,
-            },
-            output_names=["bboxes", "labels", "masks", "feature_vector", "saliency_map"] if self.explain_mode else None,
-        )
-
 
 class MaskRCNNEfficientNet(MMDetMaskRCNN):
-    load_from = ()
+    """MaskRCNN with efficientnet_b2b backbone."""
+
+    load_from = (
+        "https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/"
+        "models/instance_segmentation/v2/efficientnet_b2b-mask_rcnn-576x576.pth"
+    )
 
     def __init__(
         self,
@@ -370,12 +372,171 @@ class MaskRCNNEfficientNet(MMDetMaskRCNN):
         super().__init__(label_info, optimizer, scheduler, metric, torch_compile, tile_config)
 
     def _build_model(self, num_classes: int) -> MMDetMaskRCNN:
-        backbone = _build_pytorchcv_model("efficientnet_b2b", **backbone)
-        return MaskRCNN
+        self.mean = (123.675, 116.28, 103.53)
+        self.std = (1.0, 1.0, 1.0)
 
-    @property
-    def _exporter(self) -> OTXModelExporter:
-        raise NotImplementedError
+        train_cfg = {
+            "rpn": {
+                "assigner": MaxIoUAssigner(
+                    pos_iou_thr=0.7,
+                    neg_iou_thr=0.3,
+                    min_pos_iou=0.3,
+                    ignore_iof_thr=-1,
+                    match_low_quality=True,
+                    gpu_assign_thr=300,
+                ),
+                "sampler": RandomSampler(
+                    add_gt_as_proposals=False,
+                    num=256,
+                    pos_fraction=0.5,
+                    neg_pos_ub=-1,
+                ),
+                "allowed_border": -1,
+                "debug": False,
+                "pos_weight": -1,
+            },
+            "rpn_proposal": {
+                "max_per_img": 1000,
+                "min_bbox_size": 0,
+                "nms": {
+                    "type": "nms",
+                    "iou_threshold": 0.8,
+                },
+                "nms_pre": 2000,
+            },
+            "rcnn": {
+                "assigner": MaxIoUAssigner(
+                    pos_iou_thr=0.5,
+                    neg_iou_thr=0.5,
+                    min_pos_iou=0.5,
+                    ignore_iof_thr=-1,
+                    match_low_quality=True,
+                    gpu_assign_thr=300,
+                ),
+                "sampler": RandomSampler(
+                    add_gt_as_proposals=True,
+                    num=256,
+                    pos_fraction=0.25,
+                    neg_pos_ub=-1,
+                ),
+                "debug": False,
+                "mask_size": 28,
+                "pos_weight": -1,
+            },
+        }
+
+        test_cfg = DictConfig(
+            {
+                "rpn": {
+                    "nms_across_levels": False,
+                    "nms_pre": 800,
+                    "max_per_img": 500,
+                    "min_bbox_size": 0,
+                    "nms": {
+                        "type": "nms",
+                        "iou_threshold": 0.8,
+                    },
+                },
+                "rcnn": {
+                    "mask_thr_binary": 0.5,
+                    "max_per_img": 500,
+                    "nms": {
+                        "type": "nms",
+                        "iou_threshold": 0.5,
+                    },
+                    "score_thr": 0.05,
+                },
+            },
+        )
+
+        data_preprocessor = DetDataPreprocessor(
+            bgr_to_rgb=False,
+            mean=self.mean,
+            std=self.std,
+            pad_mask=True,
+            pad_size_divisor=32,
+            non_blocking=True,
+        )
+
+        backbone = _build_model_including_pytorchcv(
+            cfg={
+                "type": "efficientnet_b2b",
+                "out_indices": [2, 3, 4, 5],
+                "frozen_stages": -1,
+                "pretrained": True,
+                "activation_cfg": {"type": "torch_swish"},
+                "norm_cfg": {"type": "BN", "requires_grad": True},
+            },
+        )
+
+        neck = FPN(
+            in_channels=[24, 48, 120, 352],
+            out_channels=80,
+            num_outs=5,
+        )
+
+        rpn_head = RPNHead(
+            in_channels=80,
+            feat_channels=80,
+            anchor_generator=AnchorGenerator(
+                strides=[4, 8, 16, 32, 64],
+                ratios=[0.5, 1.0, 2.0],
+                scales=[8],
+            ),
+            bbox_coder=DeltaXYWHBBoxCoder(
+                target_means=(0.0, 0.0, 0.0, 0.0),
+                target_stds=(1.0, 1.0, 1.0, 1.0),
+            ),
+            loss_bbox=L1Loss(loss_weight=1.0),
+            loss_cls=CrossEntropyLoss(loss_weight=1.0, use_sigmoid=True),
+            train_cfg=train_cfg["rpn"],
+            test_cfg=test_cfg["rpn"],
+        )
+
+        roi_head = CustomRoIHead(
+            bbox_roi_extractor=SingleRoIExtractor(
+                featmap_strides=[4, 8, 16, 32],
+                out_channels=80,
+                roi_layer=RoIAlign(output_size=7, sampling_ratio=0),
+            ),
+            bbox_head=CustomConvFCBBoxHead(
+                num_classes=num_classes,
+                reg_class_agnostic=False,
+                roi_feat_size=7,
+                fc_out_channels=1024,
+                in_channels=80,
+                bbox_coder=DeltaXYWHBBoxCoder(
+                    target_means=(0.0, 0.0, 0.0, 0.0),
+                    target_stds=(0.1, 0.1, 0.2, 0.2),
+                ),
+                loss_bbox=L1Loss(loss_weight=1.0),
+                loss_cls=CrossEntropyLoss(loss_weight=1.0, use_sigmoid=False),
+            ),
+            mask_roi_extractor=SingleRoIExtractor(
+                featmap_strides=[4, 8, 16, 32],
+                out_channels=80,
+                roi_layer=RoIAlign(output_size=14, sampling_ratio=0),
+            ),
+            mask_head=FCNMaskHead(
+                conv_out_channels=80,
+                in_channels=80,
+                loss_mask=CrossEntropyLoss(loss_weight=1.0, use_mask=True),
+                num_classes=num_classes,
+                num_convs=4,
+            ),
+            train_cfg=train_cfg["rcnn"],
+            test_cfg=test_cfg["rcnn"],
+        )
+
+        return MaskRCNN(
+            data_preprocessor=data_preprocessor,
+            backbone=backbone,
+            neck=neck,
+            rpn_head=rpn_head,
+            roi_head=roi_head,
+            train_cfg=train_cfg,
+            test_cfg=test_cfg,
+        )
 
 
 class MaskRCNNSwinT(MMDetInstanceSegCompatibleModel):
