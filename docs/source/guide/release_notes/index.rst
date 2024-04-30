@@ -5,8 +5,36 @@ Releases
   :maxdepth: 1
 
 
-v2.0.0 (1Q24)
+v2.0.0 (2Q24)
 -------------
+
+v1.6.1 (2024.05)
+----------------
+
+Enhancements
+^^^^^^^^^^^^
+- Update pymongo version to 4.6.3 for resolving CVE-2024-21506
+- Use torchvision in MRCNN on CUDA
+- Update IPEX version in installation guide documentation
+- Update benchmark
+- Bump idan version to 3.7
+- Support benchmark history summary
+- Upgrade MAPI
+- Add NMS iou threshold configurable parameter
+- Remedy some medium/low severity bandit issues
+- Update documentations
+- Add perf benchmark test cases for action and visual prompting
+
+Bug fixes
+^^^^^^^^^
+- Explicitly cast incorrect output type in OV model
+- Update QAT configs for rotated detection
+- Hotfix :wrench: Bypass ClsIncrSampler for tiling
+- [NNCF] Dynamic shape datasets WA
+- [Hotfix] :fire: Fixing detection oriented OV inferencer
+- Revert adaptive batch size
+- Fix e2e tests for XPU
+- Remove torch.xpu.optimize for semantic_segmentation task
 
 v1.6.0 (2024.04)
 ----------------
@@ -59,7 +87,6 @@ v1.5.2 (2024.01)
 
 Enhancements
 ^^^^^^^^^^^^
-
 - Add memory bounded datumaro data format detect
 - Remove Protobuf version limitation (<4)
 
@@ -155,6 +182,7 @@ v1.4.0 (3Q23)
 
 v1.3.1 (2Q23)
 -------------
+
 - Minor bug fixes
 
 v1.3.0 (2Q23)
@@ -176,6 +204,7 @@ v1.3.0 (2Q23)
 
 v1.2.4 (3Q23)
 -------------
+
 - Per-class saliency maps for M-RCNN
 - Disable semantic segmentation soft prediction processing
 - Update export and nncf hyperparameters
