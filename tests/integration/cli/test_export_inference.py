@@ -115,10 +115,12 @@ def test_otx_export_infer(
     # TODO(someone): Disable deterministic for instance segmentation as it causes OOM.
     # https://github.com/pytorch/vision/issues/8168#issuecomment-1890599205
     if task != "instance_segmentation":
-        command_cfg.extend([
-            "--deterministic",
-            "warn",
-        ])
+        command_cfg.extend(
+            [
+                "--deterministic",
+                "warn",
+            ],
+        )
 
     run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)
 
