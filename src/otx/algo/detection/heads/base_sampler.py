@@ -155,7 +155,7 @@ class BaseSampler(metaclass=ABCMeta):
 class PseudoSampler(BaseSampler):
     """A pseudo sampler that does not do sampling actually."""
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         pass
 
     def _sample_pos(self, assign_result: AssignResult, num_expected: int, **kwargs) -> torch.Tensor:

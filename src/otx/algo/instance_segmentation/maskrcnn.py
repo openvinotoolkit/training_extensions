@@ -17,6 +17,7 @@ from otx.algo.detection.heads.base_sampler import RandomSampler
 from otx.algo.detection.heads.delta_xywh_bbox_coder import DeltaXYWHBBoxCoder
 from otx.algo.detection.heads.max_iou_assigner import MaxIoUAssigner
 from otx.algo.detection.losses.cross_entropy_loss import CrossEntropyLoss
+from otx.algo.detection.losses.cross_focal_loss import CrossSigmoidFocalLoss
 from otx.algo.detection.losses.smooth_l1_loss import L1Loss
 from otx.algo.instance_segmentation.mmdet.models.backbones import ResNet, SwinTransformer
 from otx.algo.instance_segmentation.mmdet.models.custom_roi_head import CustomConvFCBBoxHead, CustomRoIHead
@@ -313,7 +314,9 @@ class MaskRCNNResNet50(MMDetMaskRCNN):
                     target_stds=(0.1, 0.1, 0.2, 0.2),
                 ),
                 loss_bbox=L1Loss(loss_weight=1.0),
-                loss_cls=CrossEntropyLoss(loss_weight=1.0, use_sigmoid=False),
+                # TODO(someone): performance of CrossSigmoidFocalLoss is worse without mmcv
+                # https://github.com/openvinotoolkit/training_extensions/pull/3431
+                loss_cls=CrossSigmoidFocalLoss(loss_weight=1.0, use_sigmoid=False),
             ),
             mask_roi_extractor=SingleRoIExtractor(
                 featmap_strides=[4, 8, 16, 32],
@@ -499,7 +502,9 @@ class MaskRCNNEfficientNet(MMDetMaskRCNN):
                     target_stds=(0.1, 0.1, 0.2, 0.2),
                 ),
                 loss_bbox=L1Loss(loss_weight=1.0),
-                loss_cls=CrossEntropyLoss(loss_weight=1.0, use_sigmoid=False),
+                # TODO(someone): performance of CrossSigmoidFocalLoss is worse without mmcv
+                # https://github.com/openvinotoolkit/training_extensions/pull/3431
+                loss_cls=CrossSigmoidFocalLoss(loss_weight=1.0, use_sigmoid=False),
             ),
             mask_roi_extractor=SingleRoIExtractor(
                 featmap_strides=[4, 8, 16, 32],
@@ -708,7 +713,9 @@ class MaskRCNNSwinT(MMDetMaskRCNN):
                     target_stds=(0.1, 0.1, 0.2, 0.2),
                 ),
                 loss_bbox=L1Loss(loss_weight=1.0),
-                loss_cls=CrossEntropyLoss(loss_weight=1.0, use_sigmoid=False),
+                # TODO(someone): performance of CrossSigmoidFocalLoss is worse without mmcv
+                # https://github.com/openvinotoolkit/training_extensions/pull/3431
+                loss_cls=CrossSigmoidFocalLoss(loss_weight=1.0, use_sigmoid=False),
             ),
             mask_roi_extractor=SingleRoIExtractor(
                 featmap_strides=[4, 8, 16, 32],

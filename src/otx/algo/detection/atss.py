@@ -16,6 +16,7 @@ from otx.algo.detection.backbones.resnext import ResNeXt
 from otx.algo.detection.heads.anchor_generator import AnchorGenerator
 from otx.algo.detection.heads.atss_assigner import ATSSAssigner
 from otx.algo.detection.heads.atss_head import ATSSHead
+from otx.algo.detection.heads.base_sampler import PseudoSampler
 from otx.algo.detection.heads.delta_xywh_bbox_coder import DeltaXYWHBBoxCoder
 from otx.algo.detection.losses.cross_entropy_loss import CrossEntropyLoss
 from otx.algo.detection.losses.cross_focal_loss import CrossSigmoidFocalLoss
@@ -233,6 +234,7 @@ class MobileNetV2ATSS(ATSS):
     def _build_model(self, num_classes: int) -> SingleStageDetector:
         train_cfg = {
             "assigner": ATSSAssigner(topk=9),
+            "sampler": PseudoSampler(),
             "allowed_border": -1,
             "pos_weight": -1,
             "debug": False,
