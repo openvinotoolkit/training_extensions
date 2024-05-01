@@ -172,6 +172,8 @@ class Benchmark:
                 command.append(f"--{key}")
                 command.append(str(value))
             command.extend(["--seed", str(seed)])
+            # TODO(someone): Disable deterministic for instance segmentation as it causes OOM.
+            # https://github.com/pytorch/vision/issues/8168#issuecomment-1890599205
             command.extend(["--deterministic", str(self.deterministic)])
             if self.num_epoch > 0:
                 command.extend(["--max_epochs", str(self.num_epoch)])

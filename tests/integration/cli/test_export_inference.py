@@ -109,10 +109,16 @@ def test_otx_export_infer(
         "1" if task in ("zero_shot_visual_prompting") else "2",
         "--seed",
         f"{fxt_local_seed}",
-        "--deterministic",
-        "warn",
         *fxt_cli_override_command_per_task[task],
     ]
+
+    # TODO(someone): Disable deterministic for instance segmentation as it causes OOM.
+    # https://github.com/pytorch/vision/issues/8168#issuecomment-1890599205
+    if task != "instance_segmentation":
+        command_cfg.extend([
+            "--deterministic",
+            "warn",
+        ])
 
     run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)
 
