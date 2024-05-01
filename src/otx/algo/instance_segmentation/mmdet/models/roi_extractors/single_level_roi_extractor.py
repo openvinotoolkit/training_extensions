@@ -189,7 +189,6 @@ class SingleRoIExtractor(BaseRoIExtractor):
         SingleRoIExtractorOpenVINO.origin_output = origin_output
         torch._C._set_tracing_state(state)  # noqa: SLF001
 
-        # output_size = self.roi_layers[0].output_size[0]
         output_size = self.roi_layers[0].output_size
         featmap_strides = self.featmap_strides
         sample_num = self.roi_layers[0].sampling_ratio
