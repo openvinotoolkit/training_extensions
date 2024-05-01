@@ -303,9 +303,9 @@ class ExplainableOTXInstanceSegModel(OTXInstanceSegModel):
             tuple[torch.Tensor] | list[InstanceData]: The predicted results from the head of the model.
             Tuple for the Export case, list for the Predict case.
         """
-        from otx.algo.instance_segmentation.rtmdet_inst import RTMDetInst
+        from otx.algo.instance_segmentation.rtmdet_inst import MMDetRTMDetInstTiny
 
-        if isinstance(self, RTMDetInst):
+        if isinstance(self, MMDetRTMDetInstTiny):
             return self.model.bbox_head.predict(x, data_samples, rescale=False)
         rpn_results_list = self.model.rpn_head.predict(x, data_samples, rescale=False)
         return self.model.roi_head.predict(x, rpn_results_list, data_samples, rescale=True)
