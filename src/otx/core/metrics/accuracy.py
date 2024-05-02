@@ -75,11 +75,17 @@ class AccuracywithLabelGroup(Metric):
     It means that average will be applied to the results from the each label groups.
     """
 
-    def __init__(self, average: Literal["MICRO", "MACRO"] = "MICRO", threshold: float = 0.5):
+    def __init__(
+        self,
+        label_info: LabelInfo,
+        *,
+        average: Literal["MICRO", "MACRO"] = "MICRO",
+        threshold: float = 0.5,
+    ):
         super().__init__()
         self.average = average
         self.threshold = threshold
-        self._label_info: LabelInfo
+        self._label_info: LabelInfo = label_info
 
         self.preds: list[Tensor] = []
         self.targets: list[Tensor] = []
@@ -98,10 +104,10 @@ class AccuracywithLabelGroup(Metric):
         self.preds.extend(preds)
         self.targets.extend(target)
 
-    def _compute_unnormalized_confusion_matrices(self) -> list[NamedConfusionMatrix]:
+    def _compute_unnormalized_confusion_matrices(self) -> Tensor:
         raise NotImplementedError
 
-    def _compute_accuracy_from_conf_matrices(self, conf_matrices: list[NamedConfusionMatrix]) -> Tensor:
+    def _compute_accuracy_from_conf_matrices(self, conf_matrices: Tensor) -> Tensor:
         """Compute the accuracy from the confusion matrix."""
         correct_per_label_group = torch.stack([torch.trace(conf_matrix) for conf_matrix in conf_matrices])
         total_per_label_group = torch.stack([torch.sum(conf_matrix) for conf_matrix in conf_matrices])
@@ -131,7 +137,7 @@ class MulticlassAccuracywithLabelGroup(AccuracywithLabelGroup):
     So, the results always the same regardless of average method.
     """
 
-    def _compute_unnormalized_confusion_matrices(self) -> list[NamedConfusionMatrix]:
+    def _compute_unnormalized_confusion_matrices(self) -> Tensor:
         """Compute an unnormalized confusion matrix for every label group."""
         conf_matrices = []
         for label_group in self.label_info.label_groups:
@@ -154,7 +160,7 @@ class MulticlassAccuracywithLabelGroup(AccuracywithLabelGroup):
                 col_names=label_group,
             )
             conf_matrices.append(confmat(valid_preds, valid_targets))
-        return conf_matrices
+        return torch.stack(conf_matrices)
 
 
 class MultilabelAccuracywithLabelGroup(AccuracywithLabelGroup):
@@ -164,7 +170,7 @@ class MultilabelAccuracywithLabelGroup(AccuracywithLabelGroup):
     All lable_group represents whether the label exist or not (binary classification).
     """
 
-    def _compute_unnormalized_confusion_matrices(self) -> list[NamedConfusionMatrix]:
+    def _compute_unnormalized_confusion_matrices(self) -> Tensor:
         """Compute an unnormalized confusion matrix for every label group."""
         preds = torch.stack(self.preds)
         targets = torch.stack(self.targets)
@@ -186,7 +192,7 @@ class MultilabelAccuracywithLabelGroup(AccuracywithLabelGroup):
                 self.device,
             )
             conf_matrices.append(confmat(valid_preds, valid_targets))
-        return conf_matrices
+        return torch.stack(conf_matrices)
 
 
 class HlabelAccuracy(AccuracywithLabelGroup):
@@ -200,7 +206,7 @@ class HlabelAccuracy(AccuracywithLabelGroup):
     def _is_multiclass_group(self, label_group: list[str]) -> bool:
         return len(label_group) != 1
 
-    def _compute_unnormalized_confusion_matrices(self) -> list[NamedConfusionMatrix]:
+    def _compute_unnormalized_confusion_matrices(self) -> Tensor:
         """Compute an unnormalized confusion matrix for every label group."""
         preds = torch.stack(self.preds)
         targets = torch.stack(self.targets)
@@ -236,7 +242,7 @@ class HlabelAccuracy(AccuracywithLabelGroup):
                     col_names=data_name,
                 ).to(self.device)
                 conf_matrices.append(confmat(valid_preds, valid_targets))
-        return conf_matrices
+        return torch.stack(conf_matrices)
 
 
 class MixedHLabelAccuracy(Metric):
@@ -350,7 +356,9 @@ MultiClassClsMetricCallable: MetricCallable = _multi_class_cls_metric_callable
 
 def _multi_label_cls_metric_callable(label_info: LabelInfo) -> MetricCollection:
     return MetricCollection(
-        {"accuracy": TorchmetricAcc(task="multilabel", num_labels=label_info.num_classes)},
+        {
+            "accuracy": MultilabelAccuracywithLabelGroup(label_info=label_info),
+        },
     )
 
 
