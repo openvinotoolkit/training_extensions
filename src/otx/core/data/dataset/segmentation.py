@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING, Callable
 
 import cv2
 import numpy as np
-from datumaro.components.annotation import Image, Mask
+from datumaro.components.annotation import Image, Mask, Ellipse, Polygon
 from torchvision import tv_tensors
 
 from otx.core.data.dataset.base import Transforms
@@ -95,47 +95,53 @@ def _extract_class_mask(img_data, item: DatasetItem, img_shape: tuple[int, int],
     if ignore_index > 255:
         msg = "It is not currently support an ignore index which is more than 255."
         raise ValueError(msg, ignore_index)
-    img = np.asarray(img_data)
-    print(item.annotations)
-    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    contours, _ = cv2.findContours(gray, cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_NONE)
+
     class_mask = np.full(shape=img_shape[:2], fill_value=ignore_index, dtype=np.uint8)
-    polygons = np.asarray(item.annotations[0].as_polygon(), dtype=np.int32)
-    polygons = polygons.reshape((-1, 1, 2))
-    mask = np.zeros(shape=img_shape[:2], dtype=np.uint8)
-    print(mask.shape, polygons.shape, contours[0].shape)
-    mask = cv2.drawContours(mask, [polygons], 0, (2,2,2))
-    print(mask)
-    print(np.unique(mask))
-    exit()
+
     for mask in sorted(
-        [ann for ann in item.annotations if isinstance(ann, Mask)],
+        [ann for ann in item.annotations],
         key=lambda ann: ann.z_order,
     ):
-        binary_mask = mask.image
+
+        if not isinstance(mask, (Mask, Ellipse, Polygon)):
+            msg = f"Unsupported annotation type: {type(mask)}"
+            raise ValueError(msg)
+
         index = mask.label
 
         if index is None:
             msg = "Mask's label index should not be None."
             raise ValueError(msg)
 
-        if index > 255:
-            msg = "Mask's label index should not be more than 255."
-            raise ValueError(msg, index)
+        if isinstance(mask, (Ellipse, Polygon)):
+            polygons = np.asarray(mask.as_polygon(), dtype=np.int32).reshape((-1, 1, 2))
+            class_index = index + 1 # NOTE: disregard the background index. Objects start from index=1
+            this_class_mask = cv2.drawContours(class_mask, [polygons], 0, (class_index,class_index,class_index))
 
-        this_class_mask = _make_index_mask(
-            binary_mask=binary_mask,
-            index=index,
-            ignore_index=ignore_index,
-            dtype=np.uint8,
-        )
+        elif isinstance(mask, Mask):
+            binary_mask = mask.image
 
-        if this_class_mask.shape != img_shape:
-            this_class_mask = cv2.resize(
-                this_class_mask,
-                dsize=(img_shape[1], img_shape[0]),  # NOTE: cv2.resize() uses (width, height) format
-                interpolation=cv2.INTER_NEAREST,
+            if index is None:
+                msg = "Mask's label index should not be None."
+                raise ValueError(msg)
+
+            if index > 255:
+                msg = "Mask's label index should not be more than 255."
+                raise ValueError(msg, index)
+
+            this_class_mask = _make_index_mask(
+                binary_mask=binary_mask,
+                index=index,
+                ignore_index=ignore_index,
+                dtype=np.uint8,
             )
+
+            if this_class_mask.shape != img_shape:
+                this_class_mask = cv2.resize(
+                    this_class_mask,
+                    dsize=(img_shape[1], img_shape[0]),  # NOTE: cv2.resize() uses (width, height) format
+                    interpolation=cv2.INTER_NEAREST,
+                )
 
         class_mask = np.where(this_class_mask != ignore_index, this_class_mask, class_mask)
 
