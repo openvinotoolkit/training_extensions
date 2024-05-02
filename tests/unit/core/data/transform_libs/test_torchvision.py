@@ -272,7 +272,7 @@ class TestRandomAffine:
 class TestCachedMosaic:
     @pytest.fixture()
     def cached_mosaic(self) -> CachedMosaic:
-        return CachedMosaic(random_pop=False, max_cached_images=20)
+        return CachedMosaic(img_scale=(128, 128), random_pop=False, max_cached_images=20)
 
     @pytest.mark.xfail(raises=AssertionError)
     def test_init_invalid_img_scale(self) -> None:
@@ -282,17 +282,36 @@ class TestCachedMosaic:
     def test_init_invalid_probability(self) -> None:
         CachedMosaic(prob=1.5)
 
-    def test_forward(self, cached_mosaic, det_data_entity) -> None:
+    def test_forward_pop_small_cache(self, cached_mosaic, fxt_inst_seg_data_entity) -> None:
+        """Test forward for popping cache."""
+        cached_mosaic.max_cached_images = 4
+        cached_mosaic.results_cache = [fxt_inst_seg_data_entity[0]] * cached_mosaic.max_cached_images
+
+        # 4 -> 5 thru append -> 4 thru pop -> return due to small cache
+        results = cached_mosaic(deepcopy(fxt_inst_seg_data_entity[0]))
+
+        # check pop
+        assert len(cached_mosaic.results_cache) == cached_mosaic.max_cached_images
+
+        # check small cache
+        assert np.all(results.image == fxt_inst_seg_data_entity[0].image)
+        assert torch.all(results.bboxes == fxt_inst_seg_data_entity[0].bboxes)
+
+    def test_forward(self, cached_mosaic, fxt_inst_seg_data_entity) -> None:
         """Test forward."""
-        cached_mosaic.mix_results = [deepcopy(det_data_entity)] * 3
+        entity = deepcopy(fxt_inst_seg_data_entity[0])
+        entity.image = entity.image.transpose(1, 2, 0)
+        cached_mosaic.results_cache = [entity] * 4
 
-        results = cached_mosaic(deepcopy(det_data_entity))
+        results = cached_mosaic(deepcopy(entity))
 
-        assert results.image.shape[-2:] == (112, 224)
+        assert results.image.shape[:2] == (256, 256)
         assert results.labels.shape[0] == results.bboxes.shape[0]
         assert results.labels.dtype == torch.int64
         assert results.bboxes.dtype == torch.float32
-        assert results.img_info.img_shape == results.image.shape[-2:]
+        assert results.img_info.img_shape == results.image.shape[:2]
+        assert results.masks.shape[1:] == (256, 256)
+        assert len(results.polygons) == 4
 
 
 class TestCachedMixUp:

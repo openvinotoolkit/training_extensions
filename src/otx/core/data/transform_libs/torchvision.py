@@ -6,6 +6,7 @@
 from __future__ import annotations
 
 import copy
+import itertools
 import math
 from inspect import isclass
 from typing import TYPE_CHECKING, Any, ClassVar, Iterable, Sequence
@@ -34,6 +35,7 @@ from otx.core.data.entity.base import (
 )
 from otx.core.data.entity.instance_segmentation import InstanceSegDataEntity
 from otx.core.data.transform_libs.utils import (
+    CV2_INTERP_CODES,
     cache_randomness,
     centers_bboxes,
     clip_bboxes,
@@ -43,11 +45,14 @@ from otx.core.data.transform_libs.utils import (
     overlap_bboxes,
     project_bboxes,
     rescale_bboxes,
+    rescale_masks,
     rescale_polygons,
     rescale_size,
     scale_size,
     to_np_image,
     translate_bboxes,
+    translate_masks,
+    translate_polygons,
 )
 
 if TYPE_CHECKING:
@@ -56,6 +61,7 @@ if TYPE_CHECKING:
     from otx.core.config.data import SubsetConfig
     from otx.core.data.entity.base import T_OTXDataEntity
     from otx.core.data.entity.detection import DetDataEntity
+    # TODO (sungchul): refactor types
 
 
 def custom_query_size(flat_inputs: list[Any]) -> tuple[int, int]:  # noqa: D103
@@ -459,20 +465,12 @@ class Resize(tvt_v2.Transform, NumpytoTVTensorMixin):
             outside the border of the image. In some dataset like MOT17, the gt
             bboxes are allowed to cross the border of images. Therefore, we
             don't need to clip the gt bboxes in these cases. Defaults to True.
-        interpolation (str): Interpolation method for cv2. Defaults to 'bilinear'.
+        interpolation (str): Interpolation method. Defaults to 'bilinear'.
         interpolation_mask (str): Interpolation method for mask. Defaults to 'nearest'.
         transform_bbox (bool): Whether to transform bounding boxes. Defaults to False.
         transform_mask (bool): Whether to transform masks. Defaults to False.
         is_numpy_to_tvtensor(bool): Whether convert outputs to tensor. Defaults to False.
     """
-
-    cv2_interp_codes: ClassVar = {
-        "nearest": cv2.INTER_NEAREST,
-        "bilinear": cv2.INTER_LINEAR,
-        "bicubic": cv2.INTER_CUBIC,
-        "area": cv2.INTER_AREA,
-        "lanczos": cv2.INTER_LANCZOS4,
-    }
 
     def __init__(
         self,
@@ -527,7 +525,7 @@ class Resize(tvt_v2.Transform, NumpytoTVTensorMixin):
             if self.keep_ratio:
                 scale = rescale_size(img_shape[::-1], scale)  # type: ignore[assignment]
 
-            img = cv2.resize(img, scale, interpolation=self.cv2_interp_codes[self.interpolation])
+            img = cv2.resize(img, scale, interpolation=CV2_INTERP_CODES[self.interpolation])
 
             inputs.image = img
             inputs.img_info = _resize_image_info(inputs.img_info, img.shape[:2])
@@ -549,13 +547,7 @@ class Resize(tvt_v2.Transform, NumpytoTVTensorMixin):
         if (masks := getattr(inputs, "masks", None)) is not None and len(masks) > 0:
             # bit mask
             masks = masks.numpy() if not isinstance(masks, np.ndarray) else masks
-            scale = rescale_size(masks.shape[1:], scale_factor)
-            masks = np.stack(
-                [
-                    cv2.resize(mask, scale, interpolation=self.cv2_interp_codes[self.interpolation_mask])
-                    for mask in masks
-                ],
-            )
+            masks = rescale_masks(masks, scale_factor, interpolation=self.interpolation_mask)
             inputs.masks = masks
 
         if (polygons := getattr(inputs, "polygons", None)) is not None and len(polygons) > 0:
@@ -614,14 +606,6 @@ class RandomResizedCrop(tvt_v2.Transform, NumpytoTVTensorMixin):
             'cv2' and 'pillow'. Defaults to 'cv2'.
         is_numpy_to_tvtensor(bool): Whether convert outputs to tensor. Defaults to False.
     """
-
-    cv2_interp_codes: ClassVar = {
-        "nearest": cv2.INTER_NEAREST,
-        "bilinear": cv2.INTER_LINEAR,
-        "bicubic": cv2.INTER_CUBIC,
-        "area": cv2.INTER_AREA,
-        "lanczos": cv2.INTER_LANCZOS4,
-    }
 
     def __init__(
         self,
@@ -833,7 +817,7 @@ class RandomResizedCrop(tvt_v2.Transform, NumpytoTVTensorMixin):
                 img,
                 tuple(self.scale[::-1]),
                 dst=None,
-                interpolation=self.cv2_interp_codes[self.interpolation],
+                interpolation=CV2_INTERP_CODES[self.interpolation],
             )
             if (masks := getattr(inputs, "gt_seg_map", None)) is not None:
                 masks = masks.numpy()
@@ -842,7 +826,7 @@ class RandomResizedCrop(tvt_v2.Transform, NumpytoTVTensorMixin):
                     masks,
                     tuple(self.scale[::-1]),
                     dst=None,
-                    interpolation=self.cv2_interp_codes["nearest"],
+                    interpolation=CV2_INTERP_CODES["nearest"],
                 )
                 inputs.gt_seg_map = torch.from_numpy(masks)  # type: ignore[attr-defined]
 
@@ -1297,7 +1281,6 @@ class CachedMosaic(tvt_v2.Transform, NumpytoTVTensorMixin):
 
     Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/datasets/transforms/transforms.py#L3342-L3573
 
-    TODO : update masks for instance segmentation
     TODO : optimize logic to torcivision pipeline
 
     Args:
@@ -1388,6 +1371,9 @@ class CachedMosaic(tvt_v2.Transform, NumpytoTVTensorMixin):
         # https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/datasets/transforms/transforms.py#L3465
         mosaic_bboxes = []
         mosaic_bboxes_labels = []
+        mosaic_masks = []
+        mosaic_polygons = []
+        with_mask = bool(hasattr(inputs, "masks") or hasattr(inputs, "polygons"))
 
         if len((inp_img := to_np_image(inputs.image)).shape) == 3:
             mosaic_img = np.full(
@@ -1439,6 +1425,39 @@ class CachedMosaic(tvt_v2.Transform, NumpytoTVTensorMixin):
             gt_bboxes_i = translate_bboxes(gt_bboxes_i, (padw, padh))
             mosaic_bboxes.append(gt_bboxes_i)
             mosaic_bboxes_labels.append(gt_bboxes_labels_i)
+            if with_mask:
+                if (gt_masks_i := getattr(results_patch, "masks", None)) is not None and len(gt_masks_i) > 0:
+                    gt_masks_i = gt_masks_i.numpy() if not isinstance(gt_masks_i, np.ndarray) else gt_masks_i
+                    gt_masks_i = rescale_masks(gt_masks_i, float(scale_ratio_i))
+                    gt_masks_i = translate_masks(
+                        gt_masks_i,
+                        out_shape=(int(self.img_scale[1] * 2), int(self.img_scale[0] * 2)),
+                        offset=padw,
+                        direction="horizontal",
+                    )
+                    gt_masks_i = translate_masks(
+                        gt_masks_i,
+                        out_shape=(int(self.img_scale[1] * 2), int(self.img_scale[0] * 2)),
+                        offset=padh,
+                        direction="vertical",
+                    )
+                    mosaic_masks.append(gt_masks_i)
+
+                if (gt_polygons_i := getattr(results_patch, "polygons", None)) is not None and len(gt_masks_i) > 0:
+                    gt_polygons_i = rescale_polygons(gt_polygons_i, float(scale_ratio_i))
+                    gt_polygons_i = translate_polygons(
+                        gt_polygons_i,
+                        out_shape=(int(self.img_scale[1] * 2), int(self.img_scale[0] * 2)),
+                        offset=padw,
+                        direction="horizontal",
+                    )
+                    gt_polygons_i = translate_polygons(
+                        gt_polygons_i,
+                        out_shape=(int(self.img_scale[1] * 2), int(self.img_scale[0] * 2)),
+                        offset=padh,
+                        direction="vertical",
+                    )
+                    mosaic_polygons.append(gt_polygons_i)
 
         mosaic_bboxes = torch.cat(mosaic_bboxes, dim=0)
         mosaic_bboxes_labels = torch.cat(mosaic_bboxes_labels, dim=0)
@@ -1458,6 +1477,11 @@ class CachedMosaic(tvt_v2.Transform, NumpytoTVTensorMixin):
         )  # TODO (sungchul): need to add proper function
         inputs.bboxes = tv_tensors.BoundingBoxes(mosaic_bboxes, format="XYXY", canvas_size=mosaic_img.shape[:2])
         inputs.labels = mosaic_bboxes_labels
+        if with_mask:
+            if len(mosaic_masks) > 0:
+                inputs.masks = np.concatenate(mosaic_masks, axis=0)
+            if len(mosaic_polygons) > 0:
+                inputs.polygons = list(itertools.chain(*mosaic_polygons))
         return self.convert(inputs)
 
     def _mosaic_combine(

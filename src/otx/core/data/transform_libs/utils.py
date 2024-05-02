@@ -10,10 +10,19 @@ import functools
 import inspect
 import weakref
 
+import cv2
 import numpy as np
 import torch
 from datumaro import Polygon
 from torch import BoolTensor, Tensor
+
+CV2_INTERP_CODES = {
+    "nearest": cv2.INTER_NEAREST,
+    "bilinear": cv2.INTER_LINEAR,
+    "bicubic": cv2.INTER_CUBIC,
+    "area": cv2.INTER_AREA,
+    "lanczos": cv2.INTER_LANCZOS4,
+}
 
 
 class cache_randomness:  # noqa: N801
@@ -125,18 +134,32 @@ def rescale_bboxes(boxes: Tensor, scale_factor: tuple[float, float]) -> Tensor:
     return boxes * scale_factor
 
 
-def rescale_polygons(polygons: list[Polygon], scale_factor: tuple[float, float]) -> list[Polygon]:
+def rescale_masks(
+    masks: np.ndarray, scale_factor: float | tuple[float, float], interpolation: str = "nearest"
+) -> np.ndarray:
+    """Rescale masks as large as possible while keeping the aspect ratio."""
+    scale = rescale_size(masks.shape[1:], scale_factor)
+    return np.stack(
+        [cv2.resize(mask, scale, interpolation=CV2_INTERP_CODES[interpolation]) for mask in masks],
+    )
+
+
+def rescale_polygons(polygons: list[Polygon], scale_factor: float | tuple[float, float]) -> list[Polygon]:
     """Rescale polygons as large as possible while keeping the aspect ratio.
 
     Args:
         polygons (np.ndarray): Polygons to be rescaled.
-        scale_factor (tuple[float, float]): Scale factor to be applied to polygons.
+        scale_factor (float | tuple[float, float]): Scale factor to be applied to polygons.
 
     Returns:
         (np.ndarray) : The rescaled polygons.
     """
-    # TODO (sungchul): update comment with what the issue was
-    w_scale, h_scale = scale_factor  # TODO (sungchul): ticket no. 138831
+    if isinstance(scale_factor, float):
+        w_scale = h_scale = scale_factor
+    else:
+        # TODO (sungchul): update comment with what the issue was
+        w_scale, h_scale = scale_factor  # TODO (sungchul): ticket no. 138831
+
     resized_polygons = []
     for polygon in polygons:
         p = np.asarray(copy.deepcopy(polygon.points))
@@ -159,6 +182,114 @@ def translate_bboxes(boxes: Tensor, distances: tuple[float, float]) -> Tensor:
     """
     assert len(distances) == 2  # noqa: S101
     return boxes + boxes.new_tensor(distances).repeat(2)
+
+
+def translate_masks(
+    masks: np.ndarray,
+    out_shape: tuple[int, int],
+    offset: int | float,
+    direction: str = "horizontal",
+    border_value: int | float = 0,
+    interpolation: str = "bilinear",
+) -> np.ndarray:
+    """Translate the masks.
+
+    Args:
+        masks (np.ndarray): Masks to be translated.
+        out_shape (tuple[int]): Shape for output mask, format (h, w).
+        offset (int | float): The offset for translate.
+        direction (str): The translate direction, either "horizontal" or "vertical".
+        border_value (int | float): Border value. Default 0 for masks.
+        interpolation (str): Interpolation method, accepted values are
+            'nearest', 'bilinear', 'bicubic', 'area', 'lanczos'. Defaults to
+            'bilinear'.
+
+    Returns:
+        (np.ndarray): Translated BitmapMasks.
+    """
+    dtype = masks.dtype
+    if masks.shape[-2:] != out_shape:
+        empty_masks = np.zeros((masks.shape[0], *out_shape), dtype=dtype)
+        min_h = min(out_shape[0], masks.shape[1])
+        min_w = min(out_shape[1], masks.shape[2])
+        empty_masks[:, :min_h, :min_w] = masks[:, :min_h, :min_w]
+        masks = empty_masks
+
+    # from https://github.com/open-mmlab/mmcv/blob/v2.1.0/mmcv/image/geometric.py#L740-L788
+    height, width = masks.shape[1:]
+    if masks.ndim == 2:
+        channels = 1
+    elif masks.ndim == 3:
+        channels = masks.shape[0]
+
+    if isinstance(border_value, int):
+        border_value = tuple([border_value] * channels)
+    elif isinstance(border_value, tuple):
+        assert len(border_value) == channels, (  # noqa: S101
+            "Expected the num of elements in tuple equals the channels"
+            f"of input image. Found {len(border_value)} vs {channels}"
+        )
+    else:
+        msg = f"Invalid type {type(border_value)} for `border_value`."
+        raise ValueError(msg)  # noqa: TRY004
+
+    translate_matrix = _get_translate_matrix(offset, direction)
+    translated_masks = cv2.warpAffine(
+        masks.transpose((1, 2, 0)),
+        translate_matrix,
+        (width, height),
+        # Note case when the number elements in `border_value`
+        # greater than 3 (e.g. translating masks whose channels
+        # large than 3) will raise TypeError in `cv2.warpAffine`.
+        # Here simply slice the first 3 values in `border_value`.
+        borderValue=border_value[:3],
+        flags=CV2_INTERP_CODES[interpolation],
+    )
+
+    if translated_masks.ndim == 2:
+        translated_masks = translated_masks[:, :, None]
+    return translated_masks.transpose((2, 0, 1)).astype(dtype)
+
+
+def translate_polygons(
+    polygons: list[Polygon],
+    out_shape: tuple[int, int],
+    offset: int | float,
+    direction: str = "horizontal",
+    border_value: int | float = 0,
+) -> list[Polygon]:
+    """Translate polygons."""
+    assert (  # noqa: S101
+        border_value is None or border_value == 0
+    ), f"Here border_value is not used, and defaultly should be None or 0. got {border_value}."
+
+    translated_polygons = []
+    for polygon in polygons:
+        p = np.asarray(copy.deepcopy(polygon.points))
+        if direction == "horizontal":
+            p[0::2] = np.clip(p[0::2] + offset, 0, out_shape[1])
+        elif direction == "vertical":
+            p[1::2] = np.clip(p[1::2] + offset, 0, out_shape[0])
+        translated_polygons.append(Polygon(points=p.tolist()))
+    return translated_polygons
+
+
+def _get_translate_matrix(offset: int | float, direction: str = "horizontal") -> np.ndarray:
+    """Generate the translate matrix.
+
+    Args:
+        offset (int | float): The offset used for translate.
+        direction (str): The translate direction, either
+            "horizontal" or "vertical".
+
+    Returns:
+        ndarray: The translate matrix with dtype float32.
+    """
+    if direction == "horizontal":
+        translate_matrix = np.float32([[1, 0, offset], [0, 1, 0]])
+    elif direction == "vertical":
+        translate_matrix = np.float32([[1, 0, 0], [0, 1, offset]])
+    return translate_matrix
 
 
 def clip_bboxes(boxes: Tensor, img_shape: tuple[int, int]) -> Tensor:
