@@ -1,8 +1,7 @@
 model:
-  class_path: otx.algo.detection.yolox.OTXYOLOX
+  class_path: otx.algo.detection.yolox.YOLOXX
   init_args:
     label_info: 80
-    variant: x
 
     optimizer:
       class_path: torch.optim.SGD
@@ -44,6 +43,7 @@ overrides:
       train_subset:
         num_workers: 4
         batch_size: 4
+        to_tv_image: False
         transforms:
           - class_path: otx.core.data.transform_libs.torchvision.YOLOXHSVRandomAug
           - class_path: otx.core.data.transform_libs.torchvision.Resize
@@ -70,6 +70,7 @@ overrides:
       val_subset:
         num_workers: 4
         batch_size: 4
+        to_tv_image: False
         transforms:
           - class_path: otx.core.data.transform_libs.torchvision.Resize
             init_args:
@@ -93,6 +94,7 @@ overrides:
       test_subset:
         num_workers: 4
         batch_size: 4
+        to_tv_image: False
         transforms:
           - class_path: otx.core.data.transform_libs.torchvision.Resize
             init_args:

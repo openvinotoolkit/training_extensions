@@ -12,6 +12,7 @@ config:
     batch_size: 8
     num_workers: 4
     transform_lib_type: TORCHVISION
+    to_tv_image: True
     transforms:
       - class_path: torchvision.transforms.v2.RandomResizedCrop
         init_args:
@@ -44,6 +45,7 @@ config:
     batch_size: 8
     num_workers: 4
     transform_lib_type: TORCHVISION
+    to_tv_image: True
     transforms:
       - class_path: torchvision.transforms.v2.Resize
         init_args:
@@ -65,6 +67,7 @@ config:
     num_workers: 4
     batch_size: 8
     transform_lib_type: TORCHVISION
+    to_tv_image: True
     transforms:
       - class_path: torchvision.transforms.v2.Resize
         init_args:

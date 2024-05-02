@@ -11,6 +11,7 @@ config:
     batch_size: 8
     num_workers: 2
     transform_lib_type: MMDET
+    to_tv_image: False
     transforms:
       - backend_args: null
         type: LoadImageFromFile
@@ -31,6 +32,7 @@ config:
     num_workers: 2
     batch_size: 1
     transform_lib_type: MMDET
+    to_tv_image: False
     transforms:
       - backend_args: null
         type: LoadImageFromFile
@@ -55,6 +57,7 @@ config:
     num_workers: 2
     batch_size: 1
     transform_lib_type: MMDET
+    to_tv_image: False
     transforms:
       - backend_args: null
         type: LoadImageFromFile
