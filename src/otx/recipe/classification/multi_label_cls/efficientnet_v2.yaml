@@ -12,9 +12,9 @@ model:
     optimizer:
       class_path: torch.optim.SGD
       init_args:
-        lr: 0.0071
+        lr: 0.0093
         momentum: 0.9
-        weight_decay: 0.0001
+        weight_decay: 0.0005
 
     scheduler:
       class_path: lightning.pytorch.cli.ReduceLROnPlateau
@@ -40,6 +40,7 @@ overrides:
     - class_path: otx.algo.callbacks.adaptive_train_scheduling.AdaptiveTrainScheduling
       init_args:
         min_earlystop_patience: 4
+        min_lrschedule_patience: 3
   data:
     task: MULTI_LABEL_CLS
     config:
