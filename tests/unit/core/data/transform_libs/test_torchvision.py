@@ -302,6 +302,7 @@ class TestCachedMosaic:
         entity = deepcopy(fxt_inst_seg_data_entity[0])
         entity.image = entity.image.transpose(1, 2, 0)
         cached_mosaic.results_cache = [entity] * 4
+        cached_mosaic.prob = 1.0
 
         results = cached_mosaic(deepcopy(entity))
 
@@ -317,7 +318,7 @@ class TestCachedMosaic:
 class TestCachedMixUp:
     @pytest.fixture()
     def cached_mixup(self) -> CachedMixUp:
-        return CachedMixUp(ratio_range=(1.0, 1.0), prob=0.5, random_pop=False, max_cached_images=10)
+        return CachedMixUp(ratio_range=(1.0, 1.0), prob=1.0, random_pop=False, max_cached_images=10)
 
     @pytest.mark.xfail(raises=AssertionError)
     def test_init_invalid_img_scale(self) -> None:
@@ -327,17 +328,38 @@ class TestCachedMixUp:
     def test_init_invalid_probability(self) -> None:
         CachedMosaic(prob=1.5)
 
-    def test_forward(self, cached_mixup, det_data_entity) -> None:
+    def test_forward_pop_small_cache(self, cached_mixup, fxt_inst_seg_data_entity) -> None:
+        """Test forward for popping cache."""
+        cached_mixup.max_cached_images = 1  # force to set to 1 for this test
+        cached_mixup.results_cache = [fxt_inst_seg_data_entity[0]] * cached_mixup.max_cached_images
+
+        # 1 -> 2 thru append -> 1 thru pop -> return due to small cache
+        results = cached_mixup(deepcopy(fxt_inst_seg_data_entity[0]))
+
+        # check pop
+        assert len(cached_mixup.results_cache) == cached_mixup.max_cached_images
+
+        # check small cache
+        assert np.all(results.image == fxt_inst_seg_data_entity[0].image)
+        assert torch.all(results.bboxes == fxt_inst_seg_data_entity[0].bboxes)
+
+    def test_forward(self, cached_mixup, fxt_inst_seg_data_entity) -> None:
         """Test forward."""
-        cached_mixup.mix_results = [deepcopy(det_data_entity)]
+        entity = deepcopy(fxt_inst_seg_data_entity[0])
+        entity.image = entity.image.transpose(1, 2, 0)
+        cached_mixup.results_cache = [entity]
+        cached_mixup.prob = 1.0
+        cached_mixup.flip_ratio = 0.0
 
-        results = cached_mixup(deepcopy(det_data_entity))
+        results = cached_mixup(deepcopy(entity))
 
-        assert results.image.shape[-2:] == (112, 224)
+        assert results.image.shape[:2] == (64, 64)
         assert results.labels.shape[0] == results.bboxes.shape[0]
         assert results.labels.dtype == torch.int64
         assert results.bboxes.dtype == torch.float32
-        assert results.img_info.img_shape == results.image.shape[-2:]
+        assert results.img_info.img_shape == results.image.shape[:2]
+        assert results.masks.shape[1:] == (64, 64)
+        assert len(results.polygons) == 1
 
 
 class TestYOLOXHSVRandomAug:

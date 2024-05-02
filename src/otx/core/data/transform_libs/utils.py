@@ -650,6 +650,29 @@ def flip_image(img: np.ndarray, direction: str = "horizontal") -> np.ndarray:
         return np.flip(img, axis=(0, 1))
 
 
+def flip_masks(masks: np.ndarray, direction: str = "horizontal") -> np.ndarray:
+    """Flip masks alone the given direction."""
+    assert direction in ("horizontal", "vertical", "diagonal")  # noqa: S101
+
+    return np.stack([flip_image(mask, direction=direction) for mask in masks])
+
+
+def flip_polygons(polygons: list[Polygon], height: int, width: int, direction: str = "horizontal") -> list[Polygon]:
+    """Flip polygons alone the given direction."""
+    flipped_masks = []
+    for polygon in polygons:
+        p = np.asarray(copy.deepcopy(polygon.points))
+        if direction == "horizontal":
+            p[0::2] = width - p[0::2]
+        elif direction == "vertical":
+            p[1::2] = height - p[1::2]
+        else:
+            p[0::2] = width - p[0::2]
+            p[1::2] = height - p[1::2]
+        flipped_masks.append(Polygon(points=p.tolist()))
+    return flipped_masks
+
+
 def project_bboxes(boxes: Tensor, homography_matrix: Tensor | np.ndarray) -> Tensor:
     """Geometric transformat boxes in-place.
 

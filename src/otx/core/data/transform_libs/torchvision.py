@@ -41,6 +41,8 @@ from otx.core.data.transform_libs.utils import (
     clip_bboxes,
     flip_bboxes,
     flip_image,
+    flip_masks,
+    flip_polygons,
     is_inside_bboxes,
     overlap_bboxes,
     project_bboxes,
@@ -959,24 +961,12 @@ class RandomFlip(tvt_v2.Transform, NumpytoTVTensorMixin):
             # flip masks
             if (masks := getattr(inputs, "masks", None)) is not None and len(masks) > 0:
                 masks = masks.numpy() if not isinstance(masks, np.ndarray) else masks
-                masks = np.ascontiguousarray(np.stack([flip_image(mask, direction=cur_dir) for mask in masks]))
-                inputs.masks = masks
+                inputs.masks = np.ascontiguousarray(np.stack([flip_image(mask, direction=cur_dir) for mask in masks]))
 
             # flip polygons
             if (polygons := getattr(inputs, "polygons", None)) is not None and len(polygons) > 0:
                 height, width = inputs.img_info.img_shape
-                flipped_masks = []
-                for polygon in polygons:
-                    p = np.asarray(copy.deepcopy(polygon.points))
-                    if cur_dir == "horizontal":
-                        p[0::2] = width - p[0::2]
-                    elif cur_dir == "vertical":
-                        p[1::2] = height - p[1::2]
-                    else:
-                        p[0::2] = width - p[0::2]
-                        p[1::2] = height - p[1::2]
-                    flipped_masks.append(Polygon(points=p.tolist()))
-                inputs.polygons = flipped_masks
+                inputs.polygons = flip_polygons(polygons, height, width, cur_dir)
 
         return self.convert(inputs)
 
@@ -1577,7 +1567,6 @@ class CachedMixUp(tvt_v2.Transform, NumpytoTVTensorMixin):
 
     Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/datasets/transforms/transforms.py#L3577-L3854
 
-    TODO : update masks for instance segmentation
     TODO : optimize logic to torcivision pipeline
 
     Args:
@@ -1682,6 +1671,7 @@ class CachedMixUp(tvt_v2.Transform, NumpytoTVTensorMixin):
             return self.convert(inputs)
 
         retrieve_img = to_np_image(retrieve_results.image)
+        with_mask = bool(hasattr(inputs, "masks") or hasattr(inputs, "polygons"))
 
         jit_factor = random.uniform(*self.ratio_range)
         is_flip = random.uniform(0, 1) > self.flip_ratio
@@ -1768,6 +1758,61 @@ class CachedMixUp(tvt_v2.Transform, NumpytoTVTensorMixin):
         )  # TODO (sungchul): need to add proper function
         inputs.bboxes = tv_tensors.BoundingBoxes(mixup_gt_bboxes, format="XYXY", canvas_size=mixup_img.shape[:2])
         inputs.labels = mixup_gt_bboxes_labels
+        if with_mask:
+            inside_inds = inside_inds.numpy()
+            if (masks := getattr(retrieve_results, "masks", None)) is not None and len(masks) > 0:
+                masks = masks.numpy() if not isinstance(masks, np.ndarray) else masks
+
+                # 6. adjust bbox
+                retrieve_gt_masks = rescale_masks(masks, scale_ratio)
+                if is_flip:
+                    retrieve_gt_masks = flip_masks(retrieve_gt_masks)
+
+                # 7. filter
+                retrieve_gt_masks = translate_masks(
+                    retrieve_gt_masks,
+                    out_shape=(target_h, target_w),
+                    offset=-x_offset,
+                    direction="horizontal",
+                )
+                retrieve_gt_masks = translate_masks(
+                    retrieve_gt_masks,
+                    out_shape=(target_h, target_w),
+                    offset=-y_offset,
+                    direction="vertical",
+                )
+
+                # 8. mix up
+                mixup_gt_masks = np.concatenate([inputs.masks.numpy(), retrieve_gt_masks])
+
+                inputs.masks = mixup_gt_masks[inside_inds]
+
+            if (polygons := getattr(retrieve_results, "polygons", None)) is not None and len(polygons) > 0:
+                # 6. adjust bbox
+                retrieve_gt_polygons = rescale_polygons(polygons, scale_ratio)
+                if is_flip:
+                    height, width = retrieve_results.img_info.img_shape
+                    retrieve_gt_polygons = flip_polygons(retrieve_gt_polygons, height, width)
+
+                # 7. filter
+                retrieve_gt_polygons = translate_polygons(
+                    retrieve_gt_polygons,
+                    out_shape=(target_h, target_w),
+                    offset=-x_offset,
+                    direction="horizontal",
+                )
+                retrieve_gt_polygons = translate_polygons(
+                    retrieve_gt_polygons,
+                    out_shape=(target_h, target_w),
+                    offset=-y_offset,
+                    direction="vertical",
+                )
+
+                # 8. mix up
+                mixup_gt_polygons = list(itertools.chain(*[inputs.polygons, retrieve_gt_polygons]))
+
+                inputs.polygons = [mixup_gt_polygons[i] for i in np.where(inside_inds)[0]]
+
         return self.convert(inputs)
 
     def __repr__(self):
