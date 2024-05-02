@@ -1,72 +1,76 @@
-from torchvision.ops.roi_align import RoIAlign
-from torch.autograd import Function
+"""Rewrite mmcv RoIAlign to support export."""
+
+# Copyright (C) 2024 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+
+# Copyright (c) OpenMMLab. All rights reserved.
+from __future__ import annotations
+
 import torch
+from torch.autograd import Function
+from torchvision.ops.roi_align import RoIAlign
 
 
 class RoIAlignMMCV(Function):
+    """Rewrite of mmdeploy/mmcv/ops/roi_align.py."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
     @staticmethod
-    def forward(g, *args, **kwargs):
+    def forward(g: torch.Graph, *args, **kwargs) -> torch.Tensor:  # noqa: ARG004
+        """Dummy forward function."""
         return RoIAlignMMCV.origin_output
 
     @staticmethod
     def symbolic(
-        g, 
-        input, 
-        rois, 
-        output_size, 
-        spatial_scale, 
-        sampling_ratio,
-        pool_mode, 
-        aligned,
-    ):
-        from torch.onnx import TensorProtoDataType
-        from torch.onnx.symbolic_opset9 import sub
+        g: torch.Graph,
+        input: torch.Tensor,  # noqa: A002
+        rois: torch.Tensor,
+        output_size: tuple[int, int],
+        spatial_scale: float,
+        sampling_ratio: int,
+        pool_mode: str,
+        aligned: bool,
+    ) -> torch.Graph:
+        """Rewrite symbolic function for RoIAlign."""
+        from torch.onnx.symbolic_opset9 import _cast_Long
+        from torch.onnx.symbolic_opset11 import add, select
 
-        def _select(g, self, dim, index):
-            return g.op('Gather', self, index, axis_i=dim)
-
-        # batch_indices = rois[:, 0].long()
-        batch_indices = _select(
-            g, rois, 1,
-            g.op('Constant', value_t=torch.tensor([0], dtype=torch.long)))
-        batch_indices = g.op('Squeeze', batch_indices, axes_i=[1])
-        batch_indices = g.op(
-            'Cast', batch_indices, to_i=TensorProtoDataType.INT64)
-        # rois = rois[:, 1:]
-        rois = _select(
-            g, rois, 1,
+        batch_indices = _cast_Long(
+            g,
             g.op(
-                'Constant',
-                value_t=torch.tensor([1, 2, 3, 4], dtype=torch.long)))
-
-        if aligned:
-            # rois -= 0.5/spatial_scale
-            aligned_offset = g.op(
-                'Constant',
-                value_t=torch.tensor([0.5 / spatial_scale],
-                                     dtype=torch.float32))
-            rois = sub(g, rois, aligned_offset)
-        # roi align
+                "Squeeze",
+                select(g, rois, 1, g.op("Constant", value_t=torch.tensor([0], dtype=torch.long))),
+                axes_i=[1],
+            ),
+            False,
+        )
+        rois = select(g, rois, 1, g.op("Constant", value_t=torch.tensor([1, 2, 3, 4], dtype=torch.long)))
+        if aligned is True:
+            rois = add(g, rois, g.op("Constant", value_t=torch.tensor([-0.5 / spatial_scale], dtype=torch.float)))
         return g.op(
-            'RoiAlign',
+            "RoiAlign",
             input,
             rois,
             batch_indices,
             output_height_i=output_size[0],
             output_width_i=output_size[1],
             spatial_scale_f=spatial_scale,
-            sampling_ratio_i=max(0, sampling_ratio),
-            mode_s=pool_mode)
-
+            sampling_ratio_i=sampling_ratio,
+            mode_s=pool_mode,
+        )
 
 
 class OTXRoIAlign(RoIAlign):
+    """Rewrite of mmdeploy/mmcv/ops/roi_align.py."""
 
-    def export(self, input, rois):
+    def export(
+        self,
+        input: torch.Tensor,  # noqa: A002
+        rois: torch.Tensor,
+    ) -> torch.Tensor:
+        """Export OTXRoIAlign."""
         state = torch._C._get_tracing_state()  # noqa: SLF001
         origin_output = self(input, rois)
         RoIAlignMMCV.origin_output = origin_output
@@ -79,10 +83,10 @@ class OTXRoIAlign(RoIAlign):
         aligned = self.aligned
 
         return RoIAlignMMCV.apply(
-            input, 
-            rois, 
-            output_size, 
-            spatial_scale, 
+            input,
+            rois,
+            output_size,
+            spatial_scale,
             sampling_ratio,
             pool_mode,
             aligned,
