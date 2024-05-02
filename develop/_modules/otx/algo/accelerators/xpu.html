@@ -241,17 +241,12 @@
 <span class="c1">#</span>
 <span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
 
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Union</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span>
 
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">from</span> <span class="nn">lightning.pytorch.accelerators</span> <span class="kn">import</span> <span class="n">AcceleratorRegistry</span>
 <span class="kn">from</span> <span class="nn">lightning.pytorch.accelerators.accelerator</span> <span class="kn">import</span> <span class="n">Accelerator</span>
-<span class="kn">from</span> <span class="nn">mmcv.ops.nms</span> <span class="kn">import</span> <span class="n">NMSop</span>
-<span class="kn">from</span> <span class="nn">mmcv.ops.roi_align</span> <span class="kn">import</span> <span class="n">RoIAlign</span>
-<span class="kn">from</span> <span class="nn">mmengine.structures</span> <span class="kn">import</span> <span class="n">instance_data</span>
 
-<span class="kn">from</span> <span class="nn">otx.algo.detection.utils</span> <span class="kn">import</span> <span class="n">monkey_patched_nms</span><span class="p">,</span> <span class="n">monkey_patched_roi_align</span>
 <span class="kn">from</span> <span class="nn">otx.utils.utils</span> <span class="kn">import</span> <span class="n">is_xpu_available</span>
 
 
@@ -270,8 +265,7 @@
             <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Device should be xpu, got </span><span class="si">{</span><span class="n">device</span><span class="si">}</span><span class="s2"> instead&quot;</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
 
-        <span class="n">torch</span><span class="o">.</span><span class="n">xpu</span><span class="o">.</span><span class="n">set_device</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">patch_packages_xpu</span><span class="p">()</span></div>
+        <span class="n">torch</span><span class="o">.</span><span class="n">xpu</span><span class="o">.</span><span class="n">set_device</span><span class="p">(</span><span class="n">device</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="XPUAccelerator.parse_devices">
@@ -318,32 +312,7 @@
 <div class="viewcode-block" id="XPUAccelerator.teardown">
 <a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.algo.accelerators.html#otx.algo.accelerators.XPUAccelerator.teardown">[docs]</a>
     <span class="k">def</span> <span class="nf">teardown</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Cleans-up XPU-related resources.&quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">revert_packages_xpu</span><span class="p">()</span></div>
-
-
-<div class="viewcode-block" id="XPUAccelerator.patch_packages_xpu">
-<a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.algo.accelerators.html#otx.algo.accelerators.XPUAccelerator.patch_packages_xpu">[docs]</a>
-    <span class="k">def</span> <span class="nf">patch_packages_xpu</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Patch packages when xpu is available.&quot;&quot;&quot;</span>
-        <span class="c1"># patch instance_data from mmengie</span>
-        <span class="n">long_type_tensor</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">LongTensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">xpu</span><span class="o">.</span><span class="n">LongTensor</span><span class="p">]</span>
-        <span class="n">bool_type_tensor</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">BoolTensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">xpu</span><span class="o">.</span><span class="n">BoolTensor</span><span class="p">]</span>
-        <span class="n">instance_data</span><span class="o">.</span><span class="n">IndexType</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">slice</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">list</span><span class="p">,</span> <span class="n">long_type_tensor</span><span class="p">,</span> <span class="n">bool_type_tensor</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span>
-
-        <span class="c1"># patch nms and roi_align</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_nms_op_forward</span> <span class="o">=</span> <span class="n">NMSop</span><span class="o">.</span><span class="n">forward</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_roi_align_forward</span> <span class="o">=</span> <span class="n">RoIAlign</span><span class="o">.</span><span class="n">forward</span>
-        <span class="n">NMSop</span><span class="o">.</span><span class="n">forward</span> <span class="o">=</span> <span class="n">monkey_patched_nms</span>
-        <span class="n">RoIAlign</span><span class="o">.</span><span class="n">forward</span> <span class="o">=</span> <span class="n">monkey_patched_roi_align</span></div>
-
-
-<div class="viewcode-block" id="XPUAccelerator.revert_packages_xpu">
-<a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.algo.accelerators.html#otx.algo.accelerators.XPUAccelerator.revert_packages_xpu">[docs]</a>
-    <span class="k">def</span> <span class="nf">revert_packages_xpu</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Revert packages when xpu is available.&quot;&quot;&quot;</span>
-        <span class="n">NMSop</span><span class="o">.</span><span class="n">forward</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_nms_op_forward</span>
-        <span class="n">RoIAlign</span><span class="o">.</span><span class="n">forward</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_roi_align_forward</span></div>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Clean up any state created by the accelerator.&quot;&quot;&quot;</span></div>
 </div>
 
 
