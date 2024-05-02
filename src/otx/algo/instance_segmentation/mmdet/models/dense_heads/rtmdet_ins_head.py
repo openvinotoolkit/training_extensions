@@ -1156,7 +1156,7 @@ class RTMDetInsSepBNHead(RTMDetInsHead):
         kernels = kernels[batch_inds, inds, :]
         priors = priors.unsqueeze(0).repeat(batch_size, 1, 1)
         priors = priors[batch_inds, inds, :]
-        mask_logits = self._mask_predict_by_feat_single(mask_feats, kernels, priors)
+        mask_logits = self.export_mask_predict_by_feat_single(mask_feats, kernels, priors)
         stride = self.prior_generator.strides[0][0]
         mask_logits = torch.nn.functional.interpolate(mask_logits, scale_factor=stride, mode="bilinear")
         masks = mask_logits.sigmoid()
@@ -1170,7 +1170,7 @@ class RTMDetInsSepBNHead(RTMDetInsHead):
         cropped_masks = cropped_masks.unsqueeze(0)
         return dets, labels, cropped_masks
 
-    def _mask_predict_by_feat_single(
+    def export_mask_predict_by_feat_single(
         self,
         mask_feat: torch.Tensor,
         kernels: torch.Tensor,
