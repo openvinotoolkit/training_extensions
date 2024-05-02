@@ -126,6 +126,7 @@ class TestResize:
     def test_forward(self, resize, det_data_entity, keep_ratio: bool, expected: Tensor) -> None:
         """Test forward."""
         resize.keep_ratio = keep_ratio
+        resize.transform_bbox = True
         det_data_entity.img_info.img_shape = resize.scale
 
         results = resize(deepcopy(det_data_entity))
