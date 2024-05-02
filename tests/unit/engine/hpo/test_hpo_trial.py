@@ -32,7 +32,7 @@ if TYPE_CHECKING:
 def mock_engine() -> MagicMock:
     engine = MagicMock()
 
-    def train_side_effect(*args, **kwargs) -> None:  # noqa: ARG001
+    def train_side_effect(*args, **kwargs) -> None:
         if isinstance(engine.work_dir, str):
             work_dir = Path(engine.work_dir)
             for i in range(3):
