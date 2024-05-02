@@ -342,7 +342,7 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
         for name, value in results.items():
             log_metric_name = f"{key}/{name}"
 
-            if value.numel() != 1:
+            if not isinstance(value, Tensor) or value.numel() != 1:
                 msg = f"Log metric name={log_metric_name} is not a scalar tensor. Skip logging it."
                 warnings.warn(msg, stacklevel=1)
                 continue

@@ -104,7 +104,7 @@ class AccuracywithLabelGroup(Metric):
         self.preds.extend(preds)
         self.targets.extend(target)
 
-    def _compute_unnormalized_confusion_matrices(self) -> Tensor:
+    def _compute_unnormalized_confusion_matrices(self) -> list[NamedConfusionMatrix]:
         raise NotImplementedError
 
     def _compute_accuracy_from_conf_matrices(self, conf_matrices: Tensor) -> Tensor:
@@ -137,7 +137,7 @@ class MulticlassAccuracywithLabelGroup(AccuracywithLabelGroup):
     So, the results always the same regardless of average method.
     """
 
-    def _compute_unnormalized_confusion_matrices(self) -> Tensor:
+    def _compute_unnormalized_confusion_matrices(self) -> list[NamedConfusionMatrix]:
         """Compute an unnormalized confusion matrix for every label group."""
         conf_matrices = []
         for label_group in self.label_info.label_groups:
@@ -160,7 +160,7 @@ class MulticlassAccuracywithLabelGroup(AccuracywithLabelGroup):
                 col_names=label_group,
             )
             conf_matrices.append(confmat(valid_preds, valid_targets))
-        return torch.stack(conf_matrices)
+        return conf_matrices
 
 
 class MultilabelAccuracywithLabelGroup(AccuracywithLabelGroup):
@@ -170,7 +170,7 @@ class MultilabelAccuracywithLabelGroup(AccuracywithLabelGroup):
     All lable_group represents whether the label exist or not (binary classification).
     """
 
-    def _compute_unnormalized_confusion_matrices(self) -> Tensor:
+    def _compute_unnormalized_confusion_matrices(self) -> list[NamedConfusionMatrix]:
         """Compute an unnormalized confusion matrix for every label group."""
         preds = torch.stack(self.preds)
         targets = torch.stack(self.targets)
@@ -192,7 +192,7 @@ class MultilabelAccuracywithLabelGroup(AccuracywithLabelGroup):
                 self.device,
             )
             conf_matrices.append(confmat(valid_preds, valid_targets))
-        return torch.stack(conf_matrices)
+        return conf_matrices
 
 
 class HlabelAccuracy(AccuracywithLabelGroup):
@@ -206,7 +206,7 @@ class HlabelAccuracy(AccuracywithLabelGroup):
     def _is_multiclass_group(self, label_group: list[str]) -> bool:
         return len(label_group) != 1
 
-    def _compute_unnormalized_confusion_matrices(self) -> Tensor:
+    def _compute_unnormalized_confusion_matrices(self) -> list[NamedConfusionMatrix]:
         """Compute an unnormalized confusion matrix for every label group."""
         preds = torch.stack(self.preds)
         targets = torch.stack(self.targets)
@@ -242,7 +242,7 @@ class HlabelAccuracy(AccuracywithLabelGroup):
                     col_names=data_name,
                 ).to(self.device)
                 conf_matrices.append(confmat(valid_preds, valid_targets))
-        return torch.stack(conf_matrices)
+        return conf_matrices
 
 
 class MixedHLabelAccuracy(Metric):
