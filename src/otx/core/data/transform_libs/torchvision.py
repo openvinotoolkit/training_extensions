@@ -482,8 +482,8 @@ class Resize(tvt_v2.Transform, NumpytoTVTensorMixin):
         interpolation: str = "bilinear",
         interpolation_mask: str = "nearest",
         transform_bbox: bool = False,
-        is_numpy_to_tvtensor: bool = False,
         transform_mask: bool = False,
+        is_numpy_to_tvtensor: bool = False,
     ) -> None:
         super().__init__()
 
@@ -1861,6 +1861,7 @@ class Pad(tvt_v2.Transform, NumpytoTVTensorMixin):
         pad_to_square: bool = False,
         pad_val: int | float | dict | None = None,
         padding_mode: str = "constant",
+        transform_mask: bool = False,
         is_numpy_to_tvtensor: bool = False,
     ) -> None:
         super().__init__()
@@ -1881,6 +1882,7 @@ class Pad(tvt_v2.Transform, NumpytoTVTensorMixin):
             assert size is None or size_divisor is None  # noqa: S101
         assert padding_mode in ["constant", "edge", "reflect", "symmetric"]  # noqa: S101
         self.padding_mode = padding_mode
+        self.transform_mask = transform_mask
         self.is_numpy_to_tvtensor = is_numpy_to_tvtensor
 
     def _pad_img(self, inputs: T_OTXDataEntity) -> T_OTXDataEntity:
@@ -1909,7 +1911,7 @@ class Pad(tvt_v2.Transform, NumpytoTVTensorMixin):
         height = max(size[0] - img.shape[0], 0)
         padding = [0, 0, width, height]
 
-        padded_img = img = cv2.copyMakeBorder(
+        padded_img = cv2.copyMakeBorder(
             img,
             padding[1],
             padding[3],
@@ -1921,14 +1923,45 @@ class Pad(tvt_v2.Transform, NumpytoTVTensorMixin):
 
         inputs.image = padded_img
         inputs.img_info = _pad_image_info(inputs.img_info, padding)
-        return self.convert(inputs)
+        return inputs
+
+    def _pad_masks(self, inputs: InstanceSegDataEntity) -> InstanceSegDataEntity:
+        """Pad masks according to inputs.image_info.padding."""
+        if (masks := getattr(inputs, "masks", None)) is not None and len(masks) > 0:
+            masks = masks.numpy() if not isinstance(masks, np.ndarray) else masks
+
+            pad_val = self.pad_val.get("masks", 0)
+            padding = inputs.img_info.padding
+
+            padded_masks = np.stack(
+                [
+                    cv2.copyMakeBorder(
+                        mask,
+                        padding[1],
+                        padding[3],
+                        padding[0],
+                        padding[2],
+                        self.border_type[self.padding_mode],
+                        value=pad_val,
+                    )
+                    for mask in masks
+                ]
+            )
+
+            inputs.masks = padded_masks
+
+        return inputs
 
     def forward(self, *_inputs: T_OTXDataEntity) -> T_OTXDataEntity:
         """Forward function to pad images."""
         assert len(_inputs) == 1, "[tmp] Multiple entity is not supported yet."  # noqa: S101
         inputs = _inputs[0]
 
-        return self._pad_img(inputs)
+        inputs = self._pad_img(inputs)
+        if self.transform_mask:
+            inputs = self._pad_masks(inputs)
+
+        return self.convert(inputs)
 
 
 tvt_v2.PerturbBoundingBoxes = PerturbBoundingBoxes

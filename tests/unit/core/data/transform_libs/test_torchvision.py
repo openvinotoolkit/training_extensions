@@ -317,32 +317,43 @@ class TestYOLOXHSVRandomAug:
 
 
 class TestPad:
-    def test_forward(self, det_data_entity) -> None:
-        # test pad img/gt_masks with size
-        transform = Pad(size=(200, 250))
+    def test_forward(self, fxt_inst_seg_data_entity) -> None:
+        entity = deepcopy(fxt_inst_seg_data_entity[0])
+        entity.image = entity.image.transpose(1, 2, 0)
 
-        results = transform(deepcopy(det_data_entity))
+        # test pad img/masks with size
+        transform = Pad(size=(96, 128), transform_mask=True)
 
-        assert results.image.shape[:2] == (200, 250)
+        results = transform(deepcopy(entity))
 
-        # test pad img/gt_masks with size_divisor
-        transform = Pad(size_divisor=11)
+        assert results.image.shape[:2] == (96, 128)
+        assert results.masks.shape[1:] == (96, 128)
 
-        results = transform(deepcopy(det_data_entity))
+        # test pad img/masks with size_divisor
+        transform = Pad(size_divisor=11, transform_mask=True)
 
-        assert results.image.shape[:2] == (121, 231)
+        results = transform(deepcopy(entity))
 
-        # test pad img/gt_masks with pad_to_square
-        transform = Pad(pad_to_square=True)
+        # (64, 64) -> (66, 66)
+        assert results.image.shape[:2] == (66, 66)
+        assert results.masks.shape[1:] == (66, 66)
 
-        results = transform(deepcopy(det_data_entity))
+        # test pad img/masks with pad_to_square
+        _transform = Pad(size=(96, 128), transform_mask=True)
+        entity = _transform(deepcopy(entity))
+        transform = Pad(pad_to_square=True, transform_mask=True)
 
-        assert results.image.shape[:2] == (224, 224)
+        results = transform(deepcopy(entity))
 
-        # test pad img/gt_masks with pad_to_square and size_divisor
-        transform = Pad(pad_to_square=True, size_divisor=11)
+        assert results.image.shape[:2] == (128, 128)
+        assert results.masks.shape[1:] == (128, 128)
 
-        results = transform(deepcopy(det_data_entity))
+        # test pad img/masks with pad_to_square and size_divisor
+        _transform = Pad(size=(96, 128), transform_mask=True)
+        entity = _transform(deepcopy(entity))
+        transform = Pad(pad_to_square=True, size_divisor=11, transform_mask=True)
 
-        # TODO (sungchul): check type
-        assert results.image.shape[:2] == (231, 231)
+        results = transform(deepcopy(entity))
+
+        assert results.image.shape[:2] == (132, 132)
+        assert results.masks.shape[1:] == (132, 132)
