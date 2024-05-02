@@ -106,7 +106,7 @@ class ClassIncrementalMixin:
         all_labels: list[Tensor],
         use_bg: bool = False,
     ) -> list[Tensor]:
-        """Calcualte valid label mask with ignored labels."""
+        """Calculate valid label mask with ignored labels."""
         num_classes = self.num_classes + 1 if use_bg else self.num_classes  # type: ignore[attr-defined]
         valid_label_mask = []
         for i, meta in enumerate(img_metas):

@@ -10,7 +10,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import torch.nn.functional
-from mmengine.registry import MODELS
 from torch import Tensor, nn
 
 from otx.algo.modules.base_module import BaseModule
@@ -20,7 +19,6 @@ if TYPE_CHECKING:
     from mmengine.config import ConfigDict
 
 
-@MODELS.register_module()
 class FPN(BaseModule):
     r"""Feature Pyramid Network.
 

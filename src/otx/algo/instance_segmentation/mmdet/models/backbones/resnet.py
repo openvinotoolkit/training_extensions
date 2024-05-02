@@ -12,7 +12,6 @@ from typing import ClassVar
 
 import torch
 import torch.utils.checkpoint as cp
-from mmengine.registry import MODELS
 from torch import nn
 from torch.nn.modules.batchnorm import _BatchNorm
 
@@ -125,7 +124,6 @@ class Bottleneck(BaseModule):
         return self.relu(out)
 
 
-@MODELS.register_module()
 class ResNet(BaseModule):
     """ResNet backbone.
 

@@ -7,7 +7,6 @@ from __future__ import annotations
 
 import torch
 import torch.nn.functional
-from mmengine.registry import MODELS
 from torch import Tensor, nn
 from torch.cuda.amp import custom_fwd
 
@@ -60,7 +59,6 @@ def cross_sigmoid_focal_loss(
     return loss
 
 
-@MODELS.register_module()
 class CrossSigmoidFocalLoss(nn.Module):
     """CrossSigmoidFocalLoss class for ignore labels with sigmoid."""
 

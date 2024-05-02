@@ -27,7 +27,7 @@ model:
           class_path: lightning.pytorch.cli.ReduceLROnPlateau
           init_args:
             mode: max
-            factor: 0.1
+            factor: 0.5
             patience: 1
             monitor: val/accuracy
 
@@ -63,6 +63,7 @@ overrides:
           - class_path: otx.core.data.transform_libs.torchvision.RandomFlip
             init_args:
               prob: 0.5
+              is_numpy_to_tvtensor: true
           - class_path: torchvision.transforms.v2.ToDtype
             init_args:
               dtype: ${as_torch_dtype:torch.float32}
@@ -80,7 +81,7 @@ overrides:
           - class_path: otx.core.data.transform_libs.torchvision.Resize
             init_args:
               scale: 224
-              transform_bbox: false
+              is_numpy_to_tvtensor: true
           - class_path: torchvision.transforms.v2.ToDtype
             init_args:
               dtype: ${as_torch_dtype:torch.float32}
@@ -96,7 +97,7 @@ overrides:
           - class_path: otx.core.data.transform_libs.torchvision.Resize
             init_args:
               scale: 224
-              transform_bbox: false
+              is_numpy_to_tvtensor: true
           - class_path: torchvision.transforms.v2.ToDtype
             init_args:
               dtype: ${as_torch_dtype:torch.float32}
