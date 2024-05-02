@@ -31,6 +31,7 @@ from otx.core.data.entity.base import (
     _resize_image_info,
     _resized_crop_image_info,
 )
+from otx.core.data.entity.instance_segmentation import InstanceSegDataEntity
 from otx.core.data.transform_libs.utils import (
     cache_randomness,
     centers_bboxes,
@@ -41,6 +42,7 @@ from otx.core.data.transform_libs.utils import (
     overlap_bboxes,
     project_bboxes,
     rescale_bboxes,
+    rescale_polygons,
     rescale_size,
     scale_size,
     to_np_image,
@@ -447,8 +449,8 @@ class Resize(tvt_v2.Transform, NumpytoTVTensorMixin):
     TODO : optimize logic to torcivision pipeline
 
     Args:
-        scale (int or tuple): Images scales for resizing with (height, width). Defaults to None
-        scale_factor (float or tuple[float]): Scale factors for resizing with (height, width).
+        scale (int or tuple): Images scales for resizing with (width, height). Defaults to None
+        scale_factor (float or tuple[float]): Scale factors for resizing with (width, height).
             Defaults to None.
         keep_ratio (bool): Whether to keep the aspect ratio when resizing the
             image. Defaults to False.
@@ -457,7 +459,9 @@ class Resize(tvt_v2.Transform, NumpytoTVTensorMixin):
             bboxes are allowed to cross the border of images. Therefore, we
             don't need to clip the gt bboxes in these cases. Defaults to True.
         interpolation (str): Interpolation method for cv2. Defaults to 'bilinear'.
+        interpolation_mask (str): Interpolation method for mask. Defaults to 'nearest'.
         transform_bbox (bool): Whether to transform bounding boxes. Defaults to False.
+        transform_mask (bool): Whether to transform masks. Defaults to False.
         is_numpy_to_tvtensor(bool): Whether convert outputs to tensor. Defaults to False.
     """
 
@@ -476,8 +480,10 @@ class Resize(tvt_v2.Transform, NumpytoTVTensorMixin):
         keep_ratio: bool = False,
         clip_object_border: bool = True,
         interpolation: str = "bilinear",
+        interpolation_mask: str = "nearest",
         transform_bbox: bool = False,
         is_numpy_to_tvtensor: bool = False,
+        transform_mask: bool = False,
     ) -> None:
         super().__init__()
 
@@ -491,7 +497,9 @@ class Resize(tvt_v2.Transform, NumpytoTVTensorMixin):
             self.scale = tuple(scale)  # type: ignore[assignment]
 
         self.transform_bbox = transform_bbox
+        self.transform_mask = transform_mask
         self.interpolation = interpolation
+        self.interpolation_mask = interpolation_mask
         self.keep_ratio = keep_ratio
         self.clip_object_border = clip_object_border
         if scale_factor is None:
@@ -535,14 +543,37 @@ class Resize(tvt_v2.Transform, NumpytoTVTensorMixin):
             inputs.bboxes = tv_tensors.BoundingBoxes(bboxes, format="XYXY", canvas_size=inputs.img_info.img_shape)
         return inputs
 
+    def _resize_masks(self, inputs: InstanceSegDataEntity, scale_factor: tuple[float, float]) -> InstanceSegDataEntity:
+        """Resize masks with inputs.img_info.scale_factor."""
+        if (masks := getattr(inputs, "masks", None)) is not None and len(masks) > 0:
+            # bit mask
+            masks = masks.numpy() if not isinstance(masks, np.ndarray) else masks
+            scale = rescale_size(masks.shape[1:], scale_factor)
+            masks = np.stack(
+                [
+                    cv2.resize(mask, scale, interpolation=self.cv2_interp_codes[self.interpolation_mask])
+                    for mask in masks
+                ],
+            )
+            inputs.masks = masks
+
+        if (polygons := getattr(inputs, "polygons", None)) is not None and len(polygons) > 0:
+            # polygon mask
+            polygons = rescale_polygons(polygons, scale_factor)
+            inputs.polygons = polygons
+        return inputs
+
     def forward(self, *_inputs: T_OTXDataEntity) -> T_OTXDataEntity:
-        """Transform function to resize images and bounding boxes."""
+        """Transform function to resize images, bounding boxes, and masks."""
         assert len(_inputs) == 1, "[tmp] Multiple entity is not supported yet."  # noqa: S101
         inputs = _inputs[0]
 
         inputs, scale_factor = self._resize_img(inputs)
         if self.transform_bbox:
             inputs = self._resize_bboxes(inputs, scale_factor)  # type: ignore[arg-type, assignment]
+
+        if self.transform_mask:
+            inputs = self._resize_masks(inputs, scale_factor)  # type: ignore[arg-type, assignment]
 
         return self.convert(inputs)
 

@@ -12,6 +12,7 @@ import weakref
 
 import numpy as np
 import torch
+from datumaro import Polygon
 from torch import BoolTensor, Tensor
 
 
@@ -122,6 +123,27 @@ def rescale_bboxes(boxes: Tensor, scale_factor: tuple[float, float]) -> Tensor:
     assert len(scale_factor) == 2  # noqa: S101
     scale_factor = boxes.new_tensor(scale_factor).repeat(2)
     return boxes * scale_factor
+
+
+def rescale_polygons(polygons: list[Polygon], scale_factor: tuple[float, float]) -> list[Polygon]:
+    """Rescale polygons as large as possible while keeping the aspect ratio.
+
+    Args:
+        polygons (np.ndarray): Polygons to be rescaled.
+        scale_factor (tuple[float, float]): Scale factor to be applied to polygons.
+
+    Returns:
+        (np.ndarray) : The rescaled polygons.
+    """
+    # TODO (sungchul): update comment with what the issue was
+    w_scale, h_scale = scale_factor  # TODO (sungchul): ticket no. 138831
+    resized_polygons = []
+    for polygon in polygons:
+        p = np.asarray(copy.deepcopy(polygon.points))
+        p[0::2] *= w_scale
+        p[1::2] *= h_scale
+        resized_polygons.append(Polygon(points=p.tolist()))
+    return resized_polygons
 
 
 def translate_bboxes(boxes: Tensor, distances: tuple[float, float]) -> Tensor:
@@ -429,15 +451,19 @@ def scale_size(
     return int(w * float(scale[0]) + 0.5), int(h * float(scale[1]) + 0.5)
 
 
-def rescale_size(old_size: tuple, scale: float | int | tuple[int, int], return_scale: bool = False) -> tuple:
+def rescale_size(
+    old_size: tuple,
+    scale: float | int | tuple[float, float] | tuple[int, int],
+    return_scale: bool = False,
+) -> tuple:
     """Calculate the new size to be rescaled to.
 
     Args:
         old_size (tuple[int]): The old size (w, h) of image.
-        scale (float | int | tuple[int]): The scaling factor or maximum size.
-            If it is a float number or an integer, then the image will be
-            rescaled by this factor, else if it is a tuple of 2 integers, then
-            the image will be rescaled as large as possible within the scale.
+        scale (float | int | tuple[float] | tuple[int]): The scaling factor or maximum size.
+            If it is a float number, an integer, or a tuple of 2 float numbers,
+            then the image will be rescaled by this factor, else if it is a tuple of 2 integers,
+            then the image will be rescaled as large as possible within the scale.
         return_scale (bool): Whether to return the scaling factor besides the
             rescaled image size.
 
@@ -445,17 +471,25 @@ def rescale_size(old_size: tuple, scale: float | int | tuple[int, int], return_s
         tuple[int]: The new rescaled image size.
     """
     w, h = old_size
+    msg = ""
     if isinstance(scale, (float, int)):
         if scale <= 0:
             msg = f"Invalid scale {scale}, must be positive."
             raise ValueError(msg)
         scale_factor = scale
     elif isinstance(scale, tuple):
-        max_long_edge = max(scale)
-        max_short_edge = min(scale)
-        scale_factor = min(max_long_edge / max(h, w), max_short_edge / min(h, w))
+        if isinstance(scale[0], int):
+            max_long_edge = max(scale)
+            max_short_edge = min(scale)
+            scale_factor = min(max_long_edge / max(h, w), max_short_edge / min(h, w))
+        elif isinstance(scale[0], float):
+            scale_factor = scale  # type: ignore[assignment]
+        else:
+            msg = f"Scale must be a number or tuple of int/float, but got tuple of {type(scale[0])}"
     else:
-        msg = f"Scale must be a number or tuple of int, but got {type(scale)}"
+        msg = f"Scale must be a number or tuple of int/float, but got {type(scale)}"
+
+    if msg:
         raise TypeError(msg)
 
     new_size = scale_size((w, h), scale_factor)

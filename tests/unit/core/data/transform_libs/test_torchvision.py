@@ -27,7 +27,7 @@ from otx.core.data.transform_libs.torchvision import (
     YOLOXHSVRandomAug,
 )
 from otx.core.data.transform_libs.utils import overlap_bboxes
-from torch import LongTensor, Tensor
+from torch import LongTensor
 from torchvision import tv_tensors
 from torchvision.transforms.v2 import functional as F  # noqa: N812
 
@@ -114,48 +114,82 @@ class TestMinIoURandomCrop:
 class TestResize:
     @pytest.fixture()
     def resize(self) -> Resize:
-        return Resize(scale=(448, 448))  # (112, 224) -> (448, 448)
+        return Resize(scale=(128, 96))  # (64, 64) -> (96, 128)
 
     @pytest.mark.parametrize(
-        ("keep_ratio", "expected"),
+        ("keep_ratio", "expected_shape", "expected_scale_factor"),
         [
-            (True, torch.tensor([[0.0, 0.0, 100.0, 100.0]])),
-            (False, torch.tensor([[0.0, 0.0, 100.0, 200.0]])),
+            (True, (96, 96), (1.5, 1.5)),
+            (False, (96, 128), (2.0, 1.5)),
         ],
     )
-    def test_forward(self, resize, det_data_entity, keep_ratio: bool, expected: Tensor) -> None:
-        """Test forward."""
+    def test_forward_only_image(
+        self,
+        resize,
+        fxt_det_data_entity,
+        keep_ratio: bool,
+        expected_shape: tuple,
+        expected_scale_factor: tuple,
+    ) -> None:
+        """Test forward only image."""
         resize.keep_ratio = keep_ratio
-        resize.transform_bbox = True
-        det_data_entity.img_info.img_shape = resize.scale
+        resize.transform_bbox = False
+        resize.transform_mask = False
+        entity = deepcopy(fxt_det_data_entity[0])
+        entity.image = entity.image.transpose(1, 2, 0)
 
-        results = resize(deepcopy(det_data_entity))
+        results = resize(entity)
 
-        assert results.img_info.ori_shape == (112, 224)
+        assert results.img_info.ori_shape == (64, 64)
         if keep_ratio:
-            assert results.image.shape == (224, 448, 3)
-            assert results.img_info.img_shape == (224, 448)
-            assert results.img_info.scale_factor == (2.0, 2.0)
+            assert results.image.shape[:2] == expected_shape
+            assert results.img_info.img_shape == expected_shape
+            assert results.img_info.scale_factor == expected_scale_factor
         else:
-            assert results.image.shape == (448, 448, 3)
-            assert results.img_info.img_shape == (448, 448)
-            assert results.img_info.scale_factor == (2.0, 4.0)
+            assert results.image.shape[:2] == expected_shape
+            assert results.img_info.img_shape == expected_shape
+            assert results.img_info.scale_factor == expected_scale_factor
 
-        assert torch.all(results.bboxes.data == expected)
+        assert torch.all(results.bboxes.data == fxt_det_data_entity[0].bboxes.data)
 
-    def test_forward_without_bboxes(self, resize, det_data_entity) -> None:
-        """Test forward."""
-        resize.keep_ratio = True
-        resize.transform_bbox = False  # set `transform_bbox` to False
-        det_data_entity.img_info.img_shape = resize.scale
+    @pytest.mark.parametrize(
+        ("keep_ratio", "expected_shape"),
+        [
+            (True, (96, 96)),
+            (False, (96, 128)),
+        ],
+    )
+    def test_forward_bboxes_masks_polygons(
+        self,
+        resize,
+        fxt_inst_seg_data_entity,
+        keep_ratio: bool,
+        expected_shape: tuple,
+    ) -> None:
+        """Test forward with bboxes, masks, and polygons."""
+        resize.transform_bbox = True
+        resize.transform_mask = True
+        entity = deepcopy(fxt_inst_seg_data_entity[0])
+        entity.image = entity.image.transpose(1, 2, 0)
 
-        results = resize(deepcopy(det_data_entity))
+        resize.keep_ratio = keep_ratio
+        results = resize(entity)
 
-        assert results.img_info.ori_shape == (112, 224)
-        assert results.image.shape == (224, 448, 3)
-        assert results.img_info.img_shape == (224, 448)
-        assert results.img_info.scale_factor == (2.0, 2.0)
-        assert torch.all(results.bboxes.data == det_data_entity.bboxes.data)
+        assert results.image.shape[:2] == expected_shape
+        assert results.img_info.img_shape == expected_shape
+        assert torch.all(
+            results.bboxes == fxt_inst_seg_data_entity[0].bboxes * torch.tensor(results.img_info.scale_factor * 2),
+        )
+        assert results.masks.shape[1:] == expected_shape
+        assert all(
+            [  # noqa: C419
+                np.all(
+                    np.array(rp.points).reshape(-1, 2)
+                    == np.array(fp.points).reshape(-1, 2) * np.array([results.img_info.scale_factor]),
+                )
+                for rp, fp in zip(results.polygons, fxt_inst_seg_data_entity[0].polygons)
+            ],
+        )
 
 
 class TestRandomFlip:
