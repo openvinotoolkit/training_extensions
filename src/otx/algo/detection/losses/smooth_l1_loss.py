@@ -8,7 +8,6 @@
 from __future__ import annotations
 
 import torch
-from mmengine.registry import MODELS
 from torch import Tensor, nn
 
 from otx.algo.detection.losses.weighted_loss import weighted_loss
@@ -34,7 +33,6 @@ def l1_loss(pred: Tensor, target: Tensor) -> Tensor:
     return torch.abs(pred - target)
 
 
-@MODELS.register_module()
 class L1Loss(nn.Module):
     """L1 loss.
 

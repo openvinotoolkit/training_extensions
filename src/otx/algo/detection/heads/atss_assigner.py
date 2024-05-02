@@ -13,8 +13,9 @@ from otx.algo.detection.heads.iou2d_calculator import BboxOverlaps2D
 from otx.algo.detection.utils.structures import AssignResult
 
 if TYPE_CHECKING:
-    from mmengine import ConfigDict
-    from mmengine.structures import InstanceData
+    from omegaconf import DictConfig
+
+    from otx.algo.utils.mmengine_utils import InstanceData
 
 
 def bbox_center_distance(bboxes: Tensor, priors: Tensor) -> Tensor:
@@ -54,7 +55,7 @@ class ATSSAssigner:
         topk (int): number of priors selected in each level
         alpha (float, optional): param of cost rate for each proposal only
             in DDOD. Defaults to None.
-        iou_calculator (:obj:`ConfigDict` or dict): Config dict for iou
+        iou_calculator (:obj:`DictConfig` or dict): Config dict for iou
             calculator. Defaults to ``dict(type='BboxOverlaps2D')``
         ignore_iof_thr (float): IoF threshold for ignoring bboxes (if
             `gt_bboxes_ignore` is specified). Negative values mean not
@@ -65,7 +66,7 @@ class ATSSAssigner:
         self,
         topk: int,
         alpha: float | None = None,
-        iou_calculator: ConfigDict | dict | None = None,
+        iou_calculator: DictConfig | dict | None = None,
         ignore_iof_thr: float = -1,
     ) -> None:
         self.topk = topk
@@ -120,10 +121,10 @@ class ATSSAssigner:
         Returns:
             :obj:`AssignResult`: The assign result.
         """
-        gt_bboxes = gt_instances.bboxes
-        priors = pred_instances.priors
-        gt_labels = gt_instances.labels
-        gt_bboxes_ignore = gt_instances_ignore.bboxes if gt_instances_ignore is not None else None
+        gt_bboxes = gt_instances.bboxes  # type: ignore[attr-defined]
+        priors = pred_instances.priors  # type: ignore[attr-defined]
+        gt_labels = gt_instances.labels  # type: ignore[attr-defined]
+        gt_bboxes_ignore = gt_instances_ignore.bboxes if gt_instances_ignore is not None else None  # type: ignore[attr-defined]
 
         inf = 100000000
         priors = priors[:, :4]
@@ -145,8 +146,8 @@ class ATSSAssigner:
 
         else:
             # Dynamic cost ATSSAssigner in DDOD
-            cls_scores = pred_instances.scores
-            bbox_preds = pred_instances.bboxes
+            cls_scores = pred_instances.scores  # type: ignore[attr-defined]
+            bbox_preds = pred_instances.bboxes  # type: ignore[attr-defined]
 
             # compute cls cost for bbox and GT
             cls_cost = torch.sigmoid(cls_scores[:, gt_labels])

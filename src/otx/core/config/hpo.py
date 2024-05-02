@@ -10,6 +10,15 @@ from typing import Any, Literal
 
 import torch
 
+from otx.utils.utils import is_xpu_available
+
+if torch.cuda.is_available():
+    num_workers = torch.cuda.device_count()
+elif is_xpu_available():
+    num_workers = torch.xpu.device_count()
+else:
+    num_workers = 1
+
 
 @dataclass
 class HpoConfig:
@@ -19,7 +28,7 @@ class HpoConfig:
     save_path: str | None = None
     mode: Literal["max", "min"] = "max"
     num_trials: int | None = None
-    num_workers: int = torch.cuda.device_count() if torch.cuda.is_available() else 1
+    num_workers: int = num_workers
     expected_time_ratio: int | float | None = 4
     maximum_resource: int | float | None = None
     prior_hyper_parameters: dict | list[dict] | None = None
@@ -27,5 +36,5 @@ class HpoConfig:
     minimum_resource: int | float | None = None
     reduction_factor: int = 3
     asynchronous_bracket: bool = True
-    asynchronous_sha: bool = torch.cuda.device_count() != 1
+    asynchronous_sha: bool = num_workers > 1
     metric_name: str | None = None

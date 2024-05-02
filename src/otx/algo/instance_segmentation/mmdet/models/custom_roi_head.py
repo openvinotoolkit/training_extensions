@@ -10,23 +10,18 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import torch
-from mmdet.models.utils.misc import unpack_gt_instances  # TODO (Eugene): This should be replaced by unpack_det_entity
-from mmengine.registry import MODELS, TASK_UTILS
 from torch import Tensor
 
-from otx.algo.detection.deployment import is_mmdeploy_enabled
 from otx.algo.detection.heads.class_incremental_mixin import (
     ClassIncrementalMixin,
 )
 from otx.algo.detection.losses import CrossSigmoidFocalLoss, accuracy
 from otx.algo.detection.utils.structures import SamplingResult
-from otx.algo.detection.utils.utils import empty_instances, multi_apply
+from otx.algo.detection.utils.utils import empty_instances, multi_apply, unpack_gt_instances
 from otx.algo.instance_segmentation.mmdet.models.bbox_heads.convfc_bbox_head import Shared2FCBBoxHead
-from otx.algo.instance_segmentation.mmdet.models.mask_heads.fcn_mask_head import FCNMaskHead
 from otx.algo.instance_segmentation.mmdet.structures.bbox import bbox2roi
 
 from .base_roi_head import BaseRoIHead
-from .roi_extractors import SingleRoIExtractor
 
 if TYPE_CHECKING:
     from mmdet.structures.det_data_sample import DetDataSample
@@ -34,57 +29,13 @@ if TYPE_CHECKING:
     from mmengine.structures import InstanceData
 
 
-@MODELS.register_module()
 class StandardRoIHead(BaseRoIHead):
     """Simplest base roi head including one bbox head and one mask head."""
 
     def init_assigner_sampler(self) -> None:
         """Initialize assigner and sampler."""
-        self.bbox_assigner = TASK_UTILS.build(self.train_cfg["assigner"])
-        self.bbox_sampler = TASK_UTILS.build(self.train_cfg["sampler"], default_args={"context": self})
-
-    def init_bbox_head(self, bbox_roi_extractor: ConfigDict | dict, bbox_head: ConfigDict | dict) -> None:
-        """Initialize box head and box roi extractor.
-
-        Args:
-            bbox_roi_extractor (dict or ConfigDict): Config of box
-                roi extractor.
-            bbox_head (dict or ConfigDict): Config of box in box head.
-        """
-        if bbox_roi_extractor["type"] != SingleRoIExtractor.__name__:
-            msg = f"bbox_roi_extractor should be SingleRoIExtractor, but got {bbox_roi_extractor['type']}"
-            raise ValueError(msg)
-
-        if bbox_head["type"] != CustomConvFCBBoxHead.__name__:
-            msg = f"bbox_head should be CustomConvFCBBoxHead, but got {bbox_head['type']}"
-            raise ValueError(msg)
-
-        bbox_roi_extractor.pop("type")
-        bbox_head.pop("type")
-
-        self.bbox_roi_extractor = SingleRoIExtractor(**bbox_roi_extractor)
-        self.bbox_head = CustomConvFCBBoxHead(**bbox_head)
-
-    def init_mask_head(self, mask_roi_extractor: ConfigDict | dict, mask_head: ConfigDict | dict) -> None:
-        """Initialize mask head and mask roi extractor.
-
-        Args:
-            mask_roi_extractor (dict or ConfigDict): Config of mask roi
-                extractor.
-            mask_head (dict or ConfigDict): Config of mask in mask head.
-        """
-        if mask_roi_extractor["type"] != SingleRoIExtractor.__name__:
-            msg = f"mask_roi_extractor should be SingleRoIExtractor, but got {mask_roi_extractor['type']}"
-            raise ValueError(msg)
-        mask_roi_extractor.pop("type")
-        self.mask_roi_extractor = SingleRoIExtractor(**mask_roi_extractor)
-
-        if mask_head["type"] != FCNMaskHead.__name__:
-            msg = f"mask_head should be FCNMaskHead, but got {mask_head['type']}"
-            raise ValueError(msg)
-
-        mask_head.pop("type")
-        self.mask_head = FCNMaskHead(**mask_head)
+        self.bbox_assigner = self.train_cfg["assigner"]
+        self.bbox_sampler = self.train_cfg["sampler"]
 
     def forward(
         self,
@@ -336,8 +287,213 @@ class StandardRoIHead(BaseRoIHead):
             rescale=rescale,
         )
 
+    def _bbox_forward_export(self, x: tuple[Tensor], rois: Tensor) -> dict:
+        """Box head forward function used in both training and testing.
 
-@MODELS.register_module()
+        Args:
+            x (tuple[Tensor]): List of multi-level img features.
+            rois (Tensor): RoIs with the shape (n, 5) where the first
+                column indicates batch id of each RoI.
+
+        Returns:
+             dict[str, Tensor]: Usually returns a dictionary with keys:
+
+                - `cls_score` (Tensor): Classification scores.
+                - `bbox_pred` (Tensor): Box energies / deltas.
+                - `bbox_feats` (Tensor): Extract bbox RoI features.
+        """
+        bbox_feats = self.bbox_roi_extractor.export(
+            x[: self.bbox_roi_extractor.num_inputs],
+            rois,
+        )
+        if self.with_shared_head:
+            bbox_feats = self.shared_head(bbox_feats)
+        cls_score, bbox_pred = self.bbox_head(bbox_feats)
+
+        return {"cls_score": cls_score, "bbox_pred": bbox_pred, "bbox_feats": bbox_feats}
+
+    def _mask_forward_export(
+        self,
+        x: tuple[Tensor],
+        rois: Tensor | None = None,
+        pos_inds: Tensor | None = None,
+        bbox_feats: Tensor | None = None,
+    ) -> dict:
+        """Mask head forward function used in both training and testing.
+
+        Args:
+            x (tuple[Tensor]): Tuple of multi-level img features.
+            rois (Tensor): RoIs with the shape (n, 5) where the first
+                column indicates batch id of each RoI.
+            pos_inds (Tensor, optional): Indices of positive samples.
+                Defaults to None.
+            bbox_feats (Tensor): Extract bbox RoI features. Defaults to None.
+
+        Returns:
+            dict[str, Tensor]: Usually returns a dictionary with keys:
+
+                - `mask_preds` (Tensor): Mask prediction.
+                - `mask_feats` (Tensor): Extract mask RoI features.
+        """
+        if not ((rois is not None) ^ (pos_inds is not None and bbox_feats is not None)):
+            msg = "rois is None xor (pos_inds is not None and bbox_feats is not None)"
+            raise ValueError(msg)
+        if rois is not None:
+            mask_feats = self.mask_roi_extractor.export(x[: self.mask_roi_extractor.num_inputs], rois)
+            if self.with_shared_head:
+                mask_feats = self.shared_head(mask_feats)
+        else:
+            if bbox_feats is None:
+                msg = "bbox_feats should not be None when rois is None"
+                raise ValueError(msg)
+            mask_feats = bbox_feats[pos_inds]
+
+        mask_preds = self.mask_head(mask_feats)
+        return {"mask_preds": mask_preds, "mask_feats": mask_feats}
+
+    def export(
+        self,
+        x: tuple[Tensor],
+        rpn_results_list: tuple[Tensor, Tensor],
+        batch_data_samples: list[DetDataSample],
+        rescale: bool = False,
+    ) -> tuple[Tensor, ...]:
+        """Export the roi head and export detection results on the features of the upstream network."""
+        if not self.with_bbox:
+            msg = "Bbox head must be implemented."
+            raise NotImplementedError(msg)
+        batch_img_metas = [data_samples.metainfo for data_samples in batch_data_samples]
+
+        # If it has the mask branch, the bbox branch does not need
+        # to be scaled to the original image scale, because the mask
+        # branch will scale both bbox and mask at the same time.
+        bbox_rescale = rescale if not self.with_mask else False
+        results_list = self.export_bbox(
+            x,
+            batch_img_metas,
+            rpn_results_list,
+            rcnn_test_cfg=self.test_cfg,
+            rescale=bbox_rescale,
+        )
+
+        if self.with_mask:
+            results_list = self.export_mask(x, batch_img_metas, results_list, rescale=rescale)
+
+        return results_list
+
+    def export_bbox(
+        self,
+        x: tuple[Tensor],
+        batch_img_metas: list[dict],
+        rpn_results_list: tuple[Tensor, Tensor],
+        rcnn_test_cfg: ConfigDict | dict,
+        rescale: bool = False,
+    ) -> tuple[Tensor, ...]:
+        """Rewrite `predict_bbox` of `StandardRoIHead` for default backend.
+
+        Args:
+            x (tuple[Tensor]): Feature maps of all scale level.
+            batch_img_metas (list[dict]): List of image information.
+            rpn_results_list (list[Tensor]): List of region
+                proposals.
+            rcnn_test_cfg (obj:`ConfigDict`): `test_cfg` of R-CNN.
+            rescale (bool): If True, return boxes in original image space.
+                Defaults to False.
+
+        Returns:
+            list[Tensor]: Detection results of each image
+            after the post process.
+            Each item usually contains following keys.
+
+                - dets (Tensor): Classification bboxes and scores, has a shape
+                    (num_instance, 5)
+                - labels (Tensor): Labels of bboxes, has a shape
+                    (num_instances, ).
+        """
+        rois = rpn_results_list[0]
+        rois_dims = int(rois.shape[-1])
+        batch_index = (
+            torch.arange(rois.shape[0], device=rois.device).float().view(-1, 1, 1).expand(rois.size(0), rois.size(1), 1)
+        )
+        rois = torch.cat([batch_index, rois[..., : rois_dims - 1]], dim=-1)
+        batch_size = rois.shape[0]
+        num_proposals_per_img = rois.shape[1]
+
+        # Eliminate the batch dimension
+        rois = rois.view(-1, rois_dims)
+        bbox_results = self._bbox_forward_export(x, rois)
+        cls_scores = bbox_results["cls_score"]
+        bbox_preds = bbox_results["bbox_pred"]
+
+        # Recover the batch dimension
+        rois = rois.reshape(batch_size, num_proposals_per_img, rois.size(-1))
+        cls_scores = cls_scores.reshape(batch_size, num_proposals_per_img, cls_scores.size(-1))
+        bbox_preds = bbox_preds.reshape(batch_size, num_proposals_per_img, bbox_preds.size(-1))
+
+        return self.bbox_head.export_by_feat(
+            rois=rois,
+            cls_scores=cls_scores,
+            bbox_preds=bbox_preds,
+            batch_img_metas=batch_img_metas,
+            rcnn_test_cfg=rcnn_test_cfg,
+            rescale=rescale,
+        )
+
+    def export_mask(
+        self: StandardRoIHead,
+        x: tuple[Tensor],
+        batch_img_metas: list[dict],
+        results_list: tuple[Tensor, ...],
+        rescale: bool = False,
+    ) -> tuple[Tensor, ...]:
+        """Forward the mask head and predict detection results on the features of the upstream network.
+
+        Args:
+            x (tuple[Tensor]): Feature maps of all scale level.
+            batch_img_metas (list[dict]): List of image information.
+            results_list (list[:obj:`InstanceData`]): Detection results of
+                each image.
+            rescale (bool): If True, return boxes in original image space.
+                Defaults to False.
+
+        Returns:
+            list[Tensor]: Detection results of each image
+            after the post process.
+            Each item usually contains following keys.
+
+                - scores (Tensor): Classification scores, has a shape
+                    (num_instance, )
+                - labels (Tensor): Labels of bboxes, has a shape
+                    (num_instances, ).
+                - bboxes (Tensor): Has a shape (num_instances, 4),
+                    the last dimension 4 arrange as (x1, y1, x2, y2).
+                - masks (Tensor): Has a shape (num_instances, H, W).
+        """
+        dets, det_labels = results_list
+        batch_size = dets.size(0)
+        det_bboxes = dets[..., :4]
+        # expand might lead to static shape, use broadcast instead
+        batch_index = torch.arange(det_bboxes.size(0), device=det_bboxes.device).float().view(
+            -1,
+            1,
+            1,
+        ) + det_bboxes.new_zeros((det_bboxes.size(0), det_bboxes.size(1))).unsqueeze(-1)
+        mask_rois = torch.cat([batch_index, det_bboxes], dim=-1)
+        mask_rois = mask_rois.view(-1, 5)
+        mask_results = self._mask_forward_export(x, mask_rois)
+        mask_preds = mask_results["mask_preds"]
+        num_det = det_bboxes.shape[1]
+        segm_results: Tensor = self.mask_head.export_by_feat(
+            mask_preds,
+            results_list,
+            batch_img_metas,
+            self.test_cfg,
+            rescale=rescale,
+        )
+        segm_results = segm_results.reshape(batch_size, num_det, segm_results.shape[-2], segm_results.shape[-1])
+        return dets, det_labels, segm_results
+
+
 class CustomRoIHead(StandardRoIHead):
     """CustomRoIHead class for OTX."""
 
@@ -425,7 +581,6 @@ class CustomRoIHead(StandardRoIHead):
         return bbox_results
 
 
-@MODELS.register_module()
 class CustomConvFCBBoxHead(Shared2FCBBoxHead, ClassIncrementalMixin):
     """CustomConvFCBBoxHead class for OTX."""
 
@@ -617,125 +772,3 @@ class CustomConvFCBBoxHead(Shared2FCBBoxHead, ClassIncrementalMixin):
             else:
                 losses["loss_bbox"] = bbox_pred[pos_inds].sum()
         return losses
-
-
-if is_mmdeploy_enabled():
-    from mmdeploy.core import FUNCTION_REWRITER
-
-    @FUNCTION_REWRITER.register_rewriter(
-        "otx.algo.instance_segmentation.mmdet.models.custom_roi_head.StandardRoIHead.predict_bbox",
-    )
-    def standard_roi_head__predict_bbox(
-        self: StandardRoIHead,
-        x: tuple[Tensor],
-        batch_img_metas: list[dict],
-        rpn_results_list: list[Tensor],
-        rcnn_test_cfg: ConfigDict | dict,
-        rescale: bool = False,
-    ) -> list[Tensor]:
-        """Rewrite `predict_bbox` of `StandardRoIHead` for default backend.
-
-        Args:
-            x (tuple[Tensor]): Feature maps of all scale level.
-            batch_img_metas (list[dict]): List of image information.
-            rpn_results_list (list[Tensor]): List of region
-                proposals.
-            rcnn_test_cfg (obj:`ConfigDict`): `test_cfg` of R-CNN.
-            rescale (bool): If True, return boxes in original image space.
-                Defaults to False.
-
-        Returns:
-            list[Tensor]: Detection results of each image
-            after the post process.
-            Each item usually contains following keys.
-
-                - dets (Tensor): Classification bboxes and scores, has a shape
-                    (num_instance, 5)
-                - labels (Tensor): Labels of bboxes, has a shape
-                    (num_instances, ).
-        """
-        rois = rpn_results_list[0]
-        rois_dims = int(rois.shape[-1])
-        batch_index = (
-            torch.arange(rois.shape[0], device=rois.device).float().view(-1, 1, 1).expand(rois.size(0), rois.size(1), 1)
-        )
-        rois = torch.cat([batch_index, rois[..., : rois_dims - 1]], dim=-1)
-        batch_size = rois.shape[0]
-        num_proposals_per_img = rois.shape[1]
-
-        # Eliminate the batch dimension
-        rois = rois.view(-1, rois_dims)
-        bbox_results = self._bbox_forward(x, rois)
-        cls_scores = bbox_results["cls_score"]
-        bbox_preds = bbox_results["bbox_pred"]
-
-        # Recover the batch dimension
-        rois = rois.reshape(batch_size, num_proposals_per_img, rois.size(-1))
-        cls_scores = cls_scores.reshape(batch_size, num_proposals_per_img, cls_scores.size(-1))
-
-        bbox_preds = bbox_preds.reshape(batch_size, num_proposals_per_img, bbox_preds.size(-1))
-        return self.bbox_head.predict_by_feat(
-            rois=rois,
-            cls_scores=cls_scores,
-            bbox_preds=bbox_preds,
-            batch_img_metas=batch_img_metas,
-            rcnn_test_cfg=rcnn_test_cfg,
-            rescale=rescale,
-        )
-
-    @FUNCTION_REWRITER.register_rewriter(
-        "otx.algo.instance_segmentation.mmdet.models.custom_roi_head.StandardRoIHead.predict_mask",
-    )
-    def standard_roi_head__predict_mask(
-        self: StandardRoIHead,
-        x: tuple[Tensor],
-        batch_img_metas: list[dict],
-        results_list: list[Tensor],
-        rescale: bool = False,
-    ) -> tuple[Tensor, Tensor, Tensor]:
-        """Forward the mask head and predict detection results on the features of the upstream network.
-
-        Args:
-            x (tuple[Tensor]): Feature maps of all scale level.
-            batch_img_metas (list[dict]): List of image information.
-            results_list (list[:obj:`InstanceData`]): Detection results of
-                each image.
-            rescale (bool): If True, return boxes in original image space.
-                Defaults to False.
-
-        Returns:
-            list[Tensor]: Detection results of each image
-            after the post process.
-            Each item usually contains following keys.
-
-                - scores (Tensor): Classification scores, has a shape
-                    (num_instance, )
-                - labels (Tensor): Labels of bboxes, has a shape
-                    (num_instances, ).
-                - bboxes (Tensor): Has a shape (num_instances, 4),
-                    the last dimension 4 arrange as (x1, y1, x2, y2).
-                - masks (Tensor): Has a shape (num_instances, H, W).
-        """
-        dets, det_labels = results_list
-        batch_size = dets.size(0)
-        det_bboxes = dets[..., :4]
-        # expand might lead to static shape, use broadcast instead
-        batch_index = torch.arange(det_bboxes.size(0), device=det_bboxes.device).float().view(
-            -1,
-            1,
-            1,
-        ) + det_bboxes.new_zeros((det_bboxes.size(0), det_bboxes.size(1))).unsqueeze(-1)
-        mask_rois = torch.cat([batch_index, det_bboxes], dim=-1)
-        mask_rois = mask_rois.view(-1, 5)
-        mask_results = self._mask_forward(x, mask_rois)
-        mask_preds = mask_results["mask_preds"]
-        num_det = det_bboxes.shape[1]
-        segm_results: Tensor = self.mask_head.predict_by_feat(
-            mask_preds,
-            results_list,
-            batch_img_metas,
-            self.test_cfg,
-            rescale=rescale,
-        )
-        segm_results = segm_results.reshape(batch_size, num_det, segm_results.shape[-2], segm_results.shape[-1])
-        return dets, det_labels, segm_results

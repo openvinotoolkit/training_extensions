@@ -8,26 +8,16 @@
 from __future__ import annotations
 
 import copy
-import warnings
-from typing import TYPE_CHECKING, Callable
+from typing import TYPE_CHECKING
 
 import torch
-from mmengine.registry import MODELS
-from torch import Tensor
-
-from otx.algo.detection.backbones.pytorchcv_backbones import _build_pytorchcv_model
-from otx.algo.detection.deployment import is_mmdeploy_enabled
-from otx.algo.instance_segmentation.mmdet.models.custom_roi_head import CustomRoIHead
-from otx.algo.instance_segmentation.mmdet.models.dense_heads import RPNHead
-from otx.algo.instance_segmentation.mmdet.models.necks import FPN
+from torch import Tensor, nn
 
 from .base import BaseDetector
 
 if TYPE_CHECKING:
     from mmdet.structures.det_data_sample import DetDataSample
     from mmengine.config import ConfigDict
-
-    from otx.algo.instance_segmentation.mmdet.models.detectors.base import ForwardResults
 
 
 class TwoStageDetector(BaseDetector):
@@ -39,10 +29,10 @@ class TwoStageDetector(BaseDetector):
 
     def __init__(
         self,
-        backbone: ConfigDict | dict,
-        neck: ConfigDict | dict,
-        rpn_head: ConfigDict | dict,
-        roi_head: ConfigDict | dict,
+        backbone: nn.Module,
+        neck: nn.Module,
+        rpn_head: nn.Module,
+        roi_head: nn.Module,
         train_cfg: ConfigDict | dict,
         test_cfg: ConfigDict | dict,
         data_preprocessor: ConfigDict | dict | None = None,
@@ -50,49 +40,11 @@ class TwoStageDetector(BaseDetector):
         **kwargs,
     ) -> None:
         super().__init__(data_preprocessor=data_preprocessor, init_cfg=init_cfg)
-        try:
-            self.backbone = MODELS.build(backbone)
-        except KeyError:
-            self.backbone = _build_pytorchcv_model(**backbone)
 
-        if neck["type"] != FPN.__name__:
-            msg = f"neck type must be {FPN.__name__}, but got {neck['type']}"
-            raise ValueError(msg)
-        # pop out type for FPN
-        neck.pop("type")
-        self.neck = FPN(**neck)
-
-        rpn_train_cfg = train_cfg["rpn"]
-        rpn_head_ = rpn_head.copy()
-        rpn_head_.update(train_cfg=rpn_train_cfg, test_cfg=test_cfg["rpn"])
-        rpn_head_num_classes = rpn_head_.get("num_classes", None)
-        if rpn_head_num_classes is None:
-            rpn_head_.update(num_classes=1)
-        elif rpn_head_num_classes != 1:
-            warnings.warn(
-                "The `num_classes` should be 1 in RPN, but get "
-                f"{rpn_head_num_classes}, please set "
-                "rpn_head.num_classes = 1 in your config file.",
-                stacklevel=2,
-            )
-            rpn_head_.update(num_classes=1)
-        if rpn_head_["type"] != RPNHead.__name__:
-            msg = f"rpn_head type must be {RPNHead.__name__}, but got {rpn_head_['type']}"
-            raise ValueError(msg)
-        # pop out type for RPNHead
-        rpn_head_.pop("type")
-        self.rpn_head = RPNHead(**rpn_head_)
-
-        # update train and test cfg here for now
-        rcnn_train_cfg = train_cfg["rcnn"]
-        roi_head.update(train_cfg=rcnn_train_cfg)
-        roi_head.update(test_cfg=test_cfg["rcnn"])
-        if roi_head["type"] != CustomRoIHead.__name__:
-            msg = f"roi_head type must be {CustomRoIHead.__name__}, but got {roi_head['type']}"
-            raise ValueError(msg)
-        # pop out type for RoIHead
-        roi_head.pop("type")
-        self.roi_head = CustomRoIHead(**roi_head)
+        self.backbone = backbone
+        self.neck = neck
+        self.rpn_head = rpn_head
+        self.roi_head = roi_head
 
         self.train_cfg = train_cfg
         self.test_cfg = test_cfg
@@ -265,89 +217,3 @@ class TwoStageDetector(BaseDetector):
         results_list = self.roi_head.predict(x, rpn_results_list, batch_data_samples, rescale=rescale)
 
         return self.add_pred_to_datasample(batch_data_samples, results_list)
-
-
-if is_mmdeploy_enabled():
-    from mmdeploy.core import FUNCTION_REWRITER, mark
-    from mmdeploy.utils import is_dynamic_shape
-
-    @FUNCTION_REWRITER.register_rewriter(
-        "otx.algo.instance_segmentation.mmdet.models.detectors.two_stage.TwoStageDetector.extract_feat",
-    )
-    def two_stage_detector__extract_feat(self: TwoStageDetector, img: Tensor) -> list[Tensor]:
-        """Rewrite `extract_feat` for default backend.
-
-        This function uses the specific `extract_feat` function for the two
-        stage detector after adding marks.
-
-        Args:
-            ctx (ContextCaller): The context with additional information.
-            self: The instance of the original class.
-            img (Tensor | List[Tensor]): Input image tensor(s).
-
-        Returns:
-            list[Tensor]: Each item with shape (N, C, H, W) corresponds one
-            level of backbone and neck features.
-        """
-        ctx = FUNCTION_REWRITER.get_context()
-
-        @mark("extract_feat", inputs="img", outputs="feat")
-        def __extract_feat_impl(self: TwoStageDetector, img: Tensor) -> Callable:
-            return ctx.origin_func(self, img)
-
-        return __extract_feat_impl(self, img)
-
-    @FUNCTION_REWRITER.register_rewriter(
-        "otx.algo.instance_segmentation.mmdet.models.detectors.two_stage.TwoStageDetector.forward",
-    )
-    def two_stage_detector__forward(
-        self: TwoStageDetector,
-        batch_inputs: torch.Tensor,
-        data_samples: list[DetDataSample],
-        mode: str = "tensor",
-        **kwargs,
-    ) -> ForwardResults:
-        """Rewrite `forward` for default backend.
-
-        Support configured dynamic/static shape for model input and return
-        detection result as Tensor instead of numpy array.
-
-        Args:
-            batch_inputs (Tensor): Inputs with shape (N, C, H, W).
-            data_samples (List[:obj:`DetDataSample`]): The Data
-                Samples. It usually includes information such as
-                `gt_instance`, `gt_panoptic_seg` and `gt_sem_seg`.
-            mode (str): export mode, not used.
-
-        Returns:
-            tuple[Tensor]: Detection results of the
-            input images.
-                - dets (Tensor): Classification bboxes and scores.
-                    Has a shape (num_instances, 5)
-                - labels (Tensor): Labels of bboxes, has a shape
-                    (num_instances, ).
-        """
-        warnings.warn(f"{mode}, {kwargs} not used", stacklevel=2)
-        ctx = FUNCTION_REWRITER.get_context()
-        deploy_cfg = ctx.cfg
-
-        # get origin input shape as tensor to support onnx dynamic shape
-        is_dynamic_flag = is_dynamic_shape(deploy_cfg)
-        img_shape = torch._shape_as_tensor(batch_inputs)[2:]  # noqa: SLF001
-        if not is_dynamic_flag:
-            img_shape = [int(val) for val in img_shape]
-
-        # set the metainfo
-        # note that we can not use `set_metainfo`, deepcopy would crash the
-        # onnx trace.
-        for data_sample in data_samples:
-            data_sample.set_field(name="img_shape", value=img_shape, field_type="metainfo")
-
-        x = self.extract_feat(batch_inputs)
-
-        if data_samples[0].get("proposals", None) is None:
-            rpn_results_list = self.rpn_head.predict(x, data_samples, rescale=False)
-        else:
-            rpn_results_list = [data_sample.proposals for data_sample in data_samples]
-
-        return self.roi_head.predict(x, rpn_results_list, data_samples, rescale=False)

@@ -4,17 +4,12 @@
 #
 from __future__ import annotations
 
-from typing import Any, Union
+from typing import Any
 
-import numpy as np
 import torch
 from lightning.pytorch.accelerators import AcceleratorRegistry
 from lightning.pytorch.accelerators.accelerator import Accelerator
-from mmcv.ops.nms import NMSop
-from mmcv.ops.roi_align import RoIAlign
-from mmengine.structures import instance_data
 
-from otx.algo.detection.utils import monkey_patched_nms, monkey_patched_roi_align
 from otx.utils.utils import is_xpu_available
 
 
@@ -30,7 +25,6 @@ class XPUAccelerator(Accelerator):
             raise RuntimeError(msg)
 
         torch.xpu.set_device(device)
-        self.patch_packages_xpu()
 
     @staticmethod
     def parse_devices(devices: str | list | torch.device) -> list:
@@ -59,26 +53,7 @@ class XPUAccelerator(Accelerator):
         return {}
 
     def teardown(self) -> None:
-        """Cleans-up XPU-related resources."""
-        self.revert_packages_xpu()
-
-    def patch_packages_xpu(self) -> None:
-        """Patch packages when xpu is available."""
-        # patch instance_data from mmengie
-        long_type_tensor = Union[torch.LongTensor, torch.xpu.LongTensor]
-        bool_type_tensor = Union[torch.BoolTensor, torch.xpu.BoolTensor]
-        instance_data.IndexType = Union[str, slice, int, list, long_type_tensor, bool_type_tensor, np.ndarray]
-
-        # patch nms and roi_align
-        self._nms_op_forward = NMSop.forward
-        self._roi_align_forward = RoIAlign.forward
-        NMSop.forward = monkey_patched_nms
-        RoIAlign.forward = monkey_patched_roi_align
-
-    def revert_packages_xpu(self) -> None:
-        """Revert packages when xpu is available."""
-        NMSop.forward = self._nms_op_forward
-        RoIAlign.forward = self._roi_align_forward
+        """Clean up any state created by the accelerator."""
 
 
 AcceleratorRegistry.register(
