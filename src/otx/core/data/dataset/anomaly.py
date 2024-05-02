@@ -43,6 +43,7 @@ class AnomalyDataset(OTXDataset):
         max_refetch: int = 1000,
         image_color_channel: ImageColorChannel = ImageColorChannel.RGB,
         stack_images: bool = True,
+        to_tv_image: bool = True,
     ) -> None:
         self.task_type = task_type
         super().__init__(
@@ -53,6 +54,7 @@ class AnomalyDataset(OTXDataset):
             max_refetch,
             image_color_channel,
             stack_images,
+            to_tv_image,
         )
         self.label_info = AnomalyLabelInfo()
 

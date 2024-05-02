@@ -14,8 +14,6 @@ class TestXPUAccelerator:
     @pytest.fixture()
     def accelerator(self, mocker):
         mock_torch = mocker.patch("otx.algo.accelerators.xpu.torch")
-        mocker.patch.object(XPUAccelerator, "patch_packages_xpu")
-        mocker.patch.object(XPUAccelerator, "teardown")
         return XPUAccelerator(), mock_torch
 
     def test_setup_device(self, accelerator):

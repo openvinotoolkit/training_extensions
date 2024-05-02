@@ -19,7 +19,7 @@ from otx.core.types.precision import OTXPrecisionType
 
 
 class TestMMdeployExporter:
-    DEFAULT_MMDEPLOY_CFG = "otx.algo.detection.mmdeploy.atss"
+    DEFAULT_MMDEPLOY_CFG = "tests.assets.mmdeploy_config_sample"
 
     @pytest.fixture(autouse=True)
     def setup(self, mocker):

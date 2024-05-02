@@ -3,7 +3,7 @@
 reference: https://github.com/open-mmlab/mmdeploy/
 """
 
-_base_ = ["../../detection/mmdeploy/base_detection.py"]
+_base_ = ["./base_detection.py"]
 
 ir_config = dict(
     output_names=[

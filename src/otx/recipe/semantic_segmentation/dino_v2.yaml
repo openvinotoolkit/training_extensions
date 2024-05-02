@@ -80,11 +80,16 @@ overrides:
               size:
                 - 560
                 - 560
+              scale:
+                - 0.2
+                - 1.0
               ratio:
                 - 0.5
                 - 2.0
               antialias: True
-          - class_path: torchvision.transforms.v2.RandomPhotometricDistort
+          - class_path: otx.core.data.transform_libs.torchvision.PhotoMetricDistortion
+            init_args:
+              is_numpy_to_tvtensor: true
           - class_path: torchvision.transforms.v2.RandomHorizontalFlip
             init_args:
               p: 0.5

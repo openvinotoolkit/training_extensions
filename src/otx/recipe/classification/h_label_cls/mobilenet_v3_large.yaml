@@ -27,7 +27,7 @@ model:
           class_path: lightning.pytorch.cli.ReduceLROnPlateau
           init_args:
             mode: max
-            factor: 0.1
+            factor: 0.5
             patience: 1
             monitor: val/accuracy
 
@@ -54,6 +54,7 @@ overrides:
       data_format: datumaro
       train_subset:
         batch_size: 64
+        to_tv_image: False
         transforms:
           - class_path: otx.core.data.transform_libs.torchvision.RandomResizedCrop
             init_args:
@@ -62,6 +63,7 @@ overrides:
           - class_path: otx.core.data.transform_libs.torchvision.RandomFlip
             init_args:
               prob: 0.5
+              is_numpy_to_tvtensor: true
           - class_path: torchvision.transforms.v2.ToDtype
             init_args:
               dtype: ${as_torch_dtype:torch.float32}
@@ -74,11 +76,12 @@ overrides:
           class_path: otx.algo.samplers.balanced_sampler.BalancedSampler
       val_subset:
         batch_size: 64
+        to_tv_image: False
         transforms:
           - class_path: otx.core.data.transform_libs.torchvision.Resize
             init_args:
               scale: 224
-              transform_bbox: false
+              is_numpy_to_tvtensor: true
           - class_path: torchvision.transforms.v2.ToDtype
             init_args:
               dtype: ${as_torch_dtype:torch.float32}
@@ -89,11 +92,12 @@ overrides:
               std: [58.395, 57.12, 57.375]
       test_subset:
         batch_size: 64
+        to_tv_image: False
         transforms:
           - class_path: otx.core.data.transform_libs.torchvision.Resize
             init_args:
               scale: 224
-              transform_bbox: false
+              is_numpy_to_tvtensor: true
           - class_path: torchvision.transforms.v2.ToDtype
             init_args:
               dtype: ${as_torch_dtype:torch.float32}

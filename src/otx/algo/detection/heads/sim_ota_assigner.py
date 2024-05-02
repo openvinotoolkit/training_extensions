@@ -15,8 +15,9 @@ from otx.algo.detection.heads.iou2d_calculator import BboxOverlaps2D
 from otx.algo.detection.utils.structures import AssignResult
 
 if TYPE_CHECKING:
-    from mmengine.config import ConfigDict
-    from mmengine.structures import InstanceData
+    from omegaconf import DictConfig
+
+    from otx.algo.utils.mmengine_utils import InstanceData
 
 INF = 100000.0
 EPS = 1.0e-7
@@ -34,7 +35,7 @@ class SimOTAAssigner:
             iou cost. Defaults to 3.0.
         cls_weight (float): The scale factor for classification
             cost. Defaults to 1.0.
-        iou_calculator (ConfigDict | dict): Config of overlaps Calculator.
+        iou_calculator (DictConfig | dict): Config of overlaps Calculator.
             Defaults to dict(type='BboxOverlaps2D').
     """
 
@@ -44,7 +45,7 @@ class SimOTAAssigner:
         candidate_topk: int = 10,
         iou_weight: float = 3.0,
         cls_weight: float = 1.0,
-        iou_calculator: ConfigDict | dict = None,
+        iou_calculator: DictConfig | dict = None,
     ):
         if iou_calculator is None:
             iou_calculator = {"type": "BboxOverlaps2D"}
@@ -82,13 +83,13 @@ class SimOTAAssigner:
         Returns:
             obj:`AssignResult`: The assigned result.
         """
-        gt_bboxes = gt_instances.bboxes
-        gt_labels = gt_instances.labels
+        gt_bboxes = gt_instances.bboxes  # type: ignore[attr-defined]
+        gt_labels = gt_instances.labels  # type: ignore[attr-defined]
         num_gt = gt_bboxes.size(0)
 
-        decoded_bboxes = pred_instances.bboxes
-        pred_scores = pred_instances.scores
-        priors = pred_instances.priors
+        decoded_bboxes = pred_instances.bboxes  # type: ignore[attr-defined]
+        pred_scores = pred_instances.scores  # type: ignore[attr-defined]
+        priors = pred_instances.priors  # type: ignore[attr-defined]
         num_bboxes = decoded_bboxes.size(0)
 
         # assign 0 by default

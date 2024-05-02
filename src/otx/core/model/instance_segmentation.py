@@ -361,16 +361,17 @@ class MMDetInstanceSegCompatibleModel(ExplainableOTXInstanceSegModel):
     def __init__(
         self,
         label_info: LabelInfoTypes,
-        config: DictConfig,
+        config: DictConfig | None = None,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MaskRLEMeanAPCallable,
         torch_compile: bool = False,
         tile_config: TileConfig = TileConfig(enable_tiler=False),
     ) -> None:
-        config = inplace_num_classes(cfg=config, num_classes=self._dispatch_label_info(label_info).num_classes)
-        self.config = config
-        self.load_from = self.config.pop("load_from", None)
+        if config is not None:
+            config = inplace_num_classes(cfg=config, num_classes=self._dispatch_label_info(label_info).num_classes)
+            self.config = config
+            self.load_from = self.config.pop("load_from", None)
         self.image_size: tuple[int, int, int, int] | None = None
         super().__init__(
             label_info=label_info,

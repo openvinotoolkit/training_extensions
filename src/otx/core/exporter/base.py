@@ -6,6 +6,7 @@
 from __future__ import annotations
 
 import json
+import logging as log
 import os
 import tempfile
 from abc import abstractmethod
@@ -42,7 +43,8 @@ class OTXModelExporter:
         pad_value (int, optional): Padding value. Defaults to 0.
         swap_rgb (bool, optional): Whether to convert the image from BGR to RGB Defaults to False.
         output_names (list[str] | None, optional): Names for model's outputs, which would be
-        embedded into resulting model.
+        embedded into resulting model. Note, that order of the output names should be the same,
+        as in the target model.
     """
 
     def __init__(
@@ -280,30 +282,40 @@ class OTXModelExporter:
             # workaround for OVC's bug: single output doesn't have a name in OV model
             exported_model.outputs[0].tensor.set_names({"output1"})
 
+        # name assignment process is similar to torch onnx export
         if self.output_names is not None:
-            traced_outputs = [(output.get_names(), output) for output in exported_model.outputs]
-
-            for output_name in self.output_names:
-                found = False
-                for name, output in traced_outputs:
-                    # TODO(vinnamkim): This is because `name` in `traced_outputs` is a list of set such as
-                    # [{'logits', '1555'}, {'1556', 'preds'}, {'1557', 'scores'},
-                    # {'saliency_map', '1551'}, {'feature_vector', '1554', 'input.1767'}]
-                    # This ugly format of `name` comes from `openvino.convert_model`.
-                    # Find a cleaner way for this in the future.
-                    if output_name in name:
-                        found = True
-                        # NOTE: This is because without this renaming such as
-                        # `{'saliency_map', '1551'}` => `{'saliency_map'}`
-                        # ModelAPI cannot produce the outputs correctly.
-                        output.tensor.set_names({output_name})
-
-                if not found:
+            if len(exported_model.outputs) >= len(self.output_names):
+                if len(exported_model.outputs) != len(self.output_names):
                     msg = (
-                        "Given output name to export is not in the traced_outputs, "
-                        f"{output_name} not in {traced_outputs}"
+                        "Number of model outputs is greater than the number"
+                        " of output names to assign. Please check output_names"
+                        " argument of the exporter's constructor."
                     )
-                    raise RuntimeError(msg)
+                    log.warning(msg)
+
+                for i, name in enumerate(self.output_names):
+                    traced_names = exported_model.outputs[i].get_names()
+                    name_found = False
+                    for traced_name in traced_names:
+                        if name in traced_name:
+                            name_found = True
+                            break
+                    name_found = name_found and bool(len(traced_names))
+
+                    if not name_found:
+                        msg = (
+                            f"{name} is not matched with the converted model's traced output names: {traced_names}."
+                            " Please check output_names argument of the exporter's constructor."
+                        )
+                        log.warning(msg)
+
+                    exported_model.outputs[i].tensor.set_names({name})
+            else:
+                msg = (
+                    "Model has less outputs than the number of output names provided: "
+                    f"{len(exported_model.outputs)} vs {len(self.output_names)}"
+                )
+                raise RuntimeError(msg)
 
         if self.metadata is not None:
             export_metadata = self._extend_model_metadata(self.metadata)

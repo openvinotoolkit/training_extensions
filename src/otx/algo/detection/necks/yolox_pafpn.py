@@ -5,7 +5,6 @@
 
 from __future__ import annotations
 
-import copy
 import math
 from typing import Any
 
@@ -70,10 +69,7 @@ class YOLOXPAFPN(BaseModule):
                 "nonlinearity": "leaky_relu",
             }
 
-        super().__init__()
-        # from mmengine.model.BaseModule
-        self._is_init = False
-        self.init_cfg = copy.deepcopy(init_cfg)
+        super().__init__(init_cfg=init_cfg)
 
         self.in_channels = in_channels
         self.out_channels = out_channels
