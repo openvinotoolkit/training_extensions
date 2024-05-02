@@ -99,7 +99,8 @@ class NumpytoTVTensorMixin:
                 inputs.image = F.to_image(image)
             if (bboxes := getattr(inputs, "bboxes", None)) is not None and isinstance(bboxes, np.ndarray):
                 inputs.bboxes = tv_tensors.BoundingBoxes(bboxes, format="xyxy", canvas_size=inputs.img_info.img_shape)  # type: ignore[attr-defined]
-            # TODO (sungchul): set masks
+            if (masks := getattr(inputs, "masks", None)) is not None and isinstance(masks, np.ndarray):
+                inputs.masks = tv_tensors.Mask(masks)
         return inputs
 
 
@@ -446,7 +447,6 @@ class Resize(tvt_v2.Transform, NumpytoTVTensorMixin):
 
     Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/datasets/transforms/transforms.py#L135-L246
 
-    TODO : update masks for instance segmentation
     TODO : optimize logic to torcivision pipeline
 
     Args:
@@ -872,7 +872,6 @@ class RandomFlip(tvt_v2.Transform, NumpytoTVTensorMixin):
 
     Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/datasets/transforms/transforms.py#L496-L596
 
-    TODO : update masks for instance segmentation
     TODO : optimize logic to torcivision pipeline
 
      - ``prob`` is float, ``direction`` is string: the image will be
@@ -1009,7 +1008,6 @@ class PhotoMetricDistortion(tvt_v2.Transform, NumpytoTVTensorMixin):
 
     Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/datasets/transforms/transforms.py#L1084-L1210
 
-    TODO : update masks for instance segmentation
     TODO : optimize logic to torcivision pipeline
 
     Apply photometric distortion to image sequentially, every transformation
@@ -1157,7 +1155,8 @@ class RandomAffine(tvt_v2.Transform, NumpytoTVTensorMixin):
 
     Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/datasets/transforms/transforms.py#L2736-L2901
 
-    TODO : update masks for instance segmentation
+    RandomAffine only supports images and bounding boxes in mmdetection.
+
     TODO : optimize logic to torcivision pipeline
 
     Args:
@@ -1766,7 +1765,6 @@ class YOLOXHSVRandomAug(tvt_v2.Transform, NumpytoTVTensorMixin):
 
     Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/datasets/transforms/transforms.py#L2905-L2961
 
-    TODO : update masks for instance segmentation
     TODO : optimize logic to torcivision pipeline
 
     Args:
@@ -1833,7 +1831,6 @@ class Pad(tvt_v2.Transform, NumpytoTVTensorMixin):
 
     Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/datasets/transforms/transforms.py#L705-L784
 
-    TODO : update masks for instance segmentation
     TODO : optimize logic to torcivision pipeline
 
     Args:
