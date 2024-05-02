@@ -15,6 +15,7 @@ import numpy as np
 import PIL.Image
 import torch
 import torchvision.transforms.v2 as tvt_v2
+from datumaro import Polygon
 from datumaro.components.media import Video
 from lightning.pytorch.cli import instantiate_class
 from numpy import random
@@ -965,13 +966,34 @@ class RandomFlip(tvt_v2.Transform, NumpytoTVTensorMixin):
             # flip image
             img = to_np_image(inputs.image)
             img = np.ascontiguousarray(flip_image(img, direction=cur_dir))
-
             inputs.image = img
 
             # flip bboxes
-            if hasattr(inputs, "bboxes") and (bboxes := getattr(inputs, "bboxes", None)) is not None:
+            if (bboxes := getattr(inputs, "bboxes", None)) is not None:
                 bboxes = flip_bboxes(bboxes, inputs.img_info.img_shape, direction=cur_dir)
                 inputs.bboxes = tv_tensors.BoundingBoxes(bboxes, format="XYXY", canvas_size=img.shape[:2])
+
+            # flip masks
+            if (masks := getattr(inputs, "masks", None)) is not None and len(masks) > 0:
+                masks = masks.numpy() if not isinstance(masks, np.ndarray) else masks
+                masks = np.ascontiguousarray(np.stack([flip_image(mask, direction=cur_dir) for mask in masks]))
+                inputs.masks = masks
+
+            # flip polygons
+            if (polygons := getattr(inputs, "polygons", None)) is not None and len(polygons) > 0:
+                height, width = inputs.img_info.img_shape
+                flipped_masks = []
+                for polygon in polygons:
+                    p = np.asarray(copy.deepcopy(polygon.points))
+                    if cur_dir == "horizontal":
+                        p[0::2] = width - p[0::2]
+                    elif cur_dir == "vertical":
+                        p[1::2] = height - p[1::2]
+                    else:
+                        p[0::2] = width - p[0::2]
+                        p[1::2] = height - p[1::2]
+                    flipped_masks.append(Polygon(points=p.tolist()))
+                inputs.polygons = flipped_masks
 
         return self.convert(inputs)
 

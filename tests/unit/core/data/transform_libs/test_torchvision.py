@@ -10,6 +10,7 @@ from copy import deepcopy
 import numpy as np
 import pytest
 import torch
+from datumaro import Polygon
 from otx.core.data.entity.action_classification import ActionClsDataEntity
 from otx.core.data.entity.base import ImageInfo
 from otx.core.data.entity.detection import DetDataEntity
@@ -197,16 +198,35 @@ class TestRandomFlip:
     def random_flip(self) -> RandomFlip:
         return RandomFlip(prob=1.0)
 
-    def test_forward(self, random_flip, det_data_entity) -> None:
+    def test_forward(self, random_flip, fxt_inst_seg_data_entity) -> None:
         """Test forward."""
-        results = random_flip.forward(deepcopy(det_data_entity))
+        entity = deepcopy(fxt_inst_seg_data_entity[0])
+        entity.image = entity.image.transpose(1, 2, 0)
 
-        assert torch.all(F.to_image(results.image).flip(-1) == det_data_entity.image)
+        results = random_flip.forward(entity)
 
+        # test image
+        assert np.all(F.to_image(results.image).flip(-1).numpy() == fxt_inst_seg_data_entity[0].image)
+
+        # test bboxes
         bboxes_results = results.bboxes.clone()
         bboxes_results[..., 0] = results.img_info.img_shape[1] - results.bboxes[..., 2]
         bboxes_results[..., 2] = results.img_info.img_shape[1] - results.bboxes[..., 0]
-        assert torch.all(bboxes_results == det_data_entity.bboxes)
+        assert torch.all(bboxes_results == fxt_inst_seg_data_entity[0].bboxes)
+
+        # test masks
+        assert torch.all(tv_tensors.Mask(results.masks).flip(-1) == fxt_inst_seg_data_entity[0].masks)
+
+        # test polygons
+        def revert_hflip(polygon: list[float], width: int) -> list[float]:
+            p = np.asarray(polygon.points)
+            p[0::2] = width - p[0::2]
+            return p.tolist()
+
+        width = results.img_info.img_shape[1]
+        polygons_results = deepcopy(results.polygons)
+        polygons_results = [Polygon(points=revert_hflip(polygon, width)) for polygon in polygons_results]
+        assert polygons_results == fxt_inst_seg_data_entity[0].polygons
 
 
 class TestPhotoMetricDistortion:
