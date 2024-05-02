@@ -284,13 +284,14 @@ class OTXModelExporter:
 
         # name assignment process is similar to torch onnx export
         if self.output_names is not None:
-            if len(exported_model.outputs) != len(self.output_names):
-                msg = (
-                    "Number of model outputs is greater than the number"
-                    " of output names to assign. Please check output_names"
-                    " argument of the exporter's constructor."
-                )
-                log.warning(msg)
+            if len(exported_model.outputs) >= len(self.output_names):
+                if len(exported_model.outputs) != len(self.output_names):
+                    msg = (
+                        "Number of model outputs is greater than the number"
+                        " of output names to assign. Please check output_names"
+                        " argument of the exporter's constructor."
+                    )
+                    log.warning(msg)
 
                 for i, name in enumerate(self.output_names):
                     traced_names = exported_model.outputs[i].get_names()
