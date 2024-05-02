@@ -16,6 +16,8 @@ from otx.algo.utils.mmengine_utils import InstanceData
 from otx.core.data.entity.detection import DetBatchDataEntity
 
 
+# Methods below come from mmdet.utils and slightly modified.
+# https://github.com/open-mmlab/mmdetection/blob/3.x/mmdet/models/utils/misc.py
 def reduce_mean(tensor: Tensor) -> Tensor:
     """Obtain the mean of tensor on different GPUs.
 
@@ -28,8 +30,6 @@ def reduce_mean(tensor: Tensor) -> Tensor:
     return tensor
 
 
-# Methods below come from mmdet.utils and slightly modified.
-# https://github.com/open-mmlab/mmdetection/blob/3.x/mmdet/models/utils/misc.py
 def multi_apply(func: Callable, *args, **kwargs) -> tuple:
     """Apply function to a list of arguments.
 
@@ -313,3 +313,68 @@ def dynamic_topk(input: Tensor, k: int, dim: int | None = None, largest: bool = 
         size = k.new_zeros(()) + size
     k = torch.where(k < size, k, size)
     return torch.topk(input, k, dim=dim, largest=largest, sorted=sorted)
+
+
+def unpack_gt_instances(batch_data_samples: list[InstanceData]) -> tuple:
+    """Unpack gt_instances, gt_instances_ignore and img_metas based on batch_data_samples.
+
+    Args:
+        batch_data_samples (List[:obj:`DetDataSample`]): The Data
+            Samples. It usually includes information such as
+            `gt_instance`, `gt_panoptic_seg` and `gt_sem_seg`.
+
+    Returns:
+        tuple:
+
+            - batch_gt_instances (list[:obj:`InstanceData`]): Batch of
+                gt_instance. It usually includes ``bboxes`` and ``labels``
+                attributes.
+            - batch_gt_instances_ignore (list[:obj:`InstanceData`]):
+                Batch of gt_instances_ignore. It includes ``bboxes`` attribute
+                data that is ignored during training and testing.
+                Defaults to None.
+            - batch_img_metas (list[dict]): Meta information of each image,
+                e.g., image size, scaling factor, etc.
+    """
+    # TODO(Eugene): remove this when inst-seg data pipeline decoupling is ready
+    batch_gt_instances = []
+    batch_gt_instances_ignore = []
+    batch_img_metas = []
+    for data_sample in batch_data_samples:
+        batch_img_metas.append(data_sample.metainfo)
+        batch_gt_instances.append(data_sample.gt_instances)  # type: ignore[attr-defined]
+        if "ignored_instances" in data_sample:
+            batch_gt_instances_ignore.append(data_sample.ignored_instances)  # type: ignore[attr-defined]
+        else:
+            batch_gt_instances_ignore.append(None)
+
+    return batch_gt_instances, batch_gt_instances_ignore, batch_img_metas
+
+
+def gather_topk(
+    *inputs: tuple[torch.Tensor],
+    inds: torch.Tensor,
+    batch_size: int,
+    is_batched: bool = True,
+) -> list[torch.Tensor] | torch.Tensor:
+    """Gather topk of each tensor.
+
+    Args:
+        inputs (tuple[torch.Tensor]): Tensors to be gathered.
+        inds (torch.Tensor): Topk index.
+        batch_size (int): batch_size.
+        is_batched (bool): Inputs is batched or not.
+
+    Returns:
+        Tuple[torch.Tensor]: Gathered tensors.
+    """
+    if is_batched:
+        batch_inds = torch.arange(batch_size, device=inds.device).unsqueeze(-1)
+        outputs = [x[batch_inds, inds, ...] if x is not None else None for x in inputs]  # type: ignore[call-overload]
+    else:
+        prior_inds = inds.new_zeros((1, 1))
+        outputs = [x[prior_inds, inds, ...] if x is not None else None for x in inputs]  # type: ignore[call-overload]
+
+    if len(outputs) == 1:
+        outputs = outputs[0]
+    return outputs

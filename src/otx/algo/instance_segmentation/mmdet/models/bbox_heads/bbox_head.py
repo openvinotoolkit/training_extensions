@@ -12,12 +12,11 @@ from typing import TYPE_CHECKING
 
 import torch
 import torch.nn.functional
-from mmengine.registry import MODELS, TASK_UTILS
 from mmengine.structures import InstanceData
 from torch import Tensor, nn
 from torch.nn.modules.utils import _pair
 
-from otx.algo.detection.deployment import is_mmdeploy_enabled
+from otx.algo.detection.ops.nms import multiclass_nms
 from otx.algo.detection.utils.utils import empty_instances
 from otx.algo.instance_segmentation.mmdet.models.layers import multiclass_nms_torch
 from otx.algo.instance_segmentation.mmdet.structures.bbox import scale_boxes
@@ -35,9 +34,9 @@ class BBoxHead(BaseModule):
         in_channels: int,
         roi_feat_size: int,
         num_classes: int,
-        bbox_coder: dict,
-        loss_cls: dict,
-        loss_bbox: dict,
+        bbox_coder: nn.Module,
+        loss_cls: nn.Module,
+        loss_bbox: nn.Module,
         with_avg_pool: bool = False,
         with_cls: bool = True,
         with_reg: bool = True,
@@ -61,9 +60,9 @@ class BBoxHead(BaseModule):
         self.reg_class_agnostic = reg_class_agnostic
         self.reg_decoded_bbox = reg_decoded_bbox
 
-        self.bbox_coder = TASK_UTILS.build(bbox_coder)
-        self.loss_cls = MODELS.build(loss_cls)
-        self.loss_bbox = MODELS.build(loss_bbox)
+        self.bbox_coder = bbox_coder
+        self.loss_cls = loss_cls
+        self.loss_bbox = loss_bbox
 
         in_channels = self.in_channels
         if self.with_avg_pool:
@@ -109,7 +108,7 @@ class BBoxHead(BaseModule):
         neg_priors: Tensor,
         pos_gt_bboxes: Tensor,
         pos_gt_labels: Tensor,
-        cfg: ConfigDict,
+        cfg: dict,
     ) -> tuple:
         """Calculate the ground truth for proposals in the single image according to the sampling results.
 
@@ -156,7 +155,7 @@ class BBoxHead(BaseModule):
         bbox_weights = pos_priors.new_zeros(num_samples, reg_dim)
         if num_pos > 0:
             labels[:num_pos] = pos_gt_labels
-            pos_weight = 1.0 if cfg.pos_weight <= 0 else cfg.pos_weight
+            pos_weight = 1.0 if cfg["pos_weight"] <= 0 else cfg["pos_weight"]
             label_weights[:num_pos] = pos_weight
             if not self.reg_decoded_bbox:
                 pos_bbox_targets = self.bbox_coder.encode(pos_priors, pos_gt_bboxes)
@@ -309,48 +308,8 @@ class BBoxHead(BaseModule):
         results.labels = det_labels
         return results
 
-
-if is_mmdeploy_enabled():
-    from mmdeploy.codebase.mmdet.deploy import get_post_processing_params
-    from mmdeploy.core import FUNCTION_REWRITER, mark
-
-    from otx.algo.detection.ops.nms import multiclass_nms
-
-    @FUNCTION_REWRITER.register_rewriter(
-        "otx.algo.instance_segmentation.mmdet.models.bbox_heads.bbox_head.BBoxHead.forward",
-    )
-    @FUNCTION_REWRITER.register_rewriter(
-        "otx.algo.instance_segmentation.mmdet.models.custom_roi_head.CustomConvFCBBoxHead.forward",
-    )
-    def bbox_head__forward(self: BBoxHead, x: Tensor) -> tuple[Tensor]:
-        """Rewrite `forward` for default backend.
-
-        This function uses the specific `forward` function for the BBoxHead
-        or ConvFCBBoxHead after adding marks.
-
-        Args:
-            ctx (ContextCaller): The context with additional information.
-            self: The instance of the original class.
-            x (Tensor): Input image tensor.
-
-        Returns:
-            tuple(Tensor, Tensor): The (cls_score, bbox_pred). The cls_score
-            has shape (N, num_det, num_cls) and the bbox_pred has shape
-            (N, num_det, 4).
-        """
-        ctx = FUNCTION_REWRITER.get_context()
-
-        @mark("bbox_head_forward", inputs=["bbox_feats"], outputs=["cls_score", "bbox_pred"])
-        def __forward(self: BBoxHead, x: Tensor) -> tuple[Tensor]:
-            return ctx.origin_func(self, x)
-
-        return __forward(self, x)
-
-    @FUNCTION_REWRITER.register_rewriter(
-        "otx.algo.instance_segmentation.mmdet.models.bbox_heads.bbox_head.BBoxHead.predict_by_feat",
-    )
-    def bbox_head__predict_by_feat(
-        self: BBoxHead,
+    def export_by_feat(
+        self,
         rois: Tensor,
         cls_scores: tuple[Tensor],
         bbox_preds: tuple[Tensor],
@@ -384,7 +343,6 @@ if is_mmdeploy_enabled():
                     (num_instances, ).
         """
         warnings.warn(f"rescale: {rescale} is not supported in ONNX export. Ignored.", stacklevel=2)
-        ctx = FUNCTION_REWRITER.get_context()
         if rois.ndim != 3:
             msg = "Only support export two stage model to ONNX with batch dimension."
             raise ValueError(msg)
@@ -399,7 +357,7 @@ if is_mmdeploy_enabled():
             # num_classes = 1 if self.reg_class_agnostic else self.num_classes
             # if num_classes > 1:
             #     rois = rois.repeat_interleave(num_classes, dim=1)
-            bboxes = self.bbox_coder.decode(rois[..., 1:], bbox_preds, max_shape=img_shape)
+            bboxes = self.bbox_coder.decode_export(rois[..., 1:], bbox_preds, max_shape=img_shape)
         else:
             bboxes = rois[..., 1:].clone()
             if img_shape is not None:
@@ -420,17 +378,13 @@ if is_mmdeploy_enabled():
             bboxes = bboxes.reshape(-1, self.num_classes, encode_size)
             dim0_inds = torch.arange(bboxes.shape[0], device=device).unsqueeze(-1)
             bboxes = bboxes[dim0_inds, max_inds].reshape(batch_size, -1, encode_size)
+
         # get nms params
-        post_params = get_post_processing_params(ctx.cfg)
-        max_output_boxes_per_class = post_params.max_output_boxes_per_class
-        iou_threshold = rcnn_test_cfg["nms"].get("iou_threshold", post_params.iou_threshold)
-        score_threshold = rcnn_test_cfg.get("score_thr", post_params.score_threshold)
-        if torch.onnx.is_in_onnx_export():
-            pre_top_k = post_params.pre_top_k
-        else:
-            # For two stage partition post processing
-            pre_top_k = -1 if post_params.pre_top_k >= bboxes.shape[1] else post_params.pre_top_k
-        keep_top_k = rcnn_test_cfg.get("max_per_img", post_params.keep_top_k)
+        max_output_boxes_per_class = 200
+        pre_top_k = 5000
+        iou_threshold = rcnn_test_cfg["nms"].get("iou_threshold")
+        score_threshold = rcnn_test_cfg.get("score_thr", 0.05)
+        keep_top_k = rcnn_test_cfg.get("max_per_img", 100)
         return multiclass_nms(
             bboxes,
             scores,

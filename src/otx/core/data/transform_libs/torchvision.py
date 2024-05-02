@@ -1945,7 +1945,7 @@ class Pad(tvt_v2.Transform, NumpytoTVTensorMixin):
 
         inputs.image = padded_img
         inputs.img_info = _pad_image_info(inputs.img_info, padding)
-        return inputs
+        return self.convert(inputs)
 
     def _pad_masks(self, inputs: InstanceSegDataEntity) -> InstanceSegDataEntity:
         """Pad masks according to inputs.image_info.padding."""

@@ -13,13 +13,12 @@ from typing import TYPE_CHECKING
 
 import torch
 import torch.nn.functional
-from mmdet.models.dense_heads import AnchorHead  # TODO(Eugene): Change this for OTX module after exporter change.
-from mmengine.registry import MODELS
 from mmengine.structures import InstanceData
 from torch import Tensor, nn
 
-from otx.algo.detection.deployment import is_mmdeploy_enabled
-from otx.algo.detection.ops.nms import batched_nms
+from otx.algo.detection.heads.anchor_head import AnchorHead
+from otx.algo.detection.ops.nms import batched_nms, multiclass_nms
+from otx.algo.detection.utils.utils import dynamic_topk, gather_topk, unpack_gt_instances
 from otx.algo.instance_segmentation.mmdet.structures.bbox import (
     empty_box_as,
     get_box_wh,
@@ -29,10 +28,10 @@ from otx.algo.modules.conv_module import ConvModule
 # ruff: noqa: PLW2901
 
 if TYPE_CHECKING:
+    from mmdet.structures.det_data_sample import DetDataSample
     from mmengine.config import ConfigDict
 
 
-@MODELS.register_module()
 class RPNHead(AnchorHead):
     """Implementation of RPN head.
 
@@ -61,7 +60,12 @@ class RPNHead(AnchorHead):
         if num_classes != 1:
             msg = "num_classes must be 1 for RPNHead"
             raise ValueError(msg)
-        super().__init__(num_classes=num_classes, in_channels=in_channels, init_cfg=init_cfg, **kwargs)
+        super().__init__(
+            num_classes=num_classes,
+            in_channels=in_channels,
+            init_cfg=init_cfg,
+            **kwargs,
+        )
 
     def _init_layers(self) -> None:
         """Initialize layers of the head."""
@@ -98,6 +102,73 @@ class RPNHead(AnchorHead):
         rpn_cls_score = self.rpn_cls(x)
         rpn_bbox_pred = self.rpn_reg(x)
         return rpn_cls_score, rpn_bbox_pred
+
+    def loss_and_predict(
+        self,
+        x: tuple[Tensor],
+        batch_data_samples: list[DetDataSample],
+        proposal_cfg: ConfigDict | None = None,
+    ) -> tuple[dict, list[InstanceData]]:
+        """Forward propagation of the head, then calculate loss and predictions from the features and data samples.
+
+        Args:
+            x (tuple[Tensor]): Features from FPN.
+            batch_data_samples (list[:obj:`DetDataSample`]): Each item contains
+                the meta information of each image and corresponding
+                annotations.
+            proposal_cfg (ConfigDict, optional): Test / postprocessing
+                configuration, if None, test_cfg would be used.
+                Defaults to None.
+
+        Returns:
+            tuple: the return value is a tuple contains:
+
+                - losses: (dict[str, Tensor]): A dictionary of loss components.
+                - predictions (list[:obj:`InstanceData`]): Detection
+                  results of each image after the post process.
+        """
+        outputs = unpack_gt_instances(batch_data_samples)
+        (batch_gt_instances, batch_gt_instances_ignore, batch_img_metas) = outputs
+
+        cls_scores, bbox_preds = self(x)
+
+        losses = self.loss_by_feat(
+            cls_scores,
+            bbox_preds,
+            batch_gt_instances,
+            batch_img_metas,
+            batch_gt_instances_ignore,
+        )
+
+        predictions = self.predict_by_feat(cls_scores, bbox_preds, batch_img_metas=batch_img_metas, cfg=proposal_cfg)
+        return losses, predictions
+
+    def predict(
+        self,
+        x: tuple[Tensor, ...],
+        batch_data_samples: list[DetDataSample],  # type: ignore[override]
+        rescale: bool = False,
+    ) -> list[InstanceData]:
+        """Forward-prop of the detection head and predict detection results on the features of the upstream network.
+
+        Args:
+            x (tuple[Tensor]): Multi-level features from the
+                upstream network, each is a 4D-tensor.
+            batch_data_samples (List[:obj:`DetDataSample`]): The Data
+                Samples. It usually includes information such as
+                `gt_instance`, `gt_panoptic_seg` and `gt_sem_seg`.
+            rescale (bool, optional): Whether to rescale the results.
+                Defaults to False.
+
+        Returns:
+            list[obj:`InstanceData`]: Detection results of each image
+            after the post process.
+        """
+        batch_img_metas = [data_samples.metainfo for data_samples in batch_data_samples]
+
+        cls_scores, bbox_preds = self(x)
+
+        return self.predict_by_feat(cls_scores, bbox_preds, batch_img_metas=batch_img_metas, rescale=rescale)
 
     def loss_by_feat(
         self,
@@ -230,7 +301,7 @@ class RPNHead(AnchorHead):
     def _bbox_post_process(
         self,
         results: InstanceData,
-        cfg: ConfigDict,
+        cfg: dict,
         img_meta: dict,
         rescale: bool = False,
         with_nms: bool = True,
@@ -273,17 +344,17 @@ class RPNHead(AnchorHead):
         # filter small size bboxes
         if cfg.get("min_bbox_size", -1) >= 0:
             w, h = get_box_wh(results.bboxes)
-            valid_mask = (w > cfg.min_bbox_size) & (h > cfg.min_bbox_size)
+            valid_mask = (w > cfg["min_bbox_size"]) & (h > cfg["min_bbox_size"])
             if not valid_mask.all():
                 results = results[valid_mask]
 
         if results.bboxes.numel() > 0:
             bboxes = results.bboxes
-            det_bboxes, keep_idxs = batched_nms(bboxes, results.scores, results.level_ids, cfg.nms)
+            det_bboxes, keep_idxs = batched_nms(bboxes, results.scores, results.level_ids, cfg["nms"])
             results = results[keep_idxs]
             # some nms would reweight the score, such as softnms
             results.scores = det_bboxes[:, -1]
-            results = results[: cfg.max_per_img]
+            results = results[: cfg["max_per_img"]]
 
             #  in visualization
             results.labels = results.scores.new_zeros(len(results), dtype=torch.long)
@@ -297,73 +368,23 @@ class RPNHead(AnchorHead):
             results = results_
         return results
 
-
-if is_mmdeploy_enabled():
-    from mmdeploy.codebase.mmdet.deploy import gather_topk, get_post_processing_params, pad_with_value_if_necessary
-    from mmdeploy.core import FUNCTION_REWRITER
-    from mmdeploy.utils import is_dynamic_shape
-
-    from otx.algo.detection.ops.nms import multiclass_nms
-
-    @FUNCTION_REWRITER.register_rewriter(
-        func_name="otx.algo.instance_segmentation.mmdet.models.dense_heads.rpn_head.RPNHead.predict_by_feat",
-    )
-    def rpn_head__predict_by_feat(
-        self: RPNHead,
+    def export_by_feat(
+        self,
         cls_scores: list[Tensor],
         bbox_preds: list[Tensor],
-        batch_img_metas: list[dict],
         score_factors: list[Tensor] | None = None,
+        batch_img_metas: list[dict] | None = None,
         cfg: ConfigDict | None = None,
         rescale: bool = False,
         with_nms: bool = True,
-        **kwargs,
-    ) -> tuple:
-        """Rewrite `predict_by_feat` of `RPNHead` for default backend.
-
-        Rewrite this function to deploy model, transform network output for a
-        batch into bbox predictions.
-
-        Args:
-            ctx (ContextCaller): The context with additional information.
-            cls_scores (list[Tensor]): Classification scores for all
-                scale levels, each is a 4D-tensor, has shape
-                (batch_size, num_priors * num_classes, H, W).
-            bbox_preds (list[Tensor]): Box energies / deltas for all
-                scale levels, each is a 4D-tensor, has shape
-                (batch_size, num_priors * 4, H, W).
-            score_factors (list[Tensor], optional): Score factor for
-                all scale level, each is a 4D-tensor, has shape
-                (batch_size, num_priors * 1, H, W). Defaults to None.
-            batch_img_metas (list[dict], Optional): Batch image meta info.
-                Defaults to None.
-            cfg (ConfigDict, optional): Test / postprocessing
-                configuration, if None, test_cfg would be used.
-                Defaults to None.
-            rescale (bool): If True, return boxes in original image space.
-                Defaults to False.
-            with_nms (bool): If True, do nms before return boxes.
-                Defaults to True.
-
-        Returns:
-            If with_nms == True:
-                tuple[Tensor, Tensor]: tuple[Tensor, Tensor]: (dets, labels),
-                `dets` of shape [N, num_det, 5] and `labels` of shape
-                [N, num_det].
-            Else:
-                tuple[Tensor, Tensor, Tensor]: batch_mlvl_bboxes,
-                    batch_mlvl_scores, batch_mlvl_centerness
-        """
-        warnings.warn(f"score_factors: {score_factors} is not used in RPNHead", stacklevel=2)
-        warnings.warn(f"rescale: {rescale} is not used in RPNHead", stacklevel=2)
-        warnings.warn(f"kwargs: {kwargs} is not used in RPNHead", stacklevel=2)
-        ctx = FUNCTION_REWRITER.get_context()
+    ) -> tuple[torch.Tensor, torch.Tensor] | tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+        """Rewrite `predict_by_feat` of `RPNHead` for default backend."""
+        warnings.warn(f"score_factors: {score_factors} is not used in RPNHead.export", stacklevel=2)
+        warnings.warn(f"rescale: {rescale} is not used in RPNHead.export", stacklevel=2)
         img_metas = batch_img_metas
         if len(cls_scores) != len(bbox_preds):
             msg = "cls_scores and bbox_preds should have the same length"
             raise ValueError(msg)
-        deploy_cfg = ctx.cfg
-        is_dynamic_flag = is_dynamic_shape(deploy_cfg)
         num_levels = len(cls_scores)
 
         device = cls_scores[0].device
@@ -380,6 +401,7 @@ if is_mmdeploy_enabled():
         if cfg is None:
             warnings.warn("cfg is None, use default cfg", stacklevel=2)
             cfg = {
+                "score_thr": 0.05,
                 "max_per_img": 1000,
                 "min_bbox_size": 0,
                 "nms": {"iou_threshold": 0.7, "type": "nms"},
@@ -414,21 +436,10 @@ if is_mmdeploy_enabled():
             scores = scores.reshape(batch_size, -1, 1)
             dim = self.bbox_coder.encode_size
             bbox_pred = bbox_pred.permute(0, 2, 3, 1).reshape(batch_size, -1, dim)
-
-            # use static anchor if input shape is static
-            if not is_dynamic_flag:
-                anchors = anchors.data
-
             anchors = anchors.unsqueeze(0)
 
-            # topk in tensorrt does not support shape<k
-            # concate zero to enable topk,
-            scores = pad_with_value_if_necessary(scores, 1, pre_topk, 0.0)
-            bbox_pred = pad_with_value_if_necessary(bbox_pred, 1, pre_topk)
-            anchors = pad_with_value_if_necessary(anchors, 1, pre_topk)
-
             if pre_topk > 0:
-                _, topk_inds = scores.squeeze(2).topk(pre_topk)
+                _, topk_inds = dynamic_topk(scores.squeeze(2), pre_topk)
                 bbox_pred, scores = gather_topk(
                     bbox_pred,
                     scores,
@@ -436,7 +447,12 @@ if is_mmdeploy_enabled():
                     batch_size=batch_size,
                     is_batched=True,
                 )
-                anchors = gather_topk(anchors, inds=topk_inds, batch_size=batch_size, is_batched=False)
+                anchors = gather_topk(
+                    anchors,
+                    inds=topk_inds,
+                    batch_size=batch_size,
+                    is_batched=False,
+                )
             mlvl_valid_bboxes.append(bbox_pred)
             mlvl_scores.append(scores)
             mlvl_valid_anchors.append(anchors)
@@ -444,10 +460,10 @@ if is_mmdeploy_enabled():
         batch_mlvl_bboxes = torch.cat(mlvl_valid_bboxes, dim=1)
         batch_mlvl_scores = torch.cat(mlvl_scores, dim=1)
         batch_mlvl_anchors = torch.cat(mlvl_valid_anchors, dim=1)
-        batch_mlvl_bboxes = self.bbox_coder.decode(
+        batch_mlvl_bboxes = self.bbox_coder.decode_export(
             batch_mlvl_anchors,
             batch_mlvl_bboxes,
-            max_shape=img_metas[0]["img_shape"],
+            max_shape=img_metas[0]["img_shape"],  # type: ignore[index]
         )
         # ignore background class
         if not self.use_sigmoid_cls:
@@ -455,11 +471,10 @@ if is_mmdeploy_enabled():
         if not with_nms:
             return batch_mlvl_bboxes, batch_mlvl_scores
 
-        post_params = get_post_processing_params(deploy_cfg)
-        iou_threshold = cfg["nms"].get("iou_threshold", post_params.iou_threshold)
-        score_threshold = cfg.get("score_thr", post_params.score_threshold)
-        pre_top_k = post_params.pre_top_k
-        keep_top_k = cfg.get("max_per_img", post_params.keep_top_k)
+        pre_top_k = 5000
+        iou_threshold = cfg["nms"].get("iou_threshold")
+        score_threshold = cfg.get("score_thr", 0.05)
+        keep_top_k = cfg.get("max_per_img", 1000)
         # only one class in rpn
         max_output_boxes_per_class = keep_top_k
         return multiclass_nms(

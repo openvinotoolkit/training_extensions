@@ -16,7 +16,7 @@ if TYPE_CHECKING:
     from mmdet.structures import DetDataSample
     from mmengine import ConfigDict
     from mmengine.structures import InstanceData
-    from torch import Tensor
+    from torch import Tensor, nn
 
 
 class BaseRoIHead(BaseModule, metaclass=ABCMeta):
@@ -24,23 +24,23 @@ class BaseRoIHead(BaseModule, metaclass=ABCMeta):
 
     def __init__(
         self,
+        bbox_roi_extractor: nn.Module,
+        bbox_head: nn.Module,
+        mask_roi_extractor: nn.Module,
+        mask_head: nn.Module,
         train_cfg: ConfigDict | dict,
         test_cfg: ConfigDict | dict,
-        bbox_roi_extractor: ConfigDict | dict | list[ConfigDict | dict] | None = None,
-        bbox_head: ConfigDict | dict | list[ConfigDict | dict] | None = None,
-        mask_roi_extractor: ConfigDict | dict | list[ConfigDict | dict] | None = None,
-        mask_head: ConfigDict | dict | list[ConfigDict | dict] | None = None,
         init_cfg: ConfigDict | dict | list[ConfigDict | dict] | None = None,
     ) -> None:
         super().__init__(init_cfg=init_cfg)
         self.train_cfg = train_cfg
         self.test_cfg = test_cfg
 
-        if bbox_head is not None:
-            self.init_bbox_head(bbox_roi_extractor, bbox_head)
+        self.bbox_roi_extractor = bbox_roi_extractor
+        self.bbox_head = bbox_head
 
-        if mask_head is not None:
-            self.init_mask_head(mask_roi_extractor, mask_head)
+        self.mask_roi_extractor = mask_roi_extractor
+        self.mask_head = mask_head
 
         self.init_assigner_sampler()
 
@@ -58,14 +58,6 @@ class BaseRoIHead(BaseModule, metaclass=ABCMeta):
     def with_shared_head(self) -> bool:
         """bool: whether the RoI head contains a `shared_head`."""
         return hasattr(self, "shared_head") and self.shared_head is not None
-
-    @abstractmethod
-    def init_bbox_head(self, *args, **kwargs) -> None:
-        """Initialize ``bbox_head``."""
-
-    @abstractmethod
-    def init_mask_head(self, *args, **kwargs) -> None:
-        """Initialize ``mask_head``."""
 
     @abstractmethod
     def init_assigner_sampler(self, *args, **kwargs) -> None:
