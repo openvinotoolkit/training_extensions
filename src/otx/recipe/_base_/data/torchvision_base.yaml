@@ -9,6 +9,7 @@ config:
   train_subset:
     subset_name: train
     transform_lib_type: TORCHVISION
+    to_tv_image: True
     transforms:
       - class_path: torchvision.transforms.v2.ToImage
     batch_size: 1
@@ -18,6 +19,7 @@ config:
   val_subset:
     subset_name: val
     transform_lib_type: TORCHVISION
+    to_tv_image: True
     transforms:
       - class_path: torchvision.transforms.v2.ToImage
     batch_size: 1
@@ -27,6 +29,7 @@ config:
   test_subset:
     subset_name: test
     transform_lib_type: TORCHVISION
+    to_tv_image: True
     transforms:
       - class_path: torchvision.transforms.v2.ToImage
     batch_size: 1

@@ -11,10 +11,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import torch
-from mmengine.registry import MODELS
-from torch import Tensor
-
-from otx.algo.detection.deployment import is_mmdeploy_enabled
+from torch import Graph, Tensor
+from torch.autograd import Function
 
 from .base_roi_extractor import BaseRoIExtractor
 
@@ -25,7 +23,60 @@ if TYPE_CHECKING:
 # ruff: noqa: ARG004
 
 
-@MODELS.register_module()
+class SingleRoIExtractorOpenVINO(Function):
+    """This class adds support for ExperimentalDetectronROIFeatureExtractor when exporting to OpenVINO.
+
+    The `forward` method returns the original output, which is calculated in
+    advance and added to the SingleRoIExtractorOpenVINO class. In addition, the
+    list of arguments is changed here to be more suitable for
+    ExperimentalDetectronROIFeatureExtractor.
+    """
+
+    def __init__(self) -> None:
+        super().__init__()
+
+    @staticmethod
+    def forward(
+        g: Graph,
+        output_size: int,
+        featmap_strides: int,
+        sample_num: int,
+        rois: torch.Value,
+        *feats: tuple[torch.Value],
+    ) -> Tensor:
+        """Run forward."""
+        return SingleRoIExtractorOpenVINO.origin_output
+
+    @staticmethod
+    def symbolic(
+        g: Graph,
+        output_size: int,
+        featmap_strides: list[int],
+        sample_num: int,
+        rois: torch.Value,
+        *feats: tuple[torch.Value],
+    ) -> Graph:
+        """Symbolic function for creating onnx op."""
+        from torch.onnx.symbolic_opset10 import _slice
+
+        rois = _slice(g, rois, axes=[1], starts=[1], ends=[5])
+        domain = "org.openvinotoolkit"
+        op_name = "ExperimentalDetectronROIFeatureExtractor"
+        return g.op(
+            f"{domain}::{op_name}",
+            rois,
+            *feats,
+            output_size_i=output_size,
+            pyramid_scales_i=featmap_strides,
+            sampling_ratio_i=sample_num,
+            image_id_i=0,
+            distribute_rois_between_levels_i=1,
+            preserve_rois_order_i=0,
+            aligned_i=1,
+            outputs=1,
+        )
+
+
 class SingleRoIExtractor(BaseRoIExtractor):
     """Extract RoI features from a single level feature map.
 
@@ -96,7 +147,7 @@ class SingleRoIExtractor(BaseRoIExtractor):
         rois = rois.type_as(feats[0])
         out_size = self.roi_layers[0].output_size
         num_levels = len(feats)
-        roi_feats = feats[0].new_zeros(rois.size(0), self.out_channels, *out_size)
+        roi_feats = feats[0].new_zeros(rois.size(0), self.out_channels, out_size, out_size)
 
         if num_levels == 1:
             if len(rois) == 0:
@@ -125,89 +176,20 @@ class SingleRoIExtractor(BaseRoIExtractor):
                 roi_feats += sum(x.view(-1)[0] for x in self.parameters()) * 0.0 + feats[i].sum() * 0.0
         return roi_feats
 
-
-if is_mmdeploy_enabled():
-    from mmdeploy.core.rewriters import FUNCTION_REWRITER
-    from torch import Graph
-    from torch.autograd import Function
-
-    class SingleRoIExtractorOpenVINO(Function):
-        """This class adds support for ExperimentalDetectronROIFeatureExtractor when exporting to OpenVINO.
-
-        The `forward` method returns the original output, which is calculated in
-        advance and added to the SingleRoIExtractorOpenVINO class. In addition, the
-        list of arguments is changed here to be more suitable for
-        ExperimentalDetectronROIFeatureExtractor.
-        """
-
-        def __init__(self) -> None:
-            super().__init__()
-
-        @staticmethod
-        def forward(
-            g: Graph,
-            output_size: int,
-            featmap_strides: int,
-            sample_num: int,
-            rois: torch.Value,
-            *feats: tuple[torch.Value],
-        ) -> Tensor:
-            """Run forward."""
-            return SingleRoIExtractorOpenVINO.origin_output
-
-        @staticmethod
-        def symbolic(
-            g: Graph,
-            output_size: int,
-            featmap_strides: list[int],
-            sample_num: int,
-            rois: torch.Value,
-            *feats: tuple[torch.Value],
-        ) -> Graph:
-            """Symbolic function for creating onnx op."""
-            from torch.onnx.symbolic_opset10 import _slice
-
-            rois = _slice(g, rois, axes=[1], starts=[1], ends=[5])
-            domain = "org.openvinotoolkit"
-            op_name = "ExperimentalDetectronROIFeatureExtractor"
-            return g.op(
-                f"{domain}::{op_name}",
-                rois,
-                *feats,
-                output_size_i=output_size,
-                pyramid_scales_i=featmap_strides,
-                sampling_ratio_i=sample_num,
-                image_id_i=0,
-                distribute_rois_between_levels_i=1,
-                preserve_rois_order_i=0,
-                aligned_i=1,
-                outputs=1,
-            )
-
-    @FUNCTION_REWRITER.register_rewriter(
-        "otx.algo.instance_segmentation.mmdet.models.roi_extractors."
-        "single_level_roi_extractor.SingleRoIExtractor.forward",
-        backend="openvino",
-    )
-    def single_roi_extractor__forward__openvino(
-        self: SingleRoIExtractor,
-        feats: tuple[Tensor],
+    def export(
+        self,
+        feats: tuple[Tensor, ...],
         rois: Tensor,
         roi_scale_factor: float | None = None,
     ) -> Tensor:
-        """Replaces SingleRoIExtractor with SingleRoIExtractorOpenVINO when exporting to OpenVINO.
-
-        This function uses ExperimentalDetectronROIFeatureExtractor for OpenVINO.
-        """
-        ctx = FUNCTION_REWRITER.get_context()
-
+        """Export SingleRoIExtractorOpenVINO."""
         # Adding original output to SingleRoIExtractorOpenVINO.
         state = torch._C._get_tracing_state()  # noqa: SLF001
-        origin_output = ctx.origin_func(self, feats, rois, roi_scale_factor)
+        origin_output = self(feats, rois, roi_scale_factor)
         SingleRoIExtractorOpenVINO.origin_output = origin_output
         torch._C._set_tracing_state(state)  # noqa: SLF001
 
-        output_size = self.roi_layers[0].output_size[0]
+        output_size = self.roi_layers[0].output_size
         featmap_strides = self.featmap_strides
         sample_num = self.roi_layers[0].sampling_ratio
 

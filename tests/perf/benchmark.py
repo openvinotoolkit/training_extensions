@@ -172,6 +172,8 @@ class Benchmark:
                 command.append(f"--{key}")
                 command.append(str(value))
             command.extend(["--seed", str(seed)])
+            # TODO(someone): Disable deterministic for instance segmentation as it causes OOM.
+            # https://github.com/pytorch/vision/issues/8168#issuecomment-1890599205
             command.extend(["--deterministic", str(self.deterministic)])
             if self.num_epoch > 0:
                 command.extend(["--max_epochs", str(self.num_epoch)])
@@ -225,8 +227,6 @@ class Benchmark:
                 command = [  # NOTE: not working for h_label_cls. to be fixed
                     "otx",
                     "test",
-                    "--config",
-                    f"src/otx/recipe/{model.task}/openvino_model.yaml",
                     "--checkpoint",
                     str(exported_model_path),
                     "--work_dir",
@@ -248,9 +248,6 @@ class Benchmark:
                 command = [
                     "otx",
                     "optimize",
-                    # NOTE: auto config should be implemented
-                    "--config",
-                    f"src/otx/recipe/{model.task}/openvino_model.yaml",
                     "--checkpoint",
                     str(exported_model_path),
                     "--work_dir",
@@ -268,9 +265,6 @@ class Benchmark:
                 command = [
                     "otx",
                     "test",
-                    # NOTE: auto config should be implemented
-                    "--config",
-                    f"src/otx/recipe/{model.task}/openvino_model.yaml",
                     "--checkpoint",
                     str(optimized_model_path),
                     "--work_dir",

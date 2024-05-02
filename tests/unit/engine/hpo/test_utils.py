@@ -43,7 +43,7 @@ def test_find_trial_file(tmp_path, trial_file, trial_id):
     assert trial_file == find_trial_file(tmp_path, trial_id)
 
 
-def test_find_trial_file_file_not_exist(tmp_path, trial_file):  # noqa: ARG001
+def test_find_trial_file_file_not_exist(tmp_path, trial_file):
     assert find_trial_file(tmp_path, "2") is None
 
 
@@ -76,7 +76,7 @@ def test_get_absent_hpo_weight_dir(tmp_path, hpo_weight_dir, trial_id):
 
 
 def test_get_callable_args_name():
-    def func(arg1, arg2) -> None:  # noqa: ARG001
+    def func(arg1, arg2) -> None:
         pass
 
     assert get_callable_args_name(func) == ["arg1", "arg2"]

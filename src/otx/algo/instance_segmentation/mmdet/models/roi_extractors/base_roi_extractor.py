@@ -11,11 +11,8 @@ from abc import ABCMeta, abstractmethod
 from typing import TYPE_CHECKING
 
 import torch
-
-# TODO(Eugene): replace mmcv.sigmoid_focal_loss with torchvision
-# https://github.com/openvinotoolkit/training_extensions/pull/3281
-from mmcv.ops import RoIAlign
 from torch import Tensor, nn
+from torchvision.ops import RoIAlign
 
 from otx.algo.modules.base_module import BaseModule
 
@@ -37,7 +34,7 @@ class BaseRoIExtractor(BaseModule, metaclass=ABCMeta):
 
     def __init__(
         self,
-        roi_layer: ConfigDict | dict,
+        roi_layer: nn.Module,
         out_channels: int,
         featmap_strides: list[int],
         init_cfg: ConfigDict | dict | list[ConfigDict | dict] | None = None,
@@ -52,7 +49,7 @@ class BaseRoIExtractor(BaseModule, metaclass=ABCMeta):
         """int: Number of input feature maps."""
         return len(self.featmap_strides)
 
-    def build_roi_layers(self, layer_cfg: ConfigDict | dict, featmap_strides: list[int]) -> nn.ModuleList:
+    def build_roi_layers(self, roi_layer: nn.Module, featmap_strides: list[int]) -> nn.ModuleList:
         """Build RoI operator to extract feature from each level feature map.
 
         Args:
@@ -68,12 +65,20 @@ class BaseRoIExtractor(BaseModule, metaclass=ABCMeta):
             :obj:`nn.ModuleList`: The RoI extractor modules for each level
                 feature map.
         """
-        cfg = layer_cfg.copy()
-        layer_type = cfg.pop("type")
-        if layer_type != RoIAlign.__name__:
-            msg = f"Unsupported RoI layer type {layer_type}"
-            raise ValueError(msg)
-        return nn.ModuleList([RoIAlign(spatial_scale=1 / s, **cfg) for s in featmap_strides])
+        if not isinstance(roi_layer, RoIAlign):
+            msg = f"Unsupported RoI layer type {roi_layer.__name__}"
+            raise TypeError(msg)
+        return nn.ModuleList(
+            [
+                RoIAlign(
+                    spatial_scale=1 / s,
+                    output_size=roi_layer.output_size,
+                    sampling_ratio=roi_layer.sampling_ratio,
+                    aligned=roi_layer.aligned,
+                )
+                for s in featmap_strides
+            ],
+        )
 
     def roi_rescale(self, rois: Tensor, scale_factor: float) -> Tensor:
         """Scale RoI coordinates by scale factor.

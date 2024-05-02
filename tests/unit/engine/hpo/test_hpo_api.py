@@ -113,10 +113,10 @@ def test_execute_hpo(
     engine_work_dir: Path,
     mock_run_hpo_loop: MagicMock,
     mock_thread: MagicMock,
-    mock_hpo_configurator: HPOConfigurator,  # noqa: ARG001
+    mock_hpo_configurator: HPOConfigurator,
     mock_hpo_algo: MagicMock,
     mock_get_best_hpo_weight: MagicMock,
-    mock_find_trial_file: MagicMock,  # noqa: ARG001
+    mock_find_trial_file: MagicMock,
     mock_progress_update_callback: MagicMock,
 ):
     best_config, best_hpo_weight = execute_hpo(
