@@ -166,7 +166,7 @@ def filter_scores_and_topk(
     return scores, labels, keep_idxs, filtered_results
 
 
-def select_single_mlvl(mlvl_tensors: list[Tensor], batch_id: int, detach: bool = True) -> list[Tensor]:
+def select_single_mlvl(mlvl_tensors: list[Tensor] | tuple[Tensor], batch_id: int, detach: bool = True) -> list[Tensor]:
     """Extract a multi-scale single image tensor from a multi-scale batch tensor based on batch index.
 
     Note: The default value of detach is True, because the proposal gradient

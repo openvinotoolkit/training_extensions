@@ -244,7 +244,14 @@ class RTMDetHead(ATSSHead):
 
         flatten_bboxes = torch.cat(decoded_bboxes, 1)
 
-        cls_reg_targets = self.get_targets(
+        (
+            anchor_list,
+            labels_list,
+            label_weights_list,
+            bbox_targets_list,
+            assign_metrics_list,
+            sampling_results_list,
+        ) = self.get_targets(  # type: ignore[misc]
             flatten_cls_scores,
             flatten_bboxes,
             anchor_list,
@@ -253,14 +260,6 @@ class RTMDetHead(ATSSHead):
             batch_img_metas,
             batch_gt_instances_ignore=batch_gt_instances_ignore,
         )
-        (
-            anchor_list,
-            labels_list,
-            label_weights_list,
-            bbox_targets_list,
-            assign_metrics_list,
-            sampling_results_list,
-        ) = cls_reg_targets
 
         losses_cls, losses_bbox, cls_avg_factors, bbox_avg_factors = multi_apply(
             self.loss_by_feat_single,
@@ -289,9 +288,9 @@ class RTMDetHead(ATSSHead):
         valid_flag_list: list[list[Tensor]],
         batch_gt_instances: list[InstanceData],
         batch_img_metas: list[dict],
-        batch_gt_instances_ignore: list[InstanceData] | None = None,
+        batch_gt_instances_ignore: list[InstanceData] | list[None] | None = None,
         unmap_outputs: bool = True,
-    ) -> tuple:
+    ) -> tuple | None:
         """Compute regression and classification targets for anchors in multiple images."""
         num_imgs = len(batch_img_metas)
         if len(anchor_list) != len(valid_flag_list) != num_imgs:
@@ -422,7 +421,7 @@ class RTMDetHead(ATSSHead):
 
     def get_anchors(
         self,
-        featmap_sizes: list[tuple, ...],
+        featmap_sizes: list[tuple[int, int]],
         batch_img_metas: list[dict],
         device: torch.device | str = "cuda",
     ) -> tuple[list[list[Tensor]], list[list[Tensor]]]:

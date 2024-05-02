@@ -129,7 +129,7 @@ class MMDetRTMDetInstTiny(MMDetInstanceSegCompatibleModel):
                 "max_per_img": 100,
                 "min_bbox_size": 0,
                 "nms_pre": 300,
-            }
+            },
         )
 
         data_preprocessor = DetDataPreprocessor(

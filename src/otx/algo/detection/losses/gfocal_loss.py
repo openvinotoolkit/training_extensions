@@ -2,22 +2,24 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 # Copyright (c) OpenMMLab. All rights reserved.
-
-import torch
-
-from torch import nn
-
-import torch.nn.functional
-
-from otx.algo.detection.losses.weighted_loss import weighted_loss
+from __future__ import annotations
 
 from functools import partial
 
+import torch
+import torch.nn.functional
+from torch import nn
+
+from otx.algo.detection.losses.weighted_loss import weighted_loss
 
 
 @weighted_loss
 def quality_focal_loss_tensor_target(
-    pred: torch.Tensor, target: torch.Tensor, beta: float=2.0, activated: bool=False) -> torch.Tensor:
+    pred: torch.Tensor,
+    target: torch.Tensor,
+    beta: float = 2.0,
+    activated: bool = False,
+) -> torch.Tensor:
     """QualityFocal Loss <https://arxiv.org/abs/2008.13367>.
 
     Args:
@@ -47,20 +49,17 @@ def quality_focal_loss_tensor_target(
     target = target.type_as(pred)
 
     zerolabel = scale_factor.new_zeros(pred.shape)
-    loss = loss_function(
-        pred, zerolabel, reduction='none') * scale_factor.pow(beta)
+    loss = loss_function(pred, zerolabel, reduction="none") * scale_factor.pow(beta)
 
-    pos = (target != 0)
+    pos = target != 0
     scale_factor = target[pos] - pred_sigmoid[pos]
-    loss[pos] = loss_function(
-        pred[pos], target[pos],
-        reduction='none') * scale_factor.abs().pow(beta)
+    loss[pos] = loss_function(pred[pos], target[pos], reduction="none") * scale_factor.abs().pow(beta)
 
     return loss.sum(dim=1, keepdim=False)
 
 
 @weighted_loss
-def quality_focal_loss(pred: torch.Tensor, target: torch.Tensor, beta: float=2.0) -> torch.Tensor:
+def quality_focal_loss(pred: torch.Tensor, target: torch.Tensor, beta: float = 2.0) -> torch.Tensor:
     r"""Quality Focal Loss (QFL) is a variant of `Generalized Focal Loss <https://arxiv.org/abs/2006.04388>`_.
 
     Args:
@@ -85,8 +84,9 @@ def quality_focal_loss(pred: torch.Tensor, target: torch.Tensor, beta: float=2.0
     pred_sigmoid = pred.sigmoid()
     scale_factor = pred_sigmoid
     zerolabel = scale_factor.new_zeros(pred.shape)
-    loss = torch.nn.functional.binary_cross_entropy_with_logits(
-        pred, zerolabel, reduction='none') * scale_factor.pow(beta)
+    loss = torch.nn.functional.binary_cross_entropy_with_logits(pred, zerolabel, reduction="none") * scale_factor.pow(
+        beta,
+    )
 
     # FG cat_id: [0, num_classes -1], BG cat_id: num_classes
     bg_class_ind = pred.size(1)
@@ -95,14 +95,16 @@ def quality_focal_loss(pred: torch.Tensor, target: torch.Tensor, beta: float=2.0
     # positives are supervised by bbox quality (IoU) score
     scale_factor = score[pos] - pred_sigmoid[pos, pos_label]
     loss[pos, pos_label] = torch.nn.functional.binary_cross_entropy_with_logits(
-        pred[pos, pos_label], score[pos],
-        reduction='none') * scale_factor.abs().pow(beta)
+        pred[pos, pos_label],
+        score[pos],
+        reduction="none",
+    ) * scale_factor.abs().pow(beta)
 
     return loss.sum(dim=1, keepdim=False)
 
 
 @weighted_loss
-def quality_focal_loss_with_prob(pred: torch.Tensor, target: torch.Tensor, beta: float=2.0) -> torch.Tensor:
+def quality_focal_loss_with_prob(pred: torch.Tensor, target: torch.Tensor, beta: float = 2.0) -> torch.Tensor:
     r"""Quality Focal Loss (QFL) is a variant of `Generalized Focal Loss <https://arxiv.org/abs/2006.04388>`_.
 
     Args:
@@ -127,8 +129,7 @@ def quality_focal_loss_with_prob(pred: torch.Tensor, target: torch.Tensor, beta:
     pred_sigmoid = pred
     scale_factor = pred_sigmoid
     zerolabel = scale_factor.new_zeros(pred.shape)
-    loss = torch.nn.functional.binary_cross_entropy(
-        pred, zerolabel, reduction='none') * scale_factor.pow(beta)
+    loss = torch.nn.functional.binary_cross_entropy(pred, zerolabel, reduction="none") * scale_factor.pow(beta)
 
     # FG cat_id: [0, num_classes -1], BG cat_id: num_classes
     bg_class_ind = pred.size(1)
@@ -137,8 +138,10 @@ def quality_focal_loss_with_prob(pred: torch.Tensor, target: torch.Tensor, beta:
     # positives are supervised by bbox quality (IoU) score
     scale_factor = score[pos] - pred_sigmoid[pos, pos_label]
     loss[pos, pos_label] = torch.nn.functional.binary_cross_entropy(
-        pred[pos, pos_label], score[pos],
-        reduction='none') * scale_factor.abs().pow(beta)
+        pred[pos, pos_label],
+        score[pos],
+        reduction="none",
+    ) * scale_factor.abs().pow(beta)
 
     return loss.sum(dim=1, keepdim=False)
 
@@ -161,11 +164,11 @@ class QualityFocalLoss(nn.Module):
 
     def __init__(
         self,
-        use_sigmoid: bool=True,
-        beta: float=2.0,
-        reduction : str="mean",
+        use_sigmoid: bool = True,
+        beta: float = 2.0,
+        reduction: str = "mean",
         loss_weight: float = 1.0,
-        activated: bool=False,
+        activated: bool = False,
     ):
         super().__init__()
         if not use_sigmoid:
@@ -181,9 +184,9 @@ class QualityFocalLoss(nn.Module):
         self,
         pred: torch.Tensor,
         target: torch.Tensor,
-        weight: torch.Tensor| None=None,
-        avg_factor: int| None=None,
-        reduction_override: str | None=None,
+        weight: torch.Tensor | None = None,
+        avg_factor: int | None = None,
+        reduction_override: str | None = None,
     ) -> torch.Tensor:
         """Forward function.
 
@@ -204,18 +207,16 @@ class QualityFocalLoss(nn.Module):
                 override the original reduction method of the loss.
                 Defaults to None.
         """
-        if reduction_override not in (None, 'none', 'mean', 'sum'):
+        if reduction_override not in (None, "none", "mean", "sum"):
             msg = "Invalid reduction method."
             raise ValueError(msg)
-        reduction = (
-            reduction_override if reduction_override else self.reduction)
+        reduction = reduction_override if reduction_override else self.reduction
         if self.use_sigmoid:
             calculate_loss_func = quality_focal_loss_with_prob if self.activated else quality_focal_loss
             if isinstance(target, torch.Tensor):
                 # the target shape with (N,C) or (N,C,...), which means
                 # the target is one-hot form with soft weights.
-                calculate_loss_func = partial(
-                    quality_focal_loss_tensor_target, activated=self.activated)
+                calculate_loss_func = partial(quality_focal_loss_tensor_target, activated=self.activated)
 
             loss_cls = self.loss_weight * calculate_loss_func(
                 pred,
@@ -223,7 +224,8 @@ class QualityFocalLoss(nn.Module):
                 weight,
                 beta=self.beta,
                 reduction=reduction,
-                avg_factor=avg_factor)
+                avg_factor=avg_factor,
+            )
         else:
             raise NotImplementedError
         return loss_cls

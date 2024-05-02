@@ -35,6 +35,10 @@ from .utils import sigmoid_geometric_mean
 
 if TYPE_CHECKING:
     from mmdet.structures.det_data_sample import DetDataSample
+    from omegaconf import DictConfig
+
+
+# mypy: disable-error-code="call-overload, index, override, attr-defined, misc"
 
 
 class RTMDetInsHead(RTMDetHead):
@@ -177,14 +181,13 @@ class RTMDetInsHead(RTMDetHead):
             kernel_preds.append(kernel_pred)
         return tuple(cls_scores), tuple(bbox_preds), tuple(kernel_preds), mask_feat
 
-    def predict_by_feat(  # type: ignore[override]
+    def predict_by_feat(
         self,
-        cls_scores: list[Tensor],
-        bbox_preds: list[Tensor],
-        kernel_preds: list[Tensor],
+        cls_scores: tuple[Tensor],
+        bbox_preds: tuple[Tensor],
+        kernel_preds: tuple[Tensor],
         mask_feat: Tensor,
-        score_factors: list[Tensor] | None = None,
-        batch_img_metas: list[dict] | None = None,
+        batch_img_metas: list[dict],
         cfg: dict | None = None,
         rescale: bool = False,
         with_nms: bool = True,
@@ -193,16 +196,6 @@ class RTMDetInsHead(RTMDetHead):
         if len(cls_scores) != len(bbox_preds):
             msg = "The length of cls_scores and bbox_preds should be the same."
             raise ValueError(msg)
-
-        if score_factors is None:
-            # e.g. Retina, FreeAnchor, Foveabox, etc.
-            with_score_factors = False
-        else:
-            # e.g. FCOS, PAA, ATSS, AutoAssign, etc.
-            with_score_factors = True
-            if len(cls_scores) != len(score_factors):
-                msg = "The length of cls_scores and score_factors should be the same."
-                raise ValueError(msg)
 
         num_levels = len(cls_scores)
 
@@ -221,10 +214,7 @@ class RTMDetInsHead(RTMDetHead):
             cls_score_list = select_single_mlvl(cls_scores, img_id, detach=True)
             bbox_pred_list = select_single_mlvl(bbox_preds, img_id, detach=True)
             kernel_pred_list = select_single_mlvl(kernel_preds, img_id, detach=True)
-            if with_score_factors:
-                score_factor_list = select_single_mlvl(score_factors, img_id, detach=True)
-            else:
-                score_factor_list = [None for _ in range(num_levels)]
+            score_factor_list = [None for _ in range(num_levels)]
 
             results = self._predict_by_feat_single(
                 cls_score_list=cls_score_list,
@@ -241,7 +231,7 @@ class RTMDetInsHead(RTMDetHead):
             result_list.append(results)
         return result_list
 
-    def _predict_by_feat_single(  # type: ignore[override]
+    def _predict_by_feat_single(
         self,
         cls_score_list: list[Tensor],
         bbox_pred_list: list[Tensor],
@@ -250,17 +240,15 @@ class RTMDetInsHead(RTMDetHead):
         score_factor_list: list[Tensor],
         mlvl_priors: list[Tensor],
         img_meta: dict,
-        cfg: dict,
+        cfg: dict | None = None,
         rescale: bool = False,
         with_nms: bool = True,
     ) -> InstanceData:
         """Transform a single image's features extracted from the head into bbox and mask results."""
-        with_score_factors = score_factor_list[0] is not None
-
-        cfg = self.test_cfg if cfg is None else cfg
-        cfg = copy.deepcopy(cfg)
+        test_cfg = self.test_cfg if cfg is None else cfg
+        test_cfg = copy.deepcopy(test_cfg)
         img_shape = img_meta["img_shape"]
-        nms_pre = cfg.get("nms_pre", -1)
+        nms_pre = test_cfg.get("nms_pre", -1)
 
         mlvl_bbox_preds = []
         mlvl_kernels = []
@@ -268,13 +256,10 @@ class RTMDetInsHead(RTMDetHead):
         mlvl_scores = []
         mlvl_labels = []
 
-        mlvl_score_factors = [] if with_score_factors else None
-
-        for cls_score, bbox_pred, kernel_pred, score_factor, priors in zip(
+        for cls_score, bbox_pred, kernel_pred, priors in zip(
             cls_score_list,
             bbox_pred_list,
             kernel_pred_list,
-            score_factor_list,
             mlvl_priors,
         ):
             if cls_score.size()[-2:] != bbox_pred.size()[-2:]:
@@ -283,8 +268,6 @@ class RTMDetInsHead(RTMDetHead):
 
             dim = self.bbox_coder.encode_size
             bbox_pred = bbox_pred.permute(1, 2, 0).reshape(-1, dim)  # noqa: PLW2901
-            if with_score_factors:
-                score_factor = score_factor.permute(1, 2, 0).reshape(-1).sigmoid()  # noqa: PLW2901
             cls_score = cls_score.permute(1, 2, 0).reshape(-1, self.cls_out_channels)  # noqa: PLW2901
             kernel_pred = kernel_pred.permute(1, 2, 0).reshape(-1, self.num_gen_params)  # noqa: PLW2901
             scores = cls_score.sigmoid() if self.use_sigmoid_cls else cls_score.softmax(-1)[:, :-1]
@@ -294,22 +277,23 @@ class RTMDetInsHead(RTMDetHead):
             # There is no difference in performance for most models. If you
             # find a slight drop in performance, you can set a larger
             # `nms_pre` than before.
-            score_thr = cfg.get("score_thr", 0)
+            score_thr = test_cfg.get("score_thr", 0)
 
-            results = filter_scores_and_topk(
+            (
+                scores,
+                labels,
+                _,
+                filtered_results,
+            ) = filter_scores_and_topk(
                 scores,
                 score_thr,
                 nms_pre,
                 {"bbox_pred": bbox_pred, "priors": priors, "kernel_pred": kernel_pred},
             )
-            scores, labels, keep_idxs, filtered_results = results
 
             bbox_pred = filtered_results["bbox_pred"]  # noqa: PLW2901
             priors = filtered_results["priors"]  # noqa: PLW2901
             kernel_pred = filtered_results["kernel_pred"]  # noqa: PLW2901
-
-            if with_score_factors:
-                score_factor = score_factor[keep_idxs]  # noqa: PLW2901
 
             mlvl_bbox_preds.append(bbox_pred)
             mlvl_valid_priors.append(priors)
@@ -317,26 +301,21 @@ class RTMDetInsHead(RTMDetHead):
             mlvl_labels.append(labels)
             mlvl_kernels.append(kernel_pred)
 
-            if with_score_factors:
-                mlvl_score_factors.append(score_factor)
-
         bbox_pred = torch.cat(mlvl_bbox_preds)
         priors = torch.cat(mlvl_valid_priors)
         bboxes = self.bbox_coder.decode(priors[..., :2], bbox_pred, max_shape=img_shape)
 
         results = InstanceData()
-        results.bboxes = bboxes  # type: ignore[attr-defined]
-        results.priors = priors  # type: ignore[attr-defined]
-        results.scores = torch.cat(mlvl_scores)  # type: ignore[attr-defined]
-        results.labels = torch.cat(mlvl_labels)  # type: ignore[attr-defined]
-        results.kernels = torch.cat(mlvl_kernels)  # type: ignore[attr-defined]
-        if with_score_factors:
-            results.score_factors = torch.cat(mlvl_score_factors)  # type: ignore[attr-defined]
+        results.bboxes = bboxes
+        results.priors = priors
+        results.scores = torch.cat(mlvl_scores)
+        results.labels = torch.cat(mlvl_labels)
+        results.kernels = torch.cat(mlvl_kernels)
 
         return self._bbox_mask_post_process(
             results=results,
             mask_feat=mask_feat,
-            cfg=cfg,
+            cfg=test_cfg,
             rescale=rescale,
             with_nms=with_nms,
             img_meta=img_meta,
@@ -345,11 +324,11 @@ class RTMDetInsHead(RTMDetHead):
     def _bbox_mask_post_process(
         self,
         results: InstanceData,
-        mask_feat,
-        cfg: dict,
+        mask_feat: torch.Tensor,
+        cfg: DictConfig,
+        img_meta: dict,
         rescale: bool = False,
         with_nms: bool = True,
-        img_meta: dict | None = None,
     ) -> InstanceData:
         """Bbox and mask post-processing method.
 
@@ -584,7 +563,7 @@ class RTMDetInsHead(RTMDetHead):
 
         return self.loss_mask(batch_pos_mask_logits, pos_gt_masks, weight=None, avg_factor=num_pos)
 
-    def loss_by_feat(  # type: ignore[override]
+    def loss_by_feat(
         self,
         cls_scores: list[Tensor],
         bbox_preds: list[Tensor],
@@ -685,7 +664,7 @@ class MaskFeatModule(BaseModule):
 
     def __init__(
         self,
-        in_channels: int,
+        in_channels: tuple[int, ...] | int,
         feat_channels: int = 256,
         stacked_convs: int = 4,
         num_levels: int = 3,
@@ -987,6 +966,13 @@ class RTMDetInsSepBNHead(RTMDetInsHead):
         """
         batch_img_metas = [data_samples.metainfo for data_samples in batch_data_samples]
 
-        outs = self(x)
+        cls_scores, bbox_preds, kernel_preds, mask_feat = self(x)
 
-        return self.predict_by_feat(*outs, batch_img_metas=batch_img_metas, rescale=rescale)
+        return self.predict_by_feat(
+            cls_scores,
+            bbox_preds,
+            kernel_preds,
+            mask_feat,
+            batch_img_metas=batch_img_metas,
+            rescale=rescale,
+        )

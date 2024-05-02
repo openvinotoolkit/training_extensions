@@ -5,9 +5,12 @@
 
 from __future__ import annotations
 
-from torch import Tensor
+from typing import TYPE_CHECKING
 
 from otx.algo.detection.utils.utils import bbox2distance, distance2bbox
+
+if TYPE_CHECKING:
+    from torch import Tensor
 
 
 class DistancePointBBoxCoder:

@@ -5,20 +5,20 @@
 from __future__ import annotations
 
 import torch
-import torch.nn as nn
+from torch import nn
 
 from otx.algo.detection.losses.weighted_loss import weight_reduce_loss
 
 
 def dice_loss(
-    pred,
-    target,
-    weight=None,
-    eps=1e-3,
-    reduction='mean',
-    naive_dice=False,
-    avg_factor=None,
-):
+    pred: torch.Tensor,
+    target: torch.Tensor,
+    weight: torch.Tensor | None = None,
+    eps: float = 1e-3,
+    reduction: str = "mean",
+    naive_dice: bool = False,
+    avg_factor: int | None = None,
+) -> torch.Tensor:
     """Calculate dice loss, there are two forms of dice loss is supported.
 
     the one proposed in `V-Net: Fully Convolutional Neural
@@ -46,37 +46,41 @@ def dice_loss(
         avg_factor (int, optional): Average factor that is used to average
             the loss. Defaults to None.
     """
-
-    input = pred.flatten(1)
+    pred_input = pred.flatten(1)
     target = target.flatten(1).float()
 
-    a = torch.sum(input * target, 1)
+    a = torch.sum(pred_input * target, 1)
     if naive_dice:
-        b = torch.sum(input, 1)
+        b = torch.sum(pred_input, 1)
         c = torch.sum(target, 1)
         d = (2 * a + eps) / (b + c + eps)
     else:
-        b = torch.sum(input * input, 1) + eps
+        b = torch.sum(pred_input * pred_input, 1) + eps
         c = torch.sum(target * target, 1) + eps
         d = (2 * a) / (b + c)
 
     loss = 1 - d
     if weight is not None:
-        assert weight.ndim == loss.ndim
-        assert len(weight) == len(pred)
+        if weight.ndim != loss.ndim:
+            msg = "weight must have the same number of dimensions as loss"
+            raise ValueError(msg)
+        if len(weight) != len(pred):
+            msg = "The length of weight is not equal to the length of pred"
+            raise ValueError(msg)
     return weight_reduce_loss(loss, weight, reduction, avg_factor)
 
 
 class DiceLoss(nn.Module):
     """Dice loss."""
+
     def __init__(
         self,
-        use_sigmoid=True,
-        activate=True,
-        reduction='mean',
-        naive_dice=False,
-        loss_weight=1.0,
-        eps=1e-3,
+        use_sigmoid: bool = True,
+        activate: bool = True,
+        reduction: str = "mean",
+        naive_dice: bool = False,
+        loss_weight: float = 1.0,
+        eps: float = 1e-3,
     ) -> None:
         super().__init__()
         self.use_sigmoid = use_sigmoid
@@ -88,11 +92,11 @@ class DiceLoss(nn.Module):
 
     def forward(
         self,
-        pred,
-        target,
-        weight=None,
-        reduction_override=None,
-        avg_factor=None,
+        pred: torch.Tensor,
+        target: torch.Tensor,
+        weight: torch.Tensor | None = None,
+        reduction_override: str | None = None,
+        avg_factor: int | None = None,
     ) -> torch.Tensor:
         """Forward function.
 
@@ -111,12 +115,10 @@ class DiceLoss(nn.Module):
         Returns:
             torch.Tensor: The calculated loss
         """
-
-        if reduction_override not in (None, 'none', 'mean', 'sum'):
+        if reduction_override not in (None, "none", "mean", "sum"):
             msg = "reduction_override must be one of 'none', 'mean', 'sum'"
             raise ValueError(msg)
-        reduction = (
-            reduction_override if reduction_override else self.reduction)
+        reduction = reduction_override if reduction_override else self.reduction
 
         if self.activate:
             if self.use_sigmoid:
@@ -131,4 +133,5 @@ class DiceLoss(nn.Module):
             eps=self.eps,
             reduction=reduction,
             naive_dice=self.naive_dice,
-            avg_factor=avg_factor)
+            avg_factor=avg_factor,
+        )

@@ -42,7 +42,7 @@ class CSPNeXtPAFPN(BaseModule):
         use_depthwise: bool = False,
         expand_ratio: float = 0.5,
         upsample_cfg: dict | None = None,
-        conv_cfg: bool | None = None,
+        conv_cfg: dict | None = None,
         norm_cfg: dict | None = None,
         act_cfg: dict | None = None,
         init_cfg: dict | None = None,
