@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING, Callable
 
 import cv2
 import numpy as np
-from datumaro.components.annotation import Image, Mask, Ellipse, Polygon
+from datumaro.components.annotation import Ellipse, Image, Mask, Polygon
 from torchvision import tv_tensors
 
 from otx.core.data.dataset.base import Transforms
@@ -78,7 +78,7 @@ def _make_index_mask(
     return np.where(binary_mask, mask, ignore_index)
 
 
-def _extract_class_mask(img_data, item: DatasetItem, img_shape: tuple[int, int], ignore_index: int) -> np.ndarray:
+def _extract_class_mask(item: DatasetItem, img_shape: tuple[int, int], ignore_index: int) -> np.ndarray:
     """Extract class mask from Datumaro masks.
 
     This is a temporary workaround and will be replaced with the native Datumaro interfaces
@@ -98,14 +98,10 @@ def _extract_class_mask(img_data, item: DatasetItem, img_shape: tuple[int, int],
 
     class_mask = np.full(shape=img_shape[:2], fill_value=ignore_index, dtype=np.uint8)
 
-    for mask in sorted(
-        [ann for ann in item.annotations],
-        key=lambda ann: ann.z_order,
-    ):
-
+    for mask in sorted(item.annotations, key=lambda ann: ann.z_order):
         if not isinstance(mask, (Mask, Ellipse, Polygon)):
             msg = f"Unsupported annotation type: {type(mask)}"
-            raise ValueError(msg)
+            raise TypeError(msg)
 
         index = mask.label
 
@@ -115,8 +111,8 @@ def _extract_class_mask(img_data, item: DatasetItem, img_shape: tuple[int, int],
 
         if isinstance(mask, (Ellipse, Polygon)):
             polygons = np.asarray(mask.as_polygon(), dtype=np.int32).reshape((-1, 1, 2))
-            class_index = index + 1 # NOTE: disregard the background index. Objects start from index=1
-            this_class_mask = cv2.drawContours(class_mask, [polygons], 0, (class_index,class_index,class_index))
+            class_index = index + 1  # NOTE: disregard the background index. Objects start from index=1
+            this_class_mask = cv2.drawContours(class_mask, [polygons], 0, (class_index, class_index, class_index))
 
         elif isinstance(mask, Mask):
             binary_mask = mask.image
@@ -183,7 +179,7 @@ class OTXSegmentationDataset(OTXDataset[SegDataEntity]):
         img = item.media_as(Image)
         ignored_labels: list[int] = []
         img_data, img_shape = self._get_img_data_and_shape(img)
-        mask = _extract_class_mask(img_data, item=item, img_shape=img_shape, ignore_index=self.ignore_index)
+        mask = _extract_class_mask(item=item, img_shape=img_shape, ignore_index=self.ignore_index)
 
         entity = SegDataEntity(
             image=img_data,
