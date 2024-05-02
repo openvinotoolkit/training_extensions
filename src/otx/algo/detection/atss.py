@@ -306,6 +306,7 @@ class ResNeXt101ATSS(ATSS):
     def _build_model(self, num_classes: int) -> SingleStageDetector:
         train_cfg = {
             "assigner": ATSSAssigner(topk=9),
+            "sampler": PseudoSampler(),
             "allowed_border": -1,
             "pos_weight": -1,
             "debug": False,

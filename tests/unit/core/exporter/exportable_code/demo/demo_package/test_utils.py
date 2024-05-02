@@ -55,7 +55,7 @@ def test_get_parameters(mocker, tmp_path, mock_json):
     mock_json.load.assert_called()
 
 
-def test_get_parameters_no_cfg(mocker, tmp_path, mock_json):  # noqa: ARG001
+def test_get_parameters_no_cfg(mocker, tmp_path, mock_json):
     fake_file = tmp_path / "fake_file.txt"
     mocker.patch.object(target_file, "__file__", str(fake_file))
 
