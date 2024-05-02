@@ -8,11 +8,9 @@
 from .backbones import ResNet
 from .dense_heads import RPNHead
 from .detectors import MaskRCNN
-from .samplers import RandomSampler
 
 __all__ = [
     "ResNet",
     "RPNHead",
     "MaskRCNN",
-    "RandomSampler",
 ]

@@ -17,7 +17,6 @@ from copy import deepcopy
 import torch
 import torch.nn.functional
 import torch.utils.checkpoint as cp
-from mmengine.registry import MODELS
 from mmengine.runner.checkpoint import CheckpointLoader
 from mmengine.utils import to_2tuple
 from timm.models.layers import DropPath
@@ -493,7 +492,6 @@ class SwinBlockSequence(BaseModule):
         return x, hw_shape, x, hw_shape
 
 
-@MODELS.register_module()
 class SwinTransformer(BaseModule):
     """Swin Transformer.
 

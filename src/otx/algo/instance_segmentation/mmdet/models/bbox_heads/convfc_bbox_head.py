@@ -9,7 +9,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from mmengine.registry import MODELS
 from torch import Tensor, nn
 
 from .bbox_head import BBoxHead
@@ -18,7 +17,6 @@ if TYPE_CHECKING:
     from mmengine.config import ConfigDict
 
 
-@MODELS.register_module()
 class ConvFCBBoxHead(BBoxHead):
     r"""More general bbox head, with shared conv and fc layers and two optional separated branches.
 
@@ -188,7 +186,6 @@ class ConvFCBBoxHead(BBoxHead):
         return cls_score, bbox_pred
 
 
-@MODELS.register_module()
 class Shared2FCBBoxHead(ConvFCBBoxHead):
     """Shared 2 FC BBox Head."""
 
