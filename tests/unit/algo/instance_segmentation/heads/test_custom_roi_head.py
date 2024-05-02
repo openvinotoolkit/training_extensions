@@ -10,7 +10,7 @@ import pytest
 import torch
 from mmdet.structures import DetDataSample
 from mmengine.structures import InstanceData
-from otx.algo.instance_segmentation.maskrcnn import MMDetMaskRCNN
+from otx.algo.instance_segmentation.maskrcnn import MaskRCNNResNet50
 from otx.algo.instance_segmentation.mmdet.models.custom_roi_head import CustomRoIHead
 
 
@@ -68,7 +68,7 @@ class TestClassIncrementalMixin:
         fxt_data_sample_with_ignored_label,
         fxt_instance_list,
     ) -> None:
-        maskrcnn = MMDetMaskRCNN(3, "r50")
+        maskrcnn = MaskRCNNResNet50(3)
         input_tensors = [
             torch.randn([4, 256, 144, 256]),
             torch.randn([4, 256, 72, 128]),
