@@ -1,8 +1,7 @@
 model:
-  class_path: otx.algo.instance_segmentation.maskrcnn.MMDetMaskRCNN
+  class_path: otx.algo.instance_segmentation.maskrcnn.MaskRCNNEfficientNet
   init_args:
     label_info: 80
-    variant: efficientnetb2b
 
     optimizer:
       class_path: torch.optim.SGD
