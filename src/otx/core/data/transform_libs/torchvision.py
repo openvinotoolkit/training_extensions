@@ -457,7 +457,7 @@ class Resize(tvt_v2.Transform, NumpytoTVTensorMixin):
             bboxes are allowed to cross the border of images. Therefore, we
             don't need to clip the gt bboxes in these cases. Defaults to True.
         interpolation (str): Interpolation method for cv2. Defaults to 'bilinear'.
-        transform_bbox (bool): Whether to transform bounding boxes. Defaults to True.
+        transform_bbox (bool): Whether to transform bounding boxes. Defaults to False.
         is_numpy_to_tvtensor(bool): Whether convert outputs to tensor. Defaults to False.
     """
 
@@ -476,7 +476,7 @@ class Resize(tvt_v2.Transform, NumpytoTVTensorMixin):
         keep_ratio: bool = False,
         clip_object_border: bool = True,
         interpolation: str = "bilinear",
-        transform_bbox: bool = True,
+        transform_bbox: bool = False,
         is_numpy_to_tvtensor: bool = False,
     ) -> None:
         super().__init__()
