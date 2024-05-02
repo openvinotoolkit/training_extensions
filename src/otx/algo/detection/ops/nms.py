@@ -37,10 +37,7 @@ class NMSop(torch.autograd.Function):
             valid_mask = scores > score_threshold
             bboxes, scores = bboxes[valid_mask], scores[valid_mask]
             valid_inds = torch.nonzero(valid_mask, as_tuple=False).squeeze(dim=1)
-        if bboxes.device.type == "xpu":
-            inds = torch.ops.torch_ipex.nms(bboxes, scores, iou_threshold)
-        else:
-            inds = torch_nms(bboxes, scores, iou_threshold)
+        inds = torch_nms(bboxes, scores, iou_threshold)
 
         if max_num > 0:
             inds = inds[:max_num]
