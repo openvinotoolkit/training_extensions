@@ -78,7 +78,7 @@ def _make_index_mask(
     return np.where(binary_mask, mask, ignore_index)
 
 
-def _extract_class_mask(item: DatasetItem, img_shape: tuple[int, int], ignore_index: int) -> np.ndarray:
+def _extract_class_mask(img_data, item: DatasetItem, img_shape: tuple[int, int], ignore_index: int) -> np.ndarray:
     """Extract class mask from Datumaro masks.
 
     This is a temporary workaround and will be replaced with the native Datumaro interfaces
@@ -95,8 +95,19 @@ def _extract_class_mask(item: DatasetItem, img_shape: tuple[int, int], ignore_in
     if ignore_index > 255:
         msg = "It is not currently support an ignore index which is more than 255."
         raise ValueError(msg, ignore_index)
-
+    img = np.asarray(img_data)
+    print(item.annotations)
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    contours, _ = cv2.findContours(gray, cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_NONE)
     class_mask = np.full(shape=img_shape[:2], fill_value=ignore_index, dtype=np.uint8)
+    polygons = np.asarray(item.annotations[0].as_polygon(), dtype=np.int32)
+    polygons = polygons.reshape((-1, 1, 2))
+    mask = np.zeros(shape=img_shape[:2], dtype=np.uint8)
+    print(mask.shape, polygons.shape, contours[0].shape)
+    mask = cv2.drawContours(mask, [polygons], 0, (2,2,2))
+    print(mask)
+    print(np.unique(mask))
+    exit()
     for mask in sorted(
         [ann for ann in item.annotations if isinstance(ann, Mask)],
         key=lambda ann: ann.z_order,
@@ -166,7 +177,7 @@ class OTXSegmentationDataset(OTXDataset[SegDataEntity]):
         img = item.media_as(Image)
         ignored_labels: list[int] = []
         img_data, img_shape = self._get_img_data_and_shape(img)
-        mask = _extract_class_mask(item=item, img_shape=img_shape, ignore_index=self.ignore_index)
+        mask = _extract_class_mask(img_data, item=item, img_shape=img_shape, ignore_index=self.ignore_index)
 
         entity = SegDataEntity(
             image=img_data,
