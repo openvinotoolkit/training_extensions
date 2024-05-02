@@ -383,6 +383,7 @@ class AutoConfigurator:
         subset_config.batch_size = ov_test_config["batch_size"]
         subset_config.transform_lib_type = ov_test_config["transform_lib_type"]
         subset_config.transforms = ov_test_config["transforms"]
+        subset_config.to_tv_image = ov_test_config["to_tv_image"]
         data_configuration.tile_config.enable_tiler = False
         msg = (
             f"For OpenVINO IR models, Update the following {subset} \n"

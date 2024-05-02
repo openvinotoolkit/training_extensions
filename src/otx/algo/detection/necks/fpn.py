@@ -8,15 +8,16 @@ from typing import TYPE_CHECKING
 
 from torch import Tensor, nn
 
+from otx.algo.modules.base_module import BaseModule
 from otx.algo.modules.conv_module import ConvModule
 
 if TYPE_CHECKING:
-    from mmengine import ConfigDict
+    from omegaconf import DictConfig
 
 
 # This class come from mmdet and is slightly modified
 # https://github.com/open-mmlab/mmdetection/blob/ecac3a77becc63f23d9f6980b2a36f86acd00a8a/mmdet/models/necks/fpn.py
-class FPN(nn.Module):
+class FPN(BaseModule):
     r"""Feature Pyramid Network.
 
     This is an implementation of paper `Feature Pyramid Networks for Object
@@ -44,15 +45,15 @@ class FPN(nn.Module):
             conv. Defaults to False.
         no_norm_on_lateral (bool): Whether to apply norm on lateral.
             Defaults to False.
-        conv_cfg (:obj:`ConfigDict` or dict, optional): Config dict for
+        conv_cfg (:obj:`DictConfig` or dict, optional): Config dict for
             convolution layer. Defaults to None.
-        norm_cfg (:obj:`ConfigDict` or dict, optional): Config dict for
+        norm_cfg (:obj:`DictConfig` or dict, optional): Config dict for
             normalization layer. Defaults to None.
-        act_cfg (:obj:`ConfigDict` or dict, optional): Config dict for
+        act_cfg (:obj:`DictConfig` or dict, optional): Config dict for
             activation layer in ConvModule. Defaults to None.
-        upsample_cfg (:obj:`ConfigDict` or dict, optional): Config dict
+        upsample_cfg (:obj:`DictConfig` or dict, optional): Config dict
             for interpolate layer. Defaults to dict(mode='nearest').
-        init_cfg (:obj:`ConfigDict` or dict or list[:obj:`ConfigDict` or \
+        init_cfg (:obj:`DictConfig` or dict or list[:obj:`DictConfig` or \
             dict]): Initialization config dict.
 
     Example:
@@ -81,22 +82,15 @@ class FPN(nn.Module):
         add_extra_convs: bool | str = False,
         relu_before_extra_convs: bool = False,
         no_norm_on_lateral: bool = False,
-        conv_cfg: ConfigDict | dict | None = None,
-        norm_cfg: ConfigDict | dict | None = None,
-        act_cfg: ConfigDict | dict | None = None,
-        upsample_cfg: ConfigDict | dict | None = None,
-        init_cfg: ConfigDict | dict | list[ConfigDict] | list[dict] | None = None,
+        conv_cfg: DictConfig | dict | None = None,
+        norm_cfg: DictConfig | dict | None = None,
+        act_cfg: DictConfig | dict | None = None,
+        upsample_cfg: DictConfig | dict | None = None,
+        init_cfg: DictConfig | dict | list[DictConfig] | list[dict] | None = None,
     ) -> None:
-        super().__init__()
-        self.init_cfg = (
-            init_cfg
-            if init_cfg is not None
-            else {
-                "type": "Xavier",
-                "layer": "Conv2d",
-                "distribution": "uniform",
-            }
-        )
+        if init_cfg is None:
+            init_cfg = {"type": "Xavier", "layer": "Conv2d", "distribution": "uniform"}
+        super().__init__(init_cfg=init_cfg)
         self.in_channels = in_channels
         self.out_channels = out_channels
         self.num_ins = len(in_channels)

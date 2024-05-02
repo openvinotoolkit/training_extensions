@@ -156,6 +156,7 @@ class OTXSegmentationDataset(OTXDataset[SegDataEntity]):
         max_refetch: int = 1000,
         image_color_channel: ImageColorChannel = ImageColorChannel.RGB,
         stack_images: bool = True,
+        to_tv_image: bool = True,
         ignore_index: int = 255,
     ) -> None:
         super().__init__(
@@ -166,6 +167,7 @@ class OTXSegmentationDataset(OTXDataset[SegDataEntity]):
             max_refetch,
             image_color_channel,
             stack_images,
+            to_tv_image,
         )
         self.label_info = SegLabelInfo(
             label_names=self.label_info.label_names,

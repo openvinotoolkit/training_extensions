@@ -6,42 +6,39 @@
 from __future__ import annotations
 
 import logging
-from copy import deepcopy
-from typing import TYPE_CHECKING, Any, Literal
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 import torch
 from datumaro.components.annotation import Bbox
-from mmengine.structures import InstanceData
+from omegaconf import DictConfig
 from torch import nn
 from torchvision import tv_tensors
 
 from otx.algo.detection.backbones.pytorchcv_backbones import _build_model_including_pytorchcv
+from otx.algo.detection.heads.anchor_generator import SSDAnchorGeneratorClustered
+from otx.algo.detection.heads.delta_xywh_bbox_coder import DeltaXYWHBBoxCoder
+from otx.algo.detection.heads.max_iou_assigner import MaxIoUAssigner
 from otx.algo.detection.heads.ssd_head import SSDHead
-from otx.algo.utils.mmconfig import read_mmconfig
+from otx.algo.modules.base_module import BaseModule
+from otx.algo.utils.mmengine_utils import InstanceData, load_checkpoint
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.config.data import TileConfig
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.detection import DetBatchDataEntity, DetBatchPredEntity
+from otx.core.data.entity.utils import stack_batch
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.metrics.mean_ap import MeanAPCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
 from otx.core.model.detection import ExplainableOTXDetModel
-from otx.core.model.utils.mmdet import DetDataPreprocessor
 from otx.core.schedulers import LRSchedulerListCallable
 from otx.core.types.label import LabelInfoTypes
-from otx.core.utils.build import modify_num_classes
-from otx.core.utils.config import convert_conf_to_mmconfig_dict, inplace_num_classes
-from otx.core.utils.utils import get_mean_std_from_data_processing
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
-    from mmengine import ConfigDict
-    from omegaconf import DictConfig
     from torch import Tensor
 
-    from otx.algo.detection.heads.custom_anchor_generator import SSDAnchorGeneratorClustered
     from otx.core.data.dataset.base import OTXDataset
     from otx.core.metrics import MetricCallable
 
@@ -51,43 +48,26 @@ logger = logging.getLogger()
 
 # This class and its supporting functions below lightly adapted from the mmdet SingleStageDetector available at:
 # https://github.com/open-mmlab/mmdetection/blob/cfd5d3a985b0249de009b67d04f37263e11cdf3d/mmdet/models/detectors/single_stage.py
-class SingleStageDetector(nn.Module):
+class SingleStageDetector(BaseModule):
     """Single stage detector implementation from mmdet."""
 
     def __init__(
         self,
-        backbone: ConfigDict | dict,
-        bbox_head: ConfigDict | dict,
-        data_preprocessor: ConfigDict | dict,
-        train_cfg: ConfigDict | dict | None = None,
-        test_cfg: ConfigDict | dict | None = None,
-        init_cfg: ConfigDict | list[ConfigDict] | dict | list[dict] = None,
+        backbone: nn.Module,
+        bbox_head: nn.Module,
+        neck: nn.Module | None = None,
+        train_cfg: dict | None = None,
+        test_cfg: DictConfig | None = None,
+        init_cfg: DictConfig | list[DictConfig] = None,
     ) -> None:
         super().__init__()
         self._is_init = False
-        self.backbone = self.build_backbone(backbone)
-        bbox_head.update(train_cfg=train_cfg)
-        bbox_head.update(test_cfg=test_cfg)
-        self.bbox_head = self.build_bbox_head(bbox_head)
-        self.data_preprocessor = self.build_det_data_preprocessor(data_preprocessor)
+        self.backbone = backbone
+        self.bbox_head = bbox_head
+        self.neck = neck
         self.init_cfg = init_cfg
         self.train_cfg = train_cfg
         self.test_cfg = test_cfg
-
-    def build_backbone(self, cfg: ConfigDict | dict) -> nn.Module:
-        """Build backbone."""
-        return _build_model_including_pytorchcv(cfg)
-
-    def build_bbox_head(self, cfg: ConfigDict | dict) -> nn.Module:
-        """Build bbox head."""
-        return SSDHead(**cfg)
-
-    def build_det_data_preprocessor(self, cfg: ConfigDict | dict | nn.Module) -> nn.Module:
-        """Build DetDataPreprocessor.
-
-        TODO (someone): DetDataPreprocessor will be removed.
-        """
-        return DetDataPreprocessor(**cfg)
 
     def _load_from_state_dict(
         self,
@@ -120,54 +100,6 @@ class SingleStageDetector(nn.Module):
             unexpected_keys,
             error_msgs,
         )
-
-    def init_weights(self) -> None:
-        """Initialize the weights."""
-        from mmengine.logging import print_log
-        from mmengine.model.weight_init import PretrainedInit, initialize
-        from mmengine.model.wrappers.utils import is_model_wrapper
-
-        module_name = self.__class__.__name__
-        if not self._is_init:
-            if self.init_cfg:
-                print_log(
-                    f"initialize {module_name} with init_cfg {self.init_cfg}",
-                    logger="current",
-                    level=logging.DEBUG,
-                )
-
-                init_cfgs = self.init_cfg
-                if isinstance(self.init_cfg, dict):
-                    init_cfgs = [self.init_cfg]
-
-                # PretrainedInit has higher priority than any other init_cfg.
-                # Therefore we initialize `pretrained_cfg` last to overwrite
-                # the previous initialized weights.
-                # See details in https://github.com/open-mmlab/mmengine/issues/691 # E501
-                other_cfgs = []
-                pretrained_cfg = []
-                for init_cfg in init_cfgs:
-                    if init_cfg["type"] == "Pretrained" or init_cfg["type"] is PretrainedInit:
-                        pretrained_cfg.append(init_cfg)
-                    else:
-                        other_cfgs.append(init_cfg)
-
-                initialize(self, other_cfgs)
-
-            for m in self.children():
-                if is_model_wrapper(m) and not hasattr(m, "init_weights"):
-                    m = m.module  # noqa: PLW2901
-                if hasattr(m, "init_weights") and not getattr(m, "is_init", False):
-                    m.init_weights()
-            if self.init_cfg and pretrained_cfg:
-                initialize(self, pretrained_cfg)
-            self._is_init = True
-        else:
-            print_log(
-                f"init_weights of {self.__class__.__name__} has been called more than once.",
-                logger="current",
-                level=logging.WARNING,
-            )
 
     def forward(
         self,
@@ -338,7 +270,7 @@ class SingleStageDetector(nn.Module):
             different resolutions.
         """
         x = self.backbone(batch_inputs)
-        if self.with_neck:
+        if self.neck is not None:
             x = self.neck(x)
         return x
 
@@ -373,18 +305,16 @@ class SSD(ExplainableOTXDetModel):
     def __init__(
         self,
         label_info: LabelInfoTypes,
-        variant: Literal["mobilenetv2"],
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MeanAPCallable,
         torch_compile: bool = False,
         tile_config: TileConfig = TileConfig(enable_tiler=False),
     ) -> None:
-        model_name = f"ssd_{variant}"
-        config = read_mmconfig(model_name=model_name)
-        config = inplace_num_classes(cfg=config, num_classes=self._dispatch_label_info(label_info).num_classes)
-        self.config = config
-        self.load_from = config.pop("load_from", None)
+        self.load_from = (
+            "https://storage.openvinotoolkit.org/repositories/openvino_training_extensions"
+            "/models/object_detection/v2/mobilenet_v2-2s_ssd-992x736.pth"
+        )
         super().__init__(
             label_info=label_info,
             optimizer=optimizer,
@@ -397,16 +327,75 @@ class SSD(ExplainableOTXDetModel):
         self.tile_image_size = self.image_size
 
     def _create_model(self) -> nn.Module:
-        from mmengine.runner import load_checkpoint
-
-        config = deepcopy(self.config)
-        self.classification_layers = self.get_classification_layers(config, "model.")
-        detector = SingleStageDetector(**convert_conf_to_mmconfig_dict(config))
+        detector = self._build_model(num_classes=self.label_info.num_classes)
+        detector.init_weights()
+        self.classification_layers = self.get_classification_layers(prefix="model.")
         if self.load_from is not None:
             load_checkpoint(detector, self.load_from, map_location="cpu")
         return detector
 
+    def _build_model(self, num_classes: int) -> SingleStageDetector:
+        train_cfg = {
+            "assigner": MaxIoUAssigner(
+                min_pos_iou=0.0,
+                ignore_iof_thr=-1,
+                gt_max_assign_all=False,
+                pos_iou_thr=0.4,
+                neg_iou_thr=0.4,
+            ),
+            "smoothl1_beta": 1.0,
+            "allowed_border": -1,
+            "pos_weight": -1,
+            "neg_pos_ratio": 3,
+            "debug": False,
+            "use_giou": False,
+            "use_focal": False,
+        }
+        test_cfg = DictConfig(
+            {
+                "nms": {"type": "nms", "iou_threshold": 0.45},
+                "min_bbox_size": 0,
+                "score_thr": 0.02,
+                "max_per_img": 200,
+            },
+        )
+        backbone = _build_model_including_pytorchcv(
+            cfg={
+                "type": "mobilenetv2_w1",
+                "out_indices": [4, 5],
+                "frozen_stages": -1,
+                "norm_eval": False,
+                "pretrained": True,
+            },
+        )
+        bbox_head = SSDHead(
+            anchor_generator=SSDAnchorGeneratorClustered(
+                strides=[16, 32],
+                widths=[
+                    [38.641007923271076, 92.49516032784699, 271.4234764938237, 141.53469410876247],
+                    [206.04136086566515, 386.6542727907841, 716.9892752215089, 453.75609561761405, 788.4629155558277],
+                ],
+                heights=[
+                    [48.9243877087132, 147.73088476194903, 158.23569788707474, 324.14510379107367],
+                    [587.6216059488938, 381.60024152086544, 323.5988913027747, 702.7486097568518, 741.4865860938451],
+                ],
+            ),
+            bbox_coder=DeltaXYWHBBoxCoder(
+                target_means=(0.0, 0.0, 0.0, 0.0),
+                target_stds=(0.1, 0.1, 0.2, 0.2),
+            ),
+            num_classes=num_classes,
+            in_channels=(96, 320),
+            use_depthwise=True,
+            init_cfg={"type": "Xavier", "layer": "Conv2d", "distribution": "uniform"},
+            train_cfg=train_cfg,
+            test_cfg=test_cfg,
+        )
+        return SingleStageDetector(backbone, bbox_head, train_cfg=train_cfg, test_cfg=test_cfg)
+
     def _customize_inputs(self, entity: DetBatchDataEntity) -> dict[str, Any]:
+        if isinstance(entity.images, list):
+            entity.images = stack_batch(entity.images, pad_size_divisor=32)
         inputs: dict[str, Any] = {}
 
         inputs["entity"] = entity
@@ -441,15 +430,15 @@ class SSD(ExplainableOTXDetModel):
         for img_info, prediction in zip(inputs.imgs_info, predictions):
             if not isinstance(prediction, InstanceData):
                 raise TypeError(prediction)
-            scores.append(prediction.scores)
+            scores.append(prediction.scores)  # type: ignore[attr-defined]
             bboxes.append(
                 tv_tensors.BoundingBoxes(
-                    prediction.bboxes,
+                    prediction.bboxes,  # type: ignore[attr-defined]
                     format="XYXY",
                     canvas_size=img_info.ori_shape,
                 ),
             )
-            labels.append(prediction.labels)
+            labels.append(prediction.labels)  # type: ignore[attr-defined]
 
         if self.explain_mode:
             if not isinstance(outputs, dict):
@@ -583,9 +572,8 @@ class SSD(ExplainableOTXDetModel):
         heights = [height.tolist() for height in heights]
         return widths, heights
 
-    @staticmethod
     def get_classification_layers(
-        config: DictConfig,
+        self,
         prefix: str,
     ) -> dict[str, dict[str, bool | int]]:
         """Return classification layer names by comparing two different number of classes models.
@@ -604,12 +592,8 @@ class SSD(ExplainableOTXDetModel):
             `num_anchors` means number of anchors of layer. SSD have classification per each anchor,
             so we have to update every anchors.
         """
-        sample_config = deepcopy(config)
-        modify_num_classes(sample_config, 3)
-        sample_model_dict = SingleStageDetector(**convert_conf_to_mmconfig_dict(sample_config)).state_dict()
-
-        modify_num_classes(sample_config, 4)
-        incremental_model_dict = SingleStageDetector(**convert_conf_to_mmconfig_dict(sample_config)).state_dict()
+        sample_model_dict = self._build_model(num_classes=3).state_dict()
+        incremental_model_dict = self._build_model(num_classes=4).state_dict()
 
         classification_layers = {}
         for key in sample_model_dict:
@@ -662,7 +646,7 @@ class SSD(ExplainableOTXDetModel):
         if self.image_size is None:
             raise ValueError(self.image_size)
 
-        mean, std = get_mean_std_from_data_processing(self.config)
+        mean, std = (0.0, 0.0, 0.0), (255.0, 255.0, 255.0)
 
         return OTXNativeModelExporter(
             task_level_export_parameters=self._export_parameters,

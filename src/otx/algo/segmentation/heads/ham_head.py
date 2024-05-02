@@ -9,7 +9,6 @@ from typing import Any
 
 import torch
 import torch.nn.functional as f
-from mmengine.device import get_device
 from torch import nn
 
 from otx.algo.modules import ConvModule
@@ -223,7 +222,7 @@ class NMF2D(nn.Module):
         segments: int,
         channels: int,
         basis_vectors: int,
-        device: torch.device | None = None,
+        device: torch.device,
     ) -> torch.Tensor:
         """Build bases in initialization.
 
@@ -237,8 +236,6 @@ class NMF2D(nn.Module):
         Returns:
             torch.Tensor: Tensor of shape (batch_size * segments, channels, basis_vectors) containing the built bases.
         """
-        if device is None:
-            device = get_device()
         bases = torch.rand((batch_size * segments, channels, basis_vectors)).to(device)
 
         return f.normalize(bases, dim=1)

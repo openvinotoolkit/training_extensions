@@ -1,8 +1,7 @@
 model:
-  class_path: otx.algo.detection.yolox.OTXYOLOX
+  class_path: otx.algo.detection.yolox.YOLOXL
   init_args:
     label_info: 80
-    variant: l
 
     optimizer:
       class_path: torch.optim.SGD
@@ -40,6 +39,7 @@ overrides:
       data_format: coco_instances
       train_subset:
         batch_size: 8
+        to_tv_image: False
         transforms:
           - class_path: otx.core.data.transform_libs.torchvision.CachedMosaic
             init_args:
@@ -79,6 +79,7 @@ overrides:
                 - 640
                 - 640
               keep_ratio: true
+              transform_bbox: true
           - class_path: otx.core.data.transform_libs.torchvision.RandomFlip
             init_args:
               prob: 0.5
@@ -86,6 +87,7 @@ overrides:
             init_args:
               pad_to_square: true
               pad_val: 114
+              is_numpy_to_tvtensor: true
           - class_path: torchvision.transforms.v2.ToDtype
             init_args:
               dtype: ${as_torch_dtype:torch.float32}
@@ -98,6 +100,7 @@ overrides:
           class_path: otx.algo.samplers.balanced_sampler.BalancedSampler
       val_subset:
         batch_size: 8
+        to_tv_image: False
         transforms:
           - class_path: otx.core.data.transform_libs.torchvision.Resize
             init_args:
@@ -110,6 +113,7 @@ overrides:
             init_args:
               pad_to_square: true
               pad_val: 114
+              is_numpy_to_tvtensor: true
           - class_path: torchvision.transforms.v2.ToDtype
             init_args:
               dtype: ${as_torch_dtype:torch.float32}
@@ -120,6 +124,7 @@ overrides:
               std: [1.0, 1.0, 1.0]
       test_subset:
         batch_size: 8
+        to_tv_image: False
         transforms:
           - class_path: otx.core.data.transform_libs.torchvision.Resize
             init_args:
@@ -132,6 +137,7 @@ overrides:
             init_args:
               pad_to_square: true
               pad_val: 114
+              is_numpy_to_tvtensor: true
           - class_path: torchvision.transforms.v2.ToDtype
             init_args:
               dtype: ${as_torch_dtype:torch.float32}
