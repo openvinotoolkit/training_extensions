@@ -244,7 +244,6 @@
 
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">import</span> <span class="nn">torch.nn.functional</span>
-<span class="kn">from</span> <span class="nn">mmengine.registry</span> <span class="kn">import</span> <span class="n">MODELS</span>
 <span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">nn</span>
 <span class="kn">from</span> <span class="nn">torch.cuda.amp</span> <span class="kn">import</span> <span class="n">custom_fwd</span>
 
@@ -299,7 +298,6 @@
 
 <div class="viewcode-block" id="CrossSigmoidFocalLoss">
 <a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.detection.losses.html#otx.algo.detection.losses.CrossSigmoidFocalLoss">[docs]</a>
-<span class="nd">@MODELS</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
 <span class="k">class</span> <span class="nc">CrossSigmoidFocalLoss</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;CrossSigmoidFocalLoss class for ignore labels with sigmoid.&quot;&quot;&quot;</span>
 
