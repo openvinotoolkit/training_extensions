@@ -96,12 +96,14 @@ def _extract_class_mask(item: DatasetItem, img_shape: tuple[int, int], ignore_in
         msg = "It is not currently support an ignore index which is more than 255."
         raise ValueError(msg, ignore_index)
 
-    class_mask = np.full(shape=img_shape[:2], fill_value=ignore_index, dtype=np.uint8)
+    # fill mask with background label if we have Polygon/Ellipse annotations
+    fill_value = 0 if isinstance(item.annotations[0], (Ellipse, Polygon)) else ignore_index
+    class_mask = np.full(shape=img_shape[:2], fill_value=fill_value, dtype=np.uint8)
 
-    for mask in sorted(item.annotations, key=lambda ann: ann.z_order):
-        if not isinstance(mask, (Mask, Ellipse, Polygon)):
-            msg = f"Unsupported annotation type: {type(mask)}"
-            raise TypeError(msg)
+    for mask in sorted(
+        [ann for ann in item.annotations if isinstance(ann, (Mask, Ellipse, Polygon))],
+        key=lambda ann: ann.z_order,
+    ):
 
         index = mask.label
 
