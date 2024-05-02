@@ -8,21 +8,25 @@ import pytest
 import pytorch_lightning as pl
 import torch
 from lightning.pytorch.utilities.exceptions import MisconfigurationException
+from otx.algo.strategies import xpu_single as target_file
 from otx.algo.strategies.xpu_single import SingleXPUStrategy
 
 
 class TestSingleXPUStrategy:
-    def test_init(self, mocker):
-        with pytest.raises(MisconfigurationException):
-            strategy = SingleXPUStrategy(device="xpu:0")
-        mocked_is_xpu_available = mocker.patch(
-            "otx.algo.strategies.xpu_single.is_xpu_available",
-            return_value=True,
-        )
+    @pytest.fixture()
+    def mock_is_xpu_available(self, mocker):
+        return mocker.patch.object(target_file, "is_xpu_available", return_value=False)
+
+    def test_init(self, mock_is_xpu_available):
+        mock_is_xpu_available.return_value = True
         strategy = SingleXPUStrategy(device="xpu:0")
-        assert mocked_is_xpu_available.call_count == 1
+        assert mock_is_xpu_available.call_count == 1
         assert strategy._root_device.type == "xpu"
         assert strategy.accelerator is None
+
+    def test_init_no_xpu(self, mock_is_xpu_available):
+        with pytest.raises(MisconfigurationException):
+            SingleXPUStrategy(device="xpu:0")
 
     @pytest.fixture()
     def strategy(self, mocker):
