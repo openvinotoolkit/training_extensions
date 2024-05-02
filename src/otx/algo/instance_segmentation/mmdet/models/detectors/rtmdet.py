@@ -51,3 +51,7 @@ class RTMDet(InstSegSingleStageDetector):
             data_preprocessor=data_preprocessor,
             init_cfg=init_cfg,
         )
+
+    def export(self, batch_inputs):
+        x = self.extract_feat(batch_inputs)
+        return self.bbox_head.export(x)

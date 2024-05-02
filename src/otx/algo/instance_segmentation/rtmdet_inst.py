@@ -7,7 +7,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from mmengine.structures import InstanceData
 from omegaconf import DictConfig
 
 from otx.algo.detection.backbones.cspnext import CSPNeXt
@@ -22,7 +21,6 @@ from otx.algo.detection.losses.iou_loss import GIoULoss
 from otx.algo.detection.necks.cspnext_pafpn import CSPNeXtPAFPN
 from otx.algo.instance_segmentation.mmdet.models.dense_heads.rtmdet_ins_head import RTMDetInsSepBNHead
 from otx.algo.instance_segmentation.mmdet.models.detectors.rtmdet import RTMDet
-from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.config.data import TileConfig
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter
@@ -36,6 +34,7 @@ from otx.core.types.label import LabelInfoTypes
 if TYPE_CHECKING:
     import torch
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
+    from mmengine.structures import InstanceData
     from torch.nn.modules import Module
 
     from otx.core.metrics import MetricCallable
@@ -235,22 +234,4 @@ class MMDetRTMDetInstTiny(MMDetInstanceSegCompatibleModel):
         inputs: torch.Tensor,
     ) -> list[InstanceData]:
         """Forward function for export."""
-        shape = (int(inputs.shape[2]), int(inputs.shape[3]))
-        meta_info = {
-            "pad_shape": shape,
-            "batch_input_shape": shape,
-            "img_shape": shape,
-            "scale_factor": (1.0, 1.0),
-        }
-        sample = InstanceData(
-            metainfo=meta_info,
-        )
-        data_samples = [sample] * len(inputs)
-        return self.model.export(
-            inputs,
-            data_samples,
-        )
-
-    def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.model.") -> dict:
-        """Load the previous OTX ckpt according to OTX2.0."""
-        return OTXv1Helper.load_iseg_ckpt(state_dict, add_prefix)
+        return self.model.export(inputs)
