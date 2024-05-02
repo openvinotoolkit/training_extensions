@@ -13,7 +13,6 @@ import torch
 import torch.nn.functional
 from mmengine.structures import InstanceData
 from torch import Tensor, nn
-from torchvision.ops import RoIAlign
 
 from otx.algo.detection.ops.nms import batched_nms, multiclass_nms
 from otx.algo.detection.utils.utils import (
@@ -25,6 +24,7 @@ from otx.algo.detection.utils.utils import (
     select_single_mlvl,
     unpack_gt_instances,
 )
+from otx.algo.instance_segmentation.mmdet.models.roi_extractors.roi_align import OTXRoIAlign
 from otx.algo.instance_segmentation.mmdet.structures.bbox.transforms import get_box_wh, scale_boxes
 from otx.algo.modules.base_module import BaseModule
 from otx.algo.modules.conv_module import ConvModule
@@ -799,7 +799,7 @@ class RTMDetInsSepBNHead(RTMDetInsHead):
         # mmcv/ops/roi_align.py
         # https://github.com/openvinotoolkit/training_extensions/pull/3433
 
-        self.roi_align = RoIAlign(
+        self.roi_align = OTXRoIAlign(
             output_size=(28, 28),
             sampling_ratio=0,
             aligned=True,
@@ -1170,7 +1170,7 @@ class RTMDetInsSepBNHead(RTMDetInsHead):
             torch.arange(dets.size(0), device=dets.device).float().view(-1, 1, 1).expand(dets.size(0), dets.size(1), 1)
         )
         rois = torch.cat([batch_index, dets[..., :4]], dim=-1)
-        cropped_masks = self.roi_align(masks, rois[0])
+        cropped_masks = self.roi_align.export(masks, rois[0])
         cropped_masks = cropped_masks[torch.arange(cropped_masks.size(0)), torch.arange(cropped_masks.size(0))]
         cropped_masks = cropped_masks.unsqueeze(0)
         return dets, labels, cropped_masks
