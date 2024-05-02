@@ -794,10 +794,6 @@ class RTMDetInsSepBNHead(RTMDetInsHead):
             with_objectness=with_objectness,
             **kwargs,
         )
-        # TODO(Eugene): Add RoIAlignFunction symbolic
-        # mmdeploy/mmcv/ops/roi_align.py
-        # mmcv/ops/roi_align.py
-        # https://github.com/openvinotoolkit/training_extensions/pull/3433
 
         self.roi_align = OTXRoIAlign(
             output_size=(28, 28),
