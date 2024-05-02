@@ -54,7 +54,6 @@ class XPUAccelerator(Accelerator):
 
     def teardown(self) -> None:
         """Clean up any state created by the accelerator."""
-        pass
 
 
 AcceleratorRegistry.register(
