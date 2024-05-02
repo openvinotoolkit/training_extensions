@@ -104,7 +104,6 @@ def _extract_class_mask(item: DatasetItem, img_shape: tuple[int, int], ignore_in
         [ann for ann in item.annotations if isinstance(ann, (Mask, Ellipse, Polygon))],
         key=lambda ann: ann.z_order,
     ):
-
         index = mask.label
 
         if index is None:
