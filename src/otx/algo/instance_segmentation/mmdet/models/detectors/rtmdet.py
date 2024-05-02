@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING
 from .single_stage import InstSegSingleStageDetector
 
 if TYPE_CHECKING:
+    import torch
     from torch import nn
 
 
@@ -52,6 +53,7 @@ class RTMDet(InstSegSingleStageDetector):
             init_cfg=init_cfg,
         )
 
-    def export(self, batch_inputs):
+    def export(self, batch_inputs: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+        """Export the model."""
         x = self.extract_feat(batch_inputs)
         return self.bbox_head.export(x)

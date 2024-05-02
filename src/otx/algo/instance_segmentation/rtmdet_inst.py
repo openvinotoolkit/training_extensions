@@ -34,7 +34,6 @@ from otx.core.types.label import LabelInfoTypes
 if TYPE_CHECKING:
     import torch
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
-    from mmengine.structures import InstanceData
     from torch.nn.modules import Module
 
     from otx.core.metrics import MetricCallable
@@ -232,6 +231,6 @@ class MMDetRTMDetInstTiny(MMDetInstanceSegCompatibleModel):
     def forward_for_tracing(
         self,
         inputs: torch.Tensor,
-    ) -> list[InstanceData]:
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         """Forward function for export."""
         return self.model.export(inputs)

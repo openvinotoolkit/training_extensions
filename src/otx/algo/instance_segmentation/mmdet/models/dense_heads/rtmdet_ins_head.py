@@ -375,7 +375,7 @@ class RTMDetInsHead(RTMDetHead):
         self,
         results: InstanceData,
         mask_feat: torch.Tensor,
-        cfg: DictConfig | dict,
+        cfg: DictConfig,
         rescale: bool = False,
         with_nms: bool = True,
         img_meta: dict | None = None,
@@ -794,6 +794,8 @@ class RTMDetInsSepBNHead(RTMDetInsHead):
             with_objectness=with_objectness,
             **kwargs,
         )
+        # TODO(Eugene): Add  RoIAlignFunction symbolic
+        # https://github.com/openvinotoolkit/training_extensions/pull/3433
         self.roi_align = RoIAlign(
             output_size=(28, 28),
             sampling_ratio=0,
