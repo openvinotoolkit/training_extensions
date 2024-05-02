@@ -36,7 +36,7 @@ class OTXInstanceSegDataset(OTXDataset[InstanceSegDataEntity]):
         self.include_polygons = include_polygons
 
     def _get_item_impl(self, index: int) -> InstanceSegDataEntity | None:
-        item = self.dm_subset.as_dataset()[index]
+        item = self.dm_subset.parent[index]
         img = item.media_as(Image)
         ignored_labels: list[int] = []
         img_data, img_shape = self._get_img_data_and_shape(img)
