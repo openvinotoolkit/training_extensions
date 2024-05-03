@@ -769,20 +769,25 @@ def crop_polygons(polygons: list[Polygon], bbox: np.ndarray, height: int, width:
     initial_settings = np.seterr()
     np.seterr(invalid="ignore")
     for polygon in polygons:
+        cropped_poly_per_obj: list[Polygon] = []
+
         p = np.asarray(copy.deepcopy(polygon.points))
         p = geometry.Polygon(p.reshape(-1, 2)).buffer(0.0)
         # polygon must be valid to perform intersection.
         if not p.is_valid:
+            # a dummy polygon to avoid misalignment between masks and boxes
+            cropped_polygons.append(Polygon(points=[0, 0, 0, 0, 0, 0], label=polygon.label, z_order=polygon.z_order))
             continue
 
         cropped = p.intersection(crop_box)
         if cropped.is_empty:
+            # a dummy polygon to avoid misalignment between masks and boxes
+            cropped_polygons.append(Polygon(points=[0, 0, 0, 0, 0, 0], label=polygon.label, z_order=polygon.z_order))
             continue
 
         cropped = cropped.geoms if isinstance(cropped, geometry.collection.BaseMultipartGeometry) else [cropped]
 
         # one polygon may be cropped to multiple ones
-        cropped_poly_per_obj: list[Polygon] = []
         for poly in cropped:
             # ignore lines or points
             if not isinstance(poly, geometry.Polygon) or not poly.is_valid:

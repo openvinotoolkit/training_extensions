@@ -1438,7 +1438,7 @@ class CachedMosaic(tvt_v2.Transform, NumpytoTVTensorMixin):
                     )
                     mosaic_masks.append(gt_masks_i)
 
-                if (gt_polygons_i := getattr(results_patch, "polygons", None)) is not None and len(gt_masks_i) > 0:
+                if (gt_polygons_i := getattr(results_patch, "polygons", None)) is not None and len(gt_polygons_i) > 0:
                     gt_polygons_i = rescale_polygons(gt_polygons_i, float(scale_ratio_i))
                     gt_polygons_i = translate_polygons(
                         gt_polygons_i,
@@ -2073,12 +2073,14 @@ class RandomResize(tvt_v2.Transform, NumpytoTVTensorMixin):
 
     def __init__(
         self,
-        scale: tuple[int, int] | Sequence[tuple[int, int]],
+        scale: Sequence[int, int] | Sequence[tuple[int, int]],
         ratio_range: tuple[float, float] | None = None,
         is_numpy_to_tvtensor: bool = False,
         **resize_kwargs,
     ) -> None:
         super().__init__()
+        if isinstance(scale, list):
+            scale = tuple(scale)
         self.scale = scale
         self.ratio_range = ratio_range
         self.resize_kwargs = resize_kwargs
@@ -2227,8 +2229,8 @@ class RandomCrop(tvt_v2.Transform, NumpytoTVTensorMixin):
 
         img = to_np_image(inputs.image)
         orig_img_shape = img.shape[:2]
-        margin_h = max(img.shape[0] - crop_size[0], 0)
-        margin_w = max(img.shape[1] - crop_size[1], 0)
+        margin_h = max(orig_img_shape[0] - crop_size[0], 0)
+        margin_w = max(orig_img_shape[1] - crop_size[1], 0)
         offset_h, offset_w = self._rand_offset((margin_h, margin_w))
         crop_y1, crop_y2 = offset_h, offset_h + crop_size[0]
         crop_x1, crop_x2 = offset_w, offset_w + crop_size[1]
@@ -2431,7 +2433,9 @@ class FilterAnnotations(tvt_v2.Transform, NumpytoTVTensorMixin):
                     polygons = inputs.polygons
                     inputs.polygons = [polygons[i] for i in np.where(keep)[0]]
                 else:
-                    setattr(inputs, key, getattr(inputs, key)[keep])
+                    if len(attr := getattr(inputs, key)) == 0:
+                        continue
+                    setattr(inputs, key, attr[keep])
 
         return self.convert(inputs)
 
