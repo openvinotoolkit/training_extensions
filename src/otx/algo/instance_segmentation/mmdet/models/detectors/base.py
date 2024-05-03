@@ -7,22 +7,19 @@
 """MMDet BaseDetector."""
 from __future__ import annotations
 
-from abc import ABCMeta, abstractmethod
-from typing import TYPE_CHECKING, TypeAlias
+from typing import TYPE_CHECKING
 
-import torch
-from mmdet.structures.det_data_sample import DetDataSample
-from mmengine.model import BaseModel
-from torch import Tensor
-
-ForwardResults: TypeAlias = dict[str, torch.Tensor] | list[DetDataSample] | tuple[torch.Tensor] | torch.Tensor
+from otx.algo.modules.base_module import BaseModule
 
 if TYPE_CHECKING:
+    import torch
+    from mmdet.structures.det_data_sample import DetDataSample
     from mmengine.config import ConfigDict
     from mmengine.structures import InstanceData
+    from torch import nn
 
 
-class BaseDetector(BaseModel, metaclass=ABCMeta):
+class BaseDetector(BaseModule):
     """Base class for detectors.
 
     Args:
@@ -35,10 +32,11 @@ class BaseDetector(BaseModel, metaclass=ABCMeta):
 
     def __init__(
         self,
-        data_preprocessor: ConfigDict | dict | None = None,
+        data_preprocessor: nn.Module,
         init_cfg: ConfigDict | dict | list[ConfigDict | dict] | None = None,
     ):
-        super().__init__(data_preprocessor=data_preprocessor, init_cfg=init_cfg)
+        super().__init__(init_cfg=init_cfg)
+        self.data_preprocessor = data_preprocessor
 
     @property
     def with_neck(self) -> bool:
@@ -52,7 +50,12 @@ class BaseDetector(BaseModel, metaclass=ABCMeta):
             hasattr(self, "bbox_head") and self.bbox_head is not None
         )
 
-    def forward(self, inputs: torch.Tensor, data_samples: list[DetDataSample], mode: str = "tensor") -> ForwardResults:
+    def forward(
+        self,
+        inputs: torch.Tensor,
+        data_samples: list[DetDataSample],
+        mode: str = "tensor",
+    ) -> dict[str, torch.Tensor] | list[DetDataSample] | tuple[torch.Tensor] | torch.Tensor:
         """The unified entry for a forward process in both training and test.
 
         The method should accept three modes: "tensor", "predict" and "loss":
@@ -88,26 +91,6 @@ class BaseDetector(BaseModel, metaclass=ABCMeta):
             return self.predict(inputs, data_samples)
         msg = f"Invalid mode {mode}. Only supports loss and predict mode."
         raise RuntimeError(msg)
-
-    @abstractmethod
-    def loss(self, batch_inputs: Tensor, batch_data_samples: list[DetDataSample]) -> dict | tuple:
-        """Calculate losses from a batch of inputs and data samples."""
-
-    @abstractmethod
-    def predict(self, batch_inputs: Tensor, batch_data_samples: list[DetDataSample]) -> list[DetDataSample]:
-        """Predict results from a batch of inputs and data samples with post-processing."""
-
-    @abstractmethod
-    def _forward(self, batch_inputs: Tensor, batch_data_samples: list[DetDataSample]) -> tuple:
-        """Network forward process.
-
-        Usually includes backbone, neck and head forward without any post-
-        processing.
-        """
-
-    @abstractmethod
-    def extract_feat(self, batch_inputs: Tensor) -> tuple:
-        """Extract features from images."""
 
     def add_pred_to_datasample(
         self,
