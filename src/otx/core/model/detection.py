@@ -105,7 +105,7 @@ class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity]):
         return super()._export_parameters.wrap(
             model_type="ssd",
             task_type="detection",
-            confidence_threshold=self.hparams.get("best_confidence_threshold", 0.0),
+            confidence_threshold=self.hparams.get("best_confidence_threshold", None),
             iou_threshold=0.5,
             tile_config=self.tile_config if self.tile_config.enable_tiler else None,
         )
@@ -545,10 +545,10 @@ class OVDetectionModel(OVModel[DetBatchDataEntity, DetBatchPredEntity]):
                 "Cannot get best_confidence_threshold from OpenVINO IR's rt_info. "
                 "Please check whether this model is trained by OTX or not. "
                 "Without this information, it can produce a wrong F1 metric score. "
-                "At this time, it will be set as the default value = 0.0."
+                "At this time, it will be set as the default value = None."
             )
             log.warning(msg)
-            self.hparams["best_confidence_threshold"] = 0.0
+            self.hparams["best_confidence_threshold"] = None
 
         return Model.create_model(model_adapter, model_type=self.model_type, configuration=self.model_api_configuration)
 
@@ -643,6 +643,6 @@ class OVDetectionModel(OVModel[DetBatchDataEntity, DetBatchPredEntity]):
         }
 
     def _log_metrics(self, meter: Metric, key: Literal["val", "test"], **compute_kwargs) -> None:
-        best_confidence_threshold = self.hparams.get("best_confidence_threshold", 0.0)
+        best_confidence_threshold = self.hparams.get("best_confidence_threshold", None)
         compute_kwargs = {"best_confidence_threshold": best_confidence_threshold}
         return super()._log_metrics(meter, key, **compute_kwargs)
