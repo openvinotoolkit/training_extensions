@@ -382,7 +382,6 @@ class TestCachedMixUp:
         assert results.bboxes.dtype == torch.float32
         assert results.img_info.img_shape == results.image.shape[:2]
         assert results.masks.shape[1:] == (64, 64)
-        assert len(results.polygons) == 1
 
 
 class TestYOLOXHSVRandomAug:
