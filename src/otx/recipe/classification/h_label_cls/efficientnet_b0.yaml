@@ -22,7 +22,7 @@ model:
       class_path: lightning.pytorch.cli.ReduceLROnPlateau
       init_args:
         mode: max
-        factor: 0.1
+        factor: 0.5
         patience: 1
         monitor: val/accuracy
 
@@ -51,10 +51,13 @@ overrides:
         batch_size: 64
         to_tv_image: False
         transforms:
-          - class_path: otx.core.data.transform_libs.torchvision.RandomResizedCrop
+          - class_path: otx.core.data.transform_libs.torchvision.EfficientNetRandomCrop
             init_args:
               scale: 224
               backend: cv2
+          - class_path: otx.core.data.transform_libs.torchvision.RandomFlip
+            init_args:
+              prob: 0.5
               is_numpy_to_tvtensor: true
           - class_path: torchvision.transforms.v2.ToDtype
             init_args:
@@ -70,7 +73,6 @@ overrides:
         batch_size: 64
         to_tv_image: False
         transforms:
-          # TODO(harimkang): Need to revisit validation pipeline
           - class_path: otx.core.data.transform_libs.torchvision.Resize
             init_args:
               scale: 224
