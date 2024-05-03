@@ -152,83 +152,49 @@ class Benchmark:
             num_repeat = self.num_repeat  # Override by global setting
 
         for seed in range(num_repeat):
-            sub_work_dir = work_dir / str(seed)
-            tags["seed"] = str(seed)
+            try:
+                sub_work_dir = work_dir / str(seed)
+                tags["seed"] = str(seed)
 
-            # Train & test
-            command = [
-                "otx",
-                "train",
-                "--config",
-                f"src/otx/recipe/{model.task}/{model.name}.yaml",
-                "--data_root",
-                str(data_root),
-                "--work_dir",
-                str(sub_work_dir),
-                "--engine.device",
-                self.accelerator,
-            ]
-            for key, value in dataset.extra_overrides.get("train", {}).items():
-                command.append(f"--{key}")
-                command.append(str(value))
-            command.extend(["--seed", str(seed)])
-            # TODO(someone): Disable deterministic for instance segmentation as it causes OOM.
-            # https://github.com/pytorch/vision/issues/8168#issuecomment-1890599205
-            command.extend(["--deterministic", str(self.deterministic)])
-            if self.num_epoch > 0:
-                command.extend(["--max_epochs", str(self.num_epoch)])
-            start_time = time()
-            self._run_command(command)
-            extra_metrics = {"train/e2e_time": time() - start_time}
-            self._rename_raw_data(
-                work_dir=sub_work_dir / ".latest" / "train",
-                replaces={"train_": "train/", "{pre}": "train/"},
-            )
-            self._log_metrics(
-                work_dir=sub_work_dir / ".latest" / "train",
-                tags=tags,
-                criteria=criteria,
-                extra_metrics=extra_metrics,
-            )
-
-            command = [
-                "otx",
-                "test",
-                "--work_dir",
-                str(sub_work_dir),
-            ]
-            for key, value in dataset.extra_overrides.get("test", {}).items():
-                command.append(f"--{key}")
-                command.append(str(value))
-            self._run_command(command)
-            self._rename_raw_data(
-                work_dir=sub_work_dir / ".latest" / "test",
-                replaces={"test_": "test/", "{pre}": "test/"},
-            )
-            self._log_metrics(work_dir=sub_work_dir / ".latest" / "test", tags=tags, criteria=criteria)
-
-            # Export & test
-            if self.eval_upto in ["export", "optimize"]:
+                # Train & test
                 command = [
                     "otx",
-                    "export",
+                    "train",
+                    "--config",
+                    f"src/otx/recipe/{model.task}/{model.name}.yaml",
+                    "--data_root",
+                    str(data_root),
                     "--work_dir",
                     str(sub_work_dir),
+                    "--engine.device",
+                    self.accelerator,
                 ]
-                for key, value in dataset.extra_overrides.get("export", {}).items():
+                for key, value in dataset.extra_overrides.get("train", {}).items():
                     command.append(f"--{key}")
                     command.append(str(value))
+                command.extend(["--seed", str(seed)])
+                # TODO(someone): Disable deterministic for instance segmentation as it causes OOM.
+                # https://github.com/pytorch/vision/issues/8168#issuecomment-1890599205
+                command.extend(["--deterministic", str(self.deterministic)])
+                if self.num_epoch > 0:
+                    command.extend(["--max_epochs", str(self.num_epoch)])
+                start_time = time()
                 self._run_command(command)
+                extra_metrics = {"train/e2e_time": time() - start_time}
+                self._rename_raw_data(
+                    work_dir=sub_work_dir / ".latest" / "train",
+                    replaces={"train_": "train/", "{pre}": "train/"},
+                )
+                self._log_metrics(
+                    work_dir=sub_work_dir / ".latest" / "train",
+                    tags=tags,
+                    criteria=criteria,
+                    extra_metrics=extra_metrics,
+                )
 
-                exported_model_path = sub_work_dir / ".latest" / "export" / "exported_model.xml"
-                if not exported_model_path.exists():
-                    exported_model_path = sub_work_dir / ".latest" / "export" / "exported_model_decoder.xml"
-
-                command = [  # NOTE: not working for h_label_cls. to be fixed
+                command = [
                     "otx",
                     "test",
-                    "--checkpoint",
-                    str(exported_model_path),
                     "--work_dir",
                     str(sub_work_dir),
                 ]
@@ -236,53 +202,90 @@ class Benchmark:
                     command.append(f"--{key}")
                     command.append(str(value))
                 self._run_command(command)
-
                 self._rename_raw_data(
                     work_dir=sub_work_dir / ".latest" / "test",
-                    replaces={"test": "export", "{pre}": "export/"},
+                    replaces={"test_": "test/", "{pre}": "test/"},
                 )
                 self._log_metrics(work_dir=sub_work_dir / ".latest" / "test", tags=tags, criteria=criteria)
 
-            # Optimize & test
-            if self.eval_upto == "optimize":
-                command = [
-                    "otx",
-                    "optimize",
-                    "--checkpoint",
-                    str(exported_model_path),
-                    "--work_dir",
-                    str(sub_work_dir),
-                ]
-                for key, value in dataset.extra_overrides.get("optimize", {}).items():
-                    command.append(f"--{key}")
-                    command.append(str(value))
-                self._run_command(command)
+                # Export & test
+                if self.eval_upto in ["export", "optimize"]:
+                    command = [
+                        "otx",
+                        "export",
+                        "--work_dir",
+                        str(sub_work_dir),
+                    ]
+                    for key, value in dataset.extra_overrides.get("export", {}).items():
+                        command.append(f"--{key}")
+                        command.append(str(value))
+                    self._run_command(command)
 
-                optimized_model_path = sub_work_dir / ".latest" / "optimize" / "optimized_model.xml"
-                if not optimized_model_path.exists():
-                    optimized_model_path = sub_work_dir / ".latest" / "optimize" / "optimized_model_decoder.xml"
+                    exported_model_path = sub_work_dir / ".latest" / "export" / "exported_model.xml"
+                    if not exported_model_path.exists():
+                        exported_model_path = sub_work_dir / ".latest" / "export" / "exported_model_decoder.xml"
 
-                command = [
-                    "otx",
-                    "test",
-                    "--checkpoint",
-                    str(optimized_model_path),
-                    "--work_dir",
-                    str(sub_work_dir),
-                ]
-                for key, value in dataset.extra_overrides.get("test", {}).items():
-                    command.append(f"--{key}")
-                    command.append(str(value))
-                self._run_command(command)
+                    command = [  # NOTE: not working for h_label_cls. to be fixed
+                        "otx",
+                        "test",
+                        "--checkpoint",
+                        str(exported_model_path),
+                        "--work_dir",
+                        str(sub_work_dir),
+                    ]
+                    for key, value in dataset.extra_overrides.get("test", {}).items():
+                        command.append(f"--{key}")
+                        command.append(str(value))
+                    self._run_command(command)
 
-                self._rename_raw_data(
-                    work_dir=sub_work_dir / ".latest" / "test",
-                    replaces={"test": "optimize", "{pre}": "optimize/"},
-                )
-                self._log_metrics(work_dir=sub_work_dir / ".latest" / "test", tags=tags, criteria=criteria)
+                    self._rename_raw_data(
+                        work_dir=sub_work_dir / ".latest" / "test",
+                        replaces={"test": "export", "{pre}": "export/"},
+                    )
+                    self._log_metrics(work_dir=sub_work_dir / ".latest" / "test", tags=tags, criteria=criteria)
 
-            # Force memory clean up
-            gc.collect()
+                # Optimize & test
+                if self.eval_upto == "optimize":
+                    command = [
+                        "otx",
+                        "optimize",
+                        "--checkpoint",
+                        str(exported_model_path),
+                        "--work_dir",
+                        str(sub_work_dir),
+                    ]
+                    for key, value in dataset.extra_overrides.get("optimize", {}).items():
+                        command.append(f"--{key}")
+                        command.append(str(value))
+                    self._run_command(command)
+
+                    optimized_model_path = sub_work_dir / ".latest" / "optimize" / "optimized_model.xml"
+                    if not optimized_model_path.exists():
+                        optimized_model_path = sub_work_dir / ".latest" / "optimize" / "optimized_model_decoder.xml"
+
+                    command = [
+                        "otx",
+                        "test",
+                        "--checkpoint",
+                        str(optimized_model_path),
+                        "--work_dir",
+                        str(sub_work_dir),
+                    ]
+                    for key, value in dataset.extra_overrides.get("test", {}).items():
+                        command.append(f"--{key}")
+                        command.append(str(value))
+                    self._run_command(command)
+
+                    self._rename_raw_data(
+                        work_dir=sub_work_dir / ".latest" / "test",
+                        replaces={"test": "optimize", "{pre}": "optimize/"},
+                    )
+                    self._log_metrics(work_dir=sub_work_dir / ".latest" / "test", tags=tags, criteria=criteria)
+
+                # Force memory clean up
+                gc.collect()
+            except Exception as e:  # noqa: PERF203
+                print(f"Error with seed {seed}: {e}")
 
         result = self.load_result(work_dir)
         if result is None:
