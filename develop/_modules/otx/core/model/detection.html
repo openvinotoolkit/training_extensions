@@ -347,7 +347,7 @@
         <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_export_parameters</span><span class="o">.</span><span class="n">wrap</span><span class="p">(</span>
             <span class="n">model_type</span><span class="o">=</span><span class="s2">&quot;ssd&quot;</span><span class="p">,</span>
             <span class="n">task_type</span><span class="o">=</span><span class="s2">&quot;detection&quot;</span><span class="p">,</span>
-            <span class="n">confidence_threshold</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">hparams</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;best_confidence_threshold&quot;</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span>
+            <span class="n">confidence_threshold</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">hparams</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;best_confidence_threshold&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
             <span class="n">iou_threshold</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
             <span class="n">tile_config</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tile_config</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">tile_config</span><span class="o">.</span><span class="n">enable_tiler</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
         <span class="p">)</span>
@@ -811,10 +811,10 @@
                 <span class="s2">&quot;Cannot get best_confidence_threshold from OpenVINO IR&#39;s rt_info. &quot;</span>
                 <span class="s2">&quot;Please check whether this model is trained by OTX or not. &quot;</span>
                 <span class="s2">&quot;Without this information, it can produce a wrong F1 metric score. &quot;</span>
-                <span class="s2">&quot;At this time, it will be set as the default value = 0.0.&quot;</span>
+                <span class="s2">&quot;At this time, it will be set as the default value = None.&quot;</span>
             <span class="p">)</span>
             <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">hparams</span><span class="p">[</span><span class="s2">&quot;best_confidence_threshold&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">hparams</span><span class="p">[</span><span class="s2">&quot;best_confidence_threshold&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
 
         <span class="k">return</span> <span class="n">Model</span><span class="o">.</span><span class="n">create_model</span><span class="p">(</span><span class="n">model_adapter</span><span class="p">,</span> <span class="n">model_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model_type</span><span class="p">,</span> <span class="n">configuration</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model_api_configuration</span><span class="p">)</span>
 
@@ -909,7 +909,7 @@
         <span class="p">}</span>
 
     <span class="k">def</span> <span class="nf">_log_metrics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">meter</span><span class="p">:</span> <span class="n">Metric</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;val&quot;</span><span class="p">,</span> <span class="s2">&quot;test&quot;</span><span class="p">],</span> <span class="o">**</span><span class="n">compute_kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">best_confidence_threshold</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hparams</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;best_confidence_threshold&quot;</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+        <span class="n">best_confidence_threshold</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hparams</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;best_confidence_threshold&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
         <span class="n">compute_kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;best_confidence_threshold&quot;</span><span class="p">:</span> <span class="n">best_confidence_threshold</span><span class="p">}</span>
         <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_log_metrics</span><span class="p">(</span><span class="n">meter</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="o">**</span><span class="n">compute_kwargs</span><span class="p">)</span></div>
 
