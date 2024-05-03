@@ -19,6 +19,7 @@ from otx.core.data.transform_libs.torchvision import (
     CachedMixUp,
     CachedMosaic,
     DecodeVideo,
+    FilterAnnotations,
     MinIoURandomCrop,
     PackVideo,
     Pad,
@@ -698,4 +699,92 @@ class TestRandomCrop:
             f"recompute_bbox={recompute_bbox}, "
             f"bbox_clip_border={bbox_clip_border}, "
             f"is_numpy_to_tvtensor=False)"
+        )
+
+
+class TestFilterAnnotations:
+    @pytest.fixture()
+    def iseg_entity(self) -> InstanceSegDataEntity:
+        masks = np.zeros((3, 224, 224))
+        masks[..., 10:20, 10:20] = 1
+        masks[..., 20:40, 20:40] = 1
+        masks[..., 40:80, 40:80] = 1
+        return InstanceSegDataEntity(
+            image=np.random.random((224, 224, 3)),
+            img_info=ImageInfo(img_idx=0, img_shape=(224, 224), ori_shape=(224, 224)),
+            bboxes=tv_tensors.BoundingBoxes(
+                np.array([[10, 10, 20, 20], [20, 20, 40, 40], [40, 40, 80, 80]]), format="xyxy", canvas_size=(224, 224)
+            ),
+            labels=torch.LongTensor([1, 2, 3]),
+            masks=tv_tensors.Mask(masks),
+            polygons=[
+                Polygon(points=[10, 10, 10, 20, 20, 20, 20, 10]),
+                Polygon(points=[20, 20, 20, 40, 40, 40, 40, 20]),
+                Polygon(points=[40, 40, 40, 80, 80, 80, 80, 40]),
+            ],
+        )
+
+    @pytest.mark.parametrize("keep_empty", [True, False])
+    def test_forward_keep_empty_by_box(self, iseg_entity, keep_empty: bool) -> None:
+        transform = FilterAnnotations(min_gt_bbox_wh=(50, 50), keep_empty=keep_empty, by_box=True)
+
+        results = transform(deepcopy(iseg_entity))
+
+        if keep_empty:
+            assert np.all(results.image == iseg_entity.image)
+            assert torch.all(results.bboxes == iseg_entity.bboxes)
+            assert torch.all(results.masks == iseg_entity.masks)
+        else:
+            assert results.bboxes.shape[0] == 0
+            assert results.masks.shape[0] == 0
+            assert len(results.polygons) == 0
+
+    @pytest.mark.parametrize("keep_empty", [True, False])
+    def test_forward_keep_empty_by_mask(self, iseg_entity, keep_empty: bool) -> None:
+        transform = FilterAnnotations(min_gt_mask_area=2500, keep_empty=keep_empty, by_box=False, by_mask=True)
+
+        results = transform(deepcopy(iseg_entity))
+
+        if keep_empty:
+            assert np.all(results.image == iseg_entity.image)
+            assert torch.all(results.bboxes == iseg_entity.bboxes)
+            assert torch.all(results.masks == iseg_entity.masks)
+        else:
+            assert results.bboxes.shape[0] == 0
+            assert results.masks.shape[0] == 0
+            assert len(results.polygons) == 0
+
+    @pytest.mark.parametrize("keep_empty", [True, False])
+    def test_forward_keep_empty_by_polygon(self, iseg_entity, keep_empty: bool) -> None:
+        transform = FilterAnnotations(min_gt_mask_area=2500, keep_empty=keep_empty, by_box=False, by_polygon=True)
+
+        results = transform(deepcopy(iseg_entity))
+
+        if keep_empty:
+            assert np.all(results.image == iseg_entity.image)
+            assert torch.all(results.bboxes == iseg_entity.bboxes)
+            assert torch.all(results.masks == iseg_entity.masks)
+        else:
+            assert results.bboxes.shape[0] == 0
+            assert results.masks.shape[0] == 0
+            assert len(results.polygons) == 0
+
+    def test_forward(self, iseg_entity) -> None:
+        # test filter annotations
+        transform = FilterAnnotations(min_gt_bbox_wh=(15, 15))
+
+        results = transform(deepcopy(iseg_entity))
+
+        assert torch.all(results.labels == torch.LongTensor([2, 3]))
+        assert torch.all(results.bboxes == torch.tensor([[20, 20, 40, 40], [40, 40, 80, 80]]))
+        assert len(results.masks) == 2
+        assert len(results.polygons) == 2
+
+    def test_repr(self):
+        transform = FilterAnnotations(
+            min_gt_bbox_wh=(1, 1),
+            keep_empty=False,
+        )
+        assert (
+            repr(transform) == "FilterAnnotations(min_gt_bbox_wh=(1, 1), keep_empty=False, is_numpy_to_tvtensor=False)"
         )

@@ -842,3 +842,19 @@ def get_bboxes_from_polygons(polygons: list[Polygon], height: int, width: int) -
         boxes[idx, :2] = xy_min
         boxes[idx, 2:] = xy_max
     return boxes
+
+
+def area_polygon(x: np.ndarray, y: np.ndarray) -> np.ndarray:
+    """Compute the area of a component of a polygon.
+
+    Using the shoelace formula:
+    https://stackoverflow.com/questions/24467972/calculate-area-of-polygon-given-x-y-coordinates
+
+    Args:
+        x (ndarray): x coordinates of the component
+        y (ndarray): y coordinates of the component
+
+    Return:
+        (float): the are of the component
+    """
+    return 0.5 * np.abs(np.dot(x, np.roll(y, 1)) - np.dot(y, np.roll(x, 1)))

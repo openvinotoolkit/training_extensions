@@ -36,6 +36,7 @@ from otx.core.data.entity.base import (
 from otx.core.data.entity.instance_segmentation import InstanceSegDataEntity
 from otx.core.data.transform_libs.utils import (
     CV2_INTERP_CODES,
+    area_polygon,
     cache_randomness,
     centers_bboxes,
     clip_bboxes,
@@ -2186,6 +2187,7 @@ class RandomCrop(tvt_v2.Transform, NumpytoTVTensorMixin):
             on cropped instance masks. Defaults to False.
         bbox_clip_border (bool, optional): Whether clip the objects outside
             the border of the image. Defaults to True.
+        is_numpy_to_tvtensor(bool): Whether convert outputs to tensor. Defaults to False.
     """
 
     def __init__(
@@ -2343,6 +2345,101 @@ class RandomCrop(tvt_v2.Transform, NumpytoTVTensorMixin):
         repr_str += f"bbox_clip_border={self.bbox_clip_border}, "
         repr_str += f"is_numpy_to_tvtensor={self.is_numpy_to_tvtensor})"
         return repr_str
+
+
+class FilterAnnotations(tvt_v2.Transform, NumpytoTVTensorMixin):
+    """Implementation of mmdet.datasets.transforms.FilterAnnotations with torchvision format.
+
+    Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/datasets/transforms/loading.py#L713-L800
+
+    Args:
+        min_gt_bbox_wh (tuple[float]): Minimum width and height of ground truth
+            boxes. Default: (1., 1.)
+        min_gt_mask_area (int): Minimum foreground area of ground truth masks.
+            Default: 1
+        by_box (bool): Filter instances with bounding boxes not meeting the
+            min_gt_bbox_wh threshold. Default: True
+        by_mask (bool): Filter instances with masks not meeting
+            min_gt_mask_area threshold. Default: False
+        by_polygon (bool): Filter instances with polygons not meeting
+            min_gt_mask_area threshold. Default: False
+        keep_empty (bool): Whether to return DataEntity as it is when it
+            becomes an empty bbox after filtering. Defaults to True.
+        is_numpy_to_tvtensor(bool): Whether convert outputs to tensor. Defaults to False.
+    """
+
+    def __init__(
+        self,
+        min_gt_bbox_wh: tuple[int, int] = (1, 1),
+        min_gt_mask_area: int = 1,
+        by_box: bool = True,
+        by_mask: bool = False,
+        by_polygon: bool = False,
+        keep_empty: bool = True,
+        is_numpy_to_tvtensor: bool = False,
+    ) -> None:
+        super().__init__()
+        # TODO (mmdet): add more filter options
+        assert by_box or by_mask or by_polygon  # noqa: S101
+        self.min_gt_bbox_wh = min_gt_bbox_wh
+        self.min_gt_mask_area = min_gt_mask_area
+        self.by_box = by_box
+        self.by_mask = by_mask
+        self.by_polygon = by_polygon
+        self.keep_empty = keep_empty
+        self.is_numpy_to_tvtensor = is_numpy_to_tvtensor
+
+    def forward(self, *_inputs: T_OTXDataEntity) -> T_OTXDataEntity:
+        """Transform function to filter annotations."""
+        assert len(_inputs) == 1, "[tmp] Multiple entity is not supported yet."  # noqa: S101
+        inputs = _inputs[0]
+
+        assert hasattr(inputs, "bboxes")  # noqa: S101
+        bboxes = inputs.bboxes
+        if bboxes.shape[0] == 0:
+            return inputs
+
+        tests = []
+        if self.by_box:
+            widths = bboxes[..., 2] - bboxes[..., 0]
+            heights = bboxes[..., 3] - bboxes[..., 1]
+            tests.append(((widths > self.min_gt_bbox_wh[0]) & (heights > self.min_gt_bbox_wh[1])).numpy())
+        if self.by_mask:
+            assert hasattr(inputs, "masks")  # noqa: S101
+            areas = inputs.masks.sum((1, 2))
+            tests.append(areas >= self.min_gt_mask_area)
+        if self.by_polygon:
+            areas = []
+            for polygon in inputs.polygons:
+                x = np.asarray(polygon.points[0::2])
+                y = np.asarray(polygon.points[1::2])
+                areas.append(area_polygon(x, y))
+            areas = np.asarray(areas)
+            tests.append(areas >= self.min_gt_mask_area)
+
+        keep = tests[0]
+        for t in tests[1:]:
+            keep = keep & t
+
+        if not keep.any() and self.keep_empty:
+            return self.convert(inputs)
+
+        keys = ("bboxes", "labels", "masks", "polygons")
+        for key in keys:
+            if hasattr(inputs, key):
+                if key == "polygons":
+                    polygons = inputs.polygons
+                    inputs.polygons = [polygons[i] for i in np.where(keep)[0]]
+                else:
+                    setattr(inputs, key, getattr(inputs, key)[keep])
+
+        return self.convert(inputs)
+
+    def __repr__(self):
+        return (
+            self.__class__.__name__
+            + f"(min_gt_bbox_wh={self.min_gt_bbox_wh}, keep_empty={self.keep_empty}, is_numpy_to_tvtensor={self.is_numpy_to_tvtensor})"
+        )
 
 
 tvt_v2.PerturbBoundingBoxes = PerturbBoundingBoxes
