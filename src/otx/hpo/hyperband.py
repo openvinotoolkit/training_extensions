@@ -240,6 +240,28 @@ class Rung:
                 return trial
         return None
 
+    def get_finished_trials(self, mode: str = "max") -> List[AshaTrial]:
+        finished_trials = []
+        num_temp = []
+        num_trials_to_promote = self._num_required_trial // self._reduction_factor 
+        if num_trials_to_promote <= 0:
+            return []
+        for trial in self._trials:
+            if trial.rung == self._rung_idx and not trial.is_done():
+                continue
+            num_temp.append((trial, trial.get_best_score(mode, self.resource)))
+
+        if len(num_temp) <= num_trials_to_promote:
+            return []
+
+        num_temp = sorted(num_temp, key=lambda x : x[1], reverse=mode=="max")
+        criteria = num_temp[num_trials_to_promote - 1][1]
+        for trial, trial_score in num_temp[num_trials_to_promote:]:
+            if left_vlaue_is_better(criteria, trial_score, mode):
+                finished_trials.append(trial)
+
+        return finished_trials
+
 
 class Bracket:
     """Bracket class. It operates a single SHA using multiple rungs.
@@ -483,6 +505,13 @@ class Bracket:
                 for rung in self._rungs
             ],
         }
+
+    def get_finished_trials(self) -> List[AshaTrial]:
+        finished_trials = []
+        for rung in self._rungs[:-1]:
+            finished_trials.extend(rung.get_finished_trials(self._mode))
+
+        return finished_trials
 
 
 class HyperBand(HpoBase):
@@ -978,3 +1007,10 @@ class HyperBand(HpoBase):
         )
         for bracket in self._brackets.values():
             bracket.print_result()
+
+    def get_finished_trials(self) -> List[AshaTrial]:
+        finished_trials = []
+        for bracket in self._brackets.values():
+            finished_trials.extend(bracket.get_finished_trials())
+
+        return finished_trials
