@@ -14,6 +14,7 @@ import cv2
 import numpy as np
 import torch
 from datumaro import Polygon
+from shapely import geometry
 from torch import BoolTensor, Tensor
 
 CV2_INTERP_CODES = {
@@ -165,7 +166,7 @@ def rescale_polygons(polygons: list[Polygon], scale_factor: float | tuple[float,
         p = np.asarray(copy.deepcopy(polygon.points))
         p[0::2] *= w_scale
         p[1::2] *= h_scale
-        resized_polygons.append(Polygon(points=p.tolist()))
+        resized_polygons.append(Polygon(points=p.tolist(), label=polygon.label, z_order=polygon.z_order))
     return resized_polygons
 
 
@@ -270,7 +271,7 @@ def translate_polygons(
             p[0::2] = np.clip(p[0::2] + offset, 0, out_shape[1])
         elif direction == "vertical":
             p[1::2] = np.clip(p[1::2] + offset, 0, out_shape[0])
-        translated_polygons.append(Polygon(points=p.tolist()))
+        translated_polygons.append(Polygon(points=p.tolist(), label=polygon.label, z_order=polygon.z_order))
     return translated_polygons
 
 
@@ -669,7 +670,7 @@ def flip_polygons(polygons: list[Polygon], height: int, width: int, direction: s
         else:
             p[0::2] = width - p[0::2]
             p[1::2] = height - p[1::2]
-        flipped_masks.append(Polygon(points=p.tolist()))
+        flipped_masks.append(Polygon(points=p.tolist(), label=polygon.label, z_order=polygon.z_order))
     return flipped_masks
 
 
@@ -729,3 +730,115 @@ def corner2hbox(corners: Tensor) -> Tensor:
     min_xy = corners.min(dim=-2)[0]
     max_xy = corners.max(dim=-2)[0]
     return torch.cat([min_xy, max_xy], dim=-1)
+
+
+def crop_masks(masks: np.ndarray, bbox: np.ndarray) -> np.ndarray:
+    """Crop each mask by the given bbox."""
+    assert isinstance(bbox, np.ndarray)  # noqa: S101
+    assert bbox.ndim == 1  # noqa: S101
+
+    height, width = masks.shape[1:]
+
+    # clip the boundary
+    bbox = bbox.copy()
+    bbox[0::2] = np.clip(bbox[0::2], 0, width)
+    bbox[1::2] = np.clip(bbox[1::2], 0, height)
+    x1, y1, x2, y2 = bbox
+    w = np.maximum(x2 - x1, 1)
+    h = np.maximum(y2 - y1, 1)
+
+    return masks[:, y1 : y1 + h, x1 : x1 + w]
+
+
+def crop_polygons(polygons: list[Polygon], bbox: np.ndarray, height: int, width: int) -> list[Polygon]:
+    """Crop each polygon by the given bbox."""
+    assert isinstance(bbox, np.ndarray)  # noqa: S101
+    assert bbox.ndim == 1  # noqa: S101
+
+    # clip the boundary
+    bbox = bbox.copy()
+    bbox[0::2] = np.clip(bbox[0::2], 0, width)
+    bbox[1::2] = np.clip(bbox[1::2], 0, height)
+    x1, y1, x2, y2 = bbox
+
+    # reference: https://github.com/facebookresearch/fvcore/blob/main/fvcore/transforms/transform.py
+    crop_box = geometry.box(x1, y1, x2, y2).buffer(0.0)
+    cropped_polygons: list[Polygon] = []
+    # suppress shapely warnings util it incorporates GEOS>=3.11.2
+    # reference: https://github.com/shapely/shapely/issues/1345
+    initial_settings = np.seterr()
+    np.seterr(invalid="ignore")
+    for polygon in polygons:
+        p = np.asarray(copy.deepcopy(polygon.points))
+        p = geometry.Polygon(p.reshape(-1, 2)).buffer(0.0)
+        # polygon must be valid to perform intersection.
+        if not p.is_valid:
+            continue
+
+        cropped = p.intersection(crop_box)
+        if cropped.is_empty:
+            continue
+
+        cropped = cropped.geoms if isinstance(cropped, geometry.collection.BaseMultipartGeometry) else [cropped]
+
+        # one polygon may be cropped to multiple ones
+        cropped_poly_per_obj: list[Polygon] = []
+        for poly in cropped:
+            # ignore lines or points
+            if not isinstance(poly, geometry.Polygon) or not poly.is_valid:
+                continue
+
+            coords = np.asarray(poly.exterior.coords)
+
+            # remove an extra identical vertex at the end
+            coords = coords[:-1]
+            coords[:, 0] -= x1
+            coords[:, 1] -= y1
+            cropped_poly_per_obj.append(
+                Polygon(points=coords.reshape(-1).tolist(), label=polygon.label, z_order=polygon.z_order)
+            )
+
+        # a dummy polygon to avoid misalignment between masks and boxes
+        if len(cropped_poly_per_obj) == 0:
+            cropped_poly_per_obj.append(
+                Polygon(points=[0, 0, 0, 0, 0, 0], label=polygon.label, z_order=polygon.z_order)
+            )
+
+        cropped_polygons.extend(cropped_poly_per_obj)
+
+    np.seterr(**initial_settings)
+    return cropped_polygons
+
+
+def get_bboxes_from_masks(masks: Tensor) -> np.ndarray:
+    """Create boxes from masks."""
+    num_masks = len(masks)
+    bboxes = np.zeros((num_masks, 4), dtype=np.float32)
+
+    x_any = masks.any(axis=1)
+    y_any = masks.any(axis=2)
+    for idx in range(num_masks):
+        x = np.where(x_any[idx, :])[0]
+        y = np.where(y_any[idx, :])[0]
+        if len(x) > 0 and len(y) > 0:
+            # use +1 for x_max and y_max so that the right and bottom
+            # boundary of instance masks are fully included by the box
+            bboxes[idx, :] = np.array([x[0], y[0], x[-1] + 1, y[-1] + 1], dtype=np.float32)
+    return bboxes
+
+
+def get_bboxes_from_polygons(polygons: list[Polygon], height: int, width: int) -> np.ndarray:
+    """Create boxes from polygons."""
+    num_polygons = len(polygons)
+    boxes = np.zeros((num_polygons, 4), dtype=np.float32)
+    for idx, polygon in enumerate(polygons):
+        # simply use a number that is big enough for comparison with coordinates
+        xy_min = np.array([width * 2, height * 2], dtype=np.float32)
+        xy_max = np.zeros(2, dtype=np.float32)
+
+        xy = np.array(polygon.points).reshape(-1, 2).astype(np.float32)
+        xy_min = np.minimum(xy_min, np.min(xy, axis=0))
+        xy_max = np.maximum(xy_max, np.max(xy, axis=0))
+        boxes[idx, :2] = xy_min
+        boxes[idx, 2:] = xy_max
+    return boxes

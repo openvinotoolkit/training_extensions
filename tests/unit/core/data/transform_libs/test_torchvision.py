@@ -12,7 +12,7 @@ import pytest
 import torch
 from datumaro import Polygon
 from otx.core.data.entity.action_classification import ActionClsDataEntity
-from otx.core.data.entity.base import ImageInfo
+from otx.core.data.entity.base import ImageInfo, OTXDataEntity
 from otx.core.data.entity.detection import DetBatchDataEntity, DetDataEntity
 from otx.core.data.entity.instance_segmentation import InstanceSegBatchDataEntity, InstanceSegDataEntity
 from otx.core.data.transform_libs.torchvision import (
@@ -24,6 +24,7 @@ from otx.core.data.transform_libs.torchvision import (
     Pad,
     PhotoMetricDistortion,
     RandomAffine,
+    RandomCrop,
     RandomFlip,
     RandomResize,
     Resize,
@@ -507,3 +508,195 @@ class TestRandomResize:
         # the type of scale is invalid in init
         with pytest.raises(NotImplementedError):
             RandomResize([(224, 448), [112, 224]], keep_ratio=True)(deepcopy(entity))
+
+
+class TestRandomCrop:
+    @pytest.fixture()
+    def entity(self) -> OTXDataEntity:
+        return OTXDataEntity(
+            image=np.random.randint(0, 255, size=(24, 32), dtype=np.int32),
+            img_info=ImageInfo(img_idx=0, img_shape=(24, 32), ori_shape=(24, 32)),
+        )
+
+    @pytest.fixture()
+    def det_entity(self) -> DetDataEntity:
+        return DetDataEntity(
+            image=np.random.randint(0, 255, size=(10, 10), dtype=np.uint8),
+            img_info=ImageInfo(img_idx=0, img_shape=(10, 10), ori_shape=(10, 10)),
+            bboxes=tv_tensors.BoundingBoxes(
+                np.array([[0, 0, 7, 7], [2, 3, 9, 9]], dtype=np.float32),
+                format="xyxy",
+                canvas_size=(10, 10),
+            ),
+            labels=torch.LongTensor([0, 1]),
+        )
+
+    @pytest.fixture()
+    def iseg_entity(self) -> InstanceSegDataEntity:
+        return InstanceSegDataEntity(
+            image=np.random.randint(0, 255, size=(10, 10), dtype=np.uint8),
+            img_info=ImageInfo(img_idx=0, img_shape=(10, 10), ori_shape=(10, 10)),
+            bboxes=tv_tensors.BoundingBoxes(
+                np.array([[0, 0, 7, 7], [2, 3, 9, 9]], dtype=np.float32),
+                format="xyxy",
+                canvas_size=(10, 10),
+            ),
+            labels=torch.LongTensor([0, 1]),
+            masks=tv_tensors.Mask(np.zeros((2, 10, 10), np.uint8)),
+            polygons=[Polygon(points=[0, 0, 0, 7, 7, 7, 7, 0]), Polygon(points=[2, 3, 2, 9, 9, 9, 9, 3])],
+        )
+
+    def test_init_invalid_crop_type(self) -> None:
+        # test invalid crop_type
+        with pytest.raises(ValueError, match="Invalid crop_type"):
+            RandomCrop(crop_size=(10, 10), crop_type="unknown")
+
+    @pytest.mark.parametrize("crop_type", ["absolute", "absolute_range"])
+    @pytest.mark.parametrize("crop_size", [(0, 0), (0, 1), (1, 0)])
+    def test_init_invalid_value(self, crop_type: str, crop_size: tuple[int, int]) -> None:
+        # test h > 0 and w > 0
+        with pytest.raises(AssertionError):
+            RandomCrop(crop_size=crop_size, crop_type=crop_type)
+
+    @pytest.mark.parametrize("crop_type", ["absolute", "absolute_range"])
+    @pytest.mark.parametrize("crop_size", [(1.0, 1), (1, 1.0), (1.0, 1.0)])
+    def test_init_invalid_type(self, crop_type: str, crop_size: tuple[int, int]) -> None:
+        # test type(h) = int and type(w) = int
+        with pytest.raises(AssertionError):
+            RandomCrop(crop_size=crop_size, crop_type=crop_type)
+
+    def test_init_invalid_size(self) -> None:
+        # test crop_size[0] <= crop_size[1]
+        with pytest.raises(AssertionError):
+            RandomCrop(crop_size=(10, 5), crop_type="absolute_range")
+
+    @pytest.mark.parametrize("crop_type", ["relative_range", "relative"])
+    @pytest.mark.parametrize("crop_size", [(0, 1), (1, 0), (1.1, 0.5), (0.5, 1.1)])
+    def test_init_invalid_range(self, crop_type: str, crop_size: tuple[int | float]) -> None:
+        # test h in (0, 1] and w in (0, 1]
+        with pytest.raises(AssertionError):
+            RandomCrop(crop_size=crop_size, crop_type=crop_type)
+
+    @pytest.mark.parametrize(("crop_type", "crop_size"), [("relative", (0.5, 0.5)), ("absolute", (16, 12))])
+    def test_forward_relative_absolute(self, entity, crop_type: str, crop_size: tuple[float | int]) -> None:
+        # test relative and absolute crop
+        transform = RandomCrop(crop_size=crop_size, crop_type=crop_type)
+        target_shape = (12, 16)
+
+        results = transform(deepcopy(entity))
+
+        assert results.image.shape[:2] == target_shape
+
+    def test_forward_absolute_range(self, entity) -> None:
+        # test absolute_range crop
+        transform = RandomCrop(crop_size=(10, 20), crop_type="absolute_range")
+
+        results = transform(deepcopy(entity))
+
+        h, w = results.image.shape
+        assert 10 <= w <= 20
+        assert 10 <= h <= 20
+        assert results.img_info.img_shape == results.image.shape[:2]
+
+    def test_forward_relative_range(self, entity) -> None:
+        # test relative_range crop
+        transform = RandomCrop(crop_size=(0.5, 0.5), crop_type="relative_range")
+
+        results = transform(deepcopy(entity))
+
+        h, w = results.image.shape
+        assert 16 <= w <= 32
+        assert 12 <= h <= 24
+        assert results.img_info.img_shape == results.image.shape[:2]
+
+    def test_forward_bboxes_labels_masks_polygons(self, iseg_entity) -> None:
+        # test with bboxes, labels, masks, and polygons
+        transform = RandomCrop(crop_size=(7, 5), allow_negative_crop=False, recompute_bbox=False, bbox_clip_border=True)
+
+        results = transform(deepcopy(iseg_entity))
+
+        assert results.image.shape[:2] == (5, 7)
+        assert results.bboxes.shape[0] == 2
+        assert results.labels.shape[0] == 2
+        assert results.masks.shape[0] == 2
+        assert results.masks.shape[1:] == (5, 7)
+        assert results.img_info.img_shape == results.image.shape[:2]
+
+    def test_forward_recompute_bbox_from_mask(self, iseg_entity) -> None:
+        # test recompute_bbox = True
+        iseg_entity.bboxes = tv_tensors.wrap(torch.tensor([[0.1, 0.1, 0.2, 0.2]]), like=iseg_entity.bboxes)
+        iseg_entity.labels = torch.LongTensor([0])
+        iseg_entity.polygons = []
+        target_gt_bboxes = np.zeros((1, 4), dtype=np.float32)
+        transform = RandomCrop(
+            crop_size=(10, 11), allow_negative_crop=False, recompute_bbox=True, bbox_clip_border=True
+        )
+
+        results = transform(deepcopy(iseg_entity))
+
+        assert np.all(results.bboxes.numpy() == target_gt_bboxes)
+
+    def test_forward_recompute_bbox_from_polygon(self, iseg_entity) -> None:
+        # test recompute_bbox = True
+        iseg_entity.bboxes = tv_tensors.wrap(torch.tensor([[0.1, 0.1, 0.2, 0.2]]), like=iseg_entity.bboxes)
+        iseg_entity.labels = torch.LongTensor([0])
+        iseg_entity.masks = tv_tensors.Mask(np.zeros((0, *iseg_entity.img_info.img_shape), dtype=bool))
+        target_gt_bboxes = np.array([[0.0, 0.0, 7.0, 7.0]], dtype=np.float32)
+        transform = RandomCrop(
+            crop_size=(10, 11), allow_negative_crop=False, recompute_bbox=True, bbox_clip_border=True
+        )
+
+        results = transform(deepcopy(iseg_entity))
+
+        assert np.all(results.bboxes.numpy() == target_gt_bboxes)
+
+    def test_forward_bbox_clip_border_false(self, det_entity) -> None:
+        # test bbox_clip_border = False
+        det_entity.bboxes = tv_tensors.wrap(torch.tensor([[0.1, 0.1, 0.2, 0.2]]), like=det_entity.bboxes)
+        det_entity.labels = torch.LongTensor([0])
+        transform = RandomCrop(
+            crop_size=(10, 11), allow_negative_crop=False, recompute_bbox=True, bbox_clip_border=False
+        )
+
+        results = transform(deepcopy(det_entity))
+
+        assert torch.all(results.bboxes == det_entity.bboxes)
+
+    @pytest.mark.parametrize("allow_negative_crop", [True, False])
+    def test_forward_allow_negative_crop(self, det_entity, allow_negative_crop: bool) -> None:
+        # test the crop does not contain any gt-bbox allow_negative_crop = False
+        det_entity.image = np.random.randint(0, 255, size=(10, 10), dtype=np.uint8)
+        det_entity.bboxes = tv_tensors.wrap(torch.zeros((0, 4)), like=det_entity.bboxes)
+        det_entity.labels = torch.LongTensor()
+        transform = RandomCrop(crop_size=(5, 3), allow_negative_crop=allow_negative_crop)
+
+        results = transform(deepcopy(det_entity))
+
+        if allow_negative_crop:
+            assert results.image.shape == transform.crop_size[::-1]
+            assert len(results.bboxes) == len(det_entity.bboxes) == 0
+        else:
+            assert results.image.shape == det_entity.image.shape
+            assert np.all(results.image == det_entity.image)
+            assert len(results.bboxes) == len(det_entity.bboxes) == 0
+
+    def test_repr(self):
+        crop_type = "absolute"
+        crop_size = (10, 5)
+        allow_negative_crop = False
+        recompute_bbox = True
+        bbox_clip_border = False
+        transform = RandomCrop(
+            crop_size=crop_size,
+            crop_type=crop_type,
+            allow_negative_crop=allow_negative_crop,
+            recompute_bbox=recompute_bbox,
+            bbox_clip_border=bbox_clip_border,
+        )
+        assert (
+            repr(transform) == f"RandomCrop(crop_size={crop_size}, crop_type={crop_type}, "
+            f"allow_negative_crop={allow_negative_crop}, "
+            f"recompute_bbox={recompute_bbox}, "
+            f"bbox_clip_border={bbox_clip_border}, "
+            f"is_numpy_to_tvtensor=False)"
+        )

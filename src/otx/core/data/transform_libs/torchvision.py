@@ -39,10 +39,14 @@ from otx.core.data.transform_libs.utils import (
     cache_randomness,
     centers_bboxes,
     clip_bboxes,
+    crop_masks,
+    crop_polygons,
     flip_bboxes,
     flip_image,
     flip_masks,
     flip_polygons,
+    get_bboxes_from_masks,
+    get_bboxes_from_polygons,
     is_inside_bboxes,
     overlap_bboxes,
     project_bboxes,
@@ -2053,7 +2057,7 @@ class Pad(tvt_v2.Transform, NumpytoTVTensorMixin):
 
 
 class RandomResize(tvt_v2.Transform, NumpytoTVTensorMixin):
-    """Implementation of mmdet.datasets.transforms.Resize with torchvision format.
+    """Implementation of mmcv.transforms.RandomResize with torchvision format.
 
     Reference : https://github.com/open-mmlab/mmcv/blob/v2.1.0/mmcv/transforms/processing.py#L1381-L1562
 
@@ -2155,6 +2159,189 @@ class RandomResize(tvt_v2.Transform, NumpytoTVTensorMixin):
         repr_str += f"ratio_range={self.ratio_range}, "
         repr_str += f"is_numpy_to_tvtensor={self.is_numpy_to_tvtensor}, "
         repr_str += f"resize_kwargs={self.resize_kwargs})"
+        return repr_str
+
+
+class RandomCrop(tvt_v2.Transform, NumpytoTVTensorMixin):
+    """Implementation of mmdet.datasets.transforms.RandomCrop with torchvision format.
+
+    Reference : https://github.com/open-mmlab/mmcv/blob/v2.1.0/mmcv/transforms/processing.py#L1381-L1562
+
+    Args:
+        crop_size (tuple): The relative ratio or absolute pixels of
+            (width, height).
+        crop_type (str, optional): One of "relative_range", "relative",
+            "absolute", "absolute_range". "relative" randomly crops
+            (h * crop_size[0], w * crop_size[1]) part from an input of size
+            (h, w). "relative_range" uniformly samples relative crop size from
+            range [crop_size[0], 1] and [crop_size[1], 1] for height and width
+            respectively. "absolute" crops from an input with absolute size
+            (crop_size[0], crop_size[1]). "absolute_range" uniformly samples
+            crop_h in range [crop_size[0], min(h, crop_size[1])] and crop_w
+            in range [crop_size[0], min(w, crop_size[1])].
+            Defaults to "absolute".
+        allow_negative_crop (bool, optional): Whether to allow a crop that does
+            not contain any bbox area. Defaults to False.
+        recompute_bbox (bool, optional): Whether to re-compute the boxes based
+            on cropped instance masks. Defaults to False.
+        bbox_clip_border (bool, optional): Whether clip the objects outside
+            the border of the image. Defaults to True.
+    """
+
+    def __init__(
+        self,
+        crop_size: tuple,  # (W, H)
+        crop_type: str = "absolute",
+        allow_negative_crop: bool = False,
+        recompute_bbox: bool = False,
+        bbox_clip_border: bool = True,
+        is_numpy_to_tvtensor: bool = False,
+    ) -> None:
+        super().__init__()
+        if crop_type not in ["relative_range", "relative", "absolute", "absolute_range"]:
+            msg = f"Invalid crop_type {crop_type}."
+            raise ValueError(msg)
+        if crop_type in ["absolute", "absolute_range"]:
+            assert crop_size[0] > 0  # noqa: S101
+            assert crop_size[1] > 0  # noqa: S101
+            assert isinstance(crop_size[0], int)  # noqa: S101
+            assert isinstance(crop_size[1], int)  # noqa: S101
+            if crop_type == "absolute_range":
+                assert crop_size[0] <= crop_size[1]  # noqa: S101
+        else:
+            assert 0 < crop_size[0] <= 1  # noqa: S101
+            assert 0 < crop_size[1] <= 1  # noqa: S101
+        self.crop_size = crop_size
+        self.crop_type = crop_type
+        self.allow_negative_crop = allow_negative_crop
+        self.bbox_clip_border = bbox_clip_border
+        self.recompute_bbox = recompute_bbox
+        self.is_numpy_to_tvtensor = is_numpy_to_tvtensor
+
+    def _crop_data(self, inputs: T_OTXDataEntity, crop_size: tuple[int, int], allow_negative_crop: bool) -> dict | None:
+        """Function to randomly crop images, bounding boxes, masks, semantic segmentation maps."""
+        assert crop_size[0] > 0  # noqa: S101
+        assert crop_size[1] > 0  # noqa: S101
+
+        img = to_np_image(inputs.image)
+        orig_img_shape = img.shape[:2]
+        margin_h = max(img.shape[0] - crop_size[0], 0)
+        margin_w = max(img.shape[1] - crop_size[1], 0)
+        offset_h, offset_w = self._rand_offset((margin_h, margin_w))
+        crop_y1, crop_y2 = offset_h, offset_h + crop_size[0]
+        crop_x1, crop_x2 = offset_w, offset_w + crop_size[1]
+
+        # crop the image
+        img = img[crop_y1:crop_y2, crop_x1:crop_x2, ...]
+        cropped_img_shape = img.shape[:2]
+
+        # crop bboxes accordingly and clip to the image boundary
+        if (bboxes := getattr(inputs, "bboxes", None)) is not None:
+            bboxes = translate_bboxes(bboxes, [-offset_w, -offset_h])
+            if self.bbox_clip_border:
+                bboxes = clip_bboxes(bboxes, cropped_img_shape)
+
+            valid_inds = is_inside_bboxes(bboxes, cropped_img_shape).numpy()
+            # If the crop does not contain any gt-bbox area and
+            # allow_negative_crop is False, skip this image.
+            if not valid_inds.any() and not allow_negative_crop:
+                return inputs
+
+            inputs.bboxes = tv_tensors.BoundingBoxes(bboxes[valid_inds], format="XYXY", canvas_size=cropped_img_shape)
+
+            if (labels := getattr(inputs, "labels", None)) is not None:
+                inputs.labels = labels[valid_inds]
+
+            if (masks := getattr(inputs, "masks", None)) is not None and len(masks) > 0:
+                masks = masks.numpy() if not isinstance(masks, np.ndarray) else masks
+                inputs.masks = crop_masks(
+                    masks[valid_inds.nonzero()[0]], np.asarray([crop_x1, crop_y1, crop_x2, crop_y2])
+                )
+
+                if self.recompute_bbox:
+                    inputs.bboxes = tv_tensors.wrap(
+                        torch.as_tensor(get_bboxes_from_masks(inputs.masks)), like=inputs.bboxes
+                    )
+
+            if (polygons := getattr(inputs, "polygons", None)) is not None and len(polygons) > 0:
+                inputs.polygons = crop_polygons(
+                    [polygons[i] for i in valid_inds.nonzero()[0]],
+                    np.asarray([crop_x1, crop_y1, crop_x2, crop_y2]),
+                    *orig_img_shape,
+                )
+
+                if self.recompute_bbox:
+                    inputs.bboxes = tv_tensors.wrap(
+                        torch.as_tensor(get_bboxes_from_polygons(inputs.polygons, *cropped_img_shape)),
+                        like=inputs.bboxes,
+                    )
+
+        inputs.image = img
+        inputs.img_info = _crop_image_info(inputs.img_info, *cropped_img_shape)
+
+        return inputs
+
+    @cache_randomness
+    def _rand_offset(self, margin: tuple[int, int]) -> tuple[int, int]:
+        """Randomly generate crop offset.
+
+        Args:
+            margin (tuple[int, int]): The upper bound for the offset generated
+                randomly.
+
+        Returns:
+            tuple[int, int]: The random offset for the crop.
+        """
+        margin_h, margin_w = margin
+        offset_h = np.random.randint(0, margin_h + 1)
+        offset_w = np.random.randint(0, margin_w + 1)
+
+        return offset_h, offset_w
+
+    @cache_randomness
+    def _get_crop_size(self, image_size: tuple[int, int]) -> tuple[int, int]:
+        """Randomly generates the absolute crop size based on `crop_type` and `image_size`.
+
+        Args:
+            image_size (tuple[int, int]): (h, w).
+
+        Returns:
+            crop_size (tuple[int, int]): (crop_h, crop_w) in absolute pixels.
+        """
+        h, w = image_size
+        if self.crop_type == "absolute":
+            return min(self.crop_size[1], h), min(self.crop_size[0], w)
+
+        if self.crop_type == "absolute_range":
+            crop_h = np.random.randint(min(h, self.crop_size[0]), min(h, self.crop_size[1]) + 1)
+            crop_w = np.random.randint(min(w, self.crop_size[0]), min(w, self.crop_size[1]) + 1)
+            return crop_h, crop_w
+
+        if self.crop_type == "relative":
+            crop_w, crop_h = self.crop_size
+            return int(h * crop_h + 0.5), int(w * crop_w + 0.5)
+
+        # 'relative_range'
+        crop_size = np.asarray(self.crop_size, dtype=np.float32)
+        crop_h, crop_w = crop_size + np.random.rand(2) * (1 - crop_size)
+        return int(h * crop_h + 0.5), int(w * crop_w + 0.5)
+
+    def forward(self, *_inputs: T_OTXDataEntity) -> T_OTXDataEntity:
+        """Transform function to randomly crop images, bounding boxes, masks, and polygons."""
+        assert len(_inputs) == 1, "[tmp] Multiple entity is not supported yet."  # noqa: S101
+        inputs = _inputs[0]
+
+        crop_size = self._get_crop_size(inputs.img_info.img_shape)
+        return self.convert(self._crop_data(inputs, crop_size, self.allow_negative_crop))
+
+    def __repr__(self) -> str:
+        repr_str = self.__class__.__name__
+        repr_str += f"(crop_size={self.crop_size}, "
+        repr_str += f"crop_type={self.crop_type}, "
+        repr_str += f"allow_negative_crop={self.allow_negative_crop}, "
+        repr_str += f"recompute_bbox={self.recompute_bbox}, "
+        repr_str += f"bbox_clip_border={self.bbox_clip_border}, "
+        repr_str += f"is_numpy_to_tvtensor={self.is_numpy_to_tvtensor})"
         return repr_str
 
 
