@@ -13,7 +13,8 @@ import torch
 from datumaro import Polygon
 from otx.core.data.entity.action_classification import ActionClsDataEntity
 from otx.core.data.entity.base import ImageInfo
-from otx.core.data.entity.detection import DetDataEntity
+from otx.core.data.entity.detection import DetBatchDataEntity, DetDataEntity
+from otx.core.data.entity.instance_segmentation import InstanceSegBatchDataEntity, InstanceSegDataEntity
 from otx.core.data.transform_libs.torchvision import (
     CachedMixUp,
     CachedMosaic,
@@ -24,6 +25,7 @@ from otx.core.data.transform_libs.torchvision import (
     PhotoMetricDistortion,
     RandomAffine,
     RandomFlip,
+    RandomResize,
     Resize,
     YOLOXHSVRandomAug,
 )
@@ -98,7 +100,7 @@ class TestMinIoURandomCrop:
     def min_iou_random_crop(self) -> MinIoURandomCrop:
         return MinIoURandomCrop()
 
-    def test_forward(self, min_iou_random_crop, det_data_entity) -> None:
+    def test_forward(self, min_iou_random_crop: MinIoURandomCrop, det_data_entity: DetDataEntity) -> None:
         """Test forward."""
         results = min_iou_random_crop(deepcopy(det_data_entity))
 
@@ -126,8 +128,8 @@ class TestResize:
     )
     def test_forward_only_image(
         self,
-        resize,
-        fxt_det_data_entity,
+        resize: Resize,
+        fxt_det_data_entity: tuple[tuple, DetDataEntity, DetBatchDataEntity],
         keep_ratio: bool,
         expected_shape: tuple,
         expected_scale_factor: tuple,
@@ -162,8 +164,8 @@ class TestResize:
     )
     def test_forward_bboxes_masks_polygons(
         self,
-        resize,
-        fxt_inst_seg_data_entity,
+        resize: Resize,
+        fxt_inst_seg_data_entity: tuple[tuple, InstanceSegDataEntity, InstanceSegBatchDataEntity],
         keep_ratio: bool,
         expected_shape: tuple,
     ) -> None:
@@ -198,7 +200,11 @@ class TestRandomFlip:
     def random_flip(self) -> RandomFlip:
         return RandomFlip(prob=1.0)
 
-    def test_forward(self, random_flip, fxt_inst_seg_data_entity) -> None:
+    def test_forward(
+        self,
+        random_flip: RandomFlip,
+        fxt_inst_seg_data_entity: tuple[tuple, InstanceSegDataEntity, InstanceSegBatchDataEntity],
+    ) -> None:
         """Test forward."""
         entity = deepcopy(fxt_inst_seg_data_entity[0])
         entity.image = entity.image.transpose(1, 2, 0)
@@ -234,7 +240,7 @@ class TestPhotoMetricDistortion:
     def photo_metric_distortion(self) -> PhotoMetricDistortion:
         return PhotoMetricDistortion()
 
-    def test_forward(self, photo_metric_distortion, det_data_entity) -> None:
+    def test_forward(self, photo_metric_distortion: PhotoMetricDistortion, det_data_entity: DetDataEntity) -> None:
         """Test forward."""
         results = photo_metric_distortion(deepcopy(det_data_entity))
 
@@ -258,7 +264,7 @@ class TestRandomAffine:
     def test_init_invalid_scaling_ratio_range_zero_value(self) -> None:
         RandomAffine(scaling_ratio_range=(0, 0.5))
 
-    def test_forward(self, random_affine, det_data_entity) -> None:
+    def test_forward(self, random_affine: RandomAffine, det_data_entity: DetDataEntity) -> None:
         """Test forward."""
         results = random_affine(deepcopy(det_data_entity))
 
@@ -282,7 +288,11 @@ class TestCachedMosaic:
     def test_init_invalid_probability(self) -> None:
         CachedMosaic(prob=1.5)
 
-    def test_forward_pop_small_cache(self, cached_mosaic, fxt_inst_seg_data_entity) -> None:
+    def test_forward_pop_small_cache(
+        self,
+        cached_mosaic: CachedMosaic,
+        fxt_inst_seg_data_entity: tuple[tuple, InstanceSegDataEntity, InstanceSegBatchDataEntity],
+    ) -> None:
         """Test forward for popping cache."""
         cached_mosaic.max_cached_images = 4
         cached_mosaic.results_cache = [fxt_inst_seg_data_entity[0]] * cached_mosaic.max_cached_images
@@ -297,7 +307,11 @@ class TestCachedMosaic:
         assert np.all(results.image == fxt_inst_seg_data_entity[0].image)
         assert torch.all(results.bboxes == fxt_inst_seg_data_entity[0].bboxes)
 
-    def test_forward(self, cached_mosaic, fxt_inst_seg_data_entity) -> None:
+    def test_forward(
+        self,
+        cached_mosaic: CachedMosaic,
+        fxt_inst_seg_data_entity: tuple[tuple, InstanceSegDataEntity, InstanceSegBatchDataEntity],
+    ) -> None:
         """Test forward."""
         entity = deepcopy(fxt_inst_seg_data_entity[0])
         entity.image = entity.image.transpose(1, 2, 0)
@@ -328,7 +342,11 @@ class TestCachedMixUp:
     def test_init_invalid_probability(self) -> None:
         CachedMosaic(prob=1.5)
 
-    def test_forward_pop_small_cache(self, cached_mixup, fxt_inst_seg_data_entity) -> None:
+    def test_forward_pop_small_cache(
+        self,
+        cached_mixup: CachedMixUp,
+        fxt_inst_seg_data_entity: tuple[tuple, InstanceSegDataEntity, InstanceSegBatchDataEntity],
+    ) -> None:
         """Test forward for popping cache."""
         cached_mixup.max_cached_images = 1  # force to set to 1 for this test
         cached_mixup.results_cache = [fxt_inst_seg_data_entity[0]] * cached_mixup.max_cached_images
@@ -343,7 +361,11 @@ class TestCachedMixUp:
         assert np.all(results.image == fxt_inst_seg_data_entity[0].image)
         assert torch.all(results.bboxes == fxt_inst_seg_data_entity[0].bboxes)
 
-    def test_forward(self, cached_mixup, fxt_inst_seg_data_entity) -> None:
+    def test_forward(
+        self,
+        cached_mixup: CachedMixUp,
+        fxt_inst_seg_data_entity: tuple[tuple, InstanceSegDataEntity, InstanceSegBatchDataEntity],
+    ) -> None:
         """Test forward."""
         entity = deepcopy(fxt_inst_seg_data_entity[0])
         entity.image = entity.image.transpose(1, 2, 0)
@@ -367,7 +389,7 @@ class TestYOLOXHSVRandomAug:
     def yolox_hsv_random_aug(self) -> YOLOXHSVRandomAug:
         return YOLOXHSVRandomAug()
 
-    def test_forward(self, yolox_hsv_random_aug, det_data_entity) -> None:
+    def test_forward(self, yolox_hsv_random_aug: YOLOXHSVRandomAug, det_data_entity: DetDataEntity) -> None:
         """Test forward."""
         results = yolox_hsv_random_aug(deepcopy(det_data_entity))
 
@@ -378,7 +400,9 @@ class TestYOLOXHSVRandomAug:
 
 
 class TestPad:
-    def test_forward(self, fxt_inst_seg_data_entity) -> None:
+    def test_forward(
+        self, fxt_inst_seg_data_entity: tuple[tuple, InstanceSegDataEntity, InstanceSegBatchDataEntity]
+    ) -> None:
         entity = deepcopy(fxt_inst_seg_data_entity[0])
         entity.image = entity.image.transpose(1, 2, 0)
 
@@ -418,3 +442,68 @@ class TestPad:
 
         assert results.image.shape[:2] == (132, 132)
         assert results.masks.shape[1:] == (132, 132)
+
+
+class TestRandomResize:
+    def test_init(self):
+        transform = RandomResize((224, 224), (1.0, 2.0))
+        assert transform.scale == (224, 224)
+
+    def test_repr(self):
+        transform = RandomResize((224, 224), (1.0, 2.0))
+        transform_str = str(transform)
+        assert isinstance(transform_str, str)
+
+    def test_forward(self, fxt_inst_seg_data_entity: tuple[tuple, InstanceSegDataEntity, InstanceSegBatchDataEntity]):
+        entity = deepcopy(fxt_inst_seg_data_entity[0])
+        entity.image = entity.image.transpose(1, 2, 0)
+
+        # choose target scale from init when override is True
+        transform = RandomResize((224, 224), (1.0, 2.0))
+
+        results = transform(deepcopy(entity))
+
+        assert results.img_info.img_shape[0] >= 224
+        assert results.img_info.img_shape[0] <= 448
+        assert results.img_info.img_shape[1] >= 224
+        assert results.img_info.img_shape[1] <= 448
+
+        # keep ratio is True
+        transform = RandomResize((224, 224), (1.0, 2.0), keep_ratio=True, transform_bbox=True, transform_mask=True)
+
+        results = transform(deepcopy(entity))
+
+        assert results.image.shape[0] >= 224
+        assert results.image.shape[0] <= 448
+        assert results.image.shape[1] >= 224
+        assert results.image.shape[1] <= 448
+        assert results.img_info.img_shape[0] >= 224
+        assert results.img_info.img_shape[0] <= 448
+        assert results.img_info.img_shape[1] >= 224
+        assert results.img_info.img_shape[1] <= 448
+        assert results.img_info.scale_factor[0] == results.img_info.scale_factor[1]
+        assert results.bboxes[0, 2] == entity.bboxes[0, 2] * results.img_info.scale_factor[0]
+        assert results.bboxes[0, 3] == entity.bboxes[0, 3] * results.img_info.scale_factor[1]
+        assert results.masks.shape[1] >= 224
+        assert results.masks.shape[1] <= 448
+        assert results.masks.shape[2] >= 224
+        assert results.masks.shape[2] <= 448
+
+        # keep ratio is False
+        transform = RandomResize((224, 224), (1.0, 2.0), keep_ratio=False, transform_bbox=True, transform_mask=True)
+
+        results = transform(deepcopy(entity))
+
+        # choose target scale from init when override is False and scale is a list of tuples
+        transform = RandomResize([(224, 448), (112, 224)], keep_ratio=False, transform_bbox=True, transform_mask=True)
+
+        results = transform(deepcopy(entity))
+
+        assert results.img_info.img_shape[1] >= 112
+        assert results.img_info.img_shape[1] <= 224
+        assert results.img_info.img_shape[0] >= 224
+        assert results.img_info.img_shape[0] <= 448
+
+        # the type of scale is invalid in init
+        with pytest.raises(NotImplementedError):
+            RandomResize([(224, 448), [112, 224]], keep_ratio=True)(deepcopy(entity))

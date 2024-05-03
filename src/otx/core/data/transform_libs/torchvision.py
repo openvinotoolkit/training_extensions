@@ -2052,6 +2052,112 @@ class Pad(tvt_v2.Transform, NumpytoTVTensorMixin):
         return self.convert(inputs)
 
 
+class RandomResize(tvt_v2.Transform, NumpytoTVTensorMixin):
+    """Implementation of mmdet.datasets.transforms.Resize with torchvision format.
+
+    Reference : https://github.com/open-mmlab/mmcv/blob/v2.1.0/mmcv/transforms/processing.py#L1381-L1562
+
+    Args:
+        scale (tuple or Sequence[tuple]): Images scales for resizing.
+            Defaults to None.
+        ratio_range (tuple[float], optional): (min_ratio, max_ratio).
+            Defaults to None.
+        is_numpy_to_tvtensor(bool): Whether convert outputs to tensor. Defaults to False.
+        **resize_kwargs: Other keyword arguments for the ``resize_type``.
+    """
+
+    def __init__(
+        self,
+        scale: tuple[int, int] | Sequence[tuple[int, int]],
+        ratio_range: tuple[float, float] | None = None,
+        is_numpy_to_tvtensor: bool = False,
+        **resize_kwargs,
+    ) -> None:
+        super().__init__()
+        self.scale = scale
+        self.ratio_range = ratio_range
+        self.resize_kwargs = resize_kwargs
+        self.is_numpy_to_tvtensor = is_numpy_to_tvtensor
+        self.resize = Resize(scale=0, **resize_kwargs)
+
+    @staticmethod
+    def _random_sample(scales: list[tuple[int, int]]) -> tuple:
+        """Private function to randomly sample a scale from a list of tuples.
+
+        Args:
+            scales (list[tuple]): Images scale range for sampling.
+                There must be two tuples in scales, which specify the lower
+                and upper bound of image scales.
+
+        Returns:
+            (tuple): The targeted scale of the image to be resized.
+        """
+        assert isinstance(scales, list)  # noqa: S101
+        assert all(isinstance(scale, tuple) for scale in scales)  # noqa: S101
+        assert len(scales) == 2  # noqa: S101
+        scale_0 = [scales[0][0], scales[1][0]]
+        scale_1 = [scales[0][1], scales[1][1]]
+        edge_0 = np.random.randint(min(scale_0), max(scale_0) + 1)
+        edge_1 = np.random.randint(min(scale_1), max(scale_1) + 1)
+        return (edge_0, edge_1)
+
+    @staticmethod
+    def _random_sample_ratio(scale: tuple, ratio_range: tuple[float, float]) -> tuple:
+        """Private function to randomly sample a scale from a tuple.
+
+        A ratio will be randomly sampled from the range specified by
+        ``ratio_range``. Then it would be multiplied with ``scale`` to
+        generate sampled scale.
+
+        Args:
+            scale (tuple): Images scale base to multiply with ratio.
+            ratio_range (tuple[float]): The minimum and maximum ratio to scale
+                the ``scale``.
+
+        Returns:
+            (tuple): The targeted scale of the image to be resized.
+        """
+        assert isinstance(scale, tuple)  # noqa: S101
+        assert len(scale) == 2  # noqa: S101
+        min_ratio, max_ratio = ratio_range
+        assert min_ratio <= max_ratio  # noqa: S101
+        ratio = np.random.random_sample() * (max_ratio - min_ratio) + min_ratio
+        return int(scale[0] * ratio), int(scale[1] * ratio)
+
+    @cache_randomness
+    def _random_scale(self) -> tuple:
+        """Private function to randomly sample an scale according to the type of ``scale``.
+
+        Returns:
+            (tuple): The targeted scale of the image to be resized.
+        """
+        if isinstance(self.scale, tuple) and all(isinstance(s, int) for s in self.scale):
+            assert self.ratio_range is not None  # noqa: S101
+            assert len(self.ratio_range) == 2  # noqa: S101
+            scale = self._random_sample_ratio(self.scale, self.ratio_range)
+        elif all(isinstance(s, tuple) for s in self.scale):
+            scale = self._random_sample(self.scale)
+        else:
+            msg = f'Do not support sampling function for "{self.scale}"'
+            raise NotImplementedError(msg)
+
+        return scale
+
+    def forward(self, *_inputs: T_OTXDataEntity) -> T_OTXDataEntity:
+        """Transform function to resize images, bounding boxes, semantic segmentation map."""
+        self.resize.scale = self._random_scale()
+        return self.convert(self.resize(*_inputs))
+
+    def __repr__(self) -> str:
+        # TODO (sungchul): update other's repr
+        repr_str = self.__class__.__name__
+        repr_str += f"(scale={self.scale}, "
+        repr_str += f"ratio_range={self.ratio_range}, "
+        repr_str += f"is_numpy_to_tvtensor={self.is_numpy_to_tvtensor}, "
+        repr_str += f"resize_kwargs={self.resize_kwargs})"
+        return repr_str
+
+
 tvt_v2.PerturbBoundingBoxes = PerturbBoundingBoxes
 tvt_v2.PadtoSquare = PadtoSquare
 tvt_v2.ResizetoLongestEdge = ResizetoLongestEdge
