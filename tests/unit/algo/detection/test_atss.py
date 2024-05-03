@@ -13,7 +13,7 @@ class TestATSS:
         model = MobileNetV2ATSS(2)
         mock_load_ckpt = mocker.patch.object(OTXv1Helper, "load_det_ckpt")
         model.load_from_otx_v1_ckpt({})
-        mock_load_ckpt.assert_called_once_with({}, "model.model.")
+        mock_load_ckpt.assert_called_once_with({}, "model.")
 
         assert isinstance(model._export_parameters, TaskLevelExportParameters)
         assert isinstance(model._exporter, OTXModelExporter)
