@@ -21,6 +21,16 @@ from .history import summary
 log = logging.getLogger(__name__)
 
 
+class AggregateError(Exception):
+    def __init__(self, errors):
+        error_messages = []
+        for seed, error in errors:
+            error_messages.append(f"Seed {seed}: {error}")
+        error_message = "\n".join(error_messages)
+
+        super().__init__(f"Exceptions occurred in the following seeds:\n{error_message}")
+
+
 class Benchmark:
     """Benchmark runner for OTX2.x.
 
@@ -151,6 +161,7 @@ class Benchmark:
         if self.num_repeat > 0:
             num_repeat = self.num_repeat  # Override by global setting
 
+        exceptions = []
         for seed in range(num_repeat):
             try:
                 sub_work_dir = work_dir / str(seed)
@@ -285,7 +296,11 @@ class Benchmark:
                 # Force memory clean up
                 gc.collect()
             except Exception as e:  # noqa: PERF203
-                print(f"Error with seed {seed}: {e}")
+                exceptions.append((seed, str(e)))
+
+        if exceptions:
+            # Raise the custom exception with all collected errors
+            raise AggregateError(exceptions)
 
         result = self.load_result(work_dir)
         if result is None:
