@@ -371,7 +371,7 @@ class Engine:
             model_cls = self.model.__class__
             model = model_cls.load_from_checkpoint(checkpoint_path=checkpoint)
 
-        if model.label_info != self.datamodule.label_info:
+        if model.label_info.as_dict() != self.datamodule.label_info.as_dict():
             msg = (
                 "To launch a test pipeline, the label information should be same "
                 "between the training and testing datasets. "
@@ -452,7 +452,7 @@ class Engine:
             model_cls = self.model.__class__
             model = model_cls.load_from_checkpoint(checkpoint_path=checkpoint)
 
-        if model.label_info != self.datamodule.label_info:
+        if model.label_info.as_dict() != self.datamodule.label_info.as_dict():
             msg = (
                 "To launch a predict pipeline, the label information should be same "
                 "between the training and testing datasets. "
@@ -691,7 +691,7 @@ class Engine:
             model_cls = model.__class__
             model = model_cls.load_from_checkpoint(checkpoint_path=checkpoint)
 
-        if model.label_info != self.datamodule.label_info:
+        if model.label_info.as_dict() != self.datamodule.label_info.as_dict():
             msg = (
                 "To launch a explain pipeline, the label information should be same "
                 "between the training and testing datasets. "
