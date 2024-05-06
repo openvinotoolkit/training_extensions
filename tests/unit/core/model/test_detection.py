@@ -72,7 +72,7 @@ class TestOTXDetectionModel:
             metric=FMeasureCallable,
         )
 
-        model.load_state_dict(mock_ckpt)
+        model.on_load_checkpoint(mock_ckpt)
 
         assert model.hparams["best_confidence_threshold"] == 0.35
 
