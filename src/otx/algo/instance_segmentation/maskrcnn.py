@@ -162,7 +162,7 @@ class MMDetMaskRCNN(MMDetInstanceSegCompatibleModel):
             data_samples,
         )
 
-    def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.model.") -> dict:
+    def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.") -> dict:
         """Load the previous OTX ckpt according to OTX2.0."""
         return OTXv1Helper.load_iseg_ckpt(state_dict, add_prefix)
 
