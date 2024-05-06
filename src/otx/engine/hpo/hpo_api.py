@@ -11,15 +11,17 @@ import time
 from functools import partial
 from pathlib import Path
 from threading import Thread
-from typing import TYPE_CHECKING, Any, Callable
+from typing import TYPE_CHECKING, Any, Callable, Literal
 
 import torch
 
 from otx.core.config.hpo import HpoConfig
 from otx.core.optimizer.callable import OptimizerCallableSupportHPO
+from otx.core.schedulers import LinearWarmupSchedulerCallable, SchedulerCallableSupportHPO
+from otx.core.types.device import DeviceType
 from otx.core.types.task import OTXTaskType
 from otx.hpo import HyperBand, run_hpo_loop
-from otx.utils.utils import get_decimal_point, get_using_dot_delimited_key, remove_matched_files
+from otx.utils.utils import get_decimal_point, get_using_dot_delimited_key, is_xpu_available, remove_matched_files
 
 from .hpo_trial import run_hpo_trial
 from .utils import find_trial_file, get_best_hpo_weight, get_callable_args_name, get_hpo_weight_dir, get_metric
@@ -32,12 +34,6 @@ if TYPE_CHECKING:
     from otx.hpo.hpo_base import HpoBase
 
 logger = logging.getLogger(__name__)
-
-AVAILABLE_HP_NAME_MAP = {
-    "data.config.train_subset.batch_size": "datamodule.config.train_subset.batch_size",
-    "optimizer": "optimizer_callable.optimizer_kwargs",
-    # "scheduler": "scheduler.keywords",  NOTE need to revisit after SchedulerCallableSupportHPO is implemted
-}
 
 
 def execute_hpo(
@@ -67,7 +63,7 @@ def execute_hpo(
         msg = "Zero shot visual prompting task doesn't support HPO."
         raise RuntimeError(msg)
     if "anomaly.padim" in str(type(engine.model)).lower():
-        msg = "Padim doesn't need HPO. HPO is skipped."
+        msg = "Padim doesn't need HPO."
         raise RuntimeError(msg)
 
     engine.model.patch_optimizer_and_scheduler_for_hpo()
@@ -81,6 +77,13 @@ def execute_hpo(
         hpo_workdir=hpo_workdir,
         callbacks=callbacks,
     )
+    if (
+        train_args.get("adaptive_bs", None) == "Full"
+        and "datamodule.config.train_subset.batch_size" in hpo_configurator.hpo_config["search_space"]
+    ):
+        logger.info("Because adaptive_bs is set as Full, batch size is excluded from HPO.")
+        hpo_configurator.hpo_config["search_space"].pop("datamodule.config.train_subset.batch_size")
+
     if (hpo_algo := hpo_configurator.get_hpo_algo()) is None:
         logger.warning("HPO is skipped.")
         return None, None
@@ -99,15 +102,15 @@ def execute_hpo(
             metric_name=hpo_config.metric_name,
             **_adjust_train_args(train_args),
         ),
-        "gpu" if torch.cuda.is_available() else "cpu",
+        _get_resource_type() if engine.device.accelerator == DeviceType.auto else engine.device.accelerator,  # type: ignore[arg-type]
         num_parallel_trial=hpo_configurator.hpo_config["num_workers"],
     )
 
     best_trial = hpo_algo.get_best_config()
-    if best_trial is None:
-        best_config = None
-        best_hpo_weight = None
-    else:
+
+    best_config = None
+    best_hpo_weight = None
+    if best_trial is not None:
         best_config = best_trial["configuration"]
         if (trial_file := find_trial_file(hpo_workdir, best_trial["id"])) is not None:
             best_hpo_weight = get_best_hpo_weight(get_hpo_weight_dir(hpo_workdir, best_trial["id"]), trial_file)
@@ -240,20 +243,49 @@ class HPOConfigurator:
             "step": 10 ** -get_decimal_point(min_lr),
         }
 
-    @staticmethod
-    def _align_hp_name(search_space: dict[str, Any]) -> None:
+    def _align_hp_name(self, search_space: dict[str, Any]) -> None:
+        available_hp_name_map: dict[str, Callable[[str], None]] = {
+            "data.config.train_subset.batch_size": lambda hp_name: self._replace_hp_name(
+                hp_name,
+                "data.config.train_subset.batch_size",
+                "datamodule.config.train_subset.batch_size",
+            ),
+            "optimizer": lambda hp_name: self._replace_hp_name(
+                hp_name,
+                "optimizer",
+                "optimizer_callable.optimizer_kwargs",
+            ),
+            "scheduler": self._align_scheduler_name,
+        }
+
         for hp_name in list(search_space.keys()):
-            for valid_hp in AVAILABLE_HP_NAME_MAP:
+            for valid_hp in available_hp_name_map:
                 if valid_hp in hp_name:
-                    new_hp_name = hp_name.replace(valid_hp, AVAILABLE_HP_NAME_MAP[valid_hp])
-                    search_space[new_hp_name] = search_space.pop(hp_name)
+                    available_hp_name_map[valid_hp](hp_name)
                     break
             else:
                 error_msg = (
                     "Given hyper parameter can't be optimized by HPO. "
-                    f"Please choose one from {','.join(AVAILABLE_HP_NAME_MAP)}."
+                    f"Please choose one from {','.join(available_hp_name_map)}."
                 )
                 raise ValueError(error_msg)
+
+    def _align_scheduler_name(self, hp_name: str) -> None:
+        if isinstance(self._engine.model.scheduler_callable, LinearWarmupSchedulerCallable):
+            if "main_scheduler_callable" in hp_name:
+                self._replace_hp_name(
+                    hp_name,
+                    "scheduler.main_scheduler_callable",
+                    "scheduler_callable.main_scheduler_callable.scheduler_kwargs",
+                )
+            else:
+                self._replace_hp_name(hp_name, "scheduler", "scheduler_callable")
+        elif isinstance(self._engine.model.scheduler_callable, SchedulerCallableSupportHPO):
+            self._replace_hp_name(hp_name, "scheduler", "scheduler_callable.scheduler_kwargs")
+
+    def _replace_hp_name(self, ori_hp_name: str, old: str, new: str) -> None:
+        new_hp_name = ori_hp_name.replace(old, new)
+        self._hpo_config["search_space"][new_hp_name] = self._hpo_config["search_space"].pop(ori_hp_name)
 
     @staticmethod
     def _remove_wrong_search_space(search_space: dict[str, dict[str, Any]]) -> None:
@@ -288,9 +320,18 @@ def _adjust_train_args(train_args: dict[str, Any]) -> dict[str, Any]:
     train_args.update(train_args.pop("kwargs", {}))
     train_args.pop("self", None)
     train_args.pop("run_hpo", None)
+    train_args.pop("adaptive_bs", None)
 
     return train_args
 
 
 def _remove_unused_model_weights(hpo_workdir: Path, best_hpo_weight: Path | None = None) -> None:
     remove_matched_files(hpo_workdir, "*.ckpt", best_hpo_weight)
+
+
+def _get_resource_type() -> Literal[DeviceType.cpu, DeviceType.gpu, DeviceType.xpu]:
+    if torch.cuda.is_available():
+        return DeviceType.gpu
+    if is_xpu_available():
+        return DeviceType.xpu
+    return DeviceType.cpu

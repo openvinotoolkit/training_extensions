@@ -19,7 +19,7 @@ HeadForwardFn = Callable[[FeatureMapType], torch.Tensor]
 ExplainerForwardFn = HeadForwardFn
 
 
-def get_feature_vector(feature_map: FeatureMapType) -> torch.Tensor:
+def feature_vector_fn(feature_map: FeatureMapType) -> torch.Tensor:
     """Generate the feature vector by average pooling feature maps."""
     if isinstance(feature_map, (list, tuple)):
         # aggregate feature maps from Feature Pyramid Network
@@ -311,8 +311,11 @@ class DetClassProbabilityMap(BaseExplainAlgo):
         return saliency_map.reshape((batch_size, self._num_classes, height, width))
 
 
-class MaskRCNNExplainAlgo(BaseExplainAlgo):
-    """Dummy saliency map algo for Mask R-CNN model."""
+class InstSegExplainAlgo(BaseExplainAlgo):
+    """Dummy saliency map algo for Mask R-CNN and RTMDetInst model.
+
+    Predicted masks are combined and aggregated per-class to generate the saliency maps.
+    """
 
     def __init__(self, num_classes: int) -> None:
         super().__init__()

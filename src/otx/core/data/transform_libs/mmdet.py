@@ -99,14 +99,13 @@ class LoadAnnotations(MMDetLoadAnnotations):
             gt_masks (BitmapMasks or PolygonMasks): The generated ground truth masks.
         """
         if len(otx_data_entity.masks):
-            gt_masks = BitmapMasks(otx_data_entity.masks.numpy(), height, width)
-        else:
-            gt_masks = PolygonMasks(
-                [[np.array(polygon.points)] for polygon in otx_data_entity.polygons],
-                height,
-                width,
-            )
-        return gt_masks
+            return BitmapMasks(otx_data_entity.masks.numpy(), height, width)
+
+        return PolygonMasks(
+            [[np.array(polygon.points)] for polygon in otx_data_entity.polygons],
+            height,
+            width,
+        )
 
 
 @TRANSFORMS.register_module(force=True)
@@ -266,7 +265,7 @@ class PerturbBoundingBoxes(BaseTransform):
         def get_randomness(length: int) -> int:
             if offset_bbox == 0:
                 return 0
-            return np.random.normal(0, min(length * 0.1, offset_bbox))  # noqa: NPY002
+            return np.random.normal(0, min(length * 0.1, offset_bbox))
 
         x1, y1, x2, y2 = bbox
         return np.array(

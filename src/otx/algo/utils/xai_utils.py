@@ -96,6 +96,10 @@ def convert_maps_to_dict_all(saliency_map: list[np.ndarray]) -> list[dict[Any, n
     """Convert salincy maps to dict for TargetExplainGroup.ALL."""
     processed_saliency_maps = []
     for maps_per_image in saliency_map:
+        if maps_per_image.size == 0:
+            processed_saliency_maps.append({0: np.zeros((1, 1, 1))})
+            continue
+
         if maps_per_image.ndim != 3:
             msg = "Shape mismatch."
             raise ValueError(msg)
@@ -179,11 +183,10 @@ def _get_image_data_name(
     subset_name: str = "test",
 ) -> tuple[np.array, str]:
     subset = datamodule.subsets[subset_name]
-    image_name = subset.ids[img_id]
-    item = subset.dm_subset.get(id=image_name, subset=subset_name)
+    item = subset.dm_subset.as_dataset()[img_id]
     img = item.media_as(Image)
     img_data, _ = subset._get_img_data_and_shape(img)  # noqa: SLF001
-    image_save_name = "".join([char if char.isalnum() else "_" for char in image_name])
+    image_save_name = "".join([char if char.isalnum() else "_" for char in item.id])
     return img_data, image_save_name
 
 

@@ -4,63 +4,124 @@
 """SegNext model implementations."""
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Literal
+from typing import TYPE_CHECKING, Any, ClassVar
 
-from otx.algo.utils.mmconfig import read_mmconfig
+from otx.algo.segmentation.backbones import MSCAN
+from otx.algo.segmentation.heads import LightHamHead
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
-from otx.core.exporter.base import OTXModelExporter
-from otx.core.exporter.native import OTXNativeModelExporter
-from otx.core.metrics.dice import SegmCallable
-from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
-from otx.core.model.segmentation import MMSegCompatibleModel
-from otx.core.schedulers import LRSchedulerListCallable
-from otx.core.utils.utils import get_mean_std_from_data_processing
+from otx.core.model.segmentation import TorchVisionCompatibleModel
+
+from .base_model import BaseSegmModel
 
 if TYPE_CHECKING:
-    from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
-
-    from otx.core.metrics import MetricCallable
+    from torch import nn
 
 
-class SegNext(MMSegCompatibleModel):
+class SegNextB(BaseSegmModel):
+    """SegNextB Model."""
+
+    default_backbone_configuration: ClassVar[dict[str, Any]] = {
+        "act_cfg": {"type": "GELU"},
+        "attention_kernel_paddings": [2, [0, 3], [0, 5], [0, 10]],
+        "attention_kernel_sizes": [5, [1, 7], [1, 11], [1, 21]],
+        "depths": [3, 3, 12, 3],
+        "drop_path_rate": 0.1,
+        "drop_rate": 0.0,
+        "embed_dims": [64, 128, 320, 512],
+        "mlp_ratios": [8, 8, 4, 4],
+        "norm_cfg": {"requires_grad": True, "type": "BN"},
+        "pretrained_weights": "https://download.openmmlab.com/mmsegmentation/v0.5/pretrain/segnext/mscan_b_20230227-3ab7d230.pth",
+    }
+    default_decode_head_configuration: ClassVar[dict[str, Any]] = {
+        "ham_kwargs": {"md_r": 16, "md_s": 1, "eval_steps": 7, "train_steps": 6},
+        "in_channels": [128, 320, 512],
+        "in_index": [1, 2, 3],
+        "norm_cfg": {"num_groups": 32, "requires_grad": True, "type": "GN"},
+        "align_corners": False,
+        "channels": 512,
+        "dropout_ratio": 0.1,
+        "ham_channels": 512,
+    }
+
+
+class SegNextS(BaseSegmModel):
+    """SegNextS Model."""
+
+    default_backbone_configuration: ClassVar[dict[str, Any]] = {
+        "act_cfg": {"type": "GELU"},
+        "attention_kernel_paddings": [2, [0, 3], [0, 5], [0, 10]],
+        "attention_kernel_sizes": [5, [1, 7], [1, 11], [1, 21]],
+        "depths": [2, 2, 4, 2],
+        "drop_path_rate": 0.1,
+        "drop_rate": 0.0,
+        "embed_dims": [64, 128, 320, 512],
+        "mlp_ratios": [8, 8, 4, 4],
+        "norm_cfg": {"requires_grad": True, "type": "BN"},
+        "pretrained_weights": "https://download.openmmlab.com/mmsegmentation/v0.5/pretrain/segnext/mscan_s_20230227-f33ccdf2.pth",
+    }
+    default_decode_head_configuration: ClassVar[dict[str, Any]] = {
+        "norm_cfg": {"num_groups": 32, "requires_grad": True, "type": "GN"},
+        "ham_kwargs": {"md_r": 16, "md_s": 1, "eval_steps": 7, "rand_init": True, "train_steps": 6},
+        "in_channels": [128, 320, 512],
+        "in_index": [1, 2, 3],
+        "align_corners": False,
+        "channels": 256,
+        "dropout_ratio": 0.1,
+        "ham_channels": 256,
+    }
+
+
+class SegNextT(BaseSegmModel):
+    """SegNextT Model."""
+
+    default_backbone_configuration: ClassVar[dict[str, Any]] = {
+        "act_cfg": {"type": "GELU"},
+        "attention_kernel_paddings": [2, [0, 3], [0, 5], [0, 10]],
+        "attention_kernel_sizes": [5, [1, 7], [1, 11], [1, 21]],
+        "depths": [3, 3, 5, 2],
+        "drop_path_rate": 0.1,
+        "drop_rate": 0.0,
+        "embed_dims": [32, 64, 160, 256],
+        "mlp_ratios": [8, 8, 4, 4],
+        "norm_cfg": {"requires_grad": True, "type": "BN"},
+        "pretrained_weights": "https://download.openmmlab.com/mmsegmentation/v0.5/pretrain/segnext/mscan_t_20230227-119e8c9f.pth",
+    }
+    default_decode_head_configuration: ClassVar[dict[str, Any]] = {
+        "ham_kwargs": {"md_r": 16, "md_s": 1, "eval_steps": 7, "rand_init": True, "train_steps": 6},
+        "norm_cfg": {"num_groups": 32, "requires_grad": True, "type": "GN"},
+        "in_channels": [64, 160, 256],
+        "in_index": [1, 2, 3],
+        "align_corners": False,
+        "channels": 256,
+        "dropout_ratio": 0.1,
+        "ham_channels": 256,
+    }
+
+
+SEGNEXT_VARIANTS = {
+    "SegNextB": SegNextB,
+    "SegNextS": SegNextS,
+    "SegNextT": SegNextT,
+}
+
+
+class OTXSegNext(TorchVisionCompatibleModel):
     """SegNext Model."""
 
-    def __init__(
-        self,
-        num_classes: int,
-        variant: Literal["b", "s", "t"],
-        optimizer: OptimizerCallable = DefaultOptimizerCallable,
-        scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
-        metric: MetricCallable = SegmCallable,  # type: ignore[assignment]
-        torch_compile: bool = False,
-    ) -> None:
-        model_name = f"segnext_{variant}"
-        config = read_mmconfig(model_name=model_name)
-        super().__init__(
-            num_classes=num_classes,
-            config=config,
-            optimizer=optimizer,
-            scheduler=scheduler,
-            metric=metric,
-            torch_compile=torch_compile,
+    def _create_model(self) -> nn.Module:
+        segnext_model_class = SEGNEXT_VARIANTS[self.name_base_model]
+        # merge configurations with defaults overriding them
+        backbone_configuration = self.backbone_configuration | segnext_model_class.default_backbone_configuration
+        decode_head_configuration = (
+            self.decode_head_configuration | segnext_model_class.default_decode_head_configuration
         )
-
-    @property
-    def _exporter(self) -> OTXModelExporter:
-        """Creates OTXModelExporter object that can export the model."""
-        mean, std = get_mean_std_from_data_processing(self.config)
-
-        return OTXNativeModelExporter(
-            task_level_export_parameters=self._export_parameters,
-            input_size=self.image_size,
-            mean=mean,
-            std=std,
-            resize_mode="standard",
-            pad_value=0,
-            swap_rgb=False,
-            via_onnx=False,
-            onnx_export_configuration=None,
-            output_names=None,
+        # initialize backbones
+        backbone = MSCAN(**backbone_configuration)
+        decode_head = LightHamHead(num_classes=self.num_classes, **decode_head_configuration)
+        return segnext_model_class(
+            backbone=backbone,
+            decode_head=decode_head,
+            criterion_configuration=self.criterion_configuration,
         )
 
     def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.model.") -> dict:
@@ -73,7 +134,7 @@ class SegNext(MMSegCompatibleModel):
         # TODO(Kirill): check PTQ removing hamburger from ignored_scope
         return {
             "ignored_scope": {
-                "patterns": ["__module.decode_head.hamburger*"],
+                "patterns": ["__module.model.decode_head.hamburger*"],
                 "types": [
                     "Add",
                     "MVN",

@@ -7,14 +7,14 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Callable
 
 import numpy as np
-from openvino.model_api.adapters.utils import RESIZE_TYPES, InputTransform
-from openvino.model_api.models.model import Model
-from openvino.model_api.models.utils import (
+from model_api.adapters.utils import RESIZE_TYPES, InputTransform
+from model_api.models.model import Model
+from model_api.models.utils import (
     ClassificationResult,
 )
 
 if TYPE_CHECKING:
-    from openvino.model_api.adapters import OpenvinoAdapter
+    from model_api.adapters import OpenvinoAdapter
 
 
 def get_multiclass_predictions(logits: np.ndarray) -> ClassificationResult:

@@ -28,7 +28,7 @@ from otx.core.data.entity.anomaly import (
 )
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.types.export import OTXExportFormatType, TaskLevelExportParameters
-from otx.core.types.label import LabelInfo, NullLabelInfo
+from otx.core.types.label import NullLabelInfo
 from otx.core.types.precision import OTXPrecisionType
 from otx.core.types.task import OTXTaskType
 
@@ -205,27 +205,6 @@ class OTXAnomaly:
         else:
             msg = f"Unexpected task type: {value}"
             raise ValueError(msg)
-
-    @property
-    def label_info(self) -> LabelInfo:
-        """Get this model label information."""
-        return self._label_info
-
-    @label_info.setter
-    def label_info(self, value: LabelInfo | list[str]) -> None:
-        """Set this model label information.
-
-        It changes the number of classes to 2 and sets the labels as Normal and Anomaly.
-        This is because Datumaro returns multiple classes from the dataset. If self.label_info != 2,
-        then It will call self._reset_prediction_layer() to reset the prediction layer. Which is not required.
-
-        This overrides the OTXModel's label_info setter.
-        """
-        if isinstance(value, list):
-            # value can be greater than 2 as datumaro returns all anomalous categories separately
-            self._label_info = LabelInfo(label_names=["Normal", "Anomaly"], label_groups=[["Normal", "Anomaly"]])
-        else:
-            self._label_info = value
 
     def _extract_mean_scale_from_transforms(self, transforms: list[Transform]) -> None:
         """Extract mean and scale values from transforms."""

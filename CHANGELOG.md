@@ -8,6 +8,54 @@ All notable changes to this project will be documented in this file.
 
 ### Enhancements
 
+## \[v1.6.1\]
+
+### Enhancements
+
+- Update pymongo version to 4.6.3 for resolving CVE-2024-21506
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3396>)
+- Use torchvision in MRCNN on CUDA
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3347>)
+- Update IPEX version in installation guide documentation
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3343>)
+- Update benchmark
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3338>)
+- Bump idan version to 3.7
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3332>)
+- Support benchmark history summary
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3307>)
+- Pin pymongo version to 4.5.0
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3316>)
+- Upgrade MAPI
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3304>)
+- Add NMS iou threshold configurable parameter
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3287>)
+- Remedy some medium/low severity bandit issues
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3208>)
+- Update documentations
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3280>)
+- Add perf benchmark test cases for action and visual prompting
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3292>)
+
+### Bug fixes
+
+- Explicitly cast incorrect output type in OV model
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3395>)
+- Update QAT configs for rotated detection
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3375>)
+- Hotfix :wrench: Bypass ClsIncrSampler for tiling
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3374>)
+- [NNCF] Dynamic shape datasets WA
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3355>)
+- [Hotfix] :fire: Fixing detection oriented OV inferencer
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3351>)
+- Revert adaptive batch size
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3340>)
+- Fix e2e tests for XPU
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3305>)
+- Remove torch.xpu.optimize for semantic_segmentation task
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3172>)
+
 ## \[1.6.0\]
 
 ### New features

@@ -3,7 +3,7 @@ import pytest
 import torch
 from lightning import Trainer
 from lightning.pytorch.utilities.types import LRSchedulerConfig
-from openvino.model_api.models.utils import ClassificationResult
+from model_api.models.utils import ClassificationResult
 from otx.core.data.entity.base import OTXBatchDataEntity
 from otx.core.model.base import OTXModel, OVModel
 from otx.core.schedulers.warmup_schedulers import LinearWarmupScheduler
@@ -22,12 +22,12 @@ class MockNNModule(torch.nn.Module):
 class TestOTXModel:
     def test_smart_weight_loading(self, mocker) -> None:
         with mocker.patch.object(OTXModel, "_create_model", return_value=MockNNModule(2)):
-            prev_model = OTXModel(num_classes=2)
+            prev_model = OTXModel(label_info=2)
             prev_model.label_info = ["car", "truck"]
             prev_state_dict = prev_model.state_dict()
 
         with mocker.patch.object(OTXModel, "_create_model", return_value=MockNNModule(3)):
-            current_model = OTXModel(num_classes=3)
+            current_model = OTXModel(label_info=3)
             current_model.classification_layers = ["model.head.weight", "model.head.bias"]
             current_model.classification_layers = {
                 "model.head.weight": {"stride": 1, "num_extra_classes": 0},
@@ -57,7 +57,7 @@ class TestOTXModel:
         mock_main_scheduler = mocker.create_autospec(spec=torch.optim.lr_scheduler.LRScheduler)
 
         with mocker.patch.object(OTXModel, "_create_model", return_value=MockNNModule(3)):
-            current_model = OTXModel(num_classes=3)
+            current_model = OTXModel(label_info=3)
 
         mock_trainer = mocker.create_autospec(spec=Trainer)
         mock_trainer.lr_scheduler_configs = [
@@ -87,6 +87,16 @@ class TestOTXModel:
 
         # Regardless of the activation status, LinearWarmupScheduler can be called
         assert mock_linear_warmup_scheduler.step.call_count == 2
+
+    def test_v1_checkpoint_loading(self, mocker):
+        model = OTXModel(label_info=3)
+        mocker.patch.object(model, "load_from_otx_v1_ckpt", return_value={})
+        v1_ckpt = {
+            "model": {"state_dict": {"backbone": torch.randn(2, 2)}},
+            "labels": {"label_0": (), "label_1": (), "label_2": ()},
+            "VERSION": 1,
+        }
+        assert model.load_state_dict_incrementally(v1_ckpt) is None
 
 
 class TestOVModel:

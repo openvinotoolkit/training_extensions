@@ -5,7 +5,7 @@
 from __future__ import annotations
 
 import importlib
-from typing import TYPE_CHECKING, Any, Sequence
+from typing import TYPE_CHECKING, Any
 
 from torch import nn
 from torch.optim.optimizer import Optimizer
@@ -20,10 +20,12 @@ if TYPE_CHECKING:
 class OptimizerCallableSupportHPO:
     """Optimizer callable supports OTX hyper-parameter optimization (HPO) algorithm.
 
+    It makes OptimizerCallable pickelable and accessible to parameters.
+    It is used for HPO and adaptive batch size.
+
     Args:
         optimizer_cls: Optimizer class type or string class import path. See examples for details.
         optimizer_kwargs: Keyword arguments used for the initialization of the given `optimizer_cls`.
-        search_hparams: Sequence of optimizer hyperparameter names which can be tuned by the OTX HPO algorithm.
 
     Examples:
         This is an example to create `MobileNetV3ForMulticlassCls` with a `SGD` optimizer and
@@ -69,7 +71,6 @@ class OptimizerCallableSupportHPO:
         self,
         optimizer_cls: type[Optimizer] | str,
         optimizer_kwargs: dict[str, int | float | bool],
-        search_hparams: Sequence[str] = ("lr",),
     ):
         if isinstance(optimizer_cls, str):
             splited = optimizer_cls.split(".")
@@ -84,15 +85,6 @@ class OptimizerCallableSupportHPO:
         else:
             raise TypeError(optimizer_cls)
 
-        for search_hparam in search_hparams:
-            if search_hparam not in optimizer_kwargs:
-                msg = (
-                    f"Search hyperparamter={search_hparam} should be existed in "
-                    f"optimizer keyword arguments={optimizer_kwargs} as well."
-                )
-                raise ValueError(msg)
-
-        self.search_hparams = list(search_hparams)
         self.optimizer_kwargs = optimizer_kwargs
         self.__dict__.update(optimizer_kwargs)
 
@@ -117,7 +109,7 @@ class OptimizerCallableSupportHPO:
             class MyAwesomeMulticlassClsModel(OTXMulticlassClsModel):
                 def __init__(
                     self,
-                    num_classes: int,
+                    label_info: LabelInfoTypes,
                     optimizer: OptimizerCallable = OptimizerCallableSupportHPO(
                         optimizer_cls=SGD,
                         optimizer_kwargs={
@@ -137,14 +129,12 @@ class OptimizerCallableSupportHPO:
             OptimizerCallableSupportHPO,
             optimizer_cls=self.optimizer_path,
             optimizer_kwargs=self.optimizer_kwargs,
-            search_hparams=self.search_hparams,
         )
 
     def __reduce__(self) -> str | tuple[Any, ...]:
         return self.__class__, (
             self.optimizer_path,
             self.optimizer_kwargs,
-            self.search_hparams,
         )
 
     @classmethod

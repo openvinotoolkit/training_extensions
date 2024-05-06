@@ -30,6 +30,7 @@ from otx.core.types.task import OTXTaskType
 from otx.core.utils.cache import TrainerArgumentsCache
 from otx.utils.utils import is_xpu_available
 
+from .adaptive_bs import adapt_batch_size
 from .hpo import execute_hpo, update_hyper_parameter
 from .utils.auto_configurator import DEFAULT_CONFIG_PER_TASK, AutoConfigurator
 
@@ -183,6 +184,7 @@ class Engine:
         run_hpo: bool = False,
         hpo_config: HpoConfig = HpoConfig(),  # noqa: B008 https://github.com/omni-us/jsonargparse/issues/423
         checkpoint: PathLike | None = None,
+        adaptive_bs: Literal["None", "Safe", "Full"] = "None",
         **kwargs,
     ) -> dict[str, Any]:
         """Trains the model using the provided LightningModule and OTXDataModule.
@@ -203,6 +205,9 @@ class Engine:
             run_hpo (bool, optional): If True, optimizer hyper parameters before training a model.
             hpo_config (HpoConfig | None, optional): Configuration for HPO.
             checkpoint (PathLike | None, optional): Path to the checkpoint file. Defaults to None.
+            adaptive_bs (Literal["None", "Safe", "Full"]):
+                Change the actual batch size depending on the current GPU status.
+                Safe => Prevent GPU out of memory. Full => Find a batch size using most of GPU memory.
             **kwargs: Additional keyword arguments for pl.Trainer configuration.
 
         Returns:
@@ -240,6 +245,9 @@ class Engine:
         """
         checkpoint = checkpoint if checkpoint is not None else self.checkpoint
 
+        if adaptive_bs != "None":
+            adapt_batch_size(engine=self, **locals(), not_increase=(adaptive_bs != "Full"))
+
         if run_hpo:
             best_config, best_trial_weight = execute_hpo(engine=self, **locals())
             if best_config is not None:
@@ -265,7 +273,6 @@ class Engine:
         # NOTE: Model's label info should be converted datamodule's label info before ckpt loading
         # This is due to smart weight loading check label name as well as number of classes.
         if self.model.label_info != self.datamodule.label_info:
-            # TODO (vinnamki): Revisit label_info logic to make it cleaner
             msg = (
                 "Model label_info is not equal to the Datamodule label_info. "
                 f"It will be overriden: {self.model.label_info} => {self.datamodule.label_info}"
@@ -364,7 +371,7 @@ class Engine:
             model_cls = self.model.__class__
             model = model_cls.load_from_checkpoint(checkpoint_path=checkpoint)
 
-        if model.label_info != self.datamodule.label_info:
+        if model.label_info.as_dict() != self.datamodule.label_info.as_dict():
             msg = (
                 "To launch a test pipeline, the label information should be same "
                 "between the training and testing datasets. "
@@ -445,7 +452,7 @@ class Engine:
             model_cls = self.model.__class__
             model = model_cls.load_from_checkpoint(checkpoint_path=checkpoint)
 
-        if model.label_info != self.datamodule.label_info:
+        if model.label_info.as_dict() != self.datamodule.label_info.as_dict():
             msg = (
                 "To launch a predict pipeline, the label information should be same "
                 "between the training and testing datasets. "
@@ -684,7 +691,7 @@ class Engine:
             model_cls = model.__class__
             model = model_cls.load_from_checkpoint(checkpoint_path=checkpoint)
 
-        if model.label_info != self.datamodule.label_info:
+        if model.label_info.as_dict() != self.datamodule.label_info.as_dict():
             msg = (
                 "To launch a explain pipeline, the label information should be same "
                 "between the training and testing datasets. "

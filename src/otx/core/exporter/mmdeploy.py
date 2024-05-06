@@ -30,6 +30,8 @@ if TYPE_CHECKING:
 
     from omegaconf import DictConfig
 
+    from otx.core.model.base import OTXModel
+
 
 class MMdeployExporter(OTXModelExporter):
     """Exporter that uses mmdeploy and OpenVINO conversion tools.
@@ -102,7 +104,7 @@ class MMdeployExporter(OTXModelExporter):
 
     def to_openvino(
         self,
-        model: torch.nn.Module,
+        model: OTXModel,
         output_dir: Path,
         base_model_name: str = "exported_model",
         precision: OTXPrecisionType = OTXPrecisionType.FP32,
@@ -110,7 +112,7 @@ class MMdeployExporter(OTXModelExporter):
         """Export to OpenVINO Intermediate Representation format.
 
         Args:
-            model (torch.nn.Module): pytorch model top export
+            model (OTXModel): OTXModel to be exported
             output_dir (Path): path to the directory to store export artifacts
             base_model_name (str, optional): exported model name
             precision (OTXPrecisionType, optional): precision of the exported model's weights
@@ -135,7 +137,7 @@ class MMdeployExporter(OTXModelExporter):
 
     def to_onnx(
         self,
-        model: torch.nn.Module,
+        model: OTXModel,
         output_dir: Path,
         base_model_name: str = "exported_model",
         precision: OTXPrecisionType = OTXPrecisionType.FP32,
@@ -144,7 +146,7 @@ class MMdeployExporter(OTXModelExporter):
         """Export to ONNX format.
 
         Args:
-            model (torch.nn.Module): pytorch model top export
+            model (OTXModel): OTXModel to be exported
             output_dir (Path): path to the directory to store export artifacts
             base_model_name (str, optional): exported model name
             precision (OTXPrecisionType, optional): precision of the exported model's weights
@@ -171,14 +173,17 @@ class MMdeployExporter(OTXModelExporter):
 
     def _cvt2onnx(
         self,
-        model: torch.nn.Module,
+        model: OTXModel,
         output_dir: Path,
         base_model_name: str,
         deploy_cfg: MMConfig | None = None,
     ) -> Path:
         onnx_file_name = base_model_name + ".onnx"
         model_weight_file = output_dir / "mmdeploy_fmt_model.pth"
-        torch.save(model.state_dict(), model_weight_file)
+        # NOTE: This class doesn't actuall use the given model instance for graph tracing.
+        # It just borrows weights of the given model instance.
+        mm_model = model.model
+        torch.save(mm_model.state_dict(), model_weight_file)
 
         log.debug(f"mmdeploy torch2onnx: \n\tmodel_cfg: {self._model_cfg}\n\tdeploy_cfg: {self._deploy_cfg}")
         with use_temporary_default_scope():
@@ -188,6 +193,7 @@ class MMdeployExporter(OTXModelExporter):
                 str(output_dir),
                 onnx_file_name,
                 deploy_cfg=self._deploy_cfg if deploy_cfg is None else deploy_cfg,
+                # NOTE: The actual model instance for graph tracing is created by this `model_cfg`.
                 model_cfg=self._model_cfg,
                 model_checkpoint=str(model_weight_file),
                 device="cpu",

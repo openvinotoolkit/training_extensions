@@ -7,11 +7,12 @@ from __future__ import annotations
 
 import logging as log
 import types
-from typing import TYPE_CHECKING, Any, Callable, Literal
+from contextlib import contextmanager
+from typing import TYPE_CHECKING, Any, Callable, Iterator, Literal
 
 import torch
-from openvino.model_api.models import Model
-from openvino.model_api.tilers import DetectionTiler
+from model_api.models import Model
+from model_api.tilers import DetectionTiler
 from torchvision import tv_tensors
 
 from otx.core.config.data import TileConfig
@@ -23,18 +24,19 @@ from otx.core.metrics.mean_ap import MeanAPCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable, OTXModel, OVModel
 from otx.core.schedulers import LRSchedulerListCallable
 from otx.core.types.export import TaskLevelExportParameters
+from otx.core.types.label import LabelInfoTypes
 from otx.core.utils.config import inplace_num_classes
 from otx.core.utils.tile_merge import DetectionTileMerge
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
     from mmdet.models.data_preprocessors import DetDataPreprocessor
-    from mmdet.models.detectors import SingleStageDetector
-    from mmdet.structures import OptSampleList
+    from model_api.models.utils import DetectionResult
     from omegaconf import DictConfig
-    from openvino.model_api.models.utils import DetectionResult
     from torch import nn
     from torchmetrics import Metric
+
+    from otx.algo.detection.ssd import SingleStageDetector
 
 
 class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity]):
@@ -42,20 +44,21 @@ class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity]):
 
     def __init__(
         self,
-        num_classes: int,
+        label_info: LabelInfoTypes,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MeanAPCallable,
         torch_compile: bool = False,
+        tile_config: TileConfig = TileConfig(enable_tiler=False),
     ) -> None:
         super().__init__(
-            num_classes=num_classes,
+            label_info=label_info,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
             torch_compile=torch_compile,
+            tile_config=tile_config,
         )
-        self._tile_config = TileConfig()
 
     def forward_tiles(self, inputs: OTXTileBatchDataEntity[DetBatchDataEntity]) -> DetBatchPredEntity:
         """Unpack detection tiles.
@@ -102,7 +105,7 @@ class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity]):
         return super()._export_parameters.wrap(
             model_type="ssd",
             task_type="detection",
-            confidence_threshold=self.hparams.get("best_confidence_threshold", 0.0),
+            confidence_threshold=self.hparams.get("best_confidence_threshold", None),
             iou_threshold=0.5,
             tile_config=self.tile_config if self.tile_config.enable_tiler else None,
         )
@@ -174,33 +177,34 @@ class ExplainableOTXDetModel(OTXDetectionModel):
 
     def __init__(
         self,
-        num_classes: int,
+        label_info: LabelInfoTypes,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MeanAPCallable,
         torch_compile: bool = False,
+        tile_config: TileConfig = TileConfig(enable_tiler=False),
     ) -> None:
+        from otx.algo.explain.explain_algo import feature_vector_fn
+
         super().__init__(
-            num_classes=num_classes,
+            label_info=label_info,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
             torch_compile=torch_compile,
+            tile_config=tile_config,
         )
-
-        from otx.algo.explain.explain_algo import get_feature_vector
-
-        self.model.feature_vector_fn = get_feature_vector
+        self.model.feature_vector_fn = feature_vector_fn
         self.model.explain_fn = self.get_explain_fn()
 
     def forward_explain(self, inputs: DetBatchDataEntity) -> DetBatchPredEntity:
         """Model forward function."""
-        from otx.algo.explain.explain_algo import get_feature_vector
+        from otx.algo.explain.explain_algo import feature_vector_fn
 
         if isinstance(inputs, OTXTileBatchDataEntity):
             return self.forward_tiles(inputs)
 
-        self.model.feature_vector_fn = get_feature_vector
+        self.model.feature_vector_fn = feature_vector_fn
         self.model.explain_fn = self.get_explain_fn()
 
         # If customize_inputs is overridden
@@ -209,7 +213,6 @@ class ExplainableOTXDetModel(OTXDetectionModel):
             if self._customize_inputs != ExplainableOTXDetModel._customize_inputs
             else self._forward_explain_detection(self.model, inputs)
         )
-
         return (
             self._customize_outputs(outputs, inputs)
             if self._customize_outputs != ExplainableOTXDetModel._customize_outputs
@@ -219,8 +222,7 @@ class ExplainableOTXDetModel(OTXDetectionModel):
     @staticmethod
     def _forward_explain_detection(
         self: SingleStageDetector,
-        inputs: torch.Tensor,
-        data_samples: OptSampleList | None = None,
+        entity: DetBatchDataEntity,
         mode: str = "tensor",
     ) -> dict[str, torch.Tensor]:
         """Forward func of the BaseDetector instance, which located in is in ExplainableOTXDetModel().model."""
@@ -229,7 +231,7 @@ class ExplainableOTXDetModel(OTXDetectionModel):
         for param in self.parameters():
             param.requires_grad = False
 
-        backbone_feat = self.extract_feat(inputs)
+        backbone_feat = self.extract_feat(entity.images)
         bbox_head_feat = self.bbox_head.forward(backbone_feat)
 
         # Process the first output form bbox detection head: classification scores
@@ -237,19 +239,13 @@ class ExplainableOTXDetModel(OTXDetectionModel):
         saliency_map = self.explain_fn(bbox_head_feat[0])
 
         if mode == "predict":
-            results_list = self.bbox_head.predict(backbone_feat, data_samples)
-            if isinstance(results_list, tuple):
-                # Export case
-                predictions = results_list
-            else:
-                # Predict case, InstanceData or List[InstanceData]
-                predictions = self.add_pred_to_datasample(data_samples, results_list)
+            predictions = self.bbox_head.predict(backbone_feat, entity)
 
         elif mode == "tensor":
             predictions = bbox_head_feat
         elif mode == "loss":
             # Temporary condition to pass undetermined "test_forward_train" test, values aren't used
-            predictions = self.bbox_head.loss(backbone_feat, data_samples)["loss_cls"]
+            predictions = self.bbox_head.loss(backbone_feat, entity)["loss_cls"]
         else:
             msg = f'Invalid mode "{mode}".'
             raise RuntimeError(msg)
@@ -262,7 +258,7 @@ class ExplainableOTXDetModel(OTXDetectionModel):
 
     def get_explain_fn(self) -> Callable:
         """Returns explain function."""
-        from otx.algo.detection.heads.custom_ssd_head import SSDHead
+        from otx.algo.detection.heads.ssd_head import SSDHead
         from otx.algo.explain.explain_algo import DetClassProbabilityMap
 
         # SSD-like heads also have background class
@@ -272,6 +268,19 @@ class ExplainableOTXDetModel(OTXDetectionModel):
             num_anchors=self.get_num_anchors(),
         )
         return explainer.func
+
+    @contextmanager
+    def export_model_forward_context(self) -> Iterator[None]:
+        """A context manager for managing the model's forward function during model exportation.
+
+        It temporarily modifies the model's forward function to generate output sinks
+        for explain results during the model graph tracing.
+        """
+        try:
+            self._reset_model_forward()
+            yield
+        finally:
+            self._restore_model_forward()
 
     def _reset_model_forward(self) -> None:
         if not self.explain_mode:
@@ -321,26 +330,29 @@ class MMDetCompatibleModel(ExplainableOTXDetModel):
 
     def __init__(
         self,
-        num_classes: int,
+        label_info: LabelInfoTypes,
         config: DictConfig,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MeanAPCallable,
         torch_compile: bool = False,
+        tile_config: TileConfig = TileConfig(enable_tiler=False),
     ) -> None:
-        config = inplace_num_classes(cfg=config, num_classes=num_classes)
+        config = inplace_num_classes(cfg=config, num_classes=self._dispatch_label_info(label_info).num_classes)
         self.config = config
         self.load_from = config.pop("load_from", None)
         self.image_size: tuple[int, int, int, int] | None = None
         super().__init__(
-            num_classes=num_classes,
+            label_info=label_info,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
             torch_compile=torch_compile,
+            tile_config=tile_config,
         )
 
     def _create_model(self) -> nn.Module:
+        # TODO (someone): change to abstractmethod
         from .utils.mmdet import create_model
 
         model, self.classification_layers = create_model(self.config, self.load_from)
@@ -511,7 +523,7 @@ class OVDetectionModel(OVModel[DetBatchDataEntity, DetBatchPredEntity]):
 
     def _create_model(self) -> Model:
         """Create a OV model with help of Model API."""
-        from openvino.model_api.adapters import OpenvinoAdapter, create_core, get_user_config
+        from model_api.adapters import OpenvinoAdapter, create_core, get_user_config
 
         plugin_config = get_user_config("AUTO", str(self.num_requests), "AUTO")
         if self.use_throughput_mode:
@@ -533,10 +545,10 @@ class OVDetectionModel(OVModel[DetBatchDataEntity, DetBatchPredEntity]):
                 "Cannot get best_confidence_threshold from OpenVINO IR's rt_info. "
                 "Please check whether this model is trained by OTX or not. "
                 "Without this information, it can produce a wrong F1 metric score. "
-                "At this time, it will be set as the default value = 0.0."
+                "At this time, it will be set as the default value = None."
             )
             log.warning(msg)
-            self.hparams["best_confidence_threshold"] = 0.0
+            self.hparams["best_confidence_threshold"] = None
 
         return Model.create_model(model_adapter, model_type=self.model_type, configuration=self.model_api_configuration)
 
@@ -631,6 +643,6 @@ class OVDetectionModel(OVModel[DetBatchDataEntity, DetBatchPredEntity]):
         }
 
     def _log_metrics(self, meter: Metric, key: Literal["val", "test"], **compute_kwargs) -> None:
-        best_confidence_threshold = self.hparams.get("best_confidence_threshold", 0.0)
+        best_confidence_threshold = self.hparams.get("best_confidence_threshold", None)
         compute_kwargs = {"best_confidence_threshold": best_confidence_threshold}
         return super()._log_metrics(meter, key, **compute_kwargs)

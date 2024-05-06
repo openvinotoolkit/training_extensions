@@ -13,15 +13,17 @@ import json
 import logging
 import warnings
 from abc import abstractmethod
+from collections.abc import Sequence
 from typing import TYPE_CHECKING, Any, Callable, Generic, Literal, NamedTuple
 
 import numpy as np
 import openvino
 import torch
+from datumaro import LabelCategories
 from jsonargparse import ArgumentParser
-from lightning import LightningModule
-from openvino.model_api.models import Model
-from openvino.model_api.tilers import Tiler
+from lightning import LightningModule, Trainer
+from model_api.models import Model
+from model_api.tilers import Tiler
 from torch import Tensor, nn
 from torch.optim.lr_scheduler import ConstantLR
 from torch.optim.sgd import SGD
@@ -35,14 +37,17 @@ from otx.core.data.entity.base import (
     T_OTXBatchPredEntity,
 )
 from otx.core.data.entity.tile import OTXTileBatchDataEntity
-from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.metrics import MetricInput, NullMetricCallable
 from otx.core.optimizer.callable import OptimizerCallableSupportHPO
-from otx.core.schedulers import LRSchedulerListCallable, PicklableLRSchedulerCallable
-from otx.core.schedulers.warmup_schedulers import LinearWarmupScheduler
+from otx.core.schedulers import (
+    LinearWarmupScheduler,
+    LinearWarmupSchedulerCallable,
+    LRSchedulerListCallable,
+    SchedulerCallableSupportHPO,
+)
 from otx.core.types.export import OTXExportFormatType, TaskLevelExportParameters
-from otx.core.types.label import LabelInfo, NullLabelInfo
+from otx.core.types.label import LabelInfo, LabelInfoTypes, NullLabelInfo
 from otx.core.types.precision import OTXPrecisionType
 from otx.core.utils.build import get_default_num_async_infer_requests
 from otx.core.utils.miscellaneous import ensure_callable
@@ -57,6 +62,7 @@ if TYPE_CHECKING:
     from torch.optim.optimizer import Optimizer, params_t
 
     from otx.core.data.module import OTXDataModule
+    from otx.core.exporter.base import OTXModelExporter
     from otx.core.metrics import MetricCallable
 
 logger = logging.getLogger()
@@ -95,15 +101,16 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
 
     def __init__(
         self,
-        num_classes: int,
+        label_info: LabelInfoTypes,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = NullMetricCallable,
         torch_compile: bool = False,
+        tile_config: TileConfig = TileConfig(enable_tiler=False),
     ) -> None:
         super().__init__()
 
-        self._label_info = LabelInfo.from_num_classes(num_classes) if num_classes > 0 else NullLabelInfo()
+        self._label_info = self._dispatch_label_info(label_info)
         self.classification_layers: dict[str, dict[str, Any]] = {}
         self.model = self._create_model()
         self._explain_mode = False
@@ -115,11 +122,14 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
         self.torch_compile = torch_compile
         self._explain_mode = False
 
-        self._tile_config: TileConfig | None = None
+        # NOTE: To guarantee immutablility of the default value
+        self._tile_config = tile_config.clone()
 
         # this line allows to access init params with 'self.hparams' attribute
         # also ensures init params will be stored in ckpt
-        self.save_hyperparameters(logger=False, ignore=["model", "optimizer", "scheduler", "metric"])
+        # TODO(vinnamki): Ticket no. 138995: MetricCallable should be saved in the checkpoint
+        # so that it can retrieve it from the checkpoint
+        self.save_hyperparameters(logger=False, ignore=["optimizer", "scheduler", "metric"])
 
     def training_step(self, batch: T_OTXBatchDataEntity, batch_idx: int) -> Tensor:
         """Step for model training."""
@@ -333,7 +343,7 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
         for name, value in results.items():
             log_metric_name = f"{key}/{name}"
 
-            if value.numel() != 1:
+            if not isinstance(value, Tensor) or value.numel() != 1:
                 msg = f"Log metric name={log_metric_name} is not a scalar tensor. Skip logging it."
                 warnings.warn(msg, stacklevel=1)
                 continue
@@ -346,9 +356,7 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
 
         checkpoint["label_info"] = self.label_info
         checkpoint["otx_version"] = __version__
-
-        if self._tile_config:
-            checkpoint["tile_config"] = self._tile_config
+        checkpoint["tile_config"] = self.tile_config
 
     def on_load_checkpoint(self, checkpoint: dict[str, Any]) -> None:
         """Callback on loading checkpoint."""
@@ -358,11 +366,13 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
             self._label_info = ckpt_label_info
 
         if ckpt_tile_config := checkpoint.get("tile_config", None):
-            self._tile_config = ckpt_tile_config
+            self.tile_config = ckpt_tile_config
 
     def load_state_dict_incrementally(self, ckpt: dict[str, Any], *args, **kwargs) -> None:
         """Load state dict incrementally."""
-        ckpt_label_info: LabelInfo | None = ckpt.get("label_info", None)
+        ckpt_label_info: LabelInfo | None = (
+            ckpt.get("label_info", None) if not is_ckpt_from_otx_v1(ckpt) else self.get_ckpt_label_info_v1(ckpt)
+        )
 
         if ckpt_label_info is None:
             msg = "Checkpoint should have `label_info`."
@@ -381,11 +391,11 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
             )
 
         # Model weights
-        state_dict: dict[str, Any] = ckpt.get("state_dict", None)
+        state_dict: dict[str, Any] = ckpt.get("state_dict", None) if not is_ckpt_from_otx_v1(ckpt) else ckpt
 
-        if ckpt_label_info is None:
+        if state_dict is None:
             msg = "Checkpoint should have `state_dict`."
-            raise ValueError(msg, ckpt_label_info)
+            raise ValueError(msg, state_dict)
 
         self.load_state_dict(state_dict, *args, **kwargs)
 
@@ -412,26 +422,38 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
         """Load the previous OTX ckpt according to OTX2.0."""
         raise NotImplementedError
 
+    @staticmethod
+    def get_ckpt_label_info_v1(ckpt: dict) -> LabelInfo:
+        """Generate label info from OTX v1 checkpoint."""
+        return LabelInfo.from_dm_label_groups(LabelCategories.from_iterable(ckpt["labels"].keys()))
+
     @property
     def label_info(self) -> LabelInfo:
         """Get this model label information."""
         return self._label_info
 
     @label_info.setter
-    def label_info(self, label_info: LabelInfo | list[str]) -> None:
+    def label_info(self, label_info: LabelInfoTypes) -> None:
         """Set this model label information."""
         self._set_label_info(label_info)
 
-    def _set_label_info(self, label_info: LabelInfo | list[str]) -> None:
+    def _set_label_info(self, label_info: LabelInfoTypes) -> None:
         """Actual implementation for set this model label information.
 
         Derived classes should override this function.
         """
-        if isinstance(label_info, list):
-            label_info = LabelInfo(label_names=label_info, label_groups=[label_info])
+        msg = (
+            "Assign new label_info to the model. "
+            "It is usually not recommended. "
+            "Please create a new model instance by giving label_info to its initializer "
+            "such as `OTXModel(label_info=label_info, ...)`."
+        )
+        logger.warning(msg, stacklevel=0)
+
+        new_label_info = self._dispatch_label_info(label_info)
 
         old_num_classes = self._label_info.num_classes
-        new_num_classes = label_info.num_classes
+        new_num_classes = new_label_info.num_classes
 
         if old_num_classes != new_num_classes:
             msg = (
@@ -440,10 +462,10 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
                 "The model prediction layer is reset to the new number of classes "
                 f"(={new_num_classes})."
             )
-            warnings.warn(msg, stacklevel=0)
-            self._reset_prediction_layer(num_classes=label_info.num_classes)
+            logger.warning(msg, stacklevel=0)
+            self._reset_prediction_layer(num_classes=new_label_info.num_classes)
 
-        self._label_info = label_info
+        self._label_info = new_label_info
 
     @property
     def num_classes(self) -> int:
@@ -499,19 +521,20 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
 
     def forward_explain(self, inputs: T_OTXBatchDataEntity) -> T_OTXBatchPredEntity:
         """Model forward explain function."""
-        raise NotImplementedError
+        msg = "Derived model class should implement this class to support the explain pipeline."
+        raise NotImplementedError(msg)
+
+    def forward_for_tracing(self, *args, **kwargs) -> Tensor | dict[str, Tensor]:
+        """Model forward function used for the model tracing during model exportation."""
+        msg = (
+            "Derived model class should implement this class to support the export pipeline. "
+            "If it wants to use `otx.core.exporter.native.OTXNativeModelExporter`."
+        )
+        raise NotImplementedError(msg)
 
     def get_explain_fn(self) -> Callable:
         """Returns explain function."""
         raise NotImplementedError
-
-    def _reset_model_forward(self) -> None:
-        # TODO(vinnamkim): This will be revisited by the export refactoring
-        pass
-
-    def _restore_model_forward(self) -> None:
-        # TODO(vinnamkim): This will be revisited by the export refactoring
-        pass
 
     def forward_tiles(
         self,
@@ -610,16 +633,26 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
         Returns:
             Path: path to the exported model.
         """
-        self._reset_model_forward()
-        exported_model_path = self._exporter.export(
-            self.model,
-            output_dir,
-            base_name,
-            export_format,
-            precision,
-        )
-        self._restore_model_forward()
-        return exported_model_path
+        mode = self.training
+        self.eval()
+
+        orig_forward = self.forward
+        orig_trainer = self._trainer  # type: ignore[has-type]
+        try:
+            if self._trainer is None:  # type: ignore[has-type]
+                self._trainer = Trainer()
+            self.forward = self.forward_for_tracing  # type: ignore[method-assign, assignment]
+            return self._exporter.export(
+                self,
+                output_dir,
+                base_name,
+                export_format,
+                precision,
+            )
+        finally:
+            self.train(mode)
+            self.forward = orig_forward  # type: ignore[method-assign]
+            self._trainer = orig_trainer
 
     @property
     def _exporter(self) -> OTXModelExporter:
@@ -711,7 +744,7 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
         return super().lr_scheduler_step(scheduler=scheduler, metric=metric)
 
     def patch_optimizer_and_scheduler_for_hpo(self) -> None:
-        """Patch optimizer and scheduler for hyperparameter optimization.
+        """Patch optimizer and scheduler for hyperparameter optimization and adaptive batch size.
 
         This is inplace function changing inner states (`optimizer_callable` and `scheduler_callable`).
         Both will be changed to be picklable. In addition, `optimizer_callable` is changed
@@ -720,22 +753,40 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
         if not isinstance(self.optimizer_callable, OptimizerCallableSupportHPO):
             self.optimizer_callable = OptimizerCallableSupportHPO.from_callable(self.optimizer_callable)
 
-        if not isinstance(self.scheduler_callable, PicklableLRSchedulerCallable):
-            self.scheduler_callable = PicklableLRSchedulerCallable(self.scheduler_callable)
+        if not isinstance(self.scheduler_callable, SchedulerCallableSupportHPO) and not isinstance(
+            self.scheduler_callable,
+            LinearWarmupSchedulerCallable,  # LinearWarmupSchedulerCallable natively supports HPO
+        ):
+            self.scheduler_callable = SchedulerCallableSupportHPO.from_callable(self.scheduler_callable)
 
     @property
     def tile_config(self) -> TileConfig:
         """Get tiling configurations."""
-        if self._tile_config is None:
-            msg = "This task type does not support tiling."
-            raise RuntimeError(msg)
-
         return self._tile_config
 
     @tile_config.setter
     def tile_config(self, tile_config: TileConfig) -> None:
         """Set tiling configurations."""
+        msg = (
+            "Assign new tile_config to the model. "
+            "It is usually not recommended. "
+            "Please create a new model instance by giving tile_config to its initializer "
+            "such as `OTXModel(..., tile_config=tile_config)`."
+        )
+        logger.warning(msg, stacklevel=0)
+
         self._tile_config = tile_config
+
+    @staticmethod
+    def _dispatch_label_info(label_info: LabelInfoTypes) -> LabelInfo:
+        if isinstance(label_info, int):
+            return LabelInfo.from_num_classes(num_classes=label_info)
+        if isinstance(label_info, Sequence) and all(isinstance(name, str) for name in label_info):
+            return LabelInfo(label_names=label_info, label_groups=[label_info])
+        if isinstance(label_info, LabelInfo):
+            return label_info
+
+        raise TypeError(label_info)
 
 
 class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
@@ -769,7 +820,7 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
         self.use_throughput_mode = use_throughput_mode
         self.model_api_configuration = model_api_configuration if model_api_configuration is not None else {}
         # NOTE: num_classes and label_info comes from the IR metadata
-        super().__init__(num_classes=-1, metric=metric)
+        super().__init__(label_info=NullLabelInfo(), metric=metric)
         self._label_info = self._create_label_info_from_ov_ir()
 
         tile_enabled = False
@@ -786,7 +837,7 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
 
     def _create_model(self) -> Model:
         """Create a OV model with help of Model API."""
-        from openvino.model_api.adapters import OpenvinoAdapter, create_core, get_user_config
+        from model_api.adapters import OpenvinoAdapter, create_core, get_user_config
 
         plugin_config = get_user_config("AUTO", str(self.num_requests), "AUTO")
         if self.use_throughput_mode:
@@ -939,16 +990,15 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
         """Model parameters for export."""
         return {}
 
-    def _set_label_info(self, label_info: LabelInfo | list[str]) -> None:
+    def _set_label_info(self, label_info: LabelInfoTypes) -> None:
         """Set this model label information."""
-        if isinstance(label_info, list):
-            label_info = LabelInfo(label_names=label_info, label_groups=[label_info])
+        new_label_info = self._dispatch_label_info(label_info)
 
-        if self._label_info != label_info:
+        if self._label_info != new_label_info:
             msg = "OVModel strictly does not allow overwrite label_info if they are different each other."
             raise ValueError(msg)
 
-        self._label_info = label_info
+        self._label_info = new_label_info
 
     def _create_label_info_from_ov_ir(self) -> LabelInfo:
         ov_model = self.model.get_model()

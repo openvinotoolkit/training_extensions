@@ -109,10 +109,18 @@ def test_otx_export_infer(
         "1" if task in ("zero_shot_visual_prompting") else "2",
         "--seed",
         f"{fxt_local_seed}",
-        "--deterministic",
-        "warn",
         *fxt_cli_override_command_per_task[task],
     ]
+
+    # TODO(someone): Disable deterministic for instance segmentation as it causes OOM.
+    # https://github.com/pytorch/vision/issues/8168#issuecomment-1890599205
+    if task != "instance_segmentation":
+        command_cfg.extend(
+            [
+                "--deterministic",
+                "warn",
+            ],
+        )
 
     run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)
 
@@ -142,6 +150,21 @@ def test_otx_export_infer(
             "--checkpoint",
             checkpoint_path,
         ]
+
+        # Zero-shot visual prompting needs to specify `infer_reference_info_root`
+        if task in ["zero_shot_visual_prompting"]:
+            try:
+                idx_task = checkpoint_path.split("/").index(f"otx_train_{model_name}")
+            except ValueError:
+                idx_task = checkpoint_path.split("/").index(f"otx_test_{model_name}")
+
+            command_cfg.extend(
+                [
+                    "--model.init_args.infer_reference_info_root",
+                    str(Path(checkpoint_path).parents[-idx_task] / f"otx_train_{model_name}/outputs/.latest/train"),
+                ],
+            )
+
         run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)
 
         return tmp_path_test

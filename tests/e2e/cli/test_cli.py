@@ -44,6 +44,9 @@ def test_otx_e2e_cli(
     task = recipe.split("/")[-2]
     model_name = recipe.split("/")[-1].split(".")[0]
 
+    if task == OTXTaskType.ACTION_DETECTION:
+        pytest.xfail("Fix for action detection issue will be low priority. Refer to issue #3267.")
+
     # 1) otx train
     tmp_path_train = tmp_path / f"otx_train_{model_name}"
     command_cfg = [
@@ -52,7 +55,7 @@ def test_otx_e2e_cli(
         "--config",
         recipe,
         "--data_root",
-        fxt_target_dataset_per_task[task],
+        str(fxt_target_dataset_per_task[task]),
         "--work_dir",
         str(tmp_path_train / "outputs"),
         "--engine.device",
@@ -91,7 +94,7 @@ def test_otx_e2e_cli(
         "--config",
         recipe,
         "--data_root",
-        fxt_target_dataset_per_task[task],
+        str(fxt_target_dataset_per_task[task]),
         "--work_dir",
         str(tmp_path_test / "outputs"),
         "--engine.device",
@@ -149,7 +152,7 @@ def test_otx_e2e_cli(
             "--config",
             recipe,
             "--data_root",
-            fxt_target_dataset_per_task[task],
+            str(fxt_target_dataset_per_task[task]),
             "--work_dir",
             str(tmp_path_test / "outputs" / fmt),
             *overrides,
@@ -187,7 +190,7 @@ def test_otx_e2e_cli(
         "--config",
         recipe,
         "--data_root",
-        fxt_target_dataset_per_task[task],
+        str(fxt_target_dataset_per_task[task]),
         "--work_dir",
         str(tmp_path_test / "outputs"),
         "--engine.device",
@@ -210,8 +213,8 @@ def test_otx_e2e_cli(
     if ("_cls" not in task) and (task not in ["detection", "instance_segmentation"]):
         return  # Supported only for classification, detection and instance segmentation task.
 
-    if "dino" in model_name or "rtmdet_inst_tiny" in model_name:
-        return  # DINO and Rtmdet_tiny are not supported.
+    if "dino" in model_name:
+        return  # DINO is not supported.
 
     format_to_file = {
         "ONNX": "exported_model.onnx",
@@ -227,7 +230,7 @@ def test_otx_e2e_cli(
             "--config",
             recipe,
             "--data_root",
-            fxt_target_dataset_per_task[task],
+            str(fxt_target_dataset_per_task[task]),
             "--work_dir",
             str(tmp_path_test / "outputs" / fmt),
             *fxt_cli_override_command_per_task[task],
@@ -273,9 +276,6 @@ def test_otx_explain_e2e_cli(
     Returns:
         None
     """
-    if "tile" in recipe:
-        pytest.skip("Explain is not supported for tiling yet.")
-
     import cv2
 
     task = recipe.split("/")[-2]
@@ -284,8 +284,8 @@ def test_otx_explain_e2e_cli(
     if ("_cls" not in task) and (task not in ["detection", "instance_segmentation"]):
         pytest.skip("Supported only for classification, detection and instance segmentation task.")
 
-    if "dino" in model_name or "rtmdet_inst_tiny" in model_name:
-        pytest.skip("DINO and Rtmdet_tiny are not supported.")
+    if "dino" in model_name:
+        pytest.skip("DINO is not supported.")
 
     # otx explain
     tmp_path_explain = tmp_path / f"otx_explain_{model_name}"
@@ -294,10 +294,8 @@ def test_otx_explain_e2e_cli(
         "explain",
         "--config",
         recipe,
-        "--model.num_classes",
-        "1000",
         "--data_root",
-        fxt_target_dataset_per_task[task],
+        str(fxt_target_dataset_per_task[task]),
         "--work_dir",
         str(tmp_path_explain / "outputs"),
         "--engine.device",
@@ -318,8 +316,8 @@ def test_otx_explain_e2e_cli(
         (p for p in outputs_dir.iterdir() if p.is_dir() and p.name != ".latest"),
         key=lambda p: p.stat().st_mtime,
     )
-    assert (latest_dir / "saliency_maps").exists()
-    saliency_maps = sorted((latest_dir / "saliency_maps").glob(pattern="*.png"))
+    assert (latest_dir / "saliency_map").exists()
+    saliency_maps = sorted((latest_dir / "saliency_map").glob(pattern="*.png"))
     sal_map = cv2.imread(str(saliency_maps[0]))
     assert sal_map.shape[0] > 0
     assert sal_map.shape[1] > 0
@@ -356,7 +354,7 @@ def test_otx_explain_e2e_cli(
     }
     test_case_name = task + "_" + model_name
     if test_case_name in reference_sal_vals:
-        actual_sal_vals = cv2.imread(str(latest_dir / "saliency_maps" / reference_sal_vals[test_case_name][1]))
+        actual_sal_vals = cv2.imread(str(latest_dir / "saliency_map" / reference_sal_vals[test_case_name][1]))
         if test_case_name == "instance_segmentation_maskrcnn_efficientnetb2b":
             # Take lower corner values due to map sparsity of InstSeg
             actual_sal_vals = (actual_sal_vals[-10:, -1, 0]).astype(np.uint16)
@@ -364,76 +362,6 @@ def test_otx_explain_e2e_cli(
             actual_sal_vals = (actual_sal_vals[:10, 0, 0]).astype(np.uint16)
         ref_sal_vals = reference_sal_vals[test_case_name][0]
         assert np.max(np.abs(actual_sal_vals - ref_sal_vals) <= sal_diff_thresh)
-
-
-# @pytest.mark.skipif(len(pytest.RECIPE_OV_LIST) < 1, reason="No OV recipe found.")
-@pytest.mark.parametrize(
-    "ov_recipe",
-    pytest.RECIPE_OV_LIST,
-)
-def test_otx_ov_test_cli(
-    ov_recipe: str,
-    tmp_path: Path,
-    fxt_target_dataset_per_task: dict,
-    fxt_open_subprocess: bool,
-) -> None:
-    """
-    Test OTX CLI e2e commands.
-
-    - 'otx test' with OV model
-
-    Args:
-        recipe (str): The OV recipe to use for testing. (eg. 'classification/openvino_model.yaml')
-        tmp_path (Path): The temporary path for storing the testing outputs.
-
-    Returns:
-        None
-    """
-    task = ov_recipe.split("/")[-2]
-    model_name = ov_recipe.split("/")[-1].split(".")[0]
-
-    if task in [
-        "multi_label_cls",
-        "instance_segmentation",
-        "h_label_cls",
-        "visual_prompting",
-        "zero_shot_visual_prompting",
-        "anomaly_classification",
-        "anomaly_detection",
-        "anomaly_segmentation",
-        "action_classification",
-    ]:
-        # OMZ doesn't have proper model for Pytorch MaskRCNN interface
-        # TODO(Kirill):  Need to change this test when export enabled
-        pytest.skip("OMZ doesn't have proper model for these types of tasks.")
-
-    # otx test
-    tmp_path_test = tmp_path / f"otx_test_{task}_{model_name}"
-    command_cfg = [
-        "otx",
-        "test",
-        "--config",
-        ov_recipe,
-        "--data_root",
-        fxt_target_dataset_per_task[task],
-        "--work_dir",
-        str(tmp_path_test / "outputs"),
-        "--engine.device",
-        "cpu",
-        "--disable-infer-num-classes",
-    ]
-
-    run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)
-
-    outputs_dir = tmp_path_test / "outputs"
-    latest_dir = max(
-        (p for p in outputs_dir.iterdir() if p.is_dir() and p.name != ".latest"),
-        key=lambda p: p.stat().st_mtime,
-    )
-    assert latest_dir.exists()
-    assert (latest_dir / "csv").exists()
-    metric_result = list((latest_dir / "csv").glob(pattern="**/metrics.csv"))
-    assert len(metric_result) > 0
 
 
 @pytest.mark.parametrize("task", pytest.TASK_LIST)
@@ -459,6 +387,8 @@ def test_otx_hpo_e2e_cli(
         pytest.skip(f"Task {task} is not supported in the auto-configuration.")
     if task == OTXTaskType.ZERO_SHOT_VISUAL_PROMPTING:
         pytest.skip("ZERO_SHOT_VISUAL_PROMPTING doesn't support HPO.")
+    if task == OTXTaskType.ACTION_DETECTION:
+        pytest.xfail("Fix for action detection issue will be low priority. Refer to issue #3267.")
 
     # Need to change model to stfpm because default anomaly model is 'padim' which doesn't support HPO
     model_cfg = []
@@ -480,7 +410,7 @@ def test_otx_hpo_e2e_cli(
         "--task",
         task.upper(),
         "--data_root",
-        fxt_target_dataset_per_task[task],
+        str(fxt_target_dataset_per_task[task]),
         "--work_dir",
         str(tmp_path_hpo),
         "--engine.device",

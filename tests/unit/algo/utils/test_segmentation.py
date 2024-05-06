@@ -4,15 +4,14 @@
 
 
 import torch
-from otx.algo.utils.segmentation import (
+from otx.algo.segmentation.modules import (
     AsymmetricPositionAttentionModule,
     IterativeAggregator,
     LocalAttentionModule,
-    OnnxLpNormalization,
-    PSPModule,
     channel_shuffle,
     normalize,
 )
+from otx.algo.segmentation.modules.blocks import OnnxLpNormalization, PSPModule
 
 
 def test_channel_shuffle():

@@ -8,15 +8,14 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import torch
-from mmdet.models.utils.misc import images_to_levels, multi_apply
-from mmdet.registry import MODELS
 from torch import Tensor
 
+from otx.algo.detection.utils.utils import images_to_levels, multi_apply
+
 if TYPE_CHECKING:
-    from mmdet.utils import InstanceList, OptInstanceList
+    from otx.algo.utils.mmengine_utils import InstanceData
 
 
-@MODELS.register_module()
 class ClassIncrementalMixin:
     """Head class for Ignore labels."""
 
@@ -24,9 +23,9 @@ class ClassIncrementalMixin:
         self,
         anchor_list: list,
         valid_flag_list: list[list[Tensor]],
-        batch_gt_instances: InstanceList,
+        batch_gt_instances: list[InstanceData],
         batch_img_metas: list[dict],
-        batch_gt_instances_ignore: OptInstanceList = None,
+        batch_gt_instances_ignore: list[InstanceData] | None = None,
         unmap_outputs: bool = True,
     ) -> tuple:
         """Get targets for ATSS head.
@@ -55,7 +54,7 @@ class ClassIncrementalMixin:
 
         # compute targets for each image
         if batch_gt_instances_ignore is None:
-            batch_gt_instances_ignore = [None] * num_imgs
+            batch_gt_instances_ignore = [None] * num_imgs  # type: ignore[list-item]
         (
             all_anchors,
             all_labels,
@@ -107,7 +106,7 @@ class ClassIncrementalMixin:
         all_labels: list[Tensor],
         use_bg: bool = False,
     ) -> list[Tensor]:
-        """Calcualte valid label mask with ignored labels."""
+        """Calculate valid label mask with ignored labels."""
         num_classes = self.num_classes + 1 if use_bg else self.num_classes  # type: ignore[attr-defined]
         valid_label_mask = []
         for i, meta in enumerate(img_metas):

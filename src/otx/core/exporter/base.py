@@ -6,6 +6,7 @@
 from __future__ import annotations
 
 import json
+import logging as log
 import os
 import tempfile
 from abc import abstractmethod
@@ -13,7 +14,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, Literal
 from zipfile import ZipFile
 
-from openvino.model_api.models import Model
+from model_api.models import Model
 
 from otx.core.exporter.exportable_code import demo
 from otx.core.types.export import OTXExportFormatType, TaskLevelExportParameters
@@ -22,7 +23,8 @@ from otx.core.types.precision import OTXPrecisionType
 if TYPE_CHECKING:
     import onnx
     import openvino
-    import torch
+
+    from otx.core.model.base import OTXModel
 
 
 class OTXModelExporter:
@@ -41,7 +43,8 @@ class OTXModelExporter:
         pad_value (int, optional): Padding value. Defaults to 0.
         swap_rgb (bool, optional): Whether to convert the image from BGR to RGB Defaults to False.
         output_names (list[str] | None, optional): Names for model's outputs, which would be
-        embedded into resulting model.
+        embedded into resulting model. Note, that order of the output names should be the same,
+        as in the target model.
     """
 
     def __init__(
@@ -74,7 +77,7 @@ class OTXModelExporter:
 
     def export(
         self,
-        model: torch.nn.Module,
+        model: OTXModel,
         output_dir: Path,
         base_model_name: str = "exported_model",
         export_format: OTXExportFormatType = OTXExportFormatType.OPENVINO,
@@ -83,7 +86,7 @@ class OTXModelExporter:
         """Exports input model to the specified deployable format, such as OpenVINO IR or ONNX.
 
         Args:
-            model (torch.nn.Module): pytorch model top export
+            model (OTXModel): OTXModel to be exported
             output_dir (Path): path to the directory to store export artifacts
             base_model_name (str, optional): exported model name
             format (OTXExportFormatType): final format of the exported model
@@ -110,7 +113,7 @@ class OTXModelExporter:
     @abstractmethod
     def to_openvino(
         self,
-        model: torch.nn.Module,
+        model: OTXModel,
         output_dir: Path,
         base_model_name: str = "exported_model",
         precision: OTXPrecisionType = OTXPrecisionType.FP32,
@@ -118,7 +121,7 @@ class OTXModelExporter:
         """Export to OpenVINO Intermediate Representation format.
 
         Args:
-            model (torch.nn.Module): pytorch model top export
+            model (OTXModel): OTXModel to be exported
             output_dir (Path): path to the directory to store export artifacts
             base_model_name (str, optional): exported model name
             precision (OTXExportPrecisionType, optional): precision of the exported model's weights
@@ -130,7 +133,7 @@ class OTXModelExporter:
     @abstractmethod
     def to_onnx(
         self,
-        model: torch.nn.Module,
+        model: OTXModel,
         output_dir: Path,
         base_model_name: str = "exported_model",
         precision: OTXPrecisionType = OTXPrecisionType.FP32,
@@ -141,7 +144,7 @@ class OTXModelExporter:
         Converts the given torch model to ONNX format and saves it to the specified output directory.
 
         Args:
-            model (torch.nn.Module): The input PyTorch model to be converted.
+            model (OTXModel): The input PyTorch model to be converted.
             output_dir (Path): The directory where the ONNX model will be saved.
             base_model_name (str, optional): The name of the exported ONNX model. Defaults to "exported_model".
             precision (OTXPrecisionType, optional): The precision type for the exported model.
@@ -154,7 +157,7 @@ class OTXModelExporter:
 
     def to_exportable_code(
         self,
-        model: torch.nn.Module,
+        model: OTXModel,
         output_dir: Path,
         base_model_name: str = "exported_model",
         precision: OTXPrecisionType = OTXPrecisionType.FP32,
@@ -162,7 +165,7 @@ class OTXModelExporter:
         """Export to zip folder final OV IR model with runable demo.
 
         Args:
-            model (torch.nn.Module): pytorch model top export
+            model (OTXModel): OTXModel to be exported
             output_dir (Path): path to the directory to store export artifacts
             base_model_name (str, optional): exported model name
             precision (OTXExportPrecisionType, optional): precision of the exported model's weights
@@ -279,30 +282,40 @@ class OTXModelExporter:
             # workaround for OVC's bug: single output doesn't have a name in OV model
             exported_model.outputs[0].tensor.set_names({"output1"})
 
+        # name assignment process is similar to torch onnx export
         if self.output_names is not None:
-            traced_outputs = [(output.get_names(), output) for output in exported_model.outputs]
-
-            for output_name in self.output_names:
-                found = False
-                for name, output in traced_outputs:
-                    # TODO(vinnamkim): This is because `name` in `traced_outputs` is a list of set such as
-                    # [{'logits', '1555'}, {'1556', 'preds'}, {'1557', 'scores'},
-                    # {'saliency_map', '1551'}, {'feature_vector', '1554', 'input.1767'}]
-                    # This ugly format of `name` comes from `openvino.convert_model`.
-                    # Find a cleaner way for this in the future.
-                    if output_name in name:
-                        found = True
-                        # NOTE: This is because without this renaming such as
-                        # `{'saliency_map', '1551'}` => `{'saliency_map'}`
-                        # ModelAPI cannot produce the outputs correctly.
-                        output.tensor.set_names({output_name})
-
-                if not found:
+            if len(exported_model.outputs) >= len(self.output_names):
+                if len(exported_model.outputs) != len(self.output_names):
                     msg = (
-                        "Given output name to export is not in the traced_outputs, "
-                        f"{output_name} not in {traced_outputs}"
+                        "Number of model outputs is greater than the number"
+                        " of output names to assign. Please check output_names"
+                        " argument of the exporter's constructor."
                     )
-                    raise RuntimeError(msg)
+                    log.warning(msg)
+
+                for i, name in enumerate(self.output_names):
+                    traced_names = exported_model.outputs[i].get_names()
+                    name_found = False
+                    for traced_name in traced_names:
+                        if name in traced_name:
+                            name_found = True
+                            break
+                    name_found = name_found and bool(len(traced_names))
+
+                    if not name_found:
+                        msg = (
+                            f"{name} is not matched with the converted model's traced output names: {traced_names}."
+                            " Please check output_names argument of the exporter's constructor."
+                        )
+                        log.warning(msg)
+
+                    exported_model.outputs[i].tensor.set_names({name})
+            else:
+                msg = (
+                    "Model has less outputs than the number of output names provided: "
+                    f"{len(exported_model.outputs)} vs {len(self.output_names)}"
+                )
+                raise RuntimeError(msg)
 
         if self.metadata is not None:
             export_metadata = self._extend_model_metadata(self.metadata)

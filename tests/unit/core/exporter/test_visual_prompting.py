@@ -7,18 +7,6 @@ from unittest.mock import MagicMock
 import pytest
 from otx.core.exporter.visual_prompting import OTXVisualPromptingModelExporter
 from otx.core.types.export import OTXExportFormatType
-from torch import nn
-
-
-class MockModel(nn.Module):
-    def __init__(self):
-        super().__init__()
-        self.image_encoder = nn.Identity()
-        self.embed_dim = 2
-        self.image_embedding_size = 4
-
-    def forward(self, x):
-        return x
 
 
 class TestOTXVisualPromptingModelExporter:
@@ -45,9 +33,10 @@ class TestOTXVisualPromptingModelExporter:
             "_postprocess_openvino_model",
         )
         mocker_openvino_save_model = mocker.patch("openvino.save_model")
+        mock_model = mocker.MagicMock()
 
         otx_visual_prompting_model_exporter.export(
-            model=MockModel(),
+            model=mock_model,
             output_dir=tmpdir,
             export_format=OTXExportFormatType.OPENVINO,
         )
@@ -69,9 +58,10 @@ class TestOTXVisualPromptingModelExporter:
             otx_visual_prompting_model_exporter,
             "_postprocess_onnx_model",
         )
+        mock_model = mocker.MagicMock()
 
         otx_visual_prompting_model_exporter.export(
-            model=MockModel(),
+            model=mock_model,
             output_dir=tmpdir,
             export_format=OTXExportFormatType.ONNX,
         )
@@ -81,11 +71,13 @@ class TestOTXVisualPromptingModelExporter:
         mocker_onnx_save.assert_called()
         mocker_postprocess_onnx_model.assert_called()
 
-    def test_export_exportable_code(self, tmpdir, otx_visual_prompting_model_exporter) -> None:
+    def test_export_exportable_code(self, mocker, tmpdir, otx_visual_prompting_model_exporter) -> None:
         """Test export for EXPORTABLE_CODE."""
+        mock_model = mocker.MagicMock()
+
         with pytest.raises(NotImplementedError):
             otx_visual_prompting_model_exporter.export(
-                model=MockModel(),
+                model=mock_model,
                 output_dir=tmpdir,
                 export_format=OTXExportFormatType.EXPORTABLE_CODE,
             )

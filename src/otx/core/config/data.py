@@ -7,6 +7,7 @@
 
 from __future__ import annotations
 
+from copy import deepcopy
 from dataclasses import dataclass, field
 from typing import Any, Optional
 
@@ -60,6 +61,7 @@ class SubsetConfig:
     transform_lib_type: TransformLibType = TransformLibType.TORCHVISION
     num_workers: int = 2
     sampler: SamplerConfig = field(default_factory=lambda: SamplerConfig())
+    to_tv_image: bool = True
 
 
 @dataclass
@@ -74,6 +76,10 @@ class TileConfig:
     max_num_instances: int = 1500
     object_tile_ratio: float = 0.03
     sampling_ratio: float = 1.0
+
+    def clone(self) -> TileConfig:
+        """Return a deep copied one of this instance."""
+        return deepcopy(self)
 
 
 @dataclass

@@ -10,20 +10,21 @@ from abc import abstractmethod
 from typing import TYPE_CHECKING
 
 import torch
-from mmcv.ops import batched_nms
-from mmengine.model import constant_init
-from mmengine.structures import InstanceData
-from torch import Tensor, nn
+from torch import Tensor
 
-from otx.algo.detection.utils.utils import filter_scores_and_topk, select_single_mlvl, unpack_gt_instances
+from otx.algo.detection.ops.nms import batched_nms, multiclass_nms
+from otx.algo.detection.utils.utils import filter_scores_and_topk, select_single_mlvl, unpack_det_entity
+from otx.algo.modules.base_module import BaseModule
+from otx.algo.utils.mmengine_utils import InstanceData
+from otx.core.data.entity.detection import DetBatchDataEntity
 
 if TYPE_CHECKING:
-    from mmengine import ConfigDict
+    from omegaconf import DictConfig
 
 
 # This class and its supporting functions below lightly adapted from the mmdet BaseDenseHead available at:
 # https://github.com/open-mmlab/mmdetection/blob/fe3f809a0a514189baf889aa358c498d51ee36cd/mmdet/models/dense_heads/base_dense_head.py
-class BaseDenseHead(nn.Module):
+class BaseDenseHead(BaseModule):
     """Base class for DenseHeads.
 
     1. The ``init_weights`` method is used to initialize densehead's
@@ -60,25 +61,11 @@ class BaseDenseHead(nn.Module):
     loss_and_predict(): forward() -> loss_by_feat() -> predict_by_feat()
     """
 
-    def __init__(self, init_cfg: ConfigDict | list[ConfigDict] | dict | list[dict] | None = None) -> None:
-        super().__init__()
-
-        self._is_init = False
-
-        self.init_cfg = copy.deepcopy(init_cfg)
-
+    def __init__(self, init_cfg: DictConfig | list[DictConfig] | None = None) -> None:
+        super().__init__(init_cfg=init_cfg)
         # `_raw_positive_infos` will be used in `get_positive_infos`, which
         # can get positive information.
         self._raw_positive_infos: dict = {}
-
-    def init_weights(self) -> None:
-        """Initialize the weights."""
-        super().init_weights()
-        # avoid init_cfg overwrite the initialization of `conv_offset`
-        for m in self.modules():
-            # DeformConv2dPack, ModulatedDeformConv2dPack
-            if hasattr(m, "conv_offset"):
-                constant_init(m.conv_offset, 0)
 
     def get_positive_infos(self) -> list[InstanceData] | None:
         """Get positive information from sampling results.
@@ -103,7 +90,7 @@ class BaseDenseHead(nn.Module):
             positive_infos.append(pos_info)
         return positive_infos
 
-    def loss(self, x: tuple[Tensor], batch_data_samples: list[InstanceData]) -> dict:
+    def loss(self, x: tuple[Tensor], entity: DetBatchDataEntity) -> dict:
         """Perform forward propagation and loss calculation of the detection head.
 
         Args:
@@ -118,10 +105,9 @@ class BaseDenseHead(nn.Module):
         """
         outs = self(x)
 
-        outputs = unpack_gt_instances(batch_data_samples)
-        (batch_gt_instances, batch_gt_instances_ignore, batch_img_metas) = outputs
+        batch_gt_instances, batch_img_metas = unpack_det_entity(entity)
 
-        loss_inputs = (*outs, batch_gt_instances, batch_img_metas, batch_gt_instances_ignore)
+        loss_inputs = (*outs, batch_gt_instances, batch_img_metas)
         return self.loss_by_feat(*loss_inputs)
 
     @abstractmethod
@@ -135,45 +121,10 @@ class BaseDenseHead(nn.Module):
     ) -> dict:
         """Calculate the loss based on the features extracted by the detection head."""
 
-    def loss_and_predict(
-        self,
-        x: tuple[Tensor],
-        batch_data_samples: list[InstanceData],
-        proposal_cfg: ConfigDict | None = None,
-    ) -> tuple[dict, list[InstanceData]]:
-        """Perform forward propagation of the head, then calculate loss and predictions.
-
-        Args:
-            x (tuple[Tensor]): Features from FPN.
-            batch_data_samples (list[:obj:`DetDataSample`]): Each item contains
-                the meta information of each image and corresponding
-                annotations.
-            proposal_cfg (ConfigDict, optional): Test / postprocessing
-                configuration, if None, test_cfg would be used.
-                Defaults to None.
-
-        Returns:
-            tuple: the return value is a tuple contains:
-
-                - losses: (dict[str, Tensor]): A dictionary of loss components.
-                - predictions (list[:obj:`InstanceData`]): Detection
-                  results of each image after the post process.
-        """
-        outputs = unpack_gt_instances(batch_data_samples)
-        (batch_gt_instances, batch_gt_instances_ignore, batch_img_metas) = outputs
-
-        cls_scores, bbox_preds = self(x)
-
-        loss_inputs = (cls_scores, bbox_preds, batch_gt_instances, batch_img_metas, batch_gt_instances_ignore)
-        losses = self.loss_by_feat(*loss_inputs)
-
-        predictions = self.predict_by_feat(cls_scores, bbox_preds, batch_img_metas=batch_img_metas, cfg=proposal_cfg)
-        return losses, predictions
-
     def predict(
         self,
         x: tuple[Tensor],
-        batch_data_samples: list[InstanceData],
+        entity: DetBatchDataEntity,
         rescale: bool = False,
     ) -> list[InstanceData]:
         """Perform forward propagation of the detection head and predict detection results.
@@ -181,9 +132,7 @@ class BaseDenseHead(nn.Module):
         Args:
             x (tuple[Tensor]): Multi-level features from the
                 upstream network, each is a 4D-tensor.
-            batch_data_samples (List[:obj:`DetDataSample`]): The Data
-                Samples. It usually includes information such as
-                `gt_instance`, `gt_panoptic_seg` and `gt_sem_seg`.
+            entity (DetBatchDataEntity): Entity from OTX dataset.
             rescale (bool, optional): Whether to rescale the results.
                 Defaults to False.
 
@@ -191,19 +140,29 @@ class BaseDenseHead(nn.Module):
             list[obj:`InstanceData`]: Detection results of each image
             after the post process.
         """
-        batch_img_metas = [data_samples.metainfo for data_samples in batch_data_samples]
+        batch_img_metas = [
+            {
+                "img_id": img_info.img_idx,
+                "img_shape": img_info.img_shape,
+                "ori_shape": img_info.ori_shape,
+                "pad_shape": img_info.pad_shape,
+                "scale_factor": img_info.scale_factor,
+                "ignored_labels": img_info.ignored_labels,
+            }
+            for img_info in entity.imgs_info
+        ]
 
-        cls_scores, bbox_preds = self(x)
+        outs = self(x)
 
-        return self.predict_by_feat(cls_scores, bbox_preds, batch_img_metas=batch_img_metas, rescale=rescale)
+        return self.predict_by_feat(*outs, batch_img_metas=batch_img_metas, rescale=rescale)  # type: ignore[misc]
 
     def predict_by_feat(
         self,
         cls_scores: list[Tensor],
         bbox_preds: list[Tensor],
-        batch_img_metas: list[dict],
         score_factors: list[Tensor] | None = None,
-        cfg: ConfigDict | None = None,
+        batch_img_metas: list[dict] | None = None,
+        cfg: DictConfig | None = None,
         rescale: bool = False,
         with_nms: bool = True,
     ) -> list[InstanceData]:
@@ -225,7 +184,7 @@ class BaseDenseHead(nn.Module):
                 (batch_size, num_priors * 1, H, W). Defaults to None.
             batch_img_metas (list[dict], Optional): Batch image meta info.
                 Defaults to None.
-            cfg (ConfigDict, optional): Test / postprocessing
+            cfg (DictConfig, optional): Test / postprocessing
                 configuration, if None, test_cfg would be used.
                 Defaults to None.
             rescale (bool): If True, return boxes in original image space.
@@ -244,6 +203,9 @@ class BaseDenseHead(nn.Module):
                 - bboxes (Tensor): Has a shape (num_instances, 4),
                   the last dimension 4 arrange as (x1, y1, x2, y2).
         """
+        if batch_img_metas is None:
+            batch_img_metas = []
+
         num_levels = len(cls_scores)
 
         featmap_sizes = [cls_scores[i].shape[-2:] for i in range(num_levels)]
@@ -284,7 +246,7 @@ class BaseDenseHead(nn.Module):
         score_factor_list: list[Tensor],
         mlvl_priors: list[Tensor],
         img_meta: dict,
-        cfg: ConfigDict,
+        cfg: DictConfig,
         rescale: bool = False,
         with_nms: bool = True,
     ) -> InstanceData:
@@ -307,7 +269,7 @@ class BaseDenseHead(nn.Module):
                 when `with_stride=True`, otherwise it still has shape
                 (num_priors, 4).
             img_meta (dict): Image meta info.
-            cfg (mmengine.Config): Test / postprocessing configuration,
+            cfg (DictConfig): Test / postprocessing configuration,
                 if None, test_cfg would be used.
             rescale (bool): If True, return boxes in original image space.
                 Defaults to False.
@@ -389,7 +351,7 @@ class BaseDenseHead(nn.Module):
             mlvl_scores.append(scores)
             mlvl_labels.append(labels)
 
-            if mlvl_score_factors:
+            if mlvl_score_factors is not None:
                 mlvl_score_factors.append(score_factor)
 
         bbox_pred = torch.cat(mlvl_bbox_preds)
@@ -408,7 +370,7 @@ class BaseDenseHead(nn.Module):
     def _bbox_post_process(
         self,
         results: InstanceData,
-        cfg: ConfigDict,
+        cfg: DictConfig,
         img_meta: dict,
         rescale: bool = False,
         with_nms: bool = True,
@@ -421,7 +383,7 @@ class BaseDenseHead(nn.Module):
         Args:
             results (:obj:`InstaceData`): Detection instance results,
                 each item has shape (num_bboxes, ).
-            cfg (ConfigDict): Test / postprocessing configuration,
+            cfg (DictConfig): Test / postprocessing configuration,
                 if None, test_cfg would be used.
             rescale (bool): If True, return boxes in original image space.
                 Default to False.
@@ -443,28 +405,230 @@ class BaseDenseHead(nn.Module):
         """
         if rescale:
             scale_factor = [1 / s for s in img_meta["scale_factor"]]
-            results.bboxes = results.bboxes * results.bboxes.new_tensor(scale_factor).repeat(
-                (1, int(results.bboxes.size(-1) / 2)),
+            results.bboxes = results.bboxes * results.bboxes.new_tensor(scale_factor).repeat(  # type: ignore[attr-defined]
+                (1, int(results.bboxes.size(-1) / 2)),  # type: ignore[attr-defined]
             )
 
         if hasattr(results, "score_factors"):
             score_factors = results.pop("score_factors")
-            results.scores = results.scores * score_factors
+            results.scores = results.scores * score_factors  # type: ignore[attr-defined]
 
         # filter small size bboxes
         if cfg.get("min_bbox_size", -1) >= 0:
-            w = results.bboxes[:, 2] - results.bboxes[:, 0]
-            h = results.bboxes[:, 3] - results.bboxes[:, 1]
+            w = results.bboxes[:, 2] - results.bboxes[:, 0]  # type: ignore[attr-defined]
+            h = results.bboxes[:, 3] - results.bboxes[:, 1]  # type: ignore[attr-defined]
             valid_mask = (w > cfg.min_bbox_size) & (h > cfg.min_bbox_size)
             if not valid_mask.all():
                 results = results[valid_mask]
 
-        if with_nms and results.bboxes.numel() > 0:
-            bboxes = results.bboxes
-            det_bboxes, keep_idxs = batched_nms(bboxes, results.scores, results.labels, cfg.nms)
+        if with_nms and results.bboxes.numel() > 0:  # type: ignore[attr-defined]
+            bboxes = results.bboxes  # type: ignore[attr-defined]
+            det_bboxes, keep_idxs = batched_nms(bboxes, results.scores, results.labels, cfg.nms)  # type: ignore[attr-defined]
             results = results[keep_idxs]
             # some nms would reweight the score, such as softnms
             results.scores = det_bboxes[:, -1]
             results = results[: cfg.max_per_img]
 
         return results
+
+    def export(
+        self,
+        x: tuple[Tensor],
+        batch_img_metas: list[dict],
+        rescale: bool = False,
+    ) -> tuple[torch.Tensor, torch.Tensor] | tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+        """Perform forward propagation of the detection head and predict detection results.
+
+        Args:
+            x (tuple[Tensor]): Multi-level features from the
+                upstream network, each is a 4D-tensor.
+            batch_data_samples (List[:obj:`DetDataSample`]): The Data
+                Samples. It usually includes information such as
+                `gt_instance`, `gt_panoptic_seg` and `gt_sem_seg`.
+            rescale (bool, optional): Whether to rescale the results.
+                Defaults to False.
+
+        Returns:
+            list[tuple[torch.Tensor, torch.Tensor] | tuple[torch.Tensor, torch.Tensor, torch.Tensor]]:
+                Detection results of each image after the post process.
+        """
+        outs = self(x)
+
+        return self.export_by_feat(*outs, batch_img_metas=batch_img_metas, rescale=rescale)  # type: ignore[misc]
+
+    def export_by_feat(
+        self,
+        cls_scores: list[Tensor],
+        bbox_preds: list[Tensor],
+        score_factors: list[Tensor] | None = None,
+        batch_img_metas: list[dict] | None = None,
+        cfg: DictConfig | None = None,
+        rescale: bool = False,
+        with_nms: bool = True,
+    ) -> tuple[torch.Tensor, torch.Tensor] | tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+        """Transform a batch of output features extracted from the head into bbox results.
+
+        Note: When score_factors is not None, the cls_scores are
+        usually multiplied by it then obtain the real score used in NMS,
+        such as CenterNess in FCOS, IoU branch in ATSS.
+
+        Args:
+            cls_scores (list[Tensor]): Classification scores for all
+                scale levels, each is a 4D-tensor, has shape
+                (batch_size, num_priors * num_classes, H, W).
+            bbox_preds (list[Tensor]): Box energies / deltas for all
+                scale levels, each is a 4D-tensor, has shape
+                (batch_size, num_priors * 4, H, W).
+            score_factors (list[Tensor], optional): Score factor for
+                all scale level, each is a 4D-tensor, has shape
+                (batch_size, num_priors * 1, H, W). Defaults to None.
+            batch_img_metas (list[dict], Optional): Batch image meta info.
+                Defaults to None.
+            cfg (DictConfig, optional): Test / postprocessing
+                configuration, if None, test_cfg would be used.
+                Defaults to None.
+            rescale (bool): If True, return boxes in original image space.
+                Defaults to False.
+            with_nms (bool): If True, do nms before return boxes.
+                Defaults to True.
+
+        Returns:
+            tuple[torch.Tensor, torch.Tensor] | tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+                - scores (Tensor): Classification scores, has a shape
+                    (num_instance, )
+                - labels (Tensor): Labels of bboxes, has a shape
+                    (num_instances, ).
+                - bboxes (Tensor): Has a shape (num_instances, 4),
+                    the last dimension 4 arrange as (x1, y1, x2, y2).
+        """
+        if batch_img_metas is None:
+            batch_img_metas = [{}]
+
+        num_levels = len(cls_scores)
+
+        featmap_sizes = [featmap.size()[-2:] for featmap in cls_scores]
+        mlvl_priors = self.prior_generator.grid_priors(
+            featmap_sizes,
+            dtype=bbox_preds[0].dtype,
+            device=bbox_preds[0].device,
+        )
+
+        cls_score_list = [cls_scores[i].detach() for i in range(num_levels)]
+        bbox_pred_list = [bbox_preds[i].detach() for i in range(num_levels)]
+        if score_factors is not None:
+            score_factor_list = [score_factors[i].detach() for i in range(num_levels)]
+        else:
+            score_factor_list = [None for _ in range(num_levels)]
+
+        return self._export_by_feat_single(
+            cls_score_list=cls_score_list,
+            bbox_pred_list=bbox_pred_list,
+            score_factor_list=score_factor_list,
+            mlvl_priors=mlvl_priors,
+            img_meta=batch_img_metas[0],
+            cfg=cfg,
+            rescale=rescale,
+            with_nms=with_nms,
+        )
+
+    def _export_by_feat_single(
+        self,
+        cls_score_list: list[Tensor],
+        bbox_pred_list: list[Tensor],
+        score_factor_list: list[Tensor],
+        mlvl_priors: list[Tensor],
+        img_meta: dict,
+        cfg: DictConfig,
+        rescale: bool = False,
+        with_nms: bool = True,
+    ) -> tuple[torch.Tensor, torch.Tensor] | tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+        """Transform a single image's features extracted from the head into bbox results.
+
+        Args:
+            cls_score_list (list[Tensor]): Box scores from all scale
+                levels of a single image, each item has shape
+                (num_priors * num_classes, H, W).
+            bbox_pred_list (list[Tensor]): Box energies / deltas from
+                all scale levels of a single image, each item has shape
+                (num_priors * 4, H, W).
+            score_factor_list (list[Tensor]): Score factor from all scale
+                levels of a single image, each item has shape
+                (num_priors * 1, H, W).
+            mlvl_priors (list[Tensor]): Each element in the list is
+                the priors of a single level in feature pyramid. In all
+                anchor-based methods, it has shape (num_priors, 4). In
+                all anchor-free methods, it has shape (num_priors, 2)
+                when `with_stride=True`, otherwise it still has shape
+                (num_priors, 4).
+            img_meta (dict): Image meta info.
+            cfg (DictConfig): Test / postprocessing configuration,
+                if None, test_cfg would be used.
+            rescale (bool): If True, return boxes in original image space.
+                Defaults to False.
+            with_nms (bool): If True, do nms before return boxes.
+                Defaults to True.
+
+        Returns:
+            - scores (Tensor): Classification scores, has a shape
+                (num_instance, )
+            - labels (Tensor): Labels of bboxes, has a shape
+                (num_instances, ).
+            - bboxes (Tensor): Has a shape (num_instances, 4),
+                the last dimension 4 arrange as (x1, y1, x2, y2).
+        """
+        batch_size = cls_score_list[0].shape[0]
+        with_score_factors = score_factor_list[0] is not None
+
+        cfg = self.test_cfg if cfg is None else cfg
+        cfg = copy.deepcopy(cfg)
+        img_shape = img_meta["img_shape"]
+
+        mlvl_priors = [priors.unsqueeze(0) for priors in mlvl_priors]
+
+        mlvl_bbox_preds = []
+        mlvl_valid_priors = []
+        mlvl_scores = []
+        mlvl_score_factors: list | None = [] if with_score_factors else None
+        for cls_score, bbox_pred, score_factor, priors in zip(
+            cls_score_list,
+            bbox_pred_list,
+            score_factor_list,
+            mlvl_priors,
+        ):
+            cls_score = cls_score.permute(0, 2, 3, 1).reshape(batch_size, -1, self.cls_out_channels)  # noqa: PLW2901
+            if with_score_factors:
+                score_factor = score_factor.permute(0, 2, 3, 1).reshape(batch_size, -1).sigmoid()  # noqa: PLW2901
+
+            if getattr(self.loss_cls, "custom_cls_channels", False):
+                scores = self.loss_cls.get_activation(cls_score)
+            elif self.use_sigmoid_cls:
+                scores = cls_score.sigmoid()
+            else:
+                # remind that we set FG labels to [0, num_class-1]
+                # since mmdet v2.0
+                # BG cat_id: num_class
+                scores = cls_score.softmax(-1)[:, :, :-1]
+            dim = self.bbox_coder.encode_size
+            bbox_pred = bbox_pred.permute(0, 2, 3, 1).reshape(batch_size, -1, dim)  # noqa: PLW2901
+
+            mlvl_bbox_preds.append(bbox_pred)
+            mlvl_valid_priors.append(priors)
+            mlvl_scores.append(scores)
+
+            if mlvl_score_factors:
+                mlvl_score_factors.append(score_factor)
+
+        bbox_pred = torch.cat(mlvl_bbox_preds, dim=1)
+        priors = torch.cat(mlvl_valid_priors, dim=1)
+        scores = torch.cat(mlvl_scores, dim=1)
+        bboxes = self.bbox_coder.decode_export(priors, bbox_pred, max_shape=img_shape)
+
+        return multiclass_nms(
+            bboxes,
+            scores,
+            max_output_boxes_per_class=200,  # TODO (sungchul): temporarily set to mmdeploy cfg, will be updated
+            iou_threshold=cfg.nms.iou_threshold,
+            score_threshold=cfg.score_thr,
+            pre_top_k=5000,
+            keep_top_k=cfg.max_per_img,
+        )

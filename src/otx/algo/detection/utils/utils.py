@@ -1,21 +1,35 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
+# Copyright (c) OpenMMLab. All rights reserved.
 """Utils for otx detection algo."""
 
 from __future__ import annotations
 
 from functools import partial
-from typing import TYPE_CHECKING, Callable
+from typing import Callable
 
 import torch
+import torch.distributed as dist
 from torch import Tensor
 
-if TYPE_CHECKING:
-    from mmengine.structures import InstanceData
+from otx.algo.utils.mmengine_utils import InstanceData
+from otx.core.data.entity.detection import DetBatchDataEntity
 
 
 # Methods below come from mmdet.utils and slightly modified.
 # https://github.com/open-mmlab/mmdetection/blob/3.x/mmdet/models/utils/misc.py
+def reduce_mean(tensor: Tensor) -> Tensor:
+    """Obtain the mean of tensor on different GPUs.
+
+    Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/utils/dist_utils.py#L59-L65
+    """
+    if not (dist.is_available() and dist.is_initialized()):
+        return tensor
+    tensor = tensor.clone()
+    dist.all_reduce(tensor.div_(dist.get_world_size()), op=dist.ReduceOp.SUM)
+    return tensor
+
+
 def multi_apply(func: Callable, *args, **kwargs) -> tuple:
     """Apply function to a list of arguments.
 
@@ -177,6 +191,130 @@ def select_single_mlvl(mlvl_tensors: list[Tensor], batch_id: int, detach: bool =
     return mlvl_tensor_list
 
 
+def unpack_det_entity(entity: DetBatchDataEntity) -> tuple:
+    """Unpack gt_instances, gt_instances_ignore and img_metas based on batch_data_samples.
+
+    Args:
+        batch_data_samples (DetBatchDataEntity): Data entity from dataset.
+
+    Returns:
+        tuple:
+
+            - batch_gt_instances (list[:obj:`InstanceData`]): Batch of
+                gt_instance. It usually includes ``bboxes`` and ``labels``
+                attributes.
+            - batch_img_metas (list[dict]): Meta information of each image,
+                e.g., image size, scaling factor, etc.
+    """
+    batch_gt_instances = []
+    batch_img_metas = []
+    for img_info, bboxes, labels in zip(entity.imgs_info, entity.bboxes, entity.labels):
+        metainfo = {
+            "img_id": img_info.img_idx,
+            "img_shape": img_info.img_shape,
+            "ori_shape": img_info.ori_shape,
+            "pad_shape": img_info.pad_shape,
+            "scale_factor": img_info.scale_factor,
+            "ignored_labels": img_info.ignored_labels,
+        }
+        batch_img_metas.append(metainfo)
+        batch_gt_instances.append(InstanceData(bboxes=bboxes, labels=labels))
+
+    return batch_gt_instances, batch_img_metas
+
+
+def empty_instances(
+    batch_img_metas: list[dict],
+    device: torch.device,
+    task_type: str,
+    instance_results: list[InstanceData] | None = None,
+    mask_thr_binary: int | float = 0,
+    num_classes: int = 80,
+    score_per_cls: bool = False,
+) -> list[InstanceData]:
+    """Handle predicted instances when RoI is empty.
+
+    Note: If ``instance_results`` is not None, it will be modified
+    in place internally, and then return ``instance_results``
+
+    Args:
+        batch_img_metas (list[dict]): List of image information.
+        device (torch.device): Device of tensor.
+        task_type (str): Expected returned task type. it currently
+            supports bbox and mask.
+        instance_results (list[:obj:`InstanceData`]): List of instance
+            results.
+        mask_thr_binary (int, float): mask binarization threshold.
+            Defaults to 0.
+        box_type (str or type): The empty box type. Defaults to `hbox`.
+        use_box_type (bool): Whether to warp boxes with the box type.
+            Defaults to False.
+        num_classes (int): num_classes of bbox_head. Defaults to 80.
+        score_per_cls (bool):  Whether to generate classwise score for
+            the empty instance. ``score_per_cls`` will be True when the model
+            needs to produce raw results without nms. Defaults to False.
+
+    Returns:
+        list[:obj:`InstanceData`]: Detection results of each image
+    """
+    if task_type not in ("bbox", "mask"):
+        msg = f"Only support bbox and mask, but got {task_type}"
+        raise ValueError(msg)
+
+    if instance_results is not None and len(instance_results) != len(batch_img_metas):
+        msg = "The length of instance_results should be the same as batch_img_metas"
+        raise ValueError(msg)
+
+    results_list = []
+    for img_id in range(len(batch_img_metas)):
+        if instance_results is not None:
+            results = instance_results[img_id]
+            if not isinstance(results, InstanceData):
+                msg = f"instance_results should be InstanceData, but got {type(results)}"
+                raise TypeError(msg)
+        else:
+            results = InstanceData()
+
+        if task_type == "bbox":
+            bboxes = torch.zeros(0, 4, device=device)
+            results.bboxes = bboxes
+            score_shape = (0, num_classes + 1) if score_per_cls else (0,)
+            results.scores = torch.zeros(score_shape, device=device)
+            results.labels = torch.zeros((0,), device=device, dtype=torch.long)
+        else:
+            img_h, img_w = batch_img_metas[img_id]["ori_shape"][:2]
+            # the type of `im_mask` will be torch.bool or torch.uint8,
+            # where uint8 if for visualization and debugging.
+            im_mask = torch.zeros(
+                0,
+                img_h,
+                img_w,
+                device=device,
+                dtype=torch.bool if mask_thr_binary >= 0 else torch.uint8,
+            )
+            results.masks = im_mask
+        results_list.append(results)
+    return results_list
+
+
+def dynamic_topk(input: Tensor, k: int, dim: int | None = None, largest: bool = True, sorted: bool = True) -> Tensor:  # noqa: A002
+    """Cast k to tensor and make sure k is smaller than input.shape[dim].
+
+    Reference : https://github.com/open-mmlab/mmdeploy/blob/v1.3.1/mmdeploy/pytorch/functions/topk.py#L13-L34
+    """
+    if dim is None:
+        dim = int(input.ndim - 1)
+    size = input.shape[dim]
+    if not isinstance(k, torch.Tensor):
+        k = torch.tensor(k, device=input.device, dtype=torch.long)
+    # Always keep topk op for dynamic input
+    if isinstance(size, torch.Tensor):
+        # size would be treated as cpu tensor, trick to avoid that.
+        size = k.new_zeros(()) + size
+    k = torch.where(k < size, k, size)
+    return torch.topk(input, k, dim=dim, largest=largest, sorted=sorted)
+
+
 def unpack_gt_instances(batch_data_samples: list[InstanceData]) -> tuple:
     """Unpack gt_instances, gt_instances_ignore and img_metas based on batch_data_samples.
 
@@ -198,15 +336,45 @@ def unpack_gt_instances(batch_data_samples: list[InstanceData]) -> tuple:
             - batch_img_metas (list[dict]): Meta information of each image,
                 e.g., image size, scaling factor, etc.
     """
+    # TODO(Eugene): remove this when inst-seg data pipeline decoupling is ready
     batch_gt_instances = []
     batch_gt_instances_ignore = []
     batch_img_metas = []
     for data_sample in batch_data_samples:
         batch_img_metas.append(data_sample.metainfo)
-        batch_gt_instances.append(data_sample.gt_instances)
+        batch_gt_instances.append(data_sample.gt_instances)  # type: ignore[attr-defined]
         if "ignored_instances" in data_sample:
-            batch_gt_instances_ignore.append(data_sample.ignored_instances)
+            batch_gt_instances_ignore.append(data_sample.ignored_instances)  # type: ignore[attr-defined]
         else:
             batch_gt_instances_ignore.append(None)
 
     return batch_gt_instances, batch_gt_instances_ignore, batch_img_metas
+
+
+def gather_topk(
+    *inputs: tuple[torch.Tensor],
+    inds: torch.Tensor,
+    batch_size: int,
+    is_batched: bool = True,
+) -> list[torch.Tensor] | torch.Tensor:
+    """Gather topk of each tensor.
+
+    Args:
+        inputs (tuple[torch.Tensor]): Tensors to be gathered.
+        inds (torch.Tensor): Topk index.
+        batch_size (int): batch_size.
+        is_batched (bool): Inputs is batched or not.
+
+    Returns:
+        Tuple[torch.Tensor]: Gathered tensors.
+    """
+    if is_batched:
+        batch_inds = torch.arange(batch_size, device=inds.device).unsqueeze(-1)
+        outputs = [x[batch_inds, inds, ...] if x is not None else None for x in inputs]  # type: ignore[call-overload]
+    else:
+        prior_inds = inds.new_zeros((1, 1))
+        outputs = [x[prior_inds, inds, ...] if x is not None else None for x in inputs]  # type: ignore[call-overload]
+
+    if len(outputs) == 1:
+        outputs = outputs[0]
+    return outputs

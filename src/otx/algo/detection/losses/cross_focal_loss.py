@@ -6,11 +6,11 @@
 from __future__ import annotations
 
 import torch
-import torch.nn.functional as F  # noqa: N812
-from mmdet.models.losses.focal_loss import py_sigmoid_focal_loss, sigmoid_focal_loss
-from mmdet.registry import MODELS
+import torch.nn.functional
 from torch import Tensor, nn
 from torch.cuda.amp import custom_fwd
+
+from otx.algo.detection.losses.focal_loss import py_sigmoid_focal_loss
 
 
 def cross_sigmoid_focal_loss(
@@ -35,13 +35,10 @@ def cross_sigmoid_focal_loss(
         avg_factor: average factors.
         valid_label_mask: ignore label mask.
     """
-    if torch.cuda.is_available() and inputs.is_cuda:
-        calculate_loss_func = sigmoid_focal_loss
-    else:
-        inputs_size = inputs.size(1)
-        targets = F.one_hot(targets, num_classes=inputs_size + 1)
-        targets = targets[:, :inputs_size]
-        calculate_loss_func = py_sigmoid_focal_loss
+    inputs_size = inputs.size(1)
+    targets = torch.nn.functional.one_hot(targets, num_classes=inputs_size + 1)
+    targets = targets[:, :inputs_size]
+    calculate_loss_func = py_sigmoid_focal_loss
 
     loss = calculate_loss_func(
         inputs,
@@ -62,7 +59,6 @@ def cross_sigmoid_focal_loss(
     return loss
 
 
-@MODELS.register_module()
 class CrossSigmoidFocalLoss(nn.Module):
     """CrossSigmoidFocalLoss class for ignore labels with sigmoid."""
 
@@ -109,41 +105,3 @@ class CrossSigmoidFocalLoss(nn.Module):
             avg_factor=avg_factor,
             valid_label_mask=valid_label_mask,
         )
-
-
-@MODELS.register_module()
-class OrdinaryFocalLoss(nn.Module):
-    """Focal loss without balancing."""
-
-    def __init__(self, gamma: float = 1.5, **kwargs):
-        super().__init__()
-        if gamma < 0:
-            msg = f"{gamma} is not valid number for gamma."
-            raise ValueError(msg)
-        self.gamma = gamma
-
-    def forward(
-        self,
-        inputs: Tensor,
-        targets: Tensor,
-        label_weights: Tensor | None = None,
-        avg_factor: float | None = None,
-        reduction: str = "mean",
-        **kwargs,
-    ) -> Tensor:
-        """Forward function for focal loss."""
-        if targets.numel() == 0:
-            return 0.0 * inputs.sum()
-
-        cross_entropy_value = F.cross_entropy(inputs, targets, reduction="none")
-        p = torch.exp(-cross_entropy_value)
-        loss = (1 - p) ** self.gamma * cross_entropy_value
-        if label_weights is not None:
-            loss = loss * label_weights
-        if avg_factor is None:
-            avg_factor = targets.shape[0]
-        if reduction == "sum":
-            return loss.sum()
-        if reduction == "mean":
-            return loss.sum() / avg_factor
-        return loss

@@ -5,9 +5,10 @@
 from pathlib import Path
 
 import pytest
+import torch
 from otx.core.data.module import OTXDataModule
 from otx.core.model.base import OTXModel
-from otx.core.types.label import LabelInfo
+from otx.core.types.label import LabelInfo, SegLabelInfo
 from otx.core.types.task import OTXTaskType
 from otx.core.types.transformer_libs import TransformLibType
 from otx.engine.utils.auto_configurator import (
@@ -15,6 +16,7 @@ from otx.engine.utils.auto_configurator import (
     AutoConfigurator,
     configure_task,
 )
+from otx.utils.utils import should_pass_label_info
 
 
 @pytest.fixture()
@@ -41,6 +43,7 @@ def test_configure_task_with_unsupported_data_format(tmp_path: Path) -> None:
     # Create a temporary directory for testing
     data_root = tmp_path / "data"
     data_root.mkdir()
+    (data_root / "1.jpg").open("a").close()  # Dummy image file
 
     # Test the configure_task function with an unsupported data format
     with pytest.raises(ValueError, match="Can't find proper task."):
@@ -80,7 +83,7 @@ class TestAutoConfigurator:
 
         # OTX-Mobilenet-v2
         # new_config
-        model_name = "otx_deit_tiny"
+        model_name = "deit_tiny"
         new_config = auto_configurator._load_default_config(model_name=model_name)
         new_path = str(target_config).split("/")
         new_path[-1] = f"{model_name}.yaml"
@@ -112,15 +115,21 @@ class TestAutoConfigurator:
 
         auto_configurator = AutoConfigurator(task=fxt_task)
 
-        # Default Model
-        model = auto_configurator.get_model()
-        assert isinstance(model, OTXModel)
-
         # With label_info
         label_names = ["class1", "class2", "class3"]
-        label_info = LabelInfo(label_names=label_names, label_groups=[label_names])
+        label_info = (
+            LabelInfo(label_names=label_names, label_groups=[label_names])
+            if fxt_task != OTXTaskType.SEMANTIC_SEGMENTATION
+            else SegLabelInfo(label_names=label_names, label_groups=[label_names])
+        )
         model = auto_configurator.get_model(label_info=label_info)
         assert isinstance(model, OTXModel)
+
+        model_cls = model.__class__
+
+        if should_pass_label_info(model_cls):
+            with pytest.raises(ValueError, match="Given model class (.*) requires a valid label_info to instantiate."):
+                _ = auto_configurator.get_model(label_info=None)
 
     def test_get_optimizer(self, fxt_task: OTXTaskType) -> None:
         if fxt_task in {
@@ -159,18 +168,24 @@ class TestAutoConfigurator:
         auto_configurator = AutoConfigurator(data_root=data_root, task="DETECTION")
 
         datamodule = auto_configurator.get_datamodule()
-
         assert datamodule.config.test_subset.transforms == [
-            {"type": "LoadImageFromFile"},
-            {"type": "Resize", "scale": [992, 736], "keep_ratio": False},
-            {"type": "LoadAnnotations", "with_bbox": True},
             {
-                "type": "PackDetInputs",
-                "meta_keys": ["ori_filename", "scale_factor", "ori_shape", "filename", "img_shape", "pad_shape"],
+                "class_path": "otx.core.data.transform_libs.torchvision.Resize",
+                "init_args": {
+                    "scale": [992, 736],
+                    "keep_ratio": False,
+                    "transform_bbox": False,
+                    "is_numpy_to_tvtensor": True,
+                },
+            },
+            {"class_path": "torchvision.transforms.v2.ToDtype", "init_args": {"dtype": torch.float32, "scale": False}},
+            {
+                "class_path": "torchvision.transforms.v2.Normalize",
+                "init_args": {"mean": [0.0, 0.0, 0.0], "std": [255.0, 255.0, 255.0]},
             },
         ]
 
-        assert datamodule.config.test_subset.transform_lib_type == TransformLibType.MMDET
+        assert datamodule.config.test_subset.transform_lib_type == TransformLibType.TORCHVISION
 
         updated_datamodule = auto_configurator.update_ov_subset_pipeline(datamodule, subset="test")
         assert updated_datamodule.config.test_subset.transforms == [{"class_path": "torchvision.transforms.v2.ToImage"}]

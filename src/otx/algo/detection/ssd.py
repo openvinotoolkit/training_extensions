@@ -6,37 +6,39 @@
 from __future__ import annotations
 
 import logging
-from copy import deepcopy
-from typing import TYPE_CHECKING, Any, Literal
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
+import torch
 from datumaro.components.annotation import Bbox
-from mmdet.registry import MODELS
+from omegaconf import DictConfig
 from torch import nn
+from torchvision import tv_tensors
 
-from otx.algo.detection.backbones.pytorchcv_backbones import _build_pytorchcv_model
-from otx.algo.detection.heads.custom_ssd_head import SSDHead
-from otx.algo.utils.mmconfig import read_mmconfig
+from otx.algo.detection.backbones.pytorchcv_backbones import _build_model_including_pytorchcv
+from otx.algo.detection.heads.anchor_generator import SSDAnchorGeneratorClustered
+from otx.algo.detection.heads.delta_xywh_bbox_coder import DeltaXYWHBBoxCoder
+from otx.algo.detection.heads.max_iou_assigner import MaxIoUAssigner
+from otx.algo.detection.heads.ssd_head import SSDHead
+from otx.algo.modules.base_module import BaseModule
+from otx.algo.utils.mmengine_utils import InstanceData, load_checkpoint
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
+from otx.core.config.data import TileConfig
+from otx.core.data.entity.base import OTXBatchLossEntity
+from otx.core.data.entity.detection import DetBatchDataEntity, DetBatchPredEntity
+from otx.core.data.entity.utils import stack_batch
 from otx.core.exporter.base import OTXModelExporter
-from otx.core.exporter.mmdeploy import MMdeployExporter
+from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.metrics.mean_ap import MeanAPCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
-from otx.core.model.detection import MMDetCompatibleModel
+from otx.core.model.detection import ExplainableOTXDetModel
 from otx.core.schedulers import LRSchedulerListCallable
-from otx.core.utils.build import modify_num_classes
-from otx.core.utils.config import convert_conf_to_mmconfig_dict
-from otx.core.utils.utils import get_mean_std_from_data_processing
+from otx.core.types.label import LabelInfoTypes
 
 if TYPE_CHECKING:
-    import torch
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
-    from mmengine import ConfigDict
-    from mmengine.structures import InstanceData
-    from omegaconf import DictConfig
-    from torch import Tensor, device
+    from torch import Tensor
 
-    from otx.algo.detection.heads.custom_anchor_generator import SSDAnchorGeneratorClustered
     from otx.core.data.dataset.base import OTXDataset
     from otx.core.metrics import MetricCallable
 
@@ -46,29 +48,23 @@ logger = logging.getLogger()
 
 # This class and its supporting functions below lightly adapted from the mmdet SingleStageDetector available at:
 # https://github.com/open-mmlab/mmdetection/blob/cfd5d3a985b0249de009b67d04f37263e11cdf3d/mmdet/models/detectors/single_stage.py
-class SingleStageDetector(nn.Module):
+class SingleStageDetector(BaseModule):
     """Single stage detector implementation from mmdet."""
 
     def __init__(
         self,
-        backbone: ConfigDict | dict,
-        bbox_head: ConfigDict | dict,
-        train_cfg: ConfigDict | dict | None = None,
-        test_cfg: ConfigDict | dict | None = None,
-        data_preprocessor: ConfigDict | dict | None = None,
-        init_cfg: ConfigDict | list[ConfigDict] | dict | list[dict] = None,
+        backbone: nn.Module,
+        bbox_head: nn.Module,
+        neck: nn.Module | None = None,
+        train_cfg: dict | None = None,
+        test_cfg: DictConfig | None = None,
+        init_cfg: DictConfig | list[DictConfig] = None,
     ) -> None:
         super().__init__()
         self._is_init = False
-        self.backbone = _build_pytorchcv_model(**backbone)
-        bbox_head.update(train_cfg=train_cfg)
-        bbox_head.update(test_cfg=test_cfg)
-        bbox_head.pop("type")
-        self.bbox_head = SSDHead(**bbox_head)
-        if isinstance(data_preprocessor, nn.Module):
-            self.data_preprocessor = data_preprocessor
-        elif isinstance(data_preprocessor, dict):
-            self.data_preprocessor = MODELS.build(data_preprocessor)
+        self.backbone = backbone
+        self.bbox_head = bbox_head
+        self.neck = neck
         self.init_cfg = init_cfg
         self.train_cfg = train_cfg
         self.test_cfg = test_cfg
@@ -105,58 +101,9 @@ class SingleStageDetector(nn.Module):
             error_msgs,
         )
 
-    def init_weights(self) -> None:
-        """Initialize the weights."""
-        from mmengine.logging import print_log
-        from mmengine.model.weight_init import PretrainedInit, initialize
-        from mmengine.model.wrappers.utils import is_model_wrapper
-
-        module_name = self.__class__.__name__
-        if not self._is_init:
-            if self.init_cfg:
-                print_log(
-                    f"initialize {module_name} with init_cfg {self.init_cfg}",
-                    logger="current",
-                    level=logging.DEBUG,
-                )
-
-                init_cfgs = self.init_cfg
-                if isinstance(self.init_cfg, dict):
-                    init_cfgs = [self.init_cfg]
-
-                # PretrainedInit has higher priority than any other init_cfg.
-                # Therefore we initialize `pretrained_cfg` last to overwrite
-                # the previous initialized weights.
-                # See details in https://github.com/open-mmlab/mmengine/issues/691 # E501
-                other_cfgs = []
-                pretrained_cfg = []
-                for init_cfg in init_cfgs:
-                    if init_cfg["type"] == "Pretrained" or init_cfg["type"] is PretrainedInit:
-                        pretrained_cfg.append(init_cfg)
-                    else:
-                        other_cfgs.append(init_cfg)
-
-                initialize(self, other_cfgs)
-
-            for m in self.children():
-                if is_model_wrapper(m) and not hasattr(m, "init_weights"):
-                    m = m.module  # noqa: PLW2901
-                if hasattr(m, "init_weights") and not getattr(m, "is_init", False):
-                    m.init_weights()
-            if self.init_cfg and pretrained_cfg:
-                initialize(self, pretrained_cfg)
-            self._is_init = True
-        else:
-            print_log(
-                f"init_weights of {self.__class__.__name__} has been called more than once.",
-                logger="current",
-                level=logging.WARNING,
-            )
-
     def forward(
         self,
-        inputs: torch.Tensor,
-        data_samples: list[InstanceData],
+        entity: DetBatchDataEntity,
         mode: str = "tensor",
     ) -> dict[str, torch.Tensor] | list[InstanceData] | tuple[torch.Tensor] | torch.Tensor:
         """The unified entry for a forward process in both training and test.
@@ -189,19 +136,18 @@ class SingleStageDetector(nn.Module):
             - If ``mode="loss"``, return a dict of tensor.
         """
         if mode == "loss":
-            return self.loss(inputs, data_samples)
+            return self.loss(entity)
         if mode == "predict":
-            return self.predict(inputs, data_samples)
+            return self.predict(entity)
         if mode == "tensor":
-            return self._forward(inputs, data_samples)
+            return self._forward(entity)
 
         msg = f"Invalid mode {mode}. Only supports loss, predict and tensor mode"
         raise RuntimeError(msg)
 
     def loss(
         self,
-        batch_inputs: Tensor,
-        batch_data_samples: list[InstanceData],
+        entity: DetBatchDataEntity,
     ) -> dict | list:
         """Calculate losses from a batch of inputs and data samples.
 
@@ -215,13 +161,12 @@ class SingleStageDetector(nn.Module):
         Returns:
             dict: A dictionary of loss components.
         """
-        x = self.extract_feat(batch_inputs)
-        return self.bbox_head.loss(x, batch_data_samples)
+        x = self.extract_feat(entity.images)
+        return self.bbox_head.loss(x, entity)
 
     def predict(
         self,
-        batch_inputs: Tensor,
-        batch_data_samples: list[InstanceData],
+        entity: DetBatchDataEntity,
         rescale: bool = True,
     ) -> list[InstanceData]:
         """Predict results from a batch of inputs and data samples with post-processing.
@@ -247,9 +192,53 @@ class SingleStageDetector(nn.Module):
                 - bboxes (Tensor): Has a shape (num_instances, 4),
                     the last dimension 4 arrange as (x1, y1, x2, y2).
         """
+        x = self.extract_feat(entity.images)
+        return self.bbox_head.predict(x, entity, rescale=rescale)
+
+    def export(
+        self,
+        batch_inputs: Tensor,
+        batch_img_metas: list[dict],
+        rescale: bool = True,
+        explain_mode: bool = False,
+    ) -> list[InstanceData] | dict:
+        """Predict results from a batch of inputs and data samples with post-processing.
+
+        Args:
+            batch_inputs (Tensor): Inputs with shape (N, C, H, W).
+            batch_data_samples (List[:obj:`InstanceData`]): The Data
+                Samples. It usually includes information such as
+                `gt_instance`, `gt_panoptic_seg` and `gt_sem_seg`.
+            rescale (bool): Whether to rescale the results.
+                Defaults to True.
+
+        Returns:
+            list[:obj:`InstanceData`]: Detection results of the
+            input images. Each InstanceData usually contain
+            'pred_instances'. And the ``pred_instances`` usually
+            contains following keys.
+
+                - scores (Tensor): Classification scores, has a shape
+                    (num_instance, )
+                - labels (Tensor): Labels of bboxes, has a shape
+                    (num_instances, ).
+                - bboxes (Tensor): Has a shape (num_instances, 4),
+                    the last dimension 4 arrange as (x1, y1, x2, y2).
+        """
+        if explain_mode:
+            backbone_feat = self.extract_feat(batch_inputs)
+            bbox_head_feat = self.bbox_head.forward(backbone_feat)
+            feature_vector = self.feature_vector_fn(backbone_feat)
+            saliency_map = self.explain_fn(bbox_head_feat[0])
+            bboxes, labels = self.bbox_head.export(backbone_feat, batch_img_metas, rescale=rescale)
+            return {
+                "bboxes": bboxes,
+                "labels": labels,
+                "feature_vector": feature_vector,
+                "saliency_map": saliency_map,
+            }
         x = self.extract_feat(batch_inputs)
-        results_list = self.bbox_head.predict(x, batch_data_samples, rescale=rescale)
-        return self.add_pred_to_datasample(batch_data_samples, results_list)
+        return self.bbox_head.export(x, batch_img_metas, rescale=rescale)
 
     def _forward(
         self,
@@ -281,42 +270,9 @@ class SingleStageDetector(nn.Module):
             different resolutions.
         """
         x = self.backbone(batch_inputs)
-        if self.with_neck:
+        if self.neck is not None:
             x = self.neck(x)
         return x
-
-    def add_pred_to_datasample(
-        self,
-        data_samples: list[InstanceData],
-        results_list: list[InstanceData],
-    ) -> list[InstanceData]:
-        """Add predictions to `InstanceData`.
-
-        Args:
-            data_samples (list[:obj:`InstanceData`], optional): A batch of
-                data samples that contain annotations and predictions.
-            results_list (list[:obj:`InstanceData`]): Detection results of
-                each image.
-
-        Returns:
-            list[:obj:`InstanceData`]: Detection results of the
-            input images. Each InstanceData usually contain
-            'pred_instances'. And the ``pred_instances`` usually
-            contains following keys.
-
-                - scores (Tensor): Classification scores, has a shape
-                    (num_instance, )
-                - labels (Tensor): Labels of bboxes, has a shape
-                    (num_instances, ).
-                - bboxes (Tensor): Has a shape (num_instances, 4),
-                    the last dimension 4 arrange as (x1, y1, x2, y2).
-        """
-        from mmdet.models.utils import samplelist_boxtype2tensor
-
-        for data_sample, pred_instances in zip(data_samples, results_list):
-            data_sample.pred_instances = pred_instances
-        samplelist_boxtype2tensor(data_samples)
-        return data_samples
 
     @property
     def with_neck(self) -> bool:
@@ -343,58 +299,182 @@ class SingleStageDetector(nn.Module):
         )
 
 
-class SSD(MMDetCompatibleModel):
+class SSD(ExplainableOTXDetModel):
     """Detecion model class for SSD."""
 
     def __init__(
         self,
-        num_classes: int,
-        variant: Literal["mobilenetv2"],
+        label_info: LabelInfoTypes,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MeanAPCallable,
         torch_compile: bool = False,
+        tile_config: TileConfig = TileConfig(enable_tiler=False),
     ) -> None:
-        model_name = f"ssd_{variant}"
-        config = read_mmconfig(model_name=model_name)
+        self.load_from = (
+            "https://storage.openvinotoolkit.org/repositories/openvino_training_extensions"
+            "/models/object_detection/v2/mobilenet_v2-2s_ssd-992x736.pth"
+        )
         super().__init__(
-            num_classes=num_classes,
-            config=config,
+            label_info=label_info,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
             torch_compile=torch_compile,
+            tile_config=tile_config,
         )
         self.image_size = (1, 3, 864, 864)
         self.tile_image_size = self.image_size
 
     def _create_model(self) -> nn.Module:
-        from mmdet.models.data_preprocessors import (
-            DetDataPreprocessor as _DetDataPreprocessor,
-        )
-        from mmdet.registry import MODELS
-        from mmengine.runner import load_checkpoint
-
-        # NOTE: For the history of this monkey patching, please see
-        # https://github.com/openvinotoolkit/training_extensions/issues/2743
-        @MODELS.register_module(force=True)
-        class DetDataPreprocessor(_DetDataPreprocessor):
-            @property
-            def device(self) -> device:
-                try:
-                    buf = next(self.buffers())
-                except StopIteration:
-                    return super().device
-                else:
-                    return buf.device
-
-        config = deepcopy(self.config)
-        self.classification_layers = self.get_classification_layers(config, "model.")
-        config.pop("type")
-        detector = SingleStageDetector(**convert_conf_to_mmconfig_dict(config))
+        detector = self._build_model(num_classes=self.label_info.num_classes)
+        detector.init_weights()
+        self.classification_layers = self.get_classification_layers(prefix="model.")
         if self.load_from is not None:
             load_checkpoint(detector, self.load_from, map_location="cpu")
         return detector
+
+    def _build_model(self, num_classes: int) -> SingleStageDetector:
+        train_cfg = {
+            "assigner": MaxIoUAssigner(
+                min_pos_iou=0.0,
+                ignore_iof_thr=-1,
+                gt_max_assign_all=False,
+                pos_iou_thr=0.4,
+                neg_iou_thr=0.4,
+            ),
+            "smoothl1_beta": 1.0,
+            "allowed_border": -1,
+            "pos_weight": -1,
+            "neg_pos_ratio": 3,
+            "debug": False,
+            "use_giou": False,
+            "use_focal": False,
+        }
+        test_cfg = DictConfig(
+            {
+                "nms": {"type": "nms", "iou_threshold": 0.45},
+                "min_bbox_size": 0,
+                "score_thr": 0.02,
+                "max_per_img": 200,
+            },
+        )
+        backbone = _build_model_including_pytorchcv(
+            cfg={
+                "type": "mobilenetv2_w1",
+                "out_indices": [4, 5],
+                "frozen_stages": -1,
+                "norm_eval": False,
+                "pretrained": True,
+            },
+        )
+        bbox_head = SSDHead(
+            anchor_generator=SSDAnchorGeneratorClustered(
+                strides=[16, 32],
+                widths=[
+                    [38.641007923271076, 92.49516032784699, 271.4234764938237, 141.53469410876247],
+                    [206.04136086566515, 386.6542727907841, 716.9892752215089, 453.75609561761405, 788.4629155558277],
+                ],
+                heights=[
+                    [48.9243877087132, 147.73088476194903, 158.23569788707474, 324.14510379107367],
+                    [587.6216059488938, 381.60024152086544, 323.5988913027747, 702.7486097568518, 741.4865860938451],
+                ],
+            ),
+            bbox_coder=DeltaXYWHBBoxCoder(
+                target_means=(0.0, 0.0, 0.0, 0.0),
+                target_stds=(0.1, 0.1, 0.2, 0.2),
+            ),
+            num_classes=num_classes,
+            in_channels=(96, 320),
+            use_depthwise=True,
+            init_cfg={"type": "Xavier", "layer": "Conv2d", "distribution": "uniform"},
+            train_cfg=train_cfg,
+            test_cfg=test_cfg,
+        )
+        return SingleStageDetector(backbone, bbox_head, train_cfg=train_cfg, test_cfg=test_cfg)
+
+    def _customize_inputs(self, entity: DetBatchDataEntity) -> dict[str, Any]:
+        if isinstance(entity.images, list):
+            entity.images = stack_batch(entity.images, pad_size_divisor=32)
+        inputs: dict[str, Any] = {}
+
+        inputs["entity"] = entity
+        inputs["mode"] = "loss" if self.training else "predict"
+
+        return inputs
+
+    def _customize_outputs(
+        self,
+        outputs: list[InstanceData] | dict,
+        inputs: DetBatchDataEntity,
+    ) -> DetBatchPredEntity | OTXBatchLossEntity:
+        if self.training:
+            if not isinstance(outputs, dict):
+                raise TypeError(outputs)
+
+            losses = OTXBatchLossEntity()
+            for k, v in outputs.items():
+                if isinstance(v, list):
+                    losses[k] = sum(v)
+                elif isinstance(v, torch.Tensor):
+                    losses[k] = v
+                else:
+                    msg = "Loss output should be list or torch.tensor but got {type(v)}"
+                    raise TypeError(msg)
+            return losses
+
+        scores = []
+        bboxes = []
+        labels = []
+        predictions = outputs["predictions"] if isinstance(outputs, dict) else outputs
+        for img_info, prediction in zip(inputs.imgs_info, predictions):
+            if not isinstance(prediction, InstanceData):
+                raise TypeError(prediction)
+            scores.append(prediction.scores)  # type: ignore[attr-defined]
+            bboxes.append(
+                tv_tensors.BoundingBoxes(
+                    prediction.bboxes,  # type: ignore[attr-defined]
+                    format="XYXY",
+                    canvas_size=img_info.ori_shape,
+                ),
+            )
+            labels.append(prediction.labels)  # type: ignore[attr-defined]
+
+        if self.explain_mode:
+            if not isinstance(outputs, dict):
+                msg = f"Model output should be a dict, but got {type(outputs)}."
+                raise ValueError(msg)
+
+            if "feature_vector" not in outputs:
+                msg = "No feature vector in the model output."
+                raise ValueError(msg)
+
+            if "saliency_map" not in outputs:
+                msg = "No saliency maps in the model output."
+                raise ValueError(msg)
+
+            saliency_map = outputs["saliency_map"].detach().cpu().numpy()
+            feature_vector = outputs["feature_vector"].detach().cpu().numpy()
+
+            return DetBatchPredEntity(
+                batch_size=len(outputs),
+                images=inputs.images,
+                imgs_info=inputs.imgs_info,
+                scores=scores,
+                bboxes=bboxes,
+                labels=labels,
+                saliency_map=saliency_map,
+                feature_vector=feature_vector,
+            )
+
+        return DetBatchPredEntity(
+            batch_size=len(outputs),
+            images=inputs.images,
+            imgs_info=inputs.imgs_info,
+            scores=scores,
+            bboxes=bboxes,
+            labels=labels,
+        )
 
     def setup(self, stage: str) -> None:
         """Callback for setup OTX SSD Model.
@@ -425,11 +505,13 @@ class SSD(MMDetCompatibleModel):
 
     def _get_new_anchors(self, dataset: OTXDataset, anchor_generator: SSDAnchorGeneratorClustered) -> tuple | None:
         """Get new anchors for SSD from OTXDataset."""
-        from mmdet.datasets.transforms import Resize
+        from torchvision.transforms.v2._container import Compose
+
+        from otx.core.data.transform_libs.torchvision import Resize
 
         target_wh = None
-        if isinstance(dataset.transforms, list):
-            for transform in dataset.transforms:
+        if isinstance(dataset.transforms, Compose):
+            for transform in dataset.transforms.transforms:
                 if isinstance(transform, Resize):
                     target_wh = transform.scale
         if target_wh is None:
@@ -490,9 +572,8 @@ class SSD(MMDetCompatibleModel):
         heights = [height.tolist() for height in heights]
         return widths, heights
 
-    @staticmethod
     def get_classification_layers(
-        config: DictConfig,
+        self,
         prefix: str,
     ) -> dict[str, dict[str, bool | int]]:
         """Return classification layer names by comparing two different number of classes models.
@@ -511,13 +592,8 @@ class SSD(MMDetCompatibleModel):
             `num_anchors` means number of anchors of layer. SSD have classification per each anchor,
             so we have to update every anchors.
         """
-        sample_config = deepcopy(config)
-        sample_config.pop("type")
-        modify_num_classes(sample_config, 3)
-        sample_model_dict = SingleStageDetector(**convert_conf_to_mmconfig_dict(sample_config)).state_dict()
-
-        modify_num_classes(sample_config, 4)
-        incremental_model_dict = SingleStageDetector(**convert_conf_to_mmconfig_dict(sample_config)).state_dict()
+        sample_model_dict = self._build_model(num_classes=3).state_dict()
+        incremental_model_dict = self._build_model(num_classes=4).state_dict()
 
         classification_layers = {}
         for key in sample_model_dict:
@@ -570,13 +646,9 @@ class SSD(MMDetCompatibleModel):
         if self.image_size is None:
             raise ValueError(self.image_size)
 
-        mean, std = get_mean_std_from_data_processing(self.config)
+        mean, std = (0.0, 0.0, 0.0), (255.0, 255.0, 255.0)
 
-        return MMdeployExporter(
-            model_builder=self._create_model,
-            model_cfg=deepcopy(self.config),
-            deploy_cfg="otx.algo.detection.mmdeploy.ssd_mobilenetv2",
-            test_pipeline=self._make_fake_test_pipeline(),
+        return OTXNativeModelExporter(
             task_level_export_parameters=self._export_parameters,
             input_size=self.image_size,
             mean=mean,
@@ -584,8 +656,31 @@ class SSD(MMDetCompatibleModel):
             resize_mode="standard",
             pad_value=0,
             swap_rgb=False,
-            output_names=["feature_vector", "saliency_map"] if self.explain_mode else None,
+            via_onnx=True,  # Currently SSD should be exported through ONNX
+            onnx_export_configuration={
+                "input_names": ["image"],
+                "output_names": ["boxes", "labels"],
+                "dynamic_axes": {
+                    "image": {0: "batch", 2: "height", 3: "width"},
+                    "boxes": {0: "batch", 1: "num_dets"},
+                    "labels": {0: "batch", 1: "num_dets"},
+                },
+                "autograd_inlining": False,
+            },
+            output_names=["bboxes", "labels", "feature_vector", "saliency_map"] if self.explain_mode else None,
         )
+
+    def forward_for_tracing(self, inputs: Tensor) -> list[InstanceData]:
+        """Forward function for export."""
+        shape = (int(inputs.shape[2]), int(inputs.shape[3]))
+        meta_info = {
+            "pad_shape": shape,
+            "batch_input_shape": shape,
+            "img_shape": shape,
+            "scale_factor": (1.0, 1.0),
+        }
+        meta_info_list = [meta_info] * len(inputs)
+        return self.model.export(inputs, meta_info_list, explain_mode=self.explain_mode)
 
     def on_load_checkpoint(self, checkpoint: dict[str, Any]) -> None:
         """Callback on load checkpoint."""
@@ -597,6 +692,6 @@ class SSD(MMDetCompatibleModel):
 
         return super().on_load_checkpoint(checkpoint)
 
-    def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.model.") -> dict:
+    def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.") -> dict:
         """Load the previous OTX ckpt according to OTX2.0."""
         return OTXv1Helper.load_ssd_ckpt(state_dict, add_prefix)

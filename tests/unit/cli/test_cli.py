@@ -84,7 +84,7 @@ class TestOTXCLI:
             "src/otx/recipe/detection/atss_mobilenetv2.yaml",
             "--data_root",
             "tests/assets/car_tree_bug",
-            "--model.num_classes",
+            "--model.label_info",
             "3",
             "--work_dir",
             str(tmpdir),

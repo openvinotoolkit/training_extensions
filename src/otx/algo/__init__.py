@@ -6,8 +6,8 @@
 from . import (
     accelerators,
     action_classification,
-    classification,
     detection,
+    instance_segmentation,
     plugins,
     segmentation,
     strategies,
@@ -16,11 +16,11 @@ from . import (
 
 __all__ = [
     "action_classification",
-    "classification",
     "detection",
     "segmentation",
     "visual_prompting",
     "strategies",
     "accelerators",
     "plugins",
+    "instance_segmentation",
 ]

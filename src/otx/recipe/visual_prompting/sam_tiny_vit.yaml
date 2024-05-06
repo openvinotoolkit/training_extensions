@@ -2,7 +2,7 @@ model:
   class_path: otx.algo.visual_prompting.segment_anything.OTXSegmentAnything
   init_args:
     backbone: tiny_vit
-    num_classes: 0
+    label_info: 0
     freeze_image_encoder: True
     freeze_prompt_encoder: True
     freeze_mask_decoder: False

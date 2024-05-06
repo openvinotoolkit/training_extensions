@@ -6,8 +6,8 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
-from openvino.model_api.tilers import Tiler
-from otx.algo.classification.efficientnet_b0 import EfficientNetB0ForMulticlassCls
+from model_api.tilers import Tiler
+from otx.algo.classification.efficientnet import EfficientNetForMulticlassCls
 from otx.core.config.hpo import HpoConfig
 from otx.core.data.module import OTXDataModule
 from otx.core.model.base import OTXModel
@@ -47,6 +47,10 @@ def test_engine_from_config(
         work_dir=tmp_path_train,
         device=fxt_accelerator,
     )
+    if task.lower() == "zero_shot_visual_prompting":
+        engine.model.infer_reference_info_root = Path()
+        # update litmodule.hparams to reflect changed hparams
+        engine.model.hparams.update({"infer_reference_info_root": str(engine.model.infer_reference_info_root)})
 
     # Check OTXModel & OTXDataModule
     assert isinstance(engine.model, OTXModel)
@@ -89,6 +93,14 @@ def test_engine_from_config(
     # Test with IR Model
     if task in OVMODEL_PER_TASK:
         if task.lower() in ["visual_prompting", "zero_shot_visual_prompting"]:
+            if task.lower() == "zero_shot_visual_prompting":
+                engine.model = engine._auto_configurator.get_ov_model(
+                    model_name=str(exported_model_path["decoder"]),
+                    label_info=engine.datamodule.label_info,
+                )
+                engine.model.infer_reference_info_root = Path()
+                # update litmodule.hparams to reflect changed hparams
+                engine.model.hparams.update({"infer_reference_info_root": str(engine.model.infer_reference_info_root)})
             test_metric_from_ov_model = engine.test(checkpoint=exported_model_path["decoder"], accelerator="cpu")
         else:
             test_metric_from_ov_model = engine.test(checkpoint=exported_model_path, accelerator="cpu")
@@ -172,8 +184,20 @@ def test_otx_hpo(
         reason = f"test_otx_hpo for {task} isn't prepared yet."
         pytest.xfail(reason=reason)
 
-    model = EfficientNetB0ForMulticlassCls(num_classes=2)
-    hpo_config = HpoConfig(metric_name=METRIC_NAME[task], expected_time_ratio=2, num_workers=1)
+    model = EfficientNetForMulticlassCls(label_info=2)
+    hpo_config = HpoConfig(
+        search_space={
+            "model.scheduler.factor": {
+                "type": "uniform",
+                "min": 0.05,
+                "max": 0.15,
+                "step": 0.01,
+            },
+        },
+        metric_name=METRIC_NAME[task],
+        expected_time_ratio=2,
+        num_workers=1,
+    )
     work_dir = str(tmp_path)
     engine = Engine(
         data_root=fxt_target_dataset_per_task[task.lower()],

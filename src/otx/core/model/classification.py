@@ -31,16 +31,16 @@ from otx.core.metrics.accuracy import (
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable, OTXModel, OVModel
 from otx.core.schedulers import LRSchedulerListCallable
 from otx.core.types.export import TaskLevelExportParameters
-from otx.core.types.label import HLabelInfo
+from otx.core.types.label import HLabelInfo, LabelInfo, LabelInfoTypes
 from otx.core.utils.config import inplace_num_classes
 from otx.core.utils.utils import get_mean_std_from_data_processing
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
     from mmpretrain.models.utils import ClsDataPreprocessor
+    from model_api.models.utils import ClassificationResult
     from omegaconf import DictConfig
-    from openvino.model_api.models.utils import ClassificationResult
-    from torch import nn
+    from torch import Tensor, nn
 
     from otx.core.metrics import MetricCallable
 
@@ -50,14 +50,14 @@ class OTXMulticlassClsModel(OTXModel[MulticlassClsBatchDataEntity, MulticlassCls
 
     def __init__(
         self,
-        num_classes: int,
+        label_info: LabelInfoTypes,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MultiClassClsMetricCallable,
         torch_compile: bool = False,
     ) -> None:
         super().__init__(
-            num_classes=num_classes,
+            label_info=label_info,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
@@ -97,19 +97,19 @@ class MMPretrainMulticlassClsModel(OTXMulticlassClsModel):
 
     def __init__(
         self,
-        num_classes: int,
+        label_info: LabelInfoTypes,
         config: DictConfig,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MultiClassClsMetricCallable,
         torch_compile: bool = False,
     ) -> None:
-        config = inplace_num_classes(cfg=config, num_classes=num_classes)
+        config = inplace_num_classes(cfg=config, num_classes=self._dispatch_label_info(label_info).num_classes)
         self.config = config
         self.load_from = config.pop("load_from", None)
         self.image_size = (1, 3, 224, 224)
         super().__init__(
-            num_classes=num_classes,
+            label_info=label_info,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
@@ -229,6 +229,10 @@ class MMPretrainMulticlassClsModel(OTXMulticlassClsModel):
             output_names=["logits", "feature_vector", "saliency_map"] if self.explain_mode else None,
         )
 
+    def forward_for_tracing(self, image: Tensor) -> Tensor | dict[str, Tensor]:
+        """Model forward function used for the model tracing during model exportation."""
+        return self.model.forward(image, mode="tensor")
+
 
 ### NOTE, currently, although we've made the separate Multi-cls, Multi-label classes
 ### It'll be integrated after H-label classification integration with more advanced design.
@@ -239,14 +243,14 @@ class OTXMultilabelClsModel(OTXModel[MultilabelClsBatchDataEntity, MultilabelCls
 
     def __init__(
         self,
-        num_classes: int,
+        label_info: LabelInfoTypes,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MultiLabelClsMetricCallable,
         torch_compile: bool = False,
     ) -> None:
         super().__init__(
-            num_classes=num_classes,
+            label_info=label_info,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
@@ -274,6 +278,10 @@ class OTXMultilabelClsModel(OTXModel[MultilabelClsBatchDataEntity, MultilabelCls
             "target": torch.stack(inputs.labels),
         }
 
+    def forward_for_tracing(self, image: Tensor) -> Tensor | dict[str, Tensor]:
+        """Model forward function used for the model tracing during model exportation."""
+        return self.model.forward(image, mode="tensor")
+
 
 class MMPretrainMultilabelClsModel(OTXMultilabelClsModel):
     """Multi-label Classification model compatible for MMPretrain.
@@ -285,19 +293,19 @@ class MMPretrainMultilabelClsModel(OTXMultilabelClsModel):
 
     def __init__(
         self,
-        num_classes: int,
+        label_info: LabelInfoTypes,
         config: DictConfig,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = lambda num_labels: Accuracy(task="multilabel", num_labels=num_labels),
         torch_compile: bool = False,
     ) -> None:
-        config = inplace_num_classes(cfg=config, num_classes=num_classes)
+        config = inplace_num_classes(cfg=config, num_classes=self._dispatch_label_info(label_info).num_classes)
         self.config = config
         self.load_from = config.pop("load_from", None)
         self.image_size = (1, 3, 224, 224)
         super().__init__(
-            num_classes=num_classes,
+            label_info=label_info,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
@@ -425,21 +433,19 @@ class OTXHlabelClsModel(OTXModel[HlabelClsBatchDataEntity, HlabelClsBatchPredEnt
 
     def __init__(
         self,
-        hlabel_info: HLabelInfo,
+        label_info: HLabelInfo,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = HLabelClsMetricCallble,
         torch_compile: bool = False,
     ) -> None:
         super().__init__(
-            num_classes=hlabel_info.num_classes,
+            label_info=label_info,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
             torch_compile=torch_compile,
         )
-        # NOTE: This should be behind of super().__init__() to avoid overwriting
-        self._label_info = hlabel_info
 
     @property
     def _export_parameters(self) -> TaskLevelExportParameters:
@@ -470,6 +476,13 @@ class OTXHlabelClsModel(OTXModel[HlabelClsBatchDataEntity, HlabelClsBatchPredEnt
             "target": torch.stack(inputs.labels),
         }
 
+    @staticmethod
+    def _dispatch_label_info(label_info: LabelInfoTypes) -> LabelInfo:
+        if not isinstance(label_info, HLabelInfo):
+            raise TypeError(label_info)
+
+        return label_info
+
 
 class MMPretrainHlabelClsModel(OTXHlabelClsModel):
     """H-label Classification model compatible for MMPretrain.
@@ -481,26 +494,26 @@ class MMPretrainHlabelClsModel(OTXHlabelClsModel):
 
     def __init__(
         self,
-        hlabel_info: HLabelInfo,
+        label_info: HLabelInfo,
         config: DictConfig,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = HLabelClsMetricCallble,
         torch_compile: bool = False,
     ) -> None:
-        config = inplace_num_classes(cfg=config, num_classes=hlabel_info.num_classes)
+        config = inplace_num_classes(cfg=config, num_classes=self._dispatch_label_info(label_info).num_classes)
 
         if (head_config := getattr(config, "head", None)) is None:
             msg = 'Config should have "head" section'
             raise ValueError(msg)
 
-        head_config.update(**hlabel_info.as_head_config_dict())
+        head_config.update(**label_info.as_head_config_dict())
 
         self.config = config
         self.load_from = config.pop("load_from", None)
         self.image_size = (1, 3, 224, 224)
         super().__init__(
-            hlabel_info=hlabel_info,
+            label_info=label_info,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
@@ -621,6 +634,10 @@ class MMPretrainHlabelClsModel(OTXHlabelClsModel):
             onnx_export_configuration=None,
             output_names=["logits", "feature_vector", "saliency_map"] if self.explain_mode else None,
         )
+
+    def forward_for_tracing(self, image: Tensor) -> Tensor | dict[str, Tensor]:
+        """Model forward function used for the model tracing during model exportation."""
+        return self.model.forward(image, mode="tensor")
 
 
 class OVMulticlassClassificationModel(
