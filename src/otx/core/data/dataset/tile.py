@@ -324,7 +324,7 @@ class OTXTileDetTestDataset(OTXTileDataset):
             the return of OTXDataEntity. Nevertheless, in instances involving tiling, it becomes
             imperative to encapsulate tiles within a unified entity, namely TileDetDataEntity.
         """
-        item = self.dm_subset.as_dataset()[index]
+        item = self.dm_subset.parent[index]
         img = item.media_as(Image)
         img_data, img_shape = self._get_img_data_and_shape(img)
 
@@ -415,7 +415,7 @@ class OTXTileInstSegTestDataset(OTXTileDataset):
             the return of OTXDataEntity. Nevertheless, in instances involving tiling, it becomes
             imperative to encapsulate tiles within a unified entity, namely TileInstSegDataEntity.
         """
-        item = self.dm_subset.as_dataset()[index]
+        item = self.dm_subset.parent[index]
         img = item.media_as(Image)
         img_data, img_shape = self._get_img_data_and_shape(img)
 

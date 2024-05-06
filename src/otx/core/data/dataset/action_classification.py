@@ -20,7 +20,7 @@ class OTXActionClsDataset(OTXDataset[ActionClsDataEntity]):
     """OTXDataset class for action classification task."""
 
     def _get_item_impl(self, idx: int) -> ActionClsDataEntity | None:
-        item = self.dm_subset.as_dataset()[idx]
+        item = self.dm_subset.parent[idx]
 
         label_anns = [ann for ann in item.annotations if isinstance(ann, Label)]
 
