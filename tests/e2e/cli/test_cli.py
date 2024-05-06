@@ -284,6 +284,10 @@ def test_otx_explain_e2e_cli(
     if ("_cls" not in task) and (task not in ["detection", "instance_segmentation"]):
         pytest.skip("Supported only for classification, detection and instance segmentation task.")
 
+    # TODO (Galina): revert back when torch issue fixed
+    if task == "instance_segmentation":
+        pytest.skip("Determinism is not supported for instance_segmentation models (OOM issue).")
+
     if "dino" in model_name:
         pytest.skip("DINO is not supported.")
 
@@ -339,11 +343,11 @@ def test_otx_explain_e2e_cli(
             "img_371_jpg_rf_a893e0bdc6fda0ba1b2a7f07d56cec23_class_0_saliency_map.png",
         ),
         "detection_ssd_mobilenetv2": (
-            np.array([113, 139, 211, 190, 135,  91,  70, 103, 102,  89], dtype=np.int16),
+            np.array([113, 139, 211, 190, 135, 91, 70, 103, 102, 89], dtype=np.int16),
             "img_371_jpg_rf_a893e0bdc6fda0ba1b2a7f07d56cec23_class_0_saliency_map.png",
         ),
         "detection_atss_mobilenetv2": (
-            np.array([60,  95, 128, 107,  86, 111, 127, 125, 117, 116], dtype=np.int16),
+            np.array([60, 95, 128, 107, 86, 111, 127, 125, 117, 116], dtype=np.int16),
             "img_371_jpg_rf_a893e0bdc6fda0ba1b2a7f07d56cec23_class_0_saliency_map.png",
         ),
         # Instance Segmentation
