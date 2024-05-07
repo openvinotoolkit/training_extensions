@@ -77,7 +77,7 @@ class OTXDataset(Dataset, Generic[T_OTXDataEntity]):
         stack_images: bool = True,
         to_tv_image: bool = True,
     ) -> None:
-        self.dm_subset = dm_subset
+        self.dm_subset = dm_subset.as_dataset()
         self.transforms = transforms
         self.mem_cache_handler = mem_cache_handler
         self.mem_cache_img_max_size = mem_cache_img_max_size

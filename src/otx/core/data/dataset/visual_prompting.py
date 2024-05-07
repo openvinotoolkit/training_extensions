@@ -65,7 +65,7 @@ class OTXVisualPromptingDataset(OTXDataset[VisualPromptingDataEntity]):
         self.label_info = NullLabelInfo()
 
     def _get_item_impl(self, index: int) -> VisualPromptingDataEntity | None:
-        item = self.dm_subset.parent[index]
+        item = self.dm_subset[index]
         img = item.media_as(dmImage)
         img_data, img_shape = self._get_img_data_and_shape(img)
 
@@ -195,7 +195,7 @@ class OTXZeroShotVisualPromptingDataset(OTXDataset[ZeroShotVisualPromptingDataEn
         self.label_info = NullLabelInfo()
 
     def _get_item_impl(self, index: int) -> ZeroShotVisualPromptingDataEntity | None:
-        item = self.dm_subset.parent[index]
+        item = self.dm_subset[index]
         img = item.media_as(dmImage)
         img_data, img_shape = self._get_img_data_and_shape(img)
 
