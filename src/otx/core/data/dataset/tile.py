@@ -180,7 +180,7 @@ class OTXTileDatasetFactory:
         Returns:
             OTXTileDataset: Tile dataset.
         """
-        if dataset.dm_subset.name == "train":
+        if dataset.dm_subset[0].subset == "train":
             return OTXTileTrainDataset(dataset, tile_config)
 
         if task == OTXTaskType.DETECTION:
@@ -247,7 +247,7 @@ class OTXTileDataset(OTXDataset):
             threshold_drop_ann=0.5,
         )
 
-        if self.dm_subset.name == "val":
+        if item.subset == "val":
             # NOTE: filter validation tiles with annotations only to avoid evaluation on empty tiles.
             tile_ds = tile_ds.filter("/item/annotation", filter_annotations=True, remove_empty=True)
 

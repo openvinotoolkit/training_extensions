@@ -100,7 +100,7 @@ class OTXVisualPromptingDataset(OTXDataset[VisualPromptingDataEntity]):
                     gt_polygons["bboxes"].append(annotation)
                 else:
                     # get point
-                    if self.dm_subset.name == "train":
+                    if item.subset == "train":
                         # get random point from the mask
                         idx_chosen = torch.randperm(len(mask_points[0]))[0]
                         point = Points(

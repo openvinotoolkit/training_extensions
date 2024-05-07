@@ -35,7 +35,7 @@ class TestOTXVisualPromptingDataset:
         use_point: bool,
     ) -> None:
         dataset = OTXVisualPromptingDataset(
-            fxt_dm_dataset.subsets()[subset],
+            fxt_dm_dataset.get_subset(subset),
             fxt_tvt_transforms,
             use_bbox=use_bbox,
             use_point=use_point,
