@@ -159,10 +159,13 @@ def _scale_batch_reset_params(trainer: Trainer, steps_per_trial: int) -> None:
     if loop is None:
         msg = "There is no active loop."
         raise RuntimeError(msg)
-    trainer.limit_train_batches = 1.0
+    if trainer.fit_loop.epoch_loop.max_steps == -1:  # epoch based loop
+        trainer.fit_loop.max_epochs = 1
+        trainer.limit_train_batches = steps_per_trial
+    else:  # iter based loop
+        trainer.fit_loop.epoch_loop.max_steps = steps_per_trial
     if trainer.limit_val_batches != 0:
         trainer.limit_val_batches = steps_per_trial
-    trainer.fit_loop.epoch_loop.max_steps = steps_per_trial
 
 
 def _apply_new_batch_size(engine: Engine, new_batch_size: int) -> None:
