@@ -109,9 +109,7 @@ class DINOv2RegisterClassifier(OTXMulticlassClsModel):
             prefix="model.",
         )
 
-        model = self._build_model(num_classes=self.num_classes)
-        model.init_weights()
-        return model
+        return self._build_model(num_classes=self.num_classes)
 
     def _build_model(self, num_classes: int) -> nn.Module:
         """Create the model."""
