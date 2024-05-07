@@ -8,6 +8,17 @@ from datumaro import Polygon
 from mmdet.structures import DetDataSample
 from mmengine.structures import InstanceData
 from otx.core.data.entity.base import ImageInfo
+from otx.core.data.entity.classification import (
+    HlabelClsBatchDataEntity,
+    HlabelClsBatchPredEntity,
+    HlabelClsDataEntity,
+    MulticlassClsBatchDataEntity,
+    MulticlassClsBatchPredEntity,
+    MulticlassClsDataEntity,
+    MultilabelClsBatchDataEntity,
+    MultilabelClsBatchPredEntity,
+    MultilabelClsDataEntity,
+)
 from otx.core.data.entity.detection import DetBatchDataEntity, DetBatchPredEntity, DetDataEntity
 from otx.core.data.entity.instance_segmentation import (
     InstanceSegBatchDataEntity,
@@ -140,6 +151,84 @@ def fxt_data_sample() -> list[DetDataSample]:
         ),
     )
     return [data_sample]
+
+
+@pytest.fixture(scope="session")
+def fxt_multi_class_cls_data_entity() -> tuple[tuple, MulticlassClsDataEntity, MulticlassClsBatchDataEntity]:
+    img_size = (64, 64)
+    fake_image = torch.zeros(size=(3, *img_size), dtype=torch.uint8).numpy()
+    fake_image_info = ImageInfo(img_idx=0, img_shape=img_size, ori_shape=img_size)
+    fake_labels = LongTensor([0])
+    fake_score = torch.Tensor([0.6])
+    # define data entity
+    single_data_entity = MulticlassClsDataEntity(fake_image, fake_image_info, fake_labels)
+    batch_data_entity = MulticlassClsBatchDataEntity(
+        batch_size=1,
+        images=[Image(data=torch.from_numpy(fake_image))],
+        imgs_info=[fake_image_info],
+        labels=[fake_labels],
+    )
+    batch_pred_data_entity = MulticlassClsBatchPredEntity(
+        batch_size=1,
+        images=[Image(data=torch.from_numpy(fake_image))],
+        imgs_info=[fake_image_info],
+        labels=[fake_labels],
+        scores=[fake_score],
+    )
+
+    return single_data_entity, batch_pred_data_entity, batch_data_entity
+
+
+@pytest.fixture(scope="session")
+def fxt_multi_label_cls_data_entity() -> tuple[tuple, MultilabelClsDataEntity, MultilabelClsBatchDataEntity]:
+    img_size = (64, 64)
+    fake_image = torch.zeros(size=(3, *img_size), dtype=torch.uint8).numpy()
+    fake_image_info = ImageInfo(img_idx=0, img_shape=img_size, ori_shape=img_size)
+    fake_labels = LongTensor([0])
+    fake_score = torch.Tensor([0.6])
+    # define data entity
+    single_data_entity = MultilabelClsDataEntity(fake_image, fake_image_info, fake_labels)
+    batch_data_entity = MultilabelClsBatchDataEntity(
+        batch_size=1,
+        images=[Image(data=torch.from_numpy(fake_image))],
+        imgs_info=[fake_image_info],
+        labels=[fake_labels],
+    )
+    batch_pred_data_entity = MultilabelClsBatchPredEntity(
+        batch_size=1,
+        images=[Image(data=torch.from_numpy(fake_image))],
+        imgs_info=[fake_image_info],
+        labels=[fake_labels],
+        scores=[fake_score],
+    )
+
+    return single_data_entity, batch_pred_data_entity, batch_data_entity
+
+
+@pytest.fixture(scope="session")
+def fxt_h_label_cls_data_entity() -> tuple[tuple, HlabelClsDataEntity, HlabelClsBatchDataEntity]:
+    img_size = (64, 64)
+    fake_image = torch.zeros(size=(3, *img_size), dtype=torch.uint8).numpy()
+    fake_image_info = ImageInfo(img_idx=0, img_shape=img_size, ori_shape=img_size)
+    fake_labels = LongTensor([0])
+    fake_score = torch.Tensor([0.6])
+    # define data entity
+    single_data_entity = HlabelClsDataEntity(fake_image, fake_image_info, fake_labels)
+    batch_data_entity = HlabelClsBatchDataEntity(
+        batch_size=1,
+        images=[Image(data=torch.from_numpy(fake_image))],
+        imgs_info=[fake_image_info],
+        labels=[fake_labels],
+    )
+    batch_pred_data_entity = HlabelClsBatchPredEntity(
+        batch_size=1,
+        images=[Image(data=torch.from_numpy(fake_image))],
+        imgs_info=[fake_image_info],
+        labels=[fake_labels],
+        scores=[fake_score],
+    )
+
+    return single_data_entity, batch_pred_data_entity, batch_data_entity
 
 
 @pytest.fixture(scope="session")
