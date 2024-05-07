@@ -164,6 +164,7 @@ def _scale_batch_reset_params(trainer: Trainer, steps_per_trial: int) -> None:
         trainer.limit_train_batches = steps_per_trial
     else:  # iter based loop
         trainer.fit_loop.epoch_loop.max_steps = steps_per_trial
+        trainer.limit_train_batches = 1.0
     if trainer.limit_val_batches != 0:
         trainer.limit_val_batches = steps_per_trial
 

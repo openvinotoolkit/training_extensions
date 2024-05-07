@@ -301,6 +301,7 @@ class TestBatchSizeFinder:
         # check steps_per_trial is set well
         assert mock_trainer.limit_val_batches == steps_per_trial
         assert mock_trainer.fit_loop.epoch_loop.max_steps == steps_per_trial
+        assert mock_trainer.limit_train_batches == 1.0
         # check active_loop is run
         assert mock_active_loop.restarting is False
         mock_active_loop.run.assert_called_once()
