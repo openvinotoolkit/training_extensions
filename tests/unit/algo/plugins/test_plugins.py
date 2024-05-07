@@ -24,10 +24,15 @@ class TestMixedPrecisionXPUPlugin:
         return MagicMock()
 
     @pytest.fixture()
-    def mock_scaler(self, mock_scaler_step_output) -> MagicMock:
+    def mock_scaler_state_dict(self) -> MagicMock:
+        return MagicMock()
+
+    @pytest.fixture()
+    def mock_scaler(self, mock_scaler_step_output, mock_scaler_state_dict) -> MagicMock:
         scaler = MagicMock()
         scaler.scale.side_effect = lambda x: x
         scaler.step.return_value = mock_scaler_step_output
+        scaler.state_dict.return_value = mock_scaler_state_dict
         return scaler
 
     def test_init_w_scaler(self, mock_scaler):
@@ -146,3 +151,26 @@ class TestMixedPrecisionXPUPlugin:
         mock_optimizer._step_supports_amp_scaling = True
         with pytest.raises(RuntimeError, match="does not allow for gradient clipping"):
             plugin.clip_gradients(mock_optimizer, 0.1)
+
+    @pytest.fixture()
+    def mock_torch(self, mocker) -> MagicMock:
+        return mocker.patch.object(target_file, "torch")
+
+    def test_forward_context(self, plugin, mock_torch):
+        with plugin.forward_context():
+            pass
+
+        mock_torch.xpu.autocast.assert_called_once_with(True)
+
+    def test_state_dict(self, plugin, mock_scaler_state_dict):
+        output = plugin.state_dict()
+        assert output == mock_scaler_state_dict
+
+    def test_state_dict_no_scaler(self):
+        plugin = MixedPrecisionXPUPlugin()
+        assert plugin.state_dict() == {}
+
+    def test_load_state_dict(self, plugin, mock_scaler):
+        mock_state_dict = MagicMock()
+        plugin.load_state_dict(mock_state_dict)
+        mock_scaler.load_state_dict.assert_called_once_with(mock_state_dict)
