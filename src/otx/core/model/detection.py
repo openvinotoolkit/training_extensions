@@ -137,7 +137,7 @@ class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity]):
             ],
         }
 
-    def load_state_dict(self, ckpt: dict[str, Any], *args, **kwargs) -> None:
+    def on_load_checkpoint(self, ckpt: dict[str, Any]) -> None:
         """Load state_dict from checkpoint.
 
         For detection, it is need to update confidence threshold information when
@@ -148,7 +148,7 @@ class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity]):
             and (best_confidence_threshold := hyper_parameters.get("best_confidence_threshold", None))
         ):
             self.hparams["best_confidence_threshold"] = best_confidence_threshold
-        super().load_state_dict(ckpt, *args, **kwargs)
+        super().on_load_checkpoint(ckpt)
 
     def _log_metrics(self, meter: Metric, key: Literal["val", "test"], **compute_kwargs) -> None:
         if key == "val":
@@ -539,7 +539,7 @@ class OVDetectionModel(OVModel[DetBatchDataEntity, DetBatchPredEntity]):
 
         if model_adapter.model.has_rt_info(["model_info", "confidence_threshold"]):
             best_confidence_threshold = model_adapter.model.get_rt_info(["model_info", "confidence_threshold"]).value
-            self.hparams["best_confidence_threshold"] = best_confidence_threshold
+            self.hparams["best_confidence_threshold"] = float(best_confidence_threshold)
         else:
             msg = (
                 "Cannot get best_confidence_threshold from OpenVINO IR's rt_info. "
