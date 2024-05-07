@@ -2016,7 +2016,7 @@ class Pad(tvt_v2.Transform, NumpytoTVTensorMixin):
 
         inputs.image = padded_img
         inputs.img_info = _pad_image_info(inputs.img_info, padding)
-        return self.convert(inputs)
+        return inputs
 
     def _pad_masks(self, inputs: InstanceSegDataEntity) -> InstanceSegDataEntity:
         """Pad masks according to inputs.image_info.padding."""
@@ -2153,7 +2153,8 @@ class RandomResize(tvt_v2.Transform, NumpytoTVTensorMixin):
     def forward(self, *_inputs: T_OTXDataEntity) -> T_OTXDataEntity:
         """Transform function to resize images, bounding boxes, semantic segmentation map."""
         self.resize.scale = self._random_scale()
-        return self.convert(self.resize(*_inputs))
+        inputs = self.resize(*_inputs)
+        return self.convert(inputs)
 
     def __repr__(self) -> str:
         # TODO (sungchul): update other's repr
@@ -2228,9 +2229,8 @@ class RandomCrop(tvt_v2.Transform, NumpytoTVTensorMixin):
         assert crop_size[1] > 0  # noqa: S101
 
         img = to_np_image(inputs.image)
-        orig_img_shape = img.shape[:2]
-        margin_h = max(orig_img_shape[0] - crop_size[0], 0)
-        margin_w = max(orig_img_shape[1] - crop_size[1], 0)
+        margin_h = max(inputs.img_info.img_shape[0] - crop_size[0], 0)
+        margin_w = max(inputs.img_info.img_shape[1] - crop_size[1], 0)
         offset_h, offset_w = self._rand_offset((margin_h, margin_w))
         crop_y1, crop_y2 = offset_h, offset_h + crop_size[0]
         crop_x1, crop_x2 = offset_w, offset_w + crop_size[1]
@@ -2271,7 +2271,7 @@ class RandomCrop(tvt_v2.Transform, NumpytoTVTensorMixin):
                 inputs.polygons = crop_polygons(
                     [polygons[i] for i in valid_inds.nonzero()[0]],
                     np.asarray([crop_x1, crop_y1, crop_x2, crop_y2]),
-                    *orig_img_shape,
+                    *inputs.img_info.img_shape,
                 )
 
                 if self.recompute_bbox:
@@ -2336,7 +2336,8 @@ class RandomCrop(tvt_v2.Transform, NumpytoTVTensorMixin):
         inputs = _inputs[0]
 
         crop_size = self._get_crop_size(inputs.img_info.img_shape)
-        return self.convert(self._crop_data(inputs, crop_size, self.allow_negative_crop))
+        inputs = self._crop_data(inputs, crop_size, self.allow_negative_crop)
+        return self.convert(inputs)
 
     def __repr__(self) -> str:
         repr_str = self.__class__.__name__
@@ -2399,7 +2400,7 @@ class FilterAnnotations(tvt_v2.Transform, NumpytoTVTensorMixin):
         assert hasattr(inputs, "bboxes")  # noqa: S101
         bboxes = inputs.bboxes
         if bboxes.shape[0] == 0:
-            return inputs
+            return self.convert(inputs)
 
         tests = []
         if self.by_box:
