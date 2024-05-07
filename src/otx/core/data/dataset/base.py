@@ -24,7 +24,8 @@ from otx.core.types.image import ImageColorChannel
 from otx.core.types.label import LabelInfo
 
 if TYPE_CHECKING:
-    from datumaro import DatasetSubset, Image
+    from datumaro import Dataset as DmDataset
+    from datumaro import Image
 
     from otx.core.data.mem_cache import MemCacheHandlerBase
 
@@ -68,7 +69,7 @@ class OTXDataset(Dataset, Generic[T_OTXDataEntity]):
 
     def __init__(
         self,
-        dm_subset: DatasetSubset,
+        dm_subset: DmDataset,
         transforms: Transforms,
         mem_cache_handler: MemCacheHandlerBase = NULL_MEM_CACHE_HANDLER,
         mem_cache_img_max_size: tuple[int, int] | None = None,

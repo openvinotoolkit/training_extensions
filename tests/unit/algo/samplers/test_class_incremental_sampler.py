@@ -50,7 +50,7 @@ def fxt_old_new_dataset() -> OTXDataset:
 
     dm_dataset = DmDataset.from_iterable(dataset_items, categories=["0", "1", "2"])
     return OTXDataset(
-        dm_subset=dm_dataset,
+        dm_subset=dm_dataset.get_subset("train"),
         transforms=[],
     )
 

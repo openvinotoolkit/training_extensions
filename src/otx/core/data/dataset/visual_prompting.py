@@ -12,7 +12,7 @@ from typing import Callable
 import torch
 import torchvision.transforms.v2.functional as F  # noqa: N812
 from datumaro import Bbox as dmBbox
-from datumaro import DatasetSubset
+from datumaro import Dataset as dmDataset
 from datumaro import Image as dmImage
 from datumaro import Mask as dmMask
 from datumaro import Points as dmPoints
@@ -36,14 +36,14 @@ class OTXVisualPromptingDataset(OTXDataset[VisualPromptingDataEntity]):
     """OTXDataset class for visual prompting.
 
     Args:
-        dm_subset (DatasetSubset): The subset of the dataset.
+        dm_subset (dmDataset): The subset of the dataset.
         transforms (Transforms): Data transformations to be applied.
         **kwargs: Additional keyword arguments passed to the base class.
     """
 
     def __init__(
         self,
-        dm_subset: DatasetSubset,
+        dm_subset: dmDataset,
         transforms: Transforms,
         use_bbox: bool = True,
         use_point: bool = False,
@@ -65,7 +65,7 @@ class OTXVisualPromptingDataset(OTXDataset[VisualPromptingDataEntity]):
         self.label_info = NullLabelInfo()
 
     def _get_item_impl(self, index: int) -> VisualPromptingDataEntity | None:
-        item = self.dm_subset.parent[index]
+        item = self.dm_subset[index]
         img = item.media_as(dmImage)
         img_data, img_shape = self._get_img_data_and_shape(img)
 
@@ -100,7 +100,7 @@ class OTXVisualPromptingDataset(OTXDataset[VisualPromptingDataEntity]):
                     gt_polygons["bboxes"].append(annotation)
                 else:
                     # get point
-                    if self.dm_subset.name == "train":
+                    if item.subset == "train":
                         # get random point from the mask
                         idx_chosen = torch.randperm(len(mask_points[0]))[0]
                         point = Points(
@@ -166,14 +166,14 @@ class OTXZeroShotVisualPromptingDataset(OTXDataset[ZeroShotVisualPromptingDataEn
     """OTXDataset class for zero-shot visual prompting.
 
     Args:
-        dm_subset (DatasetSubset): The subset of the dataset.
+        dm_subset (dmDataset): The subset of the dataset.
         transforms (Transforms): Data transformations to be applied.
         **kwargs: Additional keyword arguments passed to the base class.
     """
 
     def __init__(
         self,
-        dm_subset: DatasetSubset,
+        dm_subset: dmDataset,
         transforms: Transforms,
         use_bbox: bool = True,
         use_point: bool = False,
@@ -195,7 +195,7 @@ class OTXZeroShotVisualPromptingDataset(OTXDataset[ZeroShotVisualPromptingDataEn
         self.label_info = NullLabelInfo()
 
     def _get_item_impl(self, index: int) -> ZeroShotVisualPromptingDataEntity | None:
-        item = self.dm_subset.parent[index]
+        item = self.dm_subset[index]
         img = item.media_as(dmImage)
         img_data, img_shape = self._get_img_data_and_shape(img)
 
