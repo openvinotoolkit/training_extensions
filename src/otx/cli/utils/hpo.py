@@ -594,9 +594,7 @@ class HpoRunner:
             for trial in finished_trials:
                 dir_to_remove = hpo_work_dir / "weight" / str(trial.id)
                 if dir_to_remove.exists():
-                    for file in dir_to_remove.iterdir():
-                        file.unlink()
-                    # shutil.rmtree(dir_to_remove)
+                    shutil.rmtree(dir_to_remove)
             time.sleep(1)
 
 
