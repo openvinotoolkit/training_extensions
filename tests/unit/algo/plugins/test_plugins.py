@@ -4,53 +4,145 @@
 """Test for otx.algo.plugins.xpu_precision"""
 
 
+from unittest.mock import MagicMock
+
 import pytest
 import torch
+from lightning.pytorch.utilities.exceptions import MisconfigurationException
+from otx.algo.plugins import xpu_precision as target_file
 from otx.algo.plugins.xpu_precision import MixedPrecisionXPUPlugin
-from torch.optim import Optimizer
+from torch.optim import LBFGS
 
 
 class TestMixedPrecisionXPUPlugin:
-    @pytest.fixture()
-    def plugin(self):
-        return MixedPrecisionXPUPlugin()
-
-    def test_init(self, plugin):
+    def test_init(self):
+        plugin = MixedPrecisionXPUPlugin()
         assert plugin.scaler is None
 
-    def test_pre_backward(self, plugin, mocker):
+    @pytest.fixture()
+    def mock_scaler_step_output(self) -> MagicMock:
+        return MagicMock()
+
+    @pytest.fixture()
+    def mock_scaler(self, mock_scaler_step_output) -> MagicMock:
+        scaler = MagicMock()
+        scaler.scale.side_effect = lambda x: x
+        scaler.step.return_value = mock_scaler_step_output
+        return scaler
+
+    def test_init_w_scaler(self, mock_scaler):
+        plugin = MixedPrecisionXPUPlugin(mock_scaler)
+        assert plugin.scaler == mock_scaler
+
+    @pytest.fixture()
+    def plugin(self, mock_scaler) -> MixedPrecisionXPUPlugin:
+        return MixedPrecisionXPUPlugin(mock_scaler)
+
+    @pytest.fixture()
+    def mock_lgt_module(self) -> MagicMock:
+        return MagicMock()
+
+    def test_pre_backward(self, plugin, mock_lgt_module, mock_scaler):
         tensor = torch.zeros(1)
-        module = mocker.MagicMock()
-        output = plugin.pre_backward(tensor, module)
+        output = plugin.pre_backward(tensor, mock_lgt_module)
+
+        mock_scaler.scale.assert_called_once_with(tensor)
         assert output == tensor
 
-    def test_optimizer_step_no_scaler(self, plugin, mocker):
-        optimizer = mocker.MagicMock(Optimizer)
-        model = mocker.MagicMock()
-        closure = mocker.MagicMock()
-        kwargs = {}
-        mock_optimizer_step = mocker.patch(
-            "otx.algo.plugins.xpu_precision.Precision.optimizer_step",
-        )
-        out = plugin.optimizer_step(optimizer, model, closure, **kwargs)
-        assert isinstance(out, mocker.MagicMock)
-        mock_optimizer_step.assert_called_once()
+    @pytest.fixture()
+    def mock_optimizer(self) -> MagicMock:
+        optimizer = MagicMock()
+        optimizer._step_supports_amp_scaling = False
+        return optimizer
 
-    def test_optimizer_step_with_scaler(self, plugin, mocker):
-        optimizer = mocker.MagicMock(Optimizer)
-        model = mocker.MagicMock()
-        closure = mocker.MagicMock()
-        plugin.scaler = mocker.MagicMock()
-        kwargs = {}
-        out = plugin.optimizer_step(optimizer, model, closure, **kwargs)
-        assert isinstance(out, mocker.MagicMock)
+    @pytest.fixture()
+    def mock_model(self) -> MagicMock:
+        model = MagicMock()
+        model.automatic_optimization = True
+        return model
 
-    def test_clip_gradients(self, plugin, mocker):
-        optimizer = mocker.MagicMock(Optimizer)
-        clip_val = 0.1
-        gradient_clip_algorithm = "norm"
-        mock_clip_gradients = mocker.patch(
-            "otx.algo.plugins.xpu_precision.Precision.clip_gradients",
-        )
-        plugin.clip_gradients(optimizer, clip_val, gradient_clip_algorithm)
-        mock_clip_gradients.assert_called_once()
+    @pytest.fixture()
+    def mock_closure(self) -> MagicMock:
+        return MagicMock(return_value=1)
+
+    def test_optimizer_step(
+        self,
+        plugin,
+        mock_scaler,
+        mock_optimizer,
+        mock_model,
+        mock_closure,
+        mock_scaler_step_output,
+    ):
+        output = plugin.optimizer_step(mock_optimizer, mock_model, mock_closure)
+
+        mock_closure.assert_called_once()
+        mock_scaler.unscale_.assert_called_once_with(mock_optimizer)
+        mock_scaler.step.assert_called_once_with(mock_optimizer)
+        mock_scaler.update.assert_called_once()
+        assert output == mock_scaler_step_output
+
+    def test_optimizer_step_manual_opt(
+        self,
+        plugin,
+        mock_scaler,
+        mock_optimizer,
+        mock_model,
+        mock_closure,
+    ):
+        mock_closure.return_value = None
+        output = plugin.optimizer_step(mock_optimizer, mock_model, mock_closure)
+
+        mock_closure.assert_called_once()
+        mock_scaler.unscale_.assert_called_once_with(mock_optimizer)
+        mock_scaler.step.assert_not_called()
+        mock_scaler.update.assert_not_called()
+        assert output is None
+
+    def test_optimizer_step_lbfgs_optim(
+        self,
+        plugin,
+        mock_model,
+        mock_closure,
+    ):
+        optimizer = MagicMock(spec=LBFGS)
+        with pytest.raises(MisconfigurationException, match="Native AMP and the LBFGS optimizer are not compatible."):
+            plugin.optimizer_step(optimizer, mock_model, mock_closure)
+
+    def test_optimizer_step_no_scaler(
+        self,
+        mock_optimizer,
+        mock_model,
+        mock_closure,
+    ):
+        plugin = MixedPrecisionXPUPlugin()
+        plugin.optimizer_step(mock_optimizer, mock_model, mock_closure)
+
+        mock_optimizer.step.assert_called_once()
+        mock_closure.assert_not_called()
+
+    @pytest.fixture()
+    def mock_super(self, mocker) -> MagicMock:
+        mock_super = MagicMock()
+        mocker.patch.object(target_file, "super", return_value=mock_super)
+        return mock_super
+
+    @pytest.mark.parametrize("clip_val", [0, 1])
+    def test_clip_gradients(
+        self,
+        plugin,
+        mock_optimizer,
+        clip_val,
+        mock_super,
+    ):
+        plugin.clip_gradients(mock_optimizer, clip_val)
+        mock_super.clip_gradients.assert_called_once()
+
+    def test_clip_gradients_not_allowed_grad_clip(
+        self,
+        plugin,
+        mock_optimizer,
+    ):
+        mock_optimizer._step_supports_amp_scaling = True
+        with pytest.raises(RuntimeError, match="does not allow for gradient clipping"):
+            plugin.clip_gradients(mock_optimizer, 0.1)
