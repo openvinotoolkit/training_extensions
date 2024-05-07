@@ -1474,9 +1474,11 @@ class CachedMosaic(tvt_v2.Transform, NumpytoTVTensorMixin):
         inputs.labels = mosaic_bboxes_labels
         if with_mask:
             if len(mosaic_masks) > 0:
-                inputs.masks = np.concatenate(mosaic_masks, axis=0)
+                inputs.masks = np.concatenate(mosaic_masks, axis=0)[inside_inds]
             if len(mosaic_polygons) > 0:
-                inputs.polygons = list(itertools.chain(*mosaic_polygons))
+                inputs.polygons = [
+                    polygon for ind, polygon in zip(inside_inds, itertools.chain(*mosaic_polygons)) if ind
+                ]
         return self.convert(inputs)
 
     def _mosaic_combine(
