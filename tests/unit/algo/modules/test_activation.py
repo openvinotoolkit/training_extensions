@@ -11,8 +11,8 @@ from torch.nn import functional
 def test_swish():
     act = Swish()
     inputs = torch.randn(1, 3, 64, 64)
-    expected_output = input * functional.sigmoid(inputs)
-    output = act(input)
+    expected_output = inputs * functional.sigmoid(inputs)
+    output = act(inputs)
     # test output shape
     assert output.shape == expected_output.shape
     # test output value
