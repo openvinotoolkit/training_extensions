@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING, Any, Literal
 import torch
 from torch import Tensor, nn
 
+from otx.algo.classification.utils import get_classification_layers
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.classification import (
     MulticlassClsBatchDataEntity,
@@ -99,13 +100,27 @@ class DINOv2RegisterClassifier(OTXMulticlassClsModel):
         )
 
     def _create_model(self) -> nn.Module:
+        # Get classification_layers for class-incr learning
+        sample_model_dict = self._build_model(num_classes=5).state_dict()
+        incremental_model_dict = self._build_model(num_classes=6).state_dict()
+        self.classification_layers = get_classification_layers(
+            sample_model_dict,
+            incremental_model_dict,
+            prefix="model.",
+        )
+
+        model = self._build_model(num_classes=self.num_classes)
+        model.init_weights()
+        return model
+
+    def _build_model(self, num_classes: int) -> nn.Module:
         """Create the model."""
         return DINOv2(
             backbone=self.backbone,
             freeze_backbone=self.freeze_backbone,
             # TODO(harimkang): A feature should be added to allow in_channels to adjust based on the arch.
             head_in_channels=384,
-            num_classes=self.label_info.num_classes,
+            num_classes=num_classes,
         )
 
     def _customize_inputs(self, entity: MulticlassClsBatchDataEntity) -> dict[str, Any]:
