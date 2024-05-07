@@ -16,88 +16,88 @@ on:
 permissions: read-all
 
 jobs:
-  # Code-Quality-Checks:
-  #   # This is what will cancel the job concurrency
-  #   concurrency:
-  #     group: ${{ github.workflow }}-Linting-${{ github.event.pull_request.number || github.ref }}
-  #     cancel-in-progress: true
-  #   runs-on: ubuntu-20.04
-  #   steps:
-  #     - name: Checkout repository
-  #       uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-  #     - name: Set up Python
-  #       uses: actions/setup-python@82c7e631bb3cdc910f68e0081d67478d79c6982d # v5.1.0
-  #       with:
-  #         python-version: "3.10"
-  #     - name: Install tox
-  #       run: python -m pip install --require-hashes --no-deps -r .ci/requirements/tox/requirements.txt
-  #     - name: Code quality checks
-  #       run: tox -vv -e pre-commit
-  # Unit-Test:
-  #   runs-on: ubuntu-20.04
-  #   needs: Code-Quality-Checks
-  #   timeout-minutes: 120
-  #   strategy:
-  #     fail-fast: false
-  #     matrix:
-  #       include:
-  #         - python-version: "3.10"
-  #           tox-env: "py310"
-  #           # TODO(vinnamki): Revisit after fixing in the upstream: https://github.com/omni-us/jsonargparse/issues/484
-  #           # Ticket no. 138075
-  #         - python-version: "3.11.8"
-  #           tox-env: "py311"
-  #   name: Unit-Test-with-Python${{ matrix.python-version }}
-  #   # This is what will cancel the job concurrency
-  #   concurrency:
-  #     group: ${{ github.workflow }}-Unit-${{ github.event.pull_request.number || github.ref }}-${{ matrix.tox-env }}
-  #     cancel-in-progress: true
-  #   steps:
-  #     - name: Checkout repository
-  #       uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-  #     - name: Install Python
-  #       uses: actions/setup-python@82c7e631bb3cdc910f68e0081d67478d79c6982d # v5.1.0
-  #       with:
-  #         python-version: ${{ matrix.python-version }}
-  #     - name: Install tox
-  #       run: python -m pip install --require-hashes --no-deps -r .ci/requirements/tox/requirements.txt
-  #     - name: Run unit test
-  #       run: tox -vv -e unit-test-${{ matrix.tox-env }}
-  #     - name: Upload coverage reports to Codecov
-  #       run: |
-  #         # If the workflow is triggered from PR then it gets the commit id from the PR.
-  #         # else it uses the commit id of the latest commit. This is because the commit
-  #         # of the checked-out branch/commit does not exist in the tree as it is grafted.
-  #         # Also note: GitHub does not pass secrets to pipelines triggered from a fork.
-  #         # This means that upload will fail for PRs from forks.
-  #         if [ -n "${{ github.event.pull_request.head.sha }}" ]
-  #         then
-  #           COMMIT_ID=${{ github.event.pull_request.head.sha }}
-  #         else
-  #           COMMIT_ID=${{ github.sha }}
-  #         fi
-  #         # current version of codecov-action does not support uploading reports through the proxy
-  #         # so we use the latest version of codecov uploader binary
-  #         curl -Os https://uploader.codecov.io/latest/linux/codecov
-  #         chmod +x codecov
-  #         ./codecov -t ${{ secrets.CODECOV_TOKEN }} --sha $COMMIT_ID -U $HTTP_PROXY -f .tox/coverage_unit-test-${{ matrix.tox-env }}.xml -F ${{ matrix.tox-env }}
+  Code-Quality-Checks:
+    # This is what will cancel the job concurrency
+    concurrency:
+      group: ${{ github.workflow }}-Linting-${{ github.event.pull_request.number || github.ref }}
+      cancel-in-progress: true
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      - name: Set up Python
+        uses: actions/setup-python@82c7e631bb3cdc910f68e0081d67478d79c6982d # v5.1.0
+        with:
+          python-version: "3.10"
+      - name: Install tox
+        run: python -m pip install --require-hashes --no-deps -r .ci/requirements/tox/requirements.txt
+      - name: Code quality checks
+        run: tox -vv -e pre-commit
+  Unit-Test:
+    runs-on: ubuntu-20.04
+    needs: Code-Quality-Checks
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - python-version: "3.10"
+            tox-env: "py310"
+            # TODO(vinnamki): Revisit after fixing in the upstream: https://github.com/omni-us/jsonargparse/issues/484
+            # Ticket no. 138075
+          - python-version: "3.11.8"
+            tox-env: "py311"
+    name: Unit-Test-with-Python${{ matrix.python-version }}
+    # This is what will cancel the job concurrency
+    concurrency:
+      group: ${{ github.workflow }}-Unit-${{ github.event.pull_request.number || github.ref }}-${{ matrix.tox-env }}
+      cancel-in-progress: true
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      - name: Install Python
+        uses: actions/setup-python@82c7e631bb3cdc910f68e0081d67478d79c6982d # v5.1.0
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install tox
+        run: python -m pip install --require-hashes --no-deps -r .ci/requirements/tox/requirements.txt
+      - name: Run unit test
+        run: tox -vv -e unit-test-${{ matrix.tox-env }}
+      - name: Upload coverage reports to Codecov
+        run: |
+          # If the workflow is triggered from PR then it gets the commit id from the PR.
+          # else it uses the commit id of the latest commit. This is because the commit
+          # of the checked-out branch/commit does not exist in the tree as it is grafted.
+          # Also note: GitHub does not pass secrets to pipelines triggered from a fork.
+          # This means that upload will fail for PRs from forks.
+          if [ -n "${{ github.event.pull_request.head.sha }}" ]
+          then
+            COMMIT_ID=${{ github.event.pull_request.head.sha }}
+          else
+            COMMIT_ID=${{ github.sha }}
+          fi
+          # current version of codecov-action does not support uploading reports through the proxy
+          # so we use the latest version of codecov uploader binary
+          curl -Os https://uploader.codecov.io/latest/linux/codecov
+          chmod +x codecov
+          ./codecov -t ${{ secrets.CODECOV_TOKEN }} --sha $COMMIT_ID -U $HTTP_PROXY -f .tox/coverage_unit-test-${{ matrix.tox-env }}.xml -F ${{ matrix.tox-env }}
 
   Integration-Test:
     runs-on: [otx-gpu-a10g-1]
     container:
       image: 219678651685.dkr.ecr.eu-west-1.amazonaws.com/ote-ci:11.7.1.2-devel-ubuntu20.04
       options: "--runtime=nvidia --env-file=/home/runner/.nvidia.env --ipc=host"
-    # needs: Unit-Test
+    needs: Unit-Test
     strategy:
       fail-fast: false
       matrix:
         include:
-          # - task: "action"
-          # - task: "classification"
-          # - task: "detection"
-          # - task: "instance_segmentation"
-          # - task: "semantic_segmentation"
-          # - task: "visual_prompting"
+          - task: "action"
+          - task: "classification"
+          - task: "detection"
+          - task: "instance_segmentation"
+          - task: "semantic_segmentation"
+          - task: "visual_prompting"
           - task: "anomaly"
     name: Integration-Test-${{ matrix.task }}-py310
     # This is what will cancel the job concurrency
