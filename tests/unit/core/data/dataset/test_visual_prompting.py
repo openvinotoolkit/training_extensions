@@ -35,7 +35,7 @@ class TestOTXVisualPromptingDataset:
         use_point: bool,
     ) -> None:
         dataset = OTXVisualPromptingDataset(
-            fxt_dm_dataset.get_subset(subset),
+            fxt_dm_dataset.get_subset(subset).as_dataset(),
             fxt_tvt_transforms,
             use_bbox=use_bbox,
             use_point=use_point,
@@ -85,7 +85,7 @@ class TestOTXZeroShotVisualPromptingDataset:
         use_point: bool,
     ) -> None:
         dataset = OTXZeroShotVisualPromptingDataset(
-            fxt_dm_dataset.subsets()["train"],
+            fxt_dm_dataset.get_subset("train").as_dataset(),
             fxt_tvt_transforms,
             use_bbox=use_bbox,
             use_point=use_point,

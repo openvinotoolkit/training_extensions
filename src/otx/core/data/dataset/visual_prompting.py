@@ -12,7 +12,7 @@ from typing import Callable
 import torch
 import torchvision.transforms.v2.functional as F  # noqa: N812
 from datumaro import Bbox as dmBbox
-from datumaro import DatasetSubset
+from datumaro import Dataset as dmDataset
 from datumaro import Image as dmImage
 from datumaro import Mask as dmMask
 from datumaro import Points as dmPoints
@@ -36,14 +36,14 @@ class OTXVisualPromptingDataset(OTXDataset[VisualPromptingDataEntity]):
     """OTXDataset class for visual prompting.
 
     Args:
-        dm_subset (DatasetSubset): The subset of the dataset.
+        dm_subset (dmDataset): The subset of the dataset.
         transforms (Transforms): Data transformations to be applied.
         **kwargs: Additional keyword arguments passed to the base class.
     """
 
     def __init__(
         self,
-        dm_subset: DatasetSubset,
+        dm_subset: dmDataset,
         transforms: Transforms,
         use_bbox: bool = True,
         use_point: bool = False,
@@ -166,14 +166,14 @@ class OTXZeroShotVisualPromptingDataset(OTXDataset[ZeroShotVisualPromptingDataEn
     """OTXDataset class for zero-shot visual prompting.
 
     Args:
-        dm_subset (DatasetSubset): The subset of the dataset.
+        dm_subset (dmDataset): The subset of the dataset.
         transforms (Transforms): Data transformations to be applied.
         **kwargs: Additional keyword arguments passed to the base class.
     """
 
     def __init__(
         self,
-        dm_subset: DatasetSubset,
+        dm_subset: dmDataset,
         transforms: Transforms,
         use_bbox: bool = True,
         use_point: bool = False,

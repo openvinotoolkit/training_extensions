@@ -14,7 +14,7 @@ from typing import TYPE_CHECKING, Callable
 import numpy as np
 import shapely.geometry as sg
 import torch
-from datumaro import Bbox, DatasetItem, DatasetSubset, Image, Polygon
+from datumaro import Bbox, DatasetItem, Image, Polygon
 from datumaro import Dataset as DmDataset
 from datumaro.components.annotation import AnnotationType
 from datumaro.plugins.tiling import Tile
@@ -61,7 +61,7 @@ class OTXTileTransform(Tile):
     OTXTileTransform takes tile_size and overlap as input instead of grid size
 
     Args:
-        extractor (DatasetSubset): Dataset subset to extract tiles from.
+        extractor (DmDataset): Dataset subset to extract tiles from.
         tile_size (tuple[int, int]): Tile size.
         overlap (tuple[float, float]): Overlap ratio.
         threshold_drop_ann (float): Threshold to drop annotations.
@@ -69,7 +69,7 @@ class OTXTileTransform(Tile):
 
     def __init__(
         self,
-        extractor: DatasetSubset,
+        extractor: DmDataset,
         tile_size: tuple[int, int],
         overlap: tuple[float, float],
         threshold_drop_ann: float,
@@ -274,7 +274,7 @@ class OTXTileTrainDataset(OTXTileDataset):
     """
 
     def __init__(self, dataset: OTXDataset, tile_config: TileConfig) -> None:
-        dm_dataset = dataset.dm_subset.as_dataset()
+        dm_dataset = dataset.dm_subset
         dm_dataset = dm_dataset.transform(
             OTXTileTransform,
             tile_size=tile_config.tile_size,
@@ -283,9 +283,8 @@ class OTXTileTrainDataset(OTXTileDataset):
         )
         dm_dataset = dm_dataset.filter("/item/annotation", filter_annotations=True, remove_empty=True)
         # Include original dataset for training
-        dm_dataset.update(dataset.dm_subset.as_dataset())
-        dm_subset = DatasetSubset(dm_dataset, dataset.dm_subset.name)
-        dataset.dm_subset = dm_subset
+        dm_dataset.update(dataset.dm_subset)
+        dataset.dm_subset = dm_dataset
         super().__init__(dataset, tile_config)
 
 

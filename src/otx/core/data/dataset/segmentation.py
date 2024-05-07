@@ -23,7 +23,8 @@ from otx.core.types.label import SegLabelInfo
 from .base import OTXDataset
 
 if TYPE_CHECKING:
-    from datumaro import DatasetItem, DatasetSubset
+    from datumaro import Dataset as DmDataset
+    from datumaro import DatasetItem
 
 
 # NOTE: It is copied from https://github.com/openvinotoolkit/datumaro/pull/1409
@@ -150,7 +151,7 @@ class OTXSegmentationDataset(OTXDataset[SegDataEntity]):
 
     def __init__(
         self,
-        dm_subset: DatasetSubset,
+        dm_subset: DmDataset,
         transforms: Transforms,
         mem_cache_handler: MemCacheHandlerBase = NULL_MEM_CACHE_HANDLER,
         mem_cache_img_max_size: tuple[int, int] | None = None,

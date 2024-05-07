@@ -9,7 +9,7 @@ import cv2
 import numpy as np
 import pytest
 from datumaro.components.annotation import Bbox, Label, LabelCategories, Mask, Polygon
-from datumaro.components.dataset import DatasetSubset
+from datumaro.components.dataset import Dataset as DmDataset
 from datumaro.components.dataset_base import DatasetItem
 from datumaro.components.media import Image
 from otx.core.data.dataset.action_classification import (
@@ -97,10 +97,9 @@ def fxt_dm_item(request) -> DatasetItem:
 
 @pytest.fixture()
 def fxt_mock_dm_subset(mocker: MockerFixture, fxt_dm_item: DatasetItem) -> MagicMock:
-    mock_dm_subset = mocker.MagicMock(spec=DatasetSubset)
-    mock_dm_subset.name = fxt_dm_item.subset
-    mock_dm_subset.as_dataset().__getitem__.return_value = fxt_dm_item
-    mock_dm_subset.as_dataset().__len__.return_value = 1
+    mock_dm_subset = mocker.MagicMock(spec=DmDataset)
+    mock_dm_subset.__getitem__.return_value = fxt_dm_item
+    mock_dm_subset.__len__.return_value = 1
     mock_dm_subset.categories().__getitem__.return_value = LabelCategories.from_iterable(_LABEL_NAMES)
     return mock_dm_subset
 

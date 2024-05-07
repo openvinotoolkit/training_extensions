@@ -10,7 +10,8 @@ from typing import Callable
 
 import torch
 from anomalib.data.utils import masks_to_boxes
-from datumaro import DatasetSubset, Image
+from datumaro import Dataset as DmDataset
+from datumaro import Image
 from torchvision import io
 from torchvision.tv_tensors import BoundingBoxes, BoundingBoxFormat, Mask
 
@@ -36,7 +37,7 @@ class AnomalyDataset(OTXDataset):
     def __init__(
         self,
         task_type: OTXTaskType,
-        dm_subset: DatasetSubset,
+        dm_subset: DmDataset,
         transforms: Transforms,
         mem_cache_handler: MemCacheHandlerBase = NULL_MEM_CACHE_HANDLER,
         mem_cache_img_max_size: tuple[int, int] | None = None,
