@@ -330,29 +330,29 @@ def test_otx_explain_e2e_cli(
     reference_sal_vals = {
         # Classification
         "multi_label_cls_efficientnet_v2_light": (
-            np.array([201, 209, 196, 158, 157, 119, 77], dtype=np.uint8),
+            np.array([201, 209, 196, 158, 157, 119, 77], dtype=np.int16),
             "American_Crow_0031_25433_class_0_saliency_map.png",
         ),
         "h_label_cls_efficientnet_v2_light": (
-            np.array([102, 141, 134, 79, 66, 92, 84], dtype=np.uint8),
+            np.array([102, 141, 134, 79, 66, 92, 84], dtype=np.int16),
             "108_class_4_saliency_map.png",
         ),
         # Detection
         "detection_yolox_tiny": (
-            np.array([182, 194, 187, 179, 188, 206, 215, 207, 177, 130], dtype=np.uint8),
+            np.array([182, 194, 187, 179, 188, 206, 215, 207, 177, 130], dtype=np.int16),
             "img_371_jpg_rf_a893e0bdc6fda0ba1b2a7f07d56cec23_class_0_saliency_map.png",
         ),
         "detection_ssd_mobilenetv2": (
-            np.array([118, 188, 241, 213, 160, 120, 86, 94, 111, 138], dtype=np.uint8),
+            np.array([113, 139, 211, 190, 135, 91, 70, 103, 102, 89], dtype=np.int16),
             "img_371_jpg_rf_a893e0bdc6fda0ba1b2a7f07d56cec23_class_0_saliency_map.png",
         ),
         "detection_atss_mobilenetv2": (
-            np.array([29, 39, 55, 69, 80, 88, 92, 86, 100, 88], dtype=np.uint8),
+            np.array([60, 95, 128, 107, 86, 111, 127, 125, 117, 116], dtype=np.int16),
             "img_371_jpg_rf_a893e0bdc6fda0ba1b2a7f07d56cec23_class_0_saliency_map.png",
         ),
         # Instance Segmentation
         "instance_segmentation_maskrcnn_efficientnetb2b": (
-            np.array([5, 5, 5, 5, 5, 5, 5, 5, 5, 5], dtype=np.uint8),
+            np.array([5, 5, 5, 5, 5, 5, 5, 5, 5, 5], dtype=np.int16),
             "CDY_2018_class_0_saliency_map.png",
         ),
     }
@@ -361,9 +361,9 @@ def test_otx_explain_e2e_cli(
         actual_sal_vals = cv2.imread(str(latest_dir / "saliency_map" / reference_sal_vals[test_case_name][1]))
         if test_case_name == "instance_segmentation_maskrcnn_efficientnetb2b":
             # Take lower corner values due to map sparsity of InstSeg
-            actual_sal_vals = (actual_sal_vals[-10:, -1, 0]).astype(np.uint16)
+            actual_sal_vals = (actual_sal_vals[-10:, -1, 0]).astype(np.int16)
         else:
-            actual_sal_vals = (actual_sal_vals[:10, 0, 0]).astype(np.uint16)
+            actual_sal_vals = (actual_sal_vals[:10, 0, 0]).astype(np.int16)
         ref_sal_vals = reference_sal_vals[test_case_name][0]
         assert np.max(np.abs(actual_sal_vals - ref_sal_vals) <= sal_diff_thresh)
 
