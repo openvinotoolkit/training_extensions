@@ -657,7 +657,15 @@ def run_hpo(
             logger.debug(f"{best_hpo_weight} will be loaded as best HPO weight")
             env_manager.load_model_weight(best_hpo_weight, dataset)
 
+    _remove_unused_model_weights(hpo_save_path, best_hpo_weight)
     return env_manager.environment
+
+
+def _remove_unused_model_weights(hpo_save_path: Path, best_hpo_weight: Optional[str] = None):
+    for weight in hpo_save_path.rglob("*.pth"):
+        if best_hpo_weight is not None and str(weight) == best_hpo_weight:
+            continue
+        weight.unlink()
 
 
 def get_best_hpo_weight(hpo_dir: Union[str, Path], trial_id: Union[str, Path]) -> Optional[str]:
@@ -848,11 +856,15 @@ class Trainer:
         weight_dir_path = self._get_weight_dir_path()
         weight_dir_path.mkdir(parents=True, exist_ok=True)
         self._task.copy_weight(task.project_path, weight_dir_path)
-        latest_model_weight = self._task.get_latest_weight(weight_dir_path)
-        best_model_weight = get_best_hpo_weight(self._hpo_workdir, self._hp_config["id"])
+        necessary_weights = [
+            self._task.get_latest_weight(weight_dir_path),
+            get_best_hpo_weight(self._hpo_workdir, self._hp_config["id"]),
+        ]
+        while None in necessary_weights:
+            necessary_weights.remove(None)
         for each_model_weight in weight_dir_path.iterdir():
-            for neccesary_weight in [latest_model_weight, best_model_weight]:
-                if each_model_weight.samefile(neccesary_weight):
+            for necessary_weight in necessary_weights:
+                if each_model_weight.samefile(necessary_weight):
                     break
             else:
                 each_model_weight.unlink()

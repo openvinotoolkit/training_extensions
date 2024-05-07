@@ -464,8 +464,13 @@ class TestHpoRunner:
         hpo_runner = HpoRunner(cls_task_env, train_dataset_size, 10, "fake_path")
         assert batch_size_name in hpo_runner._fixed_hp
 
+    @pytest.fixture
+    def mock_thread(self, mocker) -> MagicMock:
+        mock_thread = mocker.patch.object(hpo, "Thread")
+        return mock_thread
+
     @e2e_pytest_unit
-    def test_run_hpo(self, mocker, cls_task_env):
+    def test_run_hpo(self, mocker, cls_task_env, mock_thread):
         cls_task_env.model = None
         hpo_runner = HpoRunner(cls_task_env, 100, 10, "fake_path")
         mock_run_hpo_loop = mocker.patch("otx.cli.utils.hpo.run_hpo_loop")
@@ -477,7 +482,7 @@ class TestHpoRunner:
         mock_hb.assert_called()  # make hyperband
 
     @e2e_pytest_unit
-    def test_run_hpo_w_dataset_smaller_than_batch(self, mocker, cls_task_env):
+    def test_run_hpo_w_dataset_smaller_than_batch(self, mocker, cls_task_env, mock_thread):
         cls_task_env.model = None
         hpo_runner = HpoRunner(cls_task_env, 2, 10, "fake_path")
         mock_run_hpo_loop = mocker.patch("otx.cli.utils.hpo.run_hpo_loop")
@@ -494,6 +499,8 @@ class TestTrainer:
     def setup(self, tmp_dir):
         self.weight_format = "epoch_{}.pth"
         self.hpo_workdir = Path(tmp_dir) / "hpo_dir"
+        self.hpo_workdir.mkdir()
+        self.trial_id = "1"
 
     @pytest.fixture
     def tmp_dir(self):
@@ -519,6 +526,8 @@ class TestTrainer:
         fake_project_path.mkdir(parents=True)
         for i in range(1, 5):
             (fake_project_path / self.weight_format.format(i)).write_text("fake")
+        with (self.hpo_workdir / f"{self.trial_id}.json").open("w") as f:
+            json.dump({"id": self.trial_id, "score": {"1": 1, "2": 2, "3": 5, "4": 4}}, f)
 
         mock_get_train_task = mocker.patch.object(TaskEnvironmentManager, "get_train_task")
         mock_task = mocker.MagicMock()
@@ -552,8 +561,12 @@ class TestTrainer:
         # check
         mock_report_func.assert_called_once_with(0, 0, done=True)  # finilize report
         assert self.hpo_workdir.exists()  # make a directory to copy weight
-        for i in range(1, 5):  # check model weights are copied
-            assert (self.hpo_workdir / "weight" / trial_id / self.weight_format.format(i)).exists()
+        assert (
+            self.hpo_workdir / "weight" / trial_id / self.weight_format.format(3)
+        ).exists()  # check best weight exists
+        assert (
+            self.hpo_workdir / "weight" / trial_id / self.weight_format.format(4)
+        ).exists()  # check last weight exists
 
         mock_task.train.assert_called()  # check task.train() is called
 
@@ -588,44 +601,6 @@ class TestTrainer:
         # check
         mock_report_func.assert_called_once_with(0, 0, done=True)  # finilize report
         mock_task.train.assert_not_called()  # check task.train() is called
-
-    @e2e_pytest_unit
-    def test_delete_unused_model_weight(self, mocker, cls_template_path):
-        # prepare
-        trial0_weight_dir = self.hpo_workdir / "weight" / "0"
-        mocker.patch(
-            "otx.cli.utils.hpo.TaskManager.get_latest_weight", return_value=str(trial0_weight_dir / "latest.pth")
-        )
-        mocker.patch("otx.cli.utils.hpo.get_best_hpo_weight", return_value=str(trial0_weight_dir / "best.pth"))
-
-        self.hpo_workdir.mkdir()
-        (self.hpo_workdir / "0.json").touch()
-        for i in range(2):
-            weight_dir = self.hpo_workdir / "weight" / str(i)
-            weight_dir.mkdir(parents=True)
-            (weight_dir / "latest.pth").touch()
-            (weight_dir / "best.pth").touch()
-            (weight_dir / "unused.pth").touch()
-
-        # run
-        trainer = Trainer(
-            hp_config={"configuration": {"iterations": 10}, "id": "1"},
-            report_func=mocker.MagicMock(),
-            model_template=find_and_parse_model_template(cls_template_path),
-            data_roots=mocker.MagicMock(),
-            task_type=TaskType.CLASSIFICATION,
-            hpo_workdir=self.hpo_workdir,
-            initial_weight_name="fake",
-            metric="fake",
-        )
-        trainer._delete_unused_model_weight()
-
-        assert sorted([f.name for f in (self.hpo_workdir / "weight" / "0").iterdir()]) == sorted(
-            ["latest.pth", "best.pth"]
-        )
-        assert sorted([f.name for f in (self.hpo_workdir / "weight" / "1").iterdir()]) == sorted(
-            ["latest.pth", "best.pth", "unused.pth"]
-        )
 
 
 class TestHpoCallback:
