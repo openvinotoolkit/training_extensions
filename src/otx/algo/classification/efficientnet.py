@@ -6,6 +6,7 @@
 
 from __future__ import annotations
 
+from copy import deepcopy
 from typing import TYPE_CHECKING, Any, Callable
 
 import torch
@@ -15,6 +16,7 @@ from otx.algo.classification.backbones.efficientnet import EFFICIENTNET_VERSION,
 from otx.algo.classification.classifier.base_classifier import ImageClassifier
 from otx.algo.classification.heads import HierarchicalLinearClsHead, LinearClsHead, MultiLabelLinearClsHead
 from otx.algo.classification.necks.gap import GlobalAveragePooling
+from otx.algo.classification.utils import get_classification_layers
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.classification import (
@@ -65,19 +67,33 @@ class EfficientNetForMulticlassCls(OTXMulticlassClsModel):
         )
 
     def _create_model(self) -> nn.Module:
+        # Get classification_layers for class-incr learning
+        sample_model_dict = self._build_model(num_classes=5).state_dict()
+        incremental_model_dict = self._build_model(num_classes=6).state_dict()
+        self.classification_layers = get_classification_layers(
+            sample_model_dict,
+            incremental_model_dict,
+            prefix="model.",
+        )
+
+        model = self._build_model(num_classes=self.num_classes)
+        model.init_weights()
+        return model
+
+    def _build_model(self, num_classes: int) -> nn.Module:
         loss = self.head_config["loss_callable"]
         return ImageClassifier(
             backbone=OTXEfficientNet(version=self.version, pretrained=True),
             neck=GlobalAveragePooling(dim=2),
             head=LinearClsHead(
-                num_classes=self.num_classes,
+                num_classes=num_classes,
                 in_channels=1280,
-                topk=(1, 5) if self.num_classes >= 5 else (1,),
+                topk=(1, 5) if num_classes >= 5 else (1,),
                 loss=loss if isinstance(loss, nn.Module) else loss(),
             ),
         )
 
-    def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.model.") -> dict:
+    def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.") -> dict:
         """Load the previous OTX ckpt according to OTX2.0."""
         return OTXv1Helper.load_cls_effnet_b0_ckpt(state_dict, "multiclass", add_prefix)
 
@@ -183,12 +199,26 @@ class EfficientNetForMultilabelCls(OTXMultilabelClsModel):
         )
 
     def _create_model(self) -> nn.Module:
+        # Get classification_layers for class-incr learning
+        sample_model_dict = self._build_model(num_classes=5).state_dict()
+        incremental_model_dict = self._build_model(num_classes=6).state_dict()
+        self.classification_layers = get_classification_layers(
+            sample_model_dict,
+            incremental_model_dict,
+            prefix="model.",
+        )
+
+        model = self._build_model(num_classes=self.num_classes)
+        model.init_weights()
+        return model
+
+    def _build_model(self, num_classes: int) -> nn.Module:
         loss = self.head_config["loss_callable"]
         return ImageClassifier(
             backbone=OTXEfficientNet(version=self.version, pretrained=True),
             neck=GlobalAveragePooling(dim=2),
             head=MultiLabelLinearClsHead(
-                num_classes=self.num_classes,
+                num_classes=num_classes,
                 in_channels=1280,
                 scale=7.0,
                 normalized=True,
@@ -196,7 +226,7 @@ class EfficientNetForMultilabelCls(OTXMultilabelClsModel):
             ),
         )
 
-    def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.model.") -> dict:
+    def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.") -> dict:
         """Load the previous OTX ckpt according to OTX2.0."""
         return OTXv1Helper.load_cls_effnet_b0_ckpt(state_dict, "multilabel", add_prefix)
 
@@ -276,6 +306,8 @@ class EfficientNetForMultilabelCls(OTXMultilabelClsModel):
 class EfficientNetForHLabelCls(OTXHlabelClsModel):
     """EfficientNetB0 Model for hierarchical label classification task."""
 
+    label_info: HLabelInfo
+
     def __init__(
         self,
         label_info: HLabelInfo,
@@ -302,6 +334,23 @@ class EfficientNetForHLabelCls(OTXHlabelClsModel):
         )
 
     def _create_model(self) -> nn.Module:
+        # Get classification_layers for class-incr learning
+        sample_config = deepcopy(self.label_info.as_head_config_dict())
+        sample_config["num_classes"] = 5
+        sample_model_dict = self._build_model(head_config=sample_config).state_dict()
+        sample_config["num_classes"] = 6
+        incremental_model_dict = self._build_model(head_config=sample_config).state_dict()
+        self.classification_layers = get_classification_layers(
+            sample_model_dict,
+            incremental_model_dict,
+            prefix="model.",
+        )
+
+        model = self._build_model(head_config=self.label_info.as_head_config_dict())
+        model.init_weights()
+        return model
+
+    def _build_model(self, head_config: dict) -> nn.Module:
         multiclass_loss = self.head_config["multiclass_loss_callable"]
         multilabel_loss = self.head_config["multilabel_loss_callable"]
         if not isinstance(self.label_info, HLabelInfo):
@@ -314,11 +363,11 @@ class EfficientNetForHLabelCls(OTXHlabelClsModel):
                 in_channels=1280,
                 multiclass_loss=multiclass_loss if isinstance(multiclass_loss, nn.Module) else multiclass_loss(),
                 multilabel_loss=multilabel_loss if isinstance(multilabel_loss, nn.Module) else multilabel_loss(),
-                **self.label_info.as_head_config_dict(),
+                **head_config,
             ),
         )
 
-    def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.model.") -> dict:
+    def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.") -> dict:
         """Load the previous OTX ckpt according to OTX2.0."""
         return OTXv1Helper.load_cls_effnet_b0_ckpt(state_dict, "hlabel", add_prefix)
 

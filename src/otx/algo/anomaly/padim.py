@@ -59,6 +59,14 @@ class Padim(OTXAnomaly, OTXModel, AnomalibPadim):
         """This does not follow OTX metric configuration."""
         return
 
+    def on_train_epoch_end(self) -> None:
+        """Callback triggered when the training epoch ends."""
+        return AnomalibPadim.on_train_epoch_end(self)
+
+    def on_validation_start(self) -> None:
+        """Callback triggered when the validation starts."""
+        return AnomalibPadim.on_validation_start(self)
+
     def on_validation_epoch_start(self) -> None:
         """Callback triggered when the validation epoch starts."""
         AnomalibPadim.on_validation_epoch_start(self)

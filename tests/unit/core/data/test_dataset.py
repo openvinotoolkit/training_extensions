@@ -28,10 +28,9 @@ class TestDataset:
             **kwargs,
         )
         dataset.num_classes = 1
-        item = dataset[0]
 
-        assert isinstance(item, data_entity_cls)
-        fxt_mock_dm_subset.as_dataset().__getitem__.assert_called_once()
+        assert isinstance(dataset[0], data_entity_cls)
+        fxt_mock_dm_subset.__getitem__.assert_called_once()
 
         mocker.patch.object(dataset, "_get_item_impl", return_value=None)
         with pytest.raises(RuntimeError):
