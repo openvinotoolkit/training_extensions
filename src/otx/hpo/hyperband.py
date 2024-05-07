@@ -18,7 +18,7 @@ import json
 import math
 import os
 from os import path as osp
-from typing import Any, Dict, List, Literal, Optional, Union
+from typing import Any, Dict, List, Literal, Optional, Tuple, Union
 
 from scipy.stats.qmc import LatinHypercube
 
@@ -240,23 +240,24 @@ class Rung:
                 return trial
         return None
 
-    def get_finished_trials(self, mode: str = "max") -> List[AshaTrial]:
+    def get_inferior_trials(self, mode: Literal["min", "max"] = "max") -> List[AshaTrial]:
+        """Get trials which was done but can't be promoted."""
         finished_trials = []
-        num_temp = []
-        num_trials_to_promote = self._num_required_trial // self._reduction_factor 
+        rung_trials: List[Tuple[AshaTrial, Union[int, float]]] = []
+        num_trials_to_promote = self._num_required_trial // self._reduction_factor
         if num_trials_to_promote <= 0:
             return []
         for trial in self._trials:
             if trial.rung == self._rung_idx and not trial.is_done():
                 continue
-            num_temp.append((trial, trial.get_best_score(mode, self.resource)))
+            rung_trials.append((trial, trial.get_best_score(mode, self.resource)))
 
-        if len(num_temp) <= num_trials_to_promote:
+        if len(rung_trials) <= num_trials_to_promote:
             return []
 
-        num_temp = sorted(num_temp, key=lambda x : x[1], reverse=mode=="max")
-        criteria = num_temp[num_trials_to_promote - 1][1]
-        for trial, trial_score in num_temp[num_trials_to_promote:]:
+        rung_trials = sorted(rung_trials, key=lambda x: x[1], reverse=mode == "max")
+        criteria = rung_trials[num_trials_to_promote - 1][1]
+        for trial, trial_score in rung_trials[num_trials_to_promote:]:
             if left_vlaue_is_better(criteria, trial_score, mode):
                 finished_trials.append(trial)
 
@@ -273,7 +274,8 @@ class Bracket:
         hyper_parameter_configurations (List[AshaTrial]): Hyper parameter configuration to try.
         reduction_factor (int): Decicdes how many trials to promote to next rung.
                                 Only top 1 / reduction_factor of rung trials can be promoted.
-        mode (str, optional): Decide which trial is better between having highest score or lowest score.
+        mode (Literal["min", "max], optional):
+            Decide which trial is better between having highest score or lowest score.
                               Defaults to "max".
         asynchronous_sha (bool, optional): Whether to operate SHA asynchronously. Defaults to True.
     """
@@ -287,7 +289,7 @@ class Bracket:
         maximum_resource: Union[float, int],
         hyper_parameter_configurations: List[AshaTrial],
         reduction_factor: int = 3,
-        mode: str = "max",
+        mode: Literal["min", "max"] = "max",
         asynchronous_sha: bool = True,
     ):
         # pylint: disable=too-many-arguments
@@ -506,10 +508,11 @@ class Bracket:
             ],
         }
 
-    def get_finished_trials(self) -> List[AshaTrial]:
+    def get_inferior_trials(self) -> List[AshaTrial]:
+        """Get trials which can't be best a trial."""
         finished_trials = []
         for rung in self._rungs[:-1]:
-            finished_trials.extend(rung.get_finished_trials(self._mode))
+            finished_trials.extend(rung.get_inferior_trials(self._mode))
 
         return finished_trials
 
@@ -1008,9 +1011,10 @@ class HyperBand(HpoBase):
         for bracket in self._brackets.values():
             bracket.print_result()
 
-    def get_finished_trials(self) -> List[AshaTrial]:
+    def get_inferior_trials(self) -> List[AshaTrial]:  # type: ignore[override]
+        """Get trials which can't be best a trial."""
         finished_trials = []
         for bracket in self._brackets.values():
-            finished_trials.extend(bracket.get_finished_trials())
+            finished_trials.extend(bracket.get_inferior_trials())
 
         return finished_trials

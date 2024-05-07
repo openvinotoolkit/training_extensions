@@ -18,7 +18,7 @@ import json
 import tempfile
 from abc import ABC, abstractmethod
 from enum import IntEnum
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Literal, Optional, Union
 
 from otx.hpo.search_space import SearchSpace
 from otx.hpo.utils import check_mode_input, check_positive
@@ -36,7 +36,7 @@ class HpoBase(ABC):
     Args:
         search_space (Dict[str, Dict[str, Any]]): hyper parameter search space to find.
         save_path (Optional[str]): path where result of HPO is saved.
-        mode (str, optinal): One of {min, max}. Determines whether objective is
+        mode (Literal["min", "max], optinal): One of {min, max}. Determines whether objective is
                     minimizing or maximizing the metric attribute.
         num_trials (Optional[int]): How many training to conduct for HPO.
         num_workers (int): How many trains are executed in parallel.
@@ -66,7 +66,7 @@ class HpoBase(ABC):
         self,
         search_space: Dict[str, Dict[str, Any]],
         save_path: Optional[str] = None,
-        mode: str = "max",
+        mode: Literal["min", "max"] = "max",
         num_trials: Optional[int] = None,
         num_workers: int = 1,
         num_full_iterations: Union[int, float] = 1,
@@ -164,6 +164,11 @@ class HpoBase(ABC):
     @abstractmethod
     def get_best_config(self):
         """Get best config of HPO algorithm."""
+        raise NotImplementedError
+
+    @abstractmethod
+    def get_inferior_trials(self) -> List["Trial"]:
+        """Get trials which can't be best a trial."""
         raise NotImplementedError
 
 

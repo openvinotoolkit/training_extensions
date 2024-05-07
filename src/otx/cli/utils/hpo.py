@@ -478,7 +478,9 @@ class HpoRunner:
             progress_updater_thread = Thread(target=self._update_hpo_progress, args=[hpo_algo], daemon=True)
             progress_updater_thread.start()
 
-        remove_unused_model_weight = Thread(target=self._remove_unused_weight, args=[hpo_algo, self._hpo_workdir])
+        remove_unused_model_weight = Thread(
+            target=self._remove_unused_weight, args=[hpo_algo, self._hpo_workdir], daemon=True
+        )
         remove_unused_model_weight.start()
 
         if torch.cuda.is_available():
@@ -586,11 +588,12 @@ class HpoRunner:
         """Function for a thread to report a HPO progress regularly.
 
         Args:
-            hpo_algo (HpoBase): HPO algorithm class
+            hpo_algo (HpoBase): HPO algorithm instance.
+            hpo_work_dir (Path): HPO work directory.
         """
 
         while not hpo_algo.is_done():
-            finished_trials = hpo_algo.get_finished_trials()
+            finished_trials = hpo_algo.get_inferior_trials()
             for trial in finished_trials:
                 dir_to_remove = hpo_work_dir / "weight" / str(trial.id)
                 if dir_to_remove.exists():
@@ -654,15 +657,7 @@ def run_hpo(
             logger.debug(f"{best_hpo_weight} will be loaded as best HPO weight")
             env_manager.load_model_weight(best_hpo_weight, dataset)
 
-    # _remove_model_weights_except_best(hpo_save_path, best_hpo_weight)
     return env_manager.environment
-
-
-def _remove_model_weights_except_best(hpo_save_path: Path, best_hpo_weight: Optional[str] = None):
-    for weight in hpo_save_path.rglob("*.pth"):
-        if best_hpo_weight is not None and str(weight) == best_hpo_weight:
-            continue
-        weight.unlink()
 
 
 def get_best_hpo_weight(hpo_dir: Union[str, Path], trial_id: Union[str, Path]) -> Optional[str]:
@@ -681,27 +676,7 @@ def get_best_hpo_weight(hpo_dir: Union[str, Path], trial_id: Union[str, Path]) -
         return None
     trial_output_file = trial_output_files[0]
 
-    _, best_epochs = _get_best_score_and_epoch(trial_output_file)
-
-    best_weight = None
-    for best_epoch in best_epochs:
-        best_weight_path = list(hpo_dir.glob(f"weight/{trial_id}/*epoch*{best_epoch}*"))
-        if best_weight_path:
-            best_weight = str(best_weight_path[0])
-
-    return best_weight
-
-    
-def _get_best_score_and_epoch(trial_json: Path)-> tuple[int | float | None, list[int]]:
-    """Get best score and epochs according to json file of the trial.
-
-    Args:
-        trial_json (Path): Json file of the trial.
-
-    Returns:
-        tuple[int | float | None, list[int]]: best score and best epochs list.
-    """
-    with trial_json.open("r") as f:
+    with trial_output_file.open("r") as f:
         trial_output = json.load(f)
 
     best_epochs = []
@@ -715,8 +690,14 @@ def _get_best_score_and_epoch(trial_json: Path)-> tuple[int | float | None, list
             best_epochs = [eph]
         elif best_score == score:
             best_epochs.append(eph)
-    
-    return best_score, best_epochs
+
+    best_weight = None
+    for best_epoch in best_epochs:
+        best_weight_path = list(hpo_dir.glob(f"weight/{trial_id}/*epoch*{best_epoch}*"))
+        if best_weight_path:
+            best_weight = str(best_weight_path[0])
+
+    return best_weight
 
 
 class Trainer:
@@ -772,7 +753,6 @@ class Trainer:
 
         need_to_save_initial_weight = False
         resume_weight_path = self._get_resume_weight_path()
-        resume_epoch = None
         if resume_weight_path is not None:
             ret = re.search(r"(\d+)\.pth", resume_weight_path)
             if ret is not None:
@@ -863,19 +843,18 @@ class Trainer:
         return self._hpo_workdir / self._initial_weight_name
 
     def _finalize_trial(self, task):
-        weight_dir_path = self._get_weight_dir_path()
-        weight_dir_path.mkdir(parents=True, exist_ok=True)
         self._report_func(0, 0, done=True)
 
-        trial_id: str = self._hp_config["id"]
+        weight_dir_path = self._get_weight_dir_path()
+        weight_dir_path.mkdir(parents=True, exist_ok=True)
         self._task.copy_weight(task.project_path, weight_dir_path)
-        weight_dir = self._hpo_workdir / "weight" / trial_id
-        if not weight_dir.exists():
-            return
-        latest_model_weight = self._task.get_latest_weight(weight_dir)
-        best_model_weight = get_best_hpo_weight(self._hpo_workdir, trial_id)
-        for each_model_weight in weight_dir.iterdir():
-            if str(each_model_weight) not in [latest_model_weight, best_model_weight]:
+        latest_model_weight = self._task.get_latest_weight(weight_dir_path)
+        best_model_weight = get_best_hpo_weight(self._hpo_workdir, self._hp_config["id"])
+        for each_model_weight in weight_dir_path.iterdir():
+            for neccesary_weight in [latest_model_weight, best_model_weight]:
+                if each_model_weight.samefile(neccesary_weight):
+                    break
+            else:
                 each_model_weight.unlink()
 
     def _get_weight_dir_path(self) -> Path:
