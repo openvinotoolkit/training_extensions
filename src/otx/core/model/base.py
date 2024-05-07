@@ -19,6 +19,7 @@ from typing import TYPE_CHECKING, Any, Callable, Generic, Literal, NamedTuple
 import numpy as np
 import openvino
 import torch
+from datumaro import LabelCategories
 from jsonargparse import ArgumentParser
 from lightning import LightningModule, Trainer
 from model_api.models import Model
@@ -369,7 +370,9 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
 
     def load_state_dict_incrementally(self, ckpt: dict[str, Any], *args, **kwargs) -> None:
         """Load state dict incrementally."""
-        ckpt_label_info: LabelInfo | None = ckpt.get("label_info", None)
+        ckpt_label_info: LabelInfo | None = (
+            ckpt.get("label_info", None) if not is_ckpt_from_otx_v1(ckpt) else self.get_ckpt_label_info_v1(ckpt)
+        )
 
         if ckpt_label_info is None:
             msg = "Checkpoint should have `label_info`."
@@ -388,11 +391,11 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
             )
 
         # Model weights
-        state_dict: dict[str, Any] = ckpt.get("state_dict", None)
+        state_dict: dict[str, Any] = ckpt.get("state_dict", None) if not is_ckpt_from_otx_v1(ckpt) else ckpt
 
-        if ckpt_label_info is None:
+        if state_dict is None:
             msg = "Checkpoint should have `state_dict`."
-            raise ValueError(msg, ckpt_label_info)
+            raise ValueError(msg, state_dict)
 
         self.load_state_dict(state_dict, *args, **kwargs)
 
@@ -418,6 +421,11 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
     def load_from_otx_v1_ckpt(self, ckpt: dict[str, Any]) -> dict:
         """Load the previous OTX ckpt according to OTX2.0."""
         raise NotImplementedError
+
+    @staticmethod
+    def get_ckpt_label_info_v1(ckpt: dict) -> LabelInfo:
+        """Generate label info from OTX v1 checkpoint."""
+        return LabelInfo.from_dm_label_groups(LabelCategories.from_iterable(ckpt["labels"].keys()))
 
     @property
     def label_info(self) -> LabelInfo:

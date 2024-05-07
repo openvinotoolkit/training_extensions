@@ -88,6 +88,16 @@ class TestOTXModel:
         # Regardless of the activation status, LinearWarmupScheduler can be called
         assert mock_linear_warmup_scheduler.step.call_count == 2
 
+    def test_v1_checkpoint_loading(self, mocker):
+        model = OTXModel(label_info=3)
+        mocker.patch.object(model, "load_from_otx_v1_ckpt", return_value={})
+        v1_ckpt = {
+            "model": {"state_dict": {"backbone": torch.randn(2, 2)}},
+            "labels": {"label_0": (), "label_1": (), "label_2": ()},
+            "VERSION": 1,
+        }
+        assert model.load_state_dict_incrementally(v1_ckpt) is None
+
 
 class TestOVModel:
     @pytest.fixture()

@@ -67,7 +67,7 @@ class BaseSegmModel(nn.Module):
                 - Otherwise, returns the model outputs after interpolation.
         """
         enc_feats = self.backbone(inputs)
-        outputs = self.decode_head(enc_feats)
+        outputs = self.decode_head(inputs=enc_feats)
 
         if mode == "tensor":
             return outputs

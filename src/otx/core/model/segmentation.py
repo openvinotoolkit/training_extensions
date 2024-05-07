@@ -164,7 +164,7 @@ class TorchVisionCompatibleModel(OTXSegmentationModel):
     def _customize_inputs(self, entity: SegBatchDataEntity) -> dict[str, Any]:
         mode = "loss" if self.training else "predict"
 
-        masks = torch.stack(entity.masks).long()
+        masks = torch.stack(entity.masks).long() if mode == "loss" else None
 
         return {"inputs": entity.images, "img_metas": entity.imgs_info, "masks": masks, "mode": mode}
 
