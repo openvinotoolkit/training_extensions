@@ -1426,13 +1426,13 @@ class CachedMosaic(tvt_v2.Transform, NumpytoTVTensorMixin):
                     gt_masks_i = rescale_masks(gt_masks_i, float(scale_ratio_i))
                     gt_masks_i = translate_masks(
                         gt_masks_i,
-                        out_shape=(int(self.img_scale[1] * 2), int(self.img_scale[0] * 2)),
+                        out_shape=(int(self.img_scale[0] * 2), int(self.img_scale[1] * 2)),
                         offset=padw,
                         direction="horizontal",
                     )
                     gt_masks_i = translate_masks(
                         gt_masks_i,
-                        out_shape=(int(self.img_scale[1] * 2), int(self.img_scale[0] * 2)),
+                        out_shape=(int(self.img_scale[0] * 2), int(self.img_scale[1] * 2)),
                         offset=padh,
                         direction="vertical",
                     )
@@ -1442,13 +1442,13 @@ class CachedMosaic(tvt_v2.Transform, NumpytoTVTensorMixin):
                     gt_polygons_i = rescale_polygons(gt_polygons_i, float(scale_ratio_i))
                     gt_polygons_i = translate_polygons(
                         gt_polygons_i,
-                        out_shape=(int(self.img_scale[1] * 2), int(self.img_scale[0] * 2)),
+                        out_shape=(int(self.img_scale[0] * 2), int(self.img_scale[1] * 2)),
                         offset=padw,
                         direction="horizontal",
                     )
                     gt_polygons_i = translate_polygons(
                         gt_polygons_i,
-                        out_shape=(int(self.img_scale[1] * 2), int(self.img_scale[0] * 2)),
+                        out_shape=(int(self.img_scale[0] * 2), int(self.img_scale[1] * 2)),
                         offset=padh,
                         direction="vertical",
                     )
@@ -1790,7 +1790,8 @@ class CachedMixUp(tvt_v2.Transform, NumpytoTVTensorMixin):
                 )
 
                 # 8. mix up
-                mixup_gt_masks = np.concatenate([inputs.masks.numpy(), retrieve_gt_masks])
+                inputs_masks = inputs.masks.numpy() if not isinstance(inputs.masks, np.ndarray) else inputs.masks
+                mixup_gt_masks = np.concatenate([inputs_masks, retrieve_gt_masks])
 
                 inputs.masks = mixup_gt_masks[inside_inds]
 
@@ -2175,7 +2176,7 @@ class RandomCrop(tvt_v2.Transform, NumpytoTVTensorMixin):
 
     Args:
         crop_size (tuple): The relative ratio or absolute pixels of
-            (width, height).
+            (height, width).
         crop_type (str, optional): One of "relative_range", "relative",
             "absolute", "absolute_range". "relative" randomly crops
             (h * crop_size[0], w * crop_size[1]) part from an input of size
@@ -2197,7 +2198,7 @@ class RandomCrop(tvt_v2.Transform, NumpytoTVTensorMixin):
 
     def __init__(
         self,
-        crop_size: tuple,  # (W, H)
+        crop_size: tuple,  # (H, W)
         crop_type: str = "absolute",
         allow_negative_crop: bool = False,
         recompute_bbox: bool = False,

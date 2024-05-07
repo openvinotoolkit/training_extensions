@@ -139,9 +139,10 @@ def rescale_masks(
     masks: np.ndarray, scale_factor: float | tuple[float, float], interpolation: str = "nearest"
 ) -> np.ndarray:
     """Rescale masks as large as possible while keeping the aspect ratio."""
-    scale = rescale_size(masks.shape[1:], scale_factor)
+    h, w = masks.shape[1:]
+    new_size = rescale_size((w, h), scale_factor)
     return np.stack(
-        [cv2.resize(mask, scale, interpolation=CV2_INTERP_CODES[interpolation]) for mask in masks],
+        [cv2.resize(mask, new_size, interpolation=CV2_INTERP_CODES[interpolation]) for mask in masks],
     )
 
 
