@@ -284,6 +284,10 @@ def test_otx_explain_e2e_cli(
     if ("_cls" not in task) and (task not in ["detection", "instance_segmentation"]):
         pytest.skip("Supported only for classification, detection and instance segmentation task.")
 
+    # TODO (Galina): revert back when torch issue fixed
+    if task == "instance_segmentation":
+        pytest.skip("Determinism is not supported for instance_segmentation models (OOM issue).")
+
     if "dino" in model_name:
         pytest.skip("DINO is not supported.")
 
