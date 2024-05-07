@@ -60,7 +60,7 @@ class OTXActionDetDataset(OTXDataset[ActionDetDataEntity]):
             frame_path=item.media.path,
             proposals=self._get_proposals(
                 item.media.path,
-                self.dm_subset.infos().get(f"{self.dm_subset[0].subset}_proposals", None),
+                self.dm_subset.infos().get(f"{item.subset}_proposals", None),
             ),
         )
 
