@@ -2242,6 +2242,9 @@ class RandomCrop(tvt_v2.Transform, NumpytoTVTensorMixin):
         img = img[crop_y1:crop_y2, crop_x1:crop_x2, ...]
         cropped_img_shape = img.shape[:2]
 
+        inputs.image = img
+        inputs.img_info = _crop_image_info(inputs.img_info, *cropped_img_shape)
+
         # crop bboxes accordingly and clip to the image boundary
         if (bboxes := getattr(inputs, "bboxes", None)) is not None:
             bboxes = translate_bboxes(bboxes, [-offset_w, -offset_h])
@@ -2282,9 +2285,6 @@ class RandomCrop(tvt_v2.Transform, NumpytoTVTensorMixin):
                         torch.as_tensor(get_bboxes_from_polygons(inputs.polygons, *cropped_img_shape)),
                         like=inputs.bboxes,
                     )
-
-        inputs.image = img
-        inputs.img_info = _crop_image_info(inputs.img_info, *cropped_img_shape)
 
         return inputs
 
