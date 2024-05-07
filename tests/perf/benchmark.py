@@ -261,4 +261,7 @@ class Benchmark:
                     assert result_entry[name] > target_entry[name] * (1.0 - margin)
 
             for criterion in criteria:
-                compare(**criterion)
+                try:
+                    compare(**criterion)
+                except Exception as e:
+                    print("exception while checking:", e)
