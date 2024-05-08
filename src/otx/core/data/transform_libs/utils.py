@@ -6,10 +6,9 @@
 from __future__ import annotations
 
 import copy
-
-import itertools
 import functools
 import inspect
+import itertools
 import weakref
 
 import cv2
@@ -166,7 +165,7 @@ def rescale_polygons(polygons: list[Polygon], scale_factor: float | tuple[float,
 
     resized_polygons = []
     for polygon in polygons:
-        p = np.asarray(copy.deepcopy(polygon.points))
+        p = np.asarray(polygon.points).copy()
         p[0::2] *= w_scale
         p[1::2] *= h_scale
         resized_polygons.append(Polygon(points=p.tolist(), label=polygon.label, z_order=polygon.z_order))
@@ -269,7 +268,7 @@ def translate_polygons(
 
     translated_polygons = []
     for polygon in polygons:
-        p = np.asarray(copy.deepcopy(polygon.points))
+        p = np.asarray(polygon.points).copy()
         if direction == "horizontal":
             p[0::2] = np.clip(p[0::2] + offset, 0, out_shape[1])
         elif direction == "vertical":
@@ -665,7 +664,7 @@ def flip_polygons(polygons: list[Polygon], height: int, width: int, direction: s
     """Flip polygons alone the given direction."""
     flipped_masks = []
     for polygon in polygons:
-        p = np.asarray(copy.deepcopy(polygon.points))
+        p = np.asarray(polygon.points).copy()
         if direction == "horizontal":
             p[0::2] = width - p[0::2]
         elif direction == "vertical":
@@ -774,7 +773,7 @@ def crop_polygons(polygons: list[Polygon], bbox: np.ndarray, height: int, width:
     for polygon in polygons:
         cropped_poly_per_obj: list[Polygon] = []
 
-        p = np.asarray(copy.deepcopy(polygon.points))
+        p = np.asarray(polygon.points).copy()
         p = geometry.Polygon(p.reshape(-1, 2)).buffer(0.0)
         # polygon must be valid to perform intersection.
         if not p.is_valid:
