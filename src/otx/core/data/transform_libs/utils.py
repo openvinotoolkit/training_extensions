@@ -6,6 +6,8 @@
 from __future__ import annotations
 
 import copy
+
+import itertools
 import functools
 import inspect
 import weakref
@@ -800,17 +802,15 @@ def crop_polygons(polygons: list[Polygon], bbox: np.ndarray, height: int, width:
             coords = coords[:-1]
             coords[:, 0] -= x1
             coords[:, 1] -= y1
-            cropped_poly_per_obj.append(
-                Polygon(points=coords.reshape(-1).tolist(), label=polygon.label, z_order=polygon.z_order)
-            )
+            cropped_poly_per_obj.append(coords.reshape(-1).tolist())
 
         # a dummy polygon to avoid misalignment between masks and boxes
         if len(cropped_poly_per_obj) == 0:
-            cropped_poly_per_obj.append(
-                Polygon(points=[0, 0, 0, 0, 0, 0], label=polygon.label, z_order=polygon.z_order)
-            )
+            cropped_poly_per_obj.append([0, 0, 0, 0, 0, 0])
 
-        cropped_polygons.extend(cropped_poly_per_obj)
+        cropped_polygons.append(
+            Polygon(points=list(itertools.chain(*cropped_poly_per_obj)), label=polygon.label, z_order=polygon.z_order)
+        )
 
     np.seterr(**initial_settings)
     return cropped_polygons
