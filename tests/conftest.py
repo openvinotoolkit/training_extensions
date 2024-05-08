@@ -180,7 +180,7 @@ def fxt_multi_class_cls_data_entity() -> tuple[MulticlassClsDataEntity, Multicla
 
 
 @pytest.fixture(scope="session")
-def fxt_multi_label_cls_data_entity() -> tuple[tuple, MultilabelClsDataEntity, MultilabelClsBatchDataEntity]:
+def fxt_multi_label_cls_data_entity() -> tuple[MultilabelClsDataEntity, MultilabelClsBatchDataEntity, MultilabelClsBatchDataEntity]:
     img_size = (64, 64)
     fake_image = torch.zeros(size=(3, *img_size), dtype=torch.uint8).numpy()
     fake_image_info = ImageInfo(img_idx=0, img_shape=img_size, ori_shape=img_size)
