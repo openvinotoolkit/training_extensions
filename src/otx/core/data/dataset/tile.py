@@ -14,7 +14,7 @@ from typing import TYPE_CHECKING, Callable
 import numpy as np
 import shapely.geometry as sg
 import torch
-from datumaro import Bbox, DatasetItem, DatasetSubset, Image, Polygon
+from datumaro import Bbox, DatasetItem, Image, Polygon
 from datumaro import Dataset as DmDataset
 from datumaro.components.annotation import AnnotationType
 from datumaro.plugins.tiling import Tile
@@ -61,7 +61,7 @@ class OTXTileTransform(Tile):
     OTXTileTransform takes tile_size and overlap as input instead of grid size
 
     Args:
-        extractor (DatasetSubset): Dataset subset to extract tiles from.
+        extractor (DmDataset): Dataset subset to extract tiles from.
         tile_size (tuple[int, int]): Tile size.
         overlap (tuple[float, float]): Overlap ratio.
         threshold_drop_ann (float): Threshold to drop annotations.
@@ -69,7 +69,7 @@ class OTXTileTransform(Tile):
 
     def __init__(
         self,
-        extractor: DatasetSubset,
+        extractor: DmDataset,
         tile_size: tuple[int, int],
         overlap: tuple[float, float],
         threshold_drop_ann: float,
@@ -180,7 +180,7 @@ class OTXTileDatasetFactory:
         Returns:
             OTXTileDataset: Tile dataset.
         """
-        if dataset.dm_subset.name == "train":
+        if dataset.dm_subset[0].subset == "train":
             return OTXTileTrainDataset(dataset, tile_config)
 
         if task == OTXTaskType.DETECTION:
@@ -247,7 +247,7 @@ class OTXTileDataset(OTXDataset):
             threshold_drop_ann=0.5,
         )
 
-        if self.dm_subset.name == "val":
+        if item.subset == "val":
             # NOTE: filter validation tiles with annotations only to avoid evaluation on empty tiles.
             tile_ds = tile_ds.filter("/item/annotation", filter_annotations=True, remove_empty=True)
 
@@ -274,7 +274,7 @@ class OTXTileTrainDataset(OTXTileDataset):
     """
 
     def __init__(self, dataset: OTXDataset, tile_config: TileConfig) -> None:
-        dm_dataset = dataset.dm_subset.as_dataset()
+        dm_dataset = dataset.dm_subset
         dm_dataset = dm_dataset.transform(
             OTXTileTransform,
             tile_size=tile_config.tile_size,
@@ -283,9 +283,8 @@ class OTXTileTrainDataset(OTXTileDataset):
         )
         dm_dataset = dm_dataset.filter("/item/annotation", filter_annotations=True, remove_empty=True)
         # Include original dataset for training
-        dm_dataset.update(dataset.dm_subset.as_dataset())
-        dm_subset = DatasetSubset(dm_dataset, dataset.dm_subset.name)
-        dataset.dm_subset = dm_subset
+        dm_dataset.update(dataset.dm_subset)
+        dataset.dm_subset = dm_dataset
         super().__init__(dataset, tile_config)
 
 
@@ -324,7 +323,7 @@ class OTXTileDetTestDataset(OTXTileDataset):
             the return of OTXDataEntity. Nevertheless, in instances involving tiling, it becomes
             imperative to encapsulate tiles within a unified entity, namely TileDetDataEntity.
         """
-        item = self.dm_subset.as_dataset()[index]
+        item = self.dm_subset[index]
         img = item.media_as(Image)
         img_data, img_shape = self._get_img_data_and_shape(img)
 
@@ -415,7 +414,7 @@ class OTXTileInstSegTestDataset(OTXTileDataset):
             the return of OTXDataEntity. Nevertheless, in instances involving tiling, it becomes
             imperative to encapsulate tiles within a unified entity, namely TileInstSegDataEntity.
         """
-        item = self.dm_subset.as_dataset()[index]
+        item = self.dm_subset[index]
         img = item.media_as(Image)
         img_data, img_shape = self._get_img_data_and_shape(img)
 

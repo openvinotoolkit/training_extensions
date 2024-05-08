@@ -267,13 +267,7 @@ def empty_instances(
 
     results_list = []
     for img_id in range(len(batch_img_metas)):
-        if instance_results is not None:
-            results = instance_results[img_id]
-            if not isinstance(results, InstanceData):
-                msg = f"instance_results should be InstanceData, but got {type(results)}"
-                raise TypeError(msg)
-        else:
-            results = InstanceData()
+        results = instance_results[img_id] if instance_results is not None else InstanceData()
 
         if task_type == "bbox":
             bboxes = torch.zeros(0, 4, device=device)

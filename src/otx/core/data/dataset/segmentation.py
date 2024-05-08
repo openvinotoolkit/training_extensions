@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING, Callable
 
 import cv2
 import numpy as np
-from datumaro.components.annotation import Image, Mask
+from datumaro.components.annotation import Ellipse, Image, Mask, Polygon
 from torchvision import tv_tensors
 
 from otx.core.data.dataset.base import Transforms
@@ -23,7 +23,8 @@ from otx.core.types.label import SegLabelInfo
 from .base import OTXDataset
 
 if TYPE_CHECKING:
-    from datumaro import DatasetItem, DatasetSubset
+    from datumaro import Dataset as DmDataset
+    from datumaro import DatasetItem
 
 
 # NOTE: It is copied from https://github.com/openvinotoolkit/datumaro/pull/1409
@@ -96,35 +97,49 @@ def _extract_class_mask(item: DatasetItem, img_shape: tuple[int, int], ignore_in
         msg = "It is not currently support an ignore index which is more than 255."
         raise ValueError(msg, ignore_index)
 
-    class_mask = np.full(shape=img_shape[:2], fill_value=ignore_index, dtype=np.uint8)
+    # fill mask with background label if we have Polygon/Ellipse annotations
+    fill_value = 0 if isinstance(item.annotations[0], (Ellipse, Polygon)) else ignore_index
+    class_mask = np.full(shape=img_shape[:2], fill_value=fill_value, dtype=np.uint8)
+
     for mask in sorted(
-        [ann for ann in item.annotations if isinstance(ann, Mask)],
+        [ann for ann in item.annotations if isinstance(ann, (Mask, Ellipse, Polygon))],
         key=lambda ann: ann.z_order,
     ):
-        binary_mask = mask.image
         index = mask.label
 
         if index is None:
             msg = "Mask's label index should not be None."
             raise ValueError(msg)
 
-        if index > 255:
-            msg = "Mask's label index should not be more than 255."
-            raise ValueError(msg, index)
+        if isinstance(mask, (Ellipse, Polygon)):
+            polygons = np.asarray(mask.as_polygon(), dtype=np.int32).reshape((-1, 1, 2))
+            class_index = index + 1  # NOTE: disregard the background index. Objects start from index=1
+            this_class_mask = cv2.drawContours(class_mask, [polygons], 0, (class_index, class_index, class_index))
 
-        this_class_mask = _make_index_mask(
-            binary_mask=binary_mask,
-            index=index,
-            ignore_index=ignore_index,
-            dtype=np.uint8,
-        )
+        elif isinstance(mask, Mask):
+            binary_mask = mask.image
 
-        if this_class_mask.shape != img_shape:
-            this_class_mask = cv2.resize(
-                this_class_mask,
-                dsize=(img_shape[1], img_shape[0]),  # NOTE: cv2.resize() uses (width, height) format
-                interpolation=cv2.INTER_NEAREST,
+            if index is None:
+                msg = "Mask's label index should not be None."
+                raise ValueError(msg)
+
+            if index > 255:
+                msg = "Mask's label index should not be more than 255."
+                raise ValueError(msg, index)
+
+            this_class_mask = _make_index_mask(
+                binary_mask=binary_mask,
+                index=index,
+                ignore_index=ignore_index,
+                dtype=np.uint8,
             )
+
+            if this_class_mask.shape != img_shape:
+                this_class_mask = cv2.resize(
+                    this_class_mask,
+                    dsize=(img_shape[1], img_shape[0]),  # NOTE: cv2.resize() uses (width, height) format
+                    interpolation=cv2.INTER_NEAREST,
+                )
 
         class_mask = np.where(this_class_mask != ignore_index, this_class_mask, class_mask)
 
@@ -136,7 +151,7 @@ class OTXSegmentationDataset(OTXDataset[SegDataEntity]):
 
     def __init__(
         self,
-        dm_subset: DatasetSubset,
+        dm_subset: DmDataset,
         transforms: Transforms,
         mem_cache_handler: MemCacheHandlerBase = NULL_MEM_CACHE_HANDLER,
         mem_cache_img_max_size: tuple[int, int] | None = None,
@@ -164,7 +179,7 @@ class OTXSegmentationDataset(OTXDataset[SegDataEntity]):
         self.ignore_index = ignore_index
 
     def _get_item_impl(self, index: int) -> SegDataEntity | None:
-        item = self.dm_subset.as_dataset()[index]
+        item = self.dm_subset[index]
         img = item.media_as(Image)
         ignored_labels: list[int] = []
         img_data, img_shape = self._get_img_data_and_shape(img)
