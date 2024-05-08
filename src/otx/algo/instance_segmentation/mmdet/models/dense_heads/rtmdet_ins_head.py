@@ -27,7 +27,6 @@ from otx.algo.instance_segmentation.mmdet.models.roi_extractors.roi_align import
 from otx.algo.instance_segmentation.mmdet.structures.bbox.transforms import get_box_wh, scale_boxes
 from otx.algo.modules.base_module import BaseModule
 from otx.algo.modules.conv_module import ConvModule
-from otx.algo.modules.norm import is_norm
 from otx.algo.utils.weight_init import bias_init_with_prob, constant_init, normal_init
 
 from .rtmdet_head import RTMDetHead
@@ -913,8 +912,7 @@ class RTMDetInsSepBNHead(RTMDetInsHead):
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
                 normal_init(m, mean=0, std=0.01)
-            if is_norm(m):
-                constant_init(m, 1)
+            constant_init(m, 1)
         bias_cls = bias_init_with_prob(0.01)
         for rtm_cls, rtm_reg in zip(self.rtm_cls, self.rtm_reg):
             normal_init(rtm_cls, std=0.01, bias=bias_cls)
