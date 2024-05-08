@@ -189,10 +189,43 @@ class TestMMPretrainMulticlassClsModel:
         preds = otx_model._customize_outputs(outputs, fxt_multi_class_cls_data_entity[2])
         assert isinstance(preds, OTXBatchLossEntity)
 
+        # With wrong outputs (Not Dict type)
+        wrong_outputs = torch.Tensor([1, 2, 3])
+        with pytest.raises(TypeError):
+            otx_model._customize_outputs(wrong_outputs, fxt_multi_class_cls_data_entity[2])
+
         otx_model.training = False
         customized_input["mode"] = "predict"
         outputs = otx_model.model(**customized_input)
         preds = otx_model._customize_outputs(outputs, fxt_multi_class_cls_data_entity[2])
+        assert isinstance(preds, MulticlassClsBatchPredEntity)
+
+        # Insert wrong outputs (Not DataSample)
+        wrong_outputs = [torch.Tensor([1, 2, 3])]
+        with pytest.raises(TypeError):
+            otx_model._customize_outputs(wrong_outputs, fxt_multi_class_cls_data_entity[2])
+
+        # Explain Mode
+        otx_model.explain_mode = True
+        with pytest.raises(ValueError, match="Model output should be a dict"):
+            otx_model._customize_outputs(outputs, fxt_multi_class_cls_data_entity[2])
+
+        # Without feature_vector
+        explain_outputs = {"logits": outputs, "saliency_map": torch.Tensor([1, 2, 3])}
+        with pytest.raises(ValueError, match="No feature vector"):
+            otx_model._customize_outputs(explain_outputs, fxt_multi_class_cls_data_entity[2])
+
+        # Without saliency_map
+        explain_outputs = {"logits": outputs, "feature_vector": torch.Tensor([1, 2, 3])}
+        with pytest.raises(ValueError, match="No saliency maps"):
+            otx_model._customize_outputs(explain_outputs, fxt_multi_class_cls_data_entity[2])
+
+        explain_outputs = {
+            "logits": outputs,
+            "feature_vector": torch.Tensor([1, 2, 3]),
+            "saliency_map": torch.Tensor([1, 2, 3]),
+        }
+        preds = otx_model._customize_outputs(explain_outputs, fxt_multi_class_cls_data_entity[2])
         assert isinstance(preds, MulticlassClsBatchPredEntity)
 
     def test_export_parameters(self, otx_model):
@@ -203,6 +236,11 @@ class TestMMPretrainMulticlassClsModel:
     def test_exporter(self, otx_model):
         exporter = otx_model._exporter
         assert isinstance(exporter, OTXNativeModelExporter)
+
+    def test_forward_for_tracing(self, otx_model):
+        otx_model.eval()
+        output = otx_model.forward_for_tracing(torch.randn(1, 3, 32, 32))
+        assert len(output) == 1
 
 
 class TestOTXMultilabelClsModel:
@@ -342,10 +380,43 @@ class TestMMPretrainMultilabelClsModel:
         preds = otx_model._customize_outputs(outputs, fxt_multi_label_cls_data_entity[2])
         assert isinstance(preds, OTXBatchLossEntity)
 
+        # With wrong outputs (Not Dict type)
+        wrong_outputs = torch.Tensor([1, 2, 3])
+        with pytest.raises(TypeError):
+            otx_model._customize_outputs(wrong_outputs, fxt_multi_label_cls_data_entity[2])
+
         otx_model.training = False
         customized_input["mode"] = "predict"
         outputs = otx_model.model(**customized_input)
         preds = otx_model._customize_outputs(outputs, fxt_multi_label_cls_data_entity[2])
+        assert isinstance(preds, MultilabelClsBatchPredEntity)
+
+        # Insert wrong outputs (Not DataSample)
+        wrong_outputs = [torch.Tensor([1, 2, 3])]
+        with pytest.raises(TypeError):
+            otx_model._customize_outputs(wrong_outputs, fxt_multi_label_cls_data_entity[2])
+
+        # Explain Mode
+        otx_model.explain_mode = True
+        with pytest.raises(ValueError, match="Model output should be a dict"):
+            otx_model._customize_outputs(outputs, fxt_multi_label_cls_data_entity[2])
+
+        # Without feature_vector
+        explain_outputs = {"logits": outputs, "saliency_map": torch.Tensor([1, 2, 3])}
+        with pytest.raises(ValueError, match="No feature vector"):
+            otx_model._customize_outputs(explain_outputs, fxt_multi_label_cls_data_entity[2])
+
+        # Without saliency_map
+        explain_outputs = {"logits": outputs, "feature_vector": torch.Tensor([1, 2, 3])}
+        with pytest.raises(ValueError, match="No saliency maps"):
+            otx_model._customize_outputs(explain_outputs, fxt_multi_label_cls_data_entity[2])
+
+        explain_outputs = {
+            "logits": outputs,
+            "feature_vector": torch.Tensor([1, 2, 3]),
+            "saliency_map": torch.Tensor([1, 2, 3]),
+        }
+        preds = otx_model._customize_outputs(explain_outputs, fxt_multi_label_cls_data_entity[2])
         assert isinstance(preds, MultilabelClsBatchPredEntity)
 
     def test_export_parameters(self, otx_model):
@@ -410,3 +481,20 @@ class TestOTXHlabelClsModel:
         assert isinstance(metric_input, dict)
         assert "preds" in metric_input
         assert "target" in metric_input
+
+        model.label_info.num_multilabel_classes = 0
+        metric_input = model._convert_pred_entity_to_compute_metric(
+            fxt_h_label_cls_data_entity[1],
+            fxt_h_label_cls_data_entity[2],
+        )
+        assert isinstance(metric_input, dict)
+        assert "preds" in metric_input
+        assert "target" in metric_input
+
+    def test_set_label_info(self, fxt_hlabel_multilabel_info):
+        model = OTXHlabelClsModel(label_info=fxt_hlabel_multilabel_info)
+        assert model.label_info.num_multilabel_classes == fxt_hlabel_multilabel_info.num_multilabel_classes
+
+        fxt_hlabel_multilabel_info.num_multilabel_classes = 0
+        model.label_info = fxt_hlabel_multilabel_info
+        assert model.label_info.num_multilabel_classes == 0
