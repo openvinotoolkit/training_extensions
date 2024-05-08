@@ -169,7 +169,7 @@ class OTXAnomaly:
         """Callback on loading checkpoint."""
         super().on_load_checkpoint(checkpoint)  # type: ignore[misc]
 
-        if anomaly_attrs := checkpoint.get("anomaly", None):
+        if anomaly_attrs := checkpoint.get("anomaly"):
             for key, value in anomaly_attrs.items():
                 setattr(self, key, value)
 
@@ -334,19 +334,22 @@ class OTXAnomaly:
         inputs: AnomalyModelInputs,
     ) -> dict[str, Any]:
         """Customize inputs for the model."""
+        return_dict = {}
         if isinstance(inputs, AnomalyClassificationDataBatch):
-            return {"image": inputs.images, "label": torch.vstack(inputs.labels).squeeze()}
+            return_dict = {"image": inputs.images, "label": torch.vstack(inputs.labels).squeeze()}
         if isinstance(inputs, AnomalySegmentationDataBatch):
-            return {"image": inputs.images, "label": torch.vstack(inputs.labels).squeeze(), "mask": inputs.masks}
+            return_dict = {"image": inputs.images, "label": torch.vstack(inputs.labels).squeeze(), "mask": inputs.masks}
         if isinstance(inputs, AnomalyDetectionDataBatch):
-            return {
+            return_dict = {
                 "image": inputs.images,
                 "label": torch.vstack(inputs.labels).squeeze(),
                 "mask": inputs.masks,
                 "boxes": inputs.boxes,
             }
-        msg = f"Unsupported input type {type(inputs)}"
-        raise ValueError(msg)
+
+        if return_dict["label"].size() == torch.Size([]):  # when last batch size is 1
+            return_dict["label"] = return_dict["label"].unsqueeze(0)
+        return return_dict
 
     def _customize_outputs(
         self,

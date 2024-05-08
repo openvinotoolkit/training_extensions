@@ -10,7 +10,8 @@ from typing import Callable
 
 import numpy as np
 import torch
-from datumaro import DatasetSubset, Image, Polygon
+from datumaro import Dataset as DmDataset
+from datumaro import Image, Polygon
 from torchvision import tv_tensors
 
 from otx.core.data.entity.base import ImageInfo
@@ -24,19 +25,19 @@ class OTXInstanceSegDataset(OTXDataset[InstanceSegDataEntity]):
     """OTXDataset class for instance segmentation.
 
     Args:
-        dm_subset (DatasetSubset): The subset of the dataset.
+        dm_subset (DmDataset): The subset of the dataset.
         transforms (Transforms): Data transformations to be applied.
         include_polygons (bool): Flag indicating whether to include polygons in the dataset.
             If set to False, polygons will be converted to bitmaps, and bitmaps will be used for training.
         **kwargs: Additional keyword arguments passed to the base class.
     """
 
-    def __init__(self, dm_subset: DatasetSubset, transforms: Transforms, include_polygons: bool, **kwargs) -> None:
+    def __init__(self, dm_subset: DmDataset, transforms: Transforms, include_polygons: bool, **kwargs) -> None:
         super().__init__(dm_subset, transforms, **kwargs)
         self.include_polygons = include_polygons
 
     def _get_item_impl(self, index: int) -> InstanceSegDataEntity | None:
-        item = self.dm_subset.parent[index]
+        item = self.dm_subset[index]
         img = item.media_as(Image)
         ignored_labels: list[int] = []
         img_data, img_shape = self._get_img_data_and_shape(img)
