@@ -5,14 +5,10 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
+import numpy as np
 import pycocotools.mask as mask_utils
 import torch
-
-if TYPE_CHECKING:
-    import numpy as np
-    from datumaro import Polygon
+from datumaro import Polygon
 
 
 def polygon_to_bitmap(
@@ -91,3 +87,42 @@ def encode_rle(mask: torch.Tensor) -> dict:
         counts = torch.cat((torch.tensor([0], device=device), counts))
 
     return {"counts": counts.tolist(), "size": list(mask.shape)}
+
+
+def crop_and_resize_polygons(
+    polygons: list[Polygon],
+    bboxes: np.ndarray,
+    out_shape: tuple,
+    inds: np.ndarray,
+) -> list:
+    """Crop and resize polygons to the target size."""
+    out_h, out_w = out_shape
+    if len(polygons) == 0:
+        return []
+
+    resized_polygons = []
+    for i in range(len(bboxes)):
+        polygon = polygons[inds[i]]
+        bbox = bboxes[i, :]
+        x1, y1, x2, y2 = bbox
+        w = np.maximum(x2 - x1, 1)
+        h = np.maximum(y2 - y1, 1)
+        h_scale = out_h / max(h, 0.1)  # avoid too large scale
+        w_scale = out_w / max(w, 0.1)
+
+        points = polygon.points
+        points = points.copy()
+        points = np.array(points)
+        # crop
+        # pycocotools will clip the boundary
+        points[0::2] = points[0::2] - bbox[0]
+        points[1::2] = points[1::2] - bbox[1]
+
+        # resize
+        points[0::2] = points[0::2] * w_scale
+        points[1::2] = points[1::2] * h_scale
+
+        resized_polygon = Polygon(points.tolist())
+
+        resized_polygons.append(resized_polygon)
+    return resized_polygons

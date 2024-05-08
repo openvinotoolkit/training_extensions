@@ -23,7 +23,7 @@ from otx.algo.modules.conv import build_conv_layer
 from otx.algo.modules.norm import build_norm_layer
 
 if TYPE_CHECKING:
-    from mmengine.config import ConfigDict
+    from omegaconf import DictConfig
 
 
 class AdaptivePadding(nn.Module):
@@ -129,8 +129,8 @@ class PatchEmbed(BaseModule):
         padding: int | tuple | str = "corner",
         dilation: int = 1,
         bias: bool = True,
-        norm_cfg: ConfigDict | dict | None = None,
-        init_cfg: ConfigDict | dict | None = None,
+        norm_cfg: DictConfig | dict | None = None,
+        init_cfg: DictConfig | dict | None = None,
     ) -> None:
         super().__init__(init_cfg=init_cfg)
 
@@ -236,8 +236,8 @@ class PatchMerging(BaseModule):
         padding: int | tuple | str = "corner",
         dilation: int | tuple = 1,
         bias: bool = False,
-        norm_cfg: ConfigDict | dict | None = None,
-        init_cfg: ConfigDict | dict | None = None,
+        norm_cfg: DictConfig | dict | None = None,
+        init_cfg: DictConfig | dict | None = None,
     ) -> None:
         super().__init__(init_cfg=init_cfg)
         norm_cfg = norm_cfg if norm_cfg is not None else {"type": "LN"}

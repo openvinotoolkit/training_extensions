@@ -7,20 +7,17 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 import numpy as np
 import torch
+from datumaro.components.annotation import Polygon
+from otx.core.utils.mask_util import crop_and_resize_polygons, polygon_to_bitmap
 from torch.nn.modules.utils import _pair
-
-if TYPE_CHECKING:
-    from mmdet.structures.mask import BitmapMasks
 
 
 def mask_target(
     pos_proposals_list: list[torch.Tensor],
     pos_assigned_gt_inds_list: list[torch.Tensor],
-    gt_masks_list: list[BitmapMasks],
+    gt_masks_list: list[list[Polygon]],
     cfg: dict,
 ) -> torch.Tensor:
     """Compute mask target for positive proposals in multiple images.
@@ -48,42 +45,35 @@ def mask_target(
 def mask_target_single(
     pos_proposals: torch.Tensor,
     pos_assigned_gt_inds: torch.Tensor,
-    gt_masks: BitmapMasks,
+    gt_masks: list[Polygon],
     cfg: dict,
-) -> torch.Tensor | np.ndarray:
-    """Compute mask target for each positive proposal in the image.
+) -> torch.Tensor:
+    """Compute mask target for each positive proposal in the image."""
+    if not isinstance(gt_masks[0], Polygon):
+        msg = "Mask target only supports polygon format masks"
+        raise TypeError(msg)
 
-    Args:
-        pos_proposals (Tensor): Positive proposals.
-        pos_assigned_gt_inds (Tensor): Assigned GT inds of positive proposals.
-        gt_masks (:obj:`BaseInstanceMasks`): GT masks in the format of Bitmap
-            or Polygon.
-        cfg (dict): Config dict that indicate the mask size.
-
-    Returns:
-        Tensor: Mask target of each positive proposals in the image.
-    """
     device = pos_proposals.device
     mask_size = _pair(cfg["mask_size"])
-    binarize = not cfg.get("soft_mask_target", False)
     num_pos = pos_proposals.size(0)
     if num_pos > 0:
         proposals_np = pos_proposals.cpu().numpy()
-        maxh, maxw = gt_masks.height, gt_masks.width
+        maxh, maxw = gt_masks[0].attributes["img_shape"]
         proposals_np[:, [0, 2]] = np.clip(proposals_np[:, [0, 2]], 0, maxw)
         proposals_np[:, [1, 3]] = np.clip(proposals_np[:, [1, 3]], 0, maxh)
         pos_assigned_gt_inds = pos_assigned_gt_inds.cpu().numpy()
 
-        mask_targets = gt_masks.crop_and_resize(
+        polygon_targets = crop_and_resize_polygons(
+            gt_masks,
             proposals_np,
             mask_size,
-            device=device,
             inds=pos_assigned_gt_inds,
-            binarize=binarize,
-        ).to_ndarray()
+        )
 
-        mask_targets = torch.from_numpy(mask_targets).float().to(device)
+        polygon_targets = polygon_to_bitmap(polygon_targets, *mask_size)
+
+        polygon_targets = torch.from_numpy(polygon_targets).float().to(device)
     else:
-        mask_targets = pos_proposals.new_zeros((0, *mask_size))
+        polygon_targets = pos_proposals.new_zeros((0, *mask_size))
 
-    return mask_targets
+    return polygon_targets

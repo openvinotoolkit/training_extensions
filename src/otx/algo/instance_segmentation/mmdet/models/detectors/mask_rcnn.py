@@ -12,8 +12,7 @@ from .two_stage import TwoStageDetector
 
 if TYPE_CHECKING:
     import torch
-    from mmdet.structures.det_data_sample import DetDataSample
-    from mmengine.config import ConfigDict
+    from omegaconf import DictConfig
     from torch import nn
 
 
@@ -26,10 +25,9 @@ class MaskRCNN(TwoStageDetector):
         neck: nn.Module,
         rpn_head: nn.Module,
         roi_head: nn.Module,
-        train_cfg: ConfigDict,
-        test_cfg: ConfigDict,
-        data_preprocessor: ConfigDict | dict | None = None,
-        init_cfg: ConfigDict | dict | list[ConfigDict | dict] | None = None,
+        train_cfg: DictConfig,
+        test_cfg: DictConfig,
+        init_cfg: DictConfig | dict | list[DictConfig | dict] | None = None,
         **kwargs,
     ) -> None:
         super().__init__(
@@ -40,26 +38,25 @@ class MaskRCNN(TwoStageDetector):
             train_cfg=train_cfg,
             test_cfg=test_cfg,
             init_cfg=init_cfg,
-            data_preprocessor=data_preprocessor,
         )
 
     def export(
         self,
         batch_inputs: torch.Tensor,
-        data_samples: list[DetDataSample],
+        batch_img_metas: list[dict],
     ) -> tuple[torch.Tensor, ...]:
         """Export MaskRCNN detector."""
         x = self.extract_feat(batch_inputs)
 
         rpn_results_list = self.rpn_head.export(
             x,
-            data_samples,
+            batch_img_metas,
             rescale=False,
         )
 
         return self.roi_head.export(
             x,
             rpn_results_list,
-            data_samples,
+            batch_img_metas,
             rescale=False,
         )

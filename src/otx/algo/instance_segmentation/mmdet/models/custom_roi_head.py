@@ -17,16 +17,17 @@ from otx.algo.detection.heads.class_incremental_mixin import (
 )
 from otx.algo.detection.losses import CrossSigmoidFocalLoss, accuracy
 from otx.algo.detection.utils.structures import SamplingResult
-from otx.algo.detection.utils.utils import empty_instances, multi_apply, unpack_gt_instances
+from otx.algo.detection.utils.utils import empty_instances, multi_apply, unpack_inst_seg_entity
 from otx.algo.instance_segmentation.mmdet.models.bbox_heads.convfc_bbox_head import Shared2FCBBoxHead
 from otx.algo.instance_segmentation.mmdet.structures.bbox import bbox2roi
+from otx.core.data.entity.instance_segmentation import InstanceSegBatchDataEntity
 
 from .base_roi_head import BaseRoIHead
 
 if TYPE_CHECKING:
-    from mmdet.structures.det_data_sample import DetDataSample
-    from mmengine.config import ConfigDict
-    from mmengine.structures import InstanceData
+    from omegaconf import DictConfig
+
+    from otx.algo.utils.mmengine_utils import InstanceData
 
 
 class StandardRoIHead(BaseRoIHead):
@@ -36,29 +37,6 @@ class StandardRoIHead(BaseRoIHead):
         """Initialize assigner and sampler."""
         self.bbox_assigner = self.train_cfg["assigner"]
         self.bbox_sampler = self.train_cfg["sampler"]
-
-    def forward(
-        self,
-        x: tuple[Tensor],
-        rpn_results_list: list[InstanceData],
-        batch_data_samples: list[DetDataSample] | None = None,
-    ) -> tuple:
-        """Network forward process. Usually includes backbone, neck and head forward without any post-processing.
-
-        Args:
-            x (List[Tensor]): Multi-level features that may have different
-                resolutions.
-            rpn_results_list (list[:obj:`InstanceData`]): List of region
-                proposals.
-            batch_data_samples (list[:obj:`DetDataSample`]): Each item contains
-            the meta information of each image and corresponding
-            annotations.
-
-        Returns:
-            tuple: A tuple of features from ``bbox_head`` and ``mask_head``
-            forward.
-        """
-        raise NotImplementedError
 
     def _bbox_forward(self, x: tuple[Tensor], rois: Tensor) -> dict:
         """Box head forward function used in both training and testing.
@@ -165,7 +143,7 @@ class StandardRoIHead(BaseRoIHead):
         x: tuple[Tensor],
         batch_img_metas: list[dict],
         rpn_results_list: list[InstanceData],
-        rcnn_test_cfg: ConfigDict | dict,
+        rcnn_test_cfg: DictConfig | dict,
         rescale: bool = False,
     ) -> list[InstanceData]:
         """Forward the bbox head and predict detection results on the features of the upstream network.
@@ -355,14 +333,13 @@ class StandardRoIHead(BaseRoIHead):
         self,
         x: tuple[Tensor],
         rpn_results_list: tuple[Tensor, Tensor],
-        batch_data_samples: list[DetDataSample],
+        batch_img_metas: list[dict],
         rescale: bool = False,
     ) -> tuple[Tensor, ...]:
         """Export the roi head and export detection results on the features of the upstream network."""
         if not self.with_bbox:
             msg = "Bbox head must be implemented."
             raise NotImplementedError(msg)
-        batch_img_metas = [data_samples.metainfo for data_samples in batch_data_samples]
 
         # If it has the mask branch, the bbox branch does not need
         # to be scaled to the original image scale, because the mask
@@ -386,7 +363,7 @@ class StandardRoIHead(BaseRoIHead):
         x: tuple[Tensor],
         batch_img_metas: list[dict],
         rpn_results_list: tuple[Tensor, Tensor],
-        rcnn_test_cfg: ConfigDict | dict,
+        rcnn_test_cfg: DictConfig | dict,
         rescale: bool = False,
     ) -> tuple[Tensor, ...]:
         """Rewrite `predict_bbox` of `StandardRoIHead` for default backend.
@@ -501,33 +478,20 @@ class CustomRoIHead(StandardRoIHead):
         self,
         x: tuple[Tensor],
         rpn_results_list: list[InstanceData],
-        batch_data_samples: list[DetDataSample],
+        entity: InstanceSegBatchDataEntity,
     ) -> dict:
-        """Perform forward propagation and loss calculation of the detection roi on the features.
-
-        Args:
-            x (tuple[Tensor]): list of multi-level img features.
-            rpn_results_list (list[:obj:`InstanceData`]): list of region
-                proposals.
-            batch_data_samples (list[:obj:`DetDataSample`]): The batch
-                data samples. It usually includes information such
-                as `gt_instance` or `gt_panoptic_seg` or `gt_sem_seg`.
-
-        Returns:
-            dict[str, Tensor]: A dictionary of loss components
-        """
-        outputs = unpack_gt_instances(batch_data_samples)
-        batch_gt_instances, batch_gt_instances_ignore, batch_img_metas = outputs
+        """Perform forward propagation and loss calculation of the detection roi on the features."""
+        batch_gt_instances, batch_img_metas = unpack_inst_seg_entity(entity)
 
         # assign gts and sample proposals
-        num_imgs = len(batch_data_samples)
+        num_imgs = entity.batch_size
         sampling_results = []
         for i in range(num_imgs):
             # rename rpn_results.bboxes to rpn_results.priors
             rpn_results = rpn_results_list[i]
             rpn_results.priors = rpn_results.pop("bboxes")
 
-            assign_result = self.bbox_assigner.assign(rpn_results, batch_gt_instances[i], batch_gt_instances_ignore[i])
+            assign_result = self.bbox_assigner.assign(rpn_results, batch_gt_instances[i])
             sampling_result = self.bbox_sampler.sample(
                 assign_result,
                 rpn_results,
@@ -590,7 +554,7 @@ class CustomConvFCBBoxHead(Shared2FCBBoxHead, ClassIncrementalMixin):
         bbox_pred: Tensor,
         rois: Tensor,
         sampling_results: list[SamplingResult],
-        rcnn_train_cfg: ConfigDict,
+        rcnn_train_cfg: DictConfig,
         batch_img_metas: list[dict],
         concat: bool = True,
         reduction_override: str | None = None,
@@ -643,7 +607,7 @@ class CustomConvFCBBoxHead(Shared2FCBBoxHead, ClassIncrementalMixin):
     def get_targets(
         self,
         sampling_results: list[SamplingResult],
-        rcnn_train_cfg: ConfigDict,
+        rcnn_train_cfg: DictConfig,
         batch_img_metas: list[dict],
         concat: bool = True,
     ) -> tuple:
