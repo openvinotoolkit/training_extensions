@@ -28,6 +28,7 @@ from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallab
 from otx.core.schedulers import LRSchedulerListCallable
 from otx.core.types.export import TaskLevelExportParameters
 from otx.core.types.label import LabelInfoTypes
+from otx.core.utils.config import inplace_num_classes
 from otx.core.utils.mask_util import encode_rle, polygon_to_rle
 from otx.core.utils.tile_merge import InstanceSegTileMerge
 
@@ -37,6 +38,8 @@ if TYPE_CHECKING:
     from mmdet.models.detectors import TwoStageDetector
     from mmdet.structures import OptSampleList
     from model_api.models.utils import InstanceSegmentationResult
+    from omegaconf import DictConfig
+    from torch import nn
     from torchmetrics import Metric
 
     from otx.core.metrics import MetricCallable
@@ -300,9 +303,9 @@ class ExplainableOTXInstanceSegModel(OTXInstanceSegModel):
             tuple[torch.Tensor] | list[InstanceData]: The predicted results from the head of the model.
             Tuple for the Export case, list for the Predict case.
         """
-        from otx.algo.instance_segmentation.rtmdet_inst import MMDetRTMDetInstTiny
+        from otx.algo.instance_segmentation.rtmdet_inst import RTMDetInst
 
-        if isinstance(self, MMDetRTMDetInstTiny):
+        if isinstance(self, RTMDetInst):
             return self.model.bbox_head.predict(x, data_samples, rescale=False)
         rpn_results_list = self.model.rpn_head.predict(x, data_samples, rescale=False)
         return self.model.roi_head.predict(x, rpn_results_list, data_samples, rescale=True)
@@ -358,12 +361,17 @@ class MMDetInstanceSegCompatibleModel(ExplainableOTXInstanceSegModel):
     def __init__(
         self,
         label_info: LabelInfoTypes,
+        config: DictConfig | None = None,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MaskRLEMeanAPCallable,
         torch_compile: bool = False,
         tile_config: TileConfig = TileConfig(enable_tiler=False),
     ) -> None:
+        if config is not None:
+            config = inplace_num_classes(cfg=config, num_classes=self._dispatch_label_info(label_info).num_classes)
+            self.config = config
+            self.load_from = self.config.pop("load_from", None)
         self.image_size: tuple[int, int, int, int] | None = None
         super().__init__(
             label_info=label_info,
@@ -373,6 +381,12 @@ class MMDetInstanceSegCompatibleModel(ExplainableOTXInstanceSegModel):
             torch_compile=torch_compile,
             tile_config=tile_config,
         )
+
+    def _create_model(self) -> nn.Module:
+        from .utils.mmdet import create_model
+
+        model, self.classification_layers = create_model(self.config, self.load_from)
+        return model
 
     def _make_fake_test_pipeline(self) -> list[dict[str, Any]]:
         return [
