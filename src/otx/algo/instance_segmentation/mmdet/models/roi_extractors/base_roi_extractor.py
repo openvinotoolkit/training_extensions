@@ -17,7 +17,7 @@ from torchvision.ops import RoIAlign
 from otx.algo.modules.base_module import BaseModule
 
 if TYPE_CHECKING:
-    from mmengine.config import ConfigDict
+    from omegaconf import DictConfig
 
 
 class BaseRoIExtractor(BaseModule, metaclass=ABCMeta):
@@ -37,7 +37,7 @@ class BaseRoIExtractor(BaseModule, metaclass=ABCMeta):
         roi_layer: nn.Module,
         out_channels: int,
         featmap_strides: list[int],
-        init_cfg: ConfigDict | dict | list[ConfigDict | dict] | None = None,
+        init_cfg: DictConfig | dict | list[DictConfig | dict] | None = None,
     ) -> None:
         super().__init__(init_cfg=init_cfg)
         self.roi_layers = self.build_roi_layers(roi_layer, featmap_strides)

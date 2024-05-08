@@ -13,23 +13,24 @@ from typing import TYPE_CHECKING
 
 import torch
 import torch.nn.functional
-from mmengine.structures import InstanceData
 from torch import Tensor, nn
 
 from otx.algo.detection.heads.anchor_head import AnchorHead
 from otx.algo.detection.ops.nms import batched_nms, multiclass_nms
-from otx.algo.detection.utils.utils import dynamic_topk, gather_topk, unpack_gt_instances
+from otx.algo.detection.utils.utils import dynamic_topk, gather_topk, unpack_inst_seg_entity
 from otx.algo.instance_segmentation.mmdet.structures.bbox import (
     empty_box_as,
     get_box_wh,
 )
 from otx.algo.modules.conv_module import ConvModule
+from otx.algo.utils.mmengine_utils import InstanceData
+from otx.core.data.entity.base import OTXBatchDataEntity
+from otx.core.data.entity.instance_segmentation import InstanceSegBatchDataEntity
 
 # ruff: noqa: PLW2901
 
 if TYPE_CHECKING:
-    from mmdet.structures.det_data_sample import DetDataSample
-    from mmengine.config import ConfigDict
+    from omegaconf import DictConfig
 
 
 class RPNHead(AnchorHead):
@@ -106,8 +107,8 @@ class RPNHead(AnchorHead):
     def loss_and_predict(
         self,
         x: tuple[Tensor],
-        batch_data_samples: list[DetDataSample],
-        proposal_cfg: ConfigDict | None = None,
+        rpn_entity: InstanceSegBatchDataEntity,
+        proposal_cfg: DictConfig | None = None,
     ) -> tuple[dict, list[InstanceData]]:
         """Forward propagation of the head, then calculate loss and predictions from the features and data samples.
 
@@ -127,8 +128,7 @@ class RPNHead(AnchorHead):
                 - predictions (list[:obj:`InstanceData`]): Detection
                   results of each image after the post process.
         """
-        outputs = unpack_gt_instances(batch_data_samples)
-        (batch_gt_instances, batch_gt_instances_ignore, batch_img_metas) = outputs
+        batch_gt_instances, batch_img_metas = unpack_inst_seg_entity(rpn_entity)
 
         cls_scores, bbox_preds = self(x)
 
@@ -137,16 +137,20 @@ class RPNHead(AnchorHead):
             bbox_preds,
             batch_gt_instances,
             batch_img_metas,
-            batch_gt_instances_ignore,
         )
 
-        predictions = self.predict_by_feat(cls_scores, bbox_preds, batch_img_metas=batch_img_metas, cfg=proposal_cfg)
+        predictions = self.predict_by_feat(
+            cls_scores,
+            bbox_preds,
+            batch_img_metas=batch_img_metas,
+            cfg=proposal_cfg,
+        )
         return losses, predictions
 
     def predict(
         self,
         x: tuple[Tensor, ...],
-        batch_data_samples: list[DetDataSample],  # type: ignore[override]
+        entity: OTXBatchDataEntity,
         rescale: bool = False,
     ) -> list[InstanceData]:
         """Forward-prop of the detection head and predict detection results on the features of the upstream network.
@@ -164,7 +168,17 @@ class RPNHead(AnchorHead):
             list[obj:`InstanceData`]: Detection results of each image
             after the post process.
         """
-        batch_img_metas = [data_samples.metainfo for data_samples in batch_data_samples]
+        batch_img_metas = [
+            {
+                "img_id": img_info.img_idx,
+                "img_shape": img_info.img_shape,
+                "ori_shape": img_info.ori_shape,
+                "pad_shape": img_info.pad_shape,
+                "scale_factor": img_info.scale_factor,
+                "ignored_labels": img_info.ignored_labels,
+            }
+            for img_info in entity.imgs_info
+        ]
 
         cls_scores, bbox_preds = self(x)
 
@@ -212,7 +226,7 @@ class RPNHead(AnchorHead):
         score_factor_list: list[Tensor],
         mlvl_priors: list[Tensor],
         img_meta: dict,
-        cfg: ConfigDict,
+        cfg: DictConfig,
         rescale: bool = False,
         with_nms: bool = True,
     ) -> InstanceData:

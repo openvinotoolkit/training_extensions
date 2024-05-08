@@ -5,10 +5,11 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
-from mmengine.structures import InstanceData
+import torch
 from omegaconf import DictConfig
+from torchvision import tv_tensors
 from torchvision.ops import RoIAlign
 
 from otx.algo.detection.backbones.pytorchcv_backbones import _build_model_including_pytorchcv
@@ -26,26 +27,29 @@ from otx.algo.instance_segmentation.mmdet.models.detectors import MaskRCNN
 from otx.algo.instance_segmentation.mmdet.models.mask_heads import FCNMaskHead
 from otx.algo.instance_segmentation.mmdet.models.necks import FPN
 from otx.algo.instance_segmentation.mmdet.models.roi_extractors import SingleRoIExtractor
+from otx.algo.utils.mmengine_utils import InstanceData
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.config.data import TileConfig
+from otx.core.data.entity.base import OTXBatchLossEntity
+from otx.core.data.entity.instance_segmentation import InstanceSegBatchDataEntity, InstanceSegBatchPredEntity
+from otx.core.data.entity.utils import stack_batch
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.metrics.mean_ap import MaskRLEMeanAPCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
-from otx.core.model.instance_segmentation import MMDetInstanceSegCompatibleModel
+from otx.core.model.instance_segmentation import ExplainableOTXInstanceSegModel
 from otx.core.model.utils.mmdet import DetDataPreprocessor
 from otx.core.schedulers import LRSchedulerListCallable
 from otx.core.types.label import LabelInfoTypes
 
 if TYPE_CHECKING:
-    import torch
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
     from torch.nn.modules import Module
 
     from otx.core.metrics import MetricCallable
 
 
-class MMDetMaskRCNN(MMDetInstanceSegCompatibleModel):
+class OTXMaskRCNN(ExplainableOTXInstanceSegModel):
     """MaskRCNN Model."""
 
     def __init__(
@@ -108,8 +112,97 @@ class MMDetMaskRCNN(MMDetInstanceSegCompatibleModel):
             load_checkpoint(detector, self.load_from, map_location="cpu")
         return detector
 
-    def _build_model(self, num_classes: int) -> MMDetMaskRCNN:
+    def _build_model(self, num_classes: int) -> OTXMaskRCNN:
         raise NotImplementedError
+
+    def _customize_inputs(self, entity: InstanceSegBatchDataEntity) -> dict[str, Any]:
+        if isinstance(entity.images, list):
+            entity.images = stack_batch(entity.images, pad_size_divisor=32)
+        inputs: dict[str, Any] = {}
+
+        inputs["entity"] = entity
+        inputs["mode"] = "loss" if self.training else "predict"
+
+        return inputs
+
+    def _customize_outputs(
+        self,
+        outputs: list[InstanceData] | dict,
+        inputs: InstanceSegBatchDataEntity,
+    ) -> InstanceSegBatchPredEntity | OTXBatchLossEntity:
+        if self.training:
+            if not isinstance(outputs, dict):
+                raise TypeError(outputs)
+
+            losses = OTXBatchLossEntity()
+            for loss_name, loss_value in outputs.items():
+                if isinstance(loss_value, torch.Tensor):
+                    losses[loss_name] = loss_value
+                elif isinstance(loss_value, list):
+                    losses[loss_name] = sum(_loss.mean() for _loss in loss_value)
+            return losses
+
+        scores: list[torch.Tensor] = []
+        bboxes: list[tv_tensors.BoundingBoxes] = []
+        labels: list[torch.LongTensor] = []
+        masks: list[tv_tensors.Mask] = []
+
+        predictions = outputs["predictions"] if isinstance(outputs, dict) else outputs
+        for img_info, prediction in zip(inputs.imgs_info, predictions):
+            scores.append(prediction.scores)
+            bboxes.append(
+                tv_tensors.BoundingBoxes(
+                    prediction.bboxes,
+                    format="XYXY",
+                    canvas_size=img_info.ori_shape,
+                ),
+            )
+            output_masks = tv_tensors.Mask(
+                prediction.masks,
+                dtype=torch.bool,
+            )
+            masks.append(output_masks)
+            labels.append(prediction.labels)
+
+        if self.explain_mode:
+            if not isinstance(outputs, dict):
+                msg = f"Model output should be a dict, but got {type(outputs)}."
+                raise ValueError(msg)
+
+            if "feature_vector" not in outputs:
+                msg = "No feature vector in the model output."
+                raise ValueError(msg)
+
+            if "saliency_map" not in outputs:
+                msg = "No saliency maps in the model output."
+                raise ValueError(msg)
+
+            saliency_map = outputs["saliency_map"].detach().cpu().numpy()
+            feature_vector = outputs["feature_vector"].detach().cpu().numpy()
+
+            return InstanceSegBatchPredEntity(
+                batch_size=len(predictions),
+                images=inputs.images,
+                imgs_info=inputs.imgs_info,
+                scores=scores,
+                bboxes=bboxes,
+                masks=masks,
+                polygons=[],
+                labels=labels,
+                saliency_map=list(saliency_map),
+                feature_vector=list(feature_vector),
+            )
+
+        return InstanceSegBatchPredEntity(
+            batch_size=len(predictions),
+            images=inputs.images,
+            imgs_info=inputs.imgs_info,
+            scores=scores,
+            bboxes=bboxes,
+            masks=masks,
+            polygons=[],
+            labels=labels,
+        )
 
     @property
     def _exporter(self) -> OTXModelExporter:
@@ -153,13 +246,10 @@ class MMDetMaskRCNN(MMDetInstanceSegCompatibleModel):
             "img_shape": shape,
             "scale_factor": (1.0, 1.0),
         }
-        sample = InstanceData(
-            metainfo=meta_info,
-        )
-        data_samples = [sample] * len(inputs)
+        meta_info_list = [meta_info] * len(inputs)
         return self.model.export(
             inputs,
-            data_samples,
+            meta_info_list,
         )
 
     def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.model.") -> dict:
@@ -167,7 +257,7 @@ class MMDetMaskRCNN(MMDetInstanceSegCompatibleModel):
         return OTXv1Helper.load_iseg_ckpt(state_dict, add_prefix)
 
 
-class MaskRCNNResNet50(MMDetMaskRCNN):
+class MaskRCNNResNet50(OTXMaskRCNN):
     """MaskRCNN with ResNet50 backbone."""
 
     load_from = (
@@ -350,7 +440,7 @@ class MaskRCNNResNet50(MMDetMaskRCNN):
         )
 
 
-class MaskRCNNEfficientNet(MMDetMaskRCNN):
+class MaskRCNNEfficientNet(OTXMaskRCNN):
     """MaskRCNN with efficientnet_b2b backbone."""
 
     load_from = (
@@ -436,15 +526,6 @@ class MaskRCNNEfficientNet(MMDetMaskRCNN):
             },
         )
 
-        data_preprocessor = DetDataPreprocessor(
-            bgr_to_rgb=False,
-            mean=self.mean,
-            std=self.std,
-            pad_mask=True,
-            pad_size_divisor=32,
-            non_blocking=True,
-        )
-
         backbone = _build_model_including_pytorchcv(
             cfg={
                 "type": "efficientnet_b2b",
@@ -528,7 +609,6 @@ class MaskRCNNEfficientNet(MMDetMaskRCNN):
         )
 
         return MaskRCNN(
-            data_preprocessor=data_preprocessor,
             backbone=backbone,
             neck=neck,
             rpn_head=rpn_head,
@@ -538,7 +618,7 @@ class MaskRCNNEfficientNet(MMDetMaskRCNN):
         )
 
 
-class MaskRCNNSwinT(MMDetMaskRCNN):
+class MaskRCNNSwinT(OTXMaskRCNN):
     """MaskRCNNSwinT Model."""
 
     load_from = (

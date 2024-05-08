@@ -14,6 +14,7 @@ from torch import Tensor
 
 from otx.algo.utils.mmengine_utils import InstanceData
 from otx.core.data.entity.detection import DetBatchDataEntity
+from otx.core.data.entity.instance_segmentation import InstanceSegBatchDataEntity
 
 
 # Methods below come from mmdet.utils and slightly modified.
@@ -223,6 +224,58 @@ def unpack_det_entity(entity: DetBatchDataEntity) -> tuple:
     return batch_gt_instances, batch_img_metas
 
 
+def unpack_inst_seg_entity(entity: InstanceSegBatchDataEntity) -> tuple:
+    """Unpack gt_instances, gt_instances_ignore and img_metas based on batch_data_samples.
+
+    Args:
+        batch_data_samples (DetBatchDataEntity): Data entity from dataset.
+
+    Returns:
+        tuple:
+
+            - batch_gt_instances (list[:obj:`InstanceData`]): Batch of
+                gt_instance. It usually includes ``bboxes`` and ``labels``
+                attributes.
+            - batch_img_metas (list[dict]): Meta information of each image,
+                e.g., image size, scaling factor, etc.
+    """
+    batch_gt_instances = []
+    batch_img_metas = []
+    for img_info, masks, polygons, bboxes, labels in zip(
+        entity.imgs_info,
+        entity.masks,
+        entity.polygons,
+        entity.bboxes,
+        entity.labels,
+    ):
+        metainfo = {
+            "img_id": img_info.img_idx,
+            "img_shape": img_info.img_shape,
+            "ori_shape": img_info.ori_shape,
+            "pad_shape": img_info.pad_shape,
+            "scale_factor": img_info.scale_factor,
+            "ignored_labels": img_info.ignored_labels,
+        }
+        batch_img_metas.append(metainfo)
+
+        if len(masks) > 0:
+            gt_masks = masks
+        else:
+            for polygon in polygons:
+                polygon.attributes.update(metainfo)
+            gt_masks = polygons
+
+        batch_gt_instances.append(
+            InstanceData(
+                masks=gt_masks,
+                bboxes=bboxes,
+                labels=labels,
+            ),
+        )
+
+    return batch_gt_instances, batch_img_metas
+
+
 def empty_instances(
     batch_img_metas: list[dict],
     device: torch.device,
@@ -313,42 +366,6 @@ def dynamic_topk(input: Tensor, k: int, dim: int | None = None, largest: bool = 
         size = k.new_zeros(()) + size
     k = torch.where(k < size, k, size)
     return torch.topk(input, k, dim=dim, largest=largest, sorted=sorted)
-
-
-def unpack_gt_instances(batch_data_samples: list[InstanceData]) -> tuple:
-    """Unpack gt_instances, gt_instances_ignore and img_metas based on batch_data_samples.
-
-    Args:
-        batch_data_samples (List[:obj:`DetDataSample`]): The Data
-            Samples. It usually includes information such as
-            `gt_instance`, `gt_panoptic_seg` and `gt_sem_seg`.
-
-    Returns:
-        tuple:
-
-            - batch_gt_instances (list[:obj:`InstanceData`]): Batch of
-                gt_instance. It usually includes ``bboxes`` and ``labels``
-                attributes.
-            - batch_gt_instances_ignore (list[:obj:`InstanceData`]):
-                Batch of gt_instances_ignore. It includes ``bboxes`` attribute
-                data that is ignored during training and testing.
-                Defaults to None.
-            - batch_img_metas (list[dict]): Meta information of each image,
-                e.g., image size, scaling factor, etc.
-    """
-    # TODO(Eugene): remove this when inst-seg data pipeline decoupling is ready
-    batch_gt_instances = []
-    batch_gt_instances_ignore = []
-    batch_img_metas = []
-    for data_sample in batch_data_samples:
-        batch_img_metas.append(data_sample.metainfo)
-        batch_gt_instances.append(data_sample.gt_instances)  # type: ignore[attr-defined]
-        if "ignored_instances" in data_sample:
-            batch_gt_instances_ignore.append(data_sample.ignored_instances)  # type: ignore[attr-defined]
-        else:
-            batch_gt_instances_ignore.append(None)
-
-    return batch_gt_instances, batch_gt_instances_ignore, batch_img_metas
 
 
 def gather_topk(

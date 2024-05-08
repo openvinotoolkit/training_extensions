@@ -4,7 +4,7 @@
 from pathlib import Path
 
 import torch
-from mmengine.config import ConfigDict
+from omegaconf import DictConfig
 from otx.algo.instance_segmentation.heads.custom_rtmdet_ins_head import CustomRTMDetInsSepBNHead
 from otx.algo.instance_segmentation.rtmdet_inst import RTMDetInst
 from otx.core.types.export import OTXExportFormatType
@@ -14,13 +14,15 @@ class TestCustomRTMDetInsSepBNHead:
     def test_mask_pred(self, mocker) -> None:
         num_samples = 1
         num_classes = 1
-        test_cfg = ConfigDict(
-            nms_pre=100,
-            score_thr=0.0,
-            nms={"type": "nms", "iou_threshold": 1.0},
-            max_per_img=100,
-            mask_thr_binary=0.0,
-            min_bbox_size=-1,
+        test_cfg = DictConfig(
+            {
+                "nms_pre": 100,
+                "score_thr": 0.0,
+                "nms": {"type": "nms", "iou_threshold": 1.0},
+                "max_per_img": 100,
+                "mask_thr_binary": 0.0,
+                "min_bbox_size": -1,
+            },
         )
         s = 128
         img_metas = {

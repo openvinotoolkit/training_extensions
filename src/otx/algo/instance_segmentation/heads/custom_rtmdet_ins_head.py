@@ -18,10 +18,10 @@ from mmdeploy.mmcv.ops.nms import multiclass_nms
 from mmdet.models.dense_heads.rtmdet_ins_head import RTMDetInsSepBNHead
 from mmdet.registry import MODELS
 from mmdet.structures.bbox import get_box_tensor, get_box_wh, scale_boxes
-from mmengine.config import ConfigDict
+from omegaconf import DictConfig
 
 if TYPE_CHECKING:
-    from mmengine.structures import InstanceData
+    from otx.algo.utils.mmengine_utils import InstanceData
 
 
 @MODELS.register_module()
@@ -90,7 +90,7 @@ class CustomRTMDetInsSepBNHead(RTMDetInsSepBNHead):
         self,
         results: InstanceData,
         mask_feat: torch.Tensor,
-        cfg: ConfigDict | dict,
+        cfg: DictConfig | dict,
         rescale: bool = False,
         with_nms: bool = True,
         img_meta: dict | None = None,
@@ -129,13 +129,15 @@ class CustomRTMDetInsSepBNHead(RTMDetInsSepBNHead):
             img_meta["scale_factor"] = [1.0, 1.0]
 
         if cfg is None:
-            cfg = ConfigDict(
-                nms_pre=300,
-                mask_thr_binary=0.5,
-                max_per_img=100,
-                score_thr=0.05,
-                nms=ConfigDict(type="nms", iou_threshold=0.6),
-                min_bbox_size=0,
+            cfg = DictConfig(
+                {
+                    "nms_pre": 300,
+                    "mask_thr_binary": 0.5,
+                    "max_per_img": 100,
+                    "score_thr": 0.05,
+                    "nms": {"type": "nms", "iou_threshold": 0.6},
+                    "min_bbox_size": 0,
+                },
             )
 
         stride = self.prior_generator.strides[0][0]

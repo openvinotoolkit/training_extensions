@@ -9,9 +9,9 @@ from copy import deepcopy
 import pytest
 import torch
 from mmdet.structures import DetDataSample
-from mmengine.structures import InstanceData
 from otx.algo.instance_segmentation.maskrcnn import MaskRCNNResNet50
 from otx.algo.instance_segmentation.mmdet.models.custom_roi_head import CustomRoIHead
+from otx.algo.utils.mmengine_utils import InstanceData
 
 
 @pytest.fixture()

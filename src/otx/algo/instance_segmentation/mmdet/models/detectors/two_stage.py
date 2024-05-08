@@ -7,17 +7,18 @@
 """MMDet TwoStageDetector."""
 from __future__ import annotations
 
-import copy
 from typing import TYPE_CHECKING
 
 import torch
 from torch import Tensor, nn
 
+from otx.algo.utils.mmengine_utils import InstanceData
+from otx.core.data.entity.instance_segmentation import InstanceSegBatchDataEntity
+
 from .base import BaseDetector
 
 if TYPE_CHECKING:
-    from mmdet.structures.det_data_sample import DetDataSample
-    from mmengine.config import ConfigDict
+    from omegaconf import DictConfig
 
 
 class TwoStageDetector(BaseDetector):
@@ -33,13 +34,12 @@ class TwoStageDetector(BaseDetector):
         neck: nn.Module,
         rpn_head: nn.Module,
         roi_head: nn.Module,
-        train_cfg: ConfigDict | dict,
-        test_cfg: ConfigDict | dict,
-        data_preprocessor: ConfigDict | dict | None = None,
-        init_cfg: ConfigDict | dict | list[ConfigDict | dict] | None = None,
+        train_cfg: DictConfig | dict,
+        test_cfg: DictConfig | dict,
+        init_cfg: DictConfig | dict | list[DictConfig | dict] | None = None,
         **kwargs,
     ) -> None:
-        super().__init__(data_preprocessor=data_preprocessor, init_cfg=init_cfg)
+        super().__init__(init_cfg=init_cfg)
 
         self.backbone = backbone
         self.neck = neck
@@ -98,87 +98,56 @@ class TwoStageDetector(BaseDetector):
             x = self.neck(x)
         return x
 
-    def _forward(self, batch_inputs: Tensor, batch_data_samples: list[DetDataSample]) -> tuple:
-        """Network forward process. Usually includes backbone, neck and head forward without any post-processing.
-
-        Args:
-            batch_inputs (Tensor): Inputs with shape (N, C, H, W).
-            batch_data_samples (list[:obj:`DetDataSample`]): Each item contains
-                the meta information of each image and corresponding
-                annotations.
-
-        Returns:
-            tuple: A tuple of features from ``rpn_head`` and ``roi_head``
-            forward.
-        """
-        results = ()
-        x = self.extract_feat(batch_inputs)
-
-        if self.with_rpn:
-            rpn_results_list = self.rpn_head.predict(x, batch_data_samples, rescale=False)
-        else:
-            if batch_data_samples[0].get("proposals", None) is None:
-                msg = "No 'proposals' in data samples."
-                raise ValueError(msg)
-            rpn_results_list = [data_sample.proposals for data_sample in batch_data_samples]
-        roi_outs = self.roi_head.forward(x, rpn_results_list, batch_data_samples)
-        return (*results, roi_outs)
-
-    def loss(self, batch_inputs: Tensor, batch_data_samples: list[DetDataSample]) -> dict:
+    def loss(self, batch_inputs: InstanceSegBatchDataEntity) -> dict:
         """Calculate losses from a batch of inputs and data samples.
 
         Args:
             batch_inputs (Tensor): Input images of shape (N, C, H, W).
                 These should usually be mean centered and std scaled.
-            batch_data_samples (List[:obj:`DetDataSample`]): The batch
-                data samples. It usually includes information such
-                as `gt_instance` or `gt_panoptic_seg` or `gt_sem_seg`.
 
         Returns:
             dict: A dictionary of loss components
         """
-        x = self.extract_feat(batch_inputs)
+        x = self.extract_feat(batch_inputs.images)
 
         losses = {}
 
         # RPN forward and loss
-        if self.with_rpn:
-            proposal_cfg = self.train_cfg.get("rpn_proposal", self.test_cfg["rpn"])
-            rpn_data_samples = copy.deepcopy(batch_data_samples)
-            # set cat_id of gt_labels to 0 in RPN
-            for data_sample in rpn_data_samples:
-                data_sample.gt_instances.labels = torch.zeros_like(data_sample.gt_instances.labels)
+        proposal_cfg = self.train_cfg.get("rpn_proposal", self.test_cfg["rpn"])
 
-            rpn_losses, rpn_results_list = self.rpn_head.loss_and_predict(
-                x,
-                rpn_data_samples,
-                proposal_cfg=proposal_cfg,
-            )
-            # avoid get same name with roi_head loss
-            keys = rpn_losses.keys()
-            for key in list(keys):
-                if "loss" in key and "rpn" not in key:
-                    rpn_losses[f"rpn_{key}"] = rpn_losses.pop(key)
-            losses.update(rpn_losses)
-        else:
-            if batch_data_samples[0].get("proposals", None) is None:
-                msg = "No 'proposals' in data samples."
-                raise ValueError(msg)
-            # use pre-defined proposals in InstanceData for the second stage
-            # to extract ROI features.
-            rpn_results_list = [data_sample.proposals for data_sample in batch_data_samples]
+        # Copy data entity and set gt_labels to 0 in RPN
+        rpn_entity = InstanceSegBatchDataEntity(
+            images=torch.empty(0),
+            batch_size=batch_inputs.batch_size,
+            imgs_info=batch_inputs.imgs_info,
+            bboxes=batch_inputs.bboxes,
+            masks=batch_inputs.masks,
+            labels=[torch.zeros_like(labels) for labels in batch_inputs.labels],
+            polygons=batch_inputs.polygons,
+        )
 
-        roi_losses = self.roi_head.loss(x, rpn_results_list, batch_data_samples)
+        rpn_losses, rpn_results_list = self.rpn_head.loss_and_predict(
+            x,
+            rpn_entity,
+            proposal_cfg=proposal_cfg,
+        )
+        # avoid get same name with roi_head loss
+        keys = rpn_losses.keys()
+        for key in list(keys):
+            if "loss" in key and "rpn" not in key:
+                rpn_losses[f"rpn_{key}"] = rpn_losses.pop(key)
+        losses.update(rpn_losses)
+
+        roi_losses = self.roi_head.loss(x, rpn_results_list, batch_inputs)
         losses.update(roi_losses)
 
         return losses
 
     def predict(
         self,
-        batch_inputs: Tensor,
-        batch_data_samples: list[DetDataSample],
+        entity,
         rescale: bool = True,
-    ) -> list[DetDataSample]:
+    ) -> list[InstanceData]:
         """Predict results from a batch of inputs and data samples with post-processing.
 
         Args:
@@ -206,14 +175,8 @@ class TwoStageDetector(BaseDetector):
         if not self.with_bbox:
             msg = "Bbox head is not implemented."
             raise NotImplementedError(msg)
-        x = self.extract_feat(batch_inputs)
+        x = self.extract_feat(entity.images)
 
-        # If there are no pre-defined proposals, use RPN to get proposals
-        if batch_data_samples[0].get("proposals", None) is None:
-            rpn_results_list = self.rpn_head.predict(x, batch_data_samples, rescale=False)
-        else:
-            rpn_results_list = [data_sample.proposals for data_sample in batch_data_samples]
+        rpn_results_list = self.rpn_head.predict(x, entity, rescale=False)
 
-        results_list = self.roi_head.predict(x, rpn_results_list, batch_data_samples, rescale=rescale)
-
-        return self.add_pred_to_datasample(batch_data_samples, results_list)
+        return self.roi_head.predict(x, rpn_results_list, entity, rescale=rescale)
