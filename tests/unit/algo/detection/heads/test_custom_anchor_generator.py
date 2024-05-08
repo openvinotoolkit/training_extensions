@@ -25,3 +25,22 @@ class TestSSDAnchorGeneratorClustered:
     def test_gen_base_anchors(self, anchor_generator) -> None:
         assert anchor_generator.base_anchors[0].shape == torch.Size([4, 4])
         assert anchor_generator.base_anchors[1].shape == torch.Size([5, 4])
+
+    def test_sparse_priors(self, anchor_generator) -> None:
+        assert anchor_generator.sparse_priors(torch.IntTensor([0]), [32, 32], 0, device="cpu").shape == torch.Size(
+            [1, 4],
+        )
+
+    def test_grid_anchors(self, anchor_generator) -> None:
+        out = anchor_generator.grid_anchors([(8, 8), (16, 16)])
+        assert len(out) == 2
+        assert out[0].shape == torch.Size([256, 4])
+        assert out[1].shape == torch.Size([1280, 4])
+
+    def test_repr(self, anchor_generator) -> None:
+        assert "strides" in str(anchor_generator)
+        assert "widths" in str(anchor_generator)
+        assert "heights" in str(anchor_generator)
+        assert "num_levels" in str(anchor_generator)
+        assert "centers" in str(anchor_generator)
+        assert "center_offset" in str(anchor_generator)
