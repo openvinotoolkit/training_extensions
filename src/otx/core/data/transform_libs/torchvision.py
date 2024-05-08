@@ -2452,7 +2452,7 @@ class FilterAnnotations(tvt_v2.Transform, NumpytoTVTensorMixin):
 
     def __repr__(self):
         return (
-            f"{self.__class__.__name__} "
+            f"{self.__class__.__name__}"
             f"(min_gt_bbox_wh={self.min_gt_bbox_wh}, "
             f"keep_empty={self.keep_empty}, "
             f"is_numpy_to_tvtensor={self.is_numpy_to_tvtensor})"

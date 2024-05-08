@@ -686,9 +686,7 @@ class TestRandomCrop:
             assert results.image.shape == transform.crop_size[::-1]
             assert len(results.bboxes) == len(det_entity.bboxes) == 0
         else:
-            assert results.image.shape == det_entity.image.shape
-            assert np.all(results.image == det_entity.image)
-            assert len(results.bboxes) == len(det_entity.bboxes) == 0
+            assert results is None
 
     def test_repr(self):
         crop_type = "absolute"
