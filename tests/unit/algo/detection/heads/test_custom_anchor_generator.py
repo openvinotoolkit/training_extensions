@@ -32,7 +32,7 @@ class TestSSDAnchorGeneratorClustered:
         )
 
     def test_grid_anchors(self, anchor_generator) -> None:
-        out = anchor_generator.grid_anchors([(8, 8), (16, 16)])
+        out = anchor_generator.grid_anchors([(8, 8), (16, 16)], device="cpu")
         assert len(out) == 2
         assert out[0].shape == torch.Size([256, 4])
         assert out[1].shape == torch.Size([1280, 4])
