@@ -18,7 +18,7 @@ from otx.algo.detection.losses.cross_focal_loss import (
 from otx.algo.detection.utils.bbox_overlaps import bbox_overlaps
 from otx.algo.detection.utils.utils import anchor_inside_flags, multi_apply, reduce_mean, unmap
 from otx.algo.modules.conv_module import ConvModule
-from otx.algo.utils.mmcv_utils import Scale
+from otx.algo.modules.scale import Scale
 from otx.algo.utils.mmengine_utils import InstanceData
 
 EPS = 1e-12
