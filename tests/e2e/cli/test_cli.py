@@ -284,9 +284,10 @@ def test_otx_explain_e2e_cli(
     if ("_cls" not in task) and (task not in ["detection", "instance_segmentation"]):
         pytest.skip("Supported only for classification, detection and instance segmentation task.")
 
-    # TODO (Galina): revert back when torch issue fixed
+    deterministic = "True"
     if task == "instance_segmentation":
-        pytest.skip("Determinism is not supported for instance_segmentation models (OOM issue).")
+        # Determinism is not required for this test for instance_segmentation models.
+        deterministic = "False"
 
     if "dino" in model_name:
         pytest.skip("DINO is not supported.")
@@ -307,7 +308,7 @@ def test_otx_explain_e2e_cli(
         "--seed",
         "0",
         "--deterministic",
-        "True",
+        deterministic,
         "--dump",
         "True",
         *fxt_cli_override_command_per_task[task],
@@ -352,7 +353,7 @@ def test_otx_explain_e2e_cli(
         ),
         # Instance Segmentation
         "instance_segmentation_maskrcnn_efficientnetb2b": (
-            np.array([5, 5, 5, 5, 5, 5, 5, 5, 5, 5], dtype=np.int16),
+            np.array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0], dtype=np.int16),
             "CDY_2018_class_0_saliency_map.png",
         ),
     }
