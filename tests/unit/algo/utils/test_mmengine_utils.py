@@ -1,3 +1,5 @@
+# Copyright (C) 2024 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
 # Copyright (c) OpenMMLab. All rights reserved.
 # https://github.com/open-mmlab/mmengine/blob/main/tests/test_structures/test_instance_data.py
 
