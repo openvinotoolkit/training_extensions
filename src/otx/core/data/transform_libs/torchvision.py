@@ -954,7 +954,7 @@ class RandomFlip(tvt_v2.Transform, NumpytoTVTensorMixin):
         if (cur_dir := self._choose_direction()) is not None:
             # flip image
             img = to_np_image(inputs.image)
-            img = np.ascontiguousarray(flip_image(img, direction=cur_dir))
+            img = flip_image(img, direction=cur_dir)
             inputs.image = img
 
             # flip bboxes
@@ -965,7 +965,7 @@ class RandomFlip(tvt_v2.Transform, NumpytoTVTensorMixin):
             # flip masks
             if (masks := getattr(inputs, "masks", None)) is not None and len(masks) > 0:
                 masks = masks.numpy() if not isinstance(masks, np.ndarray) else masks
-                inputs.masks = np.ascontiguousarray(np.stack([flip_image(mask, direction=cur_dir) for mask in masks]))
+                inputs.masks = np.stack([flip_image(mask, direction=cur_dir) for mask in masks])
 
             # flip polygons
             if (polygons := getattr(inputs, "polygons", None)) is not None and len(polygons) > 0:
