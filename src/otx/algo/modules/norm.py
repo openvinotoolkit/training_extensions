@@ -15,8 +15,6 @@ from torch.nn import SyncBatchNorm
 from torch.nn.modules.batchnorm import _BatchNorm
 from torch.nn.modules.instancenorm import _InstanceNorm
 
-from otx.algo.utils.mmengine_utils import is_tuple_of
-
 NORM_DICT = {
     "BN": nn.BatchNorm2d,
     "BN1d": nn.BatchNorm1d,
@@ -134,27 +132,3 @@ def build_norm_layer(cfg: dict, num_features: int, postfix: int | str = "") -> t
         param.requires_grad = requires_grad
 
     return name, layer
-
-
-def is_norm(layer: nn.Module, exclude: type | tuple | None = None) -> bool:
-    """Check if a layer is a normalization layer.
-
-    Args:
-        layer (nn.Module): The layer to be checked.
-        exclude (type | tuple[type]): Types to be excluded.
-
-    Returns:
-        bool: Whether the layer is a norm layer.
-    """
-    if exclude is not None:
-        if not isinstance(exclude, tuple):
-            exclude = (exclude,)
-        if not is_tuple_of(exclude, type):
-            msg = f"'exclude' must be either None or type or a tuple of types, but got {type(exclude)}: {exclude}"
-            raise TypeError(msg)
-
-    if exclude and isinstance(layer, exclude):
-        return False
-
-    all_norm_bases = (_BatchNorm, _InstanceNorm, nn.GroupNorm, nn.LayerNorm)
-    return isinstance(layer, all_norm_bases)
