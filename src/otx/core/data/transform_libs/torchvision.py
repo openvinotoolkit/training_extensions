@@ -16,7 +16,6 @@ import numpy as np
 import PIL.Image
 import torch
 import torchvision.transforms.v2 as tvt_v2
-from datumaro import Polygon
 from datumaro.components.media import Video
 from lightning.pytorch.cli import instantiate_class
 from numpy import random
@@ -63,8 +62,6 @@ from otx.core.data.transform_libs.utils import (
 )
 
 if TYPE_CHECKING:
-    from torchvision.transforms.v2 import Compose
-
     from otx.core.config.data import SubsetConfig
     from otx.core.data.entity.base import T_OTXDataEntity
     from otx.core.data.entity.detection import DetDataEntity
@@ -105,9 +102,9 @@ class NumpytoTVTensorMixin:
 
     is_numpy_to_tvtensor: bool
 
-    def convert(self, inputs: T_OTXDataEntity) -> T_OTXDataEntity:
+    def convert(self, inputs: T_OTXDataEntity | None) -> T_OTXDataEntity:
         """Convert numpy to tv tensors."""
-        if self.is_numpy_to_tvtensor:
+        if self.is_numpy_to_tvtensor and inputs is not None:
             if (image := getattr(inputs, "image", None)) is not None and isinstance(image, np.ndarray):
                 inputs.image = F.to_image(image)
             if (bboxes := getattr(inputs, "bboxes", None)) is not None and isinstance(bboxes, np.ndarray):
@@ -2232,8 +2229,9 @@ class RandomCrop(tvt_v2.Transform, NumpytoTVTensorMixin):
         assert crop_size[1] > 0  # noqa: S101
 
         img = to_np_image(inputs.image)
-        margin_h = max(inputs.img_info.img_shape[0] - crop_size[0], 0)
-        margin_w = max(inputs.img_info.img_shape[1] - crop_size[1], 0)
+        orig_shape = inputs.img_info.img_shape
+        margin_h = max(orig_shape[0] - crop_size[0], 0)
+        margin_w = max(orig_shape[1] - crop_size[1], 0)
         offset_h, offset_w = self._rand_offset((margin_h, margin_w))
         crop_y1, crop_y2 = offset_h, offset_h + crop_size[0]
         crop_x1, crop_x2 = offset_w, offset_w + crop_size[1]
@@ -2255,7 +2253,7 @@ class RandomCrop(tvt_v2.Transform, NumpytoTVTensorMixin):
             # If the crop does not contain any gt-bbox area and
             # allow_negative_crop is False, skip this image.
             if not valid_inds.any() and not allow_negative_crop:
-                return inputs
+                return None
 
             inputs.bboxes = tv_tensors.BoundingBoxes(bboxes[valid_inds], format="XYXY", canvas_size=cropped_img_shape)
 
@@ -2277,7 +2275,7 @@ class RandomCrop(tvt_v2.Transform, NumpytoTVTensorMixin):
                 inputs.polygons = crop_polygons(
                     [polygons[i] for i in valid_inds.nonzero()[0]],
                     np.asarray([crop_x1, crop_y1, crop_x2, crop_y2]),
-                    *inputs.img_info.img_shape,
+                    *orig_shape,
                 )
 
                 if self.recompute_bbox:
@@ -2455,6 +2453,25 @@ tvt_v2.PadtoSquare = PadtoSquare
 tvt_v2.ResizetoLongestEdge = ResizetoLongestEdge
 
 
+class Compose(tvt_v2.Compose):
+    """Re-implementation of torchvision.transforms.v2.Compose.
+
+    MMCV transforms can produce None, so it is required to skip the result.
+    """
+
+    def forward(self, *inputs: T_OTXDataEntity) -> T_OTXDataEntity:
+        """Forward with skipping None."""
+        needs_unpacking = len(inputs) > 1
+        for transform in self.transforms:
+            outputs = transform(*inputs)
+            # MMCV transform can produce None. Please see
+            # https://github.com/open-mmlab/mmengine/blob/26f22ed283ae4ac3a24b756809e5961efe6f9da8/mmengine/dataset/base_dataset.py#L59-L66
+            if outputs is None:
+                return outputs
+            inputs = outputs if needs_unpacking else (outputs,)
+        return outputs
+
+
 class TorchVisionTransformLib:
     """Helper to support TorchVision transforms (only V2) in OTX."""
 
@@ -2470,7 +2487,7 @@ class TorchVisionTransformLib:
     @classmethod
     def generate(cls, config: SubsetConfig) -> Compose:
         """Generate TorchVision transforms from the configuration."""
-        if isinstance(config.transforms, tvt_v2.Compose):
+        if isinstance(config.transforms, Compose):
             return config.transforms
 
         transforms = []
@@ -2478,7 +2495,7 @@ class TorchVisionTransformLib:
             transform = cls._dispatch_transform(cfg_transform)
             transforms.append(transform)
 
-        return tvt_v2.Compose(transforms)
+        return Compose(transforms)
 
     @classmethod
     def _dispatch_transform(cls, cfg_transform: DictConfig | dict | tvt_v2.Transform) -> tvt_v2.Transform:
