@@ -18,6 +18,7 @@ from otx.algo.detection.utils.utils import (
     unmap,
 )
 from otx.algo.modules.conv_module import ConvModule
+from otx.algo.modules.norm import is_norm
 from otx.algo.modules.scale import Scale
 from otx.algo.utils.mmengine_utils import InstanceData
 from otx.algo.utils.weight_init import bias_init_with_prob, constant_init, normal_init
@@ -108,7 +109,8 @@ class RTMDetHead(ATSSHead):
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
                 normal_init(m, mean=0, std=0.01)
-            constant_init(m, 1)
+            if is_norm(m):
+                constant_init(m, 1)
         bias_cls = bias_init_with_prob(0.01)
         normal_init(self.rtm_cls, std=0.01, bias=bias_cls)
         normal_init(self.rtm_reg, std=0.01)
