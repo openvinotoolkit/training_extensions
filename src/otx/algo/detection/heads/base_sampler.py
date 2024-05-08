@@ -75,6 +75,7 @@ class BaseSampler(metaclass=ABCMeta):
     def _sample_neg(self, assign_result: AssignResult, num_expected: int, **kwargs) -> torch.Tensor:
         """Sample negative samples."""
 
+    @abstractmethod
     def sample(
         self,
         assign_result: AssignResult,
@@ -103,53 +104,6 @@ class BaseSampler(metaclass=ABCMeta):
         Returns:
             :obj:`SamplingResult`: Sampling result.
         """
-        gt_bboxes = gt_instances.bboxes  # type: ignore[attr-defined]
-        priors = pred_instances.priors  # type: ignore[attr-defined]
-        gt_labels = gt_instances.labels  # type: ignore[attr-defined]
-        if len(priors.shape) < 2:
-            priors = priors[None, :]
-
-        gt_flags = priors.new_zeros((priors.shape[0],), dtype=torch.uint8)
-        if self.add_gt_as_proposals and len(gt_bboxes) > 0:
-            gt_bboxes_ = gt_bboxes
-            priors = torch.cat([gt_bboxes_, priors], dim=0)
-            assign_result.add_gt_(gt_labels)
-            gt_ones = priors.new_ones(gt_bboxes_.shape[0], dtype=torch.uint8)
-            gt_flags = torch.cat([gt_ones, gt_flags])
-
-        num_expected_pos = int(self.num * self.pos_fraction)
-        pos_inds = self.pos_sampler._sample_pos(  # noqa: SLF001
-            assign_result,
-            num_expected_pos,
-            bboxes=priors,
-            **kwargs,
-        )
-        # We found that sampled indices have duplicated items occasionally.
-        # (may be a bug of PyTorch)
-        pos_inds = pos_inds.unique()
-        num_sampled_pos = pos_inds.numel()
-        num_expected_neg = self.num - num_sampled_pos
-        if self.neg_pos_ub >= 0:
-            _pos = max(1, num_sampled_pos)
-            neg_upper_bound = int(self.neg_pos_ub * _pos)
-            if num_expected_neg > neg_upper_bound:
-                num_expected_neg = neg_upper_bound
-        neg_inds = self.neg_sampler._sample_neg(  # noqa: SLF001
-            assign_result,
-            num_expected_neg,
-            bboxes=priors,
-            **kwargs,
-        )
-        neg_inds = neg_inds.unique()
-
-        return SamplingResult(
-            pos_inds=pos_inds,
-            neg_inds=neg_inds,
-            priors=priors,
-            gt_bboxes=gt_bboxes,
-            assign_result=assign_result,
-            gt_flags=gt_flags,
-        )
 
 
 class PseudoSampler(BaseSampler):
