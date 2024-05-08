@@ -10,6 +10,7 @@ import functools
 import inspect
 import itertools
 import weakref
+from typing import Sequence
 
 import cv2
 import numpy as np
@@ -137,7 +138,9 @@ def rescale_bboxes(boxes: Tensor, scale_factor: tuple[float, float]) -> Tensor:
 
 
 def rescale_masks(
-    masks: np.ndarray, scale_factor: float | tuple[float, float], interpolation: str = "nearest"
+    masks: np.ndarray,
+    scale_factor: float | tuple[float, float],
+    interpolation: str = "nearest",
 ) -> np.ndarray:
     """Rescale masks as large as possible while keeping the aspect ratio."""
     h, w = masks.shape[1:]
@@ -172,12 +175,12 @@ def rescale_polygons(polygons: list[Polygon], scale_factor: float | tuple[float,
     return resized_polygons
 
 
-def translate_bboxes(boxes: Tensor, distances: tuple[float, float]) -> Tensor:
+def translate_bboxes(boxes: Tensor, distances: Sequence[float]) -> Tensor:
     """Translate boxes in-place.
 
     Args:
         boxes (Tensor): Bounding boxes to be translated.
-        distances (tuple[float, float]): Translate distances. The first
+        distances (Sequence[float]): Translate distances. The first
             is horizontal distance and the second is vertical distance.
 
     Returns:
@@ -192,7 +195,7 @@ def translate_masks(
     out_shape: tuple[int, int],
     offset: int | float,
     direction: str = "horizontal",
-    border_value: int | float = 0,
+    border_value: int | tuple[int] = 0,
     interpolation: str = "bilinear",
 ) -> np.ndarray:
     """Translate the masks.
@@ -202,7 +205,7 @@ def translate_masks(
         out_shape (tuple[int]): Shape for output mask, format (h, w).
         offset (int | float): The offset for translate.
         direction (str): The translate direction, either "horizontal" or "vertical".
-        border_value (int | float): Border value. Default 0 for masks.
+        border_value (int | tuple[int]): Border value. Default 0 for masks.
         interpolation (str): Interpolation method, accepted values are
             'nearest', 'bilinear', 'bicubic', 'area', 'lanczos'. Defaults to
             'bilinear'.
@@ -226,7 +229,7 @@ def translate_masks(
         channels = masks.shape[0]
 
     if isinstance(border_value, int):
-        border_value = tuple([border_value] * channels)
+        border_value = tuple([border_value] * channels)  # type: ignore[assignment]
     elif isinstance(border_value, tuple):
         assert len(border_value) == channels, (  # noqa: S101
             "Expected the num of elements in tuple equals the channels"
@@ -245,7 +248,7 @@ def translate_masks(
         # greater than 3 (e.g. translating masks whose channels
         # large than 3) will raise TypeError in `cv2.warpAffine`.
         # Here simply slice the first 3 values in `border_value`.
-        borderValue=border_value[:3],
+        borderValue=border_value[:3],  # type: ignore[index]
         flags=CV2_INTERP_CODES[interpolation],
     )
 
@@ -808,7 +811,7 @@ def crop_polygons(polygons: list[Polygon], bbox: np.ndarray, height: int, width:
             cropped_poly_per_obj.append([0, 0, 0, 0, 0, 0])
 
         cropped_polygons.append(
-            Polygon(points=list(itertools.chain(*cropped_poly_per_obj)), label=polygon.label, z_order=polygon.z_order)
+            Polygon(points=list(itertools.chain(*cropped_poly_per_obj)), label=polygon.label, z_order=polygon.z_order),
         )
 
     np.seterr(**initial_settings)

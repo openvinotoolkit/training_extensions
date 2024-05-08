@@ -402,7 +402,8 @@ class TestYOLOXHSVRandomAug:
 
 class TestPad:
     def test_forward(
-        self, fxt_inst_seg_data_entity: tuple[tuple, InstanceSegDataEntity, InstanceSegBatchDataEntity]
+        self,
+        fxt_inst_seg_data_entity: tuple[tuple, InstanceSegDataEntity, InstanceSegBatchDataEntity],
     ) -> None:
         entity = deepcopy(fxt_inst_seg_data_entity[0])
         entity.image = entity.image.transpose(1, 2, 0)
@@ -629,7 +630,10 @@ class TestRandomCrop:
         iseg_entity.polygons = []
         target_gt_bboxes = np.zeros((1, 4), dtype=np.float32)
         transform = RandomCrop(
-            crop_size=(10, 11), allow_negative_crop=False, recompute_bbox=True, bbox_clip_border=True
+            crop_size=(10, 11),
+            allow_negative_crop=False,
+            recompute_bbox=True,
+            bbox_clip_border=True,
         )
 
         results = transform(deepcopy(iseg_entity))
@@ -643,7 +647,10 @@ class TestRandomCrop:
         iseg_entity.masks = tv_tensors.Mask(np.zeros((0, *iseg_entity.img_info.img_shape), dtype=bool))
         target_gt_bboxes = np.array([[0.0, 0.0, 7.0, 7.0]], dtype=np.float32)
         transform = RandomCrop(
-            crop_size=(10, 11), allow_negative_crop=False, recompute_bbox=True, bbox_clip_border=True
+            crop_size=(10, 11),
+            allow_negative_crop=False,
+            recompute_bbox=True,
+            bbox_clip_border=True,
         )
 
         results = transform(deepcopy(iseg_entity))
@@ -655,7 +662,10 @@ class TestRandomCrop:
         det_entity.bboxes = tv_tensors.wrap(torch.tensor([[0.1, 0.1, 0.2, 0.2]]), like=det_entity.bboxes)
         det_entity.labels = torch.LongTensor([0])
         transform = RandomCrop(
-            crop_size=(10, 11), allow_negative_crop=False, recompute_bbox=True, bbox_clip_border=False
+            crop_size=(10, 11),
+            allow_negative_crop=False,
+            recompute_bbox=True,
+            bbox_clip_border=False,
         )
 
         results = transform(deepcopy(det_entity))
@@ -713,7 +723,9 @@ class TestFilterAnnotations:
             image=np.random.random((224, 224, 3)),
             img_info=ImageInfo(img_idx=0, img_shape=(224, 224), ori_shape=(224, 224)),
             bboxes=tv_tensors.BoundingBoxes(
-                np.array([[10, 10, 20, 20], [20, 20, 40, 40], [40, 40, 80, 80]]), format="xyxy", canvas_size=(224, 224)
+                np.array([[10, 10, 20, 20], [20, 20, 40, 40], [40, 40, 80, 80]]),
+                format="xyxy",
+                canvas_size=(224, 224),
             ),
             labels=torch.LongTensor([1, 2, 3]),
             masks=tv_tensors.Mask(masks),
