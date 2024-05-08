@@ -1,10 +1,7 @@
-"""CSPNeXtPAFPN (CSPNeXt Path Aggregation Feature Pyramid Network)."""
-
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-
 # Copyright (c) OpenMMLab. All rights reserved.
-
+"""CSPNeXtPAFPN (CSPNeXt Path Aggregation Feature Pyramid Network)."""
 from __future__ import annotations
 
 import math

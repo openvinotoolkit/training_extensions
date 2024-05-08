@@ -1,7 +1,7 @@
-"""Dynamic Soft Label Assigner for RTMDet."""
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 # Copyright (c) OpenMMLab. All rights reserved.
+"""Dynamic Soft Label Assigner for RTMDet."""
 
 from __future__ import annotations
 

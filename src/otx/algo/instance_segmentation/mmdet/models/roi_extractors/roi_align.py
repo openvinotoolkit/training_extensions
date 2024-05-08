@@ -1,9 +1,7 @@
-"""Rewrite mmcv RoIAlign to support export."""
-
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-
 # Copyright (c) OpenMMLab. All rights reserved.
+"""Rewrite mmcv RoIAlign to support export."""
 from __future__ import annotations
 
 import torch

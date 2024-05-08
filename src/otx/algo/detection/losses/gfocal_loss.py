@@ -1,7 +1,7 @@
-""""Generalized Focal Loss: Learning Qualified and Distributed Bounding Boxes for Dense Object Detection."""
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 # Copyright (c) OpenMMLab. All rights reserved.
+""""Generalized Focal Loss: Learning Qualified and Distributed Bounding Boxes for Dense Object Detection."""
 from __future__ import annotations
 
 from functools import partial

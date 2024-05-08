@@ -1,8 +1,8 @@
-"""Single stage detector model for instance segmentation."""
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
 # Copyright (c) OpenMMLab. All rights reserved.
+"""Single stage detector model for instance segmentation."""
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
