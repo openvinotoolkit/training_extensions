@@ -132,3 +132,17 @@ def build_norm_layer(cfg: dict, num_features: int, postfix: int | str = "") -> t
         param.requires_grad = requires_grad
 
     return name, layer
+
+
+def is_norm(layer: nn.Module) -> bool:
+    """Check if a layer is a normalization layer.
+
+    Args:
+        layer (nn.Module): The layer to be checked.
+        exclude (type | tuple[type]): Types to be excluded.
+
+    Returns:
+        bool: Whether the layer is a norm layer.
+    """
+    all_norm_bases = (_BatchNorm, _InstanceNorm, nn.GroupNorm, nn.LayerNorm)
+    return isinstance(layer, all_norm_bases)
