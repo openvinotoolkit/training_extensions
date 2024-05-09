@@ -39,7 +39,6 @@ if TYPE_CHECKING:
     from lightning.pytorch.callbacks.callback import Callback
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
     from torchmetrics import Metric
-    from torchvision.transforms.v2 import Transform
 
 
 AnomalyModelInputs: TypeAlias = (
@@ -78,7 +77,7 @@ class _AnomalyModelExporter(OTXModelExporter):
             input_size=(1, 3, *image_shape),
             mean=mean_values,
             std=scale_values,
-            swap_rgb=False,  # default value. Ideally, modelAPI should pass RGB inputs after the pre-processing step
+            swap_rgb=True,  # BGR -> RGB
         )
 
     @property
@@ -145,8 +144,6 @@ class OTXAnomaly:
         self.optimizer: list[OptimizerCallable] | OptimizerCallable = None
         self.scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = None
         self._input_size: tuple[int, int] = (256, 256)
-        self.mean_values: tuple[float, float, float] = (0.0, 0.0, 0.0)
-        self.scale_values: tuple[float, float, float] = (1.0, 1.0, 1.0)
         self.trainer: Trainer
         self.model: nn.Module
         self.image_threshold: BaseThreshold
@@ -161,14 +158,12 @@ class OTXAnomaly:
         """Callback on saving checkpoint."""
         super().on_save_checkpoint(checkpoint)  # type: ignore[misc]
 
-        attrs = ["_task_type", "_input_size", "mean_values", "scale_values", "image_threshold", "pixel_threshold"]
-
+        attrs = ["_task_type", "_input_size", "image_threshold", "pixel_threshold"]
         checkpoint["anomaly"] = {key: getattr(self, key, None) for key in attrs}
 
     def on_load_checkpoint(self, checkpoint: dict[str, Any]) -> None:
         """Callback on loading checkpoint."""
         super().on_load_checkpoint(checkpoint)  # type: ignore[misc]
-
         if anomaly_attrs := checkpoint.get("anomaly"):
             for key, value in anomaly_attrs.items():
                 setattr(self, key, value)
@@ -206,15 +201,21 @@ class OTXAnomaly:
             msg = f"Unexpected task type: {value}"
             raise ValueError(msg)
 
-    def _extract_mean_scale_from_transforms(self, transforms: list[Transform]) -> None:
-        """Extract mean and scale values from transforms."""
-        for transform in transforms:
+    def _get_values_from_transforms(
+        self,
+        key_name: str,
+    ) -> tuple:
+        """Get the value requested value from default transforms."""
+        for transform in self.configure_transforms().transforms:  # type: ignore[attr-defined]
             name = transform.__class__.__name__
-            if "Resize" in name:
-                self.input_size = transform.size * 2  # transform.size has value [size], so *2 gives (size, size)
+            if "Resize" in name and key_name == "input_size":
+                image_size = transform.size
             elif "Normalize" in name:
-                self.mean_values = transform.mean
-                self.scale_values = transform.std
+                if key_name == "mean":
+                    mean_value = transform.mean
+                elif key_name == "scale":
+                    std_value = transform.std
+        return image_size, mean_value, std_value
 
     @property
     def trainable_model(self) -> str | None:
@@ -227,15 +228,6 @@ class OTXAnomaly:
         to inform the OTX lightning model which model to train.
         """
         return None
-
-    def setup(self, stage: str | None = None) -> None:
-        """Setup the model."""
-        super().setup(stage)  # type: ignore[misc]
-        if stage == "fit" and hasattr(self.trainer, "datamodule") and hasattr(self.trainer.datamodule, "config"):
-            if hasattr(self.trainer.datamodule.config, "test_subset"):
-                self._extract_mean_scale_from_transforms(self.trainer.datamodule.config.test_subset.transforms)
-            elif hasattr(self.trainer.datamodule.config, "val_subset"):
-                self._extract_mean_scale_from_transforms(self.trainer.datamodule.config.val_subset.transforms)
 
     def configure_callbacks(self) -> list[Callback]:
         """Get all necessary callbacks required for training and post-processing on Anomalib models."""
@@ -414,14 +406,14 @@ class OTXAnomaly:
         """
         min_val = self.normalization_metrics.state_dict()["min"].cpu().numpy().tolist()
         max_val = self.normalization_metrics.state_dict()["max"].cpu().numpy().tolist()
-        image_shape = (256, 256) if self.input_size is None else self.input_size
+        image_shape, mean_values, scale_values = self._get_values_from_transforms("input_size")
         exporter = _AnomalyModelExporter(
             image_shape=image_shape,
             image_threshold=self.image_threshold.value.cpu().numpy().tolist(),
             pixel_threshold=self.pixel_threshold.value.cpu().numpy().tolist(),
             task=self.task,
-            mean_values=self.mean_values,
-            scale_values=self.scale_values,
+            mean_values=mean_values,
+            scale_values=scale_values,
             normalization_scale=max_val - min_val,
         )
         return exporter.export(
