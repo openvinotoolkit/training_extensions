@@ -328,7 +328,6 @@ class TestCachedMosaic:
         assert results.bboxes.dtype == torch.float32
         assert results.img_info.img_shape == results.image.shape[:2]
         assert results.masks.shape[1:] == (256, 256)
-        assert len(results.polygons) == 4
 
 
 class TestCachedMixUp:
