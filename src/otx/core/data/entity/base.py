@@ -3,7 +3,6 @@
 #
 """Module for OTX base data entities."""
 
-
 from __future__ import annotations
 
 import warnings
@@ -304,7 +303,9 @@ def _pad_image_info(
 ) -> ImageInfo:
     """Register ImageInfo to TorchVision v2 resize kernel."""
     left, right, top, bottom = F._geometry._parse_pad_padding(padding)  # noqa: SLF001
+    height, width = image_info.img_shape
     image_info.padding = (left, top, right, bottom)
+    image_info.img_shape = (height + top + bottom, width + left + right)
     return image_info
 
 
