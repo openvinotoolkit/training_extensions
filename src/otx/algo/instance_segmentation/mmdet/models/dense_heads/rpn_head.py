@@ -357,28 +357,28 @@ class RPNHead(AnchorHead):
 
         # filter small size bboxes
         if cfg.get("min_bbox_size", -1) >= 0:
-            w, h = get_box_wh(results.bboxes)
+            w, h = get_box_wh(results.bboxes)  # type: ignore[attr-defined]
             valid_mask = (w > cfg["min_bbox_size"]) & (h > cfg["min_bbox_size"])
             if not valid_mask.all():
                 results = results[valid_mask]
 
-        if results.bboxes.numel() > 0:
-            bboxes = results.bboxes
-            det_bboxes, keep_idxs = batched_nms(bboxes, results.scores, results.level_ids, cfg["nms"])
+        if results.bboxes.numel() > 0:  # type: ignore[attr-defined]
+            bboxes = results.bboxes  # type: ignore[attr-defined]
+            det_bboxes, keep_idxs = batched_nms(bboxes, results.scores, results.level_ids, cfg["nms"])  # type: ignore[attr-defined]
             results = results[keep_idxs]
             # some nms would reweight the score, such as softnms
             results.scores = det_bboxes[:, -1]
             results = results[: cfg["max_per_img"]]
 
             #  in visualization
-            results.labels = results.scores.new_zeros(len(results), dtype=torch.long)
-            del results.level_ids
+            results.labels = results.scores.new_zeros(len(results), dtype=torch.long)  # type: ignore[attr-defined]
+            del results.level_ids  # type: ignore[attr-defined]
         else:
             # To avoid some potential error
             results_ = InstanceData()
-            results_.bboxes = empty_box_as(results.bboxes)
-            results_.scores = results.scores.new_zeros(0)
-            results_.labels = results.scores.new_zeros(0)
+            results_.bboxes = empty_box_as(results.bboxes)  # type: ignore[attr-defined]
+            results_.scores = results.scores.new_zeros(0)  # type: ignore[attr-defined]
+            results_.labels = results.scores.new_zeros(0)  # type: ignore[attr-defined]
             results = results_
         return results
 
@@ -388,7 +388,7 @@ class RPNHead(AnchorHead):
         bbox_preds: list[Tensor],
         score_factors: list[Tensor] | None = None,
         batch_img_metas: list[dict] | None = None,
-        cfg: ConfigDict | None = None,
+        cfg: DictConfig | None = None,
         rescale: bool = False,
         with_nms: bool = True,
     ) -> tuple[torch.Tensor, torch.Tensor] | tuple[torch.Tensor, torch.Tensor, torch.Tensor]:

@@ -147,8 +147,15 @@ class FCNMaskHead(BaseModule):
         """
         pos_proposals = [res.pos_priors for res in sampling_results]
         pos_assigned_gt_inds = [res.pos_assigned_gt_inds for res in sampling_results]
-        gt_masks = [res.masks for res in batch_gt_instances]
-        return mask_target(pos_proposals, pos_assigned_gt_inds, gt_masks, rcnn_train_cfg)
+        gt_masks = [res.masks for res in batch_gt_instances]  # type: ignore[attr-defined]
+        meta_infos = [gt_instances.metainfo for gt_instances in batch_gt_instances]
+        return mask_target(
+            pos_proposals,
+            pos_assigned_gt_inds,
+            gt_masks,
+            rcnn_train_cfg,
+            meta_infos,
+        )
 
     def loss_and_target(
         self,
@@ -233,7 +240,7 @@ class FCNMaskHead(BaseModule):
         for img_id in range(len(batch_img_metas)):
             img_meta = batch_img_metas[img_id]
             results = results_list[img_id]
-            bboxes = results.bboxes
+            bboxes = results.bboxes  # type: ignore[attr-defined]
             if bboxes.shape[0] == 0:
                 results_list[img_id] = empty_instances(
                     [img_meta],
@@ -246,7 +253,7 @@ class FCNMaskHead(BaseModule):
                 im_mask = self._predict_by_feat_single(
                     mask_preds=mask_preds[img_id],
                     bboxes=bboxes,
-                    labels=results.labels,
+                    labels=results.labels,  # type: ignore[attr-defined]
                     img_meta=img_meta,
                     rcnn_test_cfg=rcnn_test_cfg,
                     rescale=rescale,

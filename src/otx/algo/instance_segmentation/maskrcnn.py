@@ -27,7 +27,7 @@ from otx.algo.instance_segmentation.mmdet.models.detectors import MaskRCNN
 from otx.algo.instance_segmentation.mmdet.models.mask_heads import FCNMaskHead
 from otx.algo.instance_segmentation.mmdet.models.necks import FPN
 from otx.algo.instance_segmentation.mmdet.models.roi_extractors import SingleRoIExtractor
-from otx.algo.utils.mmengine_utils import InstanceData
+from otx.algo.utils.mmengine_utils import InstanceData, load_checkpoint
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.config.data import TileConfig
 from otx.core.data.entity.base import OTXBatchLossEntity
@@ -102,9 +102,8 @@ class OTXMaskRCNN(ExplainableOTXInstanceSegModel):
         return classification_layers
 
     def _create_model(self) -> Module:
-        from mmengine.runner import load_checkpoint
-
         detector = self._build_model(num_classes=self.label_info.num_classes)
+        detector.init_weights()
         self.classification_layers = self.get_classification_layers("model.")
 
         if self.load_from is not None:
@@ -139,6 +138,8 @@ class OTXMaskRCNN(ExplainableOTXInstanceSegModel):
                     losses[loss_name] = loss_value
                 elif isinstance(loss_value, list):
                     losses[loss_name] = sum(_loss.mean() for _loss in loss_value)
+            # pop acc from losses
+            losses.pop("acc", None)
             return losses
 
         scores: list[torch.Tensor] = []
@@ -251,7 +252,7 @@ class OTXMaskRCNN(ExplainableOTXInstanceSegModel):
             meta_info_list,
         )
 
-    def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.model.") -> dict:
+    def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.") -> dict:
         """Load the previous OTX ckpt according to OTX2.0."""
         return OTXv1Helper.load_iseg_ckpt(state_dict, add_prefix)
 

@@ -145,33 +145,10 @@ class TwoStageDetector(BaseDetector):
 
     def predict(
         self,
-        entity,
+        entity: InstanceSegBatchDataEntity,
         rescale: bool = True,
     ) -> list[InstanceData]:
-        """Predict results from a batch of inputs and data samples with post-processing.
-
-        Args:
-            batch_inputs (Tensor): Inputs with shape (N, C, H, W).
-            batch_data_samples (List[:obj:`DetDataSample`]): The Data
-                Samples. It usually includes information such as
-                `gt_instance`, `gt_panoptic_seg` and `gt_sem_seg`.
-            rescale (bool): Whether to rescale the results.
-                Defaults to True.
-
-        Returns:
-            list[:obj:`DetDataSample`]: Return the detection results of the
-            input images. The returns value is DetDataSample,
-            which usually contain 'pred_instances'. And the
-            ``pred_instances`` usually contains following keys.
-
-                - scores (Tensor): Classification scores, has a shape
-                    (num_instance, )
-                - labels (Tensor): Labels of bboxes, has a shape
-                    (num_instances, ).
-                - bboxes (Tensor): Has a shape (num_instances, 4),
-                    the last dimension 4 arrange as (x1, y1, x2, y2).
-                - masks (Tensor): Has a shape (num_instances, H, W).
-        """
+        """Predict results from a batch of inputs and data samples with post-processing."""
         if not self.with_bbox:
             msg = "Bbox head is not implemented."
             raise NotImplementedError(msg)

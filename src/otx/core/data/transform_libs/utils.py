@@ -8,7 +8,9 @@ from __future__ import annotations
 import copy
 import functools
 import inspect
+import itertools
 import weakref
+from typing import Sequence
 
 import cv2
 import numpy as np
@@ -166,19 +168,19 @@ def rescale_polygons(polygons: list[Polygon], scale_factor: float | tuple[float,
 
     resized_polygons = []
     for polygon in polygons:
-        p = np.asarray(copy.deepcopy(polygon.points))
+        p = np.asarray(polygon.points).copy()
         p[0::2] *= w_scale
         p[1::2] *= h_scale
         resized_polygons.append(Polygon(points=p.tolist(), label=polygon.label, z_order=polygon.z_order))
     return resized_polygons
 
 
-def translate_bboxes(boxes: Tensor, distances: tuple[float, float]) -> Tensor:
+def translate_bboxes(boxes: Tensor, distances: Sequence[float]) -> Tensor:
     """Translate boxes in-place.
 
     Args:
         boxes (Tensor): Bounding boxes to be translated.
-        distances (tuple[float, float]): Translate distances. The first
+        distances (Sequence[float]): Translate distances. The first
             is horizontal distance and the second is vertical distance.
 
     Returns:
@@ -193,7 +195,7 @@ def translate_masks(
     out_shape: tuple[int, int],
     offset: int | float,
     direction: str = "horizontal",
-    border_value: int | float = 0,
+    border_value: int | tuple[int] = 0,
     interpolation: str = "bilinear",
 ) -> np.ndarray:
     """Translate the masks.
@@ -203,7 +205,7 @@ def translate_masks(
         out_shape (tuple[int]): Shape for output mask, format (h, w).
         offset (int | float): The offset for translate.
         direction (str): The translate direction, either "horizontal" or "vertical".
-        border_value (int | float): Border value. Default 0 for masks.
+        border_value (int | tuple[int]): Border value. Default 0 for masks.
         interpolation (str): Interpolation method, accepted values are
             'nearest', 'bilinear', 'bicubic', 'area', 'lanczos'. Defaults to
             'bilinear'.
@@ -227,7 +229,7 @@ def translate_masks(
         channels = masks.shape[0]
 
     if isinstance(border_value, int):
-        border_value = tuple([border_value] * channels)
+        border_value = tuple([border_value] * channels)  # type: ignore[assignment]
     elif isinstance(border_value, tuple):
         assert len(border_value) == channels, (  # noqa: S101
             "Expected the num of elements in tuple equals the channels"
@@ -246,7 +248,7 @@ def translate_masks(
         # greater than 3 (e.g. translating masks whose channels
         # large than 3) will raise TypeError in `cv2.warpAffine`.
         # Here simply slice the first 3 values in `border_value`.
-        borderValue=border_value[:3],
+        borderValue=border_value[:3],  # type: ignore[index]
         flags=CV2_INTERP_CODES[interpolation],
     )
 
@@ -269,7 +271,7 @@ def translate_polygons(
 
     translated_polygons = []
     for polygon in polygons:
-        p = np.asarray(copy.deepcopy(polygon.points))
+        p = np.asarray(polygon.points).copy()
         if direction == "horizontal":
             p[0::2] = np.clip(p[0::2] + offset, 0, out_shape[1])
         elif direction == "vertical":
@@ -665,7 +667,7 @@ def flip_polygons(polygons: list[Polygon], height: int, width: int, direction: s
     """Flip polygons alone the given direction."""
     flipped_masks = []
     for polygon in polygons:
-        p = np.asarray(copy.deepcopy(polygon.points))
+        p = np.asarray(polygon.points).copy()
         if direction == "horizontal":
             p[0::2] = width - p[0::2]
         elif direction == "vertical":
@@ -774,7 +776,7 @@ def crop_polygons(polygons: list[Polygon], bbox: np.ndarray, height: int, width:
     for polygon in polygons:
         cropped_poly_per_obj: list[Polygon] = []
 
-        p = np.asarray(copy.deepcopy(polygon.points))
+        p = np.asarray(polygon.points).copy()
         p = geometry.Polygon(p.reshape(-1, 2)).buffer(0.0)
         # polygon must be valid to perform intersection.
         if not p.is_valid:
@@ -802,17 +804,15 @@ def crop_polygons(polygons: list[Polygon], bbox: np.ndarray, height: int, width:
             coords = coords[:-1]
             coords[:, 0] -= x1
             coords[:, 1] -= y1
-            cropped_poly_per_obj.append(
-                Polygon(points=coords.reshape(-1).tolist(), label=polygon.label, z_order=polygon.z_order),
-            )
+            cropped_poly_per_obj.append(coords.reshape(-1).tolist())
 
         # a dummy polygon to avoid misalignment between masks and boxes
         if len(cropped_poly_per_obj) == 0:
-            cropped_poly_per_obj.append(
-                Polygon(points=[0, 0, 0, 0, 0, 0], label=polygon.label, z_order=polygon.z_order),
-            )
+            cropped_poly_per_obj.append([0, 0, 0, 0, 0, 0])
 
-        cropped_polygons.extend(cropped_poly_per_obj)
+        cropped_polygons.append(
+            Polygon(points=list(itertools.chain(*cropped_poly_per_obj)), label=polygon.label, z_order=polygon.z_order),
+        )
 
     np.seterr(**initial_settings)
     return cropped_polygons

@@ -169,7 +169,7 @@ class StandardRoIHead(BaseRoIHead):
                 - bboxes (Tensor): Has a shape (num_instances, 4),
                   the last dimension 4 arrange as (x1, y1, x2, y2).
         """
-        proposals = [res.bboxes for res in rpn_results_list]
+        proposals = [res.bboxes for res in rpn_results_list]  # type: ignore[attr-defined]
         rois = bbox2roi(proposals)
 
         if rois.shape[0] == 0:
@@ -240,7 +240,7 @@ class StandardRoIHead(BaseRoIHead):
                 - masks (Tensor): Has a shape (num_instances, H, W).
         """
         # don't need to consider aug_test.
-        bboxes = [res.bboxes for res in results_list]
+        bboxes = [res.bboxes for res in results_list]  # type: ignore[attr-defined]
         mask_rois = bbox2roi(bboxes)
         if mask_rois.shape[0] == 0:
             return empty_instances(

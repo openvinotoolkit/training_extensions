@@ -19,6 +19,7 @@ def mask_target(
     pos_assigned_gt_inds_list: list[torch.Tensor],
     gt_masks_list: list[list[Polygon]],
     cfg: dict,
+    meta_infos: list[dict],
 ) -> torch.Tensor:
     """Compute mask target for positive proposals in multiple images.
 
@@ -35,7 +36,14 @@ def mask_target(
         Tensor: Mask target of each image, has shape (num_pos, w, h).
     """
     cfg_list = [cfg for _ in range(len(pos_proposals_list))]
-    mask_targets = map(mask_target_single, pos_proposals_list, pos_assigned_gt_inds_list, gt_masks_list, cfg_list)
+    mask_targets = map(
+        mask_target_single,
+        pos_proposals_list,
+        pos_assigned_gt_inds_list,
+        gt_masks_list,
+        cfg_list,
+        meta_infos,
+    )
     _mask_targets = list(mask_targets)
     if len(_mask_targets) > 0:
         _mask_targets = torch.cat(_mask_targets)
@@ -47,8 +55,10 @@ def mask_target_single(
     pos_assigned_gt_inds: torch.Tensor,
     gt_masks: list[Polygon],
     cfg: dict,
+    meta_info: dict,
 ) -> torch.Tensor:
     """Compute mask target for each positive proposal in the image."""
+    # TODO(Eugene): Implement crop_and_resize_masks
     if not isinstance(gt_masks[0], Polygon):
         msg = "Mask target only supports polygon format masks"
         raise TypeError(msg)
@@ -58,7 +68,7 @@ def mask_target_single(
     num_pos = pos_proposals.size(0)
     if num_pos > 0:
         proposals_np = pos_proposals.cpu().numpy()
-        maxh, maxw = gt_masks[0].attributes["img_shape"]
+        maxh, maxw = meta_info["img_shape"]
         proposals_np[:, [0, 2]] = np.clip(proposals_np[:, [0, 2]], 0, maxw)
         proposals_np[:, [1, 3]] = np.clip(proposals_np[:, [1, 3]], 0, maxh)
         pos_assigned_gt_inds = pos_assigned_gt_inds.cpu().numpy()

@@ -26,13 +26,13 @@ from torchvision.transforms.v2 import functional as F  # noqa: N812
 
 from otx.core.data.entity.action_classification import ActionClsDataEntity
 from otx.core.data.entity.base import (
+    OTXDataEntity,
     Points,
     _crop_image_info,
     _pad_image_info,
     _resize_image_info,
     _resized_crop_image_info,
 )
-from otx.core.data.entity.instance_segmentation import InstanceSegDataEntity
 from otx.core.data.transform_libs.utils import (
     CV2_INTERP_CODES,
     area_polygon,
@@ -62,12 +62,12 @@ from otx.core.data.transform_libs.utils import (
 )
 
 if TYPE_CHECKING:
-    from torchvision.transforms.v2 import Compose
-
     from otx.core.config.data import SubsetConfig
     from otx.core.data.entity.base import T_OTXDataEntity
-    from otx.core.data.entity.detection import DetDataEntity
     # TODO (sungchul): refactor types
+
+
+# mypy: disable-error-code="attr-defined"
 
 
 def custom_query_size(flat_inputs: list[Any]) -> tuple[int, int]:  # noqa: D103
@@ -104,11 +104,11 @@ class NumpytoTVTensorMixin:
 
     is_numpy_to_tvtensor: bool
 
-    def convert(self, inputs: T_OTXDataEntity) -> T_OTXDataEntity:
+    def convert(self, inputs: T_OTXDataEntity | None) -> T_OTXDataEntity | None:
         """Convert numpy to tv tensors."""
-        if self.is_numpy_to_tvtensor:
+        if self.is_numpy_to_tvtensor and inputs is not None:
             if (image := getattr(inputs, "image", None)) is not None and isinstance(image, np.ndarray):
-                inputs.image = F.to_image(image)
+                inputs.image = F.to_image(image.copy())
             if (bboxes := getattr(inputs, "bboxes", None)) is not None and isinstance(bboxes, np.ndarray):
                 inputs.bboxes = tv_tensors.BoundingBoxes(bboxes, format="xyxy", canvas_size=inputs.img_info.img_shape)  # type: ignore[attr-defined]
             if (masks := getattr(inputs, "masks", None)) is not None and isinstance(masks, np.ndarray):
@@ -372,7 +372,7 @@ class MinIoURandomCrop(tvt_v2.Transform, NumpytoTVTensorMixin):
     def _random_mode(self) -> int | float:
         return random.choice(self.sample_mode)
 
-    def forward(self, *_inputs: DetDataEntity) -> DetDataEntity:
+    def forward(self, *_inputs: T_OTXDataEntity) -> T_OTXDataEntity | None:
         """Forward for MinIoURandomCrop."""
         assert len(_inputs) == 1, "[tmp] Multiple entity is not supported yet."  # noqa: S101
         inputs = _inputs[0]
@@ -539,7 +539,7 @@ class Resize(tvt_v2.Transform, NumpytoTVTensorMixin):
             scale_factor = (scale[0] / img_shape[1], scale[1] / img_shape[0])  # TODO (sungchul): ticket no. 138831
         return inputs, scale_factor
 
-    def _resize_bboxes(self, inputs: DetDataEntity, scale_factor: tuple[float, float]) -> DetDataEntity:
+    def _resize_bboxes(self, inputs: T_OTXDataEntity, scale_factor: tuple[float, float]) -> T_OTXDataEntity:
         """Resize bounding boxes with inputs.img_info.scale_factor."""
         if (bboxes := getattr(inputs, "bboxes", None)) is not None:
             bboxes = rescale_bboxes(bboxes, scale_factor)  # TODO (sungchul): ticket no. 138831
@@ -548,7 +548,7 @@ class Resize(tvt_v2.Transform, NumpytoTVTensorMixin):
             inputs.bboxes = tv_tensors.BoundingBoxes(bboxes, format="XYXY", canvas_size=inputs.img_info.img_shape)
         return inputs
 
-    def _resize_masks(self, inputs: InstanceSegDataEntity, scale_factor: tuple[float, float]) -> InstanceSegDataEntity:
+    def _resize_masks(self, inputs: T_OTXDataEntity, scale_factor: tuple[float, float]) -> T_OTXDataEntity:
         """Resize masks with inputs.img_info.scale_factor."""
         if (masks := getattr(inputs, "masks", None)) is not None and len(masks) > 0:
             # bit mask
@@ -562,7 +562,7 @@ class Resize(tvt_v2.Transform, NumpytoTVTensorMixin):
             inputs.polygons = polygons
         return inputs
 
-    def forward(self, *_inputs: T_OTXDataEntity) -> T_OTXDataEntity:
+    def forward(self, *_inputs: T_OTXDataEntity) -> T_OTXDataEntity | None:
         """Transform function to resize images, bounding boxes, and masks."""
         assert len(_inputs) == 1, "[tmp] Multiple entity is not supported yet."  # noqa: S101
         inputs = _inputs[0]
@@ -794,7 +794,7 @@ class RandomResizedCrop(tvt_v2.Transform, NumpytoTVTensorMixin):
             return patches[0]
         return patches
 
-    def forward(self, *_inputs: T_OTXDataEntity) -> T_OTXDataEntity:
+    def forward(self, *_inputs: T_OTXDataEntity) -> T_OTXDataEntity | None:
         """Transform function to randomly resized crop images.
 
         Args:
@@ -854,6 +854,119 @@ class RandomResizedCrop(tvt_v2.Transform, NumpytoTVTensorMixin):
         repr_str += f", max_attempts={self.max_attempts}"
         repr_str += f", interpolation={self.interpolation}"
         repr_str += f", backend={self.backend})"
+        return repr_str
+
+
+class EfficientNetRandomCrop(RandomResizedCrop):
+    """EfficientNet style RandomResizedCrop.
+
+    This class implements mmpretrain.datasets.transforms.EfficientNetRandomCrop reimplemented as torchvision.transform.
+
+    Args:
+        scale (int): Desired output scale of the crop. Only int size is
+            accepted, a square crop (size, size) is made.
+        min_covered (Number): Minimum ratio of the cropped area to the original
+             area. Defaults to 0.1.
+        crop_padding (int): The crop padding parameter in efficientnet style
+            center crop. Defaults to 32.
+        crop_ratio_range (tuple): Range of the random size of the cropped
+            image compared to the original image. Defaults to (0.08, 1.0).
+        aspect_ratio_range (tuple): Range of the random aspect ratio of the
+            cropped image compared to the original image.
+            Defaults to (3. / 4., 4. / 3.).
+        max_attempts (int): Maximum number of attempts before falling back to
+            Central Crop. Defaults to 10.
+        interpolation (str): Interpolation method, accepted values are
+            'nearest', 'bilinear', 'bicubic', 'area', 'lanczos'. Defaults to
+            'bicubic'.
+        backend (str): The image resize backend type, accepted values are
+            'cv2' and 'pillow'. Defaults to 'cv2'.
+    """
+
+    def __init__(
+        self,
+        scale: int,
+        min_covered: float = 0.1,
+        crop_padding: int = 32,
+        interpolation: str = "bicubic",
+        **kwarg,
+    ):
+        assert isinstance(scale, int)  # noqa: S101
+        super().__init__(scale, interpolation=interpolation, **kwarg)
+        assert min_covered >= 0, "min_covered should be no less than 0."  # noqa: S101
+        assert crop_padding >= 0, "crop_padding should be no less than 0."  # noqa: S101
+
+        self.min_covered = min_covered
+        self.crop_padding = crop_padding
+
+    # https://github.com/kakaobrain/fast-autoaugment/blob/master/FastAutoAugment/data.py
+    @cache_randomness
+    def rand_crop_params(self, img: np.ndarray) -> tuple[int, int, int, int]:
+        """Get parameters for ``crop`` for a random sized crop.
+
+        Args:
+            img (ndarray): Image to be cropped.
+
+        Returns:
+            tuple: Params (offset_h, offset_w, target_h, target_w) to be
+                passed to `crop` for a random sized crop.
+        """
+        h, w = img.shape[:2]
+        area = h * w
+        min_target_area = self.crop_ratio_range[0] * area
+        max_target_area = self.crop_ratio_range[1] * area
+
+        for _ in range(self.max_attempts):
+            aspect_ratio = np.random.uniform(*self.aspect_ratio_range)
+            min_target_h = int(round(math.sqrt(min_target_area / aspect_ratio)))
+            max_target_h = int(round(math.sqrt(max_target_area / aspect_ratio)))
+
+            if max_target_h * aspect_ratio > w:
+                max_target_h = int((w + 0.5 - 1e-7) / aspect_ratio)
+                if max_target_h * aspect_ratio > w:
+                    max_target_h -= 1
+
+            max_target_h = min(max_target_h, h)
+            min_target_h = min(max_target_h, min_target_h)
+
+            # slightly differs from tf implementation
+            target_h = int(round(np.random.uniform(min_target_h, max_target_h)))
+            target_w = int(round(target_h * aspect_ratio))
+            target_area = target_h * target_w
+
+            # slight differs from tf. In tf, if target_area > max_target_area,
+            # area will be recalculated
+            if (
+                target_area < min_target_area
+                or target_area > max_target_area
+                or target_w > w
+                or target_h > h
+                or target_area < self.min_covered * area
+            ):
+                continue
+
+            offset_h = np.random.randint(0, h - target_h + 1)
+            offset_w = np.random.randint(0, w - target_w + 1)
+
+            return offset_h, offset_w, target_h, target_w
+
+        # Fallback to central crop
+        img_short = min(h, w)
+        crop_size = self.scale[0] / (self.scale[0] + self.crop_padding) * img_short
+
+        offset_h = max(0, int(round((h - crop_size) / 2.0)))
+        offset_w = max(0, int(round((w - crop_size) / 2.0)))
+        return offset_h, offset_w, crop_size, crop_size
+
+    def __repr__(self):
+        """Print the basic information of the transform.
+
+        Returns:
+            str: Formatted string.
+        """
+        repr_str = super().__repr__()[:-1]
+        repr_str += f", min_covered={self.min_covered}"
+        repr_str += f", crop_padding={self.crop_padding})"
         return repr_str
 
 
@@ -946,7 +1059,7 @@ class RandomFlip(tvt_v2.Transform, NumpytoTVTensorMixin):
 
         return np.random.choice(direction_list, p=prob_list)
 
-    def forward(self, *_inputs: T_OTXDataEntity) -> T_OTXDataEntity:
+    def forward(self, *_inputs: T_OTXDataEntity) -> T_OTXDataEntity | None:
         """Flip images, bounding boxes, and semantic segmentation map."""
         assert len(_inputs) == 1, "[tmp] Multiple entity is not supported yet."  # noqa: S101
         inputs = _inputs[0]
@@ -954,7 +1067,7 @@ class RandomFlip(tvt_v2.Transform, NumpytoTVTensorMixin):
         if (cur_dir := self._choose_direction()) is not None:
             # flip image
             img = to_np_image(inputs.image)
-            img = np.ascontiguousarray(flip_image(img, direction=cur_dir))
+            img = flip_image(img, direction=cur_dir)
             inputs.image = img
 
             # flip bboxes
@@ -965,7 +1078,7 @@ class RandomFlip(tvt_v2.Transform, NumpytoTVTensorMixin):
             # flip masks
             if (masks := getattr(inputs, "masks", None)) is not None and len(masks) > 0:
                 masks = masks.numpy() if not isinstance(masks, np.ndarray) else masks
-                inputs.masks = np.ascontiguousarray(np.stack([flip_image(mask, direction=cur_dir) for mask in masks]))
+                inputs.masks = np.stack([flip_image(mask, direction=cur_dir) for mask in masks])
 
             # flip polygons
             if (polygons := getattr(inputs, "polygons", None)) is not None and len(polygons) > 0:
@@ -1053,7 +1166,7 @@ class PhotoMetricDistortion(tvt_v2.Transform, NumpytoTVTensorMixin):
             swap_value,
         )
 
-    def forward(self, *_inputs: T_OTXDataEntity) -> T_OTXDataEntity:
+    def forward(self, *_inputs: T_OTXDataEntity) -> T_OTXDataEntity | None:
         """Transform function to perform photometric distortion on images."""
         assert len(_inputs) == 1, "[tmp] Multiple entity is not supported yet."  # noqa: S101
         inputs = _inputs[0]
@@ -1205,7 +1318,7 @@ class RandomAffine(tvt_v2.Transform, NumpytoTVTensorMixin):
 
         return translate_matrix @ shear_matrix @ rotation_matrix @ scaling_matrix
 
-    def forward(self, *_inputs: DetDataEntity) -> DetDataEntity:
+    def forward(self, *_inputs: T_OTXDataEntity) -> T_OTXDataEntity | None:
         """Forward for RandomAffine."""
         assert len(_inputs) == 1, "[tmp] Multiple entity is not supported yet."  # noqa: S101
         inputs = _inputs[0]
@@ -1322,7 +1435,7 @@ class CachedMosaic(tvt_v2.Transform, NumpytoTVTensorMixin):
         self.pad_val = pad_val
         self.prob = prob
 
-        self.results_cache: list[DetDataEntity] = []
+        self.results_cache: list[OTXDataEntity] = []
         self.random_pop = random_pop
         assert max_cached_images >= 4, f"The length of cache must >= 4, but got {max_cached_images}."  # noqa: S101
         self.max_cached_images = max_cached_images
@@ -1342,7 +1455,7 @@ class CachedMosaic(tvt_v2.Transform, NumpytoTVTensorMixin):
         """
         return [random.randint(0, len(cache) - 1) for _ in range(3)]
 
-    def forward(self, *_inputs: DetDataEntity) -> DetDataEntity:
+    def forward(self, *_inputs: T_OTXDataEntity) -> T_OTXDataEntity | None:
         """Forward for CachedMosaic."""
         assert len(_inputs) == 1, "[tmp] Multiple entity is not supported yet."  # noqa: S101
         inputs = _inputs[0]
@@ -1626,7 +1739,7 @@ class CachedMixUp(tvt_v2.Transform, NumpytoTVTensorMixin):
         self.pad_val = pad_val
         self.max_iters = max_iters
         self.bbox_clip_border = bbox_clip_border
-        self.results_cache: list[DetDataEntity] = []
+        self.results_cache: list[OTXDataEntity] = []
 
         self.max_cached_images = max_cached_images
         self.random_pop = random_pop
@@ -1650,7 +1763,7 @@ class CachedMixUp(tvt_v2.Transform, NumpytoTVTensorMixin):
                 break
         return index
 
-    def forward(self, *_inputs: DetDataEntity) -> DetDataEntity:
+    def forward(self, *_inputs: T_OTXDataEntity) -> T_OTXDataEntity | None:
         """MixUp transform function."""
         # cache and pop images
         assert len(_inputs) == 1, "[tmp] Multiple entity is not supported yet."  # noqa: S101
@@ -1876,7 +1989,7 @@ class YOLOXHSVRandomAug(tvt_v2.Transform, NumpytoTVTensorMixin):
         # prevent overflow
         return hsv_gains.astype(np.int16)
 
-    def forward(self, *_inputs: T_OTXDataEntity) -> T_OTXDataEntity:
+    def forward(self, *_inputs: T_OTXDataEntity) -> T_OTXDataEntity | None:
         """Forward for random hsv transform."""
         assert len(_inputs) == 1, "[tmp] Multiple entity is not supported yet."  # noqa: S101
         inputs = _inputs[0]
@@ -2020,7 +2133,7 @@ class Pad(tvt_v2.Transform, NumpytoTVTensorMixin):
         inputs.img_info = _pad_image_info(inputs.img_info, padding)
         return inputs
 
-    def _pad_masks(self, inputs: InstanceSegDataEntity) -> InstanceSegDataEntity:
+    def _pad_masks(self, inputs: T_OTXDataEntity) -> T_OTXDataEntity:
         """Pad masks according to inputs.image_info.padding."""
         if (masks := getattr(inputs, "masks", None)) is not None and len(masks) > 0:
             masks = masks.numpy() if not isinstance(masks, np.ndarray) else masks
@@ -2047,16 +2160,16 @@ class Pad(tvt_v2.Transform, NumpytoTVTensorMixin):
 
         return inputs
 
-    def forward(self, *_inputs: T_OTXDataEntity) -> T_OTXDataEntity:
+    def forward(self, *_inputs: T_OTXDataEntity) -> T_OTXDataEntity | None:
         """Forward function to pad images."""
         assert len(_inputs) == 1, "[tmp] Multiple entity is not supported yet."  # noqa: S101
         inputs = _inputs[0]
 
-        inputs = self._pad_img(inputs)
+        outputs = self._pad_img(inputs)
         if self.transform_mask:
-            inputs = self._pad_masks(inputs)
+            outputs = self._pad_masks(outputs)
 
-        return self.convert(inputs)
+        return self.convert(outputs)
 
 
 class RandomResize(tvt_v2.Transform, NumpytoTVTensorMixin):
@@ -2065,7 +2178,7 @@ class RandomResize(tvt_v2.Transform, NumpytoTVTensorMixin):
     Reference : https://github.com/open-mmlab/mmcv/blob/v2.1.0/mmcv/transforms/processing.py#L1381-L1562
 
     Args:
-        scale (tuple or Sequence[tuple]): Images scales for resizing.
+        scale (Sequence): Images scales for resizing.
             Defaults to None.
         ratio_range (tuple[float], optional): (min_ratio, max_ratio).
             Defaults to None.
@@ -2075,7 +2188,7 @@ class RandomResize(tvt_v2.Transform, NumpytoTVTensorMixin):
 
     def __init__(
         self,
-        scale: Sequence[int, int] | Sequence[tuple[int, int]],
+        scale: Sequence[int | tuple[int, int]],
         ratio_range: tuple[float, float] | None = None,
         is_numpy_to_tvtensor: bool = False,
         **resize_kwargs,
@@ -2090,18 +2203,18 @@ class RandomResize(tvt_v2.Transform, NumpytoTVTensorMixin):
         self.resize = Resize(scale=0, **resize_kwargs)
 
     @staticmethod
-    def _random_sample(scales: list[tuple[int, int]]) -> tuple:
-        """Private function to randomly sample a scale from a list of tuples.
+    def _random_sample(scales: Sequence[tuple[int, int]]) -> tuple:
+        """Private function to randomly sample a scale from a Sequence of tuples.
 
         Args:
-            scales (list[tuple]): Images scale range for sampling.
+            scales (Sequence[tuple]): Images scale range for sampling.
                 There must be two tuples in scales, which specify the lower
                 and upper bound of image scales.
 
         Returns:
             (tuple): The targeted scale of the image to be resized.
         """
-        assert isinstance(scales, list)  # noqa: S101
+        assert isinstance(scales, Sequence)  # noqa: S101
         assert all(isinstance(scale, tuple) for scale in scales)  # noqa: S101
         assert len(scales) == 2  # noqa: S101
         scale_0 = [scales[0][0], scales[1][0]]
@@ -2145,18 +2258,18 @@ class RandomResize(tvt_v2.Transform, NumpytoTVTensorMixin):
             assert len(self.ratio_range) == 2  # noqa: S101
             scale = self._random_sample_ratio(self.scale, self.ratio_range)
         elif all(isinstance(s, tuple) for s in self.scale):
-            scale = self._random_sample(self.scale)
+            scale = self._random_sample(self.scale)  # type: ignore[arg-type]
         else:
             msg = f'Do not support sampling function for "{self.scale}"'
             raise NotImplementedError(msg)
 
         return scale
 
-    def forward(self, *_inputs: T_OTXDataEntity) -> T_OTXDataEntity:
+    def forward(self, *_inputs: T_OTXDataEntity) -> T_OTXDataEntity | None:
         """Transform function to resize images, bounding boxes, semantic segmentation map."""
         self.resize.scale = self._random_scale()
-        inputs = self.resize(*_inputs)
-        return self.convert(inputs)
+        outputs = self.resize(*_inputs)
+        return self.convert(outputs)
 
     def __repr__(self) -> str:
         # TODO (sungchul): update other's repr
@@ -2225,14 +2338,20 @@ class RandomCrop(tvt_v2.Transform, NumpytoTVTensorMixin):
         self.recompute_bbox = recompute_bbox
         self.is_numpy_to_tvtensor = is_numpy_to_tvtensor
 
-    def _crop_data(self, inputs: T_OTXDataEntity, crop_size: tuple[int, int], allow_negative_crop: bool) -> dict | None:
+    def _crop_data(
+        self,
+        inputs: T_OTXDataEntity,
+        crop_size: tuple[int, int],
+        allow_negative_crop: bool,
+    ) -> T_OTXDataEntity | None:
         """Function to randomly crop images, bounding boxes, masks, semantic segmentation maps."""
         assert crop_size[0] > 0  # noqa: S101
         assert crop_size[1] > 0  # noqa: S101
 
         img = to_np_image(inputs.image)
-        margin_h = max(inputs.img_info.img_shape[0] - crop_size[0], 0)
-        margin_w = max(inputs.img_info.img_shape[1] - crop_size[1], 0)
+        orig_shape = inputs.img_info.img_shape
+        margin_h = max(orig_shape[0] - crop_size[0], 0)
+        margin_w = max(orig_shape[1] - crop_size[1], 0)
         offset_h, offset_w = self._rand_offset((margin_h, margin_w))
         crop_y1, crop_y2 = offset_h, offset_h + crop_size[0]
         crop_x1, crop_x2 = offset_w, offset_w + crop_size[1]
@@ -2240,6 +2359,9 @@ class RandomCrop(tvt_v2.Transform, NumpytoTVTensorMixin):
         # crop the image
         img = img[crop_y1:crop_y2, crop_x1:crop_x2, ...]
         cropped_img_shape = img.shape[:2]
+
+        inputs.image = img
+        inputs.img_info = _crop_image_info(inputs.img_info, *cropped_img_shape)
 
         # crop bboxes accordingly and clip to the image boundary
         if (bboxes := getattr(inputs, "bboxes", None)) is not None:
@@ -2251,7 +2373,7 @@ class RandomCrop(tvt_v2.Transform, NumpytoTVTensorMixin):
             # If the crop does not contain any gt-bbox area and
             # allow_negative_crop is False, skip this image.
             if not valid_inds.any() and not allow_negative_crop:
-                return inputs
+                return None
 
             inputs.bboxes = tv_tensors.BoundingBoxes(bboxes[valid_inds], format="XYXY", canvas_size=cropped_img_shape)
 
@@ -2275,7 +2397,7 @@ class RandomCrop(tvt_v2.Transform, NumpytoTVTensorMixin):
                 inputs.polygons = crop_polygons(
                     [polygons[i] for i in valid_inds.nonzero()[0]],
                     np.asarray([crop_x1, crop_y1, crop_x2, crop_y2]),
-                    *inputs.img_info.img_shape,
+                    *orig_shape,
                 )
 
                 if self.recompute_bbox:
@@ -2283,9 +2405,6 @@ class RandomCrop(tvt_v2.Transform, NumpytoTVTensorMixin):
                         torch.as_tensor(get_bboxes_from_polygons(inputs.polygons, *cropped_img_shape)),
                         like=inputs.bboxes,
                     )
-
-        inputs.image = img
-        inputs.img_info = _crop_image_info(inputs.img_info, *cropped_img_shape)
 
         return inputs
 
@@ -2334,14 +2453,14 @@ class RandomCrop(tvt_v2.Transform, NumpytoTVTensorMixin):
         crop_h, crop_w = crop_size + np.random.rand(2) * (1 - crop_size)
         return int(h * crop_h + 0.5), int(w * crop_w + 0.5)
 
-    def forward(self, *_inputs: T_OTXDataEntity) -> T_OTXDataEntity:
+    def forward(self, *_inputs: T_OTXDataEntity) -> T_OTXDataEntity | None:
         """Transform function to randomly crop images, bounding boxes, masks, and polygons."""
         assert len(_inputs) == 1, "[tmp] Multiple entity is not supported yet."  # noqa: S101
         inputs = _inputs[0]
 
         crop_size = self._get_crop_size(inputs.img_info.img_shape)
-        inputs = self._crop_data(inputs, crop_size, self.allow_negative_crop)
-        return self.convert(inputs)
+        outputs = self._crop_data(inputs, crop_size, self.allow_negative_crop)
+        return self.convert(outputs)
 
     def __repr__(self) -> str:
         repr_str = self.__class__.__name__
@@ -2396,7 +2515,7 @@ class FilterAnnotations(tvt_v2.Transform, NumpytoTVTensorMixin):
         self.keep_empty = keep_empty
         self.is_numpy_to_tvtensor = is_numpy_to_tvtensor
 
-    def forward(self, *_inputs: T_OTXDataEntity) -> T_OTXDataEntity:
+    def forward(self, *_inputs: T_OTXDataEntity) -> T_OTXDataEntity | None:
         """Transform function to filter annotations."""
         assert len(_inputs) == 1, "[tmp] Multiple entity is not supported yet."  # noqa: S101
         inputs = _inputs[0]
@@ -2434,7 +2553,7 @@ class FilterAnnotations(tvt_v2.Transform, NumpytoTVTensorMixin):
         keys = ("bboxes", "labels", "masks", "polygons")
         for key in keys:
             if hasattr(inputs, key):
-                if key == "polygons":
+                if key == "polygons" and len(polygons := inputs.polygons) > 0:
                     polygons = inputs.polygons
                     inputs.polygons = [polygons[i] for i in np.where(keep)[0]]
                 else:
@@ -2446,14 +2565,35 @@ class FilterAnnotations(tvt_v2.Transform, NumpytoTVTensorMixin):
 
     def __repr__(self):
         return (
-            self.__class__.__name__
-            + f"(min_gt_bbox_wh={self.min_gt_bbox_wh}, keep_empty={self.keep_empty}, is_numpy_to_tvtensor={self.is_numpy_to_tvtensor})"
+            f"{self.__class__.__name__}"
+            f"(min_gt_bbox_wh={self.min_gt_bbox_wh}, "
+            f"keep_empty={self.keep_empty}, "
+            f"is_numpy_to_tvtensor={self.is_numpy_to_tvtensor})"
         )
 
 
 tvt_v2.PerturbBoundingBoxes = PerturbBoundingBoxes
 tvt_v2.PadtoSquare = PadtoSquare
 tvt_v2.ResizetoLongestEdge = ResizetoLongestEdge
+
+
+class Compose(tvt_v2.Compose):
+    """Re-implementation of torchvision.transforms.v2.Compose.
+
+    MMCV transforms can produce None, so it is required to skip the result.
+    """
+
+    def forward(self, *inputs: T_OTXDataEntity) -> T_OTXDataEntity | None:
+        """Forward with skipping None."""
+        needs_unpacking = len(inputs) > 1
+        for transform in self.transforms:
+            outputs = transform(*inputs)
+            # MMCV transform can produce None. Please see
+            # https://github.com/open-mmlab/mmengine/blob/26f22ed283ae4ac3a24b756809e5961efe6f9da8/mmengine/dataset/base_dataset.py#L59-L66
+            if outputs is None:
+                return outputs
+            inputs = outputs if needs_unpacking else (outputs,)
+        return outputs
 
 
 class TorchVisionTransformLib:
@@ -2471,7 +2611,7 @@ class TorchVisionTransformLib:
     @classmethod
     def generate(cls, config: SubsetConfig) -> Compose:
         """Generate TorchVision transforms from the configuration."""
-        if isinstance(config.transforms, tvt_v2.Compose):
+        if isinstance(config.transforms, Compose):
             return config.transforms
 
         transforms = []
@@ -2479,7 +2619,7 @@ class TorchVisionTransformLib:
             transform = cls._dispatch_transform(cfg_transform)
             transforms.append(transform)
 
-        return tvt_v2.Compose(transforms)
+        return Compose(transforms)
 
     @classmethod
     def _dispatch_transform(cls, cfg_transform: DictConfig | dict | tvt_v2.Transform) -> tvt_v2.Transform:
