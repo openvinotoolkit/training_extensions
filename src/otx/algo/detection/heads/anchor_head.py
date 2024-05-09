@@ -13,7 +13,6 @@ from torch import Tensor, nn
 
 from otx.algo.detection.heads.anchor_generator import AnchorGenerator
 from otx.algo.detection.heads.base_head import BaseDenseHead
-from otx.algo.detection.heads.delta_xywh_bbox_coder import DeltaXYWHBBoxCoder
 from otx.algo.detection.utils.utils import anchor_inside_flags, images_to_levels, multi_apply, unmap
 from otx.algo.utils.mmengine_utils import InstanceData
 
@@ -49,14 +48,14 @@ class AnchorHead(BaseDenseHead):
         self,
         num_classes: int,
         in_channels: tuple[int, ...] | int,
-        anchor_generator: AnchorGenerator,
-        bbox_coder: DeltaXYWHBBoxCoder,
+        anchor_generator: nn.Module,
+        bbox_coder: nn.Module,
         loss_cls: nn.Module,
         loss_bbox: nn.Module,
         train_cfg: dict,
+        test_cfg: DictConfig,
         feat_channels: int = 256,
         reg_decoded_bbox: bool = False,
-        test_cfg: DictConfig | None = None,
         init_cfg: dict | list[dict] | None = None,
     ) -> None:
         super().__init__(init_cfg=init_cfg)

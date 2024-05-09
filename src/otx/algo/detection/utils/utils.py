@@ -166,7 +166,7 @@ def filter_scores_and_topk(
     return scores, labels, keep_idxs, filtered_results
 
 
-def select_single_mlvl(mlvl_tensors: list[Tensor], batch_id: int, detach: bool = True) -> list[Tensor]:
+def select_single_mlvl(mlvl_tensors: list[Tensor] | tuple[Tensor], batch_id: int, detach: bool = True) -> list[Tensor]:
     """Extract a multi-scale single image tensor from a multi-scale batch tensor based on batch index.
 
     Note: The default value of detach is True, because the proposal gradient
@@ -372,3 +372,79 @@ def gather_topk(
     if len(outputs) == 1:
         outputs = outputs[0]
     return outputs
+
+
+def distance2bbox(
+    points: Tensor,
+    distance: Tensor,
+    max_shape: Tensor | None = None,
+) -> Tensor:
+    """Decode distance prediction to bounding box."""
+    x1 = points[..., 0] - distance[..., 0]
+    y1 = points[..., 1] - distance[..., 1]
+    x2 = points[..., 0] + distance[..., 2]
+    y2 = points[..., 1] + distance[..., 3]
+
+    bboxes = torch.stack([x1, y1, x2, y2], -1)
+
+    if max_shape is not None:
+        if bboxes.dim() == 2 and not torch.onnx.is_in_onnx_export():
+            # speed up
+            bboxes[:, 0::2].clamp_(min=0, max=max_shape[1])
+            bboxes[:, 1::2].clamp_(min=0, max=max_shape[0])
+            return bboxes
+
+        if not isinstance(max_shape, torch.Tensor):
+            max_shape = x1.new_tensor(max_shape)
+        max_shape = max_shape[..., :2].type_as(x1)
+        if max_shape.ndim == 2:
+            if bboxes.ndim != 3:
+                msg = "The dimension of bboxes should be 3."
+                raise ValueError(msg)
+            if max_shape.size(0) != bboxes.size(0):
+                msg = "The size of max_shape should be the same as bboxes."
+                raise ValueError(msg)
+
+        min_xy = x1.new_tensor(0)
+        max_xy = torch.cat([max_shape, max_shape], dim=-1).flip(-1).unsqueeze(-2)
+        bboxes = torch.where(bboxes < min_xy, min_xy, bboxes)
+        bboxes = torch.where(bboxes > max_xy, max_xy, bboxes)
+
+    return bboxes
+
+
+def bbox2distance(
+    points: Tensor,
+    bbox: Tensor,
+    max_dis: float | None = None,
+    eps: float = 0.1,
+) -> Tensor:
+    """Decode bounding box based on distances.
+
+    Args:
+        points (Tensor): Shape (n, 2) or (b, n, 2), [x, y].
+        bbox (Tensor): Shape (n, 4) or (b, n, 4), "xyxy" format
+        max_dis (float, optional): Upper bound of the distance.
+        eps (float): a small value to ensure target < max_dis, instead <=
+
+    Returns:
+        Tensor: Decoded distances.
+    """
+    left = points[..., 0] - bbox[..., 0]
+    top = points[..., 1] - bbox[..., 1]
+    right = bbox[..., 2] - points[..., 0]
+    bottom = bbox[..., 3] - points[..., 1]
+    if max_dis is not None:
+        left = left.clamp(min=0, max=max_dis - eps)
+        top = top.clamp(min=0, max=max_dis - eps)
+        right = right.clamp(min=0, max=max_dis - eps)
+        bottom = bottom.clamp(min=0, max=max_dis - eps)
+    return torch.stack([left, top, right, bottom], -1)
+
+
+def inverse_sigmoid(x: Tensor, eps: float = 1e-5) -> Tensor:
+    """Inverse function of sigmoid."""
+    x = x.clamp(min=0, max=1)
+    x1 = x.clamp(min=eps)
+    x2 = (1 - x).clamp(min=eps)
+    return torch.log(x1 / x2)
