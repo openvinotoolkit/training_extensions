@@ -11,9 +11,10 @@ from typing import TYPE_CHECKING
 import numpy as np
 import torch
 import torch.nn.functional
-from datumaro import Mask, Polygon
+from datumaro import Polygon
 from mmengine.structures import InstanceData
 from torch import Tensor, nn
+from torchvision import tv_tensors
 
 from otx.algo.detection.ops.nms import batched_nms, multiclass_nms
 from otx.algo.detection.utils.utils import (
@@ -652,17 +653,16 @@ class RTMDetInsHead(RTMDetHead):
 
         flatten_bboxes = torch.cat(decoded_bboxes, 1)
         for gt_instances in batch_gt_instances:
+            if isinstance(gt_instances.masks, tv_tensors.Mask):
+                continue
+
             if isinstance(gt_instances.masks[0], Polygon):
                 ndarray_masks = polygon_to_bitmap(
                     gt_instances.masks,
                     *gt_instances.metainfo["pad_shape"],
                 )
-            elif isinstance(gt_instances.masks[0], Mask):
-                # TODO(Eugene): Implement mask to bitmap conversion
-                msg = "Mask format not supported yet"
-                raise NotImplementedError(msg)
             else:
-                msg = "Unknown format, only supports dm.Polygon and dm.Mask for now."
+                msg = "Unknown format, only supports dm.Polygon and tv_tensors.Mask for now."
                 raise NotImplementedError(msg)
             if len(ndarray_masks) == 0:
                 ndarray_masks = np.empty((0, *gt_instances.metainfo["pad_shape"]), dtype=np.uint8)

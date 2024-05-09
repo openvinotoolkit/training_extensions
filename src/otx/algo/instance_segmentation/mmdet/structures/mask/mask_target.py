@@ -10,14 +10,15 @@ from __future__ import annotations
 import numpy as np
 import torch
 from datumaro.components.annotation import Polygon
-from otx.core.utils.mask_util import crop_and_resize_polygons, polygon_to_bitmap
+from otx.core.utils.mask_util import crop_and_resize_masks, crop_and_resize_polygons
 from torch.nn.modules.utils import _pair
+from torchvision import tv_tensors
 
 
 def mask_target(
     pos_proposals_list: list[torch.Tensor],
     pos_assigned_gt_inds_list: list[torch.Tensor],
-    gt_masks_list: list[list[Polygon]],
+    gt_masks_list: list[list[Polygon]] | list[tv_tensors.Mask],
     cfg: dict,
     meta_infos: list[dict],
 ) -> torch.Tensor:
@@ -53,15 +54,18 @@ def mask_target(
 def mask_target_single(
     pos_proposals: torch.Tensor,
     pos_assigned_gt_inds: torch.Tensor,
-    gt_masks: list[Polygon],
+    gt_masks: list[Polygon] | tv_tensors.Mask,
     cfg: dict,
     meta_info: dict,
 ) -> torch.Tensor:
     """Compute mask target for each positive proposal in the image."""
-    # TODO(Eugene): Implement crop_and_resize_masks
-    if not isinstance(gt_masks[0], Polygon):
-        msg = "Mask target only supports polygon format masks"
-        raise TypeError(msg)
+    if isinstance(gt_masks[0], Polygon):
+        crop_and_resize = crop_and_resize_polygons
+    elif isinstance(gt_masks, tv_tensors.Mask):
+        crop_and_resize = crop_and_resize_masks
+    else:
+        msg = f"Unsupported type of masks: {type(gt_masks[0])}"
+        raise NotImplementedError(msg)
 
     device = pos_proposals.device
     mask_size = _pair(cfg["mask_size"])
@@ -73,17 +77,14 @@ def mask_target_single(
         proposals_np[:, [1, 3]] = np.clip(proposals_np[:, [1, 3]], 0, maxh)
         pos_assigned_gt_inds = pos_assigned_gt_inds.cpu().numpy()
 
-        polygon_targets = crop_and_resize_polygons(
+        mask_targets = crop_and_resize(
             gt_masks,
             proposals_np,
             mask_size,
             inds=pos_assigned_gt_inds,
+            device=device,
         )
-
-        polygon_targets = polygon_to_bitmap(polygon_targets, *mask_size)
-
-        polygon_targets = torch.from_numpy(polygon_targets).float().to(device)
     else:
-        polygon_targets = pos_proposals.new_zeros((0, *mask_size))
+        mask_targets = pos_proposals.new_zeros((0, *mask_size))
 
-    return polygon_targets
+    return mask_targets

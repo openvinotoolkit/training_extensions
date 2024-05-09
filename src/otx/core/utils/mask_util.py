@@ -5,10 +5,16 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import numpy as np
 import pycocotools.mask as mask_utils
 import torch
 from datumaro import Polygon
+from torchvision.ops import roi_align
+
+if TYPE_CHECKING:
+    from torchvision import tv_tensors
 
 
 def polygon_to_bitmap(
@@ -90,19 +96,20 @@ def encode_rle(mask: torch.Tensor) -> dict:
 
 
 def crop_and_resize_polygons(
-    polygons: list[Polygon],
+    annos: list[Polygon],
     bboxes: np.ndarray,
     out_shape: tuple,
     inds: np.ndarray,
-) -> list:
+    device: str = "cpu",
+) -> torch.Tensor:
     """Crop and resize polygons to the target size."""
     out_h, out_w = out_shape
-    if len(polygons) == 0:
-        return []
+    if len(annos) == 0:
+        return torch.empty((0, *out_shape), dtype=torch.float, device=device)
 
     resized_polygons = []
     for i in range(len(bboxes)):
-        polygon = polygons[inds[i]]
+        polygon = annos[inds[i]]
         bbox = bboxes[i, :]
         x1, y1, x2, y2 = bbox
         w = np.maximum(x2 - x1, 1)
@@ -125,4 +132,37 @@ def crop_and_resize_polygons(
         resized_polygon = Polygon(points.tolist())
 
         resized_polygons.append(resized_polygon)
-    return resized_polygons
+
+    mask_targets = polygon_to_bitmap(resized_polygons, *out_shape)
+
+    return torch.from_numpy(mask_targets).float().to(device)
+
+
+def crop_and_resize_masks(
+    annos: tv_tensors.Mask,
+    bboxes: np.ndarray,
+    out_shape: tuple,
+    inds: np.ndarray,
+    device: str = "cpu",
+) -> torch.Tensor:
+    """Crop and resize masks to the target size."""
+    if len(annos) == 0:
+        return torch.empty((0, *out_shape), dtype=torch.float, device=device)
+
+    # convert bboxes to tensor
+    if isinstance(bboxes, np.ndarray):
+        bboxes = torch.from_numpy(bboxes).to(device=device)
+    if isinstance(inds, np.ndarray):
+        inds = torch.from_numpy(inds).to(device=device)
+
+    num_bbox = bboxes.shape[0]
+    fake_inds = torch.arange(num_bbox, device=device).to(dtype=bboxes.dtype)[:, None]
+    rois = torch.cat([fake_inds, bboxes], dim=1)  # Nx5
+    rois = rois.to(device=device)
+    if num_bbox > 0:
+        gt_masks_th = annos.index_select(0, inds).to(dtype=rois.dtype)
+        targets = roi_align(gt_masks_th[:, None, :, :], rois, out_shape, 1.0, 0, True).squeeze(1)
+        resized_masks = targets >= 0.5
+    else:
+        resized_masks = torch.empty((0, *out_shape), device=device)
+    return resized_masks.float()
