@@ -214,7 +214,7 @@ class TestRandomFlip:
         results = random_flip.forward(entity)
 
         # test image
-        assert np.all(F.to_image(results.image).flip(-1).numpy() == fxt_inst_seg_data_entity[0].image)
+        assert np.all(F.to_image(results.image.copy()).flip(-1).numpy() == fxt_inst_seg_data_entity[0].image)
 
         # test bboxes
         bboxes_results = results.bboxes.clone()
