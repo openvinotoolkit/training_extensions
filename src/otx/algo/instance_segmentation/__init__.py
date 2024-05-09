@@ -7,6 +7,6 @@ from otx.core.model.utils.mmdet import (
     DetDataPreprocessor,  # TODO(Eugene): Remove this after decoupling det data preprocessor
 )
 
-from . import heads, mmdet
+from . import mmdet
 
-__all__ = ["heads", "mmdet", "DetDataPreprocessor"]
+__all__ = ["mmdet", "DetDataPreprocessor"]
