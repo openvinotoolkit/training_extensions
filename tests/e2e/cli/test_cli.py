@@ -41,8 +41,14 @@ def test_otx_e2e_cli(
     Returns:
         None
     """
-    task = recipe.split("/")[-2]
+    task = recipe.split("/")[-2].upper()
     model_name = recipe.split("/")[-1].split(".")[0]
+
+    if task == OTXTaskType.INSTANCE_SEGMENTATION:
+        is_tiling = "tile" in recipe
+        dataset_path = fxt_target_dataset_per_task[task]["tiling" if is_tiling else "non_tiling"]
+    else:
+        dataset_path = fxt_target_dataset_per_task[task]
 
     if task == OTXTaskType.ACTION_DETECTION:
         pytest.xfail("Fix for action detection issue will be low priority. Refer to issue #3267.")
@@ -55,7 +61,7 @@ def test_otx_e2e_cli(
         "--config",
         recipe,
         "--data_root",
-        str(fxt_target_dataset_per_task[task]),
+        str(dataset_path),
         "--work_dir",
         str(tmp_path_train / "outputs"),
         "--engine.device",
@@ -94,7 +100,7 @@ def test_otx_e2e_cli(
         "--config",
         recipe,
         "--data_root",
-        str(fxt_target_dataset_per_task[task]),
+        str(dataset_path),
         "--work_dir",
         str(tmp_path_test / "outputs"),
         "--engine.device",
@@ -152,7 +158,7 @@ def test_otx_e2e_cli(
             "--config",
             recipe,
             "--data_root",
-            str(fxt_target_dataset_per_task[task]),
+            str(dataset_path),
             "--work_dir",
             str(tmp_path_test / "outputs" / fmt),
             *overrides,
@@ -190,7 +196,7 @@ def test_otx_e2e_cli(
         "--config",
         recipe,
         "--data_root",
-        str(fxt_target_dataset_per_task[task]),
+        str(dataset_path),
         "--work_dir",
         str(tmp_path_test / "outputs"),
         "--engine.device",
@@ -230,7 +236,7 @@ def test_otx_e2e_cli(
             "--config",
             recipe,
             "--data_root",
-            str(fxt_target_dataset_per_task[task]),
+            str(dataset_path),
             "--work_dir",
             str(tmp_path_test / "outputs" / fmt),
             *fxt_cli_override_command_per_task[task],
@@ -278,16 +284,20 @@ def test_otx_explain_e2e_cli(
     """
     import cv2
 
-    task = recipe.split("/")[-2]
+    task = recipe.split("/")[-2].upper()
     model_name = recipe.split("/")[-1].split(".")[0]
 
-    if ("_cls" not in task) and (task not in ["detection", "instance_segmentation"]):
+    if ("_cls" not in task) and (task not in [OTXTaskType.DETECTION, OTXTaskType.INSTANCE_SEGMENTATION]):
         pytest.skip("Supported only for classification, detection and instance segmentation task.")
 
     deterministic = "True"
-    if task == "instance_segmentation":
+    if task == OTXTaskType.INSTANCE_SEGMENTATION:
         # Determinism is not required for this test for instance_segmentation models.
         deterministic = "False"
+        is_tiling = "tile" in recipe
+        dataset_path = fxt_target_dataset_per_task[task]["tiling" if is_tiling else "non_tiling"]
+    else:
+        dataset_path = fxt_target_dataset_per_task[task]
 
     if "dino" in model_name:
         pytest.skip("DINO is not supported.")
@@ -300,7 +310,7 @@ def test_otx_explain_e2e_cli(
         "--config",
         recipe,
         "--data_root",
-        str(fxt_target_dataset_per_task[task]),
+        str(dataset_path),
         "--work_dir",
         str(tmp_path_explain / "outputs"),
         "--engine.device",
@@ -404,8 +414,12 @@ def test_otx_hpo_e2e_cli(
     }:
         model_cfg = ["--config", str(DEFAULT_CONFIG_PER_TASK[task].parent / "stfpm.yaml")]
 
-    task = task.lower()
-    tmp_path_hpo = tmp_path / f"otx_hpo_{task}"
+    if task == OTXTaskType.INSTANCE_SEGMENTATION:
+        dataset_path = fxt_target_dataset_per_task[task]["non_tiling"]
+    else:
+        dataset_path = fxt_target_dataset_per_task[task]
+
+    tmp_path_hpo = tmp_path / f"otx_hpo_{task.lower()}"
     tmp_path_hpo.mkdir(parents=True)
 
     command_cfg = [
@@ -413,15 +427,15 @@ def test_otx_hpo_e2e_cli(
         "train",
         *model_cfg,
         "--task",
-        task.upper(),
+        task,
         "--data_root",
-        str(fxt_target_dataset_per_task[task]),
+        str(dataset_path),
         "--work_dir",
         str(tmp_path_hpo),
         "--engine.device",
         fxt_accelerator,
         "--max_epochs",
-        "1" if task in ("zero_shot_visual_prompting") else "2",
+        "1" if task in (OTXTaskType.ZERO_SHOT_VISUAL_PROMPTING) else "2",
         "--run_hpo",
         "true",
         "--hpo_config.expected_time_ratio",
