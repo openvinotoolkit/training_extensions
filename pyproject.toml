@@ -136,6 +136,7 @@ omit = [
     "src/otx/tools/*",
     "**/mmconfigs/*",
     "**/mmdeploy/*",
+    "**/exportable_code/*",
 ]
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
