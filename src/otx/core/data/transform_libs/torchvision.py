@@ -108,7 +108,7 @@ class NumpytoTVTensorMixin:
         """Convert numpy to tv tensors."""
         if self.is_numpy_to_tvtensor and inputs is not None:
             if (image := getattr(inputs, "image", None)) is not None and isinstance(image, np.ndarray):
-                inputs.image = F.to_image(image)
+                inputs.image = F.to_image(image.copy())
             if (bboxes := getattr(inputs, "bboxes", None)) is not None and isinstance(bboxes, np.ndarray):
                 inputs.bboxes = tv_tensors.BoundingBoxes(bboxes, format="xyxy", canvas_size=inputs.img_info.img_shape)  # type: ignore[attr-defined]
             if (masks := getattr(inputs, "masks", None)) is not None and isinstance(masks, np.ndarray):
@@ -2553,7 +2553,7 @@ class FilterAnnotations(tvt_v2.Transform, NumpytoTVTensorMixin):
         keys = ("bboxes", "labels", "masks", "polygons")
         for key in keys:
             if hasattr(inputs, key):
-                if key == "polygons":
+                if key == "polygons" and len(polygons := inputs.polygons) > 0:
                     polygons = inputs.polygons
                     inputs.polygons = [polygons[i] for i in np.where(keep)[0]]
                 else:
