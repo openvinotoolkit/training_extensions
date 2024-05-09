@@ -312,7 +312,7 @@ class RTMDetInstTiny(ExplainableOTXInstanceSegModel):
         )
 
     def forward_for_tracing(
-        self, 
+        self,
         inputs: torch.Tensor,
     ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         """Forward function for export."""
