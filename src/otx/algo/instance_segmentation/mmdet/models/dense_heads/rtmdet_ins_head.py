@@ -1017,7 +1017,9 @@ class RTMDetInsSepBNHead(RTMDetInsHead):
         bbox_preds: list[torch.Tensor],
         kernel_preds: list[torch.Tensor],
         mask_feat: torch.Tensor,
+        batch_img_metas: list[dict] | None = None,
         cfg: DictConfig | None = None,
+        rescale: bool = False,
     ) -> tuple[Tensor, Tensor] | tuple[Tensor, Tensor, Tensor]:
         """Export the detection head."""
         if len(cls_scores) != len(bbox_preds):

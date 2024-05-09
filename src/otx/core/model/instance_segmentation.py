@@ -470,6 +470,8 @@ class MMDetInstanceSegCompatibleModel(ExplainableOTXInstanceSegModel):
                     losses[loss_name] = loss_value
                 elif isinstance(loss_value, list):
                     losses[loss_name] = sum(_loss.mean() for _loss in loss_value)
+            # pop acc from losses as it is not needed
+            losses.pop("acc", None)
             return losses
 
         scores: list[torch.Tensor] = []
