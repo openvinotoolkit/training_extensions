@@ -3,6 +3,7 @@
 #
 """Module for OTX base data entities."""
 
+
 from __future__ import annotations
 
 import warnings
