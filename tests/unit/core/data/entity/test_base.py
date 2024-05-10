@@ -2,7 +2,6 @@
 # SPDX-License-Identifier: Apache-2.0
 """Unit tests of base data entity."""
 
-
 import pytest
 import torch
 import torchvision.transforms.v2 as tvt
@@ -103,8 +102,7 @@ class TestImageInfo:
         transform = tvt.Pad(padding=(1, 2, 3, 4))
         transformed = transform(fxt_torchvision_data_entity)
 
-        assert transformed.image.shape[1:] != transformed.img_info.img_shape
-        assert transformed.image.shape[1:] == transformed.img_info.pad_shape
+        assert transformed.image.shape[1:] == transformed.img_info.img_shape
         assert fxt_torchvision_data_entity.image.shape[1:] == transformed.img_info.ori_shape
         assert transformed.img_info.padding == (1, 2, 3, 4)
 

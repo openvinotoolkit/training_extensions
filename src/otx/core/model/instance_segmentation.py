@@ -417,7 +417,7 @@ class MMDetInstanceSegCompatibleModel(ExplainableOTXInstanceSegModel):
             entity.labels,
         ):
             # NOTE: ground-truth masks are resized in training, but not in inference
-            height, width = img_info.pad_shape if self.training else img_info.ori_shape
+            height, width = img_info.img_shape if self.training else img_info.ori_shape
             mmdet_masks: BitmapMasks | PolygonMasks
             if len(masks):
                 mmdet_masks = BitmapMasks(masks.data.cpu().numpy(), height, width)
@@ -433,7 +433,6 @@ class MMDetInstanceSegCompatibleModel(ExplainableOTXInstanceSegModel):
                     "img_id": img_info.img_idx,
                     "img_shape": img_info.img_shape,
                     "ori_shape": img_info.ori_shape,
-                    "pad_shape": img_info.pad_shape,
                     "scale_factor": img_info.scale_factor,
                     "ignored_labels": img_info.ignored_labels,
                 },

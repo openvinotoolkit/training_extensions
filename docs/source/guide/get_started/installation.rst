@@ -43,9 +43,24 @@ Install OpenVINO™ Training Extensions for users (CUDA/CPU)
 
 2. Install PyTorch & Requirements for training according to your system environment.
 
-.. code-block:: shell
+.. tab-set::
 
-    otx install -v
+    .. tab-item:: Minimum requirements
+
+        .. code-block:: shell
+
+            pip install '.[base]'
+
+        .. note::
+
+            Models from mmlab are not available for this environment. If you want to use mmlab models, you must install them with Full Requirements.
+            Also, some tasks may not be supported by minimum requirements.
+
+    .. tab-item:: Full Requirements
+
+        .. code-block:: shell
+
+            otx install -v
 
 [Optional] Refer to the `torch official installation guide <https://pytorch.org/get-started/previous-versions/>`_
 

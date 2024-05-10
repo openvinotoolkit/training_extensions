@@ -17,7 +17,6 @@ class TestInstall:
             "base": [Requirement.parse("torch==2.0.0"), Requirement.parse("pytorchcv")],
             "openvino": [Requirement.parse("openvino")],
             "mmlab": [Requirement.parse("mmpretrain")],
-            "anomaly": [Requirement.parse("anomalib")],
             "api": [Requirement.parse("test1")],
         }
         mocker.patch("otx.cli.install.get_requirements", return_value=requirements_dict)
@@ -45,7 +44,6 @@ class TestInstall:
 
         assert "pytorchcv" in argument_call_list
         assert "openvino" not in argument_call_list
-        assert "anomalib" not in argument_call_list
 
     def test_install_full(self, mocker: MockerFixture, monkeypatch: MonkeyPatch) -> None:
         mock_create_command = mocker.patch("pip._internal.commands.create_command")
@@ -64,7 +62,6 @@ class TestInstall:
 
         assert "openvino" in argument_call_list
         assert "pytorchcv" in argument_call_list
-        assert "anomalib" in argument_call_list
         assert "mmpretrain" not in argument_call_list
         mm_argument_call_list = mock_mim_installation.call_args_list[-1][0][-1]
         assert "mmpretrain" in mm_argument_call_list
