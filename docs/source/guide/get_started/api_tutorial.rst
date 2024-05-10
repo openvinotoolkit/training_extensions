@@ -248,7 +248,7 @@ The model used by the Engine is of type ``otx.core.model.entity.base.OTXModel``.
             from otx.algo.detection.atss import ATSS
             from otx.engine import Engine
 
-            model = ATSS(num_classes=5, variant="mobilenetv2")
+            model = ATSS(label_info=5, variant="mobilenetv2")
 
             engine = Engine(data_root="data/wgisd", model=model)
             engine.train()
@@ -260,7 +260,7 @@ The model used by the Engine is of type ``otx.core.model.entity.base.OTXModel``.
             from otx.algo.detection.atss import ATSS
             from otx.engine import Engine
 
-            model = ATSS(num_classes=5, variant="mobilenetv2")
+            model = ATSS(label_info=5, variant="mobilenetv2")
 
             engine = Engine(data_root="data/wgisd", model=model, checkpoint="<path/to/checkpoint>")
             engine.train()
@@ -274,7 +274,7 @@ The model used by the Engine is of type ``otx.core.model.entity.base.OTXModel``.
             from otx.algo.detection.atss import ATSS
             from otx.engine import Engine
 
-            model = ATSS(num_classes=5, variant="mobilenetv2")
+            model = ATSS(label_info=5, variant="mobilenetv2")
             optimizer = SGD(model.parameters(), lr=0.01, weight_decay=1e-4, momentum=0.9)
             scheduler = CosineAnnealingLR(optimizer, T_max=10000, eta_min=0)
 
@@ -339,7 +339,7 @@ The datamodule used by the Engine is of type ``otx.core.data.module.OTXDataModul
 
             from otx.core.metrics.fmeasure import FMeasure
 
-            metric = FMeasue(num_classes=5)
+            metric = FMeasue(label_info=5)
             engine.train(metric=metric)
 
     .. tab-item:: Set Callbacks & Logger
@@ -407,7 +407,7 @@ If the training is already in place, we just need to use the code below:
 
             from otx.core.metrics.fmeasure import FMeasure
 
-            metric = FMeasue(num_classes=5)
+            metric = FMeasue(label_info=5)
             engine.test(metric=metric)
 
 
