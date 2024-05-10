@@ -46,6 +46,9 @@ if TYPE_CHECKING:
     from otx.core.metrics import MetricCallable
 
 
+# ruff: noqa: F401
+
+
 def _convert_pred_entity_to_compute_metric(
     preds: VisualPromptingBatchPredEntity | ZeroShotVisualPromptingBatchPredEntity,
     inputs: VisualPromptingBatchDataEntity | ZeroShotVisualPromptingBatchDataEntity,
@@ -447,6 +450,8 @@ class OVVisualPromptingModel(
         metric: MetricCallable = VisualPromptingMetricCallable,
         **kwargs,
     ) -> None:
+        from otx.algo.visual_prompting import openvino_models
+
         if async_inference:
             log.warning(
                 "Async inference is not supported for visual prompting models. Setting async_inference to False.",
