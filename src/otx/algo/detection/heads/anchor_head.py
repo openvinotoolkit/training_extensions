@@ -185,7 +185,7 @@ class AnchorHead(BaseDenseHead):
         # for each image, we compute valid flags of multi level anchors
         valid_flag_list = []
         for img_meta in batch_img_metas:
-            multi_level_flags = self.prior_generator.valid_flags(featmap_sizes, img_meta["pad_shape"], device)
+            multi_level_flags = self.prior_generator.valid_flags(featmap_sizes, img_meta["img_shape"], device)
             valid_flag_list.append(multi_level_flags)
 
         return anchor_list, valid_flag_list
