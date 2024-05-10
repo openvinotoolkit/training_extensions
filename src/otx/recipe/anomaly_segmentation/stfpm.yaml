@@ -16,7 +16,7 @@ engine:
   task: ANOMALY_SEGMENTATION
   device: auto
 
-callback_monitor: image_F1Score
+callback_monitor: pixel_F1Score
 
 data: ../_base_/data/torchvision_base.yaml
 overrides:
