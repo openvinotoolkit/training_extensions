@@ -656,16 +656,18 @@ class RTMDetInsHead(RTMDetHead):
             if isinstance(gt_instances.masks, tv_tensors.Mask):
                 continue
 
+            # TODO(Eugene): Occasionally, img_shape appears to be inaccurate.
+            #               Remove this after fixing img_shape issue.
+            # https://github.com/openvinotoolkit/training_extensions/pull/3479/files
+            img_shape = (640, 640) if len(set(img_meta["img_shape"])) > 1 else img_meta["img_shape"]
+
             if isinstance(gt_instances.masks[0], Polygon):
-                ndarray_masks = polygon_to_bitmap(
-                    gt_instances.masks,
-                    *img_meta["img_shape"],
-                )
+                ndarray_masks = polygon_to_bitmap(gt_instances.masks, *img_shape)
             else:
                 msg = "Unknown format, only supports dm.Polygon and tv_tensors.Mask for now."
                 raise NotImplementedError(msg)
             if len(ndarray_masks) == 0:
-                ndarray_masks = np.empty((0, *img_meta["img_shape"]), dtype=np.uint8)
+                ndarray_masks = np.empty((0, *img_shape), dtype=np.uint8)
             gt_instances.masks = torch.tensor(ndarray_masks, dtype=torch.bool, device=device)
 
         cls_reg_targets = self.get_targets(
