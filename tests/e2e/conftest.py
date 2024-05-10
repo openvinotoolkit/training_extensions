@@ -97,7 +97,9 @@ def fxt_target_dataset_per_task(fxt_ci_data_root) -> dict:
             "tiling": Path(fxt_ci_data_root / "v2/tiling_instance_seg/vitens_aeromonas_small/1"),
         },
         OTXTaskType.SEMANTIC_SEGMENTATION: Path(fxt_ci_data_root / "v2/semantic_seg/kvasir_small/1"),
-        OTXTaskType.ACTION_CLASSIFICATION: Path(fxt_ci_data_root / "v2/action/action_classification/ucf_kinetics_5percent_small"),
+        OTXTaskType.ACTION_CLASSIFICATION: Path(
+            fxt_ci_data_root / "v2/action/action_classification/ucf_kinetics_5percent_small"
+        ),
         OTXTaskType.ACTION_DETECTION: Path(fxt_ci_data_root / "v2/action/action_detection/UCF101_ava_5percent"),
         OTXTaskType.VISUAL_PROMPTING: Path(fxt_ci_data_root / "v2/visual_prompting/wgisd_small/1"),
         OTXTaskType.ZERO_SHOT_VISUAL_PROMPTING: Path(
