@@ -7,6 +7,7 @@ Releases
 v1.6.1 (2Q24)
 -------------
 
+- Replace the default model for rotated_det/ins_seg task from resnet50_maskrcnn to efficientnetb2b_maskrcnn
 - Update pymongo version to 4.6.3 for resolving CVE-2024-21506
 - Use torchvision in MRCNN on CUDA
 - Update IPEX version in installation guide documentation
