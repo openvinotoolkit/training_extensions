@@ -1,0 +1,91 @@
+model:
+  class_path: otx.algo.instance_segmentation.maskrcnn.MaskRCNNResNet50
+  init_args:
+    label_info: 80
+
+    optimizer:
+      class_path: torch.optim.SGD
+      init_args:
+        lr: 0.007
+        momentum: 0.9
+        weight_decay: 0.001
+
+    scheduler:
+      class_path: otx.core.schedulers.LinearWarmupSchedulerCallable
+      init_args:
+        num_warmup_steps: 100
+        main_scheduler_callable:
+          class_path: lightning.pytorch.cli.ReduceLROnPlateau
+          init_args:
+            mode: max
+            factor: 0.1
+            patience: 4
+            monitor: val/map_50
+
+engine:
+  task: INSTANCE_SEGMENTATION
+  device: auto
+
+callback_monitor: val/map_50
+
+data: ../_base_/data/torchvision_base.yaml
+overrides:
+  max_epochs: 100
+  gradient_clip_val: 35.0
+  data:
+    task: INSTANCE_SEGMENTATION
+    config:
+      stack_images: true
+      data_format: coco_instances
+      include_polygons: true
+      train_subset:
+        batch_size: 4
+        transforms:
+          - class_path: otx.core.data.transform_libs.torchvision.Resize
+            init_args:
+              keep_ratio: true
+              transform_bbox: true
+              transform_mask: true
+              scale:
+                - 1024
+                - 1024
+          - class_path: otx.core.data.transform_libs.torchvision.Pad
+            init_args:
+              size_divisor: 32
+              transform_mask: true
+          - class_path: otx.core.data.transform_libs.torchvision.RandomFlip
+            init_args:
+              prob: 0.5
+              is_numpy_to_tvtensor: true
+      val_subset:
+        batch_size: 1
+        transforms:
+          - class_path: otx.core.data.transform_libs.torchvision.Resize
+            init_args:
+              keep_ratio: true
+              transform_bbox: false
+              transform_mask: false
+              scale:
+                - 1024
+                - 1024
+          - class_path: otx.core.data.transform_libs.torchvision.Pad
+            init_args:
+              size_divisor: 32
+              transform_mask: false
+              is_numpy_to_tvtensor: true
+      test_subset:
+        batch_size: 1
+        transforms:
+          - class_path: otx.core.data.transform_libs.torchvision.Resize
+            init_args:
+              keep_ratio: true
+              transform_bbox: false
+              transform_mask: false
+              scale:
+                - 1024
+                - 1024
+          - class_path: otx.core.data.transform_libs.torchvision.Pad
+            init_args:
+              size_divisor: 32
+              transform_mask: false
+              is_numpy_to_tvtensor: true
