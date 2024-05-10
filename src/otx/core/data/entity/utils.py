@@ -106,7 +106,7 @@ def stack_batch(
     # The first dim normally means channel,  which should not be padded.
     padded_sizes[:, 0] = 0
     if padded_sizes.sum() == 0:
-        return tensor_list, img_info_list
+        return torch.stack(tensor_list), img_info_list
     # `pad` is the second arguments of `F.pad`. If pad is (1, 2, 3, 4),
     # it means that padding the last dim with 1(left) 2(right), padding the
     # penultimate dim to 3(top) 4(bottom). The order of `pad` is opposite of
