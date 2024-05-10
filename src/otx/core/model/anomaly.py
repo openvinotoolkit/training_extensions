@@ -211,8 +211,8 @@ class OTXAnomaly:
             if "Resize" in name:
                 image_size = tuple(transform.size)  # type: ignore[assignment]
             elif "Normalize" in name:
-                mean_value = tuple(transform.mean)  # type: ignore[assignment]
-                std_value = tuple(transform.std)  # type: ignore[assignment]
+                mean_value = tuple(value * 255 for value in transform.mean)  # type: ignore[assignment]
+                std_value = tuple(value * 255 for value in transform.std)  # type: ignore[assignment]
         return image_size, mean_value, std_value
 
     @property

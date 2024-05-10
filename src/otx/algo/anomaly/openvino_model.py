@@ -148,10 +148,3 @@ class AnomalyOpenVINO(OVModel):
     def _customize_outputs(self, outputs: list[AnomalyResult], inputs: AnomalyModelInputs) -> list[AnomalyResult]:
         """Return outputs from the OpenVINO model as is."""
         return outputs
-
-    def _customize_inputs(self, inputs: AnomalyModelInputs) -> dict[str, np.ndarray]:
-        """Return inputs as is."""
-        inputs = super()._customize_inputs(inputs)
-        # model needs inputs in range 0-1
-        inputs["inputs"] = [value / 255.0 for value in inputs["inputs"]]
-        return inputs
