@@ -179,7 +179,6 @@ class PackActionInputs(MMPackActionInputs):
 
         ori_shape = results["original_shape"]
         img_shape = data_samples.img_shape
-        pad_shape = data_samples.metainfo.get("pad_shape", img_shape)
         scale_factor = data_samples.metainfo.get("scale_factor", (1.0, 1.0))
 
         data_entity: ActionClsDataEntity | ActionDetDataEntity = results["__otx__"]
@@ -188,7 +187,6 @@ class PackActionInputs(MMPackActionInputs):
         image_info.img_shape = img_shape
         image_info.ori_shape = ori_shape
         image_info.scale_factor = scale_factor
-        image_info.pad_shape = pad_shape
 
         labels = data_entity.labels
 
