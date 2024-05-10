@@ -262,12 +262,19 @@ def unpack_inst_seg_entity(entity: InstanceSegBatchDataEntity) -> tuple:
 
         batch_gt_instances.append(
             InstanceData(
-                metainfo=metainfo,
                 masks=gt_masks,
                 bboxes=bboxes,
                 labels=labels,
             ),
         )
+
+    # TODO(Eugene): img_shape is not being updated correctly for RMTDet for some reason.
+    #               Remove this after fixing img_shape issue.
+    # https://github.com/openvinotoolkit/training_extensions/pull/3479/files
+    img_shapes = [img_meta["img_shape"] for img_meta in batch_img_metas]
+    if len(set(img_shapes)) > 1:
+        for i in range(len(batch_img_metas)):
+            batch_img_metas[i]["img_shape"] = (640, 640)
 
     return batch_gt_instances, batch_img_metas
 

@@ -652,20 +652,20 @@ class RTMDetInsHead(RTMDetHead):
             decoded_bboxes.append(bbox_pred)
 
         flatten_bboxes = torch.cat(decoded_bboxes, 1)
-        for gt_instances in batch_gt_instances:
+        for gt_instances, img_meta in zip(batch_gt_instances, batch_img_metas):
             if isinstance(gt_instances.masks, tv_tensors.Mask):
                 continue
 
             if isinstance(gt_instances.masks[0], Polygon):
                 ndarray_masks = polygon_to_bitmap(
                     gt_instances.masks,
-                    *gt_instances.metainfo["pad_shape"],
+                    *img_meta["img_shape"],
                 )
             else:
                 msg = "Unknown format, only supports dm.Polygon and tv_tensors.Mask for now."
                 raise NotImplementedError(msg)
             if len(ndarray_masks) == 0:
-                ndarray_masks = np.empty((0, *gt_instances.metainfo["pad_shape"]), dtype=np.uint8)
+                ndarray_masks = np.empty((0, *img_meta["img_shape"]), dtype=np.uint8)
             gt_instances.masks = torch.tensor(ndarray_masks, dtype=torch.bool, device=device)
 
         cls_reg_targets = self.get_targets(
