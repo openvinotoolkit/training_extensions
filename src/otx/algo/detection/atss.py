@@ -80,7 +80,7 @@ class ATSS(ExplainableOTXDetModel):
 
     def _customize_inputs(self, entity: DetBatchDataEntity) -> dict[str, Any]:
         if isinstance(entity.images, list):
-            entity.images = stack_batch(entity.images, pad_size_divisor=32)
+            entity.images, entity.imgs_info = stack_batch(entity.images, entity.imgs_info, pad_size_divisor=32)
         inputs: dict[str, Any] = {}
 
         inputs["entity"] = entity

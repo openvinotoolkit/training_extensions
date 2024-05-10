@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 """Utility functions for OTX data entities."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -14,7 +15,7 @@ from torchvision import tv_tensors
 from torchvision.utils import _log_api_usage_once
 
 if TYPE_CHECKING:
-    from otx.core.data.entity.base import Points, T_OTXDataEntity  # noqa: TCH004
+    from otx.core.data.entity.base import ImageInfo, Points, T_OTXDataEntity  # noqa: TCH004
 
 
 def register_pytree_node(cls: type[T_OTXDataEntity]) -> type[T_OTXDataEntity]:
@@ -75,9 +76,10 @@ def clamp_points(inpt: Tensor, canvas_size: tuple[int, int] | None = None) -> Te
 
 def stack_batch(
     tensor_list: list[torch.Tensor],
+    img_info_list: list[ImageInfo],
     pad_size_divisor: int = 1,
     pad_value: int | float = 0,
-) -> torch.Tensor:
+) -> tuple[torch.Tensor, list[ImageInfo]]:
     """Stack multiple tensors to form a batch.
 
     Pad the tensor to the max shape use the right bottom padding mode in these images.
@@ -86,6 +88,7 @@ def stack_batch(
 
     Args:
         tensor_list (List[Tensor]): A list of tensors with the same dim.
+        img_info_list (List[Tensor]): A list of img_info to be updated.
         pad_size_divisor (int): If ``pad_size_divisor > 0``, add padding
             to ensure the shape of each dim is divisible by
             ``pad_size_divisor``. This depends on the model, and many
@@ -93,7 +96,7 @@ def stack_batch(
         pad_value (int, float): The padding value. Defaults to 0.
 
     Returns:
-        Tensor: The n dim tensor.
+        (tuple[torch.Tensor, list[ImageInfo]]): The n dim tensor and updated a list of ImageInfo.
     """
     dim = tensor_list[0].dim()
     num_img = len(tensor_list)
@@ -103,7 +106,7 @@ def stack_batch(
     # The first dim normally means channel,  which should not be padded.
     padded_sizes[:, 0] = 0
     if padded_sizes.sum() == 0:
-        return torch.stack(tensor_list)
+        return tensor_list, img_info_list
     # `pad` is the second arguments of `F.pad`. If pad is (1, 2, 3, 4),
     # it means that padding the last dim with 1(left) 2(right), padding the
     # penultimate dim to 3(top) 4(bottom). The order of `pad` is opposite of
@@ -113,6 +116,18 @@ def stack_batch(
     pad = torch.zeros(num_img, 2 * dim, dtype=torch.int)
     pad[:, 1::2] = padded_sizes[:, range(dim - 1, -1, -1)]
     batch_tensor = []
-    for idx, tensor in enumerate(tensor_list):
-        batch_tensor.append(torch.nn.functional.pad(tensor, tuple(pad[idx].tolist()), value=pad_value))
-    return torch.stack(batch_tensor)
+    batch_info = []
+    for idx, (tensor, info) in enumerate(zip(tensor_list, img_info_list)):
+        padded_img = torch.nn.functional.pad(tensor, tuple(pad[idx].tolist()), value=pad_value)
+        # update img_info.img_shape
+        info.img_shape = padded_img.shape[1:]
+        # update img_info.padding
+        left, top, right, bottom = info.padding
+        info.padding = (left + pad[idx, 0], top + pad[idx, 2], right + pad[idx, 1], bottom + pad[idx, 3])
+        # append padded img
+        batch_tensor.append(padded_img)
+        batch_info.append(info)
+
+    stacked_images = torch.stack(batch_tensor)
+
+    return stacked_images, batch_info
