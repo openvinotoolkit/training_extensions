@@ -398,6 +398,7 @@ def test_otx_hpo_e2e_cli(
     Returns:
         None
     """
+    task = task.upper()
     if task not in DEFAULT_CONFIG_PER_TASK:
         pytest.skip(f"Task {task} is not supported in the auto-configuration.")
     if task == OTXTaskType.ZERO_SHOT_VISUAL_PROMPTING:
