@@ -288,7 +288,6 @@ class MobileNetV2ATSS(ATSS):
             in_channels=64,
             stacked_convs=4,
             feat_channels=64,
-            init_cfg={"type": "Xavier", "layer": "Conv2d", "distribution": "uniform"},
             train_cfg=train_cfg,
             test_cfg=test_cfg,
         )
@@ -361,7 +360,6 @@ class ResNeXt101ATSS(ATSS):
             in_channels=256,
             stacked_convs=4,
             feat_channels=256,
-            init_cfg={"type": "Xavier", "layer": "Conv2d", "distribution": "uniform"},
             train_cfg=train_cfg,
             test_cfg=test_cfg,
         )
