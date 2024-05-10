@@ -78,6 +78,7 @@ base = [
     "onnx==1.16.0",
     "onnxconverter-common==1.14.0",
     "nncf==2.9.0",
+    "anomalib[core]==1.0.1",
 ]
 mmlab = [
     "mmdet==3.2.0",
@@ -88,9 +89,6 @@ mmlab = [
     # Without the pip cache, oss2 will sometimes install to a lower version. This is related to the installation of the mmlab library.
     # This causes an error when training the mm model, so fix the version first.
     "oss2==2.18.4",
-]
-anomaly = [
-    "anomalib[core]==1.0.1",
 ]
 
 [project.scripts]
