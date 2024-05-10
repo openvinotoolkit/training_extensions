@@ -12,7 +12,6 @@ import numpy as np
 import torch
 import torch.nn.functional
 from datumaro import Polygon
-from mmengine.structures import InstanceData
 from torch import Tensor, nn
 
 from otx.algo.detection.ops.nms import batched_nms, multiclass_nms
@@ -30,6 +29,7 @@ from otx.algo.instance_segmentation.mmdet.structures.bbox.transforms import get_
 from otx.algo.modules.base_module import BaseModule
 from otx.algo.modules.conv_module import ConvModule
 from otx.algo.modules.norm import is_norm
+from otx.algo.utils.mmengine_utils import InstanceData
 from otx.algo.utils.weight_init import bias_init_with_prob, constant_init, normal_init
 from otx.core.data.entity.instance_segmentation import InstanceSegBatchDataEntity
 from otx.core.utils.mask_util import polygon_to_bitmap
