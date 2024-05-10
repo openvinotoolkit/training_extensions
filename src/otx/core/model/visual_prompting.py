@@ -742,6 +742,8 @@ class OVZeroShotVisualPromptingModel(
         save_outputs: bool = True,
         **kwargs,
     ) -> None:
+        from otx.algo.visual_prompting import openvino_models
+
         if async_inference:
             log.warning(
                 (
