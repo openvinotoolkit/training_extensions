@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 from otx.algo.instance_segmentation.maskrcnn import MaskRCNNEfficientNet, MaskRCNNResNet50, MaskRCNNSwinT
-from otx.algo.instance_segmentation.rtmdet_inst import MMDetRTMDetInstTiny
+from otx.algo.instance_segmentation.rtmdet_inst import RTMDetInstTiny
 from otx.core.data.entity.instance_segmentation import (
     InstanceSegBatchPredEntity,
 )
@@ -14,7 +14,7 @@ from otx.core.types.export import OTXExportFormatType
 class TestInstSegModel:
     @pytest.mark.parametrize(
         "model",
-        [MaskRCNNEfficientNet(2), MaskRCNNResNet50(2), MaskRCNNSwinT(2), MMDetRTMDetInstTiny(2)],
+        [MaskRCNNEfficientNet(2), MaskRCNNResNet50(2), MaskRCNNSwinT(2), RTMDetInstTiny(2)],
     )
     def test_model(self, model, tmpdir, fxt_inst_seg_data_entity) -> None:
         _, _, batch_data_entity = fxt_inst_seg_data_entity

@@ -5,6 +5,7 @@
 import pytest
 import torch
 from otx.algo.instance_segmentation.maskrcnn import MaskRCNNEfficientNet, MaskRCNNResNet50, MaskRCNNSwinT
+from otx.algo.instance_segmentation.rtmdet_inst import RTMDetInstTiny
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.data.entity.instance_segmentation import InstanceSegBatchPredEntity
 from otx.core.types.export import TaskLevelExportParameters
@@ -19,7 +20,7 @@ class TestMaskRCNN:
 
         assert isinstance(model._export_parameters, TaskLevelExportParameters)
 
-    @pytest.mark.parametrize("model", [MaskRCNNResNet50(3), MaskRCNNEfficientNet(3), MaskRCNNSwinT(3)])
+    @pytest.mark.parametrize("model", [MaskRCNNResNet50(3), MaskRCNNEfficientNet(3), MaskRCNNSwinT(3), RTMDetInstTiny(3)])
     def test_loss(self, model, mocker, fxt_data_module):
         data = next(iter(fxt_data_module.train_dataloader()))
         data.images = torch.randn([2, 3, 32, 32])
@@ -36,7 +37,7 @@ class TestMaskRCNN:
         assert "loss_rpn_cls" in output
         assert "loss_rpn_bbox" in output
 
-    @pytest.mark.parametrize("model", [MaskRCNNResNet50(3), MaskRCNNEfficientNet(3), MaskRCNNSwinT(3)])
+    @pytest.mark.parametrize("model", [MaskRCNNResNet50(3), MaskRCNNEfficientNet(3), MaskRCNNSwinT(3), RTMDetInstTiny(3)])
     def test_predict(self, model, fxt_data_module):
         data = next(iter(fxt_data_module.train_dataloader()))
         data.images = [torch.randn(3, 32, 32), torch.randn(3, 48, 48)]
@@ -44,7 +45,7 @@ class TestMaskRCNN:
         output = model(data)
         assert isinstance(output, InstanceSegBatchPredEntity)
 
-    @pytest.mark.parametrize("model", [MaskRCNNResNet50(3), MaskRCNNEfficientNet(3), MaskRCNNSwinT(3)])
+    @pytest.mark.parametrize("model", [MaskRCNNResNet50(3), MaskRCNNEfficientNet(3), MaskRCNNSwinT(3), RTMDetInstTiny(3)])
     def test_export(self, model):
         model.eval()
         output = model.forward_for_tracing(torch.randn(1, 3, 32, 32))
