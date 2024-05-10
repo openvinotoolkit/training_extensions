@@ -67,7 +67,7 @@ def test_otx_e2e_cli(
         "--engine.device",
         fxt_accelerator,
         "--max_epochs",
-        "1" if task in ("zero_shot_visual_prompting") else "2",
+        "1" if task in (OTXTaskType.ZERO_SHOT_VISUAL_PROMPTING) else "2",
         *fxt_cli_override_command_per_task[task],
     ]
 
