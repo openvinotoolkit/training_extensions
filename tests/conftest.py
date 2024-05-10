@@ -238,7 +238,7 @@ def fxt_h_label_cls_data_entity() -> tuple[HlabelClsDataEntity, HlabelClsBatchDa
 @pytest.fixture(scope="session")
 def fxt_det_data_entity() -> tuple[tuple, DetDataEntity, DetBatchDataEntity]:
     img_size = (64, 64)
-    fake_image = torch.zeros(size=(3, *img_size), dtype=torch.uint8).numpy()
+    fake_image = torch.zeros(size=(3, *img_size), dtype=torch.float32).numpy()
     fake_image_info = ImageInfo(img_idx=0, img_shape=img_size, ori_shape=img_size)
     fake_bboxes = tv_tensors.BoundingBoxes(data=torch.Tensor([0, 0, 5, 5]), format="xyxy", canvas_size=(10, 10))
     fake_labels = LongTensor([1])
