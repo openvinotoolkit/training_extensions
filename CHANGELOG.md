@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Enhancements
 
+- Replace the default model for rotated_det/ins_seg task from resnet50_maskrcnn to efficientnetb2b_maskrcnn (<https://github.com/openvinotoolkit/training_extensions/pull/3478>)
 - Update pymongo version to 4.6.3 for resolving CVE-2024-21506 (<https://github.com/openvinotoolkit/training_extensions/pull/3396>)
 - Use torchvision in MRCNN on CUDA (<https://github.com/openvinotoolkit/training_extensions/pull/3347>)
 - Update IPEX version in installation guide documentation (<https://github.com/openvinotoolkit/training_extensions/pull/3343>)
