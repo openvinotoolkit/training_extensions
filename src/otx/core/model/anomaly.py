@@ -203,18 +203,16 @@ class OTXAnomaly:
 
     def _get_values_from_transforms(
         self,
-        key_name: str,
-    ) -> tuple:
+    ) -> tuple[tuple[int, int], tuple[float, float, float], tuple[float, float, float]]:
         """Get the value requested value from default transforms."""
+        image_size, mean_value, std_value = (256, 256), (123.675, 116.28, 103.53), (58.395, 57.12, 57.375)
         for transform in self.configure_transforms().transforms:  # type: ignore[attr-defined]
             name = transform.__class__.__name__
-            if "Resize" in name and key_name == "input_size":
-                image_size = transform.size
+            if "Resize" in name:
+                image_size = tuple(transform.size)  # type: ignore[assignment]
             elif "Normalize" in name:
-                if key_name == "mean":
-                    mean_value = transform.mean
-                elif key_name == "scale":
-                    std_value = transform.std
+                mean_value = tuple(transform.mean)  # type: ignore[assignment]
+                std_value = tuple(transform.std)  # type: ignore[assignment]
         return image_size, mean_value, std_value
 
     @property
@@ -406,7 +404,7 @@ class OTXAnomaly:
         """
         min_val = self.normalization_metrics.state_dict()["min"].cpu().numpy().tolist()
         max_val = self.normalization_metrics.state_dict()["max"].cpu().numpy().tolist()
-        image_shape, mean_values, scale_values = self._get_values_from_transforms("input_size")
+        image_shape, mean_values, scale_values = self._get_values_from_transforms()
         exporter = _AnomalyModelExporter(
             image_shape=image_shape,
             image_threshold=self.image_threshold.value.cpu().numpy().tolist(),
