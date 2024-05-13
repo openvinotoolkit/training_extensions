@@ -13,19 +13,19 @@ from __future__ import annotations
 import warnings
 from collections import OrderedDict
 from copy import deepcopy
+from pathlib import Path
 
 import torch
 import torch.nn.functional
 import torch.utils.checkpoint as cp
-from mmengine.runner.checkpoint import CheckpointLoader
-from mmengine.utils import to_2tuple
-from timm.models.layers import DropPath
+from timm.models.layers import DropPath, to_2tuple
 from torch import nn
 
 from otx.algo.instance_segmentation.mmdet.models.layers import PatchEmbed, PatchMerging
 from otx.algo.modules.base_module import BaseModule, ModuleList
 from otx.algo.modules.norm import build_norm_layer
 from otx.algo.modules.transformer import FFN
+from otx.algo.utils.mmengine_utils import load_from_http
 from otx.algo.utils.weight_init import constant_init, trunc_normal_, trunc_normal_init
 
 # ruff: noqa: PLR0913
@@ -711,7 +711,15 @@ class SwinTransformer(BaseModule):
             if not isinstance(self.init_cfg, dict):
                 msg = "init_cfg must be a dict"
                 raise TypeError(msg)
-            ckpt = CheckpointLoader.load_checkpoint(self.init_cfg["checkpoint"], map_location="cpu")
+
+            ckpt_path = self.init_cfg["checkpoint"]
+            if ckpt_path.startswith("http"):
+                ckpt = load_from_http(ckpt_path, map_location="cpu")
+            elif Path(ckpt_path).exists():
+                ckpt = torch.load(ckpt_path, map_location="cpu")
+            else:
+                raise FileNotFoundError(ckpt_path)
+
             if "state_dict" in ckpt:
                 _state_dict = ckpt["state_dict"]
             elif "model" in ckpt:
