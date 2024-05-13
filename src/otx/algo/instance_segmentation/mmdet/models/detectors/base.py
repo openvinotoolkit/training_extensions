@@ -13,10 +13,8 @@ from otx.algo.modules.base_module import BaseModule
 
 if TYPE_CHECKING:
     import torch
-    from mmdet.structures.det_data_sample import DetDataSample
-    from mmengine.config import ConfigDict
-    from mmengine.structures import InstanceData
-    from torch import nn
+
+    from otx.algo.utils.mmengine_utils import InstanceData
 
 
 class BaseDetector(BaseModule):
@@ -29,14 +27,6 @@ class BaseDetector(BaseModule):
        init_cfg (dict or ConfigDict, optional): the config to control the
            initialization. Defaults to None.
     """
-
-    def __init__(
-        self,
-        data_preprocessor: nn.Module,
-        init_cfg: ConfigDict | dict | list[ConfigDict | dict] | None = None,
-    ):
-        super().__init__(init_cfg=init_cfg)
-        self.data_preprocessor = data_preprocessor
 
     @property
     def with_neck(self) -> bool:
@@ -52,10 +42,9 @@ class BaseDetector(BaseModule):
 
     def forward(
         self,
-        inputs: torch.Tensor,
-        data_samples: list[DetDataSample],
+        entity: torch.Tensor,
         mode: str = "tensor",
-    ) -> dict[str, torch.Tensor] | list[DetDataSample] | tuple[torch.Tensor] | torch.Tensor:
+    ) -> dict[str, torch.Tensor] | list[InstanceData] | tuple[torch.Tensor] | torch.Tensor:
         """The unified entry for a forward process in both training and test.
 
         The method should accept three modes: "tensor", "predict" and "loss":
@@ -86,38 +75,8 @@ class BaseDetector(BaseModule):
             - If ``mode="loss"``, return a dict of tensor.
         """
         if mode == "loss":
-            return self.loss(inputs, data_samples)
+            return self.loss(entity)
         if mode == "predict":
-            return self.predict(inputs, data_samples)
+            return self.predict(entity)
         msg = f"Invalid mode {mode}. Only supports loss and predict mode."
         raise RuntimeError(msg)
-
-    def add_pred_to_datasample(
-        self,
-        data_samples: list[DetDataSample],
-        results_list: list[InstanceData],
-    ) -> list[DetDataSample]:
-        """Add predictions to `DetDataSample`.
-
-        Args:
-            data_samples (list[:obj:`DetDataSample`], optional): A batch of
-                data samples that contain annotations and predictions.
-            results_list (list[:obj:`InstanceData`]): Detection results of
-                each image.
-
-        Returns:
-            list[:obj:`DetDataSample`]: Detection results of the
-            input images. Each DetDataSample usually contain
-            'pred_instances'. And the ``pred_instances`` usually
-            contains following keys.
-
-                - scores (Tensor): Classification scores, has a shape
-                    (num_instance, )
-                - labels (Tensor): Labels of bboxes, has a shape
-                    (num_instances, ).
-                - bboxes (Tensor): Has a shape (num_instances, 4),
-                    the last dimension 4 arrange as (x1, y1, x2, y2).
-        """
-        for data_sample, pred_instances in zip(data_samples, results_list):
-            data_sample.pred_instances = pred_instances
-        return data_samples

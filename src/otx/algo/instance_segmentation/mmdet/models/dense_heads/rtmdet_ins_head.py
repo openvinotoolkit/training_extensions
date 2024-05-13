@@ -8,9 +8,10 @@ import copy
 import math
 from typing import TYPE_CHECKING
 
+import numpy as np
 import torch
 import torch.nn.functional
-from mmengine.structures import InstanceData
+from datumaro import Polygon
 from torch import Tensor, nn
 
 from otx.algo.detection.ops.nms import batched_nms, multiclass_nms
@@ -21,20 +22,22 @@ from otx.algo.detection.utils.utils import (
     multi_apply,
     reduce_mean,
     select_single_mlvl,
-    unpack_gt_instances,
+    unpack_inst_seg_entity,
 )
 from otx.algo.instance_segmentation.mmdet.models.roi_extractors.roi_align import OTXRoIAlign
 from otx.algo.instance_segmentation.mmdet.structures.bbox.transforms import get_box_wh, scale_boxes
 from otx.algo.modules.base_module import BaseModule
 from otx.algo.modules.conv_module import ConvModule
 from otx.algo.modules.norm import is_norm
+from otx.algo.utils.mmengine_utils import InstanceData
 from otx.algo.utils.weight_init import bias_init_with_prob, constant_init, normal_init
+from otx.core.data.entity.instance_segmentation import InstanceSegBatchDataEntity
+from otx.core.utils.mask_util import polygon_to_bitmap
 
 from .rtmdet_head import RTMDetHead
 from .utils import sigmoid_geometric_mean
 
 if TYPE_CHECKING:
-    from mmdet.structures.det_data_sample import DetDataSample
     from omegaconf import DictConfig
 
 
@@ -648,8 +651,13 @@ class RTMDetInsHead(RTMDetHead):
             decoded_bboxes.append(bbox_pred)
 
         flatten_bboxes = torch.cat(decoded_bboxes, 1)
-        for gt_instances in batch_gt_instances:
-            gt_instances.masks = gt_instances.masks.to_tensor(dtype=torch.bool, device=device)
+        # Convert polygon masks to bitmap masks
+        if isinstance(batch_gt_instances[0].masks[0], Polygon):
+            for gt_instances, img_meta in zip(batch_gt_instances, batch_img_metas):
+                ndarray_masks = polygon_to_bitmap(gt_instances.masks, *img_meta["img_shape"])
+                if len(ndarray_masks) == 0:
+                    ndarray_masks = np.empty((0, *img_meta["img_shape"]), dtype=np.uint8)
+                gt_instances.masks = torch.tensor(ndarray_masks, dtype=torch.bool, device=device)
 
         cls_reg_targets = self.get_targets(
             flatten_cls_scores,
@@ -976,71 +984,23 @@ class RTMDetInsSepBNHead(RTMDetInsHead):
             kernel_preds.append(kernel_pred)
         return tuple(cls_scores), tuple(bbox_preds), tuple(kernel_preds), mask_feat
 
-    def loss(self, x: tuple[Tensor], batch_data_samples: list[DetDataSample]) -> dict:
+    def loss(self, x: tuple[Tensor], entity: InstanceSegBatchDataEntity) -> dict:
         """Perform forward propagation and loss calculation.
 
         Args:
             x (tuple[Tensor]): Features from the upstream network, each is
                 a 4D-tensor.
-            batch_data_samples (List[:obj:`DetDataSample`]): The Data
-                Samples. It usually includes information such as
-                `gt_instance`, `gt_panoptic_seg` and `gt_sem_seg`.
+            entity (InstanceSegBatchDataEntity): Entity from OTX dataset.
 
         Returns:
             dict: A dictionary of loss components.
         """
         outs = self(x)
 
-        outputs = unpack_gt_instances(batch_data_samples)
-        (batch_gt_instances, batch_gt_instances_ignore, batch_img_metas) = outputs
+        batch_gt_instances, batch_img_metas = unpack_inst_seg_entity(entity)
 
-        loss_inputs = (*outs, batch_gt_instances, batch_img_metas, batch_gt_instances_ignore)
+        loss_inputs = (*outs, batch_gt_instances, batch_img_metas)
         return self.loss_by_feat(*loss_inputs)
-
-    def predict(
-        self,
-        x: tuple[Tensor],
-        batch_data_samples: list[DetDataSample],
-        rescale: bool = False,
-    ) -> list[InstanceData]:
-        """Perform forward propagation of the detection head and predict detection results.
-
-        Args:
-            x (tuple[Tensor]): Multi-level features from the
-                upstream network, each is a 4D-tensor.
-            batch_data_samples (List[:obj:`DetDataSample`]): The Data
-                Samples. It usually includes information such as
-                `gt_instance`, `gt_panoptic_seg` and `gt_sem_seg`.
-            rescale (bool, optional): Whether to rescale the results.
-                Defaults to False.
-
-        Returns:
-            list[obj:`InstanceData`]: Detection results of each image
-            after the post process.
-        """
-        batch_img_metas = [data_samples.metainfo for data_samples in batch_data_samples]
-
-        cls_scores, bbox_preds, kernel_preds, mask_feat = self(x)
-
-        return self.predict_by_feat(
-            cls_scores,
-            bbox_preds,
-            kernel_preds,
-            mask_feat,
-            batch_img_metas=batch_img_metas,
-            rescale=rescale,
-        )
-
-    def export(self, x: tuple[Tensor]) -> tuple[Tensor, Tensor] | tuple[Tensor, Tensor, Tensor]:
-        """Export the detection head."""
-        cls_scores, bbox_preds, kernel_preds, mask_feat = self(x)
-
-        return self.export_by_feat(
-            cls_scores,
-            bbox_preds,
-            kernel_preds,
-            mask_feat,
-        )
 
     def export_by_feat(
         self,
@@ -1048,7 +1008,9 @@ class RTMDetInsSepBNHead(RTMDetInsHead):
         bbox_preds: list[torch.Tensor],
         kernel_preds: list[torch.Tensor],
         mask_feat: torch.Tensor,
+        batch_img_metas: list[dict] | None = None,
         cfg: DictConfig | None = None,
+        rescale: bool = False,
     ) -> tuple[Tensor, Tensor] | tuple[Tensor, Tensor, Tensor]:
         """Export the detection head."""
         if len(cls_scores) != len(bbox_preds):

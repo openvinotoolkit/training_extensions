@@ -698,7 +698,7 @@ class SwinTransformer(BaseModule):
 
     def init_weights(self) -> None:
         """Initialize the weights."""
-        if self.init_cfg is None:
+        if not self.init_cfg:
             for m in self.modules():
                 if isinstance(m, nn.Linear):
                     trunc_normal_init(m, std=0.02, bias=0.0)

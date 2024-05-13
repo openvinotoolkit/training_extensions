@@ -6,14 +6,13 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from .single_stage import InstSegSingleStageDetector
+from otx.algo.detection.ssd import SingleStageDetector
 
 if TYPE_CHECKING:
-    import torch
     from torch import nn
 
 
-class RTMDet(InstSegSingleStageDetector):
+class RTMDet(SingleStageDetector):
     """Implementation of RTMDet.
 
     Args:
@@ -37,7 +36,6 @@ class RTMDet(InstSegSingleStageDetector):
         backbone: nn.Module,
         neck: nn.Module,
         bbox_head: nn.Module,
-        data_preprocessor: nn.Module,
         train_cfg: dict | None = None,
         test_cfg: dict | None = None,
         init_cfg: dict | None = None,
@@ -48,11 +46,5 @@ class RTMDet(InstSegSingleStageDetector):
             bbox_head=bbox_head,
             train_cfg=train_cfg,
             test_cfg=test_cfg,
-            data_preprocessor=data_preprocessor,
             init_cfg=init_cfg,
         )
-
-    def export(self, batch_inputs: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
-        """Export the model."""
-        x = self.extract_feat(batch_inputs)
-        return self.bbox_head.export(x)

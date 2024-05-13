@@ -21,7 +21,7 @@ BYTES_PER_FLOAT = 4
 GPU_MEM_LIMIT = 1024**3  # 1 GB memory limit
 
 if TYPE_CHECKING:
-    from mmengine.structures import InstanceData
+    from otx.algo.utils.mmengine_utils import InstanceData
 
 
 def center_of_mass(masks: Tensor, eps: float = 1e-7) -> Tensor:
@@ -113,13 +113,13 @@ class DynamicSoftLabelAssigner:
         Returns:
             obj:`AssignResult`: The assigned result.
         """
-        gt_bboxes = gt_instances.bboxes
-        gt_labels = gt_instances.labels
+        gt_bboxes = gt_instances.bboxes  # type: ignore[attr-defined]
+        gt_labels = gt_instances.labels  # type: ignore[attr-defined]
         num_gt = gt_bboxes.size(0)
 
-        decoded_bboxes = pred_instances.bboxes
-        pred_scores = pred_instances.scores
-        priors = pred_instances.priors
+        decoded_bboxes = pred_instances.bboxes  # type: ignore[attr-defined]
+        pred_scores = pred_instances.scores  # type: ignore[attr-defined]
+        priors = pred_instances.priors  # type: ignore[attr-defined]
         num_bboxes = decoded_bboxes.size(0)
 
         # assign 0 by default

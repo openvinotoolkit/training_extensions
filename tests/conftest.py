@@ -6,7 +6,7 @@ import pytest
 import torch
 from datumaro import Polygon
 from mmdet.structures import DetDataSample
-from mmengine.structures import InstanceData
+from otx.algo.utils.mmengine_utils import InstanceData
 from otx.core.data.entity.base import ImageInfo
 from otx.core.data.entity.classification import (
     HlabelClsBatchDataEntity,

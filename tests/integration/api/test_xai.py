@@ -47,11 +47,6 @@ def test_forward_explain(
     if "dino" in model_name:
         pytest.skip("DINO is not supported.")
 
-    # TODO(someone): fix xai for RTMDet
-    # https://github.com/openvinotoolkit/training_extensions/pull/3433
-    if "rtmdet_inst_tiny" in model_name:
-        pytest.skip("DINO is not supported.")
-
     engine = Engine.from_config(
         config_path=recipe,
         data_root=fxt_target_dataset_per_task[task],

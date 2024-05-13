@@ -8,10 +8,10 @@ Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/tests/test_mod
 
 import torch
 from mmengine.config import Config
-from mmengine.structures import InstanceData
 from otx.algo.detection.heads.yolox_head import YOLOXHead
 from otx.algo.modules.conv_module import ConvModule
-from otx.algo.modules.depthwise_separable_conv_module import DepthwiseSeparableConvModule  # TODO (sungchul): remove
+from otx.algo.modules.depthwise_separable_conv_module import DepthwiseSeparableConvModule
+from otx.algo.utils.mmengine_utils import InstanceData
 
 
 class TestYOLOXHead:
