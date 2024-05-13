@@ -5,7 +5,7 @@
 
 from __future__ import annotations
 
-import pickle
+import pickle  # nosec B403
 from functools import partial
 from pathlib import Path
 from typing import Callable
@@ -90,7 +90,7 @@ class OTXActionDetDataset(OTXDataset[ActionDetDataEntity]):
         if not proposal_file_path.exists():
             return np.array([[0, 0, 1, 1]], dtype=np.float64)
         with Path.open(proposal_file_path, "rb") as f:
-            info = pickle.load(f)  # noqa: S301
+            info = pickle.load(f)  # noqa: S301 # nosec: B301 used only for getting dataset
             return (
                 info[",".join(Path(frame_path).stem.rsplit("_", 1))][:, :4]
                 if ",".join(Path(frame_path).stem.rsplit("_", 1)) in info
