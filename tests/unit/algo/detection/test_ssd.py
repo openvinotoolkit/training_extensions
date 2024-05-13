@@ -5,8 +5,10 @@
 from pathlib import Path
 
 import pytest
+import torch
 from lightning import Trainer
 from otx.algo.detection.ssd import SSD
+from otx.core.data.entity.detection import DetBatchPredEntity
 
 
 class TestSSD:
@@ -36,3 +38,25 @@ class TestSSD:
 
         assert loaded_model.model.bbox_head.anchor_generator.widths[0][0] == 40
         assert loaded_model.model.bbox_head.anchor_generator.heights[0][0] == 50
+
+    def test_loss(self, fxt_data_module):
+        model = SSD(3)
+        data = next(iter(fxt_data_module.train_dataloader()))
+        data.images = [torch.randn(3, 32, 32), torch.randn(3, 48, 48)]
+        output = model(data)
+        assert "loss_cls" in output
+        assert "loss_bbox" in output
+
+    def test_predict(self, fxt_data_module):
+        model = SSD(3)
+        data = next(iter(fxt_data_module.train_dataloader()))
+        data.images = [torch.randn(3, 32, 32), torch.randn(3, 48, 48)]
+        model.eval()
+        output = model(data)
+        assert isinstance(output, DetBatchPredEntity)
+
+    def test_export(self):
+        model = SSD(3)
+        model.eval()
+        output = model.forward_for_tracing(torch.randn(1, 3, 32, 32))
+        assert len(output) == 2

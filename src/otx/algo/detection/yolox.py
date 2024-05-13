@@ -206,7 +206,7 @@ class YOLOX(ExplainableOTXDetModel):
         meta_info_list = [meta_info] * len(inputs)
         return self.model.export(inputs, meta_info_list, explain_mode=self.explain_mode)
 
-    def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.model.") -> dict:
+    def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.") -> dict:
         """Load the previous OTX ckpt according to OTX2.0."""
         return OTXv1Helper.load_det_ckpt(state_dict, add_prefix)
 

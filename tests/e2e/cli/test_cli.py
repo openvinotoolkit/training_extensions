@@ -41,8 +41,14 @@ def test_otx_e2e_cli(
     Returns:
         None
     """
-    task = recipe.split("/")[-2]
+    task = recipe.split("/")[-2].upper()
     model_name = recipe.split("/")[-1].split(".")[0]
+
+    if task == OTXTaskType.INSTANCE_SEGMENTATION:
+        is_tiling = "tile" in recipe
+        dataset_path = fxt_target_dataset_per_task[task]["tiling" if is_tiling else "non_tiling"]
+    else:
+        dataset_path = fxt_target_dataset_per_task[task]
 
     if task == OTXTaskType.ACTION_DETECTION:
         pytest.xfail("Fix for action detection issue will be low priority. Refer to issue #3267.")
@@ -55,13 +61,13 @@ def test_otx_e2e_cli(
         "--config",
         recipe,
         "--data_root",
-        str(fxt_target_dataset_per_task[task]),
+        str(dataset_path),
         "--work_dir",
         str(tmp_path_train / "outputs"),
         "--engine.device",
         fxt_accelerator,
         "--max_epochs",
-        "1" if task in ("zero_shot_visual_prompting") else "2",
+        "1" if task in (OTXTaskType.ZERO_SHOT_VISUAL_PROMPTING) else "2",
         *fxt_cli_override_command_per_task[task],
     ]
 
@@ -94,7 +100,7 @@ def test_otx_e2e_cli(
         "--config",
         recipe,
         "--data_root",
-        str(fxt_target_dataset_per_task[task]),
+        str(dataset_path),
         "--work_dir",
         str(tmp_path_test / "outputs"),
         "--engine.device",
@@ -152,7 +158,7 @@ def test_otx_e2e_cli(
             "--config",
             recipe,
             "--data_root",
-            str(fxt_target_dataset_per_task[task]),
+            str(dataset_path),
             "--work_dir",
             str(tmp_path_test / "outputs" / fmt),
             *overrides,
@@ -190,7 +196,7 @@ def test_otx_e2e_cli(
         "--config",
         recipe,
         "--data_root",
-        str(fxt_target_dataset_per_task[task]),
+        str(dataset_path),
         "--work_dir",
         str(tmp_path_test / "outputs"),
         "--engine.device",
@@ -230,7 +236,7 @@ def test_otx_e2e_cli(
             "--config",
             recipe,
             "--data_root",
-            str(fxt_target_dataset_per_task[task]),
+            str(dataset_path),
             "--work_dir",
             str(tmp_path_test / "outputs" / fmt),
             *fxt_cli_override_command_per_task[task],
@@ -278,11 +284,20 @@ def test_otx_explain_e2e_cli(
     """
     import cv2
 
-    task = recipe.split("/")[-2]
+    task = recipe.split("/")[-2].upper()
     model_name = recipe.split("/")[-1].split(".")[0]
 
-    if ("_cls" not in task) and (task not in ["detection", "instance_segmentation"]):
+    if ("_cls" not in task) and (task not in [OTXTaskType.DETECTION, OTXTaskType.INSTANCE_SEGMENTATION]):
         pytest.skip("Supported only for classification, detection and instance segmentation task.")
+
+    deterministic = "True"
+    if task == OTXTaskType.INSTANCE_SEGMENTATION:
+        # Determinism is not required for this test for instance_segmentation models.
+        deterministic = "False"
+        is_tiling = "tile" in recipe
+        dataset_path = fxt_target_dataset_per_task[task]["tiling" if is_tiling else "non_tiling"]
+    else:
+        dataset_path = fxt_target_dataset_per_task[task]
 
     if "dino" in model_name:
         pytest.skip("DINO is not supported.")
@@ -295,7 +310,7 @@ def test_otx_explain_e2e_cli(
         "--config",
         recipe,
         "--data_root",
-        str(fxt_target_dataset_per_task[task]),
+        str(dataset_path),
         "--work_dir",
         str(tmp_path_explain / "outputs"),
         "--engine.device",
@@ -303,7 +318,7 @@ def test_otx_explain_e2e_cli(
         "--seed",
         "0",
         "--deterministic",
-        "True",
+        deterministic,
         "--dump",
         "True",
         *fxt_cli_override_command_per_task[task],
@@ -326,29 +341,29 @@ def test_otx_explain_e2e_cli(
     reference_sal_vals = {
         # Classification
         "multi_label_cls_efficientnet_v2_light": (
-            np.array([201, 209, 196, 158, 157, 119, 77], dtype=np.uint8),
+            np.array([201, 209, 196, 158, 157, 119, 77], dtype=np.int16),
             "American_Crow_0031_25433_class_0_saliency_map.png",
         ),
         "h_label_cls_efficientnet_v2_light": (
-            np.array([102, 141, 134, 79, 66, 92, 84], dtype=np.uint8),
+            np.array([102, 141, 134, 79, 66, 92, 84], dtype=np.int16),
             "108_class_4_saliency_map.png",
         ),
         # Detection
         "detection_yolox_tiny": (
-            np.array([182, 194, 187, 179, 188, 206, 215, 207, 177, 130], dtype=np.uint8),
+            np.array([182, 194, 187, 179, 188, 206, 215, 207, 177, 130], dtype=np.int16),
             "img_371_jpg_rf_a893e0bdc6fda0ba1b2a7f07d56cec23_class_0_saliency_map.png",
         ),
         "detection_ssd_mobilenetv2": (
-            np.array([118, 188, 241, 213, 160, 120, 86, 94, 111, 138], dtype=np.uint8),
+            np.array([113, 139, 211, 190, 135, 91, 70, 103, 102, 89], dtype=np.int16),
             "img_371_jpg_rf_a893e0bdc6fda0ba1b2a7f07d56cec23_class_0_saliency_map.png",
         ),
         "detection_atss_mobilenetv2": (
-            np.array([29, 39, 55, 69, 80, 88, 92, 86, 100, 88], dtype=np.uint8),
+            np.array([60, 95, 128, 107, 86, 111, 127, 125, 117, 116], dtype=np.int16),
             "img_371_jpg_rf_a893e0bdc6fda0ba1b2a7f07d56cec23_class_0_saliency_map.png",
         ),
         # Instance Segmentation
         "instance_segmentation_maskrcnn_efficientnetb2b": (
-            np.array([5, 5, 5, 5, 5, 5, 5, 5, 5, 5], dtype=np.uint8),
+            np.array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0], dtype=np.int16),
             "CDY_2018_class_0_saliency_map.png",
         ),
     }
@@ -357,9 +372,9 @@ def test_otx_explain_e2e_cli(
         actual_sal_vals = cv2.imread(str(latest_dir / "saliency_map" / reference_sal_vals[test_case_name][1]))
         if test_case_name == "instance_segmentation_maskrcnn_efficientnetb2b":
             # Take lower corner values due to map sparsity of InstSeg
-            actual_sal_vals = (actual_sal_vals[-10:, -1, 0]).astype(np.uint16)
+            actual_sal_vals = (actual_sal_vals[-10:, -1, 0]).astype(np.int16)
         else:
-            actual_sal_vals = (actual_sal_vals[:10, 0, 0]).astype(np.uint16)
+            actual_sal_vals = (actual_sal_vals[:10, 0, 0]).astype(np.int16)
         ref_sal_vals = reference_sal_vals[test_case_name][0]
         assert np.max(np.abs(actual_sal_vals - ref_sal_vals) <= sal_diff_thresh)
 
@@ -383,6 +398,7 @@ def test_otx_hpo_e2e_cli(
     Returns:
         None
     """
+    task = task.upper()
     if task not in DEFAULT_CONFIG_PER_TASK:
         pytest.skip(f"Task {task} is not supported in the auto-configuration.")
     if task == OTXTaskType.ZERO_SHOT_VISUAL_PROMPTING:
@@ -399,8 +415,12 @@ def test_otx_hpo_e2e_cli(
     }:
         model_cfg = ["--config", str(DEFAULT_CONFIG_PER_TASK[task].parent / "stfpm.yaml")]
 
-    task = task.lower()
-    tmp_path_hpo = tmp_path / f"otx_hpo_{task}"
+    if task == OTXTaskType.INSTANCE_SEGMENTATION:
+        dataset_path = fxt_target_dataset_per_task[task]["non_tiling"]
+    else:
+        dataset_path = fxt_target_dataset_per_task[task]
+
+    tmp_path_hpo = tmp_path / f"otx_hpo_{task.lower()}"
     tmp_path_hpo.mkdir(parents=True)
 
     command_cfg = [
@@ -408,15 +428,15 @@ def test_otx_hpo_e2e_cli(
         "train",
         *model_cfg,
         "--task",
-        task.upper(),
+        task,
         "--data_root",
-        str(fxt_target_dataset_per_task[task]),
+        str(dataset_path),
         "--work_dir",
         str(tmp_path_hpo),
         "--engine.device",
         fxt_accelerator,
         "--max_epochs",
-        "1" if task in ("zero_shot_visual_prompting") else "2",
+        "1" if task in (OTXTaskType.ZERO_SHOT_VISUAL_PROMPTING) else "2",
         "--run_hpo",
         "true",
         "--hpo_config.expected_time_ratio",
