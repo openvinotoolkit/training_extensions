@@ -15,7 +15,7 @@ from typing import TYPE_CHECKING, Sequence
 
 import torch
 import torch.nn.functional
-from mmengine.utils import to_2tuple
+from timm.models.layers import to_2tuple
 from torch import nn
 
 from otx.algo.modules.base_module import BaseModule
