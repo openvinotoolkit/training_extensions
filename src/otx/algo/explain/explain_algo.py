@@ -13,7 +13,8 @@ from otx.core.types.explain import FeatureMapType
 
 if TYPE_CHECKING:
     import numpy as np
-    from mmengine.structures.instance_data import InstanceData
+
+    from otx.algo.utils.mmengine_utils import InstanceData
 
 HeadForwardFn = Callable[[FeatureMapType], torch.Tensor]
 ExplainerForwardFn = HeadForwardFn
@@ -359,7 +360,7 @@ class InstSegExplainAlgo(BaseExplainAlgo):
         if isinstance(pred, dict):
             masks, scores, labels = pred["masks"], pred["scores"], pred["labels"]
         else:
-            masks, scores, labels = (pred.masks, pred.scores, pred.labels)
+            masks, scores, labels = (pred.masks, pred.scores, pred.labels)  # type: ignore[attr-defined]
         _, height, width = masks.shape
 
         saliency_map = torch.zeros((num_classes, height, width), dtype=torch.float32, device=labels.device)
