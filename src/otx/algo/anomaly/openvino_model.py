@@ -16,7 +16,7 @@ from typing import TYPE_CHECKING, Any, Sequence
 import numpy as np
 import torch
 from anomalib.metrics import create_metric_collection
-from lightning import Callback, Trainer
+from lightning import Callback, LightningModule, Trainer
 from torchvision.transforms.functional import resize
 
 from otx.core.data.entity.anomaly import AnomalyClassificationDataBatch
@@ -33,6 +33,10 @@ if TYPE_CHECKING:
 class _OVMetricCallback(Callback):
     def __init__(self) -> None:
         super().__init__()
+
+    def on_test_start(self, trainer: Trainer, pl_module: LightningModule) -> None:
+        pl_module.image_metrics.set_threshold(pl_module.model.image_threshold / pl_module.model.normalization_scale)
+        pl_module.pixel_metrics.set_threshold(pl_module.model.pixel_threshold / pl_module.model.normalization_scale)
 
     def on_test_epoch_start(self, trainer: Trainer, pl_module: AnomalyOpenVINO) -> None:
         pl_module.image_metrics.reset()
