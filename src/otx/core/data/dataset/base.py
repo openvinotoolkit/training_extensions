@@ -7,12 +7,15 @@ from __future__ import annotations
 
 from abc import abstractmethod
 from collections.abc import Iterable
-from typing import TYPE_CHECKING, Callable, Generic, List, Union
+from contextlib import contextmanager
+from typing import TYPE_CHECKING, Callable, Generic, Iterator, List, Union
 
 import cv2
 import numpy as np
 from datumaro.components.annotation import AnnotationType
 from datumaro.components.media import ImageFromFile
+from datumaro.util.image import IMAGE_BACKEND, IMAGE_COLOR_CHANNEL, ImageBackend
+from datumaro.util.image import ImageColorChannel as DatumaroImageColorChannel
 from torch.utils.data import Dataset
 
 from otx.core.data.entity.base import T_OTXDataEntity
@@ -27,6 +30,25 @@ if TYPE_CHECKING:
     from otx.core.data.mem_cache import MemCacheHandlerBase
 
 Transforms = Union[Compose, Callable, List[Callable]]
+
+
+@contextmanager
+def image_decode_context() -> Iterator[None]:
+    """Change Datumaro image decode context.
+
+    Use PIL Image decode because of performance issues.
+    With this context, `dm.Image.data` will return BGR numpy image tensor.
+    """
+    ori_image_backend = IMAGE_BACKEND.get()
+    ori_image_color_scale = IMAGE_COLOR_CHANNEL.get()
+
+    IMAGE_BACKEND.set(ImageBackend.PIL)
+    IMAGE_COLOR_CHANNEL.set(DatumaroImageColorChannel.COLOR_BGR)
+
+    yield
+
+    IMAGE_BACKEND.set(ori_image_backend)
+    IMAGE_COLOR_CHANNEL.set(ori_image_color_scale)
 
 
 class OTXDataset(Dataset, Generic[T_OTXDataEntity]):
@@ -116,9 +138,12 @@ class OTXDataset(Dataset, Generic[T_OTXDataEntity]):
         if (img_data := self.mem_cache_handler.get(key=key)[0]) is not None:
             return img_data, img_data.shape[:2]
 
-        img_data = (
-            cv2.cvtColor(img.data, cv2.COLOR_BGR2RGB) if self.image_color_channel == ImageColorChannel.RGB else img.data
-        )
+        if self.image_color_channel == ImageColorChannel.RGB:
+            img_data = cv2.cvtColor(img.data, cv2.COLOR_BGR2RGB)
+        else:
+            # [TODO]: Need to check if using image_decode_context is appropriate.
+            with image_decode_context():
+                img_data = img.data
 
         if img_data is None:
             msg = "Cannot get image data"
