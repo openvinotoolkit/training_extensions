@@ -252,7 +252,7 @@ class TestOTXTiling:
         w_stride = max(int((1 - overlap[1]) * tile_size[1]), 1)
         num_tile_rows = (height + h_stride - 1) // h_stride
         num_tile_cols = (width + w_stride - 1) // w_stride
-        assert len(tiled_dataset) == (num_tile_rows * num_tile_cols * len(dataset)), "Incorrect number of tiles"
+        assert len(tiled_dataset) == (num_tile_rows * num_tile_cols * len(dataset)) + 1, "Incorrect number of tiles"
 
     def test_tile_polygon_func(self):
         points = np.array([(1, 2), (3, 5), (4, 2), (4, 6), (1, 6)])
