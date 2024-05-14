@@ -205,7 +205,8 @@ class DetectionTileMerge(TileMerge):
         )
 
         if explain_mode:
-            merged_vector = np.mean(feature_vectors, axis=0)
+            # Note: Skip the first feature vector as it is the full image value.
+            merged_vector = np.mean(feature_vectors[1:], axis=0)
             merged_saliency_map = self._merge_saliency_maps(saliency_maps, img_size, tiles_coords)
             det_pred_entity.feature_vector = merged_vector
             det_pred_entity.saliency_map = merged_saliency_map
@@ -220,8 +221,7 @@ class DetectionTileMerge(TileMerge):
     ) -> np.ndarray:
         """Merging saliency maps from each tile for PyTorch implementation.
 
-        OV implementation is on ModelAPI side. Unlike ModelAPI implementation,
-        it doesn't have the first tile with resized untiled image.
+        OV implementation is on ModelAPI side.
 
         Args:
             saliency_maps: list of saliency maps, shape of each map is (Nc, H, W)
@@ -234,8 +234,10 @@ class DetectionTileMerge(TileMerge):
         if len(saliency_maps) == 1:
             return saliency_maps[0]
 
-        if len(saliency_maps[0].shape) == 1:
-            return np.ndarray([])
+        image_saliency_map = saliency_maps[0]
+
+        if len(image_saliency_map.shape) == 1:
+            return image_saliency_map
 
         num_classes = saliency_maps[0].shape[0]
         map_h, map_w = saliency_maps[0].shape[1:]
@@ -247,7 +249,8 @@ class DetectionTileMerge(TileMerge):
         image_map_w = int(image_w * ratio[1])
         merged_map = np.zeros((num_classes, image_map_h, image_map_w))
 
-        for i, saliency_map in enumerate(saliency_maps):
+        # Note: Skip the first saliency map as it is the full image value.
+        for i, saliency_map in enumerate(saliency_maps[1:], 1):
             for class_idx in range(num_classes):
                 cls_map = saliency_map[class_idx]
 
@@ -273,6 +276,10 @@ class DetectionTileMerge(TileMerge):
                         merged_map[class_idx][y_1 + hi, x_1 + wi] = map_pixel
 
         for class_idx in range(num_classes):
+            image_map_cls = image_saliency_map[class_idx]
+            image_map_cls = cv2.resize(image_map_cls, (image_map_w, image_map_h))
+
+            merged_map[class_idx] += 0.5 * image_map_cls
             merged_map[class_idx] = _non_linear_normalization(merged_map[class_idx])
 
         return merged_map.astype(np.uint8)
@@ -413,7 +420,8 @@ class InstanceSegTileMerge(TileMerge):
         )
 
         if explain_mode:
-            merged_vector = np.mean(feature_vectors, axis=0)
+            # Note: Skip the first feature vector as it is the full image value.
+            merged_vector = np.mean(feature_vectors[1:], axis=0)
             merged_saliency_map = self.get_saliency_maps_from_masks(labels, scores, masks, self.num_classes)
             inst_seg_pred_entity.feature_vector = merged_vector
             inst_seg_pred_entity.saliency_map = merged_saliency_map
