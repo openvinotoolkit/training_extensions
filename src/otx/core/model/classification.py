@@ -750,7 +750,9 @@ class OVMultilabelClassificationModel(OVModel[MultilabelClsBatchDataEntity, Mult
         outputs: list[ClassificationResult],
         inputs: MultilabelClsBatchDataEntity,
     ) -> MultilabelClsBatchPredEntity:
-        pred_scores = [torch.tensor([top_label[2] for top_label in out.top_labels], device=self.device) for out in outputs]
+        pred_scores = [
+            torch.tensor([top_label[2] for top_label in out.top_labels], device=self.device) for out in outputs
+        ]
 
         if outputs and outputs[0].saliency_map.size != 0:
             # Squeeze dim 4D => 3D, (1, num_classes, H, W) => (num_classes, H, W)

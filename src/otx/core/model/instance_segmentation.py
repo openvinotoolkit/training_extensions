@@ -13,7 +13,6 @@ from typing import TYPE_CHECKING, Any, Callable, Iterator, Literal
 import numpy as np
 import torch
 from mmengine.structures.instance_data import InstanceData
-from model_api.models import Model
 from model_api.tilers import InstanceSegmentationTiler
 from torchvision import tv_tensors
 
@@ -33,11 +32,11 @@ from otx.core.utils.mask_util import encode_rle, polygon_to_rle
 from otx.core.utils.tile_merge import InstanceSegTileMerge
 
 if TYPE_CHECKING:
-    from model_api.adapters import OpenvinoAdapter
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
     from mmdet.models.data_preprocessors import DetDataPreprocessor
     from mmdet.models.detectors import TwoStageDetector
     from mmdet.structures import OptSampleList
+    from model_api.adapters import OpenvinoAdapter
     from model_api.models.utils import InstanceSegmentationResult
     from omegaconf import DictConfig
     from torch import nn
@@ -581,8 +580,7 @@ class OVInstanceSegmentationModel(
         )
 
     def _get_hparams_from_adapter(self, model_adapter: OpenvinoAdapter) -> None:
-        """
-        Reads model configuration from ModelAPI OpenVINO adapter
+        """Reads model configuration from ModelAPI OpenVINO adapter
 
         Args:
             model_adapter (OpenvinoAdapter): target adapter to read the config

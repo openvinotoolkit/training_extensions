@@ -11,7 +11,6 @@ from contextlib import contextmanager
 from typing import TYPE_CHECKING, Any, Callable, Iterator, Literal
 
 import torch
-from model_api.models import Model
 from model_api.tilers import DetectionTiler
 from torchvision import tv_tensors
 
@@ -29,9 +28,9 @@ from otx.core.utils.config import inplace_num_classes
 from otx.core.utils.tile_merge import DetectionTileMerge
 
 if TYPE_CHECKING:
-    from model_api.adapters import OpenvinoAdapter
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
     from mmdet.models.data_preprocessors import DetDataPreprocessor
+    from model_api.adapters import OpenvinoAdapter
     from model_api.models.utils import DetectionResult
     from omegaconf import DictConfig
     from torch import nn
@@ -523,8 +522,7 @@ class OVDetectionModel(OVModel[DetBatchDataEntity, DetBatchPredEntity]):
         )
 
     def _get_hparams_from_adapter(self, model_adapter: OpenvinoAdapter) -> None:
-        """
-        Reads model configuration from ModelAPI OpenVINO adapter
+        """Reads model configuration from ModelAPI OpenVINO adapter
 
         Args:
             model_adapter (OpenvinoAdapter): target adapter to read the config
@@ -574,7 +572,7 @@ class OVDetectionModel(OVModel[DetBatchDataEntity, DetBatchPredEntity]):
                     bbox,
                     format="XYXY",
                     canvas_size=inputs.imgs_info[-1].img_shape,
-                    device=self.device
+                    device=self.device,
                 ),
             )
             scores.append(torch.tensor([output.score for output in output_objects], device=self.device))

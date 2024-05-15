@@ -56,9 +56,9 @@ from otx.core.utils.utils import is_ckpt_for_finetuning, is_ckpt_from_otx_v1
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from model_api.adapters import OpenvinoAdapter
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
     from lightning.pytorch.utilities.types import LRSchedulerTypeUnion, OptimizerLRScheduler
+    from model_api.adapters import OpenvinoAdapter
     from torch.optim.lr_scheduler import LRScheduler
     from torch.optim.optimizer import Optimizer, params_t
 
@@ -837,14 +837,13 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
         raise NotImplementedError
 
     def _get_hparams_from_adapter(self, model_adapter: OpenvinoAdapter) -> None:
-        """
-        Reads model configuration from ModelAPI OpenVINO adapter
+        """Reads model configuration from ModelAPI OpenVINO adapter
 
         Args:
             model_adapter (OpenvinoAdapter): target adapter to read the config
         """
 
-    def _create_model(self, ) -> Model:
+    def _create_model(self) -> Model:
         """Create a OV model with help of Model API."""
         from model_api.adapters import OpenvinoAdapter, create_core, get_user_config
 
