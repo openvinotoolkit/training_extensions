@@ -1,13 +1,24 @@
+"""Torchvision MaskRCNN model with forward method accepting InstanceSegBatchDataEntity."""
+# Copyright (C) 2024 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+#
+
 from __future__ import annotations
+
+from collections import OrderedDict
+from typing import TYPE_CHECKING
+
+import torch
+from torchvision.models.detection.image_list import ImageList
 from torchvision.models.detection.mask_rcnn import MaskRCNN
 
-from otx.core.data.entity.instance_segmentation import InstanceSegBatchDataEntity
-import torch
-from collections import OrderedDict
-from torchvision.models.detection.image_list import ImageList
+if TYPE_CHECKING:
+    from otx.core.data.entity.instance_segmentation import InstanceSegBatchDataEntity
 
 
 class OTXTVMaskRCNN(MaskRCNN):
+    """Torchvision MaskRCNN model with forward method accepting InstanceSegBatchDataEntity."""
+
     def forward(
         self,
         entity: InstanceSegBatchDataEntity,
@@ -27,7 +38,7 @@ class OTXTVMaskRCNN(MaskRCNN):
             targets.append(
                 {
                     "boxes": bboxes,
-                    # TODO: I think we should do num_classes + 1 (BG) as torchvision.MaskRCNN assume background class?
+                    # TODO(Eugene): num_classes + 1 (BG) as torchvision.MaskRCNN assume background class?
                     "labels": labels + 1,
                     "masks": masks,
                     "polygons": polygons,
@@ -41,8 +52,12 @@ class OTXTVMaskRCNN(MaskRCNN):
 
         detections, detector_losses = self.roi_heads(features, proposals, image_list.image_sizes, targets)
 
-        # TODO: check postprocess method (I removed it but still inherited from GeneralizedRCNN)
-        detections = self.transform.postprocess(detections, image_list.image_sizes, ori_shapes)  # type: ignore[operator]
+        # TODO(Eugene): check if post-process is working correctly
+        detections = self.transform.postprocess(
+            detections,
+            image_list.image_sizes,
+            ori_shapes,
+        )  # type: ignore[operator]
 
         losses = {}
         losses.update(detector_losses)

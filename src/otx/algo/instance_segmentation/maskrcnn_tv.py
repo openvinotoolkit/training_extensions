@@ -6,33 +6,25 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-from torch import nn
 import torch
-from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
-from torch.nn.modules import Module
-from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
-from torchvision.models.detection.mask_rcnn import MaskRCNNPredictor
+from torch import nn
+from torchvision import tv_tensors
+from torchvision.models.detection.backbone_utils import _resnet_fpn_extractor, _validate_trainable_layers
+from torchvision.models.detection.faster_rcnn import FastRCNNConvFCHead, FastRCNNPredictor, RPNHead, _default_anchorgen
+from torchvision.models.detection.mask_rcnn import MaskRCNN_ResNet50_FPN_V2_Weights, MaskRCNNHeads, MaskRCNNPredictor
+from torchvision.models.resnet import resnet50
 
+from otx.algo.instance_segmentation.torchvision.maskrcnn import OTXTVMaskRCNN
 from otx.algo.instance_segmentation.torchvision.roi_head import OTXTVRoIHeads
-from otx.algo.utils.mmengine_utils import InstanceData
 from otx.core.config.data import TileConfig
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.instance_segmentation import InstanceSegBatchDataEntity, InstanceSegBatchPredEntity
 from otx.core.data.entity.utils import stack_batch
-from otx.core.metrics import MetricCallable
 from otx.core.metrics.mean_ap import MaskRLEMeanAPCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
 from otx.core.model.instance_segmentation import ExplainableOTXInstanceSegModel
 from otx.core.schedulers import LRSchedulerListCallable
 from otx.core.types.label import LabelInfoTypes
-from torchvision import tv_tensors
-from torchvision.models.detection.mask_rcnn import MaskRCNNHeads, MaskRCNN_ResNet50_FPN_V2_Weights
-from torchvision.models.resnet import resnet50
-from torchvision.models.detection.backbone_utils import _resnet_fpn_extractor, _validate_trainable_layers
-from torchvision.models._utils import _ovewrite_value_param
-from torchvision.models.detection.faster_rcnn import _default_anchorgen, FastRCNNConvFCHead, RPNHead
-from otx.algo.instance_segmentation.torchvision.maskrcnn import OTXTVMaskRCNN
-
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
@@ -43,6 +35,7 @@ if TYPE_CHECKING:
 
 class TVMaskRCNNR50(ExplainableOTXInstanceSegModel):
     """Torchvision MaskRCNN model with ResNet50 backbone."""
+
     def __init__(
         self,
         label_info: LabelInfoTypes,
@@ -63,13 +56,13 @@ class TVMaskRCNNR50(ExplainableOTXInstanceSegModel):
         self.image_size = (1, 3, 1024, 1024)
 
     def get_classification_layers(self, prefix: str = "") -> dict[str, dict[str, int]]:
+        """Get classification layers."""
         msg = "MaskRCNN does not support classification layers"
         raise NotImplementedError(msg)
 
     def _create_model(self) -> Module:
         """From torchvision tutorial."""
-        # TODO: I think we should do num_classes + 1 (BG) as torchvision.MaskRCNN assume background class?
-        # TODO: Check this later
+        # TODO(Eugene): check num_classes + 1 (BG) as torchvision.MaskRCNN assume background class?
         num_classes = self.label_info.num_classes + 1
 
         weights = MaskRCNN_ResNet50_FPN_V2_Weights.verify("DEFAULT")
@@ -86,13 +79,12 @@ class TVMaskRCNNR50(ExplainableOTXInstanceSegModel):
         rpn_anchor_generator = _default_anchorgen()
         rpn_head = RPNHead(backbone.out_channels, rpn_anchor_generator.num_anchors_per_location()[0], conv_depth=2)
         box_head = FastRCNNConvFCHead(
-            (backbone.out_channels, 7, 7), [256, 256, 256, 256], [1024], norm_layer=nn.BatchNorm2d
-        )
-        mask_head = MaskRCNNHeads(
-            backbone.out_channels,
+            (backbone.out_channels, 7, 7),
             [256, 256, 256, 256],
-            1, 
-            norm_layer=nn.BatchNorm2d)
+            [1024],
+            norm_layer=nn.BatchNorm2d,
+        )
+        mask_head = MaskRCNNHeads(backbone.out_channels, [256, 256, 256, 256], 1, norm_layer=nn.BatchNorm2d)
 
         model = OTXTVMaskRCNN(
             backbone,

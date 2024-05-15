@@ -1,22 +1,31 @@
+"""Customised torchvision RoIHeads class with support for polygons as ground truth masks."""
+# Copyright (C) 2024 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+#
+
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import torch
+import torch.nn.functional as f
+from otx.algo.instance_segmentation.mmdet.structures.mask.mask_target import mask_target
 from torch import Tensor
 from torchvision.models.detection.roi_heads import RoIHeads, fastrcnn_loss, maskrcnn_inference
-import torch.nn.functional as F
-from datumaro import Polygon
 
-from otx.algo.instance_segmentation.mmdet.structures.mask.mask_target import mask_target
+if TYPE_CHECKING:
+    from datumaro import Polygon
 
 
 def maskrcnn_loss(
     mask_logits: torch.Tensor,
     proposals: list[torch.Tensor],
     gt_masks: list[list[torch.Tensor]] | list[list[Polygon]],
-    gt_labels,
-    mask_matched_idxs,
-    image_shapes,
-):
+    gt_labels: list[torch.Tensor],
+    mask_matched_idxs: list[torch.Tensor],
+    image_shapes: list[tuple[int, int]],
+) -> torch.Tensor:
+    """Compute the mask prediction loss."""
     cfg = {"mask_size": mask_logits.shape[-1]}
     meta_infos = [{"img_shape": img_shape} for img_shape in image_shapes]
     labels = [gt_label[idxs] for gt_label, idxs in zip(gt_labels, mask_matched_idxs)]
@@ -36,12 +45,15 @@ def maskrcnn_loss(
     if mask_targets.numel() == 0:
         return mask_logits.sum() * 0
 
-    return F.binary_cross_entropy_with_logits(
-        mask_logits[torch.arange(labels.shape[0], device=labels.device), labels], mask_targets
+    return f.binary_cross_entropy_with_logits(
+        mask_logits[torch.arange(labels.shape[0], device=labels.device), labels],  # type: ignore[attr-defined]
+        mask_targets,
     )
 
 
 class OTXTVRoIHeads(RoIHeads):
+    """Customised RoIHeads class with support for polygons as ground truth masks."""
+
     def forward(
         self,
         features: dict[str, Tensor],
@@ -52,9 +64,8 @@ class OTXTVRoIHeads(RoIHeads):
         """Support both polgyons and masks as ground truth masks.
 
         Note: This method is a copy of the original forward method from RoIHeads.
-        TODO: Add support for increamental learning.
+        TODO(Eugene): Add support for increamental learning.
         """
-
         if self.training:
             proposals, matched_idxs, labels, regression_targets = self.select_training_samples(proposals, targets)
         else:
@@ -70,28 +81,31 @@ class OTXTVRoIHeads(RoIHeads):
         losses = {}
         if self.training:
             if labels is None:
-                raise ValueError("labels cannot be None")
+                msg = "labels cannot be None"
+                raise ValueError
             if regression_targets is None:
-                raise ValueError("regression_targets cannot be None")
+                msg = "regression_targets cannot be None"
+                raise ValueError(msg)
             loss_classifier, loss_box_reg = fastrcnn_loss(class_logits, box_regression, labels, regression_targets)
             losses = {"loss_classifier": loss_classifier, "loss_box_reg": loss_box_reg}
         else:
             boxes, scores, labels = self.postprocess_detections(class_logits, box_regression, proposals, image_shapes)
             num_images = len(boxes)
-            for i in range(num_images):
-                result.append(
-                    {
-                        "boxes": boxes[i],
-                        "labels": labels[i],
-                        "scores": scores[i],
-                    }
-                )
+            result = [
+                {
+                    "boxes": boxes[i],
+                    "labels": labels[i],
+                    "scores": scores[i],
+                }
+                for i in range(num_images)
+            ]
 
         if self.has_mask():
             mask_proposals = [p["boxes"] for p in result]
             if self.training:
                 if matched_idxs is None:
-                    raise ValueError("if in training, matched_idxs should not be None")
+                    msg = "if in training, matched_idxs should not be None"
+                    raise ValueError(msg)
 
                 # during training, only focus on positive boxes
                 num_images = len(proposals)
@@ -110,7 +124,7 @@ class OTXTVRoIHeads(RoIHeads):
                 mask_logits = self.mask_predictor(mask_features)
             else:
                 msg = "Expected mask_roi_pool to be not None"
-                raise Exception(msg)
+                raise RuntimeError(msg)
 
             loss_mask = {}
             if self.training:
@@ -118,7 +132,9 @@ class OTXTVRoIHeads(RoIHeads):
                     msg = "targets, pos_matched_idxs, mask_logits cannot be None when training"
                     raise ValueError(msg)
 
-                gt_masks = [t["masks"] for t in targets] if len(targets[0]["masks"]) else [t["polygons"] for t in targets]
+                gt_masks = (
+                    [t["masks"] for t in targets] if len(targets[0]["masks"]) else [t["polygons"] for t in targets]
+                )
                 gt_labels = [t["labels"] for t in targets]
                 rcnn_loss_mask = maskrcnn_loss(
                     mask_logits,
