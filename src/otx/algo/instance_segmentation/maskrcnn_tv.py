@@ -172,7 +172,7 @@ class TVMaskRCNNR50(ExplainableOTXInstanceSegModel):
                 ),
             )
             output_masks = tv_tensors.Mask(
-                prediction["masks"].squeeze(),
+                prediction["masks"].squeeze(1),
                 dtype=torch.bool,
             )
             masks.append(output_masks)
