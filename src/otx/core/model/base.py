@@ -857,8 +857,8 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
             logger.warning(msg)
 
         ov_device = "CPU"
+        ie = create_core()
         if not self.force_cpu:
-            ie = create_core()
             devices = ie.available_devices
             for device in devices:
                 device_name = ie.get_property(device_name=device, property="FULL_DEVICE_NAME")
