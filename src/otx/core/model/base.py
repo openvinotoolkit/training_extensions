@@ -855,16 +855,16 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
             )
             logger.warning(msg)
 
-        ov_device = "AUTO"
+        ov_device = "CPU"
         ie = create_core()
         devices = ie.available_devices
         for device in devices:
             device_name = ie.get_property(device_name=device, property="FULL_DEVICE_NAME")
-            if "dGPU" in device_name:
+            if "dGPU" in device_name and "Intel" in device_name:
                 ov_device = device_name
                 break
 
-        plugin_config = get_user_config(ov_device, str(self.num_requests), "AUTO")
+        plugin_config = get_user_config(ov_device, str(self.num_requests), 0)
         if self.use_throughput_mode:
             plugin_config["PERFORMANCE_HINT"] = "THROUGHPUT"
 
