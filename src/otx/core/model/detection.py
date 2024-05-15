@@ -29,6 +29,7 @@ from otx.core.utils.config import inplace_num_classes
 from otx.core.utils.tile_merge import DetectionTileMerge
 
 if TYPE_CHECKING:
+    from model_api.adapters import OpenvinoAdapter
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
     from mmdet.models.data_preprocessors import DetDataPreprocessor
     from model_api.models.utils import DetectionResult
@@ -521,22 +522,13 @@ class OVDetectionModel(OVModel[DetBatchDataEntity, DetBatchPredEntity]):
                 and overlap: {self.model.tiles_overlap}",
         )
 
-    def _create_model(self) -> Model:
-        """Create a OV model with help of Model API."""
-        from model_api.adapters import OpenvinoAdapter, create_core, get_user_config
+    def _get_hparams_from_adapter(self, model_adapter: OpenvinoAdapter) -> None:
+        """
+        Reads model configuration from ModelAPI OpenVINO adapter
 
-        plugin_config = get_user_config("AUTO", str(self.num_requests), "AUTO")
-        if self.use_throughput_mode:
-            plugin_config["PERFORMANCE_HINT"] = "THROUGHPUT"
-
-        model_adapter = OpenvinoAdapter(
-            create_core(),
-            self.model_name,
-            max_num_requests=self.num_requests,
-            plugin_config=plugin_config,
-            model_parameters=self.model_adapter_parameters,
-        )
-
+        Args:
+            model_adapter (OpenvinoAdapter): target adapter to read the config
+        """
         if model_adapter.model.has_rt_info(["model_info", "confidence_threshold"]):
             best_confidence_threshold = model_adapter.model.get_rt_info(["model_info", "confidence_threshold"]).value
             self.hparams["best_confidence_threshold"] = float(best_confidence_threshold)
@@ -549,8 +541,6 @@ class OVDetectionModel(OVModel[DetBatchDataEntity, DetBatchPredEntity]):
             )
             log.warning(msg)
             self.hparams["best_confidence_threshold"] = None
-
-        return Model.create_model(model_adapter, model_type=self.model_type, configuration=self.model_api_configuration)
 
     def _customize_outputs(
         self,
