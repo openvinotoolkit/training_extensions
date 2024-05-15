@@ -808,6 +808,7 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
         model_name: str,
         model_type: str,
         async_inference: bool = True,
+        force_cpu: bool = True,
         max_num_requests: int | None = None,
         use_throughput_mode: bool = True,
         model_api_configuration: dict[str, Any] | None = None,
@@ -816,6 +817,7 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
     ) -> None:
         self.model_name = model_name
         self.model_type = model_type
+        self.force_cpu = force_cpu
         self.async_inference = async_inference
         self.num_requests = max_num_requests if max_num_requests is not None else get_default_num_async_infer_requests()
         self.use_throughput_mode = use_throughput_mode
@@ -837,7 +839,7 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
         raise NotImplementedError
 
     def _get_hparams_from_adapter(self, model_adapter: OpenvinoAdapter) -> None:
-        """Reads model configuration from ModelAPI OpenVINO adapter
+        """Reads model configuration from ModelAPI OpenVINO adapter.
 
         Args:
             model_adapter (OpenvinoAdapter): target adapter to read the config
@@ -855,13 +857,14 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
             logger.warning(msg)
 
         ov_device = "CPU"
-        ie = create_core()
-        devices = ie.available_devices
-        for device in devices:
-            device_name = ie.get_property(device_name=device, property="FULL_DEVICE_NAME")
-            if "dGPU" in device_name and "Intel" in device_name:
-                ov_device = device_name
-                break
+        if not self.force_cpu:
+            ie = create_core()
+            devices = ie.available_devices
+            for device in devices:
+                device_name = ie.get_property(device_name=device, property="FULL_DEVICE_NAME")
+                if "dGPU" in device_name and "Intel" in device_name:
+                    ov_device = device_name
+                    break
 
         plugin_config = get_user_config(ov_device, str(self.num_requests), 0)
         if self.use_throughput_mode:

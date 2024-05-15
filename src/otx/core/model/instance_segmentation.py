@@ -580,7 +580,7 @@ class OVInstanceSegmentationModel(
         )
 
     def _get_hparams_from_adapter(self, model_adapter: OpenvinoAdapter) -> None:
-        """Reads model configuration from ModelAPI OpenVINO adapter
+        """Reads model configuration from ModelAPI OpenVINO adapter.
 
         Args:
             model_adapter (OpenvinoAdapter): target adapter to read the config
