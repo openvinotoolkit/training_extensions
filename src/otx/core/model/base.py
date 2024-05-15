@@ -24,6 +24,7 @@ from jsonargparse import ArgumentParser
 from lightning import LightningModule, Trainer
 from model_api.models import Model
 from model_api.tilers import Tiler
+import openvino.runtime as ov
 from torch import Tensor, nn
 from torch.optim.lr_scheduler import ConstantLR
 from torch.optim.sgd import SGD
@@ -52,6 +53,7 @@ from otx.core.types.precision import OTXPrecisionType
 from otx.core.utils.build import get_default_num_async_infer_requests
 from otx.core.utils.miscellaneous import ensure_callable
 from otx.core.utils.utils import is_ckpt_for_finetuning, is_ckpt_from_otx_v1
+from otx.utils.utils import is_xpu_available
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -839,7 +841,24 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
         """Create a OV model with help of Model API."""
         from model_api.adapters import OpenvinoAdapter, create_core, get_user_config
 
-        plugin_config = get_user_config("AUTO", str(self.num_requests), "AUTO")
+        if self.device.type != "cpu":
+            msg = (
+                f"Device {self.device.type} is selected for Lightning engine, but the actual inference "
+                "is conducted by OpenVINO CPU plugin."
+            )
+            logger.warning(msg)
+
+        ov_device = "AUTO"
+        if is_xpu_available():
+            ie = ov.Core()
+            devices = ie.available_devices
+            for device in devices:
+                device_name = ie.get_property(device_name=device, property="FULL_DEVICE_NAME")
+                if "dGPU" in device_name:
+                    ov_device = device_name
+                    break
+
+        plugin_config = get_user_config(ov_device, str(self.num_requests), "AUTO")
         if self.use_throughput_mode:
             plugin_config["PERFORMANCE_HINT"] = "THROUGHPUT"
 

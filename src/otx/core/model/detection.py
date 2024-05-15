@@ -584,10 +584,11 @@ class OVDetectionModel(OVModel[DetBatchDataEntity, DetBatchPredEntity]):
                     bbox,
                     format="XYXY",
                     canvas_size=inputs.imgs_info[-1].img_shape,
+                    device=self.device
                 ),
             )
-            scores.append(torch.tensor([output.score for output in output_objects]))
-            labels.append(torch.tensor([output.id - label_shift for output in output_objects]))
+            scores.append(torch.tensor([output.score for output in output_objects], device=self.device))
+            labels.append(torch.tensor([output.id - label_shift for output in output_objects], device=self.device))
 
         if outputs and outputs[0].saliency_map.size > 1:
             # Squeeze dim 4D => 3D, (1, num_classes, H, W) => (num_classes, H, W)
