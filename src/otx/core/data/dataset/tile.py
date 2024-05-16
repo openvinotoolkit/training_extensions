@@ -142,6 +142,7 @@ class OTXTileTransform(Tile):
         cols = range(0, img_w, int(tile_w * (1 - w_ovl)))
         rows = range(0, img_h, int(tile_h * (1 - h_ovl)))
 
+        rois += [x1y1x2y2_to_xywh(0, 0, img_w, img_h)]
         for offset_x, offset_y in product(cols, rows):
             x2 = min(offset_x + tile_w, img_w)
             y2 = min(offset_y + tile_h, img_h)

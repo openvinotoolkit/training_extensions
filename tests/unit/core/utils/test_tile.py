@@ -38,4 +38,4 @@ def test_tile_transform_consistency(mocker):
 
     dm_rois = [xywh_to_x1y1x2y2(*roi) for roi in tile_transform._extract_rois(dm_image)]
     # 0 index in tiler is the full image so we skip it
-    assert np.allclose(dm_rois, tiler._tile(np_image)[1:])
+    assert np.allclose(dm_rois, tiler._tile(np_image))
