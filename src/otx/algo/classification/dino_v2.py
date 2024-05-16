@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING, Any, Literal
 import torch
 from torch import Tensor, nn
 
+from otx.algo.classification.utils import get_classification_layers
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.classification import (
     MulticlassClsBatchDataEntity,
@@ -25,6 +26,7 @@ from otx.core.types.label import LabelInfoTypes
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
+    from typing_extensions import Self
 
     from otx.core.metrics import MetricCallable
 
@@ -99,13 +101,25 @@ class DINOv2RegisterClassifier(OTXMulticlassClsModel):
         )
 
     def _create_model(self) -> nn.Module:
+        # Get classification_layers for class-incr learning
+        sample_model_dict = self._build_model(num_classes=5).state_dict()
+        incremental_model_dict = self._build_model(num_classes=6).state_dict()
+        self.classification_layers = get_classification_layers(
+            sample_model_dict,
+            incremental_model_dict,
+            prefix="model.",
+        )
+
+        return self._build_model(num_classes=self.num_classes)
+
+    def _build_model(self, num_classes: int) -> nn.Module:
         """Create the model."""
         return DINOv2(
             backbone=self.backbone,
             freeze_backbone=self.freeze_backbone,
             # TODO(harimkang): A feature should be added to allow in_channels to adjust based on the arch.
             head_in_channels=384,
-            num_classes=self.label_info.num_classes,
+            num_classes=num_classes,
         )
 
     def _customize_inputs(self, entity: MulticlassClsBatchDataEntity) -> dict[str, Any]:
@@ -169,3 +183,11 @@ class DINOv2RegisterClassifier(OTXMulticlassClsModel):
     def forward_for_tracing(self, image: Tensor) -> Tensor | dict[str, Tensor]:
         """Model forward function used for the model tracing during model exportation."""
         return self.model(image)
+
+    def to(self, *args, **kwargs) -> Self:
+        """Return a model with specified device."""
+        ret = super().to(*args, **kwargs)
+        if self.device.type == "xpu":
+            msg = f"{type(self).__name__} doesn't support XPU."
+            raise RuntimeError(msg)
+        return ret

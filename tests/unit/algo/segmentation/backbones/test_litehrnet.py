@@ -1,7 +1,9 @@
 from copy import deepcopy
+from unittest.mock import MagicMock
 
 import pytest
 import torch
+from otx.algo.segmentation.backbones import litehrnet as target_file
 from otx.algo.segmentation.backbones.litehrnet import LiteHRNet, NeighbourSupport, SpatialWeightingV2, StemV2
 
 
@@ -75,6 +77,21 @@ class TestLiteHRNet:
                     (40, 80, 160, 320),
                 ],
             },
+            "out_modules": {
+                "conv": {
+                    "enable": True,
+                    "channels": 320,
+                },
+                "position_att": {
+                    "enable": True,
+                    "key_channels": 128,
+                    "value_channels": 320,
+                    "psp_size": [1, 3, 6, 8],
+                },
+                "local_att": {
+                    "enable": False,
+                },
+            },
         }
 
     @pytest.fixture()
@@ -111,3 +128,44 @@ class TestLiteHRNet:
         model = LiteHRNet(extra=extra)
         outputs = model(inputs)
         assert outputs is not None
+
+    @pytest.fixture()
+    def mock_load_from_http(self, mocker) -> MagicMock:
+        return mocker.patch.object(target_file, "load_from_http")
+
+    @pytest.fixture()
+    def mock_load_checkpoint_to_model(self, mocker) -> MagicMock:
+        return mocker.patch.object(target_file, "load_checkpoint_to_model")
+
+    @pytest.fixture()
+    def pretrained_weight(self, tmp_path) -> str:
+        weight = tmp_path / "pretrained.pth"
+        weight.touch()
+        return str(weight)
+
+    @pytest.fixture()
+    def mock_torch_load(self, mocker) -> MagicMock:
+        return mocker.patch("otx.algo.segmentation.backbones.mscan.torch.load")
+
+    def test_load_pretrained_weights(
+        self,
+        extra_cfg,
+        pretrained_weight,
+        mock_torch_load,
+        mock_load_checkpoint_to_model,
+    ):
+        extra_cfg["add_stem_features"] = True
+        model = LiteHRNet(extra=extra_cfg)
+        model.load_pretrained_weights(pretrained=pretrained_weight)
+
+        mock_torch_load.assert_called_once_with(pretrained_weight, "cpu")
+        mock_load_checkpoint_to_model.assert_called_once()
+
+    def test_load_pretrained_weights_from_url(self, extra_cfg, mock_load_from_http, mock_load_checkpoint_to_model):
+        pretrained_weight = "www.fake.com/fake.pth"
+        extra_cfg["add_stem_features"] = True
+        model = LiteHRNet(extra=extra_cfg)
+        model.load_pretrained_weights(pretrained=pretrained_weight)
+
+        mock_load_from_http.assert_called_once_with(pretrained_weight, "cpu")
+        mock_load_checkpoint_to_model.assert_called_once()

@@ -102,7 +102,7 @@ class OTXDataModule(LightningDataModule):
 
             dataset = OTXDatasetFactory.create(
                 task=self.task,
-                dm_subset=dm_subset,
+                dm_subset=dm_subset.as_dataset(),
                 mem_cache_handler=mem_cache_handler,
                 cfg_subset=config_mapping[name],
                 cfg_data_module=config,

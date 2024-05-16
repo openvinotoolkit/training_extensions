@@ -10,9 +10,9 @@ Example of ``recipe/classification/multi_class_cls``
 .. code-block:: yaml
 
     model:
-        class_path: otx.algo.classification.mobilenet_v3_large.MobileNetV3ForMulticlassCls
+        class_path: otx.algo.classification.mobilenet_v3.MobileNetV3ForMulticlassCls
         init_args:
-            num_classes: 1000
+            label_info: 1000
             light: True
 
     optimizer:
@@ -23,9 +23,12 @@ Example of ``recipe/classification/multi_class_cls``
             weight_decay: 0.0001
 
     scheduler:
-        class_path: otx.algo.schedulers.WarmupReduceLROnPlateau
-        init_args:
-            warmup_steps: 10
+      class_path: otx.core.schedulers.LinearWarmupSchedulerCallable
+      init_args:
+        num_warmup_steps: 10
+        main_scheduler_callable:
+          class_path: lightning.pytorch.cli.ReduceLROnPlateau
+          init_args:
             mode: max
             factor: 0.5
             patience: 1
@@ -36,7 +39,7 @@ Example of ``recipe/classification/multi_class_cls``
         device: auto
 
     callback_monitor: val/accuracy
-    data: ../../_base_/data/mmpretrain_base.yaml
+    data: ../../_base_/data/torchvision_base.yaml
 
 We can use the ``~.yaml`` with the above values configured.
 

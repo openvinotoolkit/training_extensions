@@ -365,7 +365,7 @@ class MMDetCompatibleModel(ExplainableOTXDetModel):
             {"type": "LoadAnnotations", "with_bbox": True},
             {
                 "type": "PackDetInputs",
-                "meta_keys": ["ori_filenamescale_factor", "ori_shape", "filename", "img_shape", "pad_shape"],
+                "meta_keys": ["ori_filenamescale_factor", "ori_shape", "filename", "img_shape"],
             },
         ]
 
@@ -382,7 +382,6 @@ class MMDetCompatibleModel(ExplainableOTXDetModel):
                     "img_id": img_info.img_idx,
                     "img_shape": img_info.img_shape,
                     "ori_shape": img_info.ori_shape,
-                    "pad_shape": img_info.pad_shape,
                     "scale_factor": img_info.scale_factor,
                     "ignored_labels": img_info.ignored_labels,
                 },

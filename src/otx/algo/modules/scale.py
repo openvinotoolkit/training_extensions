@@ -1,4 +1,7 @@
+# Copyright (C) 2024 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
 # Copyright (c) OpenMMLab. All rights reserved.
+# https://github.com/open-mmlab/mmcv/blob/98e7b3ab6088117600773245b8c6541301bfab95/mmcv/cnn/bricks/scale.py
 """Utils from mmcv."""
 
 import torch

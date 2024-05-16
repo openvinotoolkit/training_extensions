@@ -7,19 +7,19 @@
 """MMDet BaseRoIHead."""
 from __future__ import annotations
 
-from abc import ABCMeta, abstractmethod
 from typing import TYPE_CHECKING
 
 from otx.algo.modules.base_module import BaseModule
+from otx.core.data.entity.instance_segmentation import InstanceSegBatchDataEntity
 
 if TYPE_CHECKING:
-    from mmdet.structures import DetDataSample
-    from mmengine import ConfigDict
-    from mmengine.structures import InstanceData
+    from omegaconf import DictConfig
     from torch import Tensor, nn
 
+    from otx.algo.utils.mmengine_utils import InstanceData
 
-class BaseRoIHead(BaseModule, metaclass=ABCMeta):
+
+class BaseRoIHead(BaseModule):
     """Base class for RoIHeads."""
 
     def __init__(
@@ -28,9 +28,9 @@ class BaseRoIHead(BaseModule, metaclass=ABCMeta):
         bbox_head: nn.Module,
         mask_roi_extractor: nn.Module,
         mask_head: nn.Module,
-        train_cfg: ConfigDict | dict,
-        test_cfg: ConfigDict | dict,
-        init_cfg: ConfigDict | dict | list[ConfigDict | dict] | None = None,
+        train_cfg: DictConfig | dict,
+        test_cfg: DictConfig | dict,
+        init_cfg: DictConfig | dict | list[DictConfig | dict] | None = None,
     ) -> None:
         super().__init__(init_cfg=init_cfg)
         self.train_cfg = train_cfg
@@ -59,55 +59,27 @@ class BaseRoIHead(BaseModule, metaclass=ABCMeta):
         """bool: whether the RoI head contains a `shared_head`."""
         return hasattr(self, "shared_head") and self.shared_head is not None
 
-    @abstractmethod
-    def init_assigner_sampler(self, *args, **kwargs) -> None:
-        """Initialize assigner and sampler."""
-
-    @abstractmethod
-    def loss(
-        self,
-        x: tuple[Tensor],
-        rpn_results_list: list[InstanceData],
-        batch_data_samples: list[DetDataSample],
-    ) -> dict:
-        """Perform forward propagation and loss calculation of the roi head on the features of the upstream network."""
-
     def predict(
         self,
         x: tuple[Tensor],
         rpn_results_list: list[InstanceData],
-        batch_data_samples: list[DetDataSample],
+        entity: InstanceSegBatchDataEntity,
         rescale: bool = False,
     ) -> list[InstanceData]:
-        """Forward the roi head and predict detection results on the features of the upstream network.
-
-        Args:
-            x (tuple[Tensor]): Features from upstream network. Each
-                has shape (N, C, H, W).
-            rpn_results_list (list[:obj:`InstanceData`]): list of region
-                proposals.
-            batch_data_samples (List[:obj:`DetDataSample`]): The Data
-                Samples. It usually includes information such as
-                `gt_instance`, `gt_panoptic_seg` and `gt_sem_seg`.
-            rescale (bool): Whether to rescale the results to
-                the original image. Defaults to True.
-
-        Returns:
-            list[obj:`InstanceData`]: Detection results of each image.
-            Each item usually contains following keys.
-
-                - scores (Tensor): Classification scores, has a shape
-                  (num_instance, )
-                - labels (Tensor): Labels of bboxes, has a shape
-                  (num_instances, ).
-                - bboxes (Tensor): Has a shape (num_instances, 4),
-                  the last dimension 4 arrange as (x1, y1, x2, y2).
-                - masks (Tensor): Has a shape (num_instances, H, W).
-        """
+        """Forward the roi head and predict detection results on the features of the upstream network."""
         if not self.with_bbox:
             msg = "Bbox head must be implemented."
             raise NotImplementedError(msg)
-        batch_img_metas = [data_samples.metainfo for data_samples in batch_data_samples]
+        batch_img_metas = [
+            {
+                "img_id": img_info.img_idx,
+                "img_shape": img_info.img_shape,
+                "ori_shape": img_info.ori_shape,
+                "scale_factor": img_info.scale_factor,
+                "ignored_labels": img_info.ignored_labels,
+            }
+            for img_info in entity.imgs_info
+        ]
 
         # If it has the mask branch, the bbox branch does not need
         # to be scaled to the original image scale, because the mask

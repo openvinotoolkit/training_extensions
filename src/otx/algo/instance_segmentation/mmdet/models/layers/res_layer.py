@@ -16,7 +16,7 @@ from otx.algo.modules.conv import build_conv_layer
 from otx.algo.modules.norm import build_norm_layer
 
 if TYPE_CHECKING:
-    from mmengine.config import ConfigDict
+    from omegaconf import DictConfig
 
 
 class ResLayer(Sequential):
@@ -47,7 +47,7 @@ class ResLayer(Sequential):
         norm_cfg: dict,
         stride: int = 1,
         avg_down: bool = False,
-        conv_cfg: ConfigDict | dict | None = None,
+        conv_cfg: DictConfig | dict | None = None,
         downsample_first: bool = True,
         **kwargs,
     ) -> None:

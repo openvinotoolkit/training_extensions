@@ -26,11 +26,12 @@ class TestOTXInstanceSegModel:
         explain_fn = otx_model.get_explain_fn()
         assert callable(explain_fn)
 
-    def test_forward_explain_inst_seg(self, otx_model, fxt_data_sample):
-        inputs = torch.randn(1, 3, 224, 224)
+    def test_forward_explain_inst_seg(self, otx_model, fxt_inst_seg_data_entity):
+        inputs = fxt_inst_seg_data_entity[2]
+        inputs.images = torch.randn(1, 3, 224, 224)
         otx_model.model.feature_vector_fn = feature_vector_fn
         otx_model.model.explain_fn = otx_model.get_explain_fn()
-        result = otx_model._forward_explain_inst_seg(otx_model.model, inputs, fxt_data_sample, mode="predict")
+        result = otx_model._forward_explain_inst_seg(otx_model.model, inputs, mode="predict")
 
         assert "predictions" in result
         assert "feature_vector" in result
@@ -38,13 +39,12 @@ class TestOTXInstanceSegModel:
 
     def test_customize_inputs(self, otx_model, fxt_inst_seg_data_entity) -> None:
         output_data = otx_model._customize_inputs(fxt_inst_seg_data_entity[2])
-        assert output_data is not None
-        assert "gt_instances" in output_data["data_samples"][-1]
-        assert "masks" in output_data["data_samples"][-1].gt_instances
-        assert output_data["data_samples"][-1].metainfo["pad_shape"] == output_data["inputs"].shape[-2:]
+        assert output_data["mode"] == "loss"
+        assert output_data["entity"] == fxt_inst_seg_data_entity[2]
 
     def test_forward_explain(self, otx_model, fxt_inst_seg_data_entity):
         inputs = fxt_inst_seg_data_entity[2]
+        inputs.images = [image.float() for image in inputs.images]
         otx_model.training = False
         otx_model.explain_mode = True
         outputs = otx_model.forward_explain(inputs)
