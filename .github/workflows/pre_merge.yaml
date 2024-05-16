@@ -94,7 +94,7 @@ jobs:
           - task: "semantic_segmentation"
           - task: "visual_prompting"
           - task: "anomaly"
-    name: Integration-Test-${{ matrix.task }}-py310
+    name: Integration-Test-${{ matrix.task }}-py311
     # This is what will cancel the job concurrency
     concurrency:
       group: ${{ github.workflow }}-Integration-${{ github.event.pull_request.number || github.ref }}-${{ matrix.task }}
