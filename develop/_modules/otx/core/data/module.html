@@ -341,7 +341,7 @@
 
             <span class="n">dataset</span> <span class="o">=</span> <span class="n">OTXDatasetFactory</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
                 <span class="n">task</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">task</span><span class="p">,</span>
-                <span class="n">dm_subset</span><span class="o">=</span><span class="n">dm_subset</span><span class="p">,</span>
+                <span class="n">dm_subset</span><span class="o">=</span><span class="n">dm_subset</span><span class="o">.</span><span class="n">as_dataset</span><span class="p">(),</span>
                 <span class="n">mem_cache_handler</span><span class="o">=</span><span class="n">mem_cache_handler</span><span class="p">,</span>
                 <span class="n">cfg_subset</span><span class="o">=</span><span class="n">config_mapping</span><span class="p">[</span><span class="n">name</span><span class="p">],</span>
                 <span class="n">cfg_data_module</span><span class="o">=</span><span class="n">config</span><span class="p">,</span>

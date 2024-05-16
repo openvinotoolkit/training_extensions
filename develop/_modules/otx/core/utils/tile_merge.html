@@ -456,7 +456,8 @@
         <span class="p">)</span>
 
         <span class="k">if</span> <span class="n">explain_mode</span><span class="p">:</span>
-            <span class="n">merged_vector</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">feature_vectors</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="c1"># Note: Skip the first feature vector as it is the full image value.</span>
+            <span class="n">merged_vector</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">feature_vectors</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
             <span class="n">merged_saliency_map</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_merge_saliency_maps</span><span class="p">(</span><span class="n">saliency_maps</span><span class="p">,</span> <span class="n">img_size</span><span class="p">,</span> <span class="n">tiles_coords</span><span class="p">)</span>
             <span class="n">det_pred_entity</span><span class="o">.</span><span class="n">feature_vector</span> <span class="o">=</span> <span class="n">merged_vector</span>
             <span class="n">det_pred_entity</span><span class="o">.</span><span class="n">saliency_map</span> <span class="o">=</span> <span class="n">merged_saliency_map</span>
@@ -471,8 +472,7 @@
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Merging saliency maps from each tile for PyTorch implementation.</span>
 
-<span class="sd">        OV implementation is on ModelAPI side. Unlike ModelAPI implementation,</span>
-<span class="sd">        it doesn&#39;t have the first tile with resized untiled image.</span>
+<span class="sd">        OV implementation is on ModelAPI side.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            saliency_maps: list of saliency maps, shape of each map is (Nc, H, W)</span>
@@ -485,8 +485,10 @@
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">saliency_maps</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">saliency_maps</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">saliency_maps</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">([])</span>
+        <span class="n">image_saliency_map</span> <span class="o">=</span> <span class="n">saliency_maps</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">image_saliency_map</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">image_saliency_map</span>
 
         <span class="n">num_classes</span> <span class="o">=</span> <span class="n">saliency_maps</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">map_h</span><span class="p">,</span> <span class="n">map_w</span> <span class="o">=</span> <span class="n">saliency_maps</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
@@ -498,7 +500,8 @@
         <span class="n">image_map_w</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">image_w</span> <span class="o">*</span> <span class="n">ratio</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
         <span class="n">merged_map</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">num_classes</span><span class="p">,</span> <span class="n">image_map_h</span><span class="p">,</span> <span class="n">image_map_w</span><span class="p">))</span>
 
-        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">saliency_map</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">saliency_maps</span><span class="p">):</span>
+        <span class="c1"># Note: Skip the first saliency map as it is the full image value.</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">saliency_map</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">saliency_maps</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="mi">1</span><span class="p">):</span>
             <span class="k">for</span> <span class="n">class_idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_classes</span><span class="p">):</span>
                 <span class="n">cls_map</span> <span class="o">=</span> <span class="n">saliency_map</span><span class="p">[</span><span class="n">class_idx</span><span class="p">]</span>
 
@@ -524,6 +527,10 @@
                         <span class="n">merged_map</span><span class="p">[</span><span class="n">class_idx</span><span class="p">][</span><span class="n">y_1</span> <span class="o">+</span> <span class="n">hi</span><span class="p">,</span> <span class="n">x_1</span> <span class="o">+</span> <span class="n">wi</span><span class="p">]</span> <span class="o">=</span> <span class="n">map_pixel</span>
 
         <span class="k">for</span> <span class="n">class_idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_classes</span><span class="p">):</span>
+            <span class="n">image_map_cls</span> <span class="o">=</span> <span class="n">image_saliency_map</span><span class="p">[</span><span class="n">class_idx</span><span class="p">]</span>
+            <span class="n">image_map_cls</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">resize</span><span class="p">(</span><span class="n">image_map_cls</span><span class="p">,</span> <span class="p">(</span><span class="n">image_map_w</span><span class="p">,</span> <span class="n">image_map_h</span><span class="p">))</span>
+
+            <span class="n">merged_map</span><span class="p">[</span><span class="n">class_idx</span><span class="p">]</span> <span class="o">+=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">image_map_cls</span>
             <span class="n">merged_map</span><span class="p">[</span><span class="n">class_idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">_non_linear_normalization</span><span class="p">(</span><span class="n">merged_map</span><span class="p">[</span><span class="n">class_idx</span><span class="p">])</span>
 
         <span class="k">return</span> <span class="n">merged_map</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span></div>
@@ -670,7 +677,8 @@
         <span class="p">)</span>
 
         <span class="k">if</span> <span class="n">explain_mode</span><span class="p">:</span>
-            <span class="n">merged_vector</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">feature_vectors</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="c1"># Note: Skip the first feature vector as it is the full image value.</span>
+            <span class="n">merged_vector</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">feature_vectors</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
             <span class="n">merged_saliency_map</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_saliency_maps_from_masks</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">scores</span><span class="p">,</span> <span class="n">masks</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_classes</span><span class="p">)</span>
             <span class="n">inst_seg_pred_entity</span><span class="o">.</span><span class="n">feature_vector</span> <span class="o">=</span> <span class="n">merged_vector</span>
             <span class="n">inst_seg_pred_entity</span><span class="o">.</span><span class="n">saliency_map</span> <span class="o">=</span> <span class="n">merged_saliency_map</span>

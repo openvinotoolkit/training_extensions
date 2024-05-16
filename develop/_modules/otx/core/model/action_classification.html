@@ -269,6 +269,9 @@
     <span class="kn">from</span> <span class="nn">otx.core.metrics</span> <span class="kn">import</span> <span class="n">MetricCallable</span>
 
 
+<span class="c1"># ruff: noqa: F401</span>
+
+
 <div class="viewcode-block" id="OTXActionClsModel">
 <a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.model.action_classification.html#otx.core.model.action_classification.OTXActionClsModel">[docs]</a>
 <span class="k">class</span> <span class="nc">OTXActionClsModel</span><span class="p">(</span><span class="n">OTXModel</span><span class="p">[</span><span class="n">ActionClsBatchDataEntity</span><span class="p">,</span> <span class="n">ActionClsBatchPredEntity</span><span class="p">]):</span>
@@ -362,7 +365,6 @@
                     <span class="s2">&quot;img_id&quot;</span><span class="p">:</span> <span class="n">img_info</span><span class="o">.</span><span class="n">img_idx</span><span class="p">,</span>
                     <span class="s2">&quot;img_shape&quot;</span><span class="p">:</span> <span class="n">img_info</span><span class="o">.</span><span class="n">img_shape</span><span class="p">,</span>
                     <span class="s2">&quot;ori_shape&quot;</span><span class="p">:</span> <span class="n">img_info</span><span class="o">.</span><span class="n">ori_shape</span><span class="p">,</span>
-                    <span class="s2">&quot;pad_shape&quot;</span><span class="p">:</span> <span class="n">img_info</span><span class="o">.</span><span class="n">pad_shape</span><span class="p">,</span>
                     <span class="s2">&quot;scale_factor&quot;</span><span class="p">:</span> <span class="n">img_info</span><span class="o">.</span><span class="n">scale_factor</span><span class="p">,</span>
                 <span class="p">},</span>
                 <span class="n">gt_label</span><span class="o">=</span><span class="n">labels</span><span class="p">,</span>
@@ -457,6 +459,8 @@
         <span class="n">metric</span><span class="p">:</span> <span class="n">MetricCallable</span> <span class="o">=</span> <span class="n">MultiClassClsMetricCallable</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="kn">from</span> <span class="nn">otx.algo.action_classification</span> <span class="kn">import</span> <span class="n">openvino_model</span>
+
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="n">model_name</span><span class="o">=</span><span class="n">model_name</span><span class="p">,</span>
             <span class="n">model_type</span><span class="o">=</span><span class="n">model_type</span><span class="p">,</span>

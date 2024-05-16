@@ -27,12 +27,7 @@ otx.algo
    :toctree:
    :recursive:
 
-   otx.algo.action_classification
-   otx.algo.detection
-   otx.algo.segmentation
-   otx.algo.visual_prompting
    otx.algo.strategies
    otx.algo.accelerators
    otx.algo.plugins
-   otx.algo.instance_segmentation
 

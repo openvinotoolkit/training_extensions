@@ -298,14 +298,9 @@
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../reference/index.html">API reference</a><input class="toctree-checkbox" id="toctree-checkbox-11" name="toctree-checkbox-11" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-11"><i class="fa-solid fa-chevron-down"></i></label><ul>
 <li class="toctree-l2 has-children"><a class="reference internal" href="../../reference/_autosummary/otx.html">otx</a><input class="toctree-checkbox" id="toctree-checkbox-12" name="toctree-checkbox-12" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-12"><i class="fa-solid fa-chevron-down"></i></label><ul>
 <li class="toctree-l3 has-children"><a class="reference internal" href="../../reference/_autosummary/otx.algo.html">otx.algo</a><input class="toctree-checkbox" id="toctree-checkbox-13" name="toctree-checkbox-13" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-13"><i class="fa-solid fa-chevron-down"></i></label><ul>
-<li class="toctree-l4"><a class="reference internal" href="../../reference/_autosummary/otx.algo.action_classification.html">otx.algo.action_classification</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../reference/_autosummary/otx.algo.detection.html">otx.algo.detection</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../reference/_autosummary/otx.algo.segmentation.html">otx.algo.segmentation</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../reference/_autosummary/otx.algo.visual_prompting.html">otx.algo.visual_prompting</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../reference/_autosummary/otx.algo.strategies.html">otx.algo.strategies</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../reference/_autosummary/otx.algo.accelerators.html">otx.algo.accelerators</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../reference/_autosummary/otx.algo.plugins.html">otx.algo.plugins</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../reference/_autosummary/otx.algo.instance_segmentation.html">otx.algo.instance_segmentation</a></li>
 </ul>
 </li>
 <li class="toctree-l3 has-children"><a class="reference internal" href="../../reference/_autosummary/otx.cli.html">otx.cli</a><input class="toctree-checkbox" id="toctree-checkbox-14" name="toctree-checkbox-14" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-14"><i class="fa-solid fa-chevron-down"></i></label><ul>
@@ -382,9 +377,9 @@
 <h2>Configuration<a class="headerlink" href="#configuration" title="Link to this heading">#</a></h2>
 <p>Example of <code class="docutils literal notranslate"><span class="pre">recipe/classification/multi_class_cls</span></code></p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">model</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">class_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">otx.algo.classification.mobilenet_v3_large.MobileNetV3ForMulticlassCls</span>
+<span class="w">    </span><span class="nt">class_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">otx.algo.classification.mobilenet_v3.MobileNetV3ForMulticlassCls</span>
 <span class="w">    </span><span class="nt">init_args</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">num_classes</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1000</span>
+<span class="w">        </span><span class="nt">label_info</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1000</span>
 <span class="w">        </span><span class="nt">light</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">True</span>
 
 <span class="nt">optimizer</span><span class="p">:</span>
@@ -395,9 +390,12 @@
 <span class="w">        </span><span class="nt">weight_decay</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.0001</span>
 
 <span class="nt">scheduler</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">class_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">otx.algo.schedulers.WarmupReduceLROnPlateau</span>
-<span class="w">    </span><span class="nt">init_args</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">warmup_steps</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10</span>
+<span class="w">  </span><span class="nt">class_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">otx.core.schedulers.LinearWarmupSchedulerCallable</span>
+<span class="w">  </span><span class="nt">init_args</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">num_warmup_steps</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10</span>
+<span class="w">    </span><span class="nt">main_scheduler_callable</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">class_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">lightning.pytorch.cli.ReduceLROnPlateau</span>
+<span class="w">      </span><span class="nt">init_args</span><span class="p">:</span>
 <span class="w">        </span><span class="nt">mode</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">max</span>
 <span class="w">        </span><span class="nt">factor</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.5</span>
 <span class="w">        </span><span class="nt">patience</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
@@ -408,7 +406,7 @@
 <span class="w">    </span><span class="nt">device</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">auto</span>
 
 <span class="nt">callback_monitor</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">val/accuracy</span>
-<span class="nt">data</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">../../_base_/data/mmpretrain_base.yaml</span>
+<span class="nt">data</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">../../_base_/data/torchvision_base.yaml</span>
 </pre></div>
 </div>
 <p>We can use the <code class="docutils literal notranslate"><span class="pre">~.yaml</span></code> with the above values configured.</p>

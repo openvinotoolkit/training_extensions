@@ -298,9 +298,7 @@
             <span class="p">)</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">optimizer</span><span class="p">,</span> <span class="n">LBFGS</span><span class="p">):</span>
             <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Native AMP and the LBFGS optimizer are not compatible.&quot;</span>
-            <span class="k">raise</span> <span class="n">MisconfigurationException</span><span class="p">(</span>
-                <span class="n">msg</span><span class="p">,</span>
-            <span class="p">)</span>
+            <span class="k">raise</span> <span class="n">MisconfigurationException</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
         <span class="n">closure_result</span> <span class="o">=</span> <span class="n">closure</span><span class="p">()</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="n">_optimizer_handles_unscaling</span><span class="p">(</span><span class="n">optimizer</span><span class="p">):</span>
@@ -332,9 +330,7 @@
         <span class="k">if</span> <span class="n">clip_val</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">_optimizer_handles_unscaling</span><span class="p">(</span><span class="n">optimizer</span><span class="p">):</span>
             <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;The current optimizer, </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">optimizer</span><span class="p">)</span><span class="o">.</span><span class="vm">__qualname__</span><span class="si">}</span><span class="s2">, does not allow for gradient clipping&quot;</span>
             <span class="s2">&quot; because it performs unscaling of gradients internally. HINT: Are you using a &#39;fused&#39; optimizer?&quot;</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-                <span class="n">msg</span><span class="p">,</span>
-            <span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">clip_gradients</span><span class="p">(</span><span class="n">optimizer</span><span class="o">=</span><span class="n">optimizer</span><span class="p">,</span> <span class="n">clip_val</span><span class="o">=</span><span class="n">clip_val</span><span class="p">,</span> <span class="n">gradient_clip_algorithm</span><span class="o">=</span><span class="n">gradient_clip_algorithm</span><span class="p">)</span></div>
 
 

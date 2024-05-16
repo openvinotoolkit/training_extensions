@@ -249,12 +249,13 @@
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">torch</span>
-<span class="kn">from</span> <span class="nn">mmengine.structures.instance_data</span> <span class="kn">import</span> <span class="n">InstanceData</span>
 <span class="kn">from</span> <span class="nn">model_api.models</span> <span class="kn">import</span> <span class="n">Model</span>
 <span class="kn">from</span> <span class="nn">model_api.tilers</span> <span class="kn">import</span> <span class="n">InstanceSegmentationTiler</span>
 <span class="kn">from</span> <span class="nn">torchvision</span> <span class="kn">import</span> <span class="n">tv_tensors</span>
 
 <span class="kn">from</span> <span class="nn">otx.algo.explain.explain_algo</span> <span class="kn">import</span> <span class="n">InstSegExplainAlgo</span><span class="p">,</span> <span class="n">feature_vector_fn</span>
+<span class="kn">from</span> <span class="nn">otx.algo.instance_segmentation.mmdet.models.detectors.two_stage</span> <span class="kn">import</span> <span class="n">TwoStageDetector</span>
+<span class="kn">from</span> <span class="nn">otx.algo.utils.mmengine_utils</span> <span class="kn">import</span> <span class="n">InstanceData</span>
 <span class="kn">from</span> <span class="nn">otx.core.config.data</span> <span class="kn">import</span> <span class="n">TileConfig</span>
 <span class="kn">from</span> <span class="nn">otx.core.data.entity.base</span> <span class="kn">import</span> <span class="n">OTXBatchLossEntity</span>
 <span class="kn">from</span> <span class="nn">otx.core.data.entity.instance_segmentation</span> <span class="kn">import</span> <span class="n">InstanceSegBatchDataEntity</span><span class="p">,</span> <span class="n">InstanceSegBatchPredEntity</span>
@@ -272,8 +273,6 @@
 <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
     <span class="kn">from</span> <span class="nn">lightning.pytorch.cli</span> <span class="kn">import</span> <span class="n">LRSchedulerCallable</span><span class="p">,</span> <span class="n">OptimizerCallable</span>
     <span class="kn">from</span> <span class="nn">mmdet.models.data_preprocessors</span> <span class="kn">import</span> <span class="n">DetDataPreprocessor</span>
-    <span class="kn">from</span> <span class="nn">mmdet.models.detectors</span> <span class="kn">import</span> <span class="n">TwoStageDetector</span>
-    <span class="kn">from</span> <span class="nn">mmdet.structures</span> <span class="kn">import</span> <span class="n">OptSampleList</span>
     <span class="kn">from</span> <span class="nn">model_api.models.utils</span> <span class="kn">import</span> <span class="n">InstanceSegmentationResult</span>
     <span class="kn">from</span> <span class="nn">omegaconf</span> <span class="kn">import</span> <span class="n">DictConfig</span>
     <span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">nn</span>
@@ -508,8 +507,7 @@
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_forward_explain_inst_seg</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">:</span> <span class="n">TwoStageDetector</span><span class="p">,</span>
-        <span class="n">inputs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
-        <span class="n">data_samples</span><span class="p">:</span> <span class="n">OptSampleList</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">entity</span><span class="p">:</span> <span class="n">InstanceSegBatchDataEntity</span><span class="p">,</span>
         <span class="n">mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;tensor&quot;</span><span class="p">,</span>  <span class="c1"># noqa: ARG004</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Forward func of the BaseDetector instance, which located in is in ExplainableOTXInstanceSegModel().model.&quot;&quot;&quot;</span>
@@ -518,20 +516,21 @@
         <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">():</span>
             <span class="n">param</span><span class="o">.</span><span class="n">requires_grad</span> <span class="o">=</span> <span class="kc">False</span>
 
-        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">extract_feat</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">extract_feat</span><span class="p">(</span><span class="n">entity</span><span class="o">.</span><span class="n">images</span><span class="p">)</span>
 
         <span class="n">feature_vector</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">feature_vector_fn</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-        <span class="n">predictions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_results_from_head</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">data_samples</span><span class="p">)</span>
+        <span class="n">predictions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_results_from_head</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">entity</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">predictions</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">predictions</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
             <span class="c1"># Export case, consists of tensors</span>
             <span class="c1"># For OV task saliency map are generated on MAPI side</span>
             <span class="n">saliency_map</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
-
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">predictions</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">predictions</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">InstanceData</span><span class="p">):</span>
             <span class="c1"># Predict case, consists of InstanceData</span>
             <span class="n">saliency_map</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">explain_fn</span><span class="p">(</span><span class="n">predictions</span><span class="p">)</span>
-            <span class="n">predictions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">add_pred_to_datasample</span><span class="p">(</span><span class="n">data_samples</span><span class="p">,</span> <span class="n">predictions</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Unexpected predictions type: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">predictions</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="p">{</span>
             <span class="s2">&quot;predictions&quot;</span><span class="p">:</span> <span class="n">predictions</span><span class="p">,</span>
@@ -544,7 +543,7 @@
     <span class="k">def</span> <span class="nf">get_results_from_head</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">x</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span>
-        <span class="n">data_samples</span><span class="p">:</span> <span class="n">OptSampleList</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">entity</span><span class="p">:</span> <span class="n">InstanceSegBatchDataEntity</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n">InstanceData</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the results from the head of the instance segmentation model.</span>
 
@@ -556,12 +555,12 @@
 <span class="sd">            tuple[torch.Tensor] | list[InstanceData]: The predicted results from the head of the model.</span>
 <span class="sd">            Tuple for the Export case, list for the Predict case.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="kn">from</span> <span class="nn">otx.algo.instance_segmentation.rtmdet_inst</span> <span class="kn">import</span> <span class="n">RTMDetInst</span>
+        <span class="kn">from</span> <span class="nn">otx.algo.instance_segmentation.rtmdet_inst</span> <span class="kn">import</span> <span class="n">RTMDetInstTiny</span>
 
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">RTMDetInst</span><span class="p">):</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">bbox_head</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">data_samples</span><span class="p">,</span> <span class="n">rescale</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-        <span class="n">rpn_results_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">rpn_head</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">data_samples</span><span class="p">,</span> <span class="n">rescale</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">roi_head</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">rpn_results_list</span><span class="p">,</span> <span class="n">data_samples</span><span class="p">,</span> <span class="n">rescale</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">RTMDetInstTiny</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">bbox_head</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">entity</span><span class="p">,</span> <span class="n">rescale</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">rpn_results_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">rpn_head</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">entity</span><span class="p">,</span> <span class="n">rescale</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">roi_head</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">rpn_results_list</span><span class="p">,</span> <span class="n">entity</span><span class="p">,</span> <span class="n">rescale</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="ExplainableOTXInstanceSegModel.get_explain_fn">
@@ -696,7 +695,6 @@
                     <span class="s2">&quot;img_id&quot;</span><span class="p">:</span> <span class="n">img_info</span><span class="o">.</span><span class="n">img_idx</span><span class="p">,</span>
                     <span class="s2">&quot;img_shape&quot;</span><span class="p">:</span> <span class="n">img_info</span><span class="o">.</span><span class="n">img_shape</span><span class="p">,</span>
                     <span class="s2">&quot;ori_shape&quot;</span><span class="p">:</span> <span class="n">img_info</span><span class="o">.</span><span class="n">ori_shape</span><span class="p">,</span>
-                    <span class="s2">&quot;pad_shape&quot;</span><span class="p">:</span> <span class="n">img_info</span><span class="o">.</span><span class="n">pad_shape</span><span class="p">,</span>
                     <span class="s2">&quot;scale_factor&quot;</span><span class="p">:</span> <span class="n">img_info</span><span class="o">.</span><span class="n">scale_factor</span><span class="p">,</span>
                     <span class="s2">&quot;ignored_labels&quot;</span><span class="p">:</span> <span class="n">img_info</span><span class="o">.</span><span class="n">ignored_labels</span><span class="p">,</span>
                 <span class="p">},</span>
@@ -733,6 +731,8 @@
                     <span class="n">losses</span><span class="p">[</span><span class="n">loss_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">loss_value</span>
                 <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">loss_value</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
                     <span class="n">losses</span><span class="p">[</span><span class="n">loss_name</span><span class="p">]</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">_loss</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="k">for</span> <span class="n">_loss</span> <span class="ow">in</span> <span class="n">loss_value</span><span class="p">)</span>
+            <span class="c1"># pop acc from losses as it is not needed</span>
+            <span class="n">losses</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;acc&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">losses</span>
 
         <span class="n">scores</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>

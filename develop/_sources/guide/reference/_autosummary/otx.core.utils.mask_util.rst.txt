@@ -13,6 +13,8 @@ otx.core.utils.mask\_util
 
    .. autosummary::
    
+      crop_and_resize_masks
+      crop_and_resize_polygons
       encode_rle
       polygon_to_bitmap
       polygon_to_rle

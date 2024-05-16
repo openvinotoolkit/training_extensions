@@ -298,14 +298,9 @@
 <li class="toctree-l1 has-children"><a class="reference internal" href="../reference/index.html">API reference</a><input class="toctree-checkbox" id="toctree-checkbox-11" name="toctree-checkbox-11" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-11"><i class="fa-solid fa-chevron-down"></i></label><ul>
 <li class="toctree-l2 has-children"><a class="reference internal" href="../reference/_autosummary/otx.html">otx</a><input class="toctree-checkbox" id="toctree-checkbox-12" name="toctree-checkbox-12" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-12"><i class="fa-solid fa-chevron-down"></i></label><ul>
 <li class="toctree-l3 has-children"><a class="reference internal" href="../reference/_autosummary/otx.algo.html">otx.algo</a><input class="toctree-checkbox" id="toctree-checkbox-13" name="toctree-checkbox-13" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-13"><i class="fa-solid fa-chevron-down"></i></label><ul>
-<li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.algo.action_classification.html">otx.algo.action_classification</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.algo.detection.html">otx.algo.detection</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.algo.segmentation.html">otx.algo.segmentation</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.algo.visual_prompting.html">otx.algo.visual_prompting</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.algo.strategies.html">otx.algo.strategies</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.algo.accelerators.html">otx.algo.accelerators</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.algo.plugins.html">otx.algo.plugins</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.algo.instance_segmentation.html">otx.algo.instance_segmentation</a></li>
 </ul>
 </li>
 <li class="toctree-l3 has-children"><a class="reference internal" href="../reference/_autosummary/otx.cli.html">otx.cli</a><input class="toctree-checkbox" id="toctree-checkbox-14" name="toctree-checkbox-14" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-14"><i class="fa-solid fa-chevron-down"></i></label><ul>
@@ -594,7 +589,7 @@ Custom Model</label><div class="sd-tab-content docutils">
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">otx.algo.detection.atss</span> <span class="kn">import</span> <span class="n">ATSS</span>
 <span class="kn">from</span> <span class="nn">otx.engine</span> <span class="kn">import</span> <span class="n">Engine</span>
 
-<span class="n">model</span> <span class="o">=</span> <span class="n">ATSS</span><span class="p">(</span><span class="n">num_classes</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">variant</span><span class="o">=</span><span class="s2">&quot;mobilenetv2&quot;</span><span class="p">)</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">ATSS</span><span class="p">(</span><span class="n">label_info</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">variant</span><span class="o">=</span><span class="s2">&quot;mobilenetv2&quot;</span><span class="p">)</span>
 
 <span class="n">engine</span> <span class="o">=</span> <span class="n">Engine</span><span class="p">(</span><span class="n">data_root</span><span class="o">=</span><span class="s2">&quot;data/wgisd&quot;</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">)</span>
 <span class="n">engine</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
@@ -607,7 +602,7 @@ Custom Model with checkpoint</label><div class="sd-tab-content docutils">
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">otx.algo.detection.atss</span> <span class="kn">import</span> <span class="n">ATSS</span>
 <span class="kn">from</span> <span class="nn">otx.engine</span> <span class="kn">import</span> <span class="n">Engine</span>
 
-<span class="n">model</span> <span class="o">=</span> <span class="n">ATSS</span><span class="p">(</span><span class="n">num_classes</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">variant</span><span class="o">=</span><span class="s2">&quot;mobilenetv2&quot;</span><span class="p">)</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">ATSS</span><span class="p">(</span><span class="n">label_info</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">variant</span><span class="o">=</span><span class="s2">&quot;mobilenetv2&quot;</span><span class="p">)</span>
 
 <span class="n">engine</span> <span class="o">=</span> <span class="n">Engine</span><span class="p">(</span><span class="n">data_root</span><span class="o">=</span><span class="s2">&quot;data/wgisd&quot;</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">checkpoint</span><span class="o">=</span><span class="s2">&quot;&lt;path/to/checkpoint&gt;&quot;</span><span class="p">)</span>
 <span class="n">engine</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
@@ -622,7 +617,7 @@ Custom Optimizer &amp; Scheduler</label><div class="sd-tab-content docutils">
 <span class="kn">from</span> <span class="nn">otx.algo.detection.atss</span> <span class="kn">import</span> <span class="n">ATSS</span>
 <span class="kn">from</span> <span class="nn">otx.engine</span> <span class="kn">import</span> <span class="n">Engine</span>
 
-<span class="n">model</span> <span class="o">=</span> <span class="n">ATSS</span><span class="p">(</span><span class="n">num_classes</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">variant</span><span class="o">=</span><span class="s2">&quot;mobilenetv2&quot;</span><span class="p">)</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">ATSS</span><span class="p">(</span><span class="n">label_info</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">variant</span><span class="o">=</span><span class="s2">&quot;mobilenetv2&quot;</span><span class="p">)</span>
 <span class="n">optimizer</span> <span class="o">=</span> <span class="n">SGD</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">weight_decay</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">,</span> <span class="n">momentum</span><span class="o">=</span><span class="mf">0.9</span><span class="p">)</span>
 <span class="n">scheduler</span> <span class="o">=</span> <span class="n">CosineAnnealingLR</span><span class="p">(</span><span class="n">optimizer</span><span class="p">,</span> <span class="n">T_max</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span> <span class="n">eta_min</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 
@@ -690,7 +685,7 @@ Use Mixed Precision</label><div class="sd-tab-content docutils">
 Change Validation Metric</label><div class="sd-tab-content docutils">
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">otx.core.metrics.fmeasure</span> <span class="kn">import</span> <span class="n">FMeasure</span>
 
-<span class="n">metric</span> <span class="o">=</span> <span class="n">FMeasue</span><span class="p">(</span><span class="n">num_classes</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">metric</span> <span class="o">=</span> <span class="n">FMeasue</span><span class="p">(</span><span class="n">label_info</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
 <span class="n">engine</span><span class="o">.</span><span class="n">train</span><span class="p">(</span><span class="n">metric</span><span class="o">=</span><span class="n">metric</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -757,7 +752,7 @@ Evaluate Model with different datamodule or dataloader</label><div class="sd-tab
 Evaluate Model with different metrics</label><div class="sd-tab-content docutils">
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">otx.core.metrics.fmeasure</span> <span class="kn">import</span> <span class="n">FMeasure</span>
 
-<span class="n">metric</span> <span class="o">=</span> <span class="n">FMeasue</span><span class="p">(</span><span class="n">num_classes</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">metric</span> <span class="o">=</span> <span class="n">FMeasue</span><span class="p">(</span><span class="n">label_info</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
 <span class="n">engine</span><span class="o">.</span><span class="n">test</span><span class="p">(</span><span class="n">metric</span><span class="o">=</span><span class="n">metric</span><span class="p">)</span>
 </pre></div>
 </div>

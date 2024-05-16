@@ -250,7 +250,7 @@
 <span class="kn">from</span> <span class="nn">.dataset.base</span> <span class="kn">import</span> <span class="n">OTXDataset</span><span class="p">,</span> <span class="n">Transforms</span>
 
 <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
-    <span class="kn">from</span> <span class="nn">datumaro</span> <span class="kn">import</span> <span class="n">DatasetSubset</span>
+    <span class="kn">from</span> <span class="nn">datumaro</span> <span class="kn">import</span> <span class="n">Dataset</span> <span class="k">as</span> <span class="n">DmDataset</span>
 
     <span class="kn">from</span> <span class="nn">otx.core.config.data</span> <span class="kn">import</span> <span class="n">DataModuleConfig</span><span class="p">,</span> <span class="n">SubsetConfig</span>
     <span class="kn">from</span> <span class="nn">otx.core.data.mem_cache</span> <span class="kn">import</span> <span class="n">MemCacheHandlerBase</span>
@@ -315,7 +315,7 @@
     <span class="k">def</span> <span class="nf">create</span><span class="p">(</span>  <span class="c1"># noqa: PLR0911 # ignore too many return statements</span>
         <span class="bp">cls</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">OTXDatasetFactory</span><span class="p">],</span>
         <span class="n">task</span><span class="p">:</span> <span class="n">OTXTaskType</span><span class="p">,</span>
-        <span class="n">dm_subset</span><span class="p">:</span> <span class="n">DatasetSubset</span><span class="p">,</span>
+        <span class="n">dm_subset</span><span class="p">:</span> <span class="n">DmDataset</span><span class="p">,</span>
         <span class="n">mem_cache_handler</span><span class="p">:</span> <span class="n">MemCacheHandlerBase</span><span class="p">,</span>
         <span class="n">cfg_subset</span><span class="p">:</span> <span class="n">SubsetConfig</span><span class="p">,</span>
         <span class="n">cfg_data_module</span><span class="p">:</span> <span class="n">DataModuleConfig</span><span class="p">,</span>
