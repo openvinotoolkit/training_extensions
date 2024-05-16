@@ -41,11 +41,7 @@ overrides:
   callbacks:
     - class_path: lightning.pytorch.callbacks.EarlyStopping
       init_args:
-        patience: 4
-    - class_path: otx.algo.callbacks.adaptive_train_scheduling.AdaptiveTrainScheduling
-      init_args:
-        min_earlystop_patience: 4
-        min_lrschedule_patience: 3
+        patience: 3
   data:
     task: MULTI_LABEL_CLS
     config:

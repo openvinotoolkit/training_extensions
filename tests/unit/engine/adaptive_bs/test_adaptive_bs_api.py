@@ -242,7 +242,8 @@ class TestBatchSizeFinder:
     def mock_trainer(self, mock_active_loop) -> MagicMock:
         trainer = MagicMock()
         trainer.limit_val_batches = 100
-        trainer.fit_loop.epoch_loop.max_steps = 100
+        trainer.fit_loop.epoch_loop.max_steps = -1
+        trainer.fit_loop.max_epochs = 200
         trainer._active_loop = mock_active_loop
         return trainer
 
@@ -263,7 +264,9 @@ class TestBatchSizeFinder:
 
         # check steps_per_trial is set well
         assert mock_trainer.limit_val_batches == steps_per_trial
-        assert mock_trainer.fit_loop.epoch_loop.max_steps == steps_per_trial
+        assert mock_trainer.fit_loop.epoch_loop.max_steps == -1
+        assert mock_trainer.fit_loop.max_epochs == 1
+        assert mock_trainer.limit_train_batches == steps_per_trial
         # check active_loop is run
         assert mock_active_loop.restarting is False
         mock_active_loop.run.assert_called_once()
@@ -279,7 +282,26 @@ class TestBatchSizeFinder:
 
         # check steps_per_trial is set well
         assert mock_trainer.limit_val_batches == 0
+        assert mock_trainer.fit_loop.epoch_loop.max_steps == -1
+        assert mock_trainer.fit_loop.max_epochs == 1
+        assert mock_trainer.limit_train_batches == steps_per_trial
+        # check active_loop is run
+        assert mock_active_loop.restarting is False
+        mock_active_loop.run.assert_called_once()
+        # check callback and logger is removed
+        assert mock_trainer.callbacks == []
+        assert isinstance(mock_trainer.logger, DummyLogger) or mock_trainer.logger is None
+
+    def test_on_fit_start_iter_based_loop(self, mock_trainer, mock_active_loop):
+        mock_trainer.fit_loop.epoch_loop.max_steps = 200
+        steps_per_trial = 3
+        bs_finder = BatchSizeFinder(steps_per_trial=steps_per_trial)
+        bs_finder.on_fit_start(trainer=mock_trainer, pl_module=MagicMock())
+
+        # check steps_per_trial is set well
+        assert mock_trainer.limit_val_batches == steps_per_trial
         assert mock_trainer.fit_loop.epoch_loop.max_steps == steps_per_trial
+        assert mock_trainer.limit_train_batches == 1.0
         # check active_loop is run
         assert mock_active_loop.restarting is False
         mock_active_loop.run.assert_called_once()

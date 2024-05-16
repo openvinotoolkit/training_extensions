@@ -5,22 +5,12 @@
 
 from . import (
     accelerators,
-    action_classification,
-    detection,
-    instance_segmentation,
     plugins,
-    segmentation,
     strategies,
-    visual_prompting,
 )
 
 __all__ = [
-    "action_classification",
-    "detection",
-    "segmentation",
-    "visual_prompting",
     "strategies",
     "accelerators",
     "plugins",
-    "instance_segmentation",
 ]

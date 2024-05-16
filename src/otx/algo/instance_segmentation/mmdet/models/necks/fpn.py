@@ -16,7 +16,7 @@ from otx.algo.modules.base_module import BaseModule
 from otx.algo.modules.conv_module import ConvModule
 
 if TYPE_CHECKING:
-    from mmengine.config import ConfigDict
+    from omegaconf import DictConfig
 
 
 class FPN(BaseModule):
@@ -68,9 +68,9 @@ class FPN(BaseModule):
         end_level: int = -1,
         relu_before_extra_convs: bool = False,
         no_norm_on_lateral: bool = False,
-        conv_cfg: ConfigDict | dict | None = None,
-        norm_cfg: ConfigDict | dict | None = None,
-        act_cfg: ConfigDict | dict | None = None,
+        conv_cfg: DictConfig | dict | None = None,
+        norm_cfg: DictConfig | dict | None = None,
+        act_cfg: DictConfig | dict | None = None,
         upsample_cfg: dict | None = None,
         init_cfg: dict | None = None,
     ) -> None:

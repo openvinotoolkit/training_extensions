@@ -166,7 +166,7 @@ Preview all configuration values that will be executed through that command line
     model:
       class_path: otx.algo.detection.atss.ATSS
       init_args:
-        num_classes: 1000
+        label_info: 1000
         variant: mobilenetv2
     optimizer: ...
     scheduler: ...

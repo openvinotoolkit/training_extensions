@@ -3,7 +3,6 @@
 #
 """Module for OTX base data entities."""
 
-
 from __future__ import annotations
 
 import warnings
@@ -191,34 +190,6 @@ class ImageInfo(tv_tensors.TVTensor):
             )
         return output
 
-    @property
-    def pad_shape(self) -> tuple[int, int]:
-        """Image shape after padding."""
-        h_img, w_img = self.img_shape
-        left, top, right, bottom = self.padding
-        return (h_img + top + bottom, w_img + left + right)
-
-    @pad_shape.setter
-    def pad_shape(self, pad_shape: tuple[int, int] | tuple[int, int, int]) -> None:
-        """Set padding from the given pad shape.
-
-        Args:
-            pad_shape: Padded image shape (height, width) or (height, width, channel)
-                which should be larger than this image shape.
-                In addition, the padded image should be padded
-                only for the right or bottom borders.
-        """
-        h_img, w_img = self.img_shape
-        h_pad, w_pad = pad_shape[0], pad_shape[1]
-
-        if h_pad < h_img or w_pad < w_img:
-            raise ValueError(pad_shape)
-
-        left = top = 0
-        right = w_pad - w_img
-        bottom = h_pad - h_img
-        self.padding = (left, top, right, bottom)
-
     def __repr__(self) -> str:
         return (
             "ImageInfo("
@@ -304,7 +275,9 @@ def _pad_image_info(
 ) -> ImageInfo:
     """Register ImageInfo to TorchVision v2 resize kernel."""
     left, right, top, bottom = F._geometry._parse_pad_padding(padding)  # noqa: SLF001
+    height, width = image_info.img_shape
     image_info.padding = (left, top, right, bottom)
+    image_info.img_shape = (height + top + bottom, width + left + right)
     return image_info
 
 

@@ -9,7 +9,7 @@ import json
 import os
 import platform
 import re
-import subprocess
+import subprocess  # nosec B404
 from importlib.metadata import requires
 from importlib.util import find_spec
 from pathlib import Path

@@ -58,3 +58,7 @@ class TestYOLOX:
         model.eval()
         output = model.forward_for_tracing(torch.randn(1, 3, 32, 32))
         assert len(output) == 2
+
+        model.explain_mode = True
+        output = model.forward_for_tracing(torch.randn(1, 3, 32, 32))
+        assert len(output) == 4

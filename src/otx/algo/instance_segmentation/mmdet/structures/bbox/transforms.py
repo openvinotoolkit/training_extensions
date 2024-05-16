@@ -32,7 +32,7 @@ def bbox2roi(bbox_list: list[Tensor]) -> Tensor:
     return torch.cat(rois_list, 0)
 
 
-def scale_boxes(boxes: Tensor, scale_factor: tuple[float, float]) -> Tensor:
+def scale_boxes(boxes: Tensor, scale_factor: list[float]) -> Tensor:
     """Scale boxes with type of tensor or box type.
 
     Args:

@@ -54,9 +54,7 @@ class MixedPrecisionXPUPlugin(Precision):
             )
         if isinstance(optimizer, LBFGS):
             msg = "Native AMP and the LBFGS optimizer are not compatible."
-            raise MisconfigurationException(
-                msg,
-            )
+            raise MisconfigurationException(msg)
         closure_result = closure()
 
         if not _optimizer_handles_unscaling(optimizer):
@@ -85,9 +83,7 @@ class MixedPrecisionXPUPlugin(Precision):
         if clip_val > 0 and _optimizer_handles_unscaling(optimizer):
             msg = f"The current optimizer, {type(optimizer).__qualname__}, does not allow for gradient clipping"
             " because it performs unscaling of gradients internally. HINT: Are you using a 'fused' optimizer?"
-            raise RuntimeError(
-                msg,
-            )
+            raise RuntimeError(msg)
         super().clip_gradients(optimizer=optimizer, clip_val=clip_val, gradient_clip_algorithm=gradient_clip_algorithm)
 
     @contextmanager

@@ -14,7 +14,7 @@ from torch import Tensor, nn
 from .bbox_head import BBoxHead
 
 if TYPE_CHECKING:
-    from mmengine.config import ConfigDict
+    from omegaconf import DictConfig
 
 
 class ConvFCBBoxHead(BBoxHead):
@@ -37,9 +37,9 @@ class ConvFCBBoxHead(BBoxHead):
         num_reg_fcs: int = 0,
         conv_out_channels: int = 256,
         fc_out_channels: int = 1024,
-        conv_cfg: dict | ConfigDict | None = None,
-        norm_cfg: dict | ConfigDict | None = None,
-        init_cfg: dict | ConfigDict | None = None,
+        conv_cfg: dict | DictConfig | None = None,
+        norm_cfg: dict | DictConfig | None = None,
+        init_cfg: dict | DictConfig | None = None,
         *args,
         **kwargs,
     ) -> None:

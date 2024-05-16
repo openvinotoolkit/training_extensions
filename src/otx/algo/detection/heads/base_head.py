@@ -16,6 +16,7 @@ from otx.algo.detection.ops.nms import batched_nms, multiclass_nms
 from otx.algo.detection.utils.utils import filter_scores_and_topk, select_single_mlvl, unpack_det_entity
 from otx.algo.modules.base_module import BaseModule
 from otx.algo.utils.mmengine_utils import InstanceData
+from otx.core.data.entity.base import OTXBatchDataEntity
 from otx.core.data.entity.detection import DetBatchDataEntity
 
 if TYPE_CHECKING:
@@ -96,9 +97,7 @@ class BaseDenseHead(BaseModule):
         Args:
             x (tuple[Tensor]): Features from the upstream network, each is
                 a 4D-tensor.
-            batch_data_samples (List[:obj:`DetDataSample`]): The Data
-                Samples. It usually includes information such as
-                `gt_instance`, `gt_panoptic_seg` and `gt_sem_seg`.
+            entity (DetBatchDataEntity): Entity from OTX dataset.
 
         Returns:
             dict: A dictionary of loss components.
@@ -124,7 +123,7 @@ class BaseDenseHead(BaseModule):
     def predict(
         self,
         x: tuple[Tensor],
-        entity: DetBatchDataEntity,
+        entity: OTXBatchDataEntity,
         rescale: bool = False,
     ) -> list[InstanceData]:
         """Perform forward propagation of the detection head and predict detection results.
@@ -145,7 +144,6 @@ class BaseDenseHead(BaseModule):
                 "img_id": img_info.img_idx,
                 "img_shape": img_info.img_shape,
                 "ori_shape": img_info.ori_shape,
-                "pad_shape": img_info.pad_shape,
                 "scale_factor": img_info.scale_factor,
                 "ignored_labels": img_info.ignored_labels,
             }

@@ -189,16 +189,12 @@ class PackDetInputs(MMDetPackDetInputs):
         # Some MM* transforms return (H, W, C), not (H, W)
         img_shape = data_samples.img_shape if len(data_samples.img_shape) == 2 else data_samples.img_shape[:2]
         ori_shape = data_samples.ori_shape if len(data_samples.ori_shape) == 2 else data_samples.ori_shape[:2]
-        pad_shape = data_samples.metainfo.get("pad_shape", img_shape)
-        if len(pad_shape) == 3:
-            pad_shape = pad_shape[:2]
         scale_factor = data_samples.metainfo.get("scale_factor", (1.0, 1.0))
 
         image_info = deepcopy(src_image_info)
         image_info.img_shape = img_shape
         image_info.ori_shape = ori_shape
         image_info.scale_factor = scale_factor
-        image_info.pad_shape = pad_shape
 
         return image_info
 
