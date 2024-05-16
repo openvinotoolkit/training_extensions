@@ -205,6 +205,7 @@ class DetectionTileMerge(TileMerge):
         )
 
         if explain_mode:
+            # Note: Skip the first feature vector as it is the full image value.
             det_pred_entity.feature_vector = np.mean(feature_vectors[1:], axis=0)
             det_pred_entity.saliency_map = self._merge_saliency_maps(saliency_maps, img_size, tiles_coords)
 
@@ -417,6 +418,7 @@ class InstanceSegTileMerge(TileMerge):
         )
 
         if explain_mode:
+            # Note: Skip the first feature vector as it is the full image value.
             inst_seg_pred_entity.feature_vector = np.mean(feature_vectors[1:], axis=0)
             inst_seg_pred_entity.saliency_map = self.get_saliency_maps_from_masks(
                 labels,
