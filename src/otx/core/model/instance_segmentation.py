@@ -12,7 +12,6 @@ from typing import TYPE_CHECKING, Any, Callable, Iterator, Literal
 
 import numpy as np
 import torch
-from mmengine.structures.instance_data import InstanceData
 from model_api.tilers import InstanceSegmentationTiler
 from torchvision import tv_tensors
 
@@ -36,8 +35,8 @@ from otx.core.utils.tile_merge import InstanceSegTileMerge
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
     from mmdet.models.data_preprocessors import DetDataPreprocessor
-    from model_api.models.utils import InstanceSegmentationResult
     from model_api.adapters import OpenvinoAdapter
+    from model_api.models.utils import InstanceSegmentationResult
     from omegaconf import DictConfig
     from torch import nn
     from torchmetrics import Metric
