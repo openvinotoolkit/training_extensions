@@ -138,12 +138,12 @@ class OTXDataset(Dataset, Generic[T_OTXDataEntity]):
         if (img_data := self.mem_cache_handler.get(key=key)[0]) is not None:
             return img_data, img_data.shape[:2]
 
-        if self.image_color_channel == ImageColorChannel.RGB:
-            img_data = cv2.cvtColor(img.data, cv2.COLOR_BGR2RGB)
-        else:
-            # [TODO]: Need to check if using image_decode_context is appropriate.
-            with image_decode_context():
-                img_data = img.data
+        with image_decode_context():
+            img_data = (
+                cv2.cvtColor(img.data, cv2.COLOR_BGR2RGB)
+                if self.image_color_channel == ImageColorChannel.RGB
+                else img.data
+            )
 
         if img_data is None:
             msg = "Cannot get image data"
