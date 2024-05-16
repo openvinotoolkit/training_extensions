@@ -223,7 +223,7 @@ def test_otx_export_infer(
     else:
         exported_model_path = str(latest_dir / "exported_model.xml")
 
-    tmp_path_test = run_cli_test(export_test_recipe, exported_model_path, Path("outputs") / "openvino", fxt_accelerator)
+    tmp_path_test = run_cli_test(export_test_recipe, exported_model_path, Path("outputs") / "openvino", "cpu")
     assert (tmp_path_test / "outputs").exists()
 
     # 5) test optimize
@@ -257,7 +257,7 @@ def test_otx_export_infer(
         exported_model_path = str(latest_dir / "optimized_model.xml")
 
     # 6) test optimized model
-    tmp_path_test = run_cli_test(export_test_recipe, exported_model_path, Path("outputs") / "nncf_ptq", fxt_accelerator)
+    tmp_path_test = run_cli_test(export_test_recipe, exported_model_path, Path("outputs") / "nncf_ptq", "cpu")
     torch_outputs_dir = tmp_path_test / "outputs" / "torch"
     torch_latest_dir = max(
         (p for p in torch_outputs_dir.iterdir() if p.is_dir() and p.name != ".latest"),
