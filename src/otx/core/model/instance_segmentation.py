@@ -113,7 +113,7 @@ class OTXInstanceSegModel(OTXModel[InstanceSegBatchDataEntity, InstanceSegBatchP
         return super()._export_parameters.wrap(
             model_type="MaskRCNN",
             task_type="instance_segmentation",
-            confidence_threshold=self.hparams.get("best_confidence_threshold", None),
+            confidence_threshold=self.hparams.get("best_confidence_threshold", 0.05),
             iou_threshold=0.5,
             tile_config=self.tile_config if self.tile_config.enable_tiler else None,
         )
