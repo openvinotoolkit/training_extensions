@@ -84,7 +84,7 @@ Install OpenVINO™ Training Extensions for users (XPU devices)
 
         .. code-block:: shell
 
-            pip install '.[xpu]'
+            pip install '.[xpu]' --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
 
         .. note::
 
@@ -94,11 +94,12 @@ Install OpenVINO™ Training Extensions for users (XPU devices)
     .. tab-item:: Full Requirements
 
         .. code-block:: shell
-            python -m pip install torch==2.1.0.post0 torchvision==0.16.0.post0 torchaudio==2.1.0.post0 intel-extension-for-pytorch==2.1.20+xpu oneccl_bind_pt==2.1.200+xpu --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
+
             git clone https://github.com/open-mmlab/mmcv
             cd mmcv
             git checkout v2.1.0
             MMCV_WITH_OPS=1 pip install -e .
+            cd ..
             otx install -v --do-not-install-torch
 
 [Optional] Refer to the `Intel® Extension for PyTorch documentation guide <https://intel.github.io/intel-extension-for-pytorch/index.html#installation?platform=gpu&version=v2.1.10%2bxpu&os=linux%2fwsl2&package=pip>`_
