@@ -29,8 +29,9 @@ GPU_MEM_LIMIT = 1024**3  # 1 GB memory limit
 
 
 if TYPE_CHECKING:
-    from mmengine.config import ConfigDict
-    from mmengine.structures import InstanceData
+    from omegaconf import DictConfig
+
+    from otx.algo.utils.mmengine_utils import InstanceData
 
 
 class FCNMaskHead(BaseModule):
@@ -46,9 +47,9 @@ class FCNMaskHead(BaseModule):
         conv_out_channels: int = 256,
         num_classes: int = 80,
         class_agnostic: int = False,
-        conv_cfg: ConfigDict | dict | None = None,
-        norm_cfg: ConfigDict | dict | None = None,
-        init_cfg: ConfigDict | dict | list[ConfigDict | dict] | None = None,
+        conv_cfg: DictConfig | dict | None = None,
+        norm_cfg: DictConfig | dict | None = None,
+        init_cfg: DictConfig | dict | list[DictConfig | dict] | None = None,
     ) -> None:
         if init_cfg is not None:
             msg = "To prevent abnormal initialization behavior, init_cfg is not allowed to be set"
@@ -129,7 +130,7 @@ class FCNMaskHead(BaseModule):
         self,
         sampling_results: list[SamplingResult],
         batch_gt_instances: list[InstanceData],
-        rcnn_train_cfg: ConfigDict,
+        rcnn_train_cfg: DictConfig,
     ) -> Tensor:
         """Calculate the ground truth for all samples in a batch according to the sampling_results.
 
@@ -146,15 +147,22 @@ class FCNMaskHead(BaseModule):
         """
         pos_proposals = [res.pos_priors for res in sampling_results]
         pos_assigned_gt_inds = [res.pos_assigned_gt_inds for res in sampling_results]
-        gt_masks = [res.masks for res in batch_gt_instances]
-        return mask_target(pos_proposals, pos_assigned_gt_inds, gt_masks, rcnn_train_cfg)
+        gt_masks = [res.masks for res in batch_gt_instances]  # type: ignore[attr-defined]
+        meta_infos = [gt_instances.metainfo for gt_instances in batch_gt_instances]
+        return mask_target(
+            pos_proposals,
+            pos_assigned_gt_inds,
+            gt_masks,
+            rcnn_train_cfg,
+            meta_infos,
+        )
 
     def loss_and_target(
         self,
         mask_preds: Tensor,
         sampling_results: list[SamplingResult],
         batch_gt_instances: list[InstanceData],
-        rcnn_train_cfg: ConfigDict,
+        rcnn_train_cfg: DictConfig,
     ) -> dict:
         """Calculate the loss based on the features extracted by the mask head.
 
@@ -194,7 +202,7 @@ class FCNMaskHead(BaseModule):
         mask_preds: tuple[Tensor],
         results_list: list[InstanceData],
         batch_img_metas: list[dict],
-        rcnn_test_cfg: ConfigDict,
+        rcnn_test_cfg: DictConfig,
         rescale: bool = False,
         activate_map: bool = False,
     ) -> list[InstanceData]:
@@ -232,7 +240,7 @@ class FCNMaskHead(BaseModule):
         for img_id in range(len(batch_img_metas)):
             img_meta = batch_img_metas[img_id]
             results = results_list[img_id]
-            bboxes = results.bboxes
+            bboxes = results.bboxes  # type: ignore[attr-defined]
             if bboxes.shape[0] == 0:
                 results_list[img_id] = empty_instances(
                     [img_meta],
@@ -245,7 +253,7 @@ class FCNMaskHead(BaseModule):
                 im_mask = self._predict_by_feat_single(
                     mask_preds=mask_preds[img_id],
                     bboxes=bboxes,
-                    labels=results.labels,
+                    labels=results.labels,  # type: ignore[attr-defined]
                     img_meta=img_meta,
                     rcnn_test_cfg=rcnn_test_cfg,
                     rescale=rescale,
@@ -260,7 +268,7 @@ class FCNMaskHead(BaseModule):
         bboxes: Tensor,
         labels: Tensor,
         img_meta: dict,
-        rcnn_test_cfg: ConfigDict,
+        rcnn_test_cfg: DictConfig,
         rescale: bool = False,
         activate_map: bool = False,
     ) -> Tensor:
@@ -348,7 +356,7 @@ class FCNMaskHead(BaseModule):
         mask_preds: Tensor,
         results_list: tuple[Tensor, ...],
         batch_img_metas: list[dict],
-        rcnn_test_cfg: ConfigDict,
+        rcnn_test_cfg: DictConfig,
         rescale: bool = False,
         activate_map: bool = False,
     ) -> torch.Tensor:

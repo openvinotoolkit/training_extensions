@@ -32,6 +32,9 @@ if TYPE_CHECKING:
     from otx.core.metrics import MetricCallable
 
 
+# ruff: noqa: F401
+
+
 class OTXActionClsModel(OTXModel[ActionClsBatchDataEntity, ActionClsBatchPredEntity]):
     """Base class for the action classification models used in OTX."""
 
@@ -120,7 +123,6 @@ class MMActionCompatibleModel(OTXActionClsModel):
                     "img_id": img_info.img_idx,
                     "img_shape": img_info.img_shape,
                     "ori_shape": img_info.ori_shape,
-                    "pad_shape": img_info.pad_shape,
                     "scale_factor": img_info.scale_factor,
                 },
                 gt_label=labels,
@@ -209,6 +211,8 @@ class OVActionClsModel(
         metric: MetricCallable = MultiClassClsMetricCallable,
         **kwargs,
     ) -> None:
+        from otx.algo.action_classification import openvino_model
+
         super().__init__(
             model_name=model_name,
             model_type=model_type,

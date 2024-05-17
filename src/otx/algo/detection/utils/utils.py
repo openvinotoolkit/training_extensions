@@ -14,6 +14,7 @@ from torch import Tensor
 
 from otx.algo.utils.mmengine_utils import InstanceData
 from otx.core.data.entity.detection import DetBatchDataEntity
+from otx.core.data.entity.instance_segmentation import InstanceSegBatchDataEntity
 
 
 # Methods below come from mmdet.utils and slightly modified.
@@ -166,7 +167,7 @@ def filter_scores_and_topk(
     return scores, labels, keep_idxs, filtered_results
 
 
-def select_single_mlvl(mlvl_tensors: list[Tensor], batch_id: int, detach: bool = True) -> list[Tensor]:
+def select_single_mlvl(mlvl_tensors: list[Tensor] | tuple[Tensor], batch_id: int, detach: bool = True) -> list[Tensor]:
     """Extract a multi-scale single image tensor from a multi-scale batch tensor based on batch index.
 
     Note: The default value of detach is True, because the proposal gradient
@@ -213,12 +214,58 @@ def unpack_det_entity(entity: DetBatchDataEntity) -> tuple:
             "img_id": img_info.img_idx,
             "img_shape": img_info.img_shape,
             "ori_shape": img_info.ori_shape,
-            "pad_shape": img_info.pad_shape,
             "scale_factor": img_info.scale_factor,
             "ignored_labels": img_info.ignored_labels,
         }
         batch_img_metas.append(metainfo)
         batch_gt_instances.append(InstanceData(bboxes=bboxes, labels=labels))
+
+    return batch_gt_instances, batch_img_metas
+
+
+def unpack_inst_seg_entity(entity: InstanceSegBatchDataEntity) -> tuple:
+    """Unpack gt_instances, gt_instances_ignore and img_metas based on batch_data_samples.
+
+    Args:
+        batch_data_samples (DetBatchDataEntity): Data entity from dataset.
+
+    Returns:
+        tuple:
+
+            - batch_gt_instances (list[:obj:`InstanceData`]): Batch of
+                gt_instance. It usually includes ``bboxes`` and ``labels``
+                attributes.
+            - batch_img_metas (list[dict]): Meta information of each image,
+                e.g., image size, scaling factor, etc.
+    """
+    batch_gt_instances = []
+    batch_img_metas = []
+    for img_info, masks, polygons, bboxes, labels in zip(
+        entity.imgs_info,
+        entity.masks,
+        entity.polygons,
+        entity.bboxes,
+        entity.labels,
+    ):
+        metainfo = {
+            "img_id": img_info.img_idx,
+            "img_shape": img_info.img_shape,
+            "ori_shape": img_info.ori_shape,
+            "scale_factor": img_info.scale_factor,
+            "ignored_labels": img_info.ignored_labels,
+        }
+        batch_img_metas.append(metainfo)
+
+        gt_masks = masks if len(masks) > 0 else polygons
+
+        batch_gt_instances.append(
+            InstanceData(
+                metainfo=metainfo,
+                masks=gt_masks,
+                bboxes=bboxes,
+                labels=labels,
+            ),
+        )
 
     return batch_gt_instances, batch_img_metas
 
@@ -267,13 +314,7 @@ def empty_instances(
 
     results_list = []
     for img_id in range(len(batch_img_metas)):
-        if instance_results is not None:
-            results = instance_results[img_id]
-            if not isinstance(results, InstanceData):
-                msg = f"instance_results should be InstanceData, but got {type(results)}"
-                raise TypeError(msg)
-        else:
-            results = InstanceData()
+        results = instance_results[img_id] if instance_results is not None else InstanceData()
 
         if task_type == "bbox":
             bboxes = torch.zeros(0, 4, device=device)
@@ -315,42 +356,6 @@ def dynamic_topk(input: Tensor, k: int, dim: int | None = None, largest: bool = 
     return torch.topk(input, k, dim=dim, largest=largest, sorted=sorted)
 
 
-def unpack_gt_instances(batch_data_samples: list[InstanceData]) -> tuple:
-    """Unpack gt_instances, gt_instances_ignore and img_metas based on batch_data_samples.
-
-    Args:
-        batch_data_samples (List[:obj:`DetDataSample`]): The Data
-            Samples. It usually includes information such as
-            `gt_instance`, `gt_panoptic_seg` and `gt_sem_seg`.
-
-    Returns:
-        tuple:
-
-            - batch_gt_instances (list[:obj:`InstanceData`]): Batch of
-                gt_instance. It usually includes ``bboxes`` and ``labels``
-                attributes.
-            - batch_gt_instances_ignore (list[:obj:`InstanceData`]):
-                Batch of gt_instances_ignore. It includes ``bboxes`` attribute
-                data that is ignored during training and testing.
-                Defaults to None.
-            - batch_img_metas (list[dict]): Meta information of each image,
-                e.g., image size, scaling factor, etc.
-    """
-    # TODO(Eugene): remove this when inst-seg data pipeline decoupling is ready
-    batch_gt_instances = []
-    batch_gt_instances_ignore = []
-    batch_img_metas = []
-    for data_sample in batch_data_samples:
-        batch_img_metas.append(data_sample.metainfo)
-        batch_gt_instances.append(data_sample.gt_instances)  # type: ignore[attr-defined]
-        if "ignored_instances" in data_sample:
-            batch_gt_instances_ignore.append(data_sample.ignored_instances)  # type: ignore[attr-defined]
-        else:
-            batch_gt_instances_ignore.append(None)
-
-    return batch_gt_instances, batch_gt_instances_ignore, batch_img_metas
-
-
 def gather_topk(
     *inputs: tuple[torch.Tensor],
     inds: torch.Tensor,
@@ -378,3 +383,79 @@ def gather_topk(
     if len(outputs) == 1:
         outputs = outputs[0]
     return outputs
+
+
+def distance2bbox(
+    points: Tensor,
+    distance: Tensor,
+    max_shape: Tensor | None = None,
+) -> Tensor:
+    """Decode distance prediction to bounding box."""
+    x1 = points[..., 0] - distance[..., 0]
+    y1 = points[..., 1] - distance[..., 1]
+    x2 = points[..., 0] + distance[..., 2]
+    y2 = points[..., 1] + distance[..., 3]
+
+    bboxes = torch.stack([x1, y1, x2, y2], -1)
+
+    if max_shape is not None:
+        if bboxes.dim() == 2 and not torch.onnx.is_in_onnx_export():
+            # speed up
+            bboxes[:, 0::2].clamp_(min=0, max=max_shape[1])
+            bboxes[:, 1::2].clamp_(min=0, max=max_shape[0])
+            return bboxes
+
+        if not isinstance(max_shape, torch.Tensor):
+            max_shape = x1.new_tensor(max_shape)
+        max_shape = max_shape[..., :2].type_as(x1)
+        if max_shape.ndim == 2:
+            if bboxes.ndim != 3:
+                msg = "The dimension of bboxes should be 3."
+                raise ValueError(msg)
+            if max_shape.size(0) != bboxes.size(0):
+                msg = "The size of max_shape should be the same as bboxes."
+                raise ValueError(msg)
+
+        min_xy = x1.new_tensor(0)
+        max_xy = torch.cat([max_shape, max_shape], dim=-1).flip(-1).unsqueeze(-2)
+        bboxes = torch.where(bboxes < min_xy, min_xy, bboxes)
+        bboxes = torch.where(bboxes > max_xy, max_xy, bboxes)
+
+    return bboxes
+
+
+def bbox2distance(
+    points: Tensor,
+    bbox: Tensor,
+    max_dis: float | None = None,
+    eps: float = 0.1,
+) -> Tensor:
+    """Decode bounding box based on distances.
+
+    Args:
+        points (Tensor): Shape (n, 2) or (b, n, 2), [x, y].
+        bbox (Tensor): Shape (n, 4) or (b, n, 4), "xyxy" format
+        max_dis (float, optional): Upper bound of the distance.
+        eps (float): a small value to ensure target < max_dis, instead <=
+
+    Returns:
+        Tensor: Decoded distances.
+    """
+    left = points[..., 0] - bbox[..., 0]
+    top = points[..., 1] - bbox[..., 1]
+    right = bbox[..., 2] - points[..., 0]
+    bottom = bbox[..., 3] - points[..., 1]
+    if max_dis is not None:
+        left = left.clamp(min=0, max=max_dis - eps)
+        top = top.clamp(min=0, max=max_dis - eps)
+        right = right.clamp(min=0, max=max_dis - eps)
+        bottom = bottom.clamp(min=0, max=max_dis - eps)
+    return torch.stack([left, top, right, bottom], -1)
+
+
+def inverse_sigmoid(x: Tensor, eps: float = 1e-5) -> Tensor:
+    """Inverse function of sigmoid."""
+    x = x.clamp(min=0, max=1)
+    x1 = x.clamp(min=eps)
+    x2 = (1 - x).clamp(min=eps)
+    return torch.log(x1 / x2)

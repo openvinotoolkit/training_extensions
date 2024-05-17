@@ -16,14 +16,14 @@ from torch import Tensor
 from otx.algo.detection.ops.nms import batched_nms
 
 if TYPE_CHECKING:
-    from mmengine.config import ConfigDict
+    from omegaconf import DictConfig
 
 
 def multiclass_nms_torch(
     multi_bboxes: Tensor,
     multi_scores: Tensor,
     score_thr: float,
-    nms_cfg: ConfigDict | dict,
+    nms_cfg: DictConfig | dict,
     max_num: int = -1,
     score_factors: Tensor | None = None,
     return_inds: bool = False,

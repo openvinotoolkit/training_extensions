@@ -30,7 +30,7 @@ class OTXMulticlassClsDataset(OTXDataset[MulticlassClsDataEntity]):
     """OTXDataset class for multi-class classification task."""
 
     def _get_item_impl(self, index: int) -> MulticlassClsDataEntity | None:
-        item = self.dm_subset.as_dataset()[index]
+        item = self.dm_subset[index]
         img = item.media_as(Image)
         img_data, img_shape = self._get_img_data_and_shape(img)
 
@@ -66,7 +66,7 @@ class OTXMultilabelClsDataset(OTXDataset[MultilabelClsDataEntity]):
         self.num_classes = len(self.dm_subset.categories()[AnnotationType.label])
 
     def _get_item_impl(self, index: int) -> MultilabelClsDataEntity | None:
-        item = self.dm_subset.as_dataset()[index]
+        item = self.dm_subset[index]
         img = item.media_as(Image)
         ignored_labels: list[int] = []  # This should be assigned form item
         img_data, img_shape = self._get_img_data_and_shape(img)
@@ -174,7 +174,7 @@ class OTXHlabelClsDataset(OTXDataset[HlabelClsDataEntity]):
         label_anns.extend(ancestor_dm_labels)
 
     def _get_item_impl(self, index: int) -> HlabelClsDataEntity | None:
-        item = self.dm_subset.as_dataset()[index]
+        item = self.dm_subset[index]
         img = item.media_as(Image)
         ignored_labels: list[int] = []  # This should be assigned form item
         img_data, img_shape = self._get_img_data_and_shape(img)

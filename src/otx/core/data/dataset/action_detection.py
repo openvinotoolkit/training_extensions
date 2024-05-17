@@ -5,7 +5,7 @@
 
 from __future__ import annotations
 
-import pickle
+import pickle  # nosec B403
 from functools import partial
 from pathlib import Path
 from typing import Callable
@@ -29,7 +29,7 @@ class OTXActionDetDataset(OTXDataset[ActionDetDataEntity]):
         self.num_classes = len(self.dm_subset.categories()[AnnotationType.label])
 
     def _get_item_impl(self, idx: int) -> ActionDetDataEntity | None:
-        item = self.dm_subset.as_dataset()[idx]
+        item = self.dm_subset[idx]
         img = item.media_as(Image)
         img_data, img_shape = self._get_img_data_and_shape(img)
 
@@ -60,7 +60,7 @@ class OTXActionDetDataset(OTXDataset[ActionDetDataEntity]):
             frame_path=item.media.path,
             proposals=self._get_proposals(
                 item.media.path,
-                self.dm_subset.infos().get(f"{self.dm_subset.name}_proposals", None),
+                self.dm_subset.infos().get(f"{item.subset}_proposals", None),
             ),
         )
 
@@ -90,7 +90,7 @@ class OTXActionDetDataset(OTXDataset[ActionDetDataEntity]):
         if not proposal_file_path.exists():
             return np.array([[0, 0, 1, 1]], dtype=np.float64)
         with Path.open(proposal_file_path, "rb") as f:
-            info = pickle.load(f)  # noqa: S301
+            info = pickle.load(f)  # noqa: S301 # nosec: B301 used only for getting dataset
             return (
                 info[",".join(Path(frame_path).stem.rsplit("_", 1))][:, :4]
                 if ",".join(Path(frame_path).stem.rsplit("_", 1)) in info

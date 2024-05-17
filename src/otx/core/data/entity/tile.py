@@ -110,16 +110,21 @@ class TileBatchDetDataEntity(OTXTileBatchDataEntity):
             tile_attr_list[i : i + self.batch_size] for i in range(0, len(tile_attr_list), self.batch_size)
         ]
 
-        batch_data_entities = [
-            DetBatchDataEntity(
-                batch_size=self.batch_size,
-                images=stack_batch(tiles[i : i + self.batch_size]),
-                imgs_info=tile_infos[i : i + self.batch_size],
-                bboxes=[[] for _ in range(self.batch_size)],
-                labels=[[] for _ in range(self.batch_size)],
+        batch_data_entities = []
+        for i in range(0, len(tiles), self.batch_size):
+            stacked_images, updated_img_info = stack_batch(
+                tiles[i : i + self.batch_size],
+                tile_infos[i : i + self.batch_size],
             )
-            for i in range(0, len(tiles), self.batch_size)
-        ]
+            batch_data_entities.append(
+                DetBatchDataEntity(
+                    batch_size=self.batch_size,
+                    images=stacked_images,
+                    imgs_info=updated_img_info,
+                    bboxes=[[] for _ in range(self.batch_size)],
+                    labels=[[] for _ in range(self.batch_size)],
+                ),
+            )
         return list(zip(batch_tile_attr_list, batch_data_entities))
 
     @classmethod

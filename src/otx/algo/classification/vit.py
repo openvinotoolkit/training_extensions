@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 import types
+from copy import deepcopy
 from typing import TYPE_CHECKING, Any, Callable, Generic
 
 import numpy as np
@@ -19,6 +20,7 @@ from otx.algo.classification.heads import (
     VisionTransformerClsHead,
 )
 from otx.algo.classification.losses import AsymmetricAngularLossWithIgnore
+from otx.algo.classification.utils import get_classification_layers
 from otx.algo.classification.utils.embed import resize_pos_embed
 from otx.algo.explain.explain_algo import ViTReciproCAM, feature_vector_fn
 from otx.algo.utils.mmengine_utils import load_checkpoint_to_model, load_from_http
@@ -241,7 +243,6 @@ class VisionTransformerForMulticlassCls(ForwardExplainMixInForViT, OTXMulticlass
         self,
         label_info: LabelInfoTypes,
         arch: VIT_ARCH_TYPE = "deit-tiny",
-        loss_callable: Callable[[], nn.Module] = nn.CrossEntropyLoss,
         pretrained: bool = True,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
@@ -250,8 +251,6 @@ class VisionTransformerForMulticlassCls(ForwardExplainMixInForViT, OTXMulticlass
     ) -> None:
         self.arch = arch
         self.pretrained = pretrained
-        self.head_config = {"loss_callable": loss_callable}
-
         super().__init__(
             label_info=label_info,
             optimizer=optimizer,
@@ -265,27 +264,39 @@ class VisionTransformerForMulticlassCls(ForwardExplainMixInForViT, OTXMulticlass
         return OTXv1Helper.load_cls_effnet_b0_ckpt(state_dict, "multiclass", add_prefix)
 
     def _create_model(self) -> nn.Module:
-        loss = self.head_config["loss_callable"]
-        init_cfg = [
-            {"std": 0.2, "layer": "Linear", "type": "TruncNormal"},
-            {"bias": 0.0, "val": 1.0, "layer": "LayerNorm", "type": "Constant"},
-        ]
-        model = ImageClassifier(
-            backbone=VisionTransformer(arch=self.arch, img_size=224, patch_size=16),
-            neck=None,
-            head=VisionTransformerClsHead(
-                num_classes=self.num_classes,
-                in_channels=192,
-                topk=(1, 5) if self.num_classes >= 5 else (1,),
-                loss=loss if isinstance(loss, nn.Module) else loss(),
-            ),
-            init_cfg=init_cfg,
+        # Get classification_layers for class-incr learning
+        sample_model_dict = self._build_model(num_classes=5).state_dict()
+        incremental_model_dict = self._build_model(num_classes=6).state_dict()
+        self.classification_layers = get_classification_layers(
+            sample_model_dict,
+            incremental_model_dict,
+            prefix="model.",
         )
+
+        model = self._build_model(num_classes=self.num_classes)
+        model.init_weights()
         if self.pretrained and self.arch in pretrained_urls:
             print(f"init weight - {pretrained_urls[self.arch]}")
             checkpoint = load_from_http(pretrained_urls[self.arch], map_location="cpu")
             load_checkpoint_to_model(model, checkpoint)
         return model
+
+    def _build_model(self, num_classes: int) -> nn.Module:
+        init_cfg = [
+            {"std": 0.2, "layer": "Linear", "type": "TruncNormal"},
+            {"bias": 0.0, "val": 1.0, "layer": "LayerNorm", "type": "Constant"},
+        ]
+        return ImageClassifier(
+            backbone=VisionTransformer(arch=self.arch, img_size=224, patch_size=16),
+            neck=None,
+            head=VisionTransformerClsHead(
+                num_classes=num_classes,
+                in_channels=192,
+                topk=(1, 5) if num_classes >= 5 else (1,),
+                loss=nn.CrossEntropyLoss(reduction="none"),
+            ),
+            init_cfg=init_cfg,
+        )
 
     def _customize_inputs(self, inputs: MulticlassClsBatchDataEntity) -> dict[str, Any]:
         if self.training:
@@ -360,7 +371,6 @@ class VisionTransformerForMultilabelCls(ForwardExplainMixInForViT, OTXMultilabel
         self,
         label_info: LabelInfoTypes,
         arch: VIT_ARCH_TYPE = "deit-tiny",
-        loss_callable: Callable[[], nn.Module] = AsymmetricAngularLossWithIgnore,
         pretrained: bool = True,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
@@ -369,7 +379,6 @@ class VisionTransformerForMultilabelCls(ForwardExplainMixInForViT, OTXMultilabel
     ) -> None:
         self.arch = arch
         self.pretrained = pretrained
-        self.head_config = {"loss_callable": loss_callable}
 
         super().__init__(
             label_info=label_info,
@@ -384,26 +393,38 @@ class VisionTransformerForMultilabelCls(ForwardExplainMixInForViT, OTXMultilabel
         return OTXv1Helper.load_cls_effnet_b0_ckpt(state_dict, "multiclass", add_prefix)
 
     def _create_model(self) -> nn.Module:
-        loss = self.head_config["loss_callable"]
-        init_cfg = [
-            {"std": 0.2, "layer": "Linear", "type": "TruncNormal"},
-            {"bias": 0.0, "val": 1.0, "layer": "LayerNorm", "type": "Constant"},
-        ]
-        model = ImageClassifier(
-            backbone=VisionTransformer(arch=self.arch, img_size=224, patch_size=16),
-            neck=None,
-            head=MultiLabelLinearClsHead(
-                num_classes=self.num_classes,
-                in_channels=192,
-                loss=loss if isinstance(loss, nn.Module) else loss(),
-            ),
-            init_cfg=init_cfg,
+        # Get classification_layers for class-incr learning
+        sample_model_dict = self._build_model(num_classes=5).state_dict()
+        incremental_model_dict = self._build_model(num_classes=6).state_dict()
+        self.classification_layers = get_classification_layers(
+            sample_model_dict,
+            incremental_model_dict,
+            prefix="model.",
         )
+
+        model = self._build_model(num_classes=self.num_classes)
+        model.init_weights()
         if self.pretrained and self.arch in pretrained_urls:
             print(f"init weight - {pretrained_urls[self.arch]}")
             checkpoint = load_from_http(pretrained_urls[self.arch], map_location="cpu")
             load_checkpoint_to_model(model, checkpoint)
         return model
+
+    def _build_model(self, num_classes: int) -> nn.Module:
+        init_cfg = [
+            {"std": 0.2, "layer": "Linear", "type": "TruncNormal"},
+            {"bias": 0.0, "val": 1.0, "layer": "LayerNorm", "type": "Constant"},
+        ]
+        return ImageClassifier(
+            backbone=VisionTransformer(arch=self.arch, img_size=224, patch_size=16),
+            neck=None,
+            head=MultiLabelLinearClsHead(
+                num_classes=num_classes,
+                in_channels=192,
+                loss=AsymmetricAngularLossWithIgnore(gamma_pos=0.0, gamma_neg=1.0, reduction="sum"),
+            ),
+            init_cfg=init_cfg,
+        )
 
     def _customize_inputs(self, inputs: MultilabelClsBatchDataEntity) -> dict[str, Any]:
         if self.training:
@@ -473,13 +494,12 @@ class VisionTransformerForHLabelCls(ForwardExplainMixInForViT, OTXHlabelClsModel
     """DeitTiny Model for hierarchical label classification task."""
 
     model: ImageClassifier
+    label_info: HLabelInfo
 
     def __init__(
         self,
         label_info: HLabelInfo,
         arch: VIT_ARCH_TYPE = "deit-tiny",
-        multiclass_loss_callable: Callable[[], nn.Module] = nn.CrossEntropyLoss,
-        multilabel_loss_callable: Callable[[], nn.Module] = AsymmetricAngularLossWithIgnore,
         pretrained: bool = True,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
@@ -488,10 +508,6 @@ class VisionTransformerForHLabelCls(ForwardExplainMixInForViT, OTXHlabelClsModel
     ) -> None:
         self.arch = arch
         self.pretrained = pretrained
-        self.head_config = {
-            "multiclass_loss_callable": multiclass_loss_callable,
-            "multilabel_loss_callable": multilabel_loss_callable,
-        }
 
         super().__init__(
             label_info=label_info,
@@ -506,30 +522,44 @@ class VisionTransformerForHLabelCls(ForwardExplainMixInForViT, OTXHlabelClsModel
         return OTXv1Helper.load_cls_effnet_b0_ckpt(state_dict, "multiclass", add_prefix)
 
     def _create_model(self) -> nn.Module:
-        if not isinstance(self.label_info, HLabelInfo):
-            raise TypeError(self.label_info)
-        multiclass_loss = self.head_config["multiclass_loss_callable"]
-        multilabel_loss = self.head_config["multilabel_loss_callable"]
-        init_cfg = [
-            {"std": 0.2, "layer": "Linear", "type": "TruncNormal"},
-            {"bias": 0.0, "val": 1.0, "layer": "LayerNorm", "type": "Constant"},
-        ]
-        model = ImageClassifier(
-            backbone=VisionTransformer(arch=self.arch, img_size=224, patch_size=16),
-            neck=None,
-            head=HierarchicalLinearClsHead(
-                in_channels=192,
-                multiclass_loss=multiclass_loss if isinstance(multiclass_loss, nn.Module) else multiclass_loss(),
-                multilabel_loss=multilabel_loss if isinstance(multilabel_loss, nn.Module) else multilabel_loss(),
-                **self.label_info.as_head_config_dict(),
-            ),
-            init_cfg=init_cfg,
+        # Get classification_layers for class-incr learning
+        sample_config = deepcopy(self.label_info.as_head_config_dict())
+        sample_config["num_classes"] = 5
+        sample_model_dict = self._build_model(head_config=sample_config).state_dict()
+        sample_config["num_classes"] = 6
+        incremental_model_dict = self._build_model(head_config=sample_config).state_dict()
+        self.classification_layers = get_classification_layers(
+            sample_model_dict,
+            incremental_model_dict,
+            prefix="model.",
         )
+
+        model = self._build_model(head_config=self.label_info.as_head_config_dict())
+        model.init_weights()
         if self.pretrained and self.arch in pretrained_urls:
             print(f"init weight - {pretrained_urls[self.arch]}")
             checkpoint = load_from_http(pretrained_urls[self.arch], map_location="cpu")
             load_checkpoint_to_model(model, checkpoint)
         return model
+
+    def _build_model(self, head_config: dict) -> nn.Module:
+        if not isinstance(self.label_info, HLabelInfo):
+            raise TypeError(self.label_info)
+        init_cfg = [
+            {"std": 0.2, "layer": "Linear", "type": "TruncNormal"},
+            {"bias": 0.0, "val": 1.0, "layer": "LayerNorm", "type": "Constant"},
+        ]
+        return ImageClassifier(
+            backbone=VisionTransformer(arch=self.arch, img_size=224, patch_size=16),
+            neck=None,
+            head=HierarchicalLinearClsHead(
+                in_channels=192,
+                multiclass_loss=nn.CrossEntropyLoss(),
+                multilabel_loss=AsymmetricAngularLossWithIgnore(gamma_pos=0.0, gamma_neg=1.0, reduction="sum"),
+                **head_config,
+            ),
+            init_cfg=init_cfg,
+        )
 
     def _customize_inputs(self, inputs: HlabelClsBatchDataEntity) -> dict[str, Any]:
         if self.training:

@@ -4,7 +4,8 @@
 """EfficientNetV2 model implementation."""
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Callable
+from copy import deepcopy
+from typing import TYPE_CHECKING, Any
 
 import torch
 from torch import nn
@@ -12,7 +13,9 @@ from torch import nn
 from otx.algo.classification.backbones.timm import TimmBackbone
 from otx.algo.classification.classifier.base_classifier import ImageClassifier
 from otx.algo.classification.heads import HierarchicalLinearClsHead, LinearClsHead, MultiLabelLinearClsHead
+from otx.algo.classification.losses.asymmetric_angular_loss_with_ignore import AsymmetricAngularLossWithIgnore
 from otx.algo.classification.necks.gap import GlobalAveragePooling
+from otx.algo.classification.utils import get_classification_layers
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.classification import (
@@ -47,15 +50,12 @@ class EfficientNetV2ForMulticlassCls(OTXMulticlassClsModel):
 
     def __init__(
         self,
-        label_info: HLabelInfo,
-        loss_callable: Callable[[], nn.Module] = nn.CrossEntropyLoss,
+        label_info: LabelInfoTypes,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MultiClassClsMetricCallable,
         torch_compile: bool = False,
     ) -> None:
-        self.head_config = {"loss_callable": loss_callable}
-
         super().__init__(
             label_info=label_info,
             optimizer=optimizer,
@@ -65,19 +65,32 @@ class EfficientNetV2ForMulticlassCls(OTXMulticlassClsModel):
         )
 
     def _create_model(self) -> nn.Module:
-        loss = self.head_config["loss_callable"]
+        # Get classification_layers for class-incr learning
+        sample_model_dict = self._build_model(num_classes=5).state_dict()
+        incremental_model_dict = self._build_model(num_classes=6).state_dict()
+        self.classification_layers = get_classification_layers(
+            sample_model_dict,
+            incremental_model_dict,
+            prefix="model.",
+        )
+
+        model = self._build_model(num_classes=self.num_classes)
+        model.init_weights()
+        return model
+
+    def _build_model(self, num_classes: int) -> nn.Module:
         return ImageClassifier(
             backbone=TimmBackbone(backbone="efficientnetv2_s_21k", pretrained=True),
             neck=GlobalAveragePooling(dim=2),
             head=LinearClsHead(
-                num_classes=self.label_info.num_classes,
+                num_classes=num_classes,
                 in_channels=1280,
-                topk=(1, 5) if self.label_info.num_classes >= 5 else (1,),
-                loss=loss if isinstance(loss, nn.Module) else loss(),
+                topk=(1, 5) if num_classes >= 5 else (1,),
+                loss=nn.CrossEntropyLoss(reduction="none"),
             ),
         )
 
-    def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.model.") -> dict:
+    def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.") -> dict:
         """Load the previous OTX ckpt according to OTX2.0."""
         return OTXv1Helper.load_cls_effnet_v2_ckpt(state_dict, "multiclass", add_prefix)
 
@@ -161,14 +174,11 @@ class EfficientNetV2ForMultilabelCls(OTXMultilabelClsModel):
     def __init__(
         self,
         label_info: LabelInfoTypes,
-        loss_callable: Callable[[], nn.Module] = nn.CrossEntropyLoss,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MultiLabelClsMetricCallable,
         torch_compile: bool = False,
     ) -> None:
-        self.head_config = {"loss_callable": loss_callable}
-
         super().__init__(
             label_info=label_info,
             optimizer=optimizer,
@@ -178,20 +188,33 @@ class EfficientNetV2ForMultilabelCls(OTXMultilabelClsModel):
         )
 
     def _create_model(self) -> nn.Module:
-        loss = self.head_config["loss_callable"]
+        # Get classification_layers for class-incr learning
+        sample_model_dict = self._build_model(num_classes=5).state_dict()
+        incremental_model_dict = self._build_model(num_classes=6).state_dict()
+        self.classification_layers = get_classification_layers(
+            sample_model_dict,
+            incremental_model_dict,
+            prefix="model.",
+        )
+
+        model = self._build_model(num_classes=self.num_classes)
+        model.init_weights()
+        return model
+
+    def _build_model(self, num_classes: int) -> nn.Module:
         return ImageClassifier(
             backbone=TimmBackbone(backbone="efficientnetv2_s_21k", pretrained=True),
             neck=GlobalAveragePooling(dim=2),
             head=MultiLabelLinearClsHead(
-                num_classes=self.label_info.num_classes,
+                num_classes=num_classes,
                 in_channels=1280,
-                loss=loss if isinstance(loss, nn.Module) else loss(),
                 normalized=True,
                 scale=7.0,
+                loss=AsymmetricAngularLossWithIgnore(gamma_pos=0.0, gamma_neg=1.0, reduction="sum"),
             ),
         )
 
-    def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.model.") -> dict:
+    def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.") -> dict:
         """Load the previous OTX ckpt according to OTX2.0."""
         return OTXv1Helper.load_cls_effnet_v2_ckpt(state_dict, "multilabel", add_prefix)
 
@@ -276,18 +299,11 @@ class EfficientNetV2ForHLabelCls(OTXHlabelClsModel):
     def __init__(
         self,
         label_info: HLabelInfo,
-        multiclass_loss_callable: Callable[[], nn.Module] = nn.CrossEntropyLoss,
-        multilabel_loss_callable: Callable[[], nn.Module] = nn.CrossEntropyLoss,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = HLabelClsMetricCallble,
         torch_compile: bool = False,
     ) -> None:
-        self.head_config = {
-            "multiclass_loss_callable": multiclass_loss_callable,
-            "multilabel_loss_callable": multilabel_loss_callable,
-        }
-
         super().__init__(
             label_info=label_info,
             optimizer=optimizer,
@@ -297,20 +313,35 @@ class EfficientNetV2ForHLabelCls(OTXHlabelClsModel):
         )
 
     def _create_model(self) -> nn.Module:
-        multiclass_loss = self.head_config["multiclass_loss_callable"]
-        multilabel_loss = self.head_config["multilabel_loss_callable"]
+        # Get classification_layers for class-incr learning
+        sample_config = deepcopy(self.label_info.as_head_config_dict())
+        sample_config["num_classes"] = 5
+        sample_model_dict = self._build_model(head_config=sample_config).state_dict()
+        sample_config["num_classes"] = 6
+        incremental_model_dict = self._build_model(head_config=sample_config).state_dict()
+        self.classification_layers = get_classification_layers(
+            sample_model_dict,
+            incremental_model_dict,
+            prefix="model.",
+        )
+
+        model = self._build_model(head_config=self.label_info.as_head_config_dict())
+        model.init_weights()
+        return model
+
+    def _build_model(self, head_config: dict) -> nn.Module:
         return ImageClassifier(
             backbone=TimmBackbone(backbone="efficientnetv2_s_21k", pretrained=True),
             neck=GlobalAveragePooling(dim=2),
             head=HierarchicalLinearClsHead(
                 in_channels=1280,
-                multiclass_loss=multiclass_loss if isinstance(multiclass_loss, nn.Module) else multiclass_loss(),
-                multilabel_loss=multilabel_loss if isinstance(multilabel_loss, nn.Module) else multilabel_loss(),
-                **self.label_info.as_head_config_dict(),
+                multiclass_loss=nn.CrossEntropyLoss(),
+                multilabel_loss=AsymmetricAngularLossWithIgnore(gamma_pos=0.0, gamma_neg=1.0, reduction="sum"),
+                **head_config,
             ),
         )
 
-    def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.model.") -> dict:
+    def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.") -> dict:
         """Load the previous OTX ckpt according to OTX2.0."""
         return OTXv1Helper.load_cls_effnet_v2_ckpt(state_dict, "hlabel", add_prefix)
 
