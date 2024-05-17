@@ -171,6 +171,13 @@ class OTXSegmentationDataset(OTXDataset[SegDataEntity]):
             stack_images,
             to_tv_image,
         )
+        is_polygon = isinstance(dm_subset[0].annotations[-1], (Polygon, Ellipse))
+        if is_polygon:
+            # insert background class at index 0
+            self.label_info.label_names.insert(0, "background")
+            # in semantic segmentation we have only one label_group
+            self.label_info.label_groups[-1].insert(0, "background")
+
         self.label_info = SegLabelInfo(
             label_names=self.label_info.label_names,
             label_groups=self.label_info.label_groups,

@@ -121,6 +121,3 @@ engine:
 callback_monitor: val/Dice
 
 data: ../_base_/data/mmseg_base.yaml
-
-overrides:
-  max_epochs: 300
