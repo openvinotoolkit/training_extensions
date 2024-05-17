@@ -243,7 +243,6 @@ class VisionTransformerForMulticlassCls(ForwardExplainMixInForViT, OTXMulticlass
         self,
         label_info: LabelInfoTypes,
         arch: VIT_ARCH_TYPE = "deit-tiny",
-        loss_callable: Callable[[], nn.Module] = nn.CrossEntropyLoss,
         pretrained: bool = True,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
@@ -252,8 +251,6 @@ class VisionTransformerForMulticlassCls(ForwardExplainMixInForViT, OTXMulticlass
     ) -> None:
         self.arch = arch
         self.pretrained = pretrained
-        self.head_config = {"loss_callable": loss_callable}
-
         super().__init__(
             label_info=label_info,
             optimizer=optimizer,
@@ -285,7 +282,6 @@ class VisionTransformerForMulticlassCls(ForwardExplainMixInForViT, OTXMulticlass
         return model
 
     def _build_model(self, num_classes: int) -> nn.Module:
-        loss = self.head_config["loss_callable"]
         init_cfg = [
             {"std": 0.2, "layer": "Linear", "type": "TruncNormal"},
             {"bias": 0.0, "val": 1.0, "layer": "LayerNorm", "type": "Constant"},
@@ -297,7 +293,7 @@ class VisionTransformerForMulticlassCls(ForwardExplainMixInForViT, OTXMulticlass
                 num_classes=num_classes,
                 in_channels=192,
                 topk=(1, 5) if num_classes >= 5 else (1,),
-                loss=loss if isinstance(loss, nn.Module) else loss(),
+                loss=nn.CrossEntropyLoss(reduction="none"),
             ),
             init_cfg=init_cfg,
         )
@@ -375,7 +371,6 @@ class VisionTransformerForMultilabelCls(ForwardExplainMixInForViT, OTXMultilabel
         self,
         label_info: LabelInfoTypes,
         arch: VIT_ARCH_TYPE = "deit-tiny",
-        loss_callable: Callable[[], nn.Module] = AsymmetricAngularLossWithIgnore,
         pretrained: bool = True,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
@@ -384,7 +379,6 @@ class VisionTransformerForMultilabelCls(ForwardExplainMixInForViT, OTXMultilabel
     ) -> None:
         self.arch = arch
         self.pretrained = pretrained
-        self.head_config = {"loss_callable": loss_callable}
 
         super().__init__(
             label_info=label_info,
@@ -417,7 +411,6 @@ class VisionTransformerForMultilabelCls(ForwardExplainMixInForViT, OTXMultilabel
         return model
 
     def _build_model(self, num_classes: int) -> nn.Module:
-        loss = self.head_config["loss_callable"]
         init_cfg = [
             {"std": 0.2, "layer": "Linear", "type": "TruncNormal"},
             {"bias": 0.0, "val": 1.0, "layer": "LayerNorm", "type": "Constant"},
@@ -428,7 +421,7 @@ class VisionTransformerForMultilabelCls(ForwardExplainMixInForViT, OTXMultilabel
             head=MultiLabelLinearClsHead(
                 num_classes=num_classes,
                 in_channels=192,
-                loss=loss if isinstance(loss, nn.Module) else loss(),
+                loss=AsymmetricAngularLossWithIgnore(gamma_pos=0.0, gamma_neg=1.0, reduction="sum"),
             ),
             init_cfg=init_cfg,
         )
@@ -507,8 +500,6 @@ class VisionTransformerForHLabelCls(ForwardExplainMixInForViT, OTXHlabelClsModel
         self,
         label_info: HLabelInfo,
         arch: VIT_ARCH_TYPE = "deit-tiny",
-        multiclass_loss_callable: Callable[[], nn.Module] = nn.CrossEntropyLoss,
-        multilabel_loss_callable: Callable[[], nn.Module] = AsymmetricAngularLossWithIgnore,
         pretrained: bool = True,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
@@ -517,10 +508,6 @@ class VisionTransformerForHLabelCls(ForwardExplainMixInForViT, OTXHlabelClsModel
     ) -> None:
         self.arch = arch
         self.pretrained = pretrained
-        self.head_config = {
-            "multiclass_loss_callable": multiclass_loss_callable,
-            "multilabel_loss_callable": multilabel_loss_callable,
-        }
 
         super().__init__(
             label_info=label_info,
@@ -558,8 +545,6 @@ class VisionTransformerForHLabelCls(ForwardExplainMixInForViT, OTXHlabelClsModel
     def _build_model(self, head_config: dict) -> nn.Module:
         if not isinstance(self.label_info, HLabelInfo):
             raise TypeError(self.label_info)
-        multiclass_loss = self.head_config["multiclass_loss_callable"]
-        multilabel_loss = self.head_config["multilabel_loss_callable"]
         init_cfg = [
             {"std": 0.2, "layer": "Linear", "type": "TruncNormal"},
             {"bias": 0.0, "val": 1.0, "layer": "LayerNorm", "type": "Constant"},
@@ -569,8 +554,8 @@ class VisionTransformerForHLabelCls(ForwardExplainMixInForViT, OTXHlabelClsModel
             neck=None,
             head=HierarchicalLinearClsHead(
                 in_channels=192,
-                multiclass_loss=multiclass_loss if isinstance(multiclass_loss, nn.Module) else multiclass_loss(),
-                multilabel_loss=multilabel_loss if isinstance(multilabel_loss, nn.Module) else multilabel_loss(),
+                multiclass_loss=nn.CrossEntropyLoss(),
+                multilabel_loss=AsymmetricAngularLossWithIgnore(gamma_pos=0.0, gamma_neg=1.0, reduction="sum"),
                 **head_config,
             ),
             init_cfg=init_cfg,
