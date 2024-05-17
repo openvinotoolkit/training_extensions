@@ -247,8 +247,6 @@
 <span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">nn</span>
 <span class="kn">from</span> <span class="nn">torch.optim.optimizer</span> <span class="kn">import</span> <span class="n">Optimizer</span>
 
-<span class="kn">from</span> <span class="nn">otx.core.utils.jsonargparse</span> <span class="kn">import</span> <span class="n">ClassType</span><span class="p">,</span> <span class="n">lazy_instance</span>
-
 <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
     <span class="kn">from</span> <span class="nn">lightning.pytorch.cli</span> <span class="kn">import</span> <span class="n">OptimizerCallable</span>
     <span class="kn">from</span> <span class="nn">torch.optim.optimizer</span> <span class="kn">import</span> <span class="n">params_t</span>
@@ -332,48 +330,6 @@
     <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">params</span><span class="p">:</span> <span class="n">params_t</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optimizer</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Create `torch.optim.Optimizer` instance for the given parameters.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimizer_init</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">optimizer_kwargs</span><span class="p">)</span></div>
-
-
-<div class="viewcode-block" id="OptimizerCallableSupportHPO.to_lazy_instance">
-<a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.optimizer.html#otx.core.optimizer.OptimizerCallableSupportHPO.to_lazy_instance">[docs]</a>
-    <span class="k">def</span> <span class="nf">to_lazy_instance</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ClassType</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return lazy instance of this class.</span>
-
-<span class="sd">        Because OTX is rely on jsonargparse library,</span>
-<span class="sd">        the default value of class initialization</span>
-<span class="sd">        argument should be the lazy instance.</span>
-<span class="sd">        Please refer to https://jsonargparse.readthedocs.io/en/stable/#default-values</span>
-<span class="sd">        for more details.</span>
-
-<span class="sd">        Examples:</span>
-<span class="sd">            This is an example to implement a new model with a `SGD` optimizer and</span>
-<span class="sd">            custom configurations as a default.</span>
-
-<span class="sd">            ```python</span>
-<span class="sd">            class MyAwesomeMulticlassClsModel(OTXMulticlassClsModel):</span>
-<span class="sd">                def __init__(</span>
-<span class="sd">                    self,</span>
-<span class="sd">                    label_info: LabelInfoTypes,</span>
-<span class="sd">                    optimizer: OptimizerCallable = OptimizerCallableSupportHPO(</span>
-<span class="sd">                        optimizer_cls=SGD,</span>
-<span class="sd">                        optimizer_kwargs={</span>
-<span class="sd">                            &quot;lr&quot;: 0.1,</span>
-<span class="sd">                            &quot;momentum&quot;: 0.9,</span>
-<span class="sd">                            &quot;weight_decay&quot;: 1e-4,</span>
-<span class="sd">                        },</span>
-<span class="sd">                    ).to_lazy_instance(),</span>
-<span class="sd">                    scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,</span>
-<span class="sd">                    metric: MetricCallable = MultiClassClsMetricCallable,</span>
-<span class="sd">                    torch_compile: bool = False,</span>
-<span class="sd">                ) -&gt; None:</span>
-<span class="sd">                ...</span>
-<span class="sd">            ```</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">lazy_instance</span><span class="p">(</span>
-            <span class="n">OptimizerCallableSupportHPO</span><span class="p">,</span>
-            <span class="n">optimizer_cls</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">optimizer_path</span><span class="p">,</span>
-            <span class="n">optimizer_kwargs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">optimizer_kwargs</span><span class="p">,</span>
-        <span class="p">)</span></div>
 
 
     <span class="k">def</span> <span class="nf">__reduce__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>

@@ -455,47 +455,6 @@ optimizer_kwargs={</p>
 <dd><p>Create this class instance from an existing optimizer callable.</p>
 </dd></dl>
 
-<dl class="py method">
-<dt class="sig sig-object py" id="otx.core.optimizer.OptimizerCallableSupportHPO.to_lazy_instance">
-<span class="sig-name descname"><span class="pre">to_lazy_instance</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ClassType</span></span></span><a class="reference internal" href="../../../_modules/otx/core/optimizer/callable.html#OptimizerCallableSupportHPO.to_lazy_instance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.optimizer.OptimizerCallableSupportHPO.to_lazy_instance" title="Link to this definition">#</a></dt>
-<dd><p>Return lazy instance of this class.</p>
-<p>Because OTX is rely on jsonargparse library,
-the default value of class initialization
-argument should be the lazy instance.
-Please refer to <a class="reference external" href="https://jsonargparse.readthedocs.io/en/stable/#default-values">https://jsonargparse.readthedocs.io/en/stable/#default-values</a>
-for more details.</p>
-<p class="rubric">Examples</p>
-<p>This is an example to implement a new model with a <cite>SGD</cite> optimizer and
-custom configurations as a default.</p>
-<p><a href="#id11"><span class="problematic" id="id12">``</span></a><a href="#id13"><span class="problematic" id="id14">`</span></a>python
-class MyAwesomeMulticlassClsModel(OTXMulticlassClsModel):</p>
-<blockquote>
-<div><dl>
-<dt>def __init__(</dt><dd><p>self,
-label_info: LabelInfoTypes,
-optimizer: OptimizerCallable = OptimizerCallableSupportHPO(</p>
-<blockquote>
-<div><p>optimizer_cls=SGD,
-optimizer_kwargs={</p>
-<blockquote>
-<div><p>“lr”: 0.1,
-“momentum”: 0.9,
-“weight_decay”: 1e-4,</p>
-</div></blockquote>
-<p>},</p>
-</div></blockquote>
-<p>).to_lazy_instance(),
-scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
-metric: MetricCallable = MultiClassClsMetricCallable,
-torch_compile: bool = False,</p>
-</dd>
-</dl>
-<p>) -&gt; None:
-…</p>
-</div></blockquote>
-<p><a href="#id15"><span class="problematic" id="id16">``</span></a><a href="#id17"><span class="problematic" id="id18">`</span></a></p>
-</dd></dl>
-
 </section>
 </dd></dl>
 
@@ -562,15 +521,6 @@ torch_compile: bool = False,</p>
      <code class="docutils literal notranslate">
       <span class="pre">
        OptimizerCallableSupportHPO.from_callable()
-      </span>
-     </code>
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.core.optimizer.OptimizerCallableSupportHPO.to_lazy_instance">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       OptimizerCallableSupportHPO.to_lazy_instance()
       </span>
      </code>
     </a>
