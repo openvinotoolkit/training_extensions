@@ -295,6 +295,7 @@
 
     <span class="kn">from</span> <span class="nn">lightning.pytorch.cli</span> <span class="kn">import</span> <span class="n">LRSchedulerCallable</span><span class="p">,</span> <span class="n">OptimizerCallable</span>
     <span class="kn">from</span> <span class="nn">lightning.pytorch.utilities.types</span> <span class="kn">import</span> <span class="n">LRSchedulerTypeUnion</span><span class="p">,</span> <span class="n">OptimizerLRScheduler</span>
+    <span class="kn">from</span> <span class="nn">model_api.adapters</span> <span class="kn">import</span> <span class="n">OpenvinoAdapter</span>
     <span class="kn">from</span> <span class="nn">torch.optim.lr_scheduler</span> <span class="kn">import</span> <span class="n">LRScheduler</span>
     <span class="kn">from</span> <span class="nn">torch.optim.optimizer</span> <span class="kn">import</span> <span class="n">Optimizer</span><span class="p">,</span> <span class="n">params_t</span>
 
@@ -1142,6 +1143,7 @@
         <span class="n">model_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">model_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">async_inference</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">force_cpu</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">max_num_requests</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">use_throughput_mode</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">model_api_configuration</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -1150,6 +1152,7 @@
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">model_name</span> <span class="o">=</span> <span class="n">model_name</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">model_type</span> <span class="o">=</span> <span class="n">model_type</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">force_cpu</span> <span class="o">=</span> <span class="n">force_cpu</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">async_inference</span> <span class="o">=</span> <span class="n">async_inference</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">num_requests</span> <span class="o">=</span> <span class="n">max_num_requests</span> <span class="k">if</span> <span class="n">max_num_requests</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">get_default_num_async_infer_requests</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">use_throughput_mode</span> <span class="o">=</span> <span class="n">use_throughput_mode</span>
@@ -1170,21 +1173,49 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Setup tiler for tile task.&quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span>
 
+    <span class="k">def</span> <span class="nf">_get_hparams_from_adapter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_adapter</span><span class="p">:</span> <span class="n">OpenvinoAdapter</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Reads model configuration from ModelAPI OpenVINO adapter.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            model_adapter (OpenvinoAdapter): target adapter to read the config</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
     <span class="k">def</span> <span class="nf">_create_model</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Model</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a OV model with help of Model API.&quot;&quot;&quot;</span>
-        <span class="kn">from</span> <span class="nn">model_api.adapters</span> <span class="kn">import</span> <span class="n">OpenvinoAdapter</span><span class="p">,</span> <span class="n">create_core</span><span class="p">,</span> <span class="n">get_user_config</span>
+        <span class="kn">from</span> <span class="nn">model_api.adapters</span> <span class="kn">import</span> <span class="n">OpenvinoAdapter</span><span class="p">,</span> <span class="n">create_core</span>
 
-        <span class="n">plugin_config</span> <span class="o">=</span> <span class="n">get_user_config</span><span class="p">(</span><span class="s2">&quot;AUTO&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_requests</span><span class="p">),</span> <span class="s2">&quot;AUTO&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="o">.</span><span class="n">type</span> <span class="o">!=</span> <span class="s2">&quot;cpu&quot;</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Device </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="o">.</span><span class="n">type</span><span class="si">}</span><span class="s2"> is set for Lightning module, but the actual inference &quot;</span>
+                <span class="s2">&quot;device is selected by OpenVINO.&quot;</span>
+            <span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+        <span class="n">ov_device</span> <span class="o">=</span> <span class="s2">&quot;CPU&quot;</span>
+        <span class="n">ie</span> <span class="o">=</span> <span class="n">create_core</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">force_cpu</span><span class="p">:</span>
+            <span class="n">devices</span> <span class="o">=</span> <span class="n">ie</span><span class="o">.</span><span class="n">available_devices</span>
+            <span class="k">for</span> <span class="n">device</span> <span class="ow">in</span> <span class="n">devices</span><span class="p">:</span>
+                <span class="n">device_name</span> <span class="o">=</span> <span class="n">ie</span><span class="o">.</span><span class="n">get_property</span><span class="p">(</span><span class="n">device_name</span><span class="o">=</span><span class="n">device</span><span class="p">,</span> <span class="nb">property</span><span class="o">=</span><span class="s2">&quot;FULL_DEVICE_NAME&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="s2">&quot;dGPU&quot;</span> <span class="ow">in</span> <span class="n">device_name</span> <span class="ow">and</span> <span class="s2">&quot;Intel&quot;</span> <span class="ow">in</span> <span class="n">device_name</span><span class="p">:</span>
+                    <span class="n">ov_device</span> <span class="o">=</span> <span class="n">device</span>
+                    <span class="k">break</span>
+
+        <span class="n">plugin_config</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_throughput_mode</span><span class="p">:</span>
             <span class="n">plugin_config</span><span class="p">[</span><span class="s2">&quot;PERFORMANCE_HINT&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;THROUGHPUT&quot;</span>
 
         <span class="n">model_adapter</span> <span class="o">=</span> <span class="n">OpenvinoAdapter</span><span class="p">(</span>
-            <span class="n">create_core</span><span class="p">(),</span>
+            <span class="n">ie</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">model_name</span><span class="p">,</span>
+            <span class="n">device</span><span class="o">=</span><span class="n">ov_device</span><span class="p">,</span>
             <span class="n">max_num_requests</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">num_requests</span><span class="p">,</span>
             <span class="n">plugin_config</span><span class="o">=</span><span class="n">plugin_config</span><span class="p">,</span>
             <span class="n">model_parameters</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model_adapter_parameters</span><span class="p">,</span>
         <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_get_hparams_from_adapter</span><span class="p">(</span><span class="n">model_adapter</span><span class="p">)</span>
+
         <span class="k">return</span> <span class="n">Model</span><span class="o">.</span><span class="n">create_model</span><span class="p">(</span><span class="n">model_adapter</span><span class="p">,</span> <span class="n">model_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model_type</span><span class="p">,</span> <span class="n">configuration</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model_api_configuration</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_customize_inputs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entity</span><span class="p">:</span> <span class="n">T_OTXBatchDataEntity</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>

@@ -248,7 +248,6 @@
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">Literal</span>
 
 <span class="kn">import</span> <span class="nn">torch</span>
-<span class="kn">from</span> <span class="nn">model_api.models</span> <span class="kn">import</span> <span class="n">Model</span>
 <span class="kn">from</span> <span class="nn">model_api.tilers</span> <span class="kn">import</span> <span class="n">DetectionTiler</span>
 <span class="kn">from</span> <span class="nn">torchvision</span> <span class="kn">import</span> <span class="n">tv_tensors</span>
 
@@ -268,6 +267,7 @@
 <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
     <span class="kn">from</span> <span class="nn">lightning.pytorch.cli</span> <span class="kn">import</span> <span class="n">LRSchedulerCallable</span><span class="p">,</span> <span class="n">OptimizerCallable</span>
     <span class="kn">from</span> <span class="nn">mmdet.models.data_preprocessors</span> <span class="kn">import</span> <span class="n">DetDataPreprocessor</span>
+    <span class="kn">from</span> <span class="nn">model_api.adapters</span> <span class="kn">import</span> <span class="n">OpenvinoAdapter</span>
     <span class="kn">from</span> <span class="nn">model_api.models.utils</span> <span class="kn">import</span> <span class="n">DetectionResult</span>
     <span class="kn">from</span> <span class="nn">omegaconf</span> <span class="kn">import</span> <span class="n">DictConfig</span>
     <span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">nn</span>
@@ -786,22 +786,12 @@
 <span class="s2">                and overlap: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">tiles_overlap</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
         <span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_create_model</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Model</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a OV model with help of Model API.&quot;&quot;&quot;</span>
-        <span class="kn">from</span> <span class="nn">model_api.adapters</span> <span class="kn">import</span> <span class="n">OpenvinoAdapter</span><span class="p">,</span> <span class="n">create_core</span><span class="p">,</span> <span class="n">get_user_config</span>
+    <span class="k">def</span> <span class="nf">_get_hparams_from_adapter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_adapter</span><span class="p">:</span> <span class="n">OpenvinoAdapter</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Reads model configuration from ModelAPI OpenVINO adapter.</span>
 
-        <span class="n">plugin_config</span> <span class="o">=</span> <span class="n">get_user_config</span><span class="p">(</span><span class="s2">&quot;AUTO&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_requests</span><span class="p">),</span> <span class="s2">&quot;AUTO&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_throughput_mode</span><span class="p">:</span>
-            <span class="n">plugin_config</span><span class="p">[</span><span class="s2">&quot;PERFORMANCE_HINT&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;THROUGHPUT&quot;</span>
-
-        <span class="n">model_adapter</span> <span class="o">=</span> <span class="n">OpenvinoAdapter</span><span class="p">(</span>
-            <span class="n">create_core</span><span class="p">(),</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">model_name</span><span class="p">,</span>
-            <span class="n">max_num_requests</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">num_requests</span><span class="p">,</span>
-            <span class="n">plugin_config</span><span class="o">=</span><span class="n">plugin_config</span><span class="p">,</span>
-            <span class="n">model_parameters</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model_adapter_parameters</span><span class="p">,</span>
-        <span class="p">)</span>
-
+<span class="sd">        Args:</span>
+<span class="sd">            model_adapter (OpenvinoAdapter): target adapter to read the config</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">model_adapter</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">has_rt_info</span><span class="p">([</span><span class="s2">&quot;model_info&quot;</span><span class="p">,</span> <span class="s2">&quot;confidence_threshold&quot;</span><span class="p">]):</span>
             <span class="n">best_confidence_threshold</span> <span class="o">=</span> <span class="n">model_adapter</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">get_rt_info</span><span class="p">([</span><span class="s2">&quot;model_info&quot;</span><span class="p">,</span> <span class="s2">&quot;confidence_threshold&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">value</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">hparams</span><span class="p">[</span><span class="s2">&quot;best_confidence_threshold&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">best_confidence_threshold</span><span class="p">)</span>
@@ -814,8 +804,6 @@
             <span class="p">)</span>
             <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">hparams</span><span class="p">[</span><span class="s2">&quot;best_confidence_threshold&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
-
-        <span class="k">return</span> <span class="n">Model</span><span class="o">.</span><span class="n">create_model</span><span class="p">(</span><span class="n">model_adapter</span><span class="p">,</span> <span class="n">model_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model_type</span><span class="p">,</span> <span class="n">configuration</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model_api_configuration</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_customize_outputs</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -849,10 +837,11 @@
                     <span class="n">bbox</span><span class="p">,</span>
                     <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;XYXY&quot;</span><span class="p">,</span>
                     <span class="n">canvas_size</span><span class="o">=</span><span class="n">inputs</span><span class="o">.</span><span class="n">imgs_info</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">img_shape</span><span class="p">,</span>
+                    <span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">,</span>
                 <span class="p">),</span>
             <span class="p">)</span>
-            <span class="n">scores</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="n">output</span><span class="o">.</span><span class="n">score</span> <span class="k">for</span> <span class="n">output</span> <span class="ow">in</span> <span class="n">output_objects</span><span class="p">]))</span>
-            <span class="n">labels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="n">output</span><span class="o">.</span><span class="n">id</span> <span class="o">-</span> <span class="n">label_shift</span> <span class="k">for</span> <span class="n">output</span> <span class="ow">in</span> <span class="n">output_objects</span><span class="p">]))</span>
+            <span class="n">scores</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="n">output</span><span class="o">.</span><span class="n">score</span> <span class="k">for</span> <span class="n">output</span> <span class="ow">in</span> <span class="n">output_objects</span><span class="p">],</span> <span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">))</span>
+            <span class="n">labels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="n">output</span><span class="o">.</span><span class="n">id</span> <span class="o">-</span> <span class="n">label_shift</span> <span class="k">for</span> <span class="n">output</span> <span class="ow">in</span> <span class="n">output_objects</span><span class="p">],</span> <span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">))</span>
 
         <span class="k">if</span> <span class="n">outputs</span> <span class="ow">and</span> <span class="n">outputs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">saliency_map</span><span class="o">.</span><span class="n">size</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
             <span class="c1"># Squeeze dim 4D =&gt; 3D, (1, num_classes, H, W) =&gt; (num_classes, H, W)</span>
