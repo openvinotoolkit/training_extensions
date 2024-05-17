@@ -217,7 +217,7 @@ def test_otx_e2e(
         "--work_dir",
         str(tmp_path_test / "outputs"),
         "--engine.device",
-        "cpu",
+        fxt_accelerator,
         *overrides,
         "--checkpoint",
         exported_model_path,

@@ -12,7 +12,6 @@ from typing import TYPE_CHECKING, Any, Callable, Iterator, Literal
 
 import numpy as np
 import torch
-from model_api.models import Model
 from model_api.tilers import InstanceSegmentationTiler
 from torchvision import tv_tensors
 
@@ -36,6 +35,7 @@ from otx.core.utils.tile_merge import InstanceSegTileMerge
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
     from mmdet.models.data_preprocessors import DetDataPreprocessor
+    from model_api.adapters import OpenvinoAdapter
     from model_api.models.utils import InstanceSegmentationResult
     from omegaconf import DictConfig
     from torch import nn
@@ -579,22 +579,12 @@ class OVInstanceSegmentationModel(
                 and overlap: {self.model.tiles_overlap}",
         )
 
-    def _create_model(self) -> Model:
-        """Create a OV model with help of Model API."""
-        from model_api.adapters import OpenvinoAdapter, create_core, get_user_config
+    def _get_hparams_from_adapter(self, model_adapter: OpenvinoAdapter) -> None:
+        """Reads model configuration from ModelAPI OpenVINO adapter.
 
-        plugin_config = get_user_config("AUTO", str(self.num_requests), "AUTO")
-        if self.use_throughput_mode:
-            plugin_config["PERFORMANCE_HINT"] = "THROUGHPUT"
-
-        model_adapter = OpenvinoAdapter(
-            create_core(),
-            self.model_name,
-            max_num_requests=self.num_requests,
-            plugin_config=plugin_config,
-            model_parameters=self.model_adapter_parameters,
-        )
-
+        Args:
+            model_adapter (OpenvinoAdapter): target adapter to read the config
+        """
         if model_adapter.model.has_rt_info(["model_info", "confidence_threshold"]):
             best_confidence_threshold = model_adapter.model.get_rt_info(["model_info", "confidence_threshold"]).value
             self.hparams["best_confidence_threshold"] = float(best_confidence_threshold)
@@ -607,8 +597,6 @@ class OVInstanceSegmentationModel(
             )
             log.warning(msg)
             self.hparams["best_confidence_threshold"] = None
-
-        return Model.create_model(model_adapter, model_type=self.model_type, configuration=self.model_api_configuration)
 
     def _customize_outputs(
         self,
@@ -631,15 +619,16 @@ class OVInstanceSegmentationModel(
                     bbox,
                     format="XYXY",
                     canvas_size=inputs.imgs_info[-1].img_shape,
+                    device=self.device,
                 ),
             )
             # NOTE: OTX 1.5 filter predictions with result_based_confidence_threshold,
             # but OTX 2.0 doesn't have it in configuration.
             _masks = [output.mask for output in output_objects]
             _masks = np.stack(_masks) if len(_masks) else []
-            scores.append(torch.tensor([output.score for output in output_objects]))
-            masks.append(torch.tensor(_masks))
-            labels.append(torch.tensor([output.id - 1 for output in output_objects]))
+            scores.append(torch.tensor([output.score for output in output_objects], device=self.device))
+            masks.append(torch.tensor(_masks, device=self.device))
+            labels.append(torch.tensor([output.id - 1 for output in output_objects], device=self.device))
 
         if outputs and outputs[0].saliency_map:
             predicted_s_maps = []
