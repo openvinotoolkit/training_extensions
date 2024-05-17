@@ -86,7 +86,6 @@ xpu = [
 base = [
     "torch==2.1.1",
     "lightning==2.1.2",
-    "lightning==2.1.2",
     "pytorchcv",
     "timm",
     "openvino==2024.0",
