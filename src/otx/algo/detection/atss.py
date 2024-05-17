@@ -40,6 +40,7 @@ from otx.core.types.label import LabelInfoTypes
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
     from torch import Tensor, nn
+    from typing_extensions import Self
 
     from otx.core.metrics import MetricCallable
 
@@ -362,3 +363,11 @@ class ResNeXt101ATSS(ATSS):
             test_cfg=test_cfg,
         )
         return SingleStageDetector(backbone, bbox_head, neck=neck, train_cfg=train_cfg, test_cfg=test_cfg)
+
+    def to(self, *args, **kwargs) -> Self:
+        """Return a model with specified device."""
+        ret = super().to(*args, **kwargs)
+        if self.device.type == "xpu":
+            msg = f"{type(self).__name__} doesn't support XPU."
+            raise RuntimeError(msg)
+        return ret

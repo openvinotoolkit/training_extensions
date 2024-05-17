@@ -17,7 +17,10 @@ class TestPerfObjectDetection(PerfTestBase):
     """Benchmark object detection."""
 
     MODEL_TEST_CASES = [  # noqa: RUF012
-        Benchmark.Model(task="detection", name="atss_mobilenetv2", category="accuracy"),
+        pytest.param(
+            Benchmark.Model(task="detection", name="atss_mobilenetv2", category="accuracy"),
+            marks=pytest.mark.xpu,
+        ),
         Benchmark.Model(task="detection", name="atss_resnext101", category="other"),
         Benchmark.Model(task="detection", name="ssd_mobilenetv2", category="balance"),
         Benchmark.Model(task="detection", name="yolox_tiny", category="speed"),
@@ -103,7 +106,11 @@ class TestPerfObjectDetection(PerfTestBase):
         fxt_model: Benchmark.Model,
         fxt_dataset: Benchmark.Dataset,
         fxt_benchmark: Benchmark,
+        fxt_accelerator: str,
     ):
+        if fxt_model.name == "atss_resnext101" and fxt_accelerator == "xpu":
+            pytest.skip(f"{fxt_model.name} doesn't support {fxt_accelerator}.")
+
         self._test_perf(
             model=fxt_model,
             dataset=fxt_dataset,

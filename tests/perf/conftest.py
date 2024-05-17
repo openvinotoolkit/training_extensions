@@ -227,19 +227,18 @@ def fxt_dataset(request: pytest.FixtureRequest, fxt_data_group) -> Benchmark.Dat
 
 
 @pytest.fixture(scope="session")
-def fxt_tags(fxt_user_name: str, fxt_version_tags: dict[str, str]) -> dict[str, str]:
+def fxt_tags(fxt_user_name: str, fxt_version_tags: dict[str, str], fxt_accelerator: str) -> dict[str, str]:
     """Tag fields to record the machine and user executing this perf test."""
     tags = {
         **fxt_version_tags,
         "user_name": fxt_user_name,
         "machine_name": platform.node(),
         "cpu_info": get_cpu_info()["brand_raw"],
-        "accelerator_info": subprocess.check_output(
-            ["nvidia-smi", "-L"],  # noqa: S603, S607
-        )
-        .decode()
-        .strip(),
     }
+    if fxt_accelerator == "gpu":
+        tags["accelerator_info"] = subprocess.check_output(["nvidia-smi", "-L"]).decode().strip()  # noqa: S603, S607
+    elif fxt_accelerator == "xpu":
+        tags["accelerator_info"] = "xpu"
     msg = f"{tags = }"
     log.info(msg)
     return tags
