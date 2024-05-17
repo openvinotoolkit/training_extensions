@@ -3,10 +3,6 @@ model:
   init_args:
     mode: large
     label_info: 1000
-    loss_callable:
-      class_path: torch.nn.CrossEntropyLoss
-      init_args:
-        reduction: none
 
     optimizer:
       class_path: torch.optim.SGD

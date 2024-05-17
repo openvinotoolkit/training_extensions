@@ -2,6 +2,8 @@
 # SPDX-License-Identifier: Apache-2.0
 from __future__ import annotations
 
+import uuid
+from pathlib import Path
 from typing import TYPE_CHECKING
 from unittest.mock import MagicMock
 
@@ -66,8 +68,8 @@ def fxt_mem_cache_handler(monkeypatch) -> MemCacheHandlerBase:
     MemCacheHandlerSingleton.delete()
 
 
-@pytest.fixture(params=["bytes", "numpy"])
-def fxt_dm_item(request) -> DatasetItem:
+@pytest.fixture(params=["bytes", "file"])
+def fxt_dm_item(request, tmpdir) -> DatasetItem:
     np_img = np.zeros(shape=(10, 10, 3), dtype=np.uint8)
     np_img[:, :, 0] = 0  # Set 0 for B channel
     np_img[:, :, 1] = 1  # Set 1 for G channel
@@ -76,11 +78,14 @@ def fxt_dm_item(request) -> DatasetItem:
     if request.param == "bytes":
         _, np_bytes = cv2.imencode(".png", np_img)
         media = Image.from_bytes(np_bytes.tobytes())
-    elif request.param == "numpy":
-        media = Image.from_numpy(np_img)
+        media.path = ""
+    elif request.param == "file":
+        fname = str(uuid.uuid4())
+        fpath = str(Path(tmpdir) / f"{fname}.png")
+        cv2.imwrite(fpath, np_img)
+        media = Image.from_file(fpath)
     else:
         raise ValueError(request.param)
-    media.path = ""
 
     return DatasetItem(
         id="item",

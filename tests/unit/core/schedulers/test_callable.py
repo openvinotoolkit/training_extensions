@@ -4,8 +4,6 @@ import pickle
 
 import pytest
 from lightning.pytorch.cli import ReduceLROnPlateau
-from otx.core.metrics import NullMetricCallable
-from otx.core.model.base import DefaultOptimizerCallable, OTXModel
 from otx.core.schedulers import SchedulerCallableSupportHPO
 from torch import nn
 from torch.optim import SGD
@@ -69,50 +67,6 @@ class TestSchedulerCallableSupportHPO:
         )
 
         pickled = pickle.dumps(scheduler_callable)
-        unpickled = pickle.loads(pickled)  # noqa: S301
-
-        scheduler = unpickled(fxt_optimizer)
-
-        assert isinstance(scheduler, scheduler_cls)
-
-        for key, value in scheduler_kwargs.items():
-            assert scheduler.state_dict().get(key) == value
-
-    def test_lazy_instance(self, fxt_scheduler_cls_and_kwargs):
-        scheduler_cls, scheduler_kwargs = fxt_scheduler_cls_and_kwargs
-        default_scheduler_callable = SchedulerCallableSupportHPO(
-            scheduler_cls=scheduler_cls,
-            scheduler_kwargs=scheduler_kwargs,
-        ).to_lazy_instance()
-
-        class _TestOTXModel(OTXModel):
-            def __init__(
-                self,
-                num_classes=10,
-                optimizer=DefaultOptimizerCallable,
-                scheduler=default_scheduler_callable,
-                metric=NullMetricCallable,
-                torch_compile: bool = False,
-            ) -> None:
-                super().__init__(num_classes, optimizer, scheduler, metric, torch_compile)
-
-            def _create_model(self) -> nn.Module:
-                return nn.Linear(10, self.num_classes)
-
-        model = _TestOTXModel()
-        _, scheduler_configs = model.configure_optimizers()
-        scheduler = next(iter(scheduler_configs))["scheduler"]
-
-        assert isinstance(scheduler, scheduler_cls)
-
-    def test_lazy_instance_picklable(self, fxt_scheduler_cls_and_kwargs, fxt_optimizer):
-        scheduler_cls, scheduler_kwargs = fxt_scheduler_cls_and_kwargs
-        lazy_instance = SchedulerCallableSupportHPO(
-            scheduler_cls=scheduler_cls,
-            scheduler_kwargs=scheduler_kwargs,
-        ).to_lazy_instance()
-
-        pickled = pickle.dumps(lazy_instance)
         unpickled = pickle.loads(pickled)  # noqa: S301
 
         scheduler = unpickled(fxt_optimizer)

@@ -6,7 +6,7 @@
 from __future__ import annotations
 
 import logging as log
-import pickle
+import pickle  # nosec: B403   used pickle dump and load only to share inference results
 from collections import defaultdict
 from copy import deepcopy
 from functools import partial
@@ -1329,7 +1329,7 @@ class OVZeroShotVisualPromptingModel(
         if (
             path_reference_info := _infer_reference_info_root / self.reference_info_dir / "reference_info.pickle"
         ).is_file():
-            reference_info: dict[str, np.ndarray] = pickle.load(path_reference_info.open("rb"))  # noqa: S301
+            reference_info: dict[str, np.ndarray] = pickle.load(path_reference_info.open("rb"))  # noqa: S301   # nosec: B301
             self.reference_feats = reference_info.get(
                 "reference_feats",
                 np.zeros((0, 1, self.model["decoder"].embed_dim), dtype=np.float32),

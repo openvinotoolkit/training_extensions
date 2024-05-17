@@ -4,11 +4,6 @@ model:
     label_info: 1000
     arch: "deit-tiny"
 
-    loss_callable:
-      class_path: torch.nn.CrossEntropyLoss
-      init_args:
-        reduction: none
-
     optimizer:
       class_path: torch.optim.AdamW
       init_args:

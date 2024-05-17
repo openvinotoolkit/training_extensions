@@ -109,6 +109,9 @@ class TestOVModel:
     def model(self) -> OVModel:
         return OVModel(model_name="efficientnet-b0-pytorch", model_type="Classification")
 
+    def test_create_model(self) -> None:
+        OVModel(model_name="efficientnet-b0-pytorch", model_type="Classification", force_cpu=False)
+
     def test_customize_inputs(self, model, input_batch) -> None:
         inputs = model._customize_inputs(input_batch)
         assert isinstance(inputs, dict)
