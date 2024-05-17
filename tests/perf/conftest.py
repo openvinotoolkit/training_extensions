@@ -238,7 +238,8 @@ def fxt_tags(fxt_user_name: str, fxt_version_tags: dict[str, str], fxt_accelerat
     if fxt_accelerator == "gpu":
         tags["accelerator_info"] = subprocess.check_output(["nvidia-smi", "-L"]).decode().strip()  # noqa: S603, S607
     elif fxt_accelerator == "xpu":
-        tags["accelerator_info"] = "xpu"
+        raw = subprocess.check_output(args=["xpu-smi", "discovery", "--dump", "1,2"]).decode().strip()
+        tags["accelerator_info"] = "\n".join([ret.replace('"', "").replace(",", " : ") for ret in raw.split("\n")[1:]])
     msg = f"{tags = }"
     log.info(msg)
     return tags
