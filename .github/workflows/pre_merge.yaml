@@ -94,7 +94,7 @@ jobs:
           - task: "semantic_segmentation"
           - task: "visual_prompting"
           - task: "anomaly"
-    name: Integration-Test-${{ matrix.task }}-py311
+    name: Integration-Test-${{ matrix.task }}-py310
     # This is what will cancel the job concurrency
     concurrency:
       group: ${{ github.workflow }}-Integration-${{ github.event.pull_request.number || github.ref }}-${{ matrix.task }}
@@ -105,7 +105,7 @@ jobs:
       - name: Install Python
         uses: actions/setup-python@82c7e631bb3cdc910f68e0081d67478d79c6982d # v5.1.0
         with:
-          python-version: "3.11"
+          python-version: "3.10"
       - name: Install tox
         run: python -m pip install --require-hashes --no-deps -r .ci/requirements/tox/requirements.txt
       - name: Run Integration Test
