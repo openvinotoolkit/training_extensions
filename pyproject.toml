@@ -37,16 +37,6 @@ dependencies = [
     "importlib_resources==6.4.0",
     "docstring_parser==0.16", # CLI help-formatter
     "rich_argparse==1.4.0", # CLI help-formatter
-    "lightning==2.1.2",
-    "pytorchcv",
-    "timm",
-    "openvino==2024.0",
-    "openvino-dev==2024.0",
-    "openvino-model-api==0.2.0",
-    "onnx==1.16.0",
-    "onnxconverter-common==1.14.0",
-    "nncf==2.9.0",
-    "anomalib[core]==1.0.1",
 ]
 
 [project.optional-dependencies]
@@ -82,10 +72,30 @@ xpu = [
     "torchvision==0.16.0.post0",
     "intel-extension-for-pytorch==2.1.20+xpu",
     "oneccl_bind_pt==2.1.200+xpu",
+    "lightning==2.1.2",
+    "pytorchcv",
+    "timm",
+    "openvino==2024.0",
+    "openvino-dev==2024.0",
+    "openvino-model-api==0.2.0",
+    "onnx==1.16.0",
+    "onnxconverter-common==1.14.0",
+    "nncf==2.9.0",
+    "anomalib[core]==1.0.1",
 ]
 base = [
     "torch==2.1.1",
     "lightning==2.1.2",
+    "lightning==2.1.2",
+    "pytorchcv",
+    "timm",
+    "openvino==2024.0",
+    "openvino-dev==2024.0",
+    "openvino-model-api==0.2.0",
+    "onnx==1.16.0",
+    "onnxconverter-common==1.14.0",
+    "nncf==2.9.0",
+    "anomalib[core]==1.0.1",
 ]
 mmlab = [
     "mmdet==3.2.0",
