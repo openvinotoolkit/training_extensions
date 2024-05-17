@@ -13,7 +13,7 @@ model:
     scheduler:
       class_path: otx.core.schedulers.LinearWarmupSchedulerCallable
       init_args:
-        num_warmup_steps: 0
+        num_warmup_steps: 3
         main_scheduler_callable:
           class_path: lightning.pytorch.cli.ReduceLROnPlateau
           init_args:
@@ -30,13 +30,13 @@ callback_monitor: val/map_50
 
 data: ../_base_/data/torchvision_base.yaml
 overrides:
+  gradient_clip_val: 35.0
   callbacks:
     - class_path: otx.algo.callbacks.adaptive_train_scheduling.AdaptiveTrainScheduling
       init_args:
         max_interval: 5
         decay: -0.025
         min_lrschedule_patience: 3
-  gradient_clip_val: 35.0
   data:
     task: DETECTION
     config:
