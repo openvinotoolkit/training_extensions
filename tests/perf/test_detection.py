@@ -17,10 +17,7 @@ class TestPerfObjectDetection(PerfTestBase):
     """Benchmark object detection."""
 
     MODEL_TEST_CASES = [  # noqa: RUF012
-        pytest.param(
-            Benchmark.Model(task="detection", name="atss_mobilenetv2", category="accuracy"),
-            marks=pytest.mark.xpu,
-        ),
+        Benchmark.Model(task="detection", name="atss_mobilenetv2", category="accuracy"),
         Benchmark.Model(task="detection", name="atss_resnext101", category="other"),
         Benchmark.Model(task="detection", name="ssd_mobilenetv2", category="balance"),
         Benchmark.Model(task="detection", name="yolox_tiny", category="speed"),
