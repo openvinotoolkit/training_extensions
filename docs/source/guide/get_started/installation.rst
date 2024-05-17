@@ -76,49 +76,34 @@ OpenVINO™ Training Extensions command line functionality.
 Install OpenVINO™ Training Extensions for users (XPU devices)
 *************************************************************
 
-1. Follow the first two steps from above instructions
-on cloning the repository and creating a virtual environment.
+1. Install Intel Extensions for Pytorch & Requirements for training according to your system environment.
 
-2. Install Intel Extensions For Pytorch (IPEX).
-Follow the `official documentation <https://intel.github.io/intel-extension-for-pytorch/index.html#installation?platform=gpu&version=v2.1.10%2Bxpu>`_ to install prerequisites such as OneAPI and proper drivers.
+.. tab-set::
 
-.. code-block:: shell
+    .. tab-item:: Minimum requirements
 
-    python -m pip install torch==2.1.0.post0 torchvision==0.16.0.post0 torchaudio==2.1.0.post0 intel-extension-for-pytorch==2.1.20+xpu oneccl_bind_pt==2.1.200+xpu --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
+        .. code-block:: shell
 
-3. Install MMCV.
-It is required to install mmcv from source to properly build it with IPEX.
+            pip install '.[xpu]'
 
-.. code-block:: shell
+        .. note::
 
-    git clone https://github.com/open-mmlab/mmcv
-    cd mmcv
-    git checkout v2.1.0
-    MMCV_WITH_OPS=1 pip install -e .
+            Models from mmlab are not available for this environment. If you want to use mmlab models, you must install them with Full Requirements.
+            Also, some tasks may not be supported by minimum requirements.
 
-4. Install OpenVINO™ Training Extensions
-package from either:
+    .. tab-item:: Full Requirements
 
-* A local source in development mode
+        .. code-block:: shell
+            python -m pip install torch==2.1.0.post0 torchvision==0.16.0.post0 torchaudio==2.1.0.post0 intel-extension-for-pytorch==2.1.20+xpu oneccl_bind_pt==2.1.200+xpu --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
+            git clone https://github.com/open-mmlab/mmcv
+            cd mmcv
+            git checkout v2.1.0
+            MMCV_WITH_OPS=1 pip install -e .
+            otx install -v --do-not-install-torch
 
-.. code-block:: shell
+[Optional] Refer to the `Intel® Extension for PyTorch documentation guide <https://intel.github.io/intel-extension-for-pytorch/index.html#installation?platform=gpu&version=v2.1.10%2bxpu&os=linux%2fwsl2&package=pip>`_
 
-    pip install -e .
-
-* PyPI
-
-.. code-block:: shell
-
-    pip install otx
-
-5. Install requirements for training
-excluding Pytorch.
-
-.. code-block:: shell
-
-    otx install -v --do-not-install-torch
-
-6. Activate OneAPI environment
+2. Activate OneAPI environment
 and export required IPEX system variables
 
 .. code-block:: shell
@@ -127,7 +112,7 @@ and export required IPEX system variables
     export LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.30
     export IPEX_FP32_MATH_MODE=TF32
 
-7. Once the package is installed in the virtual environment, you can use full
+3. Once the package is installed in the virtual environment, you can use full
 OpenVINO™ Training Extensions command line functionality.
 
 .. code-block:: shell
