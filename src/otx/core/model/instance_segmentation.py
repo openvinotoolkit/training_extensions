@@ -260,11 +260,6 @@ class ExplainableOTXInstanceSegModel(OTXInstanceSegModel):
         mode: str = "tensor",  # noqa: ARG004
     ) -> dict[str, torch.Tensor]:
         """Forward func of the BaseDetector instance, which located in is in ExplainableOTXInstanceSegModel().model."""
-        # Workaround to remove grads for model parameters, since after class patching
-        # convolutions are failing since thay can't process gradients
-        for param in self.parameters():
-            param.requires_grad = False
-
         x = self.extract_feat(entity.images)
 
         feature_vector = self.feature_vector_fn(x)

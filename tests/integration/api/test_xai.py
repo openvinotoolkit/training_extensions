@@ -14,8 +14,8 @@ MULTI_CLASS_CLS = [recipe for recipe in RECIPE_LIST_ALL if "multi_class_cls" in 
 MULTI_LABEL_CLS = [recipe for recipe in RECIPE_LIST_ALL if "multi_label_cls" in recipe]
 MC_ML_CLS = MULTI_CLASS_CLS + MULTI_LABEL_CLS
 
-DETECTION_LIST = [recipe for recipe in RECIPE_LIST_ALL if "/detection" in recipe and "tile" not in recipe]
-INST_SEG_LIST = [recipe for recipe in RECIPE_LIST_ALL if "instance_segmentation" in recipe and "tile" not in recipe]
+DETECTION_LIST = [recipe for recipe in RECIPE_LIST_ALL if "/detection" in recipe]
+INST_SEG_LIST = [recipe for recipe in RECIPE_LIST_ALL if "instance_segmentation" in recipe]
 EXPLAIN_MODEL_LIST = MC_ML_CLS + DETECTION_LIST + INST_SEG_LIST
 
 MEAN_TORCH_OV_DIFF = 150
@@ -95,12 +95,9 @@ def test_predict_with_explain(
     if "dino" in model_name:
         pytest.skip("DINO is not supported.")
 
-    if "ssd_mobilenetv2" in model_name:
-        pytest.skip("There's issue with SSD model. Skip for now.")
-
-    if "atss" in model_name or "yolox" in model_name:
-        # TODO(Jaeguk, sungchul): ATSS and YOLOX returns dynamic output for saliency map
-        pytest.skip(f"There's issue with {model_name} model. Skip for now.")
+    # if "atss" in model_name or "yolox" in model_name:
+    #     # TODO(Jaeguk, sungchul): ATSS and YOLOX returns dynamic output for saliency map
+    #     pytest.skip(f"There's issue with {model_name} model. Skip for now.")
 
     if "instance_segmentation" in recipe:
         # TODO(Eugene): figure out why instance segmentation model fails after decoupling.
@@ -152,8 +149,8 @@ def test_predict_with_explain(
     assert predict_result_explain_ov[0].feature_vector is not None
     assert isinstance(predict_result_explain_ov[0].feature_vector[0], np.ndarray)
 
-    if task == "instance_segmentation" or "atss_r50_fpn" in recipe:
-        # For instance segmentation and atss_r50_fpn batch_size for Torch task 1, for OV 2.
+    if task == "instance_segmentation" in recipe:
+        # For instance segmentation batch_size for Torch task 1, for OV 2.
         # That why the predict_results have different format and we can't compare them.
 
         # The OV saliency maps are different from Torch and incorrect, possible root cause can be on MAPI side
@@ -168,6 +165,7 @@ def test_predict_with_explain(
     if "tv_efficientnet_b3" in recipe:
         # There is the issue with different predict results for Pytorch and OpenVINO tasks.
         # Probably because of the different preprocessed images passed as an input. Skip the rest of the checks for now.
+        # Ticket 141639
         return
 
     for i in range(len(maps_torch)):
