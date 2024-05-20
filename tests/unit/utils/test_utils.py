@@ -5,6 +5,7 @@ from pathlib import Path
 import pytest
 from otx.utils.utils import (
     find_file_recursively,
+    get_class_initial_arguments,
     get_decimal_point,
     get_using_dot_delimited_key,
     remove_matched_files,
@@ -99,3 +100,13 @@ def test_remove_matched_files_no_file_to_remove(temporary_dir_w_some_txt):
     remove_matched_files(temporary_dir_w_some_txt, "*.log")
 
     assert len(list(temporary_dir_w_some_txt.rglob("*.txt"))) == 5
+
+
+def test_get_class_initial_arguments():
+    class FakeCls:
+        def __init__(self, a, b):
+            self.init_args = get_class_initial_arguments()
+
+    fake_cls = FakeCls(4, 5)
+
+    assert fake_cls.init_args == (4, 5)
