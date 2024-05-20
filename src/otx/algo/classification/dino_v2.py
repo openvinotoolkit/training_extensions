@@ -23,7 +23,7 @@ from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallab
 from otx.core.model.classification import OTXMulticlassClsModel
 from otx.core.schedulers import LRSchedulerListCallable
 from otx.core.types.label import LabelInfoTypes
-from otx.utils.utils import get_cls_init_args
+from otx.utils.utils import get_class_initial_arguments
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
@@ -47,7 +47,7 @@ class DINOv2(nn.Module):
         num_classes: int,
     ):
         super().__init__()
-        self._init_args = get_cls_init_args()
+        self._init_args = get_class_initial_arguments()
         self.backbone = torch.hub.load(
             repo_or_dir="facebookresearch/dinov2",
             model=backbone,

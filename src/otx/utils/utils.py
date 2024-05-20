@@ -178,7 +178,7 @@ def can_pass_tile_config(model_cls: type[OTXModel]) -> bool:
     return tile_config_param is not None
 
 
-def get_cls_init_args() -> tuple:
+def get_class_initial_arguments() -> tuple:
     """Return arguments of class initilization. This function should be called in '__init__' function.
 
     Returns:
