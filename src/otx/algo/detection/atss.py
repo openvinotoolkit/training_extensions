@@ -241,11 +241,10 @@ class MobileNetV2ATSS(ATSS):
         }
         test_cfg = DictConfig(
             {
-                "nms": {"type": "nms", "iou_threshold": 0.6},
+                "nms": {"type": "nms", "iou_threshold": 0.45},
                 "min_bbox_size": 0,
-                "score_thr": 0.05,
-                "max_per_img": 100,
-                "nms_pre": 1000,
+                "score_thr": 0.02,
+                "max_per_img": 200,
             },
         )
         backbone = _build_model_including_pytorchcv(
@@ -312,11 +311,10 @@ class ResNeXt101ATSS(ATSS):
         }
         test_cfg = DictConfig(
             {
-                "nms": {"type": "nms", "iou_threshold": 0.6},
+                "nms": {"type": "nms", "iou_threshold": 0.45},
                 "min_bbox_size": 0,
-                "score_thr": 0.05,
-                "max_per_img": 100,
-                "nms_pre": 1000,
+                "score_thr": 0.02,
+                "max_per_img": 200,
             },
         )
         backbone = ResNeXt(

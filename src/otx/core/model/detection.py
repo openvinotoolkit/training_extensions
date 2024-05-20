@@ -258,9 +258,11 @@ class ExplainableOTXDetModel(OTXDetectionModel):
 
         # SSD-like heads also have background class
         background_class = isinstance(self.model.bbox_head, SSDHead)
+        tiling_mode = self.tile_config.enable_tiler if hasattr(self, "tile_config") else False
         explainer = DetClassProbabilityMap(
             num_classes=self.num_classes + background_class,
             num_anchors=self.get_num_anchors(),
+            use_cls_softmax=not tiling_mode,
         )
         return explainer.func
 
