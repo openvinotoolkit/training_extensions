@@ -254,6 +254,7 @@ class ExplainableOTXInstanceSegModel(OTXInstanceSegModel):
         )
 
     @staticmethod
+    @torch.no_grad()
     def _forward_explain_inst_seg(
         self: TwoStageDetector,
         entity: InstanceSegBatchDataEntity,
