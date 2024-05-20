@@ -95,10 +95,6 @@ def test_predict_with_explain(
     if "dino" in model_name:
         pytest.skip("DINO is not supported.")
 
-    # if "atss" in model_name or "yolox" in model_name:
-    #     # TODO(Jaeguk, sungchul): ATSS and YOLOX returns dynamic output for saliency map
-    #     pytest.skip(f"There's issue with {model_name} model. Skip for now.")
-
     if "instance_segmentation" in recipe:
         # TODO(Eugene): figure out why instance segmentation model fails after decoupling.
         pytest.skip("There's issue with instance segmentation model. Skip for now.")
