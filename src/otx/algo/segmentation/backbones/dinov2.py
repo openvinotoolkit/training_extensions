@@ -13,6 +13,7 @@ from torch import nn
 
 from otx.algo.modules.base_module import BaseModule
 from otx.algo.utils.mmengine_utils import load_checkpoint_to_model, load_from_http
+from otx.utils.utils import get_cls_init_args
 
 
 class DinoVisionTransformer(BaseModule):
@@ -27,6 +28,7 @@ class DinoVisionTransformer(BaseModule):
         pretrained_weights: str | None = None,
     ):
         super().__init__(init_cfg)
+        self._init_args = get_cls_init_args()
         torch.hub._validate_not_a_forked_repo = lambda a, b, c: True  # noqa: SLF001, ARG005
         self.backbone = torch.hub.load(repo_or_dir="facebookresearch/dinov2", model=name)
         if freeze_backbone:
@@ -70,3 +72,6 @@ class DinoVisionTransformer(BaseModule):
             print(f"init weight - {pretrained}")
         if checkpoint is not None:
             load_checkpoint_to_model(self, checkpoint, prefix=prefix)
+
+    def __reduce__(self):
+        return (DinoVisionTransformer, self._init_args)

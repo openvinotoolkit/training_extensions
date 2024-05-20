@@ -176,3 +176,13 @@ def can_pass_tile_config(model_cls: type[OTXModel]) -> bool:
     """
     tile_config_param = inspect.signature(model_cls).parameters.get("tile_config")
     return tile_config_param is not None
+
+
+def get_cls_init_args() -> tuple:
+    """Return arguments of class initilization. This function should be called in '__init__' function.
+
+    Returns:
+        tuple: class arguments.
+    """
+    keywords, _, _, values = inspect.getargvalues(inspect.stack()[1].frame)
+    return tuple(values[key] for key in keywords[1:])
