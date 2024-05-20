@@ -516,9 +516,11 @@
 
         <span class="c1"># SSD-like heads also have background class</span>
         <span class="n">background_class</span> <span class="o">=</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">bbox_head</span><span class="p">,</span> <span class="n">SSDHead</span><span class="p">)</span>
+        <span class="n">tiling_mode</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tile_config</span><span class="o">.</span><span class="n">enable_tiler</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;tile_config&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="kc">False</span>
         <span class="n">explainer</span> <span class="o">=</span> <span class="n">DetClassProbabilityMap</span><span class="p">(</span>
             <span class="n">num_classes</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">num_classes</span> <span class="o">+</span> <span class="n">background_class</span><span class="p">,</span>
             <span class="n">num_anchors</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">get_num_anchors</span><span class="p">(),</span>
+            <span class="n">use_cls_softmax</span><span class="o">=</span><span class="ow">not</span> <span class="n">tiling_mode</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="k">return</span> <span class="n">explainer</span><span class="o">.</span><span class="n">func</span></div>
 

@@ -457,10 +457,8 @@
 
         <span class="k">if</span> <span class="n">explain_mode</span><span class="p">:</span>
             <span class="c1"># Note: Skip the first feature vector as it is the full image value.</span>
-            <span class="n">merged_vector</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">feature_vectors</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-            <span class="n">merged_saliency_map</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_merge_saliency_maps</span><span class="p">(</span><span class="n">saliency_maps</span><span class="p">,</span> <span class="n">img_size</span><span class="p">,</span> <span class="n">tiles_coords</span><span class="p">)</span>
-            <span class="n">det_pred_entity</span><span class="o">.</span><span class="n">feature_vector</span> <span class="o">=</span> <span class="n">merged_vector</span>
-            <span class="n">det_pred_entity</span><span class="o">.</span><span class="n">saliency_map</span> <span class="o">=</span> <span class="n">merged_saliency_map</span>
+            <span class="n">det_pred_entity</span><span class="o">.</span><span class="n">feature_vector</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">feature_vectors</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">det_pred_entity</span><span class="o">.</span><span class="n">saliency_map</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_merge_saliency_maps</span><span class="p">(</span><span class="n">saliency_maps</span><span class="p">,</span> <span class="n">img_size</span><span class="p">,</span> <span class="n">tiles_coords</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">det_pred_entity</span>
 
@@ -678,10 +676,13 @@
 
         <span class="k">if</span> <span class="n">explain_mode</span><span class="p">:</span>
             <span class="c1"># Note: Skip the first feature vector as it is the full image value.</span>
-            <span class="n">merged_vector</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">feature_vectors</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-            <span class="n">merged_saliency_map</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_saliency_maps_from_masks</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">scores</span><span class="p">,</span> <span class="n">masks</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_classes</span><span class="p">)</span>
-            <span class="n">inst_seg_pred_entity</span><span class="o">.</span><span class="n">feature_vector</span> <span class="o">=</span> <span class="n">merged_vector</span>
-            <span class="n">inst_seg_pred_entity</span><span class="o">.</span><span class="n">saliency_map</span> <span class="o">=</span> <span class="n">merged_saliency_map</span>
+            <span class="n">inst_seg_pred_entity</span><span class="o">.</span><span class="n">feature_vector</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">feature_vectors</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">inst_seg_pred_entity</span><span class="o">.</span><span class="n">saliency_map</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_saliency_maps_from_masks</span><span class="p">(</span>
+                <span class="n">labels</span><span class="p">,</span>
+                <span class="n">scores</span><span class="p">,</span>
+                <span class="n">masks</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">num_classes</span><span class="p">,</span>
+            <span class="p">)</span>
 
         <span class="k">return</span> <span class="n">inst_seg_pred_entity</span>
 
