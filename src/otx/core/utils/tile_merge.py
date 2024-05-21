@@ -43,6 +43,7 @@ class TileMerge(Generic[T_OTXDataEntity, T_OTXBatchPredEntity]):
         self.tile_size = tile_config.tile_size
         self.iou_threshold = tile_config.iou_threshold
         self.max_num_instances = tile_config.max_num_instances
+        self.with_full_img = tile_config.with_full_img
 
     @abstractmethod
     def _merge_entities(
@@ -206,7 +207,8 @@ class DetectionTileMerge(TileMerge):
 
         if explain_mode:
             # Note: Skip the first feature vector as it is the full image value.
-            det_pred_entity.feature_vector = np.mean(feature_vectors[1:], axis=0)
+            start_idx = 1 if self.with_full_img else 0
+            det_pred_entity.feature_vector = np.mean(feature_vectors[start_idx:], axis=0)
             det_pred_entity.saliency_map = self._merge_saliency_maps(saliency_maps, img_size, tiles_coords)
 
         return det_pred_entity
@@ -248,7 +250,9 @@ class DetectionTileMerge(TileMerge):
         merged_map = np.zeros((num_classes, image_map_h, image_map_w))
 
         # Note: Skip the first saliency map as it is the full image value.
-        for i, saliency_map in enumerate(saliency_maps[1:], 1):
+        saliency_maps, start_idx = (saliency_maps[1:], 1) if self.with_full_img else (saliency_maps, 0)
+
+        for i, saliency_map in enumerate(saliency_maps, start_idx):
             for class_idx in range(num_classes):
                 cls_map = saliency_map[class_idx]
 
@@ -274,10 +278,11 @@ class DetectionTileMerge(TileMerge):
                         merged_map[class_idx][y_1 + hi, x_1 + wi] = map_pixel
 
         for class_idx in range(num_classes):
-            image_map_cls = image_saliency_map[class_idx]
-            image_map_cls = cv2.resize(image_map_cls, (image_map_w, image_map_h))
+            if self.with_full_img:
+                image_map_cls = image_saliency_map[class_idx]
+                image_map_cls = cv2.resize(image_map_cls, (image_map_w, image_map_h))
+                merged_map[class_idx] += 0.5 * image_map_cls
 
-            merged_map[class_idx] += 0.5 * image_map_cls
             merged_map[class_idx] = _non_linear_normalization(merged_map[class_idx])
 
         return merged_map.astype(np.uint8)
@@ -419,7 +424,8 @@ class InstanceSegTileMerge(TileMerge):
 
         if explain_mode:
             # Note: Skip the first feature vector as it is the full image value.
-            inst_seg_pred_entity.feature_vector = np.mean(feature_vectors[1:], axis=0)
+            start_idx = 1 if self.with_full_img else 0
+            inst_seg_pred_entity.feature_vector = np.mean(feature_vectors[start_idx:], axis=0)
             inst_seg_pred_entity.saliency_map = self.get_saliency_maps_from_masks(
                 labels,
                 scores,
