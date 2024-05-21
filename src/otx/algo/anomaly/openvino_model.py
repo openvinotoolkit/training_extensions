@@ -34,10 +34,6 @@ class _OVMetricCallback(Callback):
     def __init__(self) -> None:
         super().__init__()
 
-    def on_test_start(self, trainer: Trainer, pl_module: AnomalyOpenVINO) -> None:
-        pl_module.image_metrics.set_threshold(pl_module.model.image_threshold / pl_module.model.normalization_scale)
-        pl_module.pixel_metrics.set_threshold(pl_module.model.pixel_threshold / pl_module.model.normalization_scale)
-
     def on_test_epoch_start(self, trainer: Trainer, pl_module: AnomalyOpenVINO) -> None:
         pl_module.image_metrics.reset()
         pl_module.pixel_metrics.reset()
