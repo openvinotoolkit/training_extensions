@@ -206,10 +206,8 @@ class DetectionTileMerge(TileMerge):
 
         if explain_mode:
             # Note: Skip the first feature vector as it is the full image value.
-            merged_vector = np.mean(feature_vectors[1:], axis=0)
-            merged_saliency_map = self._merge_saliency_maps(saliency_maps, img_size, tiles_coords)
-            det_pred_entity.feature_vector = merged_vector
-            det_pred_entity.saliency_map = merged_saliency_map
+            det_pred_entity.feature_vector = np.mean(feature_vectors[1:], axis=0)
+            det_pred_entity.saliency_map = self._merge_saliency_maps(saliency_maps, img_size, tiles_coords)
 
         return det_pred_entity
 
@@ -421,10 +419,13 @@ class InstanceSegTileMerge(TileMerge):
 
         if explain_mode:
             # Note: Skip the first feature vector as it is the full image value.
-            merged_vector = np.mean(feature_vectors[1:], axis=0)
-            merged_saliency_map = self.get_saliency_maps_from_masks(labels, scores, masks, self.num_classes)
-            inst_seg_pred_entity.feature_vector = merged_vector
-            inst_seg_pred_entity.saliency_map = merged_saliency_map
+            inst_seg_pred_entity.feature_vector = np.mean(feature_vectors[1:], axis=0)
+            inst_seg_pred_entity.saliency_map = self.get_saliency_maps_from_masks(
+                labels,
+                scores,
+                masks,
+                self.num_classes,
+            )
 
         return inst_seg_pred_entity
 

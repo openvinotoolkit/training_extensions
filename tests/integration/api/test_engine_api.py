@@ -110,9 +110,9 @@ def test_engine_from_config(
     if task not in [
         OTXTaskType.MULTI_CLASS_CLS,
         OTXTaskType.MULTI_LABEL_CLS,
-        # Restore these models after fixing undetermined CI failures for ATSS and Mask RCNN
-        # OTXTaskType.DETECTION,
-        # OTXTaskType.ROTATED_DETECTION,
+        OTXTaskType.DETECTION,
+        OTXTaskType.ROTATED_DETECTION,
+        # TODO(Eugene): figure out why instance segmentation model fails after decoupling.
         # OTXTaskType.INSTANCE_SEGMENTATION,
     ]:
         return
