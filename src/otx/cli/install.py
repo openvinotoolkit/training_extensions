@@ -22,6 +22,7 @@ from otx.cli.utils.installation import (
     parse_requirements,
     patch_mmaction2,
 )
+from otx.utils.utils import is_xpu_available
 
 if TYPE_CHECKING:
     from jsonargparse._actions import _ActionSubCommands
@@ -89,7 +90,9 @@ def otx_install(
 
     requirements_dict = get_requirements("otx")
     # Add base and openvino requirements.
-    requirements = requirements_dict["base"]
+    requirements = requirements_dict["base"] if not is_xpu_available() else requirements_dict["xpu"]
+    requirements_dict.pop("xpu")
+    requirements_dict.pop("base")
     if option == "full":
         for extra in requirements_dict:
             requirements.extend(requirements_dict[extra])
