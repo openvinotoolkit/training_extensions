@@ -1,0 +1,37 @@
+﻿otx
+===
+
+.. automodule:: otx
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   otx.algorithms
+   otx.api
+   otx.cli
+   otx.core
+   otx.hpo
+   otx.recipes
+   otx.utils
+

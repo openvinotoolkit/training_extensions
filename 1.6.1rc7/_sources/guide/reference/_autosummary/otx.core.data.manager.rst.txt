@@ -1,0 +1,31 @@
+otx.core.data.manager
+=====================
+
+.. automodule:: otx.core.data.manager
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   otx.core.data.manager.dataset_manager
+

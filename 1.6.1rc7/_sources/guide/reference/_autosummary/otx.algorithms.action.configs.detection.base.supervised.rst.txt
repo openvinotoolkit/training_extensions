@@ -1,0 +1,23 @@
+otx.algorithms.action.configs.detection.base.supervised
+=======================================================
+
+.. automodule:: otx.algorithms.action.configs.detection.base.supervised
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

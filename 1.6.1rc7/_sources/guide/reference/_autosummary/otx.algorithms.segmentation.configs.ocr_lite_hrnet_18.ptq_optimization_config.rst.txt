@@ -1,0 +1,23 @@
+otx.algorithms.segmentation.configs.ocr\_lite\_hrnet\_18.ptq\_optimization\_config
+==================================================================================
+
+.. automodule:: otx.algorithms.segmentation.configs.ocr_lite_hrnet_18.ptq_optimization_config
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

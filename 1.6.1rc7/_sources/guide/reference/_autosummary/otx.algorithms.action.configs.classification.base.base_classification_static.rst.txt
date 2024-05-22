@@ -1,0 +1,23 @@
+otx.algorithms.action.configs.classification.base.base\_classification\_static
+==============================================================================
+
+.. automodule:: otx.algorithms.action.configs.classification.base.base_classification_static
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

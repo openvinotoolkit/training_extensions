@@ -1,0 +1,29 @@
+otx.api.usecases.tasks.interfaces.deployment\_interface
+=======================================================
+
+.. automodule:: otx.api.usecases.tasks.interfaces.deployment_interface
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      IDeploymentTask
+   
+   
+
+   
+   
+   
+
+
+

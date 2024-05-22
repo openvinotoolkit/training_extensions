@@ -1,0 +1,34 @@
+otx.algorithms.detection.adapters.openvino.task
+===============================================
+
+.. automodule:: otx.algorithms.detection.adapters.openvino.task
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      BaseInferencerWithConverter
+      OpenVINODetectionInferencer
+      OpenVINODetectionTask
+      OpenVINOMaskInferencer
+      OpenVINORotatedRectInferencer
+      OpenVINOTileClassifierWrapper
+   
+   
+
+   
+   
+   
+
+
+

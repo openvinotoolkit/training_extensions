@@ -1,0 +1,23 @@
+otx.algorithms.action.configs.classification.x3d.data\_pipeline
+===============================================================
+
+.. automodule:: otx.algorithms.action.configs.classification.x3d.data_pipeline
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

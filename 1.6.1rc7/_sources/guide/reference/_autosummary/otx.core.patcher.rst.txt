@@ -1,0 +1,29 @@
+otx.core.patcher
+================
+
+.. automodule:: otx.core.patcher
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      Patcher
+   
+   
+
+   
+   
+   
+
+
+

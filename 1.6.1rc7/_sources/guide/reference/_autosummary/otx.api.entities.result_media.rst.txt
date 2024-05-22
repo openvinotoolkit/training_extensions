@@ -1,0 +1,29 @@
+otx.api.entities.result\_media
+==============================
+
+.. automodule:: otx.api.entities.result_media
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      ResultMediaEntity
+   
+   
+
+   
+   
+   
+
+
+

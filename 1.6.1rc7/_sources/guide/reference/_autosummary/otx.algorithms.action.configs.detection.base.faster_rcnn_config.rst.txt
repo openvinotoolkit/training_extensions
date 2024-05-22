@@ -1,0 +1,23 @@
+otx.algorithms.action.configs.detection.base.faster\_rcnn\_config
+=================================================================
+
+.. automodule:: otx.algorithms.action.configs.detection.base.faster_rcnn_config
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

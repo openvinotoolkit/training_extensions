@@ -1,0 +1,32 @@
+otx.cli.utils.errors
+====================
+
+.. automodule:: otx.cli.utils.errors
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Exceptions
+
+   .. autosummary::
+   
+      CliException
+      ConfigValueError
+      FileNotExistError
+      NotSupportedError
+   
+   
+
+
+

@@ -1,0 +1,23 @@
+otx.algorithms.segmentation.configs.ham\_segnext\_t.ptq\_optimization\_config
+=============================================================================
+
+.. automodule:: otx.algorithms.segmentation.configs.ham_segnext_t.ptq_optimization_config
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
