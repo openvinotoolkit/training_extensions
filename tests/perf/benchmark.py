@@ -203,11 +203,14 @@ class Benchmark:
                     extra_metrics=extra_metrics,
                 )
 
+                trained_model_path = sub_work_dir / ".latest" / "train" / "best_checkpoint.ckpt"
                 command = [
                     "otx",
                     "test",
                     "--work_dir",
                     str(sub_work_dir),
+                    "--checkpoint",
+                    str(trained_model_path),
                 ]
                 for key, value in dataset.extra_overrides.get("test", {}).items():
                     command.append(f"--{key}")
