@@ -713,13 +713,11 @@ class FMeasure(Metric):
         self._f_measure_per_label = {label: result.best_f_measure_per_class[label] for label in self.classes}
 
         if best_confidence_threshold is not None:
-            print("############### a model has the best_confidence_threshold", best_confidence_threshold)
             (index,) = np.where(
                 np.isclose(list(np.arange(*boxes_pair.confidence_range)), best_confidence_threshold),
             )
             computed_f_measure = result.per_confidence.all_classes_f_measure_curve[int(index)]
         else:
-            print("############### a model doesn't have the best_confidence_threshold")
             self._f_measure_per_confidence = {
                 "xs": list(np.arange(*boxes_pair.confidence_range)),
                 "ys": result.per_confidence.all_classes_f_measure_curve,
