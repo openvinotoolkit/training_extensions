@@ -206,9 +206,7 @@ class DetectionTileMerge(TileMerge):
         )
 
         if explain_mode:
-            # Note: Skip the first feature vector as it is the full image value.
-            start_idx = 1 if self.with_full_img else 0
-            det_pred_entity.feature_vector = np.mean(feature_vectors[start_idx:], axis=0)
+            det_pred_entity.feature_vector = np.mean(feature_vectors, axis=0)
             det_pred_entity.saliency_map = self._merge_saliency_maps(saliency_maps, img_size, tiles_coords)
 
         return det_pred_entity
@@ -423,9 +421,7 @@ class InstanceSegTileMerge(TileMerge):
         )
 
         if explain_mode:
-            # Note: Skip the first feature vector as it is the full image value.
-            start_idx = 1 if self.with_full_img else 0
-            inst_seg_pred_entity.feature_vector = np.mean(feature_vectors[start_idx:], axis=0)
+            inst_seg_pred_entity.feature_vector = np.mean(feature_vectors, axis=0)
             inst_seg_pred_entity.saliency_map = self.get_saliency_maps_from_masks(
                 labels,
                 scores,
