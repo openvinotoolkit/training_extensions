@@ -93,7 +93,7 @@ def otx_install(
     requirements_dict.pop("base")
     requirements_dict.pop("xpu")
 
-    if "full" in option:
+    if option in ["full", "xpu_full"]:
         for extra in requirements_dict:
             requirements.extend(requirements_dict[extra])
     elif option in requirements_dict:
