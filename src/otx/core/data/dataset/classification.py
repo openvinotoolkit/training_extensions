@@ -14,6 +14,7 @@ from datumaro.components.annotation import AnnotationType
 from torch.nn import functional
 
 from otx.core.data.dataset.base import OTXDataset
+from otx.core.data.dataset.multi_transform import MultiTransformDataset
 from otx.core.data.entity.base import ImageInfo
 from otx.core.data.entity.classification import (
     HlabelClsBatchDataEntity,
@@ -57,6 +58,9 @@ class OTXMulticlassClsDataset(OTXDataset[MulticlassClsDataEntity]):
         """Collection function to collect MulticlassClsDataEntity into MulticlassClsBatchDataEntity in data loader."""
         return partial(MulticlassClsBatchDataEntity.collate_fn, stack_images=self.stack_images)
 
+
+class MultiTransformMulticlassClsDataset(MultiTransformDataset, OTXMulticlassClsDataset):
+    """MultiTransformDataset class for multi-class classification Semi-SL task."""
 
 class OTXMultilabelClsDataset(OTXDataset[MultilabelClsDataEntity]):
     """OTXDataset class for multi-label classification task."""

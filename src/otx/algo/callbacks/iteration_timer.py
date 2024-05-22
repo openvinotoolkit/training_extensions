@@ -103,10 +103,16 @@ class IterationTimer(Callback):
         batch_idx: int,
     ) -> None:
         """Log iteration data time on the training batch start."""
+        if isinstance(batch, dict):
+            batch_size = 0
+            for key in batch:
+                batch_size += batch[key].batch_size
+        else:
+            batch_size = batch.batch_size
         self._on_batch_start(
             pl_module=pl_module,
             phase="train",
-            batch_size=batch.batch_size,
+            batch_size=batch_size,
         )
 
     def on_train_batch_end(

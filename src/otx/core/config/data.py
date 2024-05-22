@@ -91,6 +91,25 @@ class VisualPromptingConfig:
 
 
 @dataclass
+class SemiSLConfig(SubsetConfig):
+    """DTO for unlabeled data."""
+
+    data_root: str | None = None
+    data_format: str = "image_dir"
+
+    batch_size: int = 0
+    subset_name: str = "unlabeled"
+
+    # TODO: Enable weak & strong augmentation (Consistency regularization)
+    transforms: dict[str, list[dict[str, Any]]] | list[dict[str, Any]] = field(default_factory=list)
+
+    transform_lib_type: TransformLibType = TransformLibType.TORCHVISION
+    num_workers: int = 2
+    sampler: SamplerConfig = field(default_factory=lambda: SamplerConfig())
+    to_tv_image: bool = True
+
+
+@dataclass
 class DataModuleConfig:
     """DTO for data module configuration."""
 
@@ -100,6 +119,7 @@ class DataModuleConfig:
     train_subset: SubsetConfig
     val_subset: SubsetConfig
     test_subset: SubsetConfig
+    unlabeled_subset: SemiSLConfig = field(default_factory=lambda: SemiSLConfig())
 
     tile_config: TileConfig = field(default_factory=lambda: TileConfig())
     vpm_config: VisualPromptingConfig = field(default_factory=lambda: VisualPromptingConfig())

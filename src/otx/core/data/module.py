@@ -6,7 +6,7 @@
 from __future__ import annotations
 
 import logging as log
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Iterable
 
 from datumaro import Dataset as DmDataset
 from lightning import LightningDataModule
@@ -60,6 +60,16 @@ class OTXDataModule(LightningDataModule):
         dataset = DmDataset.import_from(self.config.data_root, format=self.config.data_format)
         if self.task != "H_LABEL_CLS":
             dataset = pre_filtering(dataset, self.config.data_format, self.config.unannotated_items_ratio)
+
+        # For Semi-SL
+        unlabeled_dataset = None
+        if self.config.unlabeled_subset.data_root is not None:
+            unlabeled_dataset = DmDataset.import_from(
+                self.config.unlabeled_subset.data_root,
+                format=self.config.unlabeled_subset.data_format,
+                subset=self.config.unlabeled_subset.subset_name,
+            )
+
         if config.tile_config.enable_tiler and config.tile_config.enable_adaptive_tiling:
             adapt_tile_config(config.tile_config, dataset=dataset)
 
@@ -119,6 +129,19 @@ class OTXDataModule(LightningDataModule):
             label_infos += [self.subsets[name].label_info]
             log.info(f"Add name: {name}, self.subsets: {self.subsets}")
 
+        # For Semi-SL
+        if unlabeled_dataset is not None:
+            name = self.config.unlabeled_subset.subset_name
+            dm_subset = unlabeled_dataset.subsets()[name]
+            unlabeled_dataset = OTXDatasetFactory.create(
+                task=self.task,
+                dm_subset=dm_subset.as_dataset(),
+                mem_cache_handler=mem_cache_handler,
+                cfg_subset=self.config.unlabeled_subset,
+                cfg_data_module=config,
+            )
+            self.subsets[name] = unlabeled_dataset
+
         if self._is_meta_info_valid(label_infos) is False:
             msg = "All data meta infos of subsets should be the same."
             raise ValueError(msg)
@@ -137,7 +160,7 @@ class OTXDataModule(LightningDataModule):
             raise KeyError(msg)
         return dataset
 
-    def train_dataloader(self) -> DataLoader:
+    def train_dataloader(self) -> Iterable:
         """Get train dataloader."""
         config = self.config.train_subset
         dataset = self._get_dataset(config.subset_name)
@@ -164,7 +187,17 @@ class OTXDataModule(LightningDataModule):
                     "sampler": RandomSampler(dataset, num_samples=num_samples),
                 },
             )
-        return DataLoader(**common_args)
+        dataloader: DataLoader = DataLoader(**common_args)
+        if (unlabeled_dataloader := self.unlabeled_dataloader()) is not None:
+            # https://lightning.ai/docs/pytorch/stable/data/iterables.html
+            from lightning.pytorch.utilities import CombinedLoader
+
+            iterables = {
+                "labeled": dataloader,
+                "unlabeled": unlabeled_dataloader,
+            }
+            return CombinedLoader(iterables, mode="min_size")
+        return dataloader
 
     def val_dataloader(self) -> DataLoader:
         """Get val dataloader."""
@@ -210,6 +243,27 @@ class OTXDataModule(LightningDataModule):
             collate_fn=dataset.collate_fn,
             persistent_workers=config.num_workers > 0,
         )
+
+    def unlabeled_dataloader(self) -> DataLoader | None:
+        """Get unlabeled dataloader."""
+        config = self.config.unlabeled_subset
+        if self.config.unlabeled_subset.data_root is None:
+            return None
+
+        dataset = self._get_dataset(config.subset_name)
+        sampler = instantiate_sampler(config.sampler, dataset=dataset, batch_size=config.batch_size)
+        common_args = {
+            "dataset": dataset,
+            "batch_size": config.batch_size,
+            "num_workers": config.num_workers,
+            "pin_memory": True,
+            "collate_fn": dataset.collate_fn,
+            "persistent_workers": config.num_workers > 0,
+            "sampler": sampler,
+            "shuffle": sampler is None,
+        }
+
+        return DataLoader(**common_args)
 
     def setup(self, stage: str) -> None:
         """Setup for each stage."""

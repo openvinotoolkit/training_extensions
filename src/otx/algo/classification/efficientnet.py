@@ -14,7 +14,13 @@ from torch import Tensor, nn
 
 from otx.algo.classification.backbones.efficientnet import EFFICIENTNET_VERSION, OTXEfficientNet
 from otx.algo.classification.classifier.base_classifier import ImageClassifier
-from otx.algo.classification.heads import HierarchicalLinearClsHead, LinearClsHead, MultiLabelLinearClsHead
+from otx.algo.classification.classifier.semi_sl_classifier import SemiSLClassifier
+from otx.algo.classification.heads import (
+    HierarchicalLinearClsHead,
+    LinearClsHead,
+    MultiLabelLinearClsHead,
+    OTXSemiSLLinearClsHead,
+)
 from otx.algo.classification.losses.asymmetric_angular_loss_with_ignore import AsymmetricAngularLossWithIgnore
 from otx.algo.classification.necks.gap import GlobalAveragePooling
 from otx.algo.classification.utils import get_classification_layers
@@ -41,6 +47,7 @@ if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
 
     from otx.core.metrics import MetricCallable
+
 
 
 class EfficientNetForMulticlassCls(OTXMulticlassClsModel):
@@ -170,6 +177,50 @@ class EfficientNetForMulticlassCls(OTXMulticlassClsModel):
             return self.model(images=image, mode="explain")
 
         return self.model(images=image, mode="tensor")
+
+
+class EfficientNetForSemiSL(EfficientNetForMulticlassCls):
+    def _build_model(self, num_classes: int) -> nn.Module:
+        return SemiSLClassifier(
+            backbone=OTXEfficientNet(version=self.version, pretrained=True),
+            neck=GlobalAveragePooling(dim=2),
+            head=OTXSemiSLLinearClsHead(
+                num_classes=num_classes,
+                in_channels=1280,
+                topk=(1, 5) if num_classes >= 5 else (1,),
+                loss=nn.CrossEntropyLoss(reduction="none"),
+            ),
+        )
+
+    def _customize_inputs(self, inputs: MulticlassClsBatchDataEntity) -> dict[str, Any]:
+        if self.training:
+            mode = "loss"
+        elif self.explain_mode:
+            mode = "explain"
+        else:
+            mode = "predict"
+
+        if isinstance(inputs, dict):
+            labeled_inputs = inputs["labeled"]
+            unlabeled_inputs = inputs["unlabeled"]
+            return {
+                "images": {
+                    "labeled": labeled_inputs.images,
+                    "unlabeled": unlabeled_inputs.images,
+                },
+                "labels": torch.cat(labeled_inputs.labels, dim=0),
+                "imgs_info": {
+                    "labeled": labeled_inputs.imgs_info,
+                    "unlabeled": unlabeled_inputs.imgs_info,
+                },
+                "mode": mode,
+            }
+        return {
+            "images": inputs.stacked_images,
+            "labels": torch.cat(inputs.labels, dim=0),
+            "imgs_info": inputs.imgs_info,
+            "mode": mode,
+        }
 
 
 class EfficientNetForMultilabelCls(OTXMultilabelClsModel):
