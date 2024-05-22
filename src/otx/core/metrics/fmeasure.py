@@ -6,12 +6,18 @@
 from __future__ import annotations
 
 import logging
+from typing import TYPE_CHECKING
 
 import numpy as np
 from torch import Tensor
 from torchmetrics import Metric
+from torchmetrics.detection.mean_ap import MeanAveragePrecision
 
 from otx.core.types.label import LabelInfo
+
+if TYPE_CHECKING:
+    from pycocotools.coco import COCO
+
 
 logger = logging.getLogger()
 ALL_CLASSES_NAME = "All Classes"
@@ -707,11 +713,13 @@ class FMeasure(Metric):
         self._f_measure_per_label = {label: result.best_f_measure_per_class[label] for label in self.classes}
 
         if best_confidence_threshold is not None:
+            print("############### a model has the best_confidence_threshold", best_confidence_threshold)
             (index,) = np.where(
                 np.isclose(list(np.arange(*boxes_pair.confidence_range)), best_confidence_threshold),
             )
             computed_f_measure = result.per_confidence.all_classes_f_measure_curve[int(index)]
         else:
+            print("############### a model doesn't have the best_confidence_threshold")
             self._f_measure_per_confidence = {
                 "xs": list(np.arange(*boxes_pair.confidence_range)),
                 "ys": result.per_confidence.all_classes_f_measure_curve,
@@ -780,8 +788,141 @@ class FMeasure(Metric):
         return self.label_info.label_names
 
 
+class MeanAveragePrecisionFMeasure(MeanAveragePrecision):
+    """Computes the f-measure (also known as F1-score) for a resultset.
+
+    The f-measure is typically used in detection (localization) tasks to obtain a single number that balances precision
+    and recall.
+
+    To determine whether a predicted box matches a ground truth box an overlap measured
+    is used based on a minimum
+    intersection-over-union (IoU), by default a value of 0.5 is used.
+
+    In addition spurious results are eliminated by applying non-max suppression (NMS) so that two predicted boxes with
+    IoU > threshold are reduced to one. This threshold can be determined automatically by setting `vary_nms_threshold`
+    to True.
+
+    Args:
+        label_info (int): Dataclass including label information.
+        vary_nms_threshold (bool): if True the maximal F-measure is determined by optimizing for different NMS threshold
+            values. Defaults to False.
+        cross_class_nms (bool): Whether non-max suppression should be applied cross-class. If True this will eliminate
+            boxes with sufficient overlap even if they are from different classes. Defaults to False.
+    """
+
+    def __init__(
+        self,
+        label_info: LabelInfo,
+    ):
+        super().__init__()
+        self.label_info: LabelInfo = label_info
+
+        self._f_measure_per_confidence: dict | None = None
+        self._best_confidence_threshold: float | None = None
+        self._f_measure = float("-inf")
+
+        self.reset()
+
+    def compute(self, best_confidence_threshold: float | None = None) -> dict:
+        """Compute f1 score metric.
+
+        Args:
+            best_confidence_threshold (float | None): Pre-defined best confidence threshold.
+                If this value is None, then FMeasure will find best confidence threshold and
+                store it as member variable. Defaults to None.
+        """
+        map_results = super().compute()
+
+        coco_preds, coco_target = self._get_coco_datasets(average=self.average)
+
+        def _get_obs_f1(coco_dataset: COCO, include_score: bool) -> list[list[tuple]]:
+            obs: list = []
+            anns_per_image: list = []
+            prev_image_id = 0
+            for item in coco_dataset.anns.values():
+                item["bbox"][2] += item["bbox"][0]
+                item["bbox"][3] += item["bbox"][1]
+                if prev_image_id != item["image_id"]:
+                    obs.append(anns_per_image)
+                    anns_per_image = []
+                    prev_image_id = item["image_id"]
+                if include_score:
+                    anns_per_image.append((*item["bbox"], self.classes[item["category_id"]], item["score"]))
+                else:
+                    anns_per_image.append((*item["bbox"], self.classes[item["category_id"]]))
+            return obs
+
+        preds = _get_obs_f1(coco_preds, include_score=True)
+        target = _get_obs_f1(coco_target, include_score=False)
+
+        boxes_pair = _FMeasureCalculator(target, preds)
+        result = boxes_pair.evaluate_detections(classes=self.classes)
+
+        self._f_measure_per_confidence = {
+            "xs": list(np.arange(*boxes_pair.confidence_range)),
+            "ys": result.per_confidence.all_classes_f_measure_curve,
+        }
+        computed_f_measure = result.best_f_measure
+        best_confidence_threshold = result.per_confidence.best_threshold
+
+        if self._f_measure < computed_f_measure:
+            self._f_measure = result.best_f_measure
+            self._best_confidence_threshold = best_confidence_threshold
+
+        f1_result = {"f1-score": Tensor([computed_f_measure])}
+
+        return {**map_results, **f1_result}
+
+    @property
+    def f_measure(self) -> float:
+        """Returns the f-measure."""
+        return self._f_measure
+
+    @property
+    def f_measure_per_label(self) -> dict[str, float]:
+        """Returns the f-measure per label as dictionary (Label -> Score)."""
+        return self._f_measure_per_label
+
+    @property
+    def f_measure_per_confidence(self) -> None | dict:
+        """Returns the curve for f-measure per confidence as dictionary if exists."""
+        return self._f_measure_per_confidence
+
+    @property
+    def best_confidence_threshold(self) -> float:
+        """Returns best confidence threshold as ScoreMetric if exists."""
+        if self._best_confidence_threshold is None:
+            msg = (
+                "Cannot obtain best_confidence_threshold updated previously. "
+                "Please execute self.update(best_confidence_threshold=None) first."
+            )
+            raise RuntimeError(msg)
+        return self._best_confidence_threshold
+
+    @property
+    def f_measure_per_nms(self) -> None | dict:
+        """Returns the curve for f-measure per nms threshold as CurveMetric if exists."""
+        return self._f_measure_per_nms
+
+    @property
+    def best_nms_threshold(self) -> None | float:
+        """Returns the best NMS threshold as ScoreMetric if exists."""
+        return self._best_nms_threshold
+
+    @property
+    def classes(self) -> list[str]:
+        """Class information of dataset."""
+        return self.label_info.label_names
+
+
 def _f_measure_callable(label_info: LabelInfo) -> FMeasure:
     return FMeasure(label_info=label_info)
 
 
+def _mean_ap_f_measure_callable(label_info: LabelInfo) -> FMeasure:
+    return MeanAveragePrecisionFMeasure(label_info=label_info)
+
+
 FMeasureCallable = _f_measure_callable
+
+MeanAPFMeasureCallable = _mean_ap_f_measure_callable

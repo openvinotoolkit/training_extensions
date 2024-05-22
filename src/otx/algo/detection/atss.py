@@ -31,7 +31,7 @@ from otx.core.data.entity.detection import DetBatchDataEntity, DetBatchPredEntit
 from otx.core.data.entity.utils import stack_batch
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter
-from otx.core.metrics.mean_ap import MeanAPCallable
+from otx.core.metrics.fmeasure import MeanAPFMeasureCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
 from otx.core.model.detection import ExplainableOTXDetModel
 from otx.core.schedulers import LRSchedulerListCallable
@@ -53,7 +53,7 @@ class ATSS(ExplainableOTXDetModel):
         label_info: LabelInfoTypes,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
-        metric: MetricCallable = MeanAPCallable,
+        metric: MetricCallable = MeanAPFMeasureCallable,
         torch_compile: bool = False,
         tile_config: TileConfig = TileConfig(enable_tiler=False),
     ) -> None:
@@ -242,10 +242,11 @@ class MobileNetV2ATSS(ATSS):
         }
         test_cfg = DictConfig(
             {
-                "nms": {"type": "nms", "iou_threshold": 0.45},
+                "nms": {"type": "nms", "iou_threshold": 0.6},
                 "min_bbox_size": 0,
-                "score_thr": 0.02,
-                "max_per_img": 200,
+                "score_thr": 0.05,
+                "max_per_img": 100,
+                "nms_pre": 1000,
             },
         )
         backbone = _build_model_including_pytorchcv(
@@ -312,10 +313,11 @@ class ResNeXt101ATSS(ATSS):
         }
         test_cfg = DictConfig(
             {
-                "nms": {"type": "nms", "iou_threshold": 0.45},
+                "nms": {"type": "nms", "iou_threshold": 0.6},
                 "min_bbox_size": 0,
-                "score_thr": 0.02,
-                "max_per_img": 200,
+                "score_thr": 0.05,
+                "max_per_img": 100,
+                "nms_pre": 1000,
             },
         )
         backbone = ResNeXt(
