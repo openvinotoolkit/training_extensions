@@ -84,7 +84,7 @@ Install OpenVINO™ Training Extensions for users (XPU devices)
 
         .. code-block:: shell
 
-            pip install '.[xpu]' --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
+            pip install '.[xpu_full]' --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
 
         .. note::
 
