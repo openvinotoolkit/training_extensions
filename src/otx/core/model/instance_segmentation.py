@@ -12,12 +12,12 @@ from typing import TYPE_CHECKING, Any, Callable, Iterator, Literal
 
 import numpy as np
 import torch
-from mmengine.structures.instance_data import InstanceData
-from model_api.models import Model
 from model_api.tilers import InstanceSegmentationTiler
 from torchvision import tv_tensors
 
 from otx.algo.explain.explain_algo import InstSegExplainAlgo, feature_vector_fn
+from otx.algo.instance_segmentation.mmdet.models.detectors.two_stage import TwoStageDetector
+from otx.algo.utils.mmengine_utils import InstanceData
 from otx.core.config.data import TileConfig
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.instance_segmentation import InstanceSegBatchDataEntity, InstanceSegBatchPredEntity
@@ -35,8 +35,7 @@ from otx.core.utils.tile_merge import InstanceSegTileMerge
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
     from mmdet.models.data_preprocessors import DetDataPreprocessor
-    from mmdet.models.detectors import TwoStageDetector
-    from mmdet.structures import OptSampleList
+    from model_api.adapters import OpenvinoAdapter
     from model_api.models.utils import InstanceSegmentationResult
     from omegaconf import DictConfig
     from torch import nn
@@ -113,7 +112,7 @@ class OTXInstanceSegModel(OTXModel[InstanceSegBatchDataEntity, InstanceSegBatchP
         return super()._export_parameters.wrap(
             model_type="MaskRCNN",
             task_type="instance_segmentation",
-            confidence_threshold=self.hparams.get("best_confidence_threshold", None),
+            confidence_threshold=self.hparams.get("best_confidence_threshold", 0.05),
             iou_threshold=0.5,
             tile_config=self.tile_config if self.tile_config.enable_tiler else None,
         )
@@ -255,32 +254,28 @@ class ExplainableOTXInstanceSegModel(OTXInstanceSegModel):
         )
 
     @staticmethod
+    @torch.no_grad()
     def _forward_explain_inst_seg(
         self: TwoStageDetector,
-        inputs: torch.Tensor,
-        data_samples: OptSampleList = None,
+        entity: InstanceSegBatchDataEntity,
         mode: str = "tensor",  # noqa: ARG004
     ) -> dict[str, torch.Tensor]:
         """Forward func of the BaseDetector instance, which located in is in ExplainableOTXInstanceSegModel().model."""
-        # Workaround to remove grads for model parameters, since after class patching
-        # convolutions are failing since thay can't process gradients
-        for param in self.parameters():
-            param.requires_grad = False
-
-        x = self.extract_feat(inputs)
+        x = self.extract_feat(entity.images)
 
         feature_vector = self.feature_vector_fn(x)
-        predictions = self.get_results_from_head(x, data_samples)
+        predictions = self.get_results_from_head(x, entity)
 
         if isinstance(predictions, tuple) and isinstance(predictions[0], torch.Tensor):
             # Export case, consists of tensors
             # For OV task saliency map are generated on MAPI side
             saliency_map = torch.empty(1, dtype=torch.uint8)
-
         elif isinstance(predictions, list) and isinstance(predictions[0], InstanceData):
             # Predict case, consists of InstanceData
             saliency_map = self.explain_fn(predictions)
-            predictions = self.add_pred_to_datasample(data_samples, predictions)
+        else:
+            msg = f"Unexpected predictions type: {type(predictions)}"
+            raise TypeError(msg)
 
         return {
             "predictions": predictions,
@@ -291,7 +286,7 @@ class ExplainableOTXInstanceSegModel(OTXInstanceSegModel):
     def get_results_from_head(
         self,
         x: tuple[torch.Tensor],
-        data_samples: OptSampleList | None,
+        entity: InstanceSegBatchDataEntity,
     ) -> tuple[torch.Tensor] | list[InstanceData]:
         """Get the results from the head of the instance segmentation model.
 
@@ -303,12 +298,12 @@ class ExplainableOTXInstanceSegModel(OTXInstanceSegModel):
             tuple[torch.Tensor] | list[InstanceData]: The predicted results from the head of the model.
             Tuple for the Export case, list for the Predict case.
         """
-        from otx.algo.instance_segmentation.rtmdet_inst import RTMDetInst
+        from otx.algo.instance_segmentation.rtmdet_inst import RTMDetInstTiny
 
-        if isinstance(self, RTMDetInst):
-            return self.model.bbox_head.predict(x, data_samples, rescale=False)
-        rpn_results_list = self.model.rpn_head.predict(x, data_samples, rescale=False)
-        return self.model.roi_head.predict(x, rpn_results_list, data_samples, rescale=True)
+        if isinstance(self, RTMDetInstTiny):
+            return self.model.bbox_head.predict(x, entity, rescale=False)
+        rpn_results_list = self.model.rpn_head.predict(x, entity, rescale=False)
+        return self.model.roi_head.predict(x, rpn_results_list, entity, rescale=True)
 
     def get_explain_fn(self) -> Callable:
         """Returns explain function."""
@@ -433,7 +428,6 @@ class MMDetInstanceSegCompatibleModel(ExplainableOTXInstanceSegModel):
                     "img_id": img_info.img_idx,
                     "img_shape": img_info.img_shape,
                     "ori_shape": img_info.ori_shape,
-                    "pad_shape": img_info.pad_shape,
                     "scale_factor": img_info.scale_factor,
                     "ignored_labels": img_info.ignored_labels,
                 },
@@ -470,6 +464,8 @@ class MMDetInstanceSegCompatibleModel(ExplainableOTXInstanceSegModel):
                     losses[loss_name] = loss_value
                 elif isinstance(loss_value, list):
                     losses[loss_name] = sum(_loss.mean() for _loss in loss_value)
+            # pop acc from losses as it is not needed
+            losses.pop("acc", None)
             return losses
 
         scores: list[torch.Tensor] = []
@@ -579,22 +575,12 @@ class OVInstanceSegmentationModel(
                 and overlap: {self.model.tiles_overlap}",
         )
 
-    def _create_model(self) -> Model:
-        """Create a OV model with help of Model API."""
-        from model_api.adapters import OpenvinoAdapter, create_core, get_user_config
+    def _get_hparams_from_adapter(self, model_adapter: OpenvinoAdapter) -> None:
+        """Reads model configuration from ModelAPI OpenVINO adapter.
 
-        plugin_config = get_user_config("AUTO", str(self.num_requests), "AUTO")
-        if self.use_throughput_mode:
-            plugin_config["PERFORMANCE_HINT"] = "THROUGHPUT"
-
-        model_adapter = OpenvinoAdapter(
-            create_core(),
-            self.model_name,
-            max_num_requests=self.num_requests,
-            plugin_config=plugin_config,
-            model_parameters=self.model_adapter_parameters,
-        )
-
+        Args:
+            model_adapter (OpenvinoAdapter): target adapter to read the config
+        """
         if model_adapter.model.has_rt_info(["model_info", "confidence_threshold"]):
             best_confidence_threshold = model_adapter.model.get_rt_info(["model_info", "confidence_threshold"]).value
             self.hparams["best_confidence_threshold"] = float(best_confidence_threshold)
@@ -607,8 +593,6 @@ class OVInstanceSegmentationModel(
             )
             log.warning(msg)
             self.hparams["best_confidence_threshold"] = None
-
-        return Model.create_model(model_adapter, model_type=self.model_type, configuration=self.model_api_configuration)
 
     def _customize_outputs(
         self,
@@ -631,15 +615,16 @@ class OVInstanceSegmentationModel(
                     bbox,
                     format="XYXY",
                     canvas_size=inputs.imgs_info[-1].img_shape,
+                    device=self.device,
                 ),
             )
             # NOTE: OTX 1.5 filter predictions with result_based_confidence_threshold,
             # but OTX 2.0 doesn't have it in configuration.
             _masks = [output.mask for output in output_objects]
             _masks = np.stack(_masks) if len(_masks) else []
-            scores.append(torch.tensor([output.score for output in output_objects]))
-            masks.append(torch.tensor(_masks))
-            labels.append(torch.tensor([output.id - 1 for output in output_objects]))
+            scores.append(torch.tensor([output.score for output in output_objects], device=self.device))
+            masks.append(torch.tensor(_masks, device=self.device))
+            labels.append(torch.tensor([output.id - 1 for output in output_objects], device=self.device))
 
         if outputs and outputs[0].saliency_map:
             predicted_s_maps = []

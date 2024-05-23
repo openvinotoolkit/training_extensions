@@ -12,7 +12,6 @@ from typing import TYPE_CHECKING
 
 import torch
 import torch.nn.functional
-from mmengine.structures import InstanceData
 from torch import Tensor, nn
 from torch.nn.modules.utils import _pair
 
@@ -21,9 +20,10 @@ from otx.algo.detection.utils.utils import empty_instances
 from otx.algo.instance_segmentation.mmdet.models.layers import multiclass_nms_torch
 from otx.algo.instance_segmentation.mmdet.structures.bbox import scale_boxes
 from otx.algo.modules.base_module import BaseModule
+from otx.algo.utils.mmengine_utils import InstanceData
 
 if TYPE_CHECKING:
-    from mmengine.config import ConfigDict
+    from omegaconf import DictConfig
 
 
 class BBoxHead(BaseModule):
@@ -43,7 +43,7 @@ class BBoxHead(BaseModule):
         predict_box_type: str = "hbox",
         reg_class_agnostic: bool = False,
         reg_decoded_bbox: bool = False,
-        init_cfg: ConfigDict | dict | list[ConfigDict | dict] | None = None,
+        init_cfg: DictConfig | dict | list[DictConfig | dict] | None = None,
     ) -> None:
         super().__init__(init_cfg=init_cfg)
         if not with_cls and not with_reg:
@@ -178,7 +178,7 @@ class BBoxHead(BaseModule):
         cls_scores: tuple[Tensor],
         bbox_preds: tuple[Tensor],
         batch_img_metas: list[dict],
-        rcnn_test_cfg: ConfigDict,
+        rcnn_test_cfg: DictConfig,
         rescale: bool = False,
     ) -> list[InstanceData]:
         """Transform a batch of output features extracted from the head into bbox results.
@@ -233,7 +233,7 @@ class BBoxHead(BaseModule):
         cls_score: Tensor,
         bbox_pred: Tensor,
         img_meta: dict,
-        rcnn_test_cfg: ConfigDict,
+        rcnn_test_cfg: DictConfig,
         rescale: bool = False,
     ) -> InstanceData:
         """Transform a single image's features extracted from the head into bbox results.

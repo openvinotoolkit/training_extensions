@@ -3,16 +3,6 @@ model:
   init_args:
     arch: "deit-tiny"
 
-    multiclass_loss_callable:
-      class_path: torch.nn.CrossEntropyLoss
-
-    multilabel_loss_callable:
-      class_path: otx.algo.classification.losses.AsymmetricAngularLossWithIgnore
-      init_args:
-        reduction: sum
-        gamma_neg: 1.0
-        gamma_pos: 0.0
-
     optimizer:
       class_path: torch.optim.AdamW
       init_args:

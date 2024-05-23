@@ -61,7 +61,8 @@ def process_saliency_maps_in_pred_entity(
 
         processed_saliency_maps = process_saliency_maps(saliency_map, explain_config, pred_labels, ori_img_shapes)
 
-        return predict_result_per_batch.wrap(saliency_map=processed_saliency_maps)
+        predict_result_per_batch.saliency_map = processed_saliency_maps
+        return predict_result_per_batch
 
     return [_process(predict_result_per_batch) for predict_result_per_batch in predict_result]
 
@@ -183,7 +184,7 @@ def _get_image_data_name(
     subset_name: str = "test",
 ) -> tuple[np.array, str]:
     subset = datamodule.subsets[subset_name]
-    item = subset.dm_subset.as_dataset()[img_id]
+    item = subset.dm_subset[img_id]
     img = item.media_as(Image)
     img_data, _ = subset._get_img_data_and_shape(img)  # noqa: SLF001
     image_save_name = "".join([char if char.isalnum() else "_" for char in item.id])

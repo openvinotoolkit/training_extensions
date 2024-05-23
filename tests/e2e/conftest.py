@@ -87,43 +87,48 @@ def pytest_configure(config):
 @pytest.fixture()
 def fxt_target_dataset_per_task(fxt_ci_data_root) -> dict:
     return {
-        "multi_class_cls": Path(fxt_ci_data_root / "v2/multiclass_classification/multiclass_CUB_small/1"),
-        "multi_label_cls": Path(fxt_ci_data_root / "v2/multilabel_classification/multilabel_CUB_small/1"),
-        "h_label_cls": Path(fxt_ci_data_root / "v2/hlabel_classification/hlabel_CUB_small/1"),
-        "detection": Path(fxt_ci_data_root / "v2/detection/pothole_small/1"),
-        "rotated_detection": Path(fxt_ci_data_root / "v2/detection/pothole_small/1"),
-        "instance_segmentation": Path(fxt_ci_data_root / "v2/instance_seg/wgisd_small/1"),
-        "semantic_segmentation": Path(fxt_ci_data_root / "v2/semantic_seg/kvasir_small/1"),
-        "action_classification": Path(fxt_ci_data_root / "v2/action/action_classification/ucf_kinetics_5percent_small"),
-        "action_detection": Path(fxt_ci_data_root / "v2/action/action_detection/UCF101_ava_5percent"),
-        "visual_prompting": Path(fxt_ci_data_root / "v2/visual_prompting/wgisd_small/1"),
-        "zero_shot_visual_prompting": Path(
+        OTXTaskType.MULTI_CLASS_CLS: Path(fxt_ci_data_root / "v2/multiclass_classification/multiclass_CUB_small/1"),
+        OTXTaskType.MULTI_LABEL_CLS: Path(fxt_ci_data_root / "v2/multilabel_classification/multilabel_CUB_small/1"),
+        OTXTaskType.H_LABEL_CLS: Path(fxt_ci_data_root / "v2/hlabel_classification/hlabel_CUB_small/1"),
+        OTXTaskType.DETECTION: Path(fxt_ci_data_root / "v2/detection/pothole_small/1"),
+        OTXTaskType.ROTATED_DETECTION: Path(fxt_ci_data_root / "v2/detection/pothole_small/1"),
+        OTXTaskType.INSTANCE_SEGMENTATION: {
+            "non_tiling": Path(fxt_ci_data_root / "v2/instance_seg/wgisd_small/1"),
+            "tiling": Path(fxt_ci_data_root / "v2/tiling_instance_seg/vitens_aeromonas_small/1"),
+        },
+        OTXTaskType.SEMANTIC_SEGMENTATION: Path(fxt_ci_data_root / "v2/semantic_seg/kvasir_small/1"),
+        OTXTaskType.ACTION_CLASSIFICATION: Path(
+            fxt_ci_data_root / "v2/action/action_classification/ucf_kinetics_5percent_small",
+        ),
+        OTXTaskType.ACTION_DETECTION: Path(fxt_ci_data_root / "v2/action/action_detection/UCF101_ava_5percent"),
+        OTXTaskType.VISUAL_PROMPTING: Path(fxt_ci_data_root / "v2/visual_prompting/wgisd_small/1"),
+        OTXTaskType.ZERO_SHOT_VISUAL_PROMPTING: Path(
             fxt_ci_data_root / "v2/zero_shot_visual_prompting/coco_car_person_medium",
         ),
-        "anomaly_classification": Path(fxt_ci_data_root / "v2/anomaly/mvtec/bottle_small/1"),
-        "anomaly_detection": Path(fxt_ci_data_root / "v2/anomaly/mvtec/hazelnut_large"),
-        "anomaly_segmentation": Path(fxt_ci_data_root / "v2/anomaly/mvtec/hazelnut_large"),
+        OTXTaskType.ANOMALY_CLASSIFICATION: Path(fxt_ci_data_root / "v2/anomaly/mvtec/bottle_small/1"),
+        OTXTaskType.ANOMALY_DETECTION: Path(fxt_ci_data_root / "v2/anomaly/mvtec/hazelnut_large"),
+        OTXTaskType.ANOMALY_SEGMENTATION: Path(fxt_ci_data_root / "v2/anomaly/mvtec/hazelnut_large"),
     }
 
 
 @pytest.fixture()
 def fxt_cli_override_command_per_task() -> dict:
     return {
-        "multi_class_cls": [],
-        "multi_label_cls": [],
-        "h_label_cls": [],
-        "detection": [],
-        "rotated_detection": [],
-        "instance_segmentation": [],
-        "semantic_segmentation": [],
-        "action_classification": [],
-        "action_detection": [
+        OTXTaskType.MULTI_CLASS_CLS: [],
+        OTXTaskType.MULTI_LABEL_CLS: [],
+        OTXTaskType.H_LABEL_CLS: [],
+        OTXTaskType.DETECTION: [],
+        OTXTaskType.ROTATED_DETECTION: [],
+        OTXTaskType.INSTANCE_SEGMENTATION: [],
+        OTXTaskType.SEMANTIC_SEGMENTATION: [],
+        OTXTaskType.ACTION_CLASSIFICATION: [],
+        OTXTaskType.ACTION_DETECTION: [
             "--model.topk",
             "3",
         ],
-        "visual_prompting": [],
-        "zero_shot_visual_prompting": [],
-        "anomaly_classification": [],
-        "anomaly_detection": [],
-        "anomaly_segmentation": [],
+        OTXTaskType.VISUAL_PROMPTING: [],
+        OTXTaskType.ZERO_SHOT_VISUAL_PROMPTING: [],
+        OTXTaskType.ANOMALY_CLASSIFICATION: [],
+        OTXTaskType.ANOMALY_DETECTION: [],
+        OTXTaskType.ANOMALY_SEGMENTATION: [],
     }

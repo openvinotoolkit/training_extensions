@@ -2,6 +2,8 @@
 # SPDX-License-Identifier: Apache-2.0
 from __future__ import annotations
 
+import uuid
+from pathlib import Path
 from typing import TYPE_CHECKING
 from unittest.mock import MagicMock
 
@@ -9,7 +11,7 @@ import cv2
 import numpy as np
 import pytest
 from datumaro.components.annotation import Bbox, Label, LabelCategories, Mask, Polygon
-from datumaro.components.dataset import DatasetSubset
+from datumaro.components.dataset import Dataset as DmDataset
 from datumaro.components.dataset_base import DatasetItem
 from datumaro.components.media import Image
 from otx.core.data.dataset.action_classification import (
@@ -66,8 +68,8 @@ def fxt_mem_cache_handler(monkeypatch) -> MemCacheHandlerBase:
     MemCacheHandlerSingleton.delete()
 
 
-@pytest.fixture(params=["bytes", "numpy"])
-def fxt_dm_item(request) -> DatasetItem:
+@pytest.fixture(params=["bytes", "file"])
+def fxt_dm_item(request, tmpdir) -> DatasetItem:
     np_img = np.zeros(shape=(10, 10, 3), dtype=np.uint8)
     np_img[:, :, 0] = 0  # Set 0 for B channel
     np_img[:, :, 1] = 1  # Set 1 for G channel
@@ -76,11 +78,14 @@ def fxt_dm_item(request) -> DatasetItem:
     if request.param == "bytes":
         _, np_bytes = cv2.imencode(".png", np_img)
         media = Image.from_bytes(np_bytes.tobytes())
-    elif request.param == "numpy":
-        media = Image.from_numpy(np_img)
+        media.path = ""
+    elif request.param == "file":
+        fname = str(uuid.uuid4())
+        fpath = str(Path(tmpdir) / f"{fname}.png")
+        cv2.imwrite(fpath, np_img)
+        media = Image.from_file(fpath)
     else:
         raise ValueError(request.param)
-    media.path = ""
 
     return DatasetItem(
         id="item",
@@ -97,10 +102,8 @@ def fxt_dm_item(request) -> DatasetItem:
 
 @pytest.fixture()
 def fxt_mock_dm_subset(mocker: MockerFixture, fxt_dm_item: DatasetItem) -> MagicMock:
-    mock_dm_subset = mocker.MagicMock(spec=DatasetSubset)
-    mock_dm_subset.name = fxt_dm_item.subset
-    mock_dm_subset.as_dataset().__getitem__.return_value = fxt_dm_item
-    mock_dm_subset.__iter__ = lambda _: iter([fxt_dm_item])  # avoid `return_value` here to allow multiple iterations
+    mock_dm_subset = mocker.MagicMock(spec=DmDataset)
+    mock_dm_subset.__getitem__.return_value = fxt_dm_item
     mock_dm_subset.__len__.return_value = 1
     mock_dm_subset.categories().__getitem__.return_value = LabelCategories.from_iterable(_LABEL_NAMES)
     return mock_dm_subset

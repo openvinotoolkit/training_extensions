@@ -18,8 +18,9 @@ from otx.algo.detection.losses.weighted_loss import smooth_l1_loss
 from otx.algo.detection.utils.utils import multi_apply
 
 if TYPE_CHECKING:
-    from mmengine.config import InstanceData
     from omegaconf import DictConfig
+
+    from otx.algo.utils.mmengine_utils import InstanceData
 
 
 # This class and its supporting functions below lightly adapted from the mmdet SSDHead available at:

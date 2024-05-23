@@ -17,7 +17,7 @@ from torch.autograd import Function
 from .base_roi_extractor import BaseRoIExtractor
 
 if TYPE_CHECKING:
-    from mmengine.config import ConfigDict
+    from omegaconf import DictConfig
 
 
 # ruff: noqa: ARG004
@@ -97,11 +97,11 @@ class SingleRoIExtractor(BaseRoIExtractor):
 
     def __init__(
         self,
-        roi_layer: ConfigDict | dict,
+        roi_layer: DictConfig | dict,
         out_channels: int,
         featmap_strides: list[int],
         finest_scale: int = 56,
-        init_cfg: ConfigDict | dict | list[ConfigDict | dict] | None = None,
+        init_cfg: DictConfig | dict | list[DictConfig | dict] | None = None,
     ) -> None:
         super().__init__(
             roi_layer=roi_layer,
