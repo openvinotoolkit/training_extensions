@@ -297,7 +297,7 @@ class SegLabelInfo(LabelInfo):
         """
         if num_classes == 1:
             # binary segmentation
-            label_names = ["Background", "label_0"]
+            label_names = ["background", "label_0"]
             return SegLabelInfo(label_names=label_names, label_groups=[label_names])
 
         return super().from_num_classes(num_classes)

@@ -172,7 +172,7 @@ class OTXSegmentationDataset(OTXDataset[SegDataEntity]):
             to_tv_image,
         )
 
-        if self.has_polygons and "background" not in self.label_info.label_names:
+        if self.has_polygons and "background" not in [label_name.lower() for label_name in self.label_info.label_names]:
             # insert background class at index 0 since polygons represent only objects
             self.label_info.label_names.insert(0, "background")
 
