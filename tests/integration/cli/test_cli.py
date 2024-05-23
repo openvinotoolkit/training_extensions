@@ -311,9 +311,6 @@ def test_otx_explain_e2e(
     ckpt_file = latest_dir / "train" / "best_checkpoint.ckpt"
     assert ckpt_file.exists()
 
-    if "tile" in recipe:
-        pytest.skip("Explain is not supported for tiling yet.")
-
     if ("_cls" not in task) and (task not in ["detection", "instance_segmentation"]):
         pytest.skip("Supported only for classification, detection and instance segmentation task.")
 

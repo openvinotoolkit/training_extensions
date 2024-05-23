@@ -226,11 +226,6 @@ class ExplainableOTXDetModel(OTXDetectionModel):
         mode: str = "tensor",
     ) -> dict[str, torch.Tensor]:
         """Forward func of the BaseDetector instance, which located in is in ExplainableOTXDetModel().model."""
-        # Workaround to remove grads for model parameters, since after class patching
-        # convolutions are failing since thay can't process gradients
-        for param in self.parameters():
-            param.requires_grad = False
-
         backbone_feat = self.extract_feat(entity.images)
         bbox_head_feat = self.bbox_head.forward(backbone_feat)
 
@@ -243,9 +238,6 @@ class ExplainableOTXDetModel(OTXDetectionModel):
 
         elif mode == "tensor":
             predictions = bbox_head_feat
-        elif mode == "loss":
-            # Temporary condition to pass undetermined "test_forward_train" test, values aren't used
-            predictions = self.bbox_head.loss(backbone_feat, entity)["loss_cls"]
         else:
             msg = f'Invalid mode "{mode}".'
             raise RuntimeError(msg)
@@ -263,9 +255,11 @@ class ExplainableOTXDetModel(OTXDetectionModel):
 
         # SSD-like heads also have background class
         background_class = isinstance(self.model.bbox_head, SSDHead)
+        tiling_mode = self.tile_config.enable_tiler if hasattr(self, "tile_config") else False
         explainer = DetClassProbabilityMap(
             num_classes=self.num_classes + background_class,
             num_anchors=self.get_num_anchors(),
+            use_cls_softmax=not tiling_mode,
         )
         return explainer.func
 
