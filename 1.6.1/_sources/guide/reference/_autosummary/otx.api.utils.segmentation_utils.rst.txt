@@ -1,0 +1,34 @@
+otx.api.utils.segmentation\_utils
+=================================
+
+.. automodule:: otx.api.utils.segmentation_utils
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      create_annotation_from_segmentation_map
+      create_hard_prediction_from_soft_prediction
+      get_subcontours
+      mask_from_annotation
+      mask_from_dataset_item
+      mask_from_file
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

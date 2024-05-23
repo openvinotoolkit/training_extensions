@@ -1,0 +1,29 @@
+otx.algorithms.detection.adapters.mmdet.models.assigners
+========================================================
+
+.. automodule:: otx.algorithms.detection.adapters.mmdet.models.assigners
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      CustomMaxIoUAssigner
+   
+   
+
+   
+   
+   
+
+
+

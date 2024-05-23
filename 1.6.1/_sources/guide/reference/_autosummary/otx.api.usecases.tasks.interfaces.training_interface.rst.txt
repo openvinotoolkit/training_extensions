@@ -1,0 +1,29 @@
+otx.api.usecases.tasks.interfaces.training\_interface
+=====================================================
+
+.. automodule:: otx.api.usecases.tasks.interfaces.training_interface
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      ITrainingTask
+   
+   
+
+   
+   
+   
+
+
+

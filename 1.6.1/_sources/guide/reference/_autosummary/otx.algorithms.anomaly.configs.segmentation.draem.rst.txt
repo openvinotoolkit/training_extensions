@@ -1,0 +1,29 @@
+otx.algorithms.anomaly.configs.segmentation.draem
+=================================================
+
+.. automodule:: otx.algorithms.anomaly.configs.segmentation.draem
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      DraemAnomalySegmentationConfig
+   
+   
+
+   
+   
+   
+
+
+

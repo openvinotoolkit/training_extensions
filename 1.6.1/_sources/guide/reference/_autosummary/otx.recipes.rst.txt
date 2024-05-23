@@ -1,0 +1,31 @@
+otx.recipes
+===========
+
+.. automodule:: otx.recipes
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   otx.recipes.stages
+

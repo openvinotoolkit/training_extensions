@@ -1,0 +1,32 @@
+otx.algorithms.detection.adapters
+=================================
+
+.. automodule:: otx.algorithms.detection.adapters
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   otx.algorithms.detection.adapters.mmdet
+   otx.algorithms.detection.adapters.openvino
+

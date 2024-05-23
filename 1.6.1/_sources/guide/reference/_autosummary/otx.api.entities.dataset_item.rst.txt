@@ -1,0 +1,30 @@
+otx.api.entities.dataset\_item
+==============================
+
+.. automodule:: otx.api.entities.dataset_item
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      DatasetItemEntity
+      DatasetItemEntityWithID
+   
+   
+
+   
+   
+   
+
+
+

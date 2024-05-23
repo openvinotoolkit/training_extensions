@@ -1,0 +1,29 @@
+otx.api.utils.anomaly\_utils
+============================
+
+.. automodule:: otx.api.utils.anomaly_utils
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      create_detection_annotation_from_anomaly_heatmap
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

@@ -1,0 +1,30 @@
+otx.api.entities.resultset
+==========================
+
+.. automodule:: otx.api.entities.resultset
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      ResultSetEntity
+      ResultsetPurpose
+   
+   
+
+   
+   
+   
+
+
+

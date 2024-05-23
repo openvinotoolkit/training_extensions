@@ -1,0 +1,32 @@
+otx.cli.tools.utils.demo
+========================
+
+.. automodule:: otx.cli.tools.utils.demo
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   otx.cli.tools.utils.demo.images_capture
+   otx.cli.tools.utils.demo.visualization
+

@@ -1,0 +1,34 @@
+otx.api.entities.model
+======================
+
+.. automodule:: otx.api.entities.model
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      ModelConfiguration
+      ModelEntity
+      ModelFormat
+      ModelOptimizationType
+      ModelPrecision
+      OptimizationMethod
+   
+   
+
+   
+   
+   
+
+
+

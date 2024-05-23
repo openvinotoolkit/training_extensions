@@ -1,0 +1,23 @@
+otx.algorithms.segmentation.configs.ocr\_lite\_hrnet\_18\_mod2.semisl.model
+===========================================================================
+
+.. automodule:: otx.algorithms.segmentation.configs.ocr_lite_hrnet_18_mod2.semisl.model
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

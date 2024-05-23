@@ -1,0 +1,37 @@
+otx.api.entities.shapes.shape
+=============================
+
+.. automodule:: otx.api.entities.shapes.shape
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      Shape
+      ShapeEntity
+      ShapeType
+   
+   
+
+   
+   
+   .. rubric:: Exceptions
+
+   .. autosummary::
+   
+      GeometryException
+   
+   
+
+
+
