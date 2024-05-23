@@ -11,7 +11,6 @@ from contextlib import contextmanager
 from typing import TYPE_CHECKING, Any, Callable, Iterator, Literal
 
 import torch
-from model_api.models import Model
 from model_api.tilers import DetectionTiler
 from torchvision import tv_tensors
 
@@ -31,6 +30,7 @@ from otx.core.utils.tile_merge import DetectionTileMerge
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
     from mmdet.models.data_preprocessors import DetDataPreprocessor
+    from model_api.adapters import OpenvinoAdapter
     from model_api.models.utils import DetectionResult
     from omegaconf import DictConfig
     from torch import nn
@@ -226,11 +226,6 @@ class ExplainableOTXDetModel(OTXDetectionModel):
         mode: str = "tensor",
     ) -> dict[str, torch.Tensor]:
         """Forward func of the BaseDetector instance, which located in is in ExplainableOTXDetModel().model."""
-        # Workaround to remove grads for model parameters, since after class patching
-        # convolutions are failing since thay can't process gradients
-        for param in self.parameters():
-            param.requires_grad = False
-
         backbone_feat = self.extract_feat(entity.images)
         bbox_head_feat = self.bbox_head.forward(backbone_feat)
 
@@ -243,9 +238,6 @@ class ExplainableOTXDetModel(OTXDetectionModel):
 
         elif mode == "tensor":
             predictions = bbox_head_feat
-        elif mode == "loss":
-            # Temporary condition to pass undetermined "test_forward_train" test, values aren't used
-            predictions = self.bbox_head.loss(backbone_feat, entity)["loss_cls"]
         else:
             msg = f'Invalid mode "{mode}".'
             raise RuntimeError(msg)
@@ -263,9 +255,11 @@ class ExplainableOTXDetModel(OTXDetectionModel):
 
         # SSD-like heads also have background class
         background_class = isinstance(self.model.bbox_head, SSDHead)
+        tiling_mode = self.tile_config.enable_tiler if hasattr(self, "tile_config") else False
         explainer = DetClassProbabilityMap(
             num_classes=self.num_classes + background_class,
             num_anchors=self.get_num_anchors(),
+            use_cls_softmax=not tiling_mode,
         )
         return explainer.func
 
@@ -520,22 +514,12 @@ class OVDetectionModel(OVModel[DetBatchDataEntity, DetBatchPredEntity]):
                 and overlap: {self.model.tiles_overlap}",
         )
 
-    def _create_model(self) -> Model:
-        """Create a OV model with help of Model API."""
-        from model_api.adapters import OpenvinoAdapter, create_core, get_user_config
+    def _get_hparams_from_adapter(self, model_adapter: OpenvinoAdapter) -> None:
+        """Reads model configuration from ModelAPI OpenVINO adapter.
 
-        plugin_config = get_user_config("AUTO", str(self.num_requests), "AUTO")
-        if self.use_throughput_mode:
-            plugin_config["PERFORMANCE_HINT"] = "THROUGHPUT"
-
-        model_adapter = OpenvinoAdapter(
-            create_core(),
-            self.model_name,
-            max_num_requests=self.num_requests,
-            plugin_config=plugin_config,
-            model_parameters=self.model_adapter_parameters,
-        )
-
+        Args:
+            model_adapter (OpenvinoAdapter): target adapter to read the config
+        """
         if model_adapter.model.has_rt_info(["model_info", "confidence_threshold"]):
             best_confidence_threshold = model_adapter.model.get_rt_info(["model_info", "confidence_threshold"]).value
             self.hparams["best_confidence_threshold"] = float(best_confidence_threshold)
@@ -548,8 +532,6 @@ class OVDetectionModel(OVModel[DetBatchDataEntity, DetBatchPredEntity]):
             )
             log.warning(msg)
             self.hparams["best_confidence_threshold"] = None
-
-        return Model.create_model(model_adapter, model_type=self.model_type, configuration=self.model_api_configuration)
 
     def _customize_outputs(
         self,
@@ -583,10 +565,11 @@ class OVDetectionModel(OVModel[DetBatchDataEntity, DetBatchPredEntity]):
                     bbox,
                     format="XYXY",
                     canvas_size=inputs.imgs_info[-1].img_shape,
+                    device=self.device,
                 ),
             )
-            scores.append(torch.tensor([output.score for output in output_objects]))
-            labels.append(torch.tensor([output.id - label_shift for output in output_objects]))
+            scores.append(torch.tensor([output.score for output in output_objects], device=self.device))
+            labels.append(torch.tensor([output.id - label_shift for output in output_objects], device=self.device))
 
         if outputs and outputs[0].saliency_map.size > 1:
             # Squeeze dim 4D => 3D, (1, num_classes, H, W) => (num_classes, H, W)

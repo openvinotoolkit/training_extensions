@@ -43,7 +43,13 @@ def image_decode_context() -> Iterator[None]:
     ori_image_color_scale = IMAGE_COLOR_CHANNEL.get()
 
     IMAGE_BACKEND.set(ImageBackend.PIL)
-    IMAGE_COLOR_CHANNEL.set(DatumaroImageColorChannel.COLOR_BGR)
+    # TODO(vinnamki): This should be changed to
+    # if to_rgb:
+    #     IMAGE_COLOR_CHANNEL.set(DatumaroImageColorChannel.COLOR_RGB)
+    # else:
+    #     IMAGE_COLOR_CHANNEL.set(DatumaroImageColorChannel.COLOR_BGR)
+    # after merging https://github.com/openvinotoolkit/datumaro/pull/1501
+    IMAGE_COLOR_CHANNEL.set(DatumaroImageColorChannel.COLOR_RGB)
 
     yield
 
@@ -138,12 +144,12 @@ class OTXDataset(Dataset, Generic[T_OTXDataEntity]):
         if (img_data := self.mem_cache_handler.get(key=key)[0]) is not None:
             return img_data, img_data.shape[:2]
 
-        if self.image_color_channel == ImageColorChannel.RGB:
-            img_data = cv2.cvtColor(img.data, cv2.COLOR_BGR2RGB)
-        else:
-            # [TODO]: Need to check if using image_decode_context is appropriate.
-            with image_decode_context():
-                img_data = img.data
+        with image_decode_context():
+            img_data = (
+                img.data
+                if self.image_color_channel == ImageColorChannel.RGB
+                else cv2.cvtColor(img.data, cv2.COLOR_RGB2BGR)
+            )
 
         if img_data is None:
             msg = "Cannot get image data"

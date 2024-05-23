@@ -90,6 +90,7 @@ def otx_install(
     requirements_dict = get_requirements("otx")
     # Add base and openvino requirements.
     requirements = requirements_dict["base"]
+    requirements_dict.pop("xpu", None)
     if option == "full":
         for extra in requirements_dict:
             requirements.extend(requirements_dict[extra])
@@ -146,9 +147,9 @@ def otx_install(
 
         # TODO(harimkang): Remove this reinstalling after resolving conflict with anomalib==1.0.1
         # https://github.com/openvinotoolkit/training_extensions/actions/runs/8531851027/job/23372146228?pr=3258#step:5:2587
-        status_code = create_command("install").main(["jsonargparse==4.27.7"])
+        status_code = create_command("install").main(["jsonargparse==4.28.0"])
         if status_code != 0:
-            msg = "Cannot install jsonargparse==4.27.7"
+            msg = "Cannot install jsonargparse==4.28.0"
             raise RuntimeError(msg)
 
     # Patch MMAction2 with src/otx/cli/patches/mmaction2.patch
