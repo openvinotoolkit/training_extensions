@@ -6,7 +6,7 @@
 from __future__ import annotations
 
 import logging as log
-import pickle
+import pickle  # nosec  B403   used pickle for dumping object
 from collections import defaultdict
 from copy import deepcopy
 from itertools import product

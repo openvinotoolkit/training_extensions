@@ -57,24 +57,20 @@ class PackSegInputs(MMSegPackInputs):
 
         img_shape = data_samples.img_shape
         ori_shape = data_samples.ori_shape
-        pad_shape = data_samples.metainfo.get("pad_shape", img_shape)
         scale_factor = data_samples.metainfo.get("scale_factor", (1.0, 1.0))
 
         image_info = deepcopy(results["__otx__"].img_info)
         image_info.img_shape = img_shape
         image_info.ori_shape = ori_shape
         image_info.scale_factor = scale_factor
-        image_info.pad_shape = pad_shape
 
         masks = data_samples.gt_sem_seg.data
 
-        data_entity = SegDataEntity(
+        return SegDataEntity(
             image=image,
             img_info=image_info,
             gt_seg_map=masks,
         )
-        data_entity.img_info.pad_shape = pad_shape
-        return data_entity
 
 
 class MMSegTransformLib(MMCVTransformLib):

@@ -7,22 +7,17 @@
 """MMDet BaseDetector."""
 from __future__ import annotations
 
-from abc import ABCMeta, abstractmethod
-from typing import TYPE_CHECKING, TypeAlias
+from typing import TYPE_CHECKING
 
-import torch
-from mmdet.structures.det_data_sample import DetDataSample
-from mmengine.model import BaseModel
-from torch import Tensor
-
-ForwardResults: TypeAlias = dict[str, torch.Tensor] | list[DetDataSample] | tuple[torch.Tensor] | torch.Tensor
+from otx.algo.modules.base_module import BaseModule
 
 if TYPE_CHECKING:
-    from mmengine.config import ConfigDict
-    from mmengine.structures import InstanceData
+    import torch
+
+    from otx.algo.utils.mmengine_utils import InstanceData
 
 
-class BaseDetector(BaseModel, metaclass=ABCMeta):
+class BaseDetector(BaseModule):
     """Base class for detectors.
 
     Args:
@@ -32,13 +27,6 @@ class BaseDetector(BaseModel, metaclass=ABCMeta):
        init_cfg (dict or ConfigDict, optional): the config to control the
            initialization. Defaults to None.
     """
-
-    def __init__(
-        self,
-        data_preprocessor: ConfigDict | dict | None = None,
-        init_cfg: ConfigDict | dict | list[ConfigDict | dict] | None = None,
-    ):
-        super().__init__(data_preprocessor=data_preprocessor, init_cfg=init_cfg)
 
     @property
     def with_neck(self) -> bool:
@@ -52,7 +40,11 @@ class BaseDetector(BaseModel, metaclass=ABCMeta):
             hasattr(self, "bbox_head") and self.bbox_head is not None
         )
 
-    def forward(self, inputs: torch.Tensor, data_samples: list[DetDataSample], mode: str = "tensor") -> ForwardResults:
+    def forward(
+        self,
+        entity: torch.Tensor,
+        mode: str = "tensor",
+    ) -> dict[str, torch.Tensor] | list[InstanceData] | tuple[torch.Tensor] | torch.Tensor:
         """The unified entry for a forward process in both training and test.
 
         The method should accept three modes: "tensor", "predict" and "loss":
@@ -83,58 +75,8 @@ class BaseDetector(BaseModel, metaclass=ABCMeta):
             - If ``mode="loss"``, return a dict of tensor.
         """
         if mode == "loss":
-            return self.loss(inputs, data_samples)
+            return self.loss(entity)
         if mode == "predict":
-            return self.predict(inputs, data_samples)
+            return self.predict(entity)
         msg = f"Invalid mode {mode}. Only supports loss and predict mode."
         raise RuntimeError(msg)
-
-    @abstractmethod
-    def loss(self, batch_inputs: Tensor, batch_data_samples: list[DetDataSample]) -> dict | tuple:
-        """Calculate losses from a batch of inputs and data samples."""
-
-    @abstractmethod
-    def predict(self, batch_inputs: Tensor, batch_data_samples: list[DetDataSample]) -> list[DetDataSample]:
-        """Predict results from a batch of inputs and data samples with post-processing."""
-
-    @abstractmethod
-    def _forward(self, batch_inputs: Tensor, batch_data_samples: list[DetDataSample]) -> tuple:
-        """Network forward process.
-
-        Usually includes backbone, neck and head forward without any post-
-        processing.
-        """
-
-    @abstractmethod
-    def extract_feat(self, batch_inputs: Tensor) -> tuple:
-        """Extract features from images."""
-
-    def add_pred_to_datasample(
-        self,
-        data_samples: list[DetDataSample],
-        results_list: list[InstanceData],
-    ) -> list[DetDataSample]:
-        """Add predictions to `DetDataSample`.
-
-        Args:
-            data_samples (list[:obj:`DetDataSample`], optional): A batch of
-                data samples that contain annotations and predictions.
-            results_list (list[:obj:`InstanceData`]): Detection results of
-                each image.
-
-        Returns:
-            list[:obj:`DetDataSample`]: Detection results of the
-            input images. Each DetDataSample usually contain
-            'pred_instances'. And the ``pred_instances`` usually
-            contains following keys.
-
-                - scores (Tensor): Classification scores, has a shape
-                    (num_instance, )
-                - labels (Tensor): Labels of bboxes, has a shape
-                    (num_instances, ).
-                - bboxes (Tensor): Has a shape (num_instances, 4),
-                    the last dimension 4 arrange as (x1, y1, x2, y2).
-        """
-        for data_sample, pred_instances in zip(data_samples, results_list):
-            data_sample.pred_instances = pred_instances
-        return data_samples

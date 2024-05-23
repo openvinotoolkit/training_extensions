@@ -13,7 +13,7 @@ from otx.core.types.transformer_libs import TransformLibType
 from .dataset.base import OTXDataset, Transforms
 
 if TYPE_CHECKING:
-    from datumaro import DatasetSubset
+    from datumaro import Dataset as DmDataset
 
     from otx.core.config.data import DataModuleConfig, SubsetConfig
     from otx.core.data.mem_cache import MemCacheHandlerBase
@@ -68,7 +68,7 @@ class OTXDatasetFactory:
     def create(  # noqa: PLR0911 # ignore too many return statements
         cls: type[OTXDatasetFactory],
         task: OTXTaskType,
-        dm_subset: DatasetSubset,
+        dm_subset: DmDataset,
         mem_cache_handler: MemCacheHandlerBase,
         cfg_subset: SubsetConfig,
         cfg_data_module: DataModuleConfig,

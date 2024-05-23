@@ -272,7 +272,6 @@ class MMSegCompatibleModel(OTXSegmentationModel):
                     "img_id": img_info.img_idx,
                     "img_shape": img_info.img_shape,
                     "ori_shape": img_info.ori_shape,
-                    "pad_shape": img_info.pad_shape,
                     "scale_factor": img_info.scale_factor,
                     "ignored_labels": img_info.ignored_labels,
                 },
@@ -365,7 +364,7 @@ class OVSegmentationModel(OVModel[SegBatchDataEntity, SegBatchPredEntity]):
                 images=inputs.images,
                 imgs_info=inputs.imgs_info,
                 scores=[],
-                masks=[tv_tensors.Mask(mask.resultImage) for mask in outputs],
+                masks=[tv_tensors.Mask(mask.resultImage, device=self.device) for mask in outputs],
                 saliency_map=predicted_s_maps,
                 feature_vector=predicted_f_vectors,
             )
@@ -375,7 +374,7 @@ class OVSegmentationModel(OVModel[SegBatchDataEntity, SegBatchPredEntity]):
             images=inputs.images,
             imgs_info=inputs.imgs_info,
             scores=[],
-            masks=[tv_tensors.Mask(mask.resultImage) for mask in outputs],
+            masks=[tv_tensors.Mask(mask.resultImage, device=self.device) for mask in outputs],
         )
 
     def _convert_pred_entity_to_compute_metric(

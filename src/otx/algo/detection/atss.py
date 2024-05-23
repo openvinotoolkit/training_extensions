@@ -80,7 +80,7 @@ class ATSS(ExplainableOTXDetModel):
 
     def _customize_inputs(self, entity: DetBatchDataEntity) -> dict[str, Any]:
         if isinstance(entity.images, list):
-            entity.images = stack_batch(entity.images, pad_size_divisor=32)
+            entity.images, entity.imgs_info = stack_batch(entity.images, entity.imgs_info, pad_size_divisor=32)
         inputs: dict[str, Any] = {}
 
         inputs["entity"] = entity
@@ -241,11 +241,10 @@ class MobileNetV2ATSS(ATSS):
         }
         test_cfg = DictConfig(
             {
-                "nms": {"type": "nms", "iou_threshold": 0.6},
+                "nms": {"type": "nms", "iou_threshold": 0.45},
                 "min_bbox_size": 0,
-                "score_thr": 0.05,
-                "max_per_img": 100,
-                "nms_pre": 1000,
+                "score_thr": 0.02,
+                "max_per_img": 200,
             },
         )
         backbone = _build_model_including_pytorchcv(
@@ -288,7 +287,6 @@ class MobileNetV2ATSS(ATSS):
             in_channels=64,
             stacked_convs=4,
             feat_channels=64,
-            init_cfg={"type": "Xavier", "layer": "Conv2d", "distribution": "uniform"},
             train_cfg=train_cfg,
             test_cfg=test_cfg,
         )
@@ -313,11 +311,10 @@ class ResNeXt101ATSS(ATSS):
         }
         test_cfg = DictConfig(
             {
-                "nms": {"type": "nms", "iou_threshold": 0.6},
+                "nms": {"type": "nms", "iou_threshold": 0.45},
                 "min_bbox_size": 0,
-                "score_thr": 0.05,
-                "max_per_img": 100,
-                "nms_pre": 1000,
+                "score_thr": 0.02,
+                "max_per_img": 200,
             },
         )
         backbone = ResNeXt(
@@ -361,7 +358,6 @@ class ResNeXt101ATSS(ATSS):
             in_channels=256,
             stacked_convs=4,
             feat_channels=256,
-            init_cfg={"type": "Xavier", "layer": "Conv2d", "distribution": "uniform"},
             train_cfg=train_cfg,
             test_cfg=test_cfg,
         )

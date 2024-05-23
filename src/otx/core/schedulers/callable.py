@@ -14,8 +14,6 @@ from torch.optim import Optimizer
 from torch.optim.lr_scheduler import LRScheduler
 from torch.optim.lr_scheduler import ReduceLROnPlateau as TorchReduceLROnPlateau
 
-from otx.core.utils.jsonargparse import ClassType, lazy_instance
-
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable
 
@@ -92,44 +90,6 @@ class SchedulerCallableSupportHPO:
     def __call__(self, optimizer: Optimizer) -> LRScheduler:
         """Create `torch.optim.LRScheduler` instance for the given parameters."""
         return self.scheduler_init(optimizer, **self.scheduler_kwargs)
-
-    def to_lazy_instance(self) -> ClassType:
-        """Return lazy instance of this class.
-
-        Because OTX is rely on jsonargparse library,
-        the default value of class initialization
-        argument should be the lazy instance.
-        Please refer to https://jsonargparse.readthedocs.io/en/stable/#default-values
-        for more details.
-
-        Examples:
-            This is an example to implement a new model with a `StepLR` scheduler and
-            custom configurations as a default.
-
-            ```python
-            class MyAwesomeMulticlassClsModel(OTXMulticlassClsModel):
-                def __init__(
-                    self,
-                    num_classes: int,
-                    optimizer: OptimizerCallable = DefaultOptimizerCallable,
-                    scheduler: LRSchedulerCallable | LRSchedulerListCallable = SchedulerCallableSupportHPO(
-                        scheduler_cls=StepLR,
-                        scheduler_kwargs={
-                            "step_size": 10,
-                            "gamma": 0.5,
-                        },
-                    ).to_lazy_instance(),
-                    metric: MetricCallable = MultiClassClsMetricCallable,
-                    torch_compile: bool = False,
-                ) -> None:
-                ...
-            ```
-        """
-        return lazy_instance(
-            SchedulerCallableSupportHPO,
-            scheduler_cls=self.scheduler_path,
-            scheduler_kwargs=self.scheduler_kwargs,
-        )
 
     def __reduce__(self) -> str | tuple[Any, ...]:
         return self.__class__, (

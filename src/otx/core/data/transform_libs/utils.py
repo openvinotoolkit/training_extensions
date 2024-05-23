@@ -8,11 +8,24 @@ from __future__ import annotations
 import copy
 import functools
 import inspect
+import itertools
 import weakref
+from typing import Sequence
 
+import cv2
 import numpy as np
 import torch
+from datumaro import Polygon
+from shapely import geometry
 from torch import BoolTensor, Tensor
+
+CV2_INTERP_CODES = {
+    "nearest": cv2.INTER_NEAREST,
+    "bilinear": cv2.INTER_LINEAR,
+    "bicubic": cv2.INTER_CUBIC,
+    "area": cv2.INTER_AREA,
+    "lanczos": cv2.INTER_LANCZOS4,
+}
 
 
 class cache_randomness:  # noqa: N801
@@ -124,12 +137,50 @@ def rescale_bboxes(boxes: Tensor, scale_factor: tuple[float, float]) -> Tensor:
     return boxes * scale_factor
 
 
-def translate_bboxes(boxes: Tensor, distances: tuple[float, float]) -> Tensor:
+def rescale_masks(
+    masks: np.ndarray,
+    scale_factor: float | tuple[float, float],
+    interpolation: str = "nearest",
+) -> np.ndarray:
+    """Rescale masks as large as possible while keeping the aspect ratio."""
+    h, w = masks.shape[1:]
+    new_size = rescale_size((w, h), scale_factor)
+    return np.stack(
+        [cv2.resize(mask, new_size, interpolation=CV2_INTERP_CODES[interpolation]) for mask in masks],
+    )
+
+
+def rescale_polygons(polygons: list[Polygon], scale_factor: float | tuple[float, float]) -> list[Polygon]:
+    """Rescale polygons as large as possible while keeping the aspect ratio.
+
+    Args:
+        polygons (np.ndarray): Polygons to be rescaled.
+        scale_factor (float | tuple[float, float]): Scale factor to be applied to polygons.
+
+    Returns:
+        (np.ndarray) : The rescaled polygons.
+    """
+    if isinstance(scale_factor, float):
+        w_scale = h_scale = scale_factor
+    else:
+        # TODO (sungchul): update comment with what the issue was
+        w_scale, h_scale = scale_factor  # TODO (sungchul): ticket no. 138831
+
+    resized_polygons = []
+    for polygon in polygons:
+        p = np.asarray(polygon.points).copy()
+        p[0::2] *= w_scale
+        p[1::2] *= h_scale
+        resized_polygons.append(Polygon(points=p.tolist(), label=polygon.label, z_order=polygon.z_order))
+    return resized_polygons
+
+
+def translate_bboxes(boxes: Tensor, distances: Sequence[float]) -> Tensor:
     """Translate boxes in-place.
 
     Args:
         boxes (Tensor): Bounding boxes to be translated.
-        distances (tuple[float, float]): Translate distances. The first
+        distances (Sequence[float]): Translate distances. The first
             is horizontal distance and the second is vertical distance.
 
     Returns:
@@ -137,6 +188,114 @@ def translate_bboxes(boxes: Tensor, distances: tuple[float, float]) -> Tensor:
     """
     assert len(distances) == 2  # noqa: S101
     return boxes + boxes.new_tensor(distances).repeat(2)
+
+
+def translate_masks(
+    masks: np.ndarray,
+    out_shape: tuple[int, int],
+    offset: int | float,
+    direction: str = "horizontal",
+    border_value: int | tuple[int] = 0,
+    interpolation: str = "bilinear",
+) -> np.ndarray:
+    """Translate the masks.
+
+    Args:
+        masks (np.ndarray): Masks to be translated.
+        out_shape (tuple[int]): Shape for output mask, format (h, w).
+        offset (int | float): The offset for translate.
+        direction (str): The translate direction, either "horizontal" or "vertical".
+        border_value (int | tuple[int]): Border value. Default 0 for masks.
+        interpolation (str): Interpolation method, accepted values are
+            'nearest', 'bilinear', 'bicubic', 'area', 'lanczos'. Defaults to
+            'bilinear'.
+
+    Returns:
+        (np.ndarray): Translated BitmapMasks.
+    """
+    dtype = masks.dtype
+    if masks.shape[-2:] != out_shape:
+        empty_masks = np.zeros((masks.shape[0], *out_shape), dtype=dtype)
+        min_h = min(out_shape[0], masks.shape[1])
+        min_w = min(out_shape[1], masks.shape[2])
+        empty_masks[:, :min_h, :min_w] = masks[:, :min_h, :min_w]
+        masks = empty_masks
+
+    # from https://github.com/open-mmlab/mmcv/blob/v2.1.0/mmcv/image/geometric.py#L740-L788
+    height, width = masks.shape[1:]
+    if masks.ndim == 2:
+        channels = 1
+    elif masks.ndim == 3:
+        channels = masks.shape[0]
+
+    if isinstance(border_value, int):
+        border_value = tuple([border_value] * channels)  # type: ignore[assignment]
+    elif isinstance(border_value, tuple):
+        assert len(border_value) == channels, (  # noqa: S101
+            "Expected the num of elements in tuple equals the channels"
+            f"of input image. Found {len(border_value)} vs {channels}"
+        )
+    else:
+        msg = f"Invalid type {type(border_value)} for `border_value`."
+        raise ValueError(msg)  # noqa: TRY004
+
+    translate_matrix = _get_translate_matrix(offset, direction)
+    translated_masks = cv2.warpAffine(
+        masks.transpose((1, 2, 0)),
+        translate_matrix,
+        (width, height),
+        # Note case when the number elements in `border_value`
+        # greater than 3 (e.g. translating masks whose channels
+        # large than 3) will raise TypeError in `cv2.warpAffine`.
+        # Here simply slice the first 3 values in `border_value`.
+        borderValue=border_value[:3],  # type: ignore[index]
+        flags=CV2_INTERP_CODES[interpolation],
+    )
+
+    if translated_masks.ndim == 2:
+        translated_masks = translated_masks[:, :, None]
+    return translated_masks.transpose((2, 0, 1)).astype(dtype)
+
+
+def translate_polygons(
+    polygons: list[Polygon],
+    out_shape: tuple[int, int],
+    offset: int | float,
+    direction: str = "horizontal",
+    border_value: int | float = 0,
+) -> list[Polygon]:
+    """Translate polygons."""
+    assert (  # noqa: S101
+        border_value is None or border_value == 0
+    ), f"Here border_value is not used, and defaultly should be None or 0. got {border_value}."
+
+    translated_polygons = []
+    for polygon in polygons:
+        p = np.asarray(polygon.points).copy()
+        if direction == "horizontal":
+            p[0::2] = np.clip(p[0::2] + offset, 0, out_shape[1])
+        elif direction == "vertical":
+            p[1::2] = np.clip(p[1::2] + offset, 0, out_shape[0])
+        translated_polygons.append(Polygon(points=p.tolist(), label=polygon.label, z_order=polygon.z_order))
+    return translated_polygons
+
+
+def _get_translate_matrix(offset: int | float, direction: str = "horizontal") -> np.ndarray:
+    """Generate the translate matrix.
+
+    Args:
+        offset (int | float): The offset used for translate.
+        direction (str): The translate direction, either
+            "horizontal" or "vertical".
+
+    Returns:
+        ndarray: The translate matrix with dtype float32.
+    """
+    if direction == "horizontal":
+        translate_matrix = np.float32([[1, 0, offset], [0, 1, 0]])
+    elif direction == "vertical":
+        translate_matrix = np.float32([[1, 0, 0], [0, 1, offset]])
+    return translate_matrix
 
 
 def clip_bboxes(boxes: Tensor, img_shape: tuple[int, int]) -> Tensor:
@@ -429,15 +588,19 @@ def scale_size(
     return int(w * float(scale[0]) + 0.5), int(h * float(scale[1]) + 0.5)
 
 
-def rescale_size(old_size: tuple, scale: float | int | tuple[int, int], return_scale: bool = False) -> tuple:
+def rescale_size(
+    old_size: tuple,
+    scale: float | int | tuple[float, float] | tuple[int, int],
+    return_scale: bool = False,
+) -> tuple:
     """Calculate the new size to be rescaled to.
 
     Args:
         old_size (tuple[int]): The old size (w, h) of image.
-        scale (float | int | tuple[int]): The scaling factor or maximum size.
-            If it is a float number or an integer, then the image will be
-            rescaled by this factor, else if it is a tuple of 2 integers, then
-            the image will be rescaled as large as possible within the scale.
+        scale (float | int | tuple[float] | tuple[int]): The scaling factor or maximum size.
+            If it is a float number, an integer, or a tuple of 2 float numbers,
+            then the image will be rescaled by this factor, else if it is a tuple of 2 integers,
+            then the image will be rescaled as large as possible within the scale.
         return_scale (bool): Whether to return the scaling factor besides the
             rescaled image size.
 
@@ -445,17 +608,25 @@ def rescale_size(old_size: tuple, scale: float | int | tuple[int, int], return_s
         tuple[int]: The new rescaled image size.
     """
     w, h = old_size
+    msg = ""
     if isinstance(scale, (float, int)):
         if scale <= 0:
             msg = f"Invalid scale {scale}, must be positive."
             raise ValueError(msg)
         scale_factor = scale
     elif isinstance(scale, tuple):
-        max_long_edge = max(scale)
-        max_short_edge = min(scale)
-        scale_factor = min(max_long_edge / max(h, w), max_short_edge / min(h, w))
+        if isinstance(scale[0], int):
+            max_long_edge = max(scale)
+            max_short_edge = min(scale)
+            scale_factor = min(max_long_edge / max(h, w), max_short_edge / min(h, w))
+        elif isinstance(scale[0], float):
+            scale_factor = scale  # type: ignore[assignment]
+        else:
+            msg = f"Scale must be a number or tuple of int/float, but got tuple of {type(scale[0])}"
     else:
-        msg = f"Scale must be a number or tuple of int, but got {type(scale)}"
+        msg = f"Scale must be a number or tuple of int/float, but got {type(scale)}"
+
+    if msg:
         raise TypeError(msg)
 
     new_size = scale_size((w, h), scale_factor)
@@ -483,6 +654,29 @@ def flip_image(img: np.ndarray, direction: str = "horizontal") -> np.ndarray:
         return np.flip(img, axis=0)
     else:
         return np.flip(img, axis=(0, 1))
+
+
+def flip_masks(masks: np.ndarray, direction: str = "horizontal") -> np.ndarray:
+    """Flip masks alone the given direction."""
+    assert direction in ("horizontal", "vertical", "diagonal")  # noqa: S101
+
+    return np.stack([flip_image(mask, direction=direction) for mask in masks])
+
+
+def flip_polygons(polygons: list[Polygon], height: int, width: int, direction: str = "horizontal") -> list[Polygon]:
+    """Flip polygons alone the given direction."""
+    flipped_masks = []
+    for polygon in polygons:
+        p = np.asarray(polygon.points).copy()
+        if direction == "horizontal":
+            p[0::2] = width - p[0::2]
+        elif direction == "vertical":
+            p[1::2] = height - p[1::2]
+        else:
+            p[0::2] = width - p[0::2]
+            p[1::2] = height - p[1::2]
+        flipped_masks.append(Polygon(points=p.tolist(), label=polygon.label, z_order=polygon.z_order))
+    return flipped_masks
 
 
 def project_bboxes(boxes: Tensor, homography_matrix: Tensor | np.ndarray) -> Tensor:
@@ -541,3 +735,134 @@ def corner2hbox(corners: Tensor) -> Tensor:
     min_xy = corners.min(dim=-2)[0]
     max_xy = corners.max(dim=-2)[0]
     return torch.cat([min_xy, max_xy], dim=-1)
+
+
+def crop_masks(masks: np.ndarray, bbox: np.ndarray) -> np.ndarray:
+    """Crop each mask by the given bbox."""
+    assert isinstance(bbox, np.ndarray)  # noqa: S101
+    assert bbox.ndim == 1  # noqa: S101
+
+    height, width = masks.shape[1:]
+
+    # clip the boundary
+    bbox = bbox.copy()
+    bbox[0::2] = np.clip(bbox[0::2], 0, width)
+    bbox[1::2] = np.clip(bbox[1::2], 0, height)
+    x1, y1, x2, y2 = bbox
+    w = np.maximum(x2 - x1, 1)
+    h = np.maximum(y2 - y1, 1)
+
+    return masks[:, y1 : y1 + h, x1 : x1 + w]
+
+
+def crop_polygons(polygons: list[Polygon], bbox: np.ndarray, height: int, width: int) -> list[Polygon]:
+    """Crop each polygon by the given bbox."""
+    assert isinstance(bbox, np.ndarray)  # noqa: S101
+    assert bbox.ndim == 1  # noqa: S101
+
+    # clip the boundary
+    bbox = bbox.copy()
+    bbox[0::2] = np.clip(bbox[0::2], 0, width)
+    bbox[1::2] = np.clip(bbox[1::2], 0, height)
+    x1, y1, x2, y2 = bbox
+
+    # reference: https://github.com/facebookresearch/fvcore/blob/main/fvcore/transforms/transform.py
+    crop_box = geometry.box(x1, y1, x2, y2).buffer(0.0)
+    cropped_polygons: list[Polygon] = []
+    # suppress shapely warnings util it incorporates GEOS>=3.11.2
+    # reference: https://github.com/shapely/shapely/issues/1345
+    initial_settings = np.seterr()
+    np.seterr(invalid="ignore")
+    for polygon in polygons:
+        cropped_poly_per_obj: list[Polygon] = []
+
+        p = np.asarray(polygon.points).copy()
+        p = geometry.Polygon(p.reshape(-1, 2)).buffer(0.0)
+        # polygon must be valid to perform intersection.
+        if not p.is_valid:
+            # a dummy polygon to avoid misalignment between masks and boxes
+            cropped_polygons.append(Polygon(points=[0, 0, 0, 0, 0, 0], label=polygon.label, z_order=polygon.z_order))
+            continue
+
+        cropped = p.intersection(crop_box)
+        if cropped.is_empty:
+            # a dummy polygon to avoid misalignment between masks and boxes
+            cropped_polygons.append(Polygon(points=[0, 0, 0, 0, 0, 0], label=polygon.label, z_order=polygon.z_order))
+            continue
+
+        cropped = cropped.geoms if isinstance(cropped, geometry.collection.BaseMultipartGeometry) else [cropped]
+
+        # one polygon may be cropped to multiple ones
+        for poly in cropped:
+            # ignore lines or points
+            if not isinstance(poly, geometry.Polygon) or not poly.is_valid:
+                continue
+
+            coords = np.asarray(poly.exterior.coords)
+
+            # remove an extra identical vertex at the end
+            coords = coords[:-1]
+            coords[:, 0] -= x1
+            coords[:, 1] -= y1
+            cropped_poly_per_obj.append(coords.reshape(-1).tolist())
+
+        # a dummy polygon to avoid misalignment between masks and boxes
+        if len(cropped_poly_per_obj) == 0:
+            cropped_poly_per_obj.append([0, 0, 0, 0, 0, 0])
+
+        cropped_polygons.append(
+            Polygon(points=list(itertools.chain(*cropped_poly_per_obj)), label=polygon.label, z_order=polygon.z_order),
+        )
+
+    np.seterr(**initial_settings)
+    return cropped_polygons
+
+
+def get_bboxes_from_masks(masks: Tensor) -> np.ndarray:
+    """Create boxes from masks."""
+    num_masks = len(masks)
+    bboxes = np.zeros((num_masks, 4), dtype=np.float32)
+
+    x_any = masks.any(axis=1)
+    y_any = masks.any(axis=2)
+    for idx in range(num_masks):
+        x = np.where(x_any[idx, :])[0]
+        y = np.where(y_any[idx, :])[0]
+        if len(x) > 0 and len(y) > 0:
+            # use +1 for x_max and y_max so that the right and bottom
+            # boundary of instance masks are fully included by the box
+            bboxes[idx, :] = np.array([x[0], y[0], x[-1] + 1, y[-1] + 1], dtype=np.float32)
+    return bboxes
+
+
+def get_bboxes_from_polygons(polygons: list[Polygon], height: int, width: int) -> np.ndarray:
+    """Create boxes from polygons."""
+    num_polygons = len(polygons)
+    boxes = np.zeros((num_polygons, 4), dtype=np.float32)
+    for idx, polygon in enumerate(polygons):
+        # simply use a number that is big enough for comparison with coordinates
+        xy_min = np.array([width * 2, height * 2], dtype=np.float32)
+        xy_max = np.zeros(2, dtype=np.float32)
+
+        xy = np.array(polygon.points).reshape(-1, 2).astype(np.float32)
+        xy_min = np.minimum(xy_min, np.min(xy, axis=0))
+        xy_max = np.maximum(xy_max, np.max(xy, axis=0))
+        boxes[idx, :2] = xy_min
+        boxes[idx, 2:] = xy_max
+    return boxes
+
+
+def area_polygon(x: np.ndarray, y: np.ndarray) -> np.ndarray:
+    """Compute the area of a component of a polygon.
+
+    Using the shoelace formula:
+    https://stackoverflow.com/questions/24467972/calculate-area-of-polygon-given-x-y-coordinates
+
+    Args:
+        x (ndarray): x coordinates of the component
+        y (ndarray): y coordinates of the component
+
+    Return:
+        (float): the are of the component
+    """
+    return 0.5 * np.abs(np.dot(x, np.roll(y, 1)) - np.dot(y, np.roll(x, 1)))

@@ -67,6 +67,22 @@ docs = [
     "sphinxemoji",
     "nbsphinx",
 ]
+xpu = [
+    "torch==2.1.0.post2",
+    "torchvision==0.16.0.post2",
+    "intel-extension-for-pytorch==2.1.30+xpu",
+    "oneccl_bind_pt==2.1.300+xpu",
+    "lightning==2.1.2",
+    "pytorchcv",
+    "timm",
+    "openvino==2024.0",
+    "openvino-dev==2024.0",
+    "openvino-model-api==0.2.0",
+    "onnx==1.16.0",
+    "onnxconverter-common==1.14.0",
+    "nncf==2.9.0",
+    "anomalib[core]==1.0.1",
+]
 base = [
     "torch==2.1.1",
     "lightning==2.1.2",
@@ -78,6 +94,7 @@ base = [
     "onnx==1.16.0",
     "onnxconverter-common==1.14.0",
     "nncf==2.9.0",
+    "anomalib[core]==1.0.1",
 ]
 mmlab = [
     "mmdet==3.2.0",
@@ -88,9 +105,6 @@ mmlab = [
     # Without the pip cache, oss2 will sometimes install to a lower version. This is related to the installation of the mmlab library.
     # This causes an error when training the mm model, so fix the version first.
     "oss2==2.18.5",
-]
-anomaly = [
-    "anomalib[core]==1.0.1",
 ]
 
 [project.scripts]
@@ -136,6 +150,7 @@ omit = [
     "src/otx/tools/*",
     "**/mmconfigs/*",
     "**/mmdeploy/*",
+    "**/exportable_code/*",
 ]
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #

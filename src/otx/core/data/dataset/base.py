@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 """Base class for OTXDataset."""
+
 from __future__ import annotations
 
 from abc import abstractmethod
@@ -16,10 +17,10 @@ from datumaro.components.media import ImageFromFile
 from datumaro.util.image import IMAGE_BACKEND, IMAGE_COLOR_CHANNEL, ImageBackend
 from datumaro.util.image import ImageColorChannel as DatumaroImageColorChannel
 from torch.utils.data import Dataset
-from torchvision.transforms.v2 import Compose
 
 from otx.core.data.entity.base import T_OTXDataEntity
 from otx.core.data.mem_cache import NULL_MEM_CACHE_HANDLER
+from otx.core.data.transform_libs.torchvision import Compose
 from otx.core.types.image import ImageColorChannel
 from otx.core.types.label import LabelInfo
 
@@ -42,7 +43,13 @@ def image_decode_context() -> Iterator[None]:
     ori_image_color_scale = IMAGE_COLOR_CHANNEL.get()
 
     IMAGE_BACKEND.set(ImageBackend.PIL)
-    IMAGE_COLOR_CHANNEL.set(DatumaroImageColorChannel.COLOR_BGR)
+    # TODO(vinnamki): This should be changed to
+    # if to_rgb:
+    #     IMAGE_COLOR_CHANNEL.set(DatumaroImageColorChannel.COLOR_RGB)
+    # else:
+    #     IMAGE_COLOR_CHANNEL.set(DatumaroImageColorChannel.COLOR_BGR)
+    # after merging https://github.com/openvinotoolkit/datumaro/pull/1501
+    IMAGE_COLOR_CHANNEL.set(DatumaroImageColorChannel.COLOR_RGB)
 
     yield
 
@@ -139,9 +146,9 @@ class OTXDataset(Dataset, Generic[T_OTXDataEntity]):
 
         with image_decode_context():
             img_data = (
-                cv2.cvtColor(img.data, cv2.COLOR_BGR2RGB)
+                img.data
                 if self.image_color_channel == ImageColorChannel.RGB
-                else img.data
+                else cv2.cvtColor(img.data, cv2.COLOR_RGB2BGR)
             )
 
         if img_data is None:

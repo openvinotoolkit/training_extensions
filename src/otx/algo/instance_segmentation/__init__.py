@@ -3,10 +3,6 @@
 #
 """Module for OTX instance segmentation models."""
 
-from otx.core.model.utils.mmdet import (
-    DetDataPreprocessor,  # TODO(Eugene): Remove this after decoupling det data preprocessor
-)
+from . import mmdet
 
-from . import heads, mmdet
-
-__all__ = ["heads", "mmdet", "DetDataPreprocessor"]
+__all__ = ["mmdet"]

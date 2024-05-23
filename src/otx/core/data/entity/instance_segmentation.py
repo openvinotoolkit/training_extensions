@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING
 
 from torchvision import tv_tensors
 
+from otx.core.data.entity.utils import register_pytree_node
 from otx.core.types.task import OTXTaskType
 
 from .base import OTXBatchDataEntity, OTXBatchPredEntity, OTXDataEntity, OTXPredEntity
@@ -19,6 +20,7 @@ if TYPE_CHECKING:
     from torch import LongTensor
 
 
+@register_pytree_node
 @dataclass
 class InstanceSegDataEntity(OTXDataEntity):
     """Data entity for instance segmentation task.
