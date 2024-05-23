@@ -18,7 +18,7 @@ class TestConfigConverter:
         assert config["data"]["config"]["train_subset"]["num_workers"] == 8
         assert config["data"]["config"]["val_subset"]["num_workers"] == 8
         assert config["data"]["config"]["test_subset"]["num_workers"] == 8
-        assert config["callbacks"][0]["init_args"]["patience"] == 4
+        assert config["callbacks"][0]["init_args"]["patience"] == 7
         assert config["data"]["config"]["tile_config"]["enable_tiler"] is True
         assert config["data"]["config"]["tile_config"]["overlap"] == 0.5
 
@@ -43,6 +43,6 @@ class TestConfigConverter:
         assert engine.datamodule.config.tile_config.enable_tiler
 
         assert len(train_kwargs["callbacks"]) == len(config["callbacks"])
-        assert train_kwargs["callbacks"][0].patience == 4
+        assert train_kwargs["callbacks"][0].patience == 7
         assert len(train_kwargs["logger"]) == len(config["logger"])
         assert train_kwargs["max_epochs"] == 50
