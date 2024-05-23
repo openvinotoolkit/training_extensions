@@ -171,12 +171,10 @@ class OTXSegmentationDataset(OTXDataset[SegDataEntity]):
             stack_images,
             to_tv_image,
         )
-        is_polygon = isinstance(dm_subset[0].annotations[-1], (Polygon, Ellipse))
-        if is_polygon:
-            # insert background class at index 0
+
+        if self.has_polygons and "background" not in self.label_info.label_names:
+            # insert background class at index 0 since polygons represent only objects
             self.label_info.label_names.insert(0, "background")
-            # in semantic segmentation we have only one label_group
-            self.label_info.label_groups[-1].insert(0, "background")
 
         self.label_info = SegLabelInfo(
             label_names=self.label_info.label_names,
@@ -184,6 +182,17 @@ class OTXSegmentationDataset(OTXDataset[SegDataEntity]):
             ignore_index=ignore_index,
         )
         self.ignore_index = ignore_index
+
+    @property
+    def has_polygons(self) -> bool:
+        """Check if the dataset has polygons in annotations."""
+        has_polygons = False
+        for subset in self.dm_subset.subsets().values():
+            annot_types = set(subset.get_annotated_type())
+            if annot_types & {"polygon", "ellipse"}:
+                has_polygons = True
+
+        return has_polygons
 
     def _get_item_impl(self, index: int) -> SegDataEntity | None:
         item = self.dm_subset[index]
