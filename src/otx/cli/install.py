@@ -89,11 +89,9 @@ def otx_install(
 
     requirements_dict = get_requirements("otx")
     # Add base and openvino requirements.
-    requirements = requirements_dict["base"] if option != "xpu_full" else requirements_dict["xpu"]
-    requirements_dict.pop("base")
-    requirements_dict.pop("xpu")
-
-    if option in ["full", "xpu_full"]:
+    requirements = requirements_dict["base"]
+    requirements_dict.pop("xpu", None)
+    if option == "full":
         for extra in requirements_dict:
             requirements.extend(requirements_dict[extra])
     elif option in requirements_dict:

@@ -15,7 +15,8 @@ The current version of OpenVINO™ Training Extensions was tested in the followi
 Install OpenVINO™ Training Extensions for users (CUDA/CPU)
 **********************************************************
 
-1. Install OpenVINO™ Training Extensions package:
+1. Install OpenVINO™ Training Extensions
+package:
 
 * A local source in development mode
 
@@ -41,7 +42,8 @@ Install OpenVINO™ Training Extensions for users (CUDA/CPU)
 
             pip install -e .
 
-2. Install PyTorch & Requirements for training according to your system environment.
+2. Install PyTorch & Requirements for training
+according to your system environment.
 
 .. tab-set::
 
@@ -76,7 +78,35 @@ OpenVINO™ Training Extensions command line functionality.
 Install OpenVINO™ Training Extensions for users (XPU devices)
 *************************************************************
 
-1. Install Intel Extensions for Pytorch & Requirements for training according to your system environment.
+1. Install OpenVINO™ Training Extensions
+package:
+
+* A local source in development mode
+
+.. tab-set::
+
+    .. tab-item:: PyPI
+
+        .. code-block:: shell
+
+            pip install otx
+
+    .. tab-item:: Source
+
+        .. code-block:: shell
+
+            # Clone the training_extensions repository with the following command:
+            git clone https://github.com/openvinotoolkit/training_extensions.git
+            cd training_extensions
+
+            # Set up a virtual environment.
+            python -m venv .otx
+            source .otx/bin/activate
+
+            pip install -e .
+
+2. Install Intel Extensions for Pytorch & Requirements
+for training according to your system environment.
 
 .. tab-set::
 
@@ -84,7 +114,7 @@ Install OpenVINO™ Training Extensions for users (XPU devices)
 
         .. code-block:: shell
 
-            pip install '.[xpu_full]' --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
+            pip install '.[xpu]' --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
 
         .. note::
 
@@ -94,7 +124,7 @@ Install OpenVINO™ Training Extensions for users (XPU devices)
     .. tab-item:: Full Requirements
 
         .. code-block:: shell
-
+            python -m pip install torch==2.1.0.post2 torchvision==0.16.0.post2 torchaudio==2.1.0.post2 intel-extension-for-pytorch==2.1.30+xpu oneccl_bind_pt==2.1.300+xpu --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
             git clone https://github.com/open-mmlab/mmcv
             cd mmcv
             git checkout v2.1.0
@@ -104,7 +134,7 @@ Install OpenVINO™ Training Extensions for users (XPU devices)
 
 [Optional] Refer to the `Intel® Extension for PyTorch documentation guide <https://intel.github.io/intel-extension-for-pytorch/index.html#installation?platform=gpu&version=v2.1.10%2bxpu&os=linux%2fwsl2&package=pip>`_
 
-2. Activate OneAPI environment
+3. Activate OneAPI environment
 and export required IPEX system variables
 
 .. code-block:: shell
@@ -139,7 +169,8 @@ Then you may change code, and all fixes will be directly applied to the editable
 Install OpenVINO™ Training Extensions by using Docker
 *****************************************************
 
-1. By executing the following commands, it will build two Docker images: ``otx:${OTX_VERSION}-cuda`` and ``otx:${OTX_VERSION}-cuda-pretrained-ready``.
+1. By executing the following commands, it will build two
+Docker images: ``otx:${OTX_VERSION}-cuda`` and ``otx:${OTX_VERSION}-cuda-pretrained-ready``.
 
 .. code-block:: shell
 
@@ -147,7 +178,8 @@ Install OpenVINO™ Training Extensions by using Docker
     cd docker
     ./build.sh
 
-2. After that, you can check whether the images are built correctly such as
+2. After that, you can check whether the
+images are built correctly such as
 
 .. code-block:: shell
 
