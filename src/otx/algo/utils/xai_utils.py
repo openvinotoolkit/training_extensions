@@ -61,7 +61,8 @@ def process_saliency_maps_in_pred_entity(
 
         processed_saliency_maps = process_saliency_maps(saliency_map, explain_config, pred_labels, ori_img_shapes)
 
-        return predict_result_per_batch.wrap(saliency_map=processed_saliency_maps)
+        predict_result_per_batch.saliency_map = processed_saliency_maps
+        return predict_result_per_batch
 
     return [_process(predict_result_per_batch) for predict_result_per_batch in predict_result]
 
