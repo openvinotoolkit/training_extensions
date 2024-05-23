@@ -1,5 +1,5 @@
 Adaptive Training
-==================
+=================
 
 Adaptive-training focuses to adjust the number of iterations or interval for the validation to achieve the fast training. 
 In the small data regime, we don't need to validate the model at every epoch since there are a few iterations at a single epoch. 

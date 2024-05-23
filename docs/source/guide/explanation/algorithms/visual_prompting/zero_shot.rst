@@ -1,5 +1,5 @@
 Visual Prompting (Zero-shot learning)
-=================
+=====================================
 
 Visual prompting is a computer vision task that uses a combination of an image and prompts, such as texts, bounding boxes, points, and so on to troubleshoot problems.
 Using these useful prompts, the main purpose of this task is to obtain labels from unlabeled datasets, and to use generated label information on particular domains or to develop a new model with the generated information.

@@ -15,3 +15,4 @@ Additional Features
    fast_data_loading
    tiling
    config_input_size
+   augmentations_per_model
