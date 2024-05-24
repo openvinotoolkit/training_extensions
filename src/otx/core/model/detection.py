@@ -13,6 +13,7 @@ from typing import TYPE_CHECKING, Any, Callable, Iterator, Literal
 import torch
 from model_api.models import Model
 from model_api.tilers import DetectionTiler
+from torchmetrics import Metric, MetricCollection
 from torchvision import tv_tensors
 
 from otx.core.config.data import TileConfig
@@ -20,6 +21,7 @@ from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.detection import DetBatchDataEntity, DetBatchPredEntity
 from otx.core.data.entity.tile import OTXTileBatchDataEntity
 from otx.core.metrics import MetricCallable, MetricInput
+from otx.core.metrics.fmeasure import FMeasure
 from otx.core.metrics.mean_ap import MeanAPCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable, OTXModel, OVModel
 from otx.core.schedulers import LRSchedulerListCallable
@@ -34,7 +36,6 @@ if TYPE_CHECKING:
     from model_api.models.utils import DetectionResult
     from omegaconf import DictConfig
     from torch import nn
-    from torchmetrics import Metric
 
     from otx.algo.detection.ssd import SingleStageDetector
 
@@ -59,6 +60,29 @@ class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity]):
             torch_compile=torch_compile,
             tile_config=tile_config,
         )
+
+    def configure_metric(self) -> None:
+        """Configure the metric."""
+        if not callable(self.metric_callable):
+            raise TypeError(self.metric_callable)
+
+        metric = self.metric_callable(self.label_info)
+
+        if not isinstance(metric, (Metric, MetricCollection)):
+            msg = "Metric should be the instance of `torchmetrics.Metric` or `torchmetrics.MetricCollection`."
+            raise TypeError(msg, metric)
+
+        msg_fmeasure = (
+            "Detection should contain FMeasure computation to choose the best confidence threshold for testing."
+        )
+        if isinstance(metric, MetricCollection) and not any(isinstance(m, FMeasure) for m in metric.values()):
+            log.info(msg_fmeasure)
+            metric.add_metrics(FMeasure(self.label_info))
+        elif not isinstance(metric, FMeasure):
+            log.info(msg_fmeasure)
+            metric = MetricCollection([metric, FMeasure(self.label_info)])
+
+        self._metric = metric.to(self.device)
 
     def forward_tiles(self, inputs: OTXTileBatchDataEntity[DetBatchDataEntity]) -> DetBatchPredEntity:
         """Unpack detection tiles.
@@ -155,8 +179,16 @@ class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity]):
             retval = super()._log_metrics(meter, key)
 
             # NOTE: Validation metric logging can update `best_confidence_threshold`
-            if best_confidence_threshold := getattr(meter, "best_confidence_threshold", None):
-                self.hparams["best_confidence_threshold"] = best_confidence_threshold
+            if (
+                isinstance(meter, MetricCollection)
+                and getattr(meter, "FMeasure", None)
+                and getattr(meter.FMeasure, "best_confidence_threshold", None)
+            ):
+                # if best_confidence_threshold := getattr(meter.FMeasure, "best_confidence_threshold", None):
+                self.hparams["best_confidence_threshold"] = meter.FMeasure.best_confidence_threshold
+            elif isinstance(meter, FMeasure) and getattr(meter, "best_confidence_threshold", None):
+                # if best_confidence_threshold := getattr(meter, "best_confidence_threshold", None):
+                self.hparams["best_confidence_threshold"] = meter.best_confidence_threshold
 
             return retval
 
