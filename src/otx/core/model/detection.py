@@ -21,8 +21,7 @@ from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.detection import DetBatchDataEntity, DetBatchPredEntity
 from otx.core.data.entity.tile import OTXTileBatchDataEntity
 from otx.core.metrics import MetricCallable, MetricInput
-from otx.core.metrics.fmeasure import FMeasure
-from otx.core.metrics.mean_ap import MeanAPCallable
+from otx.core.metrics.fmeasure import FMeasure, MeanAveragePrecisionFMeasureCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable, OTXModel, OVModel
 from otx.core.schedulers import LRSchedulerListCallable
 from otx.core.types.export import TaskLevelExportParameters
@@ -48,7 +47,7 @@ class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity]):
         label_info: LabelInfoTypes,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
-        metric: MetricCallable = MeanAPCallable,
+        metric: MetricCallable = MeanAveragePrecisionFMeasureCallable,
         torch_compile: bool = False,
         tile_config: TileConfig = TileConfig(enable_tiler=False),
     ) -> None:
@@ -71,16 +70,6 @@ class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity]):
         if not isinstance(metric, (Metric, MetricCollection)):
             msg = "Metric should be the instance of `torchmetrics.Metric` or `torchmetrics.MetricCollection`."
             raise TypeError(msg, metric)
-
-        msg_fmeasure = (
-            "Detection should contain FMeasure computation to choose the best confidence threshold for testing."
-        )
-        if isinstance(metric, MetricCollection) and not any(isinstance(m, FMeasure) for m in metric.values()):
-            log.info(msg_fmeasure)
-            metric.add_metrics(FMeasure(self.label_info))
-        elif not isinstance(metric, FMeasure):
-            log.info(msg_fmeasure)
-            metric = MetricCollection([metric, FMeasure(self.label_info)])
 
         self._metric = metric.to(self.device)
 
@@ -181,12 +170,13 @@ class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity]):
             # NOTE: Validation metric logging can update `best_confidence_threshold`
             if (
                 isinstance(meter, MetricCollection)
-                and getattr(meter, "FMeasure", None)
-                and getattr(meter.FMeasure, "best_confidence_threshold", None)
+                and (fmeasure := getattr(meter, "FMeasure", None))
+                and (best_confidence_threshold := getattr(fmeasure, "best_confidence_threshold", None))
+            ) or (
+                isinstance(meter, FMeasure)
+                and (best_confidence_threshold := getattr(meter, "best_confidence_threshold", None))
             ):
-                self.hparams["best_confidence_threshold"] = meter.FMeasure.best_confidence_threshold
-            elif isinstance(meter, FMeasure) and getattr(meter, "best_confidence_threshold", None):
-                self.hparams["best_confidence_threshold"] = meter.best_confidence_threshold
+                self.hparams["best_confidence_threshold"] = best_confidence_threshold
 
             return retval
 
@@ -210,7 +200,7 @@ class ExplainableOTXDetModel(OTXDetectionModel):
         label_info: LabelInfoTypes,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
-        metric: MetricCallable = MeanAPCallable,
+        metric: MetricCallable = MeanAveragePrecisionFMeasureCallable,
         torch_compile: bool = False,
         tile_config: TileConfig = TileConfig(enable_tiler=False),
     ) -> None:
@@ -366,7 +356,7 @@ class MMDetCompatibleModel(ExplainableOTXDetModel):
         config: DictConfig,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
-        metric: MetricCallable = MeanAPCallable,
+        metric: MetricCallable = MeanAveragePrecisionFMeasureCallable,
         torch_compile: bool = False,
         tile_config: TileConfig = TileConfig(enable_tiler=False),
     ) -> None:
@@ -528,7 +518,7 @@ class OVDetectionModel(OVModel[DetBatchDataEntity, DetBatchPredEntity]):
         max_num_requests: int | None = None,
         use_throughput_mode: bool = True,
         model_api_configuration: dict[str, Any] | None = None,
-        metric: MetricCallable = MeanAPCallable,
+        metric: MetricCallable = MeanAveragePrecisionFMeasureCallable,
         **kwargs,
     ) -> None:
         super().__init__(

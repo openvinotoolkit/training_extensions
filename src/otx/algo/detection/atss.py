@@ -31,7 +31,7 @@ from otx.core.data.entity.detection import DetBatchDataEntity, DetBatchPredEntit
 from otx.core.data.entity.utils import stack_batch
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter
-from otx.core.metrics.mean_ap import MeanAPCallable
+from otx.core.metrics.fmeasure import MeanAveragePrecisionFMeasureCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
 from otx.core.model.detection import ExplainableOTXDetModel
 from otx.core.schedulers import LRSchedulerListCallable
@@ -53,7 +53,7 @@ class ATSS(ExplainableOTXDetModel):
         label_info: LabelInfoTypes,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
-        metric: MetricCallable = MeanAPCallable,
+        metric: MetricCallable = MeanAveragePrecisionFMeasureCallable,
         torch_compile: bool = False,
         tile_config: TileConfig = TileConfig(enable_tiler=False),
     ) -> None:
