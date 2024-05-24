@@ -17,7 +17,7 @@ from otx.engine.utils.auto_configurator import DEFAULT_CONFIG_PER_TASK, OVMODEL_
 
 
 @pytest.mark.parametrize("task", pytest.TASK_LIST)
-def test_engine_from_config(
+def test_api_engine_from_config(
     task: OTXTaskType,
     tmp_path: Path,
     fxt_accelerator: str,
@@ -139,7 +139,7 @@ def test_engine_from_config(
 
 
 @pytest.mark.parametrize("recipe", pytest.TILE_RECIPE_LIST)
-def test_engine_from_tile_recipe(
+def test_api_engine_from_tile_recipe(
     recipe: str,
     tmp_path: Path,
     fxt_accelerator: str,
@@ -175,7 +175,7 @@ METRIC_NAME = {
 
 
 @pytest.mark.parametrize("task", pytest.TASK_LIST)
-def test_otx_hpo(
+def test_api_otx_hpo(
     task: OTXTaskType,
     tmp_path: Path,
     fxt_target_dataset_per_task: dict,

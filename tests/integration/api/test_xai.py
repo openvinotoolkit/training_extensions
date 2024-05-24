@@ -25,7 +25,7 @@ MEAN_TORCH_OV_DIFF = 150
     "recipe",
     EXPLAIN_MODEL_LIST,
 )
-def test_forward_explain(
+def test_api_forward_explain(
     recipe: str,
     fxt_target_dataset_per_task: dict,
     fxt_accelerator: str,
@@ -71,7 +71,7 @@ def test_forward_explain(
     "recipe",
     EXPLAIN_MODEL_LIST,
 )
-def test_predict_with_explain(
+def test_api_predict_with_explain(
     recipe: str,
     tmp_path: Path,
     fxt_target_dataset_per_task: dict,

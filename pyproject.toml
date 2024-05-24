@@ -367,5 +367,6 @@ convention = "google"
 markers = [
     "gpu: mark tests which require NVIDIA GPU device",
     # "cpu: mark tests which require CPU device",
+    "api: mark tests which use python API call to test OTX functionalities",
 ]
 python_files = "tests/**/*.py"

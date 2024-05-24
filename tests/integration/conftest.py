@@ -12,6 +12,12 @@ from mmengine.config import Config as MMConfig
 from otx.core.types.task import OTXTaskType
 
 
+def pytest_collection_modifyitems(items):
+    for item in items:
+        if "api" in item.nodeid:
+            item.add_marker(pytest.mark.api)
+
+
 @pytest.fixture(scope="module", autouse=True)
 def fxt_open_subprocess(request: pytest.FixtureRequest) -> bool:
     """Open subprocess for each CLI integration test case.

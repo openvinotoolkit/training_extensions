@@ -92,21 +92,21 @@ jobs:
       matrix:
         include:
           - task: "action"
-            filter: "-k 'not api'"
+            filter: "-m 'not api'"
           - task: "classification"
-            filter: "-k 'not api'"
+            filter: "-m 'not api'"
           - task: "detection"
-            filter: "-k 'not api'"
+            filter: "-m 'not api'"
           - task: "instance_segmentation"
-            filter: "-k 'not api'"
+            filter: "-m 'not api'"
           - task: "semantic_segmentation"
-            filter: "-k 'not api'"
+            filter: "-m 'not api'"
           - task: "visual_prompting"
-            filter: "-k 'not api'"
+            filter: "-m 'not api'"
           - task: "anomaly"
-            filter: "-k 'not api'"
+            filter: "-m 'not api'"
           - task: "all"
-            filter: "-k 'not cli'"
+            filter: "-m api"
     name: Integration-Test-${{ matrix.task }}-py310
     # This is what will cancel the job concurrency
     concurrency:
