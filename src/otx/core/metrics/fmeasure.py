@@ -784,7 +784,14 @@ class FMeasure(Metric):
 
 
 class MeanAveragePrecisionFMeasure(MetricCollection):
-    """Computes the mean AP with f-measure for a resultset."""
+    """Computes the mean AP with f-measure for a resultset.
+    
+    NOTE: IMPORTANT!!! Do not use this metric to evaluate a F1 score on a test set.
+        This is because it can pollute test evaluation.
+        It will optimize the confidence threshold on the test set by doing line search on confidence threshold axis.
+        The correct way to obtain the test set F1 score is to use the best confidence threshold obtained from the validation set.
+        You should use `--metric otx.core.metrics.fmeasure.FMeasureCallable` override to correctly obtain F1 score from a test set.
+    """
 
     def __init__(self, box_format: str, iou_type: str, label_info: LabelInfo, **kwargs):
         map_kwargs = self._filter_kwargs(MeanAveragePrecision, kwargs)
