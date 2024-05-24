@@ -60,19 +60,6 @@ class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity]):
             tile_config=tile_config,
         )
 
-    def configure_metric(self) -> None:
-        """Configure the metric."""
-        if not callable(self.metric_callable):
-            raise TypeError(self.metric_callable)
-
-        metric = self.metric_callable(self.label_info)
-
-        if not isinstance(metric, (Metric, MetricCollection)):
-            msg = "Metric should be the instance of `torchmetrics.Metric` or `torchmetrics.MetricCollection`."
-            raise TypeError(msg, metric)
-
-        self._metric = metric.to(self.device)
-
     def forward_tiles(self, inputs: OTXTileBatchDataEntity[DetBatchDataEntity]) -> DetBatchPredEntity:
         """Unpack detection tiles.
 
