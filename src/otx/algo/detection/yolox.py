@@ -174,6 +174,8 @@ class YOLOX(ExplainableOTXDetModel):
         if self.image_size is None:
             raise ValueError(self.image_size)
 
+        swap_rgb = not isinstance(self, YOLOXTINY)
+
         return OTXNativeModelExporter(
             via_onnx=True,
             onnx_export_configuration={
@@ -196,7 +198,7 @@ class YOLOX(ExplainableOTXDetModel):
             std=self.std,
             resize_mode="fit_to_window_letterbox",
             pad_value=114,
-            swap_rgb=False,
+            swap_rgb=swap_rgb,
             output_names=["bboxes", "labels", "feature_vector", "saliency_map"] if self.explain_mode else None,
         )
 
