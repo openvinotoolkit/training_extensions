@@ -184,10 +184,8 @@ class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity]):
                 and getattr(meter, "FMeasure", None)
                 and getattr(meter.FMeasure, "best_confidence_threshold", None)
             ):
-                # if best_confidence_threshold := getattr(meter.FMeasure, "best_confidence_threshold", None):
                 self.hparams["best_confidence_threshold"] = meter.FMeasure.best_confidence_threshold
             elif isinstance(meter, FMeasure) and getattr(meter, "best_confidence_threshold", None):
-                # if best_confidence_threshold := getattr(meter, "best_confidence_threshold", None):
                 self.hparams["best_confidence_threshold"] = meter.best_confidence_threshold
 
             return retval
