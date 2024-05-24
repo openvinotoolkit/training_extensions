@@ -20,6 +20,7 @@ from otx.core.optimizer.callable import OptimizerCallableSupportHPO
 from otx.core.schedulers import LinearWarmupSchedulerCallable, SchedulerCallableSupportHPO
 from otx.core.types.device import DeviceType
 from otx.core.types.task import OTXTaskType
+from otx.engine.adaptive_bs import adapt_batch_size
 from otx.hpo import HyperBand, run_hpo_loop
 from otx.utils.utils import get_decimal_point, get_using_dot_delimited_key, is_xpu_available, remove_matched_files
 
@@ -76,6 +77,7 @@ def execute_hpo(
         hpo_config=hpo_config,
         hpo_workdir=hpo_workdir,
         callbacks=callbacks,
+        train_args=train_args,
     )
     if (
         train_args.get("adaptive_bs", None) == "Full"
@@ -129,7 +131,8 @@ class HPOConfigurator:
         max_epochs (int): max epochs to train.
         hpo_config (HpoConfig): Configuration for HPO.
         hpo_workdir (Path | None, optional): HPO work directory. Defaults to None.
-        callbacks (list[Callback] | Callback | None, optional): callbacks used during training. Defaults to None.
+        callbacks (list[Callback] | Callback | None, optional): Callbacks used during training. Defaults to None.
+        train_args (dict | None, optional): Additional train arguments. It's used for adapt_batch_size_search_space.
     """
 
     def __init__(
@@ -139,11 +142,13 @@ class HPOConfigurator:
         hpo_config: HpoConfig,
         hpo_workdir: Path | None = None,
         callbacks: list[Callback] | Callback | None = None,
+        train_args: dict | None = None,
     ) -> None:
         self._engine = engine
         self._max_epochs = max_epochs
         self._hpo_workdir = hpo_workdir if hpo_workdir is not None else Path(engine.work_dir) / "hpo"
         self._callbacks = callbacks
+        self._train_args = train_args if train_args is not None else {}
         self.hpo_config: dict[str, Any] = hpo_config  # type: ignore[assignment]
 
     @property
@@ -191,6 +196,12 @@ class HPOConfigurator:
             self._hpo_config["search_space"] = self._get_default_search_space()
         else:
             self._align_hp_name(self._hpo_config["search_space"])
+
+        if hpo_config.adapt_bs_search_space_max_val != "None":
+            if "datamodule.config.train_subset.batch_size" not in self._hpo_config["search_space"]:
+                logger.warning("Batch size isn't included for HPO. 'adapt_batch_size_search_space' is ignored.")
+            else:
+                self._adapt_batch_size_search_space(hpo_config.adapt_bs_search_space_max_val)
 
         if (  # align batch size to train set size
             "datamodule.config.train_subset.batch_size" in self._hpo_config["search_space"]
@@ -286,6 +297,27 @@ class HPOConfigurator:
     def _replace_hp_name(self, ori_hp_name: str, old: str, new: str) -> None:
         new_hp_name = ori_hp_name.replace(old, new)
         self._hpo_config["search_space"][new_hp_name] = self._hpo_config["search_space"].pop(ori_hp_name)
+
+    def _adapt_batch_size_search_space(self, adapt_mode: Literal["Safe", "Full"]) -> None:
+        origin_bs = self._engine.datamodule.config.train_subset.batch_size
+        origin_lr = self._engine.model.optimizer_callable.optimizer_kwargs["lr"]  # type: ignore[attr-defined]
+
+        self._engine.datamodule.config.train_subset.batch_size = \
+            self._hpo_config["search_space"]["datamodule.config.train_subset.batch_size"]["max"]  # fmt: off
+
+        adapt_batch_size(
+            self._engine,
+            adapt_mode != "Full",
+            self._callbacks,
+            **self._train_args,
+        )
+
+        adapted_bs = self._engine.datamodule.config.train_subset.batch_size
+
+        self._engine.datamodule.config.train_subset.batch_size = origin_bs
+        self._engine.model.optimizer_callable.optimizer_kwargs["lr"] = origin_lr  # type: ignore[attr-defined]
+        self._hpo_config["search_space"]["datamodule.config.train_subset.batch_size"]["max"] = adapted_bs
+        logger.info(f"Max value of batch size search space : {origin_bs} -> {adapted_bs}")
 
     @staticmethod
     def _remove_wrong_search_space(search_space: dict[str, dict[str, Any]]) -> None:

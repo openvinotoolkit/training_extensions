@@ -76,6 +76,7 @@ class TileConfig:
     max_num_instances: int = 1500
     object_tile_ratio: float = 0.03
     sampling_ratio: float = 1.0
+    with_full_img: bool = False
 
     def clone(self) -> TileConfig:
         """Return a deep copied one of this instance."""

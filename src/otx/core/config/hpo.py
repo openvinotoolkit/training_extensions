@@ -38,3 +38,4 @@ class HpoConfig:
     asynchronous_bracket: bool = True
     asynchronous_sha: bool = num_workers > 1
     metric_name: str | None = None
+    adapt_bs_search_space_max_val: Literal["None", "Safe", "Full"] = "None"
