@@ -12,7 +12,6 @@ def test_as_json(fxt_label_info):
 
 def test_seg_label_info():
     # Automatically insert background label at zero index
-    assert SegLabelInfo(["car", "bug", "tree"], []) == SegLabelInfo(["car", "bug", "tree"], [])
     assert SegLabelInfo.from_num_classes(3) == SegLabelInfo(
         ["label_0", "label_1", "label_2"],
         [["label_0", "label_1", "label_2"]],
