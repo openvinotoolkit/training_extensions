@@ -21,11 +21,12 @@ EXPLAIN_MODEL_LIST = MC_ML_CLS + DETECTION_LIST + INST_SEG_LIST
 MEAN_TORCH_OV_DIFF = 150
 
 
+@pytest.mark.api()
 @pytest.mark.parametrize(
     "recipe",
     EXPLAIN_MODEL_LIST,
 )
-def test_api_forward_explain(
+def test_forward_explain(
     recipe: str,
     fxt_target_dataset_per_task: dict,
     fxt_accelerator: str,
@@ -67,11 +68,12 @@ def test_api_forward_explain(
         assert all(predict_result[0].scores[i] == predict_result_explain[0].scores[i])
 
 
+@pytest.mark.api()
 @pytest.mark.parametrize(
     "recipe",
     EXPLAIN_MODEL_LIST,
 )
-def test_api_predict_with_explain(
+def test_predict_with_explain(
     recipe: str,
     tmp_path: Path,
     fxt_target_dataset_per_task: dict,

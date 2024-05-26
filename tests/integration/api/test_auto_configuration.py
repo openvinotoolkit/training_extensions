@@ -11,8 +11,9 @@ from otx.engine import Engine
 from otx.engine.utils.auto_configurator import DEFAULT_CONFIG_PER_TASK
 
 
+@pytest.mark.api()
 @pytest.mark.parametrize("task", pytest.TASK_LIST)
-def test_api_auto_configuration(
+def test_auto_configuration(
     task: OTXTaskType,
     tmp_path: Path,
     fxt_accelerator: str,
