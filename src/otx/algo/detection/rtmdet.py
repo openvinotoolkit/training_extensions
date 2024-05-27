@@ -210,8 +210,8 @@ class RTMDetTiny(RTMDet):
     load_from = "https://download.openmmlab.com/mmdetection/v3.0/rtmdet/rtmdet_tiny_8xb32-300e_coco/rtmdet_tiny_8xb32-300e_coco_20220902_112414-78e30dcc.pth"
     image_size = (1, 3, 640, 640)
     tile_image_size = (1, 3, 640, 640)
-    mean = (123.675, 116.28, 103.53)  # TODO (sungchul): check RGB
-    std = (58.395, 57.12, 57.375)  # TODO (sungchul): check RGB
+    mean = (103.53, 116.28, 123.675)
+    std = (57.375, 57.12, 58.395)
 
     def _build_model(self, num_classes: int) -> RTMDet:
         train_cfg = {

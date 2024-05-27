@@ -95,8 +95,8 @@ overrides:
               scale: False
           - class_path: torchvision.transforms.v2.Normalize
             init_args:
-              mean: [123.675, 116.28, 103.53] # TODO (sungchul): check RGB
-              std: [58.395, 57.12, 57.375] # TODO (sungchul): check RGB
+              mean: [103.53, 116.28, 123.675]
+              std: [57.375, 57.12, 58.395]
       val_subset:
         batch_size: 1
         num_workers: 4
@@ -122,8 +122,8 @@ overrides:
               scale: False
           - class_path: torchvision.transforms.v2.Normalize
             init_args:
-              mean: [123.675, 116.28, 103.53] # TODO (sungchul): check RGB
-              std: [58.395, 57.12, 57.375] # TODO (sungchul): check RGB
+              mean: [103.53, 116.28, 123.675]
+              std: [57.375, 57.12, 58.395]
       test_subset:
         batch_size: 1
         num_workers: 4
@@ -149,5 +149,5 @@ overrides:
               scale: False
           - class_path: torchvision.transforms.v2.Normalize
             init_args:
-              mean: [123.675, 116.28, 103.53] # TODO (sungchul): check RGB
-              std: [58.395, 57.12, 57.375] # TODO (sungchul): check RGB
+              mean: [103.53, 116.28, 123.675]
+              std: [57.375, 57.12, 58.395]
