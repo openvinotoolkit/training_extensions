@@ -267,6 +267,8 @@ class RTMDetTiny(RTMDet):
             pred_kernel_size=1,
             norm_cfg={"type": "BN"},
             act_cfg={"type": "SiLU", "inplace": True},
+            train_cfg=train_cfg,
+            test_cfg=test_cfg,
         )
 
         return SingleStageDetector(
