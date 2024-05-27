@@ -70,7 +70,7 @@ def execute_hpo(
     engine.model.patch_optimizer_and_scheduler_for_hpo()
 
     hpo_workdir = Path(engine.work_dir) / "hpo"
-    hpo_workdir.mkdir(exist_ok=True)
+    hpo_workdir.mkdir(parents=True, exist_ok=True)
     hpo_configurator = HPOConfigurator(
         engine=engine,
         max_epochs=max_epochs,
