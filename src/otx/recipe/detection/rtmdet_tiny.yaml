@@ -35,6 +35,7 @@ overrides:
   data:
     task: DETECTION
     config:
+      image_color_channel: BGR
       stack_images: true
       data_format: coco_instances
       train_subset:
