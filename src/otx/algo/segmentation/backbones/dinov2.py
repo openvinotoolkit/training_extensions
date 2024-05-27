@@ -30,7 +30,7 @@ class DinoVisionTransformer(BaseModule):
         super().__init__(init_cfg)
         self._init_args = get_class_initial_arguments()
         torch.hub._validate_not_a_forked_repo = lambda a, b, c: True  # noqa: SLF001, ARG005
-        self.backbone = torch.hub.load(repo_or_dir="facebookresearch/dinov2", model=name)
+        self.backbone = torch.hub.load(repo_or_dir="facebookresearch/dinov2", model=name, skip_validation=True)
         if freeze_backbone:
             self._freeze_backbone(self.backbone)
 

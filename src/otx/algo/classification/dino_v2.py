@@ -51,6 +51,7 @@ class DINOv2(nn.Module):
         self.backbone = torch.hub.load(
             repo_or_dir="facebookresearch/dinov2",
             model=backbone,
+            skip_validation=True,
         )
 
         if freeze_backbone:
