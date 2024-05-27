@@ -15,7 +15,6 @@ from torch import Tensor, nn
 from otx.algo.detection.heads.base_head import BaseDenseHead
 from otx.algo.detection.heads.base_sampler import PseudoSampler
 from otx.algo.detection.heads.point_generator import MlvlPointGenerator
-from otx.algo.detection.heads.sim_ota_assigner import SimOTAAssigner
 from otx.algo.detection.losses import CrossEntropyLoss, IoULoss, L1Loss
 from otx.algo.detection.ops.nms import batched_nms, multiclass_nms
 from otx.algo.detection.utils.utils import multi_apply, reduce_mean
@@ -148,7 +147,7 @@ class YOLOXHead(BaseDenseHead):
         self.train_cfg = train_cfg
 
         if self.train_cfg is not None:
-            self.assigner = SimOTAAssigner(center_radius=2.5)
+            self.assigner = self.train_cfg["assigner"]
             # YOLOX does not support sampling
             self.sampler = PseudoSampler()  # type: ignore[no-untyped-call]
 
