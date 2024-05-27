@@ -73,7 +73,7 @@ class RTMDetHead(ATSSHead):
                     conv_cfg=self.conv_cfg,
                     norm_cfg=self.norm_cfg,
                     act_cfg=self.act_cfg,
-                )
+                ),
             )
             self.reg_convs.append(
                 ConvModule(
@@ -85,7 +85,7 @@ class RTMDetHead(ATSSHead):
                     conv_cfg=self.conv_cfg,
                     norm_cfg=self.norm_cfg,
                     act_cfg=self.act_cfg,
-                )
+                ),
             )
         pred_pad_size = self.pred_kernel_size // 2
         self.rtm_cls = nn.Conv2d(
@@ -95,7 +95,10 @@ class RTMDetHead(ATSSHead):
             padding=pred_pad_size,
         )
         self.rtm_reg = nn.Conv2d(
-            self.feat_channels, self.num_base_priors * 4, self.pred_kernel_size, padding=pred_pad_size
+            self.feat_channels,
+            self.num_base_priors * 4,
+            self.pred_kernel_size,
+            padding=pred_pad_size,
         )
         if self.with_objectness:
             self.rtm_obj = nn.Conv2d(self.feat_channels, 1, self.pred_kernel_size, padding=pred_pad_size)
@@ -154,7 +157,7 @@ class RTMDetHead(ATSSHead):
             bbox_preds.append(reg_dist)
         return tuple(cls_scores), tuple(bbox_preds)
 
-    def loss_by_feat_single(
+    def loss_by_feat_single(  # type: ignore[override]
         self,
         cls_score: Tensor,
         bbox_pred: Tensor,
@@ -163,7 +166,7 @@ class RTMDetHead(ATSSHead):
         bbox_targets: Tensor,
         assign_metrics: Tensor,
         stride: list[int],
-    ) -> dict[str, Tensor]:
+    ) -> tuple[Tensor, ...]:
         """Compute loss of a single scale level.
 
         Args:
@@ -210,7 +213,10 @@ class RTMDetHead(ATSSHead):
             pos_bbox_weight = assign_metrics[pos_inds]
 
             loss_bbox = self.loss_bbox(
-                pos_decode_bbox_pred, pos_decode_bbox_targets, weight=pos_bbox_weight, avg_factor=1.0
+                pos_decode_bbox_pred,
+                pos_decode_bbox_targets,
+                weight=pos_bbox_weight,
+                avg_factor=1.0,
             )
         else:
             loss_bbox = bbox_pred.sum() * 0
@@ -218,13 +224,13 @@ class RTMDetHead(ATSSHead):
 
         return loss_cls, loss_bbox, assign_metrics.sum(), pos_bbox_weight.sum()
 
-    def loss_by_feat(
+    def loss_by_feat(  # type: ignore[override]
         self,
         cls_scores: list[Tensor],
         bbox_preds: list[Tensor],
-        batch_gt_instances: InstanceList,
+        batch_gt_instances: list[InstanceData],
         batch_img_metas: list[dict],
-        batch_gt_instances_ignore: OptInstanceList = None,
+        batch_gt_instances_ignore: list[InstanceData] | None = None,
     ) -> dict[str, Tensor]:
         """Compute losses of the head.
 
@@ -254,13 +260,14 @@ class RTMDetHead(ATSSHead):
         device = cls_scores[0].device
         anchor_list, valid_flag_list = self.get_anchors(featmap_sizes, batch_img_metas, device=device)
         flatten_cls_scores = torch.cat(
-            [cls_score.permute(0, 2, 3, 1).reshape(num_imgs, -1, self.cls_out_channels) for cls_score in cls_scores], 1
+            [cls_score.permute(0, 2, 3, 1).reshape(num_imgs, -1, self.cls_out_channels) for cls_score in cls_scores],
+            1,
         )
         decoded_bboxes = []
         for anchor, bbox_pred in zip(anchor_list[0], bbox_preds):
-            anchor = anchor.reshape(-1, 4)
-            bbox_pred = bbox_pred.permute(0, 2, 3, 1).reshape(num_imgs, -1, 4)
-            bbox_pred = distance2bbox(anchor, bbox_pred)
+            anchor = anchor.reshape(-1, 4)  # noqa: PLW2901
+            bbox_pred = bbox_pred.permute(0, 2, 3, 1).reshape(num_imgs, -1, 4)  # noqa: PLW2901
+            bbox_pred = distance2bbox(anchor, bbox_pred)  # noqa: PLW2901
             decoded_bboxes.append(bbox_pred)
 
         flatten_bboxes = torch.cat(decoded_bboxes, 1)
@@ -301,16 +308,16 @@ class RTMDetHead(ATSSHead):
         losses_bbox = [x / bbox_avg_factor for x in losses_bbox]
         return {"loss_cls": losses_cls, "loss_bbox": losses_bbox}
 
-    def get_targets(
+    def get_targets(  # type: ignore[override]
         self,
         cls_scores: Tensor,
         bbox_preds: Tensor,
         anchor_list: list[list[Tensor]],
         valid_flag_list: list[list[Tensor]],
-        batch_gt_instances: InstanceList,
+        batch_gt_instances: list[InstanceData],
         batch_img_metas: list[dict],
-        batch_gt_instances_ignore: OptInstanceList = None,
-        unmap_outputs=True,
+        batch_gt_instances_ignore: list[InstanceData] | None = None,
+        unmap_outputs: bool = True,
     ) -> tuple[list[list[Tensor]], list[Tensor], list[Tensor], list[Tensor], list[Tensor], list[Tensor]]:
         """Compute regression and classification targets for anchors in multiple images.
 
@@ -365,24 +372,29 @@ class RTMDetHead(ATSSHead):
 
         # compute targets for each image
         if batch_gt_instances_ignore is None:
-            batch_gt_instances_ignore = [None] * num_imgs
+            batch_gt_instances_ignore = [None] * num_imgs  # type: ignore[list-item]
         # anchor_list: list(b * [-1, 4])
-        (all_anchors, all_labels, all_label_weights, all_bbox_targets, all_assign_metrics, sampling_results_list) = (
-            multi_apply(
-                self._get_targets_single,
-                cls_scores.detach(),
-                bbox_preds.detach(),
-                anchor_list,
-                valid_flag_list,
-                batch_gt_instances,
-                batch_img_metas,
-                batch_gt_instances_ignore,
-                unmap_outputs=unmap_outputs,
-            )
+        (
+            all_anchors,
+            all_labels,
+            all_label_weights,
+            all_bbox_targets,
+            all_assign_metrics,
+            sampling_results_list,
+        ) = multi_apply(
+            self._get_targets_single,
+            cls_scores.detach(),
+            bbox_preds.detach(),
+            anchor_list,
+            valid_flag_list,
+            batch_gt_instances,
+            batch_img_metas,
+            batch_gt_instances_ignore,
+            unmap_outputs=unmap_outputs,
         )
         # no valid anchors
         if any(labels is None for labels in all_labels):
-            return None
+            return None  # type: ignore[return-value]
 
         # split targets to a list w.r.t. multiple levels
         anchors_list = images_to_levels(all_anchors, num_level_anchors)
@@ -400,7 +412,7 @@ class RTMDetHead(ATSSHead):
             sampling_results_list,
         )
 
-    def _get_targets_single(
+    def _get_targets_single(  # type: ignore[override]
         self,
         cls_scores: Tensor,
         bbox_preds: Tensor,
@@ -447,15 +459,20 @@ class RTMDetHead(ATSSHead):
             - sampling_result (SamplingResult): Sampling result.
         """
         inside_flags = anchor_inside_flags(
-            flat_anchors, valid_flags, img_meta["img_shape"][:2], self.train_cfg["allowed_border"]
+            flat_anchors,
+            valid_flags,
+            img_meta["img_shape"][:2],
+            self.train_cfg["allowed_border"],
         )
         if not inside_flags.any():
-            return (None,) * 7
+            return (None,) * 7  # type: ignore[return-value]
         # assign gt and sample anchors
         anchors = flat_anchors[inside_flags, :]
 
         pred_instances = InstanceData(
-            scores=cls_scores[inside_flags, :], bboxes=bbox_preds[inside_flags, :], priors=anchors
+            scores=cls_scores[inside_flags, :],
+            bboxes=bbox_preds[inside_flags, :],
+            priors=anchors,
         )
 
         assign_result = self.assigner.assign(pred_instances, gt_instances, gt_instances_ignore)
@@ -499,7 +516,10 @@ class RTMDetHead(ATSSHead):
         return (anchors, labels, label_weights, bbox_targets, assign_metrics, sampling_result)
 
     def get_anchors(
-        self, featmap_sizes: list[tuple], batch_img_metas: list[dict], device: torch.device | str = "cuda"
+        self,
+        featmap_sizes: list[tuple[int, int]],
+        batch_img_metas: list[dict],
+        device: torch.device | str = "cuda",
     ) -> tuple[list[list[Tensor]], list[list[Tensor]]]:
         """Get anchors according to feature map sizes.
 
@@ -569,7 +589,12 @@ class RTMDetSepBNHead(RTMDetHead):
         self.exp_on_reg = exp_on_reg
         self.use_depthwise = use_depthwise
         super().__init__(
-            num_classes, in_channels, norm_cfg=norm_cfg, act_cfg=act_cfg, pred_kernel_size=pred_kernel_size, **kwargs
+            num_classes,
+            in_channels,
+            norm_cfg=norm_cfg,
+            act_cfg=act_cfg,
+            pred_kernel_size=pred_kernel_size,
+            **kwargs,
         )
 
     def _init_layers(self) -> None:
@@ -582,7 +607,7 @@ class RTMDetSepBNHead(RTMDetHead):
         self.rtm_reg = nn.ModuleList()
         if self.with_objectness:
             self.rtm_obj = nn.ModuleList()
-        for n in range(len(self.prior_generator.strides)):
+        for _ in range(len(self.prior_generator.strides)):
             cls_convs = nn.ModuleList()
             reg_convs = nn.ModuleList()
             for i in range(self.stacked_convs):
@@ -597,7 +622,7 @@ class RTMDetSepBNHead(RTMDetHead):
                         conv_cfg=self.conv_cfg,
                         norm_cfg=self.norm_cfg,
                         act_cfg=self.act_cfg,
-                    )
+                    ),
                 )
                 reg_convs.append(
                     conv(
@@ -609,7 +634,7 @@ class RTMDetSepBNHead(RTMDetHead):
                         conv_cfg=self.conv_cfg,
                         norm_cfg=self.norm_cfg,
                         act_cfg=self.act_cfg,
-                    )
+                    ),
                 )
             self.cls_convs.append(cls_convs)
             self.reg_convs.append(reg_convs)
@@ -620,7 +645,7 @@ class RTMDetSepBNHead(RTMDetHead):
                     self.num_base_priors * self.cls_out_channels,
                     self.pred_kernel_size,
                     padding=self.pred_kernel_size // 2,
-                )
+                ),
             )
             self.rtm_reg.append(
                 nn.Conv2d(
@@ -628,11 +653,11 @@ class RTMDetSepBNHead(RTMDetHead):
                     self.num_base_priors * 4,
                     self.pred_kernel_size,
                     padding=self.pred_kernel_size // 2,
-                )
+                ),
             )
             if self.with_objectness:
                 self.rtm_obj.append(
-                    nn.Conv2d(self.feat_channels, 1, self.pred_kernel_size, padding=self.pred_kernel_size // 2)
+                    nn.Conv2d(self.feat_channels, 1, self.pred_kernel_size, padding=self.pred_kernel_size // 2),
                 )
 
         if self.share_conv:
