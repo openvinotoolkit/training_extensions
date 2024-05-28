@@ -142,7 +142,8 @@ class Benchmark:
             dataset (Dataset): Target dataset settings
             criteria (list[Criterion]): Target criteria settings
             perf_dir_to_load(str | None, optional):
-                Previous performance directory to load. If set, training is skipped if poossible.
+                Previous performance directory to load. If training was already done in previous performance test,
+                training is skipped and refer previous result.
 
         Retruns:
             pd.DataFrame | None: Table with benchmark metrics
@@ -204,7 +205,7 @@ class Benchmark:
                 if copied_train_dir is not None:
                     command.append("--print_config")
                     with (copied_train_dir / "configs.yaml").open("w") as f:
-                        self._run_command(command, stdout=f)
+                        self._run_command(command, stdout=f)  # replace previuos configs.yaml to new one
                 else:
                     start_time = time()
                     self._run_command(command)
@@ -287,8 +288,8 @@ class Benchmark:
         for csv_file in perf_dir_to_load.rglob("benchmark.raw.csv"):
             raw_data = pd.read_csv(csv_file)
             if (
-                "train/epoch" in raw_data.columns  # check it's train csv
-                and all(  # check meta is same
+                "train/epoch" in raw_data.columns  # check it's csv of train result
+                and all(  # check meta info is same
                     [str(raw_data.iloc[0].get(key, "NOT_IN_CSV")) == tags.get(key, "NOT_IN_TAG")
                      for key in ["data_group", "data",  "model", "task", "seed"]]
                 )
@@ -315,6 +316,7 @@ class Benchmark:
         checkpoint: Path | str | None = None,
         what2test: Literal["train", "export", "optimize"] = "train",
     ) -> None:
+        """Run otx test and update result csv file to align it's column to the current task."""
         REPLACE_MAP = {
             "train" : {"test_": "test/", "{pre}": "export/"}, 
             "export" : {"test": "export", "{pre}": "export/"}, 

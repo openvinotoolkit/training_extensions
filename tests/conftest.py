@@ -122,7 +122,8 @@ def pytest_addoption(parser: pytest.Parser):
     parser.addoption(
         "--perf-dir-to-load",
         type=str,
-        help="Previous performance directory which contains execution results.",
+        help="Previous performance test directory which contains execution results. "
+        "If training was already done in previous performance test, training is skipped and refer previous result.",
     )
     parser.addoption(
         "--open-subprocess",

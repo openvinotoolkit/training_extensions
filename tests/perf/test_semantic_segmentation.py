@@ -34,7 +34,7 @@ class TestPerfSemanticSegmentation(PerfTestBase):
             num_repeat=5,
             extra_overrides={},
         )
-        for idx in (1,)
+        for idx in (1, 2, 3)
     ] + [
         Benchmark.Dataset(
             name="kvasir_medium",
