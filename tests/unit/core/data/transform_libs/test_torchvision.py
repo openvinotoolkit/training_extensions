@@ -38,7 +38,7 @@ from torchvision.transforms.v2 import functional as F  # noqa: N812
 
 
 class MockFrame:
-    data = np.ndarray([3, 10, 10])
+    data = np.ndarray([10, 10, 3], dtype=np.uint8)
 
 
 class MockVideo:
