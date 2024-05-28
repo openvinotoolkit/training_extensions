@@ -75,7 +75,7 @@ def run_hpo_trial(
         train_args["checkpoint"] = checkpoint
         train_args["resume"] = True
 
-    callbacks = _register_hpo_callback(report_func, callbacks, metric_name)
+    callbacks = _register_hpo_callback(report_func, callbacks, engine, metric_name)
     _set_to_validate_every_epoch(callbacks, train_args)
 
     with TemporaryDirectory(prefix="OTX-HPO-") as temp_dir:
@@ -99,12 +99,13 @@ def _find_last_weight(weight_dir: Path) -> Path | None:
 def _register_hpo_callback(
     report_func: Callable,
     callbacks: list[Callback] | Callback | None = None,
+    engine: Engine | None = None,
     metric_name: str | None = None,
 ) -> list[Callback]:
     if isinstance(callbacks, Callback):
         callbacks = [callbacks]
     elif callbacks is None:
-        callbacks = []
+        callbacks = [] if engine is None else engine._cache.args.get("callbacks", [])  # noqa: SLF001
     callbacks.append(HPOCallback(report_func, get_metric(callbacks) if metric_name is None else metric_name))
     return callbacks
 

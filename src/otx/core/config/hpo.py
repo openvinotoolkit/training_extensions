@@ -24,7 +24,7 @@ else:
 class HpoConfig:
     """DTO for HPO configuration."""
 
-    search_space: dict[str, dict[str, Any]] | None = None
+    search_space: dict[str, dict[str, Any]] | str | None = None
     save_path: str | None = None
     mode: Literal["max", "min"] = "max"
     num_trials: int | None = None
