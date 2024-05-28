@@ -27,9 +27,19 @@ from torch import tensor
 if TYPE_CHECKING:
     from lightning import Callback
 
+    
+@pytest.fixture
+def mock_callback1() -> MagicMock:
+    return MagicMock()
+
+
+@pytest.fixture
+def mock_callback2() -> MagicMock:
+    return MagicMock()
+
 
 @pytest.fixture()
-def mock_engine() -> MagicMock:
+def mock_engine(mock_callback1, mock_callback2) -> MagicMock:
     engine = MagicMock()
 
     def train_side_effect(*args, **kwargs) -> None:
@@ -40,6 +50,7 @@ def mock_engine() -> MagicMock:
             (work_dir / "last.ckpt").write_text("last_ckpt")
 
     engine.train.side_effect = train_side_effect
+    engine._cache.args = {"callbacks" : [mock_callback1, mock_callback2]}
 
     return engine
 
@@ -170,6 +181,16 @@ def test_run_hpo_trial(mocker, mock_callbacks, mock_report_func, tmp_path, mock_
 
 
 def test_register_hpo_callback(mock_report_func):
+    """Check it returns list including only HPOCallback if any callbacks are passed."""
+    callabcks = _register_hpo_callback(
+        report_func=mock_report_func,
+        metric_name="metric",
+    )
+    assert len(callabcks) == 1
+    assert isinstance(callabcks[0], HPOCallback)
+
+
+def test_register_hpo_callback_hoho(mock_report_func):
     """Check it returns list including only HPOCallback if any callbacks are passed."""
     callabcks = _register_hpo_callback(
         report_func=mock_report_func,
