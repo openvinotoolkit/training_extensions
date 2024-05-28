@@ -81,7 +81,7 @@ jobs:
           ./codecov -t ${{ secrets.CODECOV_TOKEN }} --sha $COMMIT_ID -U $HTTP_PROXY -f .tox/coverage_unit-test-${{ matrix.tox-env }}.xml -F ${{ matrix.tox-env }}
 
   Integration-Test:
-    runs-on: [self-hosted, linux, x64, dev]
+    runs-on: vinnamki-arc
     needs: Unit-Test
     strategy:
       fail-fast: false
