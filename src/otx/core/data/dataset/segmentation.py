@@ -114,7 +114,13 @@ def _extract_class_mask(item: DatasetItem, img_shape: tuple[int, int], ignore_in
         if isinstance(mask, (Ellipse, Polygon)):
             polygons = np.asarray(mask.as_polygon(), dtype=np.int32).reshape((-1, 1, 2))
             class_index = index + 1  # NOTE: disregard the background index. Objects start from index=1
-            this_class_mask = cv2.drawContours(class_mask, [polygons], 0, (class_index, class_index, class_index))
+            this_class_mask = cv2.drawContours(
+                class_mask,
+                [polygons],
+                0,
+                (class_index, class_index, class_index),
+                thickness=cv2.FILLED,
+            )
 
         elif isinstance(mask, Mask):
             binary_mask = mask.image
