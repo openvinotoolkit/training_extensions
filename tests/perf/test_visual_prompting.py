@@ -87,7 +87,7 @@ class TestPerfVisualPrompting(PerfTestBase):
             dataset=fxt_dataset,
             benchmark=fxt_benchmark,
             criteria=self.BENCHMARK_CRITERIA,
-            perf_dir_to_load=fxt_perf_dir_to_load
+            perf_dir_to_load=fxt_perf_dir_to_load,
         )
 
 
@@ -153,5 +153,5 @@ class TestPerfZeroShotVisualPrompting(PerfTestBase):
             dataset=fxt_dataset,
             benchmark=fxt_benchmark,
             criteria=self.BENCHMARK_CRITERIA,
-            perf_dir_to_load=fxt_perf_dir_to_load
+            perf_dir_to_load=fxt_perf_dir_to_load,
         )

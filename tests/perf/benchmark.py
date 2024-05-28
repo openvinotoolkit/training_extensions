@@ -7,8 +7,8 @@ from __future__ import annotations
 
 import gc
 import logging
-import subprocess
 import shutil
+import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 from time import time
@@ -133,7 +133,7 @@ class Benchmark:
         model: Model,
         dataset: Dataset,
         criteria: list[Criterion],
-        perf_dir_to_load: str | None = None
+        perf_dir_to_load: str | None = None,
     ) -> pd.DataFrame | None:
         """Run configured benchmark with given dataset and model and return the result.
 
@@ -209,7 +209,7 @@ class Benchmark:
                 else:
                     start_time = time()
                     self._run_command(command)
-                    extra_metrics["train/e2e_time"] =  time() - start_time
+                    extra_metrics["train/e2e_time"] = time() - start_time
                     self._rename_raw_data(
                         work_dir=sub_work_dir / ".latest" / "train",
                         replaces={"train_": "train/", "{pre}": "train/"},
@@ -241,7 +241,12 @@ class Benchmark:
                         exported_model_path = sub_work_dir / ".latest" / "export" / "exported_model_decoder.xml"
 
                     self._run_test(
-                        sub_work_dir, dataset, tags, criteria, checkpoint=exported_model_path, what2test="export"
+                        sub_work_dir,
+                        dataset,
+                        tags,
+                        criteria,
+                        checkpoint=exported_model_path,
+                        what2test="export",
                     )
 
                 # Optimize & test
@@ -264,9 +269,13 @@ class Benchmark:
                         optimized_model_path = sub_work_dir / ".latest" / "optimize" / "optimized_model_decoder.xml"
 
                     self._run_test(
-                        sub_work_dir, dataset, tags, criteria, checkpoint=optimized_model_path, what2test="optimize"
+                        sub_work_dir,
+                        dataset,
+                        tags,
+                        criteria,
+                        checkpoint=optimized_model_path,
+                        what2test="optimize",
                     )
-
 
                 # Force memory clean up
                 gc.collect()
@@ -290,14 +299,14 @@ class Benchmark:
             if (
                 "train/epoch" in raw_data.columns  # check it's csv of train result
                 and all(  # check meta info is same
-                    [str(raw_data.iloc[0].get(key, "NOT_IN_CSV")) == tags.get(key, "NOT_IN_TAG")
-                     for key in ["data_group", "data",  "model", "task", "seed"]]
+                    str(raw_data.iloc[0].get(key, "NOT_IN_CSV")) == tags.get(key, "NOT_IN_TAG")
+                    for key in ["data_group", "data", "model", "task", "seed"]
                 )
             ):
                 return csv_file.parent
         return None
 
-    def _copy_prev_train_dir(prev_train_dir: Path, work_dir: Path) -> Path:
+    def _copy_prev_train_dir(self, prev_train_dir: Path, work_dir: Path) -> Path:
         work_dir.mkdir(parents=True, exist_ok=True)
         new_train_dir = work_dir / prev_train_dir.name
         shutil.copytree(prev_train_dir, new_train_dir, ignore_dangling_symlinks=True)
@@ -316,11 +325,11 @@ class Benchmark:
         checkpoint: Path | str | None = None,
         what2test: Literal["train", "export", "optimize"] = "train",
     ) -> None:
-        """Run otx test and update result csv file to align it's column to the current task."""
-        REPLACE_MAP = {
-            "train" : {"test_": "test/", "{pre}": "export/"}, 
-            "export" : {"test": "export", "{pre}": "export/"}, 
-            "optimize" : {"test": "optimize", "{pre}": "optimize/"} ,
+        """Run otx test and update result csv file to align it's indices to the current task."""
+        replace_map = {
+            "train": {"test_": "test/", "{pre}": "export/"},
+            "export": {"test": "export", "{pre}": "export/"},
+            "optimize": {"test": "optimize", "{pre}": "optimize/"},
         }
 
         command = [
@@ -341,10 +350,13 @@ class Benchmark:
 
         self._rename_raw_data(
             work_dir=work_dir / ".latest" / "test",
-            replaces=REPLACE_MAP[what2test],
+            replaces=replace_map[what2test],
         )
         self._log_metrics(
-            work_dir=work_dir / ".latest" / "test", tags=tags, criteria=criteria, extra_metrics=extra_metrics
+            work_dir=work_dir / ".latest" / "test",
+            tags=tags,
+            criteria=criteria,
+            extra_metrics=extra_metrics,
         )
 
     def _run_command(self, command: list[str], **kwargs) -> None:
@@ -357,7 +369,7 @@ class Benchmark:
         print(" ".join(command))
         kwargs["check"] = True
         if not self.dry_run:
-            subprocess.run(command, **kwargs)  # noqa: S603
+            subprocess.run(command, **kwargs)  # noqa: S603, PLW1510
 
     def _log_metrics(
         self,
