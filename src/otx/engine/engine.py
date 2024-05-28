@@ -371,6 +371,12 @@ class Engine:
             model_cls = self.model.__class__
             model = model_cls.load_from_checkpoint(checkpoint_path=checkpoint)
 
+        from otx.algo.anomaly.openvino_model import AnomalyOpenVINO
+
+        if isinstance(model, AnomalyOpenVINO):
+            msg = f"model.label_info={model.label_info} self.datamodule.label_info={self.datamodule.label_info}"
+            raise TypeError(msg)
+
         if model.label_info != self.datamodule.label_info:
             msg = (
                 "To launch a test pipeline, the label information should be same "
