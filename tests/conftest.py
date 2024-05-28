@@ -120,6 +120,11 @@ def pytest_addoption(parser: pytest.Parser):
         "and reverted after run. Works only for v2.x assuming CLI compatibility.",
     )
     parser.addoption(
+        "--perf-dir-to-load",
+        type=str,
+        help="Previous performance directory which contains execution results.",
+    )
+    parser.addoption(
         "--open-subprocess",
         action="store_true",
         help="Open subprocess for each CLI test case. "

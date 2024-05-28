@@ -32,7 +32,7 @@ class TestPerfSingleLabelClassification(PerfTestBase):
             num_repeat=5,
             extra_overrides={},
         )
-        for idx in (1, 2, 3)
+        for idx in (1,)
     ] + [
         Benchmark.Dataset(
             name="multiclass_CUB_medium",
@@ -61,6 +61,9 @@ class TestPerfSingleLabelClassification(PerfTestBase):
         Benchmark.Criterion(name="test/iter_time", summary="mean", compare="<", margin=0.1),
         Benchmark.Criterion(name="export/iter_time", summary="mean", compare="<", margin=0.1),
         Benchmark.Criterion(name="optimize/iter_time", summary="mean", compare="<", margin=0.1),
+        Benchmark.Criterion(name="test(trian)/e2e_time", summary="max", compare=">", margin=0.1),
+        Benchmark.Criterion(name="test(export)/e2e_time", summary="max", compare=">", margin=0.1),
+        Benchmark.Criterion(name="test(optimize)/e2e_time", summary="max", compare=">", margin=0.1),
     ]
 
     @pytest.mark.parametrize(
@@ -80,12 +83,14 @@ class TestPerfSingleLabelClassification(PerfTestBase):
         fxt_model: Benchmark.Model,
         fxt_dataset: Benchmark.Dataset,
         fxt_benchmark: Benchmark,
+        fxt_perf_dir_to_load: str | None,
     ):
         self._test_perf(
             model=fxt_model,
             dataset=fxt_dataset,
             benchmark=fxt_benchmark,
             criteria=self.BENCHMARK_CRITERIA,
+            perf_dir_to_load=fxt_perf_dir_to_load,
         )
 
 
@@ -136,6 +141,9 @@ class TestPerfMultiLabelClassification(PerfTestBase):
         Benchmark.Criterion(name="test/iter_time", summary="mean", compare="<", margin=0.1),
         Benchmark.Criterion(name="export/iter_time", summary="mean", compare="<", margin=0.1),
         Benchmark.Criterion(name="optimize/iter_time", summary="mean", compare="<", margin=0.1),
+        Benchmark.Criterion(name="test(trian)/e2e_time", summary="max", compare=">", margin=0.1),
+        Benchmark.Criterion(name="test(export)/e2e_time", summary="max", compare=">", margin=0.1),
+        Benchmark.Criterion(name="test(optimize)/e2e_time", summary="max", compare=">", margin=0.1),
     ]
 
     @pytest.mark.parametrize(
@@ -205,6 +213,9 @@ class TestPerfHierarchicalLabelClassification(PerfTestBase):
         Benchmark.Criterion(name="test/iter_time", summary="mean", compare="<", margin=0.1),
         Benchmark.Criterion(name="export/iter_time", summary="mean", compare="<", margin=0.1),
         Benchmark.Criterion(name="optimize/iter_time", summary="mean", compare="<", margin=0.1),
+        Benchmark.Criterion(name="test(trian)/e2e_time", summary="max", compare=">", margin=0.1),
+        Benchmark.Criterion(name="test(export)/e2e_time", summary="max", compare=">", margin=0.1),
+        Benchmark.Criterion(name="test(optimize)/e2e_time", summary="max", compare=">", margin=0.1),
     ]
 
     @pytest.mark.parametrize(

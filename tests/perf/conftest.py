@@ -245,6 +245,14 @@ def fxt_tags(fxt_user_name: str, fxt_version_tags: dict[str, str]) -> dict[str, 
     return tags
 
 
+@pytest.fixture(scope="session")
+def fxt_perf_dir_to_load(request: pytest.FixtureRequest) -> str | None:
+    perf_dir_to_load = request.config.getoption("--perf-dir-to-load")
+    msg = f"{perf_dir_to_load = }"
+    log.info(msg)
+    return perf_dir_to_load
+
+
 @pytest.fixture()
 def fxt_benchmark(
     fxt_data_root: Path,
@@ -356,11 +364,13 @@ class PerfTestBase:
         dataset: Benchmark.Dataset,
         benchmark: Benchmark,
         criteria: list[Benchmark.Criterion],
+        perf_dir_to_load: str | None,
     ) -> None:
         result = benchmark.run(
             model=model,
             dataset=dataset,
             criteria=criteria,
+            perf_dir_to_load=perf_dir_to_load,
         )
         benchmark.check(
             result=result,
