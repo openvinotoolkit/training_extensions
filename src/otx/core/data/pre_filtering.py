@@ -72,11 +72,12 @@ def remove_unused_labels(dataset: DmDataset, data_format: str) -> DmDataset:
     used_labels: list[int] = list({ann.label for item in dataset for ann in item.annotations})
     if data_format == "ava":
         used_labels = [0, *used_labels]
-    elif data_format == "common_semantic_segmentation_with_subset_dirs":
-        if 0 in used_labels:
-            used_labels = [label - 1 for label in used_labels[1:]]
-        else:
-            used_labels = [label - 1 for label in used_labels]
+    if data_format == "common_semantic_segmentation_with_subset_dirs" and len(original_categories) < len(used_labels):
+        msg = (
+            "There are labeles mismatch in dataset categories and actuall categories comes from semantic masks."
+            "Please, check `dataset_meta.json` file."
+        )
+        raise ValueError(msg)
     if len(used_labels) == len(original_categories):
         return dataset
     msg = "There are unused labels in dataset, they will be filtered out before training."
