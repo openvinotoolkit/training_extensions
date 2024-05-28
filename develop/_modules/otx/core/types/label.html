@@ -243,7 +243,6 @@
 <span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
 
 <span class="kn">import</span> <span class="nn">json</span>
-<span class="kn">import</span> <span class="nn">warnings</span>
 <span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">asdict</span><span class="p">,</span> <span class="n">dataclass</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Any</span>
 
@@ -553,14 +552,12 @@
     <span class="n">ignore_index</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">255</span>
 
     <span class="k">def</span> <span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">any</span><span class="p">(</span><span class="n">word</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;background&quot;</span> <span class="k">for</span> <span class="n">word</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">label_names</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">label_names</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">:</span>
             <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span>
-                <span class="s2">&quot;Currently, no background label exists for `label_names`. &quot;</span>
-                <span class="s2">&quot;Segmentation requires a background label. &quot;</span>
-                <span class="s2">&quot;To do this, `Background` is added at index 0 of `label_names`.&quot;</span>
+                <span class="s2">&quot;The number of labels must be larger than 1. &quot;</span>
+                <span class="s2">&quot;Please, check dataset labels and add background label in case of binary segmentation.&quot;</span>
             <span class="p">)</span>
-            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">label_names</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;Background&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
 
 <div class="viewcode-block" id="SegLabelInfo.from_num_classes">
 <a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.types.html#otx.core.types.SegLabelInfo.from_num_classes">[docs]</a>
@@ -578,12 +575,10 @@
 <span class="sd">            )</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">num_classes</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="n">label_names</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Background&quot;</span><span class="p">]</span>
+            <span class="c1"># binary segmentation</span>
+            <span class="n">label_names</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;background&quot;</span><span class="p">,</span> <span class="s2">&quot;label_0&quot;</span><span class="p">]</span>
             <span class="k">return</span> <span class="n">SegLabelInfo</span><span class="p">(</span><span class="n">label_names</span><span class="o">=</span><span class="n">label_names</span><span class="p">,</span> <span class="n">label_groups</span><span class="o">=</span><span class="p">[</span><span class="n">label_names</span><span class="p">])</span>
 
-        <span class="c1"># NOTE: It should have &quot;Background&quot; label at the first place.</span>
-        <span class="c1"># To consider it, we need to decrease num_classes by one.</span>
-        <span class="n">num_classes</span> <span class="o">=</span> <span class="n">num_classes</span> <span class="o">-</span> <span class="mi">1</span>
         <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">from_num_classes</span><span class="p">(</span><span class="n">num_classes</span><span class="p">)</span></div>
 </div>
 
