@@ -40,6 +40,7 @@ overrides:
       data_format: coco_instances
       train_subset:
         batch_size: 4
+        to_tv_image: False
         transforms:
           - class_path: otx.core.data.transform_libs.torchvision.CachedMosaic
             init_args:
@@ -89,6 +90,7 @@ overrides:
                 - 114
                 - 114
               prob: 0.5
+              is_numpy_to_tvtensor: true
           - class_path: torchvision.transforms.v2.ToDtype
             init_args:
               dtype: ${as_torch_dtype:torch.float32}
@@ -99,6 +101,7 @@ overrides:
               std: [57.375, 57.12, 58.395]
       val_subset:
         batch_size: 1
+        to_tv_image: False
         num_workers: 4
         transforms:
           - class_path: otx.core.data.transform_libs.torchvision.Resize
@@ -126,6 +129,7 @@ overrides:
               std: [57.375, 57.12, 58.395]
       test_subset:
         batch_size: 1
+        to_tv_image: False
         num_workers: 4
         transforms:
           - class_path: otx.core.data.transform_libs.torchvision.Resize
