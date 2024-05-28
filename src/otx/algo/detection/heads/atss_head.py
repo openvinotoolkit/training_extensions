@@ -198,7 +198,7 @@ class ATSSHead(ClassIncrementalMixin, AnchorHead):
             reg_feat = reg_conv(reg_feat)
         cls_score = self.atss_cls(cls_feat)
         # we just follow atss, not apply exp in bbox_pred
-        bbox_pred = scale(self.atss_reg(reg_feat)).float()
+        bbox_pred = scale(self.atss_reg(reg_feat))
         centerness = self.atss_centerness(reg_feat)
         return cls_score, bbox_pred, centerness
 
