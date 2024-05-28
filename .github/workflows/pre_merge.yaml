@@ -81,7 +81,10 @@ jobs:
           ./codecov -t ${{ secrets.CODECOV_TOKEN }} --sha $COMMIT_ID -U $HTTP_PROXY -f .tox/coverage_unit-test-${{ matrix.tox-env }}.xml -F ${{ matrix.tox-env }}
 
   Integration-Test:
-    runs-on: [self-hosted, linux, x64, dev]
+    runs-on: [otx-gpu-a10g-1]
+    container:
+      image: 219678651685.dkr.ecr.eu-west-1.amazonaws.com/ote-ci:11.7.1.2-devel-ubuntu20.04
+      options: "--runtime=nvidia --env-file=/home/runner/.nvidia.env --ipc=host"
     needs: Unit-Test
     strategy:
       fail-fast: false
