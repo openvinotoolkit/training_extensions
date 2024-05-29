@@ -98,6 +98,10 @@ You can find more details with examples in the [CLI command intro](https://openv
 
 ## Updates
 
+### v1.6.2 (2Q24)
+
+- Pin OTX version to requirements.txt file for the exportable package (<>)
+
 ### v1.6.1 (2Q24)
 
 - Replace the default model for rotated_det/ins_seg task from resnet50_maskrcnn to efficientnetb2b_maskrcnn (<https://github.com/openvinotoolkit/training_extensions/pull/3478>)

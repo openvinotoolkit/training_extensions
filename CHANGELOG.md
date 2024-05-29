@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## \[v1.6.2\]
+
+### Bug fixes
+
+- Pin OTX version to requirements.txt file for the exportable package (<>)
+
 ## \[v1.6.1\]
 
 ### Enhancements

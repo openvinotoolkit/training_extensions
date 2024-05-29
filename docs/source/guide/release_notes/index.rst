@@ -4,6 +4,11 @@ Releases
 .. toctree::
    :maxdepth: 1
 
+v1.6.2 (2Q24)
+-------------
+
+- Pin OTX version to requirements.txt file for the exportable package
+
 v1.6.1 (2Q24)
 -------------
 
