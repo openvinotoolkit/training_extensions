@@ -526,7 +526,10 @@ class Resize(tvt_v2.Transform, NumpytoTVTensorMixin):
             img = to_np_image(img)
 
             img_shape = img.shape[:2]  # (H, W)
-            scale: tuple[int, int] = self.scale or scale_size(img_shape, self.scale_factor)  # (H, W)
+            scale: tuple[int, int] = self.scale or scale_size(
+                img_shape,
+                self.scale_factor,  # type: ignore[arg-type]
+            )  # (H, W)
 
             if self.keep_ratio:
                 scale = rescale_size(img_shape, scale)  # type: ignore[assignment]

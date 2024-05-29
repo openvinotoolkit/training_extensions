@@ -607,7 +607,7 @@ def rescale_size(
     old_size: tuple,
     scale: float | int | tuple[float, float] | tuple[int, int],
     return_scale: bool = False,
-) -> tuple[int, int] | tuple[tuple[int, int], tuple[int, int]]:
+) -> tuple[int, int] | tuple[tuple[int, int], float | int]:
     """Calculate the new size to be rescaled to.
 
     Args:
