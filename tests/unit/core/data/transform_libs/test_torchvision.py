@@ -119,13 +119,13 @@ class TestMinIoURandomCrop:
 class TestResize:
     @pytest.fixture()
     def resize(self) -> Resize:
-        return Resize(scale=(128, 96))  # (64, 64) -> (96, 128)
+        return Resize(scale=(128, 96))  # (64, 64) -> (128, 96)
 
     @pytest.mark.parametrize(
         ("keep_ratio", "expected_shape", "expected_scale_factor"),
         [
             (True, (96, 96), (1.5, 1.5)),
-            (False, (96, 128), (2.0, 1.5)),
+            (False, (128, 96), (2.0, 1.5)),
         ],
     )
     def test_forward_only_image(
@@ -161,7 +161,7 @@ class TestResize:
         ("keep_ratio", "expected_shape"),
         [
             (True, (96, 96)),
-            (False, (96, 128)),
+            (False, (128, 96)),
         ],
     )
     def test_forward_bboxes_masks_polygons(
@@ -183,14 +183,15 @@ class TestResize:
         assert results.image.shape[:2] == expected_shape
         assert results.img_info.img_shape == expected_shape
         assert torch.all(
-            results.bboxes == fxt_inst_seg_data_entity[0].bboxes * torch.tensor(results.img_info.scale_factor * 2),
+            results.bboxes
+            == fxt_inst_seg_data_entity[0].bboxes * torch.tensor(results.img_info.scale_factor[::-1] * 2),
         )
         assert results.masks.shape[1:] == expected_shape
         assert all(
             [  # noqa: C419
                 np.all(
                     np.array(rp.points).reshape(-1, 2)
-                    == np.array(fp.points).reshape(-1, 2) * np.array([results.img_info.scale_factor]),
+                    == np.array(fp.points).reshape(-1, 2) * np.array([results.img_info.scale_factor[::-1]]),
                 )
                 for rp, fp in zip(results.polygons, fxt_inst_seg_data_entity[0].polygons)
             ],

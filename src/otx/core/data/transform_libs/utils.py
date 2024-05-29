@@ -126,27 +126,38 @@ def rescale_bboxes(boxes: Tensor, scale_factor: tuple[float, float]) -> Tensor:
 
     Args:
         boxes (Tensor): bounding boxes to be rescaled.
-        scale_factor (tuple[float, float]): factors for scaling boxes.
-            The length should be 2.
+        scale_factor (tuple[float, float]): factors for scaling boxes with (height, width).
+            It will be used after flipped. The length should be 2.
 
     Returns:
         (Tensor): rescaled bounding boxes.
     """
     assert len(scale_factor) == 2  # noqa: S101
-    scale_factor = boxes.new_tensor(scale_factor).repeat(2)
+    scale_factor = boxes.new_tensor(scale_factor[::-1]).repeat(2)
     return boxes * scale_factor
 
 
 def rescale_masks(
     masks: np.ndarray,
-    scale_factor: float | tuple[float, float],
+    scale_factor: float | tuple[float, float],  # (H, W)
     interpolation: str = "nearest",
 ) -> np.ndarray:
-    """Rescale masks as large as possible while keeping the aspect ratio."""
+    """Rescale masks as large as possible while keeping the aspect ratio.
+
+    Args:
+        masks (np.ndarray): Masks to be rescaled.
+        scale_factor (float | tuple[float, float]): Scale factor to be applied to masks with (height, width).
+        interpolation (str): Interpolation mode. Defaults to `nearest`.
+
+    Returns:
+        (np.ndarray) : The rescaled masks.
+    """
     h, w = masks.shape[1:]
-    new_size = rescale_size((w, h), scale_factor)
+    new_size = rescale_size((h, w), scale_factor)  # (H, W)
+
+    # flipping `new_size` is required because cv2.resize uses (W, H)
     return np.stack(
-        [cv2.resize(mask, new_size, interpolation=CV2_INTERP_CODES[interpolation]) for mask in masks],
+        [cv2.resize(mask, new_size[::-1], interpolation=CV2_INTERP_CODES[interpolation]) for mask in masks],
     )
 
 
@@ -155,7 +166,7 @@ def rescale_polygons(polygons: list[Polygon], scale_factor: float | tuple[float,
 
     Args:
         polygons (np.ndarray): Polygons to be rescaled.
-        scale_factor (float | tuple[float, float]): Scale factor to be applied to polygons.
+        scale_factor (float | tuple[float, float]): Scale factor to be applied to polygons with (height, width).
 
     Returns:
         (np.ndarray) : The rescaled polygons.
@@ -163,8 +174,7 @@ def rescale_polygons(polygons: list[Polygon], scale_factor: float | tuple[float,
     if isinstance(scale_factor, float):
         w_scale = h_scale = scale_factor
     else:
-        # TODO (sungchul): update comment with what the issue was
-        w_scale, h_scale = scale_factor  # TODO (sungchul): ticket no. 138831
+        h_scale, w_scale = scale_factor
 
     resized_polygons = []
     for polygon in polygons:
@@ -303,9 +313,13 @@ def clip_bboxes(boxes: Tensor, img_shape: tuple[int, int]) -> Tensor:
 
     Args:
         img_shape (tuple[int, int]): A tuple of image height and width.
+
+    Returns:
+        (Tensor): Clipped boxes.
     """
-    boxes[..., 0::2] = boxes[..., 0::2].clamp(0, img_shape[1])
-    boxes[..., 1::2] = boxes[..., 1::2].clamp(0, img_shape[0])
+    h, w = img_shape
+    boxes[..., 0::2] = boxes[..., 0::2].clamp(0, w)
+    boxes[..., 1::2] = boxes[..., 1::2].clamp(0, h)
     return boxes
 
 
@@ -576,38 +590,38 @@ def scale_size(
     """Rescale a size by a ratio.
 
     Args:
-        size (tuple[int]): (w, h).
-        scale (float | int | tuple(float) | tuple(int)): Scaling factor.
+        size (tuple[int]): (height, width).
+        scale (float | int | tuple(float) | tuple(int)): Scaling factor with (height, width).
 
     Returns:
-        tuple[int]: scaled size.
+        tuple[int]: scaled size with (height, width).
     """
     if isinstance(scale, (float, int)):
         scale = (scale, scale)
-    w, h = size
-    return int(w * float(scale[0]) + 0.5), int(h * float(scale[1]) + 0.5)
+    h, w = size
+    return int(h * float(scale[0]) + 0.5), int(w * float(scale[1]) + 0.5)
 
 
 def rescale_size(
     old_size: tuple,
     scale: float | int | tuple[float, float] | tuple[int, int],
     return_scale: bool = False,
-) -> tuple:
+) -> tuple[int, int] | tuple[tuple[int, int], tuple[int, int]]:
     """Calculate the new size to be rescaled to.
 
     Args:
-        old_size (tuple[int]): The old size (w, h) of image.
+        old_size (tuple[int]): The old size (height, width) of image.
         scale (float | int | tuple[float] | tuple[int]): The scaling factor or maximum size.
             If it is a float number, an integer, or a tuple of 2 float numbers,
             then the image will be rescaled by this factor, else if it is a tuple of 2 integers,
             then the image will be rescaled as large as possible within the scale.
-        return_scale (bool): Whether to return the scaling factor besides the
-            rescaled image size.
+        return_scale (bool): Whether to return the scaling factor besides the rescaled image size.
 
     Returns:
-        tuple[int]: The new rescaled image size.
+        tuple[int]: The new rescaled image size with (height, width).
+            If return_scale is True, scale_factor obtained again will be returned as well.
     """
-    w, h = old_size
+    h, w = old_size
     msg = ""
     if isinstance(scale, (float, int)):
         if scale <= 0:
@@ -629,7 +643,7 @@ def rescale_size(
     if msg:
         raise TypeError(msg)
 
-    new_size = scale_size((w, h), scale_factor)
+    new_size = scale_size((h, w), scale_factor)
 
     if return_scale:
         return new_size, scale_factor

@@ -462,8 +462,8 @@ class Resize(tvt_v2.Transform, NumpytoTVTensorMixin):
     TODO : optimize logic to torcivision pipeline
 
     Args:
-        scale (int or tuple): Images scales for resizing with (width, height). Defaults to None
-        scale_factor (float or tuple[float]): Scale factors for resizing with (width, height).
+        scale (int or tuple): Images scales for resizing with (height, width). Defaults to None
+        scale_factor (float or tuple[float]): Scale factors for resizing with (height, width).
             Defaults to None.
         keep_ratio (bool): Whether to keep the aspect ratio when resizing the
             image. Defaults to False.
@@ -480,8 +480,8 @@ class Resize(tvt_v2.Transform, NumpytoTVTensorMixin):
 
     def __init__(
         self,
-        scale: int | tuple[int, int] | None = None,
-        scale_factor: float | tuple[float, float] | None = None,
+        scale: int | tuple[int, int] | None = None,  # (H, W)
+        scale_factor: float | tuple[float, float] | None = None,  # (H, W)
         keep_ratio: bool = False,
         clip_object_border: bool = True,
         interpolation: str = "bilinear",
@@ -521,35 +521,36 @@ class Resize(tvt_v2.Transform, NumpytoTVTensorMixin):
 
     def _resize_img(self, inputs: T_OTXDataEntity) -> tuple[T_OTXDataEntity, tuple[float, float] | None]:
         """Resize images with inputs.img_info.img_shape."""
-        scale_factor: tuple[float, float] | None = getattr(inputs.img_info, "scale_factor", None)
+        scale_factor: tuple[float, float] | None = getattr(inputs.img_info, "scale_factor", None)  # (H, W)
         if (img := getattr(inputs, "image", None)) is not None:
             img = to_np_image(img)
 
-            img_shape = img.shape[:2]
-            scale: tuple[int, int] = self.scale or scale_size(img_shape[::-1], self.scale_factor)  # type: ignore[arg-type]
+            img_shape = img.shape[:2]  # (H, W)
+            scale: tuple[int, int] = self.scale or scale_size(img_shape, self.scale_factor)  # (H, W)
 
             if self.keep_ratio:
-                scale = rescale_size(img_shape[::-1], scale)  # type: ignore[assignment]
+                scale = rescale_size(img_shape, scale)  # type: ignore[assignment]
 
-            img = cv2.resize(img, scale, interpolation=CV2_INTERP_CODES[self.interpolation])
+            # flipping `scale` is required because cv2.resize uses (W, H)
+            img = cv2.resize(img, scale[::-1], interpolation=CV2_INTERP_CODES[self.interpolation])
 
             inputs.image = img
             inputs.img_info = _resize_image_info(inputs.img_info, img.shape[:2])
 
-            scale_factor = (scale[0] / img_shape[1], scale[1] / img_shape[0])  # TODO (sungchul): ticket no. 138831
+            scale_factor = (scale[0] / img_shape[0], scale[1] / img_shape[1])
         return inputs, scale_factor
 
     def _resize_bboxes(self, inputs: T_OTXDataEntity, scale_factor: tuple[float, float]) -> T_OTXDataEntity:
-        """Resize bounding boxes with inputs.img_info.scale_factor."""
+        """Resize bounding boxes with scale_factor only for `Resize`."""
         if (bboxes := getattr(inputs, "bboxes", None)) is not None:
-            bboxes = rescale_bboxes(bboxes, scale_factor)  # TODO (sungchul): ticket no. 138831
+            bboxes = rescale_bboxes(bboxes, scale_factor)
             if self.clip_object_border:
                 bboxes = clip_bboxes(bboxes, inputs.img_info.img_shape)
             inputs.bboxes = tv_tensors.BoundingBoxes(bboxes, format="XYXY", canvas_size=inputs.img_info.img_shape)
         return inputs
 
     def _resize_masks(self, inputs: T_OTXDataEntity, scale_factor: tuple[float, float]) -> T_OTXDataEntity:
-        """Resize masks with inputs.img_info.scale_factor."""
+        """Resize masks with scale_factor only for `Resize`."""
         if (masks := getattr(inputs, "masks", None)) is not None and len(masks) > 0:
             # bit mask
             masks = masks.numpy() if not isinstance(masks, np.ndarray) else masks
@@ -581,8 +582,12 @@ class Resize(tvt_v2.Transform, NumpytoTVTensorMixin):
         repr_str += f"(scale={self.scale}, "
         repr_str += f"scale_factor={self.scale_factor}, "
         repr_str += f"keep_ratio={self.keep_ratio}, "
-        repr_str += f"clip_object_border={self.clip_object_border}), "
-        repr_str += f"interpolation={self.interpolation})"
+        repr_str += f"clip_object_border={self.clip_object_border}, "
+        repr_str += f"interpolation={self.interpolation}, "
+        repr_str += f"interpolation_mask={self.interpolation_mask}, "
+        repr_str += f"transform_bbox={self.transform_bbox}, "
+        repr_str += f"transform_mask={self.transform_mask}, "
+        repr_str += f"is_numpy_to_tvtensor={self.is_numpy_to_tvtensor})"
         return repr_str
 
 
