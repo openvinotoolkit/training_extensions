@@ -6,7 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Bug fixes
 
-- Pin OTX version to requirements.txt file for the exportable package (<>)
+- Pin OTX version to requirements.txt file for the exportable package (<https://github.com/openvinotoolkit/training_extensions/pull/3555>)
 
 ## \[v1.6.1\]
 
