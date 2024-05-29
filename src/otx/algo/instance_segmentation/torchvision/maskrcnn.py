@@ -53,6 +53,9 @@ class OTXTVMaskRCNN(MaskRCNN):
         detections, detector_losses = self.roi_heads(features, proposals, image_list.image_sizes, targets)
 
         # TODO(Eugene): check if post-process is working correctly
+        # 1. check if post-process works correctly for tracing (i.e. mask output should be 28x28)
+        # 2. output of export should be list of dict?
+        # 3. might need to replace self.transform with custom transform
         detections = self.transform.postprocess(
             detections,
             image_list.image_sizes,
@@ -64,3 +67,29 @@ class OTXTVMaskRCNN(MaskRCNN):
         losses.update(proposal_losses)
 
         return self.eager_outputs(losses, detections)
+
+    def export(
+        self,
+        batch_inputs: torch.Tensor,
+        batch_img_metas: list[dict],
+    ):
+        img_shapes = [img_meta["image_shape"] for img_meta in batch_img_metas]
+        image_list = ImageList(batch_inputs, img_shapes)
+        features = self.backbone(batch_inputs)
+        proposals, proposal_losses = self.rpn(image_list, features)
+        detections, detector_losses = self.roi_heads(features, proposals, image_list.image_sizes)
+
+    def forward_for_tracing(
+        self,
+        inputs: torch.Tensor,
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+        """Forward function for export."""
+        shape = (int(inputs.shape[2]), int(inputs.shape[3]))
+        meta_info = {
+            "image_shape": shape,
+        }
+        meta_info_list = [meta_info] * len(inputs)
+        return self.model.export(
+            inputs,
+            meta_info_list
+        )
