@@ -5,12 +5,12 @@
 
 from __future__ import annotations
 
-import yaml
 from math import sqrt
 from typing import TYPE_CHECKING
 from unittest.mock import MagicMock
 
 import pytest
+import yaml
 from otx.core.config.hpo import HpoConfig
 from otx.core.optimizer.callable import OptimizerCallableSupportHPO
 from otx.core.schedulers import LinearWarmupSchedulerCallable, SchedulerCallableSupportHPO

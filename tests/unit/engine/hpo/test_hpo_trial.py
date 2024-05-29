@@ -27,13 +27,13 @@ from torch import tensor
 if TYPE_CHECKING:
     from lightning import Callback
 
-    
-@pytest.fixture
+
+@pytest.fixture()
 def mock_callback1() -> MagicMock:
     return MagicMock()
 
 
-@pytest.fixture
+@pytest.fixture()
 def mock_callback2() -> MagicMock:
     return MagicMock()
 
@@ -50,7 +50,7 @@ def mock_engine(mock_callback1, mock_callback2) -> MagicMock:
             (work_dir / "last.ckpt").write_text("last_ckpt")
 
     engine.train.side_effect = train_side_effect
-    engine._cache.args = {"callbacks" : [mock_callback1, mock_callback2]}
+    engine._cache.args = {"callbacks": [mock_callback1, mock_callback2]}
 
     return engine
 

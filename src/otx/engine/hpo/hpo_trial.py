@@ -5,6 +5,7 @@
 
 from __future__ import annotations
 
+import shutil
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import TYPE_CHECKING, Any, Callable
@@ -137,4 +138,5 @@ def _keep_best_and_last_weight(trial_work_dir: Path, hpo_workdir: Path, trial_id
 
 def _move_all_ckpt(src: Path, dest: Path) -> None:
     for ckpt_file in src.rglob("*.ckpt"):
-        ckpt_file.replace(dest / ckpt_file.name)
+        shutil.copy(ckpt_file, dest)
+        ckpt_file.unlink()
