@@ -53,7 +53,7 @@ class OTXSemiSLClsHead(nn.Module):
         self.min_threshold = (
             min_threshold if self.use_dynamic_threshold else 0.95
         )  # the range of threshold will be [min_thr, 1.0]
-        self.num_pseudo_label = 0.0
+        self.num_pseudo_label = 0
         self.classwise_acc = torch.ones((self.num_classes,)) * self.min_threshold
 
 
@@ -115,7 +115,7 @@ class OTXSemiSLClsHead(nn.Module):
                 # select Pseudo-Label using flexible threhold
                 self.classwise_acc = self.classwise_acc.to(label_u.device)
                 mask = max_probs.ge(self.classwise_acc[label_u]).float()
-                self.num_pseudo_label = mask.sum().item()
+                self.num_pseudo_label = int(mask.sum().item())
 
                 if self.use_dynamic_threshold:
                     # get Labeled Data True Positive Confidence
