@@ -70,7 +70,7 @@ class TestPerfActionClassification(PerfTestBase):
         Benchmark.Criterion(name="test/iter_time", summary="mean", compare="<", margin=0.1),
         Benchmark.Criterion(name="export/iter_time", summary="mean", compare="<", margin=0.1),
         Benchmark.Criterion(name="optimize/iter_time", summary="mean", compare="<", margin=0.1),
-        Benchmark.Criterion(name="test(trian)/e2e_time", summary="max", compare=">", margin=0.1),
+        Benchmark.Criterion(name="test(train)/e2e_time", summary="max", compare=">", margin=0.1),
         Benchmark.Criterion(name="test(export)/e2e_time", summary="max", compare=">", margin=0.1),
         Benchmark.Criterion(name="test(optimize)/e2e_time", summary="max", compare=">", margin=0.1),
     ]
@@ -159,7 +159,7 @@ class TestPerfActionDetection(PerfTestBase):
         Benchmark.Criterion(name="test/iter_time", summary="mean", compare="<", margin=0.1),
         Benchmark.Criterion(name="export/iter_time", summary="mean", compare="<", margin=0.1),
         Benchmark.Criterion(name="optimize/iter_time", summary="mean", compare="<", margin=0.1),
-        Benchmark.Criterion(name="test(trian)/e2e_time", summary="max", compare=">", margin=0.1),
+        Benchmark.Criterion(name="test(train)/e2e_time", summary="max", compare=">", margin=0.1),
         Benchmark.Criterion(name="test(export)/e2e_time", summary="max", compare=">", margin=0.1),
         Benchmark.Criterion(name="test(optimize)/e2e_time", summary="max", compare=">", margin=0.1),
     ]
