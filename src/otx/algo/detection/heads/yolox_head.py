@@ -464,7 +464,8 @@ class YOLOXHead(BaseDenseHead):
         """
         if rescale:
             assert img_meta.get("scale_factor") is not None  # type: ignore[union-attr] # noqa: S101
-            results.bboxes /= results.bboxes.new_tensor(img_meta["scale_factor"]).repeat((1, 2))  # type: ignore[attr-defined, index]
+            scale_factor = img_meta["scale_factor"]  # (H, W)
+            results.bboxes /= results.bboxes.new_tensor(scale_factor[::-1]).repeat((1, 2))  # type: ignore[attr-defined, index]
 
         if with_nms and results.bboxes.numel() > 0:  # type: ignore[attr-defined]
             det_bboxes, keep_idxs = batched_nms(results.bboxes, results.scores, results.labels, cfg.nms)  # type: ignore[attr-defined]
