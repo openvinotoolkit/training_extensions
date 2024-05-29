@@ -18,7 +18,7 @@ overrides:
   data:
     task: ACTION_CLASSIFICATION
     config:
-      image_color_channel: RGB
+      image_color_channel: BGR
       data_format: kinetics
       train_subset:
         batch_size: 8
