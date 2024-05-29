@@ -78,7 +78,7 @@ config:
     transform_lib_type: MMACTION
     to_tv_image: False
     batch_size: 8
-    num_workers: 2
+    num_workers: 0
     transforms:
       - type: LoadVideoForClassification
       - type: DecordInit
