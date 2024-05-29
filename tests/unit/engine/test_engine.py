@@ -58,6 +58,7 @@ class TestEngine:
 
     def test_training_with_override_args(self, fxt_engine, mocker) -> None:
         mocker.patch("pathlib.Path.symlink_to")
+        mocker.patch("pathlib.Path.relative_to")
         mocker.patch("otx.engine.engine.Trainer.fit")
         mock_seed_everything = mocker.patch("otx.engine.engine.seed_everything")
 
@@ -94,6 +95,7 @@ class TestEngine:
 
     def test_training_with_run_hpo(self, fxt_engine, mocker) -> None:
         mocker.patch("pathlib.Path.symlink_to")
+        mocker.patch("pathlib.Path.relative_to")
         mock_fit = mocker.patch("otx.engine.engine.Trainer.fit")
         mock_execute_hpo = mocker.patch("otx.engine.engine.execute_hpo")
         mock_update_hyper_parameter = mocker.patch("otx.engine.engine.update_hyper_parameter")
