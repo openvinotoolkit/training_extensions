@@ -131,9 +131,10 @@ class OTXDataModule(LightningDataModule):
 
         # For Semi-SL
         if unlabeled_dataset is not None:
+            from otx.core.data.dataset.multi_transform import MultiTransformDatasetFactory
             name = self.config.unlabeled_subset.subset_name
             dm_subset = unlabeled_dataset.subsets()[name]
-            unlabeled_dataset = OTXDatasetFactory.create(
+            unlabeled_dataset = MultiTransformDatasetFactory.create(
                 task=self.task,
                 dm_subset=dm_subset.as_dataset(),
                 mem_cache_handler=mem_cache_handler,

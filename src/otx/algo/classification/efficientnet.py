@@ -33,6 +33,7 @@ from otx.core.data.entity.classification import (
     MulticlassClsBatchPredEntity,
     MultilabelClsBatchDataEntity,
     MultilabelClsBatchPredEntity,
+    MultiTransformClsBatchDataEntity,
 )
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter
@@ -192,7 +193,7 @@ class EfficientNetForSemiSL(EfficientNetForMulticlassCls):
             ),
         )
 
-    def _customize_inputs(self, inputs: MulticlassClsBatchDataEntity) -> dict[str, Any]:
+    def _customize_inputs(self, inputs: MultiTransformClsBatchDataEntity) -> dict[str, Any]:
         if self.training:
             mode = "loss"
         elif self.explain_mode:
@@ -206,22 +207,39 @@ class EfficientNetForSemiSL(EfficientNetForMulticlassCls):
             return {
                 "images": {
                     "labeled": labeled_inputs.images,
-                    "unlabeled": unlabeled_inputs.images,
+                    **unlabeled_inputs.images,
                 },
                 "labels": torch.cat(labeled_inputs.labels, dim=0),
                 "imgs_info": {
                     "labeled": labeled_inputs.imgs_info,
-                    "unlabeled": unlabeled_inputs.imgs_info,
+                    **unlabeled_inputs.imgs_info,
                 },
                 "mode": mode,
             }
         return {
-            "images": inputs.stacked_images,
+            "images": inputs.images,
             "labels": torch.cat(inputs.labels, dim=0),
             "imgs_info": inputs.imgs_info,
             "mode": mode,
         }
 
+    def training_step(self, batch: MultiTransformClsBatchDataEntity, batch_idx: int) -> Tensor:
+        loss = super().training_step(batch, batch_idx)
+        self.log(
+            "train/unlabeled_coef",
+            self.model.head.unlabeled_coef,
+            on_step=True,
+            on_epoch=False,
+            prog_bar=True,
+        )
+        self.log(
+            "train/num_pseudo_label",
+            self.model.head.num_pseudo_label,
+            on_step=True,
+            on_epoch=False,
+            prog_bar=True,
+        )
+        return loss
 
 class EfficientNetForMultilabelCls(OTXMultilabelClsModel):
     """EfficientNet Model for multi-label classification task."""

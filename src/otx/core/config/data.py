@@ -100,8 +100,7 @@ class SemiSLConfig(SubsetConfig):
     batch_size: int = 0
     subset_name: str = "unlabeled"
 
-    # TODO: Enable weak & strong augmentation (Consistency regularization)
-    transforms: dict[str, list[dict[str, Any]]] | list[dict[str, Any]] = field(default_factory=list)
+    transforms: dict[str, list[dict[str, Any]]] = field(default_factory=dict)
 
     transform_lib_type: TransformLibType = TransformLibType.TORCHVISION
     num_workers: int = 2

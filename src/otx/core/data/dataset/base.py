@@ -29,7 +29,7 @@ if TYPE_CHECKING:
 
     from otx.core.data.mem_cache import MemCacheHandlerBase
 
-Transforms = Union[Compose, Callable, List[Callable]]
+Transforms = Union[Compose, Callable, List[Callable], dict[str, Compose | Callable | List[Callable]]]
 
 
 @contextmanager
