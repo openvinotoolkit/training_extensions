@@ -37,7 +37,7 @@ class DinoVisionTransformer(BaseModule):
         if ci_data_root is not None:
             repo_or_dir = Path(Path(ci_data_root) / "torch" / "hub" / "facebookresearch_dinov2_main")
             source = "local"
-        self.backbone = torch.hub.load(repo_or_dir=repo_or_dir, source=source, model=name)
+        self.backbone = torch.hub.load(repo_or_dir=str(repo_or_dir), source=source, model=name)
         if freeze_backbone:
             self._freeze_backbone(self.backbone)
 

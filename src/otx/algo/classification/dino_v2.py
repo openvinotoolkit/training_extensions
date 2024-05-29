@@ -58,7 +58,7 @@ class DINOv2(nn.Module):
             repo_or_dir = Path(Path(ci_data_root) / "torch" / "hub" / "facebookresearch_dinov2_main")
             source = "local"
         self.backbone = torch.hub.load(
-            repo_or_dir=repo_or_dir,
+            repo_or_dir=str(repo_or_dir),
             source=source,
             model=backbone,
         )
