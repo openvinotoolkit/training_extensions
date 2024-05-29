@@ -246,11 +246,13 @@ def fxt_tags(fxt_user_name: str, fxt_version_tags: dict[str, str]) -> dict[str, 
 
 
 @pytest.fixture(scope="session")
-def fxt_perf_dir_to_load(request: pytest.FixtureRequest) -> str | None:
-    perf_dir_to_load = request.config.getoption("--perf-dir-to-load")
-    msg = f"{perf_dir_to_load = }"
+def fxt_resume_from(request: pytest.FixtureRequest) -> Path | None:
+    resume_from = request.config.getoption("--resume-from")
+    if resume_from is not None:
+        resume_from = Path(resume_from)
+    msg = f"{resume_from = }"
     log.info(msg)
-    return perf_dir_to_load
+    return resume_from
 
 
 @pytest.fixture()
@@ -364,13 +366,13 @@ class PerfTestBase:
         dataset: Benchmark.Dataset,
         benchmark: Benchmark,
         criteria: list[Benchmark.Criterion],
-        perf_dir_to_load: str | None,
+        resume_from: Path | None,
     ) -> None:
         result = benchmark.run(
             model=model,
             dataset=dataset,
             criteria=criteria,
-            perf_dir_to_load=perf_dir_to_load,
+            resume_from=resume_from,
         )
         benchmark.check(
             result=result,

@@ -120,7 +120,7 @@ def pytest_addoption(parser: pytest.Parser):
         "and reverted after run. Works only for v2.x assuming CLI compatibility.",
     )
     parser.addoption(
-        "--perf-dir-to-load",
+        "--resume-from",
         type=str,
         help="Previous performance test directory which contains execution results. "
         "If training was already done in previous performance test, training is skipped and refer previous result.",

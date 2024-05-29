@@ -133,7 +133,7 @@ class Benchmark:
         model: Model,
         dataset: Dataset,
         criteria: list[Criterion],
-        perf_dir_to_load: str | None = None,
+        resume_from: Path | None = None,
     ) -> pd.DataFrame | None:
         """Run configured benchmark with given dataset and model and return the result.
 
@@ -141,7 +141,7 @@ class Benchmark:
             model (Model): Target model settings
             dataset (Dataset): Target dataset settings
             criteria (list[Criterion]): Target criteria settings
-            perf_dir_to_load(str | None, optional):
+            resume_from(Path | None, optional):
                 Previous performance directory to load. If training was already done in previous performance test,
                 training is skipped and refer previous result.
 
@@ -175,8 +175,8 @@ class Benchmark:
                 # Train & test
                 copied_train_dir = None
                 if (
-                    perf_dir_to_load is not None
-                    and (prev_train_dir := self._find_corresponding_dir(perf_dir_to_load, tags)) is not None
+                    resume_from is not None
+                    and (prev_train_dir := self._find_corresponding_dir(resume_from, tags)) is not None
                 ):
                     copied_train_dir = self._copy_prev_train_dir(prev_train_dir, sub_work_dir)
 
@@ -292,9 +292,8 @@ class Benchmark:
         result = summary.average(result, keys=["task", "model", "data_group", "data"])  # Average out seeds
         return result.set_index(["task", "model", "data_group", "data"])
 
-    def _find_corresponding_dir(self, perf_dir_to_load: Path | str, tags: dict[str, str]) -> Path | None:
-        perf_dir_to_load = Path(perf_dir_to_load)
-        for csv_file in perf_dir_to_load.rglob("benchmark.raw.csv"):
+    def _find_corresponding_dir(self, resume_from: Path, tags: dict[str, str]) -> Path | None:
+        for csv_file in resume_from.rglob("benchmark.raw.csv"):
             raw_data = pd.read_csv(csv_file)
             if (
                 "train/epoch" in raw_data.columns  # check it's csv of train result
