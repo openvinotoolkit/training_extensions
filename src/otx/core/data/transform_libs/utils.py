@@ -166,7 +166,8 @@ def rescale_polygons(polygons: list[Polygon], scale_factor: float | tuple[float,
 
     Args:
         polygons (np.ndarray): Polygons to be rescaled.
-        scale_factor (float | tuple[float, float]): Scale factor to be applied to polygons with (height, width).
+        scale_factor (float | tuple[float, float]): Scale factor to be applied to polygons with (height, width)
+            or single float value.
 
     Returns:
         (np.ndarray) : The rescaled polygons.
