@@ -497,7 +497,7 @@ class TestRandomResize:
         results = transform(deepcopy(entity))
 
         # choose target scale from init when override is False and scale is a list of tuples
-        transform = RandomResize([(224, 448), (112, 224)], keep_ratio=False, transform_bbox=True, transform_mask=True)
+        transform = RandomResize([(448, 224), (224, 112)], keep_ratio=False, transform_bbox=True, transform_mask=True)
 
         results = transform(deepcopy(entity))
 
@@ -508,7 +508,7 @@ class TestRandomResize:
 
         # the type of scale is invalid in init
         with pytest.raises(NotImplementedError):
-            RandomResize([(224, 448), [112, 224]], keep_ratio=True)(deepcopy(entity))
+            RandomResize([(448, 224), [224, 112]], keep_ratio=True)(deepcopy(entity))
 
 
 class TestRandomCrop:

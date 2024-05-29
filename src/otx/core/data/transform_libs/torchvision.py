@@ -2183,17 +2183,15 @@ class RandomResize(tvt_v2.Transform, NumpytoTVTensorMixin):
     Reference : https://github.com/open-mmlab/mmcv/blob/v2.1.0/mmcv/transforms/processing.py#L1381-L1562
 
     Args:
-        scale (Sequence): Images scales for resizing.
-            Defaults to None.
-        ratio_range (tuple[float], optional): (min_ratio, max_ratio).
-            Defaults to None.
+        scale (Sequence): Images scales for resizing with (height, width). Defaults to None.
+        ratio_range (tuple[float], optional): (min_ratio, max_ratio). Defaults to None.
         is_numpy_to_tvtensor(bool): Whether convert outputs to tensor. Defaults to False.
         **resize_kwargs: Other keyword arguments for the ``resize_type``.
     """
 
     def __init__(
         self,
-        scale: Sequence[int | tuple[int, int]],
+        scale: Sequence[int | tuple[int, int]],  # (H, W)
         ratio_range: tuple[float, float] | None = None,
         is_numpy_to_tvtensor: bool = False,
         **resize_kwargs,
