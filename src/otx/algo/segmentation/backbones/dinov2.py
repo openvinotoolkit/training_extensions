@@ -5,6 +5,7 @@
 
 from __future__ import annotations
 
+import os
 from functools import partial
 from pathlib import Path
 
@@ -29,8 +30,14 @@ class DinoVisionTransformer(BaseModule):
     ):
         super().__init__(init_cfg)
         self._init_args = get_class_initial_arguments()
-        torch.hub._validate_not_a_forked_repo = lambda a, b, c: True  # noqa: SLF001, ARG005
-        self.backbone = torch.hub.load(repo_or_dir="facebookresearch/dinov2", model=name, skip_validation=True)
+        # torch.hub._validate_not_a_forked_repo = lambda a, b, c: True
+        repo_or_dir: str | Path = "facebookresearch/dinov2"
+        source: str = "github"
+        ci_data_root = os.environ.get("CI_DATA_ROOT")
+        if ci_data_root is not None:
+            repo_or_dir = Path(Path(ci_data_root) / "torch" / "hub" / "facebookresearch_dinov2_main")
+            source = "local"
+        self.backbone = torch.hub.load(repo_or_dir=repo_or_dir, source=source, model=name)
         if freeze_backbone:
             self._freeze_backbone(self.backbone)
 

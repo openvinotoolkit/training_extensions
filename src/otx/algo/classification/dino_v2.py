@@ -5,6 +5,8 @@
 
 from __future__ import annotations
 
+import os
+from pathlib import Path
 from typing import TYPE_CHECKING, Any, Literal
 
 import torch
@@ -48,10 +50,17 @@ class DINOv2(nn.Module):
     ):
         super().__init__()
         self._init_args = get_class_initial_arguments()
+
+        repo_or_dir: str | Path = "facebookresearch/dinov2"
+        source: str = "github"
+        ci_data_root = os.environ.get("CI_DATA_ROOT")
+        if ci_data_root is not None:
+            repo_or_dir = Path(Path(ci_data_root) / "torch" / "hub" / "facebookresearch_dinov2_main")
+            source = "local"
         self.backbone = torch.hub.load(
-            repo_or_dir="facebookresearch/dinov2",
+            repo_or_dir=repo_or_dir,
+            source=source,
             model=backbone,
-            skip_validation=True,
         )
 
         if freeze_backbone:
