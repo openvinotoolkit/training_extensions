@@ -1095,7 +1095,8 @@ class RandomFlip(tvt_v2.Transform, NumpytoTVTensorMixin):
     def __repr__(self) -> str:
         repr_str = self.__class__.__name__
         repr_str += f"(prob={self.prob}, "
-        repr_str += f"direction={self.direction})"
+        repr_str += f"direction={self.direction}, "
+        repr_str += f"is_numpy_to_tvtensor={self.is_numpy_to_tvtensor})"
         return repr_str
 
 
@@ -1242,7 +1243,8 @@ class PhotoMetricDistortion(tvt_v2.Transform, NumpytoTVTensorMixin):
         repr_str += f"{(self.contrast_lower, self.contrast_upper)}, "
         repr_str += "saturation_range="
         repr_str += f"{(self.saturation_lower, self.saturation_upper)}, "
-        repr_str += f"hue_delta={self.hue_delta})"
+        repr_str += f"hue_delta={self.hue_delta}, "
+        repr_str += f"is_numpy_to_tvtensor={self.is_numpy_to_tvtensor})"
         return repr_str
 
 
@@ -1264,7 +1266,7 @@ class RandomAffine(tvt_v2.Transform, NumpytoTVTensorMixin):
             scaling transform. Defaults to (0.5, 1.5).
         max_shear_degree (float): Maximum degrees of shear
             transform. Defaults to 2.
-        border (tuple[int]): Distance from width and height sides of input
+        border (tuple[int]): Distance from height and width sides of input
             image to adjust output shape. Only used in mosaic dataset.
             Defaults to (0, 0).
         border_val (tuple[int]): Border padding values of 3 channels.
@@ -1282,7 +1284,7 @@ class RandomAffine(tvt_v2.Transform, NumpytoTVTensorMixin):
         max_translate_ratio: float = 0.1,
         scaling_ratio_range: tuple[float, float] = (0.5, 1.5),
         max_shear_degree: float = 2.0,
-        border: tuple[int, int] = (0, 0),
+        border: tuple[int, int] = (0, 0),  # (H, W)
         border_val: tuple[int, int, int] = (114, 114, 114),
         bbox_clip_border: bool = True,
         is_numpy_to_tvtensor: bool = False,
@@ -1296,7 +1298,7 @@ class RandomAffine(tvt_v2.Transform, NumpytoTVTensorMixin):
         self.max_translate_ratio = max_translate_ratio
         self.scaling_ratio_range = scaling_ratio_range
         self.max_shear_degree = max_shear_degree
-        self.border = border
+        self.border = border  # (H, W)
         self.border_val = border_val
         self.bbox_clip_border = bbox_clip_border
         self.is_numpy_to_tvtensor = is_numpy_to_tvtensor
@@ -1329,8 +1331,8 @@ class RandomAffine(tvt_v2.Transform, NumpytoTVTensorMixin):
         inputs = _inputs[0]
 
         img = to_np_image(inputs.image)
-        height = img.shape[0] + self.border[1] * 2
-        width = img.shape[1] + self.border[0] * 2
+        height = img.shape[0] + self.border[0] * 2
+        width = img.shape[1] + self.border[1] * 2
 
         warp_matrix = self._get_random_homography_matrix(height, width)
 
@@ -1359,7 +1361,8 @@ class RandomAffine(tvt_v2.Transform, NumpytoTVTensorMixin):
         repr_str += f"max_shear_degree={self.max_shear_degree}, "
         repr_str += f"border={self.border}, "
         repr_str += f"border_val={self.border_val}, "
-        repr_str += f"bbox_clip_border={self.bbox_clip_border})"
+        repr_str += f"bbox_clip_border={self.bbox_clip_border}, "
+        repr_str += f"is_numpy_to_tvtensor={self.is_numpy_to_tvtensor})"
         return repr_str
 
     @staticmethod
