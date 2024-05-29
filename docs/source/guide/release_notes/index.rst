@@ -8,6 +8,7 @@ v1.6.2 (2Q24)
 -------------
 
 - Pin OTX version to requirements.txt file for the exportable package
+- Add augmentation details page to the docs
 
 v1.6.1 (2Q24)
 -------------

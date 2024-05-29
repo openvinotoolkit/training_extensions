@@ -101,6 +101,7 @@ You can find more details with examples in the [CLI command intro](https://openv
 ### v1.6.2 (2Q24)
 
 - Pin OTX version to requirements.txt file for the exportable package (<https://github.com/openvinotoolkit/training_extensions/pull/3555>)
+- Add augmentation details page to the docs (<https://github.com/openvinotoolkit/training_extensions/pull/3533>)
 
 ### v1.6.1 (2Q24)
 
