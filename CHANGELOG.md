@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## \[v1.6.2\]
+
+### Enhancements
+
+- Add augmentation details page to the docs (<https://github.com/openvinotoolkit/training_extensions/pull/3533>)
+
+### Bug fixes
+
+- Pin OTX version to requirements.txt file for the exportable package (<https://github.com/openvinotoolkit/training_extensions/pull/3555>)
+
 ## \[v1.6.1\]
 
 ### Enhancements
