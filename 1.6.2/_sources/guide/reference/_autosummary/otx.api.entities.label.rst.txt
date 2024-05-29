@@ -1,0 +1,30 @@
+otx.api.entities.label
+======================
+
+.. automodule:: otx.api.entities.label
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      Domain
+      LabelEntity
+   
+   
+
+   
+   
+   
+
+
+

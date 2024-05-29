@@ -1,0 +1,23 @@
+otx.algorithms.detection.configs.instance\_segmentation.efficientnetb2b\_maskrcnn.deployment
+============================================================================================
+
+.. automodule:: otx.algorithms.detection.configs.instance_segmentation.efficientnetb2b_maskrcnn.deployment
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

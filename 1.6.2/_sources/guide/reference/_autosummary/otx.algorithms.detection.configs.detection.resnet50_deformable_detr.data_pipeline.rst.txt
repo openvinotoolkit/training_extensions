@@ -1,0 +1,23 @@
+otx.algorithms.detection.configs.detection.resnet50\_deformable\_detr.data\_pipeline
+====================================================================================
+
+.. automodule:: otx.algorithms.detection.configs.detection.resnet50_deformable_detr.data_pipeline
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

@@ -1,0 +1,34 @@
+otx.core
+========
+
+.. automodule:: otx.core
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   otx.core.data
+   otx.core.file
+   otx.core.ov
+   otx.core.patcher
+

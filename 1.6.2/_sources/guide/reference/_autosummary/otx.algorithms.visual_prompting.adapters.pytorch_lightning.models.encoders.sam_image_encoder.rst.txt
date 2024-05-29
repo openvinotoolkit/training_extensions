@@ -1,0 +1,29 @@
+otx.algorithms.visual\_prompting.adapters.pytorch\_lightning.models.encoders.sam\_image\_encoder
+================================================================================================
+
+.. automodule:: otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.encoders.sam_image_encoder
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      SAMImageEncoder
+   
+   
+
+   
+   
+   
+
+
+

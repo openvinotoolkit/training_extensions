@@ -1,0 +1,30 @@
+otx.algorithms.common.adapters.mmdeploy
+=======================================
+
+.. automodule:: otx.algorithms.common.adapters.mmdeploy
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      squeeze__default
+      is_mmdeploy_enabled
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

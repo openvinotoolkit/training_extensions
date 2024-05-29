@@ -1,0 +1,23 @@
+otx.algorithms.detection.configs.rotated\_detection.efficientnetb2b\_maskrcnn.model
+===================================================================================
+
+.. automodule:: otx.algorithms.detection.configs.rotated_detection.efficientnetb2b_maskrcnn.model
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

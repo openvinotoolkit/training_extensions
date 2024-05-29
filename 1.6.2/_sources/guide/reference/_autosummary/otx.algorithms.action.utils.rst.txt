@@ -1,0 +1,32 @@
+otx.algorithms.action.utils
+===========================
+
+.. automodule:: otx.algorithms.action.utils
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   otx.algorithms.action.utils.convert_public_data_to_cvat
+   otx.algorithms.action.utils.data
+

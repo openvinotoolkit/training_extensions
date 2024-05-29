@@ -1,0 +1,29 @@
+otx.api.usecases.tasks.interfaces.evaluate\_interface
+=====================================================
+
+.. automodule:: otx.api.usecases.tasks.interfaces.evaluate_interface
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      IEvaluationTask
+   
+   
+
+   
+   
+   
+
+
+

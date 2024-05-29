@@ -1,0 +1,23 @@
+otx.algorithms.detection.configs.detection.resnet50\_lite\_dino.deployment
+==========================================================================
+
+.. automodule:: otx.algorithms.detection.configs.detection.resnet50_lite_dino.deployment
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

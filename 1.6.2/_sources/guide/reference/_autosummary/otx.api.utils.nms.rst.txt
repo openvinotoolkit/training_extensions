@@ -1,0 +1,30 @@
+otx.api.utils.nms
+=================
+
+.. automodule:: otx.api.utils.nms
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      multiclass_nms
+      nms
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

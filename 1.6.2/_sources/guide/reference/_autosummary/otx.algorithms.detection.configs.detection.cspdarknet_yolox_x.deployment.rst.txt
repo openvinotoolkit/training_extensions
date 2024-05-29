@@ -1,0 +1,23 @@
+otx.algorithms.detection.configs.detection.cspdarknet\_yolox\_x.deployment
+==========================================================================
+
+.. automodule:: otx.algorithms.detection.configs.detection.cspdarknet_yolox_x.deployment
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

@@ -1,0 +1,29 @@
+otx.api.entities.tensor
+=======================
+
+.. automodule:: otx.api.entities.tensor
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      TensorEntity
+   
+   
+
+   
+   
+   
+
+
+

@@ -1,0 +1,37 @@
+otx.algorithms.detection.adapters.mmdet
+=======================================
+
+.. automodule:: otx.algorithms.detection.adapters.mmdet
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      OTXDetDataset
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   otx.algorithms.detection.adapters.mmdet.models
+

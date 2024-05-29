@@ -1,0 +1,30 @@
+otx.algorithms.visual\_prompting.tasks.inference
+================================================
+
+.. automodule:: otx.algorithms.visual_prompting.tasks.inference
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      InferenceTask
+      ZeroShotTask
+   
+   
+
+   
+   
+   
+
+
+

@@ -1,0 +1,29 @@
+otx.algorithms.common.adapters.torch.amp.xpu\_grad\_scaler
+==========================================================
+
+.. automodule:: otx.algorithms.common.adapters.torch.amp.xpu_grad_scaler
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      XPUGradScaler
+   
+   
+
+   
+   
+   
+
+
+
