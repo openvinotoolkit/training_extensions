@@ -578,7 +578,7 @@ class TestRandomCrop:
         with pytest.raises(AssertionError):
             RandomCrop(crop_size=crop_size, crop_type=crop_type)
 
-    @pytest.mark.parametrize(("crop_type", "crop_size"), [("relative", (0.5, 0.5)), ("absolute", (16, 12))])
+    @pytest.mark.parametrize(("crop_type", "crop_size"), [("relative", (0.5, 0.5)), ("absolute", (12, 16))])
     def test_forward_relative_absolute(self, entity, crop_type: str, crop_size: tuple[float | int]) -> None:
         # test relative and absolute crop
         transform = RandomCrop(crop_size=crop_size, crop_type=crop_type)
@@ -601,13 +601,13 @@ class TestRandomCrop:
 
     def test_forward_relative_range(self, entity) -> None:
         # test relative_range crop
-        transform = RandomCrop(crop_size=(0.5, 0.5), crop_type="relative_range")
+        transform = RandomCrop(crop_size=(0.9, 0.8), crop_type="relative_range")
 
         results = transform(deepcopy(entity))
 
         h, w = results.image.shape
-        assert 16 <= w <= 32
-        assert 12 <= h <= 24
+        assert 24 * 0.9 <= h <= 24
+        assert 32 * 0.8 <= w <= 32
         assert results.img_info.img_shape == results.image.shape[:2]
 
     def test_forward_bboxes_labels_masks_polygons(self, iseg_entity) -> None:
@@ -616,11 +616,11 @@ class TestRandomCrop:
 
         results = transform(deepcopy(iseg_entity))
 
-        assert results.image.shape[:2] == (5, 7)
+        assert results.image.shape[:2] == (7, 5)
         assert results.bboxes.shape[0] == 2
         assert results.labels.shape[0] == 2
         assert results.masks.shape[0] == 2
-        assert results.masks.shape[1:] == (5, 7)
+        assert results.masks.shape[1:] == (7, 5)
         assert results.img_info.img_shape == results.image.shape[:2]
 
     def test_forward_recompute_bbox_from_mask(self, iseg_entity) -> None:
@@ -683,7 +683,7 @@ class TestRandomCrop:
         results = transform(deepcopy(det_entity))
 
         if allow_negative_crop:
-            assert results.image.shape == transform.crop_size[::-1]
+            assert results.image.shape == transform.crop_size
             assert len(results.bboxes) == len(det_entity.bboxes) == 0
         else:
             assert results is None

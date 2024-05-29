@@ -1685,7 +1685,8 @@ class CachedMosaic(tvt_v2.Transform, NumpytoTVTensorMixin):
         repr_str += f"pad_val={self.pad_val}, "
         repr_str += f"prob={self.prob}, "
         repr_str += f"max_cached_images={self.max_cached_images}, "
-        repr_str += f"random_pop={self.random_pop})"
+        repr_str += f"random_pop={self.random_pop}, "
+        repr_str += f"is_numpy_to_tvtensor={self.is_numpy_to_tvtensor})"
         return repr_str
 
 
@@ -1953,7 +1954,8 @@ class CachedMixUp(tvt_v2.Transform, NumpytoTVTensorMixin):
         repr_str += f"bbox_clip_border={self.bbox_clip_border}, "
         repr_str += f"max_cached_images={self.max_cached_images}, "
         repr_str += f"random_pop={self.random_pop}, "
-        repr_str += f"prob={self.prob})"
+        repr_str += f"prob={self.prob}, "
+        repr_str += f"is_numpy_to_tvtensor={self.is_numpy_to_tvtensor})"
         return repr_str
 
 
@@ -2019,7 +2021,8 @@ class YOLOXHSVRandomAug(tvt_v2.Transform, NumpytoTVTensorMixin):
         repr_str = self.__class__.__name__
         repr_str += f"(hue_delta={self.hue_delta}, "
         repr_str += f"saturation_delta={self.saturation_delta}, "
-        repr_str += f"value_delta={self.value_delta})"
+        repr_str += f"value_delta={self.value_delta}, "
+        repr_str += f"is_numpy_to_tvtensor={self.is_numpy_to_tvtensor})"
         return repr_str
 
 
@@ -2032,7 +2035,7 @@ class Pad(tvt_v2.Transform, NumpytoTVTensorMixin):
 
     Args:
         size (tuple, optional): Fixed padding size.
-            Expected padding shape (width, height). Defaults to None.
+            Expected padding shape (height, width). Defaults to None.
         size_divisor (int, optional): The divisor of padded size. Defaults to
             None.
         pad_to_square (bool): Whether to pad the image into a square.
@@ -2118,7 +2121,7 @@ class Pad(tvt_v2.Transform, NumpytoTVTensorMixin):
             pad_w = int(np.ceil(size[1] / self.size_divisor)) * self.size_divisor
             size = (pad_h, pad_w)
         elif self.size is not None:
-            size = self.size
+            size = self.size  # (H, W)
 
         if isinstance(pad_val, int) and img.ndim == 3:
             pad_val = tuple(pad_val for _ in range(img.shape[2]))
@@ -2292,6 +2295,8 @@ class RandomCrop(tvt_v2.Transform, NumpytoTVTensorMixin):
 
     Reference : https://github.com/open-mmlab/mmcv/blob/v2.1.0/mmcv/transforms/processing.py#L1381-L1562
 
+    The absolute `crop_size` is sampled based on `crop_type` and `image_size`, then the cropped results are generated.
+
     Args:
         crop_size (tuple): The relative ratio or absolute pixels of
             (height, width).
@@ -2337,7 +2342,7 @@ class RandomCrop(tvt_v2.Transform, NumpytoTVTensorMixin):
         else:
             assert 0 < crop_size[0] <= 1  # noqa: S101
             assert 0 < crop_size[1] <= 1  # noqa: S101
-        self.crop_size = crop_size
+        self.crop_size = crop_size  # (H, W)
         self.crop_type = crop_type
         self.allow_negative_crop = allow_negative_crop
         self.bbox_clip_border = bbox_clip_border
@@ -2443,15 +2448,16 @@ class RandomCrop(tvt_v2.Transform, NumpytoTVTensorMixin):
         """
         h, w = image_size
         if self.crop_type == "absolute":
-            return min(self.crop_size[1], h), min(self.crop_size[0], w)
+            return min(self.crop_size[0], h), min(self.crop_size[1], w)
 
         if self.crop_type == "absolute_range":
+            # `self.crop_size` is used as range, not absolute value
             crop_h = np.random.randint(min(h, self.crop_size[0]), min(h, self.crop_size[1]) + 1)
             crop_w = np.random.randint(min(w, self.crop_size[0]), min(w, self.crop_size[1]) + 1)
             return crop_h, crop_w
 
         if self.crop_type == "relative":
-            crop_w, crop_h = self.crop_size
+            crop_h, crop_w = self.crop_size
             return int(h * crop_h + 0.5), int(w * crop_w + 0.5)
 
         # 'relative_range'
