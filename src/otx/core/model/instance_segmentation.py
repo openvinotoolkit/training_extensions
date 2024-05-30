@@ -169,6 +169,7 @@ class OTXInstanceSegModel(OTXModel[InstanceSegBatchDataEntity, InstanceSegBatchP
         """
         pred_info = []
         target_info = []
+
         for bboxes, masks, scores, labels in zip(
             preds.bboxes,
             preds.masks,
