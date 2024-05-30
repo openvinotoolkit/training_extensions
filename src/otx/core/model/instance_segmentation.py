@@ -169,7 +169,7 @@ class OTXInstanceSegModel(OTXModel[InstanceSegBatchDataEntity, InstanceSegBatchP
         """
         pred_info = []
         target_info = []
-
+        # self.visualise(preds, "otx-workspace/torch_predictions")
         for bboxes, masks, scores, labels in zip(
             preds.bboxes,
             preds.masks,
@@ -672,6 +672,7 @@ class OVInstanceSegmentationModel(
             masks=masks,
             polygons=[],
             labels=labels,
+            # file_names=inputs.file_names,
         )
 
     def _convert_pred_entity_to_compute_metric(
@@ -693,6 +694,7 @@ class OVInstanceSegmentationModel(
         pred_info = []
         target_info = []
 
+        # self.visualise(preds, "otx-workspace/ov_predictions")
         for bboxes, masks, scores, labels in zip(
             preds.bboxes,
             preds.masks,

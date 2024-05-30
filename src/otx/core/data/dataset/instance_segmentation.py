@@ -79,6 +79,7 @@ class OTXInstanceSegDataset(OTXDataset[InstanceSegDataEntity]):
             masks=tv_tensors.Mask(masks, dtype=torch.uint8),
             labels=torch.as_tensor(labels),
             polygons=gt_polygons,
+            # file_name=item.media.path,
         )
 
         return self._apply_transforms(entity)

@@ -53,6 +53,9 @@ from otx.core.utils.build import get_default_num_async_infer_requests
 from otx.core.utils.miscellaneous import ensure_callable
 from otx.core.utils.utils import is_ckpt_for_finetuning, is_ckpt_from_otx_v1
 
+import torch.nn.functional as F
+import cv2
+
 if TYPE_CHECKING:
     from pathlib import Path
 
@@ -130,6 +133,33 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
         # TODO(vinnamki): Ticket no. 138995: MetricCallable should be saved in the checkpoint
         # so that it can retrieve it from the checkpoint
         self.save_hyperparameters(logger=False, ignore=["optimizer", "scheduler", "metric"])
+
+    def visualise(self, preds, output_dir):
+        label_names = self.label_info.label_names
+        for image, img_info, pred_bboxes, pred_scores, pred_labels in zip(
+            preds.images,
+            preds.imgs_info,
+            preds.bboxes,
+            preds.scores,
+            preds.labels,
+        ):
+            h, w = img_info.ori_shape
+            if image.dtype is torch.uint8:
+                std_mean = torch.tensor([0, 0, 0], device=image.device).view(3, 1, 1)
+            else:
+                std_mean = torch.tensor([123.675, 116.28, 103.53], device=image.device).view(3, 1, 1)
+            resized_image = F.interpolate(image.unsqueeze(0), (h, w)).squeeze(0) + std_mean
+            resized_image = resized_image.permute(1, 2, 0).cpu().numpy().astype(np.uint8)
+            resized_image = np.ascontiguousarray(resized_image)
+            for box, score, label in zip(pred_bboxes, pred_scores, pred_labels):
+                box = box.cpu().numpy().astype(int)
+                score = score.cpu()
+                label = label.cpu()
+                cv2.rectangle(resized_image, (box[0], box[1]), (box[2], box[3]), (255, 0, 0), 2)
+                cv2.putText(resized_image, f'{label_names[label]}: {score:.2f}', (box[0], box[1] - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (36,255,12), 2)
+            cv2.cvtColor(resized_image, cv2.COLOR_RGB2BGR)
+            cv2.imwrite(f'{output_dir}/{img_info.img_idx}.jpg', resized_image)
+
 
     def training_step(self, batch: T_OTXBatchDataEntity, batch_idx: int) -> Tensor:
         """Step for model training."""

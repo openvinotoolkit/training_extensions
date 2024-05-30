@@ -146,6 +146,7 @@ class OTXMaskRCNN(ExplainableOTXInstanceSegModel):
         bboxes: list[tv_tensors.BoundingBoxes] = []
         labels: list[torch.LongTensor] = []
         masks: list[tv_tensors.Mask] = []
+        # file_names = []
 
         predictions = outputs["predictions"] if isinstance(outputs, dict) else outputs
         for img_info, prediction in zip(inputs.imgs_info, predictions):
@@ -163,6 +164,7 @@ class OTXMaskRCNN(ExplainableOTXInstanceSegModel):
             )
             masks.append(output_masks)
             labels.append(prediction.labels)
+            # file_names.append(file_name)
 
         if self.explain_mode:
             if not isinstance(outputs, dict):
@@ -191,6 +193,7 @@ class OTXMaskRCNN(ExplainableOTXInstanceSegModel):
                 labels=labels,
                 saliency_map=list(saliency_map),
                 feature_vector=list(feature_vector),
+                # file_names=file_names,
             )
 
         return InstanceSegBatchPredEntity(
@@ -202,6 +205,7 @@ class OTXMaskRCNN(ExplainableOTXInstanceSegModel):
             masks=masks,
             polygons=[],
             labels=labels,
+            # file_names=file_names,
         )
 
     @property
@@ -217,7 +221,7 @@ class OTXMaskRCNN(ExplainableOTXInstanceSegModel):
             input_size=input_size,
             mean=self.mean,
             std=self.std,
-            resize_mode="standard",
+            resize_mode="fit_to_window",
             pad_value=0,
             swap_rgb=False,
             via_onnx=True,
@@ -233,7 +237,7 @@ class OTXMaskRCNN(ExplainableOTXInstanceSegModel):
                 "opset_version": 11,
                 "autograd_inlining": False,
             },
-            output_names=["bboxes", "labels", "masks", "feature_vector", "saliency_map"] if self.explain_mode else None,
+            output_names=["bboxes", "labels", "masks"],
         )
 
     def forward_for_tracing(

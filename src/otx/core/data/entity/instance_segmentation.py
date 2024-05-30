@@ -41,6 +41,7 @@ class InstanceSegDataEntity(OTXDataEntity):
     masks: tv_tensors.Mask
     labels: LongTensor
     polygons: list[Polygon]
+    # file_name: str
 
 
 @dataclass
@@ -63,6 +64,7 @@ class InstanceSegBatchDataEntity(OTXBatchDataEntity[InstanceSegDataEntity]):
     masks: list[tv_tensors.Mask]
     labels: list[LongTensor]
     polygons: list[list[Polygon]]
+    # file_names: list[str]
 
     @property
     def task(self) -> OTXTaskType:
@@ -94,6 +96,7 @@ class InstanceSegBatchDataEntity(OTXBatchDataEntity[InstanceSegDataEntity]):
             masks=[entity.masks for entity in entities],
             labels=[entity.labels for entity in entities],
             polygons=[entity.polygons for entity in entities],
+            # file_names=[entity.file_name for entity in entities],
         )
 
     def pin_memory(self) -> InstanceSegBatchDataEntity:
