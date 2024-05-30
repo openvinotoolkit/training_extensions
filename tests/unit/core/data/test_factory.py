@@ -25,6 +25,7 @@ from otx.core.data.transform_libs.mmdet import MMDetTransformLib
 from otx.core.data.transform_libs.mmpretrain import MMPretrainTransformLib
 from otx.core.data.transform_libs.mmseg import MMSegTransformLib
 from otx.core.data.transform_libs.torchvision import TorchVisionTransformLib
+from otx.core.types.image import ImageColorChannel
 from otx.core.types.task import OTXTaskType
 from otx.core.types.transformer_libs import TransformLibType
 
@@ -86,6 +87,7 @@ class TestOTXDatasetFactory:
         cfg_data_module.vpm_config = mocker.MagicMock(spec=VisualPromptingConfig)
         cfg_data_module.vpm_config.use_bbox = False
         cfg_data_module.vpm_config.use_point = False
+        cfg_data_module.image_color_channel = ImageColorChannel.BGR
         mocker.patch.object(HLabelInfo, "from_dm_label_groups", return_value=fxt_mock_hlabelinfo)
         assert isinstance(
             OTXDatasetFactory.create(
