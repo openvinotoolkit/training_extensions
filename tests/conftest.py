@@ -120,6 +120,12 @@ def pytest_addoption(parser: pytest.Parser):
         "and reverted after run. Works only for v2.x assuming CLI compatibility.",
     )
     parser.addoption(
+        "--resume-from",
+        type=str,
+        help="Previous performance test directory which contains execution results. "
+        "If training was already done in previous performance test, training is skipped and refer previous result.",
+    )
+    parser.addoption(
         "--open-subprocess",
         action="store_true",
         help="Open subprocess for each CLI test case. "

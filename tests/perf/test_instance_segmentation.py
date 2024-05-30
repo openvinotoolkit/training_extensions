@@ -89,6 +89,9 @@ class TestPerfInstanceSegmentation(PerfTestBase):
         Benchmark.Criterion(name="test/iter_time", summary="mean", compare="<", margin=0.1),
         Benchmark.Criterion(name="export/iter_time", summary="mean", compare="<", margin=0.1),
         Benchmark.Criterion(name="optimize/iter_time", summary="mean", compare="<", margin=0.1),
+        Benchmark.Criterion(name="test(train)/e2e_time", summary="max", compare=">", margin=0.1),
+        Benchmark.Criterion(name="test(export)/e2e_time", summary="max", compare=">", margin=0.1),
+        Benchmark.Criterion(name="test(optimize)/e2e_time", summary="max", compare=">", margin=0.1),
     ]
 
     @pytest.mark.parametrize(
@@ -108,12 +111,14 @@ class TestPerfInstanceSegmentation(PerfTestBase):
         fxt_model: Benchmark.Model,
         fxt_dataset: Benchmark.Dataset,
         fxt_benchmark: Benchmark,
+        fxt_resume_from: Path | None,
     ):
         self._test_perf(
             model=fxt_model,
             dataset=fxt_dataset,
             benchmark=fxt_benchmark,
             criteria=self.BENCHMARK_CRITERIA,
+            resume_from=fxt_resume_from,
         )
 
 
@@ -177,6 +182,9 @@ class TestPerfTilingInstanceSegmentation(PerfTestBase):
         Benchmark.Criterion(name="test/iter_time", summary="mean", compare="<", margin=0.1),
         Benchmark.Criterion(name="export/iter_time", summary="mean", compare="<", margin=0.1),
         Benchmark.Criterion(name="optimize/iter_time", summary="mean", compare="<", margin=0.1),
+        Benchmark.Criterion(name="test(train)/e2e_time", summary="max", compare=">", margin=0.1),
+        Benchmark.Criterion(name="test(export)/e2e_time", summary="max", compare=">", margin=0.1),
+        Benchmark.Criterion(name="test(optimize)/e2e_time", summary="max", compare=">", margin=0.1),
     ]
 
     @pytest.mark.parametrize(
@@ -196,10 +204,12 @@ class TestPerfTilingInstanceSegmentation(PerfTestBase):
         fxt_model: Benchmark.Model,
         fxt_dataset: Benchmark.Dataset,
         fxt_benchmark: Benchmark,
+        fxt_resume_from: Path | None,
     ):
         self._test_perf(
             model=fxt_model,
             dataset=fxt_dataset,
             benchmark=fxt_benchmark,
             criteria=self.BENCHMARK_CRITERIA,
+            resume_from=fxt_resume_from,
         )

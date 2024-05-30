@@ -7,11 +7,12 @@ from __future__ import annotations
 
 import gc
 import logging
+import shutil
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 from time import time
-from typing import Any
+from typing import Any, Literal
 
 import numpy as np
 import pandas as pd
@@ -132,6 +133,7 @@ class Benchmark:
         model: Model,
         dataset: Dataset,
         criteria: list[Criterion],
+        resume_from: Path | None = None,
     ) -> pd.DataFrame | None:
         """Run configured benchmark with given dataset and model and return the result.
 
@@ -139,6 +141,9 @@ class Benchmark:
             model (Model): Target model settings
             dataset (Dataset): Target dataset settings
             criteria (list[Criterion]): Target criteria settings
+            resume_from(Path | None, optional):
+                Previous performance directory to load. If training was already done in previous performance test,
+                training is skipped and refer previous result.
 
         Retruns:
             pd.DataFrame | None: Table with benchmark metrics
@@ -168,6 +173,13 @@ class Benchmark:
                 tags["seed"] = str(seed)
 
                 # Train & test
+                copied_train_dir = None
+                if (
+                    resume_from is not None
+                    and (prev_train_dir := self._find_corresponding_dir(resume_from, tags)) is not None
+                ):
+                    copied_train_dir = self._copy_prev_train_dir(prev_train_dir, sub_work_dir)
+
                 command = [
                     "otx",
                     "train",
@@ -189,13 +201,19 @@ class Benchmark:
                 command.extend(["--deterministic", str(self.deterministic)])
                 if self.num_epoch > 0:
                     command.extend(["--max_epochs", str(self.num_epoch)])
-                start_time = time()
-                self._run_command(command)
-                extra_metrics = {"train/e2e_time": time() - start_time}
-                self._rename_raw_data(
-                    work_dir=sub_work_dir / ".latest" / "train",
-                    replaces={"train_": "train/", "{pre}": "train/"},
-                )
+                extra_metrics = {}
+                if copied_train_dir is not None:
+                    command.append("--print_config")
+                    with (copied_train_dir / "configs.yaml").open("w") as f:
+                        self._run_command(command, stdout=f)  # replace previuos configs.yaml to new one
+                else:
+                    start_time = time()
+                    self._run_command(command)
+                    extra_metrics["train/e2e_time"] = time() - start_time
+                    self._rename_raw_data(
+                        work_dir=sub_work_dir / ".latest" / "train",
+                        replaces={"train_": "train/", "{pre}": "train/"},
+                    )
                 self._log_metrics(
                     work_dir=sub_work_dir / ".latest" / "train",
                     tags=tags,
@@ -203,21 +221,7 @@ class Benchmark:
                     extra_metrics=extra_metrics,
                 )
 
-                command = [
-                    "otx",
-                    "test",
-                    "--work_dir",
-                    str(sub_work_dir),
-                ]
-                for key, value in dataset.extra_overrides.get("test", {}).items():
-                    command.append(f"--{key}")
-                    command.append(str(value))
-                self._run_command(command)
-                self._rename_raw_data(
-                    work_dir=sub_work_dir / ".latest" / "test",
-                    replaces={"test_": "test/", "{pre}": "test/"},
-                )
-                self._log_metrics(work_dir=sub_work_dir / ".latest" / "test", tags=tags, criteria=criteria)
+                self._run_test(sub_work_dir, dataset, tags, criteria, what2test="train")
 
                 # Export & test
                 if self.eval_upto in ["export", "optimize"]:
@@ -236,24 +240,14 @@ class Benchmark:
                     if not exported_model_path.exists():
                         exported_model_path = sub_work_dir / ".latest" / "export" / "exported_model_decoder.xml"
 
-                    command = [  # NOTE: not working for h_label_cls. to be fixed
-                        "otx",
-                        "test",
-                        "--checkpoint",
-                        str(exported_model_path),
-                        "--work_dir",
-                        str(sub_work_dir),
-                    ]
-                    for key, value in dataset.extra_overrides.get("test", {}).items():
-                        command.append(f"--{key}")
-                        command.append(str(value))
-                    self._run_command(command)
-
-                    self._rename_raw_data(
-                        work_dir=sub_work_dir / ".latest" / "test",
-                        replaces={"test": "export", "{pre}": "export/"},
+                    self._run_test(
+                        sub_work_dir,
+                        dataset,
+                        tags,
+                        criteria,
+                        checkpoint=exported_model_path,
+                        what2test="export",
                     )
-                    self._log_metrics(work_dir=sub_work_dir / ".latest" / "test", tags=tags, criteria=criteria)
 
                 # Optimize & test
                 if self.eval_upto == "optimize":
@@ -274,24 +268,14 @@ class Benchmark:
                     if not optimized_model_path.exists():
                         optimized_model_path = sub_work_dir / ".latest" / "optimize" / "optimized_model_decoder.xml"
 
-                    command = [
-                        "otx",
-                        "test",
-                        "--checkpoint",
-                        str(optimized_model_path),
-                        "--work_dir",
-                        str(sub_work_dir),
-                    ]
-                    for key, value in dataset.extra_overrides.get("test", {}).items():
-                        command.append(f"--{key}")
-                        command.append(str(value))
-                    self._run_command(command)
-
-                    self._rename_raw_data(
-                        work_dir=sub_work_dir / ".latest" / "test",
-                        replaces={"test": "optimize", "{pre}": "optimize/"},
+                    self._run_test(
+                        sub_work_dir,
+                        dataset,
+                        tags,
+                        criteria,
+                        checkpoint=optimized_model_path,
+                        what2test="optimize",
                     )
-                    self._log_metrics(work_dir=sub_work_dir / ".latest" / "test", tags=tags, criteria=criteria)
 
                 # Force memory clean up
                 gc.collect()
@@ -308,10 +292,83 @@ class Benchmark:
         result = summary.average(result, keys=["task", "model", "data_group", "data"])  # Average out seeds
         return result.set_index(["task", "model", "data_group", "data"])
 
-    def _run_command(self, command: list[str]) -> None:
+    def _find_corresponding_dir(self, resume_from: Path, tags: dict[str, str]) -> Path | None:
+        for csv_file in resume_from.rglob("benchmark.raw.csv"):
+            raw_data = pd.read_csv(csv_file)
+            if (
+                "train/epoch" in raw_data.columns  # check it's csv of train result
+                and all(  # check meta info is same
+                    str(raw_data.iloc[0].get(key, "NOT_IN_CSV")) == tags.get(key, "NOT_IN_TAG")
+                    for key in ["data_group", "data", "model", "task", "seed"]
+                )
+            ):
+                return csv_file.parent
+        return None
+
+    def _copy_prev_train_dir(self, prev_train_dir: Path, work_dir: Path) -> Path:
+        work_dir.mkdir(parents=True, exist_ok=True)
+        new_train_dir = work_dir / prev_train_dir.name
+        shutil.copytree(prev_train_dir, new_train_dir, ignore_dangling_symlinks=True)
+        cache_dir = work_dir / ".latest" / "train"
+        cache_dir.parent.mkdir(exist_ok=True)
+        cache_dir.symlink_to(Path("..") / new_train_dir.relative_to(work_dir))
+
+        return new_train_dir
+
+    def _run_test(
+        self,
+        work_dir: Path | str,
+        dataset: Dataset,
+        tags: dict[str, str],
+        criteria: list[Criterion],
+        checkpoint: Path | str | None = None,
+        what2test: Literal["train", "export", "optimize"] = "train",
+    ) -> None:
+        """Run otx test and update result csv file to align it's indices to the current task."""
+        replace_map = {
+            "train": {"test_": "test/", "{pre}": "export/"},
+            "export": {"test": "export", "{pre}": "export/"},
+            "optimize": {"test": "optimize", "{pre}": "optimize/"},
+        }
+
+        command = [
+            "otx",
+            "test",
+            "--work_dir",
+            str(work_dir),
+        ]
+        if checkpoint is not None:
+            command.extend(["--checkpoint", str(checkpoint)])
+        for key, value in dataset.extra_overrides.get("test", {}).items():
+            command.append(f"--{key}")
+            command.append(str(value))
+
+        start_time = time()
+        self._run_command(command)
+        extra_metrics = {f"test({what2test})/e2e_time": time() - start_time}
+
+        self._rename_raw_data(
+            work_dir=work_dir / ".latest" / "test",
+            replaces=replace_map[what2test],
+        )
+        self._log_metrics(
+            work_dir=work_dir / ".latest" / "test",
+            tags=tags,
+            criteria=criteria,
+            extra_metrics=extra_metrics,
+        )
+
+    def _run_command(self, command: list[str], **kwargs) -> None:
+        """Run command using 'subprocess.run'.
+
+        Args:
+            command (list[str]): command to execute.
+            kwags: arguments to 'subprocess.run'.
+        """
         print(" ".join(command))
+        kwargs["check"] = True
         if not self.dry_run:
-            subprocess.run(command, check=True)  # noqa: S603
+            subprocess.run(command, **kwargs)  # noqa: S603, PLW1510
 
     def _log_metrics(
         self,
