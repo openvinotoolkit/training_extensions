@@ -59,7 +59,7 @@ class PackInputs(MMPretrainPackInputs):
         image_info = deepcopy(data_entity.img_info)
         image_info.img_shape = img_shape
         image_info.ori_shape = ori_shape
-        image_info.scale_factor = scale_factor  # convert to (H, W)
+        image_info.scale_factor = scale_factor[::-1]  # convert to (H, W)
 
         return {
             "image": image,
