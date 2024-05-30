@@ -9,7 +9,6 @@ import torch
 from torch import Tensor, nn
 
 from otx.algo.detection.heads.atss_head import ATSSHead
-from otx.algo.detection.utils.structures import SamplingResult
 from otx.algo.detection.utils.utils import (
     anchor_inside_flags,
     distance2bbox,
@@ -51,6 +50,7 @@ class RTMDetHead(ATSSHead):
     ) -> None:
         if act_cfg is None:
             act_cfg = {"type": "ReLU"}
+
         self.act_cfg = act_cfg
         self.with_objectness = with_objectness
         super().__init__(num_classes, in_channels, **kwargs)
@@ -272,7 +272,14 @@ class RTMDetHead(ATSSHead):
 
         flatten_bboxes = torch.cat(decoded_bboxes, 1)
 
-        cls_reg_targets = self.get_targets(
+        (
+            anchor_list,
+            labels_list,
+            label_weights_list,
+            bbox_targets_list,
+            assign_metrics_list,
+            sampling_results_list,
+        ) = self.get_targets(  # type: ignore[misc]
             flatten_cls_scores,
             flatten_bboxes,
             anchor_list,
@@ -281,14 +288,6 @@ class RTMDetHead(ATSSHead):
             batch_img_metas,
             batch_gt_instances_ignore=batch_gt_instances_ignore,
         )
-        (
-            anchor_list,
-            labels_list,
-            label_weights_list,
-            bbox_targets_list,
-            assign_metrics_list,
-            sampling_results_list,
-        ) = cls_reg_targets
 
         losses_cls, losses_bbox, cls_avg_factors, bbox_avg_factors = multi_apply(
             self.loss_by_feat_single,
@@ -316,9 +315,9 @@ class RTMDetHead(ATSSHead):
         valid_flag_list: list[list[Tensor]],
         batch_gt_instances: list[InstanceData],
         batch_img_metas: list[dict],
-        batch_gt_instances_ignore: list[InstanceData] | None = None,
+        batch_gt_instances_ignore: list[InstanceData] | list[None] | None = None,
         unmap_outputs: bool = True,
-    ) -> tuple[list[list[Tensor]], list[Tensor], list[Tensor], list[Tensor], list[Tensor], list[Tensor]]:
+    ) -> tuple | None:
         """Compute regression and classification targets for anchors in multiple images.
 
         Args:
@@ -372,7 +371,7 @@ class RTMDetHead(ATSSHead):
 
         # compute targets for each image
         if batch_gt_instances_ignore is None:
-            batch_gt_instances_ignore = [None] * num_imgs  # type: ignore[list-item]
+            batch_gt_instances_ignore = [None] * num_imgs
         # anchor_list: list(b * [-1, 4])
         (
             all_anchors,
@@ -394,7 +393,7 @@ class RTMDetHead(ATSSHead):
         )
         # no valid anchors
         if any(labels is None for labels in all_labels):
-            return None  # type: ignore[return-value]
+            return None
 
         # split targets to a list w.r.t. multiple levels
         anchors_list = images_to_levels(all_anchors, num_level_anchors)
@@ -422,7 +421,7 @@ class RTMDetHead(ATSSHead):
         img_meta: dict,
         gt_instances_ignore: InstanceData | None = None,
         unmap_outputs: bool = True,
-    ) -> tuple[Tensor, Tensor, Tensor, Tensor, Tensor, SamplingResult]:
+    ) -> tuple:
         """Compute regression, classification targets for anchors in a single image.
 
         Args:
@@ -465,7 +464,7 @@ class RTMDetHead(ATSSHead):
             self.train_cfg["allowed_border"],
         )
         if not inside_flags.any():
-            return (None,) * 7  # type: ignore[return-value]
+            return (None,) * 7
         # assign gt and sample anchors
         anchors = flat_anchors[inside_flags, :]
 
