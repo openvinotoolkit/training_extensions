@@ -100,11 +100,10 @@ class SemiSLConfig(SubsetConfig):
     batch_size: int = 0
     subset_name: str = "unlabeled"
 
-    transforms: dict[str, list[dict[str, Any]]] = field(default_factory=dict)
+    transforms: dict[str, list[dict[str, Any]]] | list[dict[str, Any]] = field(default_factory=dict)
 
     transform_lib_type: TransformLibType = TransformLibType.TORCHVISION
     num_workers: int = 2
-    sampler: SamplerConfig = field(default_factory=lambda: SamplerConfig())
     to_tv_image: bool = True
 
 

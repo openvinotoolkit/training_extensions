@@ -57,7 +57,7 @@ class OTXSemiSLClsHead(nn.Module):
         self.classwise_acc = torch.ones((self.num_classes,)) * self.min_threshold
 
 
-    def loss(self, feats: dict[str, torch.Tensor] | tuple[torch.Tensor] | torch.Tensor, labels: torch.Tensor, **kwargs):
+    def loss(self, feats: dict[str, torch.Tensor] | tuple[torch.Tensor] | torch.Tensor, labels: dict[str, torch.Tensor] | torch.Tensor, **kwargs):
         """Loss function in which unlabeled data is considered.
 
         Args:
@@ -87,7 +87,7 @@ class OTXSemiSLClsHead(nn.Module):
     def get_logits(
         self,
         feats: dict[str, torch.Tensor] | tuple[torch.Tensor] | torch.Tensor,
-        labels: torch.Tensor,
+        labels: dict[str, torch.Tensor] | torch.Tensor,
     ) -> tuple[tuple[Any, Any], torch.Tensor, torch.Tensor | None, torch.Tensor | None]:
         """Forward_train head using pseudo-label selected through threshold.
 
@@ -99,6 +99,8 @@ class OTXSemiSLClsHead(nn.Module):
         Returns:
             dict[str, Tensor]: A dictionary of loss components.
         """
+        if isinstance(labels, dict):
+            labels = labels["labeled"]
         label_u, mask = None, None
         if isinstance(feats, dict):
             for key in feats:

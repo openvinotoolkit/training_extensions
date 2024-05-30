@@ -202,18 +202,13 @@ class EfficientNetForSemiSL(EfficientNetForMulticlassCls):
             mode = "predict"
 
         if isinstance(inputs, dict):
-            labeled_inputs = inputs["labeled"]
-            unlabeled_inputs = inputs["unlabeled"]
+            images = {key: inputs[key].images for key in inputs}
+            labels = {key: torch.cat(inputs[key].labels, dim=0) for key in inputs}
+            imgs_info = {key: inputs[key].imgs_info for key in inputs}
             return {
-                "images": {
-                    "labeled": labeled_inputs.images,
-                    **unlabeled_inputs.images,
-                },
-                "labels": torch.cat(labeled_inputs.labels, dim=0),
-                "imgs_info": {
-                    "labeled": labeled_inputs.imgs_info,
-                    **unlabeled_inputs.imgs_info,
-                },
+                "images": images,
+                "labels": labels,
+                "imgs_info": imgs_info,
                 "mode": mode,
             }
         return {

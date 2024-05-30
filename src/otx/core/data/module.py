@@ -6,8 +6,10 @@
 from __future__ import annotations
 
 import logging as log
+from copy import deepcopy
 from typing import TYPE_CHECKING, Iterable
 
+import torch
 from datumaro import Dataset as DmDataset
 from lightning import LightningDataModule
 from omegaconf import DictConfig, OmegaConf
@@ -135,15 +137,18 @@ class OTXDataModule(LightningDataModule):
             dm_subset = unlabeled_dataset.subsets()[name]
 
             if isinstance(self.config.unlabeled_subset.transforms, dict):
-                from otx.core.data.dataset.multi_transform import MultiTransformDatasetFactory
-
-                unlabeled_dataset = MultiTransformDatasetFactory.create(
-                    task=self.task,
-                    dm_subset=dm_subset.as_dataset(),
-                    mem_cache_handler=mem_cache_handler,
-                    cfg_subset=self.config.unlabeled_subset,
-                    cfg_data_module=config,
-                )
+                dm_subset = dm_subset.as_dataset()
+                for transform_key, transforms in self.config.unlabeled_subset.transforms.items():
+                    unlabeled_config = deepcopy(self.config.unlabeled_subset)
+                    unlabeled_config.transforms = transforms
+                    unlabeled_dataset = OTXDatasetFactory.create(
+                        task=self.task,
+                        dm_subset=dm_subset,
+                        mem_cache_handler=mem_cache_handler,
+                        cfg_subset=unlabeled_config,
+                        cfg_data_module=config,
+                    )
+                    self.subsets[transform_key] = unlabeled_dataset
             else:
                 unlabeled_dataset = OTXDatasetFactory.create(
                     task=self.task,
@@ -152,7 +157,7 @@ class OTXDataModule(LightningDataModule):
                     cfg_subset=self.config.unlabeled_subset,
                     cfg_data_module=config,
                 )
-            self.subsets[name] = unlabeled_dataset
+                self.subsets[name] = unlabeled_dataset
 
         if self._is_meta_info_valid(label_infos) is False:
             msg = "All data meta infos of subsets should be the same."
@@ -206,7 +211,7 @@ class OTXDataModule(LightningDataModule):
 
             iterables = {
                 "labeled": dataloader,
-                "unlabeled": unlabeled_dataloader,
+                **unlabeled_dataloader,
             }
             return CombinedLoader(iterables, mode="min_size")
         return dataloader
@@ -256,26 +261,47 @@ class OTXDataModule(LightningDataModule):
             persistent_workers=config.num_workers > 0,
         )
 
-    def unlabeled_dataloader(self) -> DataLoader | None:
+    def unlabeled_dataloader(self) -> dict[str, DataLoader] | None:
         """Get unlabeled dataloader."""
         config = self.config.unlabeled_subset
         if self.config.unlabeled_subset.data_root is None:
             return None
 
-        dataset = self._get_dataset(config.subset_name)
-        sampler = instantiate_sampler(config.sampler, dataset=dataset, batch_size=config.batch_size)
         common_args = {
-            "dataset": dataset,
             "batch_size": config.batch_size,
             "num_workers": config.num_workers,
             "pin_memory": True,
-            "collate_fn": dataset.collate_fn,
             "persistent_workers": config.num_workers > 0,
-            "sampler": sampler,
-            "shuffle": sampler is None,
         }
 
-        return DataLoader(**common_args)
+        dataloaders = {}
+        if isinstance(config.transforms, dict):
+            log.warning("Unlabeled dataset has multiple transforms. Use only the first one.")
+            generator = torch.Generator().manual_seed(0)
+            for key in config.transforms:
+                dataset = self._get_dataset(key)
+                # from torch.utils.data import RandomSampler
+                # sampler = RandomSampler(dataset, generator=generator)
+                sampler = instantiate_sampler(config.sampler, dataset=dataset, batch_size=config.batch_size, generator=generator)
+                dataloaders[key] = DataLoader(
+                    dataset=dataset,
+                    collate_fn=dataset.collate_fn,
+                    sampler=sampler,
+                    shuffle=False,
+                    **common_args,
+                )
+        else:
+            dataset = self._get_dataset(config.subset_name)
+            sampler = instantiate_sampler(config.sampler, dataset=dataset, batch_size=config.batch_size)
+            dataloaders[config.subset_name] = DataLoader(
+                    dataset=dataset,
+                    collate_fn=dataset.collate_fn,
+                    sampler=sampler,
+                    shuffle=sampler is None,
+                    **common_args,
+                )
+
+        return dataloaders
 
     def setup(self, stage: str) -> None:
         """Setup for each stage."""
