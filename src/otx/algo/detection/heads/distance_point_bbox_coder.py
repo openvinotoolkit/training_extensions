@@ -1,13 +1,13 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 # Copyright (c) OpenMMLab. All rights reserved.
-""""Distance Point BBox coder."""
+"""Distance Point BBox coder."""
 
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from otx.algo.detection.utils.utils import bbox2distance, distance2bbox
+from otx.algo.detection.utils.utils import bbox2distance, distance2bbox, distance2bbox_export
 
 if TYPE_CHECKING:
     from torch import Tensor
@@ -84,3 +84,18 @@ class DistancePointBBoxCoder:
         if self.clip_border is False:
             max_shape = None
         return distance2bbox(points, pred_bboxes, max_shape)
+
+    def decode_export(
+        self,
+        points: Tensor,
+        pred_bboxes: Tensor,
+        max_shape: tuple[int, ...] | Tensor | tuple[tuple[int, ...], ...] | None = None,
+    ) -> Tensor:
+        """Decode distance prediction to bounding box for export."""
+        assert points.size(0) == pred_bboxes.size(0)  # noqa: S101
+        assert points.size(-1) == 2  # noqa: S101
+        assert pred_bboxes.size(-1) == 4  # noqa: S101
+        if self.clip_border is False:
+            max_shape = None
+
+        return distance2bbox_export(points, pred_bboxes, max_shape)
