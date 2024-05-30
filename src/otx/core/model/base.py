@@ -53,9 +53,6 @@ from otx.core.utils.build import get_default_num_async_infer_requests
 from otx.core.utils.miscellaneous import ensure_callable
 from otx.core.utils.utils import is_ckpt_for_finetuning, is_ckpt_from_otx_v1
 
-import torch.nn.functional as F
-import cv2
-
 if TYPE_CHECKING:
     from pathlib import Path
 
