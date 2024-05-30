@@ -46,6 +46,18 @@ class HPOCallback(Callback):
             trainer.should_stop = True
 
 
+class HPOInitWeightCallback(Callback):
+    """Callbacks to save a HPO initial model weight. The weight is used for all trials."""
+
+    def __init__(self, save_path: Path) -> None:
+        super().__init__()
+        self._save_path = save_path
+
+    def setup(self, trainer: Trainer, pl_module: LightningModule, stage: str) -> None:
+        """Save a model weight to save_path."""
+        trainer.save_checkpoint(self._save_path)
+
+
 def run_hpo_trial(
     hp_config: dict[str, Any],
     report_func: Callable[[int | float, int | float, bool], None],
@@ -78,6 +90,13 @@ def run_hpo_trial(
 
     callbacks = _register_hpo_callback(report_func, callbacks, engine, metric_name)
     _set_to_validate_every_epoch(callbacks, train_args)
+
+    if train_args.get("checkpoint") is None:
+        hpo_initial_weight = _get_hpo_initial_weight(hpo_workdir)
+        if hpo_initial_weight.exists():
+            train_args["checkpoint"] = hpo_initial_weight
+        else:
+            callbacks = _register_init_weight_callback(callbacks, hpo_initial_weight)
 
     with TemporaryDirectory(prefix="OTX-HPO-") as temp_dir:
         _change_work_dir(temp_dir, callbacks, engine)
@@ -118,6 +137,15 @@ def _set_to_validate_every_epoch(callbacks: list[Callback], train_args: dict[str
             break
     else:
         train_args["check_val_every_n_epoch"] = 1
+
+
+def _get_hpo_initial_weight(hpo_workdir: Path) -> Path:
+    return hpo_workdir / "hpo_initial_weight.ckpt"
+
+
+def _register_init_weight_callback(callbacks: list[Callback], save_path: Path) -> list[Callback]:
+    callbacks.append(HPOInitWeightCallback(save_path))
+    return callbacks
 
 
 def _change_work_dir(work_dir: str, callbacks: list[Callback], engine: Engine) -> None:
