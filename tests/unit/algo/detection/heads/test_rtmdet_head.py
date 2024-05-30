@@ -94,7 +94,7 @@ class TestRTMDetHead:
     def test_get_anchors(self, rtmdet_head) -> None:
         featmap_sizes = [(40, 40), (20, 20), (10, 10)]
         batch_img_metas = [{"img_shape": (320, 320, 3)} for _ in range(2)]
-        device = "cuda"
+        device = "cpu"
 
         anchor_list, valid_flag_list = rtmdet_head.get_anchors(featmap_sizes, batch_img_metas, device=device)
 
