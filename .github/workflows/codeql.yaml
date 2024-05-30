@@ -15,7 +15,7 @@ on:
   push:
     branches:
       - develop
-      - releases
+      - releases/**
   pull_request:
     types:
       - opened
@@ -74,3 +74,13 @@ jobs:
         uses: github/codeql-action/analyze@47b3d888fe66b639e431abf22ebca059152f1eea # v3.24.5
         with:
           category: "/language:${{matrix.language}}"
+      - name: Generate Security Report
+        uses: rsdmike/github-security-report-action@a149b24539044c92786ec39af8ba38c93496495d # v3.0.4
+        with:
+          template: report
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: GitHub Upload Release Artifacts
+        uses: actions/upload-artifact@1746f4ab65b179e0ea60a494b83293b640dd5bba # v4.3.2
+        with:
+          name: codeql-report
+          path: "./report.pdf"
