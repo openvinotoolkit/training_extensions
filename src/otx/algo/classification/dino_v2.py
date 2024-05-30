@@ -51,17 +51,24 @@ class DINOv2(nn.Module):
         super().__init__()
         self._init_args = get_class_initial_arguments()
 
-        repo_or_dir: str | Path = "facebookresearch/dinov2"
-        source: str = "github"
         ci_data_root = os.environ.get("CI_DATA_ROOT")
+        pretrained: bool = True
         if ci_data_root is not None:
-            repo_or_dir = Path(Path(ci_data_root) / "torch" / "hub" / "facebookresearch_dinov2_main")
-            source = "local"
+            pretrained = False
+
         self.backbone = torch.hub.load(
-            repo_or_dir=str(repo_or_dir),
-            source=source,
+            repo_or_dir="facebookresearch/dinov2",
             model=backbone,
+            pretrained=pretrained,
         )
+
+        if ci_data_root is not None:
+            ckpt_filename = f"{backbone}4_pretrain.pth"
+            ckpt_path = Path(Path(ci_data_root) / "torch" / "hub" / "checkpoints" / ckpt_filename)
+            if not ckpt_path.exists():
+                msg = f"cannot find weights file: {ckpt_filename}"
+                raise FileExistsError(msg)
+            self.backbone.load_state_dict(torch.load(ckpt_path))
 
         if freeze_backbone:
             self._freeze_backbone(self.backbone)

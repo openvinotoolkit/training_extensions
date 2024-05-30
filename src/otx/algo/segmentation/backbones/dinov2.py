@@ -30,14 +30,22 @@ class DinoVisionTransformer(BaseModule):
     ):
         super().__init__(init_cfg)
         self._init_args = get_class_initial_arguments()
-        # torch.hub._validate_not_a_forked_repo = lambda a, b, c: True
-        repo_or_dir: str | Path = "facebookresearch/dinov2"
-        source: str = "github"
+
         ci_data_root = os.environ.get("CI_DATA_ROOT")
+        pretrained: bool = True
         if ci_data_root is not None:
-            repo_or_dir = Path(Path(ci_data_root) / "torch" / "hub" / "facebookresearch_dinov2_main")
-            source = "local"
-        self.backbone = torch.hub.load(repo_or_dir=str(repo_or_dir), source=source, model=name)
+            pretrained = False
+
+        self.backbone = torch.hub.load(repo_or_dir="facebookresearch/dinov2", model=name, pretrained=pretrained)
+
+        if ci_data_root is not None:
+            ckpt_filename = f"{name}4_pretrain.pth"
+            ckpt_path = Path(Path(ci_data_root) / "torch" / "hub" / "checkpoints" / ckpt_filename)
+            if not ckpt_path.exists():
+                msg = f"cannot find weights file: {ckpt_filename}"
+                raise FileExistsError(msg)
+            self.backbone.load_state_dict(torch.load(ckpt_path))
+
         if freeze_backbone:
             self._freeze_backbone(self.backbone)
 
