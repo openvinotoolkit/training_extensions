@@ -99,6 +99,10 @@ engine:
 
 callback_monitor: val/Dice
 
-data: ../_base_/data/mmseg_base.yaml
 overrides:
-  max_epochs: 170
+  callbacks:
+    - class_path: otx.algo.callbacks.adaptive_early_stopping.EarlyStoppingWithWarmup
+      init_args:
+        warmup_iters: 100
+
+data: ../_base_/data/mmseg_base.yaml

@@ -6,7 +6,6 @@
 from __future__ import annotations
 
 import json
-import warnings
 from dataclasses import asdict, dataclass
 from typing import TYPE_CHECKING, Any
 
@@ -284,14 +283,12 @@ class SegLabelInfo(LabelInfo):
     ignore_index: int = 255
 
     def __post_init__(self):
-        if not any(word.lower() == "background" for word in self.label_names):
+        if len(self.label_names) <= 1:
             msg = (
-                "Currently, no background label exists for `label_names`. "
-                "Segmentation requires a background label. "
-                "To do this, `Background` is added at index 0 of `label_names`."
+                "The number of labels must be larger than 1. "
+                "Please, check dataset labels and add background label in case of binary segmentation."
             )
-            warnings.warn(msg, stacklevel=2)
-            self.label_names.insert(0, "Background")
+            raise ValueError(msg)
 
     @classmethod
     def from_num_classes(cls, num_classes: int) -> LabelInfo:
@@ -307,12 +304,10 @@ class SegLabelInfo(LabelInfo):
             )
         """
         if num_classes == 1:
-            label_names = ["Background"]
+            # binary segmentation
+            label_names = ["background", "label_0"]
             return SegLabelInfo(label_names=label_names, label_groups=[label_names])
 
-        # NOTE: It should have "Background" label at the first place.
-        # To consider it, we need to decrease num_classes by one.
-        num_classes = num_classes - 1
         return super().from_num_classes(num_classes)
 
 

@@ -236,7 +236,10 @@ class DecodeVideo(tvt_v2.Transform):
         start_index = 0
         frame_inds = np.concatenate(frame_inds) + start_index
 
-        outputs = torch.stack([torch.tensor(inpt[idx].data) for idx in frame_inds], dim=0)
+        outputs = torch.stack(
+            [torch.tensor(cv2.cvtColor(inpt[idx].data, cv2.COLOR_RGB2BGR)) for idx in frame_inds],
+            dim=0,
+        )
         outputs = outputs.permute(0, 3, 1, 2)
         outputs = tv_tensors.Video(outputs)
         inpt.close()
