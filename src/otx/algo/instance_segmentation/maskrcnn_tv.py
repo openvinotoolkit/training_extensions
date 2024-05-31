@@ -4,7 +4,6 @@
 """TV MaskRCNN model implementations."""
 from __future__ import annotations
 
-from ast import In
 from typing import TYPE_CHECKING, Any
 
 import torch
@@ -143,41 +142,6 @@ class TVMaskRCNNR50(ExplainableOTXInstanceSegModel):
             entity.images, entity.imgs_info = stack_batch(entity.images, entity.imgs_info, pad_size_divisor=32)
         return {"entity": entity}
 
-    def visualize(self, outputs: list[dict], inputs: InstanceSegBatchDataEntity):
-        import torch.nn.functional as F
-        import numpy as np
-        import cv2
-        device = inputs.images.device
-
-        mean = torch.tensor([123.675, 116.28, 103.53], device=device).reshape(3, 1, 1)
-        std = torch.tensor([58.395, 57.12, 57.375], device=device).reshape(3, 1, 1)
-
-        for img, img_info, prediction in zip(inputs.images, inputs.imgs_info, outputs):
-            original_size = img_info.ori_shape
-            img = F.interpolate(img.unsqueeze(0), size=original_size, mode="bilinear", align_corners=False)
-            img = img.squeeze(0)
-            img = (img * std) + mean
-            img = img.clone().detach().cpu().numpy().transpose(1, 2, 0).astype("uint8")
-            img = np.ascontiguousarray(img)
-            pred_boxes = prediction["boxes"].detach().cpu().numpy()
-            pred_scores = prediction["scores"].detach().cpu().numpy()
-            pred_masks = prediction["masks"].detach().cpu().numpy()
-
-            keep = pred_scores > 0.2
-            pred_boxes = pred_boxes[keep]
-            pred_masks = pred_masks[keep]
-            pred_scores = pred_scores[keep]
-
-            for box, score, mask in zip(pred_boxes, pred_scores, pred_masks):
-                keep_pixel = mask == 1
-                mask = np.stack((mask, mask, mask), axis=-1).astype(np.uint8)
-                mask[keep_pixel, 1] = 255
-                img = cv2.addWeighted(img, 1.0, mask, 0.3, 0.0)
-
-                box = box.astype(int)
-                cv2.rectangle(img, (box[0], box[1]), (box[2], box[3]), (255, 0, 0), 2)
-
-
     def _customize_outputs(
         self,
         outputs: dict | list[dict],
@@ -202,8 +166,6 @@ class TVMaskRCNNR50(ExplainableOTXInstanceSegModel):
         labels: list[torch.LongTensor] = []
         masks: list[tv_tensors.Mask] = []
 
-        # self.visualize(outputs, inputs)
-
         for img_info, prediction in zip(inputs.imgs_info, outputs):
             scores.append(prediction["scores"])
             bboxes.append(
@@ -218,7 +180,7 @@ class TVMaskRCNNR50(ExplainableOTXInstanceSegModel):
                 dtype=torch.bool,
             )
             masks.append(output_masks)
-            labels.append(prediction["labels"] - 1)  # BG is not included in the labels
+            labels.append(prediction["labels"])
 
         if self.explain_mode:
             if not isinstance(outputs, dict):

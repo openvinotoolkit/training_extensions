@@ -12,7 +12,6 @@ import torch
 from torchvision.models.detection.image_list import ImageList
 from torchvision.models.detection.mask_rcnn import MaskRCNN
 from torchvision.models.detection.roi_heads import paste_masks_in_image
-from torchvision.models.detection.transform import resize_boxes
 
 if TYPE_CHECKING:
     from otx.core.data.entity.instance_segmentation import InstanceSegBatchDataEntity
@@ -52,37 +51,44 @@ class TVMaskRCNN(MaskRCNN):
             features = OrderedDict([("0", features)])
         proposals, proposal_losses = self.rpn(image_list, features, targets)
 
-        detections, detector_losses = self.roi_heads(features, proposals, image_list.image_sizes, targets)
-
-        if not self.training:
-            detections = self.postprocess(
-                detections,
-                image_list.image_sizes,
-                ori_shapes,
-            )
+        detections, detector_losses = self.roi_heads(
+            features,
+            proposals,
+            image_list.image_sizes,
+            targets,
+        )
 
         losses = {}
         losses.update(detector_losses)
         losses.update(proposal_losses)
 
-        return self.eager_outputs(losses, detections)
+        if self.training:
+            return losses
+        scale_factors = [img_meta.scale_factor for img_meta in entity.imgs_info]
+        return self.postprocess(
+            detections,
+            ori_shapes,
+            scale_factors,
+        )
 
     def postprocess(
         self,
         result: list[dict[str, torch.Tensor]],
-        image_shapes: list[tuple[int, int]],
-        original_image_sizes: list[tuple[int, int]],
+        ori_shapes: list[tuple[int, int]],
+        scale_factors: list[tuple[float, float]],
         mask_thr_binary: float = 0.5,
-    ) -> list[dict[str,  torch.Tensor]]:
-        if self.training:
-            return result
-        for i, (pred, im_s, o_im_s) in enumerate(zip(result, image_shapes, original_image_sizes)):
+    ) -> list[dict[str, torch.Tensor]]:
+        for i, (pred, scale_factor, ori_shape) in enumerate(zip(result, scale_factors, ori_shapes)):
             boxes = pred["boxes"]
-            boxes = resize_boxes(boxes, im_s, o_im_s)
+            # boxes = resize_boxes(boxes, im_s, o_im_s)
+            _scale_factor = [1 / s for s in scale_factor]  # (H, W)
+            boxes = boxes * boxes.new_tensor(_scale_factor[::-1]).repeat((1, int(boxes.size(-1) / 2)))
+
             result[i]["boxes"] = boxes
+            result[i]["labels"] -= 1  # Convert back to 0-indexed labels
             if "masks" in pred:
                 masks = pred["masks"]
-                masks = paste_masks_in_image(masks, boxes, o_im_s)
+                masks = paste_masks_in_image(masks, boxes, ori_shape)
                 masks = (masks >= mask_thr_binary).to(dtype=torch.bool)
                 masks = masks.squeeze(1)
                 result[i]["masks"] = masks
@@ -97,4 +103,6 @@ class TVMaskRCNN(MaskRCNN):
         image_list = ImageList(batch_inputs, img_shapes)
         features = self.backbone(batch_inputs)
         proposals, _ = self.rpn(image_list, features)
-        return self.roi_heads.export(features, proposals, image_list.image_sizes)
+        boxes, labels, masks_probs = self.roi_heads.export(features, proposals, image_list.image_sizes)
+        labels = [label - 1 for label in labels]  # Convert back to 0-indexed labels
+        return boxes, labels, masks_probs

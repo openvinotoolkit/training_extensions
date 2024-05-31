@@ -176,6 +176,7 @@ class OTXTVRoIHeads(RoIHeads):
         mask_logits = self.mask_predictor(mask_features)
 
         masks_probs = maskrcnn_inference(mask_logits, labels)
+        masks_probs = [masks_probs[0].squeeze(1)]
 
         boxes = [torch.cat([boxes[0], scores[0].unsqueeze(-1)], -1)]
         return boxes, labels, masks_probs
