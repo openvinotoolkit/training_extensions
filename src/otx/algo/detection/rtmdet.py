@@ -1,23 +1,28 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
-"""YOLOX model implementations."""
+"""RTMDet model implementations."""
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 import torch
 from omegaconf import DictConfig
+from torch import nn
 from torchvision import tv_tensors
 
-from otx.algo.detection.backbones.csp_darknet import CSPDarknet
-from otx.algo.detection.heads.sim_ota_assigner import SimOTAAssigner
-from otx.algo.detection.heads.yolox_head import YOLOXHead
-from otx.algo.detection.necks.yolox_pafpn import YOLOXPAFPN
+from otx.algo.detection.backbones.cspnext import CSPNeXt
+from otx.algo.detection.heads.base_sampler import PseudoSampler
+from otx.algo.detection.heads.distance_point_bbox_coder import DistancePointBBoxCoder
+from otx.algo.detection.heads.dynamic_soft_label_assigner import DynamicSoftLabelAssigner
+from otx.algo.detection.heads.point_generator import MlvlPointGenerator
+from otx.algo.detection.heads.rtmdet_head import RTMDetSepBNHead
+from otx.algo.detection.losses.gfocal_loss import QualityFocalLoss
+from otx.algo.detection.losses.iou_loss import GIoULoss
+from otx.algo.detection.necks.cspnext_pafpn import CSPNeXtPAFPN
 from otx.algo.detection.ssd import SingleStageDetector
 from otx.algo.utils.mmengine_utils import InstanceData, load_checkpoint
-from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.detection import DetBatchDataEntity, DetBatchPredEntity
 from otx.core.data.entity.utils import stack_batch
@@ -25,12 +30,9 @@ from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.model.detection import ExplainableOTXDetModel
 
-if TYPE_CHECKING:
-    from torch import Tensor, nn
 
-
-class YOLOX(ExplainableOTXDetModel):
-    """OTX Detection model class for YOLOX."""
+class RTMDet(ExplainableOTXDetModel):
+    """OTX Detection model class for RTMDet."""
 
     def _create_model(self) -> nn.Module:
         detector = self._build_model(num_classes=self.label_info.num_classes)
@@ -45,12 +47,7 @@ class YOLOX(ExplainableOTXDetModel):
 
     def _customize_inputs(self, entity: DetBatchDataEntity) -> dict[str, Any]:
         if isinstance(entity.images, list):
-            entity.images, entity.imgs_info = stack_batch(
-                entity.images,
-                entity.imgs_info,
-                pad_size_divisor=32,
-                pad_value=114,
-            )
+            entity.images, entity.imgs_info = stack_batch(entity.images, entity.imgs_info, pad_size_divisor=32)
         inputs: dict[str, Any] = {}
 
         inputs["entity"] = entity
@@ -78,9 +75,9 @@ class YOLOX(ExplainableOTXDetModel):
                     raise TypeError(msg)
             return losses
 
-        scores = []
-        bboxes = []
-        labels = []
+        scores: list[torch.Tensor] = []
+        bboxes: list[tv_tensors.BoundingBoxes] = []
+        labels: list[torch.LongTensor] = []
         predictions = outputs["predictions"] if isinstance(outputs, dict) else outputs
         for img_info, prediction in zip(inputs.imgs_info, predictions):
             if not isinstance(prediction, InstanceData):
@@ -112,7 +109,7 @@ class YOLOX(ExplainableOTXDetModel):
             feature_vector = outputs["feature_vector"].detach().cpu().numpy()
 
             return DetBatchPredEntity(
-                batch_size=len(outputs),
+                batch_size=len(predictions),
                 images=inputs.images,
                 imgs_info=inputs.imgs_info,
                 scores=scores,
@@ -123,7 +120,7 @@ class YOLOX(ExplainableOTXDetModel):
             )
 
         return DetBatchPredEntity(
-            batch_size=len(outputs),
+            batch_size=len(predictions),
             images=inputs.images,
             imgs_info=inputs.imgs_info,
             scores=scores,
@@ -131,16 +128,10 @@ class YOLOX(ExplainableOTXDetModel):
             labels=labels,
         )
 
-    def get_classification_layers(
-        self,
-        prefix: str = "",
-    ) -> dict[str, dict[str, int]]:
+    def get_classification_layers(self, prefix: str = "") -> dict[str, dict[str, int]]:
         """Return classification layer names by comparing two different number of classes models.
 
-        TODO (sungchul): it can be merged to otx.core.utils.build.get_classification_layers.
-
         Args:
-            config (DictConfig): Config for building model.
             prefix (str): Prefix of model param name.
                 Normally it is "model." since OTXModel set it's nn.Module model as self.model
 
@@ -171,35 +162,34 @@ class YOLOX(ExplainableOTXDetModel):
         if self.image_size is None:
             raise ValueError(self.image_size)
 
-        swap_rgb = not isinstance(self, YOLOXTINY)
-
         return OTXNativeModelExporter(
-            via_onnx=True,
-            onnx_export_configuration={
-                "input_names": ["image"],
-                "output_names": ["boxes", "labels"],
-                "export_params": True,
-                "opset_version": 11,
-                "dynamic_axes": {
-                    "image": {0: "batch", 2: "height", 3: "width"},
-                    "boxes": {0: "batch", 1: "num_dets"},
-                    "labels": {0: "batch", 1: "num_dets"},
-                },
-                "keep_initializers_as_inputs": False,
-                "verbose": False,
-                "autograd_inlining": False,
-            },
             task_level_export_parameters=self._export_parameters,
             input_size=self.image_size,
             mean=self.mean,
             std=self.std,
             resize_mode="fit_to_window_letterbox",
             pad_value=114,
-            swap_rgb=swap_rgb,
-            output_names=["bboxes", "labels", "feature_vector", "saliency_map"] if self.explain_mode else None,
+            swap_rgb=False,
+            via_onnx=True,
+            onnx_export_configuration={
+                "input_names": ["image"],
+                "output_names": ["boxes", "labels", "masks"],
+                "dynamic_axes": {
+                    "image": {0: "batch", 2: "height", 3: "width"},
+                    "boxes": {0: "batch", 1: "num_dets"},
+                    "labels": {0: "batch", 1: "num_dets"},
+                    "masks": {0: "batch", 1: "num_dets", 2: "height", 3: "width"},
+                },
+                "opset_version": 11,
+                "autograd_inlining": False,
+            },
+            output_names=["bboxes", "labels", "masks", "feature_vector", "saliency_map"] if self.explain_mode else None,
         )
 
-    def forward_for_tracing(self, inputs: Tensor) -> list[InstanceData]:
+    def forward_for_tracing(
+        self,
+        inputs: torch.Tensor,
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         """Forward function for export."""
         shape = (int(inputs.shape[2]), int(inputs.shape[3]))
         meta_info = {
@@ -208,174 +198,81 @@ class YOLOX(ExplainableOTXDetModel):
             "img_shape": shape,
             "scale_factor": (1.0, 1.0),
         }
-
         meta_info_list = [meta_info] * len(inputs)
         return self.model.export(inputs, meta_info_list, explain_mode=self.explain_mode)
 
-    def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.") -> dict:
-        """Load the previous OTX ckpt according to OTX2.0."""
-        return OTXv1Helper.load_det_ckpt(state_dict, add_prefix)
 
+class RTMDetTiny(RTMDet):
+    """RTMDet Tiny Model."""
 
-class YOLOXTINY(YOLOX):
-    """YOLOX-TINY detector."""
+    load_from = "https://download.openmmlab.com/mmdetection/v3.0/rtmdet/rtmdet_tiny_8xb32-300e_coco/rtmdet_tiny_8xb32-300e_coco_20220902_112414-78e30dcc.pth"
+    image_size = (1, 3, 640, 640)
+    tile_image_size = (1, 3, 640, 640)
+    mean = (103.53, 116.28, 123.675)
+    std = (57.375, 57.12, 58.395)
 
-    load_from = (
-        "https://storage.openvinotoolkit.org/repositories/"
-        "openvino_training_extensions/models/object_detection/v2/yolox_tiny_8x8.pth"
-    )
-    image_size = (1, 3, 416, 416)
-    tile_image_size = (1, 3, 416, 416)
-    mean = (123.675, 116.28, 103.53)
-    std = (58.395, 57.12, 57.375)
+    def _build_model(self, num_classes: int) -> RTMDet:
+        train_cfg = {
+            "assigner": DynamicSoftLabelAssigner(topk=13),
+            "sampler": PseudoSampler(),
+            "allowed_border": -1,
+            "pos_weight": -1,
+            "debug": False,
+        }
 
-    def _build_model(self, num_classes: int) -> SingleStageDetector:
-        train_cfg: dict[str, Any] = {"assigner": SimOTAAssigner(center_radius=2.5)}
         test_cfg = DictConfig(
             {
                 "nms": {"type": "nms", "iou_threshold": 0.65},
-                "score_thr": 0.01,
-                "max_per_img": 100,
+                "score_thr": 0.001,
+                "mask_thr_binary": 0.5,
+                "max_per_img": 300,
+                "min_bbox_size": 0,
+                "nms_pre": 30000,
             },
         )
-        backbone = CSPDarknet(
-            deepen_factor=0.33,
+
+        backbone = CSPNeXt(
+            arch="P5",
+            expand_ratio=0.5,
+            deepen_factor=0.167,
             widen_factor=0.375,
-            out_indices=[2, 3, 4],
+            channel_attention=True,
+            norm_cfg={"type": "BN"},
+            act_cfg={"type": "SiLU", "inplace": True},
         )
-        neck = YOLOXPAFPN(
-            in_channels=[96, 192, 384],
+
+        neck = CSPNeXtPAFPN(
+            in_channels=(96, 192, 384),
             out_channels=96,
             num_csp_blocks=1,
+            expand_ratio=0.5,
+            norm_cfg={"type": "BN"},
+            act_cfg={"type": "SiLU", "inplace": True},
         )
-        bbox_head = YOLOXHead(
+
+        bbox_head = RTMDetSepBNHead(
             num_classes=num_classes,
             in_channels=96,
+            stacked_convs=2,
             feat_channels=96,
+            anchor_generator=MlvlPointGenerator(offset=0, strides=[8, 16, 32]),
+            bbox_coder=DistancePointBBoxCoder(),
+            loss_cls=QualityFocalLoss(use_sigmoid=True, beta=2.0, loss_weight=1.0),
+            loss_bbox=GIoULoss(loss_weight=2.0),
+            with_objectness=False,
+            exp_on_reg=False,
+            share_conv=True,
+            pred_kernel_size=1,
+            norm_cfg={"type": "BN"},
+            act_cfg={"type": "SiLU", "inplace": True},
             train_cfg=train_cfg,
             test_cfg=test_cfg,
         )
-        return SingleStageDetector(backbone, bbox_head, neck=neck, train_cfg=train_cfg, test_cfg=test_cfg)
 
-
-class YOLOXS(YOLOX):
-    """YOLOX-S detector."""
-
-    load_from = (
-        "https://download.openmmlab.com/mmdetection/v2.0/yolox/yolox_s_8x8_300e_coco/"
-        "yolox_s_8x8_300e_coco_20211121_095711-4592a793.pth"
-    )
-    image_size = (1, 3, 640, 640)
-    tile_image_size = (1, 3, 640, 640)
-    mean = (0.0, 0.0, 0.0)
-    std = (1.0, 1.0, 1.0)
-
-    def _build_model(self, num_classes: int) -> SingleStageDetector:
-        train_cfg: dict[str, Any] = {"assigner": SimOTAAssigner(center_radius=2.5)}
-        test_cfg = DictConfig(
-            {
-                "nms": {"type": "nms", "iou_threshold": 0.65},
-                "score_thr": 0.01,
-                "max_per_img": 100,
-            },
-        )
-        backbone = CSPDarknet(
-            deepen_factor=0.33,
-            widen_factor=0.5,
-            out_indices=[2, 3, 4],
-        )
-        neck = YOLOXPAFPN(
-            in_channels=[128, 256, 512],
-            out_channels=128,
-            num_csp_blocks=1,
-        )
-        bbox_head = YOLOXHead(
-            num_classes=num_classes,
-            in_channels=128,
-            feat_channels=128,
+        return SingleStageDetector(
+            backbone=backbone,
+            neck=neck,
+            bbox_head=bbox_head,
             train_cfg=train_cfg,
             test_cfg=test_cfg,
         )
-        return SingleStageDetector(backbone, bbox_head, neck=neck, train_cfg=train_cfg, test_cfg=test_cfg)
-
-
-class YOLOXL(YOLOX):
-    """YOLOX-L detector."""
-
-    load_from = (
-        "https://download.openmmlab.com/mmdetection/v2.0/yolox/"
-        "yolox_l_8x8_300e_coco/yolox_l_8x8_300e_coco_20211126_140236-d3bd2b23.pth"
-    )
-    image_size = (1, 3, 640, 640)
-    tile_image_size = (1, 3, 640, 640)
-    mean = (0.0, 0.0, 0.0)
-    std = (1.0, 1.0, 1.0)
-
-    def _build_model(self, num_classes: int) -> SingleStageDetector:
-        train_cfg: dict[str, Any] = {"assigner": SimOTAAssigner(center_radius=2.5)}
-        test_cfg = DictConfig(
-            {
-                "nms": {"type": "nms", "iou_threshold": 0.65},
-                "score_thr": 0.01,
-                "max_per_img": 100,
-            },
-        )
-        backbone = CSPDarknet(
-            deepen_factor=1.0,
-            widen_factor=1.0,
-            out_indices=[2, 3, 4],
-        )
-        neck = YOLOXPAFPN(
-            in_channels=[256, 512, 1024],
-            out_channels=256,
-            num_csp_blocks=3,
-        )
-        bbox_head = YOLOXHead(
-            num_classes=num_classes,
-            in_channels=256,
-            feat_channels=256,
-            train_cfg=train_cfg,
-            test_cfg=test_cfg,
-        )
-        return SingleStageDetector(backbone, bbox_head, neck=neck, train_cfg=train_cfg, test_cfg=test_cfg)
-
-
-class YOLOXX(YOLOX):
-    """YOLOX-X detector."""
-
-    load_from = (
-        "https://download.openmmlab.com/mmdetection/v2.0/yolox/"
-        "yolox_x_8x8_300e_coco/yolox_x_8x8_300e_coco_20211126_140254-1ef88d67.pth"
-    )
-    image_size = (1, 3, 640, 640)
-    tile_image_size = (1, 3, 640, 640)
-    mean = (0.0, 0.0, 0.0)
-    std = (1.0, 1.0, 1.0)
-
-    def _build_model(self, num_classes: int) -> SingleStageDetector:
-        train_cfg: dict[str, Any] = {"assigner": SimOTAAssigner(center_radius=2.5)}
-        test_cfg = DictConfig(
-            {
-                "nms": {"type": "nms", "iou_threshold": 0.65},
-                "score_thr": 0.01,
-                "max_per_img": 100,
-            },
-        )
-        backbone = CSPDarknet(
-            deepen_factor=1.33,
-            widen_factor=1.25,
-            out_indices=[2, 3, 4],
-        )
-        neck = YOLOXPAFPN(
-            in_channels=[320, 640, 1280],
-            out_channels=320,
-            num_csp_blocks=4,
-        )
-        bbox_head = YOLOXHead(
-            num_classes=num_classes,
-            in_channels=320,
-            feat_channels=320,
-            train_cfg=train_cfg,
-            test_cfg=test_cfg,
-        )
-        return SingleStageDetector(backbone, bbox_head, neck=neck, train_cfg=train_cfg, test_cfg=test_cfg)
