@@ -492,7 +492,7 @@ class OTXCLI:
         cache_dir = latest_dir / self.subcommand
         if cache_dir.exists():
             cache_dir.unlink()
-        cache_dir.symlink_to(work_dir)
+        cache_dir.symlink_to(Path("..") / work_dir.relative_to(work_dir.parent))
 
     def set_seed(self) -> None:
         """Set the random seed for reproducibility.

@@ -133,3 +133,8 @@ overrides:
             init_args:
               mean: [123.675, 116.28, 103.53]
               std: [58.395, 57.12, 57.375]
+
+  callbacks:
+    - class_path: otx.algo.callbacks.adaptive_early_stopping.EarlyStoppingWithWarmup
+      init_args:
+        warmup_iters: 100

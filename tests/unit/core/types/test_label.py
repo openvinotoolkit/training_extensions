@@ -12,10 +12,9 @@ def test_as_json(fxt_label_info):
 
 def test_seg_label_info():
     # Automatically insert background label at zero index
-    assert SegLabelInfo(["car", "bug", "tree"], []) == SegLabelInfo(["Background", "car", "bug", "tree"], [])
     assert SegLabelInfo.from_num_classes(3) == SegLabelInfo(
-        ["Background", "label_0", "label_1"],
-        [["Background", "label_0", "label_1"]],
+        ["label_0", "label_1", "label_2"],
+        [["label_0", "label_1", "label_2"]],
     )
-    assert SegLabelInfo.from_num_classes(1) == SegLabelInfo(["Background"], [["Background"]])
+    assert SegLabelInfo.from_num_classes(1) == SegLabelInfo(["background", "label_0"], [["background", "label_0"]])
     assert SegLabelInfo.from_num_classes(0) == NullLabelInfo()

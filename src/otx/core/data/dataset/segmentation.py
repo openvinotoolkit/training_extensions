@@ -114,7 +114,13 @@ def _extract_class_mask(item: DatasetItem, img_shape: tuple[int, int], ignore_in
         if isinstance(mask, (Ellipse, Polygon)):
             polygons = np.asarray(mask.as_polygon(), dtype=np.int32).reshape((-1, 1, 2))
             class_index = index + 1  # NOTE: disregard the background index. Objects start from index=1
-            this_class_mask = cv2.drawContours(class_mask, [polygons], 0, (class_index, class_index, class_index))
+            this_class_mask = cv2.drawContours(
+                class_mask,
+                [polygons],
+                0,
+                (class_index, class_index, class_index),
+                thickness=cv2.FILLED,
+            )
 
         elif isinstance(mask, Mask):
             binary_mask = mask.image
@@ -171,12 +177,26 @@ class OTXSegmentationDataset(OTXDataset[SegDataEntity]):
             stack_images,
             to_tv_image,
         )
+
+        if self.has_polygons and "background" not in [label_name.lower() for label_name in self.label_info.label_names]:
+            # insert background class at index 0 since polygons represent only objects
+            self.label_info.label_names.insert(0, "background")
+
         self.label_info = SegLabelInfo(
             label_names=self.label_info.label_names,
             label_groups=self.label_info.label_groups,
             ignore_index=ignore_index,
         )
         self.ignore_index = ignore_index
+
+    @property
+    def has_polygons(self) -> bool:
+        """Check if the dataset has polygons in annotations."""
+        for subset in self.dm_subset.subsets().values():
+            annot_types = set(subset.get_annotated_type())
+            if annot_types & {"polygon", "ellipse"}:
+                return True
+        return False
 
     def _get_item_impl(self, index: int) -> SegDataEntity | None:
         item = self.dm_subset[index]

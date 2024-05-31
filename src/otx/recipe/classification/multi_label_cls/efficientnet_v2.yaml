@@ -28,7 +28,7 @@ data: ../../_base_/data/torchvision_base.yaml
 overrides:
   max_epochs: 200
   callbacks:
-    - class_path: lightning.pytorch.callbacks.EarlyStopping
+    - class_path: otx.algo.callbacks.adaptive_early_stopping.EarlyStoppingWithWarmup
       init_args:
         patience: 4
     - class_path: otx.algo.callbacks.adaptive_train_scheduling.AdaptiveTrainScheduling

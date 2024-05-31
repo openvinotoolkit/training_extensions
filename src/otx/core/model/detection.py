@@ -359,7 +359,7 @@ class MMDetCompatibleModel(ExplainableOTXDetModel):
             {"type": "LoadAnnotations", "with_bbox": True},
             {
                 "type": "PackDetInputs",
-                "meta_keys": ["ori_filenamescale_factor", "ori_shape", "filename", "img_shape"],
+                "meta_keys": ["ori_filename", "scale_factor", "ori_shape", "filename", "img_shape"],
             },
         ]
 
