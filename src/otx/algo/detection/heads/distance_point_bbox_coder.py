@@ -92,9 +92,21 @@ class DistancePointBBoxCoder:
         max_shape: tuple[int, ...] | Tensor | tuple[tuple[int, ...], ...] | None = None,
     ) -> Tensor:
         """Decode distance prediction to bounding box for export."""
-        assert points.size(0) == pred_bboxes.size(0)  # noqa: S101
-        assert points.size(-1) == 2  # noqa: S101
-        assert pred_bboxes.size(-1) == 4  # noqa: S101
+        if points.size(0) != pred_bboxes.size(0):
+            msg = (
+                f"The batch of points (={points.size(0)}) and the batch of pred_bboxes "
+                f"(={pred_bboxes.size(0)}) should be same."
+            )
+            raise ValueError(msg)
+
+        if points.size(-1) != 2:
+            msg = f"points should have the format with size of 2, given {points.size(-1)}."
+            raise ValueError(msg)
+
+        if pred_bboxes.size(-1) != 4:
+            msg = f"pred_bboxes should have the format with size of 4, given {pred_bboxes.size(-1)}."
+            raise ValueError(msg)
+
         if self.clip_border is False:
             max_shape = None
 

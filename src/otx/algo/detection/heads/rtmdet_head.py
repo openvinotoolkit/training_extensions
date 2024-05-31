@@ -187,7 +187,9 @@ class RTMDetHead(ATSSHead):
         Returns:
             dict[str, Tensor]: A dictionary of loss components.
         """
-        assert stride[0] == stride[1], "h stride is not equal to w stride!"  # noqa: S101
+        if stride[0] != stride[1]:
+            msg = "h stride is not equal to w stride!"
+            raise ValueError(msg)
         cls_score = cls_score.permute(0, 2, 3, 1).reshape(-1, self.cls_out_channels).contiguous()
         bbox_pred = bbox_pred.reshape(-1, 4)
         bbox_targets = bbox_targets.reshape(-1, 4)
@@ -255,7 +257,12 @@ class RTMDetHead(ATSSHead):
         """
         num_imgs = len(batch_img_metas)
         featmap_sizes = [featmap.size()[-2:] for featmap in cls_scores]
-        assert len(featmap_sizes) == self.prior_generator.num_levels  # noqa: S101
+        if len(featmap_sizes) != self.prior_generator.num_levels:
+            msg = (
+                f"The number of featmap_sizes (={len(featmap_sizes)}) and the number of levels of prior_generator "
+                f"(={self.prior_generator.num_levels}) should be same."
+            )
+            raise ValueError(msg)
 
         device = cls_scores[0].device
         anchor_list, valid_flag_list = self.get_anchors(featmap_sizes, batch_img_metas, device=device)
@@ -358,14 +365,24 @@ class RTMDetHead(ATSSHead):
               level.
         """
         num_imgs = len(batch_img_metas)
-        assert len(anchor_list) == len(valid_flag_list) == num_imgs  # noqa: S101
+        if len(anchor_list) != len(valid_flag_list) != num_imgs:
+            msg = (
+                f"The number of anchor_list (={len(anchor_list)}), the number of valid_flag_list "
+                f"(={len(valid_flag_list)}), and num_imgs (={num_imgs}) should be same."
+            )
+            raise ValueError(msg)
 
         # anchor number of multi levels
         num_level_anchors = [anchors.size(0) for anchors in anchor_list[0]]
 
         # concat all level anchors and flags to a single tensor
         for i in range(num_imgs):
-            assert len(anchor_list[i]) == len(valid_flag_list[i])  # noqa: S101
+            if len(anchor_list[i]) != len(valid_flag_list[i]):
+                msg = (
+                    f"The number of anchor_list[i] (={len(anchor_list[i])}) and the number of valid_flag_list[i] "
+                    f"(={len(valid_flag_list[i])}) should be same."
+                )
+                raise ValueError(msg)
             anchor_list[i] = torch.cat(anchor_list[i])
             valid_flag_list[i] = torch.cat(valid_flag_list[i])
 
