@@ -220,10 +220,10 @@ class RTMDetTiny(RTMDet):
 
         test_cfg = DictConfig(
             {
-                "nms": {"type": "nms", "iou_threshold": 0.65},
-                "score_thr": 0.001,
+                "nms": {"type": "nms", "iou_threshold": 0.5},
+                "score_thr": 0.05,
                 "mask_thr_binary": 0.5,
-                "max_per_img": 300,
+                "max_per_img": 100,
                 "min_bbox_size": 0,
                 "nms_pre": 30000,
             },
