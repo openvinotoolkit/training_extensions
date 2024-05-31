@@ -49,6 +49,10 @@ def test_forward_explain(
     if "_semisl" in model_name:
         pytest.skip("Semi-SL is not supported.")
 
+    if "rtmdet_tiny" in recipe:
+        # TODO (sungchul): enable xai for rtmdet_tiny (CVS-142651)
+        pytest.skip("rtmdet_tiny on detection is not supported yet.")
+
     engine = Engine.from_config(
         config_path=recipe,
         data_root=fxt_target_dataset_per_task[task],
@@ -100,6 +104,10 @@ def test_predict_with_explain(
     if "instance_segmentation" in recipe:
         # TODO(Eugene): figure out why instance segmentation model fails after decoupling.
         pytest.skip("There's issue with instance segmentation model. Skip for now.")
+
+    if "rtmdet_tiny" in recipe:
+        # TODO (sungchul): enable xai for rtmdet_tiny (CVS-142651)
+        pytest.skip("rtmdet_tiny on detection is not supported yet.")
 
     tmp_path = tmp_path / f"otx_xai_{model_name}"
     engine = Engine.from_config(

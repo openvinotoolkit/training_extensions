@@ -1,14 +1,13 @@
 model:
-  class_path: otx.algo.detection.yolox.YOLOXTINY
+  class_path: otx.algo.detection.rtmdet.RTMDetTiny
   init_args:
     label_info: 80
 
     optimizer:
-      class_path: torch.optim.SGD
+      class_path: torch.optim.AdamW
       init_args:
-        lr: 0.0002
-        momentum: 0.9
-        weight_decay: 0.0001
+        lr: 0.0007
+        weight_decay: 0.05
 
     scheduler:
       class_path: otx.core.schedulers.LinearWarmupSchedulerCallable
@@ -34,7 +33,8 @@ overrides:
   data:
     task: DETECTION
     config:
-      stack_images: True
+      image_color_channel: BGR
+      stack_images: true
       data_format: coco_instances
       train_subset:
         batch_size: 8
@@ -42,44 +42,52 @@ overrides:
         transforms:
           - class_path: otx.core.data.transform_libs.torchvision.CachedMosaic
             init_args:
-              random_pop: false
+              img_scale:
+                - 640
+                - 640
               pad_val: 114.0
               max_cached_images: 20
-              img_scale: # (H, W)
-                - 640
-                - 640
-          - class_path: otx.core.data.transform_libs.torchvision.RandomAffine
-            init_args:
-              scaling_ratio_range:
-                - 0.5
-                - 1.5
-              border:
-                - -320
-                - -320
-          - class_path: otx.core.data.transform_libs.torchvision.PhotoMetricDistortion
-            init_args:
-              brightness_delta: 32
-              contrast_range:
-                - 0.5
-                - 1.5
-              saturation_range:
-                - 0.5
-                - 1.5
-              hue_delta: 18
-          - class_path: otx.core.data.transform_libs.torchvision.Resize
+              random_pop: false
+          - class_path: otx.core.data.transform_libs.torchvision.RandomResize
             init_args:
               scale:
-                - 640
-                - 640
-              keep_ratio: True
+                - 1280
+                - 1280
+              ratio_range:
+                - 0.5
+                - 2.0
+              keep_ratio: true
               transform_bbox: true
+          - class_path: otx.core.data.transform_libs.torchvision.RandomCrop
+            init_args:
+              crop_size:
+                - 640
+                - 640
+          - class_path: otx.core.data.transform_libs.torchvision.YOLOXHSVRandomAug
           - class_path: otx.core.data.transform_libs.torchvision.RandomFlip
             init_args:
               prob: 0.5
           - class_path: otx.core.data.transform_libs.torchvision.Pad
             init_args:
-              pad_to_square: true
+              size:
+                - 640
+                - 640
               pad_val: 114
+          - class_path: otx.core.data.transform_libs.torchvision.CachedMixUp
+            init_args:
+              img_scale:
+                - 640
+                - 640
+              ratio_range:
+                - 1.0
+                - 1.0
+              max_cached_images: 10
+              random_pop: false
+              pad_val:
+                - 114
+                - 114
+                - 114
+              prob: 0.5
               is_numpy_to_tvtensor: true
           - class_path: torchvision.transforms.v2.ToDtype
             init_args:
@@ -87,10 +95,8 @@ overrides:
               scale: False
           - class_path: torchvision.transforms.v2.Normalize
             init_args:
-              mean: [123.675, 116.28, 103.53]
-              std: [58.395, 57.12, 57.375]
-        sampler:
-          class_path: otx.algo.samplers.balanced_sampler.BalancedSampler
+              mean: [103.53, 116.28, 123.675]
+              std: [57.375, 57.12, 58.395]
       val_subset:
         batch_size: 8
         to_tv_image: False
@@ -98,13 +104,15 @@ overrides:
           - class_path: otx.core.data.transform_libs.torchvision.Resize
             init_args:
               scale:
-                - 416
-                - 416
-              keep_ratio: True
+                - 640
+                - 640
+              keep_ratio: true
               transform_bbox: false
           - class_path: otx.core.data.transform_libs.torchvision.Pad
             init_args:
-              pad_to_square: true
+              size:
+                - 640
+                - 640
               pad_val: 114
               is_numpy_to_tvtensor: true
           - class_path: torchvision.transforms.v2.ToDtype
@@ -113,8 +121,8 @@ overrides:
               scale: False
           - class_path: torchvision.transforms.v2.Normalize
             init_args:
-              mean: [123.675, 116.28, 103.53]
-              std: [58.395, 57.12, 57.375]
+              mean: [103.53, 116.28, 123.675]
+              std: [57.375, 57.12, 58.395]
       test_subset:
         batch_size: 8
         to_tv_image: False
@@ -122,13 +130,15 @@ overrides:
           - class_path: otx.core.data.transform_libs.torchvision.Resize
             init_args:
               scale:
-                - 416
-                - 416
-              keep_ratio: True
+                - 640
+                - 640
+              keep_ratio: true
               transform_bbox: false
           - class_path: otx.core.data.transform_libs.torchvision.Pad
             init_args:
-              pad_to_square: true
+              size:
+                - 640
+                - 640
               pad_val: 114
               is_numpy_to_tvtensor: true
           - class_path: torchvision.transforms.v2.ToDtype
@@ -137,5 +147,5 @@ overrides:
               scale: False
           - class_path: torchvision.transforms.v2.Normalize
             init_args:
-              mean: [123.675, 116.28, 103.53]
-              std: [58.395, 57.12, 57.375]
+              mean: [103.53, 116.28, 123.675]
+              std: [57.375, 57.12, 58.395]

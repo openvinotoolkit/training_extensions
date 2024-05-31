@@ -15,7 +15,6 @@ from torch import Tensor, nn
 from otx.algo.detection.heads.base_head import BaseDenseHead
 from otx.algo.detection.heads.base_sampler import PseudoSampler
 from otx.algo.detection.heads.point_generator import MlvlPointGenerator
-from otx.algo.detection.heads.sim_ota_assigner import SimOTAAssigner
 from otx.algo.detection.losses import CrossEntropyLoss, IoULoss, L1Loss
 from otx.algo.detection.ops.nms import batched_nms, multiclass_nms
 from otx.algo.detection.utils.utils import multi_apply, reduce_mean
@@ -148,7 +147,7 @@ class YOLOXHead(BaseDenseHead):
         self.train_cfg = train_cfg
 
         if self.train_cfg is not None:
-            self.assigner = SimOTAAssigner(center_radius=2.5)
+            self.assigner = self.train_cfg["assigner"]
             # YOLOX does not support sampling
             self.sampler = PseudoSampler()  # type: ignore[no-untyped-call]
 
@@ -464,7 +463,7 @@ class YOLOXHead(BaseDenseHead):
         """
         if rescale:
             assert img_meta.get("scale_factor") is not None  # type: ignore[union-attr] # noqa: S101
-            results.bboxes /= results.bboxes.new_tensor(img_meta["scale_factor"]).repeat((1, 2))  # type: ignore[attr-defined, index]
+            results.bboxes /= results.bboxes.new_tensor(img_meta["scale_factor"][::-1]).repeat((1, 2))  # type: ignore[attr-defined, index]
 
         if with_nms and results.bboxes.numel() > 0:  # type: ignore[attr-defined]
             det_bboxes, keep_idxs = batched_nms(results.bboxes, results.scores, results.labels, cfg.nms)  # type: ignore[attr-defined]
