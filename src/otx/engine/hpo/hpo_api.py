@@ -256,8 +256,12 @@ class HPOConfigurator:
         }
 
     def _align_search_space(self) -> None:
-        if isinstance(self._hpo_config["search_space"], str):
-            with Path(self._hpo_config["search_space"]).open("r") as f:
+        if isinstance(self._hpo_config["search_space"], (str, Path)):
+            search_space_file = Path(self._hpo_config["search_space"])
+            if not search_space_file.exists():
+                msg = f"{search_space_file} is set to HPO search_space, but it doesn't exist."
+                raise FileExistsError(msg)
+            with search_space_file.open("r") as f:
                 self._hpo_config["search_space"] = yaml.safe_load(f)
         elif not isinstance(self._hpo_config["search_space"], dict):
             msg = "HpoConfig.search_space should be str or dict type."

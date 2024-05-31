@@ -6,7 +6,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Literal
+from typing import TYPE_CHECKING, Any, Literal
 
 import torch
 
@@ -19,12 +19,15 @@ elif is_xpu_available():
 else:
     num_workers = 1
 
+if TYPE_CHECKING:
+    from pathlib import Path
+
 
 @dataclass
 class HpoConfig:
     """DTO for HPO configuration."""
 
-    search_space: dict[str, dict[str, Any]] | str | None = None
+    search_space: dict[str, dict[str, Any]] | str | Path | None = None
     save_path: str | None = None
     mode: Literal["max", "min"] = "max"
     num_trials: int | None = None
