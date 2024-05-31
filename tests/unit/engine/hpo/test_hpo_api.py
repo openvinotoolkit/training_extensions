@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING
 from unittest.mock import MagicMock
 
 import pytest
+import yaml
 from otx.core.config.hpo import HpoConfig
 from otx.core.optimizer.callable import OptimizerCallableSupportHPO
 from otx.core.schedulers import LinearWarmupSchedulerCallable, SchedulerCallableSupportHPO
@@ -179,6 +180,17 @@ class TestHPOConfigurator:
         for hp_name in HPO_NAME_MAP.values():
             assert hp_name in search_sapce
 
+    def test_get_default_search_space_bs1(self, mock_engine: MagicMock, hpo_config: HpoConfig):
+        """Check batch sizes search space is set as [1, 2] if default bs is 1."""
+        mock_engine.datamodule.config.train_subset.batch_size = 1
+        hpo_configurator = HPOConfigurator(mock_engine, 10, hpo_config)
+        search_sapce = hpo_configurator._get_default_search_space()
+
+        for hp_name in HPO_NAME_MAP.values():
+            assert hp_name in search_sapce
+        assert search_sapce[HPO_NAME_MAP["bs"]]["min"] == 1
+        assert search_sapce[HPO_NAME_MAP["bs"]]["max"] == 2
+
     def test_align_lr_bs_name(self, mock_engine: MagicMock, hpo_config: HpoConfig, dataset_size):
         """Check learning rate and batch size names are aligned well."""
         search_space = {
@@ -268,6 +280,27 @@ class TestHPOConfigurator:
         }
         hpo_configurator._remove_wrong_search_space(wrong_search_space)
         assert wrong_search_space == {}
+
+    def test_search_space_file(self, mock_engine: MagicMock, hpo_config: HpoConfig, dataset_size, tmp_path):
+        """Check search space is set well if search space file is given."""
+        search_space = {
+            "model.optimizer.lr": {
+                "type": "loguniform",
+                "min": 0.0001,
+                "max": 0.1,
+            },
+        }
+
+        search_space_file = tmp_path / "search_space.yaml"
+        with search_space_file.open("w") as f:
+            yaml.dump(search_space, f)
+
+        hpo_config.search_space = str(search_space_file)
+
+        hpo_configurator = HPOConfigurator(mock_engine, 10, hpo_config)
+
+        assert hpo_configurator.hpo_config["search_space"][HPO_NAME_MAP["lr"]] == search_space["model.optimizer.lr"]
+        assert len(hpo_configurator.hpo_config["search_space"].keys()) == 1
 
     def test_get_hpo_algo(self, mocker, mock_engine: MagicMock, hpo_config: HpoConfig):
         hpo_configurator = HPOConfigurator(mock_engine, 10, hpo_config)
