@@ -217,7 +217,7 @@ class OTXMaskRCNN(ExplainableOTXInstanceSegModel):
             input_size=input_size,
             mean=self.mean,
             std=self.std,
-            resize_mode="standard",
+            resize_mode="fit_to_window",
             pad_value=0,
             swap_rgb=False,
             via_onnx=True,
@@ -233,7 +233,7 @@ class OTXMaskRCNN(ExplainableOTXInstanceSegModel):
                 "opset_version": 11,
                 "autograd_inlining": False,
             },
-            output_names=["bboxes", "labels", "masks", "feature_vector", "saliency_map"] if self.explain_mode else None,
+            output_names=["bboxes", "labels", "masks"],
         )
 
     def forward_for_tracing(
