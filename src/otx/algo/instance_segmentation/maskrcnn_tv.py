@@ -4,6 +4,7 @@
 """TV MaskRCNN model implementations."""
 from __future__ import annotations
 
+from ast import In
 from typing import TYPE_CHECKING, Any
 
 import torch
@@ -14,12 +15,14 @@ from torchvision.models.detection.faster_rcnn import FastRCNNConvFCHead, FastRCN
 from torchvision.models.detection.mask_rcnn import MaskRCNN_ResNet50_FPN_V2_Weights, MaskRCNNHeads, MaskRCNNPredictor
 from torchvision.models.resnet import resnet50
 
-from otx.algo.instance_segmentation.torchvision.maskrcnn import OTXTVMaskRCNN
+from otx.algo.instance_segmentation.torchvision.maskrcnn import TVMaskRCNN
 from otx.algo.instance_segmentation.torchvision.roi_head import OTXTVRoIHeads
 from otx.core.config.data import TileConfig
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.instance_segmentation import InstanceSegBatchDataEntity, InstanceSegBatchPredEntity
 from otx.core.data.entity.utils import stack_batch
+from otx.core.exporter.base import OTXModelExporter
+from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.metrics.mean_ap import MaskRLEMeanAPCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
 from otx.core.model.instance_segmentation import ExplainableOTXInstanceSegModel
@@ -54,6 +57,8 @@ class TVMaskRCNNR50(ExplainableOTXInstanceSegModel):
             tile_config=tile_config,
         )
         self.image_size = (1, 3, 1024, 1024)
+        self.mean = (123.675, 116.28, 103.53)
+        self.std = (58.395, 57.12, 57.375)
 
     def get_classification_layers(self, prefix: str = "") -> dict[str, dict[str, int]]:
         """Get classification layers."""
@@ -86,7 +91,7 @@ class TVMaskRCNNR50(ExplainableOTXInstanceSegModel):
         )
         mask_head = MaskRCNNHeads(backbone.out_channels, [256, 256, 256, 256], 1, norm_layer=nn.BatchNorm2d)
 
-        model = OTXTVMaskRCNN(
+        model = TVMaskRCNN(
             backbone,
             num_classes=91,
             rpn_anchor_generator=rpn_anchor_generator,
@@ -138,6 +143,41 @@ class TVMaskRCNNR50(ExplainableOTXInstanceSegModel):
             entity.images, entity.imgs_info = stack_batch(entity.images, entity.imgs_info, pad_size_divisor=32)
         return {"entity": entity}
 
+    def visualize(self, outputs: list[dict], inputs: InstanceSegBatchDataEntity):
+        import torch.nn.functional as F
+        import numpy as np
+        import cv2
+        device = inputs.images.device
+
+        mean = torch.tensor([123.675, 116.28, 103.53], device=device).reshape(3, 1, 1)
+        std = torch.tensor([58.395, 57.12, 57.375], device=device).reshape(3, 1, 1)
+
+        for img, img_info, prediction in zip(inputs.images, inputs.imgs_info, outputs):
+            original_size = img_info.ori_shape
+            img = F.interpolate(img.unsqueeze(0), size=original_size, mode="bilinear", align_corners=False)
+            img = img.squeeze(0)
+            img = (img * std) + mean
+            img = img.clone().detach().cpu().numpy().transpose(1, 2, 0).astype("uint8")
+            img = np.ascontiguousarray(img)
+            pred_boxes = prediction["boxes"].detach().cpu().numpy()
+            pred_scores = prediction["scores"].detach().cpu().numpy()
+            pred_masks = prediction["masks"].detach().cpu().numpy()
+
+            keep = pred_scores > 0.2
+            pred_boxes = pred_boxes[keep]
+            pred_masks = pred_masks[keep]
+            pred_scores = pred_scores[keep]
+
+            for box, score, mask in zip(pred_boxes, pred_scores, pred_masks):
+                keep_pixel = mask == 1
+                mask = np.stack((mask, mask, mask), axis=-1).astype(np.uint8)
+                mask[keep_pixel, 1] = 255
+                img = cv2.addWeighted(img, 1.0, mask, 0.3, 0.0)
+
+                box = box.astype(int)
+                cv2.rectangle(img, (box[0], box[1]), (box[2], box[3]), (255, 0, 0), 2)
+
+
     def _customize_outputs(
         self,
         outputs: dict | list[dict],
@@ -162,6 +202,8 @@ class TVMaskRCNNR50(ExplainableOTXInstanceSegModel):
         labels: list[torch.LongTensor] = []
         masks: list[tv_tensors.Mask] = []
 
+        # self.visualize(outputs, inputs)
+
         for img_info, prediction in zip(inputs.imgs_info, outputs):
             scores.append(prediction["scores"])
             bboxes.append(
@@ -172,7 +214,7 @@ class TVMaskRCNNR50(ExplainableOTXInstanceSegModel):
                 ),
             )
             output_masks = tv_tensors.Mask(
-                prediction["masks"].squeeze(1),
+                prediction["masks"],
                 dtype=torch.bool,
             )
             masks.append(output_masks)
@@ -216,4 +258,51 @@ class TVMaskRCNNR50(ExplainableOTXInstanceSegModel):
             masks=masks,
             polygons=[],
             labels=labels,
+        )
+
+    @property
+    def _exporter(self) -> OTXModelExporter:
+        """Creates OTXModelExporter object that can export the model."""
+        if self.image_size is None:
+            raise ValueError(self.image_size)
+
+        input_size = self.tile_image_size if self.tile_config.enable_tiler else self.image_size
+
+        return OTXNativeModelExporter(
+            task_level_export_parameters=self._export_parameters,
+            input_size=input_size,
+            mean=self.mean,
+            std=self.std,
+            resize_mode="fit_to_window",
+            pad_value=0,
+            swap_rgb=False,
+            via_onnx=True,
+            onnx_export_configuration={
+                "input_names": ["image"],
+                "output_names": ["boxes", "labels", "masks"],
+                "dynamic_axes": {
+                    "image": {0: "batch", 2: "height", 3: "width"},
+                    "boxes": {0: "batch", 1: "num_dets"},
+                    "labels": {0: "batch", 1: "num_dets"},
+                    "masks": {0: "batch", 1: "num_dets", 2: "height", 3: "width"},
+                },
+                "opset_version": 11,
+                "autograd_inlining": False,
+            },
+            output_names=["bboxes", "labels", "masks"],
+        )
+
+    def forward_for_tracing(
+        self,
+        inputs: torch.Tensor,
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+        """Forward function for export."""
+        shape = (int(inputs.shape[2]), int(inputs.shape[3]))
+        meta_info = {
+            "image_shape": shape,
+        }
+        meta_info_list = [meta_info] * len(inputs)
+        return self.model.export(
+            inputs,
+            meta_info_list,
         )

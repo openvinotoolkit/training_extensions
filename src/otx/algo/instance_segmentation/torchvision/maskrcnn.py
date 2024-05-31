@@ -11,12 +11,14 @@ from typing import TYPE_CHECKING
 import torch
 from torchvision.models.detection.image_list import ImageList
 from torchvision.models.detection.mask_rcnn import MaskRCNN
+from torchvision.models.detection.roi_heads import paste_masks_in_image
+from torchvision.models.detection.transform import resize_boxes
 
 if TYPE_CHECKING:
     from otx.core.data.entity.instance_segmentation import InstanceSegBatchDataEntity
 
 
-class OTXTVMaskRCNN(MaskRCNN):
+class TVMaskRCNN(MaskRCNN):
     """Torchvision MaskRCNN model with forward method accepting InstanceSegBatchDataEntity."""
 
     def forward(
@@ -52,21 +54,39 @@ class OTXTVMaskRCNN(MaskRCNN):
 
         detections, detector_losses = self.roi_heads(features, proposals, image_list.image_sizes, targets)
 
-        # TODO(Eugene): check if post-process is working correctly
-        # 1. check if post-process works correctly for tracing (i.e. mask output should be 28x28)
-        # 2. output of export should be list of dict?
-        # 3. might need to replace self.transform with custom transform
-        detections = self.transform.postprocess(
-            detections,
-            image_list.image_sizes,
-            ori_shapes,
-        )  # type: ignore[operator]
+        if not self.training:
+            detections = self.postprocess(
+                detections,
+                image_list.image_sizes,
+                ori_shapes,
+            )
 
         losses = {}
         losses.update(detector_losses)
         losses.update(proposal_losses)
 
         return self.eager_outputs(losses, detections)
+
+    def postprocess(
+        self,
+        result: list[dict[str, torch.Tensor]],
+        image_shapes: list[tuple[int, int]],
+        original_image_sizes: list[tuple[int, int]],
+        mask_thr_binary: float = 0.5,
+    ) -> list[dict[str,  torch.Tensor]]:
+        if self.training:
+            return result
+        for i, (pred, im_s, o_im_s) in enumerate(zip(result, image_shapes, original_image_sizes)):
+            boxes = pred["boxes"]
+            boxes = resize_boxes(boxes, im_s, o_im_s)
+            result[i]["boxes"] = boxes
+            if "masks" in pred:
+                masks = pred["masks"]
+                masks = paste_masks_in_image(masks, boxes, o_im_s)
+                masks = (masks >= mask_thr_binary).to(dtype=torch.bool)
+                masks = masks.squeeze(1)
+                result[i]["masks"] = masks
+        return result
 
     def export(
         self,
@@ -76,20 +96,5 @@ class OTXTVMaskRCNN(MaskRCNN):
         img_shapes = [img_meta["image_shape"] for img_meta in batch_img_metas]
         image_list = ImageList(batch_inputs, img_shapes)
         features = self.backbone(batch_inputs)
-        proposals, proposal_losses = self.rpn(image_list, features)
-        detections, detector_losses = self.roi_heads(features, proposals, image_list.image_sizes)
-
-    def forward_for_tracing(
-        self,
-        inputs: torch.Tensor,
-    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
-        """Forward function for export."""
-        shape = (int(inputs.shape[2]), int(inputs.shape[3]))
-        meta_info = {
-            "image_shape": shape,
-        }
-        meta_info_list = [meta_info] * len(inputs)
-        return self.model.export(
-            inputs,
-            meta_info_list
-        )
+        proposals, _ = self.rpn(image_list, features)
+        return self.roi_heads.export(features, proposals, image_list.image_sizes)

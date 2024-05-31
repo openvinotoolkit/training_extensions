@@ -154,3 +154,28 @@ class OTXTVRoIHeads(RoIHeads):
             losses.update(loss_mask)
 
         return result, losses
+
+    def export(
+        self,
+        features: dict[str, Tensor],
+        proposals: list[Tensor],
+        image_shapes: list[tuple[int, int]],
+    ):
+        box_features = self.box_roi_pool(features, proposals, image_shapes)
+        box_features = self.box_head(box_features)
+        class_logits, box_regression = self.box_predictor(box_features)
+
+        boxes, scores, labels = self.postprocess_detections(class_logits, box_regression, proposals, image_shapes)
+
+        mask_features = self.mask_roi_pool(
+            features,
+            boxes,
+            image_shapes,
+        )
+        mask_features = self.mask_head(mask_features)
+        mask_logits = self.mask_predictor(mask_features)
+
+        masks_probs = maskrcnn_inference(mask_logits, labels)
+
+        boxes = [torch.cat([boxes[0], scores[0].unsqueeze(-1)], -1)]
+        return boxes, labels, masks_probs
