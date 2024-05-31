@@ -91,7 +91,7 @@ class VisualPromptingConfig:
 
 
 @dataclass
-class SemiSLConfig(SubsetConfig):
+class UnlabeledDataConfig(SubsetConfig):
     """DTO for unlabeled data."""
 
     data_root: str | None = None
@@ -100,7 +100,7 @@ class SemiSLConfig(SubsetConfig):
     batch_size: int = 0
     subset_name: str = "unlabeled"
 
-    transforms: dict[str, list[dict[str, Any]]] | list[dict[str, Any]] = field(default_factory=dict)
+    transforms: dict[str, list[dict[str, Any]]] | list[dict[str, Any]] = field(default_factory=dict)  # type: ignore[assignment]
 
     transform_lib_type: TransformLibType = TransformLibType.TORCHVISION
     num_workers: int = 2
@@ -117,7 +117,7 @@ class DataModuleConfig:
     train_subset: SubsetConfig
     val_subset: SubsetConfig
     test_subset: SubsetConfig
-    unlabeled_subset: SemiSLConfig = field(default_factory=lambda: SemiSLConfig())
+    unlabeled_subset: UnlabeledDataConfig = field(default_factory=lambda: UnlabeledDataConfig())
 
     tile_config: TileConfig = field(default_factory=lambda: TileConfig())
     vpm_config: VisualPromptingConfig = field(default_factory=lambda: VisualPromptingConfig())

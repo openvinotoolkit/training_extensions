@@ -17,11 +17,15 @@ from .base_classifier import ImageClassifier
 class SemiSLClassifier(ImageClassifier):
     """Semi-SL Classifier."""
 
-    def extract_feat(self, inputs: dict[str, torch.Tensor], stage: str = "neck") -> dict[str, tuple | torch.Tensor] | tuple | torch.Tensor:
+    def extract_feat(
+        self,
+        inputs: dict[str, torch.Tensor],
+        stage: str = "neck",
+    ) -> dict[str, tuple | torch.Tensor] | tuple | torch.Tensor:
         """Extract features from the input tensor with shape (N, C, ...).
 
         Args:
-            inputs (Tensor): A batch of inputs. The shape of it should be
+            inputs (dict[str, Tensor]): A batch of inputs. The shape of it should be
                 ``(num_samples, num_channels, *img_shape)``.
             stage (str): Which stage to output the feature. Choose from:
 
@@ -50,7 +54,7 @@ class SemiSLClassifier(ImageClassifier):
         x = {}
         x["labeled"] = super().extract_feat(labeled_inputs, stage)
         with torch.no_grad():
-          x["unlabeled_weak"] = super().extract_feat(unlabeled_weak_inputs, stage)
+            x["unlabeled_weak"] = super().extract_feat(unlabeled_weak_inputs, stage)
         x["unlabeled_strong"] = super().extract_feat(unlabeled_strong_inputs, stage)
 
         return x

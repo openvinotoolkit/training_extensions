@@ -137,10 +137,12 @@ class OTXDataModule(LightningDataModule):
             dm_subset = unlabeled_dataset.subsets()[name]
 
             if isinstance(self.config.unlabeled_subset.transforms, dict):
+                # When applying two transforms to a single unlabeled dataset
                 dm_subset = dm_subset.as_dataset()
                 for transform_key, transforms in self.config.unlabeled_subset.transforms.items():
                     unlabeled_config = deepcopy(self.config.unlabeled_subset)
                     unlabeled_config.transforms = transforms
+
                     unlabeled_dataset = OTXDatasetFactory.create(
                         task=self.task,
                         dm_subset=dm_subset,
@@ -277,12 +279,19 @@ class OTXDataModule(LightningDataModule):
         dataloaders = {}
         if isinstance(config.transforms, dict):
             log.warning("Unlabeled dataset has multiple transforms. Use only the first one.")
-            generator = torch.Generator().manual_seed(0)
+            common_args["worker_init_fn"] = lambda _: torch.manual_seed(0)  # type: ignore[assignment]
             for key in config.transforms:
                 dataset = self._get_dataset(key)
-                # from torch.utils.data import RandomSampler
-                # sampler = RandomSampler(dataset, generator=generator)
-                sampler = instantiate_sampler(config.sampler, dataset=dataset, batch_size=config.batch_size, generator=generator)
+                # For unlabeled datasets using Multi-Transforms, must use generators and samplers
+                # with the same seed to get the same data.
+                generator = torch.Generator().manual_seed(0)
+                sampler = instantiate_sampler(
+                    config.sampler,
+                    dataset=dataset,
+                    batch_size=config.batch_size,
+                    generator=generator,
+                )
+
                 dataloaders[key] = DataLoader(
                     dataset=dataset,
                     collate_fn=dataset.collate_fn,
@@ -294,12 +303,12 @@ class OTXDataModule(LightningDataModule):
             dataset = self._get_dataset(config.subset_name)
             sampler = instantiate_sampler(config.sampler, dataset=dataset, batch_size=config.batch_size)
             dataloaders[config.subset_name] = DataLoader(
-                    dataset=dataset,
-                    collate_fn=dataset.collate_fn,
-                    sampler=sampler,
-                    shuffle=sampler is None,
-                    **common_args,
-                )
+                dataset=dataset,
+                collate_fn=dataset.collate_fn,
+                sampler=sampler,
+                shuffle=sampler is None,
+                **common_args,
+            )
 
         return dataloaders
 

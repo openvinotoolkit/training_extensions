@@ -33,7 +33,6 @@ from otx.core.data.entity.classification import (
     MulticlassClsBatchPredEntity,
     MultilabelClsBatchDataEntity,
     MultilabelClsBatchPredEntity,
-    MultiTransformClsBatchDataEntity,
 )
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter
@@ -48,7 +47,6 @@ if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
 
     from otx.core.metrics import MetricCallable
-
 
 
 class EfficientNetForMulticlassCls(OTXMulticlassClsModel):
@@ -180,7 +178,19 @@ class EfficientNetForMulticlassCls(OTXMulticlassClsModel):
         return self.model(images=image, mode="tensor")
 
 
-class EfficientNetForSemiSL(EfficientNetForMulticlassCls):
+class EfficientNetForMulticlassClsSemiSL(EfficientNetForMulticlassCls):
+    """EfficientNet model for multiclass classification with semi-supervised learning.
+
+    This class extends the `EfficientNetForMulticlassCls` class and adds support for semi-supervised learning.
+    It overrides the `_build_model` and `_customize_inputs` methods to incorporate the semi-supervised learning.
+
+    Args:
+        EfficientNetForMulticlassCls (class): The base class for EfficientNet multiclass classification.
+
+    Attributes:
+        version (str): The version of the EfficientNet model.
+    """
+
     def _build_model(self, num_classes: int) -> nn.Module:
         return SemiSLClassifier(
             backbone=OTXEfficientNet(version=self.version, pretrained=True),
@@ -193,7 +203,15 @@ class EfficientNetForSemiSL(EfficientNetForMulticlassCls):
             ),
         )
 
-    def _customize_inputs(self, inputs: MultiTransformClsBatchDataEntity) -> dict[str, Any]:
+    def _customize_inputs(self, inputs: MulticlassClsBatchDataEntity) -> dict[str, Any]:
+        """Customizes the input data for the model based on the current mode.
+
+        Args:
+            inputs (MulticlassClsBatchDataEntity): The input batch of data.
+
+        Returns:
+            dict[str, Any]: The customized input data.
+        """
         if self.training:
             mode = "loss"
         elif self.explain_mode:
@@ -218,7 +236,16 @@ class EfficientNetForSemiSL(EfficientNetForMulticlassCls):
             "mode": mode,
         }
 
-    def training_step(self, batch: MultiTransformClsBatchDataEntity, batch_idx: int) -> Tensor:
+    def training_step(self, batch: MulticlassClsBatchDataEntity, batch_idx: int) -> Tensor:
+        """Performs a single training step on a batch of data.
+
+        Args:
+            batch (MulticlassClsBatchDataEntity): The input batch of data.
+            batch_idx (int): The index of the current batch.
+
+        Returns:
+            Tensor: The computed loss for the training step.
+        """
         loss = super().training_step(batch, batch_idx)
         self.log(
             "train/unlabeled_coef",
@@ -235,6 +262,7 @@ class EfficientNetForSemiSL(EfficientNetForMulticlassCls):
             prog_bar=True,
         )
         return loss
+
 
 class EfficientNetForMultilabelCls(OTXMultilabelClsModel):
     """EfficientNet Model for multi-label classification task."""

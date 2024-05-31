@@ -14,7 +14,6 @@ from datumaro.components.annotation import AnnotationType
 from torch.nn import functional
 
 from otx.core.data.dataset.base import OTXDataset
-from otx.core.data.dataset.multi_transform import MultiTransformDataset
 from otx.core.data.entity.base import ImageInfo
 from otx.core.data.entity.classification import (
     HlabelClsBatchDataEntity,
@@ -23,8 +22,6 @@ from otx.core.data.entity.classification import (
     MulticlassClsDataEntity,
     MultilabelClsBatchDataEntity,
     MultilabelClsDataEntity,
-    MultiTransformClsBatchDataEntity,
-    MultiTransformClsDataEntity,
 )
 from otx.core.types.label import HLabelInfo
 
@@ -59,38 +56,6 @@ class OTXMulticlassClsDataset(OTXDataset[MulticlassClsDataEntity]):
     def collate_fn(self) -> Callable:
         """Collection function to collect MulticlassClsDataEntity into MulticlassClsBatchDataEntity in data loader."""
         return partial(MulticlassClsBatchDataEntity.collate_fn, stack_images=self.stack_images)
-
-
-class MultiTransformMulticlassClsDataset(MultiTransformDataset, OTXMulticlassClsDataset):
-    """MultiTransformDataset class for multi-class classification Semi-SL task."""
-
-    def _get_item_impl(self, index: int) -> MultiTransformClsDataEntity | None:
-        item = self.dm_subset[index]
-        img = item.media_as(Image)
-        img_data, img_shape = self._get_img_data_and_shape(img)
-
-        label_anns = [ann for ann in item.annotations if isinstance(ann, Label)]
-        if len(label_anns) > 1:
-            msg = f"Multi-class Classification can't use the multi-label, currently len(labels) = {len(label_anns)}"
-            raise ValueError(msg)
-
-        entity = MultiTransformClsDataEntity(
-            image=img_data,
-            img_info=ImageInfo(
-                img_idx=index,
-                img_shape=img_shape,
-                ori_shape=img_shape,
-                image_color_channel=self.image_color_channel,
-            ),
-            labels=torch.as_tensor([ann.label for ann in label_anns]),
-        )
-
-        return self._apply_transforms(entity)
-
-    @property
-    def collate_fn(self) -> Callable:
-        """Collection function to collect MulticlassClsDataEntity into MulticlassClsBatchDataEntity in data loader."""
-        return partial(MultiTransformClsBatchDataEntity.collate_fn, stack_images=self.stack_images)
 
 
 class OTXMultilabelClsDataset(OTXDataset[MultilabelClsDataEntity]):
