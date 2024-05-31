@@ -566,6 +566,7 @@ class RTMDetSepBNHead(RTMDetHead):
         act_cfg (:obj:`ConfigDict` or dict)): Config dict for activation layer.
             Defaults to dict(type='SiLU').
         pred_kernel_size (int): Kernel size of prediction layer. Defaults to 1.
+        exp_on_reg (bool): Whether using exponential of regression features or not. Defaults to False.
     """
 
     def __init__(
