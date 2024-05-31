@@ -30,6 +30,16 @@ def fxt_trained_model(
     task = recipe.split("/")[-2]
     model_name = recipe.split("/")[-1].split(".")[0]
 
+    data_root = fxt_target_dataset_per_task[task]
+    if model_name.endswith("_semisl") and "multi_class_cls" in recipe:
+        data_root = fxt_target_dataset_per_task["multi_class_cls_semisl"] + "/labeled"
+        fxt_cli_override_command_per_task[task].extends(
+            [
+                "--data.config.unlabeled_subset.data_root",
+                fxt_target_dataset_per_task["multi_class_cls_semisl"] + "/unlabeled",
+            ],
+        )
+
     # 1) otx train
     tmp_path_train = tmp_path / f"otx_train_{model_name}"
     command_cfg = [
@@ -38,7 +48,7 @@ def fxt_trained_model(
         "--config",
         recipe,
         "--data_root",
-        fxt_target_dataset_per_task[task],
+        data_root,
         "--work_dir",
         str(tmp_path_train / "outputs"),
         "--engine.device",
@@ -97,6 +107,10 @@ def test_otx_e2e(
     assert ckpt_file.exists()
 
     # 2) otx test
+    data_root = fxt_target_dataset_per_task[task]
+    if model_name.endswith("_semisl") and "multi_class_cls" in recipe:
+        data_root = fxt_target_dataset_per_task["multi_class_cls_semisl"] + "/labeled"
+
     tmp_path_test = tmp_path / f"otx_test_{model_name}"
     command_cfg = [
         "otx",
@@ -104,7 +118,7 @@ def test_otx_e2e(
         "--config",
         recipe,
         "--data_root",
-        fxt_target_dataset_per_task[task],
+        data_root,
         "--work_dir",
         str(tmp_path_test / "outputs"),
         "--engine.device",
@@ -171,7 +185,7 @@ def test_otx_e2e(
             "--config",
             recipe,
             "--data_root",
-            fxt_target_dataset_per_task[task],
+            data_root,
             "--work_dir",
             str(tmp_path_test / "outputs" / fmt),
             *overrides,
@@ -213,7 +227,7 @@ def test_otx_e2e(
         "--config",
         recipe,
         "--data_root",
-        fxt_target_dataset_per_task[task],
+        data_root,
         "--work_dir",
         str(tmp_path_test / "outputs"),
         "--engine.device",
@@ -317,6 +331,10 @@ def test_otx_explain_e2e(
     if "dino" in model_name:
         pytest.skip("DINO is not supported.")
 
+    data_root = fxt_target_dataset_per_task[task]
+    if model_name.endswith("_semisl") and "multi_class_cls" in recipe:
+        data_root = fxt_target_dataset_per_task["multi_class_cls_semisl"] + "/labeled"
+
     # otx explain
     tmp_path_explain = tmp_path / f"otx_explain_{model_name}"
     command_cfg = [
@@ -325,7 +343,7 @@ def test_otx_explain_e2e(
         "--config",
         recipe,
         "--data_root",
-        fxt_target_dataset_per_task[task],
+        data_root,
         "--work_dir",
         str(tmp_path_explain / "outputs"),
         "--engine.device",

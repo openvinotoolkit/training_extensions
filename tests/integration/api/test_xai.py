@@ -46,6 +46,8 @@ def test_forward_explain(
 
     if "dino" in model_name:
         pytest.skip("DINO is not supported.")
+    if "_semisl" in model_name:
+        pytest.skip("Semi-SL is not supported.")
 
     engine = Engine.from_config(
         config_path=recipe,

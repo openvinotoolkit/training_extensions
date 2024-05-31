@@ -92,6 +92,17 @@ def test_otx_export_infer(
         pytest.skip("Exporting models with tiling isn't supported yet.")
 
     model_name = recipe.split("/")[-1].split(".")[0]
+
+    data_root = fxt_target_dataset_per_task[task]
+    if model_name.endswith("_semisl") and "multi_class_cls" in recipe:
+        data_root = fxt_target_dataset_per_task["multi_class_cls_semisl"] + "/labeled"
+        fxt_cli_override_command_per_task[task].extends(
+            [
+                "--data.config.unlabeled_subset.data_root",
+                fxt_target_dataset_per_task["multi_class_cls_semisl"] + "/unlabeled",
+            ],
+        )
+
     # 1) otx train
     tmp_path_train = tmp_path / f"otx_train_{model_name}"
     command_cfg = [
@@ -100,7 +111,7 @@ def test_otx_export_infer(
         "--config",
         recipe,
         "--data_root",
-        fxt_target_dataset_per_task[task],
+        data_root,
         "--work_dir",
         str(tmp_path_train / "outputs"),
         "--engine.device",
@@ -141,7 +152,7 @@ def test_otx_export_infer(
             "--config",
             test_recipe,
             "--data_root",
-            fxt_target_dataset_per_task[task],
+            data_root,
             "--work_dir",
             str(tmp_path_test / work_dir),
             "--engine.device",
@@ -184,7 +195,7 @@ def test_otx_export_infer(
             "--config",
             recipe,
             "--data_root",
-            fxt_target_dataset_per_task[task],
+            data_root,
             "--work_dir",
             str(tmp_path_test / "outputs"),
             *fxt_cli_override_command_per_task[task],
@@ -233,7 +244,7 @@ def test_otx_export_infer(
         "--config",
         export_test_recipe,
         "--data_root",
-        fxt_target_dataset_per_task[task],
+        data_root,
         "--work_dir",
         str(tmp_path_test / "outputs"),
         "--engine.device",
