@@ -6,7 +6,8 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Literal
+from pathlib import Path  # noqa: TCH003
+from typing import Any, Literal
 
 import torch
 
@@ -18,9 +19,6 @@ elif is_xpu_available():
     num_workers = torch.xpu.device_count()
 else:
     num_workers = 1
-
-if TYPE_CHECKING:
-    from pathlib import Path
 
 
 @dataclass
