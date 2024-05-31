@@ -5,6 +5,7 @@
 # Please refer to https://github.com/open-mmlab/mmdetection/
 
 """MMDet bbox transforms."""
+
 from __future__ import annotations
 
 import torch
@@ -46,7 +47,7 @@ def scale_boxes(boxes: Tensor, scale_factor: list[float]) -> Tensor:
     """
     # Tensor boxes will be treated as horizontal boxes
     repeat_num = int(boxes.size(-1) / 2)
-    scale_factor = boxes.new_tensor(scale_factor).repeat((1, repeat_num))
+    scale_factor = boxes.new_tensor(scale_factor[::-1]).repeat((1, repeat_num))
     return boxes * scale_factor
 
 

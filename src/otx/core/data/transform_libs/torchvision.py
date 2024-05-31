@@ -465,8 +465,8 @@ class Resize(tvt_v2.Transform, NumpytoTVTensorMixin):
     TODO : optimize logic to torcivision pipeline
 
     Args:
-        scale (int or tuple): Images scales for resizing with (width, height). Defaults to None
-        scale_factor (float or tuple[float]): Scale factors for resizing with (width, height).
+        scale (int or tuple): Images scales for resizing with (height, width). Defaults to None
+        scale_factor (float or tuple[float]): Scale factors for resizing with (height, width).
             Defaults to None.
         keep_ratio (bool): Whether to keep the aspect ratio when resizing the
             image. Defaults to False.
@@ -483,8 +483,8 @@ class Resize(tvt_v2.Transform, NumpytoTVTensorMixin):
 
     def __init__(
         self,
-        scale: int | tuple[int, int] | None = None,
-        scale_factor: float | tuple[float, float] | None = None,
+        scale: int | tuple[int, int] | None = None,  # (H, W)
+        scale_factor: float | tuple[float, float] | None = None,  # (H, W)
         keep_ratio: bool = False,
         clip_object_border: bool = True,
         interpolation: str = "bilinear",
@@ -524,35 +524,39 @@ class Resize(tvt_v2.Transform, NumpytoTVTensorMixin):
 
     def _resize_img(self, inputs: T_OTXDataEntity) -> tuple[T_OTXDataEntity, tuple[float, float] | None]:
         """Resize images with inputs.img_info.img_shape."""
-        scale_factor: tuple[float, float] | None = getattr(inputs.img_info, "scale_factor", None)
+        scale_factor: tuple[float, float] | None = getattr(inputs.img_info, "scale_factor", None)  # (H, W)
         if (img := getattr(inputs, "image", None)) is not None:
             img = to_np_image(img)
 
-            img_shape = img.shape[:2]
-            scale: tuple[int, int] = self.scale or scale_size(img_shape[::-1], self.scale_factor)  # type: ignore[arg-type]
+            img_shape = img.shape[:2]  # (H, W)
+            scale: tuple[int, int] = self.scale or scale_size(
+                img_shape,
+                self.scale_factor,  # type: ignore[arg-type]
+            )  # (H, W)
 
             if self.keep_ratio:
-                scale = rescale_size(img_shape[::-1], scale)  # type: ignore[assignment]
+                scale = rescale_size(img_shape, scale)  # type: ignore[assignment]
 
-            img = cv2.resize(img, scale, interpolation=CV2_INTERP_CODES[self.interpolation])
+            # flipping `scale` is required because cv2.resize uses (W, H)
+            img = cv2.resize(img, scale[::-1], interpolation=CV2_INTERP_CODES[self.interpolation])
 
             inputs.image = img
             inputs.img_info = _resize_image_info(inputs.img_info, img.shape[:2])
 
-            scale_factor = (scale[0] / img_shape[1], scale[1] / img_shape[0])  # TODO (sungchul): ticket no. 138831
+            scale_factor = (scale[0] / img_shape[0], scale[1] / img_shape[1])
         return inputs, scale_factor
 
     def _resize_bboxes(self, inputs: T_OTXDataEntity, scale_factor: tuple[float, float]) -> T_OTXDataEntity:
-        """Resize bounding boxes with inputs.img_info.scale_factor."""
+        """Resize bounding boxes with scale_factor only for `Resize`."""
         if (bboxes := getattr(inputs, "bboxes", None)) is not None:
-            bboxes = rescale_bboxes(bboxes, scale_factor)  # TODO (sungchul): ticket no. 138831
+            bboxes = rescale_bboxes(bboxes, scale_factor)
             if self.clip_object_border:
                 bboxes = clip_bboxes(bboxes, inputs.img_info.img_shape)
             inputs.bboxes = tv_tensors.BoundingBoxes(bboxes, format="XYXY", canvas_size=inputs.img_info.img_shape)
         return inputs
 
     def _resize_masks(self, inputs: T_OTXDataEntity, scale_factor: tuple[float, float]) -> T_OTXDataEntity:
-        """Resize masks with inputs.img_info.scale_factor."""
+        """Resize masks with scale_factor only for `Resize`."""
         if (masks := getattr(inputs, "masks", None)) is not None and len(masks) > 0:
             # bit mask
             masks = masks.numpy() if not isinstance(masks, np.ndarray) else masks
@@ -584,8 +588,12 @@ class Resize(tvt_v2.Transform, NumpytoTVTensorMixin):
         repr_str += f"(scale={self.scale}, "
         repr_str += f"scale_factor={self.scale_factor}, "
         repr_str += f"keep_ratio={self.keep_ratio}, "
-        repr_str += f"clip_object_border={self.clip_object_border}), "
-        repr_str += f"interpolation={self.interpolation})"
+        repr_str += f"clip_object_border={self.clip_object_border}, "
+        repr_str += f"interpolation={self.interpolation}, "
+        repr_str += f"interpolation_mask={self.interpolation_mask}, "
+        repr_str += f"transform_bbox={self.transform_bbox}, "
+        repr_str += f"transform_mask={self.transform_mask}, "
+        repr_str += f"is_numpy_to_tvtensor={self.is_numpy_to_tvtensor})"
         return repr_str
 
 
@@ -1093,7 +1101,8 @@ class RandomFlip(tvt_v2.Transform, NumpytoTVTensorMixin):
     def __repr__(self) -> str:
         repr_str = self.__class__.__name__
         repr_str += f"(prob={self.prob}, "
-        repr_str += f"direction={self.direction})"
+        repr_str += f"direction={self.direction}, "
+        repr_str += f"is_numpy_to_tvtensor={self.is_numpy_to_tvtensor})"
         return repr_str
 
 
@@ -1240,7 +1249,8 @@ class PhotoMetricDistortion(tvt_v2.Transform, NumpytoTVTensorMixin):
         repr_str += f"{(self.contrast_lower, self.contrast_upper)}, "
         repr_str += "saturation_range="
         repr_str += f"{(self.saturation_lower, self.saturation_upper)}, "
-        repr_str += f"hue_delta={self.hue_delta})"
+        repr_str += f"hue_delta={self.hue_delta}, "
+        repr_str += f"is_numpy_to_tvtensor={self.is_numpy_to_tvtensor})"
         return repr_str
 
 
@@ -1262,7 +1272,7 @@ class RandomAffine(tvt_v2.Transform, NumpytoTVTensorMixin):
             scaling transform. Defaults to (0.5, 1.5).
         max_shear_degree (float): Maximum degrees of shear
             transform. Defaults to 2.
-        border (tuple[int]): Distance from width and height sides of input
+        border (tuple[int]): Distance from height and width sides of input
             image to adjust output shape. Only used in mosaic dataset.
             Defaults to (0, 0).
         border_val (tuple[int]): Border padding values of 3 channels.
@@ -1280,7 +1290,7 @@ class RandomAffine(tvt_v2.Transform, NumpytoTVTensorMixin):
         max_translate_ratio: float = 0.1,
         scaling_ratio_range: tuple[float, float] = (0.5, 1.5),
         max_shear_degree: float = 2.0,
-        border: tuple[int, int] = (0, 0),
+        border: tuple[int, int] = (0, 0),  # (H, W)
         border_val: tuple[int, int, int] = (114, 114, 114),
         bbox_clip_border: bool = True,
         is_numpy_to_tvtensor: bool = False,
@@ -1294,7 +1304,7 @@ class RandomAffine(tvt_v2.Transform, NumpytoTVTensorMixin):
         self.max_translate_ratio = max_translate_ratio
         self.scaling_ratio_range = scaling_ratio_range
         self.max_shear_degree = max_shear_degree
-        self.border = border
+        self.border = border  # (H, W)
         self.border_val = border_val
         self.bbox_clip_border = bbox_clip_border
         self.is_numpy_to_tvtensor = is_numpy_to_tvtensor
@@ -1327,8 +1337,8 @@ class RandomAffine(tvt_v2.Transform, NumpytoTVTensorMixin):
         inputs = _inputs[0]
 
         img = to_np_image(inputs.image)
-        height = img.shape[0] + self.border[1] * 2
-        width = img.shape[1] + self.border[0] * 2
+        height = img.shape[0] + self.border[0] * 2
+        width = img.shape[1] + self.border[1] * 2
 
         warp_matrix = self._get_random_homography_matrix(height, width)
 
@@ -1357,7 +1367,8 @@ class RandomAffine(tvt_v2.Transform, NumpytoTVTensorMixin):
         repr_str += f"max_shear_degree={self.max_shear_degree}, "
         repr_str += f"border={self.border}, "
         repr_str += f"border_val={self.border_val}, "
-        repr_str += f"bbox_clip_border={self.bbox_clip_border})"
+        repr_str += f"bbox_clip_border={self.bbox_clip_border}, "
+        repr_str += f"is_numpy_to_tvtensor={self.is_numpy_to_tvtensor})"
         return repr_str
 
     @staticmethod
@@ -1680,7 +1691,8 @@ class CachedMosaic(tvt_v2.Transform, NumpytoTVTensorMixin):
         repr_str += f"pad_val={self.pad_val}, "
         repr_str += f"prob={self.prob}, "
         repr_str += f"max_cached_images={self.max_cached_images}, "
-        repr_str += f"random_pop={self.random_pop})"
+        repr_str += f"random_pop={self.random_pop}, "
+        repr_str += f"is_numpy_to_tvtensor={self.is_numpy_to_tvtensor})"
         return repr_str
 
 
@@ -1948,7 +1960,8 @@ class CachedMixUp(tvt_v2.Transform, NumpytoTVTensorMixin):
         repr_str += f"bbox_clip_border={self.bbox_clip_border}, "
         repr_str += f"max_cached_images={self.max_cached_images}, "
         repr_str += f"random_pop={self.random_pop}, "
-        repr_str += f"prob={self.prob})"
+        repr_str += f"prob={self.prob}, "
+        repr_str += f"is_numpy_to_tvtensor={self.is_numpy_to_tvtensor})"
         return repr_str
 
 
@@ -2014,7 +2027,8 @@ class YOLOXHSVRandomAug(tvt_v2.Transform, NumpytoTVTensorMixin):
         repr_str = self.__class__.__name__
         repr_str += f"(hue_delta={self.hue_delta}, "
         repr_str += f"saturation_delta={self.saturation_delta}, "
-        repr_str += f"value_delta={self.value_delta})"
+        repr_str += f"value_delta={self.value_delta}, "
+        repr_str += f"is_numpy_to_tvtensor={self.is_numpy_to_tvtensor})"
         return repr_str
 
 
@@ -2027,7 +2041,7 @@ class Pad(tvt_v2.Transform, NumpytoTVTensorMixin):
 
     Args:
         size (tuple, optional): Fixed padding size.
-            Expected padding shape (width, height). Defaults to None.
+            Expected padding shape (height, width). Defaults to None.
         size_divisor (int, optional): The divisor of padded size. Defaults to
             None.
         pad_to_square (bool): Whether to pad the image into a square.
@@ -2113,7 +2127,7 @@ class Pad(tvt_v2.Transform, NumpytoTVTensorMixin):
             pad_w = int(np.ceil(size[1] / self.size_divisor)) * self.size_divisor
             size = (pad_h, pad_w)
         elif self.size is not None:
-            size = self.size
+            size = self.size  # (H, W)
 
         if isinstance(pad_val, int) and img.ndim == 3:
             pad_val = tuple(pad_val for _ in range(img.shape[2]))
@@ -2181,17 +2195,15 @@ class RandomResize(tvt_v2.Transform, NumpytoTVTensorMixin):
     Reference : https://github.com/open-mmlab/mmcv/blob/v2.1.0/mmcv/transforms/processing.py#L1381-L1562
 
     Args:
-        scale (Sequence): Images scales for resizing.
-            Defaults to None.
-        ratio_range (tuple[float], optional): (min_ratio, max_ratio).
-            Defaults to None.
+        scale (Sequence): Images scales for resizing with (height, width). Defaults to None.
+        ratio_range (tuple[float], optional): (min_ratio, max_ratio). Defaults to None.
         is_numpy_to_tvtensor(bool): Whether convert outputs to tensor. Defaults to False.
         **resize_kwargs: Other keyword arguments for the ``resize_type``.
     """
 
     def __init__(
         self,
-        scale: Sequence[int | tuple[int, int]],
+        scale: Sequence[int | tuple[int, int]],  # (H, W)
         ratio_range: tuple[float, float] | None = None,
         is_numpy_to_tvtensor: bool = False,
         **resize_kwargs,
@@ -2289,6 +2301,8 @@ class RandomCrop(tvt_v2.Transform, NumpytoTVTensorMixin):
 
     Reference : https://github.com/open-mmlab/mmcv/blob/v2.1.0/mmcv/transforms/processing.py#L1381-L1562
 
+    The absolute `crop_size` is sampled based on `crop_type` and `image_size`, then the cropped results are generated.
+
     Args:
         crop_size (tuple): The relative ratio or absolute pixels of
             (height, width).
@@ -2334,7 +2348,7 @@ class RandomCrop(tvt_v2.Transform, NumpytoTVTensorMixin):
         else:
             assert 0 < crop_size[0] <= 1  # noqa: S101
             assert 0 < crop_size[1] <= 1  # noqa: S101
-        self.crop_size = crop_size
+        self.crop_size = crop_size  # (H, W)
         self.crop_type = crop_type
         self.allow_negative_crop = allow_negative_crop
         self.bbox_clip_border = bbox_clip_border
@@ -2440,15 +2454,16 @@ class RandomCrop(tvt_v2.Transform, NumpytoTVTensorMixin):
         """
         h, w = image_size
         if self.crop_type == "absolute":
-            return min(self.crop_size[1], h), min(self.crop_size[0], w)
+            return min(self.crop_size[0], h), min(self.crop_size[1], w)
 
         if self.crop_type == "absolute_range":
+            # `self.crop_size` is used as range, not absolute value
             crop_h = np.random.randint(min(h, self.crop_size[0]), min(h, self.crop_size[1]) + 1)
             crop_w = np.random.randint(min(w, self.crop_size[0]), min(w, self.crop_size[1]) + 1)
             return crop_h, crop_w
 
         if self.crop_type == "relative":
-            crop_w, crop_h = self.crop_size
+            crop_h, crop_w = self.crop_size
             return int(h * crop_h + 0.5), int(w * crop_w + 0.5)
 
         # 'relative_range'
