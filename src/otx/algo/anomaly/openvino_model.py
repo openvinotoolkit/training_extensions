@@ -165,7 +165,7 @@ class AnomalyOpenVINO(OVModel):
             msg = "Model is already optimized by PTQ"
             raise RuntimeError(msg)
 
-        train_dataset = data_module.val_dataloader()
+        val_dataset = data_module.val_dataloader()
 
         ptq_config_from_ir = self._read_ptq_config_from_ir(ov_model)
         if ptq_config is not None:
@@ -174,7 +174,7 @@ class AnomalyOpenVINO(OVModel):
         else:
             ptq_config = ptq_config_from_ir
 
-        quantization_dataset = nncf.Dataset(train_dataset, self.transform_fn)  # type: ignore[attr-defined]
+        quantization_dataset = nncf.Dataset(val_dataset, self.transform_fn)  # type: ignore[attr-defined]
 
         compressed_model = nncf.quantize(  # type: ignore[attr-defined]
             ov_model,
