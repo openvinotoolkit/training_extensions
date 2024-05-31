@@ -6,7 +6,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 from unittest.mock import MagicMock
 
 import pytest
@@ -15,6 +15,8 @@ from otx.algo.callbacks.adaptive_train_scheduling import AdaptiveTrainScheduling
 from otx.engine.hpo import hpo_trial as target_file
 from otx.engine.hpo.hpo_trial import (
     HPOCallback,
+    HPOInitWeightCallback,
+    _get_hpo_initial_weight,
     _register_hpo_callback,
     _set_to_validate_every_epoch,
     run_hpo_trial,
@@ -122,10 +124,19 @@ def mock_callbacks(mock_checkpoint_callback, mock_adaptive_schedule_hook) -> lis
     return [mock_checkpoint_callback, mock_adaptive_schedule_hook]
 
 
-def test_run_hpo_trial(mocker, mock_callbacks, mock_report_func, tmp_path, mock_engine, mock_checkpoint_callback):
-    trial_id = "0"
-    max_epochs = 10
-    hp_config = {
+@pytest.fixture()
+def trial_id() -> str:
+    return "0"
+
+
+@pytest.fixture()
+def max_epochs() -> int:
+    return 10
+
+
+@pytest.fixture()
+def hp_config(trial_id, max_epochs) -> dict[str, Any]:
+    return {
         "id": trial_id,
         "configuration": {
             "iterations": max_epochs,
@@ -133,6 +144,19 @@ def test_run_hpo_trial(mocker, mock_callbacks, mock_report_func, tmp_path, mock_
             "d.e.f": 2,
         },
     }
+
+
+def test_run_hpo_trial(
+    trial_id,
+    max_epochs,
+    hp_config,
+    mocker,
+    mock_callbacks,
+    mock_report_func,
+    tmp_path,
+    mock_engine,
+    mock_checkpoint_callback,
+):
     hpo_weight_dir = get_hpo_weight_dir(tmp_path, trial_id)
     last_weight = hpo_weight_dir / "last.ckpt"  # last checkpoint so far. will be used to resume
     last_weight.write_text("prev_weight")
@@ -162,7 +186,7 @@ def test_run_hpo_trial(mocker, mock_callbacks, mock_report_func, tmp_path, mock_
     assert mock_engine.train.call_args.kwargs["checkpoint"] == last_weight
     assert mock_engine.train.call_args.kwargs["resume"] is True
     # check given hyper parameters are set well
-    assert mock_engine.train.call_args.kwargs["max_epochs"] == 10
+    assert mock_engine.train.call_args.kwargs["max_epochs"] == max_epochs
     assert mock_engine.a.b.c == 1
     assert mock_engine.d.e.f == 2
     # check train work directory are changed well
@@ -180,24 +204,56 @@ def test_run_hpo_trial(mocker, mock_callbacks, mock_report_func, tmp_path, mock_
     assert last_weight.read_text() == "last_ckpt"
 
 
-def test_register_hpo_callback(mock_report_func):
+def test_run_hpo_trial_wo_hpo_init_weigeht(hp_config, mock_callbacks, mock_report_func, tmp_path, mock_engine):
+    """Check if checkpoint is None and HPO initial weight doesn't exist, HPOInitWeightCallback is registered."""
+    run_hpo_trial(
+        hp_config=hp_config,
+        report_func=mock_report_func,
+        hpo_workdir=tmp_path,
+        engine=mock_engine,
+        callbacks=mock_callbacks,
+        metric_name="metric",
+    )
+
+    callbacks = mock_engine.train.call_args.kwargs["callbacks"]
+    hpo_initial_weight_callback_exist = False
+    for callback in callbacks:
+        if isinstance(callback, HPOInitWeightCallback):
+            hpo_initial_weight_callback_exist = True
+    assert hpo_initial_weight_callback_exist
+
+
+def test_run_hpo_trial_w_hpo_init_weigeht(hp_config, mock_callbacks, mock_report_func, tmp_path, mock_engine):
+    """Check if checkpoint is None and HPO initial weight exist, the weight is set to checkpoint."""
+    init_weight = _get_hpo_initial_weight(tmp_path)
+    init_weight.touch()
+
+    run_hpo_trial(
+        hp_config=hp_config,
+        report_func=mock_report_func,
+        hpo_workdir=tmp_path,
+        engine=mock_engine,
+        callbacks=mock_callbacks,
+        metric_name="metric",
+    )
+
+    assert init_weight.samefile(mock_engine.train.call_args.kwargs["checkpoint"])
+
+
+def test_register_hpo_callback(mock_report_func, mock_engine):
     """Check it returns list including only HPOCallback if any callbacks are passed."""
     callabcks = _register_hpo_callback(
         report_func=mock_report_func,
+        engine=mock_engine,
         metric_name="metric",
     )
-    assert len(callabcks) == 1
-    assert isinstance(callabcks[0], HPOCallback)
-
-
-def test_register_hpo_callback_hoho(mock_report_func):
-    """Check it returns list including only HPOCallback if any callbacks are passed."""
-    callabcks = _register_hpo_callback(
-        report_func=mock_report_func,
-        metric_name="metric",
-    )
-    assert len(callabcks) == 1
-    assert isinstance(callabcks[0], HPOCallback)
+    assert len(callabcks) == 3
+    hpo_callback_exist = False
+    for callback in callabcks:
+        if isinstance(callback, HPOCallback):
+            hpo_callback_exist = True
+            break
+    assert hpo_callback_exist
 
 
 def test_register_hpo_callback_given_callback(mock_report_func, mock_checkpoint_callback):
