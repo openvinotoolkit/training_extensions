@@ -66,6 +66,9 @@ class OTXDataModule(LightningDataModule):
         # For Semi-SL
         unlabeled_dataset = None
         if self.config.unlabeled_subset.data_root is not None:
+            log.info(
+                f"Unlabeled dataset is loaded from {self.config.unlabeled_subset.data_root}.",
+            )
             unlabeled_dataset = DmDataset.import_from(
                 self.config.unlabeled_subset.data_root,
                 format=self.config.unlabeled_subset.data_format,
@@ -278,7 +281,7 @@ class OTXDataModule(LightningDataModule):
 
         dataloaders = {}
         if isinstance(config.transforms, dict):
-            log.warning("Unlabeled dataset has multiple transforms. Use only the first one.")
+            log.warning(f"Unlabeled dataset has multiple transforms : {list(config.transforms.keys())}")
             common_args["worker_init_fn"] = lambda _: torch.manual_seed(0)  # type: ignore[assignment]
             for key in config.transforms:
                 dataset = self._get_dataset(key)
