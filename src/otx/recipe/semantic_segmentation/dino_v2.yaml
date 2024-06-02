@@ -9,7 +9,7 @@ model:
           ignore_index: 255
 
     backbone_configuration:
-      name: dinov2_vits14_reg
+      name: dinov2_vits14
       freeze_backbone: true
       out_index:
         - 8

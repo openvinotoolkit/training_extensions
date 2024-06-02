@@ -521,9 +521,9 @@ class OTXLiteHRNet(TorchVisionCompatibleModel):
     def _create_model(self) -> nn.Module:
         litehrnet_model_class = LITEHRNET_VARIANTS[self.name_base_model]
         # merge configurations with defaults overriding them
-        backbone_configuration = self.backbone_configuration | litehrnet_model_class.default_backbone_configuration
+        backbone_configuration = litehrnet_model_class.default_backbone_configuration | self.backbone_configuration
         decode_head_configuration = (
-            self.decode_head_configuration | litehrnet_model_class.default_decode_head_configuration
+            litehrnet_model_class.default_decode_head_configuration | self.decode_head_configuration
         )
         # initialize backbones
         backbone = LiteHRNet(**backbone_configuration)
