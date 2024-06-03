@@ -29,7 +29,7 @@ engine:
 callback_monitor: val/map_50
 
 data: ../_base_/data/torchvision_base.yaml
-overrides:  
+overrides:
   max_epochs: 100
   gradient_clip_val: 35.0
   data:
