@@ -84,13 +84,19 @@ class TVMaskRCNN(MaskRCNN):
         """Postprocess the output of the model."""
         for i, (pred, scale_factor, ori_shape) in enumerate(zip(result, scale_factors, ori_shapes)):
             boxes = pred["boxes"]
+            labels = pred["labels"]
             _scale_factor = [1 / s for s in scale_factor]  # (H, W)
             boxes = boxes * boxes.new_tensor(_scale_factor[::-1]).repeat((1, int(boxes.size(-1) / 2)))
-
+            h, w = ori_shape
+            boxes[:, 0::2].clamp_(min=0, max=w - 1)
+            boxes[:, 1::2].clamp_(min=0, max=h - 1)
+            keep_indices = (boxes[:, 2] - boxes[:, 0]) * (boxes[:, 3] - boxes[:, 1]) > 0
+            boxes = boxes[keep_indices > 0]
+            labels = labels[keep_indices > 0]
             result[i]["boxes"] = boxes
-            result[i]["labels"] -= 1  # Convert back to 0-indexed labels
+            result[i]["labels"] = labels - 1  # Convert back to 0-indexed labels
             if "masks" in pred:
-                masks = pred["masks"]
+                masks = pred["masks"][keep_indices]
                 masks = paste_masks_in_image(masks, boxes, ori_shape)
                 masks = (masks >= mask_thr_binary).to(dtype=torch.bool)
                 masks = masks.squeeze(1)
