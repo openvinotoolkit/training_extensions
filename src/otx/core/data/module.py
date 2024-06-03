@@ -144,7 +144,8 @@ class OTXDataModule(LightningDataModule):
                 dm_subset = dm_subset.as_dataset()
                 for transform_key, transforms in self.config.unlabeled_subset.transforms.items():
                     unlabeled_config = deepcopy(self.config.unlabeled_subset)
-                    unlabeled_config.transforms = transforms
+                    # TODO (harimkang): Revisit this with core.config.data.UnlabeledDataConfig.transforms.
+                    unlabeled_config.transforms = transforms  # type: ignore[assignment]
 
                     unlabeled_dataset = OTXDatasetFactory.create(
                         task=self.task,

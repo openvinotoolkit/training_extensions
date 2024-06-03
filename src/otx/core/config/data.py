@@ -100,7 +100,8 @@ class UnlabeledDataConfig(SubsetConfig):
     batch_size: int = 0
     subset_name: str = "unlabeled"
 
-    transforms: dict[str, list[dict[str, Any]]] | list[dict[str, Any]] = field(default_factory=dict)  # type: ignore[assignment]
+    # TODO (harimkang): If not multi-transform, support for list type, as should support for other subsets.
+    transforms: dict[str, list[dict[str, Any]]] = field(default_factory=dict)  # type: ignore[assignment]
 
     transform_lib_type: TransformLibType = TransformLibType.TORCHVISION
     num_workers: int = 2
