@@ -10,7 +10,6 @@ from typing import Callable
 import torch
 import torch.nn.functional as F  # noqa: N812
 from einops import rearrange
-from mmaction.models import MODELS
 from mmengine.config import Config
 from torch import Tensor, nn
 from torch.nn.modules.utils import _pair, _triple
@@ -650,7 +649,6 @@ class MoViNet(nn.Module):
         self.apply(self._init_weights)
 
 
-@MODELS.register_module()
 class OTXMoViNet(MoViNet):
     """MoViNet wrapper class for OTX."""
 

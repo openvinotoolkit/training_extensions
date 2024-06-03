@@ -74,6 +74,85 @@ class OTXActionClsModel(OTXModel[ActionClsBatchDataEntity, ActionClsBatchPredEnt
             "target": target,
         }
 
+    def _customize_inputs(self, entity: ActionClsBatchDataEntity) -> dict[str, Any]:
+        """Convert ActionClsBatchDataEntity into mmaction model's input."""
+        from mmaction.structures import ActionDataSample
+
+        mmaction_inputs: dict[str, Any] = {}
+
+        mmaction_inputs["inputs"] = entity.images
+        mmaction_inputs["data_samples"] = [
+            ActionDataSample(
+                metainfo={
+                    "img_id": img_info.img_idx,
+                    "img_shape": img_info.img_shape,
+                    "ori_shape": img_info.ori_shape,
+                    "scale_factor": img_info.scale_factor,
+                },
+                gt_label=labels,
+            )
+            for img_info, labels in zip(entity.imgs_info, entity.labels)
+        ]
+
+        mmaction_inputs = self.model.data_preprocessor(data=mmaction_inputs, training=self.training)
+        mmaction_inputs["mode"] = "loss" if self.training else "predict"
+        return mmaction_inputs
+
+    def _customize_outputs(
+        self,
+        outputs: Any,  # noqa: ANN401
+        inputs: ActionClsBatchDataEntity,
+    ) -> ActionClsBatchPredEntity | OTXBatchLossEntity:
+        from mmaction.structures import ActionDataSample
+
+        if self.training:
+            if not isinstance(outputs, dict):
+                raise TypeError(outputs)
+
+            losses = OTXBatchLossEntity()
+            for k, v in outputs.items():
+                losses[k] = v
+            return losses
+
+        scores = []
+        labels = []
+
+        for output in outputs:
+            if not isinstance(output, ActionDataSample):
+                raise TypeError(output)
+
+            scores.append(output.pred_score)
+            labels.append(output.pred_label)
+
+        return ActionClsBatchPredEntity(
+            batch_size=len(outputs),
+            images=inputs.images,
+            imgs_info=inputs.imgs_info,
+            scores=scores,
+            labels=labels,
+        )
+
+    @property
+    def _exporter(self) -> OTXModelExporter:
+        """Creates OTXModelExporter object that can export the model."""
+        mean, std = get_mean_std_from_data_processing(self.config)
+
+        return OTXNativeModelExporter(
+            task_level_export_parameters=self._export_parameters,
+            input_size=self.image_size,
+            mean=mean,
+            std=std,
+            resize_mode="standard",
+            pad_value=0,
+            swap_rgb=False,
+            via_onnx=False,
+            onnx_export_configuration=None,
+            output_names=None,
+        )
+
+    def forward_for_tracing(self, image: Tensor) -> Tensor | dict[str, Tensor]:
+        """Model forward function used for the model tracing during model exportation."""
+        return self.model(inputs=image, mode="tensor")
 
 class MMActionCompatibleModel(OTXActionClsModel):
     """Action classification model compitible for MMAction.
