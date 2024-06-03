@@ -7,16 +7,14 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from otx.algo.utils.mmconfig import read_mmconfig
+from otx.algo.action_classification.backbones.movinet import OTXMoViNet as MoViNetBackbone
+from otx.algo.action_classification.heads.movinet_head import MoViNetHead
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.metrics.accuracy import MultiClassClsMetricCallable
 from otx.core.model.action_classification import OTXActionClsModel
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
 from otx.core.schedulers import LRSchedulerListCallable
 from otx.core.types.label import LabelInfoTypes
-
-from otx.algo.action_classification.backbones.movinet import OTXMoViNet as MoViNetBackbone
-from otx.algo.action_classification.heads.movinet_head import MoViNetHead
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
@@ -58,7 +56,7 @@ class MoViNet(OTXActionClsModel):
                 num_extra_classes = 6 * sample_model_dim - 5 * incremental_model_dim
                 classification_layers[prefix + key] = {"stride": stride, "num_extra_classes": num_extra_classes}
         return classification_layers
-    
+
     def _create_model(self) -> nn.Module:
         detector = self._build_model(num_classes=self.label_info.num_classes)
         detector.init_weights()
@@ -66,7 +64,7 @@ class MoViNet(OTXActionClsModel):
 
         if self.load_from is not None:
             load_checkpoint(detector, self.load_from, map_location="cpu")
-            
+
         return detector
 
     def _build_model(self, num_classes: int) -> nn.Module:

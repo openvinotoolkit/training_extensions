@@ -154,6 +154,7 @@ class OTXActionClsModel(OTXModel[ActionClsBatchDataEntity, ActionClsBatchPredEnt
         """Model forward function used for the model tracing during model exportation."""
         return self.model(inputs=image, mode="tensor")
 
+
 class MMActionCompatibleModel(OTXActionClsModel):
     """Action classification model compitible for MMAction.
 
