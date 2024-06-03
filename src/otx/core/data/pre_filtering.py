@@ -29,6 +29,7 @@ def pre_filtering(
         data_format (str): The format of the dataset.
         unannotated_items_ratio (float): The ratio of background unannotated items to be used.
             This must be a float between 0 and 1.
+        ignore_index (int | None, optional): The index to be used for the ignored label. Defaults to None.
 
     Returns:
         DmDataset: The filtered dataset.
