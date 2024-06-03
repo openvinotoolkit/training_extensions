@@ -16,7 +16,12 @@ if TYPE_CHECKING:
     from datumaro.components.dataset_base import DatasetItem
 
 
-def pre_filtering(dataset: DmDataset, data_format: str, unannotated_items_ratio: float) -> DmDataset:
+def pre_filtering(
+    dataset: DmDataset,
+    data_format: str,
+    unannotated_items_ratio: float,
+    ignore_index: int | None = None,
+) -> DmDataset:
     """Pre-filtering function to filter the dataset based on certain criteria.
 
     Args:
@@ -32,7 +37,7 @@ def pre_filtering(dataset: DmDataset, data_format: str, unannotated_items_ratio:
     msg = f"There are empty annotation items in train set, Of these, only {unannotated_items_ratio*100}% are used."
     warnings.warn(msg, stacklevel=2)
     dataset = DmDataset.filter(dataset, is_valid_annot, filter_annotations=True)
-    dataset = remove_unused_labels(dataset, data_format)
+    dataset = remove_unused_labels(dataset, data_format, ignore_index)
     if unannotated_items_ratio > 0:
         empty_items = [item.id for item in dataset if item.subset == "train" and len(item.annotations) == 0]
         used_background_items = set(sample(empty_items, int(len(empty_items) * unannotated_items_ratio)))
@@ -66,10 +71,12 @@ def is_valid_annot(item: DatasetItem, annotation: Annotation) -> bool:  # noqa: 
     return True
 
 
-def remove_unused_labels(dataset: DmDataset, data_format: str) -> DmDataset:
+def remove_unused_labels(dataset: DmDataset, data_format: str, ignore_index: int | None) -> DmDataset:
     """Remove unused labels in Datumaro dataset."""
     original_categories: list[str] = dataset.get_label_cat_names()
     used_labels: list[int] = list({ann.label for item in dataset for ann in item.annotations})
+    if ignore_index is not None:
+        used_labels = list(filter(lambda x: x != ignore_index, used_labels))
     if data_format == "ava":
         used_labels = [0, *used_labels]
     if data_format == "common_semantic_segmentation_with_subset_dirs" and len(original_categories) < len(used_labels):
