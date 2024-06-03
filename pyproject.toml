@@ -81,7 +81,7 @@ xpu = [
     "onnx==1.16.0",
     "onnxconverter-common==1.14.0",
     "nncf==2.9.0",
-    "anomalib[core]==1.0.1",
+    "anomalib[core]==1.1.0",
 ]
 base = [
     "torch==2.1.1",
@@ -94,7 +94,7 @@ base = [
     "onnx==1.16.0",
     "onnxconverter-common==1.14.0",
     "nncf==2.9.0",
-    "anomalib[core]==1.0.1",
+    "anomalib[core]==1.1.0",
 ]
 mmlab = [
     "mmdet==3.2.0",
