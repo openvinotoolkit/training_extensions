@@ -14,6 +14,7 @@ import numpy as np
 import torch
 from model_api.models import Model
 from model_api.tilers import InstanceSegmentationTiler
+from torchmetrics import Metric, MetricCollection
 from torchvision import tv_tensors
 
 from otx.algo.explain.explain_algo import InstSegExplainAlgo, feature_vector_fn
@@ -24,7 +25,8 @@ from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.instance_segmentation import InstanceSegBatchDataEntity, InstanceSegBatchPredEntity
 from otx.core.data.entity.tile import OTXTileBatchDataEntity
 from otx.core.metrics import MetricInput
-from otx.core.metrics.mean_ap import MaskRLEMeanAPCallable
+from otx.core.metrics.fmeasure import FMeasure
+from otx.core.metrics.mean_ap import MaskRLEMeanAPFMeasureCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable, OTXModel, OVModel
 from otx.core.schedulers import LRSchedulerListCallable
 from otx.core.types.export import TaskLevelExportParameters
@@ -39,7 +41,6 @@ if TYPE_CHECKING:
     from model_api.models.utils import InstanceSegmentationResult
     from omegaconf import DictConfig
     from torch import nn
-    from torchmetrics import Metric
 
     from otx.core.metrics import MetricCallable
 
@@ -52,7 +53,7 @@ class OTXInstanceSegModel(OTXModel[InstanceSegBatchDataEntity, InstanceSegBatchP
         label_info: LabelInfoTypes,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
-        metric: MetricCallable = MaskRLEMeanAPCallable,
+        metric: MetricCallable = MaskRLEMeanAPFMeasureCallable,
         torch_compile: bool = False,
         tile_config: TileConfig = TileConfig(enable_tiler=False),
     ) -> None:
@@ -135,7 +136,14 @@ class OTXInstanceSegModel(OTXModel[InstanceSegBatchDataEntity, InstanceSegBatchP
             retval = super()._log_metrics(meter, key)
 
             # NOTE: Validation metric logging can update `best_confidence_threshold`
-            if best_confidence_threshold := getattr(meter, "best_confidence_threshold", None):
+            if (
+                isinstance(meter, MetricCollection)
+                and (fmeasure := getattr(meter, "FMeasure", None))
+                and (best_confidence_threshold := getattr(fmeasure, "best_confidence_threshold", None))
+            ) or (
+                isinstance(meter, FMeasure)
+                and (best_confidence_threshold := getattr(meter, "best_confidence_threshold", None))
+            ):
                 self.hparams["best_confidence_threshold"] = best_confidence_threshold
 
             return retval
@@ -215,7 +223,7 @@ class ExplainableOTXInstanceSegModel(OTXInstanceSegModel):
         label_info: LabelInfoTypes,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
-        metric: MetricCallable = MaskRLEMeanAPCallable,
+        metric: MetricCallable = MaskRLEMeanAPFMeasureCallable,
         torch_compile: bool = False,
         tile_config: TileConfig = TileConfig(enable_tiler=False),
     ) -> None:
@@ -364,7 +372,7 @@ class MMDetInstanceSegCompatibleModel(ExplainableOTXInstanceSegModel):
         config: DictConfig | None = None,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
-        metric: MetricCallable = MaskRLEMeanAPCallable,
+        metric: MetricCallable = MaskRLEMeanAPFMeasureCallable,
         torch_compile: bool = False,
         tile_config: TileConfig = TileConfig(enable_tiler=False),
     ) -> None:
@@ -556,7 +564,7 @@ class OVInstanceSegmentationModel(
         max_num_requests: int | None = None,
         use_throughput_mode: bool = True,
         model_api_configuration: dict[str, Any] | None = None,
-        metric: MetricCallable = MaskRLEMeanAPCallable,
+        metric: MetricCallable = MaskRLEMeanAPFMeasureCallable,
         **kwargs,
     ) -> None:
         super().__init__(
