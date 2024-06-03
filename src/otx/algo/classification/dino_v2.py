@@ -53,7 +53,7 @@ class DINOv2(nn.Module):
 
         ci_data_root = os.environ.get("CI_DATA_ROOT")
         pretrained: bool = True
-        if ci_data_root is not None:
+        if ci_data_root is not None and Path(ci_data_root).exists():
             pretrained = False
 
         self.backbone = torch.hub.load(
@@ -62,7 +62,7 @@ class DINOv2(nn.Module):
             pretrained=pretrained,
         )
 
-        if ci_data_root is not None:
+        if ci_data_root is not None and Path(ci_data_root).exists():
             ckpt_filename = f"{backbone}4_pretrain.pth"
             ckpt_path = Path(Path(ci_data_root) / "torch" / "hub" / "checkpoints" / ckpt_filename)
             if not ckpt_path.exists():
