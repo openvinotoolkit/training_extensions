@@ -160,7 +160,8 @@ class OTXTVRoIHeads(RoIHeads):
         features: dict[str, Tensor],
         proposals: list[Tensor],
         image_shapes: list[tuple[int, int]],
-    ):
+    ) -> tuple[list[Tensor], list[Tensor], list[Tensor]]:
+        """Export the model for inference."""
         box_features = self.box_roi_pool(features, proposals, image_shapes)
         box_features = self.box_head(box_features)
         class_logits, box_regression = self.box_predictor(box_features)

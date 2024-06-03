@@ -64,7 +64,10 @@ class TVMaskRCNN(MaskRCNN):
 
         if self.training:
             return losses
-        scale_factors = [img_meta.scale_factor for img_meta in entity.imgs_info]
+        scale_factors = [
+            img_meta.scale_factor if img_meta.scale_factor else (1.0, 1.0) for img_meta in entity.imgs_info
+        ]
+
         return self.postprocess(
             detections,
             ori_shapes,
@@ -78,6 +81,7 @@ class TVMaskRCNN(MaskRCNN):
         scale_factors: list[tuple[float, float]],
         mask_thr_binary: float = 0.5,
     ) -> list[dict[str, torch.Tensor]]:
+        """Postprocess the output of the model."""
         for i, (pred, scale_factor, ori_shape) in enumerate(zip(result, scale_factors, ori_shapes)):
             boxes = pred["boxes"]
             _scale_factor = [1 / s for s in scale_factor]  # (H, W)
@@ -97,7 +101,8 @@ class TVMaskRCNN(MaskRCNN):
         self,
         batch_inputs: torch.Tensor,
         batch_img_metas: list[dict],
-    ):
+    ) -> tuple[list[torch.Tensor], list[torch.Tensor], list[torch.Tensor]]:
+        """Export the model with the given inputs and image metas."""
         img_shapes = [img_meta["image_shape"] for img_meta in batch_img_metas]
         image_list = ImageList(batch_inputs, img_shapes)
         features = self.backbone(batch_inputs)
