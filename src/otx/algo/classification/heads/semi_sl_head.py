@@ -164,12 +164,11 @@ class OTXSemiSLLinearClsHead(OTXSemiSLClsHead, LinearClsHead):
         num_classes: int,
         in_channels: int,
         loss: nn.Module,
-        topk: int | tuple = (1,),
         unlabeled_coef: float = 1,
         use_dynamic_threshold: bool = True,
         min_threshold: float = 0.5,
     ):
-        LinearClsHead.__init__(self, num_classes=num_classes, in_channels=in_channels, loss=loss, topk=topk)
+        LinearClsHead.__init__(self, num_classes=num_classes, in_channels=in_channels, loss=loss)
         OTXSemiSLClsHead.__init__(
             self,
             num_classes=num_classes,
@@ -188,14 +187,12 @@ class OTXSemiSLNonLinearClsHead(OTXSemiSLClsHead):
         in_channels: int,
         loss: nn.Module,
         hid_channels: int = 1280,
-        topk: int | tuple = (1,),
         unlabeled_coef: float = 1,
         use_dynamic_threshold: bool = True,
         min_threshold: float = 0.5,
     ):
         self.num_classes = num_classes
         self.loss_module = loss
-        self.topk = topk
 
         self.in_channels = in_channels
         self.hid_channels = hid_channels

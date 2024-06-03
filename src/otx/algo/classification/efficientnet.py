@@ -198,7 +198,6 @@ class EfficientNetForMulticlassClsSemiSL(EfficientNetForMulticlassCls):
             head=OTXSemiSLLinearClsHead(
                 num_classes=num_classes,
                 in_channels=1280,
-                topk=(1, 5) if num_classes >= 5 else (1,),
                 loss=nn.CrossEntropyLoss(reduction="none"),
             ),
         )
