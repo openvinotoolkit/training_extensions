@@ -38,7 +38,7 @@ from torchvision.transforms.v2 import functional as F  # noqa: N812
 
 
 class MockFrame:
-    data = np.ndarray([3, 10, 10])
+    data = np.ndarray([10, 10, 3], dtype=np.uint8)
 
 
 class MockVideo:
@@ -119,13 +119,13 @@ class TestMinIoURandomCrop:
 class TestResize:
     @pytest.fixture()
     def resize(self) -> Resize:
-        return Resize(scale=(128, 96))  # (64, 64) -> (96, 128)
+        return Resize(scale=(128, 96))  # (64, 64) -> (128, 96)
 
     @pytest.mark.parametrize(
         ("keep_ratio", "expected_shape", "expected_scale_factor"),
         [
             (True, (96, 96), (1.5, 1.5)),
-            (False, (96, 128), (2.0, 1.5)),
+            (False, (128, 96), (2.0, 1.5)),
         ],
     )
     def test_forward_only_image(
@@ -161,7 +161,7 @@ class TestResize:
         ("keep_ratio", "expected_shape"),
         [
             (True, (96, 96)),
-            (False, (96, 128)),
+            (False, (128, 96)),
         ],
     )
     def test_forward_bboxes_masks_polygons(
@@ -183,14 +183,15 @@ class TestResize:
         assert results.image.shape[:2] == expected_shape
         assert results.img_info.img_shape == expected_shape
         assert torch.all(
-            results.bboxes == fxt_inst_seg_data_entity[0].bboxes * torch.tensor(results.img_info.scale_factor * 2),
+            results.bboxes
+            == fxt_inst_seg_data_entity[0].bboxes * torch.tensor(results.img_info.scale_factor[::-1] * 2),
         )
         assert results.masks.shape[1:] == expected_shape
         assert all(
             [  # noqa: C419
                 np.all(
                     np.array(rp.points).reshape(-1, 2)
-                    == np.array(fp.points).reshape(-1, 2) * np.array([results.img_info.scale_factor]),
+                    == np.array(fp.points).reshape(-1, 2) * np.array([results.img_info.scale_factor[::-1]]),
                 )
                 for rp, fp in zip(results.polygons, fxt_inst_seg_data_entity[0].polygons)
             ],
@@ -496,7 +497,7 @@ class TestRandomResize:
         results = transform(deepcopy(entity))
 
         # choose target scale from init when override is False and scale is a list of tuples
-        transform = RandomResize([(224, 448), (112, 224)], keep_ratio=False, transform_bbox=True, transform_mask=True)
+        transform = RandomResize([(448, 224), (224, 112)], keep_ratio=False, transform_bbox=True, transform_mask=True)
 
         results = transform(deepcopy(entity))
 
@@ -507,7 +508,7 @@ class TestRandomResize:
 
         # the type of scale is invalid in init
         with pytest.raises(NotImplementedError):
-            RandomResize([(224, 448), [112, 224]], keep_ratio=True)(deepcopy(entity))
+            RandomResize([(448, 224), [224, 112]], keep_ratio=True)(deepcopy(entity))
 
 
 class TestRandomCrop:
@@ -577,7 +578,7 @@ class TestRandomCrop:
         with pytest.raises(AssertionError):
             RandomCrop(crop_size=crop_size, crop_type=crop_type)
 
-    @pytest.mark.parametrize(("crop_type", "crop_size"), [("relative", (0.5, 0.5)), ("absolute", (16, 12))])
+    @pytest.mark.parametrize(("crop_type", "crop_size"), [("relative", (0.5, 0.5)), ("absolute", (12, 16))])
     def test_forward_relative_absolute(self, entity, crop_type: str, crop_size: tuple[float | int]) -> None:
         # test relative and absolute crop
         transform = RandomCrop(crop_size=crop_size, crop_type=crop_type)
@@ -600,13 +601,13 @@ class TestRandomCrop:
 
     def test_forward_relative_range(self, entity) -> None:
         # test relative_range crop
-        transform = RandomCrop(crop_size=(0.5, 0.5), crop_type="relative_range")
+        transform = RandomCrop(crop_size=(0.9, 0.8), crop_type="relative_range")
 
         results = transform(deepcopy(entity))
 
         h, w = results.image.shape
-        assert 16 <= w <= 32
-        assert 12 <= h <= 24
+        assert 24 * 0.9 <= h <= 24
+        assert 32 * 0.8 <= w <= 32
         assert results.img_info.img_shape == results.image.shape[:2]
 
     def test_forward_bboxes_labels_masks_polygons(self, iseg_entity) -> None:
@@ -615,11 +616,11 @@ class TestRandomCrop:
 
         results = transform(deepcopy(iseg_entity))
 
-        assert results.image.shape[:2] == (5, 7)
+        assert results.image.shape[:2] == (7, 5)
         assert results.bboxes.shape[0] == 2
         assert results.labels.shape[0] == 2
         assert results.masks.shape[0] == 2
-        assert results.masks.shape[1:] == (5, 7)
+        assert results.masks.shape[1:] == (7, 5)
         assert results.img_info.img_shape == results.image.shape[:2]
 
     def test_forward_recompute_bbox_from_mask(self, iseg_entity) -> None:
@@ -682,7 +683,7 @@ class TestRandomCrop:
         results = transform(deepcopy(det_entity))
 
         if allow_negative_crop:
-            assert results.image.shape == transform.crop_size[::-1]
+            assert results.image.shape == transform.crop_size
             assert len(results.bboxes) == len(det_entity.bboxes) == 0
         else:
             assert results is None
