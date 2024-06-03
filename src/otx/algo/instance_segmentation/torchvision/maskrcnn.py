@@ -80,7 +80,6 @@ class TVMaskRCNN(MaskRCNN):
     ) -> list[dict[str, torch.Tensor]]:
         for i, (pred, scale_factor, ori_shape) in enumerate(zip(result, scale_factors, ori_shapes)):
             boxes = pred["boxes"]
-            # boxes = resize_boxes(boxes, im_s, o_im_s)
             _scale_factor = [1 / s for s in scale_factor]  # (H, W)
             boxes = boxes * boxes.new_tensor(_scale_factor[::-1]).repeat((1, int(boxes.size(-1) / 2)))
 
