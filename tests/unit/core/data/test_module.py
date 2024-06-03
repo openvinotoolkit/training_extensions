@@ -12,6 +12,7 @@ from otx.core.config.data import (
     DataModuleConfig,
     SubsetConfig,
     TileConfig,
+    UnlabeledDataConfig,
 )
 from otx.core.data.module import (
     OTXDataModule,
@@ -50,6 +51,8 @@ class TestModule:
         )
         mock.test_subset.num_workers = 0
         mock.test_subset.batch_size = 1
+        mock.unlabeled_subset = MagicMock(spec=UnlabeledDataConfig)
+        mock.unlabeled_subset.data_root = None
         mock.tile_config = MagicMock(spec=TileConfig)
         mock.tile_config.enable_tiler = False
 
@@ -109,6 +112,8 @@ class TestModule:
         cfg.val_subset.num_workers = 0
         cfg.test_subset.subset_name = "test"
         cfg.test_subset.num_workers = 0
+        cfg.unlabeled_subset = {}
+        cfg.unlabeled_subset.data_root = None
         cfg.mem_cache_size = "1GB"
         cfg.tile_config = {}
         cfg.tile_config.enable_tiler = False
