@@ -59,14 +59,9 @@ class TVMaskRCNNR50(ExplainableOTXInstanceSegModel):
         self.mean = (123.675, 116.28, 103.53)
         self.std = (58.395, 57.12, 57.375)
 
-    def get_classification_layers(self, prefix: str = "") -> dict[str, dict[str, int]]:
-        """Get classification layers."""
-        msg = "MaskRCNN does not support classification layers"
-        raise NotImplementedError(msg)
-
     def _create_model(self) -> Module:
         """From torchvision tutorial."""
-        # TODO(Eugene): check num_classes + 1 (BG) as torchvision.MaskRCNN assume background class?
+        # NOTE: Add 1 to num_classes to account for background class.
         num_classes = self.label_info.num_classes + 1
 
         weights = MaskRCNN_ResNet50_FPN_V2_Weights.verify("DEFAULT")

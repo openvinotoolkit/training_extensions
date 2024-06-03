@@ -39,7 +39,7 @@ class TVMaskRCNN(MaskRCNN):
             targets.append(
                 {
                     "boxes": bboxes,
-                    # TODO(Eugene): num_classes + 1 (BG) as torchvision.MaskRCNN assume background class?
+                    # NOTE: shift labels by 1 as 0 is reserved for background
                     "labels": labels + 1,
                     "masks": masks,
                     "polygons": polygons,
