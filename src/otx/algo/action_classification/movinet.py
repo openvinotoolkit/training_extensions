@@ -16,6 +16,7 @@ from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.metrics.accuracy import MultiClassClsMetricCallable
 from otx.core.model.action_classification import OTXActionClsModel
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
+from otx.core.model.utils.mmaction import ActionDataPreprocessor
 from otx.core.schedulers import LRSchedulerListCallable
 from otx.core.types.label import LabelInfoTypes
 from otx.algo.utils.mmengine_utils import load_checkpoint
@@ -24,7 +25,6 @@ if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
     from otx.core.metrics import MetricCallable
 
-from mmaction.models.data_preprocessors.data_preprocessor import ActionDataPreprocessor
 
 class MoViNet(OTXActionClsModel):
     """MoViNet Model."""

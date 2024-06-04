@@ -46,6 +46,7 @@ class OTXActionClsModel(OTXModel[ActionClsBatchDataEntity, ActionClsBatchPredEnt
         metric: MetricCallable = MultiClassClsMetricCallable,
         torch_compile: bool = False,
     ) -> None:
+        self.image_size = (1, 1, 3, 8, 224, 224)
         super().__init__(
             label_info=label_info,
             optimizer=optimizer,

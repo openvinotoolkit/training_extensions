@@ -21,7 +21,8 @@ class OTXRecognizer3D(BaseModule):
                  backbone,
                  cls_head,
                  neck = None,
-                 data_preprocessor = None) -> None:
+                 data_preprocessor = None,
+                 test_cfg = None) -> None:
         super(OTXRecognizer3D, self).__init__()
 
         # Record the source of the backbone.
@@ -29,9 +30,10 @@ class OTXRecognizer3D(BaseModule):
         self.backbone = backbone
         self.cls_head = cls_head
         self.data_preprocessor = data_preprocessor
-
         if neck is not None:
             self.neck = neck
+        
+        self.test_cfg = test_cfg
 
     @property
     def with_neck(self) -> bool:
