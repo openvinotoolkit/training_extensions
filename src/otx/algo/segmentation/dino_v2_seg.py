@@ -46,9 +46,8 @@ class OTXDinoV2Seg(TorchVisionCompatibleModel):
 
     def _create_model(self) -> nn.Module:
         # merge configurations with defaults overriding them
-        backbone_configuration = self.backbone_configuration | DinoV2Seg.default_backbone_configuration
-        decode_head_configuration = self.decode_head_configuration | DinoV2Seg.default_decode_head_configuration
-        # initialize backbones
+        backbone_configuration = DinoV2Seg.default_backbone_configuration | self.backbone_configuration
+        decode_head_configuration = DinoV2Seg.default_decode_head_configuration | self.decode_head_configuration
         backbone = DinoVisionTransformer(**backbone_configuration)
         decode_head = FCNHead(num_classes=self.num_classes, **decode_head_configuration)
         return DinoV2Seg(
