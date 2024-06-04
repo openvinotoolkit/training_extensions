@@ -5,6 +5,7 @@
 
 from __future__ import annotations
 
+import os
 from functools import partial
 from pathlib import Path
 
@@ -29,8 +30,22 @@ class DinoVisionTransformer(BaseModule):
     ):
         super().__init__(init_cfg)
         self._init_args = get_class_initial_arguments()
-        torch.hub._validate_not_a_forked_repo = lambda a, b, c: True  # noqa: SLF001, ARG005
-        self.backbone = torch.hub.load(repo_or_dir="facebookresearch/dinov2", model=name)
+
+        ci_data_root = os.environ.get("CI_DATA_ROOT")
+        pretrained: bool = True
+        if ci_data_root is not None and Path(ci_data_root).exists():
+            pretrained = False
+
+        self.backbone = torch.hub.load(repo_or_dir="facebookresearch/dinov2", model=name, pretrained=pretrained)
+
+        if ci_data_root is not None and Path(ci_data_root).exists():
+            ckpt_filename = f"{name}4_pretrain.pth"
+            ckpt_path = Path(ci_data_root) / "torch" / "hub" / "checkpoints" / ckpt_filename
+            if not ckpt_path.exists():
+                msg = f"cannot find weights file: {ckpt_filename}"
+                raise FileExistsError(msg)
+            self.backbone.load_state_dict(torch.load(ckpt_path))
+
         if freeze_backbone:
             self._freeze_backbone(self.backbone)
 

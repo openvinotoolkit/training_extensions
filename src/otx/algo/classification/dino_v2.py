@@ -5,6 +5,8 @@
 
 from __future__ import annotations
 
+import os
+from pathlib import Path
 from typing import TYPE_CHECKING, Any, Literal
 
 import torch
@@ -48,10 +50,25 @@ class DINOv2(nn.Module):
     ):
         super().__init__()
         self._init_args = get_class_initial_arguments()
+
+        ci_data_root = os.environ.get("CI_DATA_ROOT")
+        pretrained: bool = True
+        if ci_data_root is not None and Path(ci_data_root).exists():
+            pretrained = False
+
         self.backbone = torch.hub.load(
             repo_or_dir="facebookresearch/dinov2",
             model=backbone,
+            pretrained=pretrained,
         )
+
+        if ci_data_root is not None and Path(ci_data_root).exists():
+            ckpt_filename = f"{backbone}4_pretrain.pth"
+            ckpt_path = Path(ci_data_root) / "torch" / "hub" / "checkpoints" / ckpt_filename
+            if not ckpt_path.exists():
+                msg = f"cannot find weights file: {ckpt_filename}"
+                raise FileExistsError(msg)
+            self.backbone.load_state_dict(torch.load(ckpt_path))
 
         if freeze_backbone:
             self._freeze_backbone(self.backbone)
