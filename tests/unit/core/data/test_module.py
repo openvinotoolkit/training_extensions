@@ -1,10 +1,12 @@
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
+from __future__ import annotations
+
 from pathlib import Path
+from typing import TYPE_CHECKING
 from unittest.mock import MagicMock, patch
 
 import pytest
-from datumaro.components.dataset import Dataset as DmDataset
 from datumaro.components.environment import Environment
 from importlib_resources import files
 from lightning.pytorch.loggers import CSVLogger
@@ -19,10 +21,19 @@ from otx.core.data.module import (
     OTXTaskType,
 )
 
+if TYPE_CHECKING:
+    from datumaro.components.dataset import Dataset as DmDataset
 
-def mock_data_filtering(dataset: DmDataset, data_format: str, unannotated_items_ratio: float) -> DmDataset:
+
+def mock_data_filtering(
+    dataset: DmDataset,
+    data_format: str,
+    unannotated_items_ratio: float,
+    ignore_index: int | None,
+) -> DmDataset:
     del data_format
     del unannotated_items_ratio
+    del ignore_index
     return dataset
 
 
