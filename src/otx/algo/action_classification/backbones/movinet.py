@@ -542,7 +542,7 @@ class BasicBneck(nn.Module):
         return residual + self.alpha * x
 
 
-class MoViNet(nn.Module):
+class MoViNetBackboneBase(nn.Module):
     """MoViNet class used for video classification.
 
     Args:
@@ -649,14 +649,14 @@ class MoViNet(nn.Module):
         self.apply(self._init_weights)
 
 
-class OTXMoViNet(MoViNet):
+class MoViNetBackbone(MoViNetBackboneBase):
     """MoViNet wrapper class for OTX."""
 
     def __init__(self, **kwargs):
         cfg = Config()
         cfg.name = "A0"
         cfg.conv1 = Config()
-        OTXMoViNet.fill_conv(cfg.conv1, 3, 8, (1, 3, 3), (1, 2, 2), (0, 1, 1))
+        MoViNetBackbone.fill_conv(cfg.conv1, 3, 8, (1, 3, 3), (1, 2, 2), (0, 1, 1))
 
         cfg.blocks = [
             [Config()],
@@ -667,32 +667,32 @@ class OTXMoViNet(MoViNet):
         ]
 
         # block 2
-        OTXMoViNet.fill_se_config(cfg.blocks[0][0], 8, 8, 24, (1, 5, 5), (1, 2, 2), (0, 2, 2), (0, 1, 1))
+        MoViNetBackbone.fill_se_config(cfg.blocks[0][0], 8, 8, 24, (1, 5, 5), (1, 2, 2), (0, 2, 2), (0, 1, 1))
 
         # block 3
-        OTXMoViNet.fill_se_config(cfg.blocks[1][0], 8, 32, 80, (3, 3, 3), (1, 2, 2), (1, 0, 0), (0, 0, 0))
-        OTXMoViNet.fill_se_config(cfg.blocks[1][1], 32, 32, 80, (3, 3, 3), (1, 1, 1), (1, 1, 1), (0, 1, 1))
-        OTXMoViNet.fill_se_config(cfg.blocks[1][2], 32, 32, 80, (3, 3, 3), (1, 1, 1), (1, 1, 1), (0, 1, 1))
+        MoViNetBackbone.fill_se_config(cfg.blocks[1][0], 8, 32, 80, (3, 3, 3), (1, 2, 2), (1, 0, 0), (0, 0, 0))
+        MoViNetBackbone.fill_se_config(cfg.blocks[1][1], 32, 32, 80, (3, 3, 3), (1, 1, 1), (1, 1, 1), (0, 1, 1))
+        MoViNetBackbone.fill_se_config(cfg.blocks[1][2], 32, 32, 80, (3, 3, 3), (1, 1, 1), (1, 1, 1), (0, 1, 1))
 
         # block 4
-        OTXMoViNet.fill_se_config(cfg.blocks[2][0], 32, 56, 184, (5, 3, 3), (1, 2, 2), (2, 0, 0), (0, 0, 0))
-        OTXMoViNet.fill_se_config(cfg.blocks[2][1], 56, 56, 112, (3, 3, 3), (1, 1, 1), (1, 1, 1), (0, 1, 1))
-        OTXMoViNet.fill_se_config(cfg.blocks[2][2], 56, 56, 184, (3, 3, 3), (1, 1, 1), (1, 1, 1), (0, 1, 1))
+        MoViNetBackbone.fill_se_config(cfg.blocks[2][0], 32, 56, 184, (5, 3, 3), (1, 2, 2), (2, 0, 0), (0, 0, 0))
+        MoViNetBackbone.fill_se_config(cfg.blocks[2][1], 56, 56, 112, (3, 3, 3), (1, 1, 1), (1, 1, 1), (0, 1, 1))
+        MoViNetBackbone.fill_se_config(cfg.blocks[2][2], 56, 56, 184, (3, 3, 3), (1, 1, 1), (1, 1, 1), (0, 1, 1))
 
         # block 5
-        OTXMoViNet.fill_se_config(cfg.blocks[3][0], 56, 56, 184, (5, 3, 3), (1, 1, 1), (2, 1, 1), (0, 1, 1))
-        OTXMoViNet.fill_se_config(cfg.blocks[3][1], 56, 56, 184, (3, 3, 3), (1, 1, 1), (1, 1, 1), (0, 1, 1))
-        OTXMoViNet.fill_se_config(cfg.blocks[3][2], 56, 56, 184, (3, 3, 3), (1, 1, 1), (1, 1, 1), (0, 1, 1))
-        OTXMoViNet.fill_se_config(cfg.blocks[3][3], 56, 56, 184, (3, 3, 3), (1, 1, 1), (1, 1, 1), (0, 1, 1))
+        MoViNetBackbone.fill_se_config(cfg.blocks[3][0], 56, 56, 184, (5, 3, 3), (1, 1, 1), (2, 1, 1), (0, 1, 1))
+        MoViNetBackbone.fill_se_config(cfg.blocks[3][1], 56, 56, 184, (3, 3, 3), (1, 1, 1), (1, 1, 1), (0, 1, 1))
+        MoViNetBackbone.fill_se_config(cfg.blocks[3][2], 56, 56, 184, (3, 3, 3), (1, 1, 1), (1, 1, 1), (0, 1, 1))
+        MoViNetBackbone.fill_se_config(cfg.blocks[3][3], 56, 56, 184, (3, 3, 3), (1, 1, 1), (1, 1, 1), (0, 1, 1))
 
         # block 6
-        OTXMoViNet.fill_se_config(cfg.blocks[4][0], 56, 104, 384, (5, 3, 3), (1, 2, 2), (2, 1, 1), (0, 1, 1))
-        OTXMoViNet.fill_se_config(cfg.blocks[4][1], 104, 104, 280, (1, 5, 5), (1, 1, 1), (0, 2, 2), (0, 1, 1))
-        OTXMoViNet.fill_se_config(cfg.blocks[4][2], 104, 104, 280, (1, 5, 5), (1, 1, 1), (0, 2, 2), (0, 1, 1))
-        OTXMoViNet.fill_se_config(cfg.blocks[4][3], 104, 104, 344, (1, 5, 5), (1, 1, 1), (0, 2, 2), (0, 1, 1))
+        MoViNetBackbone.fill_se_config(cfg.blocks[4][0], 56, 104, 384, (5, 3, 3), (1, 2, 2), (2, 1, 1), (0, 1, 1))
+        MoViNetBackbone.fill_se_config(cfg.blocks[4][1], 104, 104, 280, (1, 5, 5), (1, 1, 1), (0, 2, 2), (0, 1, 1))
+        MoViNetBackbone.fill_se_config(cfg.blocks[4][2], 104, 104, 280, (1, 5, 5), (1, 1, 1), (0, 2, 2), (0, 1, 1))
+        MoViNetBackbone.fill_se_config(cfg.blocks[4][3], 104, 104, 344, (1, 5, 5), (1, 1, 1), (0, 2, 2), (0, 1, 1))
 
         cfg.conv7 = Config()
-        OTXMoViNet.fill_conv(cfg.conv7, 104, 480, (1, 1, 1), (1, 1, 1), (0, 0, 0))
+        MoViNetBackbone.fill_conv(cfg.conv7, 104, 480, (1, 1, 1), (1, 1, 1), (0, 0, 0))
 
         cfg.dense9 = Config({"hidden_dim": 2048})
         super().__init__(cfg)
@@ -725,7 +725,7 @@ class OTXMoViNet(MoViNet):
         """
         conf.expanded_channels = expanded_channels
         conf.padding_avg = padding_avg
-        OTXMoViNet.fill_conv(
+        MoViNetBackbone.fill_conv(
             conf,
             input_channels,
             out_channels,

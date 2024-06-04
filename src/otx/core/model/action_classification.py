@@ -32,9 +32,6 @@ if TYPE_CHECKING:
     from otx.core.metrics import MetricCallable
 
 
-# ruff: noqa: F401
-
-
 class OTXActionClsModel(OTXModel[ActionClsBatchDataEntity, ActionClsBatchPredEntity]):
     """Base class for the action classification models used in OTX."""
 
@@ -154,6 +151,21 @@ class OTXActionClsModel(OTXModel[ActionClsBatchDataEntity, ActionClsBatchPredEnt
     def forward_for_tracing(self, image: Tensor) -> Tensor | dict[str, Tensor]:
         """Model forward function used for the model tracing during model exportation."""
         return self.model(inputs=image, mode="tensor")
+
+    def get_classification_layers(self, prefix: str = "model.") -> dict[str, dict[str, int]]:
+        """Get final classification layer information for incremental learning case."""
+        sample_model_dict = self._build_model(num_classes=5).state_dict()
+        incremental_model_dict = self._build_model(num_classes=6).state_dict()
+
+        classification_layers = {}
+        for key in sample_model_dict:
+            if sample_model_dict[key].shape != incremental_model_dict[key].shape:
+                sample_model_dim = sample_model_dict[key].shape[0]
+                incremental_model_dim = incremental_model_dict[key].shape[0]
+                stride = incremental_model_dim - sample_model_dim
+                num_extra_classes = 6 * sample_model_dim - 5 * incremental_model_dim
+                classification_layers[prefix + key] = {"stride": stride, "num_extra_classes": num_extra_classes}
+        return classification_layers
 
 
 class MMActionCompatibleModel(OTXActionClsModel):
@@ -292,8 +304,6 @@ class OVActionClsModel(
         metric: MetricCallable = MultiClassClsMetricCallable,
         **kwargs,
     ) -> None:
-        from otx.algo.action_classification import openvino_model
-
         super().__init__(
             model_name=model_name,
             model_type=model_type,

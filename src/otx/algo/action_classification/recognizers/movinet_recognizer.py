@@ -6,10 +6,10 @@ import functools
 
 from torch import nn
 
-from otx.algo.action_classification.recognizers.recognizer import OTXRecognizer3D
+from otx.algo.action_classification.recognizers.recognizer import BaseRecognizer
 
 
-class MoViNetRecognizer(OTXRecognizer3D):
+class MoViNetRecognizer(BaseRecognizer):
     """MoViNet recognizer model framework for OTX compatibility."""
 
     def __init__(self, **kwargs):

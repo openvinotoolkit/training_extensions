@@ -2,6 +2,6 @@
 # SPDX-License-Identifier: Apache-2.0
 """Custom backbones for action classification."""
 
-from .movinet import OTXMoViNet
+from .movinet import MoViNetBackbone
 
-__all__ = ["OTXMoViNet"]
+__all__ = ["MoViNetBackbone"]
