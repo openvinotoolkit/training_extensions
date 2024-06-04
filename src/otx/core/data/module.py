@@ -63,9 +63,9 @@ class OTXDataModule(LightningDataModule):
         if self.task != "H_LABEL_CLS":
             dataset = pre_filtering(dataset, self.config.data_format, self.config.unannotated_items_ratio)
 
-        # For Semi-SL
         unlabeled_dataset = None
         if self.config.unlabeled_subset.data_root is not None:
+            # If unlabeled_subset's data_root is not None, use that folder as the Unlabeled dataset root.
             log.info(
                 f"Unlabeled dataset is loaded from {self.config.unlabeled_subset.data_root}.",
             )
@@ -134,13 +134,14 @@ class OTXDataModule(LightningDataModule):
             label_infos += [self.subsets[name].label_info]
             log.info(f"Add name: {name}, self.subsets: {self.subsets}")
 
-        # For Semi-SL
         if unlabeled_dataset is not None:
             name = self.config.unlabeled_subset.subset_name
             dm_subset = unlabeled_dataset.subsets()[name]
 
             if isinstance(self.config.unlabeled_subset.transforms, dict):
-                # When applying two transforms to a single unlabeled dataset
+                # When applying multi-transforms to a single unlabeled dataset
+                # This adds as many subsets as the number of keys in the transforms. The dataset is the same,
+                # only the transforms are different.
                 dm_subset = dm_subset.as_dataset()
                 for transform_key, transforms in self.config.unlabeled_subset.transforms.items():
                     unlabeled_config = deepcopy(self.config.unlabeled_subset)
@@ -212,6 +213,7 @@ class OTXDataModule(LightningDataModule):
             )
         dataloader: DataLoader = DataLoader(**common_args)
         if (unlabeled_dataloader := self.unlabeled_dataloader()) is not None:
+            # Utilize the CombinedLoader provided by Lightning to bundle multiple dataloaders.
             # https://lightning.ai/docs/pytorch/stable/data/iterables.html
             from lightning.pytorch.utilities import CombinedLoader
 
@@ -268,7 +270,15 @@ class OTXDataModule(LightningDataModule):
         )
 
     def unlabeled_dataloader(self) -> dict[str, DataLoader] | None:
-        """Get unlabeled dataloader."""
+        """Returns a dictionary of unlabeled dataloaders.
+
+        The method creates and returns dataloaders for unlabeled datasets based on the configuration settings.
+        If the data root is not specified in the configuration, it returns None.
+
+        Returns:
+            dict[str, DataLoader] | None: A dictionary containing unlabeled dataloaders, where the keys are the names of
+            the datasets and the values are the corresponding DataLoader objects.
+        """
         config = self.config.unlabeled_subset
         if self.config.unlabeled_subset.data_root is None:
             return None

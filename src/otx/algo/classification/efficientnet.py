@@ -219,6 +219,7 @@ class EfficientNetForMulticlassClsSemiSL(EfficientNetForMulticlassCls):
             mode = "predict"
 
         if isinstance(inputs, dict):
+            # When used with an unlabeled dataset, it comes in as a dict.
             images = {key: inputs[key].images for key in inputs}
             labels = {key: torch.cat(inputs[key].labels, dim=0) for key in inputs}
             imgs_info = {key: inputs[key].imgs_info for key in inputs}
@@ -246,6 +247,7 @@ class EfficientNetForMulticlassClsSemiSL(EfficientNetForMulticlassCls):
             Tensor: The computed loss for the training step.
         """
         loss = super().training_step(batch, batch_idx)
+        # Collect metrics related to Semi-SL Training.
         self.log(
             "train/unlabeled_coef",
             self.model.head.unlabeled_coef,

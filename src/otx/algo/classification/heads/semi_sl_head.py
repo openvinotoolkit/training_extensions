@@ -1,7 +1,11 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
-"""Semi-SL for OTX Head Implementation."""
+"""Semi-SL for OTX Head Implementation.
+
+Bring the Semi-SL head implementation & Updated some of the code.
+from https://github.com/openvinotoolkit/training_extensions/blob/releases/1.6.0/src/otx/algorithms/classification/adapters/mmcls/models/heads/semisl_cls_head.py
+"""
 
 
 from __future__ import annotations
@@ -18,8 +22,6 @@ from .linear_head import LinearClsHead
 
 class OTXSemiSLClsHead(nn.Module):
     """Semi-SL for OTX Head Implementation.
-
-    This implementation is based on the algorithmic papers below, with new ideas and modifications.
 
     This implementation is based on the algorithmic papers below, with new ideas and modifications.
         - FixMatch (2020): https://arxiv.org/abs/2001.07685
@@ -71,8 +73,8 @@ class OTXSemiSLClsHead(nn.Module):
         """Computes the loss function in which unlabeled data is considered.
 
         Args:
-            feats (dict or Tensor): Input features.
-            labels (Tensor): Target features.
+            feats (dict[str, Tensor] | Tensor): Input features.
+            labels (dict[str, Tensor] | Tensor): Target features.
             **kwargs: Additional keyword arguments.
 
         Returns:
@@ -101,8 +103,8 @@ class OTXSemiSLClsHead(nn.Module):
         """Forward_train head using pseudo-label selected through threshold.
 
         Args:
-            feats (dict or Tensor): Input features.
-            labels (Tensor): Target features.
+            feats (dict[str, Tensor] | Tensor): Input features.
+            labels (dict[str, Tensor] | Tensor): Target features.
 
         Returns:
             tuple: A tuple containing the logits, labels, pseudo-labels, and mask.

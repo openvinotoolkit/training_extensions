@@ -17,7 +17,7 @@ class UnlabeledLossWarmUpCallback(Callback):
         k: current step, K: total steps
 
     Args:
-        warmup_steps_ratio (float): Ratio of warm-up steps to total steps (default: 0.5).
+        warmup_steps_ratio (float): Ratio of warm-up steps to total steps (default: 0.2).
     """
 
     def __init__(self, warmup_steps_ratio: float = 0.2):

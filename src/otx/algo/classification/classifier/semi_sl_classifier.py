@@ -33,16 +33,13 @@ class SemiSLClassifier(ImageClassifier):
                   including multiple stages features.
                 - "neck": The output of neck module. Returns a tuple including
                   multiple stages features.
-                - "pre_logits": The feature before the final classification
-                  linear layer. Usually returns a tensor.
 
                 Defaults to "neck".
 
         Returns:
-            tuple | Tensor: The output of specified stage.
-            The output depends on detailed implementation. In general, the
-            output of backbone and neck is a tuple and the output of
-            pre_logits is a tensor.
+            dict[str, tuple | torch.Tensor] | tuple | Tensor: The output of specified stage.
+            The output depends on detailed implementation. In general, the Semi-SL
+            output is a dict of labeled feats and unlabeled feats.
         """
         if not isinstance(inputs, dict):
             return super().extract_feat(inputs, stage)
@@ -53,6 +50,7 @@ class SemiSLClassifier(ImageClassifier):
 
         x = {}
         x["labeled"] = super().extract_feat(labeled_inputs, stage)
+        # For weak augmentation inputs, use no_grad to use as a pseudo-label.
         with torch.no_grad():
             x["unlabeled_weak"] = super().extract_feat(unlabeled_weak_inputs, stage)
         x["unlabeled_strong"] = super().extract_feat(unlabeled_strong_inputs, stage)
