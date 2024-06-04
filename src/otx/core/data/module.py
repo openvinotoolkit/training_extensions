@@ -61,7 +61,13 @@ class OTXDataModule(LightningDataModule):
 
         dataset = DmDataset.import_from(self.config.data_root, format=self.config.data_format)
         if self.task != "H_LABEL_CLS":
-            dataset = pre_filtering(dataset, self.config.data_format, self.config.unannotated_items_ratio)
+            ignore_index = self.config.ignore_index if self.task == "SEMANTIC_SEGMENTATION" else None
+            dataset = pre_filtering(
+                dataset,
+                self.config.data_format,
+                self.config.unannotated_items_ratio,
+                ignore_index=ignore_index,
+            )
 
         unlabeled_dataset = None
         if self.config.unlabeled_subset.data_root is not None:
