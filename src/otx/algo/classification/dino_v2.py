@@ -64,7 +64,7 @@ class DINOv2(nn.Module):
 
         if ci_data_root is not None and Path(ci_data_root).exists():
             ckpt_filename = f"{backbone}4_pretrain.pth"
-            ckpt_path = Path(Path(ci_data_root) / "torch" / "hub" / "checkpoints" / ckpt_filename)
+            ckpt_path = Path(ci_data_root) / "torch" / "hub" / "checkpoints" / ckpt_filename
             if not ckpt_path.exists():
                 msg = f"cannot find weights file: {ckpt_filename}"
                 raise FileExistsError(msg)
