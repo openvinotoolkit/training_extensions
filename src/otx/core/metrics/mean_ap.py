@@ -5,13 +5,17 @@
 
 from __future__ import annotations
 
+import inspect
 from typing import TYPE_CHECKING, Any
 
 import pycocotools.mask as mask_utils
 import torch
+from torchmetrics import MetricCollection
 from torchmetrics.detection.mean_ap import MeanAveragePrecision
 
 from otx.core.types.label import LabelInfo
+
+from .fmeasure import FMeasure
 
 if TYPE_CHECKING:
     from torchmetrics import Metric
@@ -72,6 +76,36 @@ class MaskRLEMeanAveragePrecision(MeanAveragePrecision):
         return None, tuple(masks)
 
 
+class MaskRLEMeanAveragePrecisionFMeasure(MetricCollection):
+    """Computes the mean AP with f-measure for a resultset.
+
+    NOTE: IMPORTANT!!! Do not use this metric to evaluate a F1 score on a test set.
+        This is because it can pollute test evaluation.
+        It will optimize the confidence threshold on the test set by
+        doing line search on confidence threshold axis.
+        The correct way to obtain the test set F1 score is to use
+        the best confidence threshold obtained from the validation set.
+        You should use `--metric otx.core.metrics.fmeasure.FMeasureCallable`override
+        to correctly obtain F1 score from a test set.
+    """
+
+    def __init__(self, box_format: str, iou_type: str, label_info: LabelInfo, **kwargs):
+        map_kwargs = self._filter_kwargs(MaskRLEMeanAveragePrecision, kwargs)
+        fmeasure_kwargs = self._filter_kwargs(FMeasure, kwargs)
+
+        super().__init__(
+            [
+                MaskRLEMeanAveragePrecision(box_format, iou_type, **map_kwargs),
+                FMeasure(label_info, **fmeasure_kwargs),
+            ],
+        )
+
+    def _filter_kwargs(self, cls: type[Any], kwargs: dict[str, Any]) -> dict[str, Any]:
+        cls_params = inspect.signature(cls.__init__).parameters
+        valid_keys = set(cls_params.keys()) - {"self"}
+        return {k: v for k, v in kwargs.items() if k in valid_keys}
+
+
 def _mean_ap_callable(label_info: LabelInfo) -> Metric:  # noqa: ARG001
     return MeanAveragePrecision(box_format="xyxy", iou_type="bbox")
 
@@ -86,4 +120,14 @@ def _mask_rle_mean_ap_callable(label_info: LabelInfo) -> Metric:  # noqa: ARG001
     )
 
 
+def _rle_mean_ap_f_measure_callable(label_info: LabelInfo) -> MaskRLEMeanAveragePrecisionFMeasure:
+    return MaskRLEMeanAveragePrecisionFMeasure(
+        box_format="xyxy",
+        iou_type="segm",
+        label_info=label_info,
+    )
+
+
 MaskRLEMeanAPCallable = _mask_rle_mean_ap_callable
+
+MaskRLEMeanAPFMeasureCallable = _rle_mean_ap_f_measure_callable
