@@ -92,6 +92,7 @@ class OTXModelExporter:
             base_model_name (str, optional): exported model name
             format (OTXExportFormatType): final format of the exported model
             precision (OTXExportPrecisionType, optional): precision of the exported model's weights
+            to_exportable_code (bool, optional): whether to generate exportable code
 
         Returns:
             Path: path to the exported model

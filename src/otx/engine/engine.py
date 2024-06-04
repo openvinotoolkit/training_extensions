@@ -499,6 +499,8 @@ class Engine:
             export_config (ExportConfig | None, optional): Config that allows to set export
             format and precision. Defaults to None.
             explain (bool): Whether to get "saliency_map" and "feature_vector" or not.
+            export_demo_package (bool): Whether to export demo package with the model.
+                Only OpenVINO model can be exported with demo package.
 
         Returns:
             Path: Path to the exported model.

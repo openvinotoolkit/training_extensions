@@ -631,6 +631,7 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
             base_name: (str): base name for the exported model file. Extension is defined by the target export format
             export_format (OTXExportFormatType): format of the output model
             precision (OTXExportPrecisionType): precision of the output model
+            to_exportable_code (bool): flag to export model in exportable code with demo package
 
         Returns:
             Path: path to the exported model.
@@ -973,7 +974,7 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
         base_name: str,
         export_format: OTXExportFormatType,
         precision: OTXPrecisionType = OTXPrecisionType.FP32,
-        to_exportable_code: bool = False,
+        to_exportable_code: bool = True,
     ) -> Path:
         """Export this model to the specified output directory.
 
@@ -982,7 +983,8 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
             base_name: (str): base name for the exported model file. Extension is defined by the target export format
             export_format (OTXExportFormatType): format of the output model
             precision (OTXExportPrecisionType): precision of the output model
-            to_exportable_code (OTXExportPrecisionType): whether to generate exportable code
+            to_exportable_code (bool): whether to generate exportable code with demo package.
+                OpenVINO model supports only exportable code option.
 
         Returns:
             Path: path to the exported model.
