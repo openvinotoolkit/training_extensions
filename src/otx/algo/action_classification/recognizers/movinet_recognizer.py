@@ -4,13 +4,11 @@
 
 import functools
 
-from mmaction.models import MODELS
 from torch import nn
 
 from otx.algo.action_classification.recognizers.recognizer import OTXRecognizer3D
 
 
-@MODELS.register_module()
 class MoViNetRecognizer(OTXRecognizer3D):
     """MoViNet recognizer model framework for OTX compatibility."""
 

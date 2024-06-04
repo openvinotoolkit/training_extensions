@@ -6,22 +6,25 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from torch import nn
 
 from otx.algo.action_classification.backbones.movinet import OTXMoViNet as MoViNetBackbone
 from otx.algo.action_classification.heads.movinet_head import MoViNetHead
+# from otx.algo.action_classification.recognizers.movinet_recognizer import MoViNetRecognizer
+from otx.algo.action_classification.recognizers.recognizer import OTXRecognizer3D
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.metrics.accuracy import MultiClassClsMetricCallable
 from otx.core.model.action_classification import OTXActionClsModel
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
 from otx.core.schedulers import LRSchedulerListCallable
 from otx.core.types.label import LabelInfoTypes
+from otx.algo.utils.mmengine_utils import load_checkpoint
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
-    from torch import nn
-
     from otx.core.metrics import MetricCallable
 
+from mmaction.models.data_preprocessors.data_preprocessor import ActionDataPreprocessor
 
 class MoViNet(OTXActionClsModel):
     """MoViNet Model."""
@@ -34,6 +37,10 @@ class MoViNet(OTXActionClsModel):
         metric: MetricCallable = MultiClassClsMetricCallable,
         torch_compile: bool = False,
     ) -> None:
+        self.load_from = (
+            "https://github.com/Atze00/MoViNet-pytorch/blob/main/weights/modelA0_statedict_v3?raw=true"
+        )
+
         super().__init__(
             label_info=label_info,
             optimizer=optimizer,
@@ -58,25 +65,25 @@ class MoViNet(OTXActionClsModel):
         return classification_layers
 
     def _create_model(self) -> nn.Module:
-        detector = self._build_model(num_classes=self.label_info.num_classes)
-        detector.init_weights()
+        model = self._build_model(num_classes=self.label_info.num_classes)
+        model.init_weights()
         self.classification_layers = self.get_classification_layers(prefix="model.")
 
         if self.load_from is not None:
-            load_checkpoint(detector, self.load_from, map_location="cpu")
+            load_checkpoint(model, self.load_from, map_location="cpu")
 
-        return detector
+        return model
 
     def _build_model(self, num_classes: int) -> nn.Module:
-        return ImageClassifier(
-            backbone=MoViNetBackbone(version=self.version, pretrained=True),
-            head=MoViNetHead(
+        return OTXRecognizer3D(
+            backbone=MoViNetBackbone(),
+            cls_head=MoViNetHead(
                 num_classes=num_classes,
                 in_channels=480,
                 hidden_dim=2048,
-                topk=(1, 5) if num_classes >= 5 else (1,),
-                loss=nn.CrossEntropyLoss(reduction="none"),
+                loss_cls=dict(type='CrossEntropyLoss', loss_weight=1.0),
             ),
+            data_preprocessor=ActionDataPreprocessor(mean=[0.0, 0.0, 0.0], std=[255.0, 255.0, 255.0], format_shape='NCTHW'),
         )
 
     def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.model.") -> dict:
