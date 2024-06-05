@@ -269,7 +269,7 @@ class VideoInfo(tv_tensors.TVTensor):
         num_frames: int | None = None,
         start_index: int = 0,
         frame_inds: np.ndarray | None = None,
-    ) -> ImageInfo:
+    ) -> VideoInfo:
         return cls._wrap(
             dummy_tensor=Tensor(),
             clip_len=clip_len,

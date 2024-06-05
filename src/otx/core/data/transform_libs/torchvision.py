@@ -2658,8 +2658,9 @@ class FormatShape(tvt_v2.Transform):
 
         # [M x H x W x C]
         # M = 1 * N_crops * N_clips * T
-        if self.collapse:
-            assert inputs.video_info.num_clips == 1
+        if self.collapse and inputs.video_info.num_clips != 1:
+            msg = "num_clips should be 1."
+            raise ValueError(msg)
 
         if self.input_format == "NCTHW":
             imgs = inputs.image
@@ -2698,7 +2699,9 @@ class FormatShape(tvt_v2.Transform):
             inputs.img_info.img_shape = imgs.shape
 
         if self.collapse:
-            assert inputs.image.shape[0] == 1
+            if inputs.image.shape[0] != 1:
+                msg = "num_clips should be 1."
+                raise ValueError(msg)
             inputs.image = inputs.image.squeeze(0)
             inputs.img_info.img_shape = inputs.image.shape
 
@@ -2720,7 +2723,7 @@ class DecordInit(tvt_v2.Transform):
         self.kwargs = kwargs
         self.file_client = None
 
-    def _get_video_reader(self, filename: str) -> object:
+    def _get_video_reader(self, filename: str) -> decord.VideoReader:
         if self.file_client is None:
             self.file_client = FileClient(self.io_backend, **self.kwargs)
         file_obj = io.BytesIO(self.file_client.get(filename))
@@ -2800,7 +2803,9 @@ class SampleFrames(tvt_v2.Transform):
         self.test_mode = test_mode
         self.keep_tail_frames = keep_tail_frames
         self.target_fps = target_fps
-        assert self.out_of_bound_opt in ["loop", "repeat_last"]
+        if self.out_of_bound_opt not in ["loop", "repeat_last"]:
+            msg = f"out_of_bound_opt should be 'loop' or 'repeat_last', but found {self.out_of_bound_opt}."
+            raise ValueError(msg)
 
     def _get_train_clips(self, num_frames: int, ori_clip_len: float) -> np.array:
         """Get clip offsets in train mode.
@@ -2972,7 +2977,9 @@ class DecordDecode(tvt_v2.Transform):
 
     def __init__(self, mode: str = "accurate") -> None:
         self.mode = mode
-        assert mode in ["accurate", "efficient"]
+        if self.mode not in ["accurate", "efficient"]:
+            msg = f"Decord mode should be 'accurate' or 'efficient', but found {self.mode}."
+            raise ValueError(msg)
 
     def _decord_load_frames(self, container: object, frame_inds: np.ndarray) -> list[np.ndarray]:
         if self.mode == "accurate":

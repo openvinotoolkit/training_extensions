@@ -18,7 +18,7 @@ from torchvision import tv_tensors
 
 from otx.core.data.dataset.base import OTXDataset
 from otx.core.data.entity.action_detection import ActionDetBatchDataEntity, ActionDetDataEntity
-from otx.core.data.entity.base import ImageInfo
+from otx.core.data.entity.base import ImageInfo, VideoInfo
 
 
 class OTXActionDetDataset(OTXDataset[ActionDetDataEntity]):
@@ -41,6 +41,7 @@ class OTXActionDetDataset(OTXDataset[ActionDetDataEntity]):
         )
 
         entity = ActionDetDataEntity(
+            video=item.media,
             image=img_data,
             img_info=ImageInfo(
                 img_idx=idx,
@@ -48,6 +49,7 @@ class OTXActionDetDataset(OTXDataset[ActionDetDataEntity]):
                 ori_shape=img_shape,
                 image_color_channel=self.image_color_channel,
             ),
+            video_info=VideoInfo(),
             bboxes=tv_tensors.BoundingBoxes(
                 bboxes,
                 format=tv_tensors.BoundingBoxFormat.XYXY,
