@@ -947,6 +947,7 @@
         <span class="n">base_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">export_format</span><span class="p">:</span> <span class="n">OTXExportFormatType</span><span class="p">,</span>
         <span class="n">precision</span><span class="p">:</span> <span class="n">OTXPrecisionType</span> <span class="o">=</span> <span class="n">OTXPrecisionType</span><span class="o">.</span><span class="n">FP32</span><span class="p">,</span>
+        <span class="n">to_exportable_code</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Export this model to the specified output directory.</span>
 
@@ -955,6 +956,7 @@
 <span class="sd">            base_name: (str): base name for the exported model file. Extension is defined by the target export format</span>
 <span class="sd">            export_format (OTXExportFormatType): format of the output model</span>
 <span class="sd">            precision (OTXExportPrecisionType): precision of the output model</span>
+<span class="sd">            to_exportable_code (bool): flag to export model in exportable code with demo package</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Path: path to the exported model.</span>
@@ -974,6 +976,7 @@
                 <span class="n">base_name</span><span class="p">,</span>
                 <span class="n">export_format</span><span class="p">,</span>
                 <span class="n">precision</span><span class="p">,</span>
+                <span class="n">to_exportable_code</span><span class="p">,</span>
             <span class="p">)</span>
         <span class="k">finally</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">train</span><span class="p">(</span><span class="n">mode</span><span class="p">)</span>
@@ -1309,6 +1312,43 @@
         <span class="k">return</span> <span class="n">output_model_path</span></div>
 
 
+<div class="viewcode-block" id="OVModel.export">
+<a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.model.base.html#otx.core.model.base.OVModel.export">[docs]</a>
+    <span class="k">def</span> <span class="nf">export</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">output_dir</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span>
+        <span class="n">base_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">export_format</span><span class="p">:</span> <span class="n">OTXExportFormatType</span><span class="p">,</span>
+        <span class="n">precision</span><span class="p">:</span> <span class="n">OTXPrecisionType</span> <span class="o">=</span> <span class="n">OTXPrecisionType</span><span class="o">.</span><span class="n">FP32</span><span class="p">,</span>
+        <span class="n">to_exportable_code</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Export this model to the specified output directory.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            output_dir (Path): directory for saving the exported model</span>
+<span class="sd">            base_name: (str): base name for the exported model file. Extension is defined by the target export format</span>
+<span class="sd">            export_format (OTXExportFormatType): format of the output model</span>
+<span class="sd">            precision (OTXExportPrecisionType): precision of the output model</span>
+<span class="sd">            to_exportable_code (bool): whether to generate exportable code with demo package.</span>
+<span class="sd">                OpenVINO model supports only exportable code option.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Path: path to the exported model.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">to_exportable_code</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;OpenVINO model can be exported only as exportable code with demo package.&quot;</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_exporter</span><span class="o">.</span><span class="n">export</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span>
+            <span class="n">output_dir</span><span class="p">,</span>
+            <span class="n">base_name</span><span class="p">,</span>
+            <span class="n">export_format</span><span class="p">,</span>
+            <span class="n">precision</span><span class="p">,</span>
+            <span class="n">to_exportable_code</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+
 <div class="viewcode-block" id="OVModel.transform_fn">
 <a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.model.base.html#otx.core.model.base.OVModel.transform_fn">[docs]</a>
     <span class="k">def</span> <span class="nf">transform_fn</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_batch</span><span class="p">:</span> <span class="n">T_OTXBatchDataEntity</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
@@ -1361,7 +1401,10 @@
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">_exporter</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OTXNativeModelExporter</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Exporter of the OVModel for exportable code.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">OTXNativeModelExporter</span><span class="p">(</span><span class="n">input_size</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">h</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">w</span><span class="p">),</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">_export_parameters</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">OTXNativeModelExporter</span><span class="p">(</span>
+            <span class="n">task_level_export_parameters</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_export_parameters</span><span class="p">,</span>
+            <span class="n">input_size</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">h</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">w</span><span class="p">),</span>
+        <span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">model_adapter_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>

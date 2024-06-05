@@ -740,6 +740,7 @@
         <span class="n">export_format</span><span class="p">:</span> <span class="n">OTXExportFormatType</span> <span class="o">=</span> <span class="n">OTXExportFormatType</span><span class="o">.</span><span class="n">OPENVINO</span><span class="p">,</span>
         <span class="n">export_precision</span><span class="p">:</span> <span class="n">OTXPrecisionType</span> <span class="o">=</span> <span class="n">OTXPrecisionType</span><span class="o">.</span><span class="n">FP32</span><span class="p">,</span>
         <span class="n">explain</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">export_demo_package</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Export the trained model to OpenVINO Intermediate Representation (IR) or ONNX formats.</span>
 
@@ -748,6 +749,8 @@
 <span class="sd">            export_config (ExportConfig | None, optional): Config that allows to set export</span>
 <span class="sd">            format and precision. Defaults to None.</span>
 <span class="sd">            explain (bool): Whether to get &quot;saliency_map&quot; and &quot;feature_vector&quot; or not.</span>
+<span class="sd">            export_demo_package (bool): Whether to export demo package with the model.</span>
+<span class="sd">                Only OpenVINO model can be exported with demo package.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Path: Path to the exported model.</span>
@@ -780,14 +783,18 @@
             <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;To make export, checkpoint must be specified.&quot;</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
         <span class="n">is_ir_ckpt</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">)</span><span class="o">.</span><span class="n">suffix</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;.xml&quot;</span><span class="p">]</span>
-
-        <span class="k">if</span> <span class="n">is_ir_ckpt</span> <span class="ow">and</span> <span class="n">export_format</span> <span class="o">!=</span> <span class="n">OTXExportFormatType</span><span class="o">.</span><span class="n">EXPORTABLE_CODE</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">export_demo_package</span> <span class="ow">and</span> <span class="n">export_format</span> <span class="o">==</span> <span class="n">OTXExportFormatType</span><span class="o">.</span><span class="n">ONNX</span><span class="p">:</span>
             <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span>
-                <span class="s2">&quot;Export format is automatically changed to EXPORTABLE_CODE, &quot;</span>
-                <span class="s2">&quot;since openvino IR model is passed as a checkpoint.&quot;</span>
+                <span class="s2">&quot;ONNX export is not supported in exportable code mode. &quot;</span>
+                <span class="s2">&quot;Exportable code parameter will be disregarded. &quot;</span>
             <span class="p">)</span>
             <span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-            <span class="n">export_format</span> <span class="o">=</span> <span class="n">OTXExportFormatType</span><span class="o">.</span><span class="n">EXPORTABLE_CODE</span>
+            <span class="n">export_demo_package</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="k">if</span> <span class="n">is_ir_ckpt</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">export_demo_package</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;IR model is passed as a checkpoint, export automaticaly switched to exportable code.&quot;</span>
+            <span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">export_demo_package</span> <span class="o">=</span> <span class="kc">True</span>
 
         <span class="k">if</span> <span class="n">is_ir_ckpt</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">OVModel</span><span class="p">):</span>
             <span class="c1"># create OVModel</span>
@@ -807,6 +814,7 @@
             <span class="n">base_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_EXPORTED_MODEL_BASE_NAME</span><span class="p">,</span>
             <span class="n">export_format</span><span class="o">=</span><span class="n">export_format</span><span class="p">,</span>
             <span class="n">precision</span><span class="o">=</span><span class="n">export_precision</span><span class="p">,</span>
+            <span class="n">to_exportable_code</span><span class="o">=</span><span class="n">export_demo_package</span><span class="p">,</span>
         <span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">explain_mode</span> <span class="o">=</span> <span class="kc">False</span>
@@ -889,7 +897,7 @@
             <span class="n">tmp_model_path</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">optimize</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">tmp_dir</span><span class="p">),</span> <span class="n">optimize_datamodule</span><span class="p">,</span> <span class="n">ptq_config</span><span class="p">)</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">export</span><span class="p">(</span>
                 <span class="n">checkpoint</span><span class="o">=</span><span class="n">tmp_model_path</span><span class="p">,</span>
-                <span class="n">export_format</span><span class="o">=</span><span class="n">OTXExportFormatType</span><span class="o">.</span><span class="n">EXPORTABLE_CODE</span><span class="p">,</span>
+                <span class="n">export_demo_package</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
             <span class="p">)</span></div>
 
 
