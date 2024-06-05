@@ -114,6 +114,8 @@ def execute_hpo(
         best_config = best_trial["configuration"]
         if (trial_file := find_trial_file(hpo_workdir, best_trial["id"])) is not None:
             best_hpo_weight = get_best_hpo_weight(get_hpo_weight_dir(hpo_workdir, best_trial["id"]), trial_file)
+            if best_hpo_weight is not None:
+                _update_model_ckpt_callback(best_hpo_weight)
 
     hpo_algo.print_result()
     _remove_unused_model_weights(hpo_workdir, best_hpo_weight)
@@ -335,3 +337,26 @@ def _get_resource_type() -> Literal[DeviceType.cpu, DeviceType.gpu, DeviceType.x
     if is_xpu_available():
         return DeviceType.xpu
     return DeviceType.cpu
+
+
+def _update_model_ckpt_callback(best_hpo_weight: Path) -> None:
+    """Update values in ModelCheckpoint callback.
+
+    Some values of ModelCheckpoint callback have HPO temporary directory value,
+    which can make error when best_hpo_weight is resumed.
+    To prevent it, change `best_model_path` value and remove unnecessary values.
+
+    Args:
+        best_hpo_weight (Path): Best HPO model weight.
+    """
+    best_weight = torch.load(best_hpo_weight)
+    for key, val in list(best_weight["callbacks"].items()):
+        if "ModelCheckpoint" in key:
+            val["best_model_path"] = best_hpo_weight
+            val.pop("kth_best_model_path", None)
+            val.pop("best_k_models", None)
+            val.pop("dirpath", None)
+            break
+    else:
+        return
+    torch.save(best_weight, best_hpo_weight)
