@@ -1,7 +1,7 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 # Copyright (c) OpenMMLab. All rights reserved.
-"""RTMDet head."""
+"""Implementations copied from mmdet.models.dense_heads.rtmdet_head.py."""
 
 from __future__ import annotations
 
@@ -16,15 +16,15 @@ from otx.algo.detection.utils.utils import (
     inverse_sigmoid,
     multi_apply,
     reduce_mean,
+    sigmoid_geometric_mean,
     unmap,
 )
 from otx.algo.modules.conv_module import ConvModule
+from otx.algo.modules.depthwise_separable_conv_module import DepthwiseSeparableConvModule
 from otx.algo.modules.norm import is_norm
 from otx.algo.modules.scale import Scale
 from otx.algo.utils.mmengine_utils import InstanceData
 from otx.algo.utils.weight_init import bias_init_with_prob, constant_init, normal_init
-
-from .utils import sigmoid_geometric_mean
 
 
 class RTMDetHead(ATSSHead):
@@ -119,7 +119,21 @@ class RTMDetHead(ATSSHead):
             normal_init(self.rtm_obj, std=0.01, bias=bias_cls)
 
     def forward(self, feats: tuple[Tensor, ...]) -> tuple:
-        """Forward features from the upstream network."""
+        """Forward features from the upstream network.
+
+        Args:
+            feats (tuple[Tensor]): Features from the upstream network, each is
+                a 4D-tensor.
+
+        Returns:
+            tuple: Usually a tuple of classification scores and bbox prediction
+            - cls_scores (list[Tensor]): Classification scores for all scale
+              levels, each is a 4D-tensor, the channels number is
+              num_base_priors * num_classes.
+            - bbox_preds (list[Tensor]): Box energies / deltas for all scale
+              levels, each is a 4D-tensor, the channels number is
+              num_base_priors * 4.
+        """
         cls_scores = []
         bbox_preds = []
         for x, scale, stride in zip(feats, self.scales, self.prior_generator.strides):
@@ -152,10 +166,29 @@ class RTMDetHead(ATSSHead):
         bbox_targets: Tensor,
         assign_metrics: Tensor,
         stride: list[int],
-    ) -> tuple[torch.Tensor, ...]:
-        """Compute loss of a single scale level."""
+    ) -> tuple[Tensor, ...]:
+        """Compute loss of a single scale level.
+
+        Args:
+            cls_score (Tensor): Box scores for each scale level
+                Has shape (N, num_anchors * num_classes, H, W).
+            bbox_pred (Tensor): Decoded bboxes for each scale
+                level with shape (N, num_anchors * 4, H, W).
+            labels (Tensor): Labels of each anchors with shape
+                (N, num_total_anchors).
+            label_weights (Tensor): Label weights of each anchor with shape
+                (N, num_total_anchors).
+            bbox_targets (Tensor): BBox regression targets of each anchor with
+                shape (N, num_total_anchors, 4).
+            assign_metrics (Tensor): Assign metrics with shape
+                (N, num_total_anchors).
+            stride (list[int]): Downsample stride of the feature map.
+
+        Returns:
+            dict[str, Tensor]: A dictionary of loss components.
+        """
         if stride[0] != stride[1]:
-            msg = "The stride of the feature map should be the same."
+            msg = "h stride is not equal to w stride!"
             raise ValueError(msg)
         cls_score = cls_score.permute(0, 2, 3, 1).reshape(-1, self.cls_out_channels).contiguous()
         bbox_pred = bbox_pred.reshape(-1, 4)
@@ -225,7 +258,10 @@ class RTMDetHead(ATSSHead):
         num_imgs = len(batch_img_metas)
         featmap_sizes = [featmap.size()[-2:] for featmap in cls_scores]
         if len(featmap_sizes) != self.prior_generator.num_levels:
-            msg = "The number of input feat levels should be equal to the number of levels of the prior generator."
+            msg = (
+                f"The number of featmap_sizes (={len(featmap_sizes)}) and the number of levels of prior_generator "
+                f"(={self.prior_generator.num_levels}) should be same."
+            )
             raise ValueError(msg)
 
         device = cls_scores[0].device
@@ -276,7 +312,6 @@ class RTMDetHead(ATSSHead):
 
         bbox_avg_factor = reduce_mean(sum(bbox_avg_factors)).clamp_(min=1).item()
         losses_bbox = [x / bbox_avg_factor for x in losses_bbox]
-
         return {"loss_cls": losses_cls, "loss_bbox": losses_bbox}
 
     def get_targets(  # type: ignore[override]
@@ -290,10 +325,51 @@ class RTMDetHead(ATSSHead):
         batch_gt_instances_ignore: list[InstanceData] | list[None] | None = None,
         unmap_outputs: bool = True,
     ) -> tuple | None:
-        """Compute regression and classification targets for anchors in multiple images."""
+        """Compute regression and classification targets for anchors in multiple images.
+
+        Args:
+            cls_scores (Tensor): Classification predictions of images,
+                a 3D-Tensor with shape [num_imgs, num_priors, num_classes].
+            bbox_preds (Tensor): Decoded bboxes predictions of one image,
+                a 3D-Tensor with shape [num_imgs, num_priors, 4] in [tl_x,
+                tl_y, br_x, br_y] format.
+            anchor_list (list[list[Tensor]]): Multi level anchors of each
+                image. The outer list indicates images, and the inner list
+                corresponds to feature levels of the image. Each element of
+                the inner list is a tensor of shape (num_anchors, 4).
+            valid_flag_list (list[list[Tensor]]): Multi level valid flags of
+                each image. The outer list indicates images, and the inner list
+                corresponds to feature levels of the image. Each element of
+                the inner list is a tensor of shape (num_anchors, )
+            batch_gt_instances (list[:obj:`InstanceData`]): Batch of
+                gt_instance.  It usually includes ``bboxes`` and ``labels``
+                attributes.
+            batch_img_metas (list[dict]): Meta information of each image, e.g.,
+                image size, scaling factor, etc.
+            batch_gt_instances_ignore (list[:obj:`InstanceData`], Optional):
+                Batch of gt_instances_ignore. It includes ``bboxes`` attribute
+                data that is ignored during training and testing.
+                Defaults to None.
+            unmap_outputs (bool): Whether to map outputs back to the original
+                set of anchors. Defaults to True.
+
+        Returns:
+            tuple: a tuple containing learning targets.
+
+            - anchors_list (list[list[Tensor]]): Anchors of each level.
+            - labels_list (list[Tensor]): Labels of each level.
+            - label_weights_list (list[Tensor]): Label weights of each
+              level.
+            - bbox_targets_list (list[Tensor]): BBox targets of each level.
+            - assign_metrics_list (list[Tensor]): alignment metrics of each
+              level.
+        """
         num_imgs = len(batch_img_metas)
         if len(anchor_list) != len(valid_flag_list) != num_imgs:
-            msg = "The length of anchor_list and valid_flag_list should be equal to num_imgs."
+            msg = (
+                f"The number of anchor_list (={len(anchor_list)}), the number of valid_flag_list "
+                f"(={len(valid_flag_list)}), and num_imgs (={num_imgs}) should be same."
+            )
             raise ValueError(msg)
 
         # anchor number of multi levels
@@ -302,7 +378,10 @@ class RTMDetHead(ATSSHead):
         # concat all level anchors and flags to a single tensor
         for i in range(num_imgs):
             if len(anchor_list[i]) != len(valid_flag_list[i]):
-                msg = "The length of anchor_list and valid_flag_list should be equal."
+                msg = (
+                    f"The number of anchor_list[i] (={len(anchor_list[i])}) and the number of valid_flag_list[i] "
+                    f"(={len(valid_flag_list[i])}) should be same."
+                )
                 raise ValueError(msg)
             anchor_list[i] = torch.cat(anchor_list[i])
             valid_flag_list[i] = torch.cat(valid_flag_list[i])
@@ -360,7 +439,41 @@ class RTMDetHead(ATSSHead):
         gt_instances_ignore: InstanceData | None = None,
         unmap_outputs: bool = True,
     ) -> tuple:
-        """Compute regression, classification targets for anchors in a single image."""
+        """Compute regression, classification targets for anchors in a single image.
+
+        Args:
+            cls_scores (list(Tensor)): Box scores for each image.
+            bbox_preds (list(Tensor)): Box energies / deltas for each image.
+            flat_anchors (Tensor): Multi-level anchors of the image, which are
+                concatenated into a single tensor of shape (num_anchors ,4)
+            valid_flags (Tensor): Multi level valid flags of the image,
+                which are concatenated into a single tensor of
+                    shape (num_anchors,).
+            gt_instances (:obj:`InstanceData`): Ground truth of instance
+                annotations. It usually includes ``bboxes`` and ``labels``
+                attributes.
+            img_meta (dict): Meta information for current image.
+            gt_instances_ignore (:obj:`InstanceData`, optional): Instances
+                to be ignored during training. It includes ``bboxes`` attribute
+                data that is ignored during training and testing.
+                Defaults to None.
+            unmap_outputs (bool): Whether to map outputs back to the original
+                set of anchors. Defaults to True.
+
+        Returns:
+            tuple: N is the number of total anchors in the image.
+
+            - anchors (Tensor): All anchors in the image with shape (N, 4).
+            - labels (Tensor): Labels of all anchors in the image with shape
+              (N,).
+            - label_weights (Tensor): Label weights of all anchor in the
+              image with shape (N,).
+            - bbox_targets (Tensor): BBox targets of all anchors in the
+              image with shape (N, 4).
+            - norm_alignment_metrics (Tensor): Normalized alignment metrics
+              of all priors in the image with shape (N,).
+            - sampling_result (SamplingResult): Sampling result.
+        """
         inside_flags = anchor_inside_flags(
             flat_anchors,
             valid_flags,
@@ -452,3 +565,176 @@ class RTMDetHead(ATSSHead):
             multi_level_flags = self.prior_generator.valid_flags(featmap_sizes, img_meta["img_shape"], device)
             valid_flag_list.append(multi_level_flags)
         return anchor_list, valid_flag_list
+
+
+class RTMDetSepBNHead(RTMDetHead):
+    """RTMDetHead with separated BN layers and shared conv layers.
+
+    Args:
+        num_classes (int): Number of categories excluding the background
+            category.
+        in_channels (int): Number of channels in the input feature map.
+        share_conv (bool): Whether to share conv layers between stages.
+            Defaults to True.
+        use_depthwise (bool): Whether to use depthwise separable convolution in
+            head. Defaults to False.
+        norm_cfg (:obj:`ConfigDict` or dict)): Config dict for normalization
+            layer. Defaults to dict(type='BN', momentum=0.03, eps=0.001).
+        act_cfg (:obj:`ConfigDict` or dict)): Config dict for activation layer.
+            Defaults to dict(type='SiLU').
+        pred_kernel_size (int): Kernel size of prediction layer. Defaults to 1.
+        exp_on_reg (bool): Whether using exponential of regression features or not. Defaults to False.
+    """
+
+    def __init__(
+        self,
+        num_classes: int,
+        in_channels: int,
+        share_conv: bool = True,
+        use_depthwise: bool = False,
+        norm_cfg: dict | None = None,
+        act_cfg: dict | None = None,
+        pred_kernel_size: int = 1,
+        exp_on_reg: bool = False,
+        **kwargs,
+    ) -> None:
+        if act_cfg is None:
+            act_cfg = {"type": "SiLU"}
+        if norm_cfg is None:
+            norm_cfg = {"type": "BN", "momentum": 0.03, "eps": 0.001}
+        self.share_conv = share_conv
+        self.exp_on_reg = exp_on_reg
+        self.use_depthwise = use_depthwise
+        super().__init__(
+            num_classes,
+            in_channels,
+            norm_cfg=norm_cfg,
+            act_cfg=act_cfg,
+            pred_kernel_size=pred_kernel_size,
+            **kwargs,
+        )
+
+    def _init_layers(self) -> None:
+        """Initialize layers of the head."""
+        conv = DepthwiseSeparableConvModule if self.use_depthwise else ConvModule
+        self.cls_convs = nn.ModuleList()
+        self.reg_convs = nn.ModuleList()
+
+        self.rtm_cls = nn.ModuleList()
+        self.rtm_reg = nn.ModuleList()
+        if self.with_objectness:
+            self.rtm_obj = nn.ModuleList()
+        for _ in range(len(self.prior_generator.strides)):
+            cls_convs = nn.ModuleList()
+            reg_convs = nn.ModuleList()
+            for i in range(self.stacked_convs):
+                chn = self.in_channels if i == 0 else self.feat_channels
+                cls_convs.append(
+                    conv(
+                        chn,
+                        self.feat_channels,
+                        3,
+                        stride=1,
+                        padding=1,
+                        conv_cfg=self.conv_cfg,
+                        norm_cfg=self.norm_cfg,
+                        act_cfg=self.act_cfg,
+                    ),
+                )
+                reg_convs.append(
+                    conv(
+                        chn,
+                        self.feat_channels,
+                        3,
+                        stride=1,
+                        padding=1,
+                        conv_cfg=self.conv_cfg,
+                        norm_cfg=self.norm_cfg,
+                        act_cfg=self.act_cfg,
+                    ),
+                )
+            self.cls_convs.append(cls_convs)
+            self.reg_convs.append(reg_convs)
+
+            self.rtm_cls.append(
+                nn.Conv2d(
+                    self.feat_channels,
+                    self.num_base_priors * self.cls_out_channels,
+                    self.pred_kernel_size,
+                    padding=self.pred_kernel_size // 2,
+                ),
+            )
+            self.rtm_reg.append(
+                nn.Conv2d(
+                    self.feat_channels,
+                    self.num_base_priors * 4,
+                    self.pred_kernel_size,
+                    padding=self.pred_kernel_size // 2,
+                ),
+            )
+            if self.with_objectness:
+                self.rtm_obj.append(
+                    nn.Conv2d(self.feat_channels, 1, self.pred_kernel_size, padding=self.pred_kernel_size // 2),
+                )
+
+        if self.share_conv:
+            for n in range(len(self.prior_generator.strides)):
+                for i in range(self.stacked_convs):
+                    self.cls_convs[n][i].conv = self.cls_convs[0][i].conv
+                    self.reg_convs[n][i].conv = self.reg_convs[0][i].conv
+
+    def init_weights(self) -> None:
+        """Initialize weights of the head."""
+        for m in self.modules():
+            if isinstance(m, nn.Conv2d):
+                normal_init(m, mean=0, std=0.01)
+            if is_norm(m):
+                constant_init(m, 1)
+        bias_cls = bias_init_with_prob(0.01)
+        for rtm_cls, rtm_reg in zip(self.rtm_cls, self.rtm_reg):
+            normal_init(rtm_cls, std=0.01, bias=bias_cls)
+            normal_init(rtm_reg, std=0.01)
+        if self.with_objectness:
+            for rtm_obj in self.rtm_obj:
+                normal_init(rtm_obj, std=0.01, bias=bias_cls)
+
+    def forward(self, feats: tuple[Tensor, ...]) -> tuple:
+        """Forward features from the upstream network.
+
+        Args:
+            feats (tuple[Tensor]): Features from the upstream network, each is
+                a 4D-tensor.
+
+        Returns:
+            tuple: Usually a tuple of classification scores and bbox prediction
+
+            - cls_scores (tuple[Tensor]): Classification scores for all scale
+              levels, each is a 4D-tensor, the channels number is
+              num_anchors * num_classes.
+            - bbox_preds (tuple[Tensor]): Box energies / deltas for all scale
+              levels, each is a 4D-tensor, the channels number is
+              num_anchors * 4.
+        """
+        cls_scores = []
+        bbox_preds = []
+        for idx, (x, stride) in enumerate(zip(feats, self.prior_generator.strides)):
+            cls_feat = x
+            reg_feat = x
+
+            for cls_layer in self.cls_convs[idx]:
+                cls_feat = cls_layer(cls_feat)
+            cls_score = self.rtm_cls[idx](cls_feat)
+
+            for reg_layer in self.reg_convs[idx]:
+                reg_feat = reg_layer(reg_feat)
+
+            if self.with_objectness:
+                objectness = self.rtm_obj[idx](reg_feat)
+                cls_score = inverse_sigmoid(sigmoid_geometric_mean(cls_score, objectness))
+            if self.exp_on_reg:
+                reg_dist = self.rtm_reg[idx](reg_feat).exp() * stride[0]
+            else:
+                reg_dist = self.rtm_reg[idx](reg_feat) * stride[0]
+            cls_scores.append(cls_score)
+            bbox_preds.append(reg_dist)
+        return tuple(cls_scores), tuple(bbox_preds)

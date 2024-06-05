@@ -5,7 +5,7 @@
 from __future__ import annotations
 
 from copy import deepcopy
-from typing import TYPE_CHECKING, Any, Callable
+from typing import TYPE_CHECKING, Any
 
 import torch
 from torch import nn
@@ -13,6 +13,7 @@ from torch import nn
 from otx.algo.classification.backbones.timm import TimmBackbone
 from otx.algo.classification.classifier.base_classifier import ImageClassifier
 from otx.algo.classification.heads import HierarchicalLinearClsHead, LinearClsHead, MultiLabelLinearClsHead
+from otx.algo.classification.losses.asymmetric_angular_loss_with_ignore import AsymmetricAngularLossWithIgnore
 from otx.algo.classification.necks.gap import GlobalAveragePooling
 from otx.algo.classification.utils import get_classification_layers
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
@@ -50,14 +51,11 @@ class EfficientNetV2ForMulticlassCls(OTXMulticlassClsModel):
     def __init__(
         self,
         label_info: LabelInfoTypes,
-        loss_callable: Callable[[], nn.Module] = nn.CrossEntropyLoss,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MultiClassClsMetricCallable,
         torch_compile: bool = False,
     ) -> None:
-        self.head_config = {"loss_callable": loss_callable}
-
         super().__init__(
             label_info=label_info,
             optimizer=optimizer,
@@ -81,7 +79,6 @@ class EfficientNetV2ForMulticlassCls(OTXMulticlassClsModel):
         return model
 
     def _build_model(self, num_classes: int) -> nn.Module:
-        loss = self.head_config["loss_callable"]
         return ImageClassifier(
             backbone=TimmBackbone(backbone="efficientnetv2_s_21k", pretrained=True),
             neck=GlobalAveragePooling(dim=2),
@@ -89,7 +86,7 @@ class EfficientNetV2ForMulticlassCls(OTXMulticlassClsModel):
                 num_classes=num_classes,
                 in_channels=1280,
                 topk=(1, 5) if num_classes >= 5 else (1,),
-                loss=loss if isinstance(loss, nn.Module) else loss(),
+                loss=nn.CrossEntropyLoss(reduction="none"),
             ),
         )
 
@@ -177,14 +174,11 @@ class EfficientNetV2ForMultilabelCls(OTXMultilabelClsModel):
     def __init__(
         self,
         label_info: LabelInfoTypes,
-        loss_callable: Callable[[], nn.Module] = nn.CrossEntropyLoss,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MultiLabelClsMetricCallable,
         torch_compile: bool = False,
     ) -> None:
-        self.head_config = {"loss_callable": loss_callable}
-
         super().__init__(
             label_info=label_info,
             optimizer=optimizer,
@@ -208,16 +202,15 @@ class EfficientNetV2ForMultilabelCls(OTXMultilabelClsModel):
         return model
 
     def _build_model(self, num_classes: int) -> nn.Module:
-        loss = self.head_config["loss_callable"]
         return ImageClassifier(
             backbone=TimmBackbone(backbone="efficientnetv2_s_21k", pretrained=True),
             neck=GlobalAveragePooling(dim=2),
             head=MultiLabelLinearClsHead(
                 num_classes=num_classes,
                 in_channels=1280,
-                loss=loss if isinstance(loss, nn.Module) else loss(),
                 normalized=True,
                 scale=7.0,
+                loss=AsymmetricAngularLossWithIgnore(gamma_pos=0.0, gamma_neg=1.0, reduction="sum"),
             ),
         )
 
@@ -306,18 +299,11 @@ class EfficientNetV2ForHLabelCls(OTXHlabelClsModel):
     def __init__(
         self,
         label_info: HLabelInfo,
-        multiclass_loss_callable: Callable[[], nn.Module] = nn.CrossEntropyLoss,
-        multilabel_loss_callable: Callable[[], nn.Module] = nn.CrossEntropyLoss,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = HLabelClsMetricCallble,
         torch_compile: bool = False,
     ) -> None:
-        self.head_config = {
-            "multiclass_loss_callable": multiclass_loss_callable,
-            "multilabel_loss_callable": multilabel_loss_callable,
-        }
-
         super().__init__(
             label_info=label_info,
             optimizer=optimizer,
@@ -344,15 +330,13 @@ class EfficientNetV2ForHLabelCls(OTXHlabelClsModel):
         return model
 
     def _build_model(self, head_config: dict) -> nn.Module:
-        multiclass_loss = self.head_config["multiclass_loss_callable"]
-        multilabel_loss = self.head_config["multilabel_loss_callable"]
         return ImageClassifier(
             backbone=TimmBackbone(backbone="efficientnetv2_s_21k", pretrained=True),
             neck=GlobalAveragePooling(dim=2),
             head=HierarchicalLinearClsHead(
                 in_channels=1280,
-                multiclass_loss=multiclass_loss if isinstance(multiclass_loss, nn.Module) else multiclass_loss(),
-                multilabel_loss=multilabel_loss if isinstance(multilabel_loss, nn.Module) else multilabel_loss(),
+                multiclass_loss=nn.CrossEntropyLoss(),
+                multilabel_loss=AsymmetricAngularLossWithIgnore(gamma_pos=0.0, gamma_neg=1.0, reduction="sum"),
                 **head_config,
             ),
         )

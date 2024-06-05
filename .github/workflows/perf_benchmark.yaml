@@ -144,7 +144,7 @@ jobs:
           --user-name ${{ github.triggering_actor }}
           --otx-ref ${{ inputs.otx-ref }}
       - name: Upload test results
-        uses: actions/upload-artifact@1746f4ab65b179e0ea60a494b83293b640dd5bba # v4.3.2
+        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
         with:
           name: perf-benchmark-${{ matrix.task-short }}
           path: .tox/perf-benchmark-*.*
@@ -159,7 +159,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
       - name: Install Python
-        uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c # v5.0.0
+        uses: actions/setup-python@82c7e631bb3cdc910f68e0081d67478d79c6982d # v5.1.0
         with:
           python-version: "3.10"
       - name: Install dependencies
@@ -174,7 +174,7 @@ jobs:
           python tests/perf/history/summary.py tests/perf/history ./perf-benchmark-summary --pattern "*raw*.csv" --normalize
           jupyter nbconvert --execute --to html --no-input tests/perf/history/summary.ipynb --output-dir ./perf-benchmark-summary --output perf-benchmark-summary
       - name: Upload benchmark summary
-        uses: actions/upload-artifact@1746f4ab65b179e0ea60a494b83293b640dd5bba # v4.3.2
+        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
         with:
           name: perf-benchmark-summary
           path: perf-benchmark-summary

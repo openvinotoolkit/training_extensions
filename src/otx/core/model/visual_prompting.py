@@ -573,8 +573,8 @@ class OVVisualPromptingModel(
         masks: list[tv_tensors.Mask] = []
         scores: list[torch.Tensor] = []
         for output in outputs:
-            masks.append(torch.as_tensor(output["hard_prediction"]))
-            scores.append(torch.as_tensor(output["scores"]))
+            masks.append(torch.as_tensor(output["hard_prediction"], device=self.device))
+            scores.append(torch.as_tensor(output["scores"], device=self.device))
 
         return VisualPromptingBatchPredEntity(
             batch_size=len(outputs),
@@ -1025,6 +1025,7 @@ class OVZeroShotVisualPromptingModel(
                     tv_tensors.Mask(
                         torch.stack([torch.as_tensor(m) for m in predicted_mask], dim=0),
                         dtype=torch.float32,
+                        device=self.device,
                     ),
                 )
                 prompts.append(
@@ -1032,10 +1033,13 @@ class OVZeroShotVisualPromptingModel(
                         torch.stack([torch.as_tensor(p[:2]) for p in used_points[label]], dim=0),
                         canvas_size=inputs.imgs_info[0].ori_shape,
                         dtype=torch.float32,
+                        device=self.device,
                     ),
                 )
-                scores.append(torch.stack([torch.as_tensor(p[2]) for p in used_points[label]], dim=0))
-                labels.append(torch.stack([torch.LongTensor([label]) for _ in range(len(scores[-1]))], dim=0))
+                scores.append(torch.stack([torch.as_tensor(p[2]) for p in used_points[label]], dim=0).to(self.device))
+                labels.append(
+                    torch.stack([torch.LongTensor([label]) for _ in range(len(scores[-1]))], dim=0).to(self.device),
+                )
 
         return ZeroShotVisualPromptingBatchPredEntity(
             batch_size=len(outputs),

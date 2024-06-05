@@ -11,6 +11,7 @@ from typing import Callable
 import torch
 import torch.distributed as dist
 from torch import Tensor
+from torch.autograd import Function
 
 from otx.algo.utils.mmengine_utils import InstanceData
 from otx.core.data.entity.detection import DetBatchDataEntity
@@ -424,6 +425,71 @@ def distance2bbox(
     return bboxes
 
 
+def distance2bbox_export(points: Tensor, distance: Tensor, max_shape: Tensor | None = None) -> Tensor:
+    """Decode distance prediction to bounding box for export."""
+    x1 = points[..., 0] - distance[..., 0]
+    y1 = points[..., 1] - distance[..., 1]
+    x2 = points[..., 0] + distance[..., 2]
+    y2 = points[..., 1] + distance[..., 3]
+
+    bboxes = torch.stack([x1, y1, x2, y2], -1)
+
+    if max_shape is not None:
+        # clip bboxes with dynamic `min` and `max`
+        x1, y1, x2, y2 = clip_bboxes_export(x1, y1, x2, y2, max_shape)
+        return torch.stack([x1, y1, x2, y2], dim=-1)
+
+    return bboxes
+
+
+def clip_bboxes_export(
+    x1: Tensor,
+    y1: Tensor,
+    x2: Tensor,
+    y2: Tensor,
+    max_shape: Tensor | tuple[int, ...],
+) -> tuple[Tensor, ...]:
+    """Clip bboxes for onnx.
+
+    Since torch.clamp cannot have dynamic `min` and `max`, we scale the
+      boxes by 1/max_shape and clamp in the range [0, 1] if necessary.
+
+    Args:
+        x1 (Tensor): The x1 for bounding boxes.
+        y1 (Tensor): The y1 for bounding boxes.
+        x2 (Tensor): The x2 for bounding boxes.
+        y2 (Tensor): The y2 for bounding boxes.
+        max_shape (Tensor | Sequence[int]): The (H,W) of original image.
+
+    Returns:
+        tuple(Tensor): The clipped x1, y1, x2, y2.
+    """
+    if isinstance(max_shape, torch.Tensor):
+        # scale by 1/max_shape
+        x1 = x1 / max_shape[1]
+        y1 = y1 / max_shape[0]
+        x2 = x2 / max_shape[1]
+        y2 = y2 / max_shape[0]
+
+        # clamp [0, 1]
+        x1 = torch.clamp(x1, 0, 1)
+        y1 = torch.clamp(y1, 0, 1)
+        x2 = torch.clamp(x2, 0, 1)
+        y2 = torch.clamp(y2, 0, 1)
+
+        # scale back
+        x1 = x1 * max_shape[1]
+        y1 = y1 * max_shape[0]
+        x2 = x2 * max_shape[1]
+        y2 = y2 * max_shape[0]
+    else:
+        x1 = torch.clamp(x1, 0, max_shape[1])
+        y1 = torch.clamp(y1, 0, max_shape[0])
+        x2 = torch.clamp(x2, 0, max_shape[1])
+        y2 = torch.clamp(y2, 0, max_shape[0])
+    return x1, y1, x2, y2
+
+
 def bbox2distance(
     points: Tensor,
     bbox: Tensor,
@@ -459,3 +525,31 @@ def inverse_sigmoid(x: Tensor, eps: float = 1e-5) -> Tensor:
     x1 = x.clamp(min=eps)
     x2 = (1 - x).clamp(min=eps)
     return torch.log(x1 / x2)
+
+
+class SigmoidGeometricMean(Function):
+    """Forward and backward function of geometric mean of two sigmoid functions.
+
+    This implementation with analytical gradient function substitutes
+    the autograd function of (x.sigmoid() * y.sigmoid()).sqrt(). The
+    original implementation incurs none during gradient backprapagation
+    if both x and y are very small values.
+    """
+
+    @staticmethod
+    def forward(ctx, x, y) -> Tensor:  # noqa: D102, ANN001
+        x_sigmoid = x.sigmoid()
+        y_sigmoid = y.sigmoid()
+        z = (x_sigmoid * y_sigmoid).sqrt()
+        ctx.save_for_backward(x_sigmoid, y_sigmoid, z)
+        return z
+
+    @staticmethod
+    def backward(ctx, grad_output) -> tuple[Tensor, Tensor]:  # noqa: D102, ANN001
+        x_sigmoid, y_sigmoid, z = ctx.saved_tensors
+        grad_x = grad_output * z * (1 - x_sigmoid) / 2
+        grad_y = grad_output * z * (1 - y_sigmoid) / 2
+        return grad_x, grad_y
+
+
+sigmoid_geometric_mean = SigmoidGeometricMean.apply

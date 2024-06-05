@@ -57,12 +57,12 @@ class PackSegInputs(MMSegPackInputs):
 
         img_shape = data_samples.img_shape
         ori_shape = data_samples.ori_shape
-        scale_factor = data_samples.metainfo.get("scale_factor", (1.0, 1.0))
+        scale_factor = data_samples.metainfo.get("scale_factor", (1.0, 1.0))  # (W, H) because it is from mm pipeline
 
         image_info = deepcopy(results["__otx__"].img_info)
         image_info.img_shape = img_shape
         image_info.ori_shape = ori_shape
-        image_info.scale_factor = scale_factor
+        image_info.scale_factor = scale_factor[::-1]  # convert to (H, W)
 
         masks = data_samples.gt_sem_seg.data
 

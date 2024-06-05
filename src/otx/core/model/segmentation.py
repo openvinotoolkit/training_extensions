@@ -364,7 +364,7 @@ class OVSegmentationModel(OVModel[SegBatchDataEntity, SegBatchPredEntity]):
                 images=inputs.images,
                 imgs_info=inputs.imgs_info,
                 scores=[],
-                masks=[tv_tensors.Mask(mask.resultImage) for mask in outputs],
+                masks=[tv_tensors.Mask(mask.resultImage, device=self.device) for mask in outputs],
                 saliency_map=predicted_s_maps,
                 feature_vector=predicted_f_vectors,
             )
@@ -374,7 +374,7 @@ class OVSegmentationModel(OVModel[SegBatchDataEntity, SegBatchPredEntity]):
             images=inputs.images,
             imgs_info=inputs.imgs_info,
             scores=[],
-            masks=[tv_tensors.Mask(mask.resultImage) for mask in outputs],
+            masks=[tv_tensors.Mask(mask.resultImage, device=self.device) for mask in outputs],
         )
 
     def _convert_pred_entity_to_compute_metric(

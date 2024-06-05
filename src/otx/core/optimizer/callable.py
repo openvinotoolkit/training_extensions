@@ -10,8 +10,6 @@ from typing import TYPE_CHECKING, Any
 from torch import nn
 from torch.optim.optimizer import Optimizer
 
-from otx.core.utils.jsonargparse import ClassType, lazy_instance
-
 if TYPE_CHECKING:
     from lightning.pytorch.cli import OptimizerCallable
     from torch.optim.optimizer import params_t
@@ -91,45 +89,6 @@ class OptimizerCallableSupportHPO:
     def __call__(self, params: params_t) -> Optimizer:
         """Create `torch.optim.Optimizer` instance for the given parameters."""
         return self.optimizer_init(params, **self.optimizer_kwargs)
-
-    def to_lazy_instance(self) -> ClassType:
-        """Return lazy instance of this class.
-
-        Because OTX is rely on jsonargparse library,
-        the default value of class initialization
-        argument should be the lazy instance.
-        Please refer to https://jsonargparse.readthedocs.io/en/stable/#default-values
-        for more details.
-
-        Examples:
-            This is an example to implement a new model with a `SGD` optimizer and
-            custom configurations as a default.
-
-            ```python
-            class MyAwesomeMulticlassClsModel(OTXMulticlassClsModel):
-                def __init__(
-                    self,
-                    label_info: LabelInfoTypes,
-                    optimizer: OptimizerCallable = OptimizerCallableSupportHPO(
-                        optimizer_cls=SGD,
-                        optimizer_kwargs={
-                            "lr": 0.1,
-                            "momentum": 0.9,
-                            "weight_decay": 1e-4,
-                        },
-                    ).to_lazy_instance(),
-                    scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
-                    metric: MetricCallable = MultiClassClsMetricCallable,
-                    torch_compile: bool = False,
-                ) -> None:
-                ...
-            ```
-        """
-        return lazy_instance(
-            OptimizerCallableSupportHPO,
-            optimizer_cls=self.optimizer_path,
-            optimizer_kwargs=self.optimizer_kwargs,
-        )
 
     def __reduce__(self) -> str | tuple[Any, ...]:
         return self.__class__, (

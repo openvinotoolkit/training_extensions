@@ -12,6 +12,7 @@ from omegaconf import DictConfig
 from torchvision import tv_tensors
 
 from otx.algo.detection.backbones.csp_darknet import CSPDarknet
+from otx.algo.detection.heads.sim_ota_assigner import SimOTAAssigner
 from otx.algo.detection.heads.yolox_head import YOLOXHead
 from otx.algo.detection.necks.yolox_pafpn import YOLOXPAFPN
 from otx.algo.detection.ssd import SingleStageDetector
@@ -77,7 +78,7 @@ class YOLOX(ExplainableOTXDetModel):
                 elif isinstance(v, torch.Tensor):
                     losses[k] = v
                 else:
-                    msg = "Loss output should be list or torch.tensor but got {type(v)}"
+                    msg = f"Loss output should be list or torch.tensor but got {type(v)}"
                     raise TypeError(msg)
             return losses
 
@@ -261,7 +262,7 @@ class YOLOXTINY(YOLOX):
     std = (58.395, 57.12, 57.375)
 
     def _build_model(self, num_classes: int) -> SingleStageDetector:
-        train_cfg: dict[str, Any] = {}
+        train_cfg: dict[str, Any] = {"assigner": SimOTAAssigner(center_radius=2.5)}
         test_cfg = DictConfig(
             {
                 "nms": {"type": "nms", "iou_threshold": 0.65},
@@ -302,7 +303,7 @@ class YOLOXS(YOLOX):
     std = (1.0, 1.0, 1.0)
 
     def _build_model(self, num_classes: int) -> SingleStageDetector:
-        train_cfg: dict[str, Any] = {}
+        train_cfg: dict[str, Any] = {"assigner": SimOTAAssigner(center_radius=2.5)}
         test_cfg = DictConfig(
             {
                 "nms": {"type": "nms", "iou_threshold": 0.65},
@@ -343,7 +344,7 @@ class YOLOXL(YOLOX):
     std = (1.0, 1.0, 1.0)
 
     def _build_model(self, num_classes: int) -> SingleStageDetector:
-        train_cfg: dict[str, Any] = {}
+        train_cfg: dict[str, Any] = {"assigner": SimOTAAssigner(center_radius=2.5)}
         test_cfg = DictConfig(
             {
                 "nms": {"type": "nms", "iou_threshold": 0.65},
@@ -384,7 +385,7 @@ class YOLOXX(YOLOX):
     std = (1.0, 1.0, 1.0)
 
     def _build_model(self, num_classes: int) -> SingleStageDetector:
-        train_cfg: dict[str, Any] = {}
+        train_cfg: dict[str, Any] = {"assigner": SimOTAAssigner(center_radius=2.5)}
         test_cfg = DictConfig(
             {
                 "nms": {"type": "nms", "iou_threshold": 0.65},

@@ -245,6 +245,16 @@ def fxt_tags(fxt_user_name: str, fxt_version_tags: dict[str, str], fxt_accelerat
     return tags
 
 
+@pytest.fixture(scope="session")
+def fxt_resume_from(request: pytest.FixtureRequest) -> Path | None:
+    resume_from = request.config.getoption("--resume-from")
+    if resume_from is not None:
+        resume_from = Path(resume_from)
+    msg = f"{resume_from = }"
+    log.info(msg)
+    return resume_from
+
+
 @pytest.fixture()
 def fxt_benchmark(
     fxt_data_root: Path,
@@ -356,11 +366,13 @@ class PerfTestBase:
         dataset: Benchmark.Dataset,
         benchmark: Benchmark,
         criteria: list[Benchmark.Criterion],
+        resume_from: Path | None,
     ) -> None:
         result = benchmark.run(
             model=model,
             dataset=dataset,
             criteria=criteria,
+            resume_from=resume_from,
         )
         benchmark.check(
             result=result,

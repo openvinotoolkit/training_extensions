@@ -171,12 +171,12 @@ fonttools==4.53.0 \
 ipykernel==6.29.4 \
     --hash=sha256:1181e653d95c6808039c509ef8e67c4126b3b3af7781496c7cbfb5ed938a27da \
     --hash=sha256:3d44070060f9475ac2092b760123fadf105d2e2493c24848b6691a7c4f42af5c
-    # via -r ./benchmark/requirements.in
+    # via -r .ci/requirements/benchmark/requirements.in
 ipython==8.23.0 \
     --hash=sha256:07232af52a5ba146dc3372c7bf52a0f890a23edf38d77caef8d53f9cdc2584c1 \
     --hash=sha256:7468edaf4f6de3e1b912e57f66c241e6fd3c7099f2ec2136e239e142e800274d
     # via
-    #   -r ./benchmark/requirements.in
+    #   -r .ci/requirements/benchmark/requirements.in
     #   ipykernel
 jedi==0.19.1 \
     --hash=sha256:cf0496f3651bc65d7174ac1b7d043eff454892c708a87d1b683e57b569927ffd \
@@ -412,7 +412,7 @@ matplotlib==3.8.4 \
     --hash=sha256:ecd79298550cba13a43c340581a3ec9c707bd895a6a061a78fa2524660482fc0 \
     --hash=sha256:f51c4c869d4b60d769f7b4406eec39596648d9d70246428745a681c327a8ad30 \
     --hash=sha256:fb44f53af0a62dc80bba4443d9b27f2fde6acfdac281d95bc872dc148a6509cc
-    # via -r ./benchmark/requirements.in
+    # via -r .ci/requirements/benchmark/requirements.in
 matplotlib-inline==0.1.7 \
     --hash=sha256:8423b23ec666be3d16e16b60bdd8ac4e86e840ebd1dd11a30b9f117f2fa0ab90 \
     --hash=sha256:df192d39a4ff8f21b1895d72e6a13f5fcc5099f00fa84384e0ea28c2cc0653ca
@@ -430,7 +430,7 @@ nbclient==0.10.0 \
 nbconvert==7.16.3 \
     --hash=sha256:a6733b78ce3d47c3f85e504998495b07e6ea9cf9bf6ec1c98dda63ec6ad19142 \
     --hash=sha256:ddeff14beeeedf3dd0bc506623e41e4507e551736de59df69a91f86700292b3b
-    # via -r ./benchmark/requirements.in
+    # via -r .ci/requirements/benchmark/requirements.in
 nbformat==5.10.4 \
     --hash=sha256:322168b14f937a5d11362988ecac2a4952d3d8e3a2cbeb2319584631226d5b3a \
     --hash=sha256:3b48d6c8fbca4b299bf3982ea7db1af21580e4fec269ad087b9e81588891200b
@@ -485,7 +485,7 @@ numpy==1.26.4 \
 openpyxl==3.1.2 \
     --hash=sha256:a6f5977418eff3b2d5500d54d9db50c8277a368436f4e4f8ddb1be3422870184 \
     --hash=sha256:f91456ead12ab3c6c2e9491cf33ba6d08357d802192379bb482f1033ade496f5
-    # via -r ./benchmark/requirements.in
+    # via -r .ci/requirements/benchmark/requirements.in
 packaging==24.0 \
     --hash=sha256:2ddfb553fdf02fb784c234c7ba6ccc288296ceabec964ad2eae3777778130bc5 \
     --hash=sha256:eb82c5e3e56209074766e6885bb04b8c38a0c015d0a30036ebe7ece34c9989e9
@@ -523,7 +523,7 @@ pandas==2.2.2 \
     --hash=sha256:ddf818e4e6c7c6f4f7c8a12709696d193976b591cc7dc50588d3d1a6b5dc8772 \
     --hash=sha256:e9b79011ff7a0f4b1d6da6a61aa1aa604fb312d6647de5bad20013682d1429ce \
     --hash=sha256:eee3a87076c0756de40b05c5e9a6069c035ba43e8dd71c379e68cab2c20f16ad
-    # via -r ./benchmark/requirements.in
+    # via -r .ci/requirements/benchmark/requirements.in
 pandocfilters==1.5.1 \
     --hash=sha256:002b4a555ee4ebc03f8b66307e287fa492e4a77b4ea14d3f934328297bb4939e \
     --hash=sha256:93be382804a9cdb0a7267585f157e5d1731bbe5545a85b268d6f5fe6232de2bc

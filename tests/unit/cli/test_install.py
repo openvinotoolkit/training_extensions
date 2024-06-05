@@ -18,6 +18,7 @@ class TestInstall:
             "openvino": [Requirement.parse("openvino")],
             "mmlab": [Requirement.parse("mmpretrain")],
             "api": [Requirement.parse("test1")],
+            "xpu": [Requirement.parse("torch==2.0.0"), Requirement.parse("ipex")],
         }
         mocker.patch("otx.cli.install.get_requirements", return_value=requirements_dict)
 
@@ -63,5 +64,6 @@ class TestInstall:
         assert "openvino" in argument_call_list
         assert "pytorchcv" in argument_call_list
         assert "mmpretrain" not in argument_call_list
+        assert "ipex" not in argument_call_list
         mm_argument_call_list = mock_mim_installation.call_args_list[-1][0][-1]
         assert "mmpretrain" in mm_argument_call_list

@@ -7,7 +7,7 @@
 from __future__ import annotations
 
 from copy import deepcopy
-from typing import TYPE_CHECKING, Any, Callable, Literal
+from typing import TYPE_CHECKING, Any, Literal
 
 import torch
 from torch import Tensor, nn
@@ -15,6 +15,7 @@ from torch import Tensor, nn
 from otx.algo.classification.backbones import OTXMobileNetV3
 from otx.algo.classification.classifier.base_classifier import ImageClassifier
 from otx.algo.classification.heads import HierarchicalNonLinearClsHead, LinearClsHead, MultiLabelNonLinearClsHead
+from otx.algo.classification.losses.asymmetric_angular_loss_with_ignore import AsymmetricAngularLossWithIgnore
 from otx.algo.classification.necks.gap import GlobalAveragePooling
 from otx.algo.classification.utils import get_classification_layers
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
@@ -61,15 +62,12 @@ class MobileNetV3ForMulticlassCls(OTXMulticlassClsModel):
         self,
         label_info: LabelInfoTypes,
         mode: Literal["large", "small"] = "large",
-        loss_callable: Callable[[], nn.Module] = nn.CrossEntropyLoss,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MultiClassClsMetricCallable,
         torch_compile: bool = False,
     ) -> None:
         self.mode = mode
-        self.head_config = {"loss_callable": loss_callable}
-
         super().__init__(
             label_info=label_info,
             optimizer=optimizer,
@@ -93,7 +91,6 @@ class MobileNetV3ForMulticlassCls(OTXMulticlassClsModel):
         return model
 
     def _build_model(self, num_classes: int) -> nn.Module:
-        loss = self.head_config["loss_callable"]
         return ImageClassifier(
             backbone=OTXMobileNetV3(mode=self.mode),
             neck=GlobalAveragePooling(dim=2),
@@ -101,7 +98,7 @@ class MobileNetV3ForMulticlassCls(OTXMulticlassClsModel):
                 num_classes=num_classes,
                 in_channels=960,
                 topk=(1, 5) if num_classes >= 5 else (1,),
-                loss=loss if isinstance(loss, nn.Module) else loss(),
+                loss=nn.CrossEntropyLoss(reduction="none"),
             ),
         )
 
@@ -190,15 +187,12 @@ class MobileNetV3ForMultilabelCls(OTXMultilabelClsModel):
         self,
         label_info: LabelInfoTypes,
         mode: Literal["large", "small"] = "large",
-        loss_callable: Callable[[], nn.Module] = nn.CrossEntropyLoss,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MultiLabelClsMetricCallable,
         torch_compile: bool = False,
     ) -> None:
         self.mode = mode
-        self.head_config = {"loss_callable": loss_callable}
-
         super().__init__(
             label_info=label_info,
             optimizer=optimizer,
@@ -222,7 +216,6 @@ class MobileNetV3ForMultilabelCls(OTXMultilabelClsModel):
         return model
 
     def _build_model(self, num_classes: int) -> nn.Module:
-        loss = self.head_config["loss_callable"]
         return ImageClassifier(
             backbone=OTXMobileNetV3(mode=self.mode),
             neck=GlobalAveragePooling(dim=2),
@@ -233,7 +226,7 @@ class MobileNetV3ForMultilabelCls(OTXMultilabelClsModel):
                 normalized=True,
                 scale=7.0,
                 activation_callable=nn.PReLU(),
-                loss=loss if isinstance(loss, nn.Module) else loss(),
+                loss=AsymmetricAngularLossWithIgnore(gamma_pos=0.0, gamma_neg=1.0, reduction="sum"),
             ),
         )
 
@@ -323,19 +316,12 @@ class MobileNetV3ForHLabelCls(OTXHlabelClsModel):
         self,
         label_info: HLabelInfo,
         mode: Literal["large", "small"] = "large",
-        multiclass_loss_callable: Callable[[], nn.Module] = nn.CrossEntropyLoss,
-        multilabel_loss_callable: Callable[[], nn.Module] = nn.CrossEntropyLoss,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = HLabelClsMetricCallble,
         torch_compile: bool = False,
     ) -> None:
         self.mode = mode
-        self.head_config = {
-            "multiclass_loss_callable": multiclass_loss_callable,
-            "multilabel_loss_callable": multilabel_loss_callable,
-        }
-
         super().__init__(
             label_info=label_info,
             optimizer=optimizer,
@@ -362,8 +348,6 @@ class MobileNetV3ForHLabelCls(OTXHlabelClsModel):
         return model
 
     def _build_model(self, head_config: dict) -> nn.Module:
-        multiclass_loss = self.head_config["multiclass_loss_callable"]
-        multilabel_loss = self.head_config["multilabel_loss_callable"]
         if not isinstance(self.label_info, HLabelInfo):
             raise TypeError(self.label_info)
 
@@ -372,8 +356,8 @@ class MobileNetV3ForHLabelCls(OTXHlabelClsModel):
             neck=GlobalAveragePooling(dim=2),
             head=HierarchicalNonLinearClsHead(
                 in_channels=960,
-                multiclass_loss=multiclass_loss if isinstance(multiclass_loss, nn.Module) else multiclass_loss(),
-                multilabel_loss=multilabel_loss if isinstance(multilabel_loss, nn.Module) else multilabel_loss(),
+                multiclass_loss=nn.CrossEntropyLoss(),
+                multilabel_loss=AsymmetricAngularLossWithIgnore(gamma_pos=0.0, gamma_neg=1.0, reduction="sum"),
                 **head_config,
             ),
         )

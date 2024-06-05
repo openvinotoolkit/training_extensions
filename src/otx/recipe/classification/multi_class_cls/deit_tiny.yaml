@@ -4,11 +4,6 @@ model:
     label_info: 1000
     arch: "deit-tiny"
 
-    loss_callable:
-      class_path: torch.nn.CrossEntropyLoss
-      init_args:
-        reduction: none
-
     optimizer:
       class_path: torch.optim.AdamW
       init_args:
@@ -33,7 +28,7 @@ data: ../../_base_/data/torchvision_base.yaml
 overrides:
   max_epochs: 90
   callbacks:
-    - class_path: lightning.pytorch.callbacks.EarlyStopping
+    - class_path: otx.algo.callbacks.adaptive_early_stopping.EarlyStoppingWithWarmup
       init_args:
         patience: 3
   data:

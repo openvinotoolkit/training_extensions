@@ -5,6 +5,7 @@
 # Please refer to https://github.com/open-mmlab/mmdetection/
 
 """MMDet FCNMaskHead."""
+
 from __future__ import annotations
 
 import warnings
@@ -291,7 +292,7 @@ class FCNMaskHead(BaseModule):
         Returns:
             Tensor: Encoded masks, has shape (n, img_w, img_h)
         """
-        scale_factor = bboxes.new_tensor(img_meta["scale_factor"]).repeat((1, 2))
+        scale_factor = bboxes.new_tensor(img_meta["scale_factor"][::-1]).repeat((1, 2))
         img_h, img_w = img_meta["ori_shape"][:2]
         device = bboxes.device
 

@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 # Copyright (c) OpenMMLab. All rights reserved.
 """RTMDet-Ins head."""
+
 from __future__ import annotations
 
 import copy
@@ -14,6 +15,7 @@ import torch.nn.functional
 from datumaro import Polygon
 from torch import Tensor, nn
 
+from otx.algo.detection.heads.rtmdet_head import RTMDetHead
 from otx.algo.detection.ops.nms import batched_nms, multiclass_nms
 from otx.algo.detection.utils.utils import (
     distance2bbox,
@@ -34,7 +36,6 @@ from otx.algo.utils.weight_init import bias_init_with_prob, constant_init, norma
 from otx.core.data.entity.instance_segmentation import InstanceSegBatchDataEntity
 from otx.core.utils.mask_util import polygon_to_bitmap
 
-from .rtmdet_head import RTMDetHead
 from .utils import sigmoid_geometric_mean
 
 if TYPE_CHECKING:

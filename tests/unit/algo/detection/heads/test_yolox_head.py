@@ -8,6 +8,7 @@ Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/tests/test_mod
 
 import torch
 from mmengine.config import Config
+from otx.algo.detection.heads.sim_ota_assigner import SimOTAAssigner
 from otx.algo.detection.heads.yolox_head import YOLOXHead
 from otx.algo.modules.conv_module import ConvModule
 from otx.algo.modules.depthwise_separable_conv_module import DepthwiseSeparableConvModule
@@ -46,16 +47,9 @@ class TestYOLOXHead:
                 "scale_factor": 1,
             },
         ]
-        train_cfg = Config(
-            {
-                "assigner": {
-                    "center_radius": 2.5,
-                    "candidate_topk": 10,
-                    "iou_weight": 3.0,
-                    "cls_weight": 1.0,
-                },
-            },
-        )
+        train_cfg = {
+            "assigner": SimOTAAssigner(center_radius=2.5),
+        }
         head = YOLOXHead(num_classes=4, in_channels=1, stacked_convs=1, use_depthwise=False, train_cfg=train_cfg)
         assert not head.use_l1
         assert isinstance(head.multi_level_cls_convs[0][0], ConvModule)

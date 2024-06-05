@@ -4,13 +4,6 @@ model:
     label_info: 1000
     version: b0
 
-    loss_callable:
-      class_path: otx.algo.classification.losses.AsymmetricAngularLossWithIgnore
-      init_args:
-        reduction: sum
-        gamma_neg: 1.0
-        gamma_pos: 0.0
-
     optimizer:
       class_path: torch.optim.SGD
       init_args:
@@ -36,7 +29,7 @@ data: ../../_base_/data/torchvision_base.yaml
 overrides:
   max_epochs: 200
   callbacks:
-    - class_path: lightning.pytorch.callbacks.EarlyStopping
+    - class_path: otx.algo.callbacks.adaptive_early_stopping.EarlyStoppingWithWarmup
       init_args:
         patience: 3
   data:
