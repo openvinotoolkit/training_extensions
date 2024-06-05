@@ -194,9 +194,9 @@ class MemCacheHandlerBase:
             f"store {len(self)} items."
         )
 
-    def __reduce__(self):
-        """Dump just mem_size and re-initialize with that value when unpickled."""
-        return (self.__class__, (self._mem_size,))
+    # def __reduce__(self):
+    #     """Dump just mem_size and re-initialize with that value when unpickled."""
+    #     return (self.__class__, (self._mem_size,))
 
     @property
     def frozen(self) -> bool:

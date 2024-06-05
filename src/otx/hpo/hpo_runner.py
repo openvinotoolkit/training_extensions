@@ -125,7 +125,13 @@ class HpoLoop:
             ),
         )
         self._running_trials[uid] = RunningTrial(process, trial, trial_queue)  # type: ignore[arg-type]
-        process.start()
+        try:
+            process.start()
+        except TypeError as e:
+            if str(e).startswith("cannot pickle"):
+                pass
+            else:
+                raise
         os.environ.clear()
         for key, val in origin_env.items():
             os.environ[key] = val
