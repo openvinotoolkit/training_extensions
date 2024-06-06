@@ -1,0 +1,35 @@
+otx.core.model.utils.mmaction
+=============================
+
+.. automodule:: otx.core.model.utils.mmaction
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      create_model
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      ActionDataPreprocessor
+   
+   
+
+   
+   
+   
+
+
+

@@ -1,0 +1,32 @@
+otx.core.model.segmentation
+===========================
+
+.. automodule:: otx.core.model.segmentation
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      MMSegCompatibleModel
+      OTXSegmentationModel
+      OVSegmentationModel
+      TorchVisionCompatibleModel
+   
+   
+
+   
+   
+   
+
+
+

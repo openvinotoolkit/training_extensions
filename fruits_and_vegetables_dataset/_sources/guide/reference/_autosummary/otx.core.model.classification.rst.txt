@@ -1,0 +1,37 @@
+otx.core.model.classification
+=============================
+
+.. automodule:: otx.core.model.classification
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      MMPretrainHlabelClsModel
+      MMPretrainMulticlassClsModel
+      MMPretrainMultilabelClsModel
+      OTXHlabelClsModel
+      OTXMulticlassClsModel
+      OTXMultilabelClsModel
+      OVHlabelClassificationModel
+      OVMulticlassClassificationModel
+      OVMultilabelClassificationModel
+   
+   
+
+   
+   
+   
+
+
+

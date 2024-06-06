@@ -1,0 +1,45 @@
+otx.core.config
+===============
+
+.. automodule:: otx.core.config
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      any_representer
+      as_int_tuple
+      as_torch_dtype
+      dtype_representer
+      ignore_aliases
+      register_configs
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   otx.core.config.data
+   otx.core.config.device
+   otx.core.config.explain
+   otx.core.config.hpo
+
