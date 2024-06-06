@@ -112,11 +112,11 @@ class BaseRecognizer(BaseModule):
                 ) -> tuple[torch.Tensor, ...]:
                     # recursively traverse feats until it's a tensor,
                     # then concat
-                    out_feats = []
+                    out_feats: list[torch.Tensor] = []
                     for e_idx, elem in enumerate(feats[0]):
                         batch_elem = [feat[e_idx] for feat in feats]
                         if not isinstance(elem, torch.Tensor):
-                            batch_elem = recursively_cat(batch_elem)
+                            batch_elem = recursively_cat(batch_elem)  # type: ignore[assignment]
                         else:
                             batch_elem = torch.cat(batch_elem)
                         out_feats.append(batch_elem)

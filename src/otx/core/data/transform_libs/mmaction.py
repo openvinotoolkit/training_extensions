@@ -20,6 +20,7 @@ from torchvision import tv_tensors
 
 from otx.core.data.entity.action_classification import ActionClsDataEntity
 from otx.core.data.entity.action_detection import ActionDetDataEntity
+from otx.core.data.entity.base import VideoInfo
 from otx.core.utils.config import convert_conf_to_mmconfig_dict
 
 if TYPE_CHECKING:
@@ -203,8 +204,10 @@ class PackActionInputs(MMPackActionInputs):
             )
 
             return ActionDetDataEntity(
+                video=results["__otx__"].video,
                 image=image,
                 img_info=image_info,
+                video_info=VideoInfo(),
                 bboxes=bboxes,
                 labels=labels,
                 proposals=proposals,
@@ -215,6 +218,7 @@ class PackActionInputs(MMPackActionInputs):
             video=results["__otx__"].video,
             image=image,
             img_info=image_info,
+            video_info=VideoInfo(),
             labels=labels,
         )
 

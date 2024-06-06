@@ -3,6 +3,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 
 """This implementation replaces the functionality of mmcv.cnn.bricks.activation.build_activation_layer."""
+from __future__ import annotations
 
 import copy
 
