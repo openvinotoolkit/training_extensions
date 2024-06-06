@@ -6,6 +6,7 @@ __pycache__
 
 *venv*/
 env
+data
 otx-workspace*
 .env
 .tox
