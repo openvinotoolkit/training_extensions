@@ -59,8 +59,8 @@ class MoViNet(OTXActionClsModel):
         return model
 
     def _build_model(self, num_classes: int) -> nn.Module:
-        return MoViNetRecognizer(
-            backbone=MoViNetBackbone(),
+        return MoViNetRecognizer(  # type: ignore[no-untyped-call]
+            backbone=MoViNetBackbone(),  # type: ignore[no-untyped-call]
             cls_head=MoViNetHead(
                 num_classes=num_classes,
                 in_channels=480,
