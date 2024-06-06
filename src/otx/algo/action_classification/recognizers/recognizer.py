@@ -25,7 +25,7 @@ class BaseRecognizer(BaseModule):
         backbone: torch.Module,
         cls_head: torch.Module,
         neck: torch.Module | None = None,
-        data_preprocessor=None,  # noqa: ANN001
+        data_preprocessor: object = None,
         test_cfg: dict | None = None,
     ) -> None:
         super().__init__()
