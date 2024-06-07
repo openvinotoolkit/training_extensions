@@ -287,7 +287,13 @@ def test_otx_explain_e2e_cli(
     task = recipe.split("/")[-2].upper()
     model_name = recipe.split("/")[-1].split(".")[0]
 
-    if ("_cls" not in task) and (task not in [OTXTaskType.DETECTION, OTXTaskType.INSTANCE_SEGMENTATION]):
+    if task not in [
+        OTXTaskType.MULTI_CLASS_CLS,
+        OTXTaskType.MULTI_LABEL_CLS,
+        OTXTaskType.H_LABEL_CLS,
+        OTXTaskType.DETECTION,
+        OTXTaskType.INSTANCE_SEGMENTATION,
+    ]:
         pytest.skip("Supported only for classification, detection and instance segmentation task.")
 
     deterministic = "True"
