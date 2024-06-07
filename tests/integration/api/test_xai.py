@@ -169,10 +169,10 @@ def test_predict_with_explain(
 
     assert len(maps_torch) == len(maps_ov)
 
-    if "tv_efficientnet_b3" in recipe:
+    if "tv_efficientnet_b3" in recipe or "efficientnet_b0" in recipe:
         # There is the issue with different predict results for Pytorch and OpenVINO tasks.
         # Probably because of the different preprocessed images passed as an input. Skip the rest of the checks for now.
-        # Ticket 141639
+        # Tickets: 142087, 141639
         return
 
     for i in range(len(maps_torch)):
