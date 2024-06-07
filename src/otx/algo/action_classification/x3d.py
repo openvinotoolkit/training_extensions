@@ -45,8 +45,6 @@ class X3D(OTXActionClsModel):
             metric=metric,
             torch_compile=torch_compile,
         )
-        self.mean = (114.75, 114.75, 114.75)
-        self.std = (57.38, 57.38, 57.38)
 
     def _create_model(self) -> nn.Module:
         model = self._build_model(num_classes=self.label_info.num_classes)
@@ -59,6 +57,9 @@ class X3D(OTXActionClsModel):
         return model
 
     def _build_model(self, num_classes: int) -> nn.Module:
+        self.mean = (114.75, 114.75, 114.75)
+        self.std = (57.38, 57.38, 57.38)
+
         return BaseRecognizer(
             backbone=X3DBackbone(
                 gamma_b=2.25,
