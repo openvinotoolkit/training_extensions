@@ -339,6 +339,27 @@
 
 
 
+<div class="viewcode-block" id="UnlabeledDataConfig">
+<a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.config.data.html#otx.core.config.data.UnlabeledDataConfig">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">UnlabeledDataConfig</span><span class="p">(</span><span class="n">SubsetConfig</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;DTO for unlabeled data.&quot;&quot;&quot;</span>
+
+    <span class="n">data_root</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">data_format</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;image_dir&quot;</span>
+
+    <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">subset_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;unlabeled&quot;</span>
+
+    <span class="c1"># TODO (harimkang): If not multi-transform, support for list type, as should support for other subsets.</span>
+    <span class="n">transforms</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">dict</span><span class="p">)</span>  <span class="c1"># type: ignore[assignment]</span>
+
+    <span class="n">transform_lib_type</span><span class="p">:</span> <span class="n">TransformLibType</span> <span class="o">=</span> <span class="n">TransformLibType</span><span class="o">.</span><span class="n">TORCHVISION</span>
+    <span class="n">num_workers</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="n">to_tv_image</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span></div>
+
+
+
 <div class="viewcode-block" id="DataModuleConfig">
 <a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.config.data.html#otx.core.config.data.DataModuleConfig">[docs]</a>
 <span class="nd">@dataclass</span>
@@ -351,6 +372,7 @@
     <span class="n">train_subset</span><span class="p">:</span> <span class="n">SubsetConfig</span>
     <span class="n">val_subset</span><span class="p">:</span> <span class="n">SubsetConfig</span>
     <span class="n">test_subset</span><span class="p">:</span> <span class="n">SubsetConfig</span>
+    <span class="n">unlabeled_subset</span><span class="p">:</span> <span class="n">UnlabeledDataConfig</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">UnlabeledDataConfig</span><span class="p">())</span>
 
     <span class="n">tile_config</span><span class="p">:</span> <span class="n">TileConfig</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">TileConfig</span><span class="p">())</span>
     <span class="n">vpm_config</span><span class="p">:</span> <span class="n">VisualPromptingConfig</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">VisualPromptingConfig</span><span class="p">())</span>

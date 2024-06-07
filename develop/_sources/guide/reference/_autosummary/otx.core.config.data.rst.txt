@@ -21,6 +21,7 @@ otx.core.config.data
       SamplerConfig
       SubsetConfig
       TileConfig
+      UnlabeledDataConfig
       VisualPromptingConfig
    
    
