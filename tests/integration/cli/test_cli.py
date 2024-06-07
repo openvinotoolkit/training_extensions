@@ -326,6 +326,9 @@ def test_otx_explain_e2e(
     if "dino" in model_name:
         pytest.skip("DINO is not supported.")
 
+    if "maskrcnn_r50_tv" in model_name:
+        pytest.skip("MaskRCNN R50 Torchvision model doesn't support explain.")
+
     # otx explain
     tmp_path_explain = tmp_path / f"otx_explain_{model_name}"
     command_cfg = [

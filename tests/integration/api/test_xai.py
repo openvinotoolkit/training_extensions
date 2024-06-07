@@ -49,6 +49,9 @@ def test_forward_explain(
     if "_semisl" in model_name:
         pytest.skip("Semi-SL is not supported.")
 
+    if "maskrcnn_r50_tv" in model_name:
+        pytest.skip("MaskRCNN R50 Torchvision model doesn't support explain.")
+
     if "rtmdet_tiny" in recipe:
         # TODO (sungchul): enable xai for rtmdet_tiny (CVS-142651)
         pytest.skip("rtmdet_tiny on detection is not supported yet.")

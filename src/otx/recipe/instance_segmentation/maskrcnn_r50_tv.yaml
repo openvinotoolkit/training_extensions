@@ -1,5 +1,5 @@
 model:
-  class_path: otx.algo.instance_segmentation.maskrcnn.MaskRCNNEfficientNet
+  class_path: otx.algo.instance_segmentation.maskrcnn_tv.TVMaskRCNNR50
   init_args:
     label_info: 80
 
@@ -31,6 +31,7 @@ callback_monitor: val/map_50
 data: ../_base_/data/torchvision_base.yaml
 overrides:
   max_epochs: 100
+  gradient_clip_val: 35.0
   data:
     task: INSTANCE_SEGMENTATION
     config:
@@ -64,9 +65,7 @@ overrides:
           - class_path: torchvision.transforms.v2.Normalize
             init_args:
               mean: [123.675, 116.28, 103.53]
-              std: [1.0, 1.0, 1.0]
-        sampler:
-          class_path: otx.algo.samplers.balanced_sampler.BalancedSampler
+              std: [58.395, 57.12, 57.375]
       val_subset:
         batch_size: 1
         num_workers: 4
@@ -91,7 +90,7 @@ overrides:
           - class_path: torchvision.transforms.v2.Normalize
             init_args:
               mean: [123.675, 116.28, 103.53]
-              std: [1.0, 1.0, 1.0]
+              std: [58.395, 57.12, 57.375]
       test_subset:
         batch_size: 1
         num_workers: 4
@@ -116,4 +115,4 @@ overrides:
           - class_path: torchvision.transforms.v2.Normalize
             init_args:
               mean: [123.675, 116.28, 103.53]
-              std: [1.0, 1.0, 1.0]
+              std: [58.395, 57.12, 57.375]
