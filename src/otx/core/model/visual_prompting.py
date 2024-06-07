@@ -20,6 +20,9 @@ import torch
 from torch import Tensor
 from torchvision import tv_tensors
 
+from model_api.models import Model
+from model_api.models.visual_prompting import SAMVisualPrompter
+
 from otx.core.data.entity.base import Points
 from otx.core.data.entity.visual_prompting import (
     VisualPromptingBatchDataEntity,
@@ -39,8 +42,6 @@ from otx.core.utils.mask_util import polygon_to_bitmap
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
-    from model_api.models import Model
-    from model_api.models.visual_prompting import SAMVisualPrompter
     from torchmetrics import MetricCollection
 
     from otx.core.data.module import OTXDataModule
@@ -446,7 +447,7 @@ class OVVisualPromptingModel(
         model_type: str = "Visual_Prompting",
         async_inference: bool = False,
         max_num_requests: int | None = None,
-        use_throughput_mode: bool = True,
+        use_throughput_mode: bool = False,
         model_api_configuration: dict[str, Any] | None = None,
         metric: MetricCallable = VisualPromptingMetricCallable,
         **kwargs,
@@ -475,9 +476,7 @@ class OVVisualPromptingModel(
 
     def _create_model(self) -> SAMVisualPrompter:
         """Create a OV model with help of Model API."""
-        from model_api.adapters import OpenvinoAdapter, create_core, get_user_config
-        from model_api.models import Model
-        from model_api.models.visual_prompting import SAMVisualPrompter
+        from model_api.adapters import OpenvinoAdapter, create_core
 
         ov_device = "CPU"
         ie = create_core()
@@ -523,7 +522,7 @@ class OVVisualPromptingModel(
         images, batch_prompts = self._customize_inputs(inputs)
         outputs: list[Any] = []
         for image, prompt in zip(images, batch_prompts):
-            outputs.append(self.model.infer(image, **prompt))
+            outputs.append(self.model(image, **prompt))
 
         return self._customize_outputs(outputs, inputs)
 
@@ -752,7 +751,7 @@ class OVZeroShotVisualPromptingModel(
         model_type: str = "Zero_Shot_Visual_Prompting",
         async_inference: bool = False,
         max_num_requests: int | None = None,
-        use_throughput_mode: bool = True,
+        use_throughput_mode: bool = False,
         model_api_configuration: dict[str, Any] | None = None,
         metric: MetricCallable = VisualPromptingMetricCallable,
         reference_info_dir: Path | str = "reference_infos",
@@ -760,8 +759,6 @@ class OVZeroShotVisualPromptingModel(
         save_outputs: bool = True,
         **kwargs,
     ) -> None:
-        from otx.algo.visual_prompting import openvino_models
-
         if async_inference:
             log.warning(
                 (
@@ -795,27 +792,37 @@ class OVZeroShotVisualPromptingModel(
 
         self.initialize_reference_info()
 
-    def _create_model(self) -> dict[str, Model]:
+    def _create_model(self):
         """Create a OV model with help of Model API."""
-        from model_api.adapters import OpenvinoAdapter, create_core, get_user_config
-        from model_api.models import Model
+        from model_api.adapters import OpenvinoAdapter, create_core
 
-        ov_models: dict[str, Model] = {}
+        ov_device = "CPU"
+        ie = create_core()
+        if not self.force_cpu:
+            devices = ie.available_devices
+            for device in devices:
+                device_name = ie.get_property(device_name=device, property="FULL_DEVICE_NAME")
+                if "dGPU" in device_name and "Intel" in device_name:
+                    ov_device = device
+                    break
 
-        plugin_config = get_user_config("AUTO", str(self.num_requests), "AUTO")
+        plugin_config = {}
         if self.use_throughput_mode:
             plugin_config["PERFORMANCE_HINT"] = "THROUGHPUT"
-
         model_parameters = {"decoder": {"input_layouts": "image_embeddings:NCHW"}}
+
+        ov_models: dict[str, Model] = {}
         for module in ["image_encoder", "decoder"]:
             model_adapter = OpenvinoAdapter(
                 core=create_core(),
+                device=ov_device,
                 model=self.model_names.get(module),
                 model_parameters=model_parameters.get(module, {}),
                 max_num_requests=self.num_requests,
                 plugin_config=plugin_config,
             )
-            ov_models[module] = Model.create_model(model_adapter, module, configuration=self.model_api_configuration)
+            ov_models[module] = Model.create_model(model_adapter, model_type=f"sam_{module}", configuration=self.model_api_configuration)
+
         return ov_models
 
     def learn(
