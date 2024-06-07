@@ -8,6 +8,30 @@ All notable changes to this project will be documented in this file.
 
 ### Enhancements
 
+## \[v2.0.0\]
+
+> _**NOTES**_
+>
+> OpenVINO™ Training Extensions which version 2.0.0 has been updated to include refactoring of the overall architecture and functional updates. Users should [install the new environment](https://openvinotoolkit.github.io/training_extensions/latest/guide/get_started/installation.html).
+
+### New features
+
+- Enable New design to provide a more seamless API/CLI that delivers the value of OTX: [Product Design](https://openvinotoolkit.github.io/training_extensions/latest/guide/explanation/product_design.html)
+- Moved away from MMLab's libraries to provide a Lightning-based core and training pipeline
+- Use Lightning-based modules and trainers to deliver APIs/CLIs in a more user-friendly way
+- Support Intel devices for accelerating deep learning model training
+
+### Enhancements
+
+- Support more models for each task
+- Improve the API so user can configure efficient training with shorter code
+- Provide more customize settings through the CLI and API
+- Enhance the Auto-Configuration feature and made it available in the API
+
+### Bug fixes
+
+- Fixing some minor issues
+
 ## \[v1.6.1\]
 
 ### Enhancements
