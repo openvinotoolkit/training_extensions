@@ -64,7 +64,7 @@ class ATSS(ExplainableOTXDetModel):
             torch_compile=torch_compile,
             tile_config=tile_config,
         )
-        self.image_size = (1, 3, 736, 992)
+        self.image_size = (1, 3, 800, 992)
         self.tile_image_size = self.image_size
 
     def _create_model(self) -> nn.Module:
