@@ -241,19 +241,18 @@ class BaseRecognizer(BaseModule):
         feats, predict_kwargs = self.extract_feat(inputs, test_mode=True)
         return self.cls_head.predict(feats, data_samples, **predict_kwargs)
 
-    def _forward(self, inputs: torch.Tensor, stage: str = "head", **kwargs) -> list[ActionDataSample]:
-        """Network forward process. Usually includes backbone, neck and head forward without any post-processing.
+    def _forward(self, inputs: torch.Tensor, stage: str = "backbone", **kwargs) -> torch.Tensor:
+        """Network forward process for export procedure.
 
         Args:
             inputs (torch.Tensor): Raw Inputs of the recognizer.
             stage (str): Which stage to output the features.
 
-        Returns:
-            Union[tuple, torch.Tensor]: Features from ``backbone`` or ``neck``
-            or ``head`` forward.
         """
-        feats, _ = self.extract_feat(inputs, stage=stage)
-        return feats
+        feats, predict_kwargs = self.extract_feat(inputs, test_mode=True)
+        cls_scores = self.cls_head(feats, **predict_kwargs)
+        num_segs = cls_scores.shape[0] // inputs.shape[1]
+        return self.cls_head.average_clip(cls_scores, num_segs=num_segs)
 
     @staticmethod
     def _merge_dict(*args) -> dict:
