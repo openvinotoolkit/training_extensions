@@ -6,6 +6,7 @@
 from .hlabel_cls_head import HierarchicalLinearClsHead, HierarchicalNonLinearClsHead
 from .linear_head import LinearClsHead
 from .multilabel_cls_head import MultiLabelLinearClsHead, MultiLabelNonLinearClsHead
+from .semi_sl_head import OTXSemiSLLinearClsHead
 from .vision_transformer_head import VisionTransformerClsHead
 
 __all__ = [
@@ -15,4 +16,5 @@ __all__ = [
     "HierarchicalLinearClsHead",
     "HierarchicalNonLinearClsHead",
     "VisionTransformerClsHead",
+    "OTXSemiSLLinearClsHead",
 ]
