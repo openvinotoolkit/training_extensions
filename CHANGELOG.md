@@ -23,7 +23,6 @@ All notable changes to this project will be documented in this file.
 
 ### Enhancements
 
-- Improve overall training performance
 - Support more models for each task
 - Improve the API so user can configure efficient training with shorter code
 - Provide more customize settings through the CLI and API
