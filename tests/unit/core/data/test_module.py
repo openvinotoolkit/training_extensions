@@ -172,6 +172,7 @@ class TestModule:
         fxt_config.train_subset.subset_name = "train_1"
         fxt_config.val_subset.subset_name = "val_1"
         fxt_config.test_subset.subset_name = "test_1"
+        fxt_config.unlabeled_subset.data_root = None
 
         # Dataset will have "train_0", "train_1", "val_0", ..., "test_1" subsets
         mock_dm_subsets = {f"{name}_{idx}": MagicMock() for name in ["train", "val", "test"] for idx in range(2)}
