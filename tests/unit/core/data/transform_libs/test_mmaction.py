@@ -11,7 +11,7 @@ from mmengine.fileio.file_client import FileClient
 from otx.core.config.data import SubsetConfig
 from otx.core.data.entity.action_classification import ActionClsDataEntity
 from otx.core.data.entity.action_detection import ActionDetDataEntity
-from otx.core.data.entity.base import ImageInfo
+from otx.core.data.entity.base import ImageInfo, VideoInfo
 from otx.core.data.transform_libs.mmaction import (
     LoadAnnotations,
     LoadVideoForClassification,
@@ -32,6 +32,7 @@ class TestActionClsPipeline:
     def fxt_action_cls_data(self) -> dict:
         entity = ActionClsDataEntity(
             video=MockVideo(),
+            video_info=VideoInfo(),
             image=[],
             img_info=ImageInfo(
                 img_idx=0,
@@ -61,6 +62,8 @@ class TestActionDetPipelines:
     @pytest.fixture()
     def fxt_action_det_data(self, mocker) -> dict:
         entity = ActionDetDataEntity(
+            video=MockVideo(),
+            video_info=VideoInfo(),
             image=torch.randn([3, 10, 10]),
             img_info=ImageInfo(
                 img_idx=0,
