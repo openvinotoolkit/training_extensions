@@ -44,6 +44,8 @@ class OTXActionClsModel(OTXModel[ActionClsBatchDataEntity, ActionClsBatchPredEnt
         torch_compile: bool = False,
     ) -> None:
         self.image_size = (1, 1, 3, 8, 224, 224)
+        self.mean = (0.0, 0.0, 0.0)
+        self.std = (255.0, 255.0, 255.0)
         super().__init__(
             label_info=label_info,
             optimizer=optimizer,
@@ -133,13 +135,11 @@ class OTXActionClsModel(OTXModel[ActionClsBatchDataEntity, ActionClsBatchPredEnt
     @property
     def _exporter(self) -> OTXModelExporter:
         """Creates OTXModelExporter object that can export the model."""
-        mean, std = get_mean_std_from_data_processing(self.config)
-
         return OTXNativeModelExporter(
             task_level_export_parameters=self._export_parameters,
             input_size=self.image_size,
-            mean=mean,
-            std=std,
+            mean=self.mean,
+            std=self.std,
             resize_mode="standard",
             pad_value=0,
             swap_rgb=False,

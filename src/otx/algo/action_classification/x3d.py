@@ -38,7 +38,6 @@ class X3D(OTXActionClsModel):
         torch_compile: bool = False,
     ) -> None:
         self.load_from = "https://download.openmmlab.com/mmaction/recognition/x3d/facebook/x3d_m_facebook_16x5x1_kinetics400_rgb_20201027-3f42382a.pth"
-
         super().__init__(
             label_info=label_info,
             optimizer=optimizer,
@@ -46,6 +45,8 @@ class X3D(OTXActionClsModel):
             metric=metric,
             torch_compile=torch_compile,
         )
+        self.mean = (114.75, 114.75, 114.75)
+        self.std = (57.38, 57.38, 57.38)
 
     def _create_model(self) -> nn.Module:
         model = self._build_model(num_classes=self.label_info.num_classes)
@@ -78,8 +79,8 @@ class X3D(OTXActionClsModel):
                 fc1_bias=False,
             ),
             data_preprocessor=ActionDataPreprocessor(
-                mean=[114.75, 114.75, 114.75],
-                std=[57.38, 57.38, 57.38],
+                mean=self.mean,
+                std=self.std,
                 format_shape="NCTHW",
             ),
         )

@@ -188,6 +188,8 @@ class BaseRecognizer(BaseModule):
             return self.predict(inputs, data_samples, **kwargs)
         if mode == "loss":
             return self.loss(inputs, data_samples, **kwargs)
+        if mode == "tensor":
+            return self._forward(inputs, **kwargs)
 
         msg = f"Invalid mode '{mode}'. Only supports loss, predict and tensor mode"
         raise RuntimeError(msg)
@@ -238,6 +240,20 @@ class BaseRecognizer(BaseModule):
         """
         feats, predict_kwargs = self.extract_feat(inputs, test_mode=True)
         return self.cls_head.predict(feats, data_samples, **predict_kwargs)
+
+    def _forward(self, inputs: torch.Tensor, stage: str = "head", **kwargs) -> list[ActionDataSample]:
+        """Network forward process. Usually includes backbone, neck and head forward without any post-processing.
+
+        Args:
+            inputs (torch.Tensor): Raw Inputs of the recognizer.
+            stage (str): Which stage to output the features.
+
+        Returns:
+            Union[tuple, torch.Tensor]: Features from ``backbone`` or ``neck``
+            or ``head`` forward.
+        """
+        feats, _ = self.extract_feat(inputs, stage=stage)
+        return feats
 
     @staticmethod
     def _merge_dict(*args) -> dict:

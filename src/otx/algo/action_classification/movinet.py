@@ -39,7 +39,6 @@ class MoViNet(OTXActionClsModel):
         torch_compile: bool = False,
     ) -> None:
         self.load_from = "https://github.com/Atze00/MoViNet-pytorch/blob/main/weights/modelA0_statedict_v3?raw=true"
-
         super().__init__(
             label_info=label_info,
             optimizer=optimizer,
@@ -68,8 +67,8 @@ class MoViNet(OTXActionClsModel):
                 loss_cls=nn.CrossEntropyLoss(),
             ),
             data_preprocessor=ActionDataPreprocessor(
-                mean=[0.0, 0.0, 0.0],
-                std=[255.0, 255.0, 255.0],
+                mean=self.mean,
+                std=self.std,
                 format_shape="NCTHW",
             ),
         )
