@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 from unittest.mock import MagicMock, patch
 
 import pytest
+from datumaro.components.environment import Environment
 from importlib_resources import files
 from lightning.pytorch.loggers import CSVLogger
 from omegaconf import DictConfig, OmegaConf
@@ -150,3 +151,38 @@ class TestModule:
 
         hparams_path = Path(logger.log_dir) / "hparams.yaml"
         assert hparams_path.exists()
+
+    @patch("otx.core.data.module.OTXDatasetFactory.create")
+    @patch("otx.core.data.module.DmDataset.import_from")
+    def test_data_format_check(
+        self,
+        mock_dm_dataset,
+        fxt_config,
+        mocker,
+        caplog,
+    ) -> None:
+        fxt_config.mem_cache_size = "0GB"
+        fxt_config.tile_config.enable_tiler = False
+        # Our query for subset name for train, val, test
+        fxt_config.train_subset.subset_name = "train_1"
+        fxt_config.val_subset.subset_name = "val_1"
+        fxt_config.test_subset.subset_name = "test_1"
+
+        # Dataset will have "train_0", "train_1", "val_0", ..., "test_1" subsets
+        mock_dm_subsets = {f"{name}_{idx}": MagicMock() for name in ["train", "val", "test"] for idx in range(2)}
+        mock_dm_dataset.return_value.subsets.return_value = mock_dm_subsets
+
+        mocker.patch("otx.core.data.module.pre_filtering", side_effect=mock_data_filtering)
+
+        with patch.object(Environment, "detect_dataset", return_value=["voc", "voc_classification"]):
+            # with pytest.raises(ValueError, match="Invalid data root:"):
+            OTXDataModule(task="MULTI_LABEL_CLS", config=fxt_config)
+
+        assert "Invalid data format:" in caplog.text
+        assert "Replace data_format:" in caplog.text
+
+        with patch.object(Environment, "detect_dataset", return_value=[]), pytest.raises(
+            ValueError,
+            match="Invalid data root:",
+        ):
+            OTXDataModule(task="MULTI_LABEL_CLS", config=fxt_config)

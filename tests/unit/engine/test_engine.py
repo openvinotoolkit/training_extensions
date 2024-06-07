@@ -200,6 +200,7 @@ class TestEngine:
             base_name="exported_model",
             export_format=OTXExportFormatType.OPENVINO,
             precision=OTXPrecisionType.FP32,
+            to_exportable_code=False,
         )
 
         fxt_engine.export(export_precision=OTXPrecisionType.FP16)
@@ -208,6 +209,7 @@ class TestEngine:
             base_name="exported_model",
             export_format=OTXExportFormatType.OPENVINO,
             precision=OTXPrecisionType.FP16,
+            to_exportable_code=False,
         )
 
         fxt_engine.export(export_format=OTXExportFormatType.ONNX)
@@ -216,6 +218,16 @@ class TestEngine:
             base_name="exported_model",
             export_format=OTXExportFormatType.ONNX,
             precision=OTXPrecisionType.FP32,
+            to_exportable_code=False,
+        )
+
+        fxt_engine.export(export_format=OTXExportFormatType.ONNX, export_demo_package=True)
+        mock_export.assert_called_with(
+            output_dir=Path(fxt_engine.work_dir),
+            base_name="exported_model",
+            export_format=OTXExportFormatType.ONNX,
+            precision=OTXPrecisionType.FP32,
+            to_exportable_code=False,
         )
 
         # check exportable code with IR OpenVINO model
@@ -225,13 +237,14 @@ class TestEngine:
             "otx.engine.engine.AutoConfigurator.get_ov_model",
             return_value=OVModel(model_name="efficientnet-b0-pytorch", model_type="classification"),
         )
-        fxt_engine.export(export_format=OTXExportFormatType.EXPORTABLE_CODE, checkpoint="path/to/checkpoint.xml")
+        fxt_engine.export(checkpoint="path/to/checkpoint.xml", export_demo_package=True)
         mock_get_ov_model.assert_called_once()
         mock_export.assert_called_with(
             output_dir=Path(fxt_engine.work_dir),
             base_name="exported_model",
-            export_format=OTXExportFormatType.EXPORTABLE_CODE,
+            export_format=OTXExportFormatType.OPENVINO,
             precision=OTXPrecisionType.FP32,
+            to_exportable_code=True,
         )
 
     def test_optimizing_model(self, fxt_engine, mocker) -> None:

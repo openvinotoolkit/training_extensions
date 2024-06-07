@@ -475,6 +475,7 @@ class Engine:
         export_format: OTXExportFormatType = OTXExportFormatType.OPENVINO,
         export_precision: OTXPrecisionType = OTXPrecisionType.FP32,
         explain: bool = False,
+        export_demo_package: bool = False,
     ) -> Path:
         """Export the trained model to OpenVINO Intermediate Representation (IR) or ONNX formats.
 
@@ -483,6 +484,8 @@ class Engine:
             export_config (ExportConfig | None, optional): Config that allows to set export
             format and precision. Defaults to None.
             explain (bool): Whether to get "saliency_map" and "feature_vector" or not.
+            export_demo_package (bool): Whether to export demo package with the model.
+                Only OpenVINO model can be exported with demo package.
 
         Returns:
             Path: Path to the exported model.
@@ -515,14 +518,18 @@ class Engine:
             msg = "To make export, checkpoint must be specified."
             raise RuntimeError(msg)
         is_ir_ckpt = Path(checkpoint).suffix in [".xml"]
-
-        if is_ir_ckpt and export_format != OTXExportFormatType.EXPORTABLE_CODE:
+        if export_demo_package and export_format == OTXExportFormatType.ONNX:
             msg = (
-                "Export format is automatically changed to EXPORTABLE_CODE, "
-                "since openvino IR model is passed as a checkpoint."
+                "ONNX export is not supported in exportable code mode. "
+                "Exportable code parameter will be disregarded. "
             )
             warn(msg, stacklevel=1)
-            export_format = OTXExportFormatType.EXPORTABLE_CODE
+            export_demo_package = False
+
+        if is_ir_ckpt and not export_demo_package:
+            msg = "IR model is passed as a checkpoint, export automaticaly switched to exportable code."
+            warn(msg, stacklevel=1)
+            export_demo_package = True
 
         if is_ir_ckpt and not isinstance(self.model, OVModel):
             # create OVModel
@@ -542,6 +549,7 @@ class Engine:
             base_name=self._EXPORTED_MODEL_BASE_NAME,
             export_format=export_format,
             precision=export_precision,
+            to_exportable_code=export_demo_package,
         )
 
         self.model.explain_mode = False
@@ -621,7 +629,7 @@ class Engine:
             tmp_model_path = model.optimize(Path(tmp_dir), optimize_datamodule, ptq_config)
             return self.export(
                 checkpoint=tmp_model_path,
-                export_format=OTXExportFormatType.EXPORTABLE_CODE,
+                export_demo_package=True,
             )
 
     def explain(
