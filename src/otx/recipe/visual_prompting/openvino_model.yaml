@@ -5,7 +5,7 @@ model:
     model_name: segment_anything
     model_type: Visual_Prompting
     async_inference: False
-    use_throughput_mode: True
+    use_throughput_mode: False
 
 engine:
   task: VISUAL_PROMPTING
