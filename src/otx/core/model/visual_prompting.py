@@ -40,6 +40,7 @@ from otx.core.utils.mask_util import polygon_to_bitmap
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
     from model_api.models import Model
+    from model_api.models.visual_prompting import SAMVisualPrompter
     from torchmetrics import MetricCollection
 
     from otx.core.data.module import OTXDataModule
@@ -450,8 +451,6 @@ class OVVisualPromptingModel(
         metric: MetricCallable = VisualPromptingMetricCallable,
         **kwargs,
     ) -> None:
-        from otx.algo.visual_prompting import openvino_models
-
         if async_inference:
             log.warning(
                 "Async inference is not supported for visual prompting models. Setting async_inference to False.",
@@ -474,28 +473,39 @@ class OVVisualPromptingModel(
             metric=metric,
         )
 
-    def _create_model(self) -> dict[str, Model]:
+    def _create_model(self) -> SAMVisualPrompter:
         """Create a OV model with help of Model API."""
         from model_api.adapters import OpenvinoAdapter, create_core, get_user_config
         from model_api.models import Model
+        from model_api.models.visual_prompting import SAMVisualPrompter
 
-        ov_models: dict[str, Model] = {}
+        ov_device = "CPU"
+        ie = create_core()
+        if not self.force_cpu:
+            devices = ie.available_devices
+            for device in devices:
+                device_name = ie.get_property(device_name=device, property="FULL_DEVICE_NAME")
+                if "dGPU" in device_name and "Intel" in device_name:
+                    ov_device = device
+                    break
 
-        plugin_config = get_user_config("AUTO", str(self.num_requests), "AUTO")
+        plugin_config = {}
         if self.use_throughput_mode:
             plugin_config["PERFORMANCE_HINT"] = "THROUGHPUT"
-
         model_parameters = {"decoder": {"input_layouts": "image_embeddings:NCHW"}}
+
+        ov_models: dict[str, Model] = {}
         for module in ["image_encoder", "decoder"]:
             model_adapter = OpenvinoAdapter(
                 core=create_core(),
+                device=ov_device,
                 model=self.model_names.get(module),
                 model_parameters=model_parameters.get(module, {}),
                 max_num_requests=self.num_requests,
                 plugin_config=plugin_config,
             )
-            ov_models[module] = Model.create_model(model_adapter, module, configuration=self.model_api_configuration)
-        return ov_models
+            ov_models[module] = Model.create_model(model_adapter, model_type=f"sam_{module}", configuration=self.model_api_configuration)
+        return SAMVisualPrompter(ov_models["image_encoder"], ov_models["decoder"])
 
     def forward(
         self,
@@ -510,59 +520,39 @@ class OVVisualPromptingModel(
                 ),
             )
 
-        images, metas, batch_prompts = self._customize_inputs(inputs)
-        outputs: list[dict[str, Any]] = []
-        for image, meta, prompts in zip(images, metas, batch_prompts):
-            # forward image encoder
-            image_embeddings = self.model["image_encoder"].infer_sync(image)
-
-            # forward decoder
-            for prompt in prompts:
-                label = prompt.pop("label")
-                prompt.update(**image_embeddings)
-
-                # forward decoder to get predicted mask
-                prediction = self.model["decoder"].infer_sync(prompt)
-                prediction["scores"] = prediction["iou_predictions"]
-                prediction["labels"] = label
-                processed_prediction = self.model["decoder"].postprocess(prediction, meta)
-                outputs.append(processed_prediction)
+        images, batch_prompts = self._customize_inputs(inputs)
+        outputs: list[Any] = []
+        for image, prompt in zip(images, batch_prompts):
+            outputs.append(self.model.infer(image, **prompt))
 
         return self._customize_outputs(outputs, inputs)
 
     def _customize_inputs(  # type: ignore[override]
         self,
         entity: VisualPromptingBatchDataEntity,
-    ) -> tuple[list[np.ndarray], list[dict[str, Any]], list[list[dict[str, Any]]]]:
+    ) -> tuple[list[np.ndarray], list[dict[str, Any]]]:
         """Customize OTX input batch data entity."""
         images: list[np.ndarray] = []
-        metas: list[dict[str, Any]] = []
-        prompts: list[list[dict[str, Any]]] = []
-        for image, bbox, point, label, imgs_info in zip(
+        prompts: list[dict[str, Any]] = []
+
+        for image, bbox, point, label in zip(
             entity.images,
             entity.bboxes,
             entity.points,
             entity.labels,
-            entity.imgs_info,
         ):
-            # preprocess image encoder inputs
-            numpy_image = image.cpu().numpy().transpose(1, 2, 0)
-            processed_image, meta = self.model["image_encoder"].preprocess(numpy_image)
+            processed_image = image.cpu().numpy().transpose(1, 2, 0)
             images.append(processed_image)
-            metas.append(meta)
 
-            # preprocess decoder inputs
-            processed_prompts = self.model["decoder"].preprocess(
-                {
-                    "bboxes": bbox.cpu().numpy() if bbox is not None else bbox,
+            processed_prompt = {
+                    "boxes": bbox.cpu().numpy() if bbox is not None else bbox,
                     "points": point.cpu().numpy() if point is not None else point,
                     "labels": {k: v.cpu().numpy() for k, v in label.items()},
-                    "orig_size": imgs_info.ori_shape,
-                },
-            )
-            prompts.append(processed_prompts)
+                }
 
-        return images, metas, prompts
+            prompts.append(processed_prompt)
+
+        return images, prompts
 
     def _customize_outputs(
         self,
@@ -572,9 +562,11 @@ class OVVisualPromptingModel(
         """Customize OTX output batch data entity if needed for model."""
         masks: list[tv_tensors.Mask] = []
         scores: list[torch.Tensor] = []
-        for output in outputs:
-            masks.append(torch.as_tensor(output["hard_prediction"], device=self.device))
-            scores.append(torch.as_tensor(output["scores"], device=self.device))
+        for image_output in outputs:
+            for hard_prediction in image_output.hard_predictions:
+                masks.append(torch.as_tensor(hard_prediction, device=self.device))
+            for score in image_output.scores:
+                scores.append(torch.as_tensor(score, device=self.device))
 
         return VisualPromptingBatchPredEntity(
             batch_size=len(outputs),
@@ -607,19 +599,45 @@ class OVVisualPromptingModel(
             data_batch: VisualPromptingBatchDataEntity,
             module: Literal["image_encoder", "decoder"],
         ) -> np.ndarray | dict[str, Any]:
-            images, _, prompts = self._customize_inputs(data_batch)  # type: ignore[arg-type]
+
+            images: list[np.ndarray] = []
+            prompts: list[list[dict[str, Any]]] = []
+
+            for image, bbox, point, label, imgs_info in zip(
+                data_batch.images,
+                data_batch.bboxes,
+                data_batch.points,
+                data_batch.labels,
+                data_batch.imgs_info,
+            ):
+                # preprocess image encoder inputs
+                numpy_image = image.cpu().numpy().transpose(1, 2, 0)
+                processed_image, meta = self.model.encoder_model.preprocess(numpy_image)
+                images.append(processed_image)
+
+                # preprocess decoder inputs
+                processed_prompts = self.model.decoder_model.preprocess(
+                    {
+                        "bboxes": bbox.cpu().numpy() if bbox is not None else bbox,
+                        "points": point.cpu().numpy() if point is not None else point,
+                        "labels": {k: v.cpu().numpy() for k, v in label.items()},
+                        "orig_size": imgs_info.ori_shape,
+                    },
+                )
+                prompts.append(processed_prompts)
 
             image = images[0]["images"]  # use only the first image
+
             if module == "image_encoder":
                 # resize
-                resized_image = self.model["image_encoder"].resize(
+                resized_image = self.model.encoder_model.resize(
                     image[0],
-                    (self.model["image_encoder"].w, self.model["image_encoder"].h),
+                    (self.model.encoder_model.w, self.model.encoder_model.h),
                 )
 
                 # pad image if necessary because `fit_to_window` resize for python in modelapi doesn't support pad
-                pad_w = max(0, self.model["image_encoder"].w - resized_image.shape[1])
-                pad_h = max(0, self.model["image_encoder"].h - resized_image.shape[0])
+                pad_w = max(0, self.model.encoder_model.w - resized_image.shape[1])
+                pad_h = max(0, self.model.encoder_model.h - resized_image.shape[0])
                 resized_image = np.pad(
                     resized_image,
                     ((0, pad_h), (0, pad_w), (0, 0)),
@@ -628,13 +646,13 @@ class OVVisualPromptingModel(
                 )
 
                 # normalization
-                resized_image = self.model["image_encoder"].input_transform(resized_image)
+                resized_image = self.model.encoder_model.input_transform(resized_image)
 
                 # change layout from HWC to NCHW
-                return self.model["image_encoder"]._change_layout(resized_image)  # noqa: SLF001
+                return self.model.encoder_model._change_layout(resized_image)  # noqa: SLF001
 
             # obtain image embeddings from image encoder
-            image_embeddings = self.model["image_encoder"].infer_sync(image)
+            image_embeddings = self.model.encoder_model.infer_sync(image)
             # use only the first prompt
             prompt_for_optim = next(iter(prompts[0].values()))[0] if isinstance(prompts[0], dict) else prompts[0][0]  # type: ignore[attr-defined]
             prompt_for_optim.pop("label")
