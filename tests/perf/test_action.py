@@ -64,6 +64,7 @@ class TestPerfActionClassification(PerfTestBase):
         Benchmark.Criterion(name="train/epoch", summary="max", compare="<", margin=0.1),
         Benchmark.Criterion(name="train/e2e_time", summary="max", compare="<", margin=0.1),
         Benchmark.Criterion(name="test/accuracy", summary="max", compare=">", margin=0.1),
+        Benchmark.Criterion(name="export/test/accuracy", summary="max", compare=">", margin=0.1),
         Benchmark.Criterion(name="export/accuracy", summary="max", compare=">", margin=0.1),
         Benchmark.Criterion(name="optimize/accuracy", summary="max", compare=">", margin=0.1),
         Benchmark.Criterion(name="train/iter_time", summary="mean", compare="<", margin=0.1),
