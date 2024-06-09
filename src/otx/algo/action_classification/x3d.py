@@ -11,12 +11,12 @@ from torch import nn
 from otx.algo.action_classification.backbones.x3d import X3DBackbone
 from otx.algo.action_classification.heads.x3d_head import X3DHead
 from otx.algo.action_classification.recognizers.recognizer import BaseRecognizer
+from otx.algo.action_classification.utils.data_preprocessor import ActionDataPreprocessor
 from otx.algo.utils.mmengine_utils import load_checkpoint
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.metrics.accuracy import MultiClassClsMetricCallable
 from otx.core.model.action_classification import OTXActionClsModel
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
-from otx.core.model.utils.mmaction import ActionDataPreprocessor
 from otx.core.schedulers import LRSchedulerListCallable
 from otx.core.types.label import LabelInfoTypes
 

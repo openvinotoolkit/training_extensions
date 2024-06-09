@@ -3,6 +3,8 @@
 #
 """Class definition for action_classification model entity used in OTX."""
 
+# mypy: disable-error-code="attr-defined"
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
@@ -10,6 +12,7 @@ from typing import TYPE_CHECKING, Any
 import numpy as np
 import torch
 
+from otx.algo.action_classification.utils.data_sample import ActionDataSample
 from otx.core.data.entity.action_classification import ActionClsBatchDataEntity, ActionClsBatchPredEntity
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.exporter.native import OTXNativeModelExporter
@@ -76,8 +79,6 @@ class OTXActionClsModel(OTXModel[ActionClsBatchDataEntity, ActionClsBatchPredEnt
 
     def _customize_inputs(self, entity: ActionClsBatchDataEntity) -> dict[str, Any]:
         """Convert ActionClsBatchDataEntity into mmaction model's input."""
-        from mmaction.structures import ActionDataSample
-
         mmaction_inputs: dict[str, Any] = {}
 
         mmaction_inputs["inputs"] = entity.images
@@ -103,8 +104,6 @@ class OTXActionClsModel(OTXModel[ActionClsBatchDataEntity, ActionClsBatchPredEnt
         outputs: Any,  # noqa: ANN401
         inputs: ActionClsBatchDataEntity,
     ) -> ActionClsBatchPredEntity | OTXBatchLossEntity:
-        from mmaction.structures import ActionDataSample
-
         if self.training:
             if not isinstance(outputs, dict):
                 raise TypeError(outputs)

@@ -1,20 +1,21 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
+# Copyright (c) OpenMMLab. All rights reserved.
+
 """Custom MoViNet Head for video recognition."""
+
+# mypy: disable-error-code="attr-defined"
 
 from __future__ import annotations
 
 from abc import abstractmethod
-from typing import TYPE_CHECKING
 
 import numpy as np
 import torch
 from torch import Tensor, nn
 
+from otx.algo.action_classification.utils.data_sample import ActionDataSample
 from otx.algo.modules.base_module import BaseModule
-
-if TYPE_CHECKING:
-    from mmaction.utils import ActionDataSample
 
 
 class BaseHead(BaseModule):

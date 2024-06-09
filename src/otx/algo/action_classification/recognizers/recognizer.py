@@ -4,14 +4,12 @@
 """Custom 3D recognizer for OTX."""
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 import torch
 
+from otx.algo.action_classification.utils.data_sample import ActionDataSample
 from otx.algo.modules.base_module import BaseModule
-
-if TYPE_CHECKING:
-    from mmaction.structures import ActionDataSample
 
 
 class BaseRecognizer(BaseModule):
