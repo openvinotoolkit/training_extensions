@@ -11,8 +11,6 @@ from typing import Callable
 import torch
 import torch.nn.functional as F  # noqa: N812
 from einops import rearrange
-
-# from mmengine.Config import Config
 from omegaconf.dictconfig import DictConfig
 from torch import Tensor, nn
 from torch.nn.modules.utils import _pair, _triple
