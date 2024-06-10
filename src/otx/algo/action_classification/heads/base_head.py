@@ -26,7 +26,7 @@ class BaseHead(BaseModule):
         hidden_dim (int): Number of channels in hidden layer.
         tf_like (bool): If True, uses TensorFlow-style padding. Default: False.
         conv_type (str): Type of convolutional layer. Default: '3d'.
-        loss_cls (dict): Config for building loss. Default: dict(type='CrossEntropyLoss').
+        loss_cls (nn.module): Loss class like CrossEntropyLoss.
         spatial_type (str): Pooling type in spatial dimension. Default: 'avg'.
         dropout_ratio (float): Probability of dropout layer. Default: 0.5.
         init_std (float): Standard deviation for initialization. Default: 0.1.

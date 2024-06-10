@@ -17,8 +17,7 @@ class X3DHead(BaseHead):
     Args:
         num_classes (int): Number of classes to be classified.
         in_channels (int): Number of channels in input feature.
-        loss_cls (dict or ConfigDict): Config for building loss.
-            Default: dict(type='CrossEntropyLoss')
+        loss_cls (nn.module): Loss class like CrossEntropyLoss.
         spatial_type (str): Pooling type in spatial dimension. Default: 'avg'.
         dropout_ratio (float): Probability of dropout layer. Default: 0.5.
         init_std (float): Std value for Initiation. Default: 0.01.
