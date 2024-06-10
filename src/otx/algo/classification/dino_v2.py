@@ -5,6 +5,7 @@
 
 from __future__ import annotations
 
+import logging
 import os
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Literal
@@ -37,6 +38,8 @@ if TYPE_CHECKING:
 # TODO(harimkang): Add more types of DINOv2 models. https://github.com/facebookresearch/dinov2/blob/main/MODEL_CARD.md
 DINO_BACKBONE_TYPE = Literal["dinov2_vits14_reg"]
 
+logger = logging.getLogger()
+
 
 class DINOv2(nn.Module):
     """DINO-v2 Model."""
@@ -66,8 +69,11 @@ class DINOv2(nn.Module):
             ckpt_filename = f"{backbone}4_pretrain.pth"
             ckpt_path = Path(ci_data_root) / "torch" / "hub" / "checkpoints" / ckpt_filename
             if not ckpt_path.exists():
-                msg = f"cannot find weights file: {ckpt_filename}"
-                raise FileExistsError(msg)
+                msg = (
+                    f"Internal cache was specified but cannot find weights file: {ckpt_filename}. load from torch hub."
+                )
+                logger.warning(msg)
+                self.backbone = torch.hub.load(repo_or_dir="facebookresearch/dinov2", model=backbone, pretrained=True)
             self.backbone.load_state_dict(torch.load(ckpt_path))
 
         if freeze_backbone:
