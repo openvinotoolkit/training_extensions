@@ -12,7 +12,7 @@ import pytest
 import torch
 from datumaro import Polygon
 from otx.core.data.entity.action_classification import ActionClsDataEntity
-from otx.core.data.entity.base import ImageInfo, OTXDataEntity
+from otx.core.data.entity.base import ImageInfo, OTXDataEntity, VideoInfo
 from otx.core.data.entity.detection import DetBatchDataEntity, DetDataEntity
 from otx.core.data.entity.instance_segmentation import InstanceSegBatchDataEntity, InstanceSegDataEntity
 from otx.core.data.transform_libs.torchvision import (
@@ -73,6 +73,7 @@ class TestPackVideo:
     def test_forward(self):
         entity = ActionClsDataEntity(
             video=MockVideo(),
+            video_info=VideoInfo(),
             image=[],
             img_info=ImageInfo(
                 img_idx=0,

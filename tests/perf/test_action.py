@@ -17,8 +17,8 @@ class TestPerfActionClassification(PerfTestBase):
     """Benchmark action classification."""
 
     MODEL_TEST_CASES = [  # noqa: RUF012
-        Benchmark.Model(task="action/action_classification", name="movinet", category="speed"),
-        Benchmark.Model(task="action/action_classification", name="x3d", category="accuracy"),
+        Benchmark.Model(task="action_classification", name="movinet", category="speed"),
+        Benchmark.Model(task="action_classification", name="x3d", category="accuracy"),
     ]
 
     DATASET_TEST_CASES = [  # noqa: RUF012
@@ -64,6 +64,7 @@ class TestPerfActionClassification(PerfTestBase):
         Benchmark.Criterion(name="train/epoch", summary="max", compare="<", margin=0.1),
         Benchmark.Criterion(name="train/e2e_time", summary="max", compare="<", margin=0.1),
         Benchmark.Criterion(name="test/accuracy", summary="max", compare=">", margin=0.1),
+        Benchmark.Criterion(name="export/test/accuracy", summary="max", compare=">", margin=0.1),
         Benchmark.Criterion(name="export/accuracy", summary="max", compare=">", margin=0.1),
         Benchmark.Criterion(name="optimize/accuracy", summary="max", compare=">", margin=0.1),
         Benchmark.Criterion(name="train/iter_time", summary="mean", compare="<", margin=0.1),
@@ -107,7 +108,7 @@ class TestPerfActionDetection(PerfTestBase):
     """Benchmark action detection."""
 
     MODEL_TEST_CASES = [  # noqa: RUF012
-        Benchmark.Model(task="action/action_detection", name="x3d_fastrcnn", category="accuracy"),
+        Benchmark.Model(task="action_detection", name="x3d_fastrcnn", category="accuracy"),
     ]
 
     DATASET_TEST_CASES = [  # noqa: RUF012
