@@ -32,7 +32,7 @@ data:
       - 500
       - 500
     image_color_channel: BGR
-    stack_images: False
+    stack_images: True
     unannotated_items_ratio: 0.0
     train_subset:
       subset_name: train
@@ -63,6 +63,10 @@ data:
           init_args:
             dtype: ${as_torch_dtype:torch.float32}
             scale: False
+        - class_path: otx.core.data.transform_libs.torchvision.Normalize3D
+          init_args:
+            mean: [114.75, 114.75, 114.75]
+            std: [57.38, 57.38, 57.38]
       sampler:
         class_path: torch.utils.data.RandomSampler
     val_subset:
@@ -94,6 +98,10 @@ data:
           init_args:
             dtype: ${as_torch_dtype:torch.float32}
             scale: False
+        - class_path: otx.core.data.transform_libs.torchvision.Normalize3D
+          init_args:
+            mean: [114.75, 114.75, 114.75]
+            std: [57.38, 57.38, 57.38]
     test_subset:
       subset_name: test
       transform_lib_type: TORCHVISION
@@ -123,3 +131,7 @@ data:
           init_args:
             dtype: ${as_torch_dtype:torch.float32}
             scale: False
+        - class_path: otx.core.data.transform_libs.torchvision.Normalize3D
+          init_args:
+            mean: [114.75, 114.75, 114.75]
+            std: [57.38, 57.38, 57.38]

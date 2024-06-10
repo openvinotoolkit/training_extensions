@@ -3031,6 +3031,23 @@ class DecordDecode(tvt_v2.Transform):
         return f"{self.__class__.__name__}(mode={self.mode})"
 
 
+class Normalize3D(tvt_v2.Normalize):
+    """Using normalize the 3D video data."""
+
+    def __init__(self, mean: list[float], std: list[float], inplace: bool = False) -> None:
+        self.mean = torch.Tensor(mean).view(1, 3, 1, 1, 1)
+        self.std = torch.Tensor(std).view(1, 3, 1, 1, 1)
+        self.inplace = inplace
+
+    def __call__(self, *_inputs: T_OTXDataEntity) -> T_OTXDataEntity | None:
+        """Transform function to resize images, bounding boxes, and masks."""
+        assert len(_inputs) == 1, "[tmp] Multiple entity is not supported yet."  # noqa: S101
+        inputs = _inputs[0]
+
+        inputs.image = F.normalize(inputs.image, self.mean, self.std, self.inplace)
+        return inputs
+
+
 class TorchVisionTransformLib:
     """Helper to support TorchVision transforms (only V2) in OTX."""
 

@@ -11,7 +11,6 @@ from torch import nn
 from otx.algo.action_classification.backbones.x3d import X3DBackbone
 from otx.algo.action_classification.heads.x3d_head import X3DHead
 from otx.algo.action_classification.recognizers.recognizer import BaseRecognizer
-from otx.algo.action_classification.utils.data_preprocessor import ActionDataPreprocessor
 from otx.algo.utils.mmengine_utils import load_checkpoint
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.metrics.accuracy import MultiClassClsMetricCallable
@@ -45,6 +44,8 @@ class X3D(OTXActionClsModel):
             metric=metric,
             torch_compile=torch_compile,
         )
+        self.mean = (114.75, 114.75, 114.75)
+        self.std = (57.38, 57.38, 57.38)
 
     def _create_model(self) -> nn.Module:
         model = self._build_model(num_classes=self.label_info.num_classes)
@@ -57,9 +58,6 @@ class X3D(OTXActionClsModel):
         return model
 
     def _build_model(self, num_classes: int) -> nn.Module:
-        self.mean = (114.75, 114.75, 114.75)
-        self.std = (57.38, 57.38, 57.38)
-
         return BaseRecognizer(
             backbone=X3DBackbone(
                 gamma_b=2.25,
@@ -78,11 +76,6 @@ class X3D(OTXActionClsModel):
                 dropout_ratio=0.5,
                 average_clips="prob",
                 fc1_bias=False,
-            ),
-            data_preprocessor=ActionDataPreprocessor(
-                mean=self.mean,
-                std=self.std,
-                format_shape="NCTHW",
             ),
         )
 

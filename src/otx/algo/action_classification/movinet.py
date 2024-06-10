@@ -12,7 +12,6 @@ from torch import nn
 from otx.algo.action_classification.backbones.movinet import MoViNetBackbone
 from otx.algo.action_classification.heads.movinet_head import MoViNetHead
 from otx.algo.action_classification.recognizers.movinet_recognizer import MoViNetRecognizer
-from otx.algo.action_classification.utils.data_preprocessor import ActionDataPreprocessor
 from otx.algo.utils.mmengine_utils import load_checkpoint
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.metrics.accuracy import MultiClassClsMetricCallable
@@ -65,11 +64,6 @@ class MoViNet(OTXActionClsModel):
                 in_channels=480,
                 hidden_dim=2048,
                 loss_cls=nn.CrossEntropyLoss(),
-            ),
-            data_preprocessor=ActionDataPreprocessor(
-                mean=self.mean,
-                std=self.std,
-                format_shape="NCTHW",
             ),
         )
 

@@ -24,14 +24,12 @@ class BaseRecognizer(BaseModule):
         backbone: torch.Module,
         cls_head: torch.Module,
         neck: torch.Module | None = None,
-        data_preprocessor: object = None,
         test_cfg: dict | None = None,
     ) -> None:
         super().__init__()
 
         self.backbone = backbone
         self.cls_head = cls_head
-        self.data_preprocessor = data_preprocessor
         if neck is not None:
             self.neck = neck
         self.test_cfg = test_cfg
