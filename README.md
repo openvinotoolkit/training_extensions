@@ -240,8 +240,10 @@ Please use [Issues](https://github.com/openvinotoolkit/training_extensions/issue
 
 ## Known limitations
 
-[misc](https://github.com/openvinotoolkit/training_extensions/tree/misc) branch contains training, evaluation, and export scripts for models based on TensorFlow and PyTorch.
-These scripts are not ready for production. They are exploratory and have not been validated.
+- Anomaly task processing times have increased compared with v1.\* version, with anomaly classification experiencing a slowdown of approximately 26%, anomaly detection by approximately 213%, and anomaly segmentation by approximately 78%. [Issue #3592](https://github.com/openvinotoolkit/training_extensions/issues/3592)
+- Post-Training Quantization (PTQ) optimization applied to `maskrcnn_swint` in the instance segmentation task may result in significantly reduced accuracy compared with v1.\* [Issue #3593](https://github.com/openvinotoolkit/training_extensions/issues/3593)
+- [misc](https://github.com/openvinotoolkit/training_extensions/tree/misc) branch contains training, evaluation, and export scripts for models based on TensorFlow and PyTorch.
+  These scripts are not ready for production. They are exploratory and have not been validated.
 
 ---
 
