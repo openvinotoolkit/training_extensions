@@ -21,7 +21,7 @@ from torch import Tensor
 from torchvision import tv_tensors
 
 from model_api.models import Model
-from model_api.models.visual_prompting import SAMVisualPrompter
+from model_api.models.visual_prompting import SAMVisualPrompter, SAMLearnableVisualPrompter
 
 from otx.core.data.entity.base import Points
 from otx.core.data.entity.visual_prompting import (
@@ -792,7 +792,7 @@ class OVZeroShotVisualPromptingModel(
 
         self.initialize_reference_info()
 
-    def _create_model(self):
+    def _create_model(self) -> SAMLearnableVisualPrompter:
         """Create a OV model with help of Model API."""
         from model_api.adapters import OpenvinoAdapter, create_core
 
@@ -823,7 +823,7 @@ class OVZeroShotVisualPromptingModel(
             )
             ov_models[module] = Model.create_model(model_adapter, model_type=f"sam_{module}", configuration=self.model_api_configuration)
 
-        return ov_models
+        return SAMLearnableVisualPrompter(ov_models["image_encoder"], ov_models["decoder"])
 
     def learn(
         self,
@@ -889,73 +889,15 @@ class OVZeroShotVisualPromptingModel(
         inputs: ZeroShotVisualPromptingBatchDataEntity,
         reference_feats: np.ndarray,
         used_indices: np.ndarray,
-        is_cascade: bool = True,
-        threshold: float = 0.0,
-        num_bg_points: int = 1,
-        default_threshold_target: float = 0.65,
-        image_size: int = 1024,
-        downsizing: int = 64,
     ) -> list[list[defaultdict[int, list]]]:
         """`Infer` for target predictions."""
-        images, metas, _ = self._customize_inputs(inputs)
+        images,  _ = self._customize_inputs(inputs)
+
         total_results: list[list[defaultdict[int, list]]] = []
-        for image, meta in zip(images, metas):
-            original_shape = np.array(meta["original_shape"][:2])
+        for image in images:
+            result = self.model.infer(image, reference_feats, used_indices)
+            total_results.append(result)
 
-            # forward image encoder
-            image_embeddings = self.model["image_encoder"].infer_sync(image)
-
-            # get point candidates
-            total_points_scores, total_bg_coords = self._get_prompt_candidates(
-                image_embeddings=image_embeddings["image_embeddings"],
-                reference_feats=reference_feats,
-                used_indices=used_indices,
-                original_shape=original_shape,
-                threshold=threshold,
-                num_bg_points=num_bg_points,
-                default_threshold_target=default_threshold_target,
-                image_size=image_size,
-                downsizing=downsizing,
-            )
-
-            predicted_masks: defaultdict[int, list] = defaultdict(list)
-            used_points: defaultdict[int, list] = defaultdict(list)
-            for label in total_points_scores:
-                points_scores = total_points_scores[label]
-                bg_coords = total_bg_coords[label]
-                for points_score in points_scores:
-                    if points_score[-1] in [-1.0, 0.0]:
-                        continue
-
-                    x, y = points_score[:2]
-                    is_done = False
-                    for pm in predicted_masks.get(label, []):
-                        # check if that point is already assigned
-                        if pm[int(y), int(x)] > 0:
-                            is_done = True
-                            break
-                    if is_done:
-                        continue
-
-                    point_coords = np.concatenate((np.array([[x, y]]), bg_coords), axis=0, dtype=np.float32)
-                    point_coords = self.model["decoder"].apply_coords(point_coords, original_shape)
-                    point_labels = np.array([1] + [0] * len(bg_coords), dtype=np.float32)
-                    inputs_decoder = {
-                        "point_coords": point_coords[None],
-                        "point_labels": point_labels[None],
-                        "orig_size": original_shape[None],
-                    }
-                    inputs_decoder.update(image_embeddings)
-
-                    prediction = self._predict_masks(inputs_decoder, original_shape, is_cascade)
-                    prediction.update({"scores": points_score[-1]})
-
-                    predicted_masks[label].append(prediction[self.model["decoder"].output_blob_name])
-                    used_points[label].append(points_score)
-
-            # check overlapping area between different label masks
-            self._inspect_overlapping_areas(predicted_masks, used_points)
-            total_results.append([predicted_masks, used_points])
         return total_results
 
     def forward(  # type: ignore[override]
@@ -986,10 +928,9 @@ class OVZeroShotVisualPromptingModel(
     def _customize_inputs(  # type: ignore[override]
         self,
         entity: ZeroShotVisualPromptingBatchDataEntity,  # type: ignore[override]
-    ) -> tuple[list[np.ndarray], list[dict[str, Any]], list[dict[int, list[Any]]]]:
+    ) -> tuple[list[np.ndarray], list[dict[int, list[Any]]]]:
         """Customize OTX input batch data entity."""
         images: list[np.ndarray] = []
-        metas: list[dict[str, Any]] = []
         processed_prompts: list[list[dict[str, Any]]] = []
         for image, prompts, labels, imgs_info in zip(
             entity.images,
@@ -999,9 +940,8 @@ class OVZeroShotVisualPromptingModel(
         ):
             # preprocess image encoder inputs
             numpy_image = image.cpu().numpy().transpose(1, 2, 0)
-            processed_image, meta = self.model["image_encoder"].preprocess(numpy_image)
-            images.append(processed_image)
-            metas.append(meta)
+            images.append(numpy_image)
+
             if self.training:
                 points: list[np.ndarray] = []
                 bboxes: list[np.ndarray] = []
@@ -1026,7 +966,7 @@ class OVZeroShotVisualPromptingModel(
                     ),
                 )
         processed_prompts_w_labels = self._gather_prompts_with_labels(processed_prompts)
-        return images, metas, processed_prompts_w_labels
+        return images, processed_prompts_w_labels
 
     def _customize_outputs(  # type: ignore[override]
         self,
@@ -1272,7 +1212,7 @@ class OVZeroShotVisualPromptingModel(
     ######################################
     def initialize_reference_info(self) -> None:
         """Initialize reference information."""
-        self.reference_feats = np.zeros((0, 1, self.model["decoder"].embed_dim), dtype=np.float32)
+        self.reference_feats = np.zeros((0, 1, self.model.decoder_model.embed_dim), dtype=np.float32)
         self.used_indices = np.array([], dtype=np.int64)
 
     def expand_reference_info(self, new_largest_label: int) -> None:
@@ -1351,8 +1291,8 @@ class OVZeroShotVisualPromptingModel(
         """Load latest reference info to be used."""
         _infer_reference_info_root: Path = (
             self.infer_reference_info_root
-            if self.infer_reference_info_root == self.infer_reference_info_root.absolute()
-            else Path(default_root_dir) / self.infer_reference_info_root
+            #if self.infer_reference_info_root == self.infer_reference_info_root.absolute()
+            #else Path(default_root_dir) / self.infer_reference_info_root
         )
 
         if (
@@ -1361,7 +1301,7 @@ class OVZeroShotVisualPromptingModel(
             reference_info: dict[str, np.ndarray] = pickle.load(path_reference_info.open("rb"))  # noqa: S301   # nosec: B301
             self.reference_feats = reference_info.get(
                 "reference_feats",
-                np.zeros((0, 1, self.model["decoder"].embed_dim), dtype=np.float32),
+                np.zeros((0, 1, self.model.decoder_model.embed_dim), dtype=np.float32),
             )
             self.used_indices = reference_info.get("used_indices", np.array([], dtype=np.int64))
             log.info(f"reference info saved at {path_reference_info} was successfully loaded.")
