@@ -32,6 +32,11 @@ All notable changes to this project will be documented in this file.
 
 - Fixing some minor issues
 
+### Known issues
+
+- Anomaly task processing times have increased compared with v1.\* version, with anomaly classification experiencing a slowdown of approximately 26%, anomaly detection by approximately 213%, and anomaly segmentation by approximately 78%. [Issue #3592](https://github.com/openvinotoolkit/training_extensions/issues/3592)
+- Post-Training Quantization (PTQ) optimization applied to `maskrcnn_swint` in the instance segmentation task may result in significantly reduced accuracy compared with v1.\* [Issue #3593](https://github.com/openvinotoolkit/training_extensions/issues/3593)
+
 ## \[v1.6.1\]
 
 ### Enhancements
