@@ -36,7 +36,7 @@ dependencies = [
     "regex==2024.5.10",
     "importlib_resources==6.4.0",
     "docstring_parser==0.16", # CLI help-formatter
-    "rich_argparse==1.4.0", # CLI help-formatter
+    "rich_argparse==1.5.1", # CLI help-formatter
     "einops==0.7.0",
 ]
 
