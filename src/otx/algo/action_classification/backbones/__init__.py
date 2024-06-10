@@ -3,5 +3,6 @@
 """Custom backbones for action classification."""
 
 from .movinet import MoViNetBackbone
+from .x3d import X3DBackbone
 
-__all__ = ["MoViNetBackbone"]
+__all__ = ["MoViNetBackbone", "X3DBackbone"]

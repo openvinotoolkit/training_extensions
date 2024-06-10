@@ -2,10 +2,9 @@
 # SPDX-License-Identifier: Apache-2.0
 # Copyright (c) OpenMMLab. All rights reserved.
 
-"""Implementation of action data preprocessor."""
-
 # mypy: disable-error-code="arg-type,assignment,override,return-value"
 
+"""Implementation of action data preprocessor."""
 from __future__ import annotations
 
 from typing import Mapping, Sequence, Union

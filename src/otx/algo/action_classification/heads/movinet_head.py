@@ -1,7 +1,8 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-"""Custom MoViNet Head for video recognition."""
+# Copyright (c) OpenMMLab. All rights reserved.
 
+"""Custom MoViNet Head for video recognition."""
 from __future__ import annotations
 
 from torch import Tensor, nn

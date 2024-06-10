@@ -1,6 +1,7 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-#
+# Copyright (c) OpenMMLab. All rights reserved.
+
 """X3D head implementation."""
 from __future__ import annotations
 

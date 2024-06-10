@@ -1,7 +1,7 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-"""MoViNet Recognizer for OTX compatibility."""
 
+"""MoViNet Recognizer for OTX compatibility."""
 import functools
 
 from torch import nn

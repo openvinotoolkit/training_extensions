@@ -2,10 +2,9 @@
 # SPDX-License-Identifier: Apache-2.0
 # Copyright (c) OpenMMLab. All rights reserved.
 
-"""Implementation of action data sample."""
-
 # mypy: disable-error-code="attr-defined"
 
+"""Implementation of action data sample."""
 from __future__ import annotations
 
 import copy

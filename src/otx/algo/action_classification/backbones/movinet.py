@@ -1,7 +1,8 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-"""Code modified from: https://github.com/Atze00/MoViNet-pytorch/blob/main/movinets/models.py."""
+# Copyright (c) OpenMMLab. All rights reserved.
 
+"""Code modified from: https://github.com/Atze00/MoViNet-pytorch/blob/main/movinets/models.py."""
 from __future__ import annotations
 
 from collections import OrderedDict

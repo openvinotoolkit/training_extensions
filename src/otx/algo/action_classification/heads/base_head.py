@@ -2,10 +2,9 @@
 # SPDX-License-Identifier: Apache-2.0
 # Copyright (c) OpenMMLab. All rights reserved.
 
-"""Custom MoViNet Head for video recognition."""
-
 # mypy: disable-error-code="attr-defined"
 
+"""Custom MoViNet Head for video recognition."""
 from __future__ import annotations
 
 from abc import abstractmethod
