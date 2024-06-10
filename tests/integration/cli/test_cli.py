@@ -48,6 +48,14 @@ def fxt_trained_model(
         *fxt_cli_override_command_per_task[task],
     ]
 
+    if model_name.endswith("_semisl") and "multi_class_cls" in recipe:
+        command_cfg.extend(
+            [
+                "--data.config.unlabeled_subset.data_root",
+                fxt_target_dataset_per_task["multi_class_cls_semisl"],
+            ],
+        )
+
     run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)
 
     return recipe, task, model_name, tmp_path_train
@@ -97,6 +105,7 @@ def test_otx_e2e(
     assert ckpt_file.exists()
 
     # 2) otx test
+
     tmp_path_test = tmp_path / f"otx_test_{model_name}"
     command_cfg = [
         "otx",

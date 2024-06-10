@@ -14,7 +14,7 @@ from warnings import warn
 import datumaro
 from jsonargparse import ArgumentParser, Namespace
 
-from otx.core.config.data import DataModuleConfig, SamplerConfig, SubsetConfig, TileConfig
+from otx.core.config.data import DataModuleConfig, SamplerConfig, SubsetConfig, TileConfig, UnlabeledDataConfig
 from otx.core.data.module import OTXDataModule
 from otx.core.model.base import OTXModel, OVModel
 from otx.core.types import PathLike
@@ -222,12 +222,17 @@ class AutoConfigurator:
         train_config = data_config.pop("train_subset")
         val_config = data_config.pop("val_subset")
         test_config = data_config.pop("test_subset")
+        unlabeled_config = data_config.pop("unlabeled_subset")
         return OTXDataModule(
             task=self.config["data"]["task"],
             config=DataModuleConfig(
                 train_subset=SubsetConfig(sampler=SamplerConfig(**train_config.pop("sampler", {})), **train_config),
                 val_subset=SubsetConfig(sampler=SamplerConfig(**val_config.pop("sampler", {})), **val_config),
                 test_subset=SubsetConfig(sampler=SamplerConfig(**test_config.pop("sampler", {})), **test_config),
+                unlabeled_subset=UnlabeledDataConfig(
+                    sampler=SamplerConfig(**unlabeled_config.pop("sampler", {})),
+                    **unlabeled_config,
+                ),
                 tile_config=TileConfig(**data_config.pop("tile_config", {})),
                 **data_config,
             ),

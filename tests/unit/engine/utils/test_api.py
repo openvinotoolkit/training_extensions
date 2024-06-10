@@ -30,6 +30,7 @@ def test_list_models_pattern() -> None:
 
     target = [
         "efficientnet_b0",
+        "efficientnet_b0_semisl",
         "efficientnet_v2",
         "maskrcnn_efficientnetb2b",
         "maskrcnn_efficientnetb2b_tile",
