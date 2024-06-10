@@ -653,7 +653,7 @@ class MoViNetBackboneBase(nn.Module):
 class MoViNetBackbone(MoViNetBackboneBase):
     """MoViNet wrapper class for OTX."""
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         cfg = Config()
         cfg.name = "A0"
         cfg.conv1 = Config()
@@ -704,10 +704,10 @@ class MoViNetBackbone(MoViNetBackboneBase):
         input_channels: int,
         out_channels: int,
         expanded_channels: int,
-        kernel_size: tuple[int, int],
-        stride: tuple[int, int],
-        padding: tuple[int, int],
-        padding_avg: tuple[int, int],
+        kernel_size: tuple[int, int, int],
+        stride: tuple[int, int, int],
+        padding: tuple[int, int, int],
+        padding_avg: tuple[int, int, int],
     ) -> None:
         """Set the values of a given Config object to SE module.
 
@@ -740,9 +740,9 @@ class MoViNetBackbone(MoViNetBackboneBase):
         conf: Config,
         input_channels: int,
         out_channels: int,
-        kernel_size: tuple[int, int],
-        stride: tuple[int, int],
-        padding: tuple[int, int],
+        kernel_size: tuple[int, int, int],
+        stride: tuple[int, int, int],
+        padding: tuple[int, int, int],
     ) -> None:
         """Set the values of a given Config object to conv layer.
 

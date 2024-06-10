@@ -12,7 +12,7 @@ from otx.algo.action_classification.recognizers.recognizer import BaseRecognizer
 class MoViNetRecognizer(BaseRecognizer):
     """MoViNet recognizer model framework for OTX compatibility."""
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
         # Hooks for redirect state_dict load/save
         self._register_state_dict_hook(self.state_dict_hook)
