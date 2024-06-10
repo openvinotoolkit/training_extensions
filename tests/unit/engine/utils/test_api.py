@@ -16,8 +16,6 @@ def test_list_models_per_task(task: str) -> None:
     task_dir = task
     if task_dir.endswith("CLS"):
         task_dir = "classification/" + task_dir
-    elif task_dir.startswith("ACTION"):
-        task_dir = "action/" + task_dir
     target_dir = RECIPE_PATH / task_dir.lower()
     target_recipes = [str(recipe.stem) for recipe in target_dir.glob("**/*.yaml")]
 

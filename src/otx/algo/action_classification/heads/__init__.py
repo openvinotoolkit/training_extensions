@@ -3,5 +3,6 @@
 """Custom heads for action classification."""
 
 from .movinet_head import MoViNetHead
+from .x3d_head import X3DHead
 
-__all__ = ["MoViNetHead"]
+__all__ = ["MoViNetHead", "X3DHead"]

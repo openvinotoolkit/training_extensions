@@ -29,7 +29,7 @@ engine:
 
 callback_monitor: val/map_50
 
-data: ../../_base_/data/mmaction_base.yaml
+data: ../_base_/data/mmaction_base.yaml
 overrides:
   precision: 32
   data:
