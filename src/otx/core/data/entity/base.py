@@ -208,21 +208,17 @@ class ImageInfo(tv_tensors.TVTensor):
 
 
 class VideoInfo(tv_tensors.TVTensor):
-    """Meta info for image.
+    """Meta info for video.
 
     Attributes:
-        img_id: Image id
-        img_shape: Image shape (heigth, width) after preprocessing
-        ori_shape: Image shape (heigth, width) right after loading it
-        padding: Number of pixels to pad all borders (left, top, right, bottom)
-        scale_factor: Scale factor (height, width) if the image is resized during preprocessing.
-            Default value is `(1.0, 1.0)` when there is no resizing. However, if the image is cropped,
-            it will lose the scaling information and be `None`.
-        normalized: If true, this image is normalized with `norm_mean` and `norm_std`
-        norm_mean: Mean vector used to normalize this image
-        norm_std: Standard deviation vector used to normalize this image
-        image_color_channel: Color channel type of this image, RGB or BGR.
-        ignored_labels: Label that should be ignored in this image. Default to None.
+        clip_len: Length of a video clip.
+        num_clips: Number of clips for training.
+        frame_interval: Interval between sampled frames in a video clip.
+        video_reader: Decord video reader.
+        avg_fps: Average number of frames per seconds in a clip.
+        num_frames: Number of total frames in a video clip.
+        start_index: Start frame index.
+        frame_inds: Numpy array of chosen frame indices.
     """
 
     clip_len: int
@@ -242,7 +238,7 @@ class VideoInfo(tv_tensors.TVTensor):
         clip_len: int = 8,
         num_clips: int = 1,
         frame_interval: int = 4,
-        video_reader: decord.VideoReader = None,
+        video_reader: decord.VideoReader | None = None,
         avg_fps: float = 30.0,
         num_frames: int | None = None,
         start_index: int = 0,
@@ -264,7 +260,7 @@ class VideoInfo(tv_tensors.TVTensor):
         clip_len: int = 8,
         num_clips: int = 1,
         frame_interval: int = 4,
-        video_reader: decord.VideoReader = None,
+        video_reader: decord.VideoReader | None = None,
         avg_fps: float = 30.0,
         num_frames: int | None = None,
         start_index: int = 0,
@@ -288,7 +284,7 @@ class VideoInfo(tv_tensors.TVTensor):
         output: Tensor,
         args: tuple[()] = (),
         kwargs: Mapping[str, Any] | None = None,
-    ) -> ImageType:
+    ) -> VideoInfo | list[VideoInfo] | tuple[VideoInfo]:
         """Wrap an output (`torch.Tensor`) obtained from PyTorch function.
 
         For example, this function will be called when
