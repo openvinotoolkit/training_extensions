@@ -14,7 +14,8 @@ import time
 from copy import deepcopy
 from dataclasses import dataclass
 from functools import partial
-from typing import TYPE_CHECKING, Callable, Literal
+from pickle import PicklingError
+from typing import TYPE_CHECKING, Callable, Literal, NoReturn
 
 from otx.core.types.device import DeviceType
 from otx.hpo.hpo_base import HpoBase, Trial, TrialStatus
@@ -128,20 +129,22 @@ class HpoLoop:
         self._running_trials[uid] = RunningTrial(process, trial, trial_queue)  # type: ignore[arg-type]
         try:
             process.start()
+        except PicklingError as e:
+            self._raise_pickle_error(e)
         except TypeError as e:
             if str(e).startswith("cannot pickle"):
-                unpickleable_objs = find_unpickleable_obj(self._train_func, "train_func")
-                msg = (
-                    "cannot spawn process due to objects which can't be pickled.\n"
-                    "following objects can't be pickled.\n"
-                )
-                for obj in unpickleable_objs:
-                    msg += f"{obj}\n"
-                raise RuntimeError(msg) from e
+                self._raise_pickle_error(e)
             raise
         os.environ.clear()
         for key, val in origin_env.items():
             os.environ[key] = val
+
+    def _raise_pickle_error(self, exp: Exception) -> NoReturn:
+        unpickleable_objs = find_unpickleable_obj(self._train_func, "self._train_func")
+        msg = "cannot spawn process due to objects which can't be pickled.\nfollowing objects can't be pickled.\n"
+        for obj in unpickleable_objs:
+            msg += f"{obj}\n"
+        raise RuntimeError(msg) from exp
 
     def _remove_finished_process(self) -> None:
         trial_to_remove = []
