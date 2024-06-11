@@ -378,18 +378,20 @@ class AutoConfigurator:
             OTXDataModule: The modified OTXDataModule object with OpenVINO subset transforms applied.
         """
         data_configuration = datamodule.config
-        ov_test_config = self._load_default_config(model_name="openvino_model")["data"]["config"][f"{subset}_subset"]
+        ov_config = self._load_default_config(model_name="openvino_model")["data"]["config"]
         subset_config = getattr(data_configuration, f"{subset}_subset")
-        subset_config.batch_size = ov_test_config["batch_size"]
-        subset_config.transform_lib_type = ov_test_config["transform_lib_type"]
-        subset_config.transforms = ov_test_config["transforms"]
-        subset_config.to_tv_image = ov_test_config["to_tv_image"]
+        subset_config.batch_size = ov_config[f"{subset}_subset"]["batch_size"]
+        subset_config.transform_lib_type = ov_config[f"{subset}_subset"]["transform_lib_type"]
+        subset_config.transforms = ov_config[f"{subset}_subset"]["transforms"]
+        subset_config.to_tv_image = ov_config[f"{subset}_subset"]["to_tv_image"]
+        data_configuration.image_color_channel = ov_config["image_color_channel"]
         data_configuration.tile_config.enable_tiler = False
         msg = (
             f"For OpenVINO IR models, Update the following {subset} \n"
             f"\t transforms: {subset_config.transforms} \n"
             f"\t transform_lib_type: {subset_config.transform_lib_type} \n"
             f"\t batch_size: {subset_config.batch_size} \n"
+            f"\t image_color_channel: {data_configuration.image_color_channel} \n"
             "And the tiler is disabled."
         )
         warn(msg, stacklevel=1)
