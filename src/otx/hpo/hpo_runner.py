@@ -137,7 +137,7 @@ class HpoLoop:
                 )
                 for obj in unpickleable_objs:
                     msg += f"{obj}\n"
-                raise RuntimeError(msg)
+                raise RuntimeError(msg) from e
             raise
         os.environ.clear()
         for key, val in origin_env.items():

@@ -1,22 +1,21 @@
 from __future__ import annotations
 
-from typing import Callable
-from pathlib import Path
 from functools import partial
+from pathlib import Path
 
 import pytest
 from otx.utils.utils import (
+    check_pickleable,
     find_file_recursively,
+    find_unpickleable_obj,
     get_decimal_point,
     get_using_dot_delimited_key,
     remove_matched_files,
     set_using_dot_delimited_key,
-    find_unpickleable_obj,
-    check_pickleable,
 )
 
 
-@pytest.fixture
+@pytest.fixture()
 def fake_obj(mocker):
     target = mocker.MagicMock()
     target.a.b.c = {"d": mocker.MagicMock()}
@@ -75,7 +74,7 @@ def make_dir_and_file(dir_path: Path, file_path: str | Path) -> Path:
     return file
 
 
-@pytest.fixture
+@pytest.fixture()
 def temporary_dir_w_some_txt(tmp_path):
     some_txt = ["a/b/c/d.txt", "1/2/3/4.txt", "e.txt", "f/g.txt", "5/6/7.txt"]
     for file_path in some_txt:
@@ -120,16 +119,16 @@ def fake_func_for_pickle_test(arg1):
 
 def test_find_unpickleable_obj():
     mock_class = FakeClassForPickleTest()
-    mock_class.attr1 = lambda x : 1
+    mock_class.attr1 = lambda: 1
     test_dict = {
-        "dict_type" : {
-            "unpickleable_obj1" : lambda x : 1,
-            "pickleable_obj" : 1,
+        "dict_type": {
+            "unpickleable_obj1": lambda: 1,
+            "pickleable_obj": 1,
         },
-        "list_type" : [lambda x : 1, 3],
-        "class_type" : mock_class,
-        "lambda_func" : lambda x : 1,
-        "partial_func" : partial(fake_func_for_pickle_test, arg1=lambda x : 1)
+        "list_type": [lambda: 1, 3],
+        "class_type": mock_class,
+        "lambda_func": lambda: 1,
+        "partial_func": partial(fake_func_for_pickle_test, arg1=lambda: 1),
     }
     test_dict["dict_type"]["unpickleable_obj2"] = test_dict["dict_type"]["unpickleable_obj1"]  # set same obj
     ret = find_unpickleable_obj(test_dict, "test_dict")
@@ -143,6 +142,6 @@ def test_find_unpickleable_obj():
 
 def test_check_pickleable():
     pickleable_obj = [1, 2, 3]
-    unpickleable_obj = lambda x : 1
+    unpickleable_obj = lambda: 1
     assert check_pickleable(pickleable_obj) is True
     assert check_pickleable(unpickleable_obj) is False

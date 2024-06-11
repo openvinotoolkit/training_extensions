@@ -26,7 +26,6 @@ from otx.utils.utils import (
     get_using_dot_delimited_key,
     is_xpu_available,
     remove_matched_files,
-    find_unpickleable_obj
 )
 
 from .hpo_trial import run_hpo_trial

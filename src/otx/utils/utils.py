@@ -8,8 +8,8 @@ from __future__ import annotations
 import importlib
 import inspect
 import pickle
-from functools import partial
 from decimal import Decimal
+from functools import partial
 from types import LambdaType
 from typing import TYPE_CHECKING, Any
 
@@ -191,58 +191,62 @@ def find_unpickleable_obj(obj : Any, obj_name: str) -> list[str]:
     Returns:
         list[str]: List of name of unpikcleable objects.
     """
-    unpickleable_obj = {}
+    unpickleable_obj: dict[str, Any] = {}
     _find_unpickleable_obj(obj, obj_name, unpickleable_obj)
 
-    unpickleable_cause = []
-    if unpickleable_obj:  # get actual cause of unpickleable
-        unpickleable_obj_keys = sorted(unpickleable_obj.keys())
-        for i in range(len(unpickleable_obj_keys)-1):
-            if unpickleable_obj_keys[i] not in unpickleable_obj_keys[i+1]:
-                unpickleable_cause.append(unpickleable_obj_keys[i])
-        unpickleable_cause.append(unpickleable_obj_keys[-1])
+    if not unpickleable_obj:
+        return []
+
+    # get actual cause of unpickleable
+    unpickleable_obj_keys = sorted(unpickleable_obj.keys())
+    unpickleable_cause = [
+        unpickleable_obj_keys[i]
+        for i in range(len(unpickleable_obj_keys) - 1)
+        if unpickleable_obj_keys[i] not in unpickleable_obj_keys[i + 1]
+    ]
+    unpickleable_cause.append(unpickleable_obj_keys[-1])
 
     return unpickleable_cause
 
 
-def _find_unpickleable_obj(obj : Any, obj_name: str, unpickleable_obj: dict) -> None:
+def _find_unpickleable_obj(obj: Any, obj_name: str, unpickleable_obj: dict[str, Any]) -> None:  # noqa: ANN401
     if check_pickleable(obj):
         return
 
     unpickleable_obj[obj_name] = obj
 
-    def _need_skip(obj: Any) -> bool:
+    def _need_skip(obj: Any) -> bool:  # noqa: ANN401
         return isinstance(obj, memoryview)  # it makes core dumped
 
-    def _make_iter(obj: Any) -> list[tuple[str, Any]]:
+    def _make_iter(obj: Any) -> list[tuple[str, Any]]:  # noqa: ANN401
         if isinstance(obj, (list, tuple)):
             return [(f"[{i}]", obj[i]) for i in range(len(obj))]
-        elif isinstance(obj, dict):
-            return [(f'["{key}"]', obj[key]) for key in obj.keys()]
-        else:
-            res = []
-            for attr in dir(obj):
-                if attr.startswith("__") and attr.endswith("__"):  # skip magic method
-                    continue
-                try:
-                    attr_obj = getattr(obj, attr)
-                except Exception:
-                    continue
-                if callable(attr_obj) and not isinstance(attr_obj, (LambdaType, partial)):
-                    continue
-                res.append((f".{attr}", attr_obj))
-            return res
+        if isinstance(obj, dict):
+            return [(f'["{key}"]', obj[key]) for key in obj]
+
+        res = []
+        for attr in dir(obj):
+            if attr.startswith("__") and attr.endswith("__"):  # skip magic method
+                continue
+            try:
+                attr_obj = getattr(obj, attr)
+            except Exception:  # noqa: S112
+                continue
+            if callable(attr_obj) and not isinstance(attr_obj, (LambdaType, partial)):
+                continue
+            res.append((f".{attr}", attr_obj))
+        return res
 
     for key, val in _make_iter(obj):
         if not _need_skip(val) and val not in unpickleable_obj.values():
             _find_unpickleable_obj(val, obj_name + key, unpickleable_obj)
 
 
-def check_pickleable(obj: Any) -> bool:
+def check_pickleable(obj: Any) -> bool:  # noqa: ANN401
     """Check object can be pickled."""
     try:
         pickled_data = pickle.dumps(obj)
-        pickle.loads(pickled_data)
+        pickle.loads(pickled_data)  # noqa: S301
     except Exception:
         return False
     return True

@@ -8,8 +8,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from unittest.mock import MagicMock
 
-import torch
 import pytest
+import torch
 from otx.core.config.hpo import HpoConfig
 from otx.core.optimizer.callable import OptimizerCallableSupportHPO
 from otx.core.schedulers import LinearWarmupSchedulerCallable, SchedulerCallableSupportHPO
@@ -31,27 +31,27 @@ HPO_NAME_MAP: dict[str, str] = {
 }
 
 
-@pytest.fixture
+@pytest.fixture()
 def engine_work_dir(tmp_path: Path) -> Path:
     return tmp_path
 
 
-@pytest.fixture
+@pytest.fixture()
 def dataset_size() -> int:
     return 10
 
 
-@pytest.fixture
+@pytest.fixture()
 def default_bs() -> int:
     return 8
 
 
-@pytest.fixture
+@pytest.fixture()
 def default_lr() -> float:
     return 0.001
 
 
-@pytest.fixture
+@pytest.fixture()
 def mock_engine(engine_work_dir: Path, dataset_size: int, default_bs: int, default_lr: float) -> MagicMock:
     engine = MagicMock()
     engine.work_dir = engine_work_dir
@@ -63,14 +63,14 @@ def mock_engine(engine_work_dir: Path, dataset_size: int, default_bs: int, defau
     return engine
 
 
-@pytest.fixture
+@pytest.fixture()
 def mock_hpo_algo() -> MagicMock:
     hpo_algo = MagicMock()
     hpo_algo.get_best_config.return_value = {"configuration": "best_config", "id": "best_id"}
     return hpo_algo
 
 
-@pytest.fixture
+@pytest.fixture()
 def mock_hpo_configurator(mocker, mock_hpo_algo: MagicMock) -> HPOConfigurator:
     hpo_configurator = MagicMock()
     hpo_configurator.get_hpo_algo.return_value = mock_hpo_algo
@@ -78,49 +78,49 @@ def mock_hpo_configurator(mocker, mock_hpo_algo: MagicMock) -> HPOConfigurator:
     return hpo_configurator
 
 
-@pytest.fixture
+@pytest.fixture()
 def mock_run_hpo_loop(mocker) -> MagicMock:
     return mocker.patch.object(target_file, "run_hpo_loop")
 
 
-@pytest.fixture
+@pytest.fixture()
 def mock_thread(mocker) -> MagicMock:
     return mocker.patch.object(target_file, "Thread")
 
-    
-@pytest.fixture
+
+@pytest.fixture()
 def mock_best_hpo_weight(tmp_path) -> Path:
     model_weight_path = tmp_path / "best_model_weight.pth"
     model_weight = {
-        "callbacks" : {
-            "ModelCheckpoint" : {
-                "best_model_path" : "fake_value",
-                "kth_best_model_path" : "fake_value",
-                "best_k_models" : "fake_value",
-                "dirpath" : "fake_value",
-            }
-        }
+        "callbacks": {
+            "ModelCheckpoint": {
+                "best_model_path": "fake_value",
+                "kth_best_model_path": "fake_value",
+                "best_k_models": "fake_value",
+                "dirpath": "fake_value",
+            },
+        },
     }
     torch.save(model_weight, model_weight_path)
     return model_weight_path
 
 
-@pytest.fixture
+@pytest.fixture()
 def mock_get_best_hpo_weight(mocker, mock_best_hpo_weight) -> MagicMock:
     return mocker.patch.object(target_file, "get_best_hpo_weight", return_value=mock_best_hpo_weight)
 
 
-@pytest.fixture
+@pytest.fixture()
 def mock_find_trial_file(mocker) -> MagicMock:
     return mocker.patch.object(target_file, "find_trial_file")
 
 
-@pytest.fixture
+@pytest.fixture()
 def hpo_config() -> HpoConfig:
     return HpoConfig(metric_name="val/accuracy")
 
 
-@pytest.fixture
+@pytest.fixture()
 def mock_progress_update_callback() -> MagicMock:
     return MagicMock()
 
@@ -330,7 +330,7 @@ def test_adjust_train_args():
     assert "kwargs_2" in new_train_args
 
 
-@pytest.fixture
+@pytest.fixture()
 def mock_hpo_workdir(tmp_path: Path) -> Path:
     (tmp_path / "1.ckpt").touch()
     sub_dir = tmp_path / "a"
