@@ -132,10 +132,7 @@ def _inference_step_for_zero_shot(
         if _name == "mAP":
             # MeanAveragePrecision
             _preds = [
-                {
-                    k: v > 0.5 if k == "masks" else v.squeeze(1).to(model.device) if k == "labels" else v
-                    for k, v in ett.items()
-                }
+                {k: v > 0.5 if k == "masks" else v.to(model.device) if k == "labels" else v for k, v in ett.items()}
                 for ett in converted_entities["preds"]
             ]
             _target = converted_entities["target"]
@@ -828,7 +825,7 @@ class OVZeroShotVisualPromptingModel(
             for label, input_prompts in prompts.items():
                 ref_mask: np.ndarray = np.zeros(original_shape, dtype=np.uint8)
                 for inputs_decoder in input_prompts:
-                    label = inputs_decoder.pop("label")  # noqa: PLW2901
+                    inputs_decoder.pop("label")
                     if "point_coords" in inputs_decoder:
                         # bboxes and points
                         inputs_decoder.update(image_embeddings)
@@ -853,7 +850,7 @@ class OVZeroShotVisualPromptingModel(
                     cur_default_threshold_reference -= 0.05
 
                 self.reference_feats[label] = ref_feat
-                self.used_indices: np.ndarray = np.concatenate((self.used_indices, label))
+                self.used_indices: np.ndarray = np.concatenate((self.used_indices, [label]))
                 ref_masks[label] = ref_mask
             reference_masks.append(ref_masks)
         self.used_indices = np.unique(self.used_indices)

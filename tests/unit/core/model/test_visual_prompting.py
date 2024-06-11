@@ -377,7 +377,53 @@ class TestOVZeroShotVisualPromptingModel:
         (dirpath / "exported_model_decoder.xml").touch()
         model_name = str(dirpath / "exported_model_decoder.xml")
 
-        return OVZeroShotVisualPromptingModel(num_classes=0, model_name=model_name)
+        ov_zero_shot_visual_prompting_model = OVZeroShotVisualPromptingModel(num_classes=0, model_name=model_name)
+
+        # mocking
+        mocker.patch.object(
+            ov_zero_shot_visual_prompting_model.model["image_encoder"],
+            "preprocess",
+            return_value=(np.zeros((1, 3, 1024, 1024)), {"original_shape": (1024, 1024)}),
+        )
+        mocker.patch.object(
+            ov_zero_shot_visual_prompting_model.model["image_encoder"],
+            "infer_sync",
+            return_value={"image_embeddings": np.random.random((1, 256, 64, 64))},
+        )
+        mocker.patch.object(
+            ov_zero_shot_visual_prompting_model.model["decoder"],
+            "preprocess",
+            return_value=[
+                {
+                    "point_coords": np.array([1, 1]).reshape(-1, 1, 2),
+                    "point_labels": np.array([1], dtype=np.float32).reshape(-1, 1),
+                    "mask_input": np.zeros((1, 1, 256, 256), dtype=np.float32),
+                    "has_mask_input": np.zeros((1, 1), dtype=np.float32),
+                    "orig_size": np.array([1024, 1024], dtype=np.int64).reshape(-1, 2),
+                    "label": np.array(1, dtype=np.int64),
+                },
+            ],
+        )
+        mocker.patch.object(
+            ov_zero_shot_visual_prompting_model.model["decoder"],
+            "infer_sync",
+            return_value={
+                "iou_predictions": np.array([[0.1, 0.3, 0.5, 0.7]]),
+                "upscaled_masks": np.random.randn(1, 4, 1024, 1024),
+                "low_res_masks": np.zeros((1, 4, 64, 64), dtype=np.float32),
+            },
+        )
+        mocker.patch.object(
+            ov_zero_shot_visual_prompting_model.model["decoder"],
+            "postprocess",
+            return_value={
+                "hard_prediction": np.zeros((1, 1, 1024, 1024), dtype=np.float32),
+                "soft_prediction": np.zeros((1, 1, 1024, 1024), dtype=np.float32),
+                "scores": np.zeros((1, 1), dtype=np.float32),
+            },
+        )
+
+        return ov_zero_shot_visual_prompting_model
 
     @pytest.mark.parametrize("training", [True, False])
     def test_forward(
@@ -404,48 +450,7 @@ class TestOVZeroShotVisualPromptingModel:
         ov_zero_shot_visual_prompting_model.reference_feats = np.zeros((0, 1, 256), dtype=np.float32)
         ov_zero_shot_visual_prompting_model.used_indices = np.array([], dtype=np.int64)
         ov_zero_shot_visual_prompting_model.model["decoder"].mask_threshold = 0.0
-        mocker.patch.object(
-            ov_zero_shot_visual_prompting_model.model["image_encoder"],
-            "preprocess",
-            return_value=(np.zeros((1, 3, 1024, 1024)), {"original_shape": (1024, 1024)}),
-        )
-        mocker.patch.object(
-            ov_zero_shot_visual_prompting_model.model["image_encoder"],
-            "infer_sync",
-            return_value={"image_embeddings": np.random.random((1, 256, 64, 64))},
-        )
-        mocker.patch.object(
-            ov_zero_shot_visual_prompting_model.model["decoder"],
-            "preprocess",
-            return_value=[
-                {
-                    "point_coords": np.array([1, 1]).reshape(-1, 1, 2),
-                    "point_labels": np.array([1], dtype=np.float32).reshape(-1, 1),
-                    "mask_input": np.zeros((1, 1, 256, 256), dtype=np.float32),
-                    "has_mask_input": np.zeros((1, 1), dtype=np.float32),
-                    "orig_size": np.array([1024, 1024], dtype=np.int64).reshape(-1, 2),
-                    "label": np.array([1], dtype=np.int64),
-                },
-            ],
-        )
-        mocker.patch.object(
-            ov_zero_shot_visual_prompting_model.model["decoder"],
-            "infer_sync",
-            return_value={
-                "iou_predictions": np.array([[0.1, 0.3, 0.5, 0.7]]),
-                "upscaled_masks": np.random.randn(1, 4, 1024, 1024),
-                "low_res_masks": np.zeros((1, 4, 64, 64), dtype=np.float32),
-            },
-        )
-        mocker.patch.object(
-            ov_zero_shot_visual_prompting_model.model["decoder"],
-            "postprocess",
-            return_value={
-                "hard_prediction": np.zeros((1, 1, 1024, 1024), dtype=np.float32),
-                "soft_prediction": np.zeros((1, 1, 1024, 1024), dtype=np.float32),
-                "scores": np.zeros((1, 1), dtype=np.float32),
-            },
-        )
+
         mocker.patch.object(
             ov_zero_shot_visual_prompting_model,
             "_generate_masked_features",
@@ -464,48 +469,7 @@ class TestOVZeroShotVisualPromptingModel:
         """Test infer."""
         ov_zero_shot_visual_prompting_model.model["decoder"].mask_threshold = 0.0
         ov_zero_shot_visual_prompting_model.model["decoder"].output_blob_name = "upscaled_masks"
-        mocker.patch.object(
-            ov_zero_shot_visual_prompting_model.model["image_encoder"],
-            "preprocess",
-            return_value=(np.zeros((1, 3, 1024, 1024)), {"original_shape": (1024, 1024)}),
-        )
-        mocker.patch.object(
-            ov_zero_shot_visual_prompting_model.model["image_encoder"],
-            "infer_sync",
-            return_value={"image_embeddings": np.random.random((1, 256, 64, 64))},
-        )
-        mocker.patch.object(
-            ov_zero_shot_visual_prompting_model.model["decoder"],
-            "preprocess",
-            return_value=[
-                {
-                    "point_coords": np.array([1, 1]).reshape(-1, 1, 2),
-                    "point_labels": np.array([1], dtype=np.float32).reshape(-1, 1),
-                    "mask_input": np.zeros((1, 1, 256, 256), dtype=np.float32),
-                    "has_mask_input": np.zeros((1, 1), dtype=np.float32),
-                    "orig_size": np.array([1024, 1024], dtype=np.int64).reshape(-1, 2),
-                    "label": np.array([1], dtype=np.int64),
-                },
-            ],
-        )
-        mocker.patch.object(
-            ov_zero_shot_visual_prompting_model.model["decoder"],
-            "infer_sync",
-            return_value={
-                "iou_predictions": np.array([[0.1, 0.3, 0.5, 0.7]]),
-                "upscaled_masks": np.random.randn(1, 4, 1024, 1024),
-                "low_res_masks": np.zeros((1, 4, 64, 64), dtype=np.float32),
-            },
-        )
-        mocker.patch.object(
-            ov_zero_shot_visual_prompting_model.model["decoder"],
-            "postprocess",
-            return_value={
-                "hard_prediction": np.zeros((1, 1, 1024, 1024), dtype=np.float32),
-                "soft_prediction": np.zeros((1, 1, 1024, 1024), dtype=np.float32),
-                "scores": np.zeros((1, 1), dtype=np.float32),
-            },
-        )
+
         mocker.patch.object(
             ov_zero_shot_visual_prompting_model.model["decoder"],
             "apply_coords",
