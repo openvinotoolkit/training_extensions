@@ -15,11 +15,13 @@ from otx.core.data.entity.base import (
     OTXBatchPredEntity,
     OTXDataEntity,
     OTXPredEntity,
+    VideoInfo,
 )
 from otx.core.data.entity.utils import register_pytree_node
 from otx.core.types.task import OTXTaskType
 
 if TYPE_CHECKING:
+    from datumaro.components.media import Video
     from torch import LongTensor
 
 
@@ -35,6 +37,8 @@ class ActionDetDataEntity(OTXDataEntity):
         proposals: Pre-calculated actor proposals.
     """
 
+    video: Video
+    video_info: VideoInfo
     bboxes: tv_tensors.BoundingBoxes
     labels: LongTensor
     frame_path: str

@@ -92,6 +92,7 @@ def test_otx_export_infer(
         pytest.skip("Exporting models with tiling isn't supported yet.")
 
     model_name = recipe.split("/")[-1].split(".")[0]
+
     # 1) otx train
     tmp_path_train = tmp_path / f"otx_train_{model_name}"
     command_cfg = [
@@ -119,6 +120,13 @@ def test_otx_export_infer(
             [
                 "--deterministic",
                 "warn",
+            ],
+        )
+    if model_name.endswith("_semisl") and "multi_class_cls" in recipe:
+        command_cfg.extend(
+            [
+                "--data.config.unlabeled_subset.data_root",
+                fxt_target_dataset_per_task["multi_class_cls_semisl"],
             ],
         )
 
@@ -164,7 +172,6 @@ def test_otx_export_infer(
                     str(Path(checkpoint_path).parents[-idx_task] / f"otx_train_{model_name}/outputs/.latest/train"),
                 ],
             )
-
         run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)
 
         return tmp_path_test
@@ -213,8 +220,6 @@ def test_otx_export_infer(
     tmp_path_test = tmp_path / f"otx_test_{model_name}"
     if "_cls" in recipe:
         export_test_recipe = f"src/otx/recipe/classification/{task}/openvino_model.yaml"
-    elif "action_classification" in recipe:
-        export_test_recipe = f"src/otx/recipe/action/{task}/openvino_model.yaml"
     else:
         export_test_recipe = f"src/otx/recipe/{task}/openvino_model.yaml"
 

@@ -1,7 +1,8 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-"""Code modified from: https://github.com/Atze00/MoViNet-pytorch/blob/main/movinets/models.py."""
+# Copyright (c) OpenMMLab. All rights reserved.
 
+"""Code modified from: https://github.com/Atze00/MoViNet-pytorch/blob/main/movinets/models.py."""
 from __future__ import annotations
 
 from collections import OrderedDict
@@ -10,8 +11,7 @@ from typing import Callable
 import torch
 import torch.nn.functional as F  # noqa: N812
 from einops import rearrange
-from mmaction.models import MODELS
-from mmengine.config import Config
+from omegaconf.dictconfig import DictConfig
 from torch import Tensor, nn
 from torch.nn.modules.utils import _pair, _triple
 
@@ -438,7 +438,7 @@ class BasicBneck(nn.Module):
     """Basic bottleneck block of MoViNet network.
 
     Args:
-        cfg (Config): Configuration object containing block's hyperparameters.
+        cfg (DictConfig): configuration object containing block's hyperparameters.
         tf_like (bool): A boolean indicating whether to use TensorFlow like convolution
             padding or not.
         conv_type (str): A string indicating the type of convolutional layer to use.
@@ -460,7 +460,7 @@ class BasicBneck(nn.Module):
 
     def __init__(
         self,
-        cfg: Config,
+        cfg: DictConfig,
         tf_like: bool,
         conv_type: str,
         norm_layer: Callable[..., nn.Module] | None = None,
@@ -543,11 +543,11 @@ class BasicBneck(nn.Module):
         return residual + self.alpha * x
 
 
-class MoViNet(nn.Module):
+class MoViNetBackboneBase(nn.Module):
     """MoViNet class used for video classification.
 
     Args:
-        cfg (Config): Configuration object containing network's hyperparameters.
+        cfg (DictConfig): configuration object containing network's hyperparameters.
         conv_type (str, optional): A string indicating the type of convolutional layer
             to use. Can be "2d" or "3d". Defaults to "3d".
         tf_like (bool, optional): A boolean indicating whether to use TensorFlow like
@@ -569,7 +569,7 @@ class MoViNet(nn.Module):
 
     def __init__(
         self,
-        cfg: Config,
+        cfg: DictConfig,
         conv_type: str = "3d",
         tf_like: bool = False,
     ) -> None:
@@ -650,70 +650,69 @@ class MoViNet(nn.Module):
         self.apply(self._init_weights)
 
 
-@MODELS.register_module()
-class OTXMoViNet(MoViNet):
+class MoViNetBackbone(MoViNetBackboneBase):
     """MoViNet wrapper class for OTX."""
 
-    def __init__(self, **kwargs):
-        cfg = Config()
+    def __init__(self, **kwargs) -> None:
+        cfg = DictConfig({})
         cfg.name = "A0"
-        cfg.conv1 = Config()
-        OTXMoViNet.fill_conv(cfg.conv1, 3, 8, (1, 3, 3), (1, 2, 2), (0, 1, 1))
+        cfg.conv1 = DictConfig({})
+        MoViNetBackbone.fill_conv(cfg.conv1, 3, 8, (1, 3, 3), (1, 2, 2), (0, 1, 1))
 
         cfg.blocks = [
-            [Config()],
-            [Config() for _ in range(3)],
-            [Config() for _ in range(3)],
-            [Config() for _ in range(4)],
-            [Config() for _ in range(4)],
+            [DictConfig({})],
+            [DictConfig({}) for _ in range(3)],
+            [DictConfig({}) for _ in range(3)],
+            [DictConfig({}) for _ in range(4)],
+            [DictConfig({}) for _ in range(4)],
         ]
 
         # block 2
-        OTXMoViNet.fill_se_config(cfg.blocks[0][0], 8, 8, 24, (1, 5, 5), (1, 2, 2), (0, 2, 2), (0, 1, 1))
+        MoViNetBackbone.fill_se_config(cfg.blocks[0][0], 8, 8, 24, (1, 5, 5), (1, 2, 2), (0, 2, 2), (0, 1, 1))
 
         # block 3
-        OTXMoViNet.fill_se_config(cfg.blocks[1][0], 8, 32, 80, (3, 3, 3), (1, 2, 2), (1, 0, 0), (0, 0, 0))
-        OTXMoViNet.fill_se_config(cfg.blocks[1][1], 32, 32, 80, (3, 3, 3), (1, 1, 1), (1, 1, 1), (0, 1, 1))
-        OTXMoViNet.fill_se_config(cfg.blocks[1][2], 32, 32, 80, (3, 3, 3), (1, 1, 1), (1, 1, 1), (0, 1, 1))
+        MoViNetBackbone.fill_se_config(cfg.blocks[1][0], 8, 32, 80, (3, 3, 3), (1, 2, 2), (1, 0, 0), (0, 0, 0))
+        MoViNetBackbone.fill_se_config(cfg.blocks[1][1], 32, 32, 80, (3, 3, 3), (1, 1, 1), (1, 1, 1), (0, 1, 1))
+        MoViNetBackbone.fill_se_config(cfg.blocks[1][2], 32, 32, 80, (3, 3, 3), (1, 1, 1), (1, 1, 1), (0, 1, 1))
 
         # block 4
-        OTXMoViNet.fill_se_config(cfg.blocks[2][0], 32, 56, 184, (5, 3, 3), (1, 2, 2), (2, 0, 0), (0, 0, 0))
-        OTXMoViNet.fill_se_config(cfg.blocks[2][1], 56, 56, 112, (3, 3, 3), (1, 1, 1), (1, 1, 1), (0, 1, 1))
-        OTXMoViNet.fill_se_config(cfg.blocks[2][2], 56, 56, 184, (3, 3, 3), (1, 1, 1), (1, 1, 1), (0, 1, 1))
+        MoViNetBackbone.fill_se_config(cfg.blocks[2][0], 32, 56, 184, (5, 3, 3), (1, 2, 2), (2, 0, 0), (0, 0, 0))
+        MoViNetBackbone.fill_se_config(cfg.blocks[2][1], 56, 56, 112, (3, 3, 3), (1, 1, 1), (1, 1, 1), (0, 1, 1))
+        MoViNetBackbone.fill_se_config(cfg.blocks[2][2], 56, 56, 184, (3, 3, 3), (1, 1, 1), (1, 1, 1), (0, 1, 1))
 
         # block 5
-        OTXMoViNet.fill_se_config(cfg.blocks[3][0], 56, 56, 184, (5, 3, 3), (1, 1, 1), (2, 1, 1), (0, 1, 1))
-        OTXMoViNet.fill_se_config(cfg.blocks[3][1], 56, 56, 184, (3, 3, 3), (1, 1, 1), (1, 1, 1), (0, 1, 1))
-        OTXMoViNet.fill_se_config(cfg.blocks[3][2], 56, 56, 184, (3, 3, 3), (1, 1, 1), (1, 1, 1), (0, 1, 1))
-        OTXMoViNet.fill_se_config(cfg.blocks[3][3], 56, 56, 184, (3, 3, 3), (1, 1, 1), (1, 1, 1), (0, 1, 1))
+        MoViNetBackbone.fill_se_config(cfg.blocks[3][0], 56, 56, 184, (5, 3, 3), (1, 1, 1), (2, 1, 1), (0, 1, 1))
+        MoViNetBackbone.fill_se_config(cfg.blocks[3][1], 56, 56, 184, (3, 3, 3), (1, 1, 1), (1, 1, 1), (0, 1, 1))
+        MoViNetBackbone.fill_se_config(cfg.blocks[3][2], 56, 56, 184, (3, 3, 3), (1, 1, 1), (1, 1, 1), (0, 1, 1))
+        MoViNetBackbone.fill_se_config(cfg.blocks[3][3], 56, 56, 184, (3, 3, 3), (1, 1, 1), (1, 1, 1), (0, 1, 1))
 
         # block 6
-        OTXMoViNet.fill_se_config(cfg.blocks[4][0], 56, 104, 384, (5, 3, 3), (1, 2, 2), (2, 1, 1), (0, 1, 1))
-        OTXMoViNet.fill_se_config(cfg.blocks[4][1], 104, 104, 280, (1, 5, 5), (1, 1, 1), (0, 2, 2), (0, 1, 1))
-        OTXMoViNet.fill_se_config(cfg.blocks[4][2], 104, 104, 280, (1, 5, 5), (1, 1, 1), (0, 2, 2), (0, 1, 1))
-        OTXMoViNet.fill_se_config(cfg.blocks[4][3], 104, 104, 344, (1, 5, 5), (1, 1, 1), (0, 2, 2), (0, 1, 1))
+        MoViNetBackbone.fill_se_config(cfg.blocks[4][0], 56, 104, 384, (5, 3, 3), (1, 2, 2), (2, 1, 1), (0, 1, 1))
+        MoViNetBackbone.fill_se_config(cfg.blocks[4][1], 104, 104, 280, (1, 5, 5), (1, 1, 1), (0, 2, 2), (0, 1, 1))
+        MoViNetBackbone.fill_se_config(cfg.blocks[4][2], 104, 104, 280, (1, 5, 5), (1, 1, 1), (0, 2, 2), (0, 1, 1))
+        MoViNetBackbone.fill_se_config(cfg.blocks[4][3], 104, 104, 344, (1, 5, 5), (1, 1, 1), (0, 2, 2), (0, 1, 1))
 
-        cfg.conv7 = Config()
-        OTXMoViNet.fill_conv(cfg.conv7, 104, 480, (1, 1, 1), (1, 1, 1), (0, 0, 0))
+        cfg.conv7 = DictConfig({})
+        MoViNetBackbone.fill_conv(cfg.conv7, 104, 480, (1, 1, 1), (1, 1, 1), (0, 0, 0))
 
-        cfg.dense9 = Config({"hidden_dim": 2048})
+        cfg.dense9 = DictConfig({"hidden_dim": 2048})
         super().__init__(cfg)
 
     @staticmethod
     def fill_se_config(
-        conf: Config,
+        conf: DictConfig,
         input_channels: int,
         out_channels: int,
         expanded_channels: int,
-        kernel_size: tuple[int, int],
-        stride: tuple[int, int],
-        padding: tuple[int, int],
-        padding_avg: tuple[int, int],
+        kernel_size: tuple[int, int, int],
+        stride: tuple[int, int, int],
+        padding: tuple[int, int, int],
+        padding_avg: tuple[int, int, int],
     ) -> None:
-        """Set the values of a given Config object to SE module.
+        """Set the values of a given DictConfig object to SE module.
 
         Args:
-            conf (Config): The Config object to be updated.
+            conf (DictConfig): The DictConfig object to be updated.
             input_channels (int): The number of input channels.
             out_channels (int): The number of output channels.
             expanded_channels (int): The number of channels after expansion in the basic block.
@@ -727,7 +726,7 @@ class OTXMoViNet(MoViNet):
         """
         conf.expanded_channels = expanded_channels
         conf.padding_avg = padding_avg
-        OTXMoViNet.fill_conv(
+        MoViNetBackbone.fill_conv(
             conf,
             input_channels,
             out_channels,
@@ -738,17 +737,17 @@ class OTXMoViNet(MoViNet):
 
     @staticmethod
     def fill_conv(
-        conf: Config,
+        conf: DictConfig,
         input_channels: int,
         out_channels: int,
-        kernel_size: tuple[int, int],
-        stride: tuple[int, int],
-        padding: tuple[int, int],
+        kernel_size: tuple[int, int, int],
+        stride: tuple[int, int, int],
+        padding: tuple[int, int, int],
     ) -> None:
-        """Set the values of a given Config object to conv layer.
+        """Set the values of a given DictConfig object to conv layer.
 
         Args:
-            conf (Config): The Config object to be updated.
+            conf (DictConfig): The DictConfig object to be updated.
             input_channels (int): The number of input channels.
             out_channels (int): The number of output channels.
             kernel_size (tuple[int]): The size of the kernel.
