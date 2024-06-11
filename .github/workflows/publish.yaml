@@ -9,21 +9,8 @@ on:
 permissions: read-all
 
 jobs:
-  build_wheels:
-    name: Build wheels
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-      - name: Build wheels
-        uses: pypa/cibuildwheel@0ecddd92b62987d7a2ae8911f4bb8ec9e2e4496a # v2.13.1
-      - uses: actions/upload-artifact@1746f4ab65b179e0ea60a494b83293b640dd5bba # v4.3.2
-        with:
-          name: artifact-wheels
-          path: ./wheelhouse/*.whl
-
-  build_sdist:
-    name: Build source distribution
+  build:
+    name: Build
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -40,15 +27,22 @@ jobs:
         with:
           name: artifact-sdist
           path: dist/*.tar.gz
+      - name: Build wheel
+        run: python -m build --wheel
+      - uses: actions/upload-artifact@1746f4ab65b179e0ea60a494b83293b640dd5bba # v4.3.2
+        with:
+          name: artifact-wheel
+          path: dist/*.whl
 
   publish_package:
     name: Publish package
-    needs: [build_wheels, build_sdist]
+    needs: [build]
     environment: pypi
     runs-on: ubuntu-latest
     permissions:
       packages: write
       contents: write
+      id-token: write
     steps:
       - name: Download artifacts
         uses: actions/download-artifact@87c55149d96e628cc2ef7e6fc2aab372015aec85 # v4.1.3
