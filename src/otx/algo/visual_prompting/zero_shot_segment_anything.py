@@ -774,7 +774,7 @@ class OTXZeroShotSegmentAnything(OTXZeroShotVisualPromptingModel):
                     ),
                 )
                 scores.append(torch.stack([p[2] for p in used_points[label]], dim=0))
-                labels.append(torch.stack([LongTensor([label]) for _ in range(scores[-1].shape[0])], dim=0))
+                labels.append(torch.cat([LongTensor([label]) for _ in range(scores[-1].shape[0])], dim=0))
 
         return ZeroShotVisualPromptingBatchPredEntity(
             batch_size=len(outputs),

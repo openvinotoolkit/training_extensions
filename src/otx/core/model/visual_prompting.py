@@ -1035,7 +1035,7 @@ class OVZeroShotVisualPromptingModel(
                 )
                 scores.append(torch.stack([torch.as_tensor(p[2]) for p in used_points[label]], dim=0).to(self.device))
                 labels.append(
-                    torch.stack([torch.LongTensor([label]) for _ in range(len(scores[-1]))], dim=0).to(self.device),
+                    torch.cat([torch.LongTensor([label]) for _ in range(len(scores[-1]))], dim=0).to(self.device),
                 )
 
         return ZeroShotVisualPromptingBatchPredEntity(
