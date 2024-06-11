@@ -21,7 +21,13 @@ from otx.core.schedulers import LinearWarmupSchedulerCallable, SchedulerCallable
 from otx.core.types.device import DeviceType
 from otx.core.types.task import OTXTaskType
 from otx.hpo import HyperBand, run_hpo_loop
-from otx.utils.utils import get_decimal_point, get_using_dot_delimited_key, is_xpu_available, remove_matched_files
+from otx.utils.utils import (
+    get_decimal_point,
+    get_using_dot_delimited_key,
+    is_xpu_available,
+    remove_matched_files,
+    find_unpickleable_obj
+)
 
 from .hpo_trial import run_hpo_trial
 from .utils import find_trial_file, get_best_hpo_weight, get_callable_args_name, get_hpo_weight_dir, get_metric

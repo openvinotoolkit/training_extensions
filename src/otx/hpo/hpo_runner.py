@@ -20,6 +20,7 @@ from otx.core.types.device import DeviceType
 from otx.hpo.hpo_base import HpoBase, Trial, TrialStatus
 from otx.hpo.resource_manager import get_resource_manager
 from otx.utils import append_main_proc_signal_handler
+from otx.utils.utils import find_unpickleable_obj
 
 if TYPE_CHECKING:
     from collections.abc import Hashable
@@ -129,9 +130,15 @@ class HpoLoop:
             process.start()
         except TypeError as e:
             if str(e).startswith("cannot pickle"):
-                pass
-            else:
-                raise
+                unpickleable_objs = find_unpickleable_obj(self._train_func, "train_func")
+                msg = (
+                    "cannot spawn process due to objects which can't be pickled.\n"
+                    "following objects can't be pickled.\n"
+                )
+                for obj in unpickleable_objs:
+                    msg += f"{obj}\n"
+                raise RuntimeError(msg)
+            raise
         os.environ.clear()
         for key, val in origin_env.items():
             os.environ[key] = val

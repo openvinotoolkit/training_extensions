@@ -374,6 +374,6 @@ class OTXDataModule(LightningDataModule):
         """Tiling configuration. It is a shortcut for `self.config.tile_config`."""
         return self.config.tile_config
 
-    # def __reduce__(self):
-    #     """Re-initialize object when unpickled."""
-    #     return (self.__class__, (self.task, self.config))
+    def __reduce__(self):
+        """Re-initialize object when unpickled."""
+        return (self.__class__, (self.task, self.config))
