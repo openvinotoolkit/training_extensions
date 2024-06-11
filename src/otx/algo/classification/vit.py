@@ -10,13 +10,14 @@ from typing import TYPE_CHECKING, Any, Callable, Generic
 
 import numpy as np
 import torch
-from torch import nn
+from torch import Tensor, nn
 
 from otx.algo.classification.backbones.vision_transformer import VIT_ARCH_TYPE, VisionTransformer
-from otx.algo.classification.classifier.base_classifier import ImageClassifier
+from otx.algo.classification.classifier import ImageClassifier, SemiSLClassifier
 from otx.algo.classification.heads import (
     HierarchicalLinearClsHead,
     MultiLabelLinearClsHead,
+    OTXSemiSLLinearClsHead,
     VisionTransformerClsHead,
 )
 from otx.algo.classification.losses import AsymmetricAngularLossWithIgnore
@@ -259,7 +260,7 @@ class VisionTransformerForMulticlassCls(ForwardExplainMixInForViT, OTXMulticlass
             torch_compile=torch_compile,
         )
 
-    def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.model.") -> dict:
+    def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.") -> dict:
         """Load the previous OTX ckpt according to OTX2.0."""
         return OTXv1Helper.load_cls_effnet_b0_ckpt(state_dict, "multiclass", add_prefix)
 
@@ -362,6 +363,95 @@ class VisionTransformerForMulticlassCls(ForwardExplainMixInForViT, OTXMulticlass
         )
 
 
+class VisionTransformerForMulticlassClsSemiSL(VisionTransformerForMulticlassCls):
+    """VisionTransformer model for multiclass classification with semi-supervised learning.
+
+    This class extends the `VisionTransformerForMulticlassCls` class and adds support for semi-supervised learning.
+    It overrides the `_build_model` and `_customize_inputs` methods to incorporate the semi-supervised learning.
+
+    Args:
+        VisionTransformerForMulticlassCls (class): The base class for VisionTransformer multiclass classification.
+    """
+
+    def _build_model(self, num_classes: int) -> nn.Module:
+        init_cfg = [
+            {"std": 0.2, "layer": "Linear", "type": "TruncNormal"},
+            {"bias": 0.0, "val": 1.0, "layer": "LayerNorm", "type": "Constant"},
+        ]
+        return SemiSLClassifier(
+            backbone=VisionTransformer(arch=self.arch, img_size=224, patch_size=16),
+            neck=None,
+            head=OTXSemiSLLinearClsHead(
+                num_classes=num_classes,
+                in_channels=192,
+                loss=nn.CrossEntropyLoss(reduction="none"),
+            ),
+            init_cfg=init_cfg,
+        )
+
+    def _customize_inputs(self, inputs: MulticlassClsBatchDataEntity) -> dict[str, Any]:
+        """Customizes the input data for the model based on the current mode.
+
+        Args:
+            inputs (MulticlassClsBatchDataEntity): The input batch of data.
+
+        Returns:
+            dict[str, Any]: The customized input data.
+        """
+        if self.training:
+            mode = "loss"
+        elif self.explain_mode:
+            mode = "explain"
+        else:
+            mode = "predict"
+
+        if isinstance(inputs, dict):
+            # When used with an unlabeled dataset, it comes in as a dict.
+            images = {key: inputs[key].images for key in inputs}
+            labels = {key: torch.cat(inputs[key].labels, dim=0) for key in inputs}
+            imgs_info = {key: inputs[key].imgs_info for key in inputs}
+            return {
+                "images": images,
+                "labels": labels,
+                "imgs_info": imgs_info,
+                "mode": mode,
+            }
+        return {
+            "images": inputs.images,
+            "labels": torch.cat(inputs.labels, dim=0),
+            "imgs_info": inputs.imgs_info,
+            "mode": mode,
+        }
+
+    def training_step(self, batch: MulticlassClsBatchDataEntity, batch_idx: int) -> Tensor:
+        """Performs a single training step on a batch of data.
+
+        Args:
+            batch (MulticlassClsBatchDataEntity): The input batch of data.
+            batch_idx (int): The index of the current batch.
+
+        Returns:
+            Tensor: The computed loss for the training step.
+        """
+        loss = super().training_step(batch, batch_idx)
+        # Collect metrics related to Semi-SL Training.
+        self.log(
+            "train/unlabeled_coef",
+            self.model.head.unlabeled_coef,
+            on_step=True,
+            on_epoch=False,
+            prog_bar=True,
+        )
+        self.log(
+            "train/num_pseudo_label",
+            self.model.head.num_pseudo_label,
+            on_step=True,
+            on_epoch=False,
+            prog_bar=True,
+        )
+        return loss
+
+
 class VisionTransformerForMultilabelCls(ForwardExplainMixInForViT, OTXMultilabelClsModel):
     """DeitTiny Model for multi-class classification task."""
 
@@ -388,7 +478,7 @@ class VisionTransformerForMultilabelCls(ForwardExplainMixInForViT, OTXMultilabel
             torch_compile=torch_compile,
         )
 
-    def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.model.") -> dict:
+    def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.") -> dict:
         """Load the previous OTX ckpt according to OTX2.0."""
         return OTXv1Helper.load_cls_effnet_b0_ckpt(state_dict, "multiclass", add_prefix)
 
@@ -517,7 +607,7 @@ class VisionTransformerForHLabelCls(ForwardExplainMixInForViT, OTXHlabelClsModel
             torch_compile=torch_compile,
         )
 
-    def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.model.") -> dict:
+    def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.") -> dict:
         """Load the previous OTX ckpt according to OTX2.0."""
         return OTXv1Helper.load_cls_effnet_b0_ckpt(state_dict, "multiclass", add_prefix)
 
