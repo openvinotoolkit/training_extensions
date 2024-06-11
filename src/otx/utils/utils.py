@@ -182,6 +182,15 @@ def can_pass_tile_config(model_cls: type[OTXModel]) -> bool:
 
 
 def find_unpickleable_obj(obj : Any, obj_name: str) -> list[str]:
+    """Find which objects in 'obj' can't be pickled.
+
+    Args:
+        obj (Any): Object where to find unpickleable object.
+        obj_name (str): Name of obj.
+
+    Returns:
+        list[str]: List of name of unpikcleable objects.
+    """
     unpickleable_obj = {}
     _find_unpickleable_obj(obj, obj_name, unpickleable_obj)
 
@@ -230,6 +239,7 @@ def _find_unpickleable_obj(obj : Any, obj_name: str, unpickleable_obj: dict) -> 
 
 
 def check_pickleable(obj: Any) -> bool:
+    """Check object can be pickled."""
     try:
         pickled_data = pickle.dumps(obj)
         pickle.loads(pickled_data)

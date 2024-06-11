@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+from typing import Callable
 from pathlib import Path
+from functools import partial
 
 import pytest
 from otx.utils.utils import (
@@ -9,10 +11,12 @@ from otx.utils.utils import (
     get_using_dot_delimited_key,
     remove_matched_files,
     set_using_dot_delimited_key,
+    find_unpickleable_obj,
+    check_pickleable,
 )
 
 
-@pytest.fixture()
+@pytest.fixture
 def fake_obj(mocker):
     target = mocker.MagicMock()
     target.a.b.c = {"d": mocker.MagicMock()}
@@ -71,7 +75,7 @@ def make_dir_and_file(dir_path: Path, file_path: str | Path) -> Path:
     return file
 
 
-@pytest.fixture()
+@pytest.fixture
 def temporary_dir_w_some_txt(tmp_path):
     some_txt = ["a/b/c/d.txt", "1/2/3/4.txt", "e.txt", "f/g.txt", "5/6/7.txt"]
     for file_path in some_txt:
@@ -99,3 +103,46 @@ def test_remove_matched_files_no_file_to_remove(temporary_dir_w_some_txt):
     remove_matched_files(temporary_dir_w_some_txt, "*.log")
 
     assert len(list(temporary_dir_w_some_txt.rglob("*.txt"))) == 5
+
+
+class FakeClassForPickleTest:
+    def __init__(self):
+        self.attr1 = 1
+        self.attr2 = 2
+
+    def func1():
+        return 3
+
+
+def fake_func_for_pickle_test(arg1):
+    return arg1
+
+
+def test_find_unpickleable_obj():
+    mock_class = FakeClassForPickleTest()
+    mock_class.attr1 = lambda x : 1
+    test_dict = {
+        "dict_type" : {
+            "unpickleable_obj1" : lambda x : 1,
+            "pickleable_obj" : 1,
+        },
+        "list_type" : [lambda x : 1, 3],
+        "class_type" : mock_class,
+        "lambda_func" : lambda x : 1,
+        "partial_func" : partial(fake_func_for_pickle_test, arg1=lambda x : 1)
+    }
+    test_dict["dict_type"]["unpickleable_obj2"] = test_dict["dict_type"]["unpickleable_obj1"]  # set same obj
+    ret = find_unpickleable_obj(test_dict, "test_dict")
+
+    assert 'test_dict["dict_type"]["unpickleable_obj1"]' in ret
+    assert 'test_dict["list_type"][0]' in ret
+    assert 'test_dict["class_type"].attr1' in ret
+    assert 'test_dict["lambda_func"]' in ret
+    assert 'test_dict["partial_func"].keywords["arg1"]' in ret
+
+
+def test_check_pickleable():
+    pickleable_obj = [1, 2, 3]
+    unpickleable_obj = lambda x : 1
+    assert check_pickleable(pickleable_obj) is True
+    assert check_pickleable(unpickleable_obj) is False
