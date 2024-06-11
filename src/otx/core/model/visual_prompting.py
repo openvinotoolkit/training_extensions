@@ -829,60 +829,19 @@ class OVZeroShotVisualPromptingModel(
         self,
         inputs: ZeroShotVisualPromptingBatchDataEntity,
         reset_feat: bool = False,
-        default_threshold_reference: float = 0.3,
-        is_cascade: bool = False,
     ) -> tuple[dict[str, np.ndarray], list[np.ndarray]]:
         """`Learn` for reference features."""
-        if reset_feat or self.reference_feats is None:
-            self.initialize_reference_info()
+        if reset_feat or not self.model.has_reference_features():
+            self.model.reset_reference_info()
 
-        images, metas, processed_prompts = self._customize_inputs(inputs)
-        largest_label: int = max(sum([[int(p) for p in prompt] for prompt in processed_prompts], []))
-        self.expand_reference_info(largest_label)
+        images, processed_prompts = self._customize_inputs(inputs)
 
         reference_masks: list[np.ndarray] = []
-        for image, meta, prompts in zip(images, metas, processed_prompts):
-            original_shape = np.array(meta["original_shape"][:2])
+        for image, prompts in zip(images, processed_prompts):
+            _, masks = self.model.learn(image, **prompts)
+            reference_masks.append(masks)
 
-            # forward image encoder
-            image_embeddings = self.model["image_encoder"].infer_sync(image)
-            processed_embedding = image_embeddings["image_embeddings"].squeeze().transpose(1, 2, 0)
-
-            # get reference masks
-            ref_masks: np.ndarray = np.zeros((largest_label + 1, *original_shape), dtype=np.uint8)
-            for label, input_prompts in prompts.items():
-                ref_mask: np.ndarray = np.zeros(original_shape, dtype=np.uint8)
-                for inputs_decoder in input_prompts:
-                    label = inputs_decoder.pop("label")  # noqa: PLW2901
-                    if "point_coords" in inputs_decoder:
-                        # bboxes and points
-                        inputs_decoder.update(image_embeddings)
-                        prediction = self._predict_masks(inputs_decoder, original_shape, is_cascade=is_cascade)
-                        masks = prediction["upscaled_masks"]
-                    else:
-                        log.warning("annotation and polygon will be supported.")
-                        continue
-                    ref_mask[masks] += 1
-                ref_mask = np.clip(ref_mask, 0, 1)
-
-                ref_feat: np.ndarray | None = None
-                cur_default_threshold_reference = deepcopy(default_threshold_reference)
-                while ref_feat is None:
-                    log.info(f"[*] default_threshold_reference : {cur_default_threshold_reference:.4f}")
-                    ref_feat = self._generate_masked_features(
-                        feats=processed_embedding,
-                        masks=ref_mask,
-                        threshold_mask=cur_default_threshold_reference,
-                        image_size=self.model["image_encoder"].image_size,
-                    )
-                    cur_default_threshold_reference -= 0.05
-
-                self.reference_feats[label] = ref_feat
-                self.used_indices: np.ndarray = np.concatenate((self.used_indices, label))
-                ref_masks[label] = ref_mask
-            reference_masks.append(ref_masks)
-        self.used_indices = np.unique(self.used_indices)
-        return {"reference_feats": self.reference_feats, "used_indices": self.used_indices}, reference_masks
+        return {"reference_feats": self.model.reference_feats, "used_indices": self.model.used_indices}, reference_masks
 
     def infer(
         self,
@@ -928,15 +887,15 @@ class OVZeroShotVisualPromptingModel(
     def _customize_inputs(  # type: ignore[override]
         self,
         entity: ZeroShotVisualPromptingBatchDataEntity,  # type: ignore[override]
-    ) -> tuple[list[np.ndarray], list[dict[int, list[Any]]]]:
+    ) -> tuple[list[np.ndarray], list[dict[str, Any]]]:
         """Customize OTX input batch data entity."""
         images: list[np.ndarray] = []
-        processed_prompts: list[list[dict[str, Any]]] = []
-        for image, prompts, labels, imgs_info in zip(
+        processed_prompts: list[dict[str, Any]] = []
+
+        for image, prompts, labels in zip(
             entity.images,
             entity.prompts,
             entity.labels,
-            entity.imgs_info,
         ):
             # preprocess image encoder inputs
             numpy_image = image.cpu().numpy().transpose(1, 2, 0)
@@ -956,17 +915,15 @@ class OVZeroShotVisualPromptingModel(
 
                 # preprocess decoder inputs
                 processed_prompts.append(
-                    self.model["decoder"].preprocess(
                         {
                             "bboxes": bboxes,
                             "points": points,
                             "labels": _labels,
-                            "orig_size": imgs_info.ori_shape,
-                        },
-                    ),
+                            #"orig_size": imgs_info.ori_shape,
+                        }
                 )
-        processed_prompts_w_labels = self._gather_prompts_with_labels(processed_prompts)
-        return images, processed_prompts_w_labels
+
+        return images, processed_prompts
 
     def _customize_outputs(  # type: ignore[override]
         self,
