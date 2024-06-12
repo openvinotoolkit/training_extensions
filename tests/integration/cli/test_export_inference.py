@@ -175,7 +175,7 @@ def test_otx_export_infer(
     checkpoint_path: str = str(ckpt_files[-1])
     tmp_path_test = run_cli_test(recipe, checkpoint_path, Path("outputs") / "torch")
 
-    if task in ("zero_shot_visual_prompting"):
+    if task == "zero_shot_visual_prompting":
         # Check when using reference infos obtained by otx train
         idx_task = checkpoint_path.split("/").index(f"otx_train_{model_name}")
         infer_reference_info_root = [
@@ -243,7 +243,7 @@ def test_otx_export_infer(
     tmp_path_test = run_cli_test(export_test_recipe, exported_model_path, Path("outputs") / "openvino", "cpu")
     assert (tmp_path_test / "outputs").exists()
 
-    if task in ("zero_shot_visual_prompting"):
+    if task == "zero_shot_visual_prompting":
         # Check when using reference infos obtained by otx train
         idx_task = exported_model_path.split("/").index(f"otx_test_{model_name}")
         infer_reference_info_root = [
@@ -290,7 +290,7 @@ def test_otx_export_infer(
 
     # 6) test optimized model
     tmp_path_test = run_cli_test(export_test_recipe, optimized_model_path, Path("outputs") / "nncf_ptq", "cpu")
-    if task in ("zero_shot_visual_prompting"):
+    if task == "zero_shot_visual_prompting":
         # Check when using reference infos obtained by otx train
         idx_task = optimized_model_path.split("/").index(f"otx_test_{model_name}")
         infer_reference_info_root = [
