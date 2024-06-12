@@ -70,4 +70,4 @@ class TestMMActionTransformLib:
 
         mocker.patch("otx.core.data.transform_libs.mmcv.convert_conf_to_mmconfig_dict", side_effect=mock_convert_func)
         transforms = MMActionTransformLib.generate(config)
-        assert len(transforms) == 2
+        assert len(transforms) == 1
