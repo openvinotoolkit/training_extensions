@@ -348,7 +348,11 @@ class OTXZeroShotVisualPromptingModel(
             # to set _combined_loader
             self.trainer._evaluation_loop.setup_data()  # noqa: SLF001
             self.trainer._evaluation_loop.reset()  # noqa: SLF001
-            self.load_reference_info(self.trainer.default_root_dir, self.device)
+            self.load_reference_info(
+                self.trainer.default_root_dir,
+                self.device,
+                path_to_directly_load=self.saved_reference_info_path,
+            )
 
     def on_predict_start(self) -> None:
         """Load previously saved reference info."""
@@ -361,7 +365,11 @@ class OTXZeroShotVisualPromptingModel(
             # to set _combined_loader
             self.trainer._evaluation_loop.setup_data()  # noqa: SLF001
             self.trainer._evaluation_loop.reset()  # noqa: SLF001
-            self.load_reference_info(self.trainer.default_root_dir, self.device)
+            self.load_reference_info(
+                self.trainer.default_root_dir,
+                self.device,
+                path_to_directly_load=self.saved_reference_info_path,
+            )
 
     def on_train_epoch_start(self) -> None:
         """Skip on_train_epoch_start unused in zero-shot visual prompting."""
@@ -1260,12 +1268,17 @@ class OVZeroShotVisualPromptingModel(
             "used_indices": self.used_indices,
         }
         # save reference info
-        path_reference_info: Path = Path(default_root_dir) / self.reference_info_dir / "reference_info.pt"
-        path_reference_info.parent.mkdir(parents=True, exist_ok=True)
+        self.saved_reference_info_path: Path = (
+            Path(default_root_dir) / self.reference_info_dir / "reference_info.pickle"
+        )
+        self.saved_reference_info_path.parent.mkdir(parents=True, exist_ok=True)
         # TODO (sungchul): ticket no. 139210
-        torch.save({k: torch.as_tensor(v) for k, v in reference_info.items()}, path_reference_info)
-        pickle.dump(reference_info, path_reference_info.with_suffix(".pickle").open("wb"))
-        log.info(f"Saved reference info at {path_reference_info}.")
+        torch.save(
+            {k: torch.as_tensor(v) for k, v in reference_info.items()},
+            self.saved_reference_info_path.with_suffix(".pt"),
+        )
+        pickle.dump(reference_info, self.saved_reference_info_path.open("wb"))
+        log.info(f"Saved reference info at {self.saved_reference_info_path}.")
 
     def _generate_masked_features(
         self,
@@ -1319,8 +1332,40 @@ class OVZeroShotVisualPromptingModel(
     ######################################
     #               Infer                #
     ######################################
-    def load_reference_info(self, default_root_dir: Path | str, *args, **kwargs) -> bool:
-        """Load latest reference info to be used."""
+    def load_reference_info(
+        self,
+        default_root_dir: Path | str,
+        *args,
+        path_to_directly_load: Path | None = None,
+        **kwargs,
+    ) -> bool:
+        """Load latest reference info to be used.
+
+        Args:
+            default_root_dir (Path | str): Default root directory to be used
+                when inappropriate infer_reference_info_root is given.
+            path_to_directly_load (Path | None): Reference info path to directly be loaded.
+                Normally, it is obtained after `learn` which is executed when trying to do `infer`
+                without reference features in `on_test_start` or `on_predict_start`.
+
+        Returns:
+            (bool): Whether normally loading checkpoint or not.
+        """
+
+        def _load_and_assign_reference_info(path: Path) -> bool:
+            reference_info: dict[str, np.ndarray] = pickle.load(path.open("rb"))  # noqa: S301   # nosec: B301
+            self.reference_feats = reference_info.get(
+                "reference_feats",
+                np.zeros((0, 1, self.model["decoder"].embed_dim), dtype=np.float32),
+            )
+            self.used_indices = reference_info.get("used_indices", np.array([], dtype=np.int64))
+            log.info(f"reference info saved at {path} was successfully loaded.")
+            return True
+
+        if path_to_directly_load is not None:
+            # if `path_to_directly_load` is given, forcely load
+            return _load_and_assign_reference_info(path_to_directly_load)
+
         _infer_reference_info_root: Path = (
             self.infer_reference_info_root
             if self.infer_reference_info_root == self.infer_reference_info_root.absolute()
@@ -1330,14 +1375,8 @@ class OVZeroShotVisualPromptingModel(
         if (
             path_reference_info := _infer_reference_info_root / self.reference_info_dir / "reference_info.pickle"
         ).is_file():
-            reference_info: dict[str, np.ndarray] = pickle.load(path_reference_info.open("rb"))  # noqa: S301   # nosec: B301
-            self.reference_feats = reference_info.get(
-                "reference_feats",
-                np.zeros((0, 1, self.model["decoder"].embed_dim), dtype=np.float32),
-            )
-            self.used_indices = reference_info.get("used_indices", np.array([], dtype=np.int64))
-            log.info(f"reference info saved at {path_reference_info} was successfully loaded.")
-            return True
+            return _load_and_assign_reference_info(path_reference_info)
+
         return False
 
     def _get_prompt_candidates(
@@ -1524,7 +1563,7 @@ class OVZeroShotVisualPromptingModel(
     def on_test_start(self) -> None:
         """Load previously saved reference info."""
         super().on_test_start()
-        if not self.load_reference_info(self.trainer.default_root_dir, self.device):
+        if not self.load_reference_info(self.trainer.default_root_dir):
             log.warning("No reference info found. `Learn` will be automatically executed first.")
             self.trainer.lightning_module.automatic_optimization = False
             self.trainer.fit_loop.run()
@@ -1533,11 +1572,14 @@ class OVZeroShotVisualPromptingModel(
             # to set _combined_loader
             self.trainer._evaluation_loop.setup_data()  # noqa: SLF001
             self.trainer._evaluation_loop.reset()  # noqa: SLF001
-            self.load_reference_info(self.trainer.default_root_dir, self.device)
+            self.load_reference_info(
+                self.trainer.default_root_dir,
+                path_to_directly_load=self.saved_reference_info_path,
+            )
 
     def on_predict_start(self) -> None:
         """Load previously saved reference info."""
-        if not self.load_reference_info(self.trainer.default_root_dir, self.device):
+        if not self.load_reference_info(self.trainer.default_root_dir):
             log.warning("No reference info found. `Learn` will be automatically executed first.")
             self.trainer.lightning_module.automatic_optimization = False
             self.trainer.fit_loop.run()
@@ -1546,7 +1588,10 @@ class OVZeroShotVisualPromptingModel(
             # to set _combined_loader
             self.trainer._evaluation_loop.setup_data()  # noqa: SLF001
             self.trainer._evaluation_loop.reset()  # noqa: SLF001
-            self.load_reference_info(self.trainer.default_root_dir, self.device)
+            self.load_reference_info(
+                self.trainer.default_root_dir,
+                path_to_directly_load=self.saved_reference_info_path,
+            )
 
     def on_train_epoch_start(self) -> None:
         """Skip on_train_epoch_start unused in zero-shot visual prompting."""
