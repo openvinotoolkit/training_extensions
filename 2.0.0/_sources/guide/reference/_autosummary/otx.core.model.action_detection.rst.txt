@@ -1,0 +1,30 @@
+otx.core.model.action\_detection
+================================
+
+.. automodule:: otx.core.model.action_detection
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      MMActionCompatibleModel
+      OTXActionDetModel
+   
+   
+
+   
+   
+   
+
+
+

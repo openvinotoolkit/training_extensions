@@ -1,0 +1,32 @@
+otx.core.model.instance\_segmentation
+=====================================
+
+.. automodule:: otx.core.model.instance_segmentation
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      ExplainableOTXInstanceSegModel
+      MMDetInstanceSegCompatibleModel
+      OTXInstanceSegModel
+      OVInstanceSegmentationModel
+   
+   
+
+   
+   
+   
+
+
+

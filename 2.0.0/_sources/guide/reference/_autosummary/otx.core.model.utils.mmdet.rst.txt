@@ -1,0 +1,35 @@
+otx.core.model.utils.mmdet
+==========================
+
+.. automodule:: otx.core.model.utils.mmdet
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      create_model
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      DetDataPreprocessor
+   
+   
+
+   
+   
+   
+
+
+

@@ -1,0 +1,37 @@
+otx.core.model.base
+===================
+
+.. automodule:: otx.core.model.base
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      DefaultOptimizerCallable
+      DefaultSchedulerCallable
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      OTXModel
+      OVModel
+   
+   
+
+   
+   
+   
+
+
+

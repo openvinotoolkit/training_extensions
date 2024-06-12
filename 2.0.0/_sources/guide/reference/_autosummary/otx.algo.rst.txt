@@ -1,0 +1,33 @@
+otx.algo
+========
+
+.. automodule:: otx.algo
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   otx.algo.strategies
+   otx.algo.accelerators
+   otx.algo.plugins
+
