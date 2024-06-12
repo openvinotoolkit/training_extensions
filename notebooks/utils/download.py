@@ -4,18 +4,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import pathlib
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
 import zipfile
-
-import requests
-
-=======
-import requests
->>>>>>> fdd5dec09f027c1b04f134a1a59eea59455b77bc
-import zipfile
->>>>>>> 9bf7b66184e1f751cc28c76a369d91b072e22ba6
 
 import requests
 
