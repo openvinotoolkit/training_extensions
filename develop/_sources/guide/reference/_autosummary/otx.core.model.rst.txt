@@ -28,7 +28,6 @@ otx.core.model
    :recursive:
 
    otx.core.model.action_classification
-   otx.core.model.action_detection
    otx.core.model.anomaly
    otx.core.model.base
    otx.core.model.classification
