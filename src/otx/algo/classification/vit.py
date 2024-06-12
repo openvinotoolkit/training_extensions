@@ -17,7 +17,7 @@ from otx.algo.classification.classifier import ImageClassifier, SemiSLClassifier
 from otx.algo.classification.heads import (
     HierarchicalLinearClsHead,
     MultiLabelLinearClsHead,
-    OTXSemiSLLinearClsHead,
+    OTXSemiSLVisionTransformerClsHead,
     VisionTransformerClsHead,
 )
 from otx.algo.classification.losses import AsymmetricAngularLossWithIgnore
@@ -381,7 +381,7 @@ class VisionTransformerForMulticlassClsSemiSL(VisionTransformerForMulticlassCls)
         return SemiSLClassifier(
             backbone=VisionTransformer(arch=self.arch, img_size=224, patch_size=16),
             neck=None,
-            head=OTXSemiSLLinearClsHead(
+            head=OTXSemiSLVisionTransformerClsHead(
                 num_classes=num_classes,
                 in_channels=192,
                 loss=nn.CrossEntropyLoss(reduction="none"),
