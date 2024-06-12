@@ -4,8 +4,15 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import pathlib
+<<<<<<< HEAD
+import zipfile
+
+import requests
+
+=======
 import requests
 import zipfile
+>>>>>>> 9bf7b66184e1f751cc28c76a369d91b072e22ba6
 
 def download_dataset(url: str, extract_to: str) -> None:
     """Downloads and extracts a dataset from a given URL.
@@ -41,4 +48,8 @@ def download_dataset(url: str, extract_to: str) -> None:
         # Remove the zip file
         zip_path.unlink()
     else:
+<<<<<<< HEAD
         print(f"The dataset is already available in {dataset_dir}")
+=======
+        print(f"The dataset is already available in {dataset_dir}")
+>>>>>>> 9bf7b66184e1f751cc28c76a369d91b072e22ba6

@@ -5,8 +5,10 @@
 
 import os
 from pathlib import Path
-from git.repo import Repo
 from urllib.parse import urlparse
+
+from git.repo import Repo
+
 
 def get_repo_name_from_url(git_url: str) -> str:
     """Extracts the repository name from the Git URL.
