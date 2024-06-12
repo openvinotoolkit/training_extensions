@@ -82,7 +82,6 @@ class TestModule:
             OTXTaskType.SEMANTIC_SEGMENTATION,
             OTXTaskType.INSTANCE_SEGMENTATION,
             OTXTaskType.ACTION_CLASSIFICATION,
-            OTXTaskType.ACTION_DETECTION,
         ],
     )
     def test_init(
