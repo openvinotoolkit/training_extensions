@@ -695,8 +695,8 @@
             <span class="n">datamodule</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_auto_configurator</span><span class="o">.</span><span class="n">update_ov_subset_pipeline</span><span class="p">(</span><span class="n">datamodule</span><span class="o">=</span><span class="n">datamodule</span><span class="p">,</span> <span class="n">subset</span><span class="o">=</span><span class="s2">&quot;test&quot;</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">checkpoint</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">is_ir_ckpt</span><span class="p">:</span>
-            <span class="n">model_cls</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="vm">__class__</span>
-            <span class="n">model</span> <span class="o">=</span> <span class="n">model_cls</span><span class="o">.</span><span class="n">load_from_checkpoint</span><span class="p">(</span><span class="n">checkpoint_path</span><span class="o">=</span><span class="n">checkpoint</span><span class="p">)</span>
+            <span class="n">model_cls</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="vm">__class__</span>
+            <span class="n">model</span> <span class="o">=</span> <span class="n">model_cls</span><span class="o">.</span><span class="n">load_from_checkpoint</span><span class="p">(</span><span class="n">checkpoint_path</span><span class="o">=</span><span class="n">checkpoint</span><span class="p">,</span> <span class="o">**</span><span class="n">model</span><span class="o">.</span><span class="n">hparams</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">model</span><span class="o">.</span><span class="n">label_info</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">datamodule</span><span class="o">.</span><span class="n">label_info</span><span class="p">:</span>
             <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span>
@@ -804,7 +804,11 @@
 
         <span class="k">if</span> <span class="ow">not</span> <span class="n">is_ir_ckpt</span><span class="p">:</span>
             <span class="n">model_cls</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="vm">__class__</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model_cls</span><span class="o">.</span><span class="n">load_from_checkpoint</span><span class="p">(</span><span class="n">checkpoint_path</span><span class="o">=</span><span class="n">checkpoint</span><span class="p">,</span> <span class="n">map_location</span><span class="o">=</span><span class="s2">&quot;cpu&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model_cls</span><span class="o">.</span><span class="n">load_from_checkpoint</span><span class="p">(</span>
+                <span class="n">checkpoint_path</span><span class="o">=</span><span class="n">checkpoint</span><span class="p">,</span>
+                <span class="n">map_location</span><span class="o">=</span><span class="s2">&quot;cpu&quot;</span><span class="p">,</span>
+                <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">hparams</span><span class="p">,</span>
+            <span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">explain_mode</span> <span class="o">=</span> <span class="n">explain</span>
@@ -952,7 +956,7 @@
 
         <span class="k">if</span> <span class="n">checkpoint</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">is_ir_ckpt</span><span class="p">:</span>
             <span class="n">model_cls</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="vm">__class__</span>
-            <span class="n">model</span> <span class="o">=</span> <span class="n">model_cls</span><span class="o">.</span><span class="n">load_from_checkpoint</span><span class="p">(</span><span class="n">checkpoint_path</span><span class="o">=</span><span class="n">checkpoint</span><span class="p">)</span>
+            <span class="n">model</span> <span class="o">=</span> <span class="n">model_cls</span><span class="o">.</span><span class="n">load_from_checkpoint</span><span class="p">(</span><span class="n">checkpoint_path</span><span class="o">=</span><span class="n">checkpoint</span><span class="p">,</span> <span class="o">**</span><span class="n">model</span><span class="o">.</span><span class="n">hparams</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">model</span><span class="o">.</span><span class="n">label_info</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">datamodule</span><span class="o">.</span><span class="n">label_info</span><span class="p">:</span>
             <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span>
