@@ -229,6 +229,7 @@ class TestOTXZeroShotVisualPromptingModel:
             "setup_data",
         )
         mocker_reset = mocker.patch.object(otx_zero_shot_visual_prompting_model.trainer._evaluation_loop, "reset")
+        otx_zero_shot_visual_prompting_model.saved_reference_info_path = "path"
 
         otx_zero_shot_visual_prompting_model.on_test_start()
 
@@ -246,6 +247,7 @@ class TestOTXZeroShotVisualPromptingModel:
             "setup_data",
         )
         mocker_reset = mocker.patch.object(otx_zero_shot_visual_prompting_model.trainer._evaluation_loop, "reset")
+        otx_zero_shot_visual_prompting_model.saved_reference_info_path = "path"
 
         otx_zero_shot_visual_prompting_model.on_predict_start()
 
