@@ -981,7 +981,6 @@ class Engine:
                     self._cache.args["precision"] = None
 
             kwargs = self._cache.args
-            del kwargs["callbacks"][1]
             self._trainer = Trainer(**kwargs)
             self._cache.is_trainer_args_identical = True
             self._trainer.task = self.task

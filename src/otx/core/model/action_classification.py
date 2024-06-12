@@ -271,7 +271,7 @@ class MMActionCompatibleModel(OTXActionClsModel):
             std=std,
             resize_mode="standard",
             pad_value=0,
-            swap_rgb=True,
+            swap_rgb=False,
             via_onnx=False,
             onnx_export_configuration=None,
             output_names=None,
