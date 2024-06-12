@@ -39,7 +39,7 @@ def get_task_list(task: str) -> list[OTXTaskType]:
     if task == "classification":
         return [OTXTaskType.MULTI_CLASS_CLS, OTXTaskType.MULTI_LABEL_CLS, OTXTaskType.H_LABEL_CLS]
     if task == "action":
-        return [OTXTaskType.ACTION_CLASSIFICATION, OTXTaskType.ACTION_DETECTION]
+        return [OTXTaskType.ACTION_CLASSIFICATION]
     if task == "visual_prompting":
         return [OTXTaskType.VISUAL_PROMPTING, OTXTaskType.ZERO_SHOT_VISUAL_PROMPTING]
     if task == "anomaly":
@@ -100,7 +100,6 @@ def fxt_target_dataset_per_task(fxt_ci_data_root) -> dict:
         OTXTaskType.ACTION_CLASSIFICATION: Path(
             fxt_ci_data_root / "v2/action/action_classification/ucf_kinetics_5percent_small",
         ),
-        OTXTaskType.ACTION_DETECTION: Path(fxt_ci_data_root / "v2/action/action_detection/UCF101_ava_5percent"),
         OTXTaskType.VISUAL_PROMPTING: Path(fxt_ci_data_root / "v2/visual_prompting/wgisd_small/1"),
         OTXTaskType.ZERO_SHOT_VISUAL_PROMPTING: Path(
             fxt_ci_data_root / "v2/zero_shot_visual_prompting/coco_car_person_medium",
@@ -122,10 +121,6 @@ def fxt_cli_override_command_per_task() -> dict:
         OTXTaskType.INSTANCE_SEGMENTATION: [],
         OTXTaskType.SEMANTIC_SEGMENTATION: [],
         OTXTaskType.ACTION_CLASSIFICATION: [],
-        OTXTaskType.ACTION_DETECTION: [
-            "--model.topk",
-            "3",
-        ],
         OTXTaskType.VISUAL_PROMPTING: [],
         OTXTaskType.ZERO_SHOT_VISUAL_PROMPTING: [],
         OTXTaskType.ANOMALY_CLASSIFICATION: [],
