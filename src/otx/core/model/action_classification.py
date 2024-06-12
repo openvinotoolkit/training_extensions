@@ -271,7 +271,7 @@ class MMActionCompatibleModel(OTXActionClsModel):
             std=std,
             resize_mode="standard",
             pad_value=0,
-            swap_rgb=False,
+            swap_rgb=True,
             via_onnx=False,
             onnx_export_configuration=None,
             output_names=None,
@@ -355,4 +355,4 @@ class OVActionClsModel(
     @property
     def model_adapter_parameters(self) -> dict:
         """Model parameters for export."""
-        return {"input_layouts": "?NCTHW"}
+        return {"input_layouts": "NSCTHW"}

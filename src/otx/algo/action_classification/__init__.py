@@ -5,11 +5,9 @@
 
 from .backbones import MoViNetBackbone, X3DBackbone
 from .heads import MoViNetHead, X3DHead
-from .openvino_model import OTXOVActionCls
 from .recognizers import BaseRecognizer, MoViNetRecognizer
 
 __all__ = [
-    "OTXOVActionCls",
     "BaseRecognizer",
     "MoViNetBackbone",
     "MoViNetHead",
