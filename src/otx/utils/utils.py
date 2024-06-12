@@ -181,7 +181,7 @@ def can_pass_tile_config(model_cls: type[OTXModel]) -> bool:
     return tile_config_param is not None
 
 
-def find_unpickleable_obj(obj : Any, obj_name: str) -> list[str]:
+def find_unpickleable_obj(obj: Any, obj_name: str) -> list[str]:  # noqa: ANN401
     """Find which objects in 'obj' can't be pickled.
 
     Args:
