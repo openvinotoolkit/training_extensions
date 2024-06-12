@@ -448,8 +448,8 @@ class Engine:
             datamodule = self._auto_configurator.update_ov_subset_pipeline(datamodule=datamodule, subset="test")
 
         if checkpoint is not None and not is_ir_ckpt:
-            model_cls = self.model.__class__
-            model = model_cls.load_from_checkpoint(checkpoint_path=checkpoint)
+            model_cls = model.__class__
+            model = model_cls.load_from_checkpoint(checkpoint_path=checkpoint, **model.hparams)
 
         if model.label_info != self.datamodule.label_info:
             msg = (
@@ -554,7 +554,7 @@ class Engine:
 
         if not is_ir_ckpt:
             model_cls = self.model.__class__
-            self.model = model_cls.load_from_checkpoint(checkpoint_path=checkpoint, map_location="cpu")
+            self.model = model_cls.load_from_checkpoint(checkpoint_path=checkpoint, map_location="cpu", **model.hparams)
             self.model.eval()
 
         self.model.explain_mode = explain
@@ -696,7 +696,7 @@ class Engine:
 
         if checkpoint is not None and not is_ir_ckpt:
             model_cls = model.__class__
-            model = model_cls.load_from_checkpoint(checkpoint_path=checkpoint)
+            model = model_cls.load_from_checkpoint(checkpoint_path=checkpoint, **model.hparams)
 
         if model.label_info != self.datamodule.label_info:
             msg = (
