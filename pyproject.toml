@@ -36,6 +36,8 @@ dependencies = [
     "importlib_resources==6.4.0",
     "docstring_parser==0.16", # CLI help-formatter
     "rich_argparse==1.4.0", # CLI help-formatter
+    # TODO(ashwinvaidya17): https://github.com/openvinotoolkit/anomalib/issues/2126
+    "setuptools<70",
 ]
 
 [project.optional-dependencies]
