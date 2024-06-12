@@ -554,7 +554,11 @@ class Engine:
 
         if not is_ir_ckpt:
             model_cls = self.model.__class__
-            self.model = model_cls.load_from_checkpoint(checkpoint_path=checkpoint, map_location="cpu", **model.hparams)
+            self.model = model_cls.load_from_checkpoint(
+                checkpoint_path=checkpoint,
+                map_location="cpu",
+                **self.model.hparams,
+            )
             self.model.eval()
 
         self.model.explain_mode = explain
