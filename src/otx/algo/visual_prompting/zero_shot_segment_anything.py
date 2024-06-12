@@ -714,12 +714,16 @@ class OTXZeroShotSegmentAnything(OTXZeroShotVisualPromptingModel):
         inputs: ZeroShotVisualPromptingBatchDataEntity,
         reference_feats: Tensor | None = None,
         used_indices: Tensor | None = None,
+        threshold: float = 0.0,
+        num_bg_points: int = 1,
         is_cascade: bool = True,
     ) -> ZeroShotVisualPromptingBatchPredEntity | OTXBatchLossEntity:
         """Infer to directly connect to the model."""
         self.training = False
         outputs = self.model.infer(
             **self._customize_inputs(inputs, reference_feats=reference_feats, used_indices=used_indices),
+            threshold=threshold,
+            num_bg_points=num_bg_points,
             is_cascade=is_cascade,
         )
         return self._customize_outputs(outputs, inputs)
