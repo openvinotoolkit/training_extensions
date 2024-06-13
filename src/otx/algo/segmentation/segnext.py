@@ -111,9 +111,9 @@ class OTXSegNext(TorchVisionCompatibleModel):
     def _create_model(self) -> nn.Module:
         segnext_model_class = SEGNEXT_VARIANTS[self.name_base_model]
         # merge configurations with defaults overriding them
-        backbone_configuration = self.backbone_configuration | segnext_model_class.default_backbone_configuration
+        backbone_configuration = segnext_model_class.default_backbone_configuration | self.backbone_configuration
         decode_head_configuration = (
-            self.decode_head_configuration | segnext_model_class.default_decode_head_configuration
+            segnext_model_class.default_decode_head_configuration | self.decode_head_configuration
         )
         # initialize backbones
         backbone = MSCAN(**backbone_configuration)

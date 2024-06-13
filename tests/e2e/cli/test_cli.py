@@ -50,9 +50,6 @@ def test_otx_e2e_cli(
     else:
         dataset_path = fxt_target_dataset_per_task[task]
 
-    if task == OTXTaskType.ACTION_DETECTION:
-        pytest.xfail("Fix for action detection issue will be low priority. Refer to issue #3267.")
-
     # 1) otx train
     tmp_path_train = tmp_path / f"otx_train_{model_name}"
     command_cfg = [
@@ -287,7 +284,13 @@ def test_otx_explain_e2e_cli(
     task = recipe.split("/")[-2].upper()
     model_name = recipe.split("/")[-1].split(".")[0]
 
-    if ("_cls" not in task) and (task not in [OTXTaskType.DETECTION, OTXTaskType.INSTANCE_SEGMENTATION]):
+    if task not in [
+        OTXTaskType.MULTI_CLASS_CLS,
+        OTXTaskType.MULTI_LABEL_CLS,
+        OTXTaskType.H_LABEL_CLS,
+        OTXTaskType.DETECTION,
+        OTXTaskType.INSTANCE_SEGMENTATION,
+    ]:
         pytest.skip("Supported only for classification, detection and instance segmentation task.")
 
     deterministic = "True"
@@ -403,8 +406,6 @@ def test_otx_hpo_e2e_cli(
         pytest.skip(f"Task {task} is not supported in the auto-configuration.")
     if task == OTXTaskType.ZERO_SHOT_VISUAL_PROMPTING:
         pytest.skip("ZERO_SHOT_VISUAL_PROMPTING doesn't support HPO.")
-    if task == OTXTaskType.ACTION_DETECTION:
-        pytest.xfail("Fix for action detection issue will be low priority. Refer to issue #3267.")
 
     # Need to change model to stfpm because default anomaly model is 'padim' which doesn't support HPO
     model_cfg = []

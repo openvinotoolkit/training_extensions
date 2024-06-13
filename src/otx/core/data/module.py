@@ -6,9 +6,12 @@
 from __future__ import annotations
 
 import logging as log
-from typing import TYPE_CHECKING
+from copy import deepcopy
+from typing import TYPE_CHECKING, Iterable
 
+import torch
 from datumaro import Dataset as DmDataset
+from datumaro import Environment
 from lightning import LightningDataModule
 from omegaconf import DictConfig, OmegaConf
 from torch.utils.data import DataLoader, RandomSampler
@@ -57,9 +60,40 @@ class OTXDataModule(LightningDataModule):
 
         VIDEO_EXTENSIONS.append(".mp4")
 
+        # Data Format Check
+        available_data_formats = Environment().detect_dataset(str(self.config.data_root))
+        if not available_data_formats:
+            msg = f"Invalid data root: {self.config.data_root}. Please check if the data root is valid."
+            raise ValueError(msg)
+        if self.config.data_format not in available_data_formats:
+            log.warning(
+                f"Invalid data format: {self.config.data_format}. Available formats: {available_data_formats} "
+                f"Replace data_format: {self.config.data_format} -> {available_data_formats[0]}.",
+            )
+            self.config.data_format = available_data_formats[0]
+
         dataset = DmDataset.import_from(self.config.data_root, format=self.config.data_format)
         if self.task != "H_LABEL_CLS":
-            dataset = pre_filtering(dataset, self.config.data_format, self.config.unannotated_items_ratio)
+            ignore_index = self.config.ignore_index if self.task == "SEMANTIC_SEGMENTATION" else None
+            dataset = pre_filtering(
+                dataset,
+                self.config.data_format,
+                self.config.unannotated_items_ratio,
+                ignore_index=ignore_index,
+            )
+
+        unlabeled_dataset = None
+        if self.config.unlabeled_subset.data_root is not None:
+            # If unlabeled_subset's data_root is not None, use that folder as the Unlabeled dataset root.
+            log.info(
+                f"Unlabeled dataset is loaded from {self.config.unlabeled_subset.data_root}.",
+            )
+            unlabeled_dataset = DmDataset.import_from(
+                self.config.unlabeled_subset.data_root,
+                format=self.config.unlabeled_subset.data_format,
+                subset=self.config.unlabeled_subset.subset_name,
+            )
+
         if config.tile_config.enable_tiler and config.tile_config.enable_adaptive_tiling:
             adapt_tile_config(config.tile_config, dataset=dataset)
 
@@ -119,6 +153,38 @@ class OTXDataModule(LightningDataModule):
             label_infos += [self.subsets[name].label_info]
             log.info(f"Add name: {name}, self.subsets: {self.subsets}")
 
+        if unlabeled_dataset is not None:
+            name = self.config.unlabeled_subset.subset_name
+            dm_subset = unlabeled_dataset.subsets()[name]
+
+            if isinstance(self.config.unlabeled_subset.transforms, dict):
+                # When applying multi-transforms to a single unlabeled dataset
+                # This adds as many subsets as the number of keys in the transforms. The dataset is the same,
+                # only the transforms are different.
+                dm_subset = dm_subset.as_dataset()
+                for transform_key, transforms in self.config.unlabeled_subset.transforms.items():
+                    unlabeled_config = deepcopy(self.config.unlabeled_subset)
+                    # TODO (harimkang): Revisit this with core.config.data.UnlabeledDataConfig.transforms.
+                    unlabeled_config.transforms = transforms  # type: ignore[assignment]
+
+                    unlabeled_dataset = OTXDatasetFactory.create(
+                        task=self.task,
+                        dm_subset=dm_subset,
+                        mem_cache_handler=mem_cache_handler,
+                        cfg_subset=unlabeled_config,
+                        cfg_data_module=config,
+                    )
+                    self.subsets[transform_key] = unlabeled_dataset
+            else:
+                unlabeled_dataset = OTXDatasetFactory.create(
+                    task=self.task,
+                    dm_subset=dm_subset.as_dataset(),
+                    mem_cache_handler=mem_cache_handler,
+                    cfg_subset=self.config.unlabeled_subset,
+                    cfg_data_module=config,
+                )
+                self.subsets[name] = unlabeled_dataset
+
         if self._is_meta_info_valid(label_infos) is False:
             msg = "All data meta infos of subsets should be the same."
             raise ValueError(msg)
@@ -137,7 +203,7 @@ class OTXDataModule(LightningDataModule):
             raise KeyError(msg)
         return dataset
 
-    def train_dataloader(self) -> DataLoader:
+    def train_dataloader(self) -> Iterable:
         """Get train dataloader."""
         config = self.config.train_subset
         dataset = self._get_dataset(config.subset_name)
@@ -164,7 +230,18 @@ class OTXDataModule(LightningDataModule):
                     "sampler": RandomSampler(dataset, num_samples=num_samples),
                 },
             )
-        return DataLoader(**common_args)
+        dataloader: DataLoader = DataLoader(**common_args)
+        if (unlabeled_dataloader := self.unlabeled_dataloader()) is not None:
+            # Utilize the CombinedLoader provided by Lightning to bundle multiple dataloaders.
+            # https://lightning.ai/docs/pytorch/stable/data/iterables.html
+            from lightning.pytorch.utilities import CombinedLoader
+
+            iterables = {
+                "labeled": dataloader,
+                **unlabeled_dataloader,
+            }
+            return CombinedLoader(iterables, mode="min_size")
+        return dataloader
 
     def val_dataloader(self) -> DataLoader:
         """Get val dataloader."""
@@ -210,6 +287,63 @@ class OTXDataModule(LightningDataModule):
             collate_fn=dataset.collate_fn,
             persistent_workers=config.num_workers > 0,
         )
+
+    def unlabeled_dataloader(self) -> dict[str, DataLoader] | None:
+        """Returns a dictionary of unlabeled dataloaders.
+
+        The method creates and returns dataloaders for unlabeled datasets based on the configuration settings.
+        If the data root is not specified in the configuration, it returns None.
+
+        Returns:
+            dict[str, DataLoader] | None: A dictionary containing unlabeled dataloaders, where the keys are the names of
+            the datasets and the values are the corresponding DataLoader objects.
+        """
+        config = self.config.unlabeled_subset
+        if self.config.unlabeled_subset.data_root is None:
+            return None
+
+        common_args = {
+            "batch_size": config.batch_size,
+            "num_workers": config.num_workers,
+            "pin_memory": True,
+            "persistent_workers": config.num_workers > 0,
+        }
+
+        dataloaders = {}
+        if isinstance(config.transforms, dict):
+            log.warning(f"Unlabeled dataset has multiple transforms : {list(config.transforms.keys())}")
+            common_args["worker_init_fn"] = lambda _: torch.manual_seed(0)  # type: ignore[assignment]
+            for key in config.transforms:
+                dataset = self._get_dataset(key)
+                # For unlabeled datasets using Multi-Transforms, must use generators and samplers
+                # with the same seed to get the same data.
+                generator = torch.Generator().manual_seed(0)
+                sampler = instantiate_sampler(
+                    config.sampler,
+                    dataset=dataset,
+                    batch_size=config.batch_size,
+                    generator=generator,
+                )
+
+                dataloaders[key] = DataLoader(
+                    dataset=dataset,
+                    collate_fn=dataset.collate_fn,
+                    sampler=sampler,
+                    shuffle=False,
+                    **common_args,
+                )
+        else:
+            dataset = self._get_dataset(config.subset_name)
+            sampler = instantiate_sampler(config.sampler, dataset=dataset, batch_size=config.batch_size)
+            dataloaders[config.subset_name] = DataLoader(
+                dataset=dataset,
+                collate_fn=dataset.collate_fn,
+                sampler=sampler,
+                shuffle=sampler is None,
+                **common_args,
+            )
+
+        return dataloaders
 
     def setup(self, stage: str) -> None:
         """Setup for each stage."""

@@ -49,6 +49,18 @@ class TestOTXVisualPromptingModelExporter:
         mocker_postprocess_openvino_model.assert_called()
         mocker_openvino_save_model.assert_called()
 
+        otx_visual_prompting_model_exporter.export(
+            model=mock_model,
+            output_dir=tmpdir,
+            export_format=OTXExportFormatType.OPENVINO,
+            to_exportable_code=True,
+        )
+
+        # ensure that export to openvino model called
+        # and to_exportable_code was ignored
+        mocker_openvino_convert_model.assert_called()
+        mocker_openvino_save_model.assert_called()
+
     def test_export_onnx(self, mocker, tmpdir, otx_visual_prompting_model_exporter) -> None:
         """Test export for ONNX."""
         mocker_torch_onnx_export = mocker.patch("torch.onnx.export")
@@ -70,14 +82,3 @@ class TestOTXVisualPromptingModelExporter:
         mocker_onnx_load.assert_called()
         mocker_onnx_save.assert_called()
         mocker_postprocess_onnx_model.assert_called()
-
-    def test_export_exportable_code(self, mocker, tmpdir, otx_visual_prompting_model_exporter) -> None:
-        """Test export for EXPORTABLE_CODE."""
-        mock_model = mocker.MagicMock()
-
-        with pytest.raises(NotImplementedError):
-            otx_visual_prompting_model_exporter.export(
-                model=mock_model,
-                output_dir=tmpdir,
-                export_format=OTXExportFormatType.EXPORTABLE_CODE,
-            )

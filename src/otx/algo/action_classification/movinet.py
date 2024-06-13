@@ -7,10 +7,15 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from otx.algo.utils.mmconfig import read_mmconfig
+from torch import nn
+
+from otx.algo.action_classification.backbones.movinet import MoViNetBackbone
+from otx.algo.action_classification.heads.movinet_head import MoViNetHead
+from otx.algo.action_classification.recognizers.movinet_recognizer import MoViNetRecognizer
+from otx.algo.utils.mmengine_utils import load_checkpoint
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.metrics.accuracy import MultiClassClsMetricCallable
-from otx.core.model.action_classification import MMActionCompatibleModel
+from otx.core.model.action_classification import OTXActionClsModel
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
 from otx.core.schedulers import LRSchedulerListCallable
 from otx.core.types.label import LabelInfoTypes
@@ -21,7 +26,7 @@ if TYPE_CHECKING:
     from otx.core.metrics import MetricCallable
 
 
-class MoViNet(MMActionCompatibleModel):
+class MoViNet(OTXActionClsModel):
     """MoViNet Model."""
 
     def __init__(
@@ -32,14 +37,34 @@ class MoViNet(MMActionCompatibleModel):
         metric: MetricCallable = MultiClassClsMetricCallable,
         torch_compile: bool = False,
     ) -> None:
-        config = read_mmconfig("movinet")
+        self.load_from = "https://github.com/Atze00/MoViNet-pytorch/blob/main/weights/modelA0_statedict_v3?raw=true"
         super().__init__(
             label_info=label_info,
-            config=config,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
             torch_compile=torch_compile,
+        )
+
+    def _create_model(self) -> nn.Module:
+        model = self._build_model(num_classes=self.label_info.num_classes)
+        model.init_weights()
+        self.classification_layers = self.get_classification_layers(prefix="model.")
+
+        if self.load_from is not None:
+            load_checkpoint(model, self.load_from, map_location="cpu")
+
+        return model
+
+    def _build_model(self, num_classes: int) -> nn.Module:
+        return MoViNetRecognizer(
+            backbone=MoViNetBackbone(),
+            cls_head=MoViNetHead(
+                num_classes=num_classes,
+                in_channels=480,
+                hidden_dim=2048,
+                loss_cls=nn.CrossEntropyLoss(),
+            ),
         )
 
     def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.model.") -> dict:

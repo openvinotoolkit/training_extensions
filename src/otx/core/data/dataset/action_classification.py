@@ -13,7 +13,7 @@ from datumaro import Label
 
 from otx.core.data.dataset.base import OTXDataset
 from otx.core.data.entity.action_classification import ActionClsBatchDataEntity, ActionClsDataEntity
-from otx.core.data.entity.base import ImageInfo
+from otx.core.data.entity.base import ImageInfo, VideoInfo
 from otx.core.data.mem_cache import NULL_MEM_CACHE_HANDLER
 from otx.core.types.image import ImageColorChannel
 
@@ -69,6 +69,7 @@ class OTXActionClsDataset(OTXDataset[ActionClsDataEntity]):
                 ori_shape=(0, 0),
                 image_color_channel=self.image_color_channel,
             ),
+            video_info=VideoInfo(),
             labels=torch.as_tensor([ann.label for ann in label_anns]),
         )
 
