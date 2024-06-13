@@ -65,7 +65,7 @@ class OTXDatasetFactory:
     """Factory class for OTXDataset."""
 
     @classmethod
-    def create(  # noqa: PLR0911 # ignore too many return statements
+    def create(  # ignore too many return statements
         cls: type[OTXDatasetFactory],
         task: OTXTaskType,
         dm_subset: DmDataset,
@@ -130,11 +130,6 @@ class OTXDatasetFactory:
             from .dataset.action_classification import OTXActionClsDataset
 
             return OTXActionClsDataset(**common_kwargs)
-
-        if task == OTXTaskType.ACTION_DETECTION:
-            from .dataset.action_detection import OTXActionDetDataset
-
-            return OTXActionDetDataset(**common_kwargs)
 
         if task == OTXTaskType.VISUAL_PROMPTING:
             from .dataset.visual_prompting import OTXVisualPromptingDataset

@@ -49,4 +49,4 @@ class TestDeitTiny:
 
         mock_load_ckpt = mocker.patch.object(OTXv1Helper, "load_cls_effnet_b0_ckpt")
         fxt_model.load_from_otx_v1_ckpt({})
-        mock_load_ckpt.assert_called_once_with({}, "multiclass", "model.model.")
+        mock_load_ckpt.assert_called_once_with({}, "multiclass", "model.")

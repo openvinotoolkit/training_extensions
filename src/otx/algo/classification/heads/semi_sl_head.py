@@ -18,6 +18,7 @@ from torch import nn
 from otx.algo.utils.weight_init import constant_init, normal_init
 
 from .linear_head import LinearClsHead
+from .vision_transformer_head import VisionTransformerClsHead
 
 
 class OTXSemiSLClsHead(nn.Module):
@@ -227,3 +228,36 @@ class OTXSemiSLNonLinearClsHead(OTXSemiSLClsHead):
         if isinstance(feats, Sequence):
             feats = feats[-1]
         return self.classifier(feats)
+
+
+class OTXSemiSLVisionTransformerClsHead(OTXSemiSLClsHead, VisionTransformerClsHead):
+    """VisionTransformerClsHead for OTXSemiSLClsHead."""
+
+    def __init__(
+        self,
+        num_classes: int,
+        in_channels: int,
+        loss: nn.Module,
+        unlabeled_coef: float = 1,
+        use_dynamic_threshold: bool = True,
+        min_threshold: float = 0.5,
+        hidden_dim: int | None = None,
+        init_cfg: dict = {"type": "Constant", "layer": "Linear", "val": 0},  # noqa: B006
+        **kwargs,
+    ):
+        VisionTransformerClsHead.__init__(
+            self,
+            num_classes=num_classes,
+            in_channels=in_channels,
+            loss=loss,
+            hidden_dim=hidden_dim,
+            init_cfg=init_cfg,
+            **kwargs,
+        )
+        OTXSemiSLClsHead.__init__(
+            self,
+            num_classes=num_classes,
+            unlabeled_coef=unlabeled_coef,
+            use_dynamic_threshold=use_dynamic_threshold,
+            min_threshold=min_threshold,
+        )

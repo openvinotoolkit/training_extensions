@@ -1,13 +1,12 @@
 model:
-  class_path: otx.algo.classification.efficientnet.EfficientNetForMulticlassClsSemiSL
+  class_path: otx.algo.classification.efficientnet_v2.EfficientNetV2ForMulticlassClsSemiSL
   init_args:
     label_info: 1000
-    version: b0
 
     optimizer:
       class_path: torch.optim.SGD
       init_args:
-        lr: 0.0049
+        lr: 0.0071
         momentum: 0.9
         weight_decay: 0.0001
 

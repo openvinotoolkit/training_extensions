@@ -13,6 +13,7 @@ from otx.core.data.entity.base import (
     OTXBatchPredEntity,
     OTXDataEntity,
     OTXPredEntity,
+    VideoInfo,
 )
 from otx.core.data.entity.utils import register_pytree_node
 from otx.core.types.task import OTXTaskType
@@ -33,6 +34,7 @@ class ActionClsDataEntity(OTXDataEntity):
     """
 
     video: Video
+    video_info: VideoInfo
     labels: LongTensor
 
     def to_tv_image(self) -> ActionClsDataEntity:

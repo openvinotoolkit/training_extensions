@@ -16,8 +16,6 @@ def test_list_models_per_task(task: str) -> None:
     task_dir = task
     if task_dir.endswith("CLS"):
         task_dir = "classification/" + task_dir
-    elif task_dir.startswith("ACTION"):
-        task_dir = "action/" + task_dir
     target_dir = RECIPE_PATH / task_dir.lower()
     target_recipes = [str(recipe.stem) for recipe in target_dir.glob("**/*.yaml")]
 
@@ -32,6 +30,7 @@ def test_list_models_pattern() -> None:
         "efficientnet_b0",
         "efficientnet_b0_semisl",
         "efficientnet_v2",
+        "efficientnet_v2_semisl",
         "maskrcnn_efficientnetb2b",
         "maskrcnn_efficientnetb2b_tile",
         "tv_efficientnet_b3",

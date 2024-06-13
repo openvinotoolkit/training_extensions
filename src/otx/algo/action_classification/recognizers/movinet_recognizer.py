@@ -1,20 +1,18 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-"""MoViNet Recognizer for OTX compatibility."""
 
+"""MoViNet Recognizer for OTX compatibility."""
 import functools
 
-from mmaction.models import MODELS
 from torch import nn
 
-from otx.algo.action_classification.recognizers.recognizer import OTXRecognizer3D
+from otx.algo.action_classification.recognizers.recognizer import BaseRecognizer
 
 
-@MODELS.register_module()
-class MoViNetRecognizer(OTXRecognizer3D):
+class MoViNetRecognizer(BaseRecognizer):
     """MoViNet recognizer model framework for OTX compatibility."""
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
         # Hooks for redirect state_dict load/save
         self._register_state_dict_hook(self.state_dict_hook)

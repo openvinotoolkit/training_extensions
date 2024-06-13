@@ -4,6 +4,6 @@
 """Custom 3D recognizers for OTX."""
 
 from .movinet_recognizer import MoViNetRecognizer
-from .recognizer import OTXRecognizer3D
+from .recognizer import BaseRecognizer
 
-__all__ = ["OTXRecognizer3D", "MoViNetRecognizer"]
+__all__ = ["BaseRecognizer", "MoViNetRecognizer"]

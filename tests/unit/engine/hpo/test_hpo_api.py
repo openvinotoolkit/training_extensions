@@ -11,6 +11,7 @@ from unittest.mock import MagicMock
 
 import pytest
 import yaml
+import torch
 from otx.core.config.hpo import HpoConfig
 from otx.core.optimizer.callable import OptimizerCallableSupportHPO
 from otx.core.schedulers import LinearWarmupSchedulerCallable, SchedulerCallableSupportHPO
@@ -90,8 +91,25 @@ def mock_thread(mocker) -> MagicMock:
 
 
 @pytest.fixture()
-def mock_get_best_hpo_weight(mocker) -> MagicMock:
-    return mocker.patch.object(target_file, "get_best_hpo_weight")
+def mock_best_hpo_weight(tmp_path) -> Path:
+    model_weight_path = tmp_path / "best_model_weight.pth"
+    model_weight = {
+        "callbacks": {
+            "ModelCheckpoint": {
+                "best_model_path": "fake_value",
+                "kth_best_model_path": "fake_value",
+                "best_k_models": "fake_value",
+                "dirpath": "fake_value",
+            },
+        },
+    }
+    torch.save(model_weight, model_weight_path)
+    return model_weight_path
+
+
+@pytest.fixture()
+def mock_get_best_hpo_weight(mocker, mock_best_hpo_weight) -> MagicMock:
+    return mocker.patch.object(target_file, "get_best_hpo_weight", return_value=mock_best_hpo_weight)
 
 
 @pytest.fixture()
@@ -143,7 +161,11 @@ def test_execute_hpo(
     mock_hpo_algo.print_result.assert_called_once()
     # best_config and best_hpo_weight are returned well
     assert best_config == "best_config"
-    assert best_hpo_weight == mock_get_best_hpo_weight.return_value
+    assert best_hpo_weight is not None
+    model_weight = torch.load(best_hpo_weight)
+    assert model_weight["callbacks"]["ModelCheckpoint"]["best_model_path"] == best_hpo_weight
+    for key in ["kth_best_model_path", "best_k_models", "dirpath"]:
+        assert key not in model_weight["callbacks"]["ModelCheckpoint"]
 
 
 class TestHPOConfigurator:

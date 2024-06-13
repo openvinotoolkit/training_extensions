@@ -3,9 +3,17 @@
 #
 """Module for OTX action classification models."""
 
-from .backbones import OTXMoViNet
-from .heads import MoViNetHead
+from .backbones import MoViNetBackbone, X3DBackbone
+from .heads import MoViNetHead, X3DHead
 from .openvino_model import OTXOVActionCls
-from .recognizers import MoViNetRecognizer, OTXRecognizer3D
+from .recognizers import BaseRecognizer, MoViNetRecognizer
 
-__all__ = ["OTXOVActionCls", "OTXRecognizer3D", "OTXMoViNet", "MoViNetHead", "MoViNetRecognizer"]
+__all__ = [
+    "OTXOVActionCls",
+    "BaseRecognizer",
+    "MoViNetBackbone",
+    "MoViNetHead",
+    "MoViNetRecognizer",
+    "X3DBackbone",
+    "X3DHead",
+]
