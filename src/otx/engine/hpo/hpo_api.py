@@ -14,6 +14,7 @@ from threading import Thread
 from typing import TYPE_CHECKING, Any, Callable, Literal
 
 import torch
+import yaml
 
 from otx.core.config.hpo import HpoConfig
 from otx.core.optimizer.callable import OptimizerCallableSupportHPO
@@ -195,7 +196,7 @@ class HPOConfigurator:
         if "search_space" not in self._hpo_config:
             self._hpo_config["search_space"] = self._get_default_search_space()
         else:
-            self._align_hp_name(self._hpo_config["search_space"])
+            self._align_search_space()
 
         if hpo_config.adapt_bs_search_space_max_val != "None":
             if "datamodule.config.train_subset.batch_size" not in self._hpo_config["search_space"]:
@@ -233,8 +234,8 @@ class HPOConfigurator:
         cur_bs = self._engine.datamodule.config.train_subset.batch_size
         search_space["datamodule.config.train_subset.batch_size"] = {
             "type": "qloguniform",
-            "min": cur_bs // 2,
-            "max": cur_bs * 2,
+            "min": cur_bs // 2 if cur_bs != 1 else 1,
+            "max": cur_bs * 2 if cur_bs != 1 else 2,
             "step": 2,
         }
 
@@ -253,6 +254,19 @@ class HPOConfigurator:
             "max": min(cur_lr * 10, 0.1),
             "step": 10 ** -get_decimal_point(min_lr),
         }
+
+    def _align_search_space(self) -> None:
+        if isinstance(self._hpo_config["search_space"], (str, Path)):
+            search_space_file = Path(self._hpo_config["search_space"])
+            if not search_space_file.exists():
+                msg = f"{search_space_file} is set to HPO search_space, but it doesn't exist."
+                raise FileExistsError(msg)
+            with search_space_file.open("r") as f:
+                self._hpo_config["search_space"] = yaml.safe_load(f)
+        elif not isinstance(self._hpo_config["search_space"], dict):
+            msg = "HpoConfig.search_space should be str or dict type."
+            raise TypeError(msg)
+        self._align_hp_name(self._hpo_config["search_space"])  # type: ignore[arg-type]
 
     def _align_hp_name(self, search_space: dict[str, Any]) -> None:
         available_hp_name_map: dict[str, Callable[[str], None]] = {

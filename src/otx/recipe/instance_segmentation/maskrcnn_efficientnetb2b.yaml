@@ -30,7 +30,6 @@ callback_monitor: val/map_50
 
 data: ../_base_/data/torchvision_base.yaml
 overrides:
-  export_precision: FP32
   max_epochs: 100
   data:
     task: INSTANCE_SEGMENTATION
@@ -52,6 +51,7 @@ overrides:
                 - 1024
           - class_path: otx.core.data.transform_libs.torchvision.Pad
             init_args:
+              pad_to_square: true
               size_divisor: 32
               transform_mask: true
           - class_path: otx.core.data.transform_libs.torchvision.RandomFlip
@@ -82,6 +82,7 @@ overrides:
                 - 1024
           - class_path: otx.core.data.transform_libs.torchvision.Pad
             init_args:
+              pad_to_square: true
               size_divisor: 32
               transform_mask: false
               is_numpy_to_tvtensor: true
@@ -107,6 +108,7 @@ overrides:
                 - 1024
           - class_path: otx.core.data.transform_libs.torchvision.Pad
             init_args:
+              pad_to_square: true
               size_divisor: 32
               transform_mask: false
               is_numpy_to_tvtensor: true

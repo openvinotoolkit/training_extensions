@@ -77,7 +77,7 @@ class _AnomalyModelExporter(OTXModelExporter):
             input_size=(1, 3, *image_shape),
             mean=mean_values,
             std=scale_values,
-            swap_rgb=True,  # BGR -> RGB
+            swap_rgb=False,
         )
 
     @property
