@@ -4,8 +4,10 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import pathlib
-import requests
 import zipfile
+
+import requests
+
 
 def download_dataset(url: str, extract_to: str) -> None:
     """Downloads and extracts a dataset from a given URL.
