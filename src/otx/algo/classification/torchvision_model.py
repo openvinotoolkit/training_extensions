@@ -114,6 +114,8 @@ class TVModelWithLossComputation(nn.Module):
         num_classes: int,
         loss: nn.Module,
         freeze_backbone: bool = False,
+        task: Literal["multiclass", "multilabel", "hlabel"] = "multiclass",
+        train_type: Literal["supervised", "semi_supervised"] = "supervised",
     ) -> None:
         super().__init__()
         self.num_classes = num_classes
@@ -126,16 +128,7 @@ class TVModelWithLossComputation(nn.Module):
             for param in self.backbone.parameters():
                 param.requires_grad = False
 
-        last_layer = list(net.children())[-1]
-        classifier_len = len(list(last_layer.children()))
-        if classifier_len >= 1:
-            feature_channel = list(last_layer.children())[-1].in_features
-            layers = list(last_layer.children())[:-1]
-            self.use_layer_norm_2d = layers[0].__class__.__name__ == "LayerNorm2d"
-            self.head = nn.Sequential(*layers, nn.Linear(feature_channel, num_classes))
-        else:
-            feature_channel = last_layer.in_features
-            self.head = nn.Linear(feature_channel, num_classes)
+        self.head = self._get_head(net)
 
         self.softmax = nn.Softmax(dim=-1)
         self.loss = loss
@@ -154,6 +147,25 @@ class TVModelWithLossComputation(nn.Module):
             num_classes=num_classes,
             optimize_gap=True,
         )
+
+    def _get_head(self, net: nn.Module) -> nn.Module:
+        """Returns the head of the model."""
+        last_layer = list(net.children())[-1]
+        if self.task == "multiclass":
+            classifier_len = len(list(last_layer.children()))
+            if classifier_len >= 1:
+                feature_channel = list(last_layer.children())[-1].in_features
+                layers = list(last_layer.children())[:-1]
+                self.use_layer_norm_2d = layers[0].__class__.__name__ == "LayerNorm2d"
+
+                if self.train_type == "semi_supervised":
+                    head = nn.Sequential(*layers, nn.Linear(feature_channel, self.num_classes))
+                head = nn.Sequential(*layers, nn.Linear(feature_channel, self.num_classes))
+            else:
+                feature_channel = last_layer.in_features
+                head = nn.Linear(feature_channel, self.num_classes)
+
+        return head
 
     def forward(
         self,
