@@ -369,10 +369,7 @@
         <span class="k">if</span> <span class="n">_name</span> <span class="o">==</span> <span class="s2">&quot;mAP&quot;</span><span class="p">:</span>
             <span class="c1"># MeanAveragePrecision</span>
             <span class="n">_preds</span> <span class="o">=</span> <span class="p">[</span>
-                <span class="p">{</span>
-                    <span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="o">&gt;</span> <span class="mf">0.5</span> <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="s2">&quot;masks&quot;</span> <span class="k">else</span> <span class="n">v</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">device</span><span class="p">)</span> <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="s2">&quot;labels&quot;</span> <span class="k">else</span> <span class="n">v</span>
-                    <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">ett</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
-                <span class="p">}</span>
+                <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="o">&gt;</span> <span class="mf">0.5</span> <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="s2">&quot;masks&quot;</span> <span class="k">else</span> <span class="n">v</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">device</span><span class="p">)</span> <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="s2">&quot;labels&quot;</span> <span class="k">else</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">ett</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
                 <span class="k">for</span> <span class="n">ett</span> <span class="ow">in</span> <span class="n">converted_entities</span><span class="p">[</span><span class="s2">&quot;preds&quot;</span><span class="p">]</span>
             <span class="p">]</span>
             <span class="n">_target</span> <span class="o">=</span> <span class="n">converted_entities</span><span class="p">[</span><span class="s2">&quot;target&quot;</span><span class="p">]</span>
@@ -604,7 +601,11 @@
             <span class="c1"># to set _combined_loader</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">_evaluation_loop</span><span class="o">.</span><span class="n">setup_data</span><span class="p">()</span>  <span class="c1"># noqa: SLF001</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">_evaluation_loop</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>  <span class="c1"># noqa: SLF001</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">load_reference_info</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">default_root_dir</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">load_reference_info</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">default_root_dir</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">,</span>
+                <span class="n">path_to_directly_load</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">saved_reference_info_path</span><span class="p">,</span>
+            <span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="OTXZeroShotVisualPromptingModel.on_predict_start">
@@ -620,7 +621,11 @@
             <span class="c1"># to set _combined_loader</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">_evaluation_loop</span><span class="o">.</span><span class="n">setup_data</span><span class="p">()</span>  <span class="c1"># noqa: SLF001</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">_evaluation_loop</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>  <span class="c1"># noqa: SLF001</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">load_reference_info</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">default_root_dir</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">load_reference_info</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">default_root_dir</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">,</span>
+                <span class="n">path_to_directly_load</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">saved_reference_info_path</span><span class="p">,</span>
+            <span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="OTXZeroShotVisualPromptingModel.on_train_epoch_start">
@@ -1129,7 +1134,7 @@
             <span class="k">for</span> <span class="n">label</span><span class="p">,</span> <span class="n">input_prompts</span> <span class="ow">in</span> <span class="n">prompts</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
                 <span class="n">ref_mask</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">original_shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
                 <span class="k">for</span> <span class="n">inputs_decoder</span> <span class="ow">in</span> <span class="n">input_prompts</span><span class="p">:</span>
-                    <span class="n">label</span> <span class="o">=</span> <span class="n">inputs_decoder</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;label&quot;</span><span class="p">)</span>  <span class="c1"># noqa: PLW2901</span>
+                    <span class="n">inputs_decoder</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;label&quot;</span><span class="p">)</span>
                     <span class="k">if</span> <span class="s2">&quot;point_coords&quot;</span> <span class="ow">in</span> <span class="n">inputs_decoder</span><span class="p">:</span>
                         <span class="c1"># bboxes and points</span>
                         <span class="n">inputs_decoder</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">image_embeddings</span><span class="p">)</span>
@@ -1154,7 +1159,7 @@
                     <span class="n">cur_default_threshold_reference</span> <span class="o">-=</span> <span class="mf">0.05</span>
 
                 <span class="bp">self</span><span class="o">.</span><span class="n">reference_feats</span><span class="p">[</span><span class="n">label</span><span class="p">]</span> <span class="o">=</span> <span class="n">ref_feat</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">used_indices</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">used_indices</span><span class="p">,</span> <span class="n">label</span><span class="p">))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">used_indices</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">used_indices</span><span class="p">,</span> <span class="p">[</span><span class="n">label</span><span class="p">]))</span>
                 <span class="n">ref_masks</span><span class="p">[</span><span class="n">label</span><span class="p">]</span> <span class="o">=</span> <span class="n">ref_mask</span>
             <span class="n">reference_masks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ref_masks</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">used_indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">used_indices</span><span class="p">)</span>
@@ -1346,7 +1351,7 @@
                 <span class="p">)</span>
                 <span class="n">scores</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">used_points</span><span class="p">[</span><span class="n">label</span><span class="p">]],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">))</span>
                 <span class="n">labels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                    <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">torch</span><span class="o">.</span><span class="n">LongTensor</span><span class="p">([</span><span class="n">label</span><span class="p">])</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">scores</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]))],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">),</span>
+                    <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">torch</span><span class="o">.</span><span class="n">LongTensor</span><span class="p">([</span><span class="n">label</span><span class="p">])</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">scores</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]))],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">),</span>
                 <span class="p">)</span>
 
         <span class="k">return</span> <span class="n">ZeroShotVisualPromptingBatchPredEntity</span><span class="p">(</span>
@@ -1582,12 +1587,17 @@
             <span class="s2">&quot;used_indices&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">used_indices</span><span class="p">,</span>
         <span class="p">}</span>
         <span class="c1"># save reference info</span>
-        <span class="n">path_reference_info</span><span class="p">:</span> <span class="n">Path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">default_root_dir</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">reference_info_dir</span> <span class="o">/</span> <span class="s2">&quot;reference_info.pt&quot;</span>
-        <span class="n">path_reference_info</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">saved_reference_info_path</span><span class="p">:</span> <span class="n">Path</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">Path</span><span class="p">(</span><span class="n">default_root_dir</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">reference_info_dir</span> <span class="o">/</span> <span class="s2">&quot;reference_info.pickle&quot;</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">saved_reference_info_path</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="c1"># TODO (sungchul): ticket no. 139210</span>
-        <span class="n">torch</span><span class="o">.</span><span class="n">save</span><span class="p">({</span><span class="n">k</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">reference_info</span><span class="o">.</span><span class="n">items</span><span class="p">()},</span> <span class="n">path_reference_info</span><span class="p">)</span>
-        <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">reference_info</span><span class="p">,</span> <span class="n">path_reference_info</span><span class="o">.</span><span class="n">with_suffix</span><span class="p">(</span><span class="s2">&quot;.pickle&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s2">&quot;wb&quot;</span><span class="p">))</span>
-        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Saved reference info at </span><span class="si">{</span><span class="n">path_reference_info</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span></div>
+        <span class="n">torch</span><span class="o">.</span><span class="n">save</span><span class="p">(</span>
+            <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">reference_info</span><span class="o">.</span><span class="n">items</span><span class="p">()},</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">saved_reference_info_path</span><span class="o">.</span><span class="n">with_suffix</span><span class="p">(</span><span class="s2">&quot;.pt&quot;</span><span class="p">),</span>
+        <span class="p">)</span>
+        <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">reference_info</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">saved_reference_info_path</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s2">&quot;wb&quot;</span><span class="p">))</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Saved reference info at </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">saved_reference_info_path</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span></div>
 
 
     <span class="k">def</span> <span class="nf">_generate_masked_features</span><span class="p">(</span>
@@ -1644,8 +1654,40 @@
     <span class="c1">######################################</span>
 <div class="viewcode-block" id="OVZeroShotVisualPromptingModel.load_reference_info">
 <a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.model.visual_prompting.html#otx.core.model.visual_prompting.OVZeroShotVisualPromptingModel.load_reference_info">[docs]</a>
-    <span class="k">def</span> <span class="nf">load_reference_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">default_root_dir</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Load latest reference info to be used.&quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">load_reference_info</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">default_root_dir</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="o">*</span><span class="n">args</span><span class="p">,</span>
+        <span class="n">path_to_directly_load</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Load latest reference info to be used.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            default_root_dir (Path | str): Default root directory to be used</span>
+<span class="sd">                when inappropriate infer_reference_info_root is given.</span>
+<span class="sd">            path_to_directly_load (Path | None): Reference info path to directly be loaded.</span>
+<span class="sd">                Normally, it is obtained after `learn` which is executed when trying to do `infer`</span>
+<span class="sd">                without reference features in `on_test_start` or `on_predict_start`.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            (bool): Whether normally loading checkpoint or not.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">def</span> <span class="nf">_load_and_assign_reference_info</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+            <span class="n">reference_info</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s2">&quot;rb&quot;</span><span class="p">))</span>  <span class="c1"># noqa: S301   # nosec: B301</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">reference_feats</span> <span class="o">=</span> <span class="n">reference_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+                <span class="s2">&quot;reference_feats&quot;</span><span class="p">,</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">[</span><span class="s2">&quot;decoder&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">embed_dim</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">used_indices</span> <span class="o">=</span> <span class="n">reference_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;used_indices&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">))</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;reference info saved at </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2"> was successfully loaded.&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">True</span>
+
+        <span class="k">if</span> <span class="n">path_to_directly_load</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># if `path_to_directly_load` is given, forcely load</span>
+            <span class="k">return</span> <span class="n">_load_and_assign_reference_info</span><span class="p">(</span><span class="n">path_to_directly_load</span><span class="p">)</span>
+
         <span class="n">_infer_reference_info_root</span><span class="p">:</span> <span class="n">Path</span> <span class="o">=</span> <span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">infer_reference_info_root</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">infer_reference_info_root</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">infer_reference_info_root</span><span class="o">.</span><span class="n">absolute</span><span class="p">()</span>
@@ -1655,14 +1697,8 @@
         <span class="k">if</span> <span class="p">(</span>
             <span class="n">path_reference_info</span> <span class="o">:=</span> <span class="n">_infer_reference_info_root</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">reference_info_dir</span> <span class="o">/</span> <span class="s2">&quot;reference_info.pickle&quot;</span>
         <span class="p">)</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
-            <span class="n">reference_info</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">path_reference_info</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s2">&quot;rb&quot;</span><span class="p">))</span>  <span class="c1"># noqa: S301   # nosec: B301</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">reference_feats</span> <span class="o">=</span> <span class="n">reference_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
-                <span class="s2">&quot;reference_feats&quot;</span><span class="p">,</span>
-                <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">[</span><span class="s2">&quot;decoder&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">embed_dim</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span>
-            <span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">used_indices</span> <span class="o">=</span> <span class="n">reference_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;used_indices&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">))</span>
-            <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;reference info saved at </span><span class="si">{</span><span class="n">path_reference_info</span><span class="si">}</span><span class="s2"> was successfully loaded.&quot;</span><span class="p">)</span>
-            <span class="k">return</span> <span class="kc">True</span>
+            <span class="k">return</span> <span class="n">_load_and_assign_reference_info</span><span class="p">(</span><span class="n">path_reference_info</span><span class="p">)</span>
+
         <span class="k">return</span> <span class="kc">False</span></div>
 
 
@@ -1855,7 +1891,7 @@
     <span class="k">def</span> <span class="nf">on_test_start</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Load previously saved reference info.&quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">on_test_start</span><span class="p">()</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_reference_info</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">default_root_dir</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_reference_info</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">default_root_dir</span><span class="p">):</span>
             <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;No reference info found. `Learn` will be automatically executed first.&quot;</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">lightning_module</span><span class="o">.</span><span class="n">automatic_optimization</span> <span class="o">=</span> <span class="kc">False</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">fit_loop</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
@@ -1864,14 +1900,17 @@
             <span class="c1"># to set _combined_loader</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">_evaluation_loop</span><span class="o">.</span><span class="n">setup_data</span><span class="p">()</span>  <span class="c1"># noqa: SLF001</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">_evaluation_loop</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>  <span class="c1"># noqa: SLF001</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">load_reference_info</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">default_root_dir</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">load_reference_info</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">default_root_dir</span><span class="p">,</span>
+                <span class="n">path_to_directly_load</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">saved_reference_info_path</span><span class="p">,</span>
+            <span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="OVZeroShotVisualPromptingModel.on_predict_start">
 <a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.model.visual_prompting.html#otx.core.model.visual_prompting.OVZeroShotVisualPromptingModel.on_predict_start">[docs]</a>
     <span class="k">def</span> <span class="nf">on_predict_start</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Load previously saved reference info.&quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_reference_info</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">default_root_dir</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_reference_info</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">default_root_dir</span><span class="p">):</span>
             <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;No reference info found. `Learn` will be automatically executed first.&quot;</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">lightning_module</span><span class="o">.</span><span class="n">automatic_optimization</span> <span class="o">=</span> <span class="kc">False</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">fit_loop</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
@@ -1880,7 +1919,10 @@
             <span class="c1"># to set _combined_loader</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">_evaluation_loop</span><span class="o">.</span><span class="n">setup_data</span><span class="p">()</span>  <span class="c1"># noqa: SLF001</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">_evaluation_loop</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>  <span class="c1"># noqa: SLF001</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">load_reference_info</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">default_root_dir</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">load_reference_info</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">default_root_dir</span><span class="p">,</span>
+                <span class="n">path_to_directly_load</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">saved_reference_info_path</span><span class="p">,</span>
+            <span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="OVZeroShotVisualPromptingModel.on_train_epoch_start">
