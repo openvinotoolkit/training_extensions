@@ -480,7 +480,12 @@ class Engine:
             if explain_config is None:
                 explain_config = ExplainConfig()
 
-            predict_result = process_saliency_maps_in_pred_entity(predict_result, explain_config)
+            for transform in datamodule.config.test_subset.transforms:
+                tranf_name = transform["class_path"].split(".")[-1]
+                if tranf_name == "Resize" and transform["init_args"].get("keep_ratio", False):
+                    explain_config.crop_padded_map = True
+
+            predict_result = process_saliency_maps_in_pred_entity(predict_result, explain_config, datamodule.label_info)
 
         return predict_result
 
@@ -721,7 +726,12 @@ class Engine:
         if explain_config is None:
             explain_config = ExplainConfig()
 
-        predict_result = process_saliency_maps_in_pred_entity(predict_result, explain_config)
+        for transform in datamodule.config.test_subset.transforms:
+            tranf_name = transform["class_path"].split(".")[-1]
+            if tranf_name == "Resize" and transform["init_args"].get("keep_ratio", False):
+                explain_config.crop_padded_map = True
+
+        predict_result = process_saliency_maps_in_pred_entity(predict_result, explain_config, datamodule.label_info)
         if dump:
             dump_saliency_maps(
                 predict_result,

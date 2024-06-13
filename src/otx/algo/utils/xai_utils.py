@@ -28,9 +28,11 @@ from otx.core.data.entity.classification import (
 from otx.core.data.entity.detection import DetBatchPredEntity
 from otx.core.data.entity.instance_segmentation import InstanceSegBatchPredEntity
 from otx.core.types.explain import TargetExplainGroup
+from otx.core.types.label import HLabelInfo, LabelInfoTypes
 
 if TYPE_CHECKING:
     from lightning.pytorch.utilities.types import EVAL_DATALOADERS
+    from torch import LongTensor, Tensor
 
     from otx.core.data.module import OTXDataModule
 
@@ -47,24 +49,48 @@ OTXBatchPredEntitiesSupportXAI = (
 def process_saliency_maps_in_pred_entity(
     predict_result: list[OTXBatchPredEntitiesSupportXAI],
     explain_config: ExplainConfig,
+    label_info: LabelInfoTypes,
 ) -> list[OTXBatchPredEntitiesSupportXAI]:
     """Process saliency maps in PredEntity."""
 
-    def _process(predict_result_per_batch: OTXBatchPredEntitiesSupportXAI) -> OTXBatchPredEntitiesSupportXAI:
+    def _process(
+        predict_result_per_batch: OTXBatchPredEntitiesSupportXAI,
+        label_info: LabelInfoTypes,
+    ) -> OTXBatchPredEntitiesSupportXAI:
         saliency_map: list[np.ndarray] = [
             saliency_map.cpu().numpy() if isinstance(saliency_map, torch.Tensor) else saliency_map
             for saliency_map in predict_result_per_batch.saliency_map
         ]
         imgs_info = predict_result_per_batch.imgs_info
         ori_img_shapes = [img_info.ori_shape for img_info in imgs_info]
-        pred_labels = [pred.tolist() for pred in predict_result_per_batch.labels]
+        paddings = [img_info.padding for img_info in imgs_info]
+        image_shape = imgs_info[0].img_shape
 
-        processed_saliency_maps = process_saliency_maps(saliency_map, explain_config, pred_labels, ori_img_shapes)
+        pred_labels = []
+        for labels, scores in zip(predict_result_per_batch.labels, predict_result_per_batch.scores):
+            if isinstance(label_info, HLabelInfo):
+                pred_labels.append(_convert_labels_from_hcls_format(labels, scores, label_info))
+            elif labels.shape == scores.shape:
+                # Filter out predictions with scores less than 0.3
+                pred_labels.append(labels[scores > 0.3].tolist())
+            else:
+                labels_list = labels.tolist()
+                labels_list = [labels_list] if isinstance(labels_list, int) else labels_list
+                pred_labels.append(labels_list)
+
+        processed_saliency_maps = process_saliency_maps(
+            saliency_map,
+            explain_config,
+            pred_labels,
+            ori_img_shapes,
+            image_shape,
+            paddings,
+        )
 
         predict_result_per_batch.saliency_map = processed_saliency_maps
         return predict_result_per_batch
 
-    return [_process(predict_result_per_batch) for predict_result_per_batch in predict_result]
+    return [_process(predict_result_per_batch, label_info) for predict_result_per_batch in predict_result]
 
 
 def process_saliency_maps(
@@ -72,6 +98,8 @@ def process_saliency_maps(
     explain_config: ExplainConfig,
     pred_labels: list | None,
     ori_img_shapes: list,
+    image_shape: tuple[int, int],
+    paddings: list[tuple[int, int, int, int]],
 ) -> ProcessedSaliencyMaps:
     """Perform saliency map convertion to dict and post-processing."""
     if explain_config.target_explain_group == TargetExplainGroup.ALL:
@@ -83,6 +111,9 @@ def process_saliency_maps(
     else:
         msg = f"Target explain group {explain_config.target_explain_group} is not supported."
         raise ValueError(msg)
+
+    if explain_config.crop_padded_map:
+        processed_saliency_maps = _crop_padded_map(processed_saliency_maps, image_shape, paddings)
 
     if explain_config.postprocess:
         for i in range(len(processed_saliency_maps)):
@@ -159,6 +190,7 @@ def dump_saliency_maps(
     output_dir = output_dir / "saliency_map"
     output_dir.mkdir(parents=True, exist_ok=True)
 
+    label_names = datamodule.label_info.label_names if hasattr(datamodule, "label_info") else None
     for predict_result_per_batch in predict_result:
         saliency_map = predict_result_per_batch.saliency_map
         imgs_info = predict_result_per_batch.imgs_info
@@ -167,12 +199,15 @@ def dump_saliency_maps(
             img_data, image_save_name = _get_image_data_name(datamodule, img_id)
 
             for class_id, s_map in saliency_map[pred_index].items():
-                file_name_map = Path(image_save_name + "_class_" + str(class_id) + "_saliency_map.png")
+                label_name = label_names[class_id] if label_names and class_id in label_names else str(class_id)
+                label_name = label_name.replace(" ", "_")
+
+                file_name_map = Path(image_save_name + "_class_" + label_name + "_saliency_map.png")
                 save_path_map = output_dir / file_name_map
                 cv2.imwrite(str(save_path_map), s_map)
 
                 if explain_config.postprocess:
-                    file_name_overlay = Path(image_save_name + "_class_" + str(class_id) + "_overlay.png")
+                    file_name_overlay = Path(image_save_name + "_class_" + label_name + "_overlay.png")
                     save_path_overlay = output_dir / file_name_overlay
                     overlay = _get_overlay(img_data, s_map, weight)
                     cv2.imwrite(str(save_path_overlay), overlay)
@@ -195,3 +230,51 @@ def _get_overlay(img: np.ndarray, s_map: np.ndarray, weight: float = 0.3) -> np.
     overlay = img * weight + s_map * (1 - weight)
     overlay[overlay > 255] = 255
     return overlay.astype(np.uint8)
+
+
+def _crop_padded_map(
+    batch_saliency_map: list[dict[Any, np.array]],
+    image_shape: tuple[int, int],
+    paddings: list[tuple[int, int, int, int]],
+) -> list[dict[Any, np.array]]:
+    """Crop padded map."""
+    # Padding: number of pixels to pad all borders (left, top, right, bottom)
+    height, width = image_shape
+
+    for i, image_map in enumerate(batch_saliency_map):
+        left, top, right, bottom = paddings[i]
+        left_ratio, top_ratio, right_ratio, bottom_ratio = left / width, top / height, right / width, bottom / height
+        for class_idx, class_map in image_map.items():
+            map_h, map_w = class_map.shape
+            d_top, d_bottom = int(top_ratio * map_h), int(bottom_ratio * map_h)
+            d_left, d_right = int(left_ratio * map_w), int(right_ratio * map_w)
+
+            cropped_map = class_map[d_top : map_h - d_bottom, d_left : map_w - d_right]
+            batch_saliency_map[i][class_idx] = cropped_map
+    return batch_saliency_map
+
+
+def _convert_labels_from_hcls_format(
+    labels: list[LongTensor],
+    scores: list[Tensor],
+    label_info: HLabelInfo,
+) -> list[int]:
+    """Convert the labels indexes from H-label classification label format: [0, 0, 1].
+
+    Based on the information from
+    src.otx.core.data.dataset.classification.py:OTXHlabelClsDataset:_convert_label_to_hlabel_format.
+    """
+    pred_labels = []
+    for i in range(label_info.num_multiclass_heads):
+        j = labels[i]
+        if scores[i] > 0.3:
+            label_str = label_info.all_groups[i][j]
+            pred_labels.append(label_info.label_to_idx[label_str])
+    if label_info.num_multilabel_classes:
+        for i in range(label_info.num_multilabel_classes):
+            j = label_info.num_multiclass_heads + i
+            if labels[j] and scores[j] > 0.3:
+                label_str = label_info.all_groups[j][0]
+                pred_labels.append(label_info.label_to_idx[label_str])
+
+    return pred_labels
