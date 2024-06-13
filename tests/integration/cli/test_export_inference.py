@@ -1,6 +1,6 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-
+from __future__ import annotations
 
 import logging
 from pathlib import Path
@@ -141,7 +141,13 @@ def test_otx_export_infer(
     assert len(ckpt_files) > 0
 
     # 2) otx test
-    def run_cli_test(test_recipe: str, checkpoint_path: str, work_dir: Path, device: str = fxt_accelerator) -> Path:
+    def run_cli_test(
+        test_recipe: str,
+        checkpoint_path: str,
+        work_dir: Path,
+        device: str = fxt_accelerator,
+        cli_override_command: list[str] | None = None,
+    ) -> Path:
         tmp_path_test = tmp_path / f"otx_test_{model_name}"
         command_cfg = [
             "otx",
@@ -159,24 +165,30 @@ def test_otx_export_infer(
             checkpoint_path,
         ]
 
-        # Zero-shot visual prompting needs to specify `infer_reference_info_root`
-        if task in ["zero_shot_visual_prompting"]:
-            try:
-                idx_task = checkpoint_path.split("/").index(f"otx_train_{model_name}")
-            except ValueError:
-                idx_task = checkpoint_path.split("/").index(f"otx_test_{model_name}")
+        if cli_override_command is not None:
+            command_cfg.extend(cli_override_command)
 
-            command_cfg.extend(
-                [
-                    "--model.init_args.infer_reference_info_root",
-                    str(Path(checkpoint_path).parents[-idx_task] / f"otx_train_{model_name}/outputs/.latest/train"),
-                ],
-            )
         run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)
 
         return tmp_path_test
 
-    tmp_path_test = run_cli_test(recipe, str(ckpt_files[-1]), Path("outputs") / "torch")
+    checkpoint_path: str = str(ckpt_files[-1])
+    tmp_path_test = run_cli_test(recipe, checkpoint_path, Path("outputs") / "torch")
+
+    if task == "zero_shot_visual_prompting":
+        # Check when using reference infos obtained by otx train
+        idx_task = checkpoint_path.split("/").index(f"otx_train_{model_name}")
+        infer_reference_info_root = [
+            "--model.init_args.infer_reference_info_root",
+            str(Path(checkpoint_path).parents[-idx_task] / f"otx_train_{model_name}/outputs/.latest/train"),
+        ]
+
+        tmp_path_test = run_cli_test(
+            recipe,
+            checkpoint_path,
+            Path("outputs") / "torch",
+            cli_override_command=infer_reference_info_root,
+        )
 
     assert (tmp_path_test / "outputs").exists()
 
@@ -231,6 +243,21 @@ def test_otx_export_infer(
     tmp_path_test = run_cli_test(export_test_recipe, exported_model_path, Path("outputs") / "openvino", "cpu")
     assert (tmp_path_test / "outputs").exists()
 
+    if task == "zero_shot_visual_prompting":
+        # Check when using reference infos obtained by otx train
+        idx_task = exported_model_path.split("/").index(f"otx_test_{model_name}")
+        infer_reference_info_root = [
+            "--model.init_args.infer_reference_info_root",
+            str(Path(exported_model_path).parents[-idx_task] / f"otx_train_{model_name}/outputs/.latest/train"),
+        ]
+        tmp_path_test = run_cli_test(
+            export_test_recipe,
+            exported_model_path,
+            Path("outputs") / "openvino",
+            "cpu",
+            cli_override_command=infer_reference_info_root,
+        )
+
     # 5) test optimize
     command_cfg = [
         "otx",
@@ -257,12 +284,27 @@ def test_otx_export_infer(
     )
     assert latest_dir.exists()
     if task in ("visual_prompting", "zero_shot_visual_prompting"):
-        exported_model_path = str(latest_dir / "optimized_model_decoder.xml")
+        optimized_model_path = str(latest_dir / "optimized_model_decoder.xml")
     else:
-        exported_model_path = str(latest_dir / "optimized_model.xml")
+        optimized_model_path = str(latest_dir / "optimized_model.xml")
 
     # 6) test optimized model
-    tmp_path_test = run_cli_test(export_test_recipe, exported_model_path, Path("outputs") / "nncf_ptq", "cpu")
+    tmp_path_test = run_cli_test(export_test_recipe, optimized_model_path, Path("outputs") / "nncf_ptq", "cpu")
+    if task == "zero_shot_visual_prompting":
+        # Check when using reference infos obtained by otx train
+        idx_task = optimized_model_path.split("/").index(f"otx_test_{model_name}")
+        infer_reference_info_root = [
+            "--model.init_args.infer_reference_info_root",
+            str(Path(optimized_model_path).parents[-idx_task] / f"otx_train_{model_name}/outputs/.latest/train"),
+        ]
+        tmp_path_test = run_cli_test(
+            export_test_recipe,
+            optimized_model_path,
+            Path("outputs") / "nncf_ptq",
+            "cpu",
+            cli_override_command=infer_reference_info_root,
+        )
+
     torch_outputs_dir = tmp_path_test / "outputs" / "torch"
     torch_latest_dir = max(
         (p for p in torch_outputs_dir.iterdir() if p.is_dir() and p.name != ".latest"),
