@@ -112,6 +112,10 @@ def test_predict_with_explain(
         # TODO (sungchul): enable xai for rtmdet_tiny (CVS-142651)
         pytest.skip("rtmdet_tiny on detection is not supported yet.")
 
+    if "yolox_tiny_tile" in recipe:
+        # TODO (Galina): required to update model-api to 2.1
+        pytest.skip("yolox_tiny_tile on detection requires model-api update")
+
     tmp_path = tmp_path / f"otx_xai_{model_name}"
     engine = Engine.from_config(
         config_path=recipe,

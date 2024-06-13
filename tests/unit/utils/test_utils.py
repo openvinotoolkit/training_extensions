@@ -7,8 +7,8 @@ import pytest
 from otx.utils.utils import (
     check_pickleable,
     find_file_recursively,
-    get_class_initial_arguments,
     find_unpickleable_obj,
+    get_class_initial_arguments,
     get_decimal_point,
     get_using_dot_delimited_key,
     remove_matched_files,
