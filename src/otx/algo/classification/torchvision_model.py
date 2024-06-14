@@ -284,7 +284,7 @@ class TVClassificationModel(nn.Module):
         if hasattr(self.head, "loss"):
             return self.head.loss(inputs, labels)
         logits = self.head(inputs)
-        return self.loss_module(logits, labels)
+        return self.loss_module(logits, labels).sum() / logits.size(0)
 
     @torch.no_grad()
     def _forward_explain(self, images: torch.Tensor) -> dict[str, torch.Tensor | list[torch.Tensor]]:
