@@ -16,6 +16,7 @@ from torch import Tensor, nn
 from otx.algo.classification.classifier import SemiSLClassifier
 from otx.algo.classification.heads import OTXSemiSLLinearClsHead
 from otx.algo.classification.utils import get_classification_layers
+from otx.algo.utils.utils import torch_hub_load
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.classification import (
     MulticlassClsBatchDataEntity,
@@ -234,7 +235,7 @@ class DINOv2ForMulticlassClsSemiSL(DINOv2RegisterClassifier):
     """
 
     def _build_model(self, num_classes: int) -> nn.Module:
-        backbone = torch.hub.load(
+        backbone = torch_hub_load(
             repo_or_dir="facebookresearch/dinov2",
             model=self.backbone,
         )
