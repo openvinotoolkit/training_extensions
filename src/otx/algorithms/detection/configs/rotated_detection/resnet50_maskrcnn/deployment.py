@@ -8,5 +8,5 @@ ir_config = dict(
 
 backend_config = dict(
     # dynamic batch causes forever running openvino process
-    model_inputs=[dict(opt_shapes=dict(input=[1, 3, 800, 1344]))],
+    model_inputs=[dict(opt_shapes=dict(input=[1, 3, 1024, 1024]))],
 )
