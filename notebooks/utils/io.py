@@ -32,7 +32,8 @@ def get_repo_name_from_url(git_url: str) -> str:
     parsed_url = urlparse(git_url)
     return Path(parsed_url.path).stem
 
-def setup_repo(git_url: str, branch: str = 'main') -> None:
+
+def setup_repo(git_url: str, branch: str = "main") -> None:
     """Sets up the Git repository by cloning it if necessary and checking out the specified branch.
 
     This function handles the current directory being in different locations,
@@ -73,3 +74,26 @@ def setup_repo(git_url: str, branch: str = 'main') -> None:
     if root_directory.exists() and (root_directory / ".git").exists():
         repo = Repo(root_directory)
         repo.git.checkout(branch)
+
+
+def seed_everywhere(seed: int = 42) -> None:
+    """Sets the seed for random number generators in np & torch libraries.
+
+    Args:
+        seed (int): The seed value to use. Defaults to 42.
+
+    Example:
+        >>> seed_everywhere(seed=42)
+    """
+    import random
+
+    import numpy as np
+    import torch
+
+    random.seed(seed)
+    np.random.seed(seed)
+    os.environ["PYTHONHASHSEED"] = str(seed)  # os
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
