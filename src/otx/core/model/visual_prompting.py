@@ -916,7 +916,7 @@ class OVZeroShotVisualPromptingModel(
                 # preprocess decoder inputs
                 processed_prompts.append(
                         {
-                            "bboxes": bboxes,
+                            "boxes": bboxes,
                             "points": points,
                             "labels": _labels,
                             #"orig_size": imgs_info.ori_shape,
