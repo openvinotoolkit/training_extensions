@@ -432,7 +432,7 @@ class Engine:
                 otx predict --config <CONFIG_PATH, str> --checkpoint <CKPT_PATH, str>
                 ```
         """
-        from otx.algo.utils.xai_utils import process_saliency_maps_in_pred_entity
+        from otx.algo.utils.xai_utils import process_saliency_maps_in_pred_entity, set_crop_padded_map_flag
 
         model = self.model
 
@@ -478,11 +478,7 @@ class Engine:
         if explain:
             if explain_config is None:
                 explain_config = ExplainConfig()
-
-            for transform in datamodule.config.test_subset.transforms:
-                tranf_name = transform["class_path"].split(".")[-1]
-                if tranf_name == "Resize" and transform["init_args"].get("keep_ratio", False):
-                    explain_config.crop_padded_map = True
+            explain_config = set_crop_padded_map_flag(explain_config, datamodule)
 
             predict_result = process_saliency_maps_in_pred_entity(predict_result, explain_config, datamodule.label_info)
 
@@ -691,7 +687,11 @@ class Engine:
                     --checkpoint <CKPT_PATH, str>
                 ```
         """
-        from otx.algo.utils.xai_utils import dump_saliency_maps, process_saliency_maps_in_pred_entity
+        from otx.algo.utils.xai_utils import (
+            dump_saliency_maps,
+            process_saliency_maps_in_pred_entity,
+            set_crop_padded_map_flag,
+        )
 
         model = self.model
 
@@ -728,11 +728,7 @@ class Engine:
 
         if explain_config is None:
             explain_config = ExplainConfig()
-
-        for transform in datamodule.config.test_subset.transforms:
-            tranf_name = transform["class_path"].split(".")[-1]
-            if tranf_name == "Resize" and transform["init_args"].get("keep_ratio", False):
-                explain_config.crop_padded_map = True
+        explain_config = set_crop_padded_map_flag(explain_config, datamodule)
 
         predict_result = process_saliency_maps_in_pred_entity(predict_result, explain_config, datamodule.label_info)
         if dump:

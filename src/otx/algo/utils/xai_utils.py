@@ -65,15 +65,19 @@ def process_saliency_maps_in_pred_entity(
         ori_img_shapes = [img_info.ori_shape for img_info in imgs_info]
         paddings = [img_info.padding for img_info in imgs_info]
         image_shape = imgs_info[0].img_shape
+        # Add additional conf threshold for saving maps with predicted classes,
+        # since predictions can have less than 0.05 confidence
+        conf_thr = explain_config.predicted_maps_conf_thr
 
         pred_labels = []
         for labels, scores in zip(predict_result_per_batch.labels, predict_result_per_batch.scores):
             if isinstance(label_info, HLabelInfo):
-                pred_labels.append(_convert_labels_from_hcls_format(labels, scores, label_info))
+                pred_labels.append(_convert_labels_from_hcls_format(labels, scores, label_info, conf_thr))
             elif labels.shape == scores.shape:
-                # Filter out predictions with scores less than 0.3
-                pred_labels.append(labels[scores > 0.3].tolist())
+                # Filter out predictions with scores less than explain_config.predicted_maps_conf_thr
+                pred_labels.append(labels[scores > conf_thr].tolist())
             else:
+                # Tv_* models case with a single predicted label as a scalar tensor with size zero
                 labels_list = labels.tolist()
                 labels_list = [labels_list] if isinstance(labels_list, int) else labels_list
                 pred_labels.append(labels_list)
@@ -258,6 +262,7 @@ def _convert_labels_from_hcls_format(
     labels: list[LongTensor],
     scores: list[Tensor],
     label_info: HLabelInfo,
+    conf_thr: float,
 ) -> list[int]:
     """Convert the labels indexes from H-label classification label format: [0, 0, 1].
 
@@ -267,14 +272,23 @@ def _convert_labels_from_hcls_format(
     pred_labels = []
     for i in range(label_info.num_multiclass_heads):
         j = labels[i]
-        if scores[i] > 0.3:
+        if scores[i] > conf_thr:
             label_str = label_info.all_groups[i][j]
             pred_labels.append(label_info.label_to_idx[label_str])
     if label_info.num_multilabel_classes:
         for i in range(label_info.num_multilabel_classes):
             j = label_info.num_multiclass_heads + i
-            if labels[j] and scores[j] > 0.3:
+            if labels[j] and scores[j] > conf_thr:
                 label_str = label_info.all_groups[j][0]
                 pred_labels.append(label_info.label_to_idx[label_str])
 
     return pred_labels
+
+
+def set_crop_padded_map_flag(explain_config: ExplainConfig, datamodule: OTXDataModule) -> ExplainConfig:
+    """If resize with keep_ratio = True was used, set crop_padded_map flag to True."""
+    for transform in datamodule.config.test_subset.transforms:
+        tranf_name = transform["class_path"].split(".")[-1]
+        if tranf_name == "Resize" and transform["init_args"].get("keep_ratio", False):
+            explain_config.crop_padded_map = True
+    return explain_config
