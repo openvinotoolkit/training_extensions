@@ -14,14 +14,14 @@ from otx.algo.visual_prompting.openvino_models import VisualPromptingDecoder, Vi
 
 
 class TestVisualPromptingImageEncoder:
-    def test_parameters(self):
+    def test_parameters(self) -> None:
         """Test parameters."""
         params = VisualPromptingImageEncoder.parameters()
 
         assert params.get("resize_type").default_value == "fit_to_window"
         assert params.get("image_size").default_value == 1024
 
-    def test_preproces(self, mocker):
+    def test_preproces(self, mocker) -> None:
         """Test preprocess."""
         mocker.patch.object(ImageModel, "__init__")
         image_encoder = VisualPromptingImageEncoder("adapter")
@@ -41,63 +41,76 @@ class TestVisualPromptingImageEncoder:
 
 class TestVisualPromptingDecoder:
     @pytest.fixture(autouse=True)
-    def setup(self, mocker):
+    def setup(self, mocker) -> None:
         mocker.patch.object(SegmentationModel, "__init__")
         mocker_model_adapter = mocker.Mock(spec=OpenvinoAdapter)
         self.decoder = VisualPromptingDecoder(mocker_model_adapter)
         self.decoder.image_size = 6
 
-    def test_parameters(self):
+    def test_parameters(self) -> None:
         """Test parameters."""
         params = VisualPromptingDecoder.parameters()
 
         assert isinstance(params.get("image_size"), NumericalValue)
         assert params.get("image_size").default_value == 1024
 
-    def test_get_outputs(self):
+    def test_get_outputs(self) -> None:
         """Test _get_outputs."""
         results = self.decoder._get_outputs()
 
         assert results == "upscaled_masks"
 
     @pytest.mark.parametrize(
-        ("prompts", "expected"),
+        ("prompts", "prompt_type", "expected"),
         [
             (
                 {
                     "bboxes": [np.array([[1, 1], [2, 2]])],
                     "points": [],
-                    "labels": {"bboxes": [1]},
+                    "labels": {"bboxes": [np.array(1)]},
                     "orig_size": (4, 4),
                 },
+                "bboxes",
                 {
-                    "point_coords": (1, 2, 2),
-                    "point_labels": (1, 2),
+                    "point_coords": np.array([[[1.5, 1.5], [3.0, 3.0]]]),
+                    "point_labels": np.array([[2.0, 3.0]]),
                 },
             ),
             (
-                {"bboxes": [], "points": [np.array([[1, 1]])], "labels": {"points": [1]}, "orig_size": (4, 4)},
                 {
-                    "point_coords": (1, 1, 2),
-                    "point_labels": (1, 1),
+                    "bboxes": [],
+                    "points": [np.array([[1, 1]])],
+                    "labels": {"points": [np.array(1)]},
+                    "orig_size": (4, 4),
+                },
+                "points",
+                {
+                    "point_coords": np.array([[[1.5, 1.5]]]),
+                    "point_labels": np.array([[1.0]]),
                 },
             ),
         ],
     )
-    def test_preprocess(self, prompts: dict[str, Any], expected: dict[str, Any]):
+    def test_preprocess(self, prompts: dict[str, Any], prompt_type: str, expected: dict[str, Any]) -> None:
         """Test preprocess"""
         results = self.decoder.preprocess(prompts)
 
         assert isinstance(results, list)
-        assert "point_coords" in results[0]
-        assert results[0]["point_coords"].shape == expected["point_coords"]
-        assert "point_labels" in results[0]
-        assert results[0]["point_labels"].shape == expected["point_labels"]
-        assert "mask_input" in results[0]
-        assert "has_mask_input" in results[0]
-        assert "orig_size" in results[0]
+        for i in range(len(results)):
+            assert "point_coords" in results[i]
+            assert np.all(results[i]["point_coords"] == expected["point_coords"])
+            assert "point_labels" in results[i]
+            assert np.all(results[i]["point_labels"] == expected["point_labels"])
+            assert "mask_input" in results[i]
+            assert np.all(results[i]["mask_input"] == self.decoder.mask_input)
+            assert "has_mask_input" in results[i]
+            assert np.all(results[i]["has_mask_input"] == self.decoder.has_mask_input)
+            assert "orig_size" in results[i]
+            assert np.all(results[i]["orig_size"] == prompts["orig_size"])
+            assert "label" in results[i]
+            assert np.all(results[i]["label"] == prompts["labels"][prompt_type][i])
 
-    def test_apply_coords(self):
+    def test_apply_coords(self) -> None:
         """Test apply_coords."""
         coords = np.array([[[1, 1], [2, 2]]])
         original_size = (12, 12)
@@ -114,13 +127,13 @@ class TestVisualPromptingDecoder:
             (3, 4, 6, (5, 6)),
         ],
     )
-    def test_get_preprocess_shape(self, old_h: int, old_w: int, image_size: int, expected: tuple[int]):
+    def test_get_preprocess_shape(self, old_h: int, old_w: int, image_size: int, expected: tuple[int]) -> None:
         """Test _get_preprocess_shape."""
         result = self.decoder._get_preprocess_shape(old_h, old_w, image_size)
 
         assert result == expected
 
-    def test_get_inputs(self):
+    def test_get_inputs(self) -> None:
         """Test _get_inputs."""
         self.decoder.inputs = {"images": np.ones((1, 4, 4, 3))}
 
@@ -128,7 +141,7 @@ class TestVisualPromptingDecoder:
 
         assert returned_value[0] == ["images"]
 
-    def test_postprocess(self, mocker):
+    def test_postprocess(self, mocker) -> None:
         """Test postprocess."""
         self.decoder.output_blob_name = "upscaled_masks"
         self.decoder.mask_threshold = 0.0

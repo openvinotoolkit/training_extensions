@@ -91,6 +91,30 @@ class TestRTMDetHead:
         assert loss_cls is not None
         assert loss_bbox is not None
 
+    def test_export_by_feat(self, mocker, rtmdet_head) -> None:
+        batch_size = 2
+        num_priors = 1
+        num_classes = 80
+        cls_scores = [torch.rand(batch_size, num_priors * num_classes, 20, 20) for _ in range(3)]
+        bbox_preds = [torch.rand(batch_size, num_priors * 4, 20, 20) for _ in range(3)]
+        batch_img_metas = [{"img_shape": (320, 320, 3), "scale_factor": 1.0} for _ in range(2)]
+        mocker_multiclass_nms = mocker.patch(
+            "otx.algo.detection.heads.rtmdet_head.multiclass_nms",
+            return_value=(torch.rand(2, 300, 5), torch.randint(0, 80, (2, 300))),
+        )
+
+        bboxes, scores = rtmdet_head.export_by_feat(cls_scores, bbox_preds, batch_img_metas)
+
+        # Verify that the multiclass_nms function was called
+        mocker_multiclass_nms.assert_called_once()
+
+        # Check the shape of the output
+        assert bboxes.shape[0] == 2  # batch size
+        assert bboxes.shape[1] == 300  # max_per_img
+        assert bboxes.shape[2] == 5  # 4 bbox coordinates + score
+        assert scores.shape[0] == 2  # batch size
+        assert scores.shape[1] == 300  # max_per_img
+
     def test_get_anchors(self, rtmdet_head) -> None:
         featmap_sizes = [(40, 40), (20, 20), (10, 10)]
         batch_img_metas = [{"img_shape": (320, 320, 3)} for _ in range(2)]

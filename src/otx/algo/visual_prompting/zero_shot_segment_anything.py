@@ -714,12 +714,16 @@ class OTXZeroShotSegmentAnything(OTXZeroShotVisualPromptingModel):
         inputs: ZeroShotVisualPromptingBatchDataEntity,
         reference_feats: Tensor | None = None,
         used_indices: Tensor | None = None,
+        threshold: float = 0.0,
+        num_bg_points: int = 1,
         is_cascade: bool = True,
     ) -> ZeroShotVisualPromptingBatchPredEntity | OTXBatchLossEntity:
         """Infer to directly connect to the model."""
         self.training = False
         outputs = self.model.infer(
             **self._customize_inputs(inputs, reference_feats=reference_feats, used_indices=used_indices),
+            threshold=threshold,
+            num_bg_points=num_bg_points,
             is_cascade=is_cascade,
         )
         return self._customize_outputs(outputs, inputs)
@@ -774,7 +778,7 @@ class OTXZeroShotSegmentAnything(OTXZeroShotVisualPromptingModel):
                     ),
                 )
                 scores.append(torch.stack([p[2] for p in used_points[label]], dim=0))
-                labels.append(torch.stack([LongTensor([label]) for _ in range(scores[-1].shape[0])], dim=0))
+                labels.append(torch.cat([LongTensor([label]) for _ in range(scores[-1].shape[0])], dim=0))
 
         return ZeroShotVisualPromptingBatchPredEntity(
             batch_size=len(outputs),
@@ -886,33 +890,57 @@ class OTXZeroShotSegmentAnything(OTXZeroShotVisualPromptingModel):
             "used_indices": self.used_indices,
         }
         # save reference info
-        path_reference_info: Path = Path(default_root_dir) / self.reference_info_dir / "reference_info.pt"
-        path_reference_info.parent.mkdir(parents=True, exist_ok=True)
+        self.saved_reference_info_path: Path = Path(default_root_dir) / self.reference_info_dir / "reference_info.pt"
+        self.saved_reference_info_path.parent.mkdir(parents=True, exist_ok=True)
         # TODO (sungchul): ticket no. 139210
-        torch.save(reference_info, path_reference_info)
+        torch.save(reference_info, self.saved_reference_info_path)
         pickle.dump(
             {k: v.numpy() for k, v in reference_info.items()},
-            path_reference_info.with_suffix(".pickle").open("wb"),
+            self.saved_reference_info_path.with_suffix(".pickle").open("wb"),
         )
-        log.info(f"Saved reference info at {path_reference_info}.")
+        log.info(f"Saved reference info at {self.saved_reference_info_path}.")
 
-    def load_reference_info(self, default_root_dir: Path | str, device: str | torch.device = "cpu") -> bool:
-        """Load latest reference info to be used."""
-        _infer_reference_info_root: Path = (
-            self.infer_reference_info_root
-            if self.infer_reference_info_root == self.infer_reference_info_root.absolute()
-            else Path(default_root_dir) / self.infer_reference_info_root
-        )
+    def load_reference_info(
+        self,
+        default_root_dir: Path | str,
+        device: str | torch.device = "cpu",
+        path_to_directly_load: Path | None = None,
+    ) -> bool:
+        """Load latest reference info to be used.
 
-        if (
-            path_reference_info := _infer_reference_info_root / self.reference_info_dir / "reference_info.pt"
-        ).is_file():
-            reference_info = torch.load(path_reference_info)
+        Args:
+            default_root_dir (Path | str): Default root directory to be used
+                when inappropriate infer_reference_info_root is given.
+            device (str | torch.device): Device that reference infos will be attached.
+            path_to_directly_load (Path | None): Reference info path to directly be loaded.
+                Normally, it is obtained after `learn` which is executed when trying to do `infer`
+                without reference features in `on_test_start` or `on_predict_start`.
+
+        Returns:
+            (bool): Whether normally loading checkpoint or not.
+        """
+        if path_to_directly_load is not None:
+            # if `path_to_directly_load` is given, forcely load
+            reference_info = torch.load(path_to_directly_load)
             retval = True
-            log.info(f"reference info saved at {path_reference_info} was successfully loaded.")
+            log.info(f"reference info saved at {path_to_directly_load} was successfully loaded.")
+
         else:
-            reference_info = {}
-            retval = False
+            _infer_reference_info_root: Path = (
+                self.infer_reference_info_root
+                if self.infer_reference_info_root == self.infer_reference_info_root.absolute()
+                else Path(default_root_dir) / self.infer_reference_info_root
+            )
+
+            if (
+                path_reference_info := _infer_reference_info_root / self.reference_info_dir / "reference_info.pt"
+            ).is_file():
+                reference_info = torch.load(path_reference_info)
+                retval = True
+                log.info(f"reference info saved at {path_reference_info} was successfully loaded.")
+            else:
+                reference_info = {}
+                retval = False
 
         self.register_buffer(
             "reference_feats",

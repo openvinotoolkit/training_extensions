@@ -25,7 +25,7 @@ class TestRTMDet:
         otx_rtmdet_tiny = RTMDetTiny(label_info=3)
         otx_rtmdet_tiny_exporter = otx_rtmdet_tiny._exporter
         assert isinstance(otx_rtmdet_tiny_exporter, OTXNativeModelExporter)
-        assert otx_rtmdet_tiny_exporter.swap_rgb is False
+        assert otx_rtmdet_tiny_exporter.swap_rgb is True
 
     @pytest.mark.parametrize("model", [RTMDetTiny(3)])
     def test_loss(self, model, fxt_data_module):

@@ -52,7 +52,6 @@ LITMODULE_PER_TASK = {
     OTXTaskType.INSTANCE_SEGMENTATION: "otx.core.model.module.instance_segmentation.OTXInstanceSegLitModule",
     OTXTaskType.SEMANTIC_SEGMENTATION: "otx.core.model.module.segmentation.OTXSegmentationLitModule",
     OTXTaskType.ACTION_CLASSIFICATION: "otx.core.model.module.action_classification.OTXActionClsLitModule",
-    OTXTaskType.ACTION_DETECTION: "otx.core.model.module.action_detection.OTXActionDetLitModule",
     OTXTaskType.VISUAL_PROMPTING: "otx.core.model.module.visual_prompting.OTXVisualPromptingLitModule",
     OTXTaskType.ZERO_SHOT_VISUAL_PROMPTING: "otx.core.model.module.visual_prompting.OTXZeroShotVisualPromptingLitModule",  # noqa: E501
 }
@@ -368,8 +367,8 @@ class Engine:
         # NOTE, trainer.test takes only lightning based checkpoint.
         # So, it can't take the OTX1.x checkpoint.
         if checkpoint is not None and not is_ir_ckpt:
-            model_cls = self.model.__class__
-            model = model_cls.load_from_checkpoint(checkpoint_path=checkpoint)
+            model_cls = model.__class__
+            model = model_cls.load_from_checkpoint(checkpoint_path=checkpoint, **model.hparams)
 
         if model.label_info != self.datamodule.label_info:
             msg = (
@@ -449,8 +448,8 @@ class Engine:
             datamodule = self._auto_configurator.update_ov_subset_pipeline(datamodule=datamodule, subset="test")
 
         if checkpoint is not None and not is_ir_ckpt:
-            model_cls = self.model.__class__
-            model = model_cls.load_from_checkpoint(checkpoint_path=checkpoint)
+            model_cls = model.__class__
+            model = model_cls.load_from_checkpoint(checkpoint_path=checkpoint, **model.hparams)
 
         if model.label_info != self.datamodule.label_info:
             msg = (
@@ -555,7 +554,11 @@ class Engine:
 
         if not is_ir_ckpt:
             model_cls = self.model.__class__
-            self.model = model_cls.load_from_checkpoint(checkpoint_path=checkpoint, map_location="cpu")
+            self.model = model_cls.load_from_checkpoint(
+                checkpoint_path=checkpoint,
+                map_location="cpu",
+                **self.model.hparams,
+            )
             self.model.eval()
 
         self.model.explain_mode = explain
@@ -697,7 +700,7 @@ class Engine:
 
         if checkpoint is not None and not is_ir_ckpt:
             model_cls = model.__class__
-            model = model_cls.load_from_checkpoint(checkpoint_path=checkpoint)
+            model = model_cls.load_from_checkpoint(checkpoint_path=checkpoint, **model.hparams)
 
         if model.label_info != self.datamodule.label_info:
             msg = (

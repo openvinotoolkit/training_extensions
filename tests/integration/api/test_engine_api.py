@@ -71,7 +71,6 @@ def test_engine_from_config(
     # [TODO]: Enable should progress for all Tasks.
     if task in [
         OTXTaskType.ACTION_CLASSIFICATION,
-        OTXTaskType.ACTION_DETECTION,
         OTXTaskType.H_LABEL_CLS,
         OTXTaskType.ROTATED_DETECTION,
         OTXTaskType.ANOMALY_CLASSIFICATION,
