@@ -12,6 +12,7 @@ from otx.algo.detection.heads.anchor_head import AnchorHead
 from otx.algo.detection.heads.class_incremental_mixin import (
     ClassIncrementalMixin,
 )
+from otx.algo.detection.losses.cross_entropy_loss import CrossEntropyLoss
 from otx.algo.detection.losses.cross_focal_loss import (
     CrossSigmoidFocalLoss,
 )
@@ -57,12 +58,12 @@ class ATSSHead(ClassIncrementalMixin, AnchorHead):
         self,
         num_classes: int,
         in_channels: int,
-        loss_centerness: nn.Module,
         pred_kernel_size: int = 3,
         stacked_convs: int = 4,
         conv_cfg: dict | None = None,
         norm_cfg: dict | None = None,
         reg_decoded_bbox: bool = True,
+        loss_centerness: nn.Module | None = None,
         init_cfg: dict | None = None,
         bg_loss_weight: float = -1.0,
         use_qfl: bool = False,
@@ -89,7 +90,7 @@ class ATSSHead(ClassIncrementalMixin, AnchorHead):
         )
 
         self.sampling = False
-        self.loss_centerness = loss_centerness
+        self.loss_centerness = loss_centerness or CrossEntropyLoss(use_sigmoid=True, loss_weight=1.0)
 
         if use_qfl:
             kwargs["loss_cls"] = (

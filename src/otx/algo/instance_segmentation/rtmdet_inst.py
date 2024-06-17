@@ -78,8 +78,6 @@ class RTMDetInstTiny(ExplainableOTXInstanceSegModel):
         """Return classification layer names by comparing two different number of classes models.
 
         Args:
-            config (DictConfig): Config for building model.
-            model_registry (Registry): Registry for building model.
             prefix (str): Prefix of model param name.
                 Normally it is "model." since OTXModel set it's nn.Module model as self.model
 

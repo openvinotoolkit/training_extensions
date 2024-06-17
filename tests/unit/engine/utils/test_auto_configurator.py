@@ -26,7 +26,6 @@ def fxt_data_root_per_task_type() -> dict:
         "tests/assets/multilabel_classification": OTXTaskType.MULTI_LABEL_CLS,
         "tests/assets/car_tree_bug": OTXTaskType.DETECTION,
         "tests/assets/common_semantic_segmentation_dataset": OTXTaskType.SEMANTIC_SEGMENTATION,
-        "tests/assets/action_detection_dataset": OTXTaskType.ACTION_DETECTION,
     }
 
 
@@ -110,7 +109,7 @@ class TestAutoConfigurator:
         assert datamodule.task == task
 
     def test_get_model(self, fxt_task: OTXTaskType) -> None:
-        if fxt_task in {OTXTaskType.H_LABEL_CLS, OTXTaskType.ACTION_DETECTION}:
+        if fxt_task is OTXTaskType.H_LABEL_CLS:
             pytest.xfail(reason="Not working")
 
         auto_configurator = AutoConfigurator(task=fxt_task)
@@ -172,7 +171,7 @@ class TestAutoConfigurator:
             {
                 "class_path": "otx.core.data.transform_libs.torchvision.Resize",
                 "init_args": {
-                    "scale": [992, 736],
+                    "scale": [736, 992],
                     "keep_ratio": False,
                     "transform_bbox": False,
                     "is_numpy_to_tvtensor": True,

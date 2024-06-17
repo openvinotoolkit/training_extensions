@@ -359,7 +359,7 @@ class MMDetCompatibleModel(ExplainableOTXDetModel):
             {"type": "LoadAnnotations", "with_bbox": True},
             {
                 "type": "PackDetInputs",
-                "meta_keys": ["ori_filenamescale_factor", "ori_shape", "filename", "img_shape"],
+                "meta_keys": ["ori_filename", "scale_factor", "ori_shape", "filename", "img_shape"],
             },
         ]
 
@@ -554,7 +554,7 @@ class OVDetectionModel(OVModel[DetBatchDataEntity, DetBatchPredEntity]):
         if label_shift:
             log.warning(f"label_shift: {label_shift}")
 
-        for output in outputs:
+        for i, output in enumerate(outputs):
             output_objects = output.objects
             if len(output_objects):
                 bbox = [[output.xmin, output.ymin, output.xmax, output.ymax] for output in output_objects]
@@ -564,7 +564,7 @@ class OVDetectionModel(OVModel[DetBatchDataEntity, DetBatchPredEntity]):
                 tv_tensors.BoundingBoxes(
                     bbox,
                     format="XYXY",
-                    canvas_size=inputs.imgs_info[-1].img_shape,
+                    canvas_size=inputs.imgs_info[i].img_shape,
                     device=self.device,
                 ),
             )

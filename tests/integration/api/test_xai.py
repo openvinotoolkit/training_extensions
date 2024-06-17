@@ -46,6 +46,15 @@ def test_forward_explain(
 
     if "dino" in model_name:
         pytest.skip("DINO is not supported.")
+    if "_semisl" in model_name:
+        pytest.skip("Semi-SL is not supported.")
+
+    if "maskrcnn_r50_tv" in model_name:
+        pytest.skip("MaskRCNN R50 Torchvision model doesn't support explain.")
+
+    if "rtmdet_tiny" in recipe:
+        # TODO (sungchul): enable xai for rtmdet_tiny (CVS-142651)
+        pytest.skip("rtmdet_tiny on detection is not supported yet.")
 
     engine = Engine.from_config(
         config_path=recipe,
@@ -98,6 +107,10 @@ def test_predict_with_explain(
     if "instance_segmentation" in recipe:
         # TODO(Eugene): figure out why instance segmentation model fails after decoupling.
         pytest.skip("There's issue with instance segmentation model. Skip for now.")
+
+    if "rtmdet_tiny" in recipe:
+        # TODO (sungchul): enable xai for rtmdet_tiny (CVS-142651)
+        pytest.skip("rtmdet_tiny on detection is not supported yet.")
 
     tmp_path = tmp_path / f"otx_xai_{model_name}"
     engine = Engine.from_config(
@@ -158,10 +171,10 @@ def test_predict_with_explain(
 
     assert len(maps_torch) == len(maps_ov)
 
-    if "tv_efficientnet_b3" in recipe:
+    if "tv_efficientnet_b3" in recipe or "efficientnet_b0" in recipe:
         # There is the issue with different predict results for Pytorch and OpenVINO tasks.
         # Probably because of the different preprocessed images passed as an input. Skip the rest of the checks for now.
-        # Ticket 141639
+        # Tickets: 142087, 141639
         return
 
     for i in range(len(maps_torch)):

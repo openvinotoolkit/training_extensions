@@ -18,10 +18,6 @@ from otx.core.data.dataset.action_classification import (
     ActionClsDataEntity,
     OTXActionClsDataset,
 )
-from otx.core.data.dataset.action_detection import (
-    ActionDetDataEntity,
-    OTXActionDetDataset,
-)
 from otx.core.data.dataset.anomaly import (
     AnomalyClassificationDataItem,
     AnomalyDataset,
@@ -118,7 +114,6 @@ def fxt_mock_dm_subset(mocker: MockerFixture, fxt_dm_item: DatasetItem) -> Magic
         (OTXInstanceSegDataset, InstanceSegDataEntity, {"include_polygons": True}),
         (OTXSegmentationDataset, SegDataEntity, {}),
         (OTXActionClsDataset, ActionClsDataEntity, {}),
-        (OTXActionDetDataset, ActionDetDataEntity, {}),
         (AnomalyDataset, AnomalyClassificationDataItem, {"task_type": OTXTaskType.ANOMALY_CLASSIFICATION}),
         (AnomalyDataset, AnomalyDetectionDataItem, {"task_type": OTXTaskType.ANOMALY_DETECTION}),
         (AnomalyDataset, AnomalySegmentationDataItem, {"task_type": OTXTaskType.ANOMALY_SEGMENTATION}),
@@ -131,7 +126,6 @@ def fxt_mock_dm_subset(mocker: MockerFixture, fxt_dm_item: DatasetItem) -> Magic
         "instance_seg",
         "semantic_seg",
         "action_cls",
-        "action_det",
         "anomaly_cls",
         "anomaly_det",
         "anomaly_seg",

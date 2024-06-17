@@ -21,6 +21,7 @@ from otx.core.types.image import ImageColorChannel, ImageType
 from otx.core.types.task import OTXTaskType
 
 if TYPE_CHECKING:
+    import decord
     import numpy as np
 
 
@@ -206,6 +207,139 @@ class ImageInfo(tv_tensors.TVTensor):
         )
 
 
+class VideoInfo(tv_tensors.TVTensor):
+    """Meta info for video.
+
+    Attributes:
+        clip_len: Length of a video clip.
+        num_clips: Number of clips for training.
+        frame_interval: Interval between sampled frames in a video clip.
+        video_reader: Decord video reader.
+        avg_fps: Average number of frames per seconds in a clip.
+        num_frames: Number of total frames in a video clip.
+        start_index: Start frame index.
+        frame_inds: Numpy array of chosen frame indices.
+    """
+
+    clip_len: int
+    num_clips: int
+    frame_interval: int
+    video_reader: decord.VideoReader
+    avg_fps: float
+    num_frames: int
+    start_index: int
+    frame_inds: np.ndarray
+
+    @classmethod
+    def _wrap(
+        cls,
+        dummy_tensor: Tensor,
+        *,
+        clip_len: int = 8,
+        num_clips: int = 1,
+        frame_interval: int = 4,
+        video_reader: decord.VideoReader | None = None,
+        avg_fps: float = 30.0,
+        num_frames: int | None = None,
+        start_index: int = 0,
+        frame_inds: np.ndarray | None = None,
+    ) -> ImageInfo:
+        video_info = dummy_tensor.as_subclass(cls)
+        video_info.video_reader = video_reader
+        video_info.avg_fps = avg_fps
+        video_info.num_frames = num_frames
+        video_info.clip_len = clip_len
+        video_info.num_clips = num_clips
+        video_info.frame_interval = frame_interval
+        video_info.start_index = start_index
+        video_info.frame_inds = frame_inds
+        return video_info
+
+    def __new__(  # noqa: D102
+        cls,
+        clip_len: int = 8,
+        num_clips: int = 1,
+        frame_interval: int = 4,
+        video_reader: decord.VideoReader | None = None,
+        avg_fps: float = 30.0,
+        num_frames: int | None = None,
+        start_index: int = 0,
+        frame_inds: np.ndarray | None = None,
+    ) -> VideoInfo:
+        return cls._wrap(
+            dummy_tensor=Tensor(),
+            clip_len=clip_len,
+            num_clips=num_clips,
+            frame_interval=frame_interval,
+            video_reader=video_reader,
+            avg_fps=avg_fps,
+            num_frames=num_frames,
+            start_index=start_index,
+            frame_inds=frame_inds,
+        )
+
+    @classmethod
+    def _wrap_output(
+        cls,
+        output: Tensor,
+        args: tuple[()] = (),
+        kwargs: Mapping[str, Any] | None = None,
+    ) -> VideoInfo | list[VideoInfo] | tuple[VideoInfo]:
+        """Wrap an output (`torch.Tensor`) obtained from PyTorch function.
+
+        For example, this function will be called when
+
+        >>> img_info = VideoInfo(img_idx=0, img_shape=(10, 10), ori_shape=(10, 10))
+        >>> `_wrap_output()` will be called after the PyTorch function `to()` is called
+        >>> img_info = img_info.to(device=torch.cuda)
+        """
+        flat_params, _ = tree_flatten(args + (tuple(kwargs.values()) if kwargs else ()))
+
+        if isinstance(output, Tensor) and not isinstance(output, VideoInfo):
+            video_info = next(x for x in flat_params if isinstance(x, VideoInfo))
+            output = VideoInfo._wrap(
+                dummy_tensor=output,
+                clip_len=video_info.clip_len,
+                num_clips=video_info.num_clips,
+                frame_interval=video_info.frame_interval,
+                video_reader=video_info.video_reader,
+                avg_fps=video_info.avg_fps,
+                num_frames=video_info.num_frames,
+                start_index=video_info.start_index,
+                frame_inds=video_info.frame_inds,
+            )
+        elif isinstance(output, (tuple, list)):
+            video_infos = [x for x in flat_params if isinstance(x, VideoInfo)]
+            output = type(output)(
+                VideoInfo._wrap(
+                    dummy_tensor=dummy_tensor,
+                    clip_len=video_info.clip_len,
+                    num_clips=video_info.num_clips,
+                    frame_interval=video_info.frame_interval,
+                    video_reader=video_info.video_reader,
+                    avg_fps=video_info.avg_fps,
+                    num_frames=video_info.num_frames,
+                    start_index=video_info.start_index,
+                    frame_inds=video_info.frame_inds,
+                )
+                for dummy_tensor, video_info in zip(output, video_infos)
+            )
+        return output
+
+    def __repr__(self) -> str:
+        return (
+            "VideoInfo("
+            f"clip_len={self.clip_len}, "
+            f"num_clips={self.num_clips}, "
+            f"frame_interval={self.frame_interval}, "
+            f"video_reader={self.video_reader}, "
+            f"avg_fps={self.avg_fps}, "
+            f"num_frames={self.num_frames}, "
+            f"start_index={self.start_index}, "
+            f"frame_inds={self.frame_inds})"
+        )
+
+
 @F.register_kernel(functional=F.resize, tv_tensor_cls=ImageInfo)
 def _resize_image_info(image_info: ImageInfo, size: list[int], **kwargs) -> ImageInfo:  # noqa: ARG001
     """Register ImageInfo to TorchVision v2 resize kernel."""
@@ -218,7 +352,7 @@ def _resize_image_info(image_info: ImageInfo, size: list[int], **kwargs) -> Imag
 
     ori_h, ori_w = image_info.ori_shape
     new_h, new_w = image_info.img_shape
-    image_info.scale_factor = (new_w / ori_w, new_h / ori_h)  # TODO (sungchul): ticket no. 138831
+    image_info.scale_factor = (new_h / ori_h, new_w / ori_w)
     return image_info
 
 
