@@ -1001,36 +1001,49 @@ class OVZeroShotVisualPromptingModel(
             data_batch: ZeroShotVisualPromptingBatchDataEntity,
             module: Literal["image_encoder", "decoder"],
         ) -> np.ndarray | dict[str, Any]:
-            images, _, prompts = self._customize_inputs(data_batch)  # type: ignore[arg-type]
-
-            image = images[0]["images"]  # use only the first image
+            numpy_image = data_batch.images[0].cpu().numpy().transpose(1, 2, 0) # use only the first image
+            image, meta = self.model.encoder_model.preprocess(numpy_image)
             if module == "image_encoder":
                 # resize
-                resized_image = self.model["image_encoder"].resize(
-                    image[0],
-                    (self.model["image_encoder"].w, self.model["image_encoder"].h),
-                )
-
-                # pad image if necessary because `fit_to_window` resize for python in modelapi doesn't support pad
-                pad_w = max(0, self.model["image_encoder"].w - resized_image.shape[1])
-                pad_h = max(0, self.model["image_encoder"].h - resized_image.shape[0])
-                resized_image = np.pad(
-                    resized_image,
-                    ((0, pad_h), (0, pad_w), (0, 0)),
-                    mode="constant",
-                    constant_values=0,
+                resized_image = self.model.encoder_model.resize(
+                    image["images"][0],
+                    (self.model.encoder_model.w, self.model.encoder_model.h),
                 )
 
                 # normalization
-                resized_image = self.model["image_encoder"].input_transform(resized_image)
+                resized_image = self.model.encoder_model.input_transform(resized_image)
 
                 # change layout from HWC to NCHW
-                return self.model["image_encoder"]._change_layout(resized_image)  # noqa: SLF001
+                return self.model.encoder_model._change_layout(resized_image)  # noqa: SLF001
 
             # obtain image embeddings from image encoder
-            image_embeddings = self.model["image_encoder"].infer_sync(image)
+            image_embeddings = self.model.encoder_model.infer_sync(image)
+
+            points: list[np.ndarray] = []
+            bboxes: list[np.ndarray] = []
+            _labels: dict[str, list[int]] = defaultdict(list)
+
             # use only the first prompt
-            prompt_for_optim = next(iter(prompts[0].values()))[0] if isinstance(prompts[0], dict) else prompts[0][0]  # type: ignore[attr-defined]
+            for prompt, label in zip(data_batch.prompts[0], data_batch.labels[0]):  # type: ignore[arg-type]
+                if isinstance(prompt, tv_tensors.BoundingBoxes):
+                    bboxes.append(prompt.cpu().numpy())
+                    _labels["bboxes"].append(label.cpu().numpy())
+                elif isinstance(prompt, Points):
+                    points.append(prompt.cpu().numpy())
+                    _labels["points"].append(label.cpu().numpy())
+
+            # preprocess decoder inputs
+            processed_prompts = self.model.decoder_model.preprocess(
+                    {
+                        "bboxes": bboxes,
+                        "points": points,
+                        "labels": _labels,
+                        "orig_size": meta["original_shape"][:2],
+                    },
+                )
+
+            processed_prompts_w_labels = self._gather_prompts_with_labels(processed_prompts)
+            prompt_for_optim = next(iter(processed_prompts_w_labels.values()))[0] if isinstance(processed_prompts_w_labels, dict) else prompts[0][0]  # type: ignore[attr-defined]
             prompt_for_optim.pop("label")
             prompt_for_optim.update(**image_embeddings)
             return prompt_for_optim
@@ -1071,16 +1084,18 @@ class OVZeroShotVisualPromptingModel(
     ######################################
     def _gather_prompts_with_labels(
         self,
-        batch_prompts: list[list[dict[str, Any]]],
-    ) -> list[dict[int, list[np.ndarray]]]:
+        image_prompts: list[dict[str, np.ndarray]],
+    ) -> dict[int, list[dict[str, np.ndarray]]]:
         """Gather prompts according to labels."""
-        total_processed_prompts: list[dict[int, list[np.ndarray]]] = []
-        for prompts in batch_prompts:
-            processed_prompts: defaultdict[int, list[np.ndarray]] = defaultdict(list)
-            for prompt in prompts:
-                processed_prompts[int(prompt["label"])].append(prompt)
-            total_processed_prompts.append(dict(sorted(processed_prompts.items(), key=lambda x: x)))
-        return total_processed_prompts
+
+        processed_prompts: defaultdict[int, list[dict[str, np.ndarray]]] = defaultdict(
+            list
+        )
+        for prompt in image_prompts:
+            processed_prompts[int(prompt["label"])].append(prompt)
+
+        return dict(sorted(processed_prompts.items(), key=lambda x: x))
+
 
     ######################################
     #               Learn                #
