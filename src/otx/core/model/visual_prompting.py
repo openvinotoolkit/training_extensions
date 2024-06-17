@@ -1278,7 +1278,7 @@ class OVZeroShotVisualPromptingModel(
             reference_info: dict[str, np.ndarray] = pickle.load(path.open("rb"))  # noqa: S301   # nosec: B301
             self.reference_feats = reference_info.get(
                 "reference_feats",
-                np.zeros((0, 1, self.model["decoder"].embed_dim), dtype=np.float32),
+                np.zeros((0, 1, self.model.decoder_model.embed_dim), dtype=np.float32),
             )
             self.used_indices = reference_info.get("used_indices", np.array([], dtype=np.int64))
             log.info(f"reference info saved at {path} was successfully loaded.")
