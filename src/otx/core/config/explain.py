@@ -15,3 +15,5 @@ class ExplainConfig:
 
     target_explain_group: TargetExplainGroup = TargetExplainGroup.ALL
     postprocess: bool = False
+    crop_padded_map: bool = False
+    predicted_maps_conf_thr: float = 0.3

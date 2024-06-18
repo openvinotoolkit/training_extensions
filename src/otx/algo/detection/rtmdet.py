@@ -169,21 +169,19 @@ class RTMDet(ExplainableOTXDetModel):
             std=self.std,
             resize_mode="fit_to_window_letterbox",
             pad_value=114,
-            swap_rgb=False,
+            swap_rgb=True,
             via_onnx=True,
             onnx_export_configuration={
                 "input_names": ["image"],
-                "output_names": ["boxes", "labels", "masks"],
+                "output_names": ["boxes", "labels"],
                 "dynamic_axes": {
                     "image": {0: "batch", 2: "height", 3: "width"},
                     "boxes": {0: "batch", 1: "num_dets"},
                     "labels": {0: "batch", 1: "num_dets"},
-                    "masks": {0: "batch", 1: "num_dets", 2: "height", 3: "width"},
                 },
-                "opset_version": 11,
                 "autograd_inlining": False,
             },
-            output_names=["bboxes", "labels", "masks", "feature_vector", "saliency_map"] if self.explain_mode else None,
+            output_names=["bboxes", "labels", "feature_vector", "saliency_map"] if self.explain_mode else None,
         )
 
     def forward_for_tracing(
