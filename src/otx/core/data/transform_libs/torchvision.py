@@ -20,7 +20,6 @@ import torch
 import torchvision.transforms.v2 as tvt_v2
 from datumaro.components.media import Video
 from lightning.pytorch.cli import instantiate_class
-from mmengine.fileio import FileClient
 from numpy import random
 from omegaconf import DictConfig
 from torchvision import tv_tensors
@@ -2725,6 +2724,9 @@ class DecordInit(tvt_v2.Transform):
 
     def _get_video_reader(self, filename: str) -> decord.VideoReader:
         if self.file_client is None:
+            # TODO(wonjulee): Remove mmengine imports
+            from mmengine.fileio import FileClient
+
             self.file_client = FileClient(self.io_backend, **self.kwargs)
         file_obj = io.BytesIO(self.file_client.get(filename))
         return decord.VideoReader(file_obj, num_threads=self.num_threads)
