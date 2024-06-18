@@ -2717,11 +2717,9 @@ class FormatShape(tvt_v2.Transform):
 class DecordInit(tvt_v2.Transform):
     """Using decord to initialize the video_reader."""
 
-    def __init__(self, io_backend: str = "disk", num_threads: int = 1, **kwargs) -> None:
-        self.io_backend = io_backend
+    def __init__(self, num_threads: int = 1, **kwargs) -> None:
         self.num_threads = num_threads
         self.kwargs = kwargs
-        # self.file_client = None
 
     def _get_video_reader(self, filename: str) -> decord.VideoReader:
         with Path(filename).open("rb") as f:
@@ -2741,7 +2739,7 @@ class DecordInit(tvt_v2.Transform):
         return inputs
 
     def __repr__(self) -> str:
-        return f"{self.__class__.__name__}(io_backend={self.io_backend}, num_threads={self.num_threads})"
+        return f"{self.__class__.__name__}(num_threads={self.num_threads})"
 
 
 class SampleFrames(tvt_v2.Transform):
