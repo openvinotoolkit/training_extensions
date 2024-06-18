@@ -300,6 +300,8 @@ class TVClassificationModel(nn.Module):
         feature_vector = feature_vector_fn(backbone_feat)
 
         x = self._flatten_outputs(self.avgpool(backbone_feat))
+        if self.neck is not None:
+            x = self.neck(x)
         logits = self.head(x)
 
         outputs = {
@@ -318,6 +320,8 @@ class TVClassificationModel(nn.Module):
     def _head_forward_fn(self, x: torch.Tensor) -> torch.Tensor:
         """Performs model's neck and head forward."""
         x = self._flatten_outputs(self.avgpool(x))
+        if self.neck is not None:
+            x = self.neck(x)
         return self.head(x)
 
     def _flatten_outputs(self, x: torch.Tensor) -> torch.Tensor:
