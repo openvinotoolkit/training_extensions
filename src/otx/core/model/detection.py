@@ -572,6 +572,7 @@ class OVDetectionModel(OVModel[DetBatchDataEntity, DetBatchPredEntity]):
                     bbox,
                     format="XYXY",
                     canvas_size=inputs.imgs_info[i].img_shape,
+                    device=self.device,
                 ),
             )
             scores.append(torch.tensor([output.score for output in output_objects], device=self.device))

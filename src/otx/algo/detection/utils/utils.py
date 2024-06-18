@@ -464,6 +464,10 @@ def clip_bboxes_export(
     Returns:
         tuple(Tensor): The clipped x1, y1, x2, y2.
     """
+    if len(max_shape) != 2:
+        msg = "`max_shape` should be [h, w]."
+        raise ValueError(msg)
+
     if isinstance(max_shape, torch.Tensor):
         # scale by 1/max_shape
         x1 = x1 / max_shape[1]

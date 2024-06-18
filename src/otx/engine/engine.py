@@ -432,7 +432,7 @@ class Engine:
                 otx predict --config <CONFIG_PATH, str> --checkpoint <CKPT_PATH, str>
                 ```
         """
-        from otx.algo.utils.xai_utils import process_saliency_maps_in_pred_entity
+        from otx.algo.utils.xai_utils import process_saliency_maps_in_pred_entity, set_crop_padded_map_flag
 
         model = self.model
 
@@ -478,8 +478,9 @@ class Engine:
         if explain:
             if explain_config is None:
                 explain_config = ExplainConfig()
+            explain_config = set_crop_padded_map_flag(explain_config, datamodule)
 
-            predict_result = process_saliency_maps_in_pred_entity(predict_result, explain_config)
+            predict_result = process_saliency_maps_in_pred_entity(predict_result, explain_config, datamodule.label_info)
 
         return predict_result
 
@@ -686,7 +687,11 @@ class Engine:
                     --checkpoint <CKPT_PATH, str>
                 ```
         """
-        from otx.algo.utils.xai_utils import dump_saliency_maps, process_saliency_maps_in_pred_entity
+        from otx.algo.utils.xai_utils import (
+            dump_saliency_maps,
+            process_saliency_maps_in_pred_entity,
+            set_crop_padded_map_flag,
+        )
 
         model = self.model
 
@@ -723,8 +728,9 @@ class Engine:
 
         if explain_config is None:
             explain_config = ExplainConfig()
+        explain_config = set_crop_padded_map_flag(explain_config, datamodule)
 
-        predict_result = process_saliency_maps_in_pred_entity(predict_result, explain_config)
+        predict_result = process_saliency_maps_in_pred_entity(predict_result, explain_config, datamodule.label_info)
         if dump:
             dump_saliency_maps(
                 predict_result,

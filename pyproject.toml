@@ -38,6 +38,7 @@ dependencies = [
     "docstring_parser==0.16", # CLI help-formatter
     "rich_argparse==1.4.0", # CLI help-formatter
     "einops==0.7.0",
+    "decord==0.6.0",
 ]
 
 [project.optional-dependencies]

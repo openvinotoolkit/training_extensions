@@ -181,6 +181,12 @@ def test_predict_with_explain(
         # Tickets: 142087, 141639
         return
 
+    if "yolox" in recipe:
+        # The cropping of the padded saliency maps is not implemented for OV (Model API) yet,
+        # so the saliency maps for PyTorch and OV are different.
+        # TODO(gzalessk): Implement cropping saliency maps in Model API (Ticket 144296).
+        return
+
     for i in range(len(maps_torch)):
         for class_id in maps_torch[i]:
             assert class_id in maps_ov[i]
