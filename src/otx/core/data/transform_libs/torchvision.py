@@ -10,6 +10,7 @@ import io
 import itertools
 import math
 from inspect import isclass
+from pathlib import Path
 from typing import TYPE_CHECKING, Any, ClassVar, Iterable, Sequence
 
 import cv2
@@ -2720,15 +2721,12 @@ class DecordInit(tvt_v2.Transform):
         self.io_backend = io_backend
         self.num_threads = num_threads
         self.kwargs = kwargs
-        self.file_client = None
+        # self.file_client = None
 
     def _get_video_reader(self, filename: str) -> decord.VideoReader:
-        if self.file_client is None:
-            # TODO(wonjulee): Remove mmengine imports
-            from mmengine.fileio import FileClient
-
-            self.file_client = FileClient(self.io_backend, **self.kwargs)
-        file_obj = io.BytesIO(self.file_client.get(filename))
+        with Path(filename).open("rb") as f:
+            file_byte = f.read()
+        file_obj = io.BytesIO(file_byte)
         return decord.VideoReader(file_obj, num_threads=self.num_threads)
 
     def __call__(self, *_inputs: T_OTXDataEntity) -> T_OTXDataEntity | None:
