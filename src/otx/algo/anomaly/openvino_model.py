@@ -14,17 +14,21 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Sequence
 
 import numpy as np
+import openvino
 import torch
 from anomalib.metrics import create_metric_collection
 from lightning import Callback, Trainer
 from torchvision.transforms.functional import resize
 
 from otx.core.data.entity.anomaly import AnomalyClassificationDataBatch
+from otx.core.data.module import OTXDataModule
 from otx.core.metrics.types import MetricCallable, NullMetricCallable
 from otx.core.model.anomaly import AnomalyModelInputs
 from otx.core.model.base import OVModel
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
     from anomalib.metrics import AnomalibMetricCollection
     from model_api.models import Model
     from model_api.models.anomaly import AnomalyResult
@@ -132,6 +136,55 @@ class AnomalyOpenVINO(OVModel):
             model_type=self.model_type,
             configuration=self.model_api_configuration,
         )
+
+    def optimize(
+        self,
+        output_dir: Path,
+        data_module: OTXDataModule,
+        ptq_config: dict[str, Any] | None = None,
+    ) -> Path:
+        """Runs NNCF quantization.
+
+        Note:
+            The only difference between the base class is that it uses `val_dataloader` instead of `train_dataloader`.
+
+        See ``otx.core.model.base.OVModel.optimize`` for more details.
+        """
+        import nncf
+
+        output_model_path = output_dir / (self._OPTIMIZED_MODEL_BASE_NAME + ".xml")
+
+        def check_if_quantized(model: openvino.Model) -> bool:
+            """Checks if OpenVINO model is already quantized."""
+            nodes = model.get_ops()
+            return any(op.get_type_name() == "FakeQuantize" for op in nodes)
+
+        ov_model = openvino.Core().read_model(self.model_name)
+
+        if check_if_quantized(ov_model):
+            msg = "Model is already optimized by PTQ"
+            raise RuntimeError(msg)
+
+        val_dataset = data_module.val_dataloader()
+
+        ptq_config_from_ir = self._read_ptq_config_from_ir(ov_model)
+        if ptq_config is not None:
+            ptq_config_from_ir.update(ptq_config)
+            ptq_config = ptq_config_from_ir
+        else:
+            ptq_config = ptq_config_from_ir
+
+        quantization_dataset = nncf.Dataset(val_dataset, self.transform_fn)  # type: ignore[attr-defined]
+
+        compressed_model = nncf.quantize(  # type: ignore[attr-defined]
+            ov_model,
+            quantization_dataset,
+            **ptq_config,
+        )
+
+        openvino.save_model(compressed_model, output_model_path)
+
+        return output_model_path
 
     def configure_callbacks(self) -> Sequence[Callback] | Callback:
         """Return the metric callback."""

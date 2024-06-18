@@ -523,15 +523,21 @@ def patch_mmaction2() -> None:
 
     if not file_mmaction2_patch.exists():
         msg = f"Cannot find `mmaction2.patch` file from {dir_patches}"
-        raise RuntimeError(msg)
+        warn(msg, stacklevel=1)
+        return
+        # raise RuntimeError(msg)
 
     if (spec := find_spec("mmaction")) is None:
         msg = "Cannot find mmaction spec"
-        raise RuntimeError(msg)
+        warn(msg, stacklevel=1)
+        return
+        # raise RuntimeError(msg)
 
     if (spec_origin := spec.origin) is None:
         msg = "Cannot find mmaction spec origin"
-        raise RuntimeError(msg)
+        warn(msg, stacklevel=1)
+        return
+        # raise RuntimeError(msg)
 
     dir_mmaction_parent = Path(spec_origin).parent.parent
 
@@ -546,6 +552,8 @@ def patch_mmaction2() -> None:
 
     if proc.returncode > 1:
         msg = f"Cannot patch. Error code: {proc.returncode}, stdout: {stdout.decode()} and stderr: {stderr.decode()}"
-        raise RuntimeError(msg)
+        warn(msg, stacklevel=1)
+        return
+        # raise RuntimeError(msg)
     if proc.returncode == 1:
         warn("MMAction2 is already patched. Skip patching it.", stacklevel=1)

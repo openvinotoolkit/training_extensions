@@ -35,7 +35,7 @@ from otx.core.data.entity.instance_segmentation import InstanceSegBatchDataEntit
 from otx.core.data.entity.utils import stack_batch
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter
-from otx.core.metrics.mean_ap import MaskRLEMeanAPCallable
+from otx.core.metrics.mean_ap import MaskRLEMeanAPFMeasureCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
 from otx.core.model.instance_segmentation import ExplainableOTXInstanceSegModel
 from otx.core.schedulers import LRSchedulerListCallable
@@ -56,7 +56,7 @@ class OTXMaskRCNN(ExplainableOTXInstanceSegModel):
         label_info: LabelInfoTypes,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
-        metric: MetricCallable = MaskRLEMeanAPCallable,
+        metric: MetricCallable = MaskRLEMeanAPFMeasureCallable,
         torch_compile: bool = False,
         tile_config: TileConfig = TileConfig(enable_tiler=False),
     ) -> None:
@@ -217,7 +217,7 @@ class OTXMaskRCNN(ExplainableOTXInstanceSegModel):
             input_size=input_size,
             mean=self.mean,
             std=self.std,
-            resize_mode="standard",
+            resize_mode="fit_to_window",
             pad_value=0,
             swap_rgb=False,
             via_onnx=True,
@@ -233,7 +233,7 @@ class OTXMaskRCNN(ExplainableOTXInstanceSegModel):
                 "opset_version": 11,
                 "autograd_inlining": False,
             },
-            output_names=["bboxes", "labels", "masks", "feature_vector", "saliency_map"] if self.explain_mode else None,
+            output_names=["bboxes", "labels", "masks"],
         )
 
     def forward_for_tracing(
@@ -627,7 +627,7 @@ class MaskRCNNSwinT(OTXMaskRCNN):
         label_info: LabelInfoTypes,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
-        metric: MetricCallable = MaskRLEMeanAPCallable,
+        metric: MetricCallable = MaskRLEMeanAPFMeasureCallable,
         torch_compile: bool = False,
         tile_config: TileConfig = TileConfig(enable_tiler=False),
     ) -> None:

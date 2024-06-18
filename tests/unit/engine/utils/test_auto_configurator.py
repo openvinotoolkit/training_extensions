@@ -172,7 +172,7 @@ class TestAutoConfigurator:
             {
                 "class_path": "otx.core.data.transform_libs.torchvision.Resize",
                 "init_args": {
-                    "scale": [992, 736],
+                    "scale": [992, 800],
                     "keep_ratio": False,
                     "transform_bbox": False,
                     "is_numpy_to_tvtensor": True,
