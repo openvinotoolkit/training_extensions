@@ -8,7 +8,6 @@ from copy import deepcopy
 
 import pytest
 import torch
-from mmengine.runner import save_checkpoint
 from otx.algo.classification.backbones import VisionTransformer
 from otx.algo.utils.mmengine_utils import load_checkpoint_to_model
 from torch.nn import functional
@@ -115,7 +114,8 @@ class TestVisionTransformer:
         # test load checkpoint
         pretrain_pos_embed = model.pos_embed.clone().detach()
         checkpoint = tmp_path / "test.pth"
-        save_checkpoint(model.state_dict(), str(checkpoint))
+        torch.save(model.state_dict(), str(checkpoint))
+
         cfg = deepcopy(config)
         model = VisionTransformer(**cfg)
         state_dict = torch.load(str(checkpoint), None)

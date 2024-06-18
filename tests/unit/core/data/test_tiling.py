@@ -32,7 +32,16 @@ from torchvision import tv_tensors
 
 from tests.test_helpers import generate_random_bboxes
 
+SKIP_MMLAB_TEST = False
+try:
+    import mmdet  # noqa: F401
+except ImportError:
+    SKIP_MMLAB_TEST = True
 
+
+# TODO @eugene123tw: CVS-144401
+# A modification is needed to make this test work without MMLab.
+@pytest.mark.skipif(SKIP_MMLAB_TEST, reason="CVS-144401")
 class TestOTXTiling:
     @pytest.fixture()
     def mock_otx_det_model(self) -> OTXDetectionModel:

@@ -8,19 +8,30 @@ import numpy as np
 import pytest
 import torch
 from datumaro import Polygon
-from mmdet.structures.mask import PolygonMasks
 from otx.core.config.data import SubsetConfig
 from otx.core.data.entity.base import ImageInfo
 from otx.core.data.entity.detection import DetDataEntity
 from otx.core.data.entity.instance_segmentation import InstanceSegDataEntity
 from otx.core.data.entity.visual_prompting import VisualPromptingDataEntity
-from otx.core.data.transform_libs.mmcv import LoadImageFromFile
-from otx.core.data.transform_libs.mmdet import LoadAnnotations, MMDetTransformLib, PackDetInputs, PerturbBoundingBoxes
 from otx.core.types.transformer_libs import TransformLibType
 from torch import LongTensor
 from torchvision import tv_tensors
 
+SKIP_MMLAB_TEST = False
+try:
+    from mmdet.structures.mask import PolygonMasks
+    from otx.core.data.transform_libs.mmcv import LoadImageFromFile
+    from otx.core.data.transform_libs.mmdet import (
+        LoadAnnotations,
+        MMDetTransformLib,
+        PackDetInputs,
+        PerturbBoundingBoxes,
+    )
+except ImportError:
+    SKIP_MMLAB_TEST = True
 
+
+@pytest.mark.skipif(SKIP_MMLAB_TEST, reason="MMLab is not installed")
 class TestLoadAnnotations:
     def test_det_transform(self) -> None:
         data_entity = DetDataEntity(
@@ -60,6 +71,7 @@ class TestLoadAnnotations:
         assert results["gt_ignore_flags"] == np.array([False])
 
 
+@pytest.mark.skipif(SKIP_MMLAB_TEST, reason="MMLab is not installed")
 class TestPackDetInputs:
     @pytest.mark.parametrize(
         ("data_entity", "with_point", "expected"),
@@ -129,6 +141,7 @@ class TestPackDetInputs:
         assert results.image.shape == expected
 
 
+@pytest.mark.skipif(SKIP_MMLAB_TEST, reason="MMLab is not installed")
 class TestPerturbBoundingBoxes:
     def test_transform(self) -> None:
         transform = PerturbBoundingBoxes(offset=20)
@@ -153,6 +166,7 @@ class TestPerturbBoundingBoxes:
         assert np.all(results["gt_bboxes"][3][2:] == inputs["gt_bboxes"][3][2:])
 
 
+@pytest.mark.skipif(SKIP_MMLAB_TEST, reason="MMLab is not installed")
 class TestMMDetTransformLib:
     def test_generate(self, mocker) -> None:
         def mock_convert_func(cfg: dict) -> dict:

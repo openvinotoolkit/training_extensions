@@ -23,6 +23,12 @@ from otx.cli.utils.installation import (
 from pkg_resources import Requirement
 from pytest_mock import MockerFixture
 
+SKIP_MMLAB_TEST = False
+try:
+    import mim  # noqa: F401
+except ImportError:
+    SKIP_MMLAB_TEST = True
+
 
 @pytest.fixture()
 def requirements_file() -> Path:
@@ -225,6 +231,7 @@ def test_get_mmcv_install_args(mocker: MockerFixture) -> None:
         get_mmcv_install_args(torch_requirement=torch_requirement, mmcv_requirements=["mmengine==2.0.0"])
 
 
+@pytest.mark.skipif(SKIP_MMLAB_TEST, reason="MMLab is not installed")
 def test_mim_installation(mocker: MockerFixture) -> None:
     mocker.patch("otx.cli.utils.installation.find_spec", return_value=True)
     # https://github.com/Madoshakalaka/pipenv-setup/issues/101

@@ -7,17 +7,23 @@ from __future__ import annotations
 from unittest.mock import MagicMock
 
 import pytest
-from otx.core.exporter import mmdeploy as target_file
-from otx.core.exporter.mmdeploy import (
-    MMdeployExporter,
-    load_mmconfig_from_pkg,
-    mmdeploy_init_model_helper,
-    patch_input_shape,
-    use_temporary_default_scope,
-)
 from otx.core.types.precision import OTXPrecisionType
 
+SKIP_MMLAB_TEST = False
+try:
+    from otx.core.exporter import mmdeploy as target_file
+    from otx.core.exporter.mmdeploy import (
+        MMdeployExporter,
+        load_mmconfig_from_pkg,
+        mmdeploy_init_model_helper,
+        patch_input_shape,
+        use_temporary_default_scope,
+    )
+except ImportError:
+    SKIP_MMLAB_TEST = True
 
+
+@pytest.mark.skipif(SKIP_MMLAB_TEST, reason="MMLab is not installed")
 class TestMMdeployExporter:
     DEFAULT_MMDEPLOY_CFG = "tests.assets.mmdeploy_config_sample"
 
@@ -191,6 +197,7 @@ class TestMMdeployExporter:
         assert mock_torch2onnx.call_args.kwargs["model_checkpoint"] == str(mock_torch.save.call_args.args[1])
 
 
+@pytest.mark.skipif(SKIP_MMLAB_TEST, reason="MMLab is not installed")
 def test_mmdeploy_init_model_helper():
     mock_model = MagicMock()
     model_parameters = [MagicMock() for _ in range(3)]
@@ -202,6 +209,7 @@ def test_mmdeploy_init_model_helper():
         assert param.requires_grad is False
 
 
+@pytest.mark.skipif(SKIP_MMLAB_TEST, reason="MMLab is not installed")
 def test_patch_input_shape():
     mock_deploy_cfg = MagicMock()
     width = 128
@@ -212,6 +220,7 @@ def test_patch_input_shape():
     assert mock_deploy_cfg.ir_config.input_shape == (width, height)
 
 
+@pytest.mark.skipif(SKIP_MMLAB_TEST, reason="MMLab is not installed")
 def test_load_mmconfig_from_pkg(mocker):
     mock_mmconfig = mocker.patch.object(target_file, "MMConfig")
     assert mock_mmconfig.fromfile.return_value == load_mmconfig_from_pkg("otx")
@@ -219,6 +228,7 @@ def test_load_mmconfig_from_pkg(mocker):
     assert "otx/__init__.py" in mock_mmconfig.fromfile.call_args.args[0]
 
 
+@pytest.mark.skipif(SKIP_MMLAB_TEST, reason="MMLab is not installed")
 def test_use_temporary_default_scope(mocker):
     mock_default_scope = mocker.patch.object(target_file, "DefaultScope")
     mock_default_scope._instance_dict = {}
