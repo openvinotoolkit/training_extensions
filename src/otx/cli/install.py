@@ -145,13 +145,6 @@ def otx_install(
                 msg = "Cannot complete installation"
                 raise RuntimeError(msg)
 
-        # TODO(harimkang): Remove this reinstalling after resolving conflict with anomalib==1.0.1
-        # https://github.com/openvinotoolkit/training_extensions/actions/runs/8531851027/job/23372146228?pr=3258#step:5:2587
-        status_code = create_command("install").main(["jsonargparse==4.28.0"])
-        if status_code != 0:
-            msg = "Cannot install jsonargparse==4.28.0"
-            raise RuntimeError(msg)
-
     # Patch MMAction2 with src/otx/cli/patches/mmaction2.patch
     patch_mmaction2()
 
