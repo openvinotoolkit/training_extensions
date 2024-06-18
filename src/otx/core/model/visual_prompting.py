@@ -927,7 +927,6 @@ class OVZeroShotVisualPromptingModel(
                             "boxes": bboxes,
                             "points": points,
                             "labels": _labels,
-                            #"orig_size": imgs_info.ori_shape,
                         }
                 )
 
