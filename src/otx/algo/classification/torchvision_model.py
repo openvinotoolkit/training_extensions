@@ -165,11 +165,8 @@ class TVClassificationModel(nn.Module):
                 feature_channel = list(last_layer.children())[-1].in_features
                 layers = list(last_layer.children())[:-1]
                 self.use_layer_norm_2d = layers[0].__class__.__name__ == "LayerNorm2d"
-
-                head = nn.Sequential(*layers, nn.Linear(feature_channel, self.num_classes))
             else:
                 feature_channel = last_layer.in_features
-                head = nn.Linear(feature_channel, self.num_classes)
 
             if self.train_type == "semi_supervised":
                 self.neck = nn.Sequential(*layers) if layers else None
@@ -178,6 +175,10 @@ class TVClassificationModel(nn.Module):
                     in_channels=feature_channel,
                     loss=self.loss_module,
                 )
+            elif classifier_len >= 1:
+                head = nn.Sequential(*layers, nn.Linear(feature_channel, self.num_classes))
+            else:
+                head = nn.Linear(feature_channel, self.num_classes)
 
         return head
 
@@ -192,6 +193,7 @@ class TVClassificationModel(nn.Module):
 
         Args:
             images (torch.Tensor | dict[str, torch.Tensor]): The input images.
+                if Semi-SL task with multi-augmentation, it will comes as a dict.
             labels (torch.Tensor | dict[str, torch.Tensor] | None, optional): The ground truth labels.
             mode (str, optional): The mode of the forward pass. Defaults to "tensor".
 
@@ -255,6 +257,10 @@ class TVClassificationModel(nn.Module):
         images: dict[str, torch.Tensor],
         stage: str = "neck",
     ) -> dict[str, torch.Tensor]:
+        if "labeled" not in images or "weak_transforms" not in images or "strong_transforms" not in images:
+            msg = "The input dictionary should contain 'labeled', 'weak_transforms', and 'strong_transforms' keys."
+            raise ValueError(msg)
+
         labeled_inputs = images["labeled"]
         unlabeled_weak_inputs = images["weak_transforms"]
         unlabeled_strong_inputs = images["strong_transforms"]
