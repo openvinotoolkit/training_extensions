@@ -1,6 +1,6 @@
 import pytest
 import torch
-from otx.algo.classification.torchvision_model import OTXTVModel, TVModelWithLossComputation
+from otx.algo.classification.torchvision_model import OTXTVModel, TVClassificationModel
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.classification import MulticlassClsBatchPredEntity
 from otx.core.types.export import TaskLevelExportParameters
@@ -13,7 +13,7 @@ def fxt_tv_model():
 
 class TestOTXTVModel:
     def test_create_model(self, fxt_tv_model):
-        assert isinstance(fxt_tv_model.model, TVModelWithLossComputation)
+        assert isinstance(fxt_tv_model.model, TVClassificationModel)
 
     def test_customize_inputs(self, fxt_tv_model, fxt_multiclass_cls_batch_data_entity):
         outputs = fxt_tv_model._customize_inputs(fxt_multiclass_cls_batch_data_entity)
