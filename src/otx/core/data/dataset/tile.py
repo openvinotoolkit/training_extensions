@@ -64,6 +64,7 @@ class OTXTileTransform(Tile):
         extractor (DmDataset): Dataset subset to extract tiles from.
         tile_size (tuple[int, int]): Tile size.
         overlap (tuple[float, float]): Overlap ratio.
+            Overlap values are clipped between 0 and 0.9 to ensure the stride is not too small.
         threshold_drop_ann (float): Threshold to drop annotations.
     """
 
