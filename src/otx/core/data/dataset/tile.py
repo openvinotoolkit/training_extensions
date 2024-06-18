@@ -74,6 +74,8 @@ class OTXTileTransform(Tile):
         overlap: tuple[float, float],
         threshold_drop_ann: float,
     ) -> None:
+        # NOTE: clip overlap to [0, 0.9]
+        overlap = max(0, min(overlap[0], 0.9)), max(0, min(overlap[1], 0.9))
         super().__init__(
             extractor,
             (0, 0),

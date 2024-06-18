@@ -173,8 +173,8 @@ def adapt_tile_config(tile_config: TileConfig, dataset: Dataset) -> None:
 
         if tile_overlap >= 0.9:
             # Use the average object area if the tile overlap is too large to prevent 0 stride.
-            tile_overlap = avg_size / tile_size
-            log.info(f"----> (too big) tile_overlap: {avg_size} / {tile_size} = {tile_overlap}")
+            tile_overlap = min(avg_size / tile_size, 0.9)
+            log.info(f"----> (too big) tile_overlap: {avg_size} / {tile_size} = min[{tile_overlap}, 0.9]")
 
         # TODO(Eugene): how to validate lower/upper_bound? dataclass? pydantic?
         # https://github.com/openvinotoolkit/training_extensions/pull/2903
