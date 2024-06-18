@@ -1,6 +1,0 @@
-pandas==2.2.2
-matplotlib==3.8.4
-nbconvert==7.16.3
-ipython==8.23.0
-ipykernel==6.29.4
-openpyxl==3.1.2
