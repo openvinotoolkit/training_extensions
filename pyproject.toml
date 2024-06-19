@@ -161,6 +161,7 @@ omit = [
     "src/otx/core/data/transform_libs/mmpretrain.py",
     "src/otx/core/data/transform_libs/mmseg.py",
     "src/otx/core/exporter/mmdeploy.py",
+    "src/otx/core/model/utils/*",
 ]
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
