@@ -8,20 +8,17 @@ from __future__ import annotations
 import logging as log
 import pickle  # nosec: B403   used pickle dump and load only to share inference results
 from collections import defaultdict
-from copy import copy, deepcopy
 from functools import partial
-from itertools import product
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Literal
 
-import cv2
 import numpy as np
 import torch
 from torch import Tensor
 from torchvision import tv_tensors
 
 from model_api.models import Model
-from model_api.models.visual_prompting import SAMVisualPrompter, SAMLearnableVisualPrompter
+from model_api.models.visual_prompting import SAMVisualPrompter, SAMLearnableVisualPrompter, Prompt
 
 from otx.core.data.entity.base import Points
 from otx.core.data.entity.visual_prompting import (
@@ -836,18 +833,15 @@ class OVZeroShotVisualPromptingModel(
         reset_feat: bool = False,
     ) -> tuple[dict[str, np.ndarray], list[np.ndarray]]:
         """`Learn` for reference features."""
-        if reset_feat or not self.model.has_reference_features():
-            self.model.reset_reference_info()
-
         images, processed_prompts = self._customize_inputs(inputs)
-
         reference_masks: list[np.ndarray] = []
         for image, prompts in zip(images, processed_prompts):
-            _, masks = self.model.learn(image, **prompts)
+            _, masks = self.model.learn(image, reset_features=reset_feat, **prompts)
             reference_masks.append(masks)
 
-        self.reference_feats = copy(self.model.reference_features)
-        self.used_indices = copy(self.model.used_indices)
+        output = self.model.reference_features
+        self.reference_feats = output.feature_vectors
+        self.used_indices = output.used_indices
 
         return {"reference_feats": self.reference_feats, "used_indices": self.used_indices}, reference_masks
 
@@ -923,11 +917,10 @@ class OVZeroShotVisualPromptingModel(
 
                 # preprocess decoder inputs
                 processed_prompts.append(
-                        {
-                            "boxes": bboxes,
-                            "points": points,
-                            "labels": _labels,
-                        }
+                    {
+                        "boxes": Prompt(bboxes, _labels["bboxes"]),
+                        "points": Prompt(points, _labels["points"]),
+                    }
                 )
 
         return images, processed_prompts
