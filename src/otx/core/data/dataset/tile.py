@@ -64,6 +64,7 @@ class OTXTileTransform(Tile):
         extractor (DmDataset): Dataset subset to extract tiles from.
         tile_size (tuple[int, int]): Tile size.
         overlap (tuple[float, float]): Overlap ratio.
+            Overlap values are clipped between 0 and 0.9 to ensure the stride is not too small.
         threshold_drop_ann (float): Threshold to drop annotations.
         with_full_img (bool): Include full image in the tiles.
     """
@@ -76,6 +77,8 @@ class OTXTileTransform(Tile):
         threshold_drop_ann: float,
         with_full_img: bool,
     ) -> None:
+        # NOTE: clip overlap to [0, 0.9]
+        overlap = max(0, min(overlap[0], 0.9)), max(0, min(overlap[1], 0.9))
         super().__init__(
             extractor,
             (0, 0),
