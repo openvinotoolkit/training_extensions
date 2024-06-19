@@ -18,7 +18,7 @@ from torch import Tensor
 from torchvision import tv_tensors
 
 from model_api.models import Model
-from model_api.models.visual_prompting import SAMVisualPrompter, SAMLearnableVisualPrompter, Prompt
+from model_api.models.visual_prompting import SAMVisualPrompter, SAMLearnableVisualPrompter, Prompt, VisualPromptingFeatures
 
 from otx.core.data.entity.base import Points
 from otx.core.data.entity.visual_prompting import (
@@ -545,10 +545,10 @@ class OVVisualPromptingModel(
             processed_image = image.cpu().numpy().transpose(1, 2, 0)
             images.append(processed_image)
 
+            all_labels = {k: v.cpu().numpy() for k, v in label.items()}
             processed_prompt = {
-                    "boxes": bbox.cpu().numpy() if bbox is not None else bbox,
-                    "points": point.cpu().numpy() if point is not None else point,
-                    "labels": {k: v.cpu().numpy() for k, v in label.items()},
+                    "boxes": Prompt(bbox.cpu().numpy(), all_labels["bboxes"]) if bbox is not None else bbox,
+                    "points": Prompt(point.cpu().numpy(), all_labels["points"]) if point is not None else point,
                 }
 
             prompts.append(processed_prompt)
@@ -835,13 +835,14 @@ class OVZeroShotVisualPromptingModel(
         """`Learn` for reference features."""
         images, processed_prompts = self._customize_inputs(inputs)
         reference_masks: list[np.ndarray] = []
+        reference_features = None
+
         for image, prompts in zip(images, processed_prompts):
-            _, masks = self.model.learn(image, reset_features=reset_feat, **prompts)
+            reference_features, masks = self.model.learn(image, reset_features=reset_feat, **prompts)
             reference_masks.append(masks)
 
-        output = self.model.reference_features
-        self.reference_feats = output.feature_vectors
-        self.used_indices = output.used_indices
+        self.reference_feats = reference_features.feature_vectors
+        self.used_indices = reference_features.used_indices
 
         return {"reference_feats": self.reference_feats, "used_indices": self.used_indices}, reference_masks
 
@@ -856,7 +857,7 @@ class OVZeroShotVisualPromptingModel(
 
         total_results: list[list[defaultdict[int, list]]] = []
         for image in images:
-            result = self.model.infer(image, reference_feats, used_indices)
+            result = self.model(image, VisualPromptingFeatures(reference_feats, used_indices))
             total_results.append(result)
 
         return total_results
