@@ -556,10 +556,10 @@ matplotlib==3.9.0 \
     --hash=sha256:eaf3978060a106fab40c328778b148f590e27f6fa3cd15a19d6892575bce387d \
     --hash=sha256:fe428e191ea016bb278758c8ee82a8129c51d81d8c4bc0846c09e7e8e9057241
     # via mlflow
-mlflow==2.13.1 \
-    --hash=sha256:403b235a0a06cbfb5eb0038d8d946c0f97a24d579ba1247e4a2c5c03830843d4 \
-    --hash=sha256:ece1b0baef69da5ff03e4687009417481790544ec64a3821bdcc1cc1513b12d3
-    # via -r for_developers/regression_test/requirements.in
+mlflow==2.14.0 \
+    --hash=sha256:36de3105d841fd9ada117e6c82d0f2a7a0c09b7e45b20923b2ec4ddf441e015f \
+    --hash=sha256:e4ef6b546af98edfa5e71b11915f72635bbbc833220bd663e0d86c13717176cf
+    # via -r requirements.in
 numpy==1.26.4 \
     --hash=sha256:03a8c78d01d9781b28a6989f6fa1bb2c4f2d51201cf99d3dd875df6fbd96b23b \
     --hash=sha256:08beddf13648eb95f8d867350f6a018a4be2e5ad54c8d8caed89ebca558b2818 \
