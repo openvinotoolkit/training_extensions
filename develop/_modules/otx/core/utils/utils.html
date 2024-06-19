@@ -331,6 +331,9 @@
                 <span class="n">stats</span><span class="p">[</span><span class="n">labels</span><span class="o">.</span><span class="n">items</span><span class="p">[</span><span class="n">ann</span><span class="o">.</span><span class="n">label</span><span class="p">]</span><span class="o">.</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">item_idx</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">stats</span><span class="p">[</span><span class="n">ann</span><span class="o">.</span><span class="n">label</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">item_idx</span><span class="p">)</span>
+    <span class="c1"># Remove duplicates in label stats idx: O(n)</span>
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">stats</span><span class="p">:</span>
+        <span class="n">stats</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">dict</span><span class="o">.</span><span class="n">fromkeys</span><span class="p">(</span><span class="n">stats</span><span class="p">[</span><span class="n">k</span><span class="p">]))</span>
     <span class="k">return</span> <span class="n">stats</span></div>
 
 </pre></div>
