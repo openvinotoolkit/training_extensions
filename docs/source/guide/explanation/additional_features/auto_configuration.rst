@@ -1,6 +1,14 @@
 Auto-configuration
 ==================
 
+|
+
+.. figure:: ../../../../utils/images/auto_config.png
+   :align: center
+   :width: 100%
+
+|
+
 Auto-configuration for a deep learning framework means the automatic finding of the most appropriate settings for the training parameters, based on the dataset and the specific task at hand.
 Auto-configuration can help to save time, it eases the process of interaction with OpenVINO™ Training Extensions and gives a better baseline for the given dataset.
 
