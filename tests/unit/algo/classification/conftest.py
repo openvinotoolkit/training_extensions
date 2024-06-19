@@ -7,22 +7,12 @@ from dataclasses import asdict
 
 import pytest
 import torch
-from mmpretrain.structures import DataSample
 from omegaconf import DictConfig
 from otx.core.data.dataset.classification import MulticlassClsBatchDataEntity
 from otx.core.data.entity.base import ImageInfo
 from otx.core.data.entity.classification import HlabelClsBatchDataEntity, MultilabelClsBatchDataEntity
 from otx.core.types.label import HLabelInfo
 from torchvision import tv_tensors
-
-
-@pytest.fixture()
-def fxt_data_sample() -> DataSample:
-    data_sample = DataSample(
-        img_shape=(24, 24, 3),
-        gt_label=torch.zeros(6, dtype=torch.long),
-    )
-    return [data_sample, data_sample]
 
 
 @pytest.fixture()
