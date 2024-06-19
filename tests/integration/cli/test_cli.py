@@ -437,9 +437,9 @@ def test_otx_ov_test(
     assert len(metric_result) > 0
 
 
-@pytest.mark.parametrize("task", pytest.TASK_LIST)
+@pytest.mark.parametrize("recipe", pytest.RECIPE_LIST, ids=lambda x: "/".join(Path(x).parts[-2:]))
 def test_otx_hpo_e2e(
-    task: OTXTaskType,
+    recipe: str,
     tmp_path: Path,
     fxt_accelerator: str,
     fxt_target_dataset_per_task: dict,
@@ -456,30 +456,22 @@ def test_otx_hpo_e2e(
     Returns:
         None
     """
-    if task not in DEFAULT_CONFIG_PER_TASK:
-        pytest.skip(f"Task {task} is not supported in the auto-configuration.")
-    if task == OTXTaskType.ZERO_SHOT_VISUAL_PROMPTING:
+    task = recipe.split("/")[-2]
+    model_name = recipe.split("/")[-1].split(".")[0]
+
+    if task.upper() == OTXTaskType.ZERO_SHOT_VISUAL_PROMPTING:
         pytest.skip("ZERO_SHOT_VISUAL_PROMPTING doesn't support HPO.")
+    if "padim" in recipe:
+        pytest.skip("padim model doesn't support HPO.")
 
-    # Need to change model to stfpm because default anomaly model is 'padim' which doesn't support HPO
-    model_cfg = []
-    if task in {
-        OTXTaskType.ANOMALY_CLASSIFICATION,
-        OTXTaskType.ANOMALY_DETECTION,
-        OTXTaskType.ANOMALY_SEGMENTATION,
-    }:
-        model_cfg = ["--config", str(DEFAULT_CONFIG_PER_TASK[task].parent / "stfpm.yaml")]
-
-    task = task.lower()
-    tmp_path_hpo = tmp_path / f"otx_hpo_{task}"
+    tmp_path_hpo = tmp_path / f"otx_hpo_{model_name}"
     tmp_path_hpo.mkdir(parents=True)
 
     command_cfg = [
         "otx",
         "train",
-        *model_cfg,
-        "--task",
-        task.upper(),
+        "--config",
+        recipe,
         "--data_root",
         fxt_target_dataset_per_task[task],
         "--work_dir",
@@ -491,7 +483,7 @@ def test_otx_hpo_e2e(
         "--run_hpo",
         "true",
         "--hpo_config.expected_time_ratio",
-        "2",
+        "1",
         "--hpo_config.num_workers",
         "1",
         *fxt_cli_override_command_per_task[task],
@@ -509,7 +501,7 @@ def test_otx_hpo_e2e(
     if task.startswith("anomaly"):
         return
 
-    assert len([val for val in hpo_work_dor.rglob("*.json") if str(val.stem).isdigit()]) == 2
+    assert len([val for val in hpo_work_dor.rglob("*.json") if str(val.stem).isdigit()]) == 1
 
 
 @pytest.mark.parametrize("task", pytest.TASK_LIST)

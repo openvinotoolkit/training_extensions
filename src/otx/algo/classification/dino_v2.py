@@ -5,6 +5,9 @@
 
 from __future__ import annotations
 
+import logging
+import os
+from pathlib import Path
 from typing import TYPE_CHECKING, Any, Literal
 
 import torch
@@ -13,6 +16,7 @@ from torch import Tensor, nn
 from otx.algo.classification.classifier import SemiSLClassifier
 from otx.algo.classification.heads import OTXSemiSLLinearClsHead
 from otx.algo.classification.utils import get_classification_layers
+from otx.algo.utils.utils import torch_hub_load
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.classification import (
     MulticlassClsBatchDataEntity,
@@ -25,6 +29,7 @@ from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallab
 from otx.core.model.classification import OTXMulticlassClsModel
 from otx.core.schedulers import LRSchedulerListCallable
 from otx.core.types.label import LabelInfoTypes
+from otx.utils.utils import get_class_initial_arguments
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
@@ -35,6 +40,8 @@ if TYPE_CHECKING:
 
 # TODO(harimkang): Add more types of DINOv2 models. https://github.com/facebookresearch/dinov2/blob/main/MODEL_CARD.md
 DINO_BACKBONE_TYPE = Literal["dinov2_vits14_reg"]
+
+logger = logging.getLogger()
 
 
 class DINOv2(nn.Module):
@@ -48,10 +55,29 @@ class DINOv2(nn.Module):
         num_classes: int,
     ):
         super().__init__()
+        self._init_args = get_class_initial_arguments()
+
+        ci_data_root = os.environ.get("CI_DATA_ROOT")
+        pretrained: bool = True
+        if ci_data_root is not None and Path(ci_data_root).exists():
+            pretrained = False
+
         self.backbone = torch.hub.load(
             repo_or_dir="facebookresearch/dinov2",
             model=backbone,
+            pretrained=pretrained,
         )
+
+        if ci_data_root is not None and Path(ci_data_root).exists():
+            ckpt_filename = f"{backbone}4_pretrain.pth"
+            ckpt_path = Path(ci_data_root) / "torch" / "hub" / "checkpoints" / ckpt_filename
+            if not ckpt_path.exists():
+                msg = (
+                    f"Internal cache was specified but cannot find weights file: {ckpt_filename}. load from torch hub."
+                )
+                logger.warning(msg)
+                self.backbone = torch.hub.load(repo_or_dir="facebookresearch/dinov2", model=backbone, pretrained=True)
+            self.backbone.load_state_dict(torch.load(ckpt_path))
 
         if freeze_backbone:
             self._freeze_backbone(self.backbone)
@@ -76,6 +102,9 @@ class DINOv2(nn.Module):
         if self.training:
             return self.loss(logits, labels)
         return self.softmax(logits)
+
+    def __reduce__(self):
+        return (DINOv2, self._init_args)
 
 
 class DINOv2RegisterClassifier(OTXMulticlassClsModel):
@@ -206,7 +235,7 @@ class DINOv2ForMulticlassClsSemiSL(DINOv2RegisterClassifier):
     """
 
     def _build_model(self, num_classes: int) -> nn.Module:
-        backbone = torch.hub.load(
+        backbone = torch_hub_load(
             repo_or_dir="facebookresearch/dinov2",
             model=self.backbone,
         )

@@ -5,12 +5,13 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Callable, Literal
+from typing import TYPE_CHECKING, Any, Literal
 
 import torch
 from torch import Tensor, nn
 from torchvision.models import get_model, get_model_weights
 
+from otx.algo.classification.heads import OTXSemiSLLinearClsHead
 from otx.algo.explain.explain_algo import ReciproCAM, feature_vector_fn
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.classification import MulticlassClsBatchDataEntity, MulticlassClsBatchPredEntity
@@ -90,7 +91,7 @@ TVModelType = Literal[
 ]
 
 
-class TVModelWithLossComputation(nn.Module):
+class TVClassificationModel(nn.Module):
     """TorchVision Model with Loss Computation.
 
     This class represents a TorchVision model with loss computation for classification tasks.
@@ -101,6 +102,8 @@ class TVModelWithLossComputation(nn.Module):
         num_classes (int): The number of classes for the classification task.
         loss (Callable | None, optional): The loss function to use.
         freeze_backbone (bool, optional): Whether to freeze the backbone model. Defaults to False.
+        task (Literal["multiclass", "multilabel", "hlabel"], optional): The type of classification task.
+        train_type (Literal["supervised", "semi_supervised"], optional): The type of training.
 
     Methods:
         forward(images: torch.Tensor, labels: torch.Tensor) -> torch.Tensor:
@@ -114,9 +117,14 @@ class TVModelWithLossComputation(nn.Module):
         num_classes: int,
         loss: nn.Module,
         freeze_backbone: bool = False,
+        task: Literal["multiclass", "multilabel", "hlabel"] = "multiclass",
+        train_type: Literal["supervised", "semi_supervised"] = "supervised",
     ) -> None:
         super().__init__()
         self.num_classes = num_classes
+        self.task = task
+        self.train_type = train_type
+
         net = get_model(name=backbone, weights=get_model_weights(backbone))
 
         self.backbone = nn.Sequential(*list(net.children())[:-1])
@@ -126,19 +134,10 @@ class TVModelWithLossComputation(nn.Module):
             for param in self.backbone.parameters():
                 param.requires_grad = False
 
-        last_layer = list(net.children())[-1]
-        classifier_len = len(list(last_layer.children()))
-        if classifier_len >= 1:
-            feature_channel = list(last_layer.children())[-1].in_features
-            layers = list(last_layer.children())[:-1]
-            self.use_layer_norm_2d = layers[0].__class__.__name__ == "LayerNorm2d"
-            self.head = nn.Sequential(*layers, nn.Linear(feature_channel, num_classes))
-        else:
-            feature_channel = last_layer.in_features
-            self.head = nn.Linear(feature_channel, num_classes)
-
         self.softmax = nn.Softmax(dim=-1)
-        self.loss = loss
+        self.loss_module = loss
+        self.neck: nn.Module | None = None
+        self.head = self._get_head(net)
 
         avgpool_index = 0
         for i, layer in enumerate(self.backbone.children()):
@@ -155,34 +154,143 @@ class TVModelWithLossComputation(nn.Module):
             optimize_gap=True,
         )
 
+    def _get_head(self, net: nn.Module) -> nn.Module:
+        """Returns the head of the model."""
+        head: nn.Module
+        last_layer = list(net.children())[-1]
+        layers = []
+        if self.task == "multiclass":
+            classifier_len = len(list(last_layer.children()))
+            if classifier_len >= 1:
+                feature_channel = list(last_layer.children())[-1].in_features
+                layers = list(last_layer.children())[:-1]
+                self.use_layer_norm_2d = layers[0].__class__.__name__ == "LayerNorm2d"
+            else:
+                feature_channel = last_layer.in_features
+
+            if self.train_type == "semi_supervised":
+                self.neck = nn.Sequential(*layers) if layers else None
+                head = OTXSemiSLLinearClsHead(
+                    num_classes=self.num_classes,
+                    in_channels=feature_channel,
+                    loss=self.loss_module,
+                )
+            elif classifier_len >= 1:
+                head = nn.Sequential(*layers, nn.Linear(feature_channel, self.num_classes))
+            else:
+                head = nn.Linear(feature_channel, self.num_classes)
+
+        return head
+
     def forward(
         self,
-        images: torch.Tensor,
-        labels: torch.Tensor | None = None,
+        images: torch.Tensor | dict[str, torch.Tensor],
+        labels: torch.Tensor | dict[str, torch.Tensor] | None = None,
         mode: str = "tensor",
-    ) -> torch.Tensor:
+        **kwargs,
+    ) -> dict[str, tuple | torch.Tensor] | tuple | torch.Tensor:
         """Performs forward pass of the model.
 
         Args:
-            images (torch.Tensor): The input images.
-            labels (torch.Tensor): The ground truth labels.
+            images (torch.Tensor | dict[str, torch.Tensor]): The input images.
+                if Semi-SL task with multi-augmentation, it will comes as a dict.
+            labels (torch.Tensor | dict[str, torch.Tensor] | None, optional): The ground truth labels.
             mode (str, optional): The mode of the forward pass. Defaults to "tensor".
 
         Returns:
             torch.Tensor: The output logits or loss, depending on the training mode.
         """
-        feats = self.backbone(images)
-        if len(feats.shape) == 4 and not self.use_layer_norm_2d:  # If feats is a 4D tensor: (b, c, h, w)
-            feats = feats.view(feats.size(0), -1)  # Flatten the output of the backbone: (b, f)
-        logits = self.head(feats)
         if mode == "tensor":
-            return logits
+            return self.extract_feat(images, stage="head")
         if mode == "loss":
-            return self.loss(logits, labels)
+            feats = self.extract_feat(images, stage="neck")
+            return self.loss(feats, labels)
         if mode == "explain":
             return self._forward_explain(images)
-
+        logits = self.extract_feat(images, stage="head")
         return self.softmax(logits)
+
+    def extract_feat(
+        self,
+        inputs: dict[str, torch.Tensor] | torch.Tensor,
+        stage: str = "neck",
+    ) -> dict[str, tuple | torch.Tensor] | tuple | torch.Tensor:
+        """Extract features from the input tensor with shape (N, C, ...).
+
+        Args:
+            inputs (dict[str, torch.Tensor] | torch.Tensor): A batch of inputs. The shape of it should be
+                ``(num_samples, num_channels, *img_shape)``.
+            stage (str): Which stage to output the feature. Choose from:
+
+                - "backbone": The output of backbone network. Returns a tuple
+                  including multiple stages features.
+                - "neck": The output of neck module. Returns a tuple including
+                  multiple stages features.
+                - "pre_logits": The feature before the final classification
+                  linear layer. Usually returns a tensor.
+
+                Defaults to "neck".
+
+        Returns:
+            dict[str, tuple | torch.Tensor] | tuple | torch.Tensor: The output of specified stage.
+            The output depends on detailed implementation. In general, the
+            output of backbone and neck is a tuple.
+        """
+        if isinstance(inputs, dict):
+            return self._extract_feat_with_unlabeled(inputs, stage)
+
+        x = self._flatten_outputs(self.backbone(inputs))
+
+        if stage == "backbone":
+            return x
+
+        if self.neck is not None:
+            x = self.neck(x)
+
+        if stage == "neck":
+            return x
+
+        return self.head(x)
+
+    def _extract_feat_with_unlabeled(
+        self,
+        images: dict[str, torch.Tensor],
+        stage: str = "neck",
+    ) -> dict[str, torch.Tensor]:
+        if "labeled" not in images or "weak_transforms" not in images or "strong_transforms" not in images:
+            msg = "The input dictionary should contain 'labeled', 'weak_transforms', and 'strong_transforms' keys."
+            raise ValueError(msg)
+
+        labeled_inputs = images["labeled"]
+        unlabeled_weak_inputs = images["weak_transforms"]
+        unlabeled_strong_inputs = images["strong_transforms"]
+
+        x = {}
+        x["labeled"] = self.extract_feat(labeled_inputs, stage)
+        # For weak augmentation inputs, use no_grad to use as a pseudo-label.
+        with torch.no_grad():
+            x["unlabeled_weak"] = self.extract_feat(unlabeled_weak_inputs, stage)
+        x["unlabeled_strong"] = self.extract_feat(unlabeled_strong_inputs, stage)
+        return x
+
+    def loss(
+        self,
+        inputs: dict[str, torch.Tensor] | tuple | torch.Tensor,
+        labels: dict[str, torch.Tensor] | torch.Tensor,
+    ) -> torch.Tensor:
+        """Calculates the loss of the model.
+
+        Args:
+            inputs (dict[str, torch.Tensor] | tuple | torch.Tensor): The outputs of the model backbone.
+            labels (dict[str, torch.Tensor] | torch.Tensor): The ground truth labels.
+
+        Returns:
+            torch.Tensor: The computed loss.
+        """
+        if hasattr(self.head, "loss"):
+            return self.head.loss(inputs, labels)
+        logits = self.head(inputs)
+        return self.loss_module(logits, labels).sum() / logits.size(0)
 
     @torch.no_grad()
     def _forward_explain(self, images: torch.Tensor) -> dict[str, torch.Tensor | list[torch.Tensor]]:
@@ -191,9 +299,9 @@ class TVModelWithLossComputation(nn.Module):
         saliency_map = self.explainer.func(backbone_feat)
         feature_vector = feature_vector_fn(backbone_feat)
 
-        x = self.avgpool(backbone_feat)
-        if len(x.shape) == 4 and not self.use_layer_norm_2d:
-            x = x.view(x.size(0), -1)
+        x = self._flatten_outputs(self.avgpool(backbone_feat))
+        if self.neck is not None:
+            x = self.neck(x)
         logits = self.head(x)
 
         outputs = {
@@ -211,10 +319,16 @@ class TVModelWithLossComputation(nn.Module):
     @torch.no_grad()
     def _head_forward_fn(self, x: torch.Tensor) -> torch.Tensor:
         """Performs model's neck and head forward."""
-        x = self.avgpool(x)
-        if len(x.shape) == 4 and not self.use_layer_norm_2d:
-            x = x.view(x.size(0), -1)
+        x = self._flatten_outputs(self.avgpool(x))
+        if self.neck is not None:
+            x = self.neck(x)
         return self.head(x)
+
+    def _flatten_outputs(self, x: torch.Tensor) -> torch.Tensor:
+        # Flatten the output
+        if len(x.shape) == 4 and not self.use_layer_norm_2d:  # If feats is a 4D tensor: (b, c, h, w)
+            x = x.view(x.size(0), -1)  # Flatten the output of the backbone: (b, f)
+        return x
 
 
 class OTXTVModel(OTXMulticlassClsModel):
@@ -222,28 +336,33 @@ class OTXTVModel(OTXMulticlassClsModel):
 
     Args:
         backbone (TVModelType): The backbone architecture of the model.
-        num_classes (int): The number of classes for classification.
-        loss (Callable | None, optional): The loss function to be used. Defaults to None.
+        label_info (LabelInfoTypes): The number of classes for classification.
+        optimizer (OptimizerCallable, optional): The optimizer to use for training.
+            Defaults to DefaultOptimizerCallable.
+        scheduler (LRSchedulerCallable | LRSchedulerListCallable, optional): The learning rate scheduler to use.
+            Defaults to DefaultSchedulerCallable.
+        metric (MetricCallable, optional): The metric to use for evaluation. Defaults to MultiClassClsMetricCallable.
+        torch_compile (bool, optional): Whether to compile the model using TorchScript. Defaults to False.
         freeze_backbone (bool, optional): Whether to freeze the backbone model. Defaults to False.
+        train_type (Literal["supervised", "semi_supervised"], optional): The type of training.
     """
 
-    model: TVModelWithLossComputation
+    model: TVClassificationModel
 
     def __init__(
         self,
         backbone: TVModelType,
         label_info: LabelInfoTypes,
-        loss_callable: Callable[[], nn.Module] = nn.CrossEntropyLoss,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MultiClassClsMetricCallable,
         torch_compile: bool = False,
         freeze_backbone: bool = False,
+        train_type: Literal["supervised", "semi_supervised"] = "supervised",
     ) -> None:
         self.backbone = backbone
-        self.loss_callable = loss_callable
-        self.backbone = backbone
         self.freeze_backbone = freeze_backbone
+        self.train_type = train_type
 
         super().__init__(
             label_info=label_info,
@@ -254,11 +373,13 @@ class OTXTVModel(OTXMulticlassClsModel):
         )
 
     def _create_model(self) -> nn.Module:
-        return TVModelWithLossComputation(
+        return TVClassificationModel(
             backbone=self.backbone,
             num_classes=self.num_classes,
-            loss=self.loss_callable(),
+            loss=nn.CrossEntropyLoss(reduction="none"),
             freeze_backbone=self.freeze_backbone,
+            task="multiclass",
+            train_type=self.train_type,
         )
 
     def _customize_inputs(self, inputs: MulticlassClsBatchDataEntity) -> dict[str, Any]:
@@ -268,6 +389,18 @@ class OTXTVModel(OTXMulticlassClsModel):
             mode = "explain"
         else:
             mode = "predict"
+
+        if isinstance(inputs, dict):
+            # When used with an unlabeled dataset, it comes in as a dict.
+            images = {key: inputs[key].stacked_images for key in inputs}
+            labels = {key: torch.cat(inputs[key].labels, dim=0) for key in inputs}
+            imgs_info = {key: inputs[key].imgs_info for key in inputs}
+            return {
+                "images": images,
+                "labels": labels,
+                "imgs_info": imgs_info,
+                "mode": mode,
+            }
 
         return {
             "images": inputs.stacked_images,
@@ -311,6 +444,35 @@ class OTXTVModel(OTXMulticlassClsModel):
             onnx_export_configuration=None,
             output_names=["logits", "feature_vector", "saliency_map"] if self.explain_mode else None,
         )
+
+    def training_step(self, batch: MulticlassClsBatchDataEntity, batch_idx: int) -> Tensor:
+        """Performs a single training step on a batch of data.
+
+        Args:
+            batch (MulticlassClsBatchDataEntity): The input batch of data.
+            batch_idx (int): The index of the current batch.
+
+        Returns:
+            Tensor: The computed loss for the training step.
+        """
+        loss = super().training_step(batch, batch_idx)
+        # Collect metrics related to Semi-SL Training.
+        if self.train_type == "semi_supervised":
+            self.log(
+                "train/unlabeled_coef",
+                self.model.head.unlabeled_coef,
+                on_step=True,
+                on_epoch=False,
+                prog_bar=True,
+            )
+            self.log(
+                "train/num_pseudo_label",
+                self.model.head.num_pseudo_label,
+                on_step=True,
+                on_epoch=False,
+                prog_bar=True,
+            )
+        return loss
 
     def forward_explain(self, inputs: MulticlassClsBatchDataEntity) -> MulticlassClsBatchPredEntity:
         """Model forward explain function."""

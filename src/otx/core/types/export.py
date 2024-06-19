@@ -154,6 +154,7 @@ class TaskLevelExportParameters:
                     ("model_info", "tile_size"): str(self.tile_config.tile_size[0]),
                     ("model_info", "tiles_overlap"): str(self.tile_config.overlap),
                     ("model_info", "max_pred_number"): str(self.tile_config.max_num_instances),
+                    ("model_info", "tile_with_full_img"): str(self.tile_config.with_full_img),
                 },
             )
 

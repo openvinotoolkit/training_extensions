@@ -5,11 +5,14 @@
 
 from __future__ import annotations
 
+import inspect
 import logging
+from typing import Any
 
 import numpy as np
 from torch import Tensor
-from torchmetrics import Metric
+from torchmetrics import Metric, MetricCollection
+from torchmetrics.detection.mean_ap import MeanAveragePrecision
 
 from otx.core.types.label import LabelInfo
 
@@ -780,8 +783,48 @@ class FMeasure(Metric):
         return self.label_info.label_names
 
 
+class MeanAveragePrecisionFMeasure(MetricCollection):
+    """Computes the mean AP with f-measure for a resultset.
+
+    NOTE: IMPORTANT!!! Do not use this metric to evaluate a F1 score on a test set.
+        This is because it can pollute test evaluation.
+        It will optimize the confidence threshold on the test set by
+        doing line search on confidence threshold axis.
+        The correct way to obtain the test set F1 score is to use
+        the best confidence threshold obtained from the validation set.
+        You should use `--metric otx.core.metrics.fmeasure.FMeasureCallable`override
+        to correctly obtain F1 score from a test set.
+    """
+
+    def __init__(self, box_format: str, iou_type: str, label_info: LabelInfo, **kwargs):
+        map_kwargs = self._filter_kwargs(MeanAveragePrecision, kwargs)
+        fmeasure_kwargs = self._filter_kwargs(FMeasure, kwargs)
+
+        super().__init__(
+            [
+                MeanAveragePrecision(box_format, iou_type, **map_kwargs),
+                FMeasure(label_info, **fmeasure_kwargs),
+            ],
+        )
+
+    def _filter_kwargs(self, cls: type[Any], kwargs: dict[str, Any]) -> dict[str, Any]:
+        cls_params = inspect.signature(cls.__init__).parameters
+        valid_keys = set(cls_params.keys()) - {"self"}
+        return {k: v for k, v in kwargs.items() if k in valid_keys}
+
+
 def _f_measure_callable(label_info: LabelInfo) -> FMeasure:
     return FMeasure(label_info=label_info)
 
 
+def _mean_ap_f_measure_callable(label_info: LabelInfo) -> MeanAveragePrecisionFMeasure:
+    return MeanAveragePrecisionFMeasure(
+        box_format="xyxy",
+        iou_type="bbox",
+        label_info=label_info,
+    )
+
+
 FMeasureCallable = _f_measure_callable
+
+MeanAveragePrecisionFMeasureCallable = _mean_ap_f_measure_callable

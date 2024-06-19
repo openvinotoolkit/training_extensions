@@ -78,6 +78,19 @@ class Focus(nn.Module):
         )
         return self.conv(x)
 
+    def export(self, x: Tensor) -> Tensor:
+        """Forward for export."""
+        # shape of x (b,c,w,h) -> y(b,4c,w/2,h/2)
+        b, c, h, w = x.shape
+        x = x.reshape(b, c, -1, 2, w)
+        x = x.reshape(b, c, x.shape[2], 2, -1, 2)
+        half_h = x.shape[2]
+        half_w = x.shape[4]
+        x = x.permute(0, 5, 3, 1, 2, 4)
+        x = x.reshape(b, c * 4, half_h, half_w)
+
+        return self.conv(x)
+
 
 class SPPBottleneck(BaseModule):
     """Spatial pyramid pooling layer used in YOLOv3-SPP.

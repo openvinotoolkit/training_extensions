@@ -205,7 +205,7 @@ class RTMDet(ExplainableOTXDetModel):
 class RTMDetTiny(RTMDet):
     """RTMDet Tiny Model."""
 
-    load_from = "https://download.openmmlab.com/mmdetection/v3.0/rtmdet/rtmdet_tiny_8xb32-300e_coco/rtmdet_tiny_8xb32-300e_coco_20220902_112414-78e30dcc.pth"
+    load_from = "https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/object_detection/v2/rtmdet_tiny.pth"
     image_size = (1, 3, 640, 640)
     tile_image_size = (1, 3, 640, 640)
     mean = (103.53, 116.28, 123.675)
