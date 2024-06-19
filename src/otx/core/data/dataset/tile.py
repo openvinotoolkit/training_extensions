@@ -65,6 +65,7 @@ class OTXTileTransform(Tile):
         tile_size (tuple[int, int]): Tile size.
         overlap (tuple[float, float]): Overlap ratio.
         threshold_drop_ann (float): Threshold to drop annotations.
+        with_full_img (bool): Include full image in the tiles.
     """
 
     def __init__(
@@ -73,6 +74,7 @@ class OTXTileTransform(Tile):
         tile_size: tuple[int, int],
         overlap: tuple[float, float],
         threshold_drop_ann: float,
+        with_full_img: bool,
     ) -> None:
         super().__init__(
             extractor,
@@ -82,6 +84,7 @@ class OTXTileTransform(Tile):
         )
         self._tile_size = tile_size
         self._tile_ann_func_map[AnnotationType.polygon] = OTXTileTransform._tile_polygon
+        self.with_full_img = with_full_img
 
     @staticmethod
     def _tile_polygon(
@@ -142,7 +145,8 @@ class OTXTileTransform(Tile):
         cols = range(0, img_w, int(tile_w * (1 - w_ovl)))
         rows = range(0, img_h, int(tile_h * (1 - h_ovl)))
 
-        rois += [x1y1x2y2_to_xywh(0, 0, img_w, img_h)]
+        if self.with_full_img:
+            rois += [x1y1x2y2_to_xywh(0, 0, img_w, img_h)]
         for offset_x, offset_y in product(cols, rows):
             x2 = min(offset_x + tile_w, img_w)
             y2 = min(offset_y + tile_h, img_h)
@@ -246,6 +250,7 @@ class OTXTileDataset(OTXDataset):
             tile_size=self.tile_config.tile_size,
             overlap=(self.tile_config.overlap, self.tile_config.overlap),
             threshold_drop_ann=0.5,
+            with_full_img=self.tile_config.with_full_img,
         )
 
         if item.subset == "val":
@@ -281,6 +286,7 @@ class OTXTileTrainDataset(OTXTileDataset):
             tile_size=tile_config.tile_size,
             overlap=(tile_config.overlap, tile_config.overlap),
             threshold_drop_ann=0.5,
+            with_full_img=tile_config.with_full_img,
         )
         dm_dataset = dm_dataset.filter("/item/annotation", filter_annotations=True, remove_empty=True)
         # Include original dataset for training

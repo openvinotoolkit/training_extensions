@@ -181,6 +181,16 @@ def can_pass_tile_config(model_cls: type[OTXModel]) -> bool:
     return tile_config_param is not None
 
 
+def get_class_initial_arguments() -> tuple:
+    """Return arguments of class initilization. This function should be called in '__init__' function.
+
+    Returns:
+        tuple: class arguments.
+    """
+    keywords, _, _, values = inspect.getargvalues(inspect.stack()[1].frame)
+    return tuple(values[key] for key in keywords[1:])
+
+
 def find_unpickleable_obj(obj: Any, obj_name: str) -> list[str]:  # noqa: ANN401
     """Find which objects in 'obj' can't be pickled.
 

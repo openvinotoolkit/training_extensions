@@ -27,10 +27,10 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
 ]
 dependencies = [
-    "datumaro==1.6.1rc3",
+    "datumaro==1.6.1",
     "omegaconf==2.3.0",
     "rich==13.7.1",
-    "jsonargparse==4.27.1",
+    "jsonargparse==4.27.7",
     "psutil==5.9.8", # Mem cache needs system checks
     "ftfy==6.2.0",
     "regex==2024.5.10",
@@ -87,7 +87,7 @@ xpu = [
 ]
 base = [
     "torch==2.1.1",
-    "lightning==2.1.2",
+    "lightning==2.2",
     "pytorchcv",
     "timm",
     "openvino==2024.0",
@@ -96,7 +96,7 @@ base = [
     "onnx==1.16.0",
     "onnxconverter-common==1.14.0",
     "nncf==2.9.0",
-    "anomalib[core]==1.0.1",
+    "anomalib[core]==1.1.0",
 ]
 mmlab = [
     "mmdet==3.2.0",
@@ -365,9 +365,9 @@ max-returns = 10
 convention = "google"
 
 [tool.pytest.ini_options]
-# TODO: Add cpu when OTX can run integration test parallelly for each task.
 markers = [
-    "gpu: mark tests which require NVIDIA GPU device",
-    # "cpu: mark tests which require CPU device",
+    "gpu",  # mark tests which require NVIDIA GPU
+    "cpu",
+    "xpu",  # mark tests which require Intel dGPU
 ]
 python_files = "tests/**/*.py"
