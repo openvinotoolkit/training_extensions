@@ -104,7 +104,20 @@ class cache_randomness:  # noqa: N801
         return copy.copy(self)
 
 
-def to_np_image(img: Tensor) -> np.ndarray:
+def get_image_shape(img: np.ndarray | Tensor | list) -> tuple[int, int]:
+    """Get image(s) shape with (height, width)."""
+    if isinstance(img, np.ndarray):
+        return img.shape[:2]
+    if isinstance(img, Tensor):
+        return img.shape[-2:]
+    if isinstance(img, list):
+        return get_image_shape(img[0])
+
+    msg = f"{type(img)} is not supported."
+    raise TypeError(msg)
+
+
+def to_np_image(img: np.ndarray | Tensor | list) -> np.ndarray:
     """Convert torch.Tensor 3D image to numpy 3D image.
 
     TODO (sungchul): move it into base data entity?
@@ -112,6 +125,8 @@ def to_np_image(img: Tensor) -> np.ndarray:
     """
     if isinstance(img, np.ndarray):
         return img
+    if isinstance(img, list):
+        return [to_np_image(im) for im in img]
     return np.ascontiguousarray(img.numpy().transpose(1, 2, 0))
 
 

@@ -50,6 +50,7 @@ from otx.core.data.transform_libs.utils import (
     flip_polygons,
     get_bboxes_from_masks,
     get_bboxes_from_polygons,
+    get_image_shape,
     is_inside_bboxes,
     overlap_bboxes,
     project_bboxes,
@@ -529,8 +530,8 @@ class Resize(tvt_v2.Transform, NumpytoTVTensorMixin):
         """Resize images with inputs.img_info.img_shape."""
         scale_factor: tuple[float, float] | None = getattr(inputs.img_info, "scale_factor", None)  # (H, W)
         if (img := getattr(inputs, "image", None)) is not None:
-            # for considering video case
-            img_shape = img[0].shape[:2] if isinstance(img, list) else img.shape[:2]
+            img = to_np_image(img)
+            img_shape = get_image_shape(img)
             scale: tuple[int, int] = self.scale or scale_size(
                 img_shape,
                 self.scale_factor,  # type: ignore[arg-type]
@@ -544,13 +545,13 @@ class Resize(tvt_v2.Transform, NumpytoTVTensorMixin):
                 for idx, im in enumerate(img):
                     # flipping `scale` is required because cv2.resize uses (W, H)
                     img[idx] = cv2.resize(
-                        to_np_image(im),
+                        im,
                         scale[::-1],
                         interpolation=CV2_INTERP_CODES[self.interpolation],
                     )
             else:
                 # flipping `scale` is required because cv2.resize uses (W, H)
-                img = cv2.resize(to_np_image(img), scale[::-1], interpolation=CV2_INTERP_CODES[self.interpolation])
+                img = cv2.resize(img, scale[::-1], interpolation=CV2_INTERP_CODES[self.interpolation])
 
             inputs.image = img
 
@@ -1093,12 +1094,12 @@ class RandomFlip(tvt_v2.Transform, NumpytoTVTensorMixin):
 
         if (cur_dir := self._choose_direction()) is not None:
             # flip image
-            if isinstance(inputs.image, list):
-                img = inputs.image
+            img = to_np_image(inputs.image)
+            if isinstance(img, list):
                 for idx, im in enumerate(img):
-                    img[idx] = flip_image(to_np_image(im), direction=cur_dir)
+                    img[idx] = flip_image(im, direction=cur_dir)
             else:
-                img = flip_image(to_np_image(inputs.image), direction=cur_dir)
+                img = flip_image(img, direction=cur_dir)
             inputs.image = img
 
             # flip bboxes
