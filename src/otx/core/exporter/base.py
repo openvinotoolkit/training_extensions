@@ -82,6 +82,7 @@ class OTXModelExporter:
         base_model_name: str = "exported_model",
         export_format: OTXExportFormatType = OTXExportFormatType.OPENVINO,
         precision: OTXPrecisionType = OTXPrecisionType.FP32,
+        to_exportable_code: bool = False,
     ) -> Path:
         """Exports input model to the specified deployable format, such as OpenVINO IR or ONNX.
 
@@ -91,21 +92,22 @@ class OTXModelExporter:
             base_model_name (str, optional): exported model name
             format (OTXExportFormatType): final format of the exported model
             precision (OTXExportPrecisionType, optional): precision of the exported model's weights
+            to_exportable_code (bool, optional): whether to generate exportable code
 
         Returns:
             Path: path to the exported model
         """
         if export_format == OTXExportFormatType.OPENVINO:
+            if to_exportable_code:
+                return self.to_exportable_code(
+                    model,
+                    output_dir,
+                    base_model_name,
+                    precision,
+                )
             return self.to_openvino(model, output_dir, base_model_name, precision)
         if export_format == OTXExportFormatType.ONNX:
             return self.to_onnx(model, output_dir, base_model_name, precision)
-        if export_format == OTXExportFormatType.EXPORTABLE_CODE:
-            return self.to_exportable_code(
-                model,
-                output_dir,
-                base_model_name,
-                precision,
-            )
 
         msg = f"Unsupported export format: {export_format}"
         raise ValueError(msg)

@@ -58,6 +58,7 @@ if TYPE_CHECKING:
 
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
     from lightning.pytorch.utilities.types import LRSchedulerTypeUnion, OptimizerLRScheduler
+    from model_api.adapters import OpenvinoAdapter
     from torch.optim.lr_scheduler import LRScheduler
     from torch.optim.optimizer import Optimizer, params_t
 
@@ -621,6 +622,7 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
         base_name: str,
         export_format: OTXExportFormatType,
         precision: OTXPrecisionType = OTXPrecisionType.FP32,
+        to_exportable_code: bool = False,
     ) -> Path:
         """Export this model to the specified output directory.
 
@@ -629,6 +631,7 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
             base_name: (str): base name for the exported model file. Extension is defined by the target export format
             export_format (OTXExportFormatType): format of the output model
             precision (OTXExportPrecisionType): precision of the output model
+            to_exportable_code (bool): flag to export model in exportable code with demo package
 
         Returns:
             Path: path to the exported model.
@@ -648,6 +651,7 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
                 base_name,
                 export_format,
                 precision,
+                to_exportable_code,
             )
         finally:
             self.train(mode)
@@ -807,6 +811,7 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
         model_name: str,
         model_type: str,
         async_inference: bool = True,
+        force_cpu: bool = True,
         max_num_requests: int | None = None,
         use_throughput_mode: bool = True,
         model_api_configuration: dict[str, Any] | None = None,
@@ -815,6 +820,7 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
     ) -> None:
         self.model_name = model_name
         self.model_type = model_type
+        self.force_cpu = force_cpu
         self.async_inference = async_inference
         self.num_requests = max_num_requests if max_num_requests is not None else get_default_num_async_infer_requests()
         self.use_throughput_mode = use_throughput_mode
@@ -835,21 +841,49 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
         """Setup tiler for tile task."""
         raise NotImplementedError
 
+    def _get_hparams_from_adapter(self, model_adapter: OpenvinoAdapter) -> None:
+        """Reads model configuration from ModelAPI OpenVINO adapter.
+
+        Args:
+            model_adapter (OpenvinoAdapter): target adapter to read the config
+        """
+
     def _create_model(self) -> Model:
         """Create a OV model with help of Model API."""
-        from model_api.adapters import OpenvinoAdapter, create_core, get_user_config
+        from model_api.adapters import OpenvinoAdapter, create_core
 
-        plugin_config = get_user_config("AUTO", str(self.num_requests), "AUTO")
+        if self.device.type != "cpu":
+            msg = (
+                f"Device {self.device.type} is set for Lightning module, but the actual inference "
+                "device is selected by OpenVINO."
+            )
+            logger.warning(msg)
+
+        ov_device = "CPU"
+        ie = create_core()
+        if not self.force_cpu:
+            devices = ie.available_devices
+            for device in devices:
+                device_name = ie.get_property(device_name=device, property="FULL_DEVICE_NAME")
+                if "dGPU" in device_name and "Intel" in device_name:
+                    ov_device = device
+                    break
+
+        plugin_config = {}
         if self.use_throughput_mode:
             plugin_config["PERFORMANCE_HINT"] = "THROUGHPUT"
 
         model_adapter = OpenvinoAdapter(
-            create_core(),
+            ie,
             self.model_name,
+            device=ov_device,
             max_num_requests=self.num_requests,
             plugin_config=plugin_config,
             model_parameters=self.model_adapter_parameters,
         )
+
+        self._get_hparams_from_adapter(model_adapter)
+
         return Model.create_model(model_adapter, model_type=self.model_type, configuration=self.model_api_configuration)
 
     def _customize_inputs(self, entity: T_OTXBatchDataEntity) -> dict[str, Any]:
@@ -934,6 +968,40 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
 
         return output_model_path
 
+    def export(
+        self,
+        output_dir: Path,
+        base_name: str,
+        export_format: OTXExportFormatType,
+        precision: OTXPrecisionType = OTXPrecisionType.FP32,
+        to_exportable_code: bool = True,
+    ) -> Path:
+        """Export this model to the specified output directory.
+
+        Args:
+            output_dir (Path): directory for saving the exported model
+            base_name: (str): base name for the exported model file. Extension is defined by the target export format
+            export_format (OTXExportFormatType): format of the output model
+            precision (OTXExportPrecisionType): precision of the output model
+            to_exportable_code (bool): whether to generate exportable code with demo package.
+                OpenVINO model supports only exportable code option.
+
+        Returns:
+            Path: path to the exported model.
+        """
+        if not to_exportable_code:
+            msg = "OpenVINO model can be exported only as exportable code with demo package."
+            raise RuntimeError(msg)
+
+        return self._exporter.export(
+            self.model,
+            output_dir,
+            base_name,
+            export_format,
+            precision,
+            to_exportable_code,
+        )
+
     def transform_fn(self, data_batch: T_OTXBatchDataEntity) -> np.array:
         """Data transform function for PTQ."""
         np_data = self._customize_inputs(data_batch)
@@ -983,7 +1051,10 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
     @property
     def _exporter(self) -> OTXNativeModelExporter:
         """Exporter of the OVModel for exportable code."""
-        return OTXNativeModelExporter(input_size=(1, 3, self.model.h, self.model.w), **self._export_parameters)
+        return OTXNativeModelExporter(
+            task_level_export_parameters=self._export_parameters,
+            input_size=(1, 3, self.model.h, self.model.w),
+        )
 
     @property
     def model_adapter_parameters(self) -> dict:

@@ -48,6 +48,14 @@ def fxt_trained_model(
         *fxt_cli_override_command_per_task[task],
     ]
 
+    if model_name.endswith("_semisl") and "multi_class_cls" in recipe:
+        command_cfg.extend(
+            [
+                "--data.config.unlabeled_subset.data_root",
+                fxt_target_dataset_per_task["multi_class_cls_semisl"],
+            ],
+        )
+
     run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)
 
     return recipe, task, model_name, tmp_path_train
@@ -97,6 +105,7 @@ def test_otx_e2e(
     assert ckpt_file.exists()
 
     # 2) otx test
+
     tmp_path_test = tmp_path / f"otx_test_{model_name}"
     command_cfg = [
         "otx",
@@ -217,7 +226,7 @@ def test_otx_e2e(
         "--work_dir",
         str(tmp_path_test / "outputs"),
         "--engine.device",
-        "cpu",
+        fxt_accelerator,
         *overrides,
         "--checkpoint",
         exported_model_path,
@@ -311,14 +320,14 @@ def test_otx_explain_e2e(
     ckpt_file = latest_dir / "train" / "best_checkpoint.ckpt"
     assert ckpt_file.exists()
 
-    if "tile" in recipe:
-        pytest.skip("Explain is not supported for tiling yet.")
-
     if ("_cls" not in task) and (task not in ["detection", "instance_segmentation"]):
         pytest.skip("Supported only for classification, detection and instance segmentation task.")
 
     if "dino" in model_name:
         pytest.skip("DINO is not supported.")
+
+    if "maskrcnn_r50_tv" in model_name:
+        pytest.skip("MaskRCNN R50 Torchvision model doesn't support explain.")
 
     # otx explain
     tmp_path_explain = tmp_path / f"otx_explain_{model_name}"

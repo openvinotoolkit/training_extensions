@@ -43,6 +43,20 @@ if TYPE_CHECKING:
     from otx.core.metrics import MetricCallable
 
 
+LITMODULE_PER_TASK = {
+    OTXTaskType.MULTI_CLASS_CLS: "otx.core.model.module.classification.OTXMulticlassClsLitModule",
+    OTXTaskType.MULTI_LABEL_CLS: "otx.core.model.module.classification.OTXMultilabelClsLitModule",
+    OTXTaskType.H_LABEL_CLS: "otx.core.model.module.classification.OTXHlabelClsLitModule",
+    OTXTaskType.DETECTION: "otx.core.model.module.detection.OTXDetectionLitModule",
+    OTXTaskType.ROTATED_DETECTION: "otx.core.model.module.rotated_detection.OTXRotatedDetLitModule",
+    OTXTaskType.INSTANCE_SEGMENTATION: "otx.core.model.module.instance_segmentation.OTXInstanceSegLitModule",
+    OTXTaskType.SEMANTIC_SEGMENTATION: "otx.core.model.module.segmentation.OTXSegmentationLitModule",
+    OTXTaskType.ACTION_CLASSIFICATION: "otx.core.model.module.action_classification.OTXActionClsLitModule",
+    OTXTaskType.VISUAL_PROMPTING: "otx.core.model.module.visual_prompting.OTXVisualPromptingLitModule",
+    OTXTaskType.ZERO_SHOT_VISUAL_PROMPTING: "otx.core.model.module.visual_prompting.OTXZeroShotVisualPromptingLitModule",  # noqa: E501
+}
+
+
 @contextmanager
 def override_metric_callable(model: OTXModel, new_metric_callable: MetricCallable | None) -> Iterator[OTXModel]:
     """Override `OTXModel.metric_callable` to change the evaluation metric.
@@ -353,10 +367,10 @@ class Engine:
         # NOTE, trainer.test takes only lightning based checkpoint.
         # So, it can't take the OTX1.x checkpoint.
         if checkpoint is not None and not is_ir_ckpt:
-            model_cls = self.model.__class__
-            model = model_cls.load_from_checkpoint(checkpoint_path=checkpoint)
+            model_cls = model.__class__
+            model = model_cls.load_from_checkpoint(checkpoint_path=checkpoint, **model.hparams)
 
-        if model.label_info.as_dict() != self.datamodule.label_info.as_dict():
+        if model.label_info != self.datamodule.label_info:
             msg = (
                 "To launch a test pipeline, the label information should be same "
                 "between the training and testing datasets. "
@@ -418,7 +432,7 @@ class Engine:
                 otx predict --config <CONFIG_PATH, str> --checkpoint <CKPT_PATH, str>
                 ```
         """
-        from otx.algo.utils.xai_utils import process_saliency_maps_in_pred_entity
+        from otx.algo.utils.xai_utils import process_saliency_maps_in_pred_entity, set_crop_padded_map_flag
 
         model = self.model
 
@@ -434,10 +448,10 @@ class Engine:
             datamodule = self._auto_configurator.update_ov_subset_pipeline(datamodule=datamodule, subset="test")
 
         if checkpoint is not None and not is_ir_ckpt:
-            model_cls = self.model.__class__
-            model = model_cls.load_from_checkpoint(checkpoint_path=checkpoint)
+            model_cls = model.__class__
+            model = model_cls.load_from_checkpoint(checkpoint_path=checkpoint, **model.hparams)
 
-        if model.label_info.as_dict() != self.datamodule.label_info.as_dict():
+        if model.label_info != self.datamodule.label_info:
             msg = (
                 "To launch a predict pipeline, the label information should be same "
                 "between the training and testing datasets. "
@@ -464,8 +478,9 @@ class Engine:
         if explain:
             if explain_config is None:
                 explain_config = ExplainConfig()
+            explain_config = set_crop_padded_map_flag(explain_config, datamodule)
 
-            predict_result = process_saliency_maps_in_pred_entity(predict_result, explain_config)
+            predict_result = process_saliency_maps_in_pred_entity(predict_result, explain_config, datamodule.label_info)
 
         return predict_result
 
@@ -475,6 +490,7 @@ class Engine:
         export_format: OTXExportFormatType = OTXExportFormatType.OPENVINO,
         export_precision: OTXPrecisionType = OTXPrecisionType.FP32,
         explain: bool = False,
+        export_demo_package: bool = False,
     ) -> Path:
         """Export the trained model to OpenVINO Intermediate Representation (IR) or ONNX formats.
 
@@ -483,6 +499,8 @@ class Engine:
             export_config (ExportConfig | None, optional): Config that allows to set export
             format and precision. Defaults to None.
             explain (bool): Whether to get "saliency_map" and "feature_vector" or not.
+            export_demo_package (bool): Whether to export demo package with the model.
+                Only OpenVINO model can be exported with demo package.
 
         Returns:
             Path: Path to the exported model.
@@ -515,14 +533,18 @@ class Engine:
             msg = "To make export, checkpoint must be specified."
             raise RuntimeError(msg)
         is_ir_ckpt = Path(checkpoint).suffix in [".xml"]
-
-        if is_ir_ckpt and export_format != OTXExportFormatType.EXPORTABLE_CODE:
+        if export_demo_package and export_format == OTXExportFormatType.ONNX:
             msg = (
-                "Export format is automatically changed to EXPORTABLE_CODE, "
-                "since openvino IR model is passed as a checkpoint."
+                "ONNX export is not supported in exportable code mode. "
+                "Exportable code parameter will be disregarded. "
             )
             warn(msg, stacklevel=1)
-            export_format = OTXExportFormatType.EXPORTABLE_CODE
+            export_demo_package = False
+
+        if is_ir_ckpt and not export_demo_package:
+            msg = "IR model is passed as a checkpoint, export automaticaly switched to exportable code."
+            warn(msg, stacklevel=1)
+            export_demo_package = True
 
         if is_ir_ckpt and not isinstance(self.model, OVModel):
             # create OVModel
@@ -533,7 +555,11 @@ class Engine:
 
         if not is_ir_ckpt:
             model_cls = self.model.__class__
-            self.model = model_cls.load_from_checkpoint(checkpoint_path=checkpoint, map_location="cpu")
+            self.model = model_cls.load_from_checkpoint(
+                checkpoint_path=checkpoint,
+                map_location="cpu",
+                **self.model.hparams,
+            )
             self.model.eval()
 
         self.model.explain_mode = explain
@@ -542,6 +568,7 @@ class Engine:
             base_name=self._EXPORTED_MODEL_BASE_NAME,
             export_format=export_format,
             precision=export_precision,
+            to_exportable_code=export_demo_package,
         )
 
         self.model.explain_mode = False
@@ -621,7 +648,7 @@ class Engine:
             tmp_model_path = model.optimize(Path(tmp_dir), optimize_datamodule, ptq_config)
             return self.export(
                 checkpoint=tmp_model_path,
-                export_format=OTXExportFormatType.EXPORTABLE_CODE,
+                export_demo_package=True,
             )
 
     def explain(
@@ -660,7 +687,11 @@ class Engine:
                     --checkpoint <CKPT_PATH, str>
                 ```
         """
-        from otx.algo.utils.xai_utils import dump_saliency_maps, process_saliency_maps_in_pred_entity
+        from otx.algo.utils.xai_utils import (
+            dump_saliency_maps,
+            process_saliency_maps_in_pred_entity,
+            set_crop_padded_map_flag,
+        )
 
         model = self.model
 
@@ -674,9 +705,9 @@ class Engine:
 
         if checkpoint is not None and not is_ir_ckpt:
             model_cls = model.__class__
-            model = model_cls.load_from_checkpoint(checkpoint_path=checkpoint)
+            model = model_cls.load_from_checkpoint(checkpoint_path=checkpoint, **model.hparams)
 
-        if model.label_info.as_dict() != self.datamodule.label_info.as_dict():
+        if model.label_info != self.datamodule.label_info:
             msg = (
                 "To launch a explain pipeline, the label information should be same "
                 "between the training and testing datasets. "
@@ -697,8 +728,9 @@ class Engine:
 
         if explain_config is None:
             explain_config = ExplainConfig()
+        explain_config = set_crop_padded_map_flag(explain_config, datamodule)
 
-        predict_result = process_saliency_maps_in_pred_entity(predict_result, explain_config)
+        predict_result = process_saliency_maps_in_pred_entity(predict_result, explain_config, datamodule.label_info)
         if dump:
             dump_saliency_maps(
                 predict_result,

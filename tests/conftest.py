@@ -5,8 +5,6 @@ from __future__ import annotations
 import pytest
 import torch
 from datumaro import Polygon
-from mmdet.structures import DetDataSample
-from otx.algo.utils.mmengine_utils import InstanceData
 from otx.core.data.entity.base import ImageInfo
 from otx.core.data.entity.classification import (
     HlabelClsBatchDataEntity,
@@ -120,6 +118,12 @@ def pytest_addoption(parser: pytest.Parser):
         "and reverted after run. Works only for v2.x assuming CLI compatibility.",
     )
     parser.addoption(
+        "--resume-from",
+        type=str,
+        help="Previous performance test directory which contains execution results. "
+        "If training was already done in previous performance test, training is skipped and refer previous result.",
+    )
+    parser.addoption(
         "--open-subprocess",
         action="store_true",
         help="Open subprocess for each CLI test case. "
@@ -140,24 +144,6 @@ def pytest_addoption(parser: pytest.Parser):
         type=str,
         help="Which device to use.",
     )
-
-
-@pytest.fixture(scope="session")
-def fxt_data_sample() -> list[DetDataSample]:
-    data_sample = DetDataSample(
-        metainfo={
-            "img_shape": (480, 480),
-            "ori_shape": (480, 480),
-            "scale_factor": (1.0, 1.0),
-            "pad_shape": (480, 480),
-            "ignored_labels": [],
-        },
-        gt_instances=InstanceData(
-            bboxes=torch.Tensor([[0.0, 0.0, 240, 240], [240, 240, 480, 480]]),
-            labels=torch.LongTensor([0, 1]),
-        ),
-    )
-    return [data_sample]
 
 
 @pytest.fixture(scope="session")

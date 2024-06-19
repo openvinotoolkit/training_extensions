@@ -1,10 +1,13 @@
 from __future__ import annotations
 
+from functools import partial
 from pathlib import Path
 
 import pytest
 from otx.utils.utils import (
+    check_pickleable,
     find_file_recursively,
+    find_unpickleable_obj,
     get_class_initial_arguments,
     get_decimal_point,
     get_using_dot_delimited_key,
@@ -110,3 +113,46 @@ def test_get_class_initial_arguments():
     fake_cls = FakeCls(4, 5)
 
     assert fake_cls.init_args == (4, 5)
+
+
+class FakeClassForPickleTest:
+    def __init__(self):
+        self.attr1 = 1
+        self.attr2 = 2
+
+    def func1():
+        return 3
+
+
+def fake_func_for_pickle_test(arg1):
+    return arg1
+
+
+def test_find_unpickleable_obj():
+    mock_class = FakeClassForPickleTest()
+    mock_class.attr1 = lambda: 1
+    test_dict = {
+        "dict_type": {
+            "unpickleable_obj1": lambda: 1,
+            "pickleable_obj": 1,
+        },
+        "list_type": [lambda: 1, 3],
+        "class_type": mock_class,
+        "lambda_func": lambda: 1,
+        "partial_func": partial(fake_func_for_pickle_test, arg1=lambda: 1),
+    }
+    test_dict["dict_type"]["unpickleable_obj2"] = test_dict["dict_type"]["unpickleable_obj1"]  # set same obj
+    ret = find_unpickleable_obj(test_dict, "test_dict")
+
+    assert 'test_dict["dict_type"]["unpickleable_obj1"]' in ret
+    assert 'test_dict["list_type"][0]' in ret
+    assert 'test_dict["class_type"].attr1' in ret
+    assert 'test_dict["lambda_func"]' in ret
+    assert 'test_dict["partial_func"].keywords["arg1"]' in ret
+
+
+def test_check_pickleable():
+    pickleable_obj = [1, 2, 3]
+    unpickleable_obj = lambda: 1
+    assert check_pickleable(pickleable_obj) is True
+    assert check_pickleable(unpickleable_obj) is False

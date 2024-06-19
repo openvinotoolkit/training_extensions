@@ -5,6 +5,7 @@
 
 from __future__ import annotations
 
+import logging
 import os
 from functools import partial
 from pathlib import Path
@@ -15,6 +16,8 @@ from torch import nn
 from otx.algo.modules.base_module import BaseModule
 from otx.algo.utils.mmengine_utils import load_checkpoint_to_model, load_from_http
 from otx.utils.utils import get_class_initial_arguments
+
+logger = logging.getLogger()
 
 
 class DinoVisionTransformer(BaseModule):
@@ -42,9 +45,13 @@ class DinoVisionTransformer(BaseModule):
             ckpt_filename = f"{name}4_pretrain.pth"
             ckpt_path = Path(ci_data_root) / "torch" / "hub" / "checkpoints" / ckpt_filename
             if not ckpt_path.exists():
-                msg = f"cannot find weights file: {ckpt_filename}"
-                raise FileExistsError(msg)
-            self.backbone.load_state_dict(torch.load(ckpt_path))
+                msg = (
+                    f"Internal cache was specified but cannot find weights file: {ckpt_filename}. load from torch hub."
+                )
+                logger.warning(msg)
+                self.backbone = torch.hub.load(repo_or_dir="facebookresearch/dinov2", model=name, pretrained=True)
+            else:
+                self.backbone.load_state_dict(torch.load(ckpt_path))
 
         if freeze_backbone:
             self._freeze_backbone(self.backbone)

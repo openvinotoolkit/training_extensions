@@ -8,7 +8,6 @@ import inspect
 from pathlib import Path
 
 import pytest
-from mmengine.config import Config as MMConfig
 from otx.core.types.task import OTXTaskType
 
 
@@ -46,7 +45,7 @@ def get_task_list(task: str) -> list[OTXTaskType]:
     if task == "classification":
         return [OTXTaskType.MULTI_CLASS_CLS, OTXTaskType.MULTI_LABEL_CLS, OTXTaskType.H_LABEL_CLS]
     if task == "action":
-        return [OTXTaskType.ACTION_CLASSIFICATION, OTXTaskType.ACTION_DETECTION]
+        return [OTXTaskType.ACTION_CLASSIFICATION]
     if task == "visual_prompting":
         return [OTXTaskType.VISUAL_PROMPTING, OTXTaskType.ZERO_SHOT_VISUAL_PROMPTING]
     if task == "anomaly":
@@ -95,18 +94,12 @@ def fxt_asset_dir() -> Path:
     return Path(__file__).parent.parent / "assets"
 
 
-@pytest.fixture(scope="session")
-def fxt_rtmdet_tiny_config(fxt_asset_dir: Path) -> MMConfig:
-    config_path = fxt_asset_dir / "mmdet_configs" / "rtmdet_tiny_8xb32-300e_coco.py"
-
-    return MMConfig.fromfile(config_path)
-
-
 # [TODO]: This is a temporary approach.
 @pytest.fixture(scope="module")
 def fxt_target_dataset_per_task() -> dict:
     return {
         "multi_class_cls": "tests/assets/classification_dataset",
+        "multi_class_cls_semisl": "tests/assets/classification_semisl_dataset/unlabeled",
         "multi_label_cls": "tests/assets/multilabel_classification",
         "h_label_cls": "tests/assets/hlabel_classification",
         "detection": "tests/assets/car_tree_bug",
@@ -114,7 +107,6 @@ def fxt_target_dataset_per_task() -> dict:
         "instance_segmentation": "tests/assets/car_tree_bug",
         "semantic_segmentation": "tests/assets/common_semantic_segmentation_dataset/supervised",
         "action_classification": "tests/assets/action_classification_dataset/",
-        "action_detection": "tests/assets/action_detection_dataset/",
         "visual_prompting": "tests/assets/car_tree_bug",
         "zero_shot_visual_prompting": "tests/assets/car_tree_bug_zero_shot",
         "anomaly_classification": "tests/assets/anomaly_hazelnut",
@@ -134,10 +126,6 @@ def fxt_cli_override_command_per_task() -> dict:
         "instance_segmentation": [],
         "semantic_segmentation": [],
         "action_classification": [],
-        "action_detection": [
-            "--model.topk",
-            "3",
-        ],
         "visual_prompting": [],
         "zero_shot_visual_prompting": [],
         "anomaly_classification": [],

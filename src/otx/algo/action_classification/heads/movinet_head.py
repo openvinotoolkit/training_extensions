@@ -1,18 +1,17 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-"""Custom MoViNet Head for video recognition."""
+# Copyright (c) OpenMMLab. All rights reserved.
 
+"""Custom MoViNet Head for video recognition."""
 from __future__ import annotations
 
-from mmaction.models import MODELS
-from mmaction.models.heads.base import BaseHead
 from torch import Tensor, nn
 
 from otx.algo.action_classification.backbones.movinet import ConvBlock3D
+from otx.algo.action_classification.heads.base_head import BaseHead
 from otx.algo.utils.weight_init import normal_init
 
 
-@MODELS.register_module()
 class MoViNetHead(BaseHead):
     """Classification head for MoViNet.
 
@@ -22,7 +21,8 @@ class MoViNetHead(BaseHead):
         hidden_dim (int): Number of channels in hidden layer.
         tf_like (bool): If True, uses TensorFlow-style padding. Default: False.
         conv_type (str): Type of convolutional layer. Default: '3d'.
-        loss_cls (dict): Config for building loss. Default: dict(type='CrossEntropyLoss').
+        loss_cls (nn.module): Loss class like CrossEntropyLoss.
+        topk (tuple[int, int]): Top-K training loss calculation. Default: (1, 5).
         spatial_type (str): Pooling type in spatial dimension. Default: 'avg'.
         dropout_ratio (float): Probability of dropout layer. Default: 0.5.
         init_std (float): Standard deviation for initialization. Default: 0.1.
@@ -33,12 +33,20 @@ class MoViNetHead(BaseHead):
         num_classes: int,
         in_channels: int,
         hidden_dim: int,
-        loss_cls: dict,
+        loss_cls: nn.Module,
+        topk: tuple[int, int] = (1, 5),
         tf_like: bool = False,
         conv_type: str = "3d",
         average_clips: str | None = None,
     ):
-        super().__init__(num_classes, in_channels, loss_cls, average_clips=average_clips)
+        super().__init__(
+            num_classes=num_classes,
+            in_channels=in_channels,
+            loss_cls=loss_cls,
+            topk=topk,
+            average_clips=average_clips,
+        )  # Call the initializer of BaseHead
+
         self.init_std = 0.1
         self.classifier = nn.Sequential(
             ConvBlock3D(

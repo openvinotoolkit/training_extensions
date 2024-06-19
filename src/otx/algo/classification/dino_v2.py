@@ -5,6 +5,7 @@
 
 from __future__ import annotations
 
+import logging
 import os
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Literal
@@ -12,7 +13,10 @@ from typing import TYPE_CHECKING, Any, Literal
 import torch
 from torch import Tensor, nn
 
+from otx.algo.classification.classifier import SemiSLClassifier
+from otx.algo.classification.heads import OTXSemiSLLinearClsHead
 from otx.algo.classification.utils import get_classification_layers
+from otx.algo.utils.utils import torch_hub_load
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.classification import (
     MulticlassClsBatchDataEntity,
@@ -36,6 +40,8 @@ if TYPE_CHECKING:
 
 # TODO(harimkang): Add more types of DINOv2 models. https://github.com/facebookresearch/dinov2/blob/main/MODEL_CARD.md
 DINO_BACKBONE_TYPE = Literal["dinov2_vits14_reg"]
+
+logger = logging.getLogger()
 
 
 class DINOv2(nn.Module):
@@ -66,8 +72,11 @@ class DINOv2(nn.Module):
             ckpt_filename = f"{backbone}4_pretrain.pth"
             ckpt_path = Path(ci_data_root) / "torch" / "hub" / "checkpoints" / ckpt_filename
             if not ckpt_path.exists():
-                msg = f"cannot find weights file: {ckpt_filename}"
-                raise FileExistsError(msg)
+                msg = (
+                    f"Internal cache was specified but cannot find weights file: {ckpt_filename}. load from torch hub."
+                )
+                logger.warning(msg)
+                self.backbone = torch.hub.load(repo_or_dir="facebookresearch/dinov2", model=backbone, pretrained=True)
             self.backbone.load_state_dict(torch.load(ckpt_path))
 
         if freeze_backbone:
@@ -213,3 +222,94 @@ class DINOv2RegisterClassifier(OTXMulticlassClsModel):
             msg = f"{type(self).__name__} doesn't support XPU."
             raise RuntimeError(msg)
         return ret
+
+
+class DINOv2ForMulticlassClsSemiSL(DINOv2RegisterClassifier):
+    """DinoV2 model for multiclass classification with semi-supervised learning.
+
+    This class extends the `DINOv2RegisterClassifier` class and adds support for semi-supervised learning.
+    It overrides the `_build_model` and `_customize_inputs` methods to incorporate the semi-supervised learning.
+
+    Args:
+        DINOv2RegisterClassifier (class): The base class for DinoV2 multiclass classification.
+    """
+
+    def _build_model(self, num_classes: int) -> nn.Module:
+        backbone = torch_hub_load(
+            repo_or_dir="facebookresearch/dinov2",
+            model=self.backbone,
+        )
+        if self.freeze_backbone:
+            for _, v in backbone.named_parameters():
+                v.requires_grad = False
+        return SemiSLClassifier(
+            backbone=backbone,
+            neck=None,
+            head=OTXSemiSLLinearClsHead(
+                num_classes=num_classes,
+                in_channels=384,
+                loss=nn.CrossEntropyLoss(reduction="none"),
+            ),
+        )
+
+    def _customize_inputs(self, inputs: MulticlassClsBatchDataEntity) -> dict[str, Any]:
+        """Customizes the input data for the model based on the current mode.
+
+        Args:
+            inputs (MulticlassClsBatchDataEntity): The input batch of data.
+
+        Returns:
+            dict[str, Any]: The customized input data.
+        """
+        if self.training:
+            mode = "loss"
+        elif self.explain_mode:
+            mode = "explain"
+        else:
+            mode = "predict"
+
+        if isinstance(inputs, dict):
+            # When used with an unlabeled dataset, it comes in as a dict.
+            images = {key: inputs[key].images for key in inputs}
+            labels = {key: torch.cat(inputs[key].labels, dim=0) for key in inputs}
+            imgs_info = {key: inputs[key].imgs_info for key in inputs}
+            return {
+                "images": images,
+                "labels": labels,
+                "imgs_info": imgs_info,
+                "mode": mode,
+            }
+        return {
+            "images": inputs.images,
+            "labels": torch.cat(inputs.labels, dim=0),
+            "imgs_info": inputs.imgs_info,
+            "mode": mode,
+        }
+
+    def training_step(self, batch: MulticlassClsBatchDataEntity, batch_idx: int) -> Tensor:
+        """Performs a single training step on a batch of data.
+
+        Args:
+            batch (MulticlassClsBatchDataEntity): The input batch of data.
+            batch_idx (int): The index of the current batch.
+
+        Returns:
+            Tensor: The computed loss for the training step.
+        """
+        loss = super().training_step(batch, batch_idx)
+        # Collect metrics related to Semi-SL Training.
+        self.log(
+            "train/unlabeled_coef",
+            self.model.head.unlabeled_coef,
+            on_step=True,
+            on_epoch=False,
+            prog_bar=True,
+        )
+        self.log(
+            "train/num_pseudo_label",
+            self.model.head.num_pseudo_label,
+            on_step=True,
+            on_epoch=False,
+            prog_bar=True,
+        )
+        return loss

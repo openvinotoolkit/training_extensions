@@ -25,6 +25,7 @@ from otx.core.data.module import OTXDataModule
 from otx.core.metrics.types import MetricCallable, NullMetricCallable
 from otx.core.model.anomaly import AnomalyModelInputs
 from otx.core.model.base import OVModel
+from otx.core.types.label import AnomalyLabelInfo
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -201,3 +202,6 @@ class AnomalyOpenVINO(OVModel):
     def _customize_outputs(self, outputs: list[AnomalyResult], inputs: AnomalyModelInputs) -> list[AnomalyResult]:
         """Return outputs from the OpenVINO model as is."""
         return outputs
+
+    def _create_label_info_from_ov_ir(self) -> AnomalyLabelInfo:
+        return AnomalyLabelInfo()

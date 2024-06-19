@@ -18,7 +18,6 @@ class OTXExportFormatType(str, Enum):
 
     ONNX = "ONNX"
     OPENVINO = "OPENVINO"
-    EXPORTABLE_CODE = "EXPORTABLE_CODE"
 
 
 @dataclass(frozen=True)

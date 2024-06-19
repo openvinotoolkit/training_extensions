@@ -12,6 +12,7 @@ from omegaconf import DictConfig
 from torchvision import tv_tensors
 
 from otx.algo.detection.backbones.csp_darknet import CSPDarknet
+from otx.algo.detection.heads.sim_ota_assigner import SimOTAAssigner
 from otx.algo.detection.heads.yolox_head import YOLOXHead
 from otx.algo.detection.necks.yolox_pafpn import YOLOXPAFPN
 from otx.algo.detection.ssd import SingleStageDetector
@@ -77,7 +78,7 @@ class YOLOX(ExplainableOTXDetModel):
                 elif isinstance(v, torch.Tensor):
                     losses[k] = v
                 else:
-                    msg = "Loss output should be list or torch.tensor but got {type(v)}"
+                    msg = f"Loss output should be list or torch.tensor but got {type(v)}"
                     raise TypeError(msg)
             return losses
 
@@ -208,6 +209,7 @@ class YOLOX(ExplainableOTXDetModel):
         base_name: str,
         export_format: OTXExportFormatType,
         precision: OTXPrecisionType = OTXPrecisionType.FP32,
+        to_exportable_code: bool = False,
     ) -> Path:
         """Export this model to the specified output directory.
 
@@ -226,7 +228,7 @@ class YOLOX(ExplainableOTXDetModel):
         orig_focus_forward = self.model.backbone.stem.forward
         try:
             self.model.backbone.stem.forward = self.model.backbone.stem.export
-            return super().export(output_dir, base_name, export_format, precision)
+            return super().export(output_dir, base_name, export_format, precision, to_exportable_code)
         finally:
             self.model.backbone.stem.forward = orig_focus_forward
 
@@ -261,7 +263,7 @@ class YOLOXTINY(YOLOX):
     std = (58.395, 57.12, 57.375)
 
     def _build_model(self, num_classes: int) -> SingleStageDetector:
-        train_cfg: dict[str, Any] = {}
+        train_cfg: dict[str, Any] = {"assigner": SimOTAAssigner(center_radius=2.5)}
         test_cfg = DictConfig(
             {
                 "nms": {"type": "nms", "iou_threshold": 0.65},
@@ -302,7 +304,7 @@ class YOLOXS(YOLOX):
     std = (1.0, 1.0, 1.0)
 
     def _build_model(self, num_classes: int) -> SingleStageDetector:
-        train_cfg: dict[str, Any] = {}
+        train_cfg: dict[str, Any] = {"assigner": SimOTAAssigner(center_radius=2.5)}
         test_cfg = DictConfig(
             {
                 "nms": {"type": "nms", "iou_threshold": 0.65},
@@ -343,7 +345,7 @@ class YOLOXL(YOLOX):
     std = (1.0, 1.0, 1.0)
 
     def _build_model(self, num_classes: int) -> SingleStageDetector:
-        train_cfg: dict[str, Any] = {}
+        train_cfg: dict[str, Any] = {"assigner": SimOTAAssigner(center_radius=2.5)}
         test_cfg = DictConfig(
             {
                 "nms": {"type": "nms", "iou_threshold": 0.65},
@@ -384,7 +386,7 @@ class YOLOXX(YOLOX):
     std = (1.0, 1.0, 1.0)
 
     def _build_model(self, num_classes: int) -> SingleStageDetector:
-        train_cfg: dict[str, Any] = {}
+        train_cfg: dict[str, Any] = {"assigner": SimOTAAssigner(center_radius=2.5)}
         test_cfg = DictConfig(
             {
                 "nms": {"type": "nms", "iou_threshold": 0.65},

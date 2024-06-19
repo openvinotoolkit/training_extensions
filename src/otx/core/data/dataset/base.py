@@ -22,14 +22,14 @@ from otx.core.data.entity.base import T_OTXDataEntity
 from otx.core.data.mem_cache import NULL_MEM_CACHE_HANDLER
 from otx.core.data.transform_libs.torchvision import Compose
 from otx.core.types.image import ImageColorChannel
-from otx.core.types.label import LabelInfo
+from otx.core.types.label import LabelInfo, NullLabelInfo
 
 if TYPE_CHECKING:
     from datumaro import DatasetSubset, Image
 
     from otx.core.data.mem_cache import MemCacheHandlerBase
 
-Transforms = Union[Compose, Callable, List[Callable]]
+Transforms = Union[Compose, Callable, List[Callable], dict[str, Compose | Callable | List[Callable]]]
 
 
 @contextmanager
@@ -43,7 +43,13 @@ def image_decode_context() -> Iterator[None]:
     ori_image_color_scale = IMAGE_COLOR_CHANNEL.get()
 
     IMAGE_BACKEND.set(ImageBackend.PIL)
-    IMAGE_COLOR_CHANNEL.set(DatumaroImageColorChannel.COLOR_BGR)
+    # TODO(vinnamki): This should be changed to
+    # if to_rgb:
+    #     IMAGE_COLOR_CHANNEL.set(DatumaroImageColorChannel.COLOR_RGB)
+    # else:
+    #     IMAGE_COLOR_CHANNEL.set(DatumaroImageColorChannel.COLOR_BGR)
+    # after merging https://github.com/openvinotoolkit/datumaro/pull/1501
+    IMAGE_COLOR_CHANNEL.set(DatumaroImageColorChannel.COLOR_RGB)
 
     yield
 
@@ -86,7 +92,10 @@ class OTXDataset(Dataset, Generic[T_OTXDataEntity]):
         self.image_color_channel = image_color_channel
         self.stack_images = stack_images
         self.to_tv_image = to_tv_image
-        self.label_info = LabelInfo.from_dm_label_groups(self.dm_subset.categories()[AnnotationType.label])
+        if self.dm_subset.categories():
+            self.label_info = LabelInfo.from_dm_label_groups(self.dm_subset.categories()[AnnotationType.label])
+        else:
+            self.label_info = NullLabelInfo()
 
     def __len__(self) -> int:
         return len(self.dm_subset)
@@ -138,12 +147,12 @@ class OTXDataset(Dataset, Generic[T_OTXDataEntity]):
         if (img_data := self.mem_cache_handler.get(key=key)[0]) is not None:
             return img_data, img_data.shape[:2]
 
-        if self.image_color_channel == ImageColorChannel.RGB:
-            img_data = cv2.cvtColor(img.data, cv2.COLOR_BGR2RGB)
-        else:
-            # [TODO]: Need to check if using image_decode_context is appropriate.
-            with image_decode_context():
-                img_data = img.data
+        with image_decode_context():
+            img_data = (
+                img.data
+                if self.image_color_channel == ImageColorChannel.RGB
+                else cv2.cvtColor(img.data, cv2.COLOR_RGB2BGR)
+            )
 
         if img_data is None:
             msg = "Cannot get image data"

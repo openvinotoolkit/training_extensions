@@ -14,8 +14,8 @@ MULTI_CLASS_CLS = [recipe for recipe in RECIPE_LIST_ALL if "multi_class_cls" in 
 MULTI_LABEL_CLS = [recipe for recipe in RECIPE_LIST_ALL if "multi_label_cls" in recipe]
 MC_ML_CLS = MULTI_CLASS_CLS + MULTI_LABEL_CLS
 
-DETECTION_LIST = [recipe for recipe in RECIPE_LIST_ALL if "/detection" in recipe and "tile" not in recipe]
-INST_SEG_LIST = [recipe for recipe in RECIPE_LIST_ALL if "instance_segmentation" in recipe and "tile" not in recipe]
+DETECTION_LIST = [recipe for recipe in RECIPE_LIST_ALL if "/detection" in recipe]
+INST_SEG_LIST = [recipe for recipe in RECIPE_LIST_ALL if "instance_segmentation" in recipe]
 EXPLAIN_MODEL_LIST = MC_ML_CLS + DETECTION_LIST + INST_SEG_LIST
 
 MEAN_TORCH_OV_DIFF = 150
@@ -46,6 +46,15 @@ def test_forward_explain(
 
     if "dino" in model_name:
         pytest.skip("DINO is not supported.")
+    if "_semisl" in model_name:
+        pytest.skip("Semi-SL is not supported.")
+
+    if "maskrcnn_r50_tv" in model_name:
+        pytest.skip("MaskRCNN R50 Torchvision model doesn't support explain.")
+
+    if "rtmdet_tiny" in recipe:
+        # TODO (sungchul): enable xai for rtmdet_tiny (CVS-142651)
+        pytest.skip("rtmdet_tiny on detection is not supported yet.")
 
     engine = Engine.from_config(
         config_path=recipe,
@@ -95,16 +104,17 @@ def test_predict_with_explain(
     if "dino" in model_name:
         pytest.skip("DINO is not supported.")
 
-    if "ssd_mobilenetv2" in model_name:
-        pytest.skip("There's issue with SSD model. Skip for now.")
-
-    if "atss" in model_name or "yolox" in model_name:
-        # TODO(Jaeguk, sungchul): ATSS and YOLOX returns dynamic output for saliency map
-        pytest.skip(f"There's issue with {model_name} model. Skip for now.")
-
     if "instance_segmentation" in recipe:
         # TODO(Eugene): figure out why instance segmentation model fails after decoupling.
         pytest.skip("There's issue with instance segmentation model. Skip for now.")
+
+    if "rtmdet_tiny" in recipe:
+        # TODO (sungchul): enable xai for rtmdet_tiny (CVS-142651)
+        pytest.skip("rtmdet_tiny on detection is not supported yet.")
+
+    if "yolox_tiny_tile" in recipe:
+        # TODO (Galina): required to update model-api to 2.1
+        pytest.skip("yolox_tiny_tile on detection requires model-api update")
 
     tmp_path = tmp_path / f"otx_xai_{model_name}"
     engine = Engine.from_config(
@@ -152,8 +162,8 @@ def test_predict_with_explain(
     assert predict_result_explain_ov[0].feature_vector is not None
     assert isinstance(predict_result_explain_ov[0].feature_vector[0], np.ndarray)
 
-    if task == "instance_segmentation" or "atss_r50_fpn" in recipe:
-        # For instance segmentation and atss_r50_fpn batch_size for Torch task 1, for OV 2.
+    if task == "instance_segmentation":
+        # For instance segmentation batch_size for Torch task 1, for OV 2.
         # That why the predict_results have different format and we can't compare them.
 
         # The OV saliency maps are different from Torch and incorrect, possible root cause can be on MAPI side
@@ -165,9 +175,16 @@ def test_predict_with_explain(
 
     assert len(maps_torch) == len(maps_ov)
 
-    if "tv_efficientnet_b3" in recipe:
+    if "tv_efficientnet_b3" in recipe or "efficientnet_b0" in recipe:
         # There is the issue with different predict results for Pytorch and OpenVINO tasks.
         # Probably because of the different preprocessed images passed as an input. Skip the rest of the checks for now.
+        # Tickets: 142087, 141639
+        return
+
+    if "yolox" in recipe:
+        # The cropping of the padded saliency maps is not implemented for OV (Model API) yet,
+        # so the saliency maps for PyTorch and OV are different.
+        # TODO(gzalessk): Implement cropping saliency maps in Model API (Ticket 144296).
         return
 
     for i in range(len(maps_torch)):

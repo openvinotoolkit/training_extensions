@@ -408,8 +408,8 @@ class BaseDenseHead(BaseModule):
                   the last dimension 4 arrange as (x1, y1, x2, y2).
         """
         if rescale:
-            scale_factor = [1 / s for s in img_meta["scale_factor"]]
-            results.bboxes = results.bboxes * results.bboxes.new_tensor(scale_factor).repeat(  # type: ignore[attr-defined]
+            scale_factor = [1 / s for s in img_meta["scale_factor"]]  # (H, W)
+            results.bboxes = results.bboxes * results.bboxes.new_tensor(scale_factor[::-1]).repeat(  # type: ignore[attr-defined]
                 (1, int(results.bboxes.size(-1) / 2)),  # type: ignore[attr-defined]
             )
 
