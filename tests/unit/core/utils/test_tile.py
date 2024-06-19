@@ -35,6 +35,7 @@ def test_tile_transform_consistency(mocker):
     tile_transform = OTXTileTransform()
     tile_transform._tile_size = (rnd_tile_size, rnd_tile_size)
     tile_transform._overlap = (rnd_tile_overlap, rnd_tile_overlap)
+    tile_transform.with_full_img = True
 
     dm_rois = [xywh_to_x1y1x2y2(*roi) for roi in tile_transform._extract_rois(dm_image)]
     # 0 index in tiler is the full image so we skip it

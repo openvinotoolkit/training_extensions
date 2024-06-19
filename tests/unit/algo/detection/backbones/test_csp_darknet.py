@@ -8,7 +8,7 @@ Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/tests/test_mod
 
 import pytest
 import torch
-from otx.algo.detection.backbones.csp_darknet import CSPDarknet
+from otx.algo.detection.backbones.csp_darknet import CSPDarknet, Focus
 from torch.nn.modules import GroupNorm
 from torch.nn.modules.batchnorm import _BatchNorm
 
@@ -29,6 +29,19 @@ def is_norm(modules):
     if isinstance(modules, (GroupNorm, _BatchNorm)):
         return True
     return False
+
+
+class TestFocus:
+    def test_export(self) -> None:
+        focus_model = Focus(3, 32)
+        focus_model.requires_grad_(False)
+        focus_model.cpu().eval()
+
+        x = torch.rand(1, 3, 128, 128)
+
+        results = focus_model.forward(x)
+
+        assert results.shape == (1, 32, 64, 64)
 
 
 class TestCSPDarknet:

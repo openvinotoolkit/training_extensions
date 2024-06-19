@@ -255,6 +255,7 @@ class TestOTXTiling:
             tile_size=tile_size,
             overlap=overlap,
             threshold_drop_ann=threshold_drop_ann,
+            with_full_img=True,
         )
 
         h_stride = max(int((1 - overlap[0]) * tile_size[0]), 1)
@@ -264,6 +265,16 @@ class TestOTXTiling:
         assert len(tiled_dataset) == (num_tile_rows * num_tile_cols * len(dataset)) + len(
             dataset,
         ), "Incorrect number of tiles"
+
+        tiled_dataset = DmDataset.import_from("tests/assets/car_tree_bug", format="coco_instances")
+        tiled_dataset.transform(
+            OTXTileTransform,
+            tile_size=tile_size,
+            overlap=overlap,
+            threshold_drop_ann=threshold_drop_ann,
+            with_full_img=False,
+        )
+        assert len(tiled_dataset) == (num_tile_rows * num_tile_cols * len(dataset)), "Incorrect number of tiles"
 
     def test_tile_polygon_func(self):
         points = np.array([(1, 2), (3, 5), (4, 2), (4, 6), (1, 6)])

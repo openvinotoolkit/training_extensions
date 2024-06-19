@@ -137,6 +137,13 @@ def pytest_addoption(parser: pytest.Parser):
         type=str,
         help="Task type of OTX to use test.",
     )
+    parser.addoption(
+        "--device",
+        action="store",
+        default="gpu",
+        type=str,
+        help="Which device to use.",
+    )
 
 
 @pytest.fixture(scope="session")
@@ -330,10 +337,9 @@ def fxt_clean_up_mem_cache():
     MemCacheHandlerSingleton.delete()
 
 
-# TODO(Jaeguk): Add cpu param when OTX can run integration test parallelly for each task.
-@pytest.fixture(scope="module", params=[pytest.param("gpu", marks=pytest.mark.gpu)])
+@pytest.fixture(scope="session")
 def fxt_accelerator(request: pytest.FixtureRequest) -> str:
-    return request.param
+    return request.config.getoption("--device", "gpu")
 
 
 @pytest.fixture(params=set(OTXTaskType) - {OTXTaskType.DETECTION_SEMI_SL})
