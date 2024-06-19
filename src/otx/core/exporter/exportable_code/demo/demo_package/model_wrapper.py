@@ -43,7 +43,7 @@ class ModelWrapper:
             raise RuntimeError(msg)
         self.parameters = get_parameters(model_dir / "config.json")
         self._labels = self.parameters["model_parameters"]["labels"]
-        self._task_type = TaskType[self.parameters["converter_type"].upper()]
+        self._task_type = TaskType[self.parameters["task_type"].upper()]
 
         # labels for modelAPI wrappers can be empty, because unused in pre- and postprocessing
         self.model_parameters = self.parameters["model_parameters"]
@@ -53,7 +53,7 @@ class ModelWrapper:
 
         self.core_model = Model.create_model(
             model_adapter,
-            self.parameters["type_of_model"],
+            self.parameters["model_type"],
             self.model_parameters,
             preload=True,
         )
