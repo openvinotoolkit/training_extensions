@@ -117,7 +117,7 @@ def get_image_shape(img: np.ndarray | Tensor | list) -> tuple[int, int]:
     raise TypeError(msg)
 
 
-def to_np_image(img: np.ndarray | Tensor | list) -> np.ndarray:
+def to_np_image(img: np.ndarray | Tensor | list) -> np.ndarray | list[np.ndarray]:
     """Convert torch.Tensor 3D image to numpy 3D image.
 
     TODO (sungchul): move it into base data entity?
