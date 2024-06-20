@@ -106,15 +106,15 @@ class cache_randomness:  # noqa: N801
 
 def get_image_shape(img: np.ndarray | Tensor | list) -> tuple[int, int]:
     """Get image(s) shape with (height, width)."""
+    if not isinstance(img, (np.ndarray, Tensor, list)):
+        msg = f"{type(img)} is not supported."
+        raise TypeError(msg)
+
     if isinstance(img, np.ndarray):
         return img.shape[:2]
     if isinstance(img, Tensor):
         return img.shape[-2:]
-    if isinstance(img, list):
-        return get_image_shape(img[0])
-
-    msg = f"{type(img)} is not supported."
-    raise TypeError(msg)
+    return get_image_shape(img[0])  # for list
 
 
 def to_np_image(img: np.ndarray | Tensor | list) -> np.ndarray | list[np.ndarray]:
