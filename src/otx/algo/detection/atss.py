@@ -117,7 +117,7 @@ class ATSS(ExplainableOTXDetModel):
             if not isinstance(prediction, InstanceData):
                 raise TypeError(prediction)
 
-            filtered_idx = torch.where(prediction.scores > self.hparams.get("best_confidence_threshold", 0.5))  # type: ignore[attr-defined]
+            filtered_idx = torch.where(prediction.scores > self.best_confidence_threshold)  # type: ignore[attr-defined]
             scores.append(prediction.scores[filtered_idx])  # type: ignore[attr-defined]
             bboxes.append(
                 tv_tensors.BoundingBoxes(
