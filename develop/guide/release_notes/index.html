@@ -5,7 +5,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Releases &#8212; OpenVINO™ Training Extensions 2.0.0rc0 documentation</title>
+    <title>Releases &#8212; OpenVINO™ Training Extensions 2.0.0 documentation</title>
   
   
   
@@ -35,7 +35,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94">
 
-    <script src="../../_static/documentation_options.js?v=4fff8b0c"></script>
+    <script src="../../_static/documentation_options.js?v=79f5c508"></script>
     <script src="../../_static/doctools.js?v=888ff710"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -395,11 +395,49 @@
 </div>
 <section id="v2-0-0-2q24">
 <h2>v2.0.0 (2Q24)<a class="headerlink" href="#v2-0-0-2q24" title="Link to this heading">#</a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>OpenVINO™ Training Extensions which version 2.0.0 has been updated to include refactoring of the overall
+architecture and functional updates. Users should [install the new environment](<a class="reference external" href="https://openvinotoolkit.github.io/training_extensions/latest/guide/get_started/installation.html">https://openvinotoolkit.github.io/training_extensions/latest/guide/get_started/installation.html</a>).</p>
+</div>
+<section id="new-features">
+<h3>New features<a class="headerlink" href="#new-features" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Enable New design to provide a more seamless API/CLI that delivers the value of OTX: [Product Design](<a class="reference external" href="https://openvinotoolkit.github.io/training_extensions/latest/guide/explanation/product_design.html">https://openvinotoolkit.github.io/training_extensions/latest/guide/explanation/product_design.html</a>)</p></li>
+<li><p>Moved away from MMLab’s libraries to provide a Lightning-based core and training pipeline</p></li>
+<li><p>Use Lightning-based modules and trainers to deliver APIs/CLIs in a more user-friendly way</p></li>
+<li><p>Support Intel devices for accelerating deep learning model training</p></li>
+</ul>
+</section>
+<section id="enhancements">
+<h3>Enhancements<a class="headerlink" href="#enhancements" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Support more models for each task</p></li>
+<li><p>Improve the API so user can configure efficient training with shorter code</p></li>
+<li><p>Provide more customize settings through the CLI and API</p></li>
+<li><p>Enhance the Auto-Configuration feature and made it available in the API</p></li>
+</ul>
+</section>
+<section id="bug-fixes">
+<h3>Bug fixes<a class="headerlink" href="#bug-fixes" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Fixing some minor issues</p></li>
+</ul>
+</section>
+<section id="known-issues">
+<h3>Known issues<a class="headerlink" href="#known-issues" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Anomaly task processing times have increased compared with v1.* version, with anomaly classification experiencing a slowdown of approximately 26%, anomaly detection by approximately 213%, and anomaly segmentation by approximately 78%.
+(<a class="github reference external" href="https://github.com/openvinotoolkit/training_extensions/issues/3592">openvinotoolkit/training_extensions#3592</a>)</p></li>
+<li><p>Post-Training Quantization (PTQ) optimization applied to <cite>maskrcnn_swint</cite> in the instance segmentation task may result in significantly reduced accuracy compared with v1.*
+(<a class="github reference external" href="https://github.com/openvinotoolkit/training_extensions/issues/3593">openvinotoolkit/training_extensions#3593</a>)</p></li>
+</ul>
+</section>
 </section>
 <section id="v1-6-1-2024-05">
 <h2>v1.6.1 (2024.05)<a class="headerlink" href="#v1-6-1-2024-05" title="Link to this heading">#</a></h2>
-<section id="enhancements">
-<h3>Enhancements<a class="headerlink" href="#enhancements" title="Link to this heading">#</a></h3>
+<section id="id1">
+<h3>Enhancements<a class="headerlink" href="#id1" title="Link to this heading">#</a></h3>
 <ul class="simple">
 <li><p>Update pymongo version to 4.6.3 for resolving CVE-2024-21506</p></li>
 <li><p>Use torchvision in MRCNN on CUDA</p></li>
@@ -414,8 +452,8 @@
 <li><p>Add perf benchmark test cases for action and visual prompting</p></li>
 </ul>
 </section>
-<section id="bug-fixes">
-<h3>Bug fixes<a class="headerlink" href="#bug-fixes" title="Link to this heading">#</a></h3>
+<section id="id2">
+<h3>Bug fixes<a class="headerlink" href="#id2" title="Link to this heading">#</a></h3>
 <ul class="simple">
 <li><p>Explicitly cast incorrect output type in OV model</p></li>
 <li><p>Update QAT configs for rotated detection</p></li>
@@ -430,8 +468,8 @@
 </section>
 <section id="v1-6-0-2024-04">
 <h2>v1.6.0 (2024.04)<a class="headerlink" href="#v1-6-0-2024-04" title="Link to this heading">#</a></h2>
-<section id="new-features">
-<h3>New features<a class="headerlink" href="#new-features" title="Link to this heading">#</a></h3>
+<section id="id3">
+<h3>New features<a class="headerlink" href="#id3" title="Link to this heading">#</a></h3>
 <ul class="simple">
 <li><p>Changed supported Python version range (&gt;=3.9, &lt;=3.11)</p></li>
 <li><p>Support MMDetection COCO format</p></li>
@@ -444,8 +482,8 @@
 <li><p>Support bounding box import within Kaggle extractors and add <cite>KaggleCocoBase</cite></p></li>
 </ul>
 </section>
-<section id="id1">
-<h3>Enhancements<a class="headerlink" href="#id1" title="Link to this heading">#</a></h3>
+<section id="id4">
+<h3>Enhancements<a class="headerlink" href="#id4" title="Link to this heading">#</a></h3>
 <ul class="simple">
 <li><p>Optimize Python import to make CLI entrypoint faster</p></li>
 <li><p>Add ImageColorScale context manager</p></li>
@@ -459,8 +497,8 @@
 <li><p>Fix each method of the comparator to be used separately</p></li>
 </ul>
 </section>
-<section id="id2">
-<h3>Bug fixes<a class="headerlink" href="#id2" title="Link to this heading">#</a></h3>
+<section id="id5">
+<h3>Bug fixes<a class="headerlink" href="#id5" title="Link to this heading">#</a></h3>
 <ul class="simple">
 <li><p>Fix wrong example of Datumaro dataset creation in document</p></li>
 <li><p>Fix wrong command to install datumaro from github</p></li>
@@ -482,8 +520,8 @@
 </section>
 <section id="v1-5-2-2024-01">
 <h2>v1.5.2 (2024.01)<a class="headerlink" href="#v1-5-2-2024-01" title="Link to this heading">#</a></h2>
-<section id="id3">
-<h3>Enhancements<a class="headerlink" href="#id3" title="Link to this heading">#</a></h3>
+<section id="id6">
+<h3>Enhancements<a class="headerlink" href="#id6" title="Link to this heading">#</a></h3>
 <ul class="simple">
 <li><p>Add memory bounded datumaro data format detect</p></li>
 <li><p>Remove Protobuf version limitation (&lt;4)</p></li>
@@ -492,8 +530,8 @@
 </section>
 <section id="v1-5-1-2023-11">
 <h2>v1.5.1 (2023.11)<a class="headerlink" href="#v1-5-1-2023-11" title="Link to this heading">#</a></h2>
-<section id="id4">
-<h3>Enhancements<a class="headerlink" href="#id4" title="Link to this heading">#</a></h3>
+<section id="id7">
+<h3>Enhancements<a class="headerlink" href="#id7" title="Link to this heading">#</a></h3>
 <ul class="simple">
 <li><p>Enhance Datumaro data format stream importer performance</p></li>
 <li><p>Change image default dtype from float32 to uint8</p></li>
@@ -501,8 +539,8 @@
 <li><p>Add ImportError to catch GitPython import error</p></li>
 </ul>
 </section>
-<section id="id5">
-<h3>Bug fixes<a class="headerlink" href="#id5" title="Link to this heading">#</a></h3>
+<section id="id8">
+<h3>Bug fixes<a class="headerlink" href="#id8" title="Link to this heading">#</a></h3>
 <ul class="simple">
 <li><p>Modify the draw function in the visualizer not to raise an error for unsupported annotation types.</p></li>
 <li><p>Correct explore path in the related document.</p></li>
@@ -750,12 +788,12 @@
   <a class="reference internal nav-link" href="#v2-0-0-2q24">
    v2.0.0 (2Q24)
   </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#v1-6-1-2024-05">
-   v1.6.1 (2024.05)
-  </a>
   <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#new-features">
+     New features
+    </a>
+   </li>
    <li class="toc-h3 nav-item toc-entry">
     <a class="reference internal nav-link" href="#enhancements">
      Enhancements
@@ -766,18 +804,18 @@
      Bug fixes
     </a>
    </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#known-issues">
+     Known issues
+    </a>
+   </li>
   </ul>
  </li>
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#v1-6-0-2024-04">
-   v1.6.0 (2024.04)
+  <a class="reference internal nav-link" href="#v1-6-1-2024-05">
+   v1.6.1 (2024.05)
   </a>
   <ul class="nav section-nav flex-column">
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#new-features">
-     New features
-    </a>
-   </li>
    <li class="toc-h3 nav-item toc-entry">
     <a class="reference internal nav-link" href="#id1">
      Enhancements
@@ -791,12 +829,34 @@
   </ul>
  </li>
  <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#v1-6-0-2024-04">
+   v1.6.0 (2024.04)
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#id3">
+     New features
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#id4">
+     Enhancements
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#id5">
+     Bug fixes
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#v1-5-2-2024-01">
    v1.5.2 (2024.01)
   </a>
   <ul class="nav section-nav flex-column">
    <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#id3">
+    <a class="reference internal nav-link" href="#id6">
      Enhancements
     </a>
    </li>
@@ -808,12 +868,12 @@
   </a>
   <ul class="nav section-nav flex-column">
    <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#id4">
+    <a class="reference internal nav-link" href="#id7">
      Enhancements
     </a>
    </li>
    <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#id5">
+    <a class="reference internal nav-link" href="#id8">
      Bug fixes
     </a>
    </li>
