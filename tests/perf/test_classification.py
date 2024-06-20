@@ -261,7 +261,7 @@ class TestPerfHierarchicalLabelClassification(PerfTestBase):
 
 
 class TestPerfSemiSLMultiClass(PerfTestBase):
-    """Benchmark single-label classification."""
+    """Benchmark single-label classification for Semi-SL task."""
 
     MODEL_TEST_CASES = [  # noqa: RUF012
         Benchmark.Model(task="classification/multi_class_cls", name="efficientnet_b0_semisl", category="speed"),
