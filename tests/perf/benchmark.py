@@ -70,6 +70,7 @@ class Benchmark:
         group: str
         num_repeat: int = 1
         extra_overrides: dict | None = None
+        unlabeled_data_path: Path | None = None
 
     @dataclass
     class Criterion:
@@ -192,6 +193,13 @@ class Benchmark:
                     "--engine.device",
                     self.accelerator,
                 ]
+
+                # Add unlabeled data path if exists
+                if dataset.unlabeled_data_path is not None:
+                    command.extend(
+                        ["--data.config.unlabeled_subset.data_root", str(self.data_root / dataset.unlabeled_data_path)],
+                    )
+
                 for key, value in dataset.extra_overrides.get("train", {}).items():
                     command.append(f"--{key}")
                     command.append(str(value))
