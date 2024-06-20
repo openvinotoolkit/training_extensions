@@ -7,7 +7,7 @@ Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/tests/test_mod
 """
 
 import torch
-from mmengine.config import Config
+from omegaconf import DictConfig
 from otx.algo.detection.heads.sim_ota_assigner import SimOTAAssigner
 from otx.algo.detection.heads.yolox_head import YOLOXHead
 from otx.algo.modules.conv_module import ConvModule
@@ -24,7 +24,7 @@ class TestYOLOXHead:
                 "scale_factor": (1.0, 1.0),
             },
         ]
-        test_cfg = Config({"score_thr": 0.01, "nms": {"type": "nms", "iou_threshold": 0.65}})
+        test_cfg = DictConfig({"score_thr": 0.01, "nms": {"type": "nms", "iou_threshold": 0.65}})
         head = YOLOXHead(num_classes=4, in_channels=1, stacked_convs=1, use_depthwise=False, test_cfg=test_cfg)
         feat = [torch.rand(1, 1, s // feat_size, s // feat_size) for feat_size in [4, 8, 16]]
         cls_scores, bbox_preds, objectnesses = head.forward(feat)

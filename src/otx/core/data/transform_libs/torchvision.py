@@ -10,6 +10,7 @@ import io
 import itertools
 import math
 from inspect import isclass
+from pathlib import Path
 from typing import TYPE_CHECKING, Any, ClassVar, Iterable, Sequence
 
 import cv2
@@ -2716,19 +2717,14 @@ class FormatShape(tvt_v2.Transform):
 class DecordInit(tvt_v2.Transform):
     """Using decord to initialize the video_reader."""
 
-    def __init__(self, io_backend: str = "disk", num_threads: int = 1, **kwargs) -> None:
-        self.io_backend = io_backend
+    def __init__(self, num_threads: int = 1, **kwargs) -> None:
         self.num_threads = num_threads
         self.kwargs = kwargs
-        self.file_client = None
 
     def _get_video_reader(self, filename: str) -> decord.VideoReader:
-        if self.file_client is None:
-            # TODO(wonjulee): Remove mmengine imports
-            from mmengine.fileio import FileClient
-
-            self.file_client = FileClient(self.io_backend, **self.kwargs)
-        file_obj = io.BytesIO(self.file_client.get(filename))
+        with Path(filename).open("rb") as f:
+            file_byte = f.read()
+        file_obj = io.BytesIO(file_byte)
         return decord.VideoReader(file_obj, num_threads=self.num_threads)
 
     def __call__(self, *_inputs: T_OTXDataEntity) -> T_OTXDataEntity | None:
@@ -2743,7 +2739,7 @@ class DecordInit(tvt_v2.Transform):
         return inputs
 
     def __repr__(self) -> str:
-        return f"{self.__class__.__name__}(io_backend={self.io_backend}, num_threads={self.num_threads})"
+        return f"{self.__class__.__name__}(num_threads={self.num_threads})"
 
 
 class SampleFrames(tvt_v2.Transform):
