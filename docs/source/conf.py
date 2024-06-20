@@ -71,6 +71,8 @@ html_static_path = ["_static"]
 
 html_theme_options = {
     "navbar_center": [],
+    "navbar_end": ["search-field.html", "theme-switcher.html", "navbar-icon-links.html"],
+    "search_bar_text": "Search",
     "logo": {
         "image_light": "logos/otx-logo.png",
         "image_dark": "logos/otx-logo.png",

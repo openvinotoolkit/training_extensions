@@ -4,7 +4,6 @@
 import os
 
 import pytest
-from mmpretrain.registry import MODELS
 from omegaconf import DictConfig
 from otx.core.utils.build import (
     build_mm_model,
@@ -13,7 +12,14 @@ from otx.core.utils.build import (
     modify_num_classes,
 )
 
+SKIP_MMLAB_TEST = False
+try:
+    from mmpretrain.registry import MODELS
+except ImportError:
+    SKIP_MMLAB_TEST = True
 
+
+@pytest.mark.skipif(SKIP_MMLAB_TEST, reason="MMLab is not installed")
 @pytest.fixture()
 def fxt_mm_config() -> DictConfig:
     return DictConfig(
@@ -46,6 +52,7 @@ def fxt_mm_config() -> DictConfig:
     )
 
 
+@pytest.mark.skipif(SKIP_MMLAB_TEST, reason="MMLab is not installed")
 def test_build_mm_model(fxt_mm_config, mocker) -> None:
     model = build_mm_model(config=fxt_mm_config, model_registry=MODELS)
     assert model.__class__.__name__ == "ImageClassifier"
@@ -73,6 +80,7 @@ def test_get_default_num_async_infer_requests() -> None:
         get_default_num_async_infer_requests()
 
 
+@pytest.mark.skipif(SKIP_MMLAB_TEST, reason="MMLab is not installed")
 def test_get_classification_layers(fxt_mm_config) -> None:
     expected_result = {
         "head.fc.weight": {"stride": 1, "num_extra_classes": 0},

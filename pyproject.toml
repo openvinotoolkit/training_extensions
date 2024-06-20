@@ -29,7 +29,7 @@ dependencies = [
     "datumaro==1.6.1",
     "omegaconf==2.3.0",
     "rich==13.7.1",
-    "jsonargparse==4.27.7",
+    "jsonargparse==4.30.0",
     "psutil==5.9.8", # Mem cache needs system checks
     "ftfy==6.2.0",
     "regex==2024.5.10",
@@ -150,6 +150,15 @@ omit = [
     "**/mmconfigs/*",
     "**/mmdeploy/*",
     "**/exportable_code/*",
+
+    # Ignore mm related code for now
+    "src/otx/core/data/transform_libs/mmaction.py",
+    "src/otx/core/data/transform_libs/mmcv.py",
+    "src/otx/core/data/transform_libs/mmdet.py",
+    "src/otx/core/data/transform_libs/mmpretrain.py",
+    "src/otx/core/data/transform_libs/mmseg.py",
+    "src/otx/core/exporter/mmdeploy.py",
+    "src/otx/core/model/utils/*",
 ]
 
 

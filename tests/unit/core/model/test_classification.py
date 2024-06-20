@@ -27,6 +27,12 @@ from otx.core.model.classification import (
 from otx.core.types.export import TaskLevelExportParameters
 from torch.optim import Optimizer
 
+SKIP_MMLAB_TEST = False
+try:
+    import mmpretrain  # noqa: F401
+except ImportError:
+    SKIP_MMLAB_TEST = True
+
 
 class TestOTXMulticlassClsModel:
     @pytest.fixture()
@@ -98,6 +104,7 @@ class TestOTXMulticlassClsModel:
         assert "target" in metric_input
 
 
+@pytest.mark.skipif(SKIP_MMLAB_TEST, reason="MMLab is not installed")
 class TestMMPretrainMulticlassClsModel:
     @pytest.fixture()
     def mock_optimizer(self):
@@ -292,6 +299,7 @@ class TestOTXMultilabelClsModel:
         assert "target" in metric_input
 
 
+@pytest.mark.skipif(SKIP_MMLAB_TEST, reason="MMLab is not installed")
 class TestMMPretrainMultilabelClsModel:
     @pytest.fixture()
     def mock_optimizer(self):
