@@ -175,8 +175,7 @@ def fxt_dry_run(request: pytest.FixtureRequest) -> str:
 @pytest.fixture(scope="session")
 def fxt_deterministic(request: pytest.FixtureRequest) -> str:
     """Option to turn on deterministic training."""
-    deterministic = request.config.getoption("--deterministic")
-    return deterministic
+    return request.config.getoption("--deterministic")
 
 
 @pytest.fixture(scope="session")

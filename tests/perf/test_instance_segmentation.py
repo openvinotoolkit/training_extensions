@@ -20,10 +20,7 @@ log = logging.getLogger(__name__)
 def fxt_deterministic(request: pytest.FixtureRequest) -> bool:
     """Override the deterministic setting for instance segmentation task."""
     deterministic = request.config.getoption("--deterministic")
-    if deterministic is None:
-        deterministic = False
-    else:
-        deterministic = deterministic.lower() == "true"
+    deterministic = False if deterministic is None else deterministic.lower() == "true"
     msg = f"deterministic={deterministic}"
     log.info(msg)
     return deterministic
