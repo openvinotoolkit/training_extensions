@@ -5,10 +5,10 @@
 
 from __future__ import annotations
 
+import logging
 from pathlib import Path
 
 import pytest
-import logging
 
 from .benchmark import Benchmark
 from .conftest import PerfTestBase
@@ -23,12 +23,12 @@ def fxt_deterministic(request: pytest.FixtureRequest) -> bool:
     if deterministic is None:
         deterministic = True
     else:
-        deterministic = deterministic.lower() == 'true'
+        deterministic = deterministic.lower() == "true"
     msg = f"deterministic={deterministic}"
     log.info(msg)
     return deterministic
 
- 
+
 class TestPerfObjectDetection(PerfTestBase):
     """Benchmark object detection."""
 

@@ -5,10 +5,10 @@
 
 from __future__ import annotations
 
+import logging
 from pathlib import Path
 
 import pytest
-import logging
 
 from .benchmark import Benchmark
 from .conftest import PerfTestBase
@@ -23,7 +23,7 @@ def fxt_deterministic(request: pytest.FixtureRequest) -> bool:
     if deterministic is None:
         deterministic = False
     else:
-        deterministic = deterministic.lower() == 'true'
+        deterministic = deterministic.lower() == "true"
     msg = f"deterministic={deterministic}"
     log.info(msg)
     return deterministic
@@ -38,17 +38,17 @@ class TestPerfAnomalyClassification(PerfTestBase):
     ]
 
     DATASET_TEST_CASES = [
-# TODO: Need to replace small datasets
-# Exclude small datasets from benchmark testing until it's ready to be replaced.
-#       Benchmark.Dataset(
-#           name=f"mvtec_bottle_small_{idx}",
-#           path=Path("anomaly/mvtec/bottle_small") / f"{idx}",
-#           group="small",
-#           num_repeat=5,
-#           extra_overrides={},
-#       )
-#       for idx in (1, 2, 3)
-#   ] + [
+        # TODO: Need to replace small datasets
+        # Exclude small datasets from benchmark testing until it's ready to be replaced.
+        #       Benchmark.Dataset(
+        #           name=f"mvtec_bottle_small_{idx}",
+        #           path=Path("anomaly/mvtec/bottle_small") / f"{idx}",
+        #           group="small",
+        #           num_repeat=5,
+        #           extra_overrides={},
+        #       )
+        #       for idx in (1, 2, 3)
+        #   ] + [
         Benchmark.Dataset(
             name="mvtec_wood_medium",
             path=Path("anomaly/mvtec/wood_medium"),
@@ -117,17 +117,17 @@ class TestPerfAnomalyDetection(PerfTestBase):
     ]
 
     DATASET_TEST_CASES = [
-# TODO: Need to replace small datasets
-# Exclude small datasets from benchmark testing until it's ready to be replaced.
-#       Benchmark.Dataset(
-#           name=f"mvtec_bottle_small_{idx}",
-#           path=Path("anomaly/mvtec/bottle_small") / f"{idx}",
-#           group="small",
-#           num_repeat=5,
-#           extra_overrides={},
-#       )
-#       for idx in (1, 2, 3)
-#   ] + [
+        # TODO: Need to replace small datasets
+        # Exclude small datasets from benchmark testing until it's ready to be replaced.
+        #       Benchmark.Dataset(
+        #           name=f"mvtec_bottle_small_{idx}",
+        #           path=Path("anomaly/mvtec/bottle_small") / f"{idx}",
+        #           group="small",
+        #           num_repeat=5,
+        #           extra_overrides={},
+        #       )
+        #       for idx in (1, 2, 3)
+        #   ] + [
         Benchmark.Dataset(
             name="mvtec_wood_medium",
             path=Path("anomaly/mvtec/wood_medium"),
@@ -196,17 +196,17 @@ class TestPerfAnomalySegmentation(PerfTestBase):
     ]
 
     DATASET_TEST_CASES = [
-# TODO: Need to replace small datasets
-# Exclude small datasets from benchmark testing until it's ready to be replaced.
-#       Benchmark.Dataset(
-#           name=f"mvtec_bottle_small_{idx}",
-#           path=Path("anomaly/mvtec/bottle_small") / f"{idx}",
-#           group="small",
-#           num_repeat=5,
-#           extra_overrides={},
-#       )
-#       for idx in (1, 2, 3)
-#   ] + [
+        # TODO: Need to replace small datasets
+        # Exclude small datasets from benchmark testing until it's ready to be replaced.
+        #       Benchmark.Dataset(
+        #           name=f"mvtec_bottle_small_{idx}",
+        #           path=Path("anomaly/mvtec/bottle_small") / f"{idx}",
+        #           group="small",
+        #           num_repeat=5,
+        #           extra_overrides={},
+        #       )
+        #       for idx in (1, 2, 3)
+        #   ] + [
         Benchmark.Dataset(
             name="mvtec_wood_medium",
             path=Path("anomaly/mvtec/wood_medium"),
