@@ -29,6 +29,7 @@ from otx.core.data.entity.utils import stack_batch
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.model.detection import ExplainableOTXDetModel
+from otx.core.types.export import TaskLevelExportParameters
 
 
 class RTMDet(ExplainableOTXDetModel):
@@ -185,6 +186,11 @@ class RTMDet(ExplainableOTXDetModel):
             },
             output_names=["bboxes", "labels", "feature_vector", "saliency_map"] if self.explain_mode else None,
         )
+
+    @property
+    def _export_parameters(self) -> TaskLevelExportParameters:
+        """Defines parameters required to export a particular model implementation."""
+        return super()._export_parameters.wrap(optimization_config={"preset": "mixed"})
 
     def forward_for_tracing(
         self,
