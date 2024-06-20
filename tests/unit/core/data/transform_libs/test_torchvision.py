@@ -129,11 +129,13 @@ class TestResize:
             (False, (128, 96), (2.0, 1.5)),
         ],
     )
+    @pytest.mark.parametrize("is_array", [True, False])
     def test_forward_only_image(
         self,
         resize: Resize,
         fxt_det_data_entity: tuple[tuple, DetDataEntity, DetBatchDataEntity],
         keep_ratio: bool,
+        is_array: bool,
         expected_shape: tuple,
         expected_scale_factor: tuple,
     ) -> None:
@@ -142,7 +144,10 @@ class TestResize:
         resize.transform_bbox = False
         resize.transform_mask = False
         entity = deepcopy(fxt_det_data_entity[0])
-        entity.image = entity.image.transpose(1, 2, 0)
+        if is_array:
+            entity.image = entity.image.transpose(1, 2, 0)
+        else:
+            entity.image = torch.as_tensor(entity.image)
 
         results = resize(entity)
 
@@ -204,14 +209,19 @@ class TestRandomFlip:
     def random_flip(self) -> RandomFlip:
         return RandomFlip(prob=1.0)
 
+    @pytest.mark.parametrize("is_array", [True, False])
     def test_forward(
         self,
         random_flip: RandomFlip,
         fxt_inst_seg_data_entity: tuple[tuple, InstanceSegDataEntity, InstanceSegBatchDataEntity],
+        is_array: bool,
     ) -> None:
         """Test forward."""
         entity = deepcopy(fxt_inst_seg_data_entity[0])
-        entity.image = entity.image.transpose(1, 2, 0)
+        if is_array:
+            entity.image = entity.image.transpose(1, 2, 0)
+        else:
+            entity.image = torch.as_tensor(entity.image)
 
         results = random_flip.forward(entity)
 
