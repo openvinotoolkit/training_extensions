@@ -326,7 +326,7 @@ class Benchmark:
     ) -> None:
         """Run otx test and update result csv file to align it's indices to the current task."""
         replace_map = {
-            "train": {"test_": "test/", "{pre}": f"{what2test}/"},
+            "train": {"test_": "test/", "{pre}": "test/"},
             "export": {"test": what2test, "{pre}": f"{what2test}/"},
             "optimize": {"test": what2test, "{pre}": f"{what2test}/"},
         }
