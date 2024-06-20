@@ -192,7 +192,23 @@ In addition to the examples above, please refer to the documentation for tutoria
 
 ### v2.0.0 (1Q24)
 
-TBD
+### New features
+
+- Enable New design to provide a more seamless API/CLI that delivers the value of OTX: [Product Design](https://openvinotoolkit.github.io/training_extensions/latest/guide/explanation/product_design.html)
+- Moved away from MMLab's libraries to provide a Lightning-based core and training pipeline
+- Use Lightning-based modules and trainers to deliver APIs/CLIs in a more user-friendly way
+- Support Intel devices for accelerating deep learning model training
+
+### Enhancements
+
+- Support more models for each task
+- Improve the API so user can configure efficient training with shorter code
+- Provide more customize settings through the CLI and API
+- Enhance the Auto-Configuration feature and made it available in the API
+
+### Bug fixes
+
+- Fixing some issues
 
 ### Release History
 
@@ -224,8 +240,8 @@ Please use [Issues](https://github.com/openvinotoolkit/training_extensions/issue
 
 ## Known limitations
 
-[misc](https://github.com/openvinotoolkit/training_extensions/tree/misc) branch contains training, evaluation, and export scripts for models based on TensorFlow and PyTorch.
-These scripts are not ready for production. They are exploratory and have not been validated.
+- [misc](https://github.com/openvinotoolkit/training_extensions/tree/misc) branch contains training, evaluation, and export scripts for models based on TensorFlow and PyTorch.
+  These scripts are not ready for production. They are exploratory and have not been validated.
 
 ---
 
