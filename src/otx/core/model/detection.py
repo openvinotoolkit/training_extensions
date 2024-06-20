@@ -178,6 +178,16 @@ class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity]):
 
         raise ValueError(key)
 
+    @property
+    def best_confidence_threshold(self) -> float:
+        """Best confidence threshold to filter outputs."""
+        if not hasattr(self, "_best_confidence_threshold"):
+            self._best_confidence_threshold = self.hparams.get("best_confidence_threshold", None)
+            if self._best_confidence_threshold is None:
+                log.warning("There is no predefined best_confidence_threshold, 0.5 will be used as default.")
+                self._best_confidence_threshold = 0.5
+        return self._best_confidence_threshold
+
 
 class ExplainableOTXDetModel(OTXDetectionModel):
     """OTX detection model which can attach a XAI (Explainable AI) branch."""
