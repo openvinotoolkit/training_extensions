@@ -84,13 +84,16 @@ To use this feature, add the following parameter:
 
         .. code-block:: python
 
-            Need to update!
+            from otx.engine import Engine
+
+            engine = Engine(data_root="<path_to_data_root>")
+            engine.train(adaptive_bs="Safe")
 
     .. tab-item:: CLI
 
         .. code-block:: bash
 
-            Need to update!
+            (otx) ...$ otx train ...  --adaptive_bs Safe
 
 2. Find the maximum executable batch size (`Full` mode)
 
@@ -107,13 +110,16 @@ To use this feature, add the following parameter:
 
         .. code-block:: python
 
-            Need to update!
+            from otx.engine import Engine
+
+            engine = Engine(data_root="<path_to_data_root>")
+            engine.train(adaptive_bs="Full")
 
     .. tab-item:: CLI
 
         .. code-block:: bash
 
-            Need to update!
+            (otx) ...$ otx train ...  --adaptive_bs Full
 
 
 .. Warning::
