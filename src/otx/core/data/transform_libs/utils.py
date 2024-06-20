@@ -666,7 +666,7 @@ def rescale_size(
     return new_size
 
 
-def flip_image(img: np.ndarray, direction: str = "horizontal") -> np.ndarray:
+def flip_image(img: np.ndarray | list[np.ndarray], direction: str = "horizontal") -> np.ndarray | list[np.ndarray]:
     """Flip an image horizontally or vertically.
 
     Args:
@@ -677,7 +677,13 @@ def flip_image(img: np.ndarray, direction: str = "horizontal") -> np.ndarray:
     Returns:
         ndarray: The flipped image.
     """
-    assert direction in ["horizontal", "vertical", "diagonal"]  # noqa: S101
+    if direction not in ["horizontal", "vertical", "diagonal"]:
+        msg = f"direction (={direction}) should be in one of ('horizontal', 'vertical', 'diagonal')."
+        raise ValueError(msg)
+
+    if isinstance(img, list):
+        return [flip_image(im, direction) for im in img]
+
     if direction == "horizontal":
         return np.flip(img, axis=1)
     elif direction == "vertical":  # noqa: RET505

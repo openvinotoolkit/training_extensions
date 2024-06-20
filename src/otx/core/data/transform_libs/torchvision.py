@@ -541,16 +541,10 @@ class Resize(tvt_v2.Transform, NumpytoTVTensorMixin):
                 scale = rescale_size(img_shape, scale)  # type: ignore[assignment]
 
             # for considering video case
+            # flipping `scale` is required because cv2.resize uses (W, H)
             if isinstance(img, list):
-                for idx, im in enumerate(img):
-                    # flipping `scale` is required because cv2.resize uses (W, H)
-                    img[idx] = cv2.resize(
-                        im,
-                        scale[::-1],
-                        interpolation=CV2_INTERP_CODES[self.interpolation],
-                    )
+                img = [cv2.resize(im, scale[::-1], interpolation=CV2_INTERP_CODES[self.interpolation]) for im in img]
             else:
-                # flipping `scale` is required because cv2.resize uses (W, H)
                 img = cv2.resize(img, scale[::-1], interpolation=CV2_INTERP_CODES[self.interpolation])
 
             inputs.image = img
@@ -1094,18 +1088,15 @@ class RandomFlip(tvt_v2.Transform, NumpytoTVTensorMixin):
 
         if (cur_dir := self._choose_direction()) is not None:
             # flip image
-            img: np.ndarray = to_np_image(inputs.image)
-            if isinstance(img, list):
-                for idx, im in enumerate(img):
-                    img[idx] = flip_image(im, direction=cur_dir)
-            else:
-                img = flip_image(img, direction=cur_dir)
+            img = to_np_image(inputs.image)
+            img = flip_image(img, direction=cur_dir)
             inputs.image = img
+            img_shape = get_image_shape(img)
 
             # flip bboxes
             if (bboxes := getattr(inputs, "bboxes", None)) is not None:
                 bboxes = flip_bboxes(bboxes, inputs.img_info.img_shape, direction=cur_dir)
-                inputs.bboxes = tv_tensors.BoundingBoxes(bboxes, format="XYXY", canvas_size=img.shape[:2])
+                inputs.bboxes = tv_tensors.BoundingBoxes(bboxes, format="XYXY", canvas_size=img_shape)
 
             # flip masks
             if (masks := getattr(inputs, "masks", None)) is not None and len(masks) > 0:
