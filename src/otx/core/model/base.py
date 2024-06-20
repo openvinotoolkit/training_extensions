@@ -349,7 +349,7 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
                 warnings.warn(msg, stacklevel=1)
                 continue
 
-            self.log(log_metric_name, value, sync_dist=True, prog_bar=True)
+            self.log(log_metric_name, value.to(self.device), sync_dist=True, prog_bar=True)
 
     def on_save_checkpoint(self, checkpoint: dict[str, Any]) -> None:
         """Callback on saving checkpoint."""
