@@ -22,6 +22,9 @@ class TestPerfSingleLabelClassification(PerfTestBase):
         Benchmark.Model(task="classification/multi_class_cls", name="mobilenet_v3_large", category="accuracy"),
         Benchmark.Model(task="classification/multi_class_cls", name="deit_tiny", category="other"),
         Benchmark.Model(task="classification/multi_class_cls", name="dino_v2", category="other"),
+        Benchmark.Model(task="classification/multi_class_cls", name="tv_efficientnet_b3", category="other"),
+        Benchmark.Model(task="classification/multi_class_cls", name="tv_efficientnet_v2_l", category="other"),
+        Benchmark.Model(task="classification/multi_class_cls", name="tv_mobilenet_v3_small", category="other"),
     ]
 
     DATASET_TEST_CASES = [
@@ -267,6 +270,11 @@ class TestPerfSemiSLMultiClass(PerfTestBase):
         Benchmark.Model(task="classification/multi_class_cls", name="efficientnet_b0_semisl", category="speed"),
         Benchmark.Model(task="classification/multi_class_cls", name="mobilenet_v3_large_semisl", category="speed"),
         Benchmark.Model(task="classification/multi_class_cls", name="efficientnet_v2_semisl", category="accuracy"),
+        Benchmark.Model(task="classification/multi_class_cls", name="deit_tiny_semisl", category="other"),
+        Benchmark.Model(task="classification/multi_class_cls", name="dino_v2_semisl", category="other"),
+        Benchmark.Model(task="classification/multi_class_cls", name="tv_efficientnet_b3_semisl", category="other"),
+        Benchmark.Model(task="classification/multi_class_cls", name="tv_efficientnet_v2_l_semisl", category="other"),
+        Benchmark.Model(task="classification/multi_class_cls", name="tv_mobilenet_v3_small_semisl", category="other"),
     ]
 
     DATASET_TEST_CASES = (
@@ -287,7 +295,7 @@ class TestPerfSemiSLMultiClass(PerfTestBase):
                 },
             )
             for idx in (0, 1, 2)
-            for num_label in (4, 10, 25, 50)
+            for num_label in (4, 10, 25)
         ]
         + [
             Benchmark.Dataset(
@@ -306,7 +314,7 @@ class TestPerfSemiSLMultiClass(PerfTestBase):
                 },
             )
             for idx in (0, 1, 2)
-            for num_label in (4, 10, 25, 50)
+            for num_label in (4, 10, 25)
         ]
         + [
             Benchmark.Dataset(
@@ -325,7 +333,7 @@ class TestPerfSemiSLMultiClass(PerfTestBase):
                 },
             )
             for idx in (0, 1, 2)
-            for num_label in (4, 10, 25, 50)
+            for num_label in (4, 10, 25)
         ]
     )
 
