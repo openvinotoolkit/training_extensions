@@ -8,9 +8,25 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
+import logging
 
 from .benchmark import Benchmark
 from .conftest import PerfTestBase
+
+log = logging.getLogger(__name__)
+
+
+@pytest.fixture(scope="session")
+def fxt_deterministic(request: pytest.FixtureRequest) -> bool:
+    """Override the deterministic setting for classification tasks."""
+    deterministic = request.config.getoption("--deterministic")
+    if deterministic is None:
+        deterministic = True
+    else:
+        deterministic = deterministic.lower() == 'true'
+    msg = f"deterministic={deterministic}"
+    log.info(msg)
+    return deterministic
 
 
 class TestPerfSingleLabelClassification(PerfTestBase):
@@ -267,7 +283,7 @@ class TestPerfSemiSLMultiClass(PerfTestBase):
     """Benchmark single-label classification for Semi-SL task."""
 
     MODEL_TEST_CASES = [  # noqa: RUF012
-        Benchmark.Model(task="classification/multi_class_cls", name="efficientnet_b0_semisl", category="speed"),
+        Benchmark.Model(task="classification/multi_class_cls", name="efficientnet_b0_semisl", category="balance"),
         Benchmark.Model(task="classification/multi_class_cls", name="mobilenet_v3_large_semisl", category="speed"),
         Benchmark.Model(task="classification/multi_class_cls", name="efficientnet_v2_semisl", category="accuracy"),
         Benchmark.Model(task="classification/multi_class_cls", name="deit_tiny_semisl", category="other"),
@@ -290,7 +306,6 @@ class TestPerfSemiSLMultiClass(PerfTestBase):
                         "data.config.train_subset.subset_name": "train_data",
                         "data.config.val_subset.subset_name": "val_data",
                         "data.config.test_subset.subset_name": "val_data",
-                        "deterministic": "True",
                     },
                 },
             )
@@ -309,7 +324,6 @@ class TestPerfSemiSLMultiClass(PerfTestBase):
                         "data.config.train_subset.subset_name": "train_data",
                         "data.config.val_subset.subset_name": "val_data",
                         "data.config.test_subset.subset_name": "val_data",
-                        "deterministic": "True",
                     },
                 },
             )
@@ -328,7 +342,6 @@ class TestPerfSemiSLMultiClass(PerfTestBase):
                         "data.config.train_subset.subset_name": "train_data",
                         "data.config.val_subset.subset_name": "val_data",
                         "data.config.test_subset.subset_name": "val_data",
-                        "deterministic": "True",
                     },
                 },
             )

@@ -8,9 +8,25 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
+import logging
 
 from .benchmark import Benchmark
 from .conftest import PerfTestBase
+
+log = logging.getLogger(__name__)
+
+
+@pytest.fixture(scope="session")
+def fxt_deterministic(request: pytest.FixtureRequest) -> bool:
+    """Override the deterministic setting for visual prompting task."""
+    deterministic = request.config.getoption("--deterministic")
+    if deterministic is None:
+        deterministic = False
+    else:
+        deterministic = deterministic.lower() == 'true'
+    msg = f"deterministic={deterministic}"
+    log.info(msg)
+    return deterministic
 
 
 class TestPerfVisualPrompting(PerfTestBase):
@@ -141,6 +157,13 @@ class TestPerfZeroShotVisualPrompting(PerfTestBase):
         ids=lambda dataset: dataset.name,
         indirect=True,
     )
+    @pytest.fixture(scope="session")
+    def fxt_deterministic_zero_shot_visual_prompting(fxt_deterministic: bool) -> bool:
+        """Override the deterministic setting for zero-shot visual prompting task."""
+        if fxt_deterministic is None:
+            return True
+        else:
+            return fxt_deterministic
     def test_perf(
         self,
         fxt_model: Benchmark.Model,

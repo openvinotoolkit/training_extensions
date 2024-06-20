@@ -8,9 +8,25 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
+import logging
 
 from .benchmark import Benchmark
 from .conftest import PerfTestBase
+
+log = logging.getLogger(__name__)
+
+
+@pytest.fixture(scope="session")
+def fxt_deterministic(request: pytest.FixtureRequest) -> bool:
+    """Override the deterministic setting for action classification task."""
+    deterministic = request.config.getoption("--deterministic")
+    if deterministic is None:
+        deterministic = True
+    else:
+        deterministic = deterministic.lower() == 'true'
+    msg = f"deterministic={deterministic}"
+    log.info(msg)
+    return deterministic
 
 
 class TestPerfActionClassification(PerfTestBase):
@@ -30,7 +46,6 @@ class TestPerfActionClassification(PerfTestBase):
             extra_overrides={
                 "train": {
                     "max_epochs": "10",
-                    "deterministic": "True",
                 },
             },
         ),
@@ -42,7 +57,6 @@ class TestPerfActionClassification(PerfTestBase):
             extra_overrides={
                 "train": {
                     "max_epochs": "10",
-                    "deterministic": "True",
                 },
             },
         ),
@@ -54,7 +68,6 @@ class TestPerfActionClassification(PerfTestBase):
             extra_overrides={
                 "train": {
                     "max_epochs": "3",
-                    "deterministic": "True",
                 },
             },
         ),

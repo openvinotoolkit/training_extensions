@@ -8,9 +8,25 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
+import logging
 
 from .benchmark import Benchmark
 from .conftest import PerfTestBase
+
+log = logging.getLogger(__name__)
+
+
+@pytest.fixture(scope="session")
+def fxt_deterministic(request: pytest.FixtureRequest) -> bool:
+    """Override the deterministic setting for instance segmentation task."""
+    deterministic = request.config.getoption("--deterministic")
+    if deterministic is None:
+        deterministic = False
+    else:
+        deterministic = deterministic.lower() == 'true'
+    msg = f"deterministic={deterministic}"
+    log.info(msg)
+    return deterministic
 
 
 class TestPerfInstanceSegmentation(PerfTestBase):
@@ -20,6 +36,7 @@ class TestPerfInstanceSegmentation(PerfTestBase):
         Benchmark.Model(task="instance_segmentation", name="maskrcnn_efficientnetb2b", category="speed"),
         Benchmark.Model(task="instance_segmentation", name="maskrcnn_r50", category="accuracy"),
         Benchmark.Model(task="instance_segmentation", name="maskrcnn_swint", category="other"),
+        Benchmark.Model(task="instance_segmentation", name="rtmdet_inst_tiny", category="other"),
     ]
 
     DATASET_TEST_CASES = [
@@ -30,7 +47,6 @@ class TestPerfInstanceSegmentation(PerfTestBase):
             num_repeat=5,
             extra_overrides={
                 "train": {
-                    "deterministic": "True",
                     "metric": "otx.core.metrics.fmeasure.FMeasureCallable",
                     "callback_monitor": "val/f1-score",
                     "model.scheduler.monitor": "val/f1-score",
@@ -49,7 +65,6 @@ class TestPerfInstanceSegmentation(PerfTestBase):
             num_repeat=5,
             extra_overrides={
                 "train": {
-                    "deterministic": "True",
                     "metric": "otx.core.metrics.fmeasure.FMeasureCallable",
                     "callback_monitor": "val/f1-score",
                     "model.scheduler.monitor": "val/f1-score",
@@ -66,7 +81,6 @@ class TestPerfInstanceSegmentation(PerfTestBase):
             num_repeat=5,
             extra_overrides={
                 "train": {
-                    "deterministic": "True",
                     "metric": "otx.core.metrics.fmeasure.FMeasureCallable",
                     "callback_monitor": "val/f1-score",
                     "model.scheduler.monitor": "val/f1-score",
@@ -133,6 +147,7 @@ class TestPerfTilingInstanceSegmentation(PerfTestBase):
         Benchmark.Model(task="instance_segmentation", name="maskrcnn_efficientnetb2b_tile", category="speed"),
         Benchmark.Model(task="instance_segmentation", name="maskrcnn_r50_tile", category="accuracy"),
         Benchmark.Model(task="instance_segmentation", name="maskrcnn_swint_tile", category="other"),
+        Benchmark.Model(task="instance_segmentation", name="rtmdet_inst_tiny_tile", category="other"),
     ]
 
     DATASET_TEST_CASES = [
@@ -143,7 +158,6 @@ class TestPerfTilingInstanceSegmentation(PerfTestBase):
             num_repeat=5,
             extra_overrides={
                 "train": {
-                    "deterministic": "True",
                     "metric": "otx.core.metrics.fmeasure.FMeasureCallable",
                     "callback_monitor": "val/f1-score",
                     "model.scheduler.monitor": "val/f1-score",
@@ -162,7 +176,6 @@ class TestPerfTilingInstanceSegmentation(PerfTestBase):
             num_repeat=5,
             extra_overrides={
                 "train": {
-                    "deterministic": "True",
                     "metric": "otx.core.metrics.fmeasure.FMeasureCallable",
                     "callback_monitor": "val/f1-score",
                     "model.scheduler.monitor": "val/f1-score",
