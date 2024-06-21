@@ -5,9 +5,9 @@
 
 from __future__ import annotations
 
-import torch
+from typing import TYPE_CHECKING
+
 from omegaconf import DictConfig
-from torchvision import tv_tensors
 
 from otx.algo.detection.backbones.cspnext import CSPNeXt
 from otx.algo.detection.heads.base_sampler import PseudoSampler
@@ -19,13 +19,13 @@ from otx.algo.detection.losses.gfocal_loss import QualityFocalLoss
 from otx.algo.detection.losses.iou_loss import GIoULoss
 from otx.algo.detection.necks.cspnext_pafpn import CSPNeXtPAFPN
 from otx.algo.detection.ssd import SingleStageDetector
-from otx.algo.utils.mmengine_utils import InstanceData
-from otx.core.data.entity.base import OTXBatchLossEntity
-from otx.core.data.entity.detection import DetBatchDataEntity, DetBatchPredEntity
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.model.detection import ExplainableOTXDetModel
 from otx.core.types.export import TaskLevelExportParameters
+
+if TYPE_CHECKING:
+    import torch
 
 
 class RTMDet(ExplainableOTXDetModel):
@@ -33,81 +33,6 @@ class RTMDet(ExplainableOTXDetModel):
 
     def _build_model(self, num_classes: int) -> SingleStageDetector:
         raise NotImplementedError
-
-    def _customize_outputs(
-        self,
-        outputs: list[InstanceData] | dict,
-        inputs: DetBatchDataEntity,
-    ) -> DetBatchPredEntity | OTXBatchLossEntity:
-        if self.training:
-            if not isinstance(outputs, dict):
-                raise TypeError(outputs)
-
-            losses = OTXBatchLossEntity()
-            for k, v in outputs.items():
-                if isinstance(v, list):
-                    losses[k] = sum(v)
-                elif isinstance(v, torch.Tensor):
-                    losses[k] = v
-                else:
-                    msg = f"Loss output should be list or torch.tensor but got {type(v)}"
-                    raise TypeError(msg)
-            return losses
-
-        scores: list[torch.Tensor] = []
-        bboxes: list[tv_tensors.BoundingBoxes] = []
-        labels: list[torch.LongTensor] = []
-        predictions = outputs["predictions"] if isinstance(outputs, dict) else outputs
-        for img_info, prediction in zip(inputs.imgs_info, predictions):
-            if not isinstance(prediction, InstanceData):
-                raise TypeError(prediction)
-
-            filtered_idx = torch.where(prediction.scores > self.best_confidence_threshold)  # type: ignore[attr-defined]
-            scores.append(prediction.scores[filtered_idx])  # type: ignore[attr-defined]
-            bboxes.append(
-                tv_tensors.BoundingBoxes(
-                    prediction.bboxes[filtered_idx],  # type: ignore[attr-defined]
-                    format="XYXY",
-                    canvas_size=img_info.ori_shape,
-                ),
-            )
-            labels.append(prediction.labels[filtered_idx])  # type: ignore[attr-defined]
-
-        if self.explain_mode:
-            if not isinstance(outputs, dict):
-                msg = f"Model output should be a dict, but got {type(outputs)}."
-                raise ValueError(msg)
-
-            if "feature_vector" not in outputs:
-                msg = "No feature vector in the model output."
-                raise ValueError(msg)
-
-            if "saliency_map" not in outputs:
-                msg = "No saliency maps in the model output."
-                raise ValueError(msg)
-
-            saliency_map = outputs["saliency_map"].detach().cpu().numpy()
-            feature_vector = outputs["feature_vector"].detach().cpu().numpy()
-
-            return DetBatchPredEntity(
-                batch_size=len(predictions),
-                images=inputs.images,
-                imgs_info=inputs.imgs_info,
-                scores=scores,
-                bboxes=bboxes,
-                labels=labels,
-                saliency_map=saliency_map,
-                feature_vector=feature_vector,
-            )
-
-        return DetBatchPredEntity(
-            batch_size=len(predictions),
-            images=inputs.images,
-            imgs_info=inputs.imgs_info,
-            scores=scores,
-            bboxes=bboxes,
-            labels=labels,
-        )
 
     def get_classification_layers(self, prefix: str = "") -> dict[str, dict[str, int]]:
         """Return classification layer names by comparing two different number of classes models.

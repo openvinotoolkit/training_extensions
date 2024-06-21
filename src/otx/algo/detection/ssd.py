@@ -9,11 +9,8 @@ import logging
 from typing import TYPE_CHECKING, Any
 
 import numpy as np
-import torch
 from datumaro.components.annotation import Bbox
 from omegaconf import DictConfig
-from torch import nn
-from torchvision import tv_tensors
 
 from otx.algo.detection.backbones.pytorchcv_backbones import _build_model_including_pytorchcv
 from otx.algo.detection.heads.anchor_generator import SSDAnchorGeneratorClustered
@@ -23,14 +20,14 @@ from otx.algo.detection.heads.ssd_head import SSDHead
 from otx.algo.modules.base_module import BaseModule
 from otx.algo.utils.mmengine_utils import InstanceData
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
-from otx.core.data.entity.base import OTXBatchLossEntity
-from otx.core.data.entity.detection import DetBatchDataEntity, DetBatchPredEntity
+from otx.core.data.entity.detection import DetBatchDataEntity
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.model.detection import ExplainableOTXDetModel
 
 if TYPE_CHECKING:
-    from torch import Tensor
+    import torch
+    from torch import Tensor, nn
 
     from otx.core.data.dataset.base import OTXDataset
 
@@ -359,81 +356,6 @@ class SSD(ExplainableOTXDetModel):
             test_cfg=test_cfg,
         )
         return SingleStageDetector(backbone, bbox_head, train_cfg=train_cfg, test_cfg=test_cfg)
-
-    def _customize_outputs(
-        self,
-        outputs: list[InstanceData] | dict,
-        inputs: DetBatchDataEntity,
-    ) -> DetBatchPredEntity | OTXBatchLossEntity:
-        if self.training:
-            if not isinstance(outputs, dict):
-                raise TypeError(outputs)
-
-            losses = OTXBatchLossEntity()
-            for k, v in outputs.items():
-                if isinstance(v, list):
-                    losses[k] = sum(v)
-                elif isinstance(v, torch.Tensor):
-                    losses[k] = v
-                else:
-                    msg = f"Loss output should be list or torch.tensor but got {type(v)}"
-                    raise TypeError(msg)
-            return losses
-
-        scores = []
-        bboxes = []
-        labels = []
-        predictions = outputs["predictions"] if isinstance(outputs, dict) else outputs
-        for img_info, prediction in zip(inputs.imgs_info, predictions):
-            if not isinstance(prediction, InstanceData):
-                raise TypeError(prediction)
-
-            filtered_idx = torch.where(prediction.scores > self.best_confidence_threshold)  # type: ignore[attr-defined]
-            scores.append(prediction.scores[filtered_idx])  # type: ignore[attr-defined]
-            bboxes.append(
-                tv_tensors.BoundingBoxes(
-                    prediction.bboxes[filtered_idx],  # type: ignore[attr-defined]
-                    format="XYXY",
-                    canvas_size=img_info.ori_shape,
-                ),
-            )
-            labels.append(prediction.labels[filtered_idx])  # type: ignore[attr-defined]
-
-        if self.explain_mode:
-            if not isinstance(outputs, dict):
-                msg = f"Model output should be a dict, but got {type(outputs)}."
-                raise ValueError(msg)
-
-            if "feature_vector" not in outputs:
-                msg = "No feature vector in the model output."
-                raise ValueError(msg)
-
-            if "saliency_map" not in outputs:
-                msg = "No saliency maps in the model output."
-                raise ValueError(msg)
-
-            saliency_map = outputs["saliency_map"].detach().cpu().numpy()
-            feature_vector = outputs["feature_vector"].detach().cpu().numpy()
-
-            return DetBatchPredEntity(
-                batch_size=len(outputs),
-                images=inputs.images,
-                imgs_info=inputs.imgs_info,
-                scores=scores,
-                bboxes=bboxes,
-                labels=labels,
-                saliency_map=saliency_map,
-                feature_vector=feature_vector,
-            )
-
-        return DetBatchPredEntity(
-            batch_size=len(outputs),
-            images=inputs.images,
-            imgs_info=inputs.imgs_info,
-            scores=scores,
-            bboxes=bboxes,
-            labels=labels,
-        )
 
     def setup(self, stage: str) -> None:
         """Callback for setup OTX SSD Model.
