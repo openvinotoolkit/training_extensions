@@ -34,6 +34,7 @@ class TestPerfInstanceSegmentation(PerfTestBase):
         Benchmark.Model(task="instance_segmentation", name="maskrcnn_r50", category="accuracy"),
         Benchmark.Model(task="instance_segmentation", name="maskrcnn_swint", category="other"),
         Benchmark.Model(task="instance_segmentation", name="rtmdet_inst_tiny", category="other"),
+        Benchmark.Model(task="instance_segmentation", name="maskrcnn_r50_tv", category="other"),
     ]
 
     DATASET_TEST_CASES = [
