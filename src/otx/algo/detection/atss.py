@@ -5,7 +5,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 import torch
 from omegaconf import DictConfig
@@ -27,7 +27,6 @@ from otx.algo.utils.mmengine_utils import InstanceData
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.detection import DetBatchDataEntity, DetBatchPredEntity
-from otx.core.data.entity.utils import stack_batch
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.model.detection import ExplainableOTXDetModel
@@ -42,16 +41,6 @@ class ATSS(ExplainableOTXDetModel):
 
     def _build_model(self, num_classes: int) -> SingleStageDetector:
         raise NotImplementedError
-
-    def _customize_inputs(self, entity: DetBatchDataEntity) -> dict[str, Any]:
-        if isinstance(entity.images, list):
-            entity.images, entity.imgs_info = stack_batch(entity.images, entity.imgs_info, pad_size_divisor=32)
-        inputs: dict[str, Any] = {}
-
-        inputs["entity"] = entity
-        inputs["mode"] = "loss" if self.training else "predict"
-
-        return inputs
 
     def _customize_outputs(
         self,

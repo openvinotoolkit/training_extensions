@@ -20,6 +20,7 @@ from otx.core.config.data import TileConfig
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.detection import DetBatchDataEntity, DetBatchPredEntity
 from otx.core.data.entity.tile import OTXTileBatchDataEntity
+from otx.core.data.entity.utils import stack_batch
 from otx.core.metrics import MetricCallable, MetricInput
 from otx.core.metrics.fmeasure import FMeasure, MeanAveragePrecisionFMeasureCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable, OTXModel, OVModel
@@ -50,6 +51,26 @@ class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity]):
         if self.load_from is not None:
             load_checkpoint(detector, self.load_from, map_location="cpu")
         return detector
+
+    def _customize_inputs(
+        self,
+        entity: DetBatchDataEntity,
+        pad_size_divisor: int = 32,
+        pad_value: int = 0,
+    ) -> dict[str, Any]:
+        if isinstance(entity.images, list):
+            entity.images, entity.imgs_info = stack_batch(
+                entity.images,
+                entity.imgs_info,
+                pad_size_divisor=pad_size_divisor,
+                pad_value=pad_value,
+            )
+        inputs: dict[str, Any] = {}
+
+        inputs["entity"] = entity
+        inputs["mode"] = "loss" if self.training else "predict"
+
+        return inputs
 
     def forward_tiles(self, inputs: OTXTileBatchDataEntity[DetBatchDataEntity]) -> DetBatchPredEntity:
         """Unpack detection tiles.
@@ -371,7 +392,8 @@ class MMDetCompatibleModel(ExplainableOTXDetModel):
             },
         ]
 
-    def _customize_inputs(self, entity: DetBatchDataEntity) -> dict[str, Any]:
+    def _customize_inputs(self, entity: DetBatchDataEntity) -> dict[str, Any]:  # type: ignore[override]
+        # TODO (sungchul): update input arguments
         from mmdet.structures import DetDataSample
         from mmengine.structures import InstanceData
 
