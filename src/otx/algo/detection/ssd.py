@@ -23,24 +23,17 @@ from otx.algo.detection.heads.ssd_head import SSDHead
 from otx.algo.modules.base_module import BaseModule
 from otx.algo.utils.mmengine_utils import InstanceData, load_checkpoint
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
-from otx.core.config.data import TileConfig
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.detection import DetBatchDataEntity, DetBatchPredEntity
 from otx.core.data.entity.utils import stack_batch
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter
-from otx.core.metrics.fmeasure import MeanAveragePrecisionFMeasureCallable
-from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
 from otx.core.model.detection import ExplainableOTXDetModel
-from otx.core.schedulers import LRSchedulerListCallable
-from otx.core.types.label import LabelInfoTypes
 
 if TYPE_CHECKING:
-    from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
     from torch import Tensor
 
     from otx.core.data.dataset.base import OTXDataset
-    from otx.core.metrics import MetricCallable
 
 
 logger = logging.getLogger()
@@ -302,29 +295,12 @@ class SingleStageDetector(BaseModule):
 class SSD(ExplainableOTXDetModel):
     """Detecion model class for SSD."""
 
-    def __init__(
-        self,
-        label_info: LabelInfoTypes,
-        optimizer: OptimizerCallable = DefaultOptimizerCallable,
-        scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
-        metric: MetricCallable = MeanAveragePrecisionFMeasureCallable,
-        torch_compile: bool = False,
-        tile_config: TileConfig = TileConfig(enable_tiler=False),
-    ) -> None:
-        self.load_from = (
-            "https://storage.openvinotoolkit.org/repositories/openvino_training_extensions"
-            "/models/object_detection/v2/mobilenet_v2-2s_ssd-992x736.pth"
-        )
-        super().__init__(
-            label_info=label_info,
-            optimizer=optimizer,
-            scheduler=scheduler,
-            metric=metric,
-            torch_compile=torch_compile,
-            tile_config=tile_config,
-        )
-        self.image_size = (1, 3, 864, 864)
-        self.tile_image_size = self.image_size
+    load_from = (
+        "https://storage.openvinotoolkit.org/repositories/openvino_training_extensions"
+        "/models/object_detection/v2/mobilenet_v2-2s_ssd-992x736.pth"
+    )
+    image_size = (1, 3, 864, 864)
+    tile_image_size = (1, 3, 864, 864)
 
     def _create_model(self) -> nn.Module:
         detector = self._build_model(num_classes=self.label_info.num_classes)

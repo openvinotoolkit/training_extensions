@@ -25,48 +25,20 @@ from otx.algo.detection.necks.fpn import FPN
 from otx.algo.detection.ssd import SingleStageDetector
 from otx.algo.utils.mmengine_utils import InstanceData, load_checkpoint
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
-from otx.core.config.data import TileConfig
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.detection import DetBatchDataEntity, DetBatchPredEntity
 from otx.core.data.entity.utils import stack_batch
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter
-from otx.core.metrics.fmeasure import MeanAveragePrecisionFMeasureCallable
-from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
 from otx.core.model.detection import ExplainableOTXDetModel
-from otx.core.schedulers import LRSchedulerListCallable
-from otx.core.types.label import LabelInfoTypes
 
 if TYPE_CHECKING:
-    from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
     from torch import Tensor, nn
     from typing_extensions import Self
-
-    from otx.core.metrics import MetricCallable
 
 
 class ATSS(ExplainableOTXDetModel):
     """ATSS Model."""
-
-    def __init__(
-        self,
-        label_info: LabelInfoTypes,
-        optimizer: OptimizerCallable = DefaultOptimizerCallable,
-        scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
-        metric: MetricCallable = MeanAveragePrecisionFMeasureCallable,
-        torch_compile: bool = False,
-        tile_config: TileConfig = TileConfig(enable_tiler=False),
-    ) -> None:
-        super().__init__(
-            label_info=label_info,
-            optimizer=optimizer,
-            scheduler=scheduler,
-            metric=metric,
-            torch_compile=torch_compile,
-            tile_config=tile_config,
-        )
-        self.image_size = (1, 3, 800, 992)
-        self.tile_image_size = self.image_size
 
     def _create_model(self) -> nn.Module:
         detector = self._build_model(num_classes=self.label_info.num_classes)
@@ -233,6 +205,8 @@ class MobileNetV2ATSS(ATSS):
         "https://storage.openvinotoolkit.org/repositories/"
         "openvino_training_extensions/models/object_detection/v2/mobilenet_v2-atss.pth"
     )
+    image_size = (1, 3, 800, 992)
+    tile_image_size = (1, 3, 800, 992)
 
     def _build_model(self, num_classes: int) -> SingleStageDetector:
         train_cfg = {
