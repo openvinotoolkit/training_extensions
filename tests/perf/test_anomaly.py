@@ -5,7 +5,6 @@
 
 from __future__ import annotations
 
-import logging
 from pathlib import Path
 from typing import ClassVar
 
@@ -13,18 +12,6 @@ import pytest
 
 from .benchmark import Benchmark
 from .conftest import PerfTestBase
-
-log = logging.getLogger(__name__)
-
-
-@pytest.fixture(scope="session")
-def fxt_deterministic(request: pytest.FixtureRequest) -> bool:
-    """Override the deterministic setting for anomaly tasks."""
-    deterministic = request.config.getoption("--deterministic")
-    deterministic = False if deterministic is None else deterministic.lower() == "true"
-    msg = f"deterministic={deterministic}"
-    log.info(msg)
-    return deterministic
 
 
 class TestPerfAnomalyClassification(PerfTestBase):
