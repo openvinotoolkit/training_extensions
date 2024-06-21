@@ -14,11 +14,15 @@ from typing import TYPE_CHECKING, Any, Literal
 
 import numpy as np
 import torch
+from model_api.models import Model
+from model_api.models.visual_prompting import (
+    Prompt,
+    SAMLearnableVisualPrompter,
+    SAMVisualPrompter,
+    VisualPromptingFeatures,
+)
 from torch import Tensor
 from torchvision import tv_tensors
-
-from model_api.models import Model
-from model_api.models.visual_prompting import SAMVisualPrompter, SAMLearnableVisualPrompter, Prompt, VisualPromptingFeatures
 
 from otx.core.data.entity.base import Points
 from otx.core.data.entity.visual_prompting import (
@@ -505,7 +509,11 @@ class OVVisualPromptingModel(
                 max_num_requests=self.num_requests,
                 plugin_config=plugin_config,
             )
-            ov_models[module] = Model.create_model(model_adapter, model_type=f"sam_{module}", configuration=self.model_api_configuration)
+            ov_models[module] = Model.create_model(
+                model_adapter,
+                model_type=f"sam_{module}",
+                configuration=self.model_api_configuration,
+            )
         return SAMVisualPrompter(ov_models["image_encoder"], ov_models["decoder"])
 
     def forward(
@@ -546,10 +554,21 @@ class OVVisualPromptingModel(
             images.append(processed_image)
 
             all_labels = {k: v.cpu().numpy() for k, v in label.items()}
+            boxes_prompts = []
+            points_prompts = []
+
+            if bbox is not None:
+                for i, box in enumerate(bbox.cpu().numpy()):
+                    boxes_prompts.append(Prompt(box, all_labels["bboxes"][i]))
+
+            if point is not None:
+                for i, p in enumerate(point.cpu().numpy()):
+                    points_prompts.append(Prompt(p, all_labels["points"][i]))
+
             processed_prompt = {
-                    "boxes": Prompt(bbox.cpu().numpy(), all_labels["bboxes"]) if bbox is not None else bbox,
-                    "points": Prompt(point.cpu().numpy(), all_labels["points"]) if point is not None else point,
-                }
+                "boxes": boxes_prompts if boxes_prompts else None,
+                "points": points_prompts if points_prompts else None,
+            }
 
             prompts.append(processed_prompt)
 
@@ -564,10 +583,13 @@ class OVVisualPromptingModel(
         masks: list[tv_tensors.Mask] = []
         scores: list[torch.Tensor] = []
         for image_output in outputs:
-            for hard_prediction in image_output.hard_predictions:
-                masks.append(torch.as_tensor(hard_prediction, device=self.device))
-            for score in image_output.scores:
-                scores.append(torch.as_tensor(score, device=self.device))
+            masks.extend(
+                [
+                    torch.as_tensor(hard_prediction, device=self.device)
+                    for hard_prediction in image_output.hard_predictions
+                ],
+            )
+            scores.extend([torch.as_tensor(score, device=self.device) for score in image_output.scores])
 
         return VisualPromptingBatchPredEntity(
             batch_size=len(outputs),
@@ -588,8 +610,9 @@ class OVVisualPromptingModel(
         ptq_config: dict[str, Any] | None = None,
     ) -> dict[str, Path]:
         """Runs NNCF quantization."""
-        import nncf
         import openvino
+
+        import nncf
 
         def check_if_quantized(model: openvino.Model) -> bool:
             """Checks if OpenVINO model is already quantized."""
@@ -600,7 +623,6 @@ class OVVisualPromptingModel(
             data_batch: VisualPromptingBatchDataEntity,
             module: Literal["image_encoder", "decoder"],
         ) -> np.ndarray | dict[str, Any]:
-
             images: list[np.ndarray] = []
             prompts: list[list[dict[str, Any]]] = []
 
@@ -613,11 +635,11 @@ class OVVisualPromptingModel(
             ):
                 # preprocess image encoder inputs
                 numpy_image = image.cpu().numpy().transpose(1, 2, 0)
-                processed_image, meta = self.model.encoder_model.preprocess(numpy_image)
+                processed_image, meta = self.model.encoder.preprocess(numpy_image)
                 images.append(processed_image)
 
                 # preprocess decoder inputs
-                processed_prompts = self.model.decoder_model.preprocess(
+                processed_prompts = self.model.decoder.preprocess(
                     {
                         "bboxes": bbox.cpu().numpy() if bbox is not None else bbox,
                         "points": point.cpu().numpy() if point is not None else point,
@@ -631,14 +653,14 @@ class OVVisualPromptingModel(
 
             if module == "image_encoder":
                 # resize
-                resized_image = self.model.encoder_model.resize(
+                resized_image = self.model.encoder.resize(
                     image[0],
-                    (self.model.encoder_model.w, self.model.encoder_model.h),
+                    (self.model.encoder.w, self.model.encoder.h),
                 )
 
                 # pad image if necessary because `fit_to_window` resize for python in modelapi doesn't support pad
-                pad_w = max(0, self.model.encoder_model.w - resized_image.shape[1])
-                pad_h = max(0, self.model.encoder_model.h - resized_image.shape[0])
+                pad_w = max(0, self.model.encoder.w - resized_image.shape[1])
+                pad_h = max(0, self.model.encoder.h - resized_image.shape[0])
                 resized_image = np.pad(
                     resized_image,
                     ((0, pad_h), (0, pad_w), (0, 0)),
@@ -647,13 +669,13 @@ class OVVisualPromptingModel(
                 )
 
                 # normalization
-                resized_image = self.model.encoder_model.input_transform(resized_image)
+                resized_image = self.model.encoder.input_transform(resized_image)
 
                 # change layout from HWC to NCHW
-                return self.model.encoder_model._change_layout(resized_image)  # noqa: SLF001
+                return self.model.encoder._change_layout(resized_image)  # noqa: SLF001
 
             # obtain image embeddings from image encoder
-            image_embeddings = self.model.encoder_model.infer_sync(image)
+            image_embeddings = self.model.encoder.infer_sync(image)
             # use only the first prompt
             prompt_for_optim = next(iter(prompts[0].values()))[0] if isinstance(prompts[0], dict) else prompts[0][0]  # type: ignore[attr-defined]
             prompt_for_optim.pop("label")
@@ -792,6 +814,9 @@ class OVZeroShotVisualPromptingModel(
         self.point_labels_box = np.array([[2, 3]], dtype=np.float32)
         self.has_mask_inputs = [np.array([[0.0]]), np.array([[1.0]])]
 
+        self.reference_feats: np.ndarray | None = None
+        self.used_indices: np.ndarray | None = None
+
         self.initialize_reference_info()
 
     def _create_model(self) -> SAMLearnableVisualPrompter:
@@ -823,7 +848,11 @@ class OVZeroShotVisualPromptingModel(
                 max_num_requests=self.num_requests,
                 plugin_config=plugin_config,
             )
-            ov_models[module] = Model.create_model(model_adapter, model_type=f"sam_{module}", configuration=self.model_api_configuration)
+            ov_models[module] = Model.create_model(
+                model_adapter,
+                model_type=f"sam_{module}",
+                configuration=self.model_api_configuration,
+            )
 
         return SAMLearnableVisualPrompter(ov_models["image_encoder"], ov_models["decoder"])
 
@@ -835,7 +864,7 @@ class OVZeroShotVisualPromptingModel(
         """`Learn` for reference features."""
         images, processed_prompts = self._customize_inputs(inputs)
         reference_masks: list[np.ndarray] = []
-        reference_features = None
+        reference_features = VisualPromptingFeatures(np.array(0), np.array(0))
 
         for image, prompts in zip(images, processed_prompts):
             reference_features, masks = self.model.learn(image, reset_features=reset_feat, **prompts)
@@ -853,12 +882,12 @@ class OVZeroShotVisualPromptingModel(
         used_indices: np.ndarray,
     ) -> list[list[defaultdict[int, list]]]:
         """`Infer` for target predictions."""
-        images,  _ = self._customize_inputs(inputs)
+        images, _ = self._customize_inputs(inputs)
 
         total_results: list[list[defaultdict[int, list]]] = []
         for image in images:
             result = self.model(image, VisualPromptingFeatures(reference_feats, used_indices))
-            total_results.append(result)
+            total_results.append(result.data)
 
         return total_results
 
@@ -905,23 +934,20 @@ class OVZeroShotVisualPromptingModel(
             images.append(numpy_image)
 
             if self.training:
-                points: list[np.ndarray] = []
-                bboxes: list[np.ndarray] = []
-                _labels: dict[str, list[int]] = defaultdict(list)
+                points: list[Prompt] = []
+                bboxes: list[Prompt] = []
                 for prompt, label in zip(prompts, labels):  # type: ignore[arg-type]
                     if isinstance(prompt, tv_tensors.BoundingBoxes):
-                        bboxes.append(prompt.cpu().numpy())
-                        _labels["bboxes"].append(label.cpu().numpy())
+                        bboxes.append(Prompt(prompt.cpu().numpy(), label.cpu().numpy()))
                     elif isinstance(prompt, Points):
-                        points.append(prompt.cpu().numpy())
-                        _labels["points"].append(label.cpu().numpy())
+                        points.append(Prompt(prompt.cpu().numpy(), label.cpu().numpy()))
 
                 # preprocess decoder inputs
                 processed_prompts.append(
                     {
-                        "boxes": Prompt(bboxes, _labels["bboxes"]),
-                        "points": Prompt(points, _labels["points"]),
-                    }
+                        "boxes": bboxes,
+                        "points": points,
+                    },
                 )
 
         return images, processed_prompts
@@ -940,26 +966,27 @@ class OVZeroShotVisualPromptingModel(
         scores: list[torch.Tensor] = []
         labels: list[torch.LongTensor] = []
         for output in outputs:
-            predicted_masks, used_points = output
-            for label, predicted_mask in predicted_masks.items():
-                if len(predicted_mask) == 0:
+            for label, predicted_mask in output.items():
+                if len(predicted_mask.mask) == 0:
                     continue
                 masks.append(
                     tv_tensors.Mask(
-                        torch.stack([torch.as_tensor(m) for m in predicted_mask], dim=0),
+                        torch.stack([torch.as_tensor(m) for m in predicted_mask.mask], dim=0),
                         dtype=torch.float32,
                         device=self.device,
                     ),
                 )
                 prompts.append(
                     Points(
-                        torch.stack([torch.as_tensor(p[:2]) for p in used_points[label]], dim=0),
+                        torch.stack([torch.as_tensor(p[:2]) for p in predicted_mask.points], dim=0),
                         canvas_size=inputs.imgs_info[0].ori_shape,
                         dtype=torch.float32,
                         device=self.device,
                     ),
                 )
-                scores.append(torch.stack([torch.as_tensor(p[2]) for p in used_points[label]], dim=0).to(self.device))
+                scores.append(
+                    torch.stack([torch.as_tensor(p[2]) for p in predicted_mask.points], dim=0).to(self.device),
+                )
                 labels.append(
                     torch.cat([torch.LongTensor([label]) for _ in range(len(scores[-1]))], dim=0).to(self.device),
                 )
@@ -982,8 +1009,9 @@ class OVZeroShotVisualPromptingModel(
         ptq_config: dict[str, Any] | None = None,
     ) -> dict[str, Path]:
         """Runs NNCF quantization."""
-        import nncf
         import openvino
+
+        import nncf
 
         def check_if_quantized(model: openvino.Model) -> bool:
             """Checks if OpenVINO model is already quantized."""
@@ -994,23 +1022,23 @@ class OVZeroShotVisualPromptingModel(
             data_batch: ZeroShotVisualPromptingBatchDataEntity,
             module: Literal["image_encoder", "decoder"],
         ) -> np.ndarray | dict[str, Any]:
-            numpy_image = data_batch.images[0].cpu().numpy().transpose(1, 2, 0) # use only the first image
-            image, meta = self.model.encoder_model.preprocess(numpy_image)
+            numpy_image = data_batch.images[0].cpu().numpy().transpose(1, 2, 0)  # use only the first image
+            image, meta = self.model.encoder.preprocess(numpy_image)
             if module == "image_encoder":
                 # resize
-                resized_image = self.model.encoder_model.resize(
+                resized_image = self.model.encoder.resize(
                     image["images"][0],
-                    (self.model.encoder_model.w, self.model.encoder_model.h),
+                    (self.model.encoder.w, self.model.encoder.h),
                 )
 
                 # normalization
-                resized_image = self.model.encoder_model.input_transform(resized_image)
+                resized_image = self.model.encoder.input_transform(resized_image)
 
                 # change layout from HWC to NCHW
-                return self.model.encoder_model._change_layout(resized_image)  # noqa: SLF001
+                return self.model.encoder._change_layout(resized_image)  # noqa: SLF001
 
             # obtain image embeddings from image encoder
-            image_embeddings = self.model.encoder_model.infer_sync(image)
+            image_embeddings = self.model.encoder.infer_sync(image)
 
             points: list[np.ndarray] = []
             bboxes: list[np.ndarray] = []
@@ -1026,17 +1054,21 @@ class OVZeroShotVisualPromptingModel(
                     _labels["points"].append(label.cpu().numpy())
 
             # preprocess decoder inputs
-            processed_prompts = self.model.decoder_model.preprocess(
-                    {
-                        "bboxes": bboxes,
-                        "points": points,
-                        "labels": _labels,
-                        "orig_size": meta["original_shape"][:2],
-                    },
-                )
+            processed_prompts = self.model.decoder.preprocess(
+                {
+                    "bboxes": bboxes,
+                    "points": points,
+                    "labels": _labels,
+                    "orig_size": meta["original_shape"][:2],
+                },
+            )
 
             processed_prompts_w_labels = self._gather_prompts_with_labels(processed_prompts)
-            prompt_for_optim = next(iter(processed_prompts_w_labels.values()))[0] if isinstance(processed_prompts_w_labels, dict) else prompts[0][0]  # type: ignore[attr-defined]
+            prompt_for_optim = (
+                next(iter(processed_prompts_w_labels.values()))[0]
+                if isinstance(processed_prompts_w_labels, dict)
+                else processed_prompts_w_labels[0][0]
+            )  # type: ignore[attr-defined]
             prompt_for_optim.pop("label")
             prompt_for_optim.update(**image_embeddings)
             return prompt_for_optim
@@ -1080,22 +1112,20 @@ class OVZeroShotVisualPromptingModel(
         image_prompts: list[dict[str, np.ndarray]],
     ) -> dict[int, list[dict[str, np.ndarray]]]:
         """Gather prompts according to labels."""
-
         processed_prompts: defaultdict[int, list[dict[str, np.ndarray]]] = defaultdict(
-            list
+            list,
         )
         for prompt in image_prompts:
             processed_prompts[int(prompt["label"])].append(prompt)
 
         return dict(sorted(processed_prompts.items(), key=lambda x: x))
 
-
     ######################################
     #               Learn                #
     ######################################
     def initialize_reference_info(self) -> None:
         """Initialize reference information."""
-        self.reference_feats = np.zeros((0, 1, self.model.decoder_model.embed_dim), dtype=np.float32)
+        self.reference_feats = np.zeros((0, 1, self.model.decoder.embed_dim), dtype=np.float32)
         self.used_indices = np.array([], dtype=np.int64)
 
     def save_reference_info(self, default_root_dir: Path | str) -> None:
@@ -1144,7 +1174,7 @@ class OVZeroShotVisualPromptingModel(
             reference_info: dict[str, np.ndarray] = pickle.load(path.open("rb"))  # noqa: S301   # nosec: B301
             self.reference_feats = reference_info.get(
                 "reference_feats",
-                np.zeros((0, 1, self.model.decoder_model.embed_dim), dtype=np.float32),
+                np.zeros((0, 1, self.model.decoder.embed_dim), dtype=np.float32),
             )
             self.used_indices = reference_info.get("used_indices", np.array([], dtype=np.int64))
             log.info(f"reference info saved at {path} was successfully loaded.")

@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import logging as log
 import tempfile
+from functools import partial
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Literal
 
@@ -61,7 +62,7 @@ class OTXVisualPromptingModelExporter(OTXNativeModelExporter):
                 log.warning(msg)
             fn = self.to_openvino
         elif export_format == OTXExportFormatType.ONNX:
-            fn = self.to_onnx
+            fn = partial(self.to_onnx, embed_metadata=True)
         else:
             msg = f"Unsupported export format: {export_format}"
             raise ValueError(msg)
