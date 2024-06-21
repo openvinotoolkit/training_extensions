@@ -15,6 +15,7 @@ from model_api.tilers import DetectionTiler
 from torchmetrics import Metric, MetricCollection
 from torchvision import tv_tensors
 
+from otx.algo.utils.mmengine_utils import load_checkpoint
 from otx.core.config.data import TileConfig
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.detection import DetBatchDataEntity, DetBatchPredEntity
@@ -41,6 +42,14 @@ if TYPE_CHECKING:
 
 class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity]):
     """Base class for the detection models used in OTX."""
+
+    def _create_model(self) -> nn.Module:
+        detector = self._build_model(num_classes=self.label_info.num_classes)
+        detector.init_weights()
+        self.classification_layers = self.get_classification_layers(prefix="model.")
+        if self.load_from is not None:
+            load_checkpoint(detector, self.load_from, map_location="cpu")
+        return detector
 
     def forward_tiles(self, inputs: OTXTileBatchDataEntity[DetBatchDataEntity]) -> DetBatchPredEntity:
         """Unpack detection tiles.

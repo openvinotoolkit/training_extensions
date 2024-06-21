@@ -23,7 +23,7 @@ from otx.algo.detection.losses.cross_focal_loss import CrossSigmoidFocalLoss
 from otx.algo.detection.losses.iou_loss import GIoULoss
 from otx.algo.detection.necks.fpn import FPN
 from otx.algo.detection.ssd import SingleStageDetector
-from otx.algo.utils.mmengine_utils import InstanceData, load_checkpoint
+from otx.algo.utils.mmengine_utils import InstanceData
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.detection import DetBatchDataEntity, DetBatchPredEntity
@@ -33,20 +33,12 @@ from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.model.detection import ExplainableOTXDetModel
 
 if TYPE_CHECKING:
-    from torch import Tensor, nn
+    from torch import Tensor
     from typing_extensions import Self
 
 
 class ATSS(ExplainableOTXDetModel):
     """ATSS Model."""
-
-    def _create_model(self) -> nn.Module:
-        detector = self._build_model(num_classes=self.label_info.num_classes)
-        detector.init_weights()
-        self.classification_layers = self.get_classification_layers(prefix="model.")
-        if self.load_from is not None:
-            load_checkpoint(detector, self.load_from, map_location="cpu")
-        return detector
 
     def _build_model(self, num_classes: int) -> SingleStageDetector:
         raise NotImplementedError

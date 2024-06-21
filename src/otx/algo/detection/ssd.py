@@ -21,7 +21,7 @@ from otx.algo.detection.heads.delta_xywh_bbox_coder import DeltaXYWHBBoxCoder
 from otx.algo.detection.heads.max_iou_assigner import MaxIoUAssigner
 from otx.algo.detection.heads.ssd_head import SSDHead
 from otx.algo.modules.base_module import BaseModule
-from otx.algo.utils.mmengine_utils import InstanceData, load_checkpoint
+from otx.algo.utils.mmengine_utils import InstanceData
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.detection import DetBatchDataEntity, DetBatchPredEntity
@@ -301,14 +301,6 @@ class SSD(ExplainableOTXDetModel):
     )
     image_size = (1, 3, 864, 864)
     tile_image_size = (1, 3, 864, 864)
-
-    def _create_model(self) -> nn.Module:
-        detector = self._build_model(num_classes=self.label_info.num_classes)
-        detector.init_weights()
-        self.classification_layers = self.get_classification_layers(prefix="model.")
-        if self.load_from is not None:
-            load_checkpoint(detector, self.load_from, map_location="cpu")
-        return detector
 
     def _build_model(self, num_classes: int) -> SingleStageDetector:
         train_cfg = {

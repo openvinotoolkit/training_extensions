@@ -22,7 +22,7 @@ from otx.algo.detection.losses.gfocal_loss import QualityFocalLoss
 from otx.algo.detection.losses.iou_loss import GIoULoss
 from otx.algo.detection.necks.cspnext_pafpn import CSPNeXtPAFPN
 from otx.algo.detection.ssd import SingleStageDetector
-from otx.algo.utils.mmengine_utils import InstanceData, load_checkpoint
+from otx.algo.utils.mmengine_utils import InstanceData
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.detection import DetBatchDataEntity, DetBatchPredEntity
 from otx.core.data.entity.utils import stack_batch
@@ -34,14 +34,6 @@ from otx.core.types.export import TaskLevelExportParameters
 
 class RTMDet(ExplainableOTXDetModel):
     """OTX Detection model class for RTMDet."""
-
-    def _create_model(self) -> nn.Module:
-        detector = self._build_model(num_classes=self.label_info.num_classes)
-        detector.init_weights()
-        self.classification_layers = self.get_classification_layers(prefix="model.")
-        if self.load_from is not None:
-            load_checkpoint(detector, self.load_from, map_location="cpu")
-        return detector
 
     def _build_model(self, num_classes: int) -> nn.Module:
         raise NotImplementedError
