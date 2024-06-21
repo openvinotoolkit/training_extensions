@@ -29,6 +29,7 @@ from otx.core.data.entity.utils import stack_batch
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.model.detection import ExplainableOTXDetModel
+from otx.core.types.export import TaskLevelExportParameters
 
 
 class RTMDet(ExplainableOTXDetModel):
@@ -82,15 +83,17 @@ class RTMDet(ExplainableOTXDetModel):
         for img_info, prediction in zip(inputs.imgs_info, predictions):
             if not isinstance(prediction, InstanceData):
                 raise TypeError(prediction)
-            scores.append(prediction.scores)  # type: ignore[attr-defined]
+
+            filtered_idx = torch.where(prediction.scores > self.best_confidence_threshold)  # type: ignore[attr-defined]
+            scores.append(prediction.scores[filtered_idx])  # type: ignore[attr-defined]
             bboxes.append(
                 tv_tensors.BoundingBoxes(
-                    prediction.bboxes,  # type: ignore[attr-defined]
+                    prediction.bboxes[filtered_idx],  # type: ignore[attr-defined]
                     format="XYXY",
                     canvas_size=img_info.ori_shape,
                 ),
             )
-            labels.append(prediction.labels)  # type: ignore[attr-defined]
+            labels.append(prediction.labels[filtered_idx])  # type: ignore[attr-defined]
 
         if self.explain_mode:
             if not isinstance(outputs, dict):
@@ -183,6 +186,11 @@ class RTMDet(ExplainableOTXDetModel):
             },
             output_names=["bboxes", "labels", "feature_vector", "saliency_map"] if self.explain_mode else None,
         )
+
+    @property
+    def _export_parameters(self) -> TaskLevelExportParameters:
+        """Defines parameters required to export a particular model implementation."""
+        return super()._export_parameters.wrap(optimization_config={"preset": "mixed"})
 
     def forward_for_tracing(
         self,

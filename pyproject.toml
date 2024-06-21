@@ -4,7 +4,6 @@
 requires = [
     "setuptools>=61",
     "wheel",
-    "Cython~=0.29.32",
 ]
 build-backend = "setuptools.build_meta"
 
@@ -30,15 +29,17 @@ dependencies = [
     "datumaro==1.6.1",
     "omegaconf==2.3.0",
     "rich==13.7.1",
-    "jsonargparse==4.27.7",
+    "jsonargparse==4.30.0",
     "psutil==5.9.8", # Mem cache needs system checks
     "ftfy==6.2.0",
     "regex==2024.5.10",
     "importlib_resources==6.4.0",
     "docstring_parser==0.16", # CLI help-formatter
-    "rich_argparse==1.4.0", # CLI help-formatter
+    "rich_argparse==1.5.2", # CLI help-formatter
     "einops==0.7.0",
     "decord==0.6.0",
+    # TODO(ashwinvaidya17): https://github.com/openvinotoolkit/anomalib/issues/2126
+    "setuptools<70",
 ]
 
 [project.optional-dependencies]
@@ -74,7 +75,7 @@ xpu = [
     "torchvision==0.16.0.post2",
     "intel-extension-for-pytorch==2.1.30+xpu",
     "oneccl_bind_pt==2.1.300+xpu",
-    "lightning==2.1.2",
+    "lightning==2.2",
     "pytorchcv",
     "timm",
     "openvino==2024.0",
@@ -83,8 +84,9 @@ xpu = [
     "onnx==1.16.0",
     "onnxconverter-common==1.14.0",
     "nncf==2.9.0",
-    "anomalib[core]==1.0.1",
+    "anomalib[core]==1.1.0",
 ]
+
 base = [
     "torch==2.1.1",
     "lightning==2.2",
@@ -126,11 +128,6 @@ include-package-data = true
 where = ["src"]
 include = ["otx*"]
 
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-# CI CONFIGURATION.                                                        #
-[tool.cibuildwheel]
-build = "cp39-manylinux_x86_64 cp310-manylinux_x86_64 cp311-manylinux_x86_64"
-
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # COVERAGE CONFIGURATION.                                                     #
@@ -153,7 +150,17 @@ omit = [
     "**/mmconfigs/*",
     "**/mmdeploy/*",
     "**/exportable_code/*",
+
+    # Ignore mm related code for now
+    "src/otx/core/data/transform_libs/mmaction.py",
+    "src/otx/core/data/transform_libs/mmcv.py",
+    "src/otx/core/data/transform_libs/mmdet.py",
+    "src/otx/core/data/transform_libs/mmpretrain.py",
+    "src/otx/core/data/transform_libs/mmseg.py",
+    "src/otx/core/exporter/mmdeploy.py",
+    "src/otx/core/model/utils/*",
 ]
+
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # MYPY CONFIGURATION.                                                         #
@@ -161,7 +168,6 @@ omit = [
 python_version = "3.10"
 ignore_missing_imports = true
 show_error_codes = true
-
 
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #

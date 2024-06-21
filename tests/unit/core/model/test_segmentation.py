@@ -10,7 +10,17 @@ import torch
 from otx.core.model.segmentation import MMSegCompatibleModel
 from otx.core.types.label import SegLabelInfo
 
+SKIP_MMLAB_TEST = False
+try:
+    from mmengine.structures import PixelData
+    from mmseg.structures import SegDataSample
+except ImportError:
+    SKIP_MMLAB_TEST = True
 
+
+# TODO @kprokofi: CVS-144403
+# Even without mm, otx.core.model.segmentation should be validated.
+@pytest.mark.skipif(SKIP_MMLAB_TEST, reason="CVS-144403")
 class TestOTXSegmentationModel:
     @pytest.fixture()
     def model(self, mocker) -> MMSegCompatibleModel:
@@ -30,8 +40,6 @@ class TestOTXSegmentationModel:
         assert isinstance(output_data, mocker.MagicMock)
 
     def test_customize_outputs(self, model, fxt_seg_data_entity) -> None:
-        from mmengine.structures import PixelData
-        from mmseg.structures import SegDataSample
         from otx.core.data.entity.base import OTXBatchLossEntity
         from otx.core.data.entity.segmentation import SegBatchPredEntity
 

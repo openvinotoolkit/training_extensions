@@ -28,6 +28,7 @@ from otx.core.data.module import OTXDataModule
 from otx.core.model.detection import OTXDetectionModel
 from otx.core.model.instance_segmentation import OTXInstanceSegModel
 from otx.core.types.task import OTXTaskType
+from otx.core.types.transformer_libs import TransformLibType
 from torchvision import tv_tensors
 
 from tests.test_helpers import generate_random_bboxes
@@ -39,12 +40,12 @@ class TestOTXTiling:
         return create_autospec(OTXDetectionModel)
 
     @pytest.fixture()
-    def fxt_mmcv_det_transform_config(self) -> list[DictConfig]:
-        mmdet_base = OmegaConf.load("src/otx/recipe/_base_/data/mmdet_base.yaml")
+    def fxt_tv_det_transform_config(self) -> list[DictConfig]:
+        mmdet_base = OmegaConf.load("src/otx/recipe/_base_/data/torchvision_base.yaml")
         return mmdet_base.config.train_subset.transforms
 
     @pytest.fixture()
-    def fxt_det_data_config(self, fxt_mmcv_det_transform_config) -> OTXDataModule:
+    def fxt_det_data_config(self, fxt_tv_det_transform_config) -> OTXDataModule:
         data_root = Path(__file__).parent.parent.parent.parent / "assets" / "car_tree_bug"
 
         batch_size = 8
@@ -56,34 +57,30 @@ class TestOTXTiling:
                 subset_name="train",
                 batch_size=batch_size,
                 num_workers=num_workers,
-                transform_lib_type="MMDET",
-                transforms=fxt_mmcv_det_transform_config,
+                transform_lib_type=TransformLibType.TORCHVISION,
+                transforms=fxt_tv_det_transform_config,
             ),
             val_subset=SubsetConfig(
                 subset_name="val",
                 batch_size=batch_size,
                 num_workers=num_workers,
-                transform_lib_type="MMDET",
-                transforms=fxt_mmcv_det_transform_config,
+                transform_lib_type=TransformLibType.TORCHVISION,
+                transforms=fxt_tv_det_transform_config,
             ),
             test_subset=SubsetConfig(
                 subset_name="test",
                 batch_size=batch_size,
                 num_workers=num_workers,
-                transform_lib_type="MMDET",
-                transforms=fxt_mmcv_det_transform_config,
+                transform_lib_type=TransformLibType.TORCHVISION,
+                transforms=fxt_tv_det_transform_config,
             ),
             tile_config=TileConfig(),
             vpm_config=VisualPromptingConfig(),
         )
 
     @pytest.fixture()
-    def fxt_instseg_data_config(self, fxt_mmcv_det_transform_config) -> OTXDataModule:
+    def fxt_instseg_data_config(self, fxt_tv_det_transform_config) -> OTXDataModule:
         data_root = Path(__file__).parent.parent.parent.parent / "assets" / "car_tree_bug"
-
-        for transform in fxt_mmcv_det_transform_config:
-            if transform.type == "LoadAnnotations":
-                transform.with_mask = True
 
         batch_size = 8
         num_workers = 0
@@ -94,22 +91,22 @@ class TestOTXTiling:
                 subset_name="train",
                 batch_size=batch_size,
                 num_workers=num_workers,
-                transform_lib_type="MMDET",
-                transforms=fxt_mmcv_det_transform_config,
+                transform_lib_type=TransformLibType.TORCHVISION,
+                transforms=fxt_tv_det_transform_config,
             ),
             val_subset=SubsetConfig(
                 subset_name="val",
                 batch_size=batch_size,
                 num_workers=num_workers,
-                transform_lib_type="MMDET",
-                transforms=fxt_mmcv_det_transform_config,
+                transform_lib_type=TransformLibType.TORCHVISION,
+                transforms=fxt_tv_det_transform_config,
             ),
             test_subset=SubsetConfig(
                 subset_name="test",
                 batch_size=batch_size,
                 num_workers=num_workers,
-                transform_lib_type="MMDET",
-                transforms=fxt_mmcv_det_transform_config,
+                transform_lib_type=TransformLibType.TORCHVISION,
+                transforms=fxt_tv_det_transform_config,
             ),
             tile_config=TileConfig(),
             vpm_config=VisualPromptingConfig(),
@@ -239,6 +236,7 @@ class TestOTXTiling:
         rng = np.random.default_rng()
         tile_size = rng.integers(low=100, high=500, size=(2,))
         overlap = rng.random(2)
+        overlap = overlap.clip(0, 0.9)
         threshold_drop_ann = rng.random()
         tiled_dataset = DmDataset.import_from("tests/assets/car_tree_bug", format="coco_instances")
         tiled_dataset.transform(

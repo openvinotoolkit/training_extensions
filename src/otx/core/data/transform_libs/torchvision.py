@@ -10,6 +10,7 @@ import io
 import itertools
 import math
 from inspect import isclass
+from pathlib import Path
 from typing import TYPE_CHECKING, Any, ClassVar, Iterable, Sequence
 
 import cv2
@@ -49,6 +50,7 @@ from otx.core.data.transform_libs.utils import (
     flip_polygons,
     get_bboxes_from_masks,
     get_bboxes_from_polygons,
+    get_image_shape,
     is_inside_bboxes,
     overlap_bboxes,
     project_bboxes,
@@ -382,7 +384,7 @@ class MinIoURandomCrop(tvt_v2.Transform, NumpytoTVTensorMixin):
         assert len(_inputs) == 1, "[tmp] Multiple entity is not supported yet."  # noqa: S101
         inputs = _inputs[0]
 
-        img = to_np_image(inputs.image)
+        img: np.ndarray = to_np_image(inputs.image)
         boxes = inputs.bboxes
         h, w, c = img.shape
         while True:
@@ -528,8 +530,8 @@ class Resize(tvt_v2.Transform, NumpytoTVTensorMixin):
         """Resize images with inputs.img_info.img_shape."""
         scale_factor: tuple[float, float] | None = getattr(inputs.img_info, "scale_factor", None)  # (H, W)
         if (img := getattr(inputs, "image", None)) is not None:
-            # for considering video case
-            img_shape = img[0].shape[:2] if isinstance(img, list) else img.shape[:2]
+            img = to_np_image(img)
+            img_shape = get_image_shape(img)
             scale: tuple[int, int] = self.scale or scale_size(
                 img_shape,
                 self.scale_factor,  # type: ignore[arg-type]
@@ -539,17 +541,11 @@ class Resize(tvt_v2.Transform, NumpytoTVTensorMixin):
                 scale = rescale_size(img_shape, scale)  # type: ignore[assignment]
 
             # for considering video case
+            # flipping `scale` is required because cv2.resize uses (W, H)
             if isinstance(img, list):
-                for idx, im in enumerate(img):
-                    # flipping `scale` is required because cv2.resize uses (W, H)
-                    img[idx] = cv2.resize(
-                        to_np_image(im),
-                        scale[::-1],
-                        interpolation=CV2_INTERP_CODES[self.interpolation],
-                    )
+                img = [cv2.resize(im, scale[::-1], interpolation=CV2_INTERP_CODES[self.interpolation]) for im in img]
             else:
-                # flipping `scale` is required because cv2.resize uses (W, H)
-                img = cv2.resize(to_np_image(img), scale[::-1], interpolation=CV2_INTERP_CODES[self.interpolation])
+                img = cv2.resize(img, scale[::-1], interpolation=CV2_INTERP_CODES[self.interpolation])
 
             inputs.image = img
 
@@ -1092,18 +1088,15 @@ class RandomFlip(tvt_v2.Transform, NumpytoTVTensorMixin):
 
         if (cur_dir := self._choose_direction()) is not None:
             # flip image
-            if isinstance(inputs.image, list):
-                img = inputs.image
-                for idx, im in enumerate(img):
-                    img[idx] = flip_image(to_np_image(im), direction=cur_dir)
-            else:
-                img = flip_image(to_np_image(inputs.image), direction=cur_dir)
+            img = to_np_image(inputs.image)
+            img = flip_image(img, direction=cur_dir)
             inputs.image = img
+            img_shape = get_image_shape(img)
 
             # flip bboxes
             if (bboxes := getattr(inputs, "bboxes", None)) is not None:
                 bboxes = flip_bboxes(bboxes, inputs.img_info.img_shape, direction=cur_dir)
-                inputs.bboxes = tv_tensors.BoundingBoxes(bboxes, format="XYXY", canvas_size=img.shape[:2])
+                inputs.bboxes = tv_tensors.BoundingBoxes(bboxes, format="XYXY", canvas_size=img_shape)
 
             # flip masks
             if (masks := getattr(inputs, "masks", None)) is not None and len(masks) > 0:
@@ -1355,7 +1348,7 @@ class RandomAffine(tvt_v2.Transform, NumpytoTVTensorMixin):
         assert len(_inputs) == 1, "[tmp] Multiple entity is not supported yet."  # noqa: S101
         inputs = _inputs[0]
 
-        img = to_np_image(inputs.image)
+        img: np.ndarray = to_np_image(inputs.image)
         height = img.shape[0] + self.border[0] * 2
         width = img.shape[1] + self.border[1] * 2
 
@@ -1515,7 +1508,8 @@ class CachedMosaic(tvt_v2.Transform, NumpytoTVTensorMixin):
         mosaic_polygons = []
         with_mask = bool(hasattr(inputs, "masks") or hasattr(inputs, "polygons"))
 
-        if len((inp_img := to_np_image(inputs.image)).shape) == 3:
+        inp_img: np.ndarray = to_np_image(inputs.image)
+        if len(inp_img.shape) == 3:
             mosaic_img = np.full(
                 (int(self.img_scale[0] * 2), int(self.img_scale[1] * 2), 3),
                 self.pad_val,
@@ -1537,7 +1531,7 @@ class CachedMosaic(tvt_v2.Transform, NumpytoTVTensorMixin):
         for i, loc in enumerate(loc_strs):
             results_patch = copy.deepcopy(inputs) if loc == "top_left" else copy.deepcopy(mix_results[i - 1])
 
-            img_i = to_np_image(results_patch.image)
+            img_i: np.ndarray = to_np_image(results_patch.image)
             h_i, w_i = img_i.shape[:2]
             # keep_ratio resize
             scale_ratio_i = min(self.img_scale[0] / h_i, self.img_scale[1] / w_i)
@@ -1823,7 +1817,7 @@ class CachedMixUp(tvt_v2.Transform, NumpytoTVTensorMixin):
             # empty bbox
             return self.convert(inputs)
 
-        retrieve_img = to_np_image(retrieve_results.image)
+        retrieve_img: np.ndarray = to_np_image(retrieve_results.image)
         with_mask = bool(hasattr(inputs, "masks") or hasattr(inputs, "polygons"))
 
         jit_factor = random.uniform(*self.ratio_range)
@@ -1860,7 +1854,7 @@ class CachedMixUp(tvt_v2.Transform, NumpytoTVTensorMixin):
             out_img = out_img[:, ::-1, :]
 
         # 5. random crop
-        ori_img = to_np_image(inputs.image)
+        ori_img: np.ndarray = to_np_image(inputs.image)
         origin_h, origin_w = out_img.shape[:2]
         target_h, target_w = ori_img.shape[:2]
         padded_img = np.ones((max(origin_h, target_h), max(origin_w, target_w), 3)) * self.pad_val
@@ -2029,7 +2023,7 @@ class YOLOXHSVRandomAug(tvt_v2.Transform, NumpytoTVTensorMixin):
         assert len(_inputs) == 1, "[tmp] Multiple entity is not supported yet."  # noqa: S101
         inputs = _inputs[0]
 
-        img = to_np_image(inputs.image)
+        img: np.ndarray = to_np_image(inputs.image)
         hsv_gains = self._get_hsv_gains()
         # TODO (sungchul): OTX det models except for YOLOX-S, L, X consume RGB images but mmdet assumes they are BGR.
         img_hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV).astype(np.int16)
@@ -2131,7 +2125,7 @@ class Pad(tvt_v2.Transform, NumpytoTVTensorMixin):
 
     def _pad_img(self, inputs: T_OTXDataEntity) -> T_OTXDataEntity:
         """Pad images according to ``self.size``."""
-        img = to_np_image(inputs.image)
+        img: np.ndarray = to_np_image(inputs.image)
         pad_val = self.pad_val.get("img", 0)
 
         size: tuple[int, int]
@@ -2384,7 +2378,7 @@ class RandomCrop(tvt_v2.Transform, NumpytoTVTensorMixin):
         assert crop_size[0] > 0  # noqa: S101
         assert crop_size[1] > 0  # noqa: S101
 
-        img = to_np_image(inputs.image)
+        img: np.ndarray = to_np_image(inputs.image)
         orig_shape = inputs.img_info.img_shape
         margin_h = max(orig_shape[0] - crop_size[0], 0)
         margin_w = max(orig_shape[1] - crop_size[1], 0)
@@ -2716,19 +2710,14 @@ class FormatShape(tvt_v2.Transform):
 class DecordInit(tvt_v2.Transform):
     """Using decord to initialize the video_reader."""
 
-    def __init__(self, io_backend: str = "disk", num_threads: int = 1, **kwargs) -> None:
-        self.io_backend = io_backend
+    def __init__(self, num_threads: int = 1, **kwargs) -> None:
         self.num_threads = num_threads
         self.kwargs = kwargs
-        self.file_client = None
 
     def _get_video_reader(self, filename: str) -> decord.VideoReader:
-        if self.file_client is None:
-            # TODO(wonjulee): Remove mmengine imports
-            from mmengine.fileio import FileClient
-
-            self.file_client = FileClient(self.io_backend, **self.kwargs)
-        file_obj = io.BytesIO(self.file_client.get(filename))
+        with Path(filename).open("rb") as f:
+            file_byte = f.read()
+        file_obj = io.BytesIO(file_byte)
         return decord.VideoReader(file_obj, num_threads=self.num_threads)
 
     def __call__(self, *_inputs: T_OTXDataEntity) -> T_OTXDataEntity | None:
@@ -2743,7 +2732,7 @@ class DecordInit(tvt_v2.Transform):
         return inputs
 
     def __repr__(self) -> str:
-        return f"{self.__class__.__name__}(io_backend={self.io_backend}, num_threads={self.num_threads})"
+        return f"{self.__class__.__name__}(num_threads={self.num_threads})"
 
 
 class SampleFrames(tvt_v2.Transform):

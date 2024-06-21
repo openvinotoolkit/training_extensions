@@ -4,13 +4,19 @@
 
 import numpy as np
 import pytest
-from mmcv.transforms.builder import TRANSFORMS
 from otx.core.config.data import SubsetConfig
 from otx.core.data.entity.base import ImageInfo, OTXDataEntity
-from otx.core.data.transform_libs.mmcv import LoadImageFromFile, MMCVTransformLib
 from otx.core.types.transformer_libs import TransformLibType
 
+SKIP_MMLAB_TEST = False
+try:
+    from mmcv.transforms.builder import TRANSFORMS
+    from otx.core.data.transform_libs.mmcv import LoadImageFromFile, MMCVTransformLib
+except ImportError:
+    SKIP_MMLAB_TEST = True
 
+
+@pytest.mark.skipif(SKIP_MMLAB_TEST, reason="MMLab is not installed")
 class TestLoadImageFromFile:
     def test_transform(self) -> None:
         transform = LoadImageFromFile()
@@ -23,6 +29,7 @@ class TestLoadImageFromFile:
         assert out["ori_shape"] == (224, 224)
 
 
+@pytest.mark.skipif(SKIP_MMLAB_TEST, reason="MMLab is not installed")
 class TestMMCVTransformLib:
     def test_get_builder(self) -> None:
         assert MMCVTransformLib.get_builder() == TRANSFORMS

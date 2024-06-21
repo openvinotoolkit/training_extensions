@@ -430,15 +430,17 @@ class SSD(ExplainableOTXDetModel):
         for img_info, prediction in zip(inputs.imgs_info, predictions):
             if not isinstance(prediction, InstanceData):
                 raise TypeError(prediction)
-            scores.append(prediction.scores)  # type: ignore[attr-defined]
+
+            filtered_idx = torch.where(prediction.scores > self.best_confidence_threshold)  # type: ignore[attr-defined]
+            scores.append(prediction.scores[filtered_idx])  # type: ignore[attr-defined]
             bboxes.append(
                 tv_tensors.BoundingBoxes(
-                    prediction.bboxes,  # type: ignore[attr-defined]
+                    prediction.bboxes[filtered_idx],  # type: ignore[attr-defined]
                     format="XYXY",
                     canvas_size=img_info.ori_shape,
                 ),
             )
-            labels.append(prediction.labels)  # type: ignore[attr-defined]
+            labels.append(prediction.labels[filtered_idx])  # type: ignore[attr-defined]
 
         if self.explain_mode:
             if not isinstance(outputs, dict):

@@ -1,0 +1,8 @@
+ignore:
+  - "**/__init__.py"
+  - "src/otx/recipes"
+  - "src/otx/tools"
+  - "**/exportable_code"
+  - "src/otx/core/data/transform_libs/mm*.py"
+  - "src/otx/core/exporter/mmdeploy.py"
+  - "src/otx/core/model/utils"
