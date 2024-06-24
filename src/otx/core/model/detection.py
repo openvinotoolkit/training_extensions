@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import logging as log
 import types
+from abc import abstractmethod
 from contextlib import contextmanager
 from typing import TYPE_CHECKING, Any, Callable, Iterator, Literal
 
@@ -43,6 +44,10 @@ if TYPE_CHECKING:
 
 class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity]):
     """Base class for the detection models used in OTX."""
+
+    @abstractmethod
+    def _build_model(self, num_classes: int) -> nn.Module:
+        raise NotImplementedError
 
     def _create_model(self) -> nn.Module:
         detector = self._build_model(num_classes=self.label_info.num_classes)

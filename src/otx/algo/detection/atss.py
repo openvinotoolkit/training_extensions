@@ -32,9 +32,6 @@ if TYPE_CHECKING:
 class ATSS(ExplainableOTXDetModel):
     """OTX Detection model class for ATSS."""
 
-    def _build_model(self, num_classes: int) -> SingleStageDetector:
-        raise NotImplementedError
-
     @property
     def _exporter(self) -> OTXModelExporter:
         """Creates OTXModelExporter object that can export the model."""

@@ -29,9 +29,6 @@ if TYPE_CHECKING:
 class YOLOX(ExplainableOTXDetModel):
     """OTX Detection model class for YOLOX."""
 
-    def _build_model(self, num_classes: int) -> SingleStageDetector:
-        raise NotImplementedError
-
     def _customize_inputs(
         self,
         entity: DetBatchDataEntity,
