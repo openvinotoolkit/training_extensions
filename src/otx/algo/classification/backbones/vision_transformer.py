@@ -332,7 +332,10 @@ class VisionTransformer(BaseModule):
         super().__init__(init_cfg)
 
         self.arch = arch
-        if isinstance(arch, str) and arch in self.arch_zoo:
+        if isinstance(arch, str):
+            if arch not in set(self.arch_zoo):
+                msg = f"Arch {arch} is not in default archs {set(self.arch_zoo)}"
+                raise ValueError(msg)
             self.arch_settings = self.arch_zoo[arch]
         else:
             essential_keys = {
@@ -398,6 +401,9 @@ class VisionTransformer(BaseModule):
         for i, index in enumerate(out_indices):
             if index < 0:
                 out_indices[i] = self.num_layers + index
+            if not (0 <= out_indices[i] <= self.num_layers):
+                msg = f"Invalid out_indices {index}"
+                raise AssertionError(msg)
         self.out_indices = out_indices
 
         # stochastic depth decay rule
