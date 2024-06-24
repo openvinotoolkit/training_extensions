@@ -35,7 +35,7 @@ COPY --chown=10001 . src_dir
 
 USER non-root
 
-RUN pip install --user --no-cache-dir --require-hashes --no-deps -r src_dir/.ci/requirements/piptools/requirements.txt && \
+RUN pip install --user --no-cache-dir --require-hashes --no-deps -r src_dir/.ci/requirements.txt && \
     pip-compile --generate-hashes -o /tmp/requirements.txt src_dir/pyproject.toml
 
 RUN pip install --no-cache-dir --no-deps --target ${OTX_INSTALL_PATH} src_dir/

@@ -1,25 +1,24 @@
 # Guide to Setting up the CI using the Docker images
 
 1. Build the docker image using the `build.sh` in the .ci directory.
-   Make sure you are in the root directory of `training_extensions`.
+   Make sure you are in the `.ci/docker` directory of `training_extensions`.
 
    ```bash
-   training_extensions$ .ci/build.sh --help
-      USAGE: .ci/build.sh <tag> [Options]
+   training_extensions/.ci/docker$ ./build.sh --help
+      USAGE: .ci/docker/build.sh <tag> [Options]
       Positional args
          <tag>               Tag name to be tagged to newly built image
       Options
          -p|--push           Push built image(s) to registry
          -u|--url            url to get Github actions-runner package
-         -c|--cuda           Specify CUDA version
          -r|--reg            Specify docker registry URL <default: local>
          -h|--help           Print this message
    ```
 
-   Below example builds an image using actions-runner v2.305.0 based on `NVIDIA CUDA 11.7.1` image and tag it as `2.305.0`.
+   Below example builds an image using actions-runner v2.317.0 based on NVIDIA cuda image and tag it as `2.317.0`.
 
    ```bash
-   training_extensions$ .ci/build.sh 2.305.0 -u https://github.com/actions/runner/releases/download/v2.305.0/actions-runner-linux-x64-2.305.0.tar.gz -c 11.7.1
+   training_extensions$ .ci/build.sh 2.317.0 -u https://github.com/actions/runner/releases/download/v2.305.0/actions-runner-linux-x64-2.305.0.tar.gz
    ```
 
    > **_Note_**: While building an image, script will use your system's environment variables `http_proxy`, `https_proxy`, and `no_proxy`. If you need to use proxy to access external entity, please check those settings before using this script.
@@ -35,8 +34,8 @@
 1. Create a container and start runner
 
    ```bash
-   training_extensions$ .ci/start-runner.sh --help
-      USAGE: $0 <container-prefix> <github-token> [Options]
+   training_extensions$ .ci/docker/start-runner.sh --help
+      USAGE: .ci/docker/start-runner.sh <container-prefix> <github-token> [Options]
       Positional args
          <container-prefix>  Prefix to the ci container and actions-runner
          <github-token>      Github token string
@@ -78,8 +77,8 @@
 1. Stop the runner and running container
 
    ```bash
-   training_extensions$ .ci/stop-runner.sh
-     USAGE: .ci/stop-runner.sh <container-name> <github-token> [Options]
+   training_extensions$ .ci/docker/stop-runner.sh
+     USAGE: .ci/docker/stop-runner.sh <container-name> <github-token> [Options]
      Options
          -h|--help           Print this message
    ```

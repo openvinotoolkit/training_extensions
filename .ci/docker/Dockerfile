@@ -1,15 +1,13 @@
 #########################################################
 ## Python Environment with CUDA
 #########################################################
-ARG ver_cuda="11.7.1"
 
-FROM nvidia/cuda:${ver_cuda}-devel-ubuntu20.04@sha256:f663a1cf01a46daa469c75bf246ac00098bd5179aff2c75367c44f475cd4c8f4 AS python_base_cuda
+FROM nvidia/cuda:12.1.0-runtime-ubuntu20.04@sha256:c1869c30f46fff478a37ed58d9dace7e08519541274f03424d0b78bd35b2c73a AS python_base_cuda
 LABEL maintainer="OpenVINO Training Extensions Development Team"
 
 ARG HTTP_PROXY
 ARG HTTPS_PROXY
 ARG NO_PROXY
-ARG action_runner_url
 ARG uid
 ARG gid
 
@@ -19,21 +17,16 @@ ENV https_proxy=$HTTPS_PROXY
 ENV no_proxy=$NO_PROXY
 ENV DEBIAN_FRONTEND="noninteractive"
 
-# added ninja-build for using CppExtension in the torch
 # hadolint ignore=DL3008
 RUN apt-get update && apt-get install --no-install-recommends -y \
         software-properties-common \
         wget \
         ffmpeg \
-        libpython3.10 \
         curl \
         nodejs \
         unzip \
-        npm \
-        ruby-dev \
         git \
         cron \
-        ninja-build \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -58,9 +51,9 @@ FROM python_base_cuda as otx_development_env
 
 RUN mkdir actions-runner
 WORKDIR /home/validation/actions-runner
-ARG action_runner_url
+ARG ACTIONS_RUNNER_VER=2.317.0
 # download actions-runner and extract it
-RUN curl -o actions-runner-linux-x64.tar.gz -L ${action_runner_url} && \
+RUN curl -o actions-runner-linux-x64.tar.gz -L https://github.com/actions/runner/releases/download/v${ACTIONS_RUNNER_VER}/actions-runner-linux-x64-${ACTIONS_RUNNER_VER}.tar.gz && \
     tar xzf ./actions-runner-linux-x64.tar.gz && \
     rm actions-runner-linux-x64.tar.gz
 

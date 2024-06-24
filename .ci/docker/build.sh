@@ -1,7 +1,7 @@
 #!/bin/bash
 
-VER_CUDA="11.7.1"
-ACTIONS_RUNNER_URL="https://github.com/actions/runner/releases/download/v2.305.0/actions-runner-linux-x64-2.305.0.tar.gz"
+VER_CUDA="12.1.0"
+ACTIONS_RUNNER_VER="2.317.0"
 DOCKER_REG_ADDR="local"
 POSITIONAL=()
 while [[ $# -gt 0 ]]; do
@@ -12,13 +12,8 @@ while [[ $# -gt 0 ]]; do
       PUSH="yes"
       shift # past argument
       ;;
-    -u|--url)
-      ACTIONS_RUNNER_URL="$2"
-      shift # past argument
-      shift # past value
-      ;;
-    -c|--cuda)
-      VER_CUDA="$2"
+    -v|--version)
+      ACTIONS_RUNNER_VER="$2"
       shift # past argument
       shift # past value
       ;;
@@ -48,8 +43,7 @@ cat << EndofMessage
         <tag>               Tag name to be tagged to newly built image
     Options
         -p|--push           Push built image(s) to registry
-        -u|--url            url to get Github actions-runner package
-        -c|--cuda           Specify CUDA version
+        -v|--version        Specify actions-runner version
         -r|--reg            Specify docker registry URL <default: local>
         -h|--help           Print this message
 EndofMessage
@@ -58,12 +52,11 @@ fi
 
 TAG=$1
 
-docker build -f .ci/Dockerfile \
+docker build -f ./Dockerfile \
 --build-arg HTTP_PROXY="${http_proxy:?}" \
 --build-arg HTTPS_PROXY="${https_proxy:?}" \
 --build-arg NO_PROXY="${no_proxy:?}" \
---build-arg ver_cuda="$VER_CUDA" \
---build-arg action_runner_url="$ACTIONS_RUNNER_URL" \
+--build-arg ACTIONS_RUNNER_VER="$ACTIONS_RUNNER_VER" \
 --build-arg gid="$(id -g)" \
 --build-arg uid="$UID" \
 --tag "$DOCKER_REG_ADDR"/ote/ci/cu"$VER_CUDA"/runner:"$TAG" \
