@@ -36,16 +36,16 @@ class TVMaskRCNN(MaskRCNN):
             entity.masks,
             entity.polygons,
         ):
-            if len(bboxes):
-                targets.append(
-                    {
-                        "boxes": bboxes,
-                        # NOTE: shift labels by 1 as 0 is reserved for background
-                        "labels": labels + 1,
-                        "masks": masks,
-                        "polygons": polygons,
-                    },
-                )
+            # NOTE: shift labels by 1 as 0 is reserved for background
+            _labels = labels + 1 if len(labels) else labels
+            targets.append(
+                {
+                    "boxes": bboxes,
+                    "labels": _labels,
+                    "masks": masks,
+                    "polygons": polygons,
+                },
+            )
 
         features = self.backbone(image_list.tensors)
         if isinstance(features, torch.Tensor):
