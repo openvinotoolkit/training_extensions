@@ -16,7 +16,7 @@ from datumaro import Polygon
 from torch import Tensor, nn
 
 from otx.algo.detection.heads.rtmdet_head import RTMDetHead
-from otx.algo.detection.ops.nms import batched_nms, multiclass_nms
+from otx.algo.detection.utils.nms import batched_nms, multiclass_nms
 from otx.algo.detection.utils.utils import (
     distance2bbox,
     filter_scores_and_topk,
@@ -252,7 +252,7 @@ class RTMDetInsHead(RTMDetHead):
         test_cfg = self.test_cfg if cfg is None else cfg
         test_cfg = copy.deepcopy(test_cfg)
         img_shape = img_meta["img_shape"]
-        nms_pre = test_cfg.get("nms_pre", -1)
+        nms_pre = test_cfg.get("nms_pre", -1)  # type: ignore[union-attr]
 
         mlvl_bbox_preds = []
         mlvl_kernels = []
@@ -281,7 +281,7 @@ class RTMDetInsHead(RTMDetHead):
             # There is no difference in performance for most models. If you
             # find a slight drop in performance, you can set a larger
             # `nms_pre` than before.
-            score_thr = test_cfg.get("score_thr", 0)
+            score_thr = test_cfg.get("score_thr", 0)  # type: ignore[union-attr]
 
             (
                 scores,
@@ -1043,10 +1043,10 @@ class RTMDetInsSepBNHead(RTMDetInsHead):
         scores = flatten_cls_scores
 
         max_output_boxes_per_class = 100
-        iou_threshold = cfg.nms.get("iou_threshold", 0.5)
-        score_threshold = cfg.get("score_thr", 0.05)
+        iou_threshold = cfg.nms.get("iou_threshold", 0.5)  # type: ignore[union-attr]
+        score_threshold = cfg.get("score_thr", 0.05)  # type: ignore[union-attr]
         pre_top_k = 300
-        keep_top_k = cfg.get("max_per_img", 100)
+        keep_top_k = cfg.get("max_per_img", 100)  # type: ignore[union-attr]
 
         return self._nms_with_mask_static(
             priors,

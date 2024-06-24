@@ -5,6 +5,7 @@
 # Please refer to https://github.com/open-mmlab/mmdetection/
 
 """MMDet BBox Head."""
+
 from __future__ import annotations
 
 import warnings
@@ -15,7 +16,7 @@ import torch.nn.functional
 from torch import Tensor, nn
 from torch.nn.modules.utils import _pair
 
-from otx.algo.detection.ops.nms import multiclass_nms
+from otx.algo.detection.utils.nms import multiclass_nms
 from otx.algo.detection.utils.utils import empty_instances
 from otx.algo.instance_segmentation.mmdet.models.layers import multiclass_nms_torch
 from otx.algo.instance_segmentation.mmdet.structures.bbox import scale_boxes

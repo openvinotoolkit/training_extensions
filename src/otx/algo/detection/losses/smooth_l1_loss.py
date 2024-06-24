@@ -1,16 +1,37 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-#
-# This class and its supporting functions are adapted from the mmdet.
-# Please refer to https://github.com/open-mmlab/mmdetection/
+# Copyright (c) OpenMMLab. All rights reserved.
+"""Implementations copied from mmdet.models.losses.smooth_l1_loss.py.
 
-"""Smooth L1 Loss."""
+Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/losses/smooth_l1_loss.py
+"""
+
 from __future__ import annotations
 
 import torch
 from torch import Tensor, nn
 
-from otx.algo.detection.losses.weighted_loss import weighted_loss
+from .utils import weighted_loss
+
+
+@weighted_loss
+def smooth_l1_loss(pred: Tensor, target: Tensor, beta: float = 1.0) -> Tensor:
+    """Smooth L1 loss.
+
+    Args:
+        pred (Tensor): The prediction.
+        target (Tensor): The learning target of the prediction.
+        beta (float): The threshold in the piecewise function.
+            Defaults to 1.0.
+
+    Returns:
+        (Tensor): Calculated loss
+    """
+    if target.numel() == 0:
+        return pred.sum() * 0
+
+    diff = torch.abs(pred - target)
+    return torch.where(diff < beta, 0.5 * diff * diff / beta, diff - 0.5 * beta)
 
 
 @weighted_loss
@@ -22,7 +43,7 @@ def l1_loss(pred: Tensor, target: Tensor) -> Tensor:
         target (Tensor): The learning target of the prediction.
 
     Returns:
-        Tensor: Calculated loss
+        (Tensor): Calculated loss
     """
     if target.numel() == 0:
         return pred.sum() * 0
@@ -69,7 +90,7 @@ class L1Loss(nn.Module):
                 Defaults to None.
 
         Returns:
-            Tensor: Calculated loss
+            (Tensor): Calculated loss
         """
         if weight is not None and not torch.any(weight > 0):
             if pred.dim() == weight.dim() + 1:

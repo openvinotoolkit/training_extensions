@@ -1,5 +1,10 @@
+# Copyright (C) 2024 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
 # Copyright (c) OpenMMLab. All rights reserved.
-"""ResNeXt backbone from mmdet."""
+"""Implementations copied from mmdet.models.backbones.resnext.py.
+
+Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/backbones/resnext.py
+"""
 
 from __future__ import annotations
 

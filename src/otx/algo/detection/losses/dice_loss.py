@@ -1,24 +1,28 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 # Copyright (c) OpenMMLab. All rights reserved.
-"""Dice loss."""
+"""Implementations copied from mmdet.models.losses.dice_loss.py.
+
+Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/losses/dice_loss.py
+"""
+
 from __future__ import annotations
 
 import torch
-from torch import nn
+from torch import Tensor, nn
 
-from otx.algo.detection.losses.weighted_loss import weight_reduce_loss
+from .utils import weight_reduce_loss
 
 
 def dice_loss(
-    pred: torch.Tensor,
-    target: torch.Tensor,
-    weight: torch.Tensor | None = None,
+    pred: Tensor,
+    target: Tensor,
+    weight: Tensor | None = None,
     eps: float = 1e-3,
     reduction: str = "mean",
     naive_dice: bool = False,
     avg_factor: int | None = None,
-) -> torch.Tensor:
+) -> Tensor:
     """Calculate dice loss, there are two forms of dice loss is supported.
 
     the one proposed in `V-Net: Fully Convolutional Neural
@@ -29,10 +33,10 @@ def dice_loss(
         power.
 
     Args:
-        pred (torch.Tensor): The prediction, has a shape (n, *)
-        target (torch.Tensor): The learning label of the prediction,
+        pred (Tensor): The prediction, has a shape (n, *)
+        target (Tensor): The learning label of the prediction,
             shape (n, *), same shape of pred.
-        weight (torch.Tensor, optional): The weight of loss for each
+        weight (Tensor, optional): The weight of loss for each
             prediction, has a shape (n,). Defaults to None.
         eps (float): Avoid dividing by zero. Default: 1e-3.
         reduction (str, optional): The method used to reduce the loss into
@@ -92,19 +96,19 @@ class DiceLoss(nn.Module):
 
     def forward(
         self,
-        pred: torch.Tensor,
-        target: torch.Tensor,
-        weight: torch.Tensor | None = None,
+        pred: Tensor,
+        target: Tensor,
+        weight: Tensor | None = None,
         reduction_override: str | None = None,
         avg_factor: int | None = None,
-    ) -> torch.Tensor:
+    ) -> Tensor:
         """Forward function.
 
         Args:
-            pred (torch.Tensor): The prediction, has a shape (n, *).
-            target (torch.Tensor): The label of the prediction,
+            pred (Tensor): The prediction, has a shape (n, *).
+            target (Tensor): The label of the prediction,
                 shape (n, *), same shape of pred.
-            weight (torch.Tensor, optional): The weight of loss for each
+            weight (Tensor, optional): The weight of loss for each
                 prediction, has a shape (n,). Defaults to None.
             avg_factor (int, optional): Average factor that is used to average
                 the loss. Defaults to None.
@@ -113,7 +117,7 @@ class DiceLoss(nn.Module):
                 Options are "none", "mean" and "sum".
 
         Returns:
-            torch.Tensor: The calculated loss
+            (Tensor): The calculated loss
         """
         if reduction_override not in (None, "none", "mean", "sum"):
             msg = "reduction_override must be one of 'none', 'mean', 'sum'"

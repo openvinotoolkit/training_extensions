@@ -1,31 +1,34 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 # Copyright (c) OpenMMLab. All rights reserved.
-""""Generalized Focal Loss: Learning Qualified and Distributed Bounding Boxes for Dense Object Detection."""
+"""Implementations copied from mmdet.models.losses.gfocal_loss.py.
+
+Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/losses/gfocal_loss.py
+"""
+
 from __future__ import annotations
 
 from functools import partial
 
-import torch
-import torch.nn.functional
-from torch import nn
+import torch.nn.functional as F  # noqa: N812
+from torch import Tensor, nn
 
-from otx.algo.detection.losses.weighted_loss import weighted_loss
+from .utils import weighted_loss
 
 
 @weighted_loss
 def quality_focal_loss_tensor_target(
-    pred: torch.Tensor,
-    target: torch.Tensor,
+    pred: Tensor,
+    target: Tensor,
     beta: float = 2.0,
     activated: bool = False,
-) -> torch.Tensor:
+) -> Tensor:
     """QualityFocal Loss <https://arxiv.org/abs/2008.13367>.
 
     Args:
-        pred (torch.Tensor): The prediction with shape (N, C), C is the
+        pred (Tensor): The prediction with shape (N, C), C is the
             number of classes
-        target (torch.Tensor): The learning target of the iou-aware
+        target (Tensor): The learning target of the iou-aware
             classification score with shape (N, C), C is the number of classes.
         beta (float): The beta parameter for calculating the modulating factor.
             Defaults to 2.0.
@@ -40,10 +43,10 @@ def quality_focal_loss_tensor_target(
         raise ValueError(msg)
     if activated:
         pred_sigmoid = pred
-        loss_function = torch.nn.functional.binary_cross_entropy
+        loss_function = F.binary_cross_entropy
     else:
         pred_sigmoid = pred.sigmoid()
-        loss_function = torch.nn.functional.binary_cross_entropy_with_logits
+        loss_function = F.binary_cross_entropy_with_logits
 
     scale_factor = pred_sigmoid
     target = target.type_as(pred)
@@ -59,20 +62,20 @@ def quality_focal_loss_tensor_target(
 
 
 @weighted_loss
-def quality_focal_loss(pred: torch.Tensor, target: torch.Tensor, beta: float = 2.0) -> torch.Tensor:
+def quality_focal_loss(pred: Tensor, target: Tensor, beta: float = 2.0) -> Tensor:
     r"""Quality Focal Loss (QFL) is a variant of `Generalized Focal Loss <https://arxiv.org/abs/2006.04388>`_.
 
     Args:
-        pred (torch.Tensor): Predicted joint representation of classification
+        pred (Tensor): Predicted joint representation of classification
             and quality (IoU) estimation with shape (N, C), C is the number of
             classes.
-        target (tuple([torch.Tensor])): Target category label with shape (N,)
+        target (tuple([Tensor])): Target category label with shape (N,)
             and target quality label with shape (N,).
         beta (float): The beta parameter for calculating the modulating factor.
             Defaults to 2.0.
 
     Returns:
-        torch.Tensor: Loss tensor with shape (N,).
+        (Tensor): Loss tensor with shape (N,).
     """
     if len(target) != 2:
         msg = "The length of target should be 2."
@@ -84,7 +87,7 @@ def quality_focal_loss(pred: torch.Tensor, target: torch.Tensor, beta: float = 2
     pred_sigmoid = pred.sigmoid()
     scale_factor = pred_sigmoid
     zerolabel = scale_factor.new_zeros(pred.shape)
-    loss = torch.nn.functional.binary_cross_entropy_with_logits(pred, zerolabel, reduction="none") * scale_factor.pow(
+    loss = F.binary_cross_entropy_with_logits(pred, zerolabel, reduction="none") * scale_factor.pow(
         beta,
     )
 
@@ -94,7 +97,7 @@ def quality_focal_loss(pred: torch.Tensor, target: torch.Tensor, beta: float = 2
     pos_label = label[pos].long()
     # positives are supervised by bbox quality (IoU) score
     scale_factor = score[pos] - pred_sigmoid[pos, pos_label]
-    loss[pos, pos_label] = torch.nn.functional.binary_cross_entropy_with_logits(
+    loss[pos, pos_label] = F.binary_cross_entropy_with_logits(
         pred[pos, pos_label],
         score[pos],
         reduction="none",
@@ -104,20 +107,20 @@ def quality_focal_loss(pred: torch.Tensor, target: torch.Tensor, beta: float = 2
 
 
 @weighted_loss
-def quality_focal_loss_with_prob(pred: torch.Tensor, target: torch.Tensor, beta: float = 2.0) -> torch.Tensor:
+def quality_focal_loss_with_prob(pred: Tensor, target: Tensor, beta: float = 2.0) -> Tensor:
     r"""Quality Focal Loss (QFL) is a variant of `Generalized Focal Loss <https://arxiv.org/abs/2006.04388>`_.
 
     Args:
-        pred (torch.Tensor): Predicted joint representation of classification
+        pred (Tensor): Predicted joint representation of classification
             and quality (IoU) estimation with shape (N, C), C is the number of
             classes.
-        target (tuple([torch.Tensor])): Target category label with shape (N,)
+        target (tuple([Tensor])): Target category label with shape (N,)
             and target quality label with shape (N,).
         beta (float): The beta parameter for calculating the modulating factor.
             Defaults to 2.0.
 
     Returns:
-        torch.Tensor: Loss tensor with shape (N,).
+        (Tensor): Loss tensor with shape (N,).
     """
     if len(target) != 2:
         msg = "The length of target should be 2."
@@ -129,7 +132,7 @@ def quality_focal_loss_with_prob(pred: torch.Tensor, target: torch.Tensor, beta:
     pred_sigmoid = pred
     scale_factor = pred_sigmoid
     zerolabel = scale_factor.new_zeros(pred.shape)
-    loss = torch.nn.functional.binary_cross_entropy(pred, zerolabel, reduction="none") * scale_factor.pow(beta)
+    loss = F.binary_cross_entropy(pred, zerolabel, reduction="none") * scale_factor.pow(beta)
 
     # FG cat_id: [0, num_classes -1], BG cat_id: num_classes
     bg_class_ind = pred.size(1)
@@ -137,7 +140,7 @@ def quality_focal_loss_with_prob(pred: torch.Tensor, target: torch.Tensor, beta:
     pos_label = label[pos].long()
     # positives are supervised by bbox quality (IoU) score
     scale_factor = score[pos] - pred_sigmoid[pos, pos_label]
-    loss[pos, pos_label] = torch.nn.functional.binary_cross_entropy(
+    loss[pos, pos_label] = F.binary_cross_entropy(
         pred[pos, pos_label],
         score[pos],
         reduction="none",
@@ -182,24 +185,24 @@ class QualityFocalLoss(nn.Module):
 
     def forward(
         self,
-        pred: torch.Tensor,
-        target: torch.Tensor,
-        weight: torch.Tensor | None = None,
+        pred: Tensor,
+        target: Tensor,
+        weight: Tensor | None = None,
         avg_factor: int | None = None,
         reduction_override: str | None = None,
-    ) -> torch.Tensor:
+    ) -> Tensor:
         """Forward function.
 
         Args:
-            pred (torch.Tensor): Predicted joint representation of
+            pred (Tensor): Predicted joint representation of
                 classification and quality (IoU) estimation with shape (N, C),
                 C is the number of classes.
-            target (Union(tuple([torch.Tensor]),Torch.Tensor)): The type is
+            target (Union(tuple([Tensor]),Tensor)): The type is
                 tuple, it should be included Target category label with
                 shape (N,) and target quality label with shape (N,).The type
-                is torch.Tensor, the target should be one-hot form with
+                is Tensor, the target should be one-hot form with
                 soft weights.
-            weight (torch.Tensor, optional): The weight of loss for each
+            weight (Tensor, optional): The weight of loss for each
                 prediction. Defaults to None.
             avg_factor (int, optional): Average factor that is used to average
                 the loss. Defaults to None.
@@ -213,7 +216,7 @@ class QualityFocalLoss(nn.Module):
         reduction = reduction_override if reduction_override else self.reduction
         if self.use_sigmoid:
             calculate_loss_func = quality_focal_loss_with_prob if self.activated else quality_focal_loss
-            if isinstance(target, torch.Tensor):
+            if isinstance(target, Tensor):
                 # the target shape with (N,C) or (N,C,...), which means
                 # the target is one-hot form with soft weights.
                 calculate_loss_func = partial(quality_focal_loss_tensor_target, activated=self.activated)

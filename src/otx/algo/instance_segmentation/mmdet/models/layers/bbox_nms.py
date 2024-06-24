@@ -13,7 +13,7 @@ from typing import TYPE_CHECKING
 import torch
 from torch import Tensor
 
-from otx.algo.detection.ops.nms import batched_nms
+from otx.algo.detection.utils.nms import batched_nms
 
 if TYPE_CHECKING:
     from omegaconf import DictConfig

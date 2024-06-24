@@ -1,10 +1,11 @@
-# Copyright (C) 2023 Intel Corporation
+# Copyright (C) 2023-2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 # This class and its supporting functions are adapted from the mmdet.
 # Please refer to https://github.com/open-mmlab/mmdetection/
 
 """MMDet RPNHead."""
+
 from __future__ import annotations
 
 import copy
@@ -16,7 +17,7 @@ import torch.nn.functional
 from torch import Tensor, nn
 
 from otx.algo.detection.heads.anchor_head import AnchorHead
-from otx.algo.detection.ops.nms import batched_nms, multiclass_nms
+from otx.algo.detection.utils.nms import batched_nms, multiclass_nms
 from otx.algo.detection.utils.utils import dynamic_topk, gather_topk, unpack_inst_seg_entity
 from otx.algo.instance_segmentation.mmdet.structures.bbox import (
     empty_box_as,
@@ -218,7 +219,7 @@ class RPNHead(AnchorHead):
         )
         return {"loss_rpn_cls": losses["loss_cls"], "loss_rpn_bbox": losses["loss_bbox"]}
 
-    def _predict_by_feat_single(
+    def _predict_by_feat_single(  # type: ignore[override]
         self,
         cls_score_list: list[Tensor],
         bbox_pred_list: list[Tensor],

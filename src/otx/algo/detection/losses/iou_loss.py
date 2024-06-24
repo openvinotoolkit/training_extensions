@@ -1,7 +1,10 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 # Copyright (c) OpenMMLab. All rights reserved.
-"""Implementations copied from mmdet.models.losses.iou_loss.py."""
+"""Implementations copied from mmdet.models.losses.iou_loss.py.
+
+Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/losses/iou_loss.py
+"""
 
 from __future__ import annotations
 
@@ -12,7 +15,7 @@ from torch import Tensor, nn
 
 from otx.algo.detection.utils.bbox_overlaps import bbox_overlaps
 
-from .weighted_loss import weighted_loss
+from .utils import weighted_loss
 
 
 @weighted_loss
@@ -32,8 +35,8 @@ def iou_loss(pred: Tensor, target: Tensor, linear: bool = False, mode: str = "lo
             Default: 'log'
         eps (float): Epsilon to avoid log(0).
 
-    Return:
-        Tensor: Loss tensor.
+    Returns:
+        (Tensor): Loss tensor.
     """
     assert mode in ["linear", "square", "log"]  # noqa: S101
     if linear:
@@ -126,8 +129,8 @@ class IoULoss(nn.Module):
                 override the original reduction method of the loss.
                 Defaults to None. Options are "none", "mean" and "sum".
 
-        Return:
-            Tensor: Loss tensor.
+        Returns:
+            (Tensor): Loss tensor.
         """
         assert reduction_override in (None, "none", "mean", "sum")  # noqa: S101
         reduction = reduction_override if reduction_override else self.reduction
@@ -186,16 +189,16 @@ class GIoULoss(nn.Module):
                 shape (n, 4).
             target (Tensor): The learning target of the prediction,
                 shape (n, 4).
-            weight (Tensor | None): The weight of loss for each
+            weight (Tensor, optional): The weight of loss for each
                 prediction. Defaults to None.
-            avg_factor (int | None): Average factor that is used
+            avg_factor (int, optional): Average factor that is used
                 to average the loss. Defaults to None.
-            reduction_override (str | None): The reduction method
+            reduction_override (str, optional): The reduction method
                 used to override the original reduction method of the loss.
                 Defaults to None. Options are "none", "mean" and "sum".
 
         Returns:
-            Tensor: Loss tensor.
+            (Tensor): Loss tensor.
         """
         if weight is not None and not torch.any(weight > 0):
             if pred.dim() == weight.dim() + 1:
@@ -227,8 +230,8 @@ def giou_loss(pred: Tensor, target: Tensor, eps: float = 1e-7) -> Tensor:
         target (Tensor): Corresponding gt bboxes, shape (n, 4).
         eps (float): Epsilon to avoid log(0).
 
-    Return:
-        Tensor: Loss tensor.
+    Returns:
+        (Tensor): Loss tensor.
     """
     # avoid fp16 overflow
     if pred.dtype == torch.float16:

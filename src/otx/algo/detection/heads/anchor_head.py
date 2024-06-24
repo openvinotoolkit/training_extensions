@@ -1,12 +1,14 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-#
-"""Anchor based object detector head implementation."""
+# Copyright (c) OpenMMLab. All rights reserved.
+"""Implementations copied from mmdet.models.dense_heads.anchor_head.py.
+
+Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/dense_heads/anchor_head.py
+"""
 
 from __future__ import annotations
 
 import warnings
-from typing import TYPE_CHECKING
 
 import torch
 from torch import Tensor, nn
@@ -16,32 +18,27 @@ from otx.algo.detection.utils.anchor_generator import AnchorGenerator
 from otx.algo.detection.utils.utils import anchor_inside_flags, images_to_levels, multi_apply, unmap
 from otx.algo.utils.mmengine_utils import InstanceData
 
-if TYPE_CHECKING:
-    from omegaconf import DictConfig
 
-
-# This class and its supporting functions below lightly adapted from the mmdet AnchorHead available at:
-# https://github.com/open-mmlab/mmdetection/blob/cfd5d3a985b0249de009b67d04f37263e11cdf3d/mmdet/models/dense_heads/anchor_head.py
 class AnchorHead(BaseDenseHead):
     """Anchor-based head (RPN, RetinaNet, SSD, etc.).
 
     Args:
         num_classes (int): Number of categories excluding the background
             category.
-        in_channels (int): Number of channels in the input feature map.
+        in_channels (tuple[int, ...], int): Number of channels in the input feature map.
+        anchor_generator (nn.Module): Module for anchor generator
+        bbox_coder (nn.Module): Module of bounding box coder.
+        loss_cls (nn.Module): Module of classification loss.
+        loss_bbox (nn.Module): Module of localization loss.
+        train_cfg (dict): Training config of anchor head.
+        test_cfg (dict, optional): Testing config of anchor head.
         feat_channels (int): Number of hidden channels. Used in child classes.
-        anchor_generator (dict): Config dict for anchor generator
-        bbox_coder (dict): Config of bounding box coder.
         reg_decoded_bbox (bool): If true, the regression loss would be
             applied directly on decoded bounding boxes, converting both
             the predicted boxes and regression targets to absolute
             coordinates format. Default False. It should be `True` when
             using `IoULoss`, `GIoULoss`, or `DIoULoss` in the bbox head.
-        loss_cls (dict): Config of classification loss.
-        loss_bbox (dict): Config of localization loss.
-        train_cfg (dict): Training config of anchor head.
-        test_cfg (dict): Testing config of anchor head.
-        init_cfg (dict or list[dict], optional): Initialization config dict.
+        init_cfg (dict, list[dict], optional): Initialization config dict.
     """
 
     def __init__(
@@ -53,7 +50,7 @@ class AnchorHead(BaseDenseHead):
         loss_cls: nn.Module,
         loss_bbox: nn.Module,
         train_cfg: dict,
-        test_cfg: DictConfig,
+        test_cfg: dict | None = None,
         feat_channels: int = 256,
         reg_decoded_bbox: bool = False,
         init_cfg: dict | list[dict] | None = None,
@@ -125,7 +122,7 @@ class AnchorHead(BaseDenseHead):
             x (Tensor): Features of a single scale level.
 
         Returns:
-            tuple:
+            (tuple):
                 cls_score (Tensor): Cls scores for a single scale level \
                     the channels number is num_base_priors * num_classes.
                 bbox_pred (Tensor): Box energies / deltas for a single scale \
@@ -143,8 +140,7 @@ class AnchorHead(BaseDenseHead):
                 a 4D-tensor.
 
         Returns:
-            tuple: A tuple of classification scores and bbox prediction.
-
+            (tuple): A tuple of classification scores and bbox prediction.
                 - cls_scores (list[Tensor]): Classification scores for all \
                     scale levels, each is a 4D-tensor, the channels number \
                     is num_base_priors * num_classes.
@@ -169,8 +165,7 @@ class AnchorHead(BaseDenseHead):
                 Defaults to cuda.
 
         Returns:
-            tuple:
-
+            (tuple):
                 - anchor_list (list[list[Tensor]]): Anchors of each image.
                 - valid_flag_list (list[list[Tensor]]): Valid flags of each
                   image.
@@ -208,11 +203,11 @@ class AnchorHead(BaseDenseHead):
             valid_flags (Tensor): Multi level valid flags of the image,
                 which are concatenated into a single tensor of
                     shape (num_anchors, ).
-            gt_instances (:obj:`InstanceData`): Ground truth of instance
+            gt_instances (InstanceData): Ground truth of instance
                 annotations. It should includes ``bboxes`` and ``labels``
                 attributes.
             img_meta (dict): Meta information for current image.
-            gt_instances_ignore (:obj:`InstanceData`, optional): Instances
+            gt_instances_ignore (InstanceData, optional): Instances
                 to be ignored during training. It includes ``bboxes`` attribute
                 data that is ignored during training and testing.
                 Defaults to None.
@@ -220,15 +215,14 @@ class AnchorHead(BaseDenseHead):
                 set of anchors.  Defaults to True.
 
         Returns:
-            tuple:
-
+            (tuple):
                 - labels (Tensor): Labels of each level.
                 - label_weights (Tensor): Label weights of each level.
                 - bbox_targets (Tensor): BBox targets of each level.
                 - bbox_weights (Tensor): BBox weights of each level.
                 - pos_inds (Tensor): positive samples indexes.
                 - neg_inds (Tensor): negative samples indexes.
-                - sampling_result (:obj:`SamplingResult`): Sampling results.
+                - sampling_result (`SamplingResult`): Sampling results.
         """
         inside_flags = anchor_inside_flags(
             flat_anchors,
@@ -311,12 +305,12 @@ class AnchorHead(BaseDenseHead):
                 each image. The outer list indicates images, and the inner list
                 corresponds to feature levels of the image. Each element of
                 the inner list is a tensor of shape (num_anchors, )
-            batch_gt_instances (list[:obj:`InstanceData`]): Batch of
+            batch_gt_instances (list[InstanceData]): Batch of
                 gt_instance. It usually includes ``bboxes`` and ``labels``
                 attributes.
             batch_img_metas (list[dict]): Meta information of each image, e.g.,
                 image size, scaling factor, etc.
-            batch_gt_instances_ignore (list[:obj:`InstanceData`], optional):
+            batch_gt_instances_ignore (list[InstanceData], optional):
                 Batch of gt_instances_ignore. It includes ``bboxes`` attribute
                 data that is ignored during training and testing.
                 Defaults to None.
@@ -324,8 +318,7 @@ class AnchorHead(BaseDenseHead):
                 set of anchors. Defaults to True.
 
         Returns:
-            tuple: Usually returns a tuple containing learning targets.
-
+            (tuple): Usually returns a tuple containing learning targets.
                 - labels_list (list[Tensor]): Labels of each level.
                 - label_weights_list (list[Tensor]): Label weights of each
                   level.
@@ -429,7 +422,7 @@ class AnchorHead(BaseDenseHead):
             avg_factor (int): Average factor that is used to average the loss.
 
         Returns:
-            tuple: loss components.
+            (tuple): loss components.
         """
         # classification loss
         labels = labels.reshape(-1)
@@ -465,18 +458,18 @@ class AnchorHead(BaseDenseHead):
                 has shape (N, num_anchors * num_classes, H, W).
             bbox_preds (list[Tensor]): Box energies / deltas for each scale
                 level with shape (N, num_anchors * 4, H, W).
-            batch_gt_instances (list[:obj:`InstanceData`]): Batch of
+            batch_gt_instances (list[InstanceData]): Batch of
                 gt_instance. It usually includes ``bboxes`` and ``labels``
                 attributes.
             batch_img_metas (list[dict]): Meta information of each image, e.g.,
                 image size, scaling factor, etc.
-            batch_gt_instances_ignore (list[:obj:`InstanceData`], optional):
+            batch_gt_instances_ignore (list[InstanceData], optional):
                 Batch of gt_instances_ignore. It includes ``bboxes`` attribute
                 data that is ignored during training and testing.
                 Defaults to None.
 
         Returns:
-            dict: A dictionary of loss components.
+            (dict): A dictionary of loss components.
         """
         featmap_sizes = [featmap.size()[-2:] for featmap in cls_scores]
 

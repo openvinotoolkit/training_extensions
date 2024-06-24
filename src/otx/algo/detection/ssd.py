@@ -10,7 +10,6 @@ from typing import TYPE_CHECKING, Any
 
 import numpy as np
 from datumaro.components.annotation import Bbox
-from omegaconf import DictConfig
 
 from otx.algo.detection.backbones import build_model_including_pytorchcv
 from otx.algo.detection.heads import SSDHead
@@ -46,8 +45,8 @@ class SingleStageDetector(BaseModule):
         bbox_head: nn.Module,
         neck: nn.Module | None = None,
         train_cfg: dict | None = None,
-        test_cfg: DictConfig | None = None,
-        init_cfg: DictConfig | list[DictConfig] = None,
+        test_cfg: dict | None = None,
+        init_cfg: dict | list[dict] | None = None,
     ) -> None:
         super().__init__()
         self._is_init = False
@@ -317,14 +316,12 @@ class SSD(ExplainableOTXDetModel):
             "use_giou": False,
             "use_focal": False,
         }
-        test_cfg = DictConfig(
-            {
-                "nms": {"type": "nms", "iou_threshold": 0.45},
-                "min_bbox_size": 0,
-                "score_thr": 0.02,
-                "max_per_img": 200,
-            },
-        )
+        test_cfg = {
+            "nms": {"type": "nms", "iou_threshold": 0.45},
+            "min_bbox_size": 0,
+            "score_thr": 0.02,
+            "max_per_img": 200,
+        }
         backbone = build_model_including_pytorchcv(
             cfg={
                 "type": "mobilenetv2_w1",

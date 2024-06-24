@@ -1,10 +1,10 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-#
-# This class and its supporting functions are adapted from the mmdet.
-# Please refer to https://github.com/open-mmlab/mmdetection/
+# Copyright (c) OpenMMLab. All rights reserved.
+"""Implementations copied from mmdet.models.losses.accuracy.py.
 
-"""MMDet Accuracy."""
+Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/losses/accuracy.py
+"""
 
 from __future__ import annotations
 
@@ -23,8 +23,8 @@ def accuracy(
     """Calculate accuracy according to the prediction and target.
 
     Args:
-        pred (torch.Tensor): The model prediction, shape (N, num_class)
-        target (torch.Tensor): The target of each prediction, shape (N, )
+        pred (Tensor): The model prediction, shape (N, num_class)
+        target (Tensor): The target of each prediction, shape (N, )
         topk (int | tuple[int], optional): If the predictions in ``topk``
             matches the target, the predictions will be regarded as
             correct ones. Defaults to 1.
@@ -32,7 +32,7 @@ def accuracy(
             this threshold are considered incorrect. Default to None.
 
     Returns:
-        float | tuple[float]: If the input ``topk`` is a single integer,
+        (float | tuple[float]): If the input ``topk`` is a single integer,
             the function will return a single float as accuracy. If
             ``topk`` is a tuple containing multiple integers, the
             function will return a tuple containing accuracies of

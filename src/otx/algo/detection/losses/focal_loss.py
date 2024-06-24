@@ -1,9 +1,10 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-#
-# This class and its supporting functions are adapted from the mmdet.
-# Please refer to https://github.com/open-mmlab/mmdetection/
-"""MMDet Focal Loss."""
+# Copyright (c) OpenMMLab. All rights reserved.
+"""Implementations copied from mmdet.models.losses.focal_loss.py.
+
+Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/losses/focal_loss.py
+"""
 
 from __future__ import annotations
 
@@ -12,7 +13,7 @@ from typing import TYPE_CHECKING
 import torch
 import torch.nn.functional
 
-from otx.algo.detection.losses.weighted_loss import weight_reduce_loss
+from .utils import weight_reduce_loss
 
 if TYPE_CHECKING:
     from torch import Tensor

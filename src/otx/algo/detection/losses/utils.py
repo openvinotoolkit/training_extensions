@@ -1,5 +1,10 @@
+# Copyright (C) 2024 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
 # Copyright (c) OpenMMLab. All rights reserved.
-"""Weighted loss from mmdet."""
+"""Implementations copied from mmdet.models.losses.utils.py.
+
+Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/losses/utils.py
+"""
 
 from __future__ import annotations
 
@@ -133,23 +138,3 @@ def weighted_loss(loss_func: Callable) -> Callable:
         return weight_reduce_loss(loss, weight, reduction, avg_factor)
 
     return wrapper
-
-
-@weighted_loss
-def smooth_l1_loss(pred: Tensor, target: Tensor, beta: float = 1.0) -> Tensor:
-    """Smooth L1 loss.
-
-    Args:
-        pred (Tensor): The prediction.
-        target (Tensor): The learning target of the prediction.
-        beta (float): The threshold in the piecewise function.
-            Defaults to 1.0.
-
-    Returns:
-        Tensor: Calculated loss
-    """
-    if target.numel() == 0:
-        return pred.sum() * 0
-
-    diff = torch.abs(pred - target)
-    return torch.where(diff < beta, 0.5 * diff * diff / beta, diff - 0.5 * beta)

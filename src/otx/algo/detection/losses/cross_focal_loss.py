@@ -10,7 +10,7 @@ import torch.nn.functional
 from torch import Tensor, nn
 from torch.cuda.amp import custom_fwd
 
-from otx.algo.detection.losses.focal_loss import py_sigmoid_focal_loss
+from .focal_loss import py_sigmoid_focal_loss
 
 
 def cross_sigmoid_focal_loss(
@@ -26,14 +26,14 @@ def cross_sigmoid_focal_loss(
     """Cross Focal Loss for ignore labels.
 
     Args:
-        inputs: inputs Tensor (N * C).
-        targets: targets Tensor (N).
-        weight: weight Tensor (N), consists of (binarized label schema * weight).
-        alpha: focal loss alpha.
-        gamma: focal loss gamma.
-        reduction: default = mean.
-        avg_factor: average factors.
-        valid_label_mask: ignore label mask.
+        inputs (Tensor): inputs Tensor (N * C).
+        targets (Tensor): targets Tensor (N).
+        weight (Tensor, optional): weight Tensor (N), consists of (binarized label schema * weight).
+        alpha (float): focal loss alpha.
+        gamma (float): focal loss gamma.
+        reduction (str): default = mean.
+        avg_factor (float, optional): average factors.
+        valid_label_mask (Tensor, optional): ignore label mask.
     """
     inputs_size = inputs.size(1)
     targets = torch.nn.functional.one_hot(targets, num_classes=inputs_size + 1)

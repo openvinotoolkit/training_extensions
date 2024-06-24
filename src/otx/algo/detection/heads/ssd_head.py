@@ -1,7 +1,10 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 # Copyright (c) OpenMMLab. All rights reserved.
-"""Custom SSD head for OTX template."""
+"""Implementations copied from mmdet.models.dense_heads.ssd_head.py.
+
+Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/dense_heads/ssd_head.py
+"""
 
 from __future__ import annotations
 
@@ -12,55 +15,43 @@ from torch import Tensor, nn
 
 from otx.algo.detection.heads.anchor_head import AnchorHead
 from otx.algo.detection.losses import CrossEntropyLoss
-from otx.algo.detection.losses.weighted_loss import smooth_l1_loss
-from otx.algo.detection.utils.anchor_generator import AnchorGenerator
-from otx.algo.detection.utils.coder import DeltaXYWHBBoxCoder
+from otx.algo.detection.losses.smooth_l1_loss import smooth_l1_loss
 from otx.algo.detection.utils.sampler import PseudoSampler
 from otx.algo.detection.utils.utils import multi_apply
 
 if TYPE_CHECKING:
-    from omegaconf import DictConfig
-
     from otx.algo.utils.mmengine_utils import InstanceData
 
 
-# This class and its supporting functions below lightly adapted from the mmdet SSDHead available at:
-# https://github.com/open-mmlab/mmdetection/blob/cfd5d3a985b0249de009b67d04f37263e11cdf3d/mmdet/models/dense_heads/ssd_head.py
 class SSDHead(AnchorHead):
     """Implementation of `SSD head <https://arxiv.org/abs/1512.02325>`_.
 
     Args:
-        num_classes (int): Number of categories excluding the background
-            category.
-        in_channels (Sequence[int]): Number of channels in the input feature
-            map.
+        anchor_generator (nn.Module): Config dict for anchor generator.
+        bbox_coder (nn.Module): Config of bounding box coder.
+        init_cfg (dict, list[dict]): Initialization config dict.
+        train_cfg (dict): Training config of anchor head.
+        num_classes (int): Number of categories excluding the background category.
+        in_channels (Sequence[int]): Number of channels in the input feature map.
         stacked_convs (int): Number of conv layers in cls and reg tower.
             Defaults to 0.
-        feat_channels (int): Number of hidden channels when stacked_convs
-            > 0. Defaults to 256.
+        feat_channels (int): Number of hidden channels when stacked_convs > 0.
+            Defaults to 256.
         use_depthwise (bool): Whether to use DepthwiseSeparableConv.
             Defaults to False.
-        anchor_generator (:obj:`ConfigDict` or dict): Config dict for anchor
-            generator.
-        bbox_coder (:obj:`ConfigDict` or dict): Config of bounding box coder.
         reg_decoded_bbox (bool): If true, the regression loss would be
             applied directly on decoded bounding boxes, converting both
             the predicted boxes and regression targets to absolute
             coordinates format. Defaults to False. It should be `True` when
             using `IoULoss`, `GIoULoss`, or `DIoULoss` in the bbox head.
-        train_cfg (:obj:`ConfigDict` or dict, Optional): Training config of
-            anchor head.
-        test_cfg (:obj:`ConfigDict` or dict, Optional): Testing config of
-            anchor head.
-        init_cfg (:obj:`ConfigDict` or dict or list[:obj:`ConfigDict` or \
-            dict], Optional): Initialization config dict.
+        test_cfg (dict, Optional): Testing config of anchor head.
     """
 
     def __init__(
         self,
-        anchor_generator: AnchorGenerator,
-        bbox_coder: DeltaXYWHBBoxCoder,
-        init_cfg: DictConfig | list[DictConfig],
+        anchor_generator: nn.Module,
+        bbox_coder: nn.Module,
+        init_cfg: dict | list[dict],
         train_cfg: dict,
         num_classes: int = 80,
         in_channels: tuple[int, ...] | int = (512, 1024, 512, 256, 256, 256),
@@ -68,7 +59,7 @@ class SSDHead(AnchorHead):
         feat_channels: int = 256,
         use_depthwise: bool = False,
         reg_decoded_bbox: bool = False,
-        test_cfg: DictConfig | None = None,
+        test_cfg: dict | None = None,
     ) -> None:
         super(AnchorHead, self).__init__(init_cfg=init_cfg)
         self.num_classes = num_classes
@@ -103,19 +94,14 @@ class SSDHead(AnchorHead):
         """Forward features from the upstream network.
 
         Args:
-            x (tuple[Tensor]): Features from the upstream network, each is
-                a 4D-tensor.
+            x (tuple[Tensor]): Features from the upstream network, each is a 4D-tensor.
 
         Returns:
-            tuple[list[Tensor], list[Tensor]]: A tuple of cls_scores list and
-            bbox_preds list.
-
-            - cls_scores (list[Tensor]): Classification scores for all scale \
-            levels, each is a 4D-tensor, the channels number is \
-            num_anchors * num_classes.
-            - bbox_preds (list[Tensor]): Box energies / deltas for all scale \
-            levels, each is a 4D-tensor, the channels number is \
-            num_anchors * 4.
+            (tuple[list[Tensor], list[Tensor]]): A tuple of cls_scores list and bbox_preds list.
+                - cls_scores (list[Tensor]): Classification scores for all scale
+                    levels, each is a 4D-tensor, the channels number is num_anchors * num_classes.
+                - bbox_preds (list[Tensor]): Box energies / deltas for all scale
+                    levels, each is a 4D-tensor, the channels number is num_anchors * 4.
         """
         cls_scores = []
         bbox_preds = []
@@ -138,20 +124,13 @@ class SSDHead(AnchorHead):
         """Compute loss of a single image.
 
         Args:
-            cls_score (Tensor): Box scores for eachimage
-                Has shape (num_total_anchors, num_classes).
-            bbox_pred (Tensor): Box energies / deltas for each image
-                level with shape (num_total_anchors, 4).
-            anchors (Tensor): Box reference for each scale level with shape
-                (num_total_anchors, 4).
-            labels (Tensor): Labels of each anchors with shape
-                (num_total_anchors,).
-            label_weights (Tensor): Label weights of each anchor with shape
-                (num_total_anchors,)
-            bbox_targets (Tensor): BBox regression targets of each anchor with
-                shape (num_total_anchors, 4).
-            bbox_weights (Tensor): BBox regression loss weights of each anchor
-                with shape (num_total_anchors, 4).
+            cls_score (Tensor): Box scores for each image has shape (num_total_anchors, num_classes).
+            bbox_pred (Tensor): Box energies / deltas for each image level with shape (num_total_anchors, 4).
+            anchors (Tensor): Box reference for each scale level with shape (num_total_anchors, 4).
+            labels (Tensor): Labels of each anchors with shape (num_total_anchors,).
+            label_weights (Tensor): Label weights of each anchor with shape (num_total_anchors,)
+            bbox_targets (Tensor): BBox regression targets of each anchor with shape (num_total_anchors, 4).
+            bbox_weights (Tensor): BBox regression loss weights of each anchor with shape (num_total_anchors, 4).
             avg_factor (int): Average factor that is used to average
                 the loss. When using sampling method, avg_factor is usually
                 the sum of positive and negative priors. When using
@@ -159,8 +138,7 @@ class SSDHead(AnchorHead):
                 of positive priors.
 
         Returns:
-            Tuple[Tensor, Tensor]: A tuple of cls loss and bbox loss of one
-            feature map.
+            (tuple[Tensor, Tensor]): A tuple of cls loss and bbox loss of one feature map.
         """
         loss_cls_all = nn.functional.cross_entropy(cls_score, labels, reduction="none") * label_weights
         # FG cat_id: [0, num_classes -1], BG cat_id: num_classes
@@ -202,28 +180,20 @@ class SSDHead(AnchorHead):
         """Compute losses of the head.
 
         Args:
-            cls_scores (list[Tensor]): Box scores for each scale level
-                Has shape (N, num_anchors * num_classes, H, W)
-            bbox_preds (list[Tensor]): Box energies / deltas for each scale
-                level with shape (N, num_anchors * 4, H, W)
-            batch_gt_instances (list[:obj:`InstanceData`]): Batch of
-                gt_instance.  It usually includes ``bboxes`` and ``labels``
-                attributes.
-            batch_img_metas (list[dict]): Meta information of each image, e.g.,
-                image size, scaling factor, etc.
-            batch_gt_instances_ignore (list[:obj:`InstanceData`], Optional):
-                Batch of gt_instances_ignore. It includes ``bboxes`` attribute
-                data that is ignored during training and testing.
+            cls_scores (list[Tensor]): Box scores for each scale level has shape (N, num_anchors * num_classes, H, W)
+            bbox_preds (list[Tensor]): Box energies deltas for each scale level with shape (N, num_anchors * 4, H, W)
+            batch_gt_instances (list[InstanceData]): Batch of gt_instance.
+                It usually includes ``bboxes`` and ``labels`` attributes.
+            batch_img_metas (list[dict]): Meta information of each image,
+                e.g., image size, scaling factor, etc.
+            batch_gt_instances_ignore (list[InstanceData], Optional): Batch of gt_instances_ignore.
+                It includes ``bboxes`` attribute data that is ignored during training and testing.
                 Defaults to None.
 
         Returns:
-            dict[str, list[Tensor]]: A dictionary of loss components. the dict
-            has components below:
-
-            - loss_cls (list[Tensor]): A list containing each feature map \
-            classification loss.
-            - loss_bbox (list[Tensor]): A list containing each feature map \
-            regression loss.
+            (dict[str, list[Tensor]]): A dictionary of loss components. The dict has components below:
+                - loss_cls (list[Tensor]): A list containing each feature map classification loss.
+                - loss_bbox (list[Tensor]): A list containing each feature map regression loss.
         """
         featmap_sizes = [featmap.size()[-2:] for featmap in cls_scores]
 

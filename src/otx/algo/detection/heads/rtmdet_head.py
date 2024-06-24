@@ -1,17 +1,18 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 # Copyright (c) OpenMMLab. All rights reserved.
-"""Implementations copied from mmdet.models.dense_heads.rtmdet_head.py."""
+"""Implementations copied from mmdet.models.dense_heads.rtmdet_head.py.
+
+Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/dense_heads/rtmdet_head.py
+"""
 
 from __future__ import annotations
-
-from typing import TYPE_CHECKING
 
 import torch
 from torch import Tensor, nn
 
 from otx.algo.detection.heads import ATSSHead
-from otx.algo.detection.ops.nms import multiclass_nms
+from otx.algo.detection.utils.nms import multiclass_nms
 from otx.algo.detection.utils.utils import (
     anchor_inside_flags,
     distance2bbox,
@@ -29,20 +30,16 @@ from otx.algo.modules.scale import Scale
 from otx.algo.utils.mmengine_utils import InstanceData
 from otx.algo.utils.weight_init import bias_init_with_prob, constant_init, normal_init
 
-if TYPE_CHECKING:
-    from omegaconf import DictConfig
-
 
 class RTMDetHead(ATSSHead):
     """Detection Head of RTMDet.
 
     Args:
-        num_classes (int): Number of categories excluding the background
-            category.
+        num_classes (int): Number of categories excluding the background category.
         in_channels (int): Number of channels in the input feature map.
         with_objectness (bool): Whether to add an objectness branch.
             Defaults to True.
-        act_cfg (:obj:`ConfigDict` or dict): Config dict for activation layer.
+        act_cfg (dict): Config dict for activation layer.
             Default: dict(type='ReLU')
     """
 
@@ -54,10 +51,7 @@ class RTMDetHead(ATSSHead):
         act_cfg: dict | None = None,
         **kwargs,
     ) -> None:
-        if act_cfg is None:
-            act_cfg = {"type": "ReLU"}
-
-        self.act_cfg = act_cfg
+        self.act_cfg = act_cfg or {"type": "ReLU"}
         self.with_objectness = with_objectness
         super().__init__(num_classes, in_channels, **kwargs)
         if self.train_cfg:
@@ -132,13 +126,11 @@ class RTMDetHead(ATSSHead):
                 a 4D-tensor.
 
         Returns:
-            tuple: Usually a tuple of classification scores and bbox prediction
-            - cls_scores (list[Tensor]): Classification scores for all scale
-              levels, each is a 4D-tensor, the channels number is
-              num_base_priors * num_classes.
-            - bbox_preds (list[Tensor]): Box energies / deltas for all scale
-              levels, each is a 4D-tensor, the channels number is
-              num_base_priors * 4.
+            (tuple): Usually a tuple of classification scores and bbox prediction
+                - cls_scores (list[Tensor]): Classification scores for all scale
+                    levels, each is a 4D-tensor, the channels number is num_base_priors * num_classes.
+                - bbox_preds (list[Tensor]): Box energies / deltas for all scale
+                    levels, each is a 4D-tensor, the channels number is num_base_priors * 4.
         """
         cls_scores = []
         bbox_preds = []
@@ -191,7 +183,7 @@ class RTMDetHead(ATSSHead):
             stride (list[int]): Downsample stride of the feature map.
 
         Returns:
-            dict[str, Tensor]: A dictionary of loss components.
+            (dict[str, Tensor]): A dictionary of loss components.
         """
         if stride[0] != stride[1]:
             msg = "h stride is not equal to w stride!"
@@ -248,18 +240,18 @@ class RTMDetHead(ATSSHead):
             bbox_preds (list[Tensor]): Decoded box for each scale
                 level with shape (N, num_anchors * 4, H, W) in
                 [tl_x, tl_y, br_x, br_y] format.
-            batch_gt_instances (list[:obj:`InstanceData`]): Batch of
+            batch_gt_instances (list[InstanceData]): Batch of
                 gt_instance.  It usually includes ``bboxes`` and ``labels``
                 attributes.
             batch_img_metas (list[dict]): Meta information of each image, e.g.,
                 image size, scaling factor, etc.
-            batch_gt_instances_ignore (list[:obj:`InstanceData`], Optional):
+            batch_gt_instances_ignore (list[InstanceData], Optional):
                 Batch of gt_instances_ignore. It includes ``bboxes`` attribute
                 data that is ignored during training and testing.
                 Defaults to None.
 
         Returns:
-            dict[str, Tensor]: A dictionary of loss components.
+            (dict[str, Tensor]): A dictionary of loss components.
         """
         num_imgs = len(batch_img_metas)
         featmap_sizes = [featmap.size()[-2:] for featmap in cls_scores]
@@ -325,7 +317,7 @@ class RTMDetHead(ATSSHead):
         cls_scores: list[Tensor],
         bbox_preds: list[Tensor],
         batch_img_metas: list[dict] | None = None,
-        cfg: DictConfig | None = None,
+        cfg: dict | None = None,
         rescale: bool = False,
         with_nms: bool = True,
     ) -> tuple[Tensor, Tensor] | tuple[Tensor, Tensor, Tensor]:
@@ -342,7 +334,7 @@ class RTMDetHead(ATSSHead):
                 (batch_size, num_priors * 4, H, W).
             batch_img_metas (list[dict], Optional): Batch image meta info.
                 Defaults to None.
-            cfg (DictConfig, optional): Test / postprocessing
+            cfg (dict, optional): Test / postprocessing
                 configuration, if None, test_cfg would be used.
                 Defaults to None.
             rescale (bool): If True, return boxes in original image space.
@@ -351,7 +343,7 @@ class RTMDetHead(ATSSHead):
                 Defaults to True.
 
         Returns:
-            tuple[Tensor, Tensor]: The first item is an (N, num_box, 5) tensor,
+            (tuple[Tensor, Tensor]): The first item is an (N, num_box, 5) tensor,
                 where 5 represent (tl_x, tl_y, br_x, br_y, score), N is batch
                 size and the score between 0 and 1. The shape of the second
                 tensor in the tuple is (N, num_box), and each element
@@ -384,10 +376,10 @@ class RTMDetHead(ATSSHead):
             bboxes,
             scores,
             max_output_boxes_per_class=200,
-            iou_threshold=cfg.nms.iou_threshold,
-            score_threshold=cfg.score_thr,
+            iou_threshold=cfg["nms"]["iou_threshold"],  # type: ignore[index]
+            score_threshold=cfg["score_thr"],  # type: ignore[index]
             pre_top_k=5000,
-            keep_top_k=cfg.max_per_img,
+            keep_top_k=cfg["max_per_img"],  # type: ignore[index]
         )
 
     def get_targets(  # type: ignore[override]
@@ -417,12 +409,12 @@ class RTMDetHead(ATSSHead):
                 each image. The outer list indicates images, and the inner list
                 corresponds to feature levels of the image. Each element of
                 the inner list is a tensor of shape (num_anchors, )
-            batch_gt_instances (list[:obj:`InstanceData`]): Batch of
+            batch_gt_instances (list[InstanceData]): Batch of
                 gt_instance.  It usually includes ``bboxes`` and ``labels``
                 attributes.
             batch_img_metas (list[dict]): Meta information of each image, e.g.,
                 image size, scaling factor, etc.
-            batch_gt_instances_ignore (list[:obj:`InstanceData`], Optional):
+            batch_gt_instances_ignore (list[InstanceData], Optional):
                 Batch of gt_instances_ignore. It includes ``bboxes`` attribute
                 data that is ignored during training and testing.
                 Defaults to None.
@@ -430,15 +422,12 @@ class RTMDetHead(ATSSHead):
                 set of anchors. Defaults to True.
 
         Returns:
-            tuple: a tuple containing learning targets.
-
-            - anchors_list (list[list[Tensor]]): Anchors of each level.
-            - labels_list (list[Tensor]): Labels of each level.
-            - label_weights_list (list[Tensor]): Label weights of each
-              level.
-            - bbox_targets_list (list[Tensor]): BBox targets of each level.
-            - assign_metrics_list (list[Tensor]): alignment metrics of each
-              level.
+            (tuple): a tuple containing learning targets.
+                - anchors_list (list[list[Tensor]]): Anchors of each level.
+                - labels_list (list[Tensor]): Labels of each level.
+                - label_weights_list (list[Tensor]): Label weights of each level.
+                - bbox_targets_list (list[Tensor]): BBox targets of each level.
+                - assign_metrics_list (list[Tensor]): alignment metrics of each level.
         """
         num_imgs = len(batch_img_metas)
         if len(anchor_list) != len(valid_flag_list) != num_imgs:
@@ -518,18 +507,18 @@ class RTMDetHead(ATSSHead):
         """Compute regression, classification targets for anchors in a single image.
 
         Args:
-            cls_scores (list(Tensor)): Box scores for each image.
-            bbox_preds (list(Tensor)): Box energies / deltas for each image.
+            cls_scores (list[Tensor]): Box scores for each image.
+            bbox_preds (list[Tensor]): Box energies / deltas for each image.
             flat_anchors (Tensor): Multi-level anchors of the image, which are
                 concatenated into a single tensor of shape (num_anchors ,4)
             valid_flags (Tensor): Multi level valid flags of the image,
                 which are concatenated into a single tensor of
                     shape (num_anchors,).
-            gt_instances (:obj:`InstanceData`): Ground truth of instance
+            gt_instances (InstanceData): Ground truth of instance
                 annotations. It usually includes ``bboxes`` and ``labels``
                 attributes.
             img_meta (dict): Meta information for current image.
-            gt_instances_ignore (:obj:`InstanceData`, optional): Instances
+            gt_instances_ignore (InstanceData, optional): Instances
                 to be ignored during training. It includes ``bboxes`` attribute
                 data that is ignored during training and testing.
                 Defaults to None.
@@ -537,18 +526,16 @@ class RTMDetHead(ATSSHead):
                 set of anchors. Defaults to True.
 
         Returns:
-            tuple: N is the number of total anchors in the image.
-
-            - anchors (Tensor): All anchors in the image with shape (N, 4).
-            - labels (Tensor): Labels of all anchors in the image with shape
-              (N,).
-            - label_weights (Tensor): Label weights of all anchor in the
-              image with shape (N,).
-            - bbox_targets (Tensor): BBox targets of all anchors in the
-              image with shape (N, 4).
-            - norm_alignment_metrics (Tensor): Normalized alignment metrics
-              of all priors in the image with shape (N,).
-            - sampling_result (SamplingResult): Sampling result.
+            (tuple): N is the number of total anchors in the image.
+                - anchors (Tensor): All anchors in the image with shape (N, 4).
+                - labels (Tensor): Labels of all anchors in the image with shape (N,).
+                - label_weights (Tensor): Label weights of all anchor in the
+                    image with shape (N,).
+                - bbox_targets (Tensor): BBox targets of all anchors in the
+                    image with shape (N, 4).
+                - norm_alignment_metrics (Tensor): Normalized alignment metrics
+                    of all priors in the image with shape (N,).
+                - sampling_result (SamplingResult): Sampling result.
         """
         inside_flags = anchor_inside_flags(
             flat_anchors,
@@ -622,11 +609,9 @@ class RTMDetHead(ATSSHead):
                 Defaults to cuda.
 
         Returns:
-            tuple:
-
-            - anchor_list (list[list[Tensor]]): Anchors of each image.
-            - valid_flag_list (list[list[Tensor]]): Valid flags of each
-              image.
+            (tuple):
+                - anchor_list (list[list[Tensor]]): Anchors of each image.
+                - valid_flag_list (list[list[Tensor]]): Valid flags of each image.
         """
         num_imgs = len(batch_img_metas)
 
@@ -647,16 +632,15 @@ class RTMDetSepBNHead(RTMDetHead):
     """RTMDetHead with separated BN layers and shared conv layers.
 
     Args:
-        num_classes (int): Number of categories excluding the background
-            category.
+        num_classes (int): Number of categories excluding the background category.
         in_channels (int): Number of channels in the input feature map.
         share_conv (bool): Whether to share conv layers between stages.
             Defaults to True.
-        use_depthwise (bool): Whether to use depthwise separable convolution in
-            head. Defaults to False.
-        norm_cfg (:obj:`ConfigDict` or dict)): Config dict for normalization
-            layer. Defaults to dict(type='BN', momentum=0.03, eps=0.001).
-        act_cfg (:obj:`ConfigDict` or dict)): Config dict for activation layer.
+        use_depthwise (bool): Whether to use depthwise separable convolution in head.
+            Defaults to False.
+        norm_cfg (dict): Config dict for normalization layer.
+            Defaults to dict(type='BN', momentum=0.03, eps=0.001).
+        act_cfg (dict): Config dict for activation layer.
             Defaults to dict(type='SiLU').
         pred_kernel_size (int): Kernel size of prediction layer. Defaults to 1.
         exp_on_reg (bool): Whether using exponential of regression features or not. Defaults to False.
@@ -674,10 +658,8 @@ class RTMDetSepBNHead(RTMDetHead):
         exp_on_reg: bool = False,
         **kwargs,
     ) -> None:
-        if act_cfg is None:
-            act_cfg = {"type": "SiLU"}
-        if norm_cfg is None:
-            norm_cfg = {"type": "BN", "momentum": 0.03, "eps": 0.001}
+        act_cfg = act_cfg or {"type": "SiLU"}
+        norm_cfg = norm_cfg or {"type": "BN", "momentum": 0.03, "eps": 0.001}
         self.share_conv = share_conv
         self.exp_on_reg = exp_on_reg
         self.use_depthwise = use_depthwise
@@ -778,18 +760,14 @@ class RTMDetSepBNHead(RTMDetHead):
         """Forward features from the upstream network.
 
         Args:
-            feats (tuple[Tensor]): Features from the upstream network, each is
-                a 4D-tensor.
+            feats (tuple[Tensor]): Features from the upstream network, each is a 4D-tensor.
 
         Returns:
-            tuple: Usually a tuple of classification scores and bbox prediction
-
-            - cls_scores (tuple[Tensor]): Classification scores for all scale
-              levels, each is a 4D-tensor, the channels number is
-              num_anchors * num_classes.
-            - bbox_preds (tuple[Tensor]): Box energies / deltas for all scale
-              levels, each is a 4D-tensor, the channels number is
-              num_anchors * 4.
+            (tuple): Usually a tuple of classification scores and bbox prediction
+                - cls_scores (tuple[Tensor]): Classification scores for all scale
+                    levels, each is a 4D-tensor, the channels number is num_anchors * num_classes.
+                - bbox_preds (tuple[Tensor]): Box energies / deltas for all scale
+                    levels, each is a 4D-tensor, the channels number is num_anchors * 4.
         """
         cls_scores = []
         bbox_preds = []

@@ -1,7 +1,10 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 # Copyright (c) OpenMMLab. All rights reserved.
-"""Custom ATSS head for OTX template."""
+"""Implementations copied from mmdet.models.dense_heads.atss_head.py.
+
+Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/dense_heads/atss_head.py
+"""
 
 from __future__ import annotations
 
@@ -32,23 +35,19 @@ class ATSSHead(ClassIncrementalMixin, AnchorHead):
         num_classes (int): Number of categories excluding the background
             category.
         in_channels (int): Number of channels in the input feature map.
-        pred_kernel_size (int): Kernel size of ``nn.Conv2d``
-        stacked_convs (int): Number of stacking convs of the head.
-        conv_cfg (:obj:`ConfigDict` or dict, optional): Config dict for
-            convolution layer. Defaults to None.
-        norm_cfg (:obj:`ConfigDict` or dict): Config dict for normalization
-            layer. Defaults to ``dict(type='GN', num_groups=32,
-            requires_grad=True)``.
+        pred_kernel_size (int): Kernel size of ``nn.Conv2d``. Defaults to 3.
+        stacked_convs (int): Number of stacking convs of the head. Defaults to 4.
+        conv_cfg (dict, optional): Config dict for convolution layer.
+            Defaults to None.
+        norm_cfg (dict): Config dict for normalization layer.
+            Defaults to ``dict(type='GN', num_groups=32, requires_grad=True)``.
         reg_decoded_bbox (bool): If true, the regression loss would be
             applied directly on decoded bounding boxes, converting both
             the predicted boxes and regression targets to absolute
             coordinates format. Defaults to False. It should be `True` when
             using `IoULoss`, `GIoULoss`, or `DIoULoss` in the bbox head.
-        loss_centerness (:obj:`ConfigDict` or dict): Config of centerness loss.
-            Defaults to ``dict(type='CrossEntropyLoss', use_sigmoid=True,
-            loss_weight=1.0)``.
-        init_cfg (:obj:`ConfigDict` or dict or list[dict] or
-            list[:obj:`ConfigDict`]): Initialization config dict.
+        loss_centerness (nn.Module, optinoal): Module of centerness loss. Defaults to None.
+        init_cfg (dict, list[dict], optional): Initialization config dict.
     """
 
     def __init__(
@@ -70,14 +69,13 @@ class ATSSHead(ClassIncrementalMixin, AnchorHead):
         self.pred_kernel_size = pred_kernel_size
         self.stacked_convs = stacked_convs
         self.conv_cfg = conv_cfg
-        self.norm_cfg = norm_cfg if norm_cfg is not None else {"type": "GN", "num_groups": 32, "requires_grad": True}
-        if init_cfg is None:
-            init_cfg = {
-                "type": "Normal",
-                "layer": "Conv2d",
-                "std": 0.01,
-                "override": {"type": "Normal", "name": "atss_cls", "std": 0.01, "bias_prob": 0.01},
-            }
+        self.norm_cfg = norm_cfg or {"type": "GN", "num_groups": 32, "requires_grad": True}
+        init_cfg = init_cfg or {
+            "type": "Normal",
+            "layer": "Conv2d",
+            "std": 0.01,
+            "override": {"type": "Normal", "name": "atss_cls", "std": 0.01, "bias_prob": 0.01},
+        }
         super().__init__(
             num_classes=num_classes,
             in_channels=in_channels,
@@ -161,7 +159,7 @@ class ATSSHead(ClassIncrementalMixin, AnchorHead):
                 a 4D-tensor.
 
         Returns:
-            tuple: Usually a tuple of classification scores and bbox prediction
+            (tuple): Usually a tuple of classification scores and bbox prediction
                 cls_scores (list[Tensor]): Classification scores for all scale
                     levels, each is a 4D-tensor, the channels number is
                     num_anchors * num_classes.
@@ -176,11 +174,10 @@ class ATSSHead(ClassIncrementalMixin, AnchorHead):
 
         Args:
             x (Tensor): Features of a single scale level.
-            scale (:obj: `mmcv.cnn.Scale`): Learnable scale module to resize
-                the bbox prediction.
+            scale (Scale): Learnable scale module to resize the bbox prediction.
 
         Returns:
-            tuple:
+            (tuple):
                 cls_score (Tensor): Cls scores for a single scale level
                     the channels number is num_anchors * num_classes.
                 bbox_pred (Tensor): Box energies / deltas for a single scale
@@ -218,18 +215,17 @@ class ATSSHead(ClassIncrementalMixin, AnchorHead):
                 level with shape (N, num_anchors * 4, H, W)
             centernesses (list[Tensor]): Centerness for each scale
                 level with shape (N, num_anchors * 1, H, W)
-            batch_gt_instances (list[:obj:`InstanceData`]): Batch of
-                gt_instance.  It usually includes ``bboxes`` and ``labels``
-                attributes.
-            batch_img_metas (list[dict]): Meta information of each image, e.g.,
-                image size, scaling factor, etc.
-            batch_gt_instances_ignore (list[:obj:`InstanceData`], Optional):
+            batch_gt_instances (list[InstanceData]): Batch of gt_instance.
+                It usually includes ``bboxes`` and ``labels`` attributes.
+            batch_img_metas (list[dict]): Meta information of each image,
+                e.g., image size, scaling factor, etc.
+            batch_gt_instances_ignore (list[InstanceData], Optional):
                 Batch of gt_instances_ignore. It includes ``bboxes`` attribute
                 data that is ignored during training and testing.
                 Defaults to None.
 
         Returns:
-            dict[str, Tensor]: A dictionary of loss components.
+            (dict[str, Tensor]): A dictionary of loss components.
         """
         featmap_sizes = [featmap.size()[-2:] for featmap in cls_scores]
         if len(featmap_sizes) != self.prior_generator.num_levels:
@@ -291,29 +287,29 @@ class ATSSHead(ClassIncrementalMixin, AnchorHead):
         """Compute loss of a single scale level.
 
         Args:
+            anchors (Tensor): Box reference for each scale level with shape
+                (N, num_total_anchors, 4).
             cls_score (Tensor): Box scores for each scale level
                 Has shape (N, num_anchors * num_classes, H, W).
             bbox_pred (Tensor): Box energies / deltas for each scale
                 level with shape (N, num_anchors * 4, H, W).
             centerness(Tensor): Centerness scores for each scale level.
-            anchors (Tensor): Box reference for each scale level with shape
-                (N, num_total_anchors, 4).
             labels (Tensor): Labels of each anchors with shape
                 (N, num_total_anchors).
             label_weights (Tensor): Label weights of each anchor with shape
                 (N, num_total_anchors)
             bbox_targets (Tensor): BBox regression targets of each anchor with
                 shape (N, num_total_anchors, 4).
+            valid_label_mask (Tensor): Label mask for consideration of ignored
+                label with shape (N, num_total_anchors, 1).
             avg_factor (float): Average factor that is used to average
                 the loss. When using sampling method, avg_factor is usually
                 the sum of positive and negative priors. When using
                 `PseudoSampler`, `avg_factor` is usually equal to the number
                 of positive priors.
-            valid_label_mask (Tensor): Label mask for consideration of ignored
-                label with shape (N, num_total_anchors, 1).
 
         Returns:
-            tuple[Tensor]: A tuple of loss components.
+            (tuple[Tensor]): A tuple of loss components.
         """
         anchors = anchors.reshape(-1, 4)
         cls_score = cls_score.permute(0, 2, 3, 1).reshape(-1, self.cls_out_channels).contiguous()
@@ -379,7 +375,7 @@ class ATSSHead(ClassIncrementalMixin, AnchorHead):
             gts (Tensor): Ground truth bboxes with shape (N, 4), "xyxy" format.
 
         Returns:
-            Tensor: Centerness between anchors and gts.
+            (Tensor): Centerness between anchors and gts.
         """
         anchors_cx = (anchors[:, 2] + anchors[:, 0]) / 2
         anchors_cy = (anchors[:, 3] + anchors[:, 1]) / 2
@@ -481,11 +477,11 @@ class ATSSHead(ClassIncrementalMixin, AnchorHead):
                     shape (num_anchors,).
             num_level_anchors (List[int]): Number of anchors of each scale
                 level.
-            gt_instances (:obj:`InstanceData`): Ground truth of instance
+            gt_instances (InstanceData): Ground truth of instance
                 annotations. It usually includes ``bboxes`` and ``labels``
                 attributes.
             img_meta (dict): Meta information for current image.
-            gt_instances_ignore (:obj:`InstanceData`, optional): Instances
+            gt_instances_ignore (InstanceData, optional): Instances
                 to be ignored during training. It includes ``bboxes`` attribute
                 data that is ignored during training and testing.
                 Defaults to None.
@@ -493,7 +489,7 @@ class ATSSHead(ClassIncrementalMixin, AnchorHead):
                 set of anchors.
 
         Returns:
-            tuple: N is the number of total anchors in the image.
+            (tuple): N is the number of total anchors in the image.
                 labels (Tensor): Labels of all anchors in the image with shape
                     (N,).
                 label_weights (Tensor): Label weights of all anchor in the
@@ -506,7 +502,7 @@ class ATSSHead(ClassIncrementalMixin, AnchorHead):
                     (num_pos,).
                 neg_inds (Tensor): Indices of negative anchor with shape
                     (num_neg,).
-                sampling_result (:obj:`SamplingResult`): Sampling results.
+                sampling_result (`SamplingResult`): Sampling results.
         """
         inside_flags = anchor_inside_flags(
             flat_anchors,

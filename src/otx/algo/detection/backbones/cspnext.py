@@ -1,8 +1,10 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 # Copyright (c) OpenMMLab. All rights reserved.
+"""Implementations copied from mmdet.models.backbones.cspnext.py.
 
-"""CSPNeXt backbone used in RTMDet."""
+Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/backbones/cspnext.py
+"""
 
 from __future__ import annotations
 
@@ -43,17 +45,16 @@ class CSPNeXt(BaseModule):
             layers. Defaults to (5, 9, 13).
         channel_attention (bool): Whether to add channel attention in each
             stage. Defaults to True.
-        conv_cfg (:obj:`ConfigDict` or dict, optional): Config dict for
+        conv_cfg (dict, optional): Config dict for
             convolution layer. Defaults to None.
-        norm_cfg (:obj:`ConfigDict` or dict): Dictionary to construct and
+        norm_cfg (dict): Dictionary to construct and
             config norm layer. Defaults to dict(type='BN', requires_grad=True).
-        act_cfg (:obj:`ConfigDict` or dict): Config dict for activation layer.
+        act_cfg (dict): Config dict for activation layer.
             Defaults to dict(type='SiLU').
         norm_eval (bool): Whether to set norm layers to eval mode, namely,
             freeze running stats (mean and var). Note: Effect on Batch Norm
             and its variants only.
-        init_cfg (:obj:`ConfigDict` or dict or list[dict] or
-            list[:obj:`ConfigDict`]): Initialization config dict.
+        init_cfg (dict, list[dict]): Initialization config dict.
     """
 
     # From left to right:
@@ -92,17 +93,19 @@ class CSPNeXt(BaseModule):
         norm_eval: bool = False,
         init_cfg: dict | None = None,
     ) -> None:
-        if init_cfg is None:
-            init_cfg = {
-                "type": "Kaiming",
-                "layer": "Conv2d",
-                "a": math.sqrt(5),
-                "distribution": "uniform",
-                "mode": "fan_in",
-                "nonlinearity": "leaky_relu",
-            }
+        init_cfg = init_cfg or {
+            "type": "Kaiming",
+            "layer": "Conv2d",
+            "a": math.sqrt(5),
+            "distribution": "uniform",
+            "mode": "fan_in",
+            "nonlinearity": "leaky_relu",
+        }
 
         super().__init__(init_cfg=init_cfg)
+        norm_cfg = norm_cfg or {"type": "BN", "momentum": 0.03, "eps": 0.001}
+        act_cfg = act_cfg or {"type": "SiLU"}
+
         arch_setting = self.arch_settings[arch]
         if arch_ovewrite:
             arch_setting = arch_ovewrite  # type: ignore[assignment]
@@ -114,12 +117,6 @@ class CSPNeXt(BaseModule):
         if frozen_stages not in range(-1, len(arch_setting) + 1):
             msg = f"frozen_stages must be in (-1, len(arch_setting) + 1). But received {frozen_stages}"
             raise ValueError(msg)
-
-        if norm_cfg is None:
-            norm_cfg = {"type": "BN", "momentum": 0.03, "eps": 0.001}
-
-        if act_cfg is None:
-            act_cfg = {"type": "SiLU"}
 
         self.out_indices = out_indices
         self.frozen_stages = frozen_stages

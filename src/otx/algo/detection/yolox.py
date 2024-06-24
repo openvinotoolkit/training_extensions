@@ -11,6 +11,7 @@ from omegaconf import DictConfig
 
 from otx.algo.detection.backbones import CSPDarknet
 from otx.algo.detection.heads import YOLOXHead
+from otx.algo.detection.losses import CrossEntropyLoss, IoULoss, L1Loss
 from otx.algo.detection.necks import YOLOXPAFPN
 from otx.algo.detection.ssd import SingleStageDetector
 from otx.algo.detection.utils.assigner import SimOTAAssigner
@@ -140,6 +141,10 @@ class YOLOXTINY(YOLOX):
             num_classes=num_classes,
             in_channels=96,
             feat_channels=96,
+            loss_cls=CrossEntropyLoss(use_sigmoid=True, reduction="sum", loss_weight=1.0),
+            loss_bbox=IoULoss(mode="square", eps=1e-16, reduction="sum", loss_weight=5.0),
+            loss_obj=CrossEntropyLoss(use_sigmoid=True, reduction="sum", loss_weight=1.0),
+            loss_l1=L1Loss(reduction="sum", loss_weight=1.0),
             train_cfg=train_cfg,
             test_cfg=test_cfg,
         )
@@ -181,6 +186,10 @@ class YOLOXS(YOLOX):
             num_classes=num_classes,
             in_channels=128,
             feat_channels=128,
+            loss_cls=CrossEntropyLoss(use_sigmoid=True, reduction="sum", loss_weight=1.0),
+            loss_bbox=IoULoss(mode="square", eps=1e-16, reduction="sum", loss_weight=5.0),
+            loss_obj=CrossEntropyLoss(use_sigmoid=True, reduction="sum", loss_weight=1.0),
+            loss_l1=L1Loss(reduction="sum", loss_weight=1.0),
             train_cfg=train_cfg,
             test_cfg=test_cfg,
         )
@@ -222,6 +231,10 @@ class YOLOXL(YOLOX):
             num_classes=num_classes,
             in_channels=256,
             feat_channels=256,
+            loss_cls=CrossEntropyLoss(use_sigmoid=True, reduction="sum", loss_weight=1.0),
+            loss_bbox=IoULoss(mode="square", eps=1e-16, reduction="sum", loss_weight=5.0),
+            loss_obj=CrossEntropyLoss(use_sigmoid=True, reduction="sum", loss_weight=1.0),
+            loss_l1=L1Loss(reduction="sum", loss_weight=1.0),
             train_cfg=train_cfg,
             test_cfg=test_cfg,
         )
@@ -263,6 +276,10 @@ class YOLOXX(YOLOX):
             num_classes=num_classes,
             in_channels=320,
             feat_channels=320,
+            loss_cls=CrossEntropyLoss(use_sigmoid=True, reduction="sum", loss_weight=1.0),
+            loss_bbox=IoULoss(mode="square", eps=1e-16, reduction="sum", loss_weight=5.0),
+            loss_obj=CrossEntropyLoss(use_sigmoid=True, reduction="sum", loss_weight=1.0),
+            loss_l1=L1Loss(reduction="sum", loss_weight=1.0),
             train_cfg=train_cfg,
             test_cfg=test_cfg,
         )

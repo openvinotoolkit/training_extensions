@@ -7,8 +7,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from omegaconf import DictConfig
-
 from otx.algo.common.backbones import ResNeXt
 from otx.algo.detection.backbones import build_model_including_pytorchcv
 from otx.algo.detection.heads import ATSSHead
@@ -84,15 +82,13 @@ class MobileNetV2ATSS(ATSS):
             "pos_weight": -1,
             "debug": False,
         }
-        test_cfg = DictConfig(
-            {
-                "nms": {"type": "nms", "iou_threshold": 0.6},
-                "min_bbox_size": 0,
-                "score_thr": 0.05,
-                "max_per_img": 100,
-                "nms_pre": 1000,
-            },
-        )
+        test_cfg = {
+            "nms": {"type": "nms", "iou_threshold": 0.6},
+            "min_bbox_size": 0,
+            "score_thr": 0.05,
+            "max_per_img": 100,
+            "nms_pre": 1000,
+        }
         backbone = build_model_including_pytorchcv(
             cfg={
                 "type": "mobilenetv2_w1",
@@ -105,12 +101,15 @@ class MobileNetV2ATSS(ATSS):
         neck = FPN(
             in_channels=[24, 32, 96, 320],
             out_channels=64,
+            num_outs=5,
             start_level=1,
             add_extra_convs="on_output",
-            num_outs=5,
             relu_before_extra_convs=True,
         )
         bbox_head = ATSSHead(
+            num_classes=num_classes,
+            in_channels=64,
+            stacked_convs=4,
             anchor_generator=AnchorGenerator(
                 ratios=[1.0],
                 octave_base_scale=8,
@@ -129,9 +128,6 @@ class MobileNetV2ATSS(ATSS):
             ),
             loss_bbox=GIoULoss(loss_weight=2.0),
             loss_centerness=CrossEntropyLoss(use_sigmoid=True, loss_weight=1.0),
-            num_classes=num_classes,
-            in_channels=64,
-            stacked_convs=4,
             feat_channels=64,
             train_cfg=train_cfg,
             test_cfg=test_cfg,
@@ -159,15 +155,13 @@ class ResNeXt101ATSS(ATSS):
             "pos_weight": -1,
             "debug": False,
         }
-        test_cfg = DictConfig(
-            {
-                "nms": {"type": "nms", "iou_threshold": 0.6},
-                "min_bbox_size": 0,
-                "score_thr": 0.05,
-                "max_per_img": 100,
-                "nms_pre": 1000,
-            },
-        )
+        test_cfg = {
+            "nms": {"type": "nms", "iou_threshold": 0.6},
+            "min_bbox_size": 0,
+            "score_thr": 0.05,
+            "max_per_img": 100,
+            "nms_pre": 1000,
+        }
         backbone = ResNeXt(
             depth=101,
             groups=64,

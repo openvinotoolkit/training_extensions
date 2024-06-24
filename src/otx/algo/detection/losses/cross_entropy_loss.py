@@ -1,34 +1,36 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-"""Base Cross Entropy Loss implementation from mmdet."""
+# Copyright (c) OpenMMLab. All rights reserved.
+"""Implementations copied from mmdet.models.losses.cross_entropy.py.
+
+Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/losses/cross_entropy.py
+"""
 
 from __future__ import annotations
 
 import torch
-from torch import nn
+from torch import Tensor, nn
 
-from otx.algo.detection.losses.weighted_loss import weight_reduce_loss
+from .utils import weight_reduce_loss
 
 
-# All of the methods and classes below come from mmdet, and are slightly modified.
-# https://github.com/open-mmlab/mmdetection/blob/ecac3a77becc63f23d9f6980b2a36f86acd00a8a/mmdet/models/losses/cross_entropy_loss.py
 def cross_entropy(
-    pred: torch.Tensor,
-    label: torch.Tensor,
-    weight: torch.Tensor | None = None,
+    pred: Tensor,
+    label: Tensor,
+    weight: Tensor | None = None,
     reduction: str = "mean",
     avg_factor: int | None = None,
     class_weight: list[float] | None = None,
     ignore_index: int = -100,
     avg_non_ignore: bool = False,
-) -> torch.Tensor:
+) -> Tensor:
     """Calculate the CrossEntropy loss.
 
     Args:
-        pred (torch.Tensor): The prediction with shape (N, C), C is the number
+        pred (Tensor): The prediction with shape (N, C), C is the number
             of classes.
-        label (torch.Tensor): The learning label of the prediction.
-        weight (torch.Tensor, optional): Sample-wise loss weight.
+        label (Tensor): The learning label of the prediction.
+        weight (Tensor, optional): Sample-wise loss weight.
         reduction (str): The method used to reduce the loss.
         avg_factor (int, optional): Average factor that is used to average
             the loss. Defaults to None.
@@ -39,7 +41,7 @@ def cross_entropy(
             only averaged over non-ignored targets. Default: False.
 
     Returns:
-        torch.Tensor: The calculated loss
+        (Tensor): The calculated loss
     """
     loss = nn.functional.cross_entropy(pred, label, weight=class_weight, reduction="none", ignore_index=ignore_index)
 
@@ -56,11 +58,11 @@ def cross_entropy(
 
 
 def _expand_onehot_labels(
-    labels: torch.Tensor,
-    label_weights: torch.Tensor,
+    labels: Tensor,
+    label_weights: Tensor,
     label_channels: int,
     ignore_index: int,
-) -> tuple[torch.Tensor, ...]:
+) -> tuple[Tensor, ...]:
     """Expand onehot labels to match the size of prediction."""
     bin_labels = labels.new_full((labels.size(0), label_channels), 0)
     valid_mask = (labels >= 0) & (labels != ignore_index)
@@ -77,25 +79,25 @@ def _expand_onehot_labels(
 
 
 def binary_cross_entropy(
-    pred: torch.Tensor,
-    label: torch.Tensor,
-    weight: torch.Tensor | None = None,
+    pred: Tensor,
+    label: Tensor,
+    weight: Tensor | None = None,
     reduction: str = "mean",
     avg_factor: int | None = None,
     class_weight: list[float] | None = None,
     ignore_index: int = -100,
     avg_non_ignore: bool = False,
-) -> torch.Tensor:
+) -> Tensor:
     """Calculate the binary CrossEntropy loss.
 
     Args:
-        pred (torch.Tensor): The prediction with shape (N, 1) or (N, ).
+        pred (Tensor): The prediction with shape (N, 1) or (N, ).
             When the shape of pred is (N, 1), label will be expanded to
             one-hot format, and when the shape of pred is (N, ), label
             will not be expanded to one-hot format.
-        label (torch.Tensor): The learning label of the prediction,
+        label (Tensor): The learning label of the prediction,
             with shape (N, ).
-        weight (torch.Tensor, None): Sample-wise loss weight.
+        weight (Tensor, None): Sample-wise loss weight.
         reduction (str): The method used to reduce the loss.
             Options are "none", "mean" and "sum".
         avg_factor (int, optional): Average factor that is used to average
@@ -107,7 +109,7 @@ def binary_cross_entropy(
             only averaged over non-ignored targets. Default: False.
 
     Returns:
-        torch.Tensor: The calculated loss.
+        (Tensor): The calculated loss.
     """
     if pred.dim() != label.dim():
         label, weight, valid_mask = _expand_onehot_labels(label, weight, pred.size(-1), ignore_index)
@@ -136,26 +138,26 @@ def binary_cross_entropy(
 
 
 def mask_cross_entropy(
-    pred: torch.Tensor,
-    target: torch.Tensor,
-    label: torch.Tensor,
+    pred: Tensor,
+    target: Tensor,
+    label: Tensor,
     class_weight: list[float] | None = None,
     **kwargs,  # noqa: ARG001
-) -> torch.Tensor:
+) -> Tensor:
     """Calculate the CrossEntropy loss for masks.
 
     Args:
-        pred (torch.Tensor): The prediction with shape (N, C, *), C is the
+        pred (Tensor): The prediction with shape (N, C, *), C is the
             number of classes. The trailing * indicates arbitrary shape.
-        target (torch.Tensor): The learning label of the prediction.
-        label (torch.Tensor): ``label`` indicates the class label of the mask
+        target (Tensor): The learning label of the prediction.
+        label (Tensor): ``label`` indicates the class label of the mask
             corresponding object. This will be used to select the mask in the
             of the class which the object belongs to when the mask prediction
             if not class-agnostic.
         class_weight (list[float], None): The weight for each class.
 
     Returns:
-        torch.Tensor: The calculated loss
+        (Tensor): The calculated loss
 
     Example:
         >>> N, C = 3, 11
@@ -229,20 +231,20 @@ class CrossEntropyLoss(nn.Module):
 
     def forward(
         self,
-        cls_score: torch.Tensor,
-        label: torch.Tensor,
-        weight: torch.Tensor | None = None,
+        cls_score: Tensor,
+        label: Tensor,
+        weight: Tensor | None = None,
         avg_factor: int | None = None,
         reduction_override: str | None = None,
         ignore_index: int = -100,
         **kwargs,
-    ) -> torch.Tensor:
+    ) -> Tensor:
         """Forward function.
 
         Args:
-            cls_score (torch.Tensor): The prediction.
-            label (torch.Tensor): The learning label of the prediction.
-            weight (torch.Tensor, None): Sample-wise loss weight.
+            cls_score (Tensor): The prediction.
+            label (Tensor): The learning label of the prediction.
+            weight (Tensor, None): Sample-wise loss weight.
             avg_factor (int, None): Average factor that is used to average
                 the loss. Defaults to None.
             reduction_override (str, None): The method used to reduce the
@@ -251,7 +253,7 @@ class CrossEntropyLoss(nn.Module):
                 Default: -100.
 
         Returns:
-            torch.Tensor: The calculated loss.
+            (Tensor): The calculated loss.
         """
         reduction = reduction_override if reduction_override else self.reduction
 

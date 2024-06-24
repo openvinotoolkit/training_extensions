@@ -5,8 +5,6 @@
 
 from __future__ import annotations
 
-from omegaconf import DictConfig
-
 from otx.algo.detection.backbones import CSPNeXt
 from otx.algo.detection.heads import RTMDetSepBNHead
 from otx.algo.detection.losses import GIoULoss, QualityFocalLoss
@@ -77,22 +75,20 @@ class RTMDetTiny(RTMDet):
             "debug": False,
         }
 
-        test_cfg = DictConfig(
-            {
-                "nms": {"type": "nms", "iou_threshold": 0.65},
-                "score_thr": 0.001,
-                "mask_thr_binary": 0.5,
-                "max_per_img": 300,
-                "min_bbox_size": 0,
-                "nms_pre": 30000,
-            },
-        )
+        test_cfg = {
+            "nms": {"type": "nms", "iou_threshold": 0.65},
+            "score_thr": 0.001,
+            "mask_thr_binary": 0.5,
+            "max_per_img": 300,
+            "min_bbox_size": 0,
+            "nms_pre": 30000,
+        }
 
         backbone = CSPNeXt(
             arch="P5",
-            expand_ratio=0.5,
             deepen_factor=0.167,
             widen_factor=0.375,
+            expand_ratio=0.5,
             channel_attention=True,
             norm_cfg={"type": "BN"},
             act_cfg={"type": "SiLU", "inplace": True},
