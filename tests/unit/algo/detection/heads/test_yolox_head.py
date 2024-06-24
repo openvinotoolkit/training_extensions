@@ -8,7 +8,7 @@ Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/tests/test_mod
 
 import torch
 from omegaconf import DictConfig
-from otx.algo.detection.heads.yolox_head import YOLOXHead
+from otx.algo.detection.heads import YOLOXHead
 from otx.algo.detection.utils.assigner import SimOTAAssigner
 from otx.algo.modules.conv_module import ConvModule
 from otx.algo.modules.depthwise_separable_conv_module import DepthwiseSeparableConvModule

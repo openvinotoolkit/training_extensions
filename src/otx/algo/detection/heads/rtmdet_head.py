@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING
 import torch
 from torch import Tensor, nn
 
-from otx.algo.detection.heads.atss_head import ATSSHead
+from otx.algo.detection.heads import ATSSHead
 from otx.algo.detection.ops.nms import multiclass_nms
 from otx.algo.detection.utils.utils import (
     anchor_inside_flags,

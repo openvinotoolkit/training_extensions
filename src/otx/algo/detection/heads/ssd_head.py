@@ -1,5 +1,6 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
+# Copyright (c) OpenMMLab. All rights reserved.
 """Custom SSD head for OTX template."""
 
 from __future__ import annotations
@@ -10,7 +11,7 @@ import torch
 from torch import Tensor, nn
 
 from otx.algo.detection.heads.anchor_head import AnchorHead
-from otx.algo.detection.losses.cross_entropy_loss import CrossEntropyLoss
+from otx.algo.detection.losses import CrossEntropyLoss
 from otx.algo.detection.losses.weighted_loss import smooth_l1_loss
 from otx.algo.detection.utils.anchor_generator import AnchorGenerator
 from otx.algo.detection.utils.coder import DeltaXYWHBBoxCoder
