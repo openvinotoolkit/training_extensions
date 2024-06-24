@@ -12,7 +12,7 @@ from omegaconf import DictConfig
 from otx.algo.detection.backbones import ResNeXt, build_model_including_pytorchcv
 from otx.algo.detection.heads import ATSSHead
 from otx.algo.detection.losses import CrossEntropyLoss, CrossSigmoidFocalLoss, GIoULoss
-from otx.algo.detection.necks.fpn import FPN
+from otx.algo.detection.necks import FPN
 from otx.algo.detection.ssd import SingleStageDetector
 from otx.algo.detection.utils.anchor_generator import AnchorGenerator
 from otx.algo.detection.utils.assigner import ATSSAssigner

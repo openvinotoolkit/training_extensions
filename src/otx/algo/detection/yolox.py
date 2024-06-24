@@ -11,7 +11,7 @@ from omegaconf import DictConfig
 
 from otx.algo.detection.backbones import CSPDarknet
 from otx.algo.detection.heads import YOLOXHead
-from otx.algo.detection.necks.yolox_pafpn import YOLOXPAFPN
+from otx.algo.detection.necks import YOLOXPAFPN
 from otx.algo.detection.ssd import SingleStageDetector
 from otx.algo.detection.utils.assigner import SimOTAAssigner
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
