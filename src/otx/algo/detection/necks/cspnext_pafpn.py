@@ -10,7 +10,7 @@ import math
 import torch
 from torch import Tensor, nn
 
-from otx.algo.detection.utils.layer import CSPLayer
+from otx.algo.detection.layers import CSPLayer
 from otx.algo.modules.base_module import BaseModule
 from otx.algo.modules.conv_module import ConvModule
 from otx.algo.modules.depthwise_separable_conv_module import DepthwiseSeparableConvModule
