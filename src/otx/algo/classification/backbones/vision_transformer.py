@@ -3,19 +3,21 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 
 """Copy from mmpretrain/models/backbones/vision_transformer.py."""
+from __future__ import annotations
 
-from typing import Sequence, Literal
+from typing import Literal, Sequence
 
 import numpy as np
 import torch
-import torch.nn as nn
+from torch import nn
+
+from otx.algo.classification.utils.attention import MultiheadAttention
+from otx.algo.classification.utils.embed import resize_pos_embed
+from otx.algo.classification.utils.swiglu_ffn import SwiGLUFFNFused
 from otx.algo.modules.base_module import BaseModule, ModuleList
 from otx.algo.modules.norm import build_norm_layer
 from otx.algo.modules.transformer import FFN, PatchEmbed
 from otx.algo.utils.weight_init import trunc_normal_
-from otx.algo.classification.utils.attention import MultiheadAttention
-from otx.algo.classification.utils.embed import resize_pos_embed
-from otx.algo.classification.utils.swiglu_ffn import SwiGLUFFNFused
 
 
 class TransformerEncoderLayer(BaseModule):
@@ -44,22 +46,24 @@ class TransformerEncoderLayer(BaseModule):
             Defaults to None.
     """
 
-    def __init__(self,
-                 embed_dims: int,
-                 num_heads: int,
-                 feedforward_channels: int,
-                 drop_rate: float = 0.,
-                 attn_drop_rate: float = 0.,
-                 drop_path_rate: float = 0.,
-                 num_fcs: int = 2,
-                 qkv_bias: bool = True,
-                 ffn_type: str = 'origin',
-                 act_cfg: dict = {'type': 'GELU'},
-                 norm_cfg: dict = {"type": "LN"},
-                 init_cfg: dict | None=None):
-        super(TransformerEncoderLayer, self).__init__(init_cfg=init_cfg)
+    def __init__(
+        self,
+        embed_dims: int,
+        num_heads: int,
+        feedforward_channels: int,
+        drop_rate: float = 0.0,
+        attn_drop_rate: float = 0.0,
+        drop_path_rate: float = 0.0,
+        num_fcs: int = 2,
+        qkv_bias: bool = True,
+        ffn_type: str = "origin",
+        act_cfg: dict = {"type": "GELU"},  # noqa: B006
+        norm_cfg: dict = {"type": "LN"},  # noqa: B006
+        init_cfg: dict | None = None,
+    ):
+        super().__init__(init_cfg=init_cfg)
 
-        act_cfg = act_cfg if act_cfg else {'type': 'GELU'}
+        act_cfg = act_cfg if act_cfg else {"type": "GELU"}
         self.embed_dims = embed_dims
 
         _, self.ln1 = build_norm_layer(norm_cfg, self.embed_dims)
@@ -69,58 +73,87 @@ class TransformerEncoderLayer(BaseModule):
             num_heads=num_heads,
             attn_drop=attn_drop_rate,
             proj_drop=drop_rate,
-            dropout_layer=dict(type='DropPath', drop_prob=drop_path_rate),
-            qkv_bias=qkv_bias)
+            dropout_layer={"type": "DropPath", "drop_prob": drop_path_rate},
+            qkv_bias=qkv_bias,
+        )
 
         _, self.ln2 = build_norm_layer(norm_cfg, self.embed_dims)
 
-        if ffn_type == 'origin':
+        if ffn_type == "origin":
             self.ffn = FFN(
                 embed_dims=embed_dims,
                 feedforward_channels=feedforward_channels,
                 num_fcs=num_fcs,
                 act_cfg=act_cfg,
                 ffn_drop=drop_rate,
-                dropout_layer=dict(type='DropPath', drop_prob=drop_path_rate),
-                )
-        elif ffn_type == 'swiglu_fused':
-            self.ffn = SwiGLUFFNFused(
-                embed_dims=embed_dims,
-                feedforward_channels=feedforward_channels)
+                dropout_layer={"type": "DropPath", "drop_prob": drop_path_rate},
+            )
+        elif ffn_type == "swiglu_fused":
+            self.ffn = SwiGLUFFNFused(embed_dims=embed_dims, feedforward_channels=feedforward_channels)
         else:
             raise NotImplementedError
 
     @property
-    def norm1(self):
+    def norm1(self) -> nn.Module:
+        """Returns the normalization layer used in the Vision Transformer backbone.
+
+        Returns:
+            nn.Module: The normalization layer.
+        """
         return self.ln1
 
     @property
-    def norm2(self):
+    def norm2(self) -> nn.Module:
+        """Returns the second normalization layer of the VisionTransformer backbone.
+
+        Returns:
+            nn.Module: The second normalization layer.
+        """
         return self.ln2
 
-    def init_weights(self):
-        super(TransformerEncoderLayer, self).init_weights()
+    def init_weights(self) -> None:
+        """Initializes the weights of the TransformerEncoderLayer.
+
+        This method overrides the `init_weights` method of the base class and initializes the weights
+        of the linear layers in the feed-forward network (ffn) using Xavier uniform initialization
+        for the weights and normal distribution with a standard deviation of 1e-6 for the biases.
+        """
+        super().init_weights()
         for m in self.ffn.modules():
             if isinstance(m, nn.Linear):
                 nn.init.xavier_uniform_(m.weight)
                 nn.init.normal_(m.bias, std=1e-6)
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """Forward pass of the VisionTransformer model.
+
+        Args:
+            x (torch.Tensor): Input tensor.
+
+        Returns:
+            torch.Tensor: Output tensor.
+        """
         x = x + self.attn(self.ln1(x))
-        x = self.ffn(self.ln2(x), identity=x)
-        return x
+        return self.ffn(self.ln2(x), identity=x)
 
 
 VIT_ARCH_TYPE = Literal[
     "small",
     "base",
-    'large',
-    'huge',
-    'eva-g', 'eva-giant',
-    'deit-t', 'deit-tiny',
-    'deit-s', 'deit-small', 'dinov2-s', 'dinov2-small',
-    'deit-b', 'deit-base',
-    'dinov2-g', 'dinov2-giant',
+    "large",
+    "huge",
+    "eva-g",
+    "eva-giant",
+    "deit-t",
+    "deit-tiny",
+    "deit-s",
+    "deit-small",
+    "dinov2-s",
+    "dinov2-small",
+    "deit-b",
+    "deit-base",
+    "dinov2-g",
+    "dinov2-giant",
 ]
 
 
@@ -184,128 +217,149 @@ class VisionTransformer(BaseModule):
         init_cfg (dict, optional): Initialization config dict.
             Defaults to None.
     """
-    arch_zoo = {
+
+    arch_zoo = {  # noqa: RUF012
         **dict.fromkeys(
-            ['s', 'small'], {
-                'embed_dims': 768,
-                'num_layers': 8,
-                'num_heads': 8,
-                'feedforward_channels': 768 * 3,
-            }),
+            ["s", "small"],
+            {
+                "embed_dims": 768,
+                "num_layers": 8,
+                "num_heads": 8,
+                "feedforward_channels": 768 * 3,
+            },
+        ),
         **dict.fromkeys(
-            ['b', 'base'], {
-                'embed_dims': 768,
-                'num_layers': 12,
-                'num_heads': 12,
-                'feedforward_channels': 3072
-            }),
+            ["b", "base"],
+            {
+                "embed_dims": 768,
+                "num_layers": 12,
+                "num_heads": 12,
+                "feedforward_channels": 3072,
+            },
+        ),
         **dict.fromkeys(
-            ['l', 'large'], {
-                'embed_dims': 1024,
-                'num_layers': 24,
-                'num_heads': 16,
-                'feedforward_channels': 4096
-            }),
+            ["l", "large"],
+            {
+                "embed_dims": 1024,
+                "num_layers": 24,
+                "num_heads": 16,
+                "feedforward_channels": 4096,
+            },
+        ),
         **dict.fromkeys(
-            ['h', 'huge'],
+            ["h", "huge"],
             {
                 # The same as the implementation in MAE
                 # <https://arxiv.org/abs/2111.06377>
-                'embed_dims': 1280,
-                'num_layers': 32,
-                'num_heads': 16,
-                'feedforward_channels': 5120
-            }),
+                "embed_dims": 1280,
+                "num_layers": 32,
+                "num_heads": 16,
+                "feedforward_channels": 5120,
+            },
+        ),
         **dict.fromkeys(
-            ['eva-g', 'eva-giant'],
+            ["eva-g", "eva-giant"],
             {
                 # The implementation in EVA
                 # <https://arxiv.org/abs/2211.07636>
-                'embed_dims': 1408,
-                'num_layers': 40,
-                'num_heads': 16,
-                'feedforward_channels': 6144
-            }),
+                "embed_dims": 1408,
+                "num_layers": 40,
+                "num_heads": 16,
+                "feedforward_channels": 6144,
+            },
+        ),
         **dict.fromkeys(
-            ['deit-t', 'deit-tiny'], {
-                'embed_dims': 192,
-                'num_layers': 12,
-                'num_heads': 3,
-                'feedforward_channels': 192 * 4
-            }),
+            ["deit-t", "deit-tiny"],
+            {
+                "embed_dims": 192,
+                "num_layers": 12,
+                "num_heads": 3,
+                "feedforward_channels": 192 * 4,
+            },
+        ),
         **dict.fromkeys(
-            ['deit-s', 'deit-small', 'dinov2-s', 'dinov2-small'], {
-                'embed_dims': 384,
-                'num_layers': 12,
-                'num_heads': 6,
-                'feedforward_channels': 384 * 4
-            }),
+            ["deit-s", "deit-small", "dinov2-s", "dinov2-small"],
+            {
+                "embed_dims": 384,
+                "num_layers": 12,
+                "num_heads": 6,
+                "feedforward_channels": 384 * 4,
+            },
+        ),
         **dict.fromkeys(
-            ['deit-b', 'deit-base'], {
-                'embed_dims': 768,
-                'num_layers': 12,
-                'num_heads': 12,
-                'feedforward_channels': 768 * 4
-            }),
+            ["deit-b", "deit-base"],
+            {
+                "embed_dims": 768,
+                "num_layers": 12,
+                "num_heads": 12,
+                "feedforward_channels": 768 * 4,
+            },
+        ),
         **dict.fromkeys(
-            ['dinov2-g', 'dinov2-giant'], {
-                'embed_dims': 1536,
-                'num_layers': 40,
-                'num_heads': 24,
-                'feedforward_channels': 6144
-            }),
+            ["dinov2-g", "dinov2-giant"],
+            {
+                "embed_dims": 1536,
+                "num_layers": 40,
+                "num_heads": 24,
+                "feedforward_channels": 6144,
+            },
+        ),
     }
     num_extra_tokens = 1  # class token
-    OUT_TYPES = {'raw', 'cls_token', 'featmap', 'avg_featmap'}
+    OUT_TYPES = {"raw", "cls_token", "featmap", "avg_featmap"}  # noqa: RUF012
 
-    def __init__(self,
-                 arch: VIT_ARCH_TYPE = 'base',
-                 img_size: int = 224,
-                 patch_size: int = 16,
-                 in_channels: int = 3,
-                 out_indices: int | list[int] = -1,
-                 drop_rate: float = 0.,
-                 drop_path_rate: float = 0.,
-                 qkv_bias: bool = True,
-                 norm_cfg: dict = dict(type='LN', eps=1e-6),
-                 final_norm: bool = True,
-                 out_type: str = 'cls_token',
-                 with_cls_token: bool = True,
-                 frozen_stages: int = -1,
-                 interpolate_mode: str = 'bicubic',
-                 patch_cfg: dict = dict(),
-                 layer_cfgs: dict | list[dict] = dict(),
-                 pre_norm: bool = False,
-                 init_cfg: dict | None = None):
-        super(VisionTransformer, self).__init__(init_cfg)
+    def __init__(
+        self,
+        arch: VIT_ARCH_TYPE = "base",
+        img_size: int = 224,
+        patch_size: int = 16,
+        in_channels: int = 3,
+        out_indices: int | list[int] = -1,
+        drop_rate: float = 0.0,
+        drop_path_rate: float = 0.0,
+        qkv_bias: bool = True,
+        norm_cfg: dict = {"type": "LN", "eps": 1e-6},  # noqa: B006
+        final_norm: bool = True,
+        out_type: str = "cls_token",
+        with_cls_token: bool = True,
+        frozen_stages: int = -1,
+        interpolate_mode: str = "bicubic",
+        patch_cfg: dict = {},  # noqa: B006
+        layer_cfgs: dict | list[dict] = {},  # noqa: B006
+        pre_norm: bool = False,
+        init_cfg: dict | None = None,
+    ):
+        super().__init__(init_cfg)
 
         self.arch = arch
-        if isinstance(arch, str):
-            assert arch in set(self.arch_zoo), \
-                f'Arch {arch} is not in default archs {set(self.arch_zoo)}'
+        if isinstance(arch, str) and arch in self.arch_zoo:
             self.arch_settings = self.arch_zoo[arch]
         else:
             essential_keys = {
-                'embed_dims', 'num_layers', 'num_heads', 'feedforward_channels'
+                "embed_dims",
+                "num_layers",
+                "num_heads",
+                "feedforward_channels",
             }
-            assert isinstance(arch, dict) and essential_keys <= set(arch), \
-                f'Custom arch needs a dict with keys {essential_keys}'
+            if not (isinstance(arch, dict) and essential_keys <= set(arch)):
+                msg = f"Custom arch needs a dict with keys {essential_keys}"
+                raise ValueError(msg)
             self.arch_settings = arch
 
-        self.embed_dims = self.arch_settings['embed_dims']
-        self.num_layers = self.arch_settings['num_layers']
+        self.embed_dims = self.arch_settings["embed_dims"]
+        self.num_layers = self.arch_settings["num_layers"]
         self.img_size = img_size if isinstance(img_size, tuple) else (img_size, img_size)
 
         # Set patch embedding
-        _patch_cfg = dict(
-            in_channels=in_channels,
-            input_size=img_size,
-            embed_dims=self.embed_dims,
-            conv_type='Conv2d',
-            kernel_size=patch_size,
-            stride=patch_size,
-            bias=not pre_norm,  # disable bias if pre_norm is used(e.g., CLIP)
-        )
+        _patch_cfg = {
+            "in_channels": in_channels,
+            "input_size": img_size,
+            "embed_dims": self.embed_dims,
+            "conv_type": "Conv2d",
+            "kernel_size": patch_size,
+            "stride": patch_size,
+            "bias": not pre_norm,  # disable bias if pre_norm is used(e.g., CLIP)
+        }
         _patch_cfg.update(patch_cfg)
         self.patch_embed = PatchEmbed(**_patch_cfg)  # type: ignore [arg-type]
         self.patch_resolution = self.patch_embed.init_out_size
@@ -313,40 +367,37 @@ class VisionTransformer(BaseModule):
 
         # Set out type
         if out_type not in self.OUT_TYPES:
-            raise ValueError(f'Unsupported `out_type` {out_type}, please '
-                             f'choose from {self.OUT_TYPES}')
+            msg = f"Unsupported `out_type` {out_type}, please choose from {self.OUT_TYPES}"
+            raise ValueError(msg)
         self.out_type = out_type
 
         # Set cls token
         self.with_cls_token = with_cls_token
+        self.cls_token: nn.Parameter | None
         if with_cls_token:
             self.cls_token = nn.Parameter(torch.zeros(1, 1, self.embed_dims))
-        elif out_type != 'cls_token':
+        elif out_type != "cls_token":
             self.cls_token = None
             self.num_extra_tokens = 0
         else:
-            raise ValueError(
-                'with_cls_token must be True when `out_type="cls_token"`.')
+            msg = 'with_cls_token must be True when `out_type="cls_token"`.'
+            raise ValueError(msg)
 
         # Set position embedding
         self.interpolate_mode = interpolate_mode
-        self.pos_embed = nn.Parameter(
-            torch.zeros(1, num_patches + self.num_extra_tokens,
-                        self.embed_dims))
+        self.pos_embed = nn.Parameter(torch.zeros(1, num_patches + self.num_extra_tokens, self.embed_dims))
         self._register_load_state_dict_pre_hook(self._prepare_pos_embed)
 
         self.drop_after_pos = nn.Dropout(p=drop_rate)
 
         if isinstance(out_indices, int):
             out_indices = [out_indices]
-        assert isinstance(out_indices, Sequence), \
-            f'"out_indices" must by a sequence or int, ' \
-            f'get {type(out_indices)} instead.'
+        if not isinstance(out_indices, Sequence):
+            msg = f"'out_indices' must by a sequence or int, get {type(out_indices)} instead."
+            raise TypeError(msg)
         for i, index in enumerate(out_indices):
             if index < 0:
                 out_indices[i] = self.num_layers + index
-            assert 0 <= out_indices[i] <= self.num_layers, \
-                f'Invalid out_indices {index}'
         self.out_indices = out_indices
 
         # stochastic depth decay rule
@@ -356,15 +407,15 @@ class VisionTransformer(BaseModule):
         if isinstance(layer_cfgs, dict):
             layer_cfgs = [layer_cfgs] * self.num_layers
         for i in range(self.num_layers):
-            _layer_cfg = dict(
-                embed_dims=self.embed_dims,
-                num_heads=self.arch_settings['num_heads'],
-                feedforward_channels=self.
-                arch_settings['feedforward_channels'],
-                drop_rate=drop_rate,
-                drop_path_rate=dpr[i],
-                qkv_bias=qkv_bias,
-                norm_cfg=norm_cfg)
+            _layer_cfg = {
+                "embed_dims": self.embed_dims,
+                "num_heads": self.arch_settings["num_heads"],
+                "feedforward_channels": self.arch_settings["feedforward_channels"],
+                "drop_rate": drop_rate,
+                "drop_path_rate": dpr[i],
+                "qkv_bias": qkv_bias,
+                "norm_cfg": norm_cfg,
+            }
             _layer_cfg.update(layer_cfgs[i])
             self.layers.append(TransformerEncoderLayer(**_layer_cfg))  # type: ignore [arg-type]
 
@@ -378,7 +429,7 @@ class VisionTransformer(BaseModule):
         self.final_norm = final_norm
         if final_norm:
             _, self.ln1 = build_norm_layer(norm_cfg, self.embed_dims)
-        if self.out_type == 'avg_featmap':
+        if self.out_type == "avg_featmap":
             _, self.ln2 = build_norm_layer(norm_cfg, self.embed_dims)
 
         # freeze stages only when self.frozen_stages > 0
@@ -386,29 +437,39 @@ class VisionTransformer(BaseModule):
             self._freeze_stages()
 
     @property
-    def norm1(self):
+    def norm1(self) -> nn.Module:
+        """Returns the normalization layer used in the Vision Transformer backbone.
+
+        Returns:
+            nn.Module: The normalization layer.
+        """
         return self.ln1
 
     @property
-    def norm2(self):
+    def norm2(self) -> nn.Module:
+        """Returns the normalization layer used in the Vision Transformer backbone.
+
+        Returns:
+            nn.Module: The normalization layer.
+        """
         return self.ln2
 
-    def init_weights(self):
-        super(VisionTransformer, self).init_weights()
+    def init_weights(self) -> None:
+        """Initializes the weights of the VisionTransformer."""
+        super().init_weights()
 
-        if not (isinstance(self.init_cfg, dict)
-                and self.init_cfg['type'] == 'Pretrained'):
-            if self.pos_embed is not None:
-                trunc_normal_(self.pos_embed, std=0.02)
+        if not (
+            isinstance(self.init_cfg, dict) and self.init_cfg["type"] == "Pretrained"
+        ) and self.pos_embed is not None:
+            trunc_normal_(self.pos_embed, std=0.02)
 
-    def _prepare_pos_embed(self, state_dict, prefix, *args, **kwargs):
-        name = prefix + 'pos_embed'
-        if name not in state_dict.keys():
+    def _prepare_pos_embed(self, state_dict: dict, prefix: str, *args, **kwargs) -> None:
+        name = prefix + "pos_embed"
+        if name not in state_dict:
             return
 
         ckpt_pos_embed_shape = state_dict[name].shape
-        if (not self.with_cls_token
-                and ckpt_pos_embed_shape[1] == self.pos_embed.shape[1] + 1):
+        if not self.with_cls_token and ckpt_pos_embed_shape[1] == self.pos_embed.shape[1] + 1:
             # Remove cls token from state dict if it's not used.
             state_dict[name] = state_dict[name][:, 1:]
             ckpt_pos_embed_shape = state_dict[name].shape
@@ -420,14 +481,16 @@ class VisionTransformer(BaseModule):
             ckpt_pos_embed_shape = (embed_size, embed_size)
             pos_embed_shape = self.patch_embed.init_out_size
 
-            state_dict[name] = resize_pos_embed(state_dict[name],
-                                                ckpt_pos_embed_shape,
-                                                pos_embed_shape,
-                                                self.interpolate_mode,
-                                                self.num_extra_tokens)
+            state_dict[name] = resize_pos_embed(
+                state_dict[name],
+                ckpt_pos_embed_shape,
+                pos_embed_shape,
+                self.interpolate_mode,
+                self.num_extra_tokens,
+            )
 
     @staticmethod
-    def resize_pos_embed(*args, **kwargs):
+    def resize_pos_embed(*args, **kwargs) -> torch.Tensor:
         """Interface for backward-compatibility."""
         return resize_pos_embed(*args, **kwargs)
 
@@ -460,18 +523,19 @@ class VisionTransformer(BaseModule):
                 for param in self.ln1.parameters():
                     param.requires_grad = False
 
-            if self.out_type == 'avg_featmap':
+            if self.out_type == "avg_featmap":
                 self.ln2.eval()
                 for param in self.ln2.parameters():
                     param.requires_grad = False
 
-    def forward(self, x):
-        B = x.shape[0]
+    def forward(self, x: torch.Tensor) -> tuple:
+        """Forward pass of the VisionTransformer model."""
+        b = x.shape[0]
         x, patch_resolution = self.patch_embed(x)
 
         if self.cls_token is not None:
             # stole cls_tokens impl from Phil Wang, thanks
-            cls_token = self.cls_token.expand(B, -1, -1)
+            cls_token = self.cls_token.expand(b, -1, -1)
             x = torch.cat((cls_token, x), dim=1)
 
         x = x + resize_pos_embed(
@@ -479,7 +543,8 @@ class VisionTransformer(BaseModule):
             self.patch_resolution,
             patch_resolution,
             mode=self.interpolate_mode,
-            num_extra_tokens=self.num_extra_tokens)
+            num_extra_tokens=self.num_extra_tokens,
+        )
         x = self.drop_after_pos(x)
 
         x = self.pre_norm(x)
@@ -496,21 +561,22 @@ class VisionTransformer(BaseModule):
 
         return tuple(outs)
 
-    def _format_output(self, x, hw):
-        if self.out_type == 'raw':
+    def _format_output(self, x: torch.Tensor, hw: nn.Module) -> torch.Tensor:
+        if self.out_type == "raw":
             return x
-        if self.out_type == 'cls_token':
+        if self.out_type == "cls_token":
             return x[:, 0]
 
-        patch_token = x[:, self.num_extra_tokens:]
-        if self.out_type == 'featmap':
-            B = x.size(0)
+        patch_token = x[:, self.num_extra_tokens :]
+        if self.out_type == "featmap":
+            b = x.size(0)
             # (B, N, C) -> (B, H, W, C) -> (B, C, H, W)
-            return patch_token.reshape(B, *hw, -1).permute(0, 3, 1, 2)
-        if self.out_type == 'avg_featmap':
+            return patch_token.reshape(b, *hw, -1).permute(0, 3, 1, 2)
+        if self.out_type == "avg_featmap":
             return self.ln2(patch_token.mean(dim=1))
+        raise NotImplementedError
 
-    def get_layer_depth(self, param_name: str, prefix: str = ''):
+    def get_layer_depth(self, param_name: str, prefix: str = "") -> tuple[int, int]:
         """Get the layer-wise depth of a parameter.
 
         Args:
@@ -531,14 +597,12 @@ class VisionTransformer(BaseModule):
             # For subsequent module like head
             return num_layers - 1, num_layers
 
-        param_name = param_name[len(prefix):]
+        param_name = param_name[len(prefix) :]
 
-        if param_name in ('cls_token', 'pos_embed'):
+        if param_name in ("cls_token", "pos_embed") or param_name.startswith("patch_embed"):
             layer_depth = 0
-        elif param_name.startswith('patch_embed'):
-            layer_depth = 0
-        elif param_name.startswith('layers'):
-            layer_id = int(param_name.split('.')[1])
+        elif param_name.startswith("layers"):
+            layer_id = int(param_name.split(".")[1])
             layer_depth = layer_id + 1
         else:
             layer_depth = num_layers - 1

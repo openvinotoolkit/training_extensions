@@ -7,15 +7,16 @@ Original papers:
 - 'EfficientNetV2: Smaller Models and Faster Training,' https://arxiv.org/abs/2104.00298,
 - 'Adversarial Examples Improve Image Recognition,' https://arxiv.org/abs/1911.09665.
 """
+from __future__ import annotations
 
-
-import os
-
-import torch
-import timm
-from otx.algo.utils.mmengine_utils import load_from_http, load_checkpoint_to_model
-from torch import nn
+from pathlib import Path
 from typing import Literal
+
+import timm
+import torch
+from torch import nn
+
+from otx.algo.utils.mmengine_utils import load_checkpoint_to_model, load_from_http
 
 PRETRAINED_ROOT = "https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-effv2-weights/"
 pretrained_urls = {
@@ -47,11 +48,13 @@ TimmModelType = Literal[
 
 
 class TimmBackbone(nn.Module):
+    """Timm backbone model."""
+
     def __init__(
         self,
         backbone: TimmModelType,
-        pretrained=False,
-        pooling_type="avg",
+        pretrained: bool = False,
+        pooling_type: str = "avg",
         **kwargs,
     ):
         super().__init__(**kwargs)
@@ -67,41 +70,38 @@ class TimmBackbone(nn.Module):
         self.num_features = self.model.conv_head.in_channels if self.is_mobilenet else self.model.num_features
         self.pooling_type = pooling_type
 
-    def forward(self, x, **kwargs):
+    def forward(self, x: torch.Tensor, **kwargs) -> tuple[torch.Tensor]:
         """Forward."""
         y = self.extract_features(x)
         return (y,)
 
-    def extract_features(self, x):
+    def extract_features(self, x: torch.Tensor) -> torch.Tensor:
         """Extract features."""
         if self.is_mobilenet:
             x = self.model.conv_stem(x)
             x = self.model.bn1(x)
             x = self.model.act1(x)
-            y = self.model.blocks(x)
-            return y
+            return self.model.blocks(x)
         return self.model.forward_features(x)
 
-    def get_config_optim(self, lrs):
+    def get_config_optim(self, lrs: list[float] | float) -> list[dict[str, float]]:
         """Get optimizer configs."""
         parameters = [
             {"params": self.model.named_parameters()},
         ]
         if isinstance(lrs, list):
-            assert len(lrs) == len(parameters)
             for lr, param_dict in zip(lrs, parameters):
                 param_dict["lr"] = lr
         else:
-            assert isinstance(lrs, float)
             for param_dict in parameters:
                 param_dict["lr"] = lrs
 
         return parameters
 
-    def init_weights(self, pretrained: str | bool | None = None):
+    def init_weights(self, pretrained: str | bool | None = None) -> None:
         """Initialize weights."""
         checkpoint = None
-        if isinstance(pretrained, str) and os.path.exists(pretrained):
+        if isinstance(pretrained, str) and Path(pretrained).exists():
             checkpoint = torch.load(pretrained, None)
             print(f"init weight - {pretrained}")
         elif pretrained is not None:

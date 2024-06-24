@@ -2,20 +2,20 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 """EfficientNet Module."""
+from __future__ import annotations
 
 import math
-import os
+from pathlib import Path
+from typing import Literal
 
 import torch
-import torch.nn.functional as F
+from pytorchcv.models.model_store import download_model
+from torch import nn
+from torch.nn import functional, init
+
 from otx.algo.modules.activation import build_activation_layer
 from otx.algo.modules.conv_module import ConvModule
 from otx.algo.utils.mmengine_utils import load_checkpoint_to_model
-from pytorchcv.models.model_store import download_model
-from torch import nn
-from torch.nn import init
-
-from typing import Literal
 
 PRETRAINED_ROOT = "https://github.com/osmr/imgclsmob/releases/download/v0.0.364/"
 pretrained_urls = {
@@ -43,8 +43,8 @@ def conv1x1_block(
         padding=padding,
         groups=groups,
         bias=bias,
-        norm_cfg=(dict(type="BN", eps=bn_eps) if use_bn else None),
-        act_cfg=(dict(type=activation) if activation else None),
+        norm_cfg=({"type": "BN", "eps": bn_eps} if use_bn else None),
+        act_cfg=({"type": activation} if activation else None),
     )
 
 
@@ -59,7 +59,6 @@ def conv3x3_block(
     use_bn: bool = True,
     bn_eps: float = 1e-5,
     activation: str | None = "ReLU",
-    IN_conv: bool = False,
 ) -> ConvModule:
     """Conv block."""
     return ConvModule(
@@ -71,8 +70,8 @@ def conv3x3_block(
         dilation=dilation,
         groups=groups,
         bias=bias,
-        norm_cfg=(dict(type="BN", eps=bn_eps) if use_bn else None),
-        act_cfg=(dict(type=activation) if activation else None),
+        norm_cfg=({"type": "BN", "eps": bn_eps} if use_bn else None),
+        act_cfg=({"type": activation} if activation else None),
     )
 
 
@@ -97,8 +96,8 @@ def dwconv3x3_block(
         dilation=dilation,
         groups=out_channels,
         bias=bias,
-        norm_cfg=(dict(type="BN", eps=bn_eps) if use_bn else None),
-        act_cfg=(dict(type=activation) if activation else None),
+        norm_cfg=({"type": "BN", "eps": bn_eps} if use_bn else None),
+        act_cfg=({"type": activation} if activation else None),
     )
 
 
@@ -123,8 +122,8 @@ def dwconv5x5_block(
         dilation=dilation,
         groups=out_channels,
         bias=bias,
-        norm_cfg=(dict(type="BN", eps=bn_eps) if use_bn else None),
-        act_cfg=(dict(type=activation) if activation else None),
+        norm_cfg=({"type": "BN", "eps": bn_eps} if use_bn else None),
+        act_cfg=({"type": activation} if activation else None),
     )
 
 
@@ -200,7 +199,7 @@ class SEBlock(nn.Module):
             )
         else:
             self.fc1 = nn.Linear(in_features=channels, out_features=mid_channels)
-        self.activ = build_activation_layer(dict(type=mid_activation))
+        self.activ = build_activation_layer({"type": mid_activation})
         if use_conv:
             self.conv2 = nn.Conv2d(
                 in_channels=mid_channels,
@@ -212,7 +211,7 @@ class SEBlock(nn.Module):
             )
         else:
             self.fc2 = nn.Linear(in_features=mid_channels, out_features=channels)
-        self.sigmoid = build_activation_layer(dict(type=out_activation))
+        self.sigmoid = build_activation_layer({"type": out_activation})
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Forward."""
@@ -225,8 +224,7 @@ class SEBlock(nn.Module):
         w = self.sigmoid(w)
         if not self.use_conv:
             w = w.unsqueeze(2).unsqueeze(3)
-        x = x * w
-        return x
+        return x * w
 
 
 class EffiDwsConvUnit(nn.Module):
@@ -241,7 +239,15 @@ class EffiDwsConvUnit(nn.Module):
         tf_mode : bool. Whether to use TF-like mode.
     """
 
-    def __init__(self, in_channels: int, out_channels: int, stride: int | tuple[int, int], bn_eps: float, activation: str, tf_mode: bool):
+    def __init__(
+        self,
+        in_channels: int,
+        out_channels: int,
+        stride: int | tuple[int, int],
+        bn_eps: float,
+        activation: str,
+        tf_mode: bool,
+    ):
         super().__init__()
         self.tf_mode = tf_mode
         self.residual = (in_channels == out_channels) and (stride == 1)
@@ -266,7 +272,7 @@ class EffiDwsConvUnit(nn.Module):
         if self.residual:
             identity = x
         if self.tf_mode:
-            x = F.pad(x, pad=calc_tf_padding(x, kernel_size=3))
+            x = functional.pad(x, pad=calc_tf_padding(x, kernel_size=3))
         x = self.dw_conv(x)
         x = self.se(x)
         x = self.pw_conv(x)
@@ -344,7 +350,7 @@ class EffiInvResUnit(nn.Module):
             identity = x
         x = self.conv1(x)
         if self.tf_mode:
-            x = F.pad(
+            x = functional.pad(
                 x,
                 pad=calc_tf_padding(x, kernel_size=self.kernel_size, stride=self.stride),
             )
@@ -368,7 +374,14 @@ class EffiInitBlock(nn.Module):
         tf_mode : bool. Whether to use TF-like mode.
     """
 
-    def __init__(self, in_channels: int, out_channels: int, bn_eps: float, activation: str | None, tf_mode: bool, IN_conv1: bool):
+    def __init__(
+        self,
+        in_channels: int,
+        out_channels: int,
+        bn_eps: float,
+        activation: str | None,
+        tf_mode: bool,
+    ):
         super().__init__()
         self.tf_mode = tf_mode
 
@@ -379,15 +392,13 @@ class EffiInitBlock(nn.Module):
             padding=(0 if tf_mode else 1),
             bn_eps=bn_eps,
             activation=activation,
-            IN_conv=IN_conv1,
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Forward."""
         if self.tf_mode:
-            x = F.pad(x, pad=calc_tf_padding(x, kernel_size=3, stride=2))
-        x = self.conv(x)
-        return x
+            x = functional.pad(x, pad=calc_tf_padding(x, kernel_size=3, stride=2))
+        return self.conv(x)
 
 
 class EfficientNet(nn.Module):
@@ -424,17 +435,15 @@ class EfficientNet(nn.Module):
         pooling_type: str | None = "avg",
         bn_eval: bool = False,
         bn_frozen: bool = False,
-        IN_first: bool = False,
-        IN_conv1: bool = False,
+        instance_norm_first: bool = False,
         pretrained: bool = False,
         **kwargs,
     ):
-
         super().__init__(**kwargs)
         self.num_classes = 1000
         self.pretrained = pretrained
         self.in_size = in_size
-        self.input_IN = nn.InstanceNorm2d(3, affine=True) if IN_first else None
+        self.input_IN = nn.InstanceNorm2d(3, affine=True) if instance_norm_first else None
         self.bn_eval = bn_eval
         self.bn_frozen = bn_frozen
         self.pooling_type = pooling_type
@@ -449,7 +458,6 @@ class EfficientNet(nn.Module):
                 bn_eps=bn_eps,
                 activation=activation,
                 tf_mode=tf_mode,
-                IN_conv1=IN_conv1,
             ),
         )
         in_channels = init_block_channels
@@ -494,7 +502,10 @@ class EfficientNet(nn.Module):
         self.features.add_module(
             "final_block",
             conv1x1_block(
-                in_channels=in_channels, out_channels=final_block_channels, bn_eps=bn_eps, activation=activation,
+                in_channels=in_channels,
+                out_channels=final_block_channels,
+                bn_eps=bn_eps,
+                activation=activation,
             ),
         )
         self._init_params()
@@ -506,7 +517,12 @@ class EfficientNet(nn.Module):
                 if module.bias is not None:
                     init.constant_(module.bias, 0)
 
-    def forward(self, x: torch.Tensor, return_featuremaps: bool = False, get_embeddings: bool = False):
+    def forward(
+        self,
+        x: torch.Tensor,
+        return_featuremaps: bool = False,
+        get_embeddings: bool = False,
+    ) -> tuple | list[torch.Tensor] | torch.Tensor:
         """Forward."""
         if self.input_IN is not None:
             x = self.input_IN(x)
@@ -525,15 +541,13 @@ class EfficientNet(nn.Module):
         if get_embeddings:
             out_data = [logits, glob_features.view(x.shape[0], -1)]
         elif self.loss in ["softmax", "am_softmax"]:
-            if self.lr_finder.enable and self.lr_finder.mode == "automatic":
-                out_data = logits
-            else:
-                out_data = [logits]
+            out_data = logits if self.lr_finder.enable and self.lr_finder.mode == "automatic" else [logits]
 
         elif self.loss in ["triplet"]:
             out_data = [logits, glob_features]
         else:
-            raise KeyError(f"Unsupported loss: {self.loss}")
+            msg = f"Unsupported loss: {self.loss}"
+            raise KeyError(msg)
 
         if self.lr_finder.enable and self.lr_finder.mode == "automatic":
             return out_data
@@ -591,7 +605,8 @@ class OTXEfficientNet(EfficientNet):
             depth_factor = 3.6
             width_factor = 2.2
         else:
-            raise ValueError(f"Unsupported EfficientNet version {version}")
+            msg = f"Unsupported EfficientNet version {version}"
+            raise ValueError(msg)
 
         init_block_channels = 32
         layers = [1, 2, 2, 3, 3, 4, 1]
@@ -608,22 +623,22 @@ class OTXEfficientNet(EfficientNet):
         from functools import reduce
 
         channels: list = reduce(
-            lambda x, y: x + [[y[0]] * y[1]] if y[2] != 0 else x[:-1] + [x[-1] + [y[0]] * y[1]],
+            lambda x, y: [*x, [y[0]] * y[1]] if y[2] != 0 else x[:-1] + [x[-1] + [y[0]] * y[1]],
             zip(channels_per_layers, layers, downsample),
             [],
         )
         kernel_sizes: list = reduce(
-            lambda x, y: x + [[y[0]] * y[1]] if y[2] != 0 else x[:-1] + [x[-1] + [y[0]] * y[1]],
+            lambda x, y: [*x, [y[0]] * y[1]] if y[2] != 0 else x[:-1] + [x[-1] + [y[0]] * y[1]],
             zip(kernel_sizes_per_layers, layers, downsample),
             [],
         )
         expansion_factors: list = reduce(
-            lambda x, y: x + [[y[0]] * y[1]] if y[2] != 0 else x[:-1] + [x[-1] + [y[0]] * y[1]],
+            lambda x, y: [*x, [y[0]] * y[1]] if y[2] != 0 else x[:-1] + [x[-1] + [y[0]] * y[1]],
             zip(expansion_factors_per_layers, layers, downsample),
             [],
         )
         strides_per_stage: list = reduce(
-            lambda x, y: x + [[y[0]] * y[1]] if y[2] != 0 else x[:-1] + [x[-1] + [y[0]] * y[1]],
+            lambda x, y: [*x, [y[0]] * y[1]] if y[2] != 0 else x[:-1] + [x[-1] + [y[0]] * y[1]],
             zip(_strides_per_stage, layers, downsample),
             [],
         )
@@ -632,7 +647,6 @@ class OTXEfficientNet(EfficientNet):
         init_block_channels = round_channels(init_block_channels * width_factor)
 
         if width_factor > 1.0:
-            assert int(final_block_channels * width_factor) == round_channels(final_block_channels * width_factor)
             final_block_channels = round_channels(final_block_channels * width_factor)
 
         super().__init__(
@@ -642,7 +656,7 @@ class OTXEfficientNet(EfficientNet):
             kernel_sizes=kernel_sizes,
             strides_per_stage=strides_per_stage,
             expansion_factors=expansion_factors,
-            dropout_cls=dict(dist="none"),
+            dropout_cls={"dist": "none"},
             tf_mode=False,
             bn_eps=1e-5,
             in_size=in_size,
@@ -654,9 +668,9 @@ class OTXEfficientNet(EfficientNet):
         """Forward."""
         return super().forward(x, return_featuremaps=return_featuremaps, get_embeddings=get_embeddings)
 
-    def init_weights(self, pretrained: bool | str | None = None):
+    def init_weights(self, pretrained: bool | str | None = None) -> None:
         """Initialize weights."""
-        if isinstance(pretrained, str) and os.path.exists(pretrained):
+        if isinstance(pretrained, str) and Path(pretrained).exists():
             checkpoint = torch.load(pretrained, None)
             load_checkpoint_to_model(self, checkpoint)
             print(f"init weight - {pretrained}")
