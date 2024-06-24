@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 # Copyright (c) OpenMMLab. All rights reserved.
 """CSPNeXtPAFPN (CSPNeXt Path Aggregation Feature Pyramid Network)."""
+
 from __future__ import annotations
 
 import math
@@ -9,7 +10,7 @@ import math
 import torch
 from torch import Tensor, nn
 
-from otx.algo.detection.layers.csp_layer import CSPLayer
+from otx.algo.detection.utils.layer import CSPLayer
 from otx.algo.modules.base_module import BaseModule
 from otx.algo.modules.conv_module import ConvModule
 from otx.algo.modules.depthwise_separable_conv_module import DepthwiseSeparableConvModule
