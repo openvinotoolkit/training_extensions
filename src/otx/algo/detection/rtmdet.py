@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from omegaconf import DictConfig
 
-from otx.algo.detection.backbones.cspnext import CSPNeXt
+from otx.algo.detection.backbones import CSPNeXt
 from otx.algo.detection.heads.base_sampler import PseudoSampler
 from otx.algo.detection.heads.distance_point_bbox_coder import DistancePointBBoxCoder
 from otx.algo.detection.heads.dynamic_soft_label_assigner import DynamicSoftLabelAssigner

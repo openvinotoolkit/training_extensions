@@ -4,7 +4,7 @@
 
 import pytest
 import torch
-from otx.algo.detection.backbones.cspnext import CSPNeXt
+from otx.algo.detection.backbones import CSPNeXt
 from otx.algo.detection.heads.rtmdet_head import RTMDetSepBNHead
 from otx.algo.detection.necks.cspnext_pafpn import CSPNeXtPAFPN
 from otx.algo.detection.rtmdet import RTMDetTiny

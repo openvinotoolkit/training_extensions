@@ -12,7 +12,7 @@ from omegaconf import DictConfig
 from torchvision import tv_tensors
 from torchvision.ops import RoIAlign
 
-from otx.algo.detection.backbones.pytorchcv_backbones import _build_model_including_pytorchcv
+from otx.algo.detection.backbones import build_model_including_pytorchcv
 from otx.algo.detection.heads.anchor_generator import AnchorGenerator
 from otx.algo.detection.heads.base_sampler import RandomSampler
 from otx.algo.detection.heads.delta_xywh_bbox_coder import DeltaXYWHBBoxCoder
@@ -518,7 +518,7 @@ class MaskRCNNEfficientNet(OTXMaskRCNN):
             },
         )
 
-        backbone = _build_model_including_pytorchcv(
+        backbone = build_model_including_pytorchcv(
             cfg={
                 "type": "efficientnet_b2b",
                 "out_indices": [2, 3, 4, 5],

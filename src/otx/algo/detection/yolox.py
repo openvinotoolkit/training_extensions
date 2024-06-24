@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING, Any
 
 from omegaconf import DictConfig
 
-from otx.algo.detection.backbones.csp_darknet import CSPDarknet
+from otx.algo.detection.backbones import CSPDarknet
 from otx.algo.detection.heads.sim_ota_assigner import SimOTAAssigner
 from otx.algo.detection.heads.yolox_head import YOLOXHead
 from otx.algo.detection.necks.yolox_pafpn import YOLOXPAFPN

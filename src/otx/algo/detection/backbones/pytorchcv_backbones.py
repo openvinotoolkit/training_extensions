@@ -95,10 +95,10 @@ def init_weights(self: nn.Module, pretrained: bool = True) -> None:
 
 
 def _pytorchcv_model_reduce(self) -> nn.Module:  # noqa: ANN001
-    return (_build_model_including_pytorchcv, (self.otx_cfg,))
+    return (build_model_including_pytorchcv, (self.otx_cfg,))
 
 
-def _build_model_including_pytorchcv(
+def build_model_including_pytorchcv(
     cfg: dict,
     default_args: dict | None = None,
 ) -> nn.Module:

@@ -1,4 +1,4 @@
-# Copyright (C) 2023 Intel Corporation
+# Copyright (C) 2023-2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 """SSD object detector for the OTX detection."""
@@ -12,7 +12,7 @@ import numpy as np
 from datumaro.components.annotation import Bbox
 from omegaconf import DictConfig
 
-from otx.algo.detection.backbones.pytorchcv_backbones import _build_model_including_pytorchcv
+from otx.algo.detection.backbones import build_model_including_pytorchcv
 from otx.algo.detection.heads.anchor_generator import SSDAnchorGeneratorClustered
 from otx.algo.detection.heads.delta_xywh_bbox_coder import DeltaXYWHBBoxCoder
 from otx.algo.detection.heads.max_iou_assigner import MaxIoUAssigner
@@ -325,7 +325,7 @@ class SSD(ExplainableOTXDetModel):
                 "max_per_img": 200,
             },
         )
-        backbone = _build_model_including_pytorchcv(
+        backbone = build_model_including_pytorchcv(
             cfg={
                 "type": "mobilenetv2_w1",
                 "out_indices": [4, 5],

@@ -1,4 +1,4 @@
-# Copyright (C) 2023 Intel Corporation
+# Copyright (C) 2023-2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 """ATSS model implementations."""
@@ -9,8 +9,7 @@ from typing import TYPE_CHECKING
 
 from omegaconf import DictConfig
 
-from otx.algo.detection.backbones.pytorchcv_backbones import _build_model_including_pytorchcv
-from otx.algo.detection.backbones.resnext import ResNeXt
+from otx.algo.detection.backbones import ResNeXt, build_model_including_pytorchcv
 from otx.algo.detection.heads.anchor_generator import AnchorGenerator
 from otx.algo.detection.heads.atss_assigner import ATSSAssigner
 from otx.algo.detection.heads.atss_head import ATSSHead
@@ -98,7 +97,7 @@ class MobileNetV2ATSS(ATSS):
                 "nms_pre": 1000,
             },
         )
-        backbone = _build_model_including_pytorchcv(
+        backbone = build_model_including_pytorchcv(
             cfg={
                 "type": "mobilenetv2_w1",
                 "out_indices": [2, 3, 4, 5],

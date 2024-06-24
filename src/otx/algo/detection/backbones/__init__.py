@@ -1,9 +1,11 @@
-# Copyright (C) 2023 Intel Corporation
+# Copyright (C) 2023-2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 """Custom backbone implementations for detection task."""
 
-from . import pytorchcv_backbones
 from .csp_darknet import CSPDarknet
+from .cspnext import CSPNeXt
+from .pytorchcv_backbones import build_model_including_pytorchcv
+from .resnext import ResNeXt
 
-__all__ = ["pytorchcv_backbones", "CSPDarknet"]
+__all__ = ["CSPDarknet", "CSPNeXt", "build_model_including_pytorchcv", "ResNeXt"]
