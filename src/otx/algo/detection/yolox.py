@@ -43,40 +43,6 @@ class YOLOX(ExplainableOTXDetModel):
     ) -> dict[str, Any]:
         return super()._customize_inputs(entity=entity, pad_size_divisor=pad_size_divisor, pad_value=pad_value)
 
-    def get_classification_layers(
-        self,
-        prefix: str = "",
-    ) -> dict[str, dict[str, int]]:
-        """Return classification layer names by comparing two different number of classes models.
-
-        TODO (sungchul): it can be merged to otx.core.utils.build.get_classification_layers.
-
-        Args:
-            config (DictConfig): Config for building model.
-            prefix (str): Prefix of model param name.
-                Normally it is "model." since OTXModel set it's nn.Module model as self.model
-
-        Return:
-            dict[str, dict[str, int]]
-            A dictionary contain classification layer's name and information.
-            Stride means dimension of each classes, normally stride is 1, but sometimes it can be 4
-            if the layer is related bbox regression for object detection.
-            Extra classes is default class except class from data.
-            Normally it is related with background classes.
-        """
-        sample_model_dict = self._build_model(num_classes=5).state_dict()
-        incremental_model_dict = self._build_model(num_classes=6).state_dict()
-
-        classification_layers = {}
-        for key in sample_model_dict:
-            if sample_model_dict[key].shape != incremental_model_dict[key].shape:
-                sample_model_dim = sample_model_dict[key].shape[0]
-                incremental_model_dim = incremental_model_dict[key].shape[0]
-                stride = incremental_model_dim - sample_model_dim
-                num_extra_classes = 6 * sample_model_dim - 5 * incremental_model_dim
-                classification_layers[prefix + key] = {"stride": stride, "num_extra_classes": num_extra_classes}
-        return classification_layers
-
     @property
     def _exporter(self) -> OTXModelExporter:
         """Creates OTXModelExporter object that can export the model."""
