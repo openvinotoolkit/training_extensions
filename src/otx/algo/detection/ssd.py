@@ -297,6 +297,8 @@ class SSD(ExplainableOTXDetModel):
     )
     image_size = (1, 3, 864, 864)
     tile_image_size = (1, 3, 864, 864)
+    mean = (0.0, 0.0, 0.0)
+    std = (255.0, 255.0, 255.0)
 
     def _build_model(self, num_classes: int) -> SingleStageDetector:
         train_cfg = {
@@ -521,14 +523,11 @@ class SSD(ExplainableOTXDetModel):
         """Creates OTXModelExporter object that can export the model."""
         if self.image_size is None:
             raise ValueError(self.image_size)
-
-        mean, std = (0.0, 0.0, 0.0), (255.0, 255.0, 255.0)
-
         return OTXNativeModelExporter(
             task_level_export_parameters=self._export_parameters,
             input_size=self.image_size,
-            mean=mean,
-            std=std,
+            mean=self.mean,
+            std=self.std,
             resize_mode="standard",
             pad_value=0,
             swap_rgb=False,
@@ -545,18 +544,6 @@ class SSD(ExplainableOTXDetModel):
             },
             output_names=["bboxes", "labels", "feature_vector", "saliency_map"] if self.explain_mode else None,
         )
-
-    def forward_for_tracing(self, inputs: Tensor) -> list[InstanceData]:
-        """Forward function for export."""
-        shape = (int(inputs.shape[2]), int(inputs.shape[3]))
-        meta_info = {
-            "pad_shape": shape,
-            "batch_input_shape": shape,
-            "img_shape": shape,
-            "scale_factor": (1.0, 1.0),
-        }
-        meta_info_list = [meta_info] * len(inputs)
-        return self.model.export(inputs, meta_info_list, explain_mode=self.explain_mode)
 
     def on_load_checkpoint(self, checkpoint: dict[str, Any]) -> None:
         """Callback on load checkpoint."""

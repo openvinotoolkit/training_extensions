@@ -14,7 +14,6 @@ from otx.algo.detection.heads.sim_ota_assigner import SimOTAAssigner
 from otx.algo.detection.heads.yolox_head import YOLOXHead
 from otx.algo.detection.necks.yolox_pafpn import YOLOXPAFPN
 from otx.algo.detection.ssd import SingleStageDetector
-from otx.algo.utils.mmengine_utils import InstanceData
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.data.entity.detection import DetBatchDataEntity
 from otx.core.exporter.base import OTXModelExporter
@@ -25,8 +24,6 @@ from otx.core.types.precision import OTXPrecisionType
 
 if TYPE_CHECKING:
     from pathlib import Path
-
-    from torch import Tensor
 
 
 class YOLOX(ExplainableOTXDetModel):
@@ -49,9 +46,16 @@ class YOLOX(ExplainableOTXDetModel):
         if self.image_size is None:
             raise ValueError(self.image_size)
 
-        swap_rgb = not isinstance(self, YOLOXTINY)
+        swap_rgb = not isinstance(self, YOLOXTINY)  # only YOLOX-TINY uses RGB
 
         return OTXNativeModelExporter(
+            task_level_export_parameters=self._export_parameters,
+            input_size=self.image_size,
+            mean=self.mean,
+            std=self.std,
+            resize_mode="fit_to_window_letterbox",
+            pad_value=114,
+            swap_rgb=swap_rgb,
             via_onnx=True,
             onnx_export_configuration={
                 "input_names": ["image"],
@@ -67,13 +71,6 @@ class YOLOX(ExplainableOTXDetModel):
                 "verbose": False,
                 "autograd_inlining": False,
             },
-            task_level_export_parameters=self._export_parameters,
-            input_size=self.image_size,
-            mean=self.mean,
-            std=self.std,
-            resize_mode="fit_to_window_letterbox",
-            pad_value=114,
-            swap_rgb=swap_rgb,
             output_names=["bboxes", "labels", "feature_vector", "saliency_map"] if self.explain_mode else None,
         )
 
@@ -105,19 +102,6 @@ class YOLOX(ExplainableOTXDetModel):
             return super().export(output_dir, base_name, export_format, precision, to_exportable_code)
         finally:
             self.model.backbone.stem.forward = orig_focus_forward
-
-    def forward_for_tracing(self, inputs: Tensor) -> list[InstanceData]:
-        """Forward function for export."""
-        shape = (int(inputs.shape[2]), int(inputs.shape[3]))
-        meta_info = {
-            "pad_shape": shape,
-            "batch_input_shape": shape,
-            "img_shape": shape,
-            "scale_factor": (1.0, 1.0),
-        }
-
-        meta_info_list = [meta_info] * len(inputs)
-        return self.model.export(inputs, meta_info_list, explain_mode=self.explain_mode)
 
     def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.") -> dict:
         """Load the previous OTX ckpt according to OTX2.0."""

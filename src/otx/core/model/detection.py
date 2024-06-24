@@ -1,4 +1,4 @@
-# Copyright (C) 2023 Intel Corporation
+# Copyright (C) 2023-2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 """Class definition for detection model entity used in OTX."""
@@ -200,6 +200,18 @@ class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity]):
             pred_entity.feature_vector = [pred_entity.feature_vector for pred_entity in pred_entities]
 
         return pred_entity
+
+    def forward_for_tracing(self, inputs: torch.Tensor) -> list[InstanceData]:
+        """Forward function for export."""
+        shape = (int(inputs.shape[2]), int(inputs.shape[3]))
+        meta_info = {
+            "pad_shape": shape,
+            "batch_input_shape": shape,
+            "img_shape": shape,
+            "scale_factor": (1.0, 1.0),
+        }
+        meta_info_list = [meta_info] * len(inputs)
+        return self.model.export(inputs, meta_info_list, explain_mode=self.explain_mode)
 
     @property
     def _export_parameters(self) -> TaskLevelExportParameters:

@@ -21,19 +21,17 @@ from otx.algo.detection.losses.cross_focal_loss import CrossSigmoidFocalLoss
 from otx.algo.detection.losses.iou_loss import GIoULoss
 from otx.algo.detection.necks.fpn import FPN
 from otx.algo.detection.ssd import SingleStageDetector
-from otx.algo.utils.mmengine_utils import InstanceData
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.model.detection import ExplainableOTXDetModel
 
 if TYPE_CHECKING:
-    from torch import Tensor
     from typing_extensions import Self
 
 
 class ATSS(ExplainableOTXDetModel):
-    """ATSS Model."""
+    """OTX Detection model class for ATSS."""
 
     def _build_model(self, num_classes: int) -> SingleStageDetector:
         raise NotImplementedError
@@ -44,13 +42,11 @@ class ATSS(ExplainableOTXDetModel):
         if self.image_size is None:
             raise ValueError(self.image_size)
 
-        mean, std = (0.0, 0.0, 0.0), (255.0, 255.0, 255.0)
-
         return OTXNativeModelExporter(
             task_level_export_parameters=self._export_parameters,
             input_size=self.image_size,
-            mean=mean,
-            std=std,
+            mean=self.mean,
+            std=self.std,
             resize_mode="standard",
             pad_value=0,
             swap_rgb=False,
@@ -68,18 +64,6 @@ class ATSS(ExplainableOTXDetModel):
             output_names=["bboxes", "labels", "feature_vector", "saliency_map"] if self.explain_mode else None,
         )
 
-    def forward_for_tracing(self, inputs: Tensor) -> list[InstanceData]:
-        """Forward function for export."""
-        shape = (int(inputs.shape[2]), int(inputs.shape[3]))
-        meta_info = {
-            "pad_shape": shape,
-            "batch_input_shape": shape,
-            "img_shape": shape,
-            "scale_factor": (1.0, 1.0),
-        }
-        meta_info_list = [meta_info] * len(inputs)
-        return self.model.export(inputs, meta_info_list, explain_mode=self.explain_mode)
-
     def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.") -> dict:
         """Load the previous OTX ckpt according to OTX2.0."""
         return OTXv1Helper.load_det_ckpt(state_dict, add_prefix)
@@ -94,6 +78,8 @@ class MobileNetV2ATSS(ATSS):
     )
     image_size = (1, 3, 800, 992)
     tile_image_size = (1, 3, 800, 992)
+    mean = (0.0, 0.0, 0.0)
+    std = (255.0, 255.0, 255.0)
 
     def _build_model(self, num_classes: int) -> SingleStageDetector:
         train_cfg = {
@@ -165,6 +151,10 @@ class ResNeXt101ATSS(ATSS):
         "https://storage.openvinotoolkit.org/repositories/"
         "openvino_training_extensions/models/object_detection/v2/resnext101_atss_070623.pth"
     )
+    image_size = (1, 3, 800, 992)
+    tile_image_size = (1, 3, 800, 992)
+    mean = (0.0, 0.0, 0.0)
+    std = (255.0, 255.0, 255.0)
 
     def _build_model(self, num_classes: int) -> SingleStageDetector:
         train_cfg = {

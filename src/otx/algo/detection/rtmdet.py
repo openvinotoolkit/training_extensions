@@ -5,8 +5,6 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 from omegaconf import DictConfig
 
 from otx.algo.detection.backbones.cspnext import CSPNeXt
@@ -23,9 +21,6 @@ from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.model.detection import ExplainableOTXDetModel
 from otx.core.types.export import TaskLevelExportParameters
-
-if TYPE_CHECKING:
-    import torch
 
 
 class RTMDet(ExplainableOTXDetModel):
@@ -66,21 +61,6 @@ class RTMDet(ExplainableOTXDetModel):
     def _export_parameters(self) -> TaskLevelExportParameters:
         """Defines parameters required to export a particular model implementation."""
         return super()._export_parameters.wrap(optimization_config={"preset": "mixed"})
-
-    def forward_for_tracing(
-        self,
-        inputs: torch.Tensor,
-    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
-        """Forward function for export."""
-        shape = (int(inputs.shape[2]), int(inputs.shape[3]))
-        meta_info = {
-            "pad_shape": shape,
-            "batch_input_shape": shape,
-            "img_shape": shape,
-            "scale_factor": (1.0, 1.0),
-        }
-        meta_info_list = [meta_info] * len(inputs)
-        return self.model.export(inputs, meta_info_list, explain_mode=self.explain_mode)
 
 
 class RTMDetTiny(RTMDet):
