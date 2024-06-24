@@ -661,5 +661,6 @@ class OTXEfficientNet(EfficientNet):
             load_checkpoint_to_model(self, checkpoint)
             print(f"init weight - {pretrained}")
         elif pretrained is not None:
-            download_model(net=self, model_name=self.model_name)
+            cache_dir = os.path.join("~", ".cache", "torch", "hub", "checkpoints")
+            download_model(net=self, model_name=self.model_name, local_model_store_dir_path=cache_dir)
             print(f"init weight - {pretrained_urls[self.model_name]}")
