@@ -128,7 +128,7 @@ def _build_pytorchcv_model(
     **kwargs,
 ) -> nn.Module:
     """Build pytorchcv model."""
-    models_cache_root = kwargs.get("root", Path.home() / ".torch" / "models")
+    models_cache_root = kwargs.get("root", Path.home() / ".cache" / "torch" / "hub" / "checkpoints")
     is_pretrained = kwargs.get("pretrained", False)
     print(
         f"Init model {type}, pretrained={is_pretrained}, models cache {models_cache_root}",
