@@ -12,7 +12,7 @@ import torch
 import torch.nn.functional
 from torch import Tensor
 
-from otx.algo.detection.heads.iou2d_calculator import BboxOverlaps2D
+from otx.algo.detection.utils.iou2d_calculator import BboxOverlaps2D
 from otx.algo.detection.utils.structures import AssignResult
 
 INF = 100000000
