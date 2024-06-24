@@ -208,12 +208,12 @@ would be used to setup them.
     $ pytest tests/
 
 Another option to run the tests is using the testing automation tool `tox <https://tox.wiki/en/latest/index.html>`_. Following commands will install
-the tool ``tox`` to your host and run all test codes inside of ``tests/`` folder.
+the tool ``tox`` to your host and run all test codes inside of ``tests/integration`` folder.
 
 .. code-block::
 
     $ pip install tox
-    $ tox -e tests-all-py310 -- tests/
+    $ tox -e integration-test-all
 
 .. note::
 

@@ -57,6 +57,7 @@ dev = [
     "py-cpuinfo==9.0.0",  # For perf benchmark
     "openpyxl",           # For perf benchmark
 ]
+
 docs = [
     "furo",
     "myst-parser",
@@ -70,6 +71,7 @@ docs = [
     "sphinxemoji",
     "nbsphinx",
 ]
+
 xpu = [
     "torch==2.1.0.post2",
     "torchvision==0.16.0.post2",
@@ -100,6 +102,7 @@ base = [
     "nncf==2.9.0",
     "anomalib[core]==1.1.0",
 ]
+
 mmlab = [
     "mmdet==3.2.0",
     "mmpretrain==1.1.1",
@@ -109,6 +112,23 @@ mmlab = [
     # Without the pip cache, oss2 will sometimes install to a lower version. This is related to the installation of the mmlab library.
     # This causes an error when training the mm model, so fix the version first.
     "oss2==2.18.5",
+]
+
+ci_tox = [
+    "tox==4.14.1",
+]
+
+ci_publish = [
+    "build==1.1.1",
+]
+
+ci_benchmark = [
+    "pandas==2.2.2",
+    "matplotlib==3.8.4",
+    "nbconvert==7.16.3",
+    "ipython==8.23.0",
+    "ipykernel==6.29.4",
+    "openpyxl==3.1.2",
 ]
 
 [project.scripts]
