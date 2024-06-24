@@ -53,7 +53,7 @@ dev = [
     "pytest-mock",
     "pytest-csv",
     "pytest-cov",
-    "mlflow==2.12.2",     # For perf benchmark
+    "mlflow==2.14.0",     # For perf benchmark
     "py-cpuinfo==9.0.0",  # For perf benchmark
     "openpyxl",           # For perf benchmark
 ]
