@@ -9,12 +9,12 @@ from typing import TYPE_CHECKING
 import torch
 from torch import Tensor, nn
 
-from otx.algo.detection.heads.anchor_generator import AnchorGenerator
 from otx.algo.detection.heads.anchor_head import AnchorHead
-from otx.algo.detection.heads.base_sampler import PseudoSampler
-from otx.algo.detection.heads.delta_xywh_bbox_coder import DeltaXYWHBBoxCoder
 from otx.algo.detection.losses.cross_entropy_loss import CrossEntropyLoss
 from otx.algo.detection.losses.weighted_loss import smooth_l1_loss
+from otx.algo.detection.utils.anchor_generator import AnchorGenerator
+from otx.algo.detection.utils.coder import DeltaXYWHBBoxCoder
+from otx.algo.detection.utils.sampler import PseudoSampler
 from otx.algo.detection.utils.utils import multi_apply
 
 if TYPE_CHECKING:

@@ -381,7 +381,7 @@ class ExplainableOTXDetModel(OTXDetectionModel):
 
     def get_explain_fn(self) -> Callable:
         """Returns explain function."""
-        from otx.algo.detection.heads.ssd_head import SSDHead
+        from otx.algo.detection.heads import SSDHead
         from otx.algo.explain.explain_algo import DetClassProbabilityMap
 
         # SSD-like heads also have background class

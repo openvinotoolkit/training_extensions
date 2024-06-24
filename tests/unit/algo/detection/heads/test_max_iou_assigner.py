@@ -3,7 +3,7 @@
 """Test Max Iou Assigner ."""
 
 import torch
-from otx.algo.detection.heads.max_iou_assigner import perm_repeat_bboxes
+from otx.algo.detection.utils.assigner.max_iou_assigner import perm_repeat_bboxes
 
 
 def test_perm_repeat_bboxes() -> None:

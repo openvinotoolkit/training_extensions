@@ -13,13 +13,13 @@ from torchvision import tv_tensors
 from torchvision.ops import RoIAlign
 
 from otx.algo.detection.backbones import build_model_including_pytorchcv
-from otx.algo.detection.heads.anchor_generator import AnchorGenerator
-from otx.algo.detection.heads.base_sampler import RandomSampler
-from otx.algo.detection.heads.delta_xywh_bbox_coder import DeltaXYWHBBoxCoder
-from otx.algo.detection.heads.max_iou_assigner import MaxIoUAssigner
 from otx.algo.detection.losses.cross_entropy_loss import CrossEntropyLoss
 from otx.algo.detection.losses.cross_focal_loss import CrossSigmoidFocalLoss
 from otx.algo.detection.losses.smooth_l1_loss import L1Loss
+from otx.algo.detection.utils.anchor_generator import AnchorGenerator
+from otx.algo.detection.utils.assigner import MaxIoUAssigner
+from otx.algo.detection.utils.coder import DeltaXYWHBBoxCoder
+from otx.algo.detection.utils.sampler import RandomSampler
 from otx.algo.instance_segmentation.mmdet.models.backbones import ResNet, SwinTransformer
 from otx.algo.instance_segmentation.mmdet.models.custom_roi_head import CustomConvFCBBoxHead, CustomRoIHead
 from otx.algo.instance_segmentation.mmdet.models.dense_heads import RPNHead

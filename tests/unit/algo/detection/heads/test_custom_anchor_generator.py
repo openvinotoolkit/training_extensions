@@ -4,7 +4,7 @@
 
 import pytest
 import torch
-from otx.algo.detection.heads.anchor_generator import SSDAnchorGeneratorClustered
+from otx.algo.detection.utils.anchor_generator import SSDAnchorGeneratorClustered
 
 
 class TestSSDAnchorGeneratorClustered:

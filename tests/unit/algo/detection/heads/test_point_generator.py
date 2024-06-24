@@ -4,7 +4,7 @@
 
 import pytest
 import torch
-from otx.algo.detection.heads.point_generator import MlvlPointGenerator
+from otx.algo.detection.utils.anchor_generator import MlvlPointGenerator
 
 
 class TestMlvlPointGenerator:

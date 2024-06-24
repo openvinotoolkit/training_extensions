@@ -13,10 +13,10 @@ from datumaro.components.annotation import Bbox
 from omegaconf import DictConfig
 
 from otx.algo.detection.backbones import build_model_including_pytorchcv
-from otx.algo.detection.heads.anchor_generator import SSDAnchorGeneratorClustered
-from otx.algo.detection.heads.delta_xywh_bbox_coder import DeltaXYWHBBoxCoder
-from otx.algo.detection.heads.max_iou_assigner import MaxIoUAssigner
-from otx.algo.detection.heads.ssd_head import SSDHead
+from otx.algo.detection.heads import SSDHead
+from otx.algo.detection.utils.anchor_generator import SSDAnchorGeneratorClustered
+from otx.algo.detection.utils.assigner import MaxIoUAssigner
+from otx.algo.detection.utils.coder import DeltaXYWHBBoxCoder
 from otx.algo.modules.base_module import BaseModule
 from otx.algo.utils.mmengine_utils import InstanceData
 from otx.algo.utils.support_otx_v1 import OTXv1Helper

@@ -10,16 +10,16 @@ from typing import TYPE_CHECKING
 from omegaconf import DictConfig
 
 from otx.algo.detection.backbones import ResNeXt, build_model_including_pytorchcv
-from otx.algo.detection.heads.anchor_generator import AnchorGenerator
-from otx.algo.detection.heads.atss_assigner import ATSSAssigner
-from otx.algo.detection.heads.atss_head import ATSSHead
-from otx.algo.detection.heads.base_sampler import PseudoSampler
-from otx.algo.detection.heads.delta_xywh_bbox_coder import DeltaXYWHBBoxCoder
+from otx.algo.detection.heads import ATSSHead
 from otx.algo.detection.losses.cross_entropy_loss import CrossEntropyLoss
 from otx.algo.detection.losses.cross_focal_loss import CrossSigmoidFocalLoss
 from otx.algo.detection.losses.iou_loss import GIoULoss
 from otx.algo.detection.necks.fpn import FPN
 from otx.algo.detection.ssd import SingleStageDetector
+from otx.algo.detection.utils.anchor_generator import AnchorGenerator
+from otx.algo.detection.utils.assigner import ATSSAssigner
+from otx.algo.detection.utils.coder import DeltaXYWHBBoxCoder
+from otx.algo.detection.utils.sampler import PseudoSampler
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter
