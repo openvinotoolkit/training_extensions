@@ -6,8 +6,7 @@ import pytest
 import torch
 from omegaconf import DictConfig
 from otx.algo.detection.heads.rtmdet_head import RTMDetHead, RTMDetSepBNHead
-from otx.algo.detection.losses.gfocal_loss import QualityFocalLoss
-from otx.algo.detection.losses.iou_loss import GIoULoss
+from otx.algo.detection.losses import GIoULoss, QualityFocalLoss
 from otx.algo.detection.utils.anchor_generator import MlvlPointGenerator
 from otx.algo.detection.utils.assigner import DynamicSoftLabelAssigner
 from otx.algo.detection.utils.coder import DistancePointBBoxCoder

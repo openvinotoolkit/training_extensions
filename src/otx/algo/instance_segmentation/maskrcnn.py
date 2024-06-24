@@ -13,9 +13,7 @@ from torchvision import tv_tensors
 from torchvision.ops import RoIAlign
 
 from otx.algo.detection.backbones import build_model_including_pytorchcv
-from otx.algo.detection.losses.cross_entropy_loss import CrossEntropyLoss
-from otx.algo.detection.losses.cross_focal_loss import CrossSigmoidFocalLoss
-from otx.algo.detection.losses.smooth_l1_loss import L1Loss
+from otx.algo.detection.losses import CrossEntropyLoss, CrossSigmoidFocalLoss, L1Loss
 from otx.algo.detection.utils.anchor_generator import AnchorGenerator
 from otx.algo.detection.utils.assigner import MaxIoUAssigner
 from otx.algo.detection.utils.coder import DeltaXYWHBBoxCoder

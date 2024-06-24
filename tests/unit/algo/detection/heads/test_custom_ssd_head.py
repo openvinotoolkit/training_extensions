@@ -1,10 +1,10 @@
-# Copyright (C) 2023 Intel Corporation
+# Copyright (C) 2023-2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 """Test of CustomSSDHead."""
 
 from omegaconf import DictConfig
-from otx.algo.detection.heads.ssd_head import SSDHead
-from otx.algo.detection.losses.cross_entropy_loss import CrossEntropyLoss
+from otx.algo.detection.heads import SSDHead
+from otx.algo.detection.losses import CrossEntropyLoss
 from otx.algo.detection.utils.anchor_generator import SSDAnchorGeneratorClustered
 from otx.algo.detection.utils.coder import DeltaXYWHBBoxCoder
 

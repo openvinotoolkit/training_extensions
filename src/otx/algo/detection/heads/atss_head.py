@@ -1,6 +1,6 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-#
+# Copyright (c) OpenMMLab. All rights reserved.
 """Custom ATSS head for OTX template."""
 
 from __future__ import annotations
@@ -12,10 +12,7 @@ from otx.algo.detection.heads.anchor_head import AnchorHead
 from otx.algo.detection.heads.class_incremental_mixin import (
     ClassIncrementalMixin,
 )
-from otx.algo.detection.losses.cross_entropy_loss import CrossEntropyLoss
-from otx.algo.detection.losses.cross_focal_loss import (
-    CrossSigmoidFocalLoss,
-)
+from otx.algo.detection.losses import CrossEntropyLoss, CrossSigmoidFocalLoss
 from otx.algo.detection.utils.bbox_overlaps import bbox_overlaps
 from otx.algo.detection.utils.utils import anchor_inside_flags, multi_apply, reduce_mean, unmap
 from otx.algo.modules.conv_module import ConvModule

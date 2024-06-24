@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import pytest
 import torch
-from otx.algo.detection.losses.smooth_l1_loss import L1Loss
+from otx.algo.detection.losses import L1Loss
 
 
 class TestL1Loss:

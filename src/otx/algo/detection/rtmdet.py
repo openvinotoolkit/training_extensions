@@ -9,8 +9,7 @@ from omegaconf import DictConfig
 
 from otx.algo.detection.backbones import CSPNeXt
 from otx.algo.detection.heads import RTMDetSepBNHead
-from otx.algo.detection.losses.gfocal_loss import QualityFocalLoss
-from otx.algo.detection.losses.iou_loss import GIoULoss
+from otx.algo.detection.losses import GIoULoss, QualityFocalLoss
 from otx.algo.detection.necks.cspnext_pafpn import CSPNeXtPAFPN
 from otx.algo.detection.ssd import SingleStageDetector
 from otx.algo.detection.utils.anchor_generator import MlvlPointGenerator
