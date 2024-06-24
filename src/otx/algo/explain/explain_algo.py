@@ -303,7 +303,7 @@ class DetClassProbabilityMap(BaseExplainAlgo):
         # Don't use softmax for tiles in tiling detection, if the tile doesn't contain objects,
         # it would highlight one of the class maps as a background class
         if self.use_cls_softmax:
-            saliency_map[0] = torch.stack([torch.softmax(t, dim=1) for t in saliency_map[0]])
+            saliency_map = torch.stack([torch.softmax(b, dim=0) for b in saliency_map])
 
         if self._norm_saliency_maps:
             saliency_map = saliency_map.reshape((batch_size, self._num_classes, -1))

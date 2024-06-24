@@ -82,6 +82,7 @@ class OTXModelExporter:
         base_model_name: str = "exported_model",
         export_format: OTXExportFormatType = OTXExportFormatType.OPENVINO,
         precision: OTXPrecisionType = OTXPrecisionType.FP32,
+        to_exportable_code: bool = False,
     ) -> Path:
         """Exports input model to the specified deployable format, such as OpenVINO IR or ONNX.
 
@@ -91,21 +92,22 @@ class OTXModelExporter:
             base_model_name (str, optional): exported model name
             format (OTXExportFormatType): final format of the exported model
             precision (OTXExportPrecisionType, optional): precision of the exported model's weights
+            to_exportable_code (bool, optional): whether to generate exportable code
 
         Returns:
             Path: path to the exported model
         """
         if export_format == OTXExportFormatType.OPENVINO:
+            if to_exportable_code:
+                return self.to_exportable_code(
+                    model,
+                    output_dir,
+                    base_model_name,
+                    precision,
+                )
             return self.to_openvino(model, output_dir, base_model_name, precision)
         if export_format == OTXExportFormatType.ONNX:
             return self.to_onnx(model, output_dir, base_model_name, precision)
-        if export_format == OTXExportFormatType.EXPORTABLE_CODE:
-            return self.to_exportable_code(
-                model,
-                output_dir,
-                base_model_name,
-                precision,
-            )
 
         msg = f"Unsupported export format: {export_format}"
         raise ValueError(msg)
@@ -192,16 +194,16 @@ class OTXModelExporter:
                 raise RuntimeError(msg)
 
             if not is_ir_model and self.metadata is not None:
-                parameters["type_of_model"] = self.metadata.get(("model_info", "task_type"), "")
-                parameters["converter_type"] = self.metadata.get(("model_info", "model_type"), "")
+                parameters["task_type"] = self.metadata.get(("model_info", "task_type"), "")
+                parameters["model_type"] = self.metadata.get(("model_info", "model_type"), "")
                 parameters["model_parameters"] = {
                     "labels": self.metadata.get(("model_info", "labels"), ""),
                     "labels_ids": self.metadata.get(("model_info", "label_ids"), ""),
                 }
             elif is_ir_model:
                 model_info = model.get_model().rt_info["model_info"]
-                parameters["type_of_model"] = model_info["task_type"].value if "task_type" in model_info else ""
-                parameters["converter_type"] = model_info["model_type"].value if "model_type" in model_info else ""
+                parameters["task_type"] = model_info["task_type"].value if "task_type" in model_info else ""
+                parameters["model_type"] = model_info["model_type"].value if "model_type" in model_info else ""
                 parameters["model_parameters"] = {
                     "labels": model_info["labels"].value if "labels" in model_info else "",
                     "labels_ids": model_info["label_ids"].value if "label_ids" in model_info else "",

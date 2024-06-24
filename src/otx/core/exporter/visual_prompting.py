@@ -32,6 +32,7 @@ class OTXVisualPromptingModelExporter(OTXNativeModelExporter):
         base_model_name: str = "exported_model",
         export_format: OTXExportFormatType = OTXExportFormatType.OPENVINO,
         precision: OTXPrecisionType = OTXPrecisionType.FP32,
+        to_exportable_code: bool = False,
     ) -> dict[str, Path]:
         """Exports input model to the specified deployable format, such as OpenVINO IR or ONNX.
 
@@ -41,6 +42,8 @@ class OTXVisualPromptingModelExporter(OTXNativeModelExporter):
             base_model_name (str, optional): exported model name
             format (OTXExportFormatType): final format of the exported model
             precision (OTXExportPrecisionType, optional): precision of the exported model's weights
+            to_exportable_code (bool, optional): whether to generate exportable code.
+                Currently not supported by Visual Promting task.
 
         Returns:
             dict[str, Path]: paths to the exported models
@@ -53,12 +56,12 @@ class OTXVisualPromptingModelExporter(OTXNativeModelExporter):
         }
 
         if export_format == OTXExportFormatType.OPENVINO:
+            if to_exportable_code:
+                msg = "Exportable code option is not supported and will be ignored."
+                log.warning(msg)
             fn = self.to_openvino
         elif export_format == OTXExportFormatType.ONNX:
             fn = self.to_onnx
-        elif export_format == OTXExportFormatType.EXPORTABLE_CODE:
-            msg = "exportable code will be supported soon."
-            raise NotImplementedError(msg)
         else:
             msg = f"Unsupported export format: {export_format}"
             raise ValueError(msg)

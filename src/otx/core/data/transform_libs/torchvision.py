@@ -6,12 +6,15 @@
 from __future__ import annotations
 
 import copy
+import io
 import itertools
 import math
 from inspect import isclass
+from pathlib import Path
 from typing import TYPE_CHECKING, Any, ClassVar, Iterable, Sequence
 
 import cv2
+import decord
 import numpy as np
 import PIL.Image
 import torch
@@ -47,6 +50,7 @@ from otx.core.data.transform_libs.utils import (
     flip_polygons,
     get_bboxes_from_masks,
     get_bboxes_from_polygons,
+    get_image_shape,
     is_inside_bboxes,
     overlap_bboxes,
     project_bboxes,
@@ -380,7 +384,7 @@ class MinIoURandomCrop(tvt_v2.Transform, NumpytoTVTensorMixin):
         assert len(_inputs) == 1, "[tmp] Multiple entity is not supported yet."  # noqa: S101
         inputs = _inputs[0]
 
-        img = to_np_image(inputs.image)
+        img: np.ndarray = to_np_image(inputs.image)
         boxes = inputs.bboxes
         h, w, c = img.shape
         while True:
@@ -527,8 +531,7 @@ class Resize(tvt_v2.Transform, NumpytoTVTensorMixin):
         scale_factor: tuple[float, float] | None = getattr(inputs.img_info, "scale_factor", None)  # (H, W)
         if (img := getattr(inputs, "image", None)) is not None:
             img = to_np_image(img)
-
-            img_shape = img.shape[:2]  # (H, W)
+            img_shape = get_image_shape(img)
             scale: tuple[int, int] = self.scale or scale_size(
                 img_shape,
                 self.scale_factor,  # type: ignore[arg-type]
@@ -537,11 +540,19 @@ class Resize(tvt_v2.Transform, NumpytoTVTensorMixin):
             if self.keep_ratio:
                 scale = rescale_size(img_shape, scale)  # type: ignore[assignment]
 
+            # for considering video case
             # flipping `scale` is required because cv2.resize uses (W, H)
-            img = cv2.resize(img, scale[::-1], interpolation=CV2_INTERP_CODES[self.interpolation])
+            if isinstance(img, list):
+                img = [cv2.resize(im, scale[::-1], interpolation=CV2_INTERP_CODES[self.interpolation]) for im in img]
+            else:
+                img = cv2.resize(img, scale[::-1], interpolation=CV2_INTERP_CODES[self.interpolation])
 
             inputs.image = img
-            inputs.img_info = _resize_image_info(inputs.img_info, img.shape[:2])
+
+            if isinstance(img, list):
+                inputs.img_info = _resize_image_info(inputs.img_info, img[0].shape[:2])
+            else:
+                inputs.img_info = _resize_image_info(inputs.img_info, img.shape[:2])
 
             scale_factor = (scale[0] / img_shape[0], scale[1] / img_shape[1])
         return inputs, scale_factor
@@ -1080,11 +1091,12 @@ class RandomFlip(tvt_v2.Transform, NumpytoTVTensorMixin):
             img = to_np_image(inputs.image)
             img = flip_image(img, direction=cur_dir)
             inputs.image = img
+            img_shape = get_image_shape(img)
 
             # flip bboxes
             if (bboxes := getattr(inputs, "bboxes", None)) is not None:
                 bboxes = flip_bboxes(bboxes, inputs.img_info.img_shape, direction=cur_dir)
-                inputs.bboxes = tv_tensors.BoundingBoxes(bboxes, format="XYXY", canvas_size=img.shape[:2])
+                inputs.bboxes = tv_tensors.BoundingBoxes(bboxes, format="XYXY", canvas_size=img_shape)
 
             # flip masks
             if (masks := getattr(inputs, "masks", None)) is not None and len(masks) > 0:
@@ -1336,7 +1348,7 @@ class RandomAffine(tvt_v2.Transform, NumpytoTVTensorMixin):
         assert len(_inputs) == 1, "[tmp] Multiple entity is not supported yet."  # noqa: S101
         inputs = _inputs[0]
 
-        img = to_np_image(inputs.image)
+        img: np.ndarray = to_np_image(inputs.image)
         height = img.shape[0] + self.border[0] * 2
         width = img.shape[1] + self.border[1] * 2
 
@@ -1496,7 +1508,8 @@ class CachedMosaic(tvt_v2.Transform, NumpytoTVTensorMixin):
         mosaic_polygons = []
         with_mask = bool(hasattr(inputs, "masks") or hasattr(inputs, "polygons"))
 
-        if len((inp_img := to_np_image(inputs.image)).shape) == 3:
+        inp_img: np.ndarray = to_np_image(inputs.image)
+        if len(inp_img.shape) == 3:
             mosaic_img = np.full(
                 (int(self.img_scale[0] * 2), int(self.img_scale[1] * 2), 3),
                 self.pad_val,
@@ -1518,7 +1531,7 @@ class CachedMosaic(tvt_v2.Transform, NumpytoTVTensorMixin):
         for i, loc in enumerate(loc_strs):
             results_patch = copy.deepcopy(inputs) if loc == "top_left" else copy.deepcopy(mix_results[i - 1])
 
-            img_i = to_np_image(results_patch.image)
+            img_i: np.ndarray = to_np_image(results_patch.image)
             h_i, w_i = img_i.shape[:2]
             # keep_ratio resize
             scale_ratio_i = min(self.img_scale[0] / h_i, self.img_scale[1] / w_i)
@@ -1804,7 +1817,7 @@ class CachedMixUp(tvt_v2.Transform, NumpytoTVTensorMixin):
             # empty bbox
             return self.convert(inputs)
 
-        retrieve_img = to_np_image(retrieve_results.image)
+        retrieve_img: np.ndarray = to_np_image(retrieve_results.image)
         with_mask = bool(hasattr(inputs, "masks") or hasattr(inputs, "polygons"))
 
         jit_factor = random.uniform(*self.ratio_range)
@@ -1841,7 +1854,7 @@ class CachedMixUp(tvt_v2.Transform, NumpytoTVTensorMixin):
             out_img = out_img[:, ::-1, :]
 
         # 5. random crop
-        ori_img = to_np_image(inputs.image)
+        ori_img: np.ndarray = to_np_image(inputs.image)
         origin_h, origin_w = out_img.shape[:2]
         target_h, target_w = ori_img.shape[:2]
         padded_img = np.ones((max(origin_h, target_h), max(origin_w, target_w), 3)) * self.pad_val
@@ -2010,7 +2023,7 @@ class YOLOXHSVRandomAug(tvt_v2.Transform, NumpytoTVTensorMixin):
         assert len(_inputs) == 1, "[tmp] Multiple entity is not supported yet."  # noqa: S101
         inputs = _inputs[0]
 
-        img = to_np_image(inputs.image)
+        img: np.ndarray = to_np_image(inputs.image)
         hsv_gains = self._get_hsv_gains()
         # TODO (sungchul): OTX det models except for YOLOX-S, L, X consume RGB images but mmdet assumes they are BGR.
         img_hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV).astype(np.int16)
@@ -2112,7 +2125,7 @@ class Pad(tvt_v2.Transform, NumpytoTVTensorMixin):
 
     def _pad_img(self, inputs: T_OTXDataEntity) -> T_OTXDataEntity:
         """Pad images according to ``self.size``."""
-        img = to_np_image(inputs.image)
+        img: np.ndarray = to_np_image(inputs.image)
         pad_val = self.pad_val.get("img", 0)
 
         size: tuple[int, int]
@@ -2365,7 +2378,7 @@ class RandomCrop(tvt_v2.Transform, NumpytoTVTensorMixin):
         assert crop_size[0] > 0  # noqa: S101
         assert crop_size[1] > 0  # noqa: S101
 
-        img = to_np_image(inputs.image)
+        img: np.ndarray = to_np_image(inputs.image)
         orig_shape = inputs.img_info.img_shape
         margin_h = max(orig_shape[0] - crop_size[0], 0)
         margin_w = max(orig_shape[1] - crop_size[1], 0)
@@ -2612,6 +2625,418 @@ class Compose(tvt_v2.Compose):
                 return outputs
             inputs = outputs if needs_unpacking else (outputs,)
         return outputs
+
+
+class FormatShape(tvt_v2.Transform):
+    """Format final imgs shape to the given input_format."""
+
+    def __init__(self, input_format: str, collapse: bool = False) -> None:
+        self.input_format = input_format
+        self.collapse = collapse
+        if self.input_format not in [
+            "NCTHW",
+            "NCHW",
+            "NPTCHW",
+        ]:
+            msg = f"The input format {self.input_format} is invalid."
+            raise ValueError(msg)
+
+    def __call__(self, *_inputs: T_OTXDataEntity) -> T_OTXDataEntity | None:
+        """Perform the SampleFrames loading."""
+        assert len(_inputs) == 1, "[tmp] Multiple entity is not supported yet."  # noqa: S101
+        inputs = _inputs[0]
+
+        if not isinstance(inputs.image, np.ndarray):
+            inputs.image = np.array(inputs.image)
+
+        # [M x H x W x C]
+        # M = 1 * N_crops * N_clips * T
+        if self.collapse and inputs.video_info.num_clips != 1:
+            msg = "num_clips should be 1."
+            raise ValueError(msg)
+
+        if self.input_format == "NCTHW":
+            imgs = inputs.image
+            num_clips = inputs.video_info.num_clips
+            clip_len = inputs.video_info.clip_len
+            if isinstance(clip_len, dict):
+                clip_len = clip_len["RGB"]
+
+            imgs = imgs.reshape((-1, num_clips, clip_len) + imgs.shape[1:])
+            # N_crops x N_clips x T x H x W x C
+            imgs = np.transpose(imgs, (0, 1, 5, 2, 3, 4))
+            # N_crops x N_clips x C x T x H x W
+            imgs = imgs.reshape((-1,) + imgs.shape[2:])
+            # M' x C x T x H x W
+            # M' = N_crops x N_clips
+            inputs.image = imgs
+            inputs.img_info.img_shape = imgs.shape
+        elif self.input_format == "NCHW":
+            imgs = inputs.image
+            imgs = np.transpose(imgs, (0, 3, 1, 2))
+
+            # M x C x H x W
+            inputs.image = imgs
+            inputs.img_info.img_shape = imgs.shape
+        elif self.input_format == "NPTCHW":
+            num_proposals = inputs.proposals.shape[0]  # WJ
+            num_clips = inputs.video_info.num_clips
+            clip_len = inputs.video_info.clip_len
+            imgs = inputs.image
+            imgs = imgs.reshape((num_proposals, num_clips * clip_len) + imgs.shape[1:])
+            # P x M x H x W x C
+            # M = N_clips x T
+            imgs = np.transpose(imgs, (0, 1, 4, 2, 3))
+            # P x M x C x H x W
+            inputs.image["imgs"] = imgs
+            inputs.img_info.img_shape = imgs.shape
+
+        if self.collapse:
+            if inputs.image.shape[0] != 1:
+                msg = "num_clips should be 1."
+                raise ValueError(msg)
+            inputs.image = inputs.image.squeeze(0)
+            inputs.img_info.img_shape = inputs.image.shape
+
+        inputs.image = tv_tensors.Image(inputs.image)
+        return inputs
+
+    def __repr__(self) -> str:
+        repr_str = self.__class__.__name__
+        repr_str += f"(input_format='{self.input_format}')"
+        return repr_str
+
+
+class DecordInit(tvt_v2.Transform):
+    """Using decord to initialize the video_reader."""
+
+    def __init__(self, num_threads: int = 1, **kwargs) -> None:
+        self.num_threads = num_threads
+        self.kwargs = kwargs
+
+    def _get_video_reader(self, filename: str) -> decord.VideoReader:
+        with Path(filename).open("rb") as f:
+            file_byte = f.read()
+        file_obj = io.BytesIO(file_byte)
+        return decord.VideoReader(file_obj, num_threads=self.num_threads)
+
+    def __call__(self, *_inputs: T_OTXDataEntity) -> T_OTXDataEntity | None:
+        """Perform the Decord initialization."""
+        assert len(_inputs) == 1, "[tmp] Multiple entity is not supported yet."  # noqa: S101
+        inputs = _inputs[0]
+
+        container = self._get_video_reader(inputs.video.path)
+        inputs.video_info.video_reader = container
+        inputs.video_info.num_frames = len(container)
+        inputs.video_info.avg_fps = container.get_avg_fps()
+        return inputs
+
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__}(num_threads={self.num_threads})"
+
+
+class SampleFrames(tvt_v2.Transform):
+    """Sample frames from the video.
+
+    Required Keys:
+
+        - total_frames
+        - start_index
+
+    Added Keys:
+
+        - frame_inds
+        - frame_interval
+        - num_clips
+
+    Args:
+        clip_len (int): Frames of each sampled output clip.
+        frame_interval (int): Temporal interval of adjacent sampled frames.
+            Defaults to 1.
+        num_clips (int): Number of clips to be sampled. Default: 1.
+        temporal_jitter (bool): Whether to apply temporal jittering.
+            Defaults to False.
+        twice_sample (bool): Whether to use twice sample when testing.
+            If set to True, it will sample frames with and without fixed shift,
+            which is commonly used for testing in TSM model. Defaults to False.
+        out_of_bound_opt (str): The way to deal with out of bounds frame
+            indexes. Available options are 'loop', 'repeat_last'.
+            Defaults to 'loop'.
+        test_mode (bool): Store True when building test or validation dataset.
+            Defaults to False.
+        keep_tail_frames (bool): Whether to keep tail frames when sampling.
+            Defaults to False.
+        target_fps (optional, int): Convert input videos with arbitrary frame
+            rates to the unified target FPS before sampling frames. If
+            ``None``, the frame rate will not be adjusted. Defaults to
+            ``None``.
+    """
+
+    def __init__(
+        self,
+        clip_len: int,
+        frame_interval: int = 1,
+        num_clips: int = 1,
+        temporal_jitter: bool = False,
+        twice_sample: bool = False,
+        out_of_bound_opt: str = "loop",
+        test_mode: bool = False,
+        keep_tail_frames: bool = False,
+        target_fps: int | None = None,
+        **kwargs,
+    ) -> None:
+        self.clip_len = clip_len
+        self.frame_interval = frame_interval
+        self.num_clips = num_clips
+        self.temporal_jitter = temporal_jitter
+        self.twice_sample = twice_sample
+        self.out_of_bound_opt = out_of_bound_opt
+        self.test_mode = test_mode
+        self.keep_tail_frames = keep_tail_frames
+        self.target_fps = target_fps
+        if self.out_of_bound_opt not in ["loop", "repeat_last"]:
+            msg = f"out_of_bound_opt should be 'loop' or 'repeat_last', but found {self.out_of_bound_opt}."
+            raise ValueError(msg)
+
+    def _get_train_clips(self, num_frames: int, ori_clip_len: float) -> np.array:
+        """Get clip offsets in train mode.
+
+        It will calculate the average interval for selected frames,
+        and randomly shift them within offsets between [0, avg_interval].
+        If the total number of frames is smaller than clips num or origin
+        frames length, it will return all zero indices.
+
+        Args:
+            num_frames (int): Total number of frame in the video.
+            ori_clip_len (float): length of original sample clip.
+
+        Returns:
+            np.ndarray: Sampled frame indices in train mode.
+        """
+        if self.keep_tail_frames:
+            avg_interval = (num_frames - ori_clip_len + 1) / float(self.num_clips)
+            if num_frames > ori_clip_len - 1:
+                base_offsets = np.arange(self.num_clips) * avg_interval
+                clip_offsets = (base_offsets + np.random.uniform(0, avg_interval, self.num_clips)).astype(np.int32)
+            else:
+                clip_offsets = np.zeros((self.num_clips,), dtype=np.int32)
+        else:
+            avg_interval = (num_frames - ori_clip_len + 1) // self.num_clips
+
+            if avg_interval > 0:
+                base_offsets = np.arange(self.num_clips) * avg_interval
+                clip_offsets = base_offsets + np.random.randint(avg_interval, size=self.num_clips)
+            elif num_frames > max(self.num_clips, ori_clip_len):
+                clip_offsets = np.sort(np.random.randint(num_frames - ori_clip_len + 1, size=self.num_clips))
+            elif avg_interval == 0:
+                ratio = (num_frames - ori_clip_len + 1.0) / self.num_clips
+                clip_offsets = np.around(np.arange(self.num_clips) * ratio)
+            else:
+                clip_offsets = np.zeros((self.num_clips,), dtype=np.int32)
+
+        return clip_offsets
+
+    def _get_test_clips(self, num_frames: int, ori_clip_len: float) -> np.array:
+        """Get clip offsets in test mode.
+
+        If the total number of frames is
+        not enough, it will return all zero indices.
+
+        Args:
+            num_frames (int): Total number of frame in the video.
+            ori_clip_len (float): length of original sample clip.
+
+        Returns:
+            np.ndarray: Sampled frame indices in test mode.
+        """
+        if self.clip_len == 1:  # 2D recognizer
+            # assert self.frame_interval == 1
+            avg_interval = num_frames / float(self.num_clips)
+            base_offsets = np.arange(self.num_clips) * avg_interval
+            clip_offsets = base_offsets + avg_interval / 2.0
+            if self.twice_sample:
+                clip_offsets = np.concatenate([clip_offsets, base_offsets])
+        else:  # 3D recognizer
+            max_offset = max(num_frames - ori_clip_len, 0)
+            num_clips = self.num_clips * 2 if self.twice_sample else self.num_clips
+            if num_clips > 1:
+                num_segments = self.num_clips - 1
+                # align test sample strategy with `PySlowFast` repo
+                if self.target_fps is not None:
+                    offset_between = np.floor(max_offset / float(num_segments))
+                    clip_offsets = np.arange(num_clips) * offset_between
+                else:
+                    offset_between = max_offset / float(num_segments)
+                    clip_offsets = np.arange(num_clips) * offset_between
+                    clip_offsets = np.round(clip_offsets)
+            else:
+                clip_offsets = np.array([max_offset // 2])
+        return clip_offsets
+
+    def _sample_clips(self, num_frames: int, ori_clip_len: float) -> np.array:
+        """Choose clip offsets for the video in a given mode.
+
+        Args:
+            num_frames (int): Total number of frame in the video.
+
+        Returns:
+            np.ndarray: Sampled frame indices.
+        """
+        if self.test_mode:
+            clip_offsets = self._get_test_clips(num_frames, ori_clip_len)
+        else:
+            clip_offsets = self._get_train_clips(num_frames, ori_clip_len)
+
+        return clip_offsets
+
+    def _get_ori_clip_len(self, fps_scale_ratio: float) -> float:
+        """Calculate length of clip segment for different strategy.
+
+        Args:
+            fps_scale_ratio (float): Scale ratio to adjust fps.
+        """
+        if self.target_fps is not None:
+            # align test sample strategy with `PySlowFast` repo
+            ori_clip_len = self.clip_len * self.frame_interval
+            ori_clip_len = np.maximum(1, ori_clip_len * fps_scale_ratio)
+        elif self.test_mode:
+            ori_clip_len = (self.clip_len - 1) * self.frame_interval + 1
+        else:
+            ori_clip_len = self.clip_len * self.frame_interval
+
+        return ori_clip_len
+
+    def __call__(self, *_inputs: T_OTXDataEntity) -> T_OTXDataEntity | None:
+        """Perform the SampleFrames loading."""
+        assert len(_inputs) == 1, "[tmp] Multiple entity is not supported yet."  # noqa: S101
+        inputs = _inputs[0]
+
+        total_frames = inputs.video_info.num_frames
+        # if can't get fps, same value of `fps` and `target_fps`
+        # will perform nothing
+        fps = inputs.video_info.avg_fps
+        fps_scale_ratio = 1.0 if self.target_fps is None or not fps else fps / self.target_fps
+        ori_clip_len = self._get_ori_clip_len(fps_scale_ratio)
+        clip_offsets = self._sample_clips(total_frames, ori_clip_len)
+
+        if self.target_fps:
+            frame_inds = clip_offsets[:, None] + np.linspace(0, ori_clip_len - 1, self.clip_len).astype(np.int32)
+        else:
+            frame_inds = clip_offsets[:, None] + np.arange(self.clip_len)[None, :] * self.frame_interval
+            frame_inds = np.concatenate(frame_inds)
+
+        if self.temporal_jitter:
+            perframe_offsets = np.random.randint(self.frame_interval, size=len(frame_inds))
+            frame_inds += perframe_offsets
+
+        frame_inds = frame_inds.reshape((-1, self.clip_len))
+        if self.out_of_bound_opt == "loop":
+            frame_inds = np.mod(frame_inds, total_frames)
+        elif self.out_of_bound_opt == "repeat_last":
+            safe_inds = frame_inds < total_frames
+            unsafe_inds = 1 - safe_inds
+            last_ind = np.max(safe_inds * frame_inds, axis=1)
+            new_inds = safe_inds * frame_inds + (unsafe_inds.T * last_ind).T
+            frame_inds = new_inds
+        else:
+            msg = f"out_of_bound_opt should be 'loop' or 'repeat_last', but found {self.out_of_bound_opt}."
+            raise ValueError(msg)
+
+        start_index = inputs.video_info.start_index
+        frame_inds = np.concatenate(frame_inds) + start_index
+        inputs.video_info.frame_inds = frame_inds.astype(np.int32)
+        inputs.video_info.clip_len = self.clip_len
+        inputs.video_info.frame_interval = self.frame_interval
+        inputs.video_info.num_clips = self.num_clips
+        return inputs
+
+    def __repr__(self) -> str:
+        return (
+            f"{self.__class__.__name__}("
+            f"clip_len={self.clip_len}, "
+            f"frame_interval={self.frame_interval}, "
+            f"num_clips={self.num_clips}, "
+            f"temporal_jitter={self.temporal_jitter}, "
+            f"twice_sample={self.twice_sample}, "
+            f"out_of_bound_opt={self.out_of_bound_opt}, "
+            f"test_mode={self.test_mode})"
+        )
+
+
+class DecordDecode(tvt_v2.Transform):
+    """Using decord to decode the video."""
+
+    def __init__(self, mode: str = "accurate") -> None:
+        self.mode = mode
+        if self.mode not in ["accurate", "efficient"]:
+            msg = f"Decord mode should be 'accurate' or 'efficient', but found {self.mode}."
+            raise ValueError(msg)
+
+    def _decord_load_frames(self, container: object, frame_inds: np.ndarray) -> list[np.ndarray]:
+        if self.mode == "accurate":
+            imgs = container.get_batch(frame_inds).asnumpy()
+            imgs = list(imgs)
+        elif self.mode == "efficient":
+            # This mode is faster, however it always returns I-FRAME
+            container.seek(0)
+            imgs = []
+            for idx in frame_inds:
+                container.seek(idx)
+                frame = container.next()
+                imgs.append(frame.asnumpy())
+        return imgs
+
+    def __call__(self, *_inputs: T_OTXDataEntity) -> T_OTXDataEntity | None:
+        """Transform function to resize images, bounding boxes, and masks."""
+        assert len(_inputs) == 1, "[tmp] Multiple entity is not supported yet."  # noqa: S101
+        inputs = _inputs[0]
+
+        container = inputs.video_info.video_reader
+
+        if inputs.video_info.frame_inds.ndim != 1:
+            inputs.video_info.frame_inds = np.squeeze(inputs.video_info.frame_inds)
+
+        frame_inds = inputs.video_info.frame_inds
+        imgs = self._decord_load_frames(container, frame_inds)
+
+        inputs.video_info.video_reader = None
+        del container
+
+        inputs.image = imgs
+        inputs.img_info.ori_shape = imgs[0].shape[:2]
+        inputs.img_info.img_shape = imgs[0].shape[:2]
+
+        # we resize the gt_bboxes and proposals to their real scale
+        if bboxes := getattr(inputs, "bboxes", None):
+            h, w = inputs.img_info.img_shape
+            scale_factor = np.array([w, h, w, h])
+            gt_bboxes = (bboxes * scale_factor).astype(np.float32)
+            inputs.bboxes = gt_bboxes
+            if proposals := getattr(inputs, "proposals", None):
+                proposals = (proposals * scale_factor).astype(np.float32)
+                inputs.proposals = proposals
+
+        return inputs
+
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__}(mode={self.mode})"
+
+
+class Normalize3D(tvt_v2.Normalize):
+    """Using normalize the 3D video data."""
+
+    def __init__(self, mean: list[float], std: list[float], inplace: bool = False) -> None:
+        self.mean = torch.Tensor(mean).view(1, 3, 1, 1, 1)
+        self.std = torch.Tensor(std).view(1, 3, 1, 1, 1)
+        self.inplace = inplace
+
+    def __call__(self, *_inputs: T_OTXDataEntity) -> T_OTXDataEntity | None:
+        """Transform function to resize images, bounding boxes, and masks."""
+        assert len(_inputs) == 1, "[tmp] Multiple entity is not supported yet."  # noqa: S101
+        inputs = _inputs[0]
+
+        inputs.image = F.normalize(inputs.image, self.mean, self.std, self.inplace)
+        return inputs
 
 
 class TorchVisionTransformLib:

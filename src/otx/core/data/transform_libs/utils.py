@@ -104,7 +104,20 @@ class cache_randomness:  # noqa: N801
         return copy.copy(self)
 
 
-def to_np_image(img: Tensor) -> np.ndarray:
+def get_image_shape(img: np.ndarray | Tensor | list) -> tuple[int, int]:
+    """Get image(s) shape with (height, width)."""
+    if not isinstance(img, (np.ndarray, Tensor, list)):
+        msg = f"{type(img)} is not supported."
+        raise TypeError(msg)
+
+    if isinstance(img, np.ndarray):
+        return img.shape[:2]
+    if isinstance(img, Tensor):
+        return img.shape[-2:]
+    return get_image_shape(img[0])  # for list
+
+
+def to_np_image(img: np.ndarray | Tensor | list) -> np.ndarray | list[np.ndarray]:
     """Convert torch.Tensor 3D image to numpy 3D image.
 
     TODO (sungchul): move it into base data entity?
@@ -112,6 +125,8 @@ def to_np_image(img: Tensor) -> np.ndarray:
     """
     if isinstance(img, np.ndarray):
         return img
+    if isinstance(img, list):
+        return [to_np_image(im) for im in img]
     return np.ascontiguousarray(img.numpy().transpose(1, 2, 0))
 
 
@@ -651,7 +666,7 @@ def rescale_size(
     return new_size
 
 
-def flip_image(img: np.ndarray, direction: str = "horizontal") -> np.ndarray:
+def flip_image(img: np.ndarray | list[np.ndarray], direction: str = "horizontal") -> np.ndarray | list[np.ndarray]:
     """Flip an image horizontally or vertically.
 
     Args:
@@ -662,7 +677,13 @@ def flip_image(img: np.ndarray, direction: str = "horizontal") -> np.ndarray:
     Returns:
         ndarray: The flipped image.
     """
-    assert direction in ["horizontal", "vertical", "diagonal"]  # noqa: S101
+    if direction not in ["horizontal", "vertical", "diagonal"]:
+        msg = f"direction (={direction}) should be in one of ('horizontal', 'vertical', 'diagonal')."
+        raise ValueError(msg)
+
+    if isinstance(img, list):
+        return [flip_image(im, direction) for im in img]
+
     if direction == "horizontal":
         return np.flip(img, axis=1)
     elif direction == "vertical":  # noqa: RET505

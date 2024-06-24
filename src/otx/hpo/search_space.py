@@ -14,7 +14,13 @@ from otx.hpo.utils import check_positive
 
 logger = logging.getLogger()
 
-AVAILABLE_SEARCH_SPACE_TYPE = ["uniform", "quniform", "loguniform", "qloguniform", "choice"]
+AVAILABLE_SEARCH_SPACE_TYPE = [
+    "uniform",
+    "quniform",
+    "loguniform",
+    "qloguniform",
+    "choice",
+]
 
 
 class SingleSearchSpace:
@@ -58,7 +64,9 @@ class SingleSearchSpace:
         self._check_all_value_is_right()
 
     @property
-    def type(self) -> Literal["uniform", "loguniform", "quniform", "qloguniform", "choice"]:  # noqa: A003
+    def type(  # noqa: A003
+        self,
+    ) -> Literal["uniform", "loguniform", "quniform", "qloguniform", "choice"]:
         """Type of hyper parameter in search space."""
         return self._type
 
@@ -309,8 +317,13 @@ class SearchSpace:
     ) -> None:
         self.search_space: dict[str, SingleSearchSpace] = {}
 
-        for key, val in search_space.items():  # pylint: disable=too-many-nested-blocks
-            self.search_space[key] = SingleSearchSpace(**val)
+        try:
+            for key, val in search_space.items():  # pylint: disable=too-many-nested-blocks
+                self.search_space[key] = SingleSearchSpace(**val)
+        except Exception:
+            msg = f"Failed to create SingleSearchSpace. key={key}, val={val}"
+            logging.exception(msg)
+            raise
 
     def __getitem__(self, key: str) -> SingleSearchSpace:
         """Get search space by key."""

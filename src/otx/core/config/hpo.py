@@ -6,6 +6,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from pathlib import Path  # noqa: TCH003
 from typing import Any, Literal
 
 import torch
@@ -24,7 +25,7 @@ else:
 class HpoConfig:
     """DTO for HPO configuration."""
 
-    search_space: dict[str, dict[str, Any]] | None = None
+    search_space: dict[str, dict[str, Any]] | str | Path | None = None
     save_path: str | None = None
     mode: Literal["max", "min"] = "max"
     num_trials: int | None = None
@@ -38,3 +39,4 @@ class HpoConfig:
     asynchronous_bracket: bool = True
     asynchronous_sha: bool = num_workers > 1
     metric_name: str | None = None
+    adapt_bs_search_space_max_val: Literal["None", "Safe", "Full"] = "None"

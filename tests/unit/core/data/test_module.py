@@ -1,10 +1,13 @@
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
+from __future__ import annotations
+
 from pathlib import Path
+from typing import TYPE_CHECKING
 from unittest.mock import MagicMock, patch
 
 import pytest
-from datumaro.components.dataset import Dataset as DmDataset
+from datumaro.components.environment import Environment
 from importlib_resources import files
 from lightning.pytorch.loggers import CSVLogger
 from omegaconf import DictConfig, OmegaConf
@@ -12,16 +15,26 @@ from otx.core.config.data import (
     DataModuleConfig,
     SubsetConfig,
     TileConfig,
+    UnlabeledDataConfig,
 )
 from otx.core.data.module import (
     OTXDataModule,
     OTXTaskType,
 )
 
+if TYPE_CHECKING:
+    from datumaro.components.dataset import Dataset as DmDataset
 
-def mock_data_filtering(dataset: DmDataset, data_format: str, unannotated_items_ratio: float) -> DmDataset:
+
+def mock_data_filtering(
+    dataset: DmDataset,
+    data_format: str,
+    unannotated_items_ratio: float,
+    ignore_index: int | None,
+) -> DmDataset:
     del data_format
     del unannotated_items_ratio
+    del ignore_index
     return dataset
 
 
@@ -50,6 +63,8 @@ class TestModule:
         )
         mock.test_subset.num_workers = 0
         mock.test_subset.batch_size = 1
+        mock.unlabeled_subset = MagicMock(spec=UnlabeledDataConfig)
+        mock.unlabeled_subset.data_root = None
         mock.tile_config = MagicMock(spec=TileConfig)
         mock.tile_config.enable_tiler = False
 
@@ -67,7 +82,6 @@ class TestModule:
             OTXTaskType.SEMANTIC_SEGMENTATION,
             OTXTaskType.INSTANCE_SEGMENTATION,
             OTXTaskType.ACTION_CLASSIFICATION,
-            OTXTaskType.ACTION_DETECTION,
         ],
     )
     def test_init(
@@ -109,6 +123,8 @@ class TestModule:
         cfg.val_subset.num_workers = 0
         cfg.test_subset.subset_name = "test"
         cfg.test_subset.num_workers = 0
+        cfg.unlabeled_subset = {}
+        cfg.unlabeled_subset.data_root = None
         cfg.mem_cache_size = "1GB"
         cfg.tile_config = {}
         cfg.tile_config.enable_tiler = False
@@ -139,3 +155,39 @@ class TestModule:
 
         hparams_path = Path(logger.log_dir) / "hparams.yaml"
         assert hparams_path.exists()
+
+    @patch("otx.core.data.module.OTXDatasetFactory.create")
+    @patch("otx.core.data.module.DmDataset.import_from")
+    def test_data_format_check(
+        self,
+        mock_dm_dataset,
+        fxt_config,
+        mocker,
+        caplog,
+    ) -> None:
+        fxt_config.mem_cache_size = "0GB"
+        fxt_config.tile_config.enable_tiler = False
+        # Our query for subset name for train, val, test
+        fxt_config.train_subset.subset_name = "train_1"
+        fxt_config.val_subset.subset_name = "val_1"
+        fxt_config.test_subset.subset_name = "test_1"
+        fxt_config.unlabeled_subset.data_root = None
+
+        # Dataset will have "train_0", "train_1", "val_0", ..., "test_1" subsets
+        mock_dm_subsets = {f"{name}_{idx}": MagicMock() for name in ["train", "val", "test"] for idx in range(2)}
+        mock_dm_dataset.return_value.subsets.return_value = mock_dm_subsets
+
+        mocker.patch("otx.core.data.module.pre_filtering", side_effect=mock_data_filtering)
+
+        with patch.object(Environment, "detect_dataset", return_value=["voc", "voc_classification"]):
+            # with pytest.raises(ValueError, match="Invalid data root:"):
+            OTXDataModule(task="MULTI_LABEL_CLS", config=fxt_config)
+
+        assert "Invalid data format:" in caplog.text
+        assert "Replace data_format:" in caplog.text
+
+        with patch.object(Environment, "detect_dataset", return_value=[]), pytest.raises(
+            ValueError,
+            match="Invalid data root:",
+        ):
+            OTXDataModule(task="MULTI_LABEL_CLS", config=fxt_config)

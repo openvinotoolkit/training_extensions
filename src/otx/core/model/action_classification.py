@@ -3,6 +3,8 @@
 #
 """Class definition for action_classification model entity used in OTX."""
 
+# mypy: disable-error-code="attr-defined"
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
@@ -10,6 +12,7 @@ from typing import TYPE_CHECKING, Any
 import numpy as np
 import torch
 
+from otx.algo.action_classification.utils.data_sample import ActionDataSample
 from otx.core.data.entity.action_classification import ActionClsBatchDataEntity, ActionClsBatchPredEntity
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.exporter.native import OTXNativeModelExporter
@@ -32,9 +35,6 @@ if TYPE_CHECKING:
     from otx.core.metrics import MetricCallable
 
 
-# ruff: noqa: F401
-
-
 class OTXActionClsModel(OTXModel[ActionClsBatchDataEntity, ActionClsBatchPredEntity]):
     """Base class for the action classification models used in OTX."""
 
@@ -46,6 +46,9 @@ class OTXActionClsModel(OTXModel[ActionClsBatchDataEntity, ActionClsBatchPredEnt
         metric: MetricCallable = MultiClassClsMetricCallable,
         torch_compile: bool = False,
     ) -> None:
+        self.image_size = (1, 1, 3, 8, 224, 224)
+        self.mean = (0.0, 0.0, 0.0)
+        self.std = (255.0, 255.0, 255.0)
         super().__init__(
             label_info=label_info,
             optimizer=optimizer,
@@ -73,6 +76,94 @@ class OTXActionClsModel(OTXModel[ActionClsBatchDataEntity, ActionClsBatchPredEnt
             "preds": pred,
             "target": target,
         }
+
+    def _customize_inputs(self, entity: ActionClsBatchDataEntity) -> dict[str, Any]:
+        """Convert ActionClsBatchDataEntity into mmaction model's input."""
+        mmaction_inputs: dict[str, Any] = {}
+
+        mmaction_inputs["inputs"] = entity.images
+        mmaction_inputs["data_samples"] = [
+            ActionDataSample(
+                metainfo={
+                    "img_id": img_info.img_idx,
+                    "img_shape": img_info.img_shape,
+                    "ori_shape": img_info.ori_shape,
+                    "scale_factor": img_info.scale_factor,
+                },
+                gt_label=labels,
+            )
+            for img_info, labels in zip(entity.imgs_info, entity.labels)
+        ]
+
+        mmaction_inputs["mode"] = "loss" if self.training else "predict"
+        return mmaction_inputs
+
+    def _customize_outputs(
+        self,
+        outputs: Any,  # noqa: ANN401
+        inputs: ActionClsBatchDataEntity,
+    ) -> ActionClsBatchPredEntity | OTXBatchLossEntity:
+        if self.training:
+            if not isinstance(outputs, dict):
+                raise TypeError(outputs)
+
+            losses = OTXBatchLossEntity()
+            for k, v in outputs.items():
+                losses[k] = v
+            return losses
+
+        scores = []
+        labels = []
+
+        for output in outputs:
+            if not isinstance(output, ActionDataSample):
+                raise TypeError(output)
+
+            scores.append(output.pred_score)
+            labels.append(output.pred_label)
+
+        return ActionClsBatchPredEntity(
+            batch_size=len(outputs),
+            images=inputs.images,
+            imgs_info=inputs.imgs_info,
+            scores=scores,
+            labels=labels,
+        )
+
+    @property
+    def _exporter(self) -> OTXModelExporter:
+        """Creates OTXModelExporter object that can export the model."""
+        return OTXNativeModelExporter(
+            task_level_export_parameters=self._export_parameters,
+            input_size=self.image_size,
+            mean=self.mean,
+            std=self.std,
+            resize_mode="standard",
+            pad_value=0,
+            swap_rgb=False,
+            via_onnx=False,
+            onnx_export_configuration=None,
+            output_names=None,
+        )
+
+    def forward_for_tracing(self, image: Tensor) -> Tensor | dict[str, Tensor]:
+        """Model forward function used for the model tracing during model exportation."""
+        return self.model(inputs=image, mode="tensor")
+
+    def get_classification_layers(self, prefix: str = "model.") -> dict[str, dict[str, int]]:
+        """Get final classification layer information for incremental learning case."""
+        sample_model_dict = self._build_model(num_classes=5).state_dict()
+        incremental_model_dict = self._build_model(num_classes=6).state_dict()
+
+        classification_layers = {}
+        for key in sample_model_dict:
+            if sample_model_dict[key].shape != incremental_model_dict[key].shape:
+                sample_model_dim = sample_model_dict[key].shape[0]
+                incremental_model_dim = incremental_model_dict[key].shape[0]
+                stride = incremental_model_dim - sample_model_dim
+                num_extra_classes = 6 * sample_model_dim - 5 * incremental_model_dim
+                classification_layers[prefix + key] = {"stride": stride, "num_extra_classes": num_extra_classes}
+        return classification_layers
 
 
 class MMActionCompatibleModel(OTXActionClsModel):
@@ -211,8 +302,6 @@ class OVActionClsModel(
         metric: MetricCallable = MultiClassClsMetricCallable,
         **kwargs,
     ) -> None:
-        from otx.algo.action_classification import openvino_model
-
         super().__init__(
             model_name=model_name,
             model_type=model_type,

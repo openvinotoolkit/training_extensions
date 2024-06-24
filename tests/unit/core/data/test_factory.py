@@ -6,7 +6,6 @@
 import pytest
 from otx.core.config.data import DataModuleConfig, SubsetConfig, TileConfig, VisualPromptingConfig
 from otx.core.data.dataset.action_classification import OTXActionClsDataset
-from otx.core.data.dataset.action_detection import OTXActionDetDataset
 from otx.core.data.dataset.anomaly import AnomalyDataset
 from otx.core.data.dataset.classification import (
     HLabelInfo,
@@ -19,28 +18,37 @@ from otx.core.data.dataset.instance_segmentation import OTXInstanceSegDataset
 from otx.core.data.dataset.segmentation import OTXSegmentationDataset
 from otx.core.data.dataset.visual_prompting import OTXVisualPromptingDataset, OTXZeroShotVisualPromptingDataset
 from otx.core.data.factory import OTXDatasetFactory, TransformLibFactory
-from otx.core.data.transform_libs.mmaction import MMActionTransformLib
-from otx.core.data.transform_libs.mmcv import MMCVTransformLib
-from otx.core.data.transform_libs.mmdet import MMDetTransformLib
-from otx.core.data.transform_libs.mmpretrain import MMPretrainTransformLib
-from otx.core.data.transform_libs.mmseg import MMSegTransformLib
 from otx.core.data.transform_libs.torchvision import TorchVisionTransformLib
 from otx.core.types.image import ImageColorChannel
 from otx.core.types.task import OTXTaskType
 from otx.core.types.transformer_libs import TransformLibType
 
+lib_type_parameters = [(TransformLibType.TORCHVISION, TorchVisionTransformLib)]
+SKIP_MMLAB_TEST = False
+try:
+    from otx.core.data.transform_libs.mmaction import MMActionTransformLib
+    from otx.core.data.transform_libs.mmcv import MMCVTransformLib
+    from otx.core.data.transform_libs.mmdet import MMDetTransformLib
+    from otx.core.data.transform_libs.mmpretrain import MMPretrainTransformLib
+    from otx.core.data.transform_libs.mmseg import MMSegTransformLib
 
-class TestTransformLibFactory:
-    @pytest.mark.parametrize(
-        ("lib_type", "lib"),
+    lib_type_parameters.extend(
         [
-            (TransformLibType.TORCHVISION, TorchVisionTransformLib),
             (TransformLibType.MMCV, MMCVTransformLib),
             (TransformLibType.MMPRETRAIN, MMPretrainTransformLib),
             (TransformLibType.MMDET, MMDetTransformLib),
             (TransformLibType.MMSEG, MMSegTransformLib),
             (TransformLibType.MMACTION, MMActionTransformLib),
         ],
+    )
+except ImportError:
+    SKIP_MMLAB_TEST = True
+
+
+class TestTransformLibFactory:
+    @pytest.mark.parametrize(
+        ("lib_type", "lib"),
+        lib_type_parameters,
     )
     def test_generate(self, lib_type, lib, mocker) -> None:
         mock_generate = mocker.patch.object(lib, "generate")
@@ -64,7 +72,6 @@ class TestOTXDatasetFactory:
             (OTXTaskType.VISUAL_PROMPTING, OTXVisualPromptingDataset),
             (OTXTaskType.ZERO_SHOT_VISUAL_PROMPTING, OTXZeroShotVisualPromptingDataset),
             (OTXTaskType.ACTION_CLASSIFICATION, OTXActionClsDataset),
-            (OTXTaskType.ACTION_DETECTION, OTXActionDetDataset),
             (OTXTaskType.ANOMALY_CLASSIFICATION, AnomalyDataset),
             (OTXTaskType.ANOMALY_DETECTION, AnomalyDataset),
             (OTXTaskType.ANOMALY_SEGMENTATION, AnomalyDataset),

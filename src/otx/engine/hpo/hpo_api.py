@@ -14,14 +14,21 @@ from threading import Thread
 from typing import TYPE_CHECKING, Any, Callable, Literal
 
 import torch
+import yaml
 
 from otx.core.config.hpo import HpoConfig
 from otx.core.optimizer.callable import OptimizerCallableSupportHPO
 from otx.core.schedulers import LinearWarmupSchedulerCallable, SchedulerCallableSupportHPO
 from otx.core.types.device import DeviceType
 from otx.core.types.task import OTXTaskType
+from otx.engine.adaptive_bs import adapt_batch_size
 from otx.hpo import HyperBand, run_hpo_loop
-from otx.utils.utils import get_decimal_point, get_using_dot_delimited_key, is_xpu_available, remove_matched_files
+from otx.utils.utils import (
+    get_decimal_point,
+    get_using_dot_delimited_key,
+    is_xpu_available,
+    remove_matched_files,
+)
 
 from .hpo_trial import run_hpo_trial
 from .utils import find_trial_file, get_best_hpo_weight, get_callable_args_name, get_hpo_weight_dir, get_metric
@@ -69,13 +76,14 @@ def execute_hpo(
     engine.model.patch_optimizer_and_scheduler_for_hpo()
 
     hpo_workdir = Path(engine.work_dir) / "hpo"
-    hpo_workdir.mkdir(exist_ok=True)
+    hpo_workdir.mkdir(parents=True, exist_ok=True)
     hpo_configurator = HPOConfigurator(
         engine=engine,
         max_epochs=max_epochs,
         hpo_config=hpo_config,
         hpo_workdir=hpo_workdir,
         callbacks=callbacks,
+        train_args=train_args,
     )
     if (
         train_args.get("adaptive_bs", None) == "Full"
@@ -114,6 +122,8 @@ def execute_hpo(
         best_config = best_trial["configuration"]
         if (trial_file := find_trial_file(hpo_workdir, best_trial["id"])) is not None:
             best_hpo_weight = get_best_hpo_weight(get_hpo_weight_dir(hpo_workdir, best_trial["id"]), trial_file)
+            if best_hpo_weight is not None:
+                _update_model_ckpt_callback(best_hpo_weight)
 
     hpo_algo.print_result()
     _remove_unused_model_weights(hpo_workdir, best_hpo_weight)
@@ -129,7 +139,8 @@ class HPOConfigurator:
         max_epochs (int): max epochs to train.
         hpo_config (HpoConfig): Configuration for HPO.
         hpo_workdir (Path | None, optional): HPO work directory. Defaults to None.
-        callbacks (list[Callback] | Callback | None, optional): callbacks used during training. Defaults to None.
+        callbacks (list[Callback] | Callback | None, optional): Callbacks used during training. Defaults to None.
+        train_args (dict | None, optional): Additional train arguments. It's used for adapt_batch_size_search_space.
     """
 
     def __init__(
@@ -139,11 +150,13 @@ class HPOConfigurator:
         hpo_config: HpoConfig,
         hpo_workdir: Path | None = None,
         callbacks: list[Callback] | Callback | None = None,
+        train_args: dict | None = None,
     ) -> None:
         self._engine = engine
         self._max_epochs = max_epochs
         self._hpo_workdir = hpo_workdir if hpo_workdir is not None else Path(engine.work_dir) / "hpo"
         self._callbacks = callbacks
+        self._train_args = train_args if train_args is not None else {}
         self.hpo_config: dict[str, Any] = hpo_config  # type: ignore[assignment]
 
     @property
@@ -190,7 +203,13 @@ class HPOConfigurator:
         if "search_space" not in self._hpo_config:
             self._hpo_config["search_space"] = self._get_default_search_space()
         else:
-            self._align_hp_name(self._hpo_config["search_space"])
+            self._align_search_space()
+
+        if hpo_config.adapt_bs_search_space_max_val != "None":
+            if "datamodule.config.train_subset.batch_size" not in self._hpo_config["search_space"]:
+                logger.warning("Batch size isn't included for HPO. 'adapt_batch_size_search_space' is ignored.")
+            else:
+                self._adapt_batch_size_search_space(hpo_config.adapt_bs_search_space_max_val)
 
         if (  # align batch size to train set size
             "datamodule.config.train_subset.batch_size" in self._hpo_config["search_space"]
@@ -222,8 +241,8 @@ class HPOConfigurator:
         cur_bs = self._engine.datamodule.config.train_subset.batch_size
         search_space["datamodule.config.train_subset.batch_size"] = {
             "type": "qloguniform",
-            "min": cur_bs // 2,
-            "max": cur_bs * 2,
+            "min": cur_bs // 2 if cur_bs != 1 else 1,
+            "max": cur_bs * 2 if cur_bs != 1 else 2,
             "step": 2,
         }
 
@@ -242,6 +261,19 @@ class HPOConfigurator:
             "max": min(cur_lr * 10, 0.1),
             "step": 10 ** -get_decimal_point(min_lr),
         }
+
+    def _align_search_space(self) -> None:
+        if isinstance(self._hpo_config["search_space"], (str, Path)):
+            search_space_file = Path(self._hpo_config["search_space"])
+            if not search_space_file.exists():
+                msg = f"{search_space_file} is set to HPO search_space, but it doesn't exist."
+                raise FileExistsError(msg)
+            with search_space_file.open("r") as f:
+                self._hpo_config["search_space"] = yaml.safe_load(f)
+        elif not isinstance(self._hpo_config["search_space"], dict):
+            msg = "HpoConfig.search_space should be str or dict type."
+            raise TypeError(msg)
+        self._align_hp_name(self._hpo_config["search_space"])  # type: ignore[arg-type]
 
     def _align_hp_name(self, search_space: dict[str, Any]) -> None:
         available_hp_name_map: dict[str, Callable[[str], None]] = {
@@ -286,6 +318,27 @@ class HPOConfigurator:
     def _replace_hp_name(self, ori_hp_name: str, old: str, new: str) -> None:
         new_hp_name = ori_hp_name.replace(old, new)
         self._hpo_config["search_space"][new_hp_name] = self._hpo_config["search_space"].pop(ori_hp_name)
+
+    def _adapt_batch_size_search_space(self, adapt_mode: Literal["Safe", "Full"]) -> None:
+        origin_bs = self._engine.datamodule.config.train_subset.batch_size
+        origin_lr = self._engine.model.optimizer_callable.optimizer_kwargs["lr"]  # type: ignore[attr-defined]
+
+        self._engine.datamodule.config.train_subset.batch_size = \
+            self._hpo_config["search_space"]["datamodule.config.train_subset.batch_size"]["max"]  # fmt: off
+
+        adapt_batch_size(
+            self._engine,
+            adapt_mode != "Full",
+            self._callbacks,
+            **self._train_args,
+        )
+
+        adapted_bs = self._engine.datamodule.config.train_subset.batch_size
+
+        self._engine.datamodule.config.train_subset.batch_size = origin_bs
+        self._engine.model.optimizer_callable.optimizer_kwargs["lr"] = origin_lr  # type: ignore[attr-defined]
+        self._hpo_config["search_space"]["datamodule.config.train_subset.batch_size"]["max"] = adapted_bs
+        logger.info(f"Max value of batch size search space : {origin_bs} -> {adapted_bs}")
 
     @staticmethod
     def _remove_wrong_search_space(search_space: dict[str, dict[str, Any]]) -> None:
@@ -335,3 +388,26 @@ def _get_resource_type() -> Literal[DeviceType.cpu, DeviceType.gpu, DeviceType.x
     if is_xpu_available():
         return DeviceType.xpu
     return DeviceType.cpu
+
+
+def _update_model_ckpt_callback(best_hpo_weight: Path) -> None:
+    """Update values in ModelCheckpoint callback.
+
+    Some values of ModelCheckpoint callback have HPO temporary directory value,
+    which can make error when best_hpo_weight is resumed.
+    To prevent it, change `best_model_path` value and remove unnecessary values.
+
+    Args:
+        best_hpo_weight (Path): Best HPO model weight.
+    """
+    best_weight = torch.load(best_hpo_weight)
+    for key, val in list(best_weight["callbacks"].items()):
+        if "ModelCheckpoint" in key:
+            val["best_model_path"] = best_hpo_weight
+            val.pop("kth_best_model_path", None)
+            val.pop("best_k_models", None)
+            val.pop("dirpath", None)
+            break
+    else:
+        return
+    torch.save(best_weight, best_hpo_weight)

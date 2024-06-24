@@ -31,7 +31,7 @@ from otx.core.data.entity.detection import DetBatchDataEntity, DetBatchPredEntit
 from otx.core.data.entity.utils import stack_batch
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter
-from otx.core.metrics.mean_ap import MeanAPCallable
+from otx.core.metrics.fmeasure import MeanAveragePrecisionFMeasureCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
 from otx.core.model.detection import ExplainableOTXDetModel
 from otx.core.schedulers import LRSchedulerListCallable
@@ -40,6 +40,7 @@ from otx.core.types.label import LabelInfoTypes
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
     from torch import Tensor, nn
+    from typing_extensions import Self
 
     from otx.core.metrics import MetricCallable
 
@@ -52,7 +53,7 @@ class ATSS(ExplainableOTXDetModel):
         label_info: LabelInfoTypes,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
-        metric: MetricCallable = MeanAPCallable,
+        metric: MetricCallable = MeanAveragePrecisionFMeasureCallable,
         torch_compile: bool = False,
         tile_config: TileConfig = TileConfig(enable_tiler=False),
     ) -> None:
@@ -64,7 +65,7 @@ class ATSS(ExplainableOTXDetModel):
             torch_compile=torch_compile,
             tile_config=tile_config,
         )
-        self.image_size = (1, 3, 736, 992)
+        self.image_size = (1, 3, 800, 992)
         self.tile_image_size = self.image_size
 
     def _create_model(self) -> nn.Module:
@@ -115,15 +116,17 @@ class ATSS(ExplainableOTXDetModel):
         for img_info, prediction in zip(inputs.imgs_info, predictions):
             if not isinstance(prediction, InstanceData):
                 raise TypeError(prediction)
-            scores.append(prediction.scores)  # type: ignore[attr-defined]
+
+            filtered_idx = torch.where(prediction.scores > self.best_confidence_threshold)  # type: ignore[attr-defined]
+            scores.append(prediction.scores[filtered_idx])  # type: ignore[attr-defined]
             bboxes.append(
                 tv_tensors.BoundingBoxes(
-                    prediction.bboxes,  # type: ignore[attr-defined]
+                    prediction.bboxes[filtered_idx],  # type: ignore[attr-defined]
                     format="XYXY",
                     canvas_size=img_info.ori_shape,
                 ),
             )
-            labels.append(prediction.labels)  # type: ignore[attr-defined]
+            labels.append(prediction.labels[filtered_idx])  # type: ignore[attr-defined]
 
         if self.explain_mode:
             if not isinstance(outputs, dict):
@@ -241,10 +244,11 @@ class MobileNetV2ATSS(ATSS):
         }
         test_cfg = DictConfig(
             {
-                "nms": {"type": "nms", "iou_threshold": 0.45},
+                "nms": {"type": "nms", "iou_threshold": 0.6},
                 "min_bbox_size": 0,
-                "score_thr": 0.02,
-                "max_per_img": 200,
+                "score_thr": 0.05,
+                "max_per_img": 100,
+                "nms_pre": 1000,
             },
         )
         backbone = _build_model_including_pytorchcv(
@@ -311,10 +315,11 @@ class ResNeXt101ATSS(ATSS):
         }
         test_cfg = DictConfig(
             {
-                "nms": {"type": "nms", "iou_threshold": 0.45},
+                "nms": {"type": "nms", "iou_threshold": 0.6},
                 "min_bbox_size": 0,
-                "score_thr": 0.02,
-                "max_per_img": 200,
+                "score_thr": 0.05,
+                "max_per_img": 100,
+                "nms_pre": 1000,
             },
         )
         backbone = ResNeXt(
@@ -362,3 +367,11 @@ class ResNeXt101ATSS(ATSS):
             test_cfg=test_cfg,
         )
         return SingleStageDetector(backbone, bbox_head, neck=neck, train_cfg=train_cfg, test_cfg=test_cfg)
+
+    def to(self, *args, **kwargs) -> Self:
+        """Return a model with specified device."""
+        ret = super().to(*args, **kwargs)
+        if self.device.type == "xpu":
+            msg = f"{type(self).__name__} doesn't support XPU."
+            raise RuntimeError(msg)
+        return ret

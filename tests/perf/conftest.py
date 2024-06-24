@@ -173,11 +173,11 @@ def fxt_dry_run(request: pytest.FixtureRequest) -> str:
 
 
 @pytest.fixture(scope="session")
-def fxt_deterministic(request: pytest.FixtureRequest) -> str:
+def fxt_deterministic(request: pytest.FixtureRequest) -> bool:
     """Option to turn on deterministic training."""
     deterministic = request.config.getoption("--deterministic")
-    msg = f"{deterministic = }"
-    log.info(msg)
+    deterministic = False if deterministic is None else deterministic == "true"
+    log.info(f"{deterministic=}")
     return deterministic
 
 
@@ -227,19 +227,19 @@ def fxt_dataset(request: pytest.FixtureRequest, fxt_data_group) -> Benchmark.Dat
 
 
 @pytest.fixture(scope="session")
-def fxt_tags(fxt_user_name: str, fxt_version_tags: dict[str, str]) -> dict[str, str]:
+def fxt_tags(fxt_user_name: str, fxt_version_tags: dict[str, str], fxt_accelerator: str) -> dict[str, str]:
     """Tag fields to record the machine and user executing this perf test."""
     tags = {
         **fxt_version_tags,
         "user_name": fxt_user_name,
         "machine_name": platform.node(),
         "cpu_info": get_cpu_info()["brand_raw"],
-        "accelerator_info": subprocess.check_output(
-            ["nvidia-smi", "-L"],  # noqa: S603, S607
-        )
-        .decode()
-        .strip(),
     }
+    if fxt_accelerator == "gpu":
+        tags["accelerator_info"] = subprocess.check_output(["nvidia-smi", "-L"]).decode().strip()  # noqa: S603, S607
+    elif fxt_accelerator == "xpu":
+        raw = subprocess.check_output(args=["xpu-smi", "discovery", "--dump", "1,2"]).decode().strip()
+        tags["accelerator_info"] = "\n".join([ret.replace('"', "").replace(",", " : ") for ret in raw.split("\n")[1:]])
     msg = f"{tags = }"
     log.info(msg)
     return tags

@@ -315,17 +315,17 @@ def _select_nms_index(
     batched_labels = cls_inds.unsqueeze(0).repeat(batch_size, 1)
     batched_labels = batched_labels.where((batch_inds == batch_template.unsqueeze(1)), batched_labels.new_ones(1) * -1)
 
-    batch_size = batched_dets.shape[0]
+    new_batch_size = batched_dets.shape[0]
 
     # expand tensor to eliminate [0, ...] tensor
-    batched_dets = torch.cat((batched_dets, batched_dets.new_zeros((batch_size, 1, 5))), 1)
-    batched_labels = torch.cat((batched_labels, batched_labels.new_zeros((batch_size, 1))), 1)
+    batched_dets = torch.cat((batched_dets, batched_dets.new_zeros((new_batch_size, 1, 5))), 1)
+    batched_labels = torch.cat((batched_labels, batched_labels.new_zeros((new_batch_size, 1))), 1)
     if output_index and pre_inds is not None:
         # batch all
         pre_inds = pre_inds[batch_inds, box_inds]
         pre_inds = pre_inds.unsqueeze(0).repeat(batch_size, 1)
         pre_inds = pre_inds.where((batch_inds == batch_template.unsqueeze(1)), pre_inds.new_zeros(1))
-        pre_inds = torch.cat((pre_inds, -pre_inds.new_ones((batch_size, 1))), 1)
+        pre_inds = torch.cat((pre_inds, -pre_inds.new_ones((new_batch_size, 1))), 1)
     # sort
     is_use_topk = keep_top_k > 0 and (torch.onnx.is_in_onnx_export() or keep_top_k < batched_dets.shape[1])
     if is_use_topk:

@@ -51,5 +51,5 @@ codebase_config = dict(
 backend_config = dict(
     type="openvino",
     mo_options=None,
-    model_inputs=[dict(opt_shapes=dict(input=[-1, 3, 736, 992]))],
+    model_inputs=[dict(opt_shapes=dict(input=[-1, 3, 800, 992]))],
 )

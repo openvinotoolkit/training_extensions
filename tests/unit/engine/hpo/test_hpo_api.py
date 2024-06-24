@@ -5,10 +5,13 @@
 
 from __future__ import annotations
 
+from math import sqrt
 from typing import TYPE_CHECKING
 from unittest.mock import MagicMock
 
 import pytest
+import torch
+import yaml
 from otx.core.config.hpo import HpoConfig
 from otx.core.optimizer.callable import OptimizerCallableSupportHPO
 from otx.core.schedulers import LinearWarmupSchedulerCallable, SchedulerCallableSupportHPO
@@ -37,7 +40,7 @@ def engine_work_dir(tmp_path: Path) -> Path:
 
 @pytest.fixture()
 def dataset_size() -> int:
-    return 10
+    return 32
 
 
 @pytest.fixture()
@@ -88,8 +91,25 @@ def mock_thread(mocker) -> MagicMock:
 
 
 @pytest.fixture()
-def mock_get_best_hpo_weight(mocker) -> MagicMock:
-    return mocker.patch.object(target_file, "get_best_hpo_weight")
+def mock_best_hpo_weight(tmp_path) -> Path:
+    model_weight_path = tmp_path / "best_model_weight.pth"
+    model_weight = {
+        "callbacks": {
+            "ModelCheckpoint": {
+                "best_model_path": "fake_value",
+                "kth_best_model_path": "fake_value",
+                "best_k_models": "fake_value",
+                "dirpath": "fake_value",
+            },
+        },
+    }
+    torch.save(model_weight, model_weight_path)
+    return model_weight_path
+
+
+@pytest.fixture()
+def mock_get_best_hpo_weight(mocker, mock_best_hpo_weight) -> MagicMock:
+    return mocker.patch.object(target_file, "get_best_hpo_weight", return_value=mock_best_hpo_weight)
 
 
 @pytest.fixture()
@@ -141,7 +161,11 @@ def test_execute_hpo(
     mock_hpo_algo.print_result.assert_called_once()
     # best_config and best_hpo_weight are returned well
     assert best_config == "best_config"
-    assert best_hpo_weight == mock_get_best_hpo_weight.return_value
+    assert best_hpo_weight is not None
+    model_weight = torch.load(best_hpo_weight)
+    assert model_weight["callbacks"]["ModelCheckpoint"]["best_model_path"] == best_hpo_weight
+    for key in ["kth_best_model_path", "best_k_models", "dirpath"]:
+        assert key not in model_weight["callbacks"]["ModelCheckpoint"]
 
 
 class TestHPOConfigurator:
@@ -167,7 +191,7 @@ class TestHPOConfigurator:
         # check search_space is set automatically
         assert hpo_config["search_space"] is not None
         # check max range of batch size isn't bigger than dataset size
-        assert hpo_config["search_space"][HPO_NAME_MAP["bs"]]["max"] == dataset_size
+        assert hpo_config["search_space"][HPO_NAME_MAP["bs"]]["max"] <= dataset_size
         # check current hyper parameter will be tested first
         assert hpo_config["prior_hyper_parameters"] == {HPO_NAME_MAP["lr"]: default_lr, HPO_NAME_MAP["bs"]: default_bs}
 
@@ -178,7 +202,18 @@ class TestHPOConfigurator:
         for hp_name in HPO_NAME_MAP.values():
             assert hp_name in search_sapce
 
-    def test_align_lr_bs_name(self, mock_engine: MagicMock, hpo_config: HpoConfig):
+    def test_get_default_search_space_bs1(self, mock_engine: MagicMock, hpo_config: HpoConfig):
+        """Check batch sizes search space is set as [1, 2] if default bs is 1."""
+        mock_engine.datamodule.config.train_subset.batch_size = 1
+        hpo_configurator = HPOConfigurator(mock_engine, 10, hpo_config)
+        search_sapce = hpo_configurator._get_default_search_space()
+
+        for hp_name in HPO_NAME_MAP.values():
+            assert hp_name in search_sapce
+        assert search_sapce[HPO_NAME_MAP["bs"]]["min"] == 1
+        assert search_sapce[HPO_NAME_MAP["bs"]]["max"] == 2
+
+    def test_align_lr_bs_name(self, mock_engine: MagicMock, hpo_config: HpoConfig, dataset_size):
         """Check learning rate and batch size names are aligned well."""
         search_space = {
             "model.optimizer.lr": {
@@ -199,6 +234,8 @@ class TestHPOConfigurator:
 
         for new_name in HPO_NAME_MAP.values():
             assert new_name in hpo_configurator.hpo_config["search_space"]
+        # check max range of batch size isn't bigger than dataset size
+        assert hpo_configurator.hpo_config["search_space"][HPO_NAME_MAP["bs"]]["max"] <= dataset_size
 
     def test_align_scheduler_callable_support_hpo_name(self, mock_engine: MagicMock, hpo_config: HpoConfig):
         """Check scheduler name is aligned well if class of scheduler is SchedulerCallableSupportHPO."""
@@ -266,6 +303,27 @@ class TestHPOConfigurator:
         hpo_configurator._remove_wrong_search_space(wrong_search_space)
         assert wrong_search_space == {}
 
+    def test_search_space_file(self, mock_engine: MagicMock, hpo_config: HpoConfig, dataset_size, tmp_path):
+        """Check search space is set well if search space file is given."""
+        search_space = {
+            "model.optimizer.lr": {
+                "type": "loguniform",
+                "min": 0.0001,
+                "max": 0.1,
+            },
+        }
+
+        search_space_file = tmp_path / "search_space.yaml"
+        with search_space_file.open("w") as f:
+            yaml.dump(search_space, f)
+
+        hpo_config.search_space = str(search_space_file)
+
+        hpo_configurator = HPOConfigurator(mock_engine, 10, hpo_config)
+
+        assert hpo_configurator.hpo_config["search_space"][HPO_NAME_MAP["lr"]] == search_space["model.optimizer.lr"]
+        assert len(hpo_configurator.hpo_config["search_space"].keys()) == 1
+
     def test_get_hpo_algo(self, mocker, mock_engine: MagicMock, hpo_config: HpoConfig):
         hpo_configurator = HPOConfigurator(mock_engine, 10, hpo_config)
         mock_hyper_band = mocker.patch.object(target_file, "HyperBand")
@@ -273,6 +331,66 @@ class TestHPOConfigurator:
 
         mock_hyper_band.assert_called_once()
         assert mock_hyper_band.call_args.kwargs == hpo_configurator.hpo_config
+
+    @pytest.fixture()
+    def max_bs_for_memory(self, default_bs) -> int:
+        return default_bs + 2
+
+    @pytest.fixture()
+    def mock_adapt_batch_size(self, mocker, max_bs_for_memory) -> MagicMock:
+        def func(engine, not_increase: bool = True, *args, **kwargs) -> None:
+            origin_bs = engine.datamodule.config.train_subset.batch_size
+            if not not_increase:
+                engine.datamodule.config.train_subset.batch_size = max_bs_for_memory
+                engine.model.optimizer_callable.optimizer_kwargs["lr"] *= sqrt(max_bs_for_memory / origin_bs)
+
+        return mocker.patch.object(target_file, "adapt_batch_size", side_effect=func)
+
+    @pytest.mark.parametrize("adapt_mode", ["Safe", "Full"])
+    def test_adapt_bs_search_space_max_val(
+        self,
+        mock_engine: MagicMock,
+        hpo_config: HpoConfig,
+        mock_adapt_batch_size: MagicMock,
+        max_bs_for_memory: int,
+        default_bs: int,
+        adapt_mode: str,
+    ):
+        origin_lr = mock_engine.model.optimizer_callable.optimizer_kwargs["lr"]
+        hpo_config.adapt_bs_search_space_max_val = adapt_mode
+        expected_bs = default_bs * 2 if adapt_mode == "Safe" else max_bs_for_memory
+
+        hpo_configurator = HPOConfigurator(mock_engine, 10, hpo_config)
+
+        assert (
+            hpo_configurator.hpo_config["search_space"]["datamodule.config.train_subset.batch_size"]["max"]
+            == expected_bs
+        )  # check batch size is adapted
+        mock_adapt_batch_size.assert_called_once()
+        assert mock_adapt_batch_size.call_args.args[1] == (adapt_mode != "Full")
+        assert mock_engine.model.optimizer_callable.optimizer_kwargs["lr"] == origin_lr  # check lr isn't changed
+
+    @pytest.mark.parametrize("adapt_mode", ["Safe", "Full"])
+    def test_adapt_bs_search_space_max_val_wo_bs(
+        self,
+        mock_engine: MagicMock,
+        hpo_config: HpoConfig,
+        mock_adapt_batch_size: MagicMock,
+        adapt_mode: str,
+    ):
+        search_space = {
+            "model.optimizer.lr": {
+                "type": "loguniform",
+                "min": 0.0001,
+                "max": 0.1,
+            },
+        }
+        hpo_config.search_space = search_space
+        hpo_config.adapt_bs_search_space_max_val = adapt_mode
+
+        HPOConfigurator(mock_engine, 10, hpo_config)
+        # check _adapt_batch_size_search_space isn't called if search space doesn't include batch size
+        mock_adapt_batch_size.assert_not_called()
 
 
 def test_update_hpo_progress(mocker, mock_progress_update_callback: MagicMock):

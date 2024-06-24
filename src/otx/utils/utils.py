@@ -7,7 +7,10 @@ from __future__ import annotations
 
 import importlib
 import inspect
+import pickle
 from decimal import Decimal
+from functools import partial
+from types import LambdaType
 from typing import TYPE_CHECKING, Any
 
 import torch
@@ -176,3 +179,84 @@ def can_pass_tile_config(model_cls: type[OTXModel]) -> bool:
     """
     tile_config_param = inspect.signature(model_cls).parameters.get("tile_config")
     return tile_config_param is not None
+
+
+def get_class_initial_arguments() -> tuple:
+    """Return arguments of class initilization. This function should be called in '__init__' function.
+
+    Returns:
+        tuple: class arguments.
+    """
+    keywords, _, _, values = inspect.getargvalues(inspect.stack()[1].frame)
+    return tuple(values[key] for key in keywords[1:])
+
+
+def find_unpickleable_obj(obj: Any, obj_name: str) -> list[str]:  # noqa: ANN401
+    """Find which objects in 'obj' can't be pickled.
+
+    Args:
+        obj (Any): Object where to find unpickleable object.
+        obj_name (str): Name of obj.
+
+    Returns:
+        list[str]: List of name of unpikcleable objects.
+    """
+    unpickleable_obj: dict[str, Any] = {}
+    _find_unpickleable_obj(obj, obj_name, unpickleable_obj)
+
+    if not unpickleable_obj:
+        return []
+
+    # get actual cause of unpickleable
+    unpickleable_obj_keys = sorted(unpickleable_obj.keys())
+    unpickleable_cause = [
+        unpickleable_obj_keys[i]
+        for i in range(len(unpickleable_obj_keys) - 1)
+        if unpickleable_obj_keys[i] not in unpickleable_obj_keys[i + 1]
+    ]
+    unpickleable_cause.append(unpickleable_obj_keys[-1])
+
+    return unpickleable_cause
+
+
+def _find_unpickleable_obj(obj: Any, obj_name: str, unpickleable_obj: dict[str, Any]) -> None:  # noqa: ANN401
+    if check_pickleable(obj):
+        return
+
+    unpickleable_obj[obj_name] = obj
+
+    def _need_skip(obj: Any) -> bool:  # noqa: ANN401
+        return isinstance(obj, memoryview)  # it makes core dumped
+
+    def _make_iter(obj: Any) -> list[tuple[str, Any]]:  # noqa: ANN401
+        if isinstance(obj, (list, tuple)):
+            return [(f"[{i}]", obj[i]) for i in range(len(obj))]
+        if isinstance(obj, dict):
+            return [(f'["{key}"]', obj[key]) for key in obj]
+
+        res = []
+        for attr in dir(obj):
+            if attr.startswith("__") and attr.endswith("__"):  # skip magic method
+                continue
+            try:
+                attr_obj = getattr(obj, attr)
+            except Exception:  # noqa: S112
+                continue
+            if callable(attr_obj) and not isinstance(attr_obj, (LambdaType, partial)):
+                continue
+            res.append((f".{attr}", attr_obj))
+        return res
+
+    for key, val in _make_iter(obj):
+        if not _need_skip(val) and val not in unpickleable_obj.values():
+            _find_unpickleable_obj(val, obj_name + key, unpickleable_obj)
+
+
+def check_pickleable(obj: Any) -> bool:  # noqa: ANN401
+    """Check object can be pickled."""
+    try:
+        pickled_data = pickle.dumps(obj)
+        pickle.loads(pickled_data)  # noqa: S301
+    except Exception:
+        return False
+    return True

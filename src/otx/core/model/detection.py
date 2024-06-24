@@ -12,6 +12,7 @@ from typing import TYPE_CHECKING, Any, Callable, Iterator, Literal
 
 import torch
 from model_api.tilers import DetectionTiler
+from torchmetrics import Metric, MetricCollection
 from torchvision import tv_tensors
 
 from otx.core.config.data import TileConfig
@@ -19,7 +20,7 @@ from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.detection import DetBatchDataEntity, DetBatchPredEntity
 from otx.core.data.entity.tile import OTXTileBatchDataEntity
 from otx.core.metrics import MetricCallable, MetricInput
-from otx.core.metrics.mean_ap import MeanAPCallable
+from otx.core.metrics.fmeasure import FMeasure, MeanAveragePrecisionFMeasureCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable, OTXModel, OVModel
 from otx.core.schedulers import LRSchedulerListCallable
 from otx.core.types.export import TaskLevelExportParameters
@@ -34,7 +35,6 @@ if TYPE_CHECKING:
     from model_api.models.utils import DetectionResult
     from omegaconf import DictConfig
     from torch import nn
-    from torchmetrics import Metric
 
     from otx.algo.detection.ssd import SingleStageDetector
 
@@ -47,7 +47,7 @@ class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity]):
         label_info: LabelInfoTypes,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
-        metric: MetricCallable = MeanAPCallable,
+        metric: MetricCallable = MeanAveragePrecisionFMeasureCallable,
         torch_compile: bool = False,
         tile_config: TileConfig = TileConfig(enable_tiler=False),
     ) -> None:
@@ -155,7 +155,14 @@ class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity]):
             retval = super()._log_metrics(meter, key)
 
             # NOTE: Validation metric logging can update `best_confidence_threshold`
-            if best_confidence_threshold := getattr(meter, "best_confidence_threshold", None):
+            if (
+                isinstance(meter, MetricCollection)
+                and (fmeasure := getattr(meter, "FMeasure", None))
+                and (best_confidence_threshold := getattr(fmeasure, "best_confidence_threshold", None))
+            ) or (
+                isinstance(meter, FMeasure)
+                and (best_confidence_threshold := getattr(meter, "best_confidence_threshold", None))
+            ):
                 self.hparams["best_confidence_threshold"] = best_confidence_threshold
 
             return retval
@@ -171,6 +178,16 @@ class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity]):
 
         raise ValueError(key)
 
+    @property
+    def best_confidence_threshold(self) -> float:
+        """Best confidence threshold to filter outputs."""
+        if not hasattr(self, "_best_confidence_threshold"):
+            self._best_confidence_threshold = self.hparams.get("best_confidence_threshold", None)
+            if self._best_confidence_threshold is None:
+                log.warning("There is no predefined best_confidence_threshold, 0.5 will be used as default.")
+                self._best_confidence_threshold = 0.5
+        return self._best_confidence_threshold
+
 
 class ExplainableOTXDetModel(OTXDetectionModel):
     """OTX detection model which can attach a XAI (Explainable AI) branch."""
@@ -180,7 +197,7 @@ class ExplainableOTXDetModel(OTXDetectionModel):
         label_info: LabelInfoTypes,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
-        metric: MetricCallable = MeanAPCallable,
+        metric: MetricCallable = MeanAveragePrecisionFMeasureCallable,
         torch_compile: bool = False,
         tile_config: TileConfig = TileConfig(enable_tiler=False),
     ) -> None:
@@ -328,7 +345,7 @@ class MMDetCompatibleModel(ExplainableOTXDetModel):
         config: DictConfig,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
-        metric: MetricCallable = MeanAPCallable,
+        metric: MetricCallable = MeanAveragePrecisionFMeasureCallable,
         torch_compile: bool = False,
         tile_config: TileConfig = TileConfig(enable_tiler=False),
     ) -> None:
@@ -490,7 +507,7 @@ class OVDetectionModel(OVModel[DetBatchDataEntity, DetBatchPredEntity]):
         max_num_requests: int | None = None,
         use_throughput_mode: bool = True,
         model_api_configuration: dict[str, Any] | None = None,
-        metric: MetricCallable = MeanAPCallable,
+        metric: MetricCallable = MeanAveragePrecisionFMeasureCallable,
         **kwargs,
     ) -> None:
         super().__init__(
@@ -554,7 +571,7 @@ class OVDetectionModel(OVModel[DetBatchDataEntity, DetBatchPredEntity]):
         if label_shift:
             log.warning(f"label_shift: {label_shift}")
 
-        for output in outputs:
+        for i, output in enumerate(outputs):
             output_objects = output.objects
             if len(output_objects):
                 bbox = [[output.xmin, output.ymin, output.xmax, output.ymax] for output in output_objects]
@@ -564,7 +581,7 @@ class OVDetectionModel(OVModel[DetBatchDataEntity, DetBatchPredEntity]):
                 tv_tensors.BoundingBoxes(
                     bbox,
                     format="XYXY",
-                    canvas_size=inputs.imgs_info[-1].img_shape,
+                    canvas_size=inputs.imgs_info[i].img_shape,
                     device=self.device,
                 ),
             )
