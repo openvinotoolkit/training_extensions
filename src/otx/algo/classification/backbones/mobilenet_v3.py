@@ -6,14 +6,16 @@
 Original papers:
 - 'Searching for MobileNetV3,' https://arxiv.org/abs/1905.02244.
 """
+from __future__ import annotations
 
 import math
-import os
+from pathlib import Path
 
-from otx.algo.utils.mmengine_utils import load_from_http, load_checkpoint_to_model
-import torch.nn.functional as F
-from torch import nn
 import torch
+from torch import nn
+from torch.nn import functional
+
+from otx.algo.utils.mmengine_utils import load_checkpoint_to_model, load_from_http
 
 pretrained_root = "https://github.com/d-li14/mobilenetv3.pytorch/blob/master/pretrained/"
 pretrained_urls = {
@@ -48,17 +50,18 @@ class ModelInterface(nn.Module):
             self.use_angle_simple_linear = False
 
     @staticmethod
-    def _glob_feature_vector(x, mode, reduce_dims=True):
+    def _glob_feature_vector(x: torch.Tensor, mode: str, reduce_dims: bool = True) -> torch.Tensor:
         if mode == "avg":
-            out = F.adaptive_avg_pool2d(x, 1)
+            out = functional.adaptive_avg_pool2d(x, 1)
         elif mode == "max":
-            out = F.adaptive_max_pool2d(x, 1)
+            out = functional.adaptive_max_pool2d(x, 1)
         elif mode == "avg+max":
-            avg_pool = F.adaptive_avg_pool2d(x, 1)
-            max_pool = F.adaptive_max_pool2d(x, 1)
+            avg_pool = functional.adaptive_avg_pool2d(x, 1)
+            max_pool = functional.adaptive_max_pool2d(x, 1)
             out = avg_pool + max_pool
         else:
-            raise ValueError(f"Unknown pooling mode: {mode}")
+            msg = f"Unknown pooling mode: {mode}"
+            raise ValueError(msg)
 
         if reduce_dims:
             return out.view(x.size(0), -1)
@@ -71,9 +74,9 @@ class HSigmoid(nn.Module):
     https://arxiv.org/abs/1905.02244.
     """
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Forward."""
-        return F.relu6(x + 3.0, inplace=True) / 6.0
+        return functional.relu6(x + 3.0, inplace=True) / 6.0
 
 
 class HSwish(nn.Module):
@@ -89,9 +92,9 @@ class HSwish(nn.Module):
         super().__init__()
         self.inplace = inplace
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Forward."""
-        return x * F.relu6(x + 3.0, inplace=self.inplace) / 6.0
+        return x * functional.relu6(x + 3.0, inplace=self.inplace) / 6.0
 
 
 class SELayer(nn.Module):
@@ -107,7 +110,7 @@ class SELayer(nn.Module):
             HSigmoid(),
         )
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Forward."""
         # with no_nncf_se_layer_context():
         b, c, _, _ = x.size()
@@ -116,16 +119,16 @@ class SELayer(nn.Module):
         return x * y
 
 
-def conv_3x3_bn(inp: int, oup: int, stride: int, IN_conv1: bool = False):
+def conv_3x3_bn(inp: int, oup: int, stride: int, instance_norm_conv1: bool = False) -> nn.Sequential:
     """Conv 3x3 layer with batch-norm."""
     return nn.Sequential(
         nn.Conv2d(inp, oup, 3, stride, 1, bias=False),
-        nn.BatchNorm2d(oup) if not IN_conv1 else nn.InstanceNorm2d(oup, affine=True),
+        nn.BatchNorm2d(oup) if not instance_norm_conv1 else nn.InstanceNorm2d(oup, affine=True),
         HSwish(),
     )
 
 
-def conv_1x1_bn(inp: int, oup: int, loss: str = "softmax"):
+def conv_1x1_bn(inp: int, oup: int, loss: str = "softmax") -> nn.Sequential:
     """Conv 1x1 layer with batch-norm."""
     return nn.Sequential(
         nn.Conv2d(inp, oup, 1, 1, 0, bias=False),
@@ -134,7 +137,7 @@ def conv_1x1_bn(inp: int, oup: int, loss: str = "softmax"):
     )
 
 
-def make_divisible(value: int | float, divisor: int, min_value: int | None = None, min_ratio: float = 0.9):
+def make_divisible(value: int | float, divisor: int, min_value: int | None = None, min_ratio: float = 0.9) -> int:
     """Make divisible function.
 
     This function rounds the channel number down to the nearest value that can
@@ -147,10 +150,10 @@ def make_divisible(value: int | float, divisor: int, min_value: int | None = Non
             Default: None, means that the minimum value equal to the divisor.
         min_ratio (float): The minimum ratio of the rounded channel
             number to the original channel number. Default: 0.9.
+
     Returns:
         int: The modified output channel number
     """
-
     if min_value is None:
         min_value = divisor
     new_value = max(min_value, int(value + divisor / 2) // divisor * divisor)
@@ -165,7 +168,6 @@ class InvertedResidual(nn.Module):
 
     def __init__(self, inp: int, hidden_dim: int, oup: int, kernel_size: int, stride: int, use_se: bool, use_hs: bool):
         super().__init__()
-        assert stride in [1, 2]
 
         self.identity = stride == 1 and inp == oup
 
@@ -214,7 +216,7 @@ class InvertedResidual(nn.Module):
                 nn.BatchNorm2d(oup),
             )
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Forward."""
         if self.identity:
             return x + self.conv(x)
@@ -233,62 +235,62 @@ class MobileNetV3Base(ModelInterface):
         dropout_cls: nn.Module | None = None,
         pooling_type: str = "avg",
         feature_dim: int = 1280,
-        IN_first: bool = False,
+        instance_norm_first: bool = False,
         self_challenging_cfg: bool = False,
         **kwargs,
     ):
-
         super().__init__(**kwargs)
         self.in_size = input_size
         self.num_classes = num_classes
-        self.input_IN = nn.InstanceNorm2d(in_channels, affine=True) if IN_first else None
+        self.input_IN = nn.InstanceNorm2d(in_channels, affine=True) if instance_norm_first else None
         self.pooling_type = pooling_type
         self.self_challenging_cfg = self_challenging_cfg
         self.width_mult = width_mult
         self.dropout_cls = dropout_cls
         self.feature_dim = feature_dim
 
-    def infer_head(self, x, skip_pool=False):
+    def infer_head(self, x: torch.Tensor, skip_pool: bool = False) -> torch.Tensor:
         """Inference head."""
         raise NotImplementedError
 
-    def extract_features(self, x):
+    def extract_features(self, x: torch.Tensor) -> tuple[torch.Tensor]:
         """Extract features."""
         raise NotImplementedError
 
-    def forward(self, x, return_featuremaps=False, get_embeddings=False, gt_labels=None):
+    def forward(
+        self,
+        x: torch.Tensor,
+    ) -> torch.Tensor:
         """Forward."""
         if self.input_IN is not None:
             x = self.input_IN(x)
 
-        y = self.extract_features(x)
-        if return_featuremaps:
-            return y
-        return y
+        return self.extract_features(x)
 
 
 class MobileNetV3(MobileNetV3Base):
     """MobileNetV3."""
 
-    def __init__(self, cfgs: list, mode: str, IN_conv1: bool = False, **kwargs):
+    def __init__(self, cfgs: list, mode: str, instance_norm_conv1: bool = False, **kwargs):
         super().__init__(**kwargs)
         # setting of inverted residual blocks
         self.cfgs = cfgs
-        assert mode in ["large", "small"]
         # building first layer
         input_channel = make_divisible(16 * self.width_mult, 8)
         stride = 1 if self.in_size[0] < 100 else 2
-        layers = [conv_3x3_bn(3, input_channel, stride, IN_conv1)]
+        layers = [conv_3x3_bn(3, input_channel, stride, instance_norm_conv1)]
         # building inverted residual blocks
         block = InvertedResidual
         flag = True
+        output_channel: int | dict[str, int]
         for k, t, c, use_se, use_hs, s in self.cfgs:
+            _s = s
             if (self.in_size[0] < 100) and (s == 2) and flag:
-                s = 1
+                _s = 1
                 flag = False
             output_channel = make_divisible(c * self.width_mult, 8)
             exp_size = make_divisible(input_channel * t, 8)
-            layers.append(block(input_channel, exp_size, output_channel, k, s, use_se, use_hs))
+            layers.append(block(input_channel, exp_size, output_channel, k, _s, use_se, use_hs))
             input_channel = output_channel
         self.features = nn.Sequential(*layers)
         # building last several layers
@@ -299,17 +301,14 @@ class MobileNetV3(MobileNetV3Base):
         )
         self._initialize_weights()
 
-    def extract_features(self, x):
+    def extract_features(self, x: torch.Tensor) -> tuple[torch.Tensor]:
         """Extract features."""
         y = self.conv(self.features(x))
-        return (y, )
+        return (y,)
 
-    def infer_head(self, x, skip_pool=False):
+    def infer_head(self, x: torch.Tensor, skip_pool: bool = False) -> tuple[torch.Tensor, torch.Tensor]:
         """Inference head."""
-        if not skip_pool:
-            glob_features = self._glob_feature_vector(x, self.pooling_type, reduce_dims=False)
-        else:
-            glob_features = x
+        glob_features = self._glob_feature_vector(x, self.pooling_type, reduce_dims=False) if not skip_pool else x
 
         logits = self.classifier(glob_features.view(x.shape[0], -1))
         return glob_features, logits
@@ -334,8 +333,8 @@ class MobileNetV3(MobileNetV3Base):
 class OTXMobileNetV3(MobileNetV3):
     """MobileNetV3 model for OTX."""
 
-    backbone_configs = dict(
-        small=[
+    backbone_configs = {  # noqa: RUF012
+        "small": [
             # k, t, c, SE, HS, s
             [3, 1, 16, 1, 0, 2],
             [3, 4.5, 24, 0, 0, 2],
@@ -349,7 +348,7 @@ class OTXMobileNetV3(MobileNetV3):
             [5, 6, 96, 1, 1, 1],
             [5, 6, 96, 1, 1, 1],
         ],
-        large=[
+        "large": [
             # k, t, c, SE, HS, s
             [3, 1, 16, 0, 0, 1],
             [3, 4, 24, 0, 0, 2],
@@ -367,7 +366,7 @@ class OTXMobileNetV3(MobileNetV3):
             [5, 6, 160, 1, 1, 1],
             [5, 6, 160, 1, 1, 1],
         ],
-    )
+    }
 
     def __init__(self, mode: str = "large", width_mult: float = 1.0, **kwargs):
         super().__init__(self.backbone_configs[mode], mode=mode, width_mult=width_mult, **kwargs)
@@ -376,14 +375,10 @@ class OTXMobileNetV3(MobileNetV3):
             self.key = self.key + f"_{int(width_mult * 100):03d}"  # pylint: disable=consider-using-f-string
         self.init_weights(self.pretrained)
 
-    def forward(self, x):
-        """Forward."""
-        return super().forward(x, return_featuremaps=True)
-
-    def init_weights(self, pretrained: str | bool | None = None):
+    def init_weights(self, pretrained: str | bool | None = None) -> None:
         """Initialize weights."""
         checkpoint = None
-        if isinstance(pretrained, str) and os.path.exists(pretrained):
+        if isinstance(pretrained, str) and Path(pretrained).exists():
             checkpoint = torch.load(pretrained, None)
             print(f"init weight - {pretrained}")
         elif pretrained is not None:

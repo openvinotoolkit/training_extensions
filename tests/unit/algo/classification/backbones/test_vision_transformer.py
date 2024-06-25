@@ -43,7 +43,7 @@ class TestVisionTransformer:
         # Test invalid default arch
         cfg = deepcopy(config)
         cfg["arch"] = "unknown"
-        with pytest.raises(AssertionError, match="not in default archs"):
+        with pytest.raises(ValueError, match="not in default archs"):
             VisionTransformer(**cfg)
 
         # Test invalid custom arch
@@ -53,7 +53,7 @@ class TestVisionTransformer:
             "num_heads": 16,
             "feedforward_channels": 4096,
         }
-        with pytest.raises(AssertionError, match="Custom arch needs"):
+        with pytest.raises(ValueError, match="Custom arch needs"):
             VisionTransformer(**cfg)
 
         # Test custom arch
@@ -74,7 +74,7 @@ class TestVisionTransformer:
         # Test out_indices
         cfg = deepcopy(config)
         cfg["out_indices"] = {1: 1}
-        with pytest.raises(AssertionError, match="get <class 'dict'>"):
+        with pytest.raises(TypeError, match="get <class 'dict'>"):
             VisionTransformer(**cfg)
         cfg["out_indices"] = [0, 13]
         with pytest.raises(AssertionError, match="Invalid out_indices 13"):
