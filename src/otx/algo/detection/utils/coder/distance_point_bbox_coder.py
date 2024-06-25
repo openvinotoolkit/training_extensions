@@ -1,7 +1,10 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 # Copyright (c) OpenMMLab. All rights reserved.
-"""Distance Point BBox coder."""
+"""Implementations copied from mmdet.models.task_modules.coders.distance_point_bbox_coder.
+
+Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/task_modules/coders/distance_point_bbox_coder.py
+"""
 
 from __future__ import annotations
 
@@ -24,15 +27,8 @@ class DistancePointBBoxCoder:
             border of the image. Defaults to True.
     """
 
-    def __init__(
-        self,
-        clip_border: bool = True,
-        encode_size: int = 4,
-        use_box_type: bool = False,
-    ) -> None:
+    def __init__(self, clip_border: bool = True) -> None:
         self.clip_border = clip_border
-        self.encode_size = encode_size
-        self.use_box_type = use_box_type
 
     def encode(
         self,
@@ -91,7 +87,10 @@ class DistancePointBBoxCoder:
         pred_bboxes: Tensor,
         max_shape: tuple[int, ...] | Tensor | tuple[tuple[int, ...], ...] | None = None,
     ) -> Tensor:
-        """Decode distance prediction to bounding box for export."""
+        """Decode distance prediction to bounding box for export.
+
+        Reference : https://github.com/open-mmlab/mmdeploy/blob/v1.3.1/mmdeploy/codebase/mmdet/models/task_modules/coders/distance_point_bbox_coder.py#L11-L42
+        """
         if points.size(0) != pred_bboxes.size(0):
             msg = (
                 f"The batch of points (={points.size(0)}) and the batch of pred_bboxes "

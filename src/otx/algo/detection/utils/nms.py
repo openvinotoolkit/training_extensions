@@ -1,7 +1,12 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-#
-"""NMS implementations for detection task."""
+# Copyright (c) OpenMMLab. All rights reserved.
+"""Implementations copied from mmcv.ops.nms and mmdeploy.mmcv.ops.nms.
+
+Reference :
+    - https://github.com/open-mmlab/mmcv/blob/v2.1.0/mmcv/ops/nms.py
+    - https://github.com/open-mmlab/mmdeploy/blob/v1.3.1/mmdeploy/mmcv/ops/nms.py
+"""
 
 from __future__ import annotations
 
@@ -16,8 +21,6 @@ from torchvision.ops.boxes import nms as torch_nms
 from otx.algo.detection.utils.utils import dynamic_topk
 
 
-# This class is from NMSop in mmcv and slightly modified
-# https://github.com/open-mmlab/mmcv/blob/265531fa9fe9e071c7d80df549d680ed257d9a16/mmcv/ops/nms.py
 class NMSop(torch.autograd.Function):
     """NMS operation."""
 
@@ -46,8 +49,6 @@ class NMSop(torch.autograd.Function):
         return inds
 
 
-# This method is from nms in mmcv
-# https://github.com/open-mmlab/mmcv/blob/265531fa9fe9e071c7d80df549d680ed257d9a16/mmcv/ops/nms.py
 def nms(
     boxes: Tensor | np.ndarray,
     scores: Tensor | np.ndarray,
@@ -103,8 +104,6 @@ def nms(
     return dets, inds
 
 
-# This method is from batched_nms in mmcv
-# https://github.com/open-mmlab/mmcv/blob/265531fa9fe9e071c7d80df549d680ed257d9a16/mmcv/ops/nms.py
 def batched_nms(
     boxes: Tensor,
     scores: Tensor,
@@ -224,8 +223,6 @@ def batched_nms(
     return boxes, keep
 
 
-# Below functions come from mmdeploy
-# https://github.com/open-mmlab/mmdeploy/blob/bc75c9d6c8940aa03d0e1e5b5962bd930478ba77/mmdeploy/mmcv/ops/nms.py
 def multiclass_nms(
     boxes: Tensor,
     scores: Tensor,
@@ -237,6 +234,8 @@ def multiclass_nms(
     output_index: bool = False,
 ) -> tuple[torch.Tensor, torch.Tensor] | tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
     """Create a dummy onnx::NonMaxSuppression op while exporting to ONNX.
+
+    Reference : https://github.com/open-mmlab/mmdeploy/blob/v1.3.1/mmdeploy/mmcv/ops/nms.py#L267-L309
 
     This function helps exporting to onnx with batch and multiclass NMS op. It
     only supports class-agnostic detection results. That is, the scores is of
@@ -278,6 +277,8 @@ def _select_nms_index(
     output_index: bool = False,
 ) -> tuple[torch.Tensor, torch.Tensor] | tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
     """Transform NMS output.
+
+    Reference : https://github.com/open-mmlab/mmdeploy/blob/v1.3.1/mmdeploy/mmcv/ops/nms.py#L186-L264
 
     Args:
         scores (Tensor): The detection scores of shape
@@ -345,6 +346,8 @@ def _select_nms_index(
 
 class ONNXNMSop(torch.autograd.Function):
     """Create onnx::NonMaxSuppression op.
+
+    Reference : https://github.com/open-mmlab/mmdeploy/blob/v1.3.1/mmdeploy/mmcv/ops/nms.py#L14-L102
 
     NMS in mmcv only supports one class with no batch info. This class assists
     in exporting NMS of ONNX's definition.

@@ -1,5 +1,10 @@
+# Copyright (C) 2024 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
 # Copyright (c) OpenMMLab. All rights reserved.
-"""Base Sampler implementation from mmdet."""
+"""Implementations copied from mmdet.models.task_modules.samplers.base_sampler.
+
+Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/task_modules/samplers/base_sampler.py
+"""
 
 from __future__ import annotations
 
@@ -15,6 +20,8 @@ from otx.algo.utils.mmengine_utils import InstanceData
 def ensure_rng(rng: int | np.random.RandomState | None = None) -> np.random.RandomState:
     """Coerces input into a random number generator.
 
+    Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/utils/util_random.py#L6-L34
+
     If the input is None, then a global random state is returned.
 
     If the input is a numeric value, then that is used as a seed to construct a
@@ -26,6 +33,7 @@ def ensure_rng(rng: int | np.random.RandomState | None = None) -> np.random.Rand
         rng (int | numpy.random.RandomState | None):
             if None, then defaults to the global rng. Otherwise this can be an
             integer or a RandomState class
+
     Returns:
         (numpy.random.RandomState) : rng -
             a numpy random number generator
@@ -46,7 +54,7 @@ class BaseSampler(metaclass=ABCMeta):
     Args:
         num (int): Number of samples
         pos_fraction (float): Fraction of positive samples
-        neg_pos_up (int): Upper bound number of negative and
+        neg_pos_ub (int): Upper bound number of negative and
             positive samples. Defaults to -1.
         add_gt_as_proposals (bool): Whether to add ground truth
             boxes as proposals. Defaults to True.
@@ -89,20 +97,20 @@ class BaseSampler(metaclass=ABCMeta):
         assigning results and ground truth bboxes.
 
         Args:
-            assign_result (:obj:`AssignResult`): Assigning results.
-            pred_instances (:obj:`InstanceData`): Instances of model
+            assign_result (AssignResult): Assigning results.
+            pred_instances (InstanceData): Instances of model
                 predictions. It includes ``priors``, and the priors can
                 be anchors or points, or the bboxes predicted by the
                 previous stage, has shape (n, 4). The bboxes predicted by
                 the current model or stage will be named ``bboxes``,
-                ``labels``, and ``scores``, the same as the ``InstanceData``
+                ``labels``, and ``scores``, the same as the `InstanceData`
                 in other places.
-            gt_instances (:obj:`InstanceData`): Ground truth of instance
+            gt_instances (InstanceData): Ground truth of instance
                 annotations. It usually includes ``bboxes``, with shape (k, 4),
                 and ``labels``, with shape (k, ).
 
         Returns:
-            :obj:`SamplingResult`: Sampling result.
+            SamplingResult: Sampling result.
         """
 
 
@@ -131,17 +139,17 @@ class PseudoSampler(BaseSampler):
         """Directly returns the positive and negative indices  of samples.
 
         Args:
-            assign_result (:obj:`AssignResult`): Bbox assigning results.
-            pred_instances (:obj:`InstanceData`): Instances of model
+            assign_result (AssignResult): Bbox assigning results.
+            pred_instances (InstanceData): Instances of model
                 predictions. It includes ``priors``, and the priors can
                 be anchors, points, or bboxes predicted by the model,
                 shape(n, 4).
-            gt_instances (:obj:`InstanceData`): Ground truth of instance
+            gt_instances (InstanceData): Ground truth of instance
                 annotations. It usually includes ``bboxes`` and ``labels``
                 attributes.
 
         Returns:
-            :obj:`SamplingResult`: sampler results
+            SamplingResult: sampler results
         """
         gt_bboxes = gt_instances.bboxes  # type: ignore[attr-defined]
         priors = pred_instances.priors  # type: ignore[attr-defined]
@@ -167,7 +175,7 @@ class RandomSampler(BaseSampler):
     Args:
         num (int): Number of samples
         pos_fraction (float): Fraction of positive samples
-        neg_pos_up (int): Upper bound number of negative and
+        neg_pos_ub (int): Upper bound number of negative and
             positive samples. Defaults to -1.
         add_gt_as_proposals (bool): Whether to add ground truth
             boxes as proposals. Defaults to True.
@@ -220,7 +228,7 @@ class RandomSampler(BaseSampler):
         """Randomly sample some positive samples.
 
         Args:
-            assign_result (:obj:`AssignResult`): Bbox assigning results.
+            assign_result (AssignResult): Bbox assigning results.
             num_expected (int): The number of expected positive samples
 
         Returns:
@@ -237,7 +245,7 @@ class RandomSampler(BaseSampler):
         """Randomly sample some negative samples.
 
         Args:
-            assign_result (:obj:`AssignResult`): Bbox assigning results.
+            assign_result (AssignResult): Bbox assigning results.
             num_expected (int): The number of expected positive samples
 
         Returns:
@@ -263,20 +271,20 @@ class RandomSampler(BaseSampler):
         assigning results and ground truth bboxes.
 
         Args:
-            assign_result (:obj:`AssignResult`): Assigning results.
-            pred_instances (:obj:`InstanceData`): Instances of model
+            assign_result (AssignResult): Assigning results.
+            pred_instances (InstanceData): Instances of model
                 predictions. It includes ``priors``, and the priors can
                 be anchors or points, or the bboxes predicted by the
                 previous stage, has shape (n, 4). The bboxes predicted by
                 the current model or stage will be named ``bboxes``,
-                ``labels``, and ``scores``, the same as the ``InstanceData``
+                ``labels``, and ``scores``, the same as the `InstanceData`
                 in other places.
-            gt_instances (:obj:`InstanceData`): Ground truth of instance
+            gt_instances (InstanceData): Ground truth of instance
                 annotations. It usually includes ``bboxes``, with shape (k, 4),
                 and ``labels``, with shape (k, ).
 
         Returns:
-            :obj:`SamplingResult`: Sampling result.
+            SamplingResult: Sampling result.
         """
         gt_bboxes = gt_instances.bboxes  # type: ignore[attr-defined]
         priors = pred_instances.priors  # type: ignore[attr-defined]

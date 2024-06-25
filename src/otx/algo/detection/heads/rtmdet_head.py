@@ -12,9 +12,9 @@ import torch
 from torch import Tensor, nn
 
 from otx.algo.detection.heads import ATSSHead
+from otx.algo.detection.utils.anchor_generator.utils import anchor_inside_flags
 from otx.algo.detection.utils.nms import multiclass_nms
 from otx.algo.detection.utils.utils import (
-    anchor_inside_flags,
     distance2bbox,
     images_to_levels,
     inverse_sigmoid,

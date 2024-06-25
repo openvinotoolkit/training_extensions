@@ -1,6 +1,10 @@
-# Copyright (C) 2023 Intel Corporation
+# Copyright (C) 2023-2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-"""DeltaXYWHBBoxCoder implementation from mmdet."""
+# Copyright (c) OpenMMLab. All rights reserved.
+"""Implementations copied from mmdet.models.task_modules.coders.delta_xywh_bbox_coder.
+
+Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/task_modules/coders/delta_xywh_bbox_coder.py
+"""
 
 from __future__ import annotations
 
@@ -8,11 +12,9 @@ import numpy as np
 import torch
 from torch import Tensor
 
-from otx.algo.detection.utils.utils import clip_bboxes_export
+from otx.algo.detection.utils.utils import clip_bboxes
 
 
-# This class and its supporting functions below lightly adapted from the mmdet DeltaXYWHBBoxCoder available at:
-# https://github.com/open-mmlab/mmdetection/blob/cfd5d3a985b0249de009b67d04f37263e11cdf3d/mmdet/models/task_modules/coders/delta_xywh_bbox_coder.py
 class DeltaXYWHBBoxCoder:
     """Delta XYWH BBox coder.
 
@@ -36,17 +38,12 @@ class DeltaXYWHBBoxCoder:
 
     def __init__(
         self,
-        encode_size: int = 4,
-        use_box_type: bool = False,
         target_means: tuple[float, ...] = (0.0, 0.0, 0.0, 0.0),
         target_stds: tuple[float, ...] = (1.0, 1.0, 1.0, 1.0),
         clip_border: bool = True,
         add_ctr_clamp: bool = False,
         ctr_clamp: int = 32,
     ) -> None:
-        self.encode_size = encode_size
-        # TODO(Jaeguk): use_box_type should be deprecated.
-        self.use_box_type = use_box_type
         self.means = target_means
         self.stds = target_stds
         self.clip_border = clip_border
@@ -57,13 +54,13 @@ class DeltaXYWHBBoxCoder:
         """Get box regression transformation deltas that can be used to transform the bboxes into the gt_bboxes.
 
         Args:
-            bboxes (torch.Tensor): Source boxes,
+            bboxes (Tensor): Source boxes,
                 e.g., object proposals.
-            gt_bboxes (torch.Tensor): Target of the
+            gt_bboxes (Tensor): Target of the
                 transformation, e.g., ground-truth boxes.
 
         Returns:
-            torch.Tensor: Box transformation deltas
+            Tensor: Box transformation deltas
         """
         return bbox2delta(bboxes, gt_bboxes, self.means, self.stds)
 
@@ -77,13 +74,13 @@ class DeltaXYWHBBoxCoder:
         """Apply transformation `pred_bboxes` to `boxes`.
 
         Args:
-            bboxes (torch.Tensor): Basic boxes. Shape
+            bboxes (Tensor): Basic boxes. Shape
                 (B, N, 4) or (N, 4)
             pred_bboxes (Tensor): Encoded offsets with respect to each roi.
                Has shape (B, N, num_classes * 4) or (B, N, 4) or
                (N, num_classes * 4) or (N, 4). Note N = num_anchors * W * H
                when rois is a grid of anchors.Offset encoding follows [1]_.
-            max_shape (Sequence[int] or torch.Tensor or Sequence[
+            max_shape (Sequence[int] or Tensor or Sequence[
                Sequence[int]],optional): Maximum bounds for boxes, specifies
                (H, W, C) or (H, W). If bboxes shape is (B, N, 4), then
                the max_shape should be a Sequence[Sequence[int]]
@@ -92,7 +89,7 @@ class DeltaXYWHBBoxCoder:
                 width and height.
 
         Returns:
-            torch.Tensor: Decoded boxes.
+            Tensor: Decoded boxes.
         """
         return delta2bbox(
             bboxes,
@@ -115,14 +112,16 @@ class DeltaXYWHBBoxCoder:
     ) -> Tensor:
         """Apply transformation `pred_bboxes` to `boxes`.
 
+        Reference : https://github.com/open-mmlab/mmdeploy/blob/v1.3.1/mmdeploy/codebase/mmdet/models/task_modules/coders/delta_xywh_bbox_coder.py#L12-L46
+
         Args:
-            bboxes (torch.Tensor): Basic boxes. Shape
+            bboxes (Tensor): Basic boxes. Shape
                 (B, N, 4) or (N, 4)
             pred_bboxes (Tensor): Encoded offsets with respect to each roi.
                Has shape (B, N, num_classes * 4) or (B, N, 4) or
                (N, num_classes * 4) or (N, 4). Note N = num_anchors * W * H
                when rois is a grid of anchors.Offset encoding follows [1]_.
-            max_shape (Sequence[int] or torch.Tensor or Sequence[
+            max_shape (Sequence[int] or Tensor or Sequence[
                Sequence[int]],optional): Maximum bounds for boxes, specifies
                (H, W, C) or (H, W). If bboxes shape is (B, N, 4), then
                the max_shape should be a Sequence[Sequence[int]]
@@ -131,7 +130,7 @@ class DeltaXYWHBBoxCoder:
                 width and height.
 
         Returns:
-            torch.Tensor: Decoded boxes.
+            Tensor: Decoded boxes.
         """
         return delta2bbox_export(
             bboxes,
@@ -277,8 +276,6 @@ def delta2bbox(
     return bboxes.reshape(num_bboxes, -1)
 
 
-# Funtions below come from mmdeploy and modified for OTX usage.
-# https://github.com/open-mmlab/mmdeploy/tree/bc75c9d6c8940aa03d0e1e5b5962bd930478ba77/mmdeploy/codebase/mmdet
 def delta2bbox_export(
     rois: Tensor,
     deltas: Tensor,
@@ -292,11 +289,12 @@ def delta2bbox_export(
 ) -> Tensor:
     """Rewrite `delta2bbox` for default backend.
 
+    Reference : https://github.com/open-mmlab/mmdeploy/blob/v1.3.1/mmdeploy/codebase/mmdet/models/task_modules/coders/delta_xywh_bbox_coder.py#L53-L138
+
     Since the need of clip op with dynamic min and max, this function uses
     clip_bboxes function to support dynamic shape.
 
     Args:
-        ctx (ContextCaller): The context with additional information.
         rois (Tensor): Boxes to be transformed. Has shape (N, 4).
         deltas (Tensor): Encoded offsets relative to each roi.
             Has shape (N, num_classes * 4) or (N, 4). Note
@@ -362,6 +360,6 @@ def delta2bbox_export(
     y2 = xy2[..., 1]
 
     if clip_border and max_shape is not None:
-        x1, y1, x2, y2 = clip_bboxes_export(x1, y1, x2, y2, max_shape)
+        x1, y1, x2, y2 = clip_bboxes(x1, y1, x2, y2, max_shape)
 
     return torch.stack([x1, y1, x2, y2], dim=-1).view(deltas.size())

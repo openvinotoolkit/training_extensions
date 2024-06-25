@@ -1,7 +1,10 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 # Copyright (c) OpenMMLab. All rights reserved.
-"""Implementations copied from mmdet.models.task_modules.prior_generators.point_generator.py."""
+"""Implementations copied from mmdet.models.task_modules.prior_generators.point_generator.
+
+Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/task_modules/prior_generators/point_generator.py
+"""
 
 from __future__ import annotations
 
@@ -17,6 +20,8 @@ DeviceType = Union[str, torch.device]
 
 class MlvlPointGenerator:
     """Standard points generator for multi-level (Mlvl) feature maps in 2D points-based detectors.
+
+    # TODO (sungchul): change strides format from (w, h) to (h, w)
 
     Args:
         strides (list[int] | list[tuple[int, int]]): Strides of anchors
@@ -60,7 +65,7 @@ class MlvlPointGenerator:
             featmap_sizes (list[tuple]): List of feature map sizes in
                 multiple feature levels, each size arrange as
                 as (h, w).
-            dtype (:obj:`dtype`): Dtype of priors. Defaults to torch.float32.
+            dtype (torch.dtype): Dtype of priors. Defaults to torch.float32.
             device (str | torch.device): The device where the anchors will be
                 put on.
             with_stride (bool): Whether to concatenate the stride to
@@ -106,7 +111,7 @@ class MlvlPointGenerator:
             featmap_size (tuple[int]): Size of the feature maps, arrange as
                 (h, w).
             level_idx (int): The index of corresponding feature map level.
-            dtype (:obj:`dtype`): Dtype of priors. Defaults to torch.float32.
+            dtype (torch.dtype): Dtype of priors. Defaults to torch.float32.
             device (str | torch.device): The device the tensor will be put on.
                 Defaults to 'cuda'.
             with_stride (bool): Concatenate the stride to the last dimension
@@ -224,7 +229,7 @@ class MlvlPointGenerator:
             featmap_size (tuple[int]): feature map size arrange as (w, h).
             level_idx (int): The level index of corresponding feature
                 map.
-            dtype (obj:`torch.dtype`): Date type of points. Defaults to
+            dtype (torch.dtype): Date type of points. Defaults to
                 ``torch.float32``.
             device (str | torch.device): The device where the points is
                 located.

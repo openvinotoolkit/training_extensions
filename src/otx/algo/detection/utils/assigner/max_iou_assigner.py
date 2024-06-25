@@ -1,7 +1,10 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 # Copyright (c) OpenMMLab. All rights reserved.
-"""Max Iou Assigner implementation from mmdet."""
+"""Implementations copied from mmdet.models.task_modules.assigners.max_iou_assigner.
+
+Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/task_modules/assigners/max_iou_assigner.py
+"""
 
 from __future__ import annotations
 
@@ -11,15 +14,13 @@ from typing import TYPE_CHECKING, Callable
 import torch
 from torch import Tensor
 
-from otx.algo.detection.utils.iou2d_calculator import BboxOverlaps2D
+from otx.algo.detection.utils.assigner import BboxOverlaps2D
 from otx.algo.detection.utils.structures import AssignResult
 
 if TYPE_CHECKING:
     from otx.algo.utils.mmengine_utils import InstanceData
 
 
-# This class and its supporting functions below lightly adapted from the mmdet MaxIoUAssigner available at:
-# https://github.com/open-mmlab/mmdetection/blob/cfd5d3a985b0249de009b67d04f37263e11cdf3d/mmdet/models/task_modules/assigners/max_iou_assigner.py
 class MaxIoUAssigner:
     """Assign a corresponding gt bbox or background to each bbox.
 
@@ -53,7 +54,7 @@ class MaxIoUAssigner:
         gpu_assign_thr (int): The upper bound of the number of GT for GPU
             assign. When the number of gt is above this threshold, will assign
             on CPU device. Negative values mean not assign on CPU.
-        iou_calculator (dict): Config of overlaps Calculator.
+        iou_calculator (Callable): IoU calculator. Defaults to `BboxOverlaps2D()`.
         perm_repeat_gt_cfg (dict): Config of permute repeated gt bboxes.
     """
 
@@ -67,6 +68,7 @@ class MaxIoUAssigner:
         ignore_wrt_candidates: bool = True,
         match_low_quality: bool = True,
         gpu_assign_thr: float = -1,
+        iou_calculator: Callable | None = None,
         perm_repeat_gt_cfg: dict | None = None,
     ):
         self.pos_iou_thr = pos_iou_thr
@@ -77,7 +79,7 @@ class MaxIoUAssigner:
         self.ignore_wrt_candidates = ignore_wrt_candidates
         self.gpu_assign_thr = gpu_assign_thr
         self.match_low_quality = match_low_quality
-        self.iou_calculator = BboxOverlaps2D()
+        self.iou_calculator = iou_calculator or BboxOverlaps2D()
         self.perm_repeat_gt_cfg = perm_repeat_gt_cfg
 
     def assign(
@@ -102,36 +104,23 @@ class MaxIoUAssigner:
            one) to itself
 
         Args:
-            pred_instances (:obj:`InstanceData`): Instances of model
+            pred_instances (InstanceData): Instances of model
                 predictions. It includes ``priors``, and the priors can
                 be anchors or points, or the bboxes predicted by the
                 previous stage, has shape (n, 4). The bboxes predicted by
                 the current model or stage will be named ``bboxes``,
-                ``labels``, and ``scores``, the same as the ``InstanceData``
+                ``labels``, and ``scores``, the same as the `InstanceData`
                 in other places.
-            gt_instances (:obj:`InstanceData`): Ground truth of instance
+            gt_instances (InstanceData): Ground truth of instance
                 annotations. It usually includes ``bboxes``, with shape (k, 4),
                 and ``labels``, with shape (k, ).
-            gt_instances_ignore (:obj:`InstanceData`, optional): Instances
+            gt_instances_ignore (InstanceData, optional): Instances
                 to be ignored during training. It includes ``bboxes``
                 attribute data that is ignored during training and testing.
                 Defaults to None.
 
         Returns:
-            :obj:`AssignResult`: The assign result.
-
-        Example:
-            >>> from otx.algo.utils.mmengine_utils import InstanceData
-            >>> self = MaxIoUAssigner(0.5, 0.5)
-            >>> pred_instances = InstanceData()
-            >>> pred_instances.priors = torch.Tensor([[0, 0, 10, 10],
-            ...                                      [10, 10, 20, 20]])
-            >>> gt_instances = InstanceData()
-            >>> gt_instances.bboxes = torch.Tensor([[0, 0, 10, 9]])
-            >>> gt_instances.labels = torch.Tensor([0])
-            >>> assign_result = self.assign(pred_instances, gt_instances)
-            >>> expected_gt_inds = torch.LongTensor([1, 0])
-            >>> assert torch.all(assign_result.gt_inds == expected_gt_inds)
+            AssignResult: The assign result.
         """
         gt_bboxes = gt_instances.bboxes  # type: ignore[attr-defined]
         priors = pred_instances.priors  # type: ignore[attr-defined]
@@ -185,7 +174,7 @@ class MaxIoUAssigner:
             gt_labels (Tensor): Labels of k gt_bboxes, shape (k, ).
 
         Returns:
-            :obj:`AssignResult`: The assign result.
+            AssignResult: The assign result.
         """
         num_gts, num_bboxes = overlaps.size(0), overlaps.size(1)
 

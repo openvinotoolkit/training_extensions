@@ -1,7 +1,10 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 # Copyright (c) OpenMMLab. All rights reserved.
-"""2D IoU calculator implementation from mmdet."""
+"""Implementations copied from mmdet.models.task_modules.assigners.iou2d_calculator.
+
+Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/task_modules/assigners/iou2d_calculator.py
+"""
 
 from __future__ import annotations
 
@@ -10,8 +13,6 @@ import torch
 from otx.algo.detection.utils.bbox_overlaps import bbox_overlaps
 
 
-# This class and its supporting functions below lightly adapted from the mmdet BboxOverlaps2D available at:
-# https://github.com/open-mmlab/mmdetection/blob/cfd5d3a985b0249de009b67d04f37263e11cdf3d/mmdet/models/task_modules/assigners/iou2d_calculator.py
 class BboxOverlaps2D:
     """2D Overlaps (e.g. IoUs, GIoUs) Calculator."""
 

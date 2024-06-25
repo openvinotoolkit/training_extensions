@@ -1,7 +1,13 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 # Copyright (c) OpenMMLab. All rights reserved.
-"""Utils for otx detection algo."""
+"""Utils for otx detection algo.
+
+Reference :
+    - https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/utils.
+    - https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/utils.
+    - https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/structures/bbox/transforms.
+"""
 
 from __future__ import annotations
 
@@ -18,13 +24,8 @@ from otx.core.data.entity.detection import DetBatchDataEntity
 from otx.core.data.entity.instance_segmentation import InstanceSegBatchDataEntity
 
 
-# Methods below come from mmdet.utils and slightly modified.
-# https://github.com/open-mmlab/mmdetection/blob/3.x/mmdet/models/utils/misc.py
 def reduce_mean(tensor: Tensor) -> Tensor:
-    """Obtain the mean of tensor on different GPUs.
-
-    Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/utils/dist_utils.py#L59-L65
-    """
+    """Obtain the mean of tensor on different GPUs."""
     if not (dist.is_available() and dist.is_initialized()):
         return tensor
     tensor = tensor.clone()
@@ -52,39 +53,6 @@ def multi_apply(func: Callable, *args, **kwargs) -> tuple:
     pfunc = partial(func, **kwargs) if kwargs else func
     map_results = map(pfunc, *args)  # type: ignore[call-overload]
     return tuple(map(list, zip(*map_results)))
-
-
-def anchor_inside_flags(
-    flat_anchors: Tensor,
-    valid_flags: Tensor,
-    img_shape: tuple[int, ...],
-    allowed_border: int = 0,
-) -> Tensor:
-    """Check whether the anchors are inside the border.
-
-    Args:
-        flat_anchors (torch.Tensor): Flatten anchors, shape (n, 4).
-        valid_flags (torch.Tensor): An existing valid flags of anchors.
-        img_shape (tuple(int)): Shape of current image.
-        allowed_border (int): The border to allow the valid anchor.
-            Defaults to 0.
-
-    Returns:
-        torch.Tensor: Flags indicating whether the anchors are inside a \
-            valid range.
-    """
-    img_h, img_w = img_shape[:2]
-    if allowed_border >= 0:
-        inside_flags = (
-            valid_flags
-            & (flat_anchors[:, 0] >= -allowed_border)
-            & (flat_anchors[:, 1] >= -allowed_border)
-            & (flat_anchors[:, 2] < img_w + allowed_border)
-            & (flat_anchors[:, 3] < img_h + allowed_border)
-        )
-    else:
-        inside_flags = valid_flags
-    return inside_flags
 
 
 def images_to_levels(target: list[Tensor], num_levels: list[int]) -> list[Tensor]:
@@ -160,7 +128,7 @@ def filter_scores_and_topk(
             filtered_results = {k: v[keep_idxs] for k, v in results.items()}
         elif isinstance(results, list):
             filtered_results = [result[keep_idxs] for result in results]
-        elif isinstance(results, torch.Tensor):
+        elif isinstance(results, Tensor):
             filtered_results = results[keep_idxs]
         else:
             msg = f"Only supports dict or list or Tensor, but get {type(results)}."
@@ -202,7 +170,7 @@ def unpack_det_entity(entity: DetBatchDataEntity) -> tuple:
     Returns:
         tuple:
 
-            - batch_gt_instances (list[:obj:`InstanceData`]): Batch of
+            - batch_gt_instances (list[InstanceData]): Batch of
                 gt_instance. It usually includes ``bboxes`` and ``labels``
                 attributes.
             - batch_img_metas (list[dict]): Meta information of each image,
@@ -233,7 +201,7 @@ def unpack_inst_seg_entity(entity: InstanceSegBatchDataEntity) -> tuple:
     Returns:
         tuple:
 
-            - batch_gt_instances (list[:obj:`InstanceData`]): Batch of
+            - batch_gt_instances (list[InstanceData]): Batch of
                 gt_instance. It usually includes ``bboxes`` and ``labels``
                 attributes.
             - batch_img_metas (list[dict]): Meta information of each image,
@@ -290,7 +258,7 @@ def empty_instances(
         device (torch.device): Device of tensor.
         task_type (str): Expected returned task type. it currently
             supports bbox and mask.
-        instance_results (list[:obj:`InstanceData`]): List of instance
+        instance_results (list[InstanceData]): List of instance
             results.
         mask_thr_binary (int, float): mask binarization threshold.
             Defaults to 0.
@@ -303,7 +271,7 @@ def empty_instances(
             needs to produce raw results without nms. Defaults to False.
 
     Returns:
-        list[:obj:`InstanceData`]: Detection results of each image
+        list[InstanceData]: Detection results of each image
     """
     if task_type not in ("bbox", "mask"):
         msg = f"Only support bbox and mask, but got {task_type}"
@@ -347,10 +315,10 @@ def dynamic_topk(input: Tensor, k: int, dim: int | None = None, largest: bool = 
     if dim is None:
         dim = int(input.ndim - 1)
     size = input.shape[dim]
-    if not isinstance(k, torch.Tensor):
-        k = torch.tensor(k, device=input.device, dtype=torch.long)
+    if not isinstance(k, Tensor):
+        k = Tensor(k, device=input.device, dtype=torch.long)
     # Always keep topk op for dynamic input
-    if isinstance(size, torch.Tensor):
+    if isinstance(size, Tensor):
         # size would be treated as cpu tensor, trick to avoid that.
         size = k.new_zeros(()) + size
     k = torch.where(k < size, k, size)
@@ -358,21 +326,21 @@ def dynamic_topk(input: Tensor, k: int, dim: int | None = None, largest: bool = 
 
 
 def gather_topk(
-    *inputs: tuple[torch.Tensor],
-    inds: torch.Tensor,
+    *inputs: tuple[Tensor],
+    inds: Tensor,
     batch_size: int,
     is_batched: bool = True,
-) -> list[torch.Tensor] | torch.Tensor:
+) -> list[Tensor] | Tensor:
     """Gather topk of each tensor.
 
     Args:
-        inputs (tuple[torch.Tensor]): Tensors to be gathered.
-        inds (torch.Tensor): Topk index.
+        inputs (tuple[Tensor]): Tensors to be gathered.
+        inds (Tensor): Topk index.
         batch_size (int): batch_size.
         is_batched (bool): Inputs is batched or not.
 
     Returns:
-        Tuple[torch.Tensor]: Gathered tensors.
+        list[Tensor] or Tensor: Gathered tensor(s).
     """
     if is_batched:
         batch_inds = torch.arange(batch_size, device=inds.device).unsqueeze(-1)
@@ -391,7 +359,10 @@ def distance2bbox(
     distance: Tensor,
     max_shape: Tensor | None = None,
 ) -> Tensor:
-    """Decode distance prediction to bounding box."""
+    """Decode distance prediction to bounding box.
+
+    Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/structures/bbox/transforms.py#L147-L203
+    """
     x1 = points[..., 0] - distance[..., 0]
     y1 = points[..., 1] - distance[..., 1]
     x2 = points[..., 0] + distance[..., 2]
@@ -406,7 +377,7 @@ def distance2bbox(
             bboxes[:, 1::2].clamp_(min=0, max=max_shape[0])
             return bboxes
 
-        if not isinstance(max_shape, torch.Tensor):
+        if not isinstance(max_shape, Tensor):
             max_shape = x1.new_tensor(max_shape)
         max_shape = max_shape[..., :2].type_as(x1)
         if max_shape.ndim == 2:
@@ -426,7 +397,10 @@ def distance2bbox(
 
 
 def distance2bbox_export(points: Tensor, distance: Tensor, max_shape: Tensor | None = None) -> Tensor:
-    """Decode distance prediction to bounding box for export."""
+    """Decode distance prediction to bounding box for export.
+
+    Reference : https://github.com/open-mmlab/mmdeploy/blob/v1.3.1/mmdeploy/codebase/mmdet/structures/bbox/transforms.py#L11-L43
+    """
     x1 = points[..., 0] - distance[..., 0]
     y1 = points[..., 1] - distance[..., 1]
     x2 = points[..., 0] + distance[..., 2]
@@ -436,13 +410,13 @@ def distance2bbox_export(points: Tensor, distance: Tensor, max_shape: Tensor | N
 
     if max_shape is not None:
         # clip bboxes with dynamic `min` and `max`
-        x1, y1, x2, y2 = clip_bboxes_export(x1, y1, x2, y2, max_shape)
+        x1, y1, x2, y2 = clip_bboxes(x1, y1, x2, y2, max_shape)
         return torch.stack([x1, y1, x2, y2], dim=-1)
 
     return bboxes
 
 
-def clip_bboxes_export(
+def clip_bboxes(
     x1: Tensor,
     y1: Tensor,
     x2: Tensor,
@@ -450,6 +424,8 @@ def clip_bboxes_export(
     max_shape: Tensor | tuple[int, ...],
 ) -> tuple[Tensor, ...]:
     """Clip bboxes for onnx.
+
+    Reference : https://github.com/open-mmlab/mmdeploy/blob/v1.3.1/mmdeploy/codebase/mmdet/deploy/utils.py#L31-L72
 
     Since torch.clamp cannot have dynamic `min` and `max`, we scale the
       boxes by 1/max_shape and clamp in the range [0, 1] if necessary.
@@ -468,7 +444,7 @@ def clip_bboxes_export(
         msg = "`max_shape` should be [h, w]."
         raise ValueError(msg)
 
-    if isinstance(max_shape, torch.Tensor):
+    if isinstance(max_shape, Tensor):
         # scale by 1/max_shape
         x1 = x1 / max_shape[1]
         y1 = y1 / max_shape[0]
@@ -502,6 +478,8 @@ def bbox2distance(
 ) -> Tensor:
     """Decode bounding box based on distances.
 
+    Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/structures/bbox/transforms.py#L206-L230
+
     Args:
         points (Tensor): Shape (n, 2) or (b, n, 2), [x, y].
         bbox (Tensor): Shape (n, 4) or (b, n, 4), "xyxy" format
@@ -524,7 +502,10 @@ def bbox2distance(
 
 
 def inverse_sigmoid(x: Tensor, eps: float = 1e-5) -> Tensor:
-    """Inverse function of sigmoid."""
+    """Inverse function of sigmoid.
+
+    Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/layers/transformer/utils.py#L100-L113
+    """
     x = x.clamp(min=0, max=1)
     x1 = x.clamp(min=eps)
     x2 = (1 - x).clamp(min=eps)

@@ -1,22 +1,23 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 # Copyright (c) OpenMMLab. All rights reserved.
-"""Assigner for ATSS."""
+"""Implementations copied from mmdet.models.task_modules.assigners.atss_assigner.
+
+Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/task_modules/assigners/atss_assigner.py
+"""
 
 from __future__ import annotations
 
 import warnings
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Callable
 
 import torch
 from torch import Tensor
 
-from otx.algo.detection.utils.iou2d_calculator import BboxOverlaps2D
+from otx.algo.detection.utils.assigner import BboxOverlaps2D
 from otx.algo.detection.utils.structures import AssignResult
 
 if TYPE_CHECKING:
-    from omegaconf import DictConfig
-
     from otx.algo.utils.mmengine_utils import InstanceData
 
 
@@ -57,8 +58,7 @@ class ATSSAssigner:
         topk (int): number of priors selected in each level
         alpha (float, optional): param of cost rate for each proposal only
             in DDOD. Defaults to None.
-        iou_calculator (:obj:`DictConfig` or dict): Config dict for iou
-            calculator. Defaults to ``dict(type='BboxOverlaps2D')``
+        iou_calculator (Callable): IoU calculator. Defaults to `BboxOverlaps2D()`.
         ignore_iof_thr (float): IoF threshold for ignoring bboxes (if
             `gt_bboxes_ignore` is specified). Negative values mean not
             ignoring any bboxes. Defaults to -1.
@@ -68,14 +68,12 @@ class ATSSAssigner:
         self,
         topk: int,
         alpha: float | None = None,
-        iou_calculator: DictConfig | dict | None = None,
+        iou_calculator: Callable | None = None,
         ignore_iof_thr: float = -1,
     ) -> None:
         self.topk = topk
         self.alpha = alpha
-        if iou_calculator is None:
-            iou_calculator = {}
-        self.iou_calculator = BboxOverlaps2D(**iou_calculator)
+        self.iou_calculator = iou_calculator or BboxOverlaps2D()
         self.ignore_iof_thr = ignore_iof_thr
 
     # https://github.com/sfzhang15/ATSS/blob/master/atss_core/modeling/rpn/atss/loss.py
@@ -107,21 +105,21 @@ class ATSSAssigner:
         the DDOD.
 
         Args:
-            pred_instances (:obj:`InstaceData`): Instances of model
+            pred_instances (InstaceData): Instances of model
                 predictions. It includes ``priors``, and the priors can
                 be anchors, points, or bboxes predicted by the model,
                 shape(n, 4).
             num_level_priors (List): Number of bboxes in each level
-            gt_instances (:obj:`InstaceData`): Ground truth of instance
+            gt_instances (InstaceData): Ground truth of instance
                 annotations. It usually includes ``bboxes`` and ``labels``
                 attributes.
-            gt_instances_ignore (:obj:`InstaceData`, optional): Instances
+            gt_instances_ignore (InstaceData, optional): Instances
                 to be ignored during training. It includes ``bboxes``
                 attribute data that is ignored during training and testing.
                 Defaults to None.
 
         Returns:
-            :obj:`AssignResult`: The assign result.
+            AssignResult: The assign result.
         """
         gt_bboxes = gt_instances.bboxes  # type: ignore[attr-defined]
         priors = pred_instances.priors  # type: ignore[attr-defined]

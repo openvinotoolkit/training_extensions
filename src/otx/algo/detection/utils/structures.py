@@ -1,6 +1,15 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-"""Data structures for detection task."""
+# Copyright (c) OpenMMLab. All rights reserved.
+"""Data structures for detection task.
+
+Implementations copied from mmdet.models.task_modules.assigners.assign_result
+and mmdet.models.task_modules.samplers.sampling_result.
+
+Reference :
+    - https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/task_modules/assigners/assign_result.py
+    - https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/task_modules/samplers/sampling_result.py
+"""
 
 from __future__ import annotations
 
@@ -13,7 +22,9 @@ from torch import Tensor
 class AssignResult:
     """Stores assignments between predicted and truth boxes.
 
-    Attributes:
+    Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/task_modules/assigners/assign_result.py#L8-L198
+
+    Args:
         num_gts (int): the number of truth boxes considered when computing this
             assignment
         gt_inds (Tensor): for each predicted box indicates the 1-based
@@ -63,7 +74,7 @@ class AssignResult:
         """Add ground truth as assigned results.
 
         Args:
-            gt_labels (torch.Tensor): Labels of gt boxes
+            gt_labels (Tensor): Labels of gt boxes
         """
         self_inds = torch.arange(1, len(gt_labels) + 1, dtype=torch.long, device=gt_labels.device)
         self.gt_inds = torch.cat([self_inds, self.gt_inds])
@@ -75,6 +86,8 @@ class AssignResult:
 
 class SamplingResult:
     """Bbox sampling result.
+
+    Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/task_modules/samplers/sampling_result.py#L51-L179
 
     Args:
         pos_inds (Tensor): Indices of positive samples.
@@ -122,12 +135,12 @@ class SamplingResult:
 
     @property
     def priors(self) -> Tensor:
-        """torch.Tensor: concatenated positive and negative priors."""
+        """Tensor: concatenated positive and negative priors."""
         return torch.cat([self.pos_priors, self.neg_priors])
 
     @property
     def bboxes(self) -> Tensor:
-        """torch.Tensor: concatenated positive and negative boxes."""
+        """Tensor: concatenated positive and negative boxes."""
         return self.priors
 
     @property
@@ -151,7 +164,7 @@ class SamplingResult:
         """
         _dict = self.__dict__
         for key, value in _dict.items():
-            if isinstance(value, torch.Tensor):
+            if isinstance(value, Tensor):
                 _dict[key] = value.to(device)
         return self
 

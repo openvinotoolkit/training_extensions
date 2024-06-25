@@ -1,18 +1,23 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 # Copyright (c) OpenMMLab. All rights reserved.
-"""Dynamic Soft Label Assigner for RTMDet."""
+"""Dynamic Soft Label Assigner for RTMDet.
+
+Implementations copied from mmdet.models.task_modules.assigners.dynamic_soft_label_assigner.
+
+Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/task_modules/assigners/dynamic_soft_label_assigner.py
+"""
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Callable
 
 import numpy as np
 import torch
 import torch.nn.functional
 from torch import Tensor
 
-from otx.algo.detection.utils.iou2d_calculator import BboxOverlaps2D
+from otx.algo.detection.utils.assigner import BboxOverlaps2D
 from otx.algo.detection.utils.structures import AssignResult
 
 INF = 100000000
@@ -31,7 +36,6 @@ def center_of_mass(masks: Tensor, eps: float = 1e-7) -> Tensor:
         masks: Mask tensor, has shape (num_masks, H, W).
         eps: a small number to avoid normalizer to be zero.
             Defaults to 1e-7.
-
 
     Returns:
         Tensor: The masks center of mass. Has shape (num_masks, 2).
@@ -68,8 +72,7 @@ class DynamicSoftLabelAssigner:
         topk (int): Select top-k predictions to calculate dynamic k
             best matches for each gt. Defaults to 13.
         iou_weight (float): The scale factor of iou cost. Defaults to 3.0.
-        iou_calculator (ConfigType): Config of overlaps Calculator.
-            Defaults to dict(type='BboxOverlaps2D').
+        iou_calculator (Callable): IoU calculator. Defaults to `BboxOverlaps2D()`.
     """
 
     def __init__(
@@ -77,11 +80,12 @@ class DynamicSoftLabelAssigner:
         soft_center_radius: float = 3.0,
         topk: int = 13,
         iou_weight: float = 3.0,
+        iou_calculator: Callable | None = None,
     ) -> None:
         self.soft_center_radius = soft_center_radius
         self.topk = topk
         self.iou_weight = iou_weight
-        self.iou_calculator = BboxOverlaps2D()
+        self.iou_calculator = iou_calculator or BboxOverlaps2D()
 
     def assign(
         self,
@@ -93,25 +97,24 @@ class DynamicSoftLabelAssigner:
         """Assign gt to priors.
 
         Args:
-            pred_instances (:obj:`InstanceData`): Instances of model
+            pred_instances (InstanceData): Instances of model
                 predictions. It includes ``priors``, and the priors can
                 be anchors or points, or the bboxes predicted by the
                 previous stage, has shape (n, 4). The bboxes predicted by
                 the current model or stage will be named ``bboxes``,
                 ``labels``, and ``scores``, the same as the ``InstanceData``
                 in other places.
-            gt_instances (:obj:`InstanceData`): Ground truth of instance
+            gt_instances (InstanceData): Ground truth of instance
                 annotations. It usually includes ``bboxes``, with shape (k, 4),
                 and ``labels``, with shape (k, ).
-            gt_instances_ignore (:obj:`InstanceData`, optional): Instances
+            gt_instances_ignore (InstanceData, optional): Instances
                 to be ignored during training. It includes ``bboxes``
                 attribute data that is ignored during training and testing.
                 Defaults to None.
             kwargs (dict, optional): Any keyword arguments to be used.
 
-
         Returns:
-            obj:`AssignResult`: The assigned result.
+            AssignResult: The assigned result.
         """
         gt_bboxes = gt_instances.bboxes  # type: ignore[attr-defined]
         gt_labels = gt_instances.labels  # type: ignore[attr-defined]

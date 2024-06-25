@@ -1,12 +1,18 @@
+# Copyright (C) 2024 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
 # Copyright (c) OpenMMLab. All rights reserved.
-"""Overlap between bboxes calculation function."""
+"""Implementations copied from mmdet.structures.bbox.bbox_overlaps.
+
+Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/structures/bbox/bbox_overlaps.py
+"""
 
 from __future__ import annotations
 
 import torch
+from torch import Tensor
 
 
-def fp16_clamp(x: torch.Tensor, min_value: int | None = None, max_value: int | None = None) -> torch.Tensor:
+def fp16_clamp(x: Tensor, min_value: int | None = None, max_value: int | None = None) -> Tensor:
     """Clamp for cpu float16, tensor fp16 has no clamp implementation."""
     if not x.is_cuda and x.dtype == torch.float16:
         return x.float().clamp(min_value, max_value).half()
@@ -15,12 +21,12 @@ def fp16_clamp(x: torch.Tensor, min_value: int | None = None, max_value: int | N
 
 
 def bbox_overlaps(
-    bboxes1: torch.Tensor,
-    bboxes2: torch.Tensor,
+    bboxes1: Tensor,
+    bboxes2: Tensor,
     mode: str = "iou",
     is_aligned: bool = False,
     eps: float = 1e-6,
-) -> torch.Tensor:
+) -> Tensor:
     """Calculate overlap between two set of bboxes.
 
     FP16 Contributed by https://github.com/open-mmlab/mmdetection/pull/4889
