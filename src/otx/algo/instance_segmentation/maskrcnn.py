@@ -611,7 +611,7 @@ class MaskRCNNEfficientNet(OTXMaskRCNN):
 
     @property
     def _optimization_config(self) -> dict[str, Any]:
-        """PTQ config for SegNext."""
+        """PTQ config for MaskRCNN-Eff."""
         return {
             "ignored_scope": {
                 "types": ["Add", "Divide", "Multiply", "Sigmoid"],
@@ -820,9 +820,3 @@ class MaskRCNNSwinT(OTXMaskRCNN):
             train_cfg=train_cfg,
             test_cfg=test_cfg,
         )
-
-    @property
-    def _optimization_config(self) -> dict[str, Any]:
-        return {
-            "model_type": "transformer",
-        }
