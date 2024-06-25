@@ -46,7 +46,8 @@ class OTXAnomalyModelExporter(OTXNativeModelExporter):
                 Defaults to (1.0, 1.0, 1.0).
             normalization_scale (float, optional): Scale value for normalization.
                 Defaults to 1.0.
-            via_onnx (bool, optional): Whether to export the model in OpenVINO format via ONNX first. Defaults to False.
+            via_onnx (bool, optional): Whether to export the model in OpenVINO format via ONNX first.
+                Defaults to False.
             onnx_export_configuration (dict[str, Any] | None, optional): Configuration for ONNX export.
                 Defaults to None.
         """

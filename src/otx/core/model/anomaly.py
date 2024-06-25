@@ -334,6 +334,7 @@ class OTXAnomaly:
             base_name: (str): base name for the exported model file. Extension is defined by the target export format
             export_format (OTXExportFormatType): format of the output model
             precision (OTXExportPrecisionType): precision of the output model
+            to_exportable_code (bool): flag to export model in exportable code with demo package
 
         Returns:
             Path: path to the exported model.
