@@ -5,15 +5,15 @@
 # Please refer to https://github.com/open-mmlab/mmdetection/
 
 """MMDet ResLayer."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from torch import nn
-
 from otx.algo.modules.base_module import BaseModule, Sequential
 from otx.algo.modules.conv import build_conv_layer
 from otx.algo.modules.norm import build_norm_layer
+from torch import nn
 
 if TYPE_CHECKING:
     from omegaconf import DictConfig

@@ -6,6 +6,5 @@
 from .csp_darknet import CSPDarknet
 from .cspnext import CSPNeXt
 from .pytorchcv_backbones import build_model_including_pytorchcv
-from .resnext import ResNeXt
 
-__all__ = ["CSPDarknet", "CSPNeXt", "build_model_including_pytorchcv", "ResNeXt"]
+__all__ = ["CSPDarknet", "CSPNeXt", "build_model_including_pytorchcv"]

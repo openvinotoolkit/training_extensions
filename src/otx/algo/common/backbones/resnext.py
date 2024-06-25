@@ -6,11 +6,12 @@ from __future__ import annotations
 import math
 from typing import ClassVar
 
-from otx.algo.instance_segmentation.mmdet.models.backbones import ResNet
-from otx.algo.instance_segmentation.mmdet.models.backbones.resnet import Bottleneck as _Bottleneck
-from otx.algo.instance_segmentation.mmdet.models.layers import ResLayer
+from otx.algo.common.layers import ResLayer
 from otx.algo.modules.conv import build_conv_layer
 from otx.algo.modules.norm import build_norm_layer
+
+from .resnet import Bottleneck as _Bottleneck
+from .resnet import ResNet
 
 
 class Bottleneck(_Bottleneck):

@@ -9,7 +9,8 @@ from typing import TYPE_CHECKING
 
 from omegaconf import DictConfig
 
-from otx.algo.detection.backbones import ResNeXt, build_model_including_pytorchcv
+from otx.algo.common.backbones import ResNeXt
+from otx.algo.detection.backbones import build_model_including_pytorchcv
 from otx.algo.detection.heads import ATSSHead
 from otx.algo.detection.losses import CrossEntropyLoss, CrossSigmoidFocalLoss, GIoULoss
 from otx.algo.detection.necks import FPN
