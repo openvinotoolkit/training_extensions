@@ -209,7 +209,7 @@ def test_otx_e2e(
     ov_output_dir = tmp_path_test / "outputs" / "OPENVINO"
     ov_files = list(ov_output_dir.rglob("exported*.xml"))
     if not ov_files:
-        msg = ""
+        msg = "There is no OV IR."
         raise RuntimeError(msg)
     exported_model_path = str(ov_files[0])
     if task in ("visual_prompting", "zero_shot_visual_prompting"):
