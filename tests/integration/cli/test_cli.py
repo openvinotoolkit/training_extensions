@@ -156,18 +156,6 @@ def test_otx_e2e(
     assert (latest_dir / "csv").exists()
 
     # 3) otx export
-    if any(
-        task_name in recipe
-        for task_name in [
-            "h_label_cls",
-            "detection",
-            "dino_v2",
-            "instance_segmentation",
-            "action",
-        ]
-    ):
-        return
-
     if task in ("visual_prompting", "zero_shot_visual_prompting"):
         fxt_export_list = [
             ExportCase2Test("ONNX", False, "exported_model_decoder.onnx"),
