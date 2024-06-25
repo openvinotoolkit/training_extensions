@@ -301,6 +301,12 @@ class OTXAnomaly:
         min_val = self.normalization_metrics.state_dict()["min"].cpu().numpy().tolist()
         max_val = self.normalization_metrics.state_dict()["max"].cpu().numpy().tolist()
         image_shape, mean_values, scale_values = self._get_values_from_transforms()
+        onnx_export_configuration = {
+            "opset_version": 14,
+            "dynamic_axes": {"input": {0: "batch_size"}, "output": {0: "batch_size"}},
+            "input_names": ["input"],
+            "output_names": ["output"],
+        }
         return OTXAnomalyModelExporter(
             image_shape=image_shape,
             image_threshold=self.image_threshold.value.cpu().numpy().tolist(),
@@ -309,6 +315,8 @@ class OTXAnomaly:
             mean_values=mean_values,
             scale_values=scale_values,
             normalization_scale=max_val - min_val,
+            onnx_export_configuration=onnx_export_configuration,
+            via_onnx=False,
         )
 
     def export(

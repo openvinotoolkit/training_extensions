@@ -4,21 +4,16 @@
 """Class definition for anomaly models exporter used in OTX."""
 from __future__ import annotations
 
-from pathlib import Path
+from typing import Any
 
-import onnx
-import openvino
-import torch
 from anomalib import TaskType as AnomalibTaskType
-from torch import nn
 
-from otx.core.exporter.base import OTXModelExporter
+from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.types.export import TaskLevelExportParameters
 from otx.core.types.label import NullLabelInfo
-from otx.core.types.precision import OTXPrecisionType
 
 
-class OTXAnomalyModelExporter(OTXModelExporter):
+class OTXAnomalyModelExporter(OTXNativeModelExporter):
     """Exporter for anomaly tasks."""
 
     def __init__(
@@ -31,6 +26,8 @@ class OTXAnomalyModelExporter(OTXModelExporter):
         mean_values: tuple[float, float, float] = (0.0, 0.0, 0.0),
         scale_values: tuple[float, float, float] = (1.0, 1.0, 1.0),
         normalization_scale: float = 1.0,
+        via_onnx: bool = False,
+        onnx_export_configuration: dict[str, Any] | None = None,
     ) -> None:
         """Initializes `OTXAnomalyModelExporter` object.
 
@@ -49,12 +46,17 @@ class OTXAnomalyModelExporter(OTXModelExporter):
                 Defaults to (1.0, 1.0, 1.0).
             normalization_scale (float, optional): Scale value for normalization.
                 Defaults to 1.0.
+            via_onnx (bool, optional): Whether to export the model in OpenVINO format via ONNX first. Defaults to False.
+            onnx_export_configuration (dict[str, Any] | None, optional): Configuration for ONNX export.
+                Defaults to None.
         """
         self.orig_height, self.orig_width = image_shape
         self.image_threshold = image_threshold
         self.pixel_threshold = pixel_threshold
         self.task = task
         self.normalization_scale = normalization_scale
+        self.via_onnx = via_onnx
+        self.onnx_export_configuration = onnx_export_configuration if onnx_export_configuration is not None else {}
 
         super().__init__(
             task_level_export_parameters=TaskLevelExportParameters(
@@ -87,70 +89,3 @@ class OTXAnomalyModelExporter(OTXModelExporter):
             ("model_info", "model_type"): "AnomalyDetection",
             ("model_info", "task"): self.task.value,
         }
-
-    def to_openvino(
-        self,
-        model: nn.Module,
-        output_dir: Path,
-        base_model_name: str = "exported_model",
-        precision: OTXPrecisionType = OTXPrecisionType.FP32,
-    ) -> Path:
-        """Exports the model to OpenVINO Intermediate Representation.
-
-        Args:
-            model (nn.Module): The model to export.
-            output_dir (Path): The directory where the exported model will be saved.
-            base_model_name (str, optional): The base name for the exported model. Defaults to "exported_model".
-            precision (OTXPrecisionType, optional): The precision type for the exported model.
-            Defaults to OTXPrecisionType.FP32.
-
-        Returns:
-            Path: The path to the exported model.
-        """
-        save_path = str(output_dir / f"{base_model_name}.xml")
-        exported_model = openvino.convert_model(
-            input_model=model,
-            example_input=torch.rand(self.input_size),
-            input=(openvino.runtime.PartialShape(self.input_size)),
-        )
-        exported_model = self._postprocess_openvino_model(exported_model)
-        openvino.save_model(exported_model, save_path, compress_to_fp16=(precision == OTXPrecisionType.FP16))
-        return Path(save_path)
-
-    def to_onnx(
-        self,
-        model: nn.Module,
-        output_dir: Path,
-        base_model_name: str = "exported_model",
-        precision: OTXPrecisionType = OTXPrecisionType.FP32,
-        embed_metadata: bool = True,
-    ) -> Path:
-        """Exports the model to ONNX format.
-
-        Args:
-            model (nn.Module): The model to export.
-            output_dir (Path): The directory where the exported model will be saved.
-            base_model_name (str, optional): The base name for the exported model. Defaults to "exported_model".
-            precision (OTXPrecisionType, optional): The precision type for the exported model.
-            Defaults to OTXPrecisionType.FP32.
-            embed_metadata (bool, optional): Whether to embed metadata in the exported model. Defaults to True.
-
-        Returns:
-            Path: The path to the exported model.
-        """
-        save_path = str(output_dir / f"{base_model_name}.onnx")
-        torch.onnx.export(
-            model=model,
-            args=(torch.rand(1, 3, self.orig_height, self.orig_width)).to(
-                next(model.parameters()).device,
-            ),
-            f=save_path,
-            opset_version=14,
-            dynamic_axes={"input": {0: "batch_size"}, "output": {0: "batch_size"}},
-            input_names=["input"],
-            output_names=["output"],
-        )
-        onnx_model = onnx.load(save_path)
-        onnx_model = self._postprocess_onnx_model(onnx_model, embed_metadata, precision)
-        onnx.save(onnx_model, save_path)
-        return Path(save_path)
