@@ -614,9 +614,6 @@ class MaskRCNNEfficientNet(OTXMaskRCNN):
         """PTQ config for SegNext."""
         return {
             "ignored_scope": {
-                "patterns": [
-                    "model.roi_head.bbox_head*",
-                ],
                 "types": ["Add", "Divide", "Multiply", "Sigmoid"],
                 "validate": False,
             },
