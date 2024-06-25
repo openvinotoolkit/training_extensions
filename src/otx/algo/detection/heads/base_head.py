@@ -41,9 +41,9 @@ class BaseDenseHead(BaseModule):
         """Get positive information from sampling results.
 
         Returns:
-            (list[InstanceData]): Positive information of each image,
-                usually including positive bboxes, positive labels, positive
-                priors, etc.
+            list[InstanceData]: Positive information of each image,
+            usually including positive bboxes, positive labels, positive
+            priors, etc.
         """
         if len(self._raw_positive_infos) == 0:
             return None
@@ -69,7 +69,7 @@ class BaseDenseHead(BaseModule):
             entity (DetBatchDataEntity): Entity from OTX dataset.
 
         Returns:
-            (dict): A dictionary of loss components.
+            dict: A dictionary of loss components.
         """
         outs = self(x)
 
@@ -105,7 +105,8 @@ class BaseDenseHead(BaseModule):
                 Defaults to False.
 
         Returns:
-            (list[InstanceData]): Detection results of each image after the post process.
+            list[InstanceData]: Detection results of each image
+            after the post process.
         """
         batch_img_metas = [
             {
@@ -158,14 +159,15 @@ class BaseDenseHead(BaseModule):
                 Defaults to True.
 
         Returns:
-            (list[InstanceData]): Object detection results of each image after the post process.
-                Each item usually contains following keys.
-                    - scores (Tensor): Classification scores, has a shape
-                    (num_instance, )
-                    - labels (Tensor): Labels of bboxes, has a shape
-                    (num_instances, ).
-                    - bboxes (Tensor): Has a shape (num_instances, 4),
-                    the last dimension 4 arrange as (x1, y1, x2, y2).
+            list[InstanceData]: Object detection results of each image
+            after the post process. Each item usually contains following keys.
+
+                - scores (Tensor): Classification scores, has a shape
+                  (num_instance, )
+                - labels (Tensor): Labels of bboxes, has a shape
+                  (num_instances, ).
+                - bboxes (Tensor): Has a shape (num_instances, 4),
+                  the last dimension 4 arrange as (x1, y1, x2, y2).
         """
         if batch_img_metas is None:
             batch_img_metas = []
@@ -241,14 +243,15 @@ class BaseDenseHead(BaseModule):
                 Defaults to True.
 
         Returns:
-            (InstanceData): Detection results of each image after the post process.
-                Each item usually contains following keys.
-                    - scores (Tensor): Classification scores, has a shape
-                    (num_instance, )
-                    - labels (Tensor): Labels of bboxes, has a shape
-                    (num_instances, ).
-                    - bboxes (Tensor): Has a shape (num_instances, 4),
-                    the last dimension 4 arrange as (x1, y1, x2, y2).
+            InstanceData: Detection results of each image
+            after the post process. Each item usually contains following keys.
+
+                - scores (Tensor): Classification scores, has a shape
+                  (num_instance, )
+                - labels (Tensor): Labels of bboxes, has a shape
+                  (num_instances, ).
+                - bboxes (Tensor): Has a shape (num_instances, 4),
+                  the last dimension 4 arrange as (x1, y1, x2, y2).
         """
         with_score_factors = score_factor_list[0] is not None
 
@@ -354,14 +357,15 @@ class BaseDenseHead(BaseModule):
             img_meta (dict, optional): Image meta info. Defaults to None.
 
         Returns:
-            (InstanceData): Detection results of each image after the post process.
-                Each item usually contains following keys.
-                    - scores (Tensor): Classification scores, has a shape
-                    (num_instance, )
-                    - labels (Tensor): Labels of bboxes, has a shape
-                    (num_instances, ).
-                    - bboxes (Tensor): Has a shape (num_instances, 4),
-                    the last dimension 4 arrange as (x1, y1, x2, y2).
+            InstanceData: Detection results of each image
+            after the post process. Each item usually contains following keys.
+
+                - scores (Tensor): Classification scores, has a shape
+                  (num_instance, )
+                - labels (Tensor): Labels of bboxes, has a shape
+                  (num_instances, ).
+                - bboxes (Tensor): Has a shape (num_instances, 4),
+                  the last dimension 4 arrange as (x1, y1, x2, y2).
         """
         if rescale:
             scale_factor = [1 / s for s in img_meta["scale_factor"]]  # (H, W)
@@ -407,7 +411,7 @@ class BaseDenseHead(BaseModule):
                 Defaults to False.
 
         Returns:
-            (list[tuple[Tensor, Tensor] | tuple[Tensor, Tensor, Tensor]]):
+            list[tuple[Tensor, Tensor] | tuple[Tensor, Tensor, Tensor]]:
                 Detection results of each image after the post process.
         """
         outs = self(x)
@@ -453,7 +457,7 @@ class BaseDenseHead(BaseModule):
                 Defaults to True.
 
         Returns:
-            (tuple[Tensor, Tensor] | tuple[Tensor, Tensor, Tensor]):
+            tuple[Tensor, Tensor] | tuple[Tensor, Tensor, Tensor]:
                 - scores (Tensor): Classification scores, has a shape
                     (num_instance, )
                 - labels (Tensor): Labels of bboxes, has a shape

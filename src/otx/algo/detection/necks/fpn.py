@@ -152,7 +152,7 @@ class FPN(BaseModule):
             inputs (tuple[Tensor]): Features from the upstream network, each is a 4D-tensor.
 
         Returns:
-            (tuple): Feature maps, each is a 4D-tensor.
+            tuple: Feature maps, each is a 4D-tensor.
         """
         # build laterals
         laterals = [lateral_conv(inputs[i + self.start_level]) for i, lateral_conv in enumerate(self.lateral_convs)]

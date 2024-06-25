@@ -160,7 +160,7 @@ class ATSSHead(ClassIncrementalMixin, AnchorHead):
                 a 4D-tensor.
 
         Returns:
-            (tuple): Usually a tuple of classification scores and bbox prediction
+            tuple: Usually a tuple of classification scores and bbox prediction
                 cls_scores (list[Tensor]): Classification scores for all scale
                     levels, each is a 4D-tensor, the channels number is
                     num_anchors * num_classes.
@@ -178,7 +178,7 @@ class ATSSHead(ClassIncrementalMixin, AnchorHead):
             scale (Scale): Learnable scale module to resize the bbox prediction.
 
         Returns:
-            (tuple):
+            tuple:
                 cls_score (Tensor): Cls scores for a single scale level
                     the channels number is num_anchors * num_classes.
                 bbox_pred (Tensor): Box energies / deltas for a single scale
@@ -226,7 +226,7 @@ class ATSSHead(ClassIncrementalMixin, AnchorHead):
                 Defaults to None.
 
         Returns:
-            (dict[str, Tensor]): A dictionary of loss components.
+            dict[str, Tensor]: A dictionary of loss components.
         """
         featmap_sizes = [featmap.size()[-2:] for featmap in cls_scores]
         if len(featmap_sizes) != self.prior_generator.num_levels:
@@ -310,7 +310,7 @@ class ATSSHead(ClassIncrementalMixin, AnchorHead):
                 of positive priors.
 
         Returns:
-            (tuple[Tensor]): A tuple of loss components.
+            tuple[Tensor]: A tuple of loss components.
         """
         anchors = anchors.reshape(-1, 4)
         cls_score = cls_score.permute(0, 2, 3, 1).reshape(-1, self.cls_out_channels).contiguous()
@@ -376,7 +376,7 @@ class ATSSHead(ClassIncrementalMixin, AnchorHead):
             gts (Tensor): Ground truth bboxes with shape (N, 4), "xyxy" format.
 
         Returns:
-            (Tensor): Centerness between anchors and gts.
+            Tensor: Centerness between anchors and gts.
         """
         anchors_cx = (anchors[:, 2] + anchors[:, 0]) / 2
         anchors_cy = (anchors[:, 3] + anchors[:, 1]) / 2
@@ -490,7 +490,7 @@ class ATSSHead(ClassIncrementalMixin, AnchorHead):
                 set of anchors.
 
         Returns:
-            (tuple): N is the number of total anchors in the image.
+            tuple: N is the number of total anchors in the image.
                 labels (Tensor): Labels of all anchors in the image with shape
                     (N,).
                 label_weights (Tensor): Label weights of all anchor in the

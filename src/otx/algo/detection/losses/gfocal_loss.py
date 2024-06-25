@@ -75,7 +75,7 @@ def quality_focal_loss(pred: Tensor, target: Tensor, beta: float = 2.0) -> Tenso
             Defaults to 2.0.
 
     Returns:
-        (Tensor): Loss tensor with shape (N,).
+        Tensor: Loss tensor with shape (N,).
     """
     if len(target) != 2:
         msg = "The length of target should be 2."
@@ -120,7 +120,7 @@ def quality_focal_loss_with_prob(pred: Tensor, target: Tensor, beta: float = 2.0
             Defaults to 2.0.
 
     Returns:
-        (Tensor): Loss tensor with shape (N,).
+        Tensor: Loss tensor with shape (N,).
     """
     if len(target) != 2:
         msg = "The length of target should be 2."

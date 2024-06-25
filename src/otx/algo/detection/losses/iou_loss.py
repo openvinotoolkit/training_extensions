@@ -36,7 +36,7 @@ def iou_loss(pred: Tensor, target: Tensor, linear: bool = False, mode: str = "lo
         eps (float): Epsilon to avoid log(0).
 
     Returns:
-        (Tensor): Loss tensor.
+        Tensor: Loss tensor.
     """
     assert mode in ["linear", "square", "log"]  # noqa: S101
     if linear:
@@ -130,7 +130,7 @@ class IoULoss(nn.Module):
                 Defaults to None. Options are "none", "mean" and "sum".
 
         Returns:
-            (Tensor): Loss tensor.
+            Tensor: Loss tensor.
         """
         assert reduction_override in (None, "none", "mean", "sum")  # noqa: S101
         reduction = reduction_override if reduction_override else self.reduction
@@ -198,7 +198,7 @@ class GIoULoss(nn.Module):
                 Defaults to None. Options are "none", "mean" and "sum".
 
         Returns:
-            (Tensor): Loss tensor.
+            Tensor: Loss tensor.
         """
         if weight is not None and not torch.any(weight > 0):
             if pred.dim() == weight.dim() + 1:
@@ -231,7 +231,7 @@ def giou_loss(pred: Tensor, target: Tensor, eps: float = 1e-7) -> Tensor:
         eps (float): Epsilon to avoid log(0).
 
     Returns:
-        (Tensor): Loss tensor.
+        Tensor: Loss tensor.
     """
     # avoid fp16 overflow
     if pred.dtype == torch.float16:

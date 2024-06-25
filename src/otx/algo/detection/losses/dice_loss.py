@@ -117,7 +117,7 @@ class DiceLoss(nn.Module):
                 Options are "none", "mean" and "sum".
 
         Returns:
-            (Tensor): The calculated loss
+            Tensor: The calculated loss
         """
         if reduction_override not in (None, "none", "mean", "sum"):
             msg = "reduction_override must be one of 'none', 'mean', 'sum'"

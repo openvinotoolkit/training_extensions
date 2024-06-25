@@ -126,11 +126,13 @@ class RTMDetHead(ATSSHead):
                 a 4D-tensor.
 
         Returns:
-            (tuple): Usually a tuple of classification scores and bbox prediction
-                - cls_scores (list[Tensor]): Classification scores for all scale
-                    levels, each is a 4D-tensor, the channels number is num_base_priors * num_classes.
-                - bbox_preds (list[Tensor]): Box energies / deltas for all scale
-                    levels, each is a 4D-tensor, the channels number is num_base_priors * 4.
+            tuple: Usually a tuple of classification scores and bbox prediction
+            - cls_scores (list[Tensor]): Classification scores for all scale
+              levels, each is a 4D-tensor, the channels number is
+              num_base_priors * num_classes.
+            - bbox_preds (list[Tensor]): Box energies / deltas for all scale
+              levels, each is a 4D-tensor, the channels number is
+              num_base_priors * 4.
         """
         cls_scores = []
         bbox_preds = []
@@ -183,7 +185,7 @@ class RTMDetHead(ATSSHead):
             stride (list[int]): Downsample stride of the feature map.
 
         Returns:
-            (dict[str, Tensor]): A dictionary of loss components.
+            dict[str, Tensor]: A dictionary of loss components.
         """
         if stride[0] != stride[1]:
             msg = "h stride is not equal to w stride!"
@@ -251,7 +253,7 @@ class RTMDetHead(ATSSHead):
                 Defaults to None.
 
         Returns:
-            (dict[str, Tensor]): A dictionary of loss components.
+            dict[str, Tensor]: A dictionary of loss components.
         """
         num_imgs = len(batch_img_metas)
         featmap_sizes = [featmap.size()[-2:] for featmap in cls_scores]
@@ -343,7 +345,7 @@ class RTMDetHead(ATSSHead):
                 Defaults to True.
 
         Returns:
-            (tuple[Tensor, Tensor]): The first item is an (N, num_box, 5) tensor,
+            tuple[Tensor, Tensor]: The first item is an (N, num_box, 5) tensor,
                 where 5 represent (tl_x, tl_y, br_x, br_y, score), N is batch
                 size and the score between 0 and 1. The shape of the second
                 tensor in the tuple is (N, num_box), and each element
@@ -422,12 +424,15 @@ class RTMDetHead(ATSSHead):
                 set of anchors. Defaults to True.
 
         Returns:
-            (tuple): a tuple containing learning targets.
-                - anchors_list (list[list[Tensor]]): Anchors of each level.
-                - labels_list (list[Tensor]): Labels of each level.
-                - label_weights_list (list[Tensor]): Label weights of each level.
-                - bbox_targets_list (list[Tensor]): BBox targets of each level.
-                - assign_metrics_list (list[Tensor]): alignment metrics of each level.
+            tuple: a tuple containing learning targets.
+
+            - anchors_list (list[list[Tensor]]): Anchors of each level.
+            - labels_list (list[Tensor]): Labels of each level.
+            - label_weights_list (list[Tensor]): Label weights of each
+              level.
+            - bbox_targets_list (list[Tensor]): BBox targets of each level.
+            - assign_metrics_list (list[Tensor]): alignment metrics of each
+              level.
         """
         num_imgs = len(batch_img_metas)
         if len(anchor_list) != len(valid_flag_list) != num_imgs:
@@ -526,16 +531,18 @@ class RTMDetHead(ATSSHead):
                 set of anchors. Defaults to True.
 
         Returns:
-            (tuple): N is the number of total anchors in the image.
-                - anchors (Tensor): All anchors in the image with shape (N, 4).
-                - labels (Tensor): Labels of all anchors in the image with shape (N,).
-                - label_weights (Tensor): Label weights of all anchor in the
-                    image with shape (N,).
-                - bbox_targets (Tensor): BBox targets of all anchors in the
-                    image with shape (N, 4).
-                - norm_alignment_metrics (Tensor): Normalized alignment metrics
-                    of all priors in the image with shape (N,).
-                - sampling_result (SamplingResult): Sampling result.
+            tuple: N is the number of total anchors in the image.
+
+            - anchors (Tensor): All anchors in the image with shape (N, 4).
+            - labels (Tensor): Labels of all anchors in the image with shape
+              (N,).
+            - label_weights (Tensor): Label weights of all anchor in the
+              image with shape (N,).
+            - bbox_targets (Tensor): BBox targets of all anchors in the
+              image with shape (N, 4).
+            - norm_alignment_metrics (Tensor): Normalized alignment metrics
+              of all priors in the image with shape (N,).
+            - sampling_result (SamplingResult): Sampling result.
         """
         inside_flags = anchor_inside_flags(
             flat_anchors,
@@ -609,9 +616,11 @@ class RTMDetHead(ATSSHead):
                 Defaults to cuda.
 
         Returns:
-            (tuple):
-                - anchor_list (list[list[Tensor]]): Anchors of each image.
-                - valid_flag_list (list[list[Tensor]]): Valid flags of each image.
+            tuple:
+
+            - anchor_list (list[list[Tensor]]): Anchors of each image.
+            - valid_flag_list (list[list[Tensor]]): Valid flags of each
+              image.
         """
         num_imgs = len(batch_img_metas)
 
@@ -763,11 +772,14 @@ class RTMDetSepBNHead(RTMDetHead):
             feats (tuple[Tensor]): Features from the upstream network, each is a 4D-tensor.
 
         Returns:
-            (tuple): Usually a tuple of classification scores and bbox prediction
-                - cls_scores (tuple[Tensor]): Classification scores for all scale
-                    levels, each is a 4D-tensor, the channels number is num_anchors * num_classes.
-                - bbox_preds (tuple[Tensor]): Box energies / deltas for all scale
-                    levels, each is a 4D-tensor, the channels number is num_anchors * 4.
+            tuple: Usually a tuple of classification scores and bbox prediction
+
+            - cls_scores (tuple[Tensor]): Classification scores for all scale
+              levels, each is a 4D-tensor, the channels number is
+              num_anchors * num_classes.
+            - bbox_preds (tuple[Tensor]): Box energies / deltas for all scale
+              levels, each is a 4D-tensor, the channels number is
+              num_anchors * 4.
         """
         cls_scores = []
         bbox_preds = []

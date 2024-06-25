@@ -123,7 +123,7 @@ class AnchorHead(BaseDenseHead):
             x (Tensor): Features of a single scale level.
 
         Returns:
-            (tuple):
+            tuple:
                 cls_score (Tensor): Cls scores for a single scale level \
                     the channels number is num_base_priors * num_classes.
                 bbox_pred (Tensor): Box energies / deltas for a single scale \
@@ -141,7 +141,8 @@ class AnchorHead(BaseDenseHead):
                 a 4D-tensor.
 
         Returns:
-            (tuple): A tuple of classification scores and bbox prediction.
+            tuple: A tuple of classification scores and bbox prediction.
+
                 - cls_scores (list[Tensor]): Classification scores for all \
                     scale levels, each is a 4D-tensor, the channels number \
                     is num_base_priors * num_classes.
@@ -166,7 +167,8 @@ class AnchorHead(BaseDenseHead):
                 Defaults to cuda.
 
         Returns:
-            (tuple):
+            tuple:
+
                 - anchor_list (list[list[Tensor]]): Anchors of each image.
                 - valid_flag_list (list[list[Tensor]]): Valid flags of each
                   image.
@@ -216,7 +218,8 @@ class AnchorHead(BaseDenseHead):
                 set of anchors.  Defaults to True.
 
         Returns:
-            (tuple):
+            tuple:
+
                 - labels (Tensor): Labels of each level.
                 - label_weights (Tensor): Label weights of each level.
                 - bbox_targets (Tensor): BBox targets of each level.
@@ -319,7 +322,8 @@ class AnchorHead(BaseDenseHead):
                 set of anchors. Defaults to True.
 
         Returns:
-            (tuple): Usually returns a tuple containing learning targets.
+            tuple: Usually returns a tuple containing learning targets.
+
                 - labels_list (list[Tensor]): Labels of each level.
                 - label_weights_list (list[Tensor]): Label weights of each
                   level.
@@ -423,7 +427,7 @@ class AnchorHead(BaseDenseHead):
             avg_factor (int): Average factor that is used to average the loss.
 
         Returns:
-            (tuple): loss components.
+            tuple: loss components.
         """
         # classification loss
         labels = labels.reshape(-1)
@@ -470,7 +474,7 @@ class AnchorHead(BaseDenseHead):
                 Defaults to None.
 
         Returns:
-            (dict): A dictionary of loss components.
+            dict: A dictionary of loss components.
         """
         featmap_sizes = [featmap.size()[-2:] for featmap in cls_scores]
 

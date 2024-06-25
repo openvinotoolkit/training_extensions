@@ -97,11 +97,15 @@ class SSDHead(AnchorHead):
             x (tuple[Tensor]): Features from the upstream network, each is a 4D-tensor.
 
         Returns:
-            (tuple[list[Tensor], list[Tensor]]): A tuple of cls_scores list and bbox_preds list.
-                - cls_scores (list[Tensor]): Classification scores for all scale
-                    levels, each is a 4D-tensor, the channels number is num_anchors * num_classes.
-                - bbox_preds (list[Tensor]): Box energies / deltas for all scale
-                    levels, each is a 4D-tensor, the channels number is num_anchors * 4.
+            tuple[list[Tensor], list[Tensor]]: A tuple of cls_scores list and
+            bbox_preds list.
+
+            - cls_scores (list[Tensor]): Classification scores for all scale \
+            levels, each is a 4D-tensor, the channels number is \
+            num_anchors * num_classes.
+            - bbox_preds (list[Tensor]): Box energies / deltas for all scale \
+            levels, each is a 4D-tensor, the channels number is \
+            num_anchors * 4.
         """
         cls_scores = []
         bbox_preds = []
@@ -138,7 +142,8 @@ class SSDHead(AnchorHead):
                 of positive priors.
 
         Returns:
-            (tuple[Tensor, Tensor]): A tuple of cls loss and bbox loss of one feature map.
+            tuple[Tensor, Tensor]: A tuple of cls loss and bbox loss of one
+            feature map.
         """
         loss_cls_all = nn.functional.cross_entropy(cls_score, labels, reduction="none") * label_weights
         # FG cat_id: [0, num_classes -1], BG cat_id: num_classes
@@ -191,9 +196,13 @@ class SSDHead(AnchorHead):
                 Defaults to None.
 
         Returns:
-            (dict[str, list[Tensor]]): A dictionary of loss components. The dict has components below:
-                - loss_cls (list[Tensor]): A list containing each feature map classification loss.
-                - loss_bbox (list[Tensor]): A list containing each feature map regression loss.
+            dict[str, list[Tensor]]: A dictionary of loss components. the dict
+            has components below:
+
+            - loss_cls (list[Tensor]): A list containing each feature map \
+            classification loss.
+            - loss_bbox (list[Tensor]): A list containing each feature map \
+            regression loss.
         """
         featmap_sizes = [featmap.size()[-2:] for featmap in cls_scores]
 

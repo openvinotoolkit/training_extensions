@@ -25,7 +25,7 @@ def smooth_l1_loss(pred: Tensor, target: Tensor, beta: float = 1.0) -> Tensor:
             Defaults to 1.0.
 
     Returns:
-        (Tensor): Calculated loss
+        Tensor: Calculated loss
     """
     if target.numel() == 0:
         return pred.sum() * 0
@@ -43,7 +43,7 @@ def l1_loss(pred: Tensor, target: Tensor) -> Tensor:
         target (Tensor): The learning target of the prediction.
 
     Returns:
-        (Tensor): Calculated loss
+        Tensor: Calculated loss
     """
     if target.numel() == 0:
         return pred.sum() * 0
@@ -90,7 +90,7 @@ class L1Loss(nn.Module):
                 Defaults to None.
 
         Returns:
-            (Tensor): Calculated loss
+            Tensor: Calculated loss
         """
         if weight is not None and not torch.any(weight > 0):
             if pred.dim() == weight.dim() + 1:

@@ -41,7 +41,7 @@ def cross_entropy(
             only averaged over non-ignored targets. Default: False.
 
     Returns:
-        (Tensor): The calculated loss
+        Tensor: The calculated loss
     """
     loss = nn.functional.cross_entropy(pred, label, weight=class_weight, reduction="none", ignore_index=ignore_index)
 
@@ -109,7 +109,7 @@ def binary_cross_entropy(
             only averaged over non-ignored targets. Default: False.
 
     Returns:
-        (Tensor): The calculated loss.
+        Tensor: The calculated loss.
     """
     if pred.dim() != label.dim():
         label, weight, valid_mask = _expand_onehot_labels(label, weight, pred.size(-1), ignore_index)
@@ -157,7 +157,7 @@ def mask_cross_entropy(
         class_weight (list[float], None): The weight for each class.
 
     Returns:
-        (Tensor): The calculated loss
+        Tensor: The calculated loss
 
     Example:
         >>> N, C = 3, 11
@@ -253,7 +253,7 @@ class CrossEntropyLoss(nn.Module):
                 Default: -100.
 
         Returns:
-            (Tensor): The calculated loss.
+            Tensor: The calculated loss.
         """
         reduction = reduction_override if reduction_override else self.reduction
 

@@ -142,7 +142,7 @@ class CSPNeXtPAFPN(BaseModule):
             inputs (tuple[Tensor]): input features.
 
         Returns:
-            (tuple[Tensor]): YOLOXPAFPN features.
+            tuple[Tensor]: YOLOXPAFPN features.
         """
         if len(inputs) != len(self.in_channels):
             msg = "The length of input features is not equal to the length of in_channels"

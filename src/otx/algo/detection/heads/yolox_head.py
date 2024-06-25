@@ -37,7 +37,7 @@ def bbox_xyxy_to_cxcywh(bbox: Tensor) -> Tensor:
         bbox (Tensor): Shape (n, 4) for bboxes.
 
     Returns:
-        (Tensor): Converted bboxes.
+        Tensor: Converted bboxes.
     """
     x1, y1, x2, y2 = bbox.split((1, 1, 1, 1), dim=-1)
     bbox_new = [(x1 + x2) / 2, (y1 + y2) / 2, (x2 - x1), (y2 - y1)]
@@ -227,7 +227,8 @@ class YOLOXHead(BaseDenseHead):
             x (tuple[Tensor]): Features from the upstream network, each is a 4D-tensor.
 
         Returns:
-            (tuple[list]): A tuple of multi-level classification scores, bbox predictions, and objectnesses.
+            tuple[List]: A tuple of multi-level classification scores, bbox
+            predictions, and objectnesses.
         """
         return multi_apply(
             self.forward_single,
@@ -272,11 +273,15 @@ class YOLOXHead(BaseDenseHead):
                 Defaults to True.
 
         Returns:
-            (list[InstanceData]): Object detection results of each image after the post process.
-                Each item usually contains following keys.
-                    - scores (Tensor): Classification scores, has a shape (num_instance, )
-                    - labels (Tensor): Labels of bboxes, has a shape (num_instances, ).
-                    - bboxes (Tensor): Has a shape (num_instances, 4), the last dimension 4 arrange as (x1, y1, x2, y2).
+            list[InstanceData]: Object detection results of each image
+            after the post process. Each item usually contains following keys.
+
+            - scores (Tensor): Classification scores, has a shape
+              (num_instance, )
+            - labels (Tensor): Labels of bboxes, has a shape
+              (num_instances, ).
+            - bboxes (Tensor): Has a shape (num_instances, 4),
+              the last dimension 4 arrange as (x1, y1, x2, y2).
         """
         assert len(cls_scores) == len(bbox_preds) == len(objectnesses)  # type: ignore[arg-type] # noqa: S101
         cfg = cfg or self.test_cfg
@@ -361,7 +366,7 @@ class YOLOXHead(BaseDenseHead):
                 Defaults to True.
 
         Returns:
-            (tuple[Tensor, Tensor]): The first item is an (N, num_box, 5) tensor,
+            tuple[Tensor, Tensor]: The first item is an (N, num_box, 5) tensor,
                 where 5 represent (tl_x, tl_y, br_x, br_y, score), N is batch
                 size and the score between 0 and 1. The shape of the second
                 tensor in the tuple is (N, num_box), and each element
@@ -408,7 +413,8 @@ class YOLOXHead(BaseDenseHead):
             bbox_preds (Tensor): Box energies / deltas for all instances, has shape (batch_size, num_instances, 4).
 
         Returns:
-            (Tensor): Decoded bboxes in (tl_x, tl_y, br_x, br_y) format, has shape (batch_size, num_instances, 4).
+            Tensor: Decoded bboxes in (tl_x, tl_y, br_x, br_y) format. Has
+            shape (batch_size, num_instances, 4).
         """
         xys = (bbox_preds[..., :2] * priors[:, 2:]) + priors[:, :2]
         whs = bbox_preds[..., 2:].exp() * priors[:, 2:]
@@ -445,11 +451,16 @@ class YOLOXHead(BaseDenseHead):
             img_meta (dict, optional): Image meta info. Defaults to None.
 
         Returns:
-            (InstanceData): Detection results of each image after the post process.
-                Each item usually contains following keys.
-                    - scores (Tensor): Classification scores, has a shape (num_instance, )
-                    - labels (Tensor): Labels of bboxes, has a shape (num_instances, ).
-                    - bboxes (Tensor): Has a shape (num_instances, 4), the last dimension 4 arrange as (x1, y1, x2, y2).
+            InstanceData: Detection results of each image
+            after the post process.
+            Each item usually contains following keys.
+
+            - scores (Tensor): Classification scores, has a shape
+              (num_instance, )
+            - labels (Tensor): Labels of bboxes, has a shape
+              (num_instances, ).
+            - bboxes (Tensor): Has a shape (num_instances, 4),
+              the last dimension 4 arrange as (x1, y1, x2, y2).
         """
         if rescale:
             assert img_meta.get("scale_factor") is not None  # type: ignore[union-attr] # noqa: S101
@@ -494,7 +505,7 @@ class YOLOXHead(BaseDenseHead):
                 Defaults to None.
 
         Returns:
-            (dict[str, Tensor]): A dictionary of losses.
+            dict[str, Tensor]: A dictionary of losses.
         """
         num_imgs = len(batch_img_metas)
         if batch_gt_instances_ignore is None:
@@ -608,8 +619,9 @@ class YOLOXHead(BaseDenseHead):
                 Defaults to None.
 
         Returns:
-            (tuple):
-                foreground_mask (list[Tensor]): Binary mask of foreground targets.
+            tuple:
+                foreground_mask (list[Tensor]): Binary mask of foreground
+                targets.
                 cls_target (list[Tensor]): Classification targets of an image.
                 obj_target (list[Tensor]): Objectness targets of an image.
                 bbox_target (list[Tensor]): BBox targets of an image.
