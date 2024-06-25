@@ -316,7 +316,7 @@ def dynamic_topk(input: Tensor, k: int, dim: int | None = None, largest: bool = 
         dim = int(input.ndim - 1)
     size = input.shape[dim]
     if not isinstance(k, Tensor):
-        k = Tensor(k, device=input.device, dtype=torch.long)
+        k = torch.tensor(k, device=input.device, dtype=torch.long)
     # Always keep topk op for dynamic input
     if isinstance(size, Tensor):
         # size would be treated as cpu tensor, trick to avoid that.

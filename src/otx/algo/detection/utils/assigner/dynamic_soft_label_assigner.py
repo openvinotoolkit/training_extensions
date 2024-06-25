@@ -17,8 +17,9 @@ import torch
 import torch.nn.functional
 from torch import Tensor
 
-from otx.algo.detection.utils.assigner import BboxOverlaps2D
 from otx.algo.detection.utils.structures import AssignResult
+
+from .iou2d_calculator import BboxOverlaps2D
 
 INF = 100000000
 EPS = 1.0e-7

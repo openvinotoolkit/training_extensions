@@ -23,6 +23,7 @@ class DeltaXYWHBBoxCoder:
     decodes delta (dx, dy, dw, dh) back to original bbox (x1, y1, x2, y2).
 
     Args:
+        encode_size (int): Encode size.
         target_means (Sequence[float]): Denormalizing means of target for
             delta coordinates
         target_stds (Sequence[float]): Denormalizing standard deviation of
@@ -38,12 +39,14 @@ class DeltaXYWHBBoxCoder:
 
     def __init__(
         self,
+        encode_size: int = 4,
         target_means: tuple[float, ...] = (0.0, 0.0, 0.0, 0.0),
         target_stds: tuple[float, ...] = (1.0, 1.0, 1.0, 1.0),
         clip_border: bool = True,
         add_ctr_clamp: bool = False,
         ctr_clamp: int = 32,
     ) -> None:
+        self.encode_size = encode_size
         self.means = target_means
         self.stds = target_stds
         self.clip_border = clip_border

@@ -25,10 +25,12 @@ class DistancePointBBoxCoder:
     Args:
         clip_border (bool, optional): Whether clip the objects outside the
             border of the image. Defaults to True.
+        encode_size (int): Encode size.
     """
 
-    def __init__(self, clip_border: bool = True) -> None:
+    def __init__(self, clip_border: bool = True, encode_size: int = 4) -> None:
         self.clip_border = clip_border
+        self.encode_size = encode_size
 
     def encode(
         self,
