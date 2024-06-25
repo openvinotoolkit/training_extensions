@@ -16,8 +16,8 @@ from otx.algo.detection.heads.class_incremental_mixin import (
     ClassIncrementalMixin,
 )
 from otx.algo.detection.losses import CrossEntropyLoss, CrossSigmoidFocalLoss
-from otx.algo.detection.utils.anchor_generator.utils import anchor_inside_flags
 from otx.algo.detection.utils.bbox_overlaps import bbox_overlaps
+from otx.algo.detection.utils.prior_generators.utils import anchor_inside_flags
 from otx.algo.detection.utils.utils import multi_apply, reduce_mean, unmap
 from otx.algo.modules.conv_module import ConvModule
 from otx.algo.modules.scale import Scale

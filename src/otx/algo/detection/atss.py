@@ -13,10 +13,10 @@ from otx.algo.detection.heads import ATSSHead
 from otx.algo.detection.losses import CrossEntropyLoss, CrossSigmoidFocalLoss, GIoULoss
 from otx.algo.detection.necks import FPN
 from otx.algo.detection.ssd import SingleStageDetector
-from otx.algo.detection.utils.anchor_generator import AnchorGenerator
-from otx.algo.detection.utils.assigner import ATSSAssigner
-from otx.algo.detection.utils.coder import DeltaXYWHBBoxCoder
-from otx.algo.detection.utils.sampler import PseudoSampler
+from otx.algo.detection.utils.assigners import ATSSAssigner
+from otx.algo.detection.utils.coders import DeltaXYWHBBoxCoder
+from otx.algo.detection.utils.prior_generators import AnchorGenerator
+from otx.algo.detection.utils.samplers import PseudoSampler
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter

@@ -9,7 +9,7 @@ Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/tests/test_mod
 import torch
 from omegaconf import DictConfig
 from otx.algo.detection.heads import YOLOXHead
-from otx.algo.detection.utils.assigner import SimOTAAssigner
+from otx.algo.detection.utils.assigners import SimOTAAssigner
 from otx.algo.modules.conv_module import ConvModule
 from otx.algo.modules.depthwise_separable_conv_module import DepthwiseSeparableConvModule
 from otx.algo.utils.mmengine_utils import InstanceData
@@ -28,15 +28,7 @@ class TestYOLOXHead:
         head = YOLOXHead(num_classes=4, in_channels=1, stacked_convs=1, use_depthwise=False, test_cfg=test_cfg)
         feat = [torch.rand(1, 1, s // feat_size, s // feat_size) for feat_size in [4, 8, 16]]
         cls_scores, bbox_preds, objectnesses = head.forward(feat)
-        head.predict_by_feat(
-            cls_scores,
-            bbox_preds,
-            objectnesses,
-            img_metas,
-            cfg=test_cfg,
-            rescale=True,
-            with_nms=True,
-        )
+        head.predict_by_feat(cls_scores, bbox_preds, objectnesses, img_metas, cfg=test_cfg, rescale=True, with_nms=True)
         head.predict_by_feat(
             cls_scores,
             bbox_preds,

@@ -5,8 +5,8 @@
 from omegaconf import DictConfig
 from otx.algo.detection.heads import SSDHead
 from otx.algo.detection.losses import CrossEntropyLoss
-from otx.algo.detection.utils.anchor_generator import SSDAnchorGeneratorClustered
-from otx.algo.detection.utils.coder import DeltaXYWHBBoxCoder
+from otx.algo.detection.utils.coders import DeltaXYWHBBoxCoder
+from otx.algo.detection.utils.prior_generators import SSDAnchorGeneratorClustered
 
 
 class TestSSDHead:

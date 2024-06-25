@@ -16,7 +16,7 @@ from torch import Tensor, nn
 from otx.algo.detection.heads.anchor_head import AnchorHead
 from otx.algo.detection.losses import CrossEntropyLoss
 from otx.algo.detection.losses.smooth_l1_loss import smooth_l1_loss
-from otx.algo.detection.utils.sampler import PseudoSampler
+from otx.algo.detection.utils.samplers import PseudoSampler
 from otx.algo.detection.utils.utils import multi_apply
 
 if TYPE_CHECKING:

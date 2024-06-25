@@ -14,7 +14,7 @@ from otx.algo.detection.heads import YOLOXHead
 from otx.algo.detection.losses import CrossEntropyLoss, IoULoss, L1Loss
 from otx.algo.detection.necks import YOLOXPAFPN
 from otx.algo.detection.ssd import SingleStageDetector
-from otx.algo.detection.utils.assigner import SimOTAAssigner
+from otx.algo.detection.utils.assigners import SimOTAAssigner
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.data.entity.detection import DetBatchDataEntity
 from otx.core.exporter.base import OTXModelExporter
