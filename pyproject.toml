@@ -115,7 +115,7 @@ mmlab = [
 ]
 
 ci_tox = [
-    "tox==4.14.1",
+    "tox==4.15.0",
 ]
 
 ci_publish = [
