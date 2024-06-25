@@ -115,7 +115,7 @@ mmlab = [
 ]
 
 ci_tox = [
-    "tox==4.14.1",
+    "tox==4.15.0",
 ]
 
 ci_publish = [
@@ -318,7 +318,6 @@ exclude = [
     "src/otx/algo/**/mmdeploy/",
 
     # it will be cleaned up later
-    "src/otx/algo/classification/backbones/*",
     "for_developers/helpers.py",
 
     # Ruff complains it but don't know how to fix since it literally showed no useful logs.

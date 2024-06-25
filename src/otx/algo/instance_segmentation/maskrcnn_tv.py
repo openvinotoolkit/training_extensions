@@ -56,6 +56,7 @@ class TVMaskRCNNR50(ExplainableOTXInstanceSegModel):
             tile_config=tile_config,
         )
         self.image_size = (1, 3, 1024, 1024)
+        self.tile_image_size = (1, 3, 512, 512)
         self.mean = (123.675, 116.28, 103.53)
         self.std = (58.395, 57.12, 57.375)
 
