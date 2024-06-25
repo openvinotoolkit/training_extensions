@@ -12,12 +12,13 @@ from typing import TYPE_CHECKING, Iterable
 from jsonargparse import DefaultHelpFormatter
 from rich.markdown import Markdown
 from rich.panel import Panel
+from rich.theme import Theme
 from rich_argparse import RichHelpFormatter
 
 if TYPE_CHECKING:
     import argparse
 
-    from rich.console import RenderableType
+    from rich.console import Console, RenderableType
 
 
 BASE_ARGUMENTS = {"config", "print_config", "help", "engine", "model", "model.help", "task"}
@@ -25,9 +26,7 @@ ENGINE_ARGUMENTS = {"data_root", "engine.help", "engine.device", "work_dir"}
 REQUIRED_ARGUMENTS = {
     "train": {
         "data",
-        "optimizer",
-        "scheduler",
-        "engine.checkpoint",
+        "checkpoint",
         *BASE_ARGUMENTS,
         *ENGINE_ARGUMENTS,
     },
@@ -48,6 +47,14 @@ REQUIRED_ARGUMENTS = {
         "checkpoint",
         "export_format",
         "export_precision",
+        "explain",
+        "export_demo_package",
+        *BASE_ARGUMENTS,
+        *ENGINE_ARGUMENTS,
+    },
+    "optimize": {
+        "checkpoint",
+        "export_demo_package",
         *BASE_ARGUMENTS,
         *ENGINE_ARGUMENTS,
     },
@@ -55,6 +62,7 @@ REQUIRED_ARGUMENTS = {
         "data",
         "checkpoint",
         "explain_config",
+        "dump",
         *BASE_ARGUMENTS,
         *ENGINE_ARGUMENTS,
     },
@@ -96,11 +104,11 @@ INTRO_MARKDOWN = (
 
 VERBOSE_USAGE = (
     "To get more overridable argument information, run the command below.\n"
-    "```python\n"
+    "```shell\n"
     "# Verbosity Level 1\n"
-    "otx {subcommand} [optional_arguments] -h -v\n"
+    ">>> otx {subcommand} [optional_arguments] -h -v\n"
     "# Verbosity Level 2\n"
-    "otx {subcommand} [optional_arguments] -h -vv\n"
+    ">>> otx {subcommand} [optional_arguments] -h -vv\n"
     "```"
 )
 
@@ -186,6 +194,19 @@ class CustomHelpFormatter(RichHelpFormatter, DefaultHelpFormatter):
     verbosity_level = verbosity_dict["verbosity"]
     subcommand = verbosity_dict["subcommand"]
 
+    def __init__(
+        self,
+        prog: str,
+        indent_increment: int = 2,
+        max_help_position: int = 24,
+        width: int | None = None,
+        console: Console | None = None,
+    ) -> None:
+        RichHelpFormatter.group_name_formatter = str
+
+        RichHelpFormatter.__init__(self, prog, indent_increment, max_help_position, width, console=console)
+        DefaultHelpFormatter.__init__(self, prog, indent_increment, max_help_position, width)
+
     def add_usage(self, usage: str | None, actions: Iterable[argparse.Action], *args, **kwargs) -> None:
         """Add usage information to the formatter.
 
@@ -229,7 +250,7 @@ class CustomHelpFormatter(RichHelpFormatter, DefaultHelpFormatter):
         Returns:
             str: A string containing the formatted help message.
         """
-        with self.console.capture() as capture:
+        with self.console.use_theme(Theme(self.styles)), self.console.capture() as capture:
             section = self._root_section
             rendered_content: RenderableType = section
             if self.subcommand in REQUIRED_ARGUMENTS and self.verbosity_level in (0, 1) and len(section.rich_items) > 1:
@@ -239,7 +260,7 @@ class CustomHelpFormatter(RichHelpFormatter, DefaultHelpFormatter):
             if self.verbosity_level > 0:
                 if len(section.rich_items) > 1:
                     rendered_content = Panel(section, border_style="dim", title="Arguments", title_align="left")
-                self.console.print(rendered_content, highlight=False, soft_wrap=True)
+                self.console.print(rendered_content, highlight=True, soft_wrap=True)
         help_msg = capture.get()
 
         if help_msg:
