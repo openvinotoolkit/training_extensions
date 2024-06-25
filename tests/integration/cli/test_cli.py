@@ -169,7 +169,10 @@ def test_otx_e2e(
         return
 
     if task in ("visual_prompting", "zero_shot_visual_prompting"):
-        del fxt_export_list[-1]  # TODO (sungchul): EXPORTABLE_CODE will be supported
+        fxt_export_list = [
+            ExportCase2Test("ONNX", False, "exported_model_decoder.onnx"),
+            ExportCase2Test("OPENVINO", False, "exported_model_decoder.xml"),
+        ]  # TODO (sungchul): EXPORTABLE_CODE will be supported
 
     overrides = fxt_cli_override_command_per_task[task]
     if "anomaly" in task:
