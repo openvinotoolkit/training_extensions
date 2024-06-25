@@ -411,12 +411,16 @@ class EfficientNet(nn.Module):
         kernel_sizes : list of list of int. Number of kernel sizes for each unit.
         strides_per_stage : list int. Stride value for the first unit of each stage.
         expansion_factors : list of list of int. Number of expansion factors for each unit.
-        dropout_rate : float, default 0.2. Fraction of the input units to drop. Must be a number between 0 and 1.
         tf_mode : bool, default False. Whether to use TF-like mode.
         bn_eps : float, default 1e-5. Small float added to variance in Batch norm.
         in_channels : int, default 3. Number of input channels.
         in_size : tuple of two ints, default (224, 224). Spatial size of the expected input image.
-        num_classes : int, default 1000. Number of classification classes.
+        dropout_cls : dict, dropout configurations.
+        pooling_type : str, default 'avg'. Pooling type to use.
+        bn_eval : bool, default False. Whether to use BatchNorm eval mode.
+        bn_frozen : bool, default False. Whether to freeze BatchNorm parameters.
+        instance_norm_first : bool, default False. Whether to use instance normalization first.
+        pretrained : bool, default False. Whether to load ImageNet pre-trained weights.
     """
 
     def __init__(
