@@ -36,11 +36,12 @@ class TVMaskRCNN(MaskRCNN):
             entity.masks,
             entity.polygons,
         ):
+            # NOTE: shift labels by 1 as 0 is reserved for background
+            _labels = labels + 1 if len(labels) else labels
             targets.append(
                 {
                     "boxes": bboxes,
-                    # NOTE: shift labels by 1 as 0 is reserved for background
-                    "labels": labels + 1,
+                    "labels": _labels,
                     "masks": masks,
                     "polygons": polygons,
                 },
