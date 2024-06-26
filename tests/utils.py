@@ -6,9 +6,12 @@ from __future__ import annotations
 import logging
 import subprocess
 import sys
+from collections import namedtuple
 from unittest.mock import patch
 
 from otx.cli import main
+
+ExportCase2Test = namedtuple("ExportCase2Test", ["export_format", "export_demo_package", "expected_output"])
 
 
 def run_main(command_cfg: list[str], open_subprocess: bool) -> None:
