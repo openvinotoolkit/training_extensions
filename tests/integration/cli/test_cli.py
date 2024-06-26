@@ -3,7 +3,6 @@
 
 from __future__ import annotations
 
-from collections import namedtuple
 from pathlib import Path
 
 import cv2
@@ -12,18 +11,7 @@ import yaml
 from otx.core.types.task import OTXTaskType
 from otx.engine.utils.auto_configurator import DEFAULT_CONFIG_PER_TASK
 
-from tests.utils import run_main
-
-ExportCase2Test = namedtuple("ExportCase2Test", ["export_format", "export_demo_package", "expected_output"])
-
-
-@pytest.fixture()
-def fxt_export_list() -> list[ExportCase2Test]:
-    return [
-        ExportCase2Test("ONNX", False, "exported_model.onnx"),
-        ExportCase2Test("OPENVINO", False, "exported_model.xml"),
-        ExportCase2Test("OPENVINO", True, "exportable_code.zip"),
-    ]
+from tests.utils import ExportCase2Test, run_main
 
 
 @pytest.fixture(
