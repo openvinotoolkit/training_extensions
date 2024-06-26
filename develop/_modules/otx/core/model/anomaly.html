@@ -260,11 +260,9 @@
 
 <span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
 
-<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">import</span> <span class="nn">logging</span> <span class="k">as</span> <span class="nn">log</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">TypeAlias</span>
 
-<span class="kn">import</span> <span class="nn">onnx</span>
-<span class="kn">import</span> <span class="nn">openvino</span>
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">from</span> <span class="nn">anomalib</span> <span class="kn">import</span> <span class="n">TaskType</span> <span class="k">as</span> <span class="n">AnomalibTaskType</span>
 <span class="kn">from</span> <span class="nn">anomalib.callbacks.metrics</span> <span class="kn">import</span> <span class="n">_MetricsCallback</span>
@@ -281,13 +279,14 @@
     <span class="n">AnomalySegmentationBatchPrediction</span><span class="p">,</span>
     <span class="n">AnomalySegmentationDataBatch</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="kn">from</span> <span class="nn">otx.core.exporter.base</span> <span class="kn">import</span> <span class="n">OTXModelExporter</span>
-<span class="kn">from</span> <span class="nn">otx.core.types.export</span> <span class="kn">import</span> <span class="n">OTXExportFormatType</span><span class="p">,</span> <span class="n">TaskLevelExportParameters</span>
-<span class="kn">from</span> <span class="nn">otx.core.types.label</span> <span class="kn">import</span> <span class="n">NullLabelInfo</span>
+<span class="kn">from</span> <span class="nn">otx.core.exporter.anomaly</span> <span class="kn">import</span> <span class="n">OTXAnomalyModelExporter</span>
+<span class="kn">from</span> <span class="nn">otx.core.types.export</span> <span class="kn">import</span> <span class="n">OTXExportFormatType</span>
 <span class="kn">from</span> <span class="nn">otx.core.types.precision</span> <span class="kn">import</span> <span class="n">OTXPrecisionType</span>
 <span class="kn">from</span> <span class="nn">otx.core.types.task</span> <span class="kn">import</span> <span class="n">OTXTaskType</span>
 
 <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+
     <span class="kn">from</span> <span class="nn">anomalib.metrics</span> <span class="kn">import</span> <span class="n">AnomalibMetricCollection</span>
     <span class="kn">from</span> <span class="nn">anomalib.metrics.threshold</span> <span class="kn">import</span> <span class="n">BaseThreshold</span>
     <span class="kn">from</span> <span class="nn">lightning.pytorch</span> <span class="kn">import</span> <span class="n">Trainer</span>
@@ -302,94 +301,6 @@
 <span class="n">AnomalyModelOutputs</span><span class="p">:</span> <span class="n">TypeAlias</span> <span class="o">=</span> <span class="p">(</span>
     <span class="n">AnomalyClassificationBatchPrediction</span> <span class="o">|</span> <span class="n">AnomalySegmentationBatchPrediction</span> <span class="o">|</span> <span class="n">AnomalyDetectionBatchPrediction</span>
 <span class="p">)</span>
-
-
-<span class="k">class</span> <span class="nc">_AnomalyModelExporter</span><span class="p">(</span><span class="n">OTXModelExporter</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
-        <span class="n">image_shape</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">256</span><span class="p">,</span> <span class="mi">256</span><span class="p">),</span>
-        <span class="n">image_threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span>
-        <span class="n">pixel_threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span>
-        <span class="n">task</span><span class="p">:</span> <span class="n">AnomalibTaskType</span> <span class="o">=</span> <span class="n">AnomalibTaskType</span><span class="o">.</span><span class="n">CLASSIFICATION</span><span class="p">,</span>
-        <span class="c1"># the actual values for mean and scale should be in range 0-255</span>
-        <span class="n">mean_values</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span>
-        <span class="n">scale_values</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">),</span>
-        <span class="n">normalization_scale</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">orig_height</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">orig_width</span> <span class="o">=</span> <span class="n">image_shape</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">image_threshold</span> <span class="o">=</span> <span class="n">image_threshold</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">pixel_threshold</span> <span class="o">=</span> <span class="n">pixel_threshold</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">task</span> <span class="o">=</span> <span class="n">task</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">normalization_scale</span> <span class="o">=</span> <span class="n">normalization_scale</span>
-
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
-            <span class="n">task_level_export_parameters</span><span class="o">=</span><span class="n">TaskLevelExportParameters</span><span class="p">(</span>
-                <span class="n">model_type</span><span class="o">=</span><span class="s2">&quot;anomaly&quot;</span><span class="p">,</span>
-                <span class="n">task_type</span><span class="o">=</span><span class="s2">&quot;anomaly&quot;</span><span class="p">,</span>
-                <span class="n">label_info</span><span class="o">=</span><span class="n">NullLabelInfo</span><span class="p">(),</span>
-                <span class="n">optimization_config</span><span class="o">=</span><span class="p">{},</span>
-            <span class="p">),</span>
-            <span class="n">input_size</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="o">*</span><span class="n">image_shape</span><span class="p">),</span>
-            <span class="n">mean</span><span class="o">=</span><span class="n">mean_values</span><span class="p">,</span>
-            <span class="n">std</span><span class="o">=</span><span class="n">scale_values</span><span class="p">,</span>
-            <span class="n">swap_rgb</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-        <span class="p">)</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]:</span>  <span class="c1"># type: ignore[override]</span>
-        <span class="k">return</span> <span class="p">{</span>
-            <span class="p">(</span><span class="s2">&quot;model_info&quot;</span><span class="p">,</span> <span class="s2">&quot;image_threshold&quot;</span><span class="p">):</span> <span class="bp">self</span><span class="o">.</span><span class="n">image_threshold</span><span class="p">,</span>
-            <span class="p">(</span><span class="s2">&quot;model_info&quot;</span><span class="p">,</span> <span class="s2">&quot;pixel_threshold&quot;</span><span class="p">):</span> <span class="bp">self</span><span class="o">.</span><span class="n">pixel_threshold</span><span class="p">,</span>
-            <span class="p">(</span><span class="s2">&quot;model_info&quot;</span><span class="p">,</span> <span class="s2">&quot;normalization_scale&quot;</span><span class="p">):</span> <span class="bp">self</span><span class="o">.</span><span class="n">normalization_scale</span><span class="p">,</span>
-            <span class="p">(</span><span class="s2">&quot;model_info&quot;</span><span class="p">,</span> <span class="s2">&quot;orig_height&quot;</span><span class="p">):</span> <span class="bp">self</span><span class="o">.</span><span class="n">orig_height</span><span class="p">,</span>
-            <span class="p">(</span><span class="s2">&quot;model_info&quot;</span><span class="p">,</span> <span class="s2">&quot;orig_width&quot;</span><span class="p">):</span> <span class="bp">self</span><span class="o">.</span><span class="n">orig_width</span><span class="p">,</span>
-            <span class="p">(</span><span class="s2">&quot;model_info&quot;</span><span class="p">,</span> <span class="s2">&quot;image_shape&quot;</span><span class="p">):</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">orig_height</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">orig_width</span><span class="p">),</span>
-            <span class="p">(</span><span class="s2">&quot;model_info&quot;</span><span class="p">,</span> <span class="s2">&quot;labels&quot;</span><span class="p">):</span> <span class="s2">&quot;Normal Anomaly&quot;</span><span class="p">,</span>
-            <span class="p">(</span><span class="s2">&quot;model_info&quot;</span><span class="p">,</span> <span class="s2">&quot;model_type&quot;</span><span class="p">):</span> <span class="s2">&quot;AnomalyDetection&quot;</span><span class="p">,</span>
-            <span class="p">(</span><span class="s2">&quot;model_info&quot;</span><span class="p">,</span> <span class="s2">&quot;task&quot;</span><span class="p">):</span> <span class="bp">self</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
-        <span class="p">}</span>
-
-    <span class="k">def</span> <span class="nf">to_openvino</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
-        <span class="n">model</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span>
-        <span class="n">output_dir</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span>
-        <span class="n">base_model_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;exported_model&quot;</span><span class="p">,</span>
-        <span class="n">precision</span><span class="p">:</span> <span class="n">OTXPrecisionType</span> <span class="o">=</span> <span class="n">OTXPrecisionType</span><span class="o">.</span><span class="n">FP32</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
-        <span class="n">save_path</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">output_dir</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">base_model_name</span><span class="si">}</span><span class="s2">.xml&quot;</span><span class="p">)</span>
-        <span class="n">exported_model</span> <span class="o">=</span> <span class="n">openvino</span><span class="o">.</span><span class="n">convert_model</span><span class="p">(</span>
-            <span class="n">input_model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
-            <span class="n">example_input</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_size</span><span class="p">),</span>
-            <span class="nb">input</span><span class="o">=</span><span class="p">(</span><span class="n">openvino</span><span class="o">.</span><span class="n">runtime</span><span class="o">.</span><span class="n">PartialShape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_size</span><span class="p">)),</span>
-        <span class="p">)</span>
-        <span class="n">exported_model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_postprocess_openvino_model</span><span class="p">(</span><span class="n">exported_model</span><span class="p">)</span>
-        <span class="n">openvino</span><span class="o">.</span><span class="n">save_model</span><span class="p">(</span><span class="n">exported_model</span><span class="p">,</span> <span class="n">save_path</span><span class="p">,</span> <span class="n">compress_to_fp16</span><span class="o">=</span><span class="p">(</span><span class="n">precision</span> <span class="o">==</span> <span class="n">OTXPrecisionType</span><span class="o">.</span><span class="n">FP16</span><span class="p">))</span>
-        <span class="k">return</span> <span class="n">Path</span><span class="p">(</span><span class="n">save_path</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">to_onnx</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
-        <span class="n">model</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span>
-        <span class="n">output_dir</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span>
-        <span class="n">base_model_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;exported_model&quot;</span><span class="p">,</span>
-        <span class="n">precision</span><span class="p">:</span> <span class="n">OTXPrecisionType</span> <span class="o">=</span> <span class="n">OTXPrecisionType</span><span class="o">.</span><span class="n">FP32</span><span class="p">,</span>
-        <span class="n">embed_metadata</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
-        <span class="n">save_path</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">output_dir</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">base_model_name</span><span class="si">}</span><span class="s2">.onnx&quot;</span><span class="p">)</span>
-        <span class="n">torch</span><span class="o">.</span><span class="n">onnx</span><span class="o">.</span><span class="n">export</span><span class="p">(</span>
-            <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
-            <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">orig_height</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">orig_width</span><span class="p">))</span><span class="o">.</span><span class="n">to</span><span class="p">(</span>
-                <span class="nb">next</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">())</span><span class="o">.</span><span class="n">device</span><span class="p">,</span>
-            <span class="p">),</span>
-            <span class="n">f</span><span class="o">=</span><span class="n">save_path</span><span class="p">,</span>
-            <span class="n">opset_version</span><span class="o">=</span><span class="mi">14</span><span class="p">,</span>
-            <span class="n">dynamic_axes</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;input&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="s2">&quot;batch_size&quot;</span><span class="p">},</span> <span class="s2">&quot;output&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="s2">&quot;batch_size&quot;</span><span class="p">}},</span>
-            <span class="n">input_names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;input&quot;</span><span class="p">],</span>
-            <span class="n">output_names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;output&quot;</span><span class="p">],</span>
-        <span class="p">)</span>
-        <span class="n">onnx_model</span> <span class="o">=</span> <span class="n">onnx</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">save_path</span><span class="p">)</span>
-        <span class="n">onnx_model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_postprocess_onnx_model</span><span class="p">(</span><span class="n">onnx_model</span><span class="p">,</span> <span class="n">embed_metadata</span><span class="p">,</span> <span class="n">precision</span><span class="p">)</span>
-        <span class="n">onnx</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">onnx_model</span><span class="p">,</span> <span class="n">save_path</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">Path</span><span class="p">(</span><span class="n">save_path</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="OTXAnomaly">
@@ -665,6 +576,30 @@
         <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Unsupported task type </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">task</span><span class="si">}</span><span class="s2">&quot;</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
 
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">_exporter</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OTXAnomalyModelExporter</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Creates OTXAnomalyModelExporter object that can export anomaly models.&quot;&quot;&quot;</span>
+        <span class="n">min_val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">normalization_metrics</span><span class="o">.</span><span class="n">state_dict</span><span class="p">()[</span><span class="s2">&quot;min&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="n">max_val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">normalization_metrics</span><span class="o">.</span><span class="n">state_dict</span><span class="p">()[</span><span class="s2">&quot;max&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="n">image_shape</span><span class="p">,</span> <span class="n">mean_values</span><span class="p">,</span> <span class="n">scale_values</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_values_from_transforms</span><span class="p">()</span>
+        <span class="n">onnx_export_configuration</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;opset_version&quot;</span><span class="p">:</span> <span class="mi">14</span><span class="p">,</span>
+            <span class="s2">&quot;dynamic_axes&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;input&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="s2">&quot;batch_size&quot;</span><span class="p">},</span> <span class="s2">&quot;output&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="s2">&quot;batch_size&quot;</span><span class="p">}},</span>
+            <span class="s2">&quot;input_names&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;input&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;output_names&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;output&quot;</span><span class="p">],</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="n">OTXAnomalyModelExporter</span><span class="p">(</span>
+            <span class="n">image_shape</span><span class="o">=</span><span class="n">image_shape</span><span class="p">,</span>
+            <span class="n">image_threshold</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">image_threshold</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span>
+            <span class="n">pixel_threshold</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pixel_threshold</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span>
+            <span class="n">task</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">task</span><span class="p">,</span>
+            <span class="n">mean_values</span><span class="o">=</span><span class="n">mean_values</span><span class="p">,</span>
+            <span class="n">scale_values</span><span class="o">=</span><span class="n">scale_values</span><span class="p">,</span>
+            <span class="n">normalization_scale</span><span class="o">=</span><span class="n">max_val</span> <span class="o">-</span> <span class="n">min_val</span><span class="p">,</span>
+            <span class="n">onnx_export_configuration</span><span class="o">=</span><span class="n">onnx_export_configuration</span><span class="p">,</span>
+            <span class="n">via_onnx</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="p">)</span>
+
 <div class="viewcode-block" id="OTXAnomaly.export">
 <a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.model.anomaly.html#otx.core.model.anomaly.OTXAnomaly.export">[docs]</a>
     <span class="k">def</span> <span class="nf">export</span><span class="p">(</span>
@@ -673,6 +608,7 @@
         <span class="n">base_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">export_format</span><span class="p">:</span> <span class="n">OTXExportFormatType</span><span class="p">,</span>
         <span class="n">precision</span><span class="p">:</span> <span class="n">OTXPrecisionType</span> <span class="o">=</span> <span class="n">OTXPrecisionType</span><span class="o">.</span><span class="n">FP32</span><span class="p">,</span>
+        <span class="n">to_exportable_code</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Export this model to the specified output directory.</span>
 
@@ -681,28 +617,24 @@
 <span class="sd">            base_name: (str): base name for the exported model file. Extension is defined by the target export format</span>
 <span class="sd">            export_format (OTXExportFormatType): format of the output model</span>
 <span class="sd">            precision (OTXExportPrecisionType): precision of the output model</span>
+<span class="sd">            to_exportable_code (bool): flag to export model in exportable code with demo package</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Path: path to the exported model.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">min_val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">normalization_metrics</span><span class="o">.</span><span class="n">state_dict</span><span class="p">()[</span><span class="s2">&quot;min&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
-        <span class="n">max_val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">normalization_metrics</span><span class="o">.</span><span class="n">state_dict</span><span class="p">()[</span><span class="s2">&quot;max&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
-        <span class="n">image_shape</span><span class="p">,</span> <span class="n">mean_values</span><span class="p">,</span> <span class="n">scale_values</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_values_from_transforms</span><span class="p">()</span>
-        <span class="n">exporter</span> <span class="o">=</span> <span class="n">_AnomalyModelExporter</span><span class="p">(</span>
-            <span class="n">image_shape</span><span class="o">=</span><span class="n">image_shape</span><span class="p">,</span>
-            <span class="n">image_threshold</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">image_threshold</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span>
-            <span class="n">pixel_threshold</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pixel_threshold</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span>
-            <span class="n">task</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">task</span><span class="p">,</span>
-            <span class="n">mean_values</span><span class="o">=</span><span class="n">mean_values</span><span class="p">,</span>
-            <span class="n">scale_values</span><span class="o">=</span><span class="n">scale_values</span><span class="p">,</span>
-            <span class="n">normalization_scale</span><span class="o">=</span><span class="n">max_val</span> <span class="o">-</span> <span class="n">min_val</span><span class="p">,</span>
-        <span class="p">)</span>
-        <span class="k">return</span> <span class="n">exporter</span><span class="o">.</span><span class="n">export</span><span class="p">(</span>
+        <span class="k">if</span> <span class="n">export_format</span> <span class="o">==</span> <span class="n">OTXExportFormatType</span><span class="o">.</span><span class="n">OPENVINO</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">to_exportable_code</span><span class="p">:</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Exportable code option is not supported yet for anomaly tasks and will be ignored.&quot;</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+            <span class="n">to_exportable_code</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_exporter</span><span class="o">.</span><span class="n">export</span><span class="p">(</span>
             <span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span>
             <span class="n">output_dir</span><span class="o">=</span><span class="n">output_dir</span><span class="p">,</span>
             <span class="n">base_model_name</span><span class="o">=</span><span class="n">base_name</span><span class="p">,</span>
             <span class="n">export_format</span><span class="o">=</span><span class="n">export_format</span><span class="p">,</span>
             <span class="n">precision</span><span class="o">=</span><span class="n">precision</span><span class="p">,</span>
+            <span class="n">to_exportable_code</span><span class="o">=</span><span class="n">to_exportable_code</span><span class="p">,</span>
         <span class="p">)</span></div>
 </div>
 

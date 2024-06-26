@@ -568,9 +568,9 @@ $<span class="w"> </span>pytest<span class="w"> </span>tests/
 </pre></div>
 </div>
 <p>Another option to run the tests is using the testing automation tool <a class="reference external" href="https://tox.wiki/en/latest/index.html">tox</a>. Following commands will install
-the tool <code class="docutils literal notranslate"><span class="pre">tox</span></code> to your host and run all test codes inside of <code class="docutils literal notranslate"><span class="pre">tests/</span></code> folder.</p>
+the tool <code class="docutils literal notranslate"><span class="pre">tox</span></code> to your host and run all test codes inside of <code class="docutils literal notranslate"><span class="pre">tests/integration</span></code> folder.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ pip install tox
-$ tox -e tests-all-py310 -- tests/
+$ tox -e integration-test-all
 </pre></div>
 </div>
 <div class="admonition note">

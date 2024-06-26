@@ -475,16 +475,31 @@
 <span class="gp">... </span><span class="p">)</span>
 </pre></div>
 </div>
-<dl>
-<dt>CLI Usage:</dt><dd><ol class="arabic">
-<li><dl>
-<dt>To run XAI using the specified model, run</dt><dd><p><a href="#id1"><span class="problematic" id="id2">``</span></a><a href="#id3"><span class="problematic" id="id4">`</span></a>python
-otx explain</p>
-<blockquote>
-<div><p>–config &lt;CONFIG_PATH&gt; –data_root &lt;DATASET_PATH, str&gt;
-–checkpoint &lt;CKPT_PATH, str&gt;</p>
-</div></blockquote>
-<p><a href="#id5"><span class="problematic" id="id6">``</span></a><a href="#id7"><span class="problematic" id="id8">`</span></a></p>
+<dl class="simple">
+<dt>CLI Usage:</dt><dd><ol class="arabic simple">
+<li><dl class="simple">
+<dt>To run XAI with the torch model in work_dir, run</dt><dd><p><code class="docutils literal notranslate"><span class="pre">`shell</span>
+<span class="pre">&gt;&gt;&gt;</span> <span class="pre">otx</span> <span class="pre">explain</span> <span class="pre">\</span>
+<span class="pre">...</span>&#160;&#160;&#160;&#160; <span class="pre">--work_dir</span> <span class="pre">&lt;WORK_DIR_PATH,</span> <span class="pre">str&gt;</span>
+<span class="pre">`</span></code></p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>To run XAI using the specified model (torch or IR), run</dt><dd><p><code class="docutils literal notranslate"><span class="pre">`shell</span>
+<span class="pre">&gt;&gt;&gt;</span> <span class="pre">otx</span> <span class="pre">explain</span> <span class="pre">\</span>
+<span class="pre">...</span>&#160;&#160;&#160;&#160; <span class="pre">--work_dir</span> <span class="pre">&lt;WORK_DIR_PATH,</span> <span class="pre">str&gt;</span> <span class="pre">\</span>
+<span class="pre">...</span>&#160;&#160;&#160;&#160; <span class="pre">--checkpoint</span> <span class="pre">&lt;CKPT_PATH,</span> <span class="pre">str&gt;</span>
+<span class="pre">`</span></code></p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>To run XAI using the configuration, run</dt><dd><p><code class="docutils literal notranslate"><span class="pre">`shell</span>
+<span class="pre">&gt;&gt;&gt;</span> <span class="pre">otx</span> <span class="pre">explain</span> <span class="pre">\</span>
+<span class="pre">...</span>&#160;&#160;&#160;&#160; <span class="pre">--config</span> <span class="pre">&lt;CONFIG_PATH&gt;</span> <span class="pre">--data_root</span> <span class="pre">&lt;DATASET_PATH,</span> <span class="pre">str&gt;</span> <span class="pre">\</span>
+<span class="pre">...</span>&#160;&#160;&#160;&#160; <span class="pre">--checkpoint</span> <span class="pre">&lt;CKPT_PATH,</span> <span class="pre">str&gt;</span>
+<span class="pre">`</span></code></p>
 </dd>
 </dl>
 </li>
@@ -524,27 +539,35 @@ Only OpenVINO model can be exported with demo package.</p></li>
 <span class="gp">... </span><span class="p">)</span>
 </pre></div>
 </div>
-<dl>
-<dt>CLI Usage:</dt><dd><ol class="arabic">
-<li><dl>
-<dt>To export a model with default setting (OPENVINO, FP32), run</dt><dd><p><a href="#id9"><span class="problematic" id="id10">``</span></a><a href="#id11"><span class="problematic" id="id12">`</span></a>python
-otx export</p>
-<blockquote>
-<div><p>–config &lt;CONFIG_PATH&gt; –data_root &lt;DATASET_PATH, str&gt;
-–checkpoint &lt;CKPT_PATH, str&gt;</p>
-</div></blockquote>
-<p><a href="#id13"><span class="problematic" id="id14">``</span></a><a href="#id15"><span class="problematic" id="id16">`</span></a></p>
+<dl class="simple">
+<dt>CLI Usage:</dt><dd><ol class="arabic simple">
+<li><dl class="simple">
+<dt>To export a model with default setting (OPENVINO, FP32), run</dt><dd><p><code class="docutils literal notranslate"><span class="pre">`shell</span>
+<span class="pre">&gt;&gt;&gt;</span> <span class="pre">otx</span> <span class="pre">export</span> <span class="pre">--work_dir</span> <span class="pre">&lt;WORK_DIR_PATH,</span> <span class="pre">str&gt;</span>
+<span class="pre">`</span></code></p>
 </dd>
 </dl>
 </li>
-<li><dl>
-<dt>To export a model with precision FP16 and format ONNX, run</dt><dd><p><a href="#id17"><span class="problematic" id="id18">``</span></a><a href="#id19"><span class="problematic" id="id20">`</span></a>python
-otx export</p>
-<blockquote>
-<div><p>–config &lt;CONFIG_PATH&gt; –data_root &lt;DATASET_PATH, str&gt;
-–checkpoint &lt;CKPT_PATH, str&gt; –export_precision FP16 –export_format ONNX</p>
-</div></blockquote>
-<p><a href="#id21"><span class="problematic" id="id22">``</span></a><a href="#id23"><span class="problematic" id="id24">`</span></a></p>
+<li><dl class="simple">
+<dt>To export a specific checkpoint, run</dt><dd><p><code class="docutils literal notranslate"><span class="pre">`shell</span>
+<span class="pre">&gt;&gt;&gt;</span> <span class="pre">otx</span> <span class="pre">export</span> <span class="pre">--config</span> <span class="pre">&lt;CONFIG_PATH,</span> <span class="pre">str&gt;</span> <span class="pre">--checkpoint</span> <span class="pre">&lt;CKPT_PATH,</span> <span class="pre">str&gt;</span>
+<span class="pre">`</span></code></p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>To export a model with precision FP16 and format ONNX, run</dt><dd><p><code class="docutils literal notranslate"><span class="pre">`shell</span>
+<span class="pre">&gt;&gt;&gt;</span> <span class="pre">otx</span> <span class="pre">export</span> <span class="pre">...</span> <span class="pre">\</span>
+<span class="pre">...</span>&#160;&#160;&#160;&#160; <span class="pre">--export_precision</span> <span class="pre">FP16</span> <span class="pre">--export_format</span> <span class="pre">ONNX</span>
+<span class="pre">`</span></code></p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>To export model with ‘saliency_map’ and ‘feature_vector’, run</dt><dd><p><code class="docutils literal notranslate"><span class="pre">`shell</span>
+<span class="pre">&gt;&gt;&gt;</span> <span class="pre">otx</span> <span class="pre">export</span> <span class="pre">...</span> <span class="pre">\</span>
+<span class="pre">...</span>&#160;&#160;&#160;&#160; <span class="pre">--explain</span> <span class="pre">True</span>
+<span class="pre">`</span></code></p>
 </dd>
 </dl>
 </li>
@@ -665,18 +688,29 @@ comes in mixed precision (some operations, however, remain in FP32).</p>
 <span class="gp">... </span><span class="p">)</span>
 </pre></div>
 </div>
-<dl>
-<dt>CLI Usage:</dt><dd><dl>
-<dt>To optimize a model, run</dt><dd><p><a href="#id25"><span class="problematic" id="id26">``</span></a><a href="#id27"><span class="problematic" id="id28">`</span></a>python
-otx optimize</p>
-<blockquote>
-<div><p>–checkpoint &lt;CKPT_PATH, str&gt;
-–model &lt;CONFIG | CLASS_PATH_OR_NAME&gt; –data_root &lt;DATASET_PATH, str&gt;
-–model.model_name=&lt;PATH_TO_IR_XML, str&gt;</p>
-</div></blockquote>
-<p><a href="#id29"><span class="problematic" id="id30">``</span></a><a href="#id31"><span class="problematic" id="id32">`</span></a></p>
+<dl class="simple">
+<dt>CLI Usage:</dt><dd><ol class="arabic simple">
+<li><dl class="simple">
+<dt>To optimize a model with IR Model, run</dt><dd><p><code class="docutils literal notranslate"><span class="pre">`shell</span>
+<span class="pre">&gt;&gt;&gt;</span> <span class="pre">otx</span> <span class="pre">optimize</span> <span class="pre">\</span>
+<span class="pre">...</span>&#160;&#160;&#160;&#160; <span class="pre">--work_dir</span> <span class="pre">&lt;WORK_DIR_PATH,</span> <span class="pre">str&gt;</span> <span class="pre">\</span>
+<span class="pre">...</span>&#160;&#160;&#160;&#160; <span class="pre">--checkpoint</span> <span class="pre">&lt;IR_MODEL_WEIGHT_PATH,</span> <span class="pre">str&gt;</span>
+<span class="pre">`</span></code></p>
 </dd>
 </dl>
+</li>
+<li><dl class="simple">
+<dt>To optimize a specific OVModel class with XML, run</dt><dd><p><code class="docutils literal notranslate"><span class="pre">`shell</span>
+<span class="pre">&gt;&gt;&gt;</span> <span class="pre">otx</span> <span class="pre">optimize</span> <span class="pre">\</span>
+<span class="pre">...</span>&#160;&#160;&#160;&#160; <span class="pre">--data_root</span> <span class="pre">&lt;DATASET_PATH,</span> <span class="pre">str&gt;</span> <span class="pre">\</span>
+<span class="pre">...</span>&#160;&#160;&#160;&#160; <span class="pre">--checkpoint</span> <span class="pre">&lt;IR_MODEL_WEIGHT_PATH,</span> <span class="pre">str&gt;</span> <span class="pre">\</span>
+<span class="pre">...</span>&#160;&#160;&#160;&#160; <span class="pre">--model</span> <span class="pre">&lt;CONFIG</span> <span class="pre">|</span> <span class="pre">CLASS_PATH_OR_NAME,</span> <span class="pre">OVModel&gt;</span> <span class="pre">\</span>
+<span class="pre">...</span>&#160;&#160;&#160;&#160; <span class="pre">--model.model_name=&lt;PATH_TO_IR_XML,</span> <span class="pre">str&gt;</span>
+<span class="pre">`</span></code></p>
+</dd>
+</dl>
+</li>
+</ol>
 </dd>
 </dl>
 </dd></dl>
@@ -688,11 +722,11 @@ otx optimize</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>datamodule</strong> (<em>EVAL_DATALOADERS</em><em> | </em><a class="reference internal" href="otx.core.data.html#otx.core.data.OTXDataModule" title="otx.core.data.OTXDataModule"><em>OTXDataModule</em></a><em> | </em><em>None</em><em>, </em><em>optional</em>) – The data module to use for predictions.</p></li>
 <li><p><strong>checkpoint</strong> (<em>PathLike</em><em> | </em><em>None</em><em>, </em><em>optional</em>) – The path to the checkpoint file to load the model from.</p></li>
+<li><p><strong>datamodule</strong> (<em>EVAL_DATALOADERS</em><em> | </em><a class="reference internal" href="otx.core.data.html#otx.core.data.OTXDataModule" title="otx.core.data.OTXDataModule"><em>OTXDataModule</em></a><em> | </em><em>None</em><em>, </em><em>optional</em>) – The data module to use for predictions.</p></li>
 <li><p><strong>return_predictions</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a><em> | </em><em>None</em><em>, </em><em>optional</em>) – Whether to return the predictions or not.</p></li>
-<li><p><strong>explain</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a>) – Whether to dump “saliency_map” and “feature_vector” or not.</p></li>
-<li><p><strong>explain_config</strong> (<a class="reference internal" href="otx.core.config.explain.html#otx.core.config.explain.ExplainConfig" title="otx.core.config.explain.ExplainConfig"><em>ExplainConfig</em></a>) – Explain configuration (used for saliency map post-processing).</p></li>
+<li><p><strong>explain</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a><em>, </em><em>optional</em>) – Whether to dump “saliency_map” and “feature_vector” or not.</p></li>
+<li><p><strong>explain_config</strong> (<a class="reference internal" href="otx.core.config.explain.html#otx.core.config.explain.ExplainConfig" title="otx.core.config.explain.ExplainConfig"><em>ExplainConfig</em></a><em> | </em><em>None</em><em>, </em><em>optional</em>) – Explain configuration used for saliency map post-processing</p></li>
 <li><p><strong>**kwargs</strong> – Additional keyword arguments for pl.Trainer configuration.</p></li>
 </ul>
 </dd>
@@ -712,22 +746,29 @@ otx optimize</p>
 <span class="gp">... </span><span class="p">)</span>
 </pre></div>
 </div>
-<dl>
-<dt>CLI Usage:</dt><dd><ol class="arabic">
-<li><dl>
-<dt>you can pick a model.</dt><dd><p><a href="#id33"><span class="problematic" id="id34">``</span></a><a href="#id35"><span class="problematic" id="id36">`</span></a>python
-otx predict</p>
-<blockquote>
-<div><p>–config &lt;CONFIG_PATH&gt; –data_root &lt;DATASET_PATH, str&gt;
-–checkpoint &lt;CKPT_PATH, str&gt;</p>
-</div></blockquote>
-<p><a href="#id37"><span class="problematic" id="id38">``</span></a><a href="#id39"><span class="problematic" id="id40">`</span></a></p>
+<dl class="simple">
+<dt>CLI Usage:</dt><dd><ol class="arabic simple">
+<li><dl class="simple">
+<dt>To predict a model with work_dir, run</dt><dd><p><code class="docutils literal notranslate"><span class="pre">`shell</span>
+<span class="pre">&gt;&gt;&gt;</span> <span class="pre">otx</span> <span class="pre">predict</span> <span class="pre">--work_dir</span> <span class="pre">&lt;WORK_DIR_PATH,</span> <span class="pre">str&gt;</span>
+<span class="pre">`</span></code></p>
 </dd>
 </dl>
 </li>
 <li><dl class="simple">
-<dt>If you have a ready configuration file, run it like this.</dt><dd><p><code class="docutils literal notranslate"><span class="pre">`python</span>
-<span class="pre">otx</span> <span class="pre">predict</span> <span class="pre">--config</span> <span class="pre">&lt;CONFIG_PATH,</span> <span class="pre">str&gt;</span> <span class="pre">--checkpoint</span> <span class="pre">&lt;CKPT_PATH,</span> <span class="pre">str&gt;</span>
+<dt>To predict a specific model, run</dt><dd><p><code class="docutils literal notranslate"><span class="pre">`shell</span>
+<span class="pre">&gt;&gt;&gt;</span> <span class="pre">otx</span> <span class="pre">predict</span> <span class="pre">\</span>
+<span class="pre">...</span>&#160;&#160;&#160;&#160; <span class="pre">--work_dir</span> <span class="pre">&lt;WORK_DIR_PATH,</span> <span class="pre">str&gt;</span> <span class="pre">\</span>
+<span class="pre">...</span>&#160;&#160;&#160;&#160; <span class="pre">--checkpoint</span> <span class="pre">&lt;CKPT_PATH,</span> <span class="pre">str&gt;</span>
+<span class="pre">`</span></code></p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>To predict with configuration file, run</dt><dd><p><code class="docutils literal notranslate"><span class="pre">`shell</span>
+<span class="pre">&gt;&gt;&gt;</span> <span class="pre">otx</span> <span class="pre">predict</span> <span class="pre">\</span>
+<span class="pre">...</span>&#160;&#160;&#160;&#160; <span class="pre">--config</span> <span class="pre">&lt;CONFIG_PATH,</span> <span class="pre">str&gt;</span> <span class="pre">\</span>
+<span class="pre">...</span>&#160;&#160;&#160;&#160; <span class="pre">--checkpoint</span> <span class="pre">&lt;CKPT_PATH,</span> <span class="pre">str&gt;</span>
 <span class="pre">`</span></code></p>
 </dd>
 </dl>
@@ -744,9 +785,9 @@ otx predict</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>datamodule</strong> (<em>EVAL_DATALOADERS</em><em> | </em><a class="reference internal" href="otx.core.data.html#otx.core.data.OTXDataModule" title="otx.core.data.OTXDataModule"><em>OTXDataModule</em></a><em> | </em><em>None</em><em>, </em><em>optional</em>) – The data module containing the test data.</p></li>
 <li><p><strong>checkpoint</strong> (<em>PathLike</em><em> | </em><em>None</em><em>, </em><em>optional</em>) – Path to the checkpoint file to load the model from.
 Defaults to None.</p></li>
+<li><p><strong>datamodule</strong> (<em>EVAL_DATALOADERS</em><em> | </em><a class="reference internal" href="otx.core.data.html#otx.core.data.OTXDataModule" title="otx.core.data.OTXDataModule"><em>OTXDataModule</em></a><em> | </em><em>None</em><em>, </em><em>optional</em>) – The data module containing the test data.</p></li>
 <li><p><strong>metric</strong> (<em>MetricCallable</em><em> | </em><em>None</em>) – If not None, it will override <cite>OTXModel.metric_callable</cite> with the given
 metric callable. It will temporarilly change the evaluation metric for the validation and test.</p></li>
 <li><p><strong>**kwargs</strong> – Additional keyword arguments for pl.Trainer configuration.</p></li>
@@ -766,22 +807,35 @@ metric callable. It will temporarilly change the evaluation metric for the valid
 <span class="gp">... </span><span class="p">)</span>
 </pre></div>
 </div>
-<dl>
-<dt>CLI Usage:</dt><dd><ol class="arabic">
-<li><dl>
-<dt>you can pick a model.</dt><dd><p><a href="#id41"><span class="problematic" id="id42">``</span></a><a href="#id43"><span class="problematic" id="id44">`</span></a>python
-otx test</p>
-<blockquote>
-<div><p>–model &lt;CONFIG | CLASS_PATH_OR_NAME&gt; –data_root &lt;DATASET_PATH, str&gt;
-–checkpoint &lt;CKPT_PATH, str&gt;</p>
-</div></blockquote>
-<p><a href="#id45"><span class="problematic" id="id46">``</span></a><a href="#id47"><span class="problematic" id="id48">`</span></a></p>
+<dl class="simple">
+<dt>CLI Usage:</dt><dd><ol class="arabic simple">
+<li><dl class="simple">
+<dt>To eval model by specifying the work_dir where did the training, run</dt><dd><p><code class="docutils literal notranslate"><span class="pre">`shell</span>
+<span class="pre">&gt;&gt;&gt;</span> <span class="pre">otx</span> <span class="pre">test</span> <span class="pre">--work_dir</span> <span class="pre">&lt;WORK_DIR_PATH,</span> <span class="pre">str&gt;</span>
+<span class="pre">`</span></code></p>
 </dd>
 </dl>
 </li>
 <li><dl class="simple">
-<dt>If you have a ready configuration file, run it like this.</dt><dd><p><code class="docutils literal notranslate"><span class="pre">`python</span>
-<span class="pre">otx</span> <span class="pre">test</span> <span class="pre">--config</span> <span class="pre">&lt;CONFIG_PATH,</span> <span class="pre">str&gt;</span> <span class="pre">--checkpoint</span> <span class="pre">&lt;CKPT_PATH,</span> <span class="pre">str&gt;</span>
+<dt>To eval model a specific checkpoint, run</dt><dd><p><code class="docutils literal notranslate"><span class="pre">`shell</span>
+<span class="pre">&gt;&gt;&gt;</span> <span class="pre">otx</span> <span class="pre">test</span> <span class="pre">--work_dir</span> <span class="pre">&lt;WORK_DIR_PATH,</span> <span class="pre">str&gt;</span> <span class="pre">--checkpoint</span> <span class="pre">&lt;CKPT_PATH,</span> <span class="pre">str&gt;</span>
+<span class="pre">`</span></code></p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Can pick a model.</dt><dd><p><code class="docutils literal notranslate"><span class="pre">`shell</span>
+<span class="pre">&gt;&gt;&gt;</span> <span class="pre">otx</span> <span class="pre">test</span> <span class="pre">\</span>
+<span class="pre">...</span>&#160;&#160;&#160;&#160; <span class="pre">--model</span> <span class="pre">&lt;CONFIG</span> <span class="pre">|</span> <span class="pre">CLASS_PATH_OR_NAME&gt;</span> <span class="pre">\</span>
+<span class="pre">...</span>&#160;&#160;&#160;&#160; <span class="pre">--data_root</span> <span class="pre">&lt;DATASET_PATH,</span> <span class="pre">str&gt;</span> <span class="pre">\</span>
+<span class="pre">...</span>&#160;&#160;&#160;&#160; <span class="pre">--checkpoint</span> <span class="pre">&lt;CKPT_PATH,</span> <span class="pre">str&gt;</span>
+<span class="pre">`</span></code></p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>To eval with configuration file, run</dt><dd><p><code class="docutils literal notranslate"><span class="pre">`shell</span>
+<span class="pre">&gt;&gt;&gt;</span> <span class="pre">otx</span> <span class="pre">test</span> <span class="pre">--config</span> <span class="pre">&lt;CONFIG_PATH,</span> <span class="pre">str&gt;</span> <span class="pre">--checkpoint</span> <span class="pre">&lt;CKPT_PATH,</span> <span class="pre">str&gt;</span>
 <span class="pre">`</span></code></p>
 </dd>
 </dl>
@@ -800,11 +854,9 @@ otx test</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>max_epochs</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a><em> | </em><em>None</em><em>, </em><em>optional</em>) – The maximum number of epochs. Defaults to None.</p></li>
 <li><p><strong>seed</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a><em> | </em><em>None</em><em>, </em><em>optional</em>) – The random seed. Defaults to None.</p></li>
-<li><p><strong>deterministic</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a><em> | </em><em>Literal</em><em>[</em><em>&quot;warn&quot;</em><em>]</em>) – Whether to enable deterministic behavior.</p></li>
-<li><p><strong>Also</strong> – </p></li>
-<li><p><strong>failures</strong> (<em>can be set to warn to avoid</em>) – </p></li>
-<li><p><strong>don't</strong> (<em>because some operations</em>) – </p></li>
-<li><p><strong>False.</strong> (<em>support deterministic mode. Defaults to</em>) – </p></li>
+<li><p><strong>deterministic</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a><em> | </em><em>Literal</em><em>[</em><em>&quot;warn&quot;</em><em>]</em>) – Whether to enable deterministic behavior.
+Also, can be set to <cite>warn</cite> to avoid failures, because some operations don’t
+support deterministic mode. Defaults to False.</p></li>
 <li><p><strong>precision</strong> (<em>_PRECISION_INPUT</em><em> | </em><em>None</em><em>, </em><em>optional</em>) – The precision of the model. Defaults to 32.</p></li>
 <li><p><strong>val_check_interval</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a><em> | </em><em>None</em><em>, </em><em>optional</em>) – The validation check interval. Defaults to None.</p></li>
 <li><p><strong>callbacks</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.12)"><em>list</em></a><em>[</em><em>Callback</em><em>] </em><em>| </em><em>Callback</em><em> | </em><em>None</em><em>, </em><em>optional</em>) – The callbacks to be used during training.</p></li>
@@ -836,38 +888,45 @@ Safe =&gt; Prevent GPU out of memory. Full =&gt; Find a batch size using most of
 <span class="gp">... </span><span class="p">)</span>
 </pre></div>
 </div>
-<dl>
-<dt>CLI Usage:</dt><dd><ol class="arabic">
+<dl class="simple">
+<dt>CLI Usage:</dt><dd><ol class="arabic simple">
 <li><dl class="simple">
-<dt>you can train with data_root only. then OTX will provide default model.</dt><dd><p><code class="docutils literal notranslate"><span class="pre">`python</span>
-<span class="pre">otx</span> <span class="pre">train</span> <span class="pre">--data_root</span> <span class="pre">&lt;DATASET_PATH&gt;</span>
+<dt>Can train with data_root only. then OTX will provide default training configuration.</dt><dd><p><code class="docutils literal notranslate"><span class="pre">`shell</span>
+<span class="pre">&gt;&gt;&gt;</span> <span class="pre">otx</span> <span class="pre">train</span> <span class="pre">--data_root</span> <span class="pre">&lt;DATASET_PATH,</span> <span class="pre">str&gt;</span>
 <span class="pre">`</span></code></p>
 </dd>
 </dl>
 </li>
 <li><dl class="simple">
-<dt>you can pick a model or datamodule as Config file or Class.</dt><dd><p><code class="docutils literal notranslate"><span class="pre">`python</span>
-<span class="pre">otx</span> <span class="pre">train</span>
-<span class="pre">--data_root</span> <span class="pre">&lt;DATASET_PATH&gt;</span>
-<span class="pre">--model</span> <span class="pre">&lt;CONFIG</span> <span class="pre">|</span> <span class="pre">CLASS_PATH_OR_NAME&gt;</span> <span class="pre">--data</span> <span class="pre">&lt;CONFIG</span> <span class="pre">|</span> <span class="pre">CLASS_PATH_OR_NAME&gt;</span>
+<dt>Can pick a model or datamodule as Config file or Class.</dt><dd><p><code class="docutils literal notranslate"><span class="pre">`shell</span>
+<span class="pre">&gt;&gt;&gt;</span> <span class="pre">otx</span> <span class="pre">train</span> <span class="pre">\</span>
+<span class="pre">...</span>&#160;&#160;&#160;&#160; <span class="pre">--data_root</span> <span class="pre">&lt;DATASET_PATH,</span> <span class="pre">str&gt;</span> <span class="pre">\</span>
+<span class="pre">...</span>&#160;&#160;&#160;&#160; <span class="pre">--model</span> <span class="pre">&lt;CONFIG</span> <span class="pre">|</span> <span class="pre">CLASS_PATH_OR_NAME,</span> <span class="pre">OTXModel&gt;</span> <span class="pre">\</span>
+<span class="pre">...</span>&#160;&#160;&#160;&#160; <span class="pre">--data</span> <span class="pre">&lt;CONFIG</span> <span class="pre">|</span> <span class="pre">CLASS_PATH_OR_NAME,</span> <span class="pre">OTXDataModule&gt;</span>
 <span class="pre">`</span></code></p>
 </dd>
 </dl>
 </li>
-<li><dl>
-<dt>Of course, you can override the various values with commands.</dt><dd><p><a href="#id49"><span class="problematic" id="id50">``</span></a><a href="#id51"><span class="problematic" id="id52">`</span></a>python
-otx train</p>
-<blockquote>
-<div><p>–data_root &lt;DATASET_PATH&gt;
-–max_epochs &lt;EPOCHS, int&gt; –checkpoint &lt;CKPT_PATH, str&gt;</p>
-</div></blockquote>
-<p><a href="#id53"><span class="problematic" id="id54">``</span></a><a href="#id55"><span class="problematic" id="id56">`</span></a></p>
+<li><dl class="simple">
+<dt>Of course, can override the various values with commands.</dt><dd><p><code class="docutils literal notranslate"><span class="pre">`shell</span>
+<span class="pre">&gt;&gt;&gt;</span> <span class="pre">otx</span> <span class="pre">train</span> <span class="pre">\</span>
+<span class="pre">...</span>&#160;&#160;&#160;&#160; <span class="pre">--data_root</span> <span class="pre">&lt;DATASET_PATH,</span> <span class="pre">str&gt;</span> <span class="pre">\</span>
+<span class="pre">...</span>&#160;&#160;&#160;&#160; <span class="pre">--max_epochs</span> <span class="pre">&lt;EPOCHS,</span> <span class="pre">int&gt;</span> <span class="pre">\</span>
+<span class="pre">...</span>&#160;&#160;&#160;&#160; <span class="pre">--checkpoint</span> <span class="pre">&lt;CKPT_PATH,</span> <span class="pre">str&gt;</span>
+<span class="pre">`</span></code></p>
 </dd>
 </dl>
 </li>
 <li><dl class="simple">
-<dt>If you have a complete configuration file, run it like this.</dt><dd><p><code class="docutils literal notranslate"><span class="pre">`python</span>
-<span class="pre">otx</span> <span class="pre">train</span> <span class="pre">--data_root</span> <span class="pre">&lt;DATASET_PATH&gt;</span> <span class="pre">--config</span> <span class="pre">&lt;CONFIG_PATH,</span> <span class="pre">str&gt;</span>
+<dt>To train with configuration file, run</dt><dd><p><code class="docutils literal notranslate"><span class="pre">`shell</span>
+<span class="pre">&gt;&gt;&gt;</span> <span class="pre">otx</span> <span class="pre">train</span> <span class="pre">--data_root</span> <span class="pre">&lt;DATASET_PATH,</span> <span class="pre">str&gt;</span> <span class="pre">--config</span> <span class="pre">&lt;CONFIG_PATH,</span> <span class="pre">str&gt;</span>
+<span class="pre">`</span></code></p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>To reproduce the existing training with work_dir, run</dt><dd><p><code class="docutils literal notranslate"><span class="pre">`shell</span>
+<span class="pre">&gt;&gt;&gt;</span> <span class="pre">otx</span> <span class="pre">train</span> <span class="pre">--work_dir</span> <span class="pre">&lt;WORK_DIR_PATH,</span> <span class="pre">str&gt;</span>
 <span class="pre">`</span></code></p>
 </dd>
 </dl>

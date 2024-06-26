@@ -27,6 +27,7 @@ otx.core.exporter
    :toctree:
    :recursive:
 
+   otx.core.exporter.anomaly
    otx.core.exporter.base
    otx.core.exporter.exportable_code
    otx.core.exporter.mmdeploy

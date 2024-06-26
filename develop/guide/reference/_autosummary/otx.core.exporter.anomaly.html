@@ -5,7 +5,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>otx.core.model.utils.mmpretrain &#8212; OpenVINO™ Training Extensions 2.0.0 documentation</title>
+    <title>otx.core.exporter.anomaly &#8212; OpenVINO™ Training Extensions 2.0.0 documentation</title>
   
   
   
@@ -41,11 +41,11 @@
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../../_static/copybutton.js?v=f281be69"></script>
     <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = 'guide/reference/_autosummary/otx.core.model.utils.mmpretrain';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'guide/reference/_autosummary/otx.core.exporter.anomaly';</script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
-    <link rel="next" title="otx.core.model.utils.mmseg" href="otx.core.model.utils.mmseg.html" />
-    <link rel="prev" title="otx.core.model.utils.mmdet" href="otx.core.model.utils.mmdet.html" />
+    <link rel="next" title="otx.core.exporter.base" href="otx.core.exporter.base.html" />
+    <link rel="prev" title="otx.core.exporter" href="otx.core.exporter.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="docsearch:language" content="en">
   </head>
@@ -331,9 +331,9 @@
 <li class="toctree-l3 current active has-children"><a class="reference internal" href="otx.core.html">otx.core</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-15" name="toctree-checkbox-15" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-15"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
 <li class="toctree-l4"><a class="reference internal" href="otx.core.config.html">otx.core.config</a></li>
 <li class="toctree-l4"><a class="reference internal" href="otx.core.data.html">otx.core.data</a></li>
-<li class="toctree-l4"><a class="reference internal" href="otx.core.exporter.html">otx.core.exporter</a></li>
+<li class="toctree-l4 current active"><a class="reference internal" href="otx.core.exporter.html">otx.core.exporter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="otx.core.metrics.html">otx.core.metrics</a></li>
-<li class="toctree-l4 current active"><a class="reference internal" href="otx.core.model.html">otx.core.model</a></li>
+<li class="toctree-l4"><a class="reference internal" href="otx.core.model.html">otx.core.model</a></li>
 <li class="toctree-l4"><a class="reference internal" href="otx.core.optimizer.html">otx.core.optimizer</a></li>
 <li class="toctree-l4"><a class="reference internal" href="otx.core.schedulers.html">otx.core.schedulers</a></li>
 <li class="toctree-l4"><a class="reference internal" href="otx.core.types.html">otx.core.types</a></li>
@@ -390,115 +390,61 @@
             
             <article class="bd-article" role="main">
               
-  <section id="module-otx.core.model.utils.mmpretrain">
-<span id="otx-core-model-utils-mmpretrain"></span><h1>otx.core.model.utils.mmpretrain<a class="headerlink" href="#module-otx.core.model.utils.mmpretrain" title="Link to this heading">#</a></h1>
-<p>Utility files for the mmpretrain package.</p>
-<p class="rubric">Functions</p>
-<table class="autosummary longtable table autosummary">
-<tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#otx.core.model.utils.mmpretrain.create_model" title="otx.core.model.utils.mmpretrain.create_model"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_model</span></code></a>(config[, load_from])</p></td>
-<td><p>Create a model from mmpretrain Model registry.</p></td>
-</tr>
-</tbody>
-</table>
+  <section id="module-otx.core.exporter.anomaly">
+<span id="otx-core-exporter-anomaly"></span><h1>otx.core.exporter.anomaly<a class="headerlink" href="#module-otx.core.exporter.anomaly" title="Link to this heading">#</a></h1>
+<p>Class definition for anomaly models exporter used in OTX.</p>
 <p class="rubric">Classes</p>
 <table class="autosummary longtable table autosummary">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#otx.core.model.utils.mmpretrain.ClsDataPreprocessor" title="otx.core.model.utils.mmpretrain.ClsDataPreprocessor"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ClsDataPreprocessor</span></code></a>([mean, std, ...])</p></td>
-<td><p>Class for monkey patching preprocessor.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#otx.core.model.utils.mmpretrain.ExplainableMixInMMPretrainModel" title="otx.core.model.utils.mmpretrain.ExplainableMixInMMPretrainModel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ExplainableMixInMMPretrainModel</span></code></a>()</p></td>
-<td><p>Mix-in class to support XAI feature for MM Pretrained models commonly.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.core.exporter.anomaly.OTXAnomalyModelExporter" title="otx.core.exporter.anomaly.OTXAnomalyModelExporter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OTXAnomalyModelExporter</span></code></a>([image_shape, ...])</p></td>
+<td><p>Exporter for anomaly tasks.</p></td>
 </tr>
 </tbody>
 </table>
 <dl class="py class">
-<dt class="sig sig-object py" id="otx.core.model.utils.mmpretrain.ClsDataPreprocessor">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.core.model.utils.mmpretrain.</span></span><span class="sig-name descname"><span class="pre">ClsDataPreprocessor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mean</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Sequence" title="(in Python v3.12)"><span class="pre">Sequence</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/numbers.html#numbers.Number" title="(in Python v3.12)"><span class="pre">Number</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Sequence" title="(in Python v3.12)"><span class="pre">Sequence</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/numbers.html#numbers.Number" title="(in Python v3.12)"><span class="pre">Number</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pad_size_divisor</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pad_value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/numbers.html#numbers.Number" title="(in Python v3.12)"><span class="pre">Number</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">to_rgb</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">to_onehot</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_classes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_augments</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><span class="pre">dict</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/core/model/utils/mmpretrain.html#ClsDataPreprocessor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.utils.mmpretrain.ClsDataPreprocessor" title="Link to this definition">#</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ClsDataPreprocessor</span></code></p>
-<p>Class for monkey patching preprocessor.</p>
-<p>NOTE: For the history of this monkey patching, please see
-<a class="github reference external" href="https://github.com/openvinotoolkit/training_extensions/issues/2743">openvinotoolkit/training_extensions#2743</a></p>
-<p>Initializes internal Module state, shared by both nn.Module and ScriptModule.</p>
-<dl class="py property">
-<dt class="sig sig-object py" id="otx.core.model.utils.mmpretrain.ClsDataPreprocessor.device">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">device</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">device</span></em><a class="headerlink" href="#otx.core.model.utils.mmpretrain.ClsDataPreprocessor.device" title="Link to this definition">#</a></dt>
-<dd><p>Which device being used.</p>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="otx.core.model.utils.mmpretrain.ExplainableMixInMMPretrainModel">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.core.model.utils.mmpretrain.</span></span><span class="sig-name descname"><span class="pre">ExplainableMixInMMPretrainModel</span></span><a class="reference internal" href="../../../_modules/otx/core/model/utils/mmpretrain.html#ExplainableMixInMMPretrainModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.utils.mmpretrain.ExplainableMixInMMPretrainModel" title="Link to this definition">#</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Generic" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Generic</span></code></a>[<code class="xref py py-obj docutils literal notranslate"><span class="pre">T_OTXBatchPredEntity</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">T_OTXBatchDataEntity</span></code>]</p>
-<p>Mix-in class to support XAI feature for MM Pretrained models commonly.</p>
-<p>This is a mix-in class that cannot be used as standalone. The correct usage of it will be like
-<code class="docutils literal notranslate"><span class="pre">`python</span>
-<span class="pre">class</span> <span class="pre">MobileNetV3ForMulticlassCls(ExplainableMixInMMPretrainModel,</span> <span class="pre">MMPretrainMulticlassClsModel):</span>
-<span class="pre">`</span></code></p>
-<dl class="py method">
-<dt class="sig sig-object py" id="otx.core.model.utils.mmpretrain.ExplainableMixInMMPretrainModel.forward_explain">
-<span class="sig-name descname"><span class="pre">forward_explain</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">T_OTXBatchDataEntity</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">T_OTXBatchPredEntity</span></span></span><a class="reference internal" href="../../../_modules/otx/core/model/utils/mmpretrain.html#ExplainableMixInMMPretrainModel.forward_explain"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.utils.mmpretrain.ExplainableMixInMMPretrainModel.forward_explain" title="Link to this definition">#</a></dt>
-<dd><p>Model forward function.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="otx.core.model.utils.mmpretrain.ExplainableMixInMMPretrainModel.forward_for_tracing">
-<span class="sig-name descname"><span class="pre">forward_for_tracing</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tensor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/otx/core/model/utils/mmpretrain.html#ExplainableMixInMMPretrainModel.forward_for_tracing"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.utils.mmpretrain.ExplainableMixInMMPretrainModel.forward_for_tracing" title="Link to this definition">#</a></dt>
-<dd><p>Model forward function used for the model tracing during model exportation.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="otx.core.model.utils.mmpretrain.ExplainableMixInMMPretrainModel.get_explain_fn">
-<span class="sig-name descname"><span class="pre">get_explain_fn</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.12)"><span class="pre">Callable</span></a></span></span><a class="reference internal" href="../../../_modules/otx/core/model/utils/mmpretrain.html#ExplainableMixInMMPretrainModel.get_explain_fn"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.utils.mmpretrain.ExplainableMixInMMPretrainModel.get_explain_fn" title="Link to this definition">#</a></dt>
-<dd><p>Returns explain function.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Can be redefined at the model’s level.</p>
-</div>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="otx.core.model.utils.mmpretrain.ExplainableMixInMMPretrainModel.head_forward_fn">
-<span class="sig-name descname"><span class="pre">head_forward_fn</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tensor</span></span></span><a class="reference internal" href="../../../_modules/otx/core/model/utils/mmpretrain.html#ExplainableMixInMMPretrainModel.head_forward_fn"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.utils.mmpretrain.ExplainableMixInMMPretrainModel.head_forward_fn" title="Link to this definition">#</a></dt>
-<dd><p>Performs model’s neck and head forward.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Can be redefined at the model’s level.</p>
-</div>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="otx.core.model.utils.mmpretrain.ExplainableMixInMMPretrainModel.has_gap">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">has_gap</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></em><a class="headerlink" href="#otx.core.model.utils.mmpretrain.ExplainableMixInMMPretrainModel.has_gap" title="Link to this definition">#</a></dt>
-<dd><p>Defines if GAP is used right after backbone.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Can be redefined at the model’s level.</p>
-</div>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="otx.core.model.utils.mmpretrain.create_model">
-<span class="sig-prename descclassname"><span class="pre">otx.core.model.utils.mmpretrain.</span></span><span class="sig-name descname"><span class="pre">create_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DictConfig</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">load_from</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><span class="pre">nn.Module</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/otx/core/model/utils/mmpretrain.html#create_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.utils.mmpretrain.create_model" title="Link to this definition">#</a></dt>
-<dd><p>Create a model from mmpretrain Model registry.</p>
+<dt class="sig sig-object py" id="otx.core.exporter.anomaly.OTXAnomalyModelExporter">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.core.exporter.anomaly.</span></span><span class="sig-name descname"><span class="pre">OTXAnomalyModelExporter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image_shape</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(256,</span> <span class="pre">256)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">image_threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pixel_threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">task</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">TaskType</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">TaskType.CLASSIFICATION</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mean_values</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(0.0,</span> <span class="pre">0.0,</span> <span class="pre">0.0)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale_values</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(1.0,</span> <span class="pre">1.0,</span> <span class="pre">1.0)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalization_scale</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">via_onnx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">onnx_export_configuration</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.12)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/core/exporter/anomaly.html#OTXAnomalyModelExporter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.exporter.anomaly.OTXAnomalyModelExporter" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="otx.core.exporter.native.html#otx.core.exporter.native.OTXNativeModelExporter" title="otx.core.exporter.native.OTXNativeModelExporter"><code class="xref py py-class docutils literal notranslate"><span class="pre">OTXNativeModelExporter</span></code></a></p>
+<p>Exporter for anomaly tasks.</p>
+<p>Initializes <cite>OTXAnomalyModelExporter</cite> object.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>config</strong> (<em>DictConfig</em>) – Model configuration.</p></li>
-<li><p><strong>load_from</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a><em> | </em><em>None</em>) – Model weight file path.</p></li>
+<li><p><strong>image_shape</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><em>tuple</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a><em>]</em><em>, </em><em>optional</em>) – Shape of the input image.
+Defaults to (256, 256).</p></li>
+<li><p><strong>image_threshold</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a><em>, </em><em>optional</em>) – Threshold for image anomaly detection.
+Defaults to 0.5.</p></li>
+<li><p><strong>pixel_threshold</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a><em>, </em><em>optional</em>) – Threshold for pixel anomaly detection.
+Defaults to 0.5.</p></li>
+<li><p><strong>task</strong> (<em>AnomalibTaskType</em><em>, </em><em>optional</em>) – Task type for anomaly detection.
+Defaults to AnomalibTaskType.CLASSIFICATION.</p></li>
+<li><p><strong>mean_values</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><em>tuple</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a><em>]</em><em>, </em><em>optional</em>) – Mean values for normalization.
+Defaults to (0.0, 0.0, 0.0).</p></li>
+<li><p><strong>scale_values</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><em>tuple</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a><em>]</em><em>, </em><em>optional</em>) – Scale values for normalization.
+Defaults to (1.0, 1.0, 1.0).</p></li>
+<li><p><strong>normalization_scale</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a><em>, </em><em>optional</em>) – Scale value for normalization.
+Defaults to 1.0.</p></li>
+<li><p><strong>via_onnx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a><em>, </em><em>optional</em>) – Whether to export the model in OpenVINO format via ONNX first.
+Defaults to False.</p></li>
+<li><p><strong>onnx_export_configuration</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a><em>, </em><em>Any</em><em>] </em><em>| </em><em>None</em><em>, </em><em>optional</em>) – Configuration for ONNX export.
+Defaults to None.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Model instance and classification layers.</p>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="otx.core.exporter.anomaly.OTXAnomalyModelExporter.metadata">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">metadata</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#otx.core.exporter.anomaly.OTXAnomalyModelExporter.metadata" title="Link to this definition">#</a></dt>
+<dd><p>Returns a dictionary containing metadata about the model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A dictionary with metadata.</p>
 </dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)">tuple</a>[nn.Module, <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)">dict</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)">str</a>, <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)">dict</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)">str</a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)">int</a>]]]</p>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)">dict</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)">tuple</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)">str</a>, <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)">str</a>], <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)">str</a> | <a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)">float</a> | <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)">int</a> | <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)">tuple</a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)">int</a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)">int</a>]]</p>
 </dd>
 </dl>
+</dd></dl>
+
 </dd></dl>
 
 </section>
@@ -511,17 +457,17 @@
             <footer class="bd-footer-article">
                 <!-- Previous / next buttons -->
 <div class='prev-next-area'>
-  <a class='left-prev' id="prev-link" href="otx.core.model.utils.mmdet.html" title="previous page">
+  <a class='left-prev' id="prev-link" href="otx.core.exporter.html" title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
           <p class="prev-next-subtitle">previous</p>
-          <p class="prev-next-title">otx.core.model.utils.mmdet</p>
+          <p class="prev-next-title">otx.core.exporter</p>
       </div>
   </a>
-  <a class='right-next' id="next-link" href="otx.core.model.utils.mmseg.html" title="next page">
+  <a class='right-next' id="next-link" href="otx.core.exporter.base.html" title="next page">
   <div class="prev-next-info">
       <p class="prev-next-subtitle">next</p>
-      <p class="prev-next-title">otx.core.model.utils.mmseg</p>
+      <p class="prev-next-title">otx.core.exporter.base</p>
   </div>
   <i class="fa-solid fa-angle-right"></i>
   </a>
@@ -542,89 +488,24 @@
 <nav id="bd-toc-nav" class="page-toc">
     <ul class="visible nav section-nav flex-column">
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#otx.core.model.utils.mmpretrain.ClsDataPreprocessor">
+  <a class="reference internal nav-link" href="#otx.core.exporter.anomaly.OTXAnomalyModelExporter">
    <code class="docutils literal notranslate">
     <span class="pre">
-     ClsDataPreprocessor
+     OTXAnomalyModelExporter
     </span>
    </code>
   </a>
   <ul class="nav section-nav flex-column">
    <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.core.model.utils.mmpretrain.ClsDataPreprocessor.device">
+    <a class="reference internal nav-link" href="#otx.core.exporter.anomaly.OTXAnomalyModelExporter.metadata">
      <code class="docutils literal notranslate">
       <span class="pre">
-       ClsDataPreprocessor.device
+       OTXAnomalyModelExporter.metadata
       </span>
      </code>
     </a>
    </li>
   </ul>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#otx.core.model.utils.mmpretrain.ExplainableMixInMMPretrainModel">
-   <code class="docutils literal notranslate">
-    <span class="pre">
-     ExplainableMixInMMPretrainModel
-    </span>
-   </code>
-  </a>
-  <ul class="nav section-nav flex-column">
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.core.model.utils.mmpretrain.ExplainableMixInMMPretrainModel.forward_explain">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       ExplainableMixInMMPretrainModel.forward_explain()
-      </span>
-     </code>
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.core.model.utils.mmpretrain.ExplainableMixInMMPretrainModel.forward_for_tracing">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       ExplainableMixInMMPretrainModel.forward_for_tracing()
-      </span>
-     </code>
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.core.model.utils.mmpretrain.ExplainableMixInMMPretrainModel.get_explain_fn">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       ExplainableMixInMMPretrainModel.get_explain_fn()
-      </span>
-     </code>
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.core.model.utils.mmpretrain.ExplainableMixInMMPretrainModel.head_forward_fn">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       ExplainableMixInMMPretrainModel.head_forward_fn()
-      </span>
-     </code>
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.core.model.utils.mmpretrain.ExplainableMixInMMPretrainModel.has_gap">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       ExplainableMixInMMPretrainModel.has_gap
-      </span>
-     </code>
-    </a>
-   </li>
-  </ul>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#otx.core.model.utils.mmpretrain.create_model">
-   <code class="docutils literal notranslate">
-    <span class="pre">
-     create_model()
-    </span>
-   </code>
-  </a>
  </li>
 </ul>
 
@@ -643,7 +524,7 @@
 <div class="toc-item">
   
 <div class="tocsection sourcelink">
-    <a href="../../../_sources/guide/reference/_autosummary/otx.core.model.utils.mmpretrain.rst.txt">
+    <a href="../../../_sources/guide/reference/_autosummary/otx.core.exporter.anomaly.rst.txt">
         <i class="fa-solid fa-file-lines"></i> Show Source
     </a>
 </div>

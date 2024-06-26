@@ -445,14 +445,14 @@
         <span class="n">adaptive_bs</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;None&quot;</span><span class="p">,</span> <span class="s2">&quot;Safe&quot;</span><span class="p">,</span> <span class="s2">&quot;Full&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;None&quot;</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Trains the model using the provided LightningModule and OTXDataModule.</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Trains the model using the provided LightningModule and OTXDataModule.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            max_epochs (int | None, optional): The maximum number of epochs. Defaults to None.</span>
 <span class="sd">            seed (int | None, optional): The random seed. Defaults to None.</span>
 <span class="sd">            deterministic (bool | Literal[&quot;warn&quot;]): Whether to enable deterministic behavior.</span>
-<span class="sd">            Also, can be set to `warn` to avoid failures, because some operations don&#39;t</span>
-<span class="sd">            support deterministic mode. Defaults to False.</span>
+<span class="sd">                Also, can be set to `warn` to avoid failures, because some operations don&#39;t</span>
+<span class="sd">                support deterministic mode. Defaults to False.</span>
 <span class="sd">            precision (_PRECISION_INPUT | None, optional): The precision of the model. Defaults to 32.</span>
 <span class="sd">            val_check_interval (int | float | None, optional): The validation check interval. Defaults to None.</span>
 <span class="sd">            callbacks (list[Callback] | Callback | None, optional): The callbacks to be used during training.</span>
@@ -480,25 +480,31 @@
 <span class="sd">            ... )</span>
 
 <span class="sd">        CLI Usage:</span>
-<span class="sd">            1. you can train with data_root only. then OTX will provide default model.</span>
-<span class="sd">                ```python</span>
-<span class="sd">                otx train --data_root &lt;DATASET_PATH&gt;</span>
+<span class="sd">            1. Can train with data_root only. then OTX will provide default training configuration.</span>
+<span class="sd">                ```shell</span>
+<span class="sd">                &gt;&gt;&gt; otx train --data_root &lt;DATASET_PATH, str&gt;</span>
 <span class="sd">                ```</span>
-<span class="sd">            2. you can pick a model or datamodule as Config file or Class.</span>
-<span class="sd">                ```python</span>
-<span class="sd">                otx train</span>
-<span class="sd">                --data_root &lt;DATASET_PATH&gt;</span>
-<span class="sd">                --model &lt;CONFIG | CLASS_PATH_OR_NAME&gt; --data &lt;CONFIG | CLASS_PATH_OR_NAME&gt;</span>
+<span class="sd">            2. Can pick a model or datamodule as Config file or Class.</span>
+<span class="sd">                ```shell</span>
+<span class="sd">                &gt;&gt;&gt; otx train \</span>
+<span class="sd">                ...     --data_root &lt;DATASET_PATH, str&gt; \</span>
+<span class="sd">                ...     --model &lt;CONFIG | CLASS_PATH_OR_NAME, OTXModel&gt; \</span>
+<span class="sd">                ...     --data &lt;CONFIG | CLASS_PATH_OR_NAME, OTXDataModule&gt;</span>
 <span class="sd">                ```</span>
-<span class="sd">            3. Of course, you can override the various values with commands.</span>
-<span class="sd">                ```python</span>
-<span class="sd">                otx train</span>
-<span class="sd">                    --data_root &lt;DATASET_PATH&gt;</span>
-<span class="sd">                    --max_epochs &lt;EPOCHS, int&gt; --checkpoint &lt;CKPT_PATH, str&gt;</span>
+<span class="sd">            3. Of course, can override the various values with commands.</span>
+<span class="sd">                ```shell</span>
+<span class="sd">                &gt;&gt;&gt; otx train \</span>
+<span class="sd">                ...     --data_root &lt;DATASET_PATH, str&gt; \</span>
+<span class="sd">                ...     --max_epochs &lt;EPOCHS, int&gt; \</span>
+<span class="sd">                ...     --checkpoint &lt;CKPT_PATH, str&gt;</span>
 <span class="sd">                ```</span>
-<span class="sd">            4. If you have a complete configuration file, run it like this.</span>
-<span class="sd">                ```python</span>
-<span class="sd">                otx train --data_root &lt;DATASET_PATH&gt; --config &lt;CONFIG_PATH, str&gt;</span>
+<span class="sd">            4. To train with configuration file, run</span>
+<span class="sd">                ```shell</span>
+<span class="sd">                &gt;&gt;&gt; otx train --data_root &lt;DATASET_PATH, str&gt; --config &lt;CONFIG_PATH, str&gt;</span>
+<span class="sd">                ```</span>
+<span class="sd">            5. To reproduce the existing training with work_dir, run</span>
+<span class="sd">                ```shell</span>
+<span class="sd">                &gt;&gt;&gt; otx train --work_dir &lt;WORK_DIR_PATH, str&gt;</span>
 <span class="sd">                ```</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">checkpoint</span> <span class="o">=</span> <span class="n">checkpoint</span> <span class="k">if</span> <span class="n">checkpoint</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">checkpoint</span>
@@ -579,12 +585,12 @@
         <span class="n">metric</span><span class="p">:</span> <span class="n">MetricCallable</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Run the testing phase of the engine.</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Run the testing phase of the engine.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            datamodule (EVAL_DATALOADERS | OTXDataModule | None, optional): The data module containing the test data.</span>
 <span class="sd">            checkpoint (PathLike | None, optional): Path to the checkpoint file to load the model from.</span>
 <span class="sd">                Defaults to None.</span>
+<span class="sd">            datamodule (EVAL_DATALOADERS | OTXDataModule | None, optional): The data module containing the test data.</span>
 <span class="sd">            metric (MetricCallable | None): If not None, it will override `OTXModel.metric_callable` with the given</span>
 <span class="sd">                metric callable. It will temporarilly change the evaluation metric for the validation and test.</span>
 <span class="sd">            **kwargs: Additional keyword arguments for pl.Trainer configuration.</span>
@@ -599,15 +605,24 @@
 <span class="sd">            ... )</span>
 
 <span class="sd">        CLI Usage:</span>
-<span class="sd">            1. you can pick a model.</span>
-<span class="sd">                ```python</span>
-<span class="sd">                otx test</span>
-<span class="sd">                    --model &lt;CONFIG | CLASS_PATH_OR_NAME&gt; --data_root &lt;DATASET_PATH, str&gt;</span>
-<span class="sd">                    --checkpoint &lt;CKPT_PATH, str&gt;</span>
+<span class="sd">            1. To eval model by specifying the work_dir where did the training, run</span>
+<span class="sd">                ```shell</span>
+<span class="sd">                &gt;&gt;&gt; otx test --work_dir &lt;WORK_DIR_PATH, str&gt;</span>
 <span class="sd">                ```</span>
-<span class="sd">            2. If you have a ready configuration file, run it like this.</span>
-<span class="sd">                ```python</span>
-<span class="sd">                otx test --config &lt;CONFIG_PATH, str&gt; --checkpoint &lt;CKPT_PATH, str&gt;</span>
+<span class="sd">            2. To eval model a specific checkpoint, run</span>
+<span class="sd">                ```shell</span>
+<span class="sd">                &gt;&gt;&gt; otx test --work_dir &lt;WORK_DIR_PATH, str&gt; --checkpoint &lt;CKPT_PATH, str&gt;</span>
+<span class="sd">                ```</span>
+<span class="sd">            3. Can pick a model.</span>
+<span class="sd">                ```shell</span>
+<span class="sd">                &gt;&gt;&gt; otx test \</span>
+<span class="sd">                ...     --model &lt;CONFIG | CLASS_PATH_OR_NAME&gt; \</span>
+<span class="sd">                ...     --data_root &lt;DATASET_PATH, str&gt; \</span>
+<span class="sd">                ...     --checkpoint &lt;CKPT_PATH, str&gt;</span>
+<span class="sd">                ```</span>
+<span class="sd">            4. To eval with configuration file, run</span>
+<span class="sd">                ```shell</span>
+<span class="sd">                &gt;&gt;&gt; otx test --config &lt;CONFIG_PATH, str&gt; --checkpoint &lt;CKPT_PATH, str&gt;</span>
 <span class="sd">                ```</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span>
@@ -664,14 +679,14 @@
         <span class="n">explain_config</span><span class="p">:</span> <span class="n">ExplainConfig</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Run predictions using the specified model and data.</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Run predictions using the specified model and data.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            datamodule (EVAL_DATALOADERS | OTXDataModule | None, optional): The data module to use for predictions.</span>
 <span class="sd">            checkpoint (PathLike | None, optional): The path to the checkpoint file to load the model from.</span>
+<span class="sd">            datamodule (EVAL_DATALOADERS | OTXDataModule | None, optional): The data module to use for predictions.</span>
 <span class="sd">            return_predictions (bool | None, optional): Whether to return the predictions or not.</span>
-<span class="sd">            explain (bool): Whether to dump &quot;saliency_map&quot; and &quot;feature_vector&quot; or not.</span>
-<span class="sd">            explain_config (ExplainConfig): Explain configuration (used for saliency map post-processing).</span>
+<span class="sd">            explain (bool, optional): Whether to dump &quot;saliency_map&quot; and &quot;feature_vector&quot; or not.</span>
+<span class="sd">            explain_config (ExplainConfig | None, optional): Explain configuration used for saliency map post-processing</span>
 <span class="sd">            **kwargs: Additional keyword arguments for pl.Trainer configuration.</span>
 
 <span class="sd">        Returns:</span>
@@ -686,15 +701,21 @@
 <span class="sd">            ... )</span>
 
 <span class="sd">        CLI Usage:</span>
-<span class="sd">            1. you can pick a model.</span>
-<span class="sd">                ```python</span>
-<span class="sd">                otx predict</span>
-<span class="sd">                    --config &lt;CONFIG_PATH&gt; --data_root &lt;DATASET_PATH, str&gt;</span>
-<span class="sd">                    --checkpoint &lt;CKPT_PATH, str&gt;</span>
+<span class="sd">            1. To predict a model with work_dir, run</span>
+<span class="sd">                ```shell</span>
+<span class="sd">                &gt;&gt;&gt; otx predict --work_dir &lt;WORK_DIR_PATH, str&gt;</span>
 <span class="sd">                ```</span>
-<span class="sd">            2. If you have a ready configuration file, run it like this.</span>
-<span class="sd">                ```python</span>
-<span class="sd">                otx predict --config &lt;CONFIG_PATH, str&gt; --checkpoint &lt;CKPT_PATH, str&gt;</span>
+<span class="sd">            2. To predict a specific model, run</span>
+<span class="sd">                ```shell</span>
+<span class="sd">                &gt;&gt;&gt; otx predict \</span>
+<span class="sd">                ...     --work_dir &lt;WORK_DIR_PATH, str&gt; \</span>
+<span class="sd">                ...     --checkpoint &lt;CKPT_PATH, str&gt;</span>
+<span class="sd">                ```</span>
+<span class="sd">            3. To predict with configuration file, run</span>
+<span class="sd">                ```shell</span>
+<span class="sd">                &gt;&gt;&gt; otx predict \</span>
+<span class="sd">                ...     --config &lt;CONFIG_PATH, str&gt; \</span>
+<span class="sd">                ...     --checkpoint &lt;CKPT_PATH, str&gt;</span>
 <span class="sd">                ```</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="kn">from</span> <span class="nn">otx.algo.utils.xai_utils</span> <span class="kn">import</span> <span class="n">process_saliency_maps_in_pred_entity</span><span class="p">,</span> <span class="n">set_crop_padded_map_flag</span>
@@ -760,7 +781,7 @@
         <span class="n">explain</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">export_demo_package</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Export the trained model to OpenVINO Intermediate Representation (IR) or ONNX formats.</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Export the trained model to OpenVINO Intermediate Representation (IR) or ONNX formats.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            checkpoint (PathLike | None, optional): Checkpoint to export. Defaults to None.</span>
@@ -783,16 +804,22 @@
 
 <span class="sd">        CLI Usage:</span>
 <span class="sd">            1. To export a model with default setting (OPENVINO, FP32), run</span>
-<span class="sd">                ```python</span>
-<span class="sd">                otx export</span>
-<span class="sd">                    --config &lt;CONFIG_PATH&gt; --data_root &lt;DATASET_PATH, str&gt;</span>
-<span class="sd">                    --checkpoint &lt;CKPT_PATH, str&gt;</span>
+<span class="sd">                ```shell</span>
+<span class="sd">                &gt;&gt;&gt; otx export --work_dir &lt;WORK_DIR_PATH, str&gt;</span>
 <span class="sd">                ```</span>
-<span class="sd">            2. To export a model with precision FP16 and format ONNX, run</span>
-<span class="sd">                ```python</span>
-<span class="sd">                otx export</span>
-<span class="sd">                    --config &lt;CONFIG_PATH&gt; --data_root &lt;DATASET_PATH, str&gt;</span>
-<span class="sd">                    --checkpoint &lt;CKPT_PATH, str&gt; --export_precision FP16 --export_format ONNX</span>
+<span class="sd">            2. To export a specific checkpoint, run</span>
+<span class="sd">                ```shell</span>
+<span class="sd">                &gt;&gt;&gt; otx export --config &lt;CONFIG_PATH, str&gt; --checkpoint &lt;CKPT_PATH, str&gt;</span>
+<span class="sd">                ```</span>
+<span class="sd">            3. To export a model with precision FP16 and format ONNX, run</span>
+<span class="sd">                ```shell</span>
+<span class="sd">                &gt;&gt;&gt; otx export ... \</span>
+<span class="sd">                ...     --export_precision FP16 --export_format ONNX</span>
+<span class="sd">                ```</span>
+<span class="sd">            4. To export model with &#39;saliency_map&#39; and &#39;feature_vector&#39;, run</span>
+<span class="sd">                ```shell</span>
+<span class="sd">                &gt;&gt;&gt; otx export ... \</span>
+<span class="sd">                ...     --explain True</span>
 <span class="sd">                ```</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">checkpoint</span> <span class="o">=</span> <span class="n">checkpoint</span> <span class="k">if</span> <span class="n">checkpoint</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">checkpoint</span>
@@ -852,7 +879,7 @@
         <span class="n">max_data_subset_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">export_demo_package</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Applies NNCF.PTQ to the underlying models (now works only for OV models).</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Applies NNCF.PTQ to the underlying models (now works only for OV models).</span>
 
 <span class="sd">        PTQ performs int-8 quantization on the input model, so the resulting model</span>
 <span class="sd">        comes in mixed precision (some operations, however, remain in FP32).</span>
@@ -877,12 +904,19 @@
 <span class="sd">            ... )</span>
 
 <span class="sd">        CLI Usage:</span>
-<span class="sd">            To optimize a model, run</span>
-<span class="sd">                ```python</span>
-<span class="sd">                otx optimize</span>
-<span class="sd">                    --checkpoint &lt;CKPT_PATH, str&gt;</span>
-<span class="sd">                    --model &lt;CONFIG | CLASS_PATH_OR_NAME&gt; --data_root &lt;DATASET_PATH, str&gt;</span>
-<span class="sd">                    --model.model_name=&lt;PATH_TO_IR_XML, str&gt;</span>
+<span class="sd">            1. To optimize a model with IR Model, run</span>
+<span class="sd">                ```shell</span>
+<span class="sd">                &gt;&gt;&gt; otx optimize \</span>
+<span class="sd">                ...     --work_dir &lt;WORK_DIR_PATH, str&gt; \</span>
+<span class="sd">                ...     --checkpoint &lt;IR_MODEL_WEIGHT_PATH, str&gt;</span>
+<span class="sd">                ```</span>
+<span class="sd">            2. To optimize a specific OVModel class with XML, run</span>
+<span class="sd">                ```shell</span>
+<span class="sd">                &gt;&gt;&gt; otx optimize \</span>
+<span class="sd">                ...     --data_root &lt;DATASET_PATH, str&gt; \</span>
+<span class="sd">                ...     --checkpoint &lt;IR_MODEL_WEIGHT_PATH, str&gt; \</span>
+<span class="sd">                ...     --model &lt;CONFIG | CLASS_PATH_OR_NAME, OVModel&gt; \</span>
+<span class="sd">                ...     --model.model_name=&lt;PATH_TO_IR_XML, str&gt;</span>
 <span class="sd">                ```</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">checkpoint</span> <span class="o">=</span> <span class="n">checkpoint</span> <span class="k">if</span> <span class="n">checkpoint</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">checkpoint</span>
@@ -933,7 +967,7 @@
         <span class="n">dump</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Run XAI using the specified model and data (test subset).</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Run XAI using the specified model and data (test subset).</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            checkpoint (PathLike | None, optional): The path to the checkpoint file to load the model from.</span>
@@ -954,11 +988,22 @@
 <span class="sd">            ... )</span>
 
 <span class="sd">        CLI Usage:</span>
-<span class="sd">            1. To run XAI using the specified model, run</span>
-<span class="sd">                ```python</span>
-<span class="sd">                otx explain</span>
-<span class="sd">                    --config &lt;CONFIG_PATH&gt; --data_root &lt;DATASET_PATH, str&gt;</span>
-<span class="sd">                    --checkpoint &lt;CKPT_PATH, str&gt;</span>
+<span class="sd">            1. To run XAI with the torch model in work_dir, run</span>
+<span class="sd">                ```shell</span>
+<span class="sd">                &gt;&gt;&gt; otx explain \</span>
+<span class="sd">                ...     --work_dir &lt;WORK_DIR_PATH, str&gt;</span>
+<span class="sd">                ```</span>
+<span class="sd">            2. To run XAI using the specified model (torch or IR), run</span>
+<span class="sd">                ```shell</span>
+<span class="sd">                &gt;&gt;&gt; otx explain \</span>
+<span class="sd">                ...     --work_dir &lt;WORK_DIR_PATH, str&gt; \</span>
+<span class="sd">                ...     --checkpoint &lt;CKPT_PATH, str&gt;</span>
+<span class="sd">                ```</span>
+<span class="sd">            3. To run XAI using the configuration, run</span>
+<span class="sd">                ```shell</span>
+<span class="sd">                &gt;&gt;&gt; otx explain \</span>
+<span class="sd">                ...     --config &lt;CONFIG_PATH&gt; --data_root &lt;DATASET_PATH, str&gt; \</span>
+<span class="sd">                ...     --checkpoint &lt;CKPT_PATH, str&gt;</span>
 <span class="sd">                ```</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="kn">from</span> <span class="nn">otx.algo.utils.xai_utils</span> <span class="kn">import</span> <span class="p">(</span>

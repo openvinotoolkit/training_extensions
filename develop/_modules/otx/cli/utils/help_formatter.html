@@ -267,12 +267,13 @@
 <span class="kn">from</span> <span class="nn">jsonargparse</span> <span class="kn">import</span> <span class="n">DefaultHelpFormatter</span>
 <span class="kn">from</span> <span class="nn">rich.markdown</span> <span class="kn">import</span> <span class="n">Markdown</span>
 <span class="kn">from</span> <span class="nn">rich.panel</span> <span class="kn">import</span> <span class="n">Panel</span>
+<span class="kn">from</span> <span class="nn">rich.theme</span> <span class="kn">import</span> <span class="n">Theme</span>
 <span class="kn">from</span> <span class="nn">rich_argparse</span> <span class="kn">import</span> <span class="n">RichHelpFormatter</span>
 
 <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
     <span class="kn">import</span> <span class="nn">argparse</span>
 
-    <span class="kn">from</span> <span class="nn">rich.console</span> <span class="kn">import</span> <span class="n">RenderableType</span>
+    <span class="kn">from</span> <span class="nn">rich.console</span> <span class="kn">import</span> <span class="n">Console</span><span class="p">,</span> <span class="n">RenderableType</span>
 
 
 <span class="n">BASE_ARGUMENTS</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;config&quot;</span><span class="p">,</span> <span class="s2">&quot;print_config&quot;</span><span class="p">,</span> <span class="s2">&quot;help&quot;</span><span class="p">,</span> <span class="s2">&quot;engine&quot;</span><span class="p">,</span> <span class="s2">&quot;model&quot;</span><span class="p">,</span> <span class="s2">&quot;model.help&quot;</span><span class="p">,</span> <span class="s2">&quot;task&quot;</span><span class="p">}</span>
@@ -280,9 +281,7 @@
 <span class="n">REQUIRED_ARGUMENTS</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s2">&quot;train&quot;</span><span class="p">:</span> <span class="p">{</span>
         <span class="s2">&quot;data&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;optimizer&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;scheduler&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;engine.checkpoint&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;checkpoint&quot;</span><span class="p">,</span>
         <span class="o">*</span><span class="n">BASE_ARGUMENTS</span><span class="p">,</span>
         <span class="o">*</span><span class="n">ENGINE_ARGUMENTS</span><span class="p">,</span>
     <span class="p">},</span>
@@ -303,6 +302,14 @@
         <span class="s2">&quot;checkpoint&quot;</span><span class="p">,</span>
         <span class="s2">&quot;export_format&quot;</span><span class="p">,</span>
         <span class="s2">&quot;export_precision&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;explain&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;export_demo_package&quot;</span><span class="p">,</span>
+        <span class="o">*</span><span class="n">BASE_ARGUMENTS</span><span class="p">,</span>
+        <span class="o">*</span><span class="n">ENGINE_ARGUMENTS</span><span class="p">,</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;optimize&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;checkpoint&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;export_demo_package&quot;</span><span class="p">,</span>
         <span class="o">*</span><span class="n">BASE_ARGUMENTS</span><span class="p">,</span>
         <span class="o">*</span><span class="n">ENGINE_ARGUMENTS</span><span class="p">,</span>
     <span class="p">},</span>
@@ -310,6 +317,7 @@
         <span class="s2">&quot;data&quot;</span><span class="p">,</span>
         <span class="s2">&quot;checkpoint&quot;</span><span class="p">,</span>
         <span class="s2">&quot;explain_config&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;dump&quot;</span><span class="p">,</span>
         <span class="o">*</span><span class="n">BASE_ARGUMENTS</span><span class="p">,</span>
         <span class="o">*</span><span class="n">ENGINE_ARGUMENTS</span><span class="p">,</span>
     <span class="p">},</span>
@@ -354,11 +362,11 @@
 
 <span class="n">VERBOSE_USAGE</span> <span class="o">=</span> <span class="p">(</span>
     <span class="s2">&quot;To get more overridable argument information, run the command below.</span><span class="se">\n</span><span class="s2">&quot;</span>
-    <span class="s2">&quot;```python</span><span class="se">\n</span><span class="s2">&quot;</span>
+    <span class="s2">&quot;```shell</span><span class="se">\n</span><span class="s2">&quot;</span>
     <span class="s2">&quot;# Verbosity Level 1</span><span class="se">\n</span><span class="s2">&quot;</span>
-    <span class="s2">&quot;otx </span><span class="si">{subcommand}</span><span class="s2"> [optional_arguments] -h -v</span><span class="se">\n</span><span class="s2">&quot;</span>
+    <span class="s2">&quot;&gt;&gt;&gt; otx </span><span class="si">{subcommand}</span><span class="s2"> [optional_arguments] -h -v</span><span class="se">\n</span><span class="s2">&quot;</span>
     <span class="s2">&quot;# Verbosity Level 2</span><span class="se">\n</span><span class="s2">&quot;</span>
-    <span class="s2">&quot;otx </span><span class="si">{subcommand}</span><span class="s2"> [optional_arguments] -h -vv</span><span class="se">\n</span><span class="s2">&quot;</span>
+    <span class="s2">&quot;&gt;&gt;&gt; otx </span><span class="si">{subcommand}</span><span class="s2"> [optional_arguments] -h -vv</span><span class="se">\n</span><span class="s2">&quot;</span>
     <span class="s2">&quot;```&quot;</span>
 <span class="p">)</span>
 
@@ -452,6 +460,19 @@
     <span class="n">verbosity_level</span> <span class="o">=</span> <span class="n">verbosity_dict</span><span class="p">[</span><span class="s2">&quot;verbosity&quot;</span><span class="p">]</span>
     <span class="n">subcommand</span> <span class="o">=</span> <span class="n">verbosity_dict</span><span class="p">[</span><span class="s2">&quot;subcommand&quot;</span><span class="p">]</span>
 
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">prog</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">indent_increment</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
+        <span class="n">max_help_position</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">24</span><span class="p">,</span>
+        <span class="n">width</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">console</span><span class="p">:</span> <span class="n">Console</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">RichHelpFormatter</span><span class="o">.</span><span class="n">group_name_formatter</span> <span class="o">=</span> <span class="nb">str</span>
+
+        <span class="n">RichHelpFormatter</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prog</span><span class="p">,</span> <span class="n">indent_increment</span><span class="p">,</span> <span class="n">max_help_position</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">console</span><span class="o">=</span><span class="n">console</span><span class="p">)</span>
+        <span class="n">DefaultHelpFormatter</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prog</span><span class="p">,</span> <span class="n">indent_increment</span><span class="p">,</span> <span class="n">max_help_position</span><span class="p">,</span> <span class="n">width</span><span class="p">)</span>
+
 <div class="viewcode-block" id="CustomHelpFormatter.add_usage">
 <a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.cli.utils.help_formatter.html#otx.cli.utils.help_formatter.CustomHelpFormatter.add_usage">[docs]</a>
     <span class="k">def</span> <span class="nf">add_usage</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">usage</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">actions</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">argparse</span><span class="o">.</span><span class="n">Action</span><span class="p">],</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -503,7 +524,7 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            str: A string containing the formatted help message.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">console</span><span class="o">.</span><span class="n">capture</span><span class="p">()</span> <span class="k">as</span> <span class="n">capture</span><span class="p">:</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">console</span><span class="o">.</span><span class="n">use_theme</span><span class="p">(</span><span class="n">Theme</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">styles</span><span class="p">)),</span> <span class="bp">self</span><span class="o">.</span><span class="n">console</span><span class="o">.</span><span class="n">capture</span><span class="p">()</span> <span class="k">as</span> <span class="n">capture</span><span class="p">:</span>
             <span class="n">section</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_root_section</span>
             <span class="n">rendered_content</span><span class="p">:</span> <span class="n">RenderableType</span> <span class="o">=</span> <span class="n">section</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">subcommand</span> <span class="ow">in</span> <span class="n">REQUIRED_ARGUMENTS</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbosity_level</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">section</span><span class="o">.</span><span class="n">rich_items</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
@@ -513,7 +534,7 @@
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbosity_level</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">section</span><span class="o">.</span><span class="n">rich_items</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
                     <span class="n">rendered_content</span> <span class="o">=</span> <span class="n">Panel</span><span class="p">(</span><span class="n">section</span><span class="p">,</span> <span class="n">border_style</span><span class="o">=</span><span class="s2">&quot;dim&quot;</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Arguments&quot;</span><span class="p">,</span> <span class="n">title_align</span><span class="o">=</span><span class="s2">&quot;left&quot;</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">console</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="n">rendered_content</span><span class="p">,</span> <span class="n">highlight</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">soft_wrap</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">console</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="n">rendered_content</span><span class="p">,</span> <span class="n">highlight</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">soft_wrap</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="n">help_msg</span> <span class="o">=</span> <span class="n">capture</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
 
         <span class="k">if</span> <span class="n">help_msg</span><span class="p">:</span>
