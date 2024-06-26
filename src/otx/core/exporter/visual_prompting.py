@@ -74,7 +74,7 @@ class OTXVisualPromptingModelExporter(OTXNativeModelExporter):
 
     def to_openvino(
         self,
-        model: OTXModel,
+        model: OTXModel | torch.nn.Module,
         output_dir: Path,
         base_model_name: str = "exported_model",
         precision: OTXPrecisionType = OTXPrecisionType.FP32,
@@ -114,12 +114,12 @@ class OTXVisualPromptingModelExporter(OTXNativeModelExporter):
 
     def to_onnx(
         self,
-        model: OTXModel,
+        model: OTXModel | torch.nn.Module,
         output_dir: Path,
         base_model_name: str = "exported_model",
         precision: OTXPrecisionType = OTXPrecisionType.FP32,
-        embed_metadata: bool = True,
         model_type: str = "sam",
+        embed_metadata: bool = True,
     ) -> Path:
         """Export the given PyTorch model to ONNX format and save it to the specified output directory.
 
