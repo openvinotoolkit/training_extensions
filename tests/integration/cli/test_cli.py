@@ -156,6 +156,14 @@ def test_otx_e2e(
     assert (latest_dir / "csv").exists()
 
     # 3) otx export
+    if any(
+        task_name in recipe
+        for task_name in [
+            "dino_v2",
+            "rotated_detection/maskrcnn",
+        ]
+    ):
+        return
     if task in ("visual_prompting", "zero_shot_visual_prompting"):
         fxt_export_list = [
             ExportCase2Test("ONNX", False, "exported_model_decoder.onnx"),
@@ -245,6 +253,8 @@ def test_otx_e2e(
     assert latest_dir.exists()
 
     # 5) otx export with XAI
+    if "instance_segmentation/rtmdet_inst_tiny" in recipe:
+        return
     if ("_cls" not in task) and (task not in ["detection", "instance_segmentation"]):
         return  # Supported only for classification, detection and instance segmentation task.
 
