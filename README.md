@@ -80,23 +80,13 @@ If you want to make changes to the library, then a local installation is recomme
 Installing the library with pip is the easiest way to get started with otx.
 
 ```bash
-pip install otx
+pip install otx[base]
 ```
 
-This will install OTX CLI. OTX requires torch and lightning by default to provide training. To use the full pipeline, you need the commands below:
+Alternatively, for zsh users:
 
 ```bash
-# Get help for the installation arguments
-otx install -h
-
-# Install the full package
-otx install
-
-# Install with verbose output
-otx install -v
-
-# Install with docs option only.
-otx install --option docs
+pip install 'otx[base]'
 ```
 
 </details>
@@ -117,23 +107,7 @@ conda activate otx_env
 # Clone the repository and install in editable mode
 git clone https://github.com/openvinotoolkit/training_extensions.git
 cd training_extensions
-pip install -e .
-```
-
-This will install OTX CLI. OTX requires torch and lightning by default to provide training. To use the full pipeline, you need the commands below:
-
-```bash
-# Get help for the installation arguments
-otx install -h
-
-# Install the full package
-otx install
-
-# Install with verbose output
-otx install -v
-
-# Install with docs option only.
-otx install --option docs
+pip install -e .[base]  # for zsh: pip install -e '.[base]'
 ```
 
 </details>
@@ -152,6 +126,10 @@ otx --help
 
 # Print help messages from the train subcommand
 otx train --help
+
+# Print help messages for more details
+otx train --help -v   # Print required parameters
+otx train --help -vv  # Print all configurable parameters
 ```
 
 You can find details with examples in the [CLI Guide](https://openvinotoolkit.github.io/training_extensions/latest/guide/get_started/cli_commands.html). and [API Quick-Guide](https://openvinotoolkit.github.io/training_extensions/latest/guide/get_started/api_tutorial.html).
@@ -189,6 +167,10 @@ In addition to the examples above, please refer to the documentation for tutoria
 ---
 
 ## Updates
+
+### v2.1.0 (2Q24)
+
+TBD
 
 ### v2.0.0 (1Q24)
 

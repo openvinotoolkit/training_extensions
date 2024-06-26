@@ -123,7 +123,7 @@ ci_publish = [
 ]
 
 ci_benchmark = [
-    "pandas==2.2.2",
+    "pandas<2.2",       # To avoid conflict with nncf==2.9.0
     "matplotlib==3.8.4",
     "nbconvert==7.16.3",
     "ipython==8.23.0",
@@ -318,7 +318,6 @@ exclude = [
     "src/otx/algo/**/mmdeploy/",
 
     # it will be cleaned up later
-    "src/otx/algo/classification/backbones/*",
     "for_developers/helpers.py",
 
     # Ruff complains it but don't know how to fix since it literally showed no useful logs.
