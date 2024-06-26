@@ -126,7 +126,7 @@ ci_benchmark = [
     "pandas<2.2",       # To avoid conflict with nncf==2.9.0
     "matplotlib==3.8.4",
     "nbconvert==7.16.3",
-    "ipython==8.23.0",
+    "ipython==8.25.0",
     "ipykernel==6.29.4",
     "openpyxl==3.1.4",
 ]
