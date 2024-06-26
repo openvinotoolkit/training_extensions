@@ -157,14 +157,6 @@ class Engine:
             )
         )
 
-        # [TODO](ashwinvaidya17): Need to revisit how task, optimizer, and scheduler are assigned to the model
-        if self.task in (
-            OTXTaskType.ANOMALY_CLASSIFICATION,
-            OTXTaskType.ANOMALY_DETECTION,
-            OTXTaskType.ANOMALY_SEGMENTATION,
-        ):
-            self._model = self._get_anomaly_model(self._model)
-
     # ------------------------------------------------------------------------ #
     # General OTX Entry Points
     # ------------------------------------------------------------------------ #
@@ -1029,8 +1021,3 @@ class Engine:
             msg = "Please include the `data_root` or `datamodule` when creating the Engine."
             raise RuntimeError(msg)
         return self._datamodule
-
-    def _get_anomaly_model(self, model: OTXModel) -> OTXModel:
-        # [TODO](ashwinvaidya17): Need to revisit how task, optimizer, and scheduler are assigned to the model
-        model.task = self.task
-        return model

@@ -7,13 +7,14 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal
 
 from anomalib.models.image import Padim as AnomalibPadim
 
 from otx.core.model.anomaly import OTXAnomaly
 from otx.core.model.base import OTXModel
 from otx.core.types.label import AnomalyLabelInfo
+from otx.core.types.task import OTXTaskType
 
 if TYPE_CHECKING:
     from lightning.pytorch.utilities.types import STEP_OUTPUT
@@ -30,8 +31,9 @@ class Padim(OTXAnomaly, OTXModel, AnomalibPadim):
         layers (list[str], optional): Feature extractor layers. Defaults to ["layer1", "layer2", "layer3"].
         pre_trained (bool, optional): Pretrained backbone. Defaults to True.
         n_features (int | None, optional): Number of features. Defaults to None.
-        num_classes (int, optional): Anoamly don't use num_classes ,
-            but OTXModel always receives num_classes, so need this.
+        task (Literal[
+                OTXTaskType.ANOMALY_CLASSIFICATION, OTXTaskType.ANOMALY_DETECTION, OTXTaskType.ANOMALY_SEGMENTATION
+            ], optional): Task type of Anomaly Task. Defaults to OTXTaskType.ANOMALY_CLASSIFICATION.
     """
 
     def __init__(
@@ -40,6 +42,11 @@ class Padim(OTXAnomaly, OTXModel, AnomalibPadim):
         layers: list[str] = ["layer1", "layer2", "layer3"],  # noqa: B006
         pre_trained: bool = True,
         n_features: int | None = None,
+        task: Literal[
+            OTXTaskType.ANOMALY_CLASSIFICATION,
+            OTXTaskType.ANOMALY_DETECTION,
+            OTXTaskType.ANOMALY_SEGMENTATION,
+        ] = OTXTaskType.ANOMALY_CLASSIFICATION,
     ) -> None:
         OTXAnomaly.__init__(self)
         OTXModel.__init__(self, label_info=AnomalyLabelInfo())
@@ -50,6 +57,7 @@ class Padim(OTXAnomaly, OTXModel, AnomalibPadim):
             pre_trained=pre_trained,
             n_features=n_features,
         )
+        self.task = task
 
     def configure_optimizers(self) -> tuple[list[Optimizer], list[Optimizer]] | None:
         """PADIM doesn't require optimization, therefore returns no optimizers."""
