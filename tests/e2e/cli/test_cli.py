@@ -125,7 +125,6 @@ def test_otx_e2e_cli(
         task_name in recipe
         for task_name in [
             "dino_v2",
-            "rotated_detection/maskrcnn",
         ]
     ):
         return
