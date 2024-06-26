@@ -82,7 +82,7 @@ xpu = [
     "timm",
     "openvino==2024.0",
     "openvino-dev==2024.0",
-    "openvino-model-api==0.2.0",
+    "openvino-model-api==0.2.1",
     "onnx==1.16.1",
     "onnxconverter-common==1.14.0",
     "nncf==2.9.0",
