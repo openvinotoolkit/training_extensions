@@ -186,14 +186,14 @@ class Engine:
         adaptive_bs: Literal["None", "Safe", "Full"] = "None",
         **kwargs,
     ) -> dict[str, Any]:
-        """Trains the model using the provided LightningModule and OTXDataModule.
+        r"""Trains the model using the provided LightningModule and OTXDataModule.
 
         Args:
             max_epochs (int | None, optional): The maximum number of epochs. Defaults to None.
             seed (int | None, optional): The random seed. Defaults to None.
             deterministic (bool | Literal["warn"]): Whether to enable deterministic behavior.
-            Also, can be set to `warn` to avoid failures, because some operations don't
-            support deterministic mode. Defaults to False.
+                Also, can be set to `warn` to avoid failures, because some operations don't
+                support deterministic mode. Defaults to False.
             precision (_PRECISION_INPUT | None, optional): The precision of the model. Defaults to 32.
             val_check_interval (int | float | None, optional): The validation check interval. Defaults to None.
             callbacks (list[Callback] | Callback | None, optional): The callbacks to be used during training.
@@ -221,25 +221,31 @@ class Engine:
             ... )
 
         CLI Usage:
-            1. you can train with data_root only. then OTX will provide default model.
-                ```python
-                otx train --data_root <DATASET_PATH>
+            1. Can train with data_root only. then OTX will provide default training configuration.
+                ```shell
+                >>> otx train --data_root <DATASET_PATH, str>
                 ```
-            2. you can pick a model or datamodule as Config file or Class.
-                ```python
-                otx train
-                --data_root <DATASET_PATH>
-                --model <CONFIG | CLASS_PATH_OR_NAME> --data <CONFIG | CLASS_PATH_OR_NAME>
+            2. Can pick a model or datamodule as Config file or Class.
+                ```shell
+                >>> otx train \
+                ...     --data_root <DATASET_PATH, str> \
+                ...     --model <CONFIG | CLASS_PATH_OR_NAME, OTXModel> \
+                ...     --data <CONFIG | CLASS_PATH_OR_NAME, OTXDataModule>
                 ```
-            3. Of course, you can override the various values with commands.
-                ```python
-                otx train
-                    --data_root <DATASET_PATH>
-                    --max_epochs <EPOCHS, int> --checkpoint <CKPT_PATH, str>
+            3. Of course, can override the various values with commands.
+                ```shell
+                >>> otx train \
+                ...     --data_root <DATASET_PATH, str> \
+                ...     --max_epochs <EPOCHS, int> \
+                ...     --checkpoint <CKPT_PATH, str>
                 ```
-            4. If you have a complete configuration file, run it like this.
-                ```python
-                otx train --data_root <DATASET_PATH> --config <CONFIG_PATH, str>
+            4. To train with configuration file, run
+                ```shell
+                >>> otx train --data_root <DATASET_PATH, str> --config <CONFIG_PATH, str>
+                ```
+            5. To reproduce the existing training with work_dir, run
+                ```shell
+                >>> otx train --work_dir <WORK_DIR_PATH, str>
                 ```
         """
         checkpoint = checkpoint if checkpoint is not None else self.checkpoint
@@ -317,12 +323,12 @@ class Engine:
         metric: MetricCallable | None = None,
         **kwargs,
     ) -> dict:
-        """Run the testing phase of the engine.
+        r"""Run the testing phase of the engine.
 
         Args:
-            datamodule (EVAL_DATALOADERS | OTXDataModule | None, optional): The data module containing the test data.
             checkpoint (PathLike | None, optional): Path to the checkpoint file to load the model from.
                 Defaults to None.
+            datamodule (EVAL_DATALOADERS | OTXDataModule | None, optional): The data module containing the test data.
             metric (MetricCallable | None): If not None, it will override `OTXModel.metric_callable` with the given
                 metric callable. It will temporarilly change the evaluation metric for the validation and test.
             **kwargs: Additional keyword arguments for pl.Trainer configuration.
@@ -337,15 +343,24 @@ class Engine:
             ... )
 
         CLI Usage:
-            1. you can pick a model.
-                ```python
-                otx test
-                    --model <CONFIG | CLASS_PATH_OR_NAME> --data_root <DATASET_PATH, str>
-                    --checkpoint <CKPT_PATH, str>
+            1. To eval model by specifying the work_dir where did the training, run
+                ```shell
+                >>> otx test --work_dir <WORK_DIR_PATH, str>
                 ```
-            2. If you have a ready configuration file, run it like this.
-                ```python
-                otx test --config <CONFIG_PATH, str> --checkpoint <CKPT_PATH, str>
+            2. To eval model a specific checkpoint, run
+                ```shell
+                >>> otx test --work_dir <WORK_DIR_PATH, str> --checkpoint <CKPT_PATH, str>
+                ```
+            3. Can pick a model.
+                ```shell
+                >>> otx test \
+                ...     --model <CONFIG | CLASS_PATH_OR_NAME> \
+                ...     --data_root <DATASET_PATH, str> \
+                ...     --checkpoint <CKPT_PATH, str>
+                ```
+            4. To eval with configuration file, run
+                ```shell
+                >>> otx test --config <CONFIG_PATH, str> --checkpoint <CKPT_PATH, str>
                 ```
         """
         model = self.model
@@ -399,14 +414,14 @@ class Engine:
         explain_config: ExplainConfig | None = None,
         **kwargs,
     ) -> list | None:
-        """Run predictions using the specified model and data.
+        r"""Run predictions using the specified model and data.
 
         Args:
-            datamodule (EVAL_DATALOADERS | OTXDataModule | None, optional): The data module to use for predictions.
             checkpoint (PathLike | None, optional): The path to the checkpoint file to load the model from.
+            datamodule (EVAL_DATALOADERS | OTXDataModule | None, optional): The data module to use for predictions.
             return_predictions (bool | None, optional): Whether to return the predictions or not.
-            explain (bool): Whether to dump "saliency_map" and "feature_vector" or not.
-            explain_config (ExplainConfig): Explain configuration (used for saliency map post-processing).
+            explain (bool, optional): Whether to dump "saliency_map" and "feature_vector" or not.
+            explain_config (ExplainConfig | None, optional): Explain configuration used for saliency map post-processing
             **kwargs: Additional keyword arguments for pl.Trainer configuration.
 
         Returns:
@@ -421,18 +436,24 @@ class Engine:
             ... )
 
         CLI Usage:
-            1. you can pick a model.
-                ```python
-                otx predict
-                    --config <CONFIG_PATH> --data_root <DATASET_PATH, str>
-                    --checkpoint <CKPT_PATH, str>
+            1. To predict a model with work_dir, run
+                ```shell
+                >>> otx predict --work_dir <WORK_DIR_PATH, str>
                 ```
-            2. If you have a ready configuration file, run it like this.
-                ```python
-                otx predict --config <CONFIG_PATH, str> --checkpoint <CKPT_PATH, str>
+            2. To predict a specific model, run
+                ```shell
+                >>> otx predict \
+                ...     --work_dir <WORK_DIR_PATH, str> \
+                ...     --checkpoint <CKPT_PATH, str>
+                ```
+            3. To predict with configuration file, run
+                ```shell
+                >>> otx predict \
+                ...     --config <CONFIG_PATH, str> \
+                ...     --checkpoint <CKPT_PATH, str>
                 ```
         """
-        from otx.algo.utils.xai_utils import process_saliency_maps_in_pred_entity
+        from otx.algo.utils.xai_utils import process_saliency_maps_in_pred_entity, set_crop_padded_map_flag
 
         model = self.model
 
@@ -478,8 +499,9 @@ class Engine:
         if explain:
             if explain_config is None:
                 explain_config = ExplainConfig()
+            explain_config = set_crop_padded_map_flag(explain_config, datamodule)
 
-            predict_result = process_saliency_maps_in_pred_entity(predict_result, explain_config)
+            predict_result = process_saliency_maps_in_pred_entity(predict_result, explain_config, datamodule.label_info)
 
         return predict_result
 
@@ -491,7 +513,7 @@ class Engine:
         explain: bool = False,
         export_demo_package: bool = False,
     ) -> Path:
-        """Export the trained model to OpenVINO Intermediate Representation (IR) or ONNX formats.
+        r"""Export the trained model to OpenVINO Intermediate Representation (IR) or ONNX formats.
 
         Args:
             checkpoint (PathLike | None, optional): Checkpoint to export. Defaults to None.
@@ -514,16 +536,22 @@ class Engine:
 
         CLI Usage:
             1. To export a model with default setting (OPENVINO, FP32), run
-                ```python
-                otx export
-                    --config <CONFIG_PATH> --data_root <DATASET_PATH, str>
-                    --checkpoint <CKPT_PATH, str>
+                ```shell
+                >>> otx export --work_dir <WORK_DIR_PATH, str>
                 ```
-            2. To export a model with precision FP16 and format ONNX, run
-                ```python
-                otx export
-                    --config <CONFIG_PATH> --data_root <DATASET_PATH, str>
-                    --checkpoint <CKPT_PATH, str> --export_precision FP16 --export_format ONNX
+            2. To export a specific checkpoint, run
+                ```shell
+                >>> otx export --config <CONFIG_PATH, str> --checkpoint <CKPT_PATH, str>
+                ```
+            3. To export a model with precision FP16 and format ONNX, run
+                ```shell
+                >>> otx export ... \
+                ...     --export_precision FP16 --export_format ONNX
+                ```
+            4. To export model with 'saliency_map' and 'feature_vector', run
+                ```shell
+                >>> otx export ... \
+                ...     --explain True
                 ```
         """
         checkpoint = checkpoint if checkpoint is not None else self.checkpoint
@@ -580,7 +608,7 @@ class Engine:
         max_data_subset_size: int | None = None,
         export_demo_package: bool = False,
     ) -> Path:
-        """Applies NNCF.PTQ to the underlying models (now works only for OV models).
+        r"""Applies NNCF.PTQ to the underlying models (now works only for OV models).
 
         PTQ performs int-8 quantization on the input model, so the resulting model
         comes in mixed precision (some operations, however, remain in FP32).
@@ -605,12 +633,19 @@ class Engine:
             ... )
 
         CLI Usage:
-            To optimize a model, run
-                ```python
-                otx optimize
-                    --checkpoint <CKPT_PATH, str>
-                    --model <CONFIG | CLASS_PATH_OR_NAME> --data_root <DATASET_PATH, str>
-                    --model.model_name=<PATH_TO_IR_XML, str>
+            1. To optimize a model with IR Model, run
+                ```shell
+                >>> otx optimize \
+                ...     --work_dir <WORK_DIR_PATH, str> \
+                ...     --checkpoint <IR_MODEL_WEIGHT_PATH, str>
+                ```
+            2. To optimize a specific OVModel class with XML, run
+                ```shell
+                >>> otx optimize \
+                ...     --data_root <DATASET_PATH, str> \
+                ...     --checkpoint <IR_MODEL_WEIGHT_PATH, str> \
+                ...     --model <CONFIG | CLASS_PATH_OR_NAME, OVModel> \
+                ...     --model.model_name=<PATH_TO_IR_XML, str>
                 ```
         """
         checkpoint = checkpoint if checkpoint is not None else self.checkpoint
@@ -658,7 +693,7 @@ class Engine:
         dump: bool | None = False,
         **kwargs,
     ) -> list | None:
-        """Run XAI using the specified model and data (test subset).
+        r"""Run XAI using the specified model and data (test subset).
 
         Args:
             checkpoint (PathLike | None, optional): The path to the checkpoint file to load the model from.
@@ -679,14 +714,29 @@ class Engine:
             ... )
 
         CLI Usage:
-            1. To run XAI using the specified model, run
-                ```python
-                otx explain
-                    --config <CONFIG_PATH> --data_root <DATASET_PATH, str>
-                    --checkpoint <CKPT_PATH, str>
+            1. To run XAI with the torch model in work_dir, run
+                ```shell
+                >>> otx explain \
+                ...     --work_dir <WORK_DIR_PATH, str>
+                ```
+            2. To run XAI using the specified model (torch or IR), run
+                ```shell
+                >>> otx explain \
+                ...     --work_dir <WORK_DIR_PATH, str> \
+                ...     --checkpoint <CKPT_PATH, str>
+                ```
+            3. To run XAI using the configuration, run
+                ```shell
+                >>> otx explain \
+                ...     --config <CONFIG_PATH> --data_root <DATASET_PATH, str> \
+                ...     --checkpoint <CKPT_PATH, str>
                 ```
         """
-        from otx.algo.utils.xai_utils import dump_saliency_maps, process_saliency_maps_in_pred_entity
+        from otx.algo.utils.xai_utils import (
+            dump_saliency_maps,
+            process_saliency_maps_in_pred_entity,
+            set_crop_padded_map_flag,
+        )
 
         model = self.model
 
@@ -723,8 +773,9 @@ class Engine:
 
         if explain_config is None:
             explain_config = ExplainConfig()
+        explain_config = set_crop_padded_map_flag(explain_config, datamodule)
 
-        predict_result = process_saliency_maps_in_pred_entity(predict_result, explain_config)
+        predict_result = process_saliency_maps_in_pred_entity(predict_result, explain_config, datamodule.label_info)
         if dump:
             dump_saliency_maps(
                 predict_result,

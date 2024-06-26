@@ -24,8 +24,12 @@ from otx.core.data.entity.utils import stack_batch
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.model.detection import ExplainableOTXDetModel
+from otx.core.types.export import OTXExportFormatType
+from otx.core.types.precision import OTXPrecisionType
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
     from torch import Tensor, nn
 
 
@@ -85,15 +89,17 @@ class YOLOX(ExplainableOTXDetModel):
         for img_info, prediction in zip(inputs.imgs_info, predictions):
             if not isinstance(prediction, InstanceData):
                 raise TypeError(prediction)
-            scores.append(prediction.scores)  # type: ignore[attr-defined]
+
+            filtered_idx = torch.where(prediction.scores > self.best_confidence_threshold)  # type: ignore[attr-defined]
+            scores.append(prediction.scores[filtered_idx])  # type: ignore[attr-defined]
             bboxes.append(
                 tv_tensors.BoundingBoxes(
-                    prediction.bboxes,  # type: ignore[attr-defined]
+                    prediction.bboxes[filtered_idx],  # type: ignore[attr-defined]
                     format="XYXY",
                     canvas_size=img_info.ori_shape,
                 ),
             )
-            labels.append(prediction.labels)  # type: ignore[attr-defined]
+            labels.append(prediction.labels[filtered_idx])  # type: ignore[attr-defined]
 
         if self.explain_mode:
             if not isinstance(outputs, dict):
@@ -198,6 +204,35 @@ class YOLOX(ExplainableOTXDetModel):
             swap_rgb=swap_rgb,
             output_names=["bboxes", "labels", "feature_vector", "saliency_map"] if self.explain_mode else None,
         )
+
+    def export(
+        self,
+        output_dir: Path,
+        base_name: str,
+        export_format: OTXExportFormatType,
+        precision: OTXPrecisionType = OTXPrecisionType.FP32,
+        to_exportable_code: bool = False,
+    ) -> Path:
+        """Export this model to the specified output directory.
+
+        This is required to patch otx.algo.detection.backbones.csp_darknet.Focus.forward to export forward.
+
+        Args:
+            output_dir (Path): directory for saving the exported model
+            base_name: (str): base name for the exported model file. Extension is defined by the target export format
+            export_format (OTXExportFormatType): format of the output model
+            precision (OTXExportPrecisionType): precision of the output model
+
+        Returns:
+            Path: path to the exported model.
+        """
+        # patch otx.algo.detection.backbones.csp_darknet.Focus.forward
+        orig_focus_forward = self.model.backbone.stem.forward
+        try:
+            self.model.backbone.stem.forward = self.model.backbone.stem.export
+            return super().export(output_dir, base_name, export_format, precision, to_exportable_code)
+        finally:
+            self.model.backbone.stem.forward = orig_focus_forward
 
     def forward_for_tracing(self, inputs: Tensor) -> list[InstanceData]:
         """Forward function for export."""

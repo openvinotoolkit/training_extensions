@@ -5,11 +5,9 @@
 
 from __future__ import annotations
 
-from pathlib import Path
+import logging as log
 from typing import TYPE_CHECKING, Any, TypeAlias
 
-import onnx
-import openvino
 import torch
 from anomalib import TaskType as AnomalibTaskType
 from anomalib.callbacks.metrics import _MetricsCallback
@@ -26,13 +24,14 @@ from otx.core.data.entity.anomaly import (
     AnomalySegmentationBatchPrediction,
     AnomalySegmentationDataBatch,
 )
-from otx.core.exporter.base import OTXModelExporter
-from otx.core.types.export import OTXExportFormatType, TaskLevelExportParameters
-from otx.core.types.label import NullLabelInfo
+from otx.core.exporter.anomaly import OTXAnomalyModelExporter
+from otx.core.types.export import OTXExportFormatType
 from otx.core.types.precision import OTXPrecisionType
 from otx.core.types.task import OTXTaskType
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
     from anomalib.metrics import AnomalibMetricCollection
     from anomalib.metrics.threshold import BaseThreshold
     from lightning.pytorch import Trainer
@@ -47,94 +46,6 @@ AnomalyModelInputs: TypeAlias = (
 AnomalyModelOutputs: TypeAlias = (
     AnomalyClassificationBatchPrediction | AnomalySegmentationBatchPrediction | AnomalyDetectionBatchPrediction
 )
-
-
-class _AnomalyModelExporter(OTXModelExporter):
-    def __init__(
-        self,
-        image_shape: tuple[int, int] = (256, 256),
-        image_threshold: float = 0.5,
-        pixel_threshold: float = 0.5,
-        task: AnomalibTaskType = AnomalibTaskType.CLASSIFICATION,
-        # the actual values for mean and scale should be in range 0-255
-        mean_values: tuple[float, float, float] = (0.0, 0.0, 0.0),
-        scale_values: tuple[float, float, float] = (1.0, 1.0, 1.0),
-        normalization_scale: float = 1.0,
-    ) -> None:
-        self.orig_height, self.orig_width = image_shape
-        self.image_threshold = image_threshold
-        self.pixel_threshold = pixel_threshold
-        self.task = task
-        self.normalization_scale = normalization_scale
-
-        super().__init__(
-            task_level_export_parameters=TaskLevelExportParameters(
-                model_type="anomaly",
-                task_type="anomaly",
-                label_info=NullLabelInfo(),
-                optimization_config={},
-            ),
-            input_size=(1, 3, *image_shape),
-            mean=mean_values,
-            std=scale_values,
-            swap_rgb=True,  # BGR -> RGB
-        )
-
-    @property
-    def metadata(self) -> dict[tuple[str, str], str | float | int | tuple[int, int]]:  # type: ignore[override]
-        return {
-            ("model_info", "image_threshold"): self.image_threshold,
-            ("model_info", "pixel_threshold"): self.pixel_threshold,
-            ("model_info", "normalization_scale"): self.normalization_scale,
-            ("model_info", "orig_height"): self.orig_height,
-            ("model_info", "orig_width"): self.orig_width,
-            ("model_info", "image_shape"): (self.orig_height, self.orig_width),
-            ("model_info", "labels"): "Normal Anomaly",
-            ("model_info", "model_type"): "AnomalyDetection",
-            ("model_info", "task"): self.task.value,
-        }
-
-    def to_openvino(
-        self,
-        model: nn.Module,
-        output_dir: Path,
-        base_model_name: str = "exported_model",
-        precision: OTXPrecisionType = OTXPrecisionType.FP32,
-    ) -> Path:
-        save_path = str(output_dir / f"{base_model_name}.xml")
-        exported_model = openvino.convert_model(
-            input_model=model,
-            example_input=torch.rand(self.input_size),
-            input=(openvino.runtime.PartialShape(self.input_size)),
-        )
-        exported_model = self._postprocess_openvino_model(exported_model)
-        openvino.save_model(exported_model, save_path, compress_to_fp16=(precision == OTXPrecisionType.FP16))
-        return Path(save_path)
-
-    def to_onnx(
-        self,
-        model: nn.Module,
-        output_dir: Path,
-        base_model_name: str = "exported_model",
-        precision: OTXPrecisionType = OTXPrecisionType.FP32,
-        embed_metadata: bool = True,
-    ) -> Path:
-        save_path = str(output_dir / f"{base_model_name}.onnx")
-        torch.onnx.export(
-            model=model,
-            args=(torch.rand(1, 3, self.orig_height, self.orig_width)).to(
-                next(model.parameters()).device,
-            ),
-            f=save_path,
-            opset_version=14,
-            dynamic_axes={"input": {0: "batch_size"}, "output": {0: "batch_size"}},
-            input_names=["input"],
-            output_names=["output"],
-        )
-        onnx_model = onnx.load(save_path)
-        onnx_model = self._postprocess_onnx_model(onnx_model, embed_metadata, precision)
-        onnx.save(onnx_model, save_path)
-        return Path(save_path)
 
 
 class OTXAnomaly:
@@ -384,12 +295,37 @@ class OTXAnomaly:
         msg = f"Unsupported task type {self.task}"
         raise ValueError(msg)
 
+    @property
+    def _exporter(self) -> OTXAnomalyModelExporter:
+        """Creates OTXAnomalyModelExporter object that can export anomaly models."""
+        min_val = self.normalization_metrics.state_dict()["min"].cpu().numpy().tolist()
+        max_val = self.normalization_metrics.state_dict()["max"].cpu().numpy().tolist()
+        image_shape, mean_values, scale_values = self._get_values_from_transforms()
+        onnx_export_configuration = {
+            "opset_version": 14,
+            "dynamic_axes": {"input": {0: "batch_size"}, "output": {0: "batch_size"}},
+            "input_names": ["input"],
+            "output_names": ["output"],
+        }
+        return OTXAnomalyModelExporter(
+            image_shape=image_shape,
+            image_threshold=self.image_threshold.value.cpu().numpy().tolist(),
+            pixel_threshold=self.pixel_threshold.value.cpu().numpy().tolist(),
+            task=self.task,
+            mean_values=mean_values,
+            scale_values=scale_values,
+            normalization_scale=max_val - min_val,
+            onnx_export_configuration=onnx_export_configuration,
+            via_onnx=False,
+        )
+
     def export(
         self,
         output_dir: Path,
         base_name: str,
         export_format: OTXExportFormatType,
         precision: OTXPrecisionType = OTXPrecisionType.FP32,
+        to_exportable_code: bool = False,
     ) -> Path:
         """Export this model to the specified output directory.
 
@@ -398,26 +334,22 @@ class OTXAnomaly:
             base_name: (str): base name for the exported model file. Extension is defined by the target export format
             export_format (OTXExportFormatType): format of the output model
             precision (OTXExportPrecisionType): precision of the output model
+            to_exportable_code (bool): flag to export model in exportable code with demo package
 
         Returns:
             Path: path to the exported model.
         """
-        min_val = self.normalization_metrics.state_dict()["min"].cpu().numpy().tolist()
-        max_val = self.normalization_metrics.state_dict()["max"].cpu().numpy().tolist()
-        image_shape, mean_values, scale_values = self._get_values_from_transforms()
-        exporter = _AnomalyModelExporter(
-            image_shape=image_shape,
-            image_threshold=self.image_threshold.value.cpu().numpy().tolist(),
-            pixel_threshold=self.pixel_threshold.value.cpu().numpy().tolist(),
-            task=self.task,
-            mean_values=mean_values,
-            scale_values=scale_values,
-            normalization_scale=max_val - min_val,
-        )
-        return exporter.export(
+        if export_format == OTXExportFormatType.OPENVINO:
+            if to_exportable_code:
+                msg = "Exportable code option is not supported yet for anomaly tasks and will be ignored."
+                log.warning(msg)
+            to_exportable_code = False
+
+        return self._exporter.export(
             model=self.model,
             output_dir=output_dir,
             base_model_name=base_name,
             export_format=export_format,
             precision=precision,
+            to_exportable_code=to_exportable_code,
         )

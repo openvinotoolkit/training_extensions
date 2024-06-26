@@ -30,7 +30,11 @@ jobs:
         with:
           python-version: "3.10"
       - name: Install tox
-        run: python -m pip install --require-hashes --no-deps -r .ci/requirements/tox/requirements.txt
+        run: |
+          python -m pip install --require-hashes --no-deps -r .ci/requirements.txt
+          pip-compile --generate-hashes --output-file=/tmp/requirements.txt --extra=ci_tox pyproject.toml
+          python -m pip install --require-hashes --no-deps -r /tmp/requirements.txt
+          rm /tmp/requirements.txt
       - name: Code quality checks
         run: tox -vv -e pre-commit
   Unit-Test:
@@ -43,7 +47,9 @@ jobs:
         include:
           - python-version: "3.10"
             tox-env: "py310"
-          - python-version: "3.11"
+            # TODO(vinnamki): Revisit after fixing in the upstream: https://github.com/omni-us/jsonargparse/issues/484
+            # Ticket no. 138075
+          - python-version: "3.11.8"
             tox-env: "py311"
     name: Unit-Test-with-Python${{ matrix.python-version }}
     # This is what will cancel the job concurrency
@@ -58,7 +64,11 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install tox
-        run: python -m pip install --require-hashes --no-deps -r .ci/requirements/tox/requirements.txt
+        run: |
+          python -m pip install --require-hashes --no-deps -r .ci/requirements.txt
+          pip-compile --generate-hashes --output-file=/tmp/requirements.txt --extra=ci_tox pyproject.toml
+          python -m pip install --require-hashes --no-deps -r /tmp/requirements.txt
+          rm /tmp/requirements.txt
       - name: Run unit test
         run: tox -vv -e unit-test-${{ matrix.tox-env }}
       - name: Upload coverage reports to Codecov
@@ -80,33 +90,37 @@ jobs:
           chmod +x codecov
           ./codecov -t ${{ secrets.CODECOV_TOKEN }} --sha $COMMIT_ID -U $HTTP_PROXY -f .tox/coverage_unit-test-${{ matrix.tox-env }}.xml -F ${{ matrix.tox-env }}
 
-  Integration-Test:
-    runs-on: [self-hosted, linux, x64, dev]
-    needs: Unit-Test
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - task: "action"
-          - task: "classification"
-          - task: "detection"
-          - task: "instance_segmentation"
-          - task: "semantic_segmentation"
-          - task: "visual_prompting"
-          - task: "anomaly"
-    name: Integration-Test-${{ matrix.task }}-py310
-    # This is what will cancel the job concurrency
-    concurrency:
-      group: ${{ github.workflow }}-Integration-${{ github.event.pull_request.number || github.ref }}-${{ matrix.task }}
-      cancel-in-progress: true
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-      - name: Install Python
-        uses: actions/setup-python@82c7e631bb3cdc910f68e0081d67478d79c6982d # v5.1.0
-        with:
-          python-version: "3.10"
-      - name: Install tox
-        run: python -m pip install --require-hashes --no-deps -r .ci/requirements/tox/requirements.txt
-      - name: Run Integration Test
-        run: tox -vv -e integration-test-${{ matrix.task }}
+  # Integration-Test:
+  #   runs-on: [self-hosted, linux, x64, dev]
+  #   needs: Unit-Test
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       include:
+  #         - task: "action"
+  #         - task: "classification"
+  #         - task: "detection"
+  #         - task: "instance_segmentation"
+  #         - task: "semantic_segmentation"
+  #         - task: "visual_prompting"
+  #         - task: "anomaly"
+  #   name: Integration-Test-${{ matrix.task }}-py310
+  #   # This is what will cancel the job concurrency
+  #   concurrency:
+  #     group: ${{ github.workflow }}-Integration-${{ github.event.pull_request.number || github.ref }}-${{ matrix.task }}
+  #     cancel-in-progress: true
+  #   steps:
+  #     - name: Checkout repository
+  #       uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+  #     - name: Install Python
+  #       uses: actions/setup-python@82c7e631bb3cdc910f68e0081d67478d79c6982d # v5.1.0
+  #       with:
+  #         python-version: "3.10"
+  #     - name: Install tox
+  #       run: |
+  #         python -m pip install --require-hashes --no-deps -r .ci/requirements.txt
+  #         pip-compile --generate-hashes --output-file=/tmp/requirements.txt --extra=ci_tox pyproject.toml
+  #         python -m pip install --require-hashes --no-deps -r /tmp/requirements.txt
+  #         rm /tmp/requirements.txt
+  #     - name: Run Integration Test
+  #       run: tox -vv -e integration-test-${{ matrix.task }}

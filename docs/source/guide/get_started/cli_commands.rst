@@ -9,6 +9,14 @@ All possible OpenVINO™ Training Extensions CLI commands are presented below al
     Also, by default, the OpenVINO™ Training Extensions CLI is written using jsonargparse, see jsonargparse or LightningCLI.
     Please refer `Jsonargparse Documentation <https://jsonargparse.readthedocs.io/en/v4.27.4/#configuration-files>`_
 
+|
+
+.. figure:: ../../../utils/images/cli.png
+   :align: center
+   :width: 100%
+
+|
+
 *****
 Help
 *****

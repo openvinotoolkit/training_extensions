@@ -61,7 +61,12 @@ def add_install_parser(subcommands_action: _ActionSubCommands) -> None:
     )
     parser.add_argument(
         "--do-not-install-torch",
-        help="Do not install PyTorch. Choose this option if you already install PyTorch.",
+        help="Do not install PyTorch. Choose this option if you already installed PyTorch.",
+        action="store_true",
+    )
+    parser.add_argument(
+        "--user",
+        help="Install packages in the user site directory, e.g., `pip install --user ...`",
         action="store_true",
     )
 
@@ -72,12 +77,16 @@ def otx_install(
     option: str | None = None,
     verbose: bool = False,
     do_not_install_torch: bool = False,
+    user: bool = False,
 ) -> int:
     """Install OTX requirements.
 
     Args:
         option (str): Optional-dependency to install requirements for.
         verbose (bool): Set pip logger level to INFO
+        do_not_install_torch (bool): If true, skip PyTorch installation.
+        user (bool): If true, install packages in the user site directory,
+            e.g., `pip install --user ...`
 
     Raises:
         ValueError: When the task is not supported.
@@ -103,7 +112,7 @@ def otx_install(
     # This is done to parse the correct version of torch (cpu/cuda) and mmcv (mmcv/mmcv-full).
     torch_requirement, mmcv_requirements, other_requirements = parse_requirements(requirements)
 
-    install_args: list[str] = []
+    install_args: list[str] = ["--user"] if user else []
 
     # Combine torch and other requirements.
     install_args = (
@@ -114,7 +123,7 @@ def otx_install(
     )
 
     # Parse mmX requirements if the task requires mmX packages.
-    mmcv_install_args = []
+    mmcv_install_args = ["--user"] if user else []
     if mmcv_requirements:
         mmcv_install_args = get_mmcv_install_args(torch_requirement, mmcv_requirements)
         install_args += ["openmim"]
@@ -144,13 +153,6 @@ def otx_install(
             else:
                 msg = "Cannot complete installation"
                 raise RuntimeError(msg)
-
-        # TODO(harimkang): Remove this reinstalling after resolving conflict with anomalib==1.0.1
-        # https://github.com/openvinotoolkit/training_extensions/actions/runs/8531851027/job/23372146228?pr=3258#step:5:2587
-        status_code = create_command("install").main(["jsonargparse==4.28.0"])
-        if status_code != 0:
-            msg = "Cannot install jsonargparse==4.28.0"
-            raise RuntimeError(msg)
 
     # Patch MMAction2 with src/otx/cli/patches/mmaction2.patch
     patch_mmaction2()

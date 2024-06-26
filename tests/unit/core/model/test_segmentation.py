@@ -7,77 +7,104 @@ from __future__ import annotations
 
 import pytest
 import torch
-from otx.core.model.segmentation import MMSegCompatibleModel
+from otx.core.data.entity.base import OTXBatchLossEntity
+from otx.core.data.entity.segmentation import SegBatchDataEntity, SegBatchPredEntity
+from otx.core.metrics.dice import SegmCallable
+from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
+from otx.core.model.segmentation import OTXSegmentationModel, TorchVisionCompatibleModel
 from otx.core.types.label import SegLabelInfo
+
+
+@pytest.fixture()
+def label_info():
+    return SegLabelInfo(
+        label_names=["Background", "label_0", "label_1"],
+        label_groups=[["Background", "label_0", "label_1"]],
+    )
+
+
+@pytest.fixture()
+def optimizer():
+    return DefaultOptimizerCallable
+
+
+@pytest.fixture()
+def scheduler():
+    return DefaultSchedulerCallable
+
+
+@pytest.fixture()
+def metric():
+    return SegmCallable
+
+
+@pytest.fixture()
+def torch_compile():
+    return False
 
 
 class TestOTXSegmentationModel:
     @pytest.fixture()
-    def model(self, mocker) -> MMSegCompatibleModel:
-        mocker.patch("otx.core.model.segmentation.inplace_num_classes")
-        mocker.patch.object(MMSegCompatibleModel, "_create_model")
-        model = MMSegCompatibleModel(label_info=3, config=mocker.MagicMock())
-        model.label_info = SegLabelInfo(
-            label_names=["Background", "label_0", "label_1"],
-            label_groups=[["Background", "label_0", "label_1"]],
+    def model(self, label_info, optimizer, scheduler, metric, torch_compile):
+        return OTXSegmentationModel(label_info, optimizer, scheduler, metric, torch_compile)
+
+    def test_export_parameters(self, model):
+        params = model._export_parameters
+        assert params.model_type == "Segmentation"
+        assert params.task_type == "segmentation"
+        assert params.return_soft_prediction is True
+        assert params.soft_threshold == 0.5
+        assert params.blur_strength == -1
+
+    @pytest.mark.parametrize(
+        ("label_info", "expected_label_info"),
+        [
+            (
+                SegLabelInfo(label_names=["label1", "label2", "label3"], label_groups=[["label1", "label2", "label3"]]),
+                SegLabelInfo(label_names=["label1", "label2", "label3"], label_groups=[["label1", "label2", "label3"]]),
+            ),
+            (SegLabelInfo.from_num_classes(num_classes=5), SegLabelInfo.from_num_classes(num_classes=5)),
+        ],
+    )
+    def test_dispatch_label_info(self, model, label_info, expected_label_info):
+        result = model._dispatch_label_info(label_info)
+        assert result == expected_label_info
+
+
+class TestTorchVisionCompatibleModel:
+    @pytest.fixture()
+    def model(self, label_info, optimizer, scheduler, metric, torch_compile):
+        return TorchVisionCompatibleModel(label_info, optimizer, scheduler, metric, torch_compile)
+
+    @pytest.fixture()
+    def batch_data_entity(self):
+        return SegBatchDataEntity(
+            batch_size=2,
+            images=torch.randn(2, 3, 224, 224),
+            imgs_info=[],
+            masks=[torch.randn(224, 224), torch.randn(224, 224)],
         )
-        return model
 
-    def test_customize_inputs(self, model, fxt_seg_data_entity, mocker) -> None:
-        model.model.data_preprocessor = mocker.MagicMock()
-        output_data = model._customize_inputs(fxt_seg_data_entity[2])
-        assert output_data is not None
-        assert isinstance(output_data, mocker.MagicMock)
+    def test_init(self, model):
+        assert model.num_classes == 3
 
-    def test_customize_outputs(self, model, fxt_seg_data_entity) -> None:
-        from mmengine.structures import PixelData
-        from mmseg.structures import SegDataSample
-        from otx.core.data.entity.base import OTXBatchLossEntity
-        from otx.core.data.entity.segmentation import SegBatchPredEntity
+    def test_customize_inputs(self, model, batch_data_entity):
+        customized_inputs = model._customize_inputs(batch_data_entity)
+        assert customized_inputs["inputs"].shape == (2, 3, 224, 224)
+        assert customized_inputs["img_metas"] == []
+        assert customized_inputs["masks"].shape == (2, 224, 224)
 
-        data_sample = SegDataSample()
-        pred_segm_map = PixelData()
-        pred_segm_map.data = torch.randint(0, 2, (1, 4, 4))
-        data_sample.pred_sem_seg = pred_segm_map
+    def test_customize_outputs_training(self, model, batch_data_entity):
+        outputs = {"loss": torch.tensor(0.5)}
+        customized_outputs = model._customize_outputs(outputs, batch_data_entity)
+        assert isinstance(customized_outputs, OTXBatchLossEntity)
+        assert customized_outputs["loss"] == torch.tensor(0.5)
 
-        output_loss = {"loss_segm": torch.rand(1, requires_grad=True), "acc": torch.rand(1), "some": "some"}
-        out = model._customize_outputs(output_loss, fxt_seg_data_entity[2])
-        assert isinstance(out, OTXBatchLossEntity)
-
+    def test_customize_outputs_predict(self, model, batch_data_entity):
         model.training = False
-        out = model._customize_outputs([data_sample], fxt_seg_data_entity[2])
-        assert isinstance(out, SegBatchPredEntity)
-
-    def test_validation_step(self, mocker, model, fxt_seg_data_entity) -> None:
-        model.eval()
-        model.on_validation_start()
-        mocker_update_loss = mocker.patch.object(
-            model,
-            "_convert_pred_entity_to_compute_metric",
-            return_value=[
-                {"preds": torch.randint(0, 2, size=[1, 3, 3]), "target": torch.randint(0, 2, size=[1, 3, 3])},
-            ],
-        )
-        model.validation_step(fxt_seg_data_entity[2], 0)
-        mocker_update_loss.assert_called_once()
-
-    def test_test_metric(self, mocker, model, fxt_seg_data_entity) -> None:
-        model.eval()
-        model.on_validation_start()
-        mocker_update_loss = mocker.patch.object(
-            model,
-            "_convert_pred_entity_to_compute_metric",
-            return_value=[
-                {"preds": torch.randint(0, 2, size=[1, 3, 3]), "target": torch.randint(0, 2, size=[1, 3, 3])},
-            ],
-        )
-        model.test_step(fxt_seg_data_entity[2], 0)
-        mocker_update_loss.assert_called_once()
-
-    def test_convert_pred_entity_to_compute_metric(self, model, fxt_seg_data_entity) -> None:
-        pred_entity = fxt_seg_data_entity[2]
-        out = model._convert_pred_entity_to_compute_metric(pred_entity, fxt_seg_data_entity[2])
-        assert isinstance(out, list)
-        assert "preds" in out[-1]
-        assert "target" in out[-1]
-        assert out[-1]["preds"].sum() == out[-1]["target"].sum()
+        outputs = torch.randn(2, 10, 224, 224)
+        customized_outputs = model._customize_outputs(outputs, batch_data_entity)
+        assert isinstance(customized_outputs, SegBatchPredEntity)
+        assert len(customized_outputs.scores) == 0
+        assert customized_outputs.images.shape == (2, 3, 224, 224)
+        assert customized_outputs.imgs_info == []

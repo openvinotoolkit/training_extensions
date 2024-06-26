@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+from collections import namedtuple
 from pathlib import Path
 
 import cv2
@@ -12,6 +13,17 @@ from otx.core.types.task import OTXTaskType
 from otx.engine.utils.auto_configurator import DEFAULT_CONFIG_PER_TASK
 
 from tests.utils import run_main
+
+ExportCase2Test = namedtuple("ExportCase2Test", ["export_format", "export_demo_package", "expected_output"])
+
+
+@pytest.fixture()
+def fxt_export_list() -> list[ExportCase2Test]:
+    return [
+        ExportCase2Test("ONNX", False, "exported_model.onnx"),
+        ExportCase2Test("OPENVINO", False, "exported_model.xml"),
+        ExportCase2Test("OPENVINO", True, "exportable_code.zip"),
+    ]
 
 
 @pytest.fixture(
@@ -67,6 +79,7 @@ def test_otx_e2e(
     fxt_target_dataset_per_task: dict,
     fxt_cli_override_command_per_task: dict,
     fxt_open_subprocess: bool,
+    fxt_export_list: list[ExportCase2Test],
     tmp_path: Path,
 ) -> None:
     """
@@ -156,24 +169,17 @@ def test_otx_e2e(
         return
 
     if task in ("visual_prompting", "zero_shot_visual_prompting"):
-        format_to_file = {
-            "ONNX": "exported_model_decoder.onnx",
-            "OPENVINO": "exported_model_decoder.xml",
-            # TODO (sungchul): EXPORTABLE_CODE will be supported
-        }
-    else:
-        format_to_file = {
-            "ONNX": "exported_model.onnx",
-            "OPENVINO": "exported_model.xml",
-            "EXPORTABLE_CODE": "exportable_code.zip",
-        }
+        fxt_export_list = [
+            ExportCase2Test("ONNX", False, "exported_model_decoder.onnx"),
+            ExportCase2Test("OPENVINO", False, "exported_model_decoder.xml"),
+        ]  # TODO (sungchul): EXPORTABLE_CODE will be supported
 
     overrides = fxt_cli_override_command_per_task[task]
     if "anomaly" in task:
         overrides = {}  # Overrides are not needed in export
 
     tmp_path_test = tmp_path / f"otx_test_{model_name}"
-    for fmt in format_to_file:
+    for export_case in fxt_export_list:
         command_cfg = [
             "otx",
             "export",
@@ -182,35 +188,35 @@ def test_otx_e2e(
             "--data_root",
             fxt_target_dataset_per_task[task],
             "--work_dir",
-            str(tmp_path_test / "outputs" / fmt),
+            str(tmp_path_test / "outputs" / export_case.export_format),
             *overrides,
             "--checkpoint",
             str(ckpt_file),
             "--export_format",
-            f"{fmt}",
+            export_case.export_format,
+            "--export_demo_package",
+            str(export_case.export_demo_package),
         ]
 
         run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)
 
-        outputs_dir = tmp_path_test / "outputs" / fmt
+        outputs_dir = tmp_path_test / "outputs" / export_case.export_format
         latest_dir = max(
             (p for p in outputs_dir.iterdir() if p.is_dir() and p.name != ".latest"),
             key=lambda p: p.stat().st_mtime,
         )
         assert latest_dir.exists()
-        assert (latest_dir / f"{format_to_file[fmt]}").exists()
+        assert (latest_dir / export_case.expected_output).exists()
 
     # 4) infer of the exported models
     ov_output_dir = tmp_path_test / "outputs" / "OPENVINO"
-    ov_latest_dir = max(
-        (p for p in ov_output_dir.iterdir() if p.is_dir() and p.name != ".latest"),
-        key=lambda p: p.stat().st_mtime,
-    )
+    ov_files = list(ov_output_dir.rglob("exported*.xml"))
+    if not ov_files:
+        msg = "There is no OV IR."
+        raise RuntimeError(msg)
+    exported_model_path = str(ov_files[0])
     if task in ("visual_prompting", "zero_shot_visual_prompting"):
-        exported_model_path = str(ov_latest_dir / "exported_model_decoder.xml")
         recipe = str(Path(recipe).parents[0] / "openvino_model.yaml")
-    else:
-        exported_model_path = str(ov_latest_dir / "exported_model.xml")
 
     overrides = fxt_cli_override_command_per_task[task]
     if "anomaly" in task:
@@ -257,14 +263,8 @@ def test_otx_e2e(
     if "dino" in model_name:
         return  # DINO is not supported.
 
-    format_to_file = {
-        "ONNX": "exported_model.onnx",
-        "OPENVINO": "exported_model.xml",
-        "EXPORTABLE_CODE": "exportable_code.zip",
-    }
-
     tmp_path_test = tmp_path / f"otx_export_xai_{model_name}"
-    for fmt in format_to_file:
+    for export_case in fxt_export_list:
         command_cfg = [
             "otx",
             "export",
@@ -273,25 +273,27 @@ def test_otx_e2e(
             "--data_root",
             fxt_target_dataset_per_task[task],
             "--work_dir",
-            str(tmp_path_test / "outputs" / fmt),
+            str(tmp_path_test / "outputs" / export_case.export_format),
             *fxt_cli_override_command_per_task[task],
             "--checkpoint",
             str(ckpt_file),
             "--export_format",
-            f"{fmt}",
+            f"{export_case.export_format}",
+            "--export_demo_package",
+            str(export_case.export_demo_package),
             "--explain",
             "True",
         ]
 
         run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)
 
-        fmt_dir = tmp_path_test / "outputs" / fmt
+        fmt_dir = tmp_path_test / "outputs" / export_case.export_format
         assert fmt_dir.exists()
         fmt_latest_dir = max(
             (p for p in fmt_dir.iterdir() if p.is_dir() and p.name != ".latest"),
             key=lambda p: p.stat().st_mtime,
         )
-        assert (fmt_latest_dir / f"{format_to_file[fmt]}").exists()
+        assert (fmt_latest_dir / f"{export_case.expected_output}").exists()
 
 
 def test_otx_explain_e2e(
@@ -437,9 +439,9 @@ def test_otx_ov_test(
     assert len(metric_result) > 0
 
 
-@pytest.mark.parametrize("task", pytest.TASK_LIST)
+@pytest.mark.parametrize("recipe", pytest.RECIPE_LIST, ids=lambda x: "/".join(Path(x).parts[-2:]))
 def test_otx_hpo_e2e(
-    task: OTXTaskType,
+    recipe: str,
     tmp_path: Path,
     fxt_accelerator: str,
     fxt_target_dataset_per_task: dict,
@@ -456,30 +458,22 @@ def test_otx_hpo_e2e(
     Returns:
         None
     """
-    if task not in DEFAULT_CONFIG_PER_TASK:
-        pytest.skip(f"Task {task} is not supported in the auto-configuration.")
-    if task == OTXTaskType.ZERO_SHOT_VISUAL_PROMPTING:
+    task = recipe.split("/")[-2]
+    model_name = recipe.split("/")[-1].split(".")[0]
+
+    if task.upper() == OTXTaskType.ZERO_SHOT_VISUAL_PROMPTING:
         pytest.skip("ZERO_SHOT_VISUAL_PROMPTING doesn't support HPO.")
+    if "padim" in recipe:
+        pytest.skip("padim model doesn't support HPO.")
 
-    # Need to change model to stfpm because default anomaly model is 'padim' which doesn't support HPO
-    model_cfg = []
-    if task in {
-        OTXTaskType.ANOMALY_CLASSIFICATION,
-        OTXTaskType.ANOMALY_DETECTION,
-        OTXTaskType.ANOMALY_SEGMENTATION,
-    }:
-        model_cfg = ["--config", str(DEFAULT_CONFIG_PER_TASK[task].parent / "stfpm.yaml")]
-
-    task = task.lower()
-    tmp_path_hpo = tmp_path / f"otx_hpo_{task}"
+    tmp_path_hpo = tmp_path / f"otx_hpo_{model_name}"
     tmp_path_hpo.mkdir(parents=True)
 
     command_cfg = [
         "otx",
         "train",
-        *model_cfg,
-        "--task",
-        task.upper(),
+        "--config",
+        recipe,
         "--data_root",
         fxt_target_dataset_per_task[task],
         "--work_dir",
@@ -491,7 +485,7 @@ def test_otx_hpo_e2e(
         "--run_hpo",
         "true",
         "--hpo_config.expected_time_ratio",
-        "2",
+        "1",
         "--hpo_config.num_workers",
         "1",
         *fxt_cli_override_command_per_task[task],
@@ -509,7 +503,7 @@ def test_otx_hpo_e2e(
     if task.startswith("anomaly"):
         return
 
-    assert len([val for val in hpo_work_dor.rglob("*.json") if str(val.stem).isdigit()]) == 2
+    assert len([val for val in hpo_work_dor.rglob("*.json") if str(val.stem).isdigit()]) == 1
 
 
 @pytest.mark.parametrize("task", pytest.TASK_LIST)

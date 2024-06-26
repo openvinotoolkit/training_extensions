@@ -5,12 +5,24 @@
 
 from __future__ import annotations
 
+import logging
 from pathlib import Path
 
 import pytest
 
 from .benchmark import Benchmark
 from .conftest import PerfTestBase
+
+log = logging.getLogger(__name__)
+
+
+@pytest.fixture(scope="session")
+def fxt_deterministic(request: pytest.FixtureRequest) -> bool:
+    """Override the deterministic setting for detection task."""
+    deterministic = request.config.getoption("--deterministic")
+    deterministic = True if deterministic is None else deterministic == "true"
+    log.info(f"{deterministic=}")
+    return deterministic
 
 
 class TestPerfObjectDetection(PerfTestBase):
@@ -24,6 +36,7 @@ class TestPerfObjectDetection(PerfTestBase):
         Benchmark.Model(task="detection", name="yolox_s", category="other"),
         Benchmark.Model(task="detection", name="yolox_l", category="other"),
         Benchmark.Model(task="detection", name="yolox_x", category="other"),
+        Benchmark.Model(task="detection", name="rtmdet_tiny", category="other"),
     ]
 
     DATASET_TEST_CASES = [
@@ -33,9 +46,6 @@ class TestPerfObjectDetection(PerfTestBase):
             group="small",
             num_repeat=5,
             extra_overrides={
-                "train": {
-                    "deterministic": "True",
-                },
                 "test": {
                     "metric": "otx.core.metrics.fmeasure.FMeasureCallable",
                 },
@@ -49,9 +59,6 @@ class TestPerfObjectDetection(PerfTestBase):
             group="medium",
             num_repeat=5,
             extra_overrides={
-                "train": {
-                    "deterministic": "True",
-                },
                 "test": {
                     "metric": "otx.core.metrics.fmeasure.FMeasureCallable",
                 },
@@ -63,9 +70,6 @@ class TestPerfObjectDetection(PerfTestBase):
             group="large",
             num_repeat=5,
             extra_overrides={
-                "train": {
-                    "deterministic": "True",
-                },
                 "test": {
                     "metric": "otx.core.metrics.fmeasure.FMeasureCallable",
                 },
@@ -107,7 +111,11 @@ class TestPerfObjectDetection(PerfTestBase):
         fxt_dataset: Benchmark.Dataset,
         fxt_benchmark: Benchmark,
         fxt_resume_from: Path | None,
+        fxt_accelerator: str,
     ):
+        if fxt_model.name == "atss_resnext101" and fxt_accelerator == "xpu":
+            pytest.skip(f"{fxt_model.name} doesn't support {fxt_accelerator}.")
+
         self._test_perf(
             model=fxt_model,
             dataset=fxt_dataset,

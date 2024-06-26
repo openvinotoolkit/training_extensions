@@ -8,7 +8,6 @@ from copy import deepcopy
 
 import pytest
 import torch
-from mmengine.runner import save_checkpoint
 from otx.algo.classification.backbones import VisionTransformer
 from otx.algo.utils.mmengine_utils import load_checkpoint_to_model
 from torch.nn import functional
@@ -44,7 +43,7 @@ class TestVisionTransformer:
         # Test invalid default arch
         cfg = deepcopy(config)
         cfg["arch"] = "unknown"
-        with pytest.raises(AssertionError, match="not in default archs"):
+        with pytest.raises(ValueError, match="not in default archs"):
             VisionTransformer(**cfg)
 
         # Test invalid custom arch
@@ -54,7 +53,7 @@ class TestVisionTransformer:
             "num_heads": 16,
             "feedforward_channels": 4096,
         }
-        with pytest.raises(AssertionError, match="Custom arch needs"):
+        with pytest.raises(ValueError, match="Custom arch needs"):
             VisionTransformer(**cfg)
 
         # Test custom arch
@@ -75,7 +74,7 @@ class TestVisionTransformer:
         # Test out_indices
         cfg = deepcopy(config)
         cfg["out_indices"] = {1: 1}
-        with pytest.raises(AssertionError, match="get <class 'dict'>"):
+        with pytest.raises(TypeError, match="get <class 'dict'>"):
             VisionTransformer(**cfg)
         cfg["out_indices"] = [0, 13]
         with pytest.raises(AssertionError, match="Invalid out_indices 13"):
@@ -115,7 +114,8 @@ class TestVisionTransformer:
         # test load checkpoint
         pretrain_pos_embed = model.pos_embed.clone().detach()
         checkpoint = tmp_path / "test.pth"
-        save_checkpoint(model.state_dict(), str(checkpoint))
+        torch.save(model.state_dict(), str(checkpoint))
+
         cfg = deepcopy(config)
         model = VisionTransformer(**cfg)
         state_dict = torch.load(str(checkpoint), None)

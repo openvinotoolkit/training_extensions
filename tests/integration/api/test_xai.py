@@ -112,6 +112,10 @@ def test_predict_with_explain(
         # TODO (sungchul): enable xai for rtmdet_tiny (CVS-142651)
         pytest.skip("rtmdet_tiny on detection is not supported yet.")
 
+    if "yolox_tiny_tile" in recipe:
+        # TODO (Galina): required to update model-api to 2.1
+        pytest.skip("yolox_tiny_tile on detection requires model-api update")
+
     tmp_path = tmp_path / f"otx_xai_{model_name}"
     engine = Engine.from_config(
         config_path=recipe,
@@ -175,6 +179,12 @@ def test_predict_with_explain(
         # There is the issue with different predict results for Pytorch and OpenVINO tasks.
         # Probably because of the different preprocessed images passed as an input. Skip the rest of the checks for now.
         # Tickets: 142087, 141639
+        return
+
+    if "yolox" in recipe:
+        # The cropping of the padded saliency maps is not implemented for OV (Model API) yet,
+        # so the saliency maps for PyTorch and OV are different.
+        # TODO(gzalessk): Implement cropping saliency maps in Model API (Ticket 144296).
         return
 
     for i in range(len(maps_torch)):

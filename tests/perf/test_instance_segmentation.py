@@ -20,6 +20,8 @@ class TestPerfInstanceSegmentation(PerfTestBase):
         Benchmark.Model(task="instance_segmentation", name="maskrcnn_efficientnetb2b", category="speed"),
         Benchmark.Model(task="instance_segmentation", name="maskrcnn_r50", category="accuracy"),
         Benchmark.Model(task="instance_segmentation", name="maskrcnn_swint", category="other"),
+        Benchmark.Model(task="instance_segmentation", name="rtmdet_inst_tiny", category="other"),
+        Benchmark.Model(task="instance_segmentation", name="maskrcnn_r50_tv", category="other"),
     ]
 
     DATASET_TEST_CASES = [
@@ -30,7 +32,6 @@ class TestPerfInstanceSegmentation(PerfTestBase):
             num_repeat=5,
             extra_overrides={
                 "train": {
-                    "deterministic": "True",
                     "metric": "otx.core.metrics.fmeasure.FMeasureCallable",
                     "callback_monitor": "val/f1-score",
                     "model.scheduler.monitor": "val/f1-score",
@@ -49,7 +50,6 @@ class TestPerfInstanceSegmentation(PerfTestBase):
             num_repeat=5,
             extra_overrides={
                 "train": {
-                    "deterministic": "True",
                     "metric": "otx.core.metrics.fmeasure.FMeasureCallable",
                     "callback_monitor": "val/f1-score",
                     "model.scheduler.monitor": "val/f1-score",
@@ -66,7 +66,6 @@ class TestPerfInstanceSegmentation(PerfTestBase):
             num_repeat=5,
             extra_overrides={
                 "train": {
-                    "deterministic": "True",
                     "metric": "otx.core.metrics.fmeasure.FMeasureCallable",
                     "callback_monitor": "val/f1-score",
                     "model.scheduler.monitor": "val/f1-score",
@@ -112,7 +111,11 @@ class TestPerfInstanceSegmentation(PerfTestBase):
         fxt_dataset: Benchmark.Dataset,
         fxt_benchmark: Benchmark,
         fxt_resume_from: Path | None,
+        fxt_accelerator: str,
     ):
+        if fxt_model.name == "maskrcnn_r50" and fxt_accelerator == "xpu":
+            pytest.skip(f"{fxt_model.name} doesn't support {fxt_accelerator}.")
+
         self._test_perf(
             model=fxt_model,
             dataset=fxt_dataset,
@@ -129,6 +132,7 @@ class TestPerfTilingInstanceSegmentation(PerfTestBase):
         Benchmark.Model(task="instance_segmentation", name="maskrcnn_efficientnetb2b_tile", category="speed"),
         Benchmark.Model(task="instance_segmentation", name="maskrcnn_r50_tile", category="accuracy"),
         Benchmark.Model(task="instance_segmentation", name="maskrcnn_swint_tile", category="other"),
+        Benchmark.Model(task="instance_segmentation", name="rtmdet_inst_tiny_tile", category="other"),
     ]
 
     DATASET_TEST_CASES = [
@@ -139,7 +143,6 @@ class TestPerfTilingInstanceSegmentation(PerfTestBase):
             num_repeat=5,
             extra_overrides={
                 "train": {
-                    "deterministic": "True",
                     "metric": "otx.core.metrics.fmeasure.FMeasureCallable",
                     "callback_monitor": "val/f1-score",
                     "model.scheduler.monitor": "val/f1-score",
@@ -158,7 +161,6 @@ class TestPerfTilingInstanceSegmentation(PerfTestBase):
             num_repeat=5,
             extra_overrides={
                 "train": {
-                    "deterministic": "True",
                     "metric": "otx.core.metrics.fmeasure.FMeasureCallable",
                     "callback_monitor": "val/f1-score",
                     "model.scheduler.monitor": "val/f1-score",
@@ -205,7 +207,11 @@ class TestPerfTilingInstanceSegmentation(PerfTestBase):
         fxt_dataset: Benchmark.Dataset,
         fxt_benchmark: Benchmark,
         fxt_resume_from: Path | None,
+        fxt_accelerator: str,
     ):
+        if fxt_model.name == "maskrcnn_r50" and fxt_accelerator == "xpu":
+            pytest.skip(f"{fxt_model.name} doesn't support {fxt_accelerator}.")
+
         self._test_perf(
             model=fxt_model,
             dataset=fxt_dataset,

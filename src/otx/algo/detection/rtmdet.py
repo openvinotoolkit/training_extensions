@@ -29,6 +29,7 @@ from otx.core.data.entity.utils import stack_batch
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.model.detection import ExplainableOTXDetModel
+from otx.core.types.export import TaskLevelExportParameters
 
 
 class RTMDet(ExplainableOTXDetModel):
@@ -82,15 +83,17 @@ class RTMDet(ExplainableOTXDetModel):
         for img_info, prediction in zip(inputs.imgs_info, predictions):
             if not isinstance(prediction, InstanceData):
                 raise TypeError(prediction)
-            scores.append(prediction.scores)  # type: ignore[attr-defined]
+
+            filtered_idx = torch.where(prediction.scores > self.best_confidence_threshold)  # type: ignore[attr-defined]
+            scores.append(prediction.scores[filtered_idx])  # type: ignore[attr-defined]
             bboxes.append(
                 tv_tensors.BoundingBoxes(
-                    prediction.bboxes,  # type: ignore[attr-defined]
+                    prediction.bboxes[filtered_idx],  # type: ignore[attr-defined]
                     format="XYXY",
                     canvas_size=img_info.ori_shape,
                 ),
             )
-            labels.append(prediction.labels)  # type: ignore[attr-defined]
+            labels.append(prediction.labels[filtered_idx])  # type: ignore[attr-defined]
 
         if self.explain_mode:
             if not isinstance(outputs, dict):
@@ -184,6 +187,11 @@ class RTMDet(ExplainableOTXDetModel):
             output_names=["bboxes", "labels", "feature_vector", "saliency_map"] if self.explain_mode else None,
         )
 
+    @property
+    def _export_parameters(self) -> TaskLevelExportParameters:
+        """Defines parameters required to export a particular model implementation."""
+        return super()._export_parameters.wrap(optimization_config={"preset": "mixed"})
+
     def forward_for_tracing(
         self,
         inputs: torch.Tensor,
@@ -203,7 +211,7 @@ class RTMDet(ExplainableOTXDetModel):
 class RTMDetTiny(RTMDet):
     """RTMDet Tiny Model."""
 
-    load_from = "https://download.openmmlab.com/mmdetection/v3.0/rtmdet/rtmdet_tiny_8xb32-300e_coco/rtmdet_tiny_8xb32-300e_coco_20220902_112414-78e30dcc.pth"
+    load_from = "https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/object_detection/v2/rtmdet_tiny.pth"
     image_size = (1, 3, 640, 640)
     tile_image_size = (1, 3, 640, 640)
     mean = (103.53, 116.28, 123.675)

@@ -5,8 +5,6 @@ from __future__ import annotations
 import pytest
 import torch
 from datumaro import Polygon
-from mmdet.structures import DetDataSample
-from otx.algo.utils.mmengine_utils import InstanceData
 from otx.core.data.entity.base import ImageInfo
 from otx.core.data.entity.classification import (
     HlabelClsBatchDataEntity,
@@ -96,9 +94,9 @@ def pytest_addoption(parser: pytest.Parser):
     )
     parser.addoption(
         "--deterministic",
-        action="store_true",
-        default=False,
-        help="Turn on deterministic training.",
+        choices=["true", "false"],
+        default=None,
+        help="Turn on deterministic training (true/false).",
     )
     parser.addoption(
         "--user-name",
@@ -139,24 +137,13 @@ def pytest_addoption(parser: pytest.Parser):
         type=str,
         help="Task type of OTX to use test.",
     )
-
-
-@pytest.fixture(scope="session")
-def fxt_data_sample() -> list[DetDataSample]:
-    data_sample = DetDataSample(
-        metainfo={
-            "img_shape": (480, 480),
-            "ori_shape": (480, 480),
-            "scale_factor": (1.0, 1.0),
-            "pad_shape": (480, 480),
-            "ignored_labels": [],
-        },
-        gt_instances=InstanceData(
-            bboxes=torch.Tensor([[0.0, 0.0, 240, 240], [240, 240, 480, 480]]),
-            labels=torch.LongTensor([0, 1]),
-        ),
+    parser.addoption(
+        "--device",
+        action="store",
+        default="gpu",
+        type=str,
+        help="Which device to use.",
     )
-    return [data_sample]
 
 
 @pytest.fixture(scope="session")
@@ -350,10 +337,9 @@ def fxt_clean_up_mem_cache():
     MemCacheHandlerSingleton.delete()
 
 
-# TODO(Jaeguk): Add cpu param when OTX can run integration test parallelly for each task.
-@pytest.fixture(scope="module", params=[pytest.param("gpu", marks=pytest.mark.gpu)])
+@pytest.fixture(scope="session")
 def fxt_accelerator(request: pytest.FixtureRequest) -> str:
-    return request.param
+    return request.config.getoption("--device", "gpu")
 
 
 @pytest.fixture(params=set(OTXTaskType) - {OTXTaskType.DETECTION_SEMI_SL})

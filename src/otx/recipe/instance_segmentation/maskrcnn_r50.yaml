@@ -53,6 +53,7 @@ overrides:
           - class_path: otx.core.data.transform_libs.torchvision.Pad
             init_args:
               pad_to_square: true
+              size_divisor: 32
               transform_mask: true
           - class_path: otx.core.data.transform_libs.torchvision.RandomFlip
             init_args:
@@ -81,6 +82,7 @@ overrides:
           - class_path: otx.core.data.transform_libs.torchvision.Pad
             init_args:
               pad_to_square: true
+              size_divisor: 32
               transform_mask: false
               is_numpy_to_tvtensor: true
           - class_path: torchvision.transforms.v2.ToDtype
@@ -106,6 +108,7 @@ overrides:
           - class_path: otx.core.data.transform_libs.torchvision.Pad
             init_args:
               pad_to_square: true
+              size_divisor: 32
               transform_mask: false
               is_numpy_to_tvtensor: true
           - class_path: torchvision.transforms.v2.ToDtype

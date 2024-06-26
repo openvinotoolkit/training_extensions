@@ -2,6 +2,9 @@
 # SPDX-License-Identifier: Apache-2.0
 
 
+import tempfile
+from pathlib import Path
+
 import pytest
 import torch
 from anomalib.metrics.min_max import MinMax
@@ -21,7 +24,7 @@ class TestAnomalyOpenVINO:
             "stfpm",
         ],
     )
-    def fxt_ov_ir(self, request, tmpdir):
+    def otx_model(self, request):
         if request.param == "padim":
             model = Padim()
         elif request.param == "stfpm":
@@ -38,13 +41,14 @@ class TestAnomalyOpenVINO:
         model.image_threshold = ManualThreshold(0.0)
         model.pixel_threshold = ManualThreshold(0.0)
         model.task = OTXTaskType.ANOMALY_CLASSIFICATION
+        return model
 
-        return model.export(
-            output_dir=tmpdir,
-            base_name="exported_model",
-            export_format=OTXExportFormatType.OPENVINO,
-        )
-
-    def test_label_info(self, fxt_ov_ir):
-        ov_model = AnomalyOpenVINO(model_name=fxt_ov_ir)
-        assert isinstance(ov_model.label_info, AnomalyLabelInfo)
+    def test_label_info(self, otx_model):
+        with tempfile.TemporaryDirectory() as tmpdirname:
+            exported_model = otx_model.export(
+                output_dir=Path(tmpdirname),
+                base_name="exported_model",
+                export_format=OTXExportFormatType.OPENVINO,
+            )
+            ov_model = AnomalyOpenVINO(model_name=exported_model)
+            assert isinstance(ov_model.label_info, AnomalyLabelInfo)

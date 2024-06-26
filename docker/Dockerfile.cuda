@@ -1,9 +1,9 @@
-FROM pytorch/pytorch:2.1.2-cuda11.8-cudnn8-runtime@sha256:971fbeae82c0a5a7a970a264a8b8ce1c3426aa79df7111004ad2bc2640f7d89c AS base
-
 ARG http_proxy
 ARG https_proxy
 ARG no_proxy
-ARG NON_ROOT_HOME=/home/non-root
+
+
+FROM pytorch/pytorch:2.1.2-cuda11.8-cudnn8-runtime@sha256:971fbeae82c0a5a7a970a264a8b8ce1c3426aa79df7111004ad2bc2640f7d89c AS build_base
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libsm6=2:1.2.3-1 \
@@ -14,27 +14,64 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libgl1-mesa-glx=21.2.6-0ubuntu0.1~20.04.2 \
     && rm -rf /var/lib/apt/lists/*
 
+ARG NON_ROOT_HOME=/home/non-root
+
 RUN useradd -l -u 10001 non-root \
     && mkdir -p ${NON_ROOT_HOME}
 
-WORKDIR ${NON_ROOT_HOME}
-COPY . src_dir
 RUN chown -R non-root:non-root ${NON_ROOT_HOME}
-
-USER non-root
 
 ENV PATH=${PATH}:${NON_ROOT_HOME}/.local/bin
 
-RUN pip install --no-cache-dir --require-hashes --no-deps -r src_dir/.ci/requirements/piptools/requirements.txt && \
-    pip-compile --generate-hashes -o /tmp/requirements.txt src_dir/pyproject.toml && \
-    pip install --no-cache-dir --no-deps -e src_dir/ && \
-    pip install --no-cache-dir --require-hashes --no-deps -r /tmp/requirements.txt && \
-    otx install --do-not-install-torch && \
+
+FROM build_base AS install_packages
+
+ARG OTX_INSTALL_PATH=/opt/otx
+
+RUN mkdir -p ${OTX_INSTALL_PATH} && chown 10001 ${OTX_INSTALL_PATH}
+
+WORKDIR /workspace
+COPY --chown=10001 . src_dir
+
+USER non-root
+
+RUN pip install --user --no-cache-dir --require-hashes --no-deps -r src_dir/.ci/requirements.txt && \
+    pip-compile --generate-hashes -o /tmp/requirements.txt src_dir/pyproject.toml
+
+RUN pip install --no-cache-dir --no-deps --target ${OTX_INSTALL_PATH} src_dir/
+
+ENV PYTHONPATH=${OTX_INSTALL_PATH}:${PYTHONPATH:+:${PYTHONPATH}}
+ENV PATH=${OTX_INSTALL_PATH}/bin:${PATH:+:${PATH}}
+
+RUN pip install --user --no-cache-dir --require-hashes --no-deps -r /tmp/requirements.txt && \
+    otx install --do-not-install-torch --user && \
     rm /tmp/requirements.txt
 
-FROM base AS cuda
 
+FROM install_packages AS download_pretrained_weights
 
-FROM base AS cuda_pretrained_ready
+WORKDIR ${NON_ROOT_HOME}
+
 COPY docker/download_pretrained_weights.py download_pretrained_weights.py
 RUN python download_pretrained_weights.py
+
+
+FROM build_base AS cuda
+
+ARG USER_SITE=/home/non-root/.local/lib/python3.10/site-packages
+ARG OTX_INSTALL_PATH=/opt/otx
+
+ENV PYTHONPATH=${OTX_INSTALL_PATH}:${PYTHONPATH:+:${PYTHONPATH}}
+ENV PATH=${OTX_INSTALL_PATH}/bin:${PATH:+:${PATH}}
+
+COPY --chown=10001 --from=install_packages ${USER_SITE} ${USER_SITE}
+COPY --chown=10001 --from=install_packages ${OTX_INSTALL_PATH} ${OTX_INSTALL_PATH}
+
+USER non-root
+WORKDIR ${NON_ROOT_HOME}
+
+
+FROM cuda AS cuda_pretrained_ready
+ARG TORCH_CACHE=/home/non-root/.cache/torch
+
+COPY --chown=10001 --from=download_pretrained_weights ${TORCH_CACHE} ${TORCH_CACHE}
