@@ -3,7 +3,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 """FPN (Feature Pyramid Network) implementation.
 
-Implementations copied from mmdet.models.necks.fpn.py.
+Implementation modified from mmdet.models.necks.fpn.py.
 
 Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/necks/fpn.py
 """

@@ -3,7 +3,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 """Dynamic Soft Label Assigner for RTMDet.
 
-Implementations copied from mmdet.models.task_modules.assigners.dynamic_soft_label_assigner.
+Implementation modified from mmdet.models.task_modules.assigners.dynamic_soft_label_assigner.
 
 Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/task_modules/assigners/dynamic_soft_label_assigner.py
 """

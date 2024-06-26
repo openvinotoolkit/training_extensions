@@ -3,7 +3,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 """Data structures for detection task.
 
-Implementations copied from mmdet.models.task_modules.assigners.assign_result
+Implementation modified from mmdet.models.task_modules.assigners.assign_result
 and mmdet.models.task_modules.samplers.sampling_result.
 
 Reference :

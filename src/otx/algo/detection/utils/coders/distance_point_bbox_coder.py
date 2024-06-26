@@ -1,7 +1,7 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 # Copyright (c) OpenMMLab. All rights reserved.
-"""Implementations copied from mmdet.models.task_modules.coders.distance_point_bbox_coder.
+"""Implementation modified from mmdet.models.task_modules.coders.distance_point_bbox_coder.
 
 Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/task_modules/coders/distance_point_bbox_coder.py
 """

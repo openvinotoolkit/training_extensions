@@ -1,7 +1,7 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 # Copyright (c) OpenMMLab. All rights reserved.
-"""Implementations copied from mmcv.ops.nms and mmdeploy.mmcv.ops.nms.
+"""Implementation modified from mmcv.ops.nms and mmdeploy.mmcv.ops.nms.
 
 Reference :
     - https://github.com/open-mmlab/mmcv/blob/v2.1.0/mmcv/ops/nms.py

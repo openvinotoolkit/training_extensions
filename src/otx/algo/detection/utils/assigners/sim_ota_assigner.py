@@ -1,7 +1,7 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 # Copyright (c) OpenMMLab. All rights reserved.
-"""Implementations copied from mmdet.models.task_modules.assigners.sim_ota_assigner.
+"""Implementation modified from mmdet.models.task_modules.assigners.sim_ota_assigner.
 
 Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/task_modules/assigners/sim_ota_assigner.py
 """
