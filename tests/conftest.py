@@ -31,6 +31,8 @@ from torch import LongTensor
 from torchvision import tv_tensors
 from torchvision.tv_tensors import Image, Mask
 
+from tests.utils import ExportCase2Test
+
 
 def pytest_addoption(parser: pytest.Parser):
     """Add custom options for perf tests."""
@@ -468,4 +470,13 @@ def fxt_xpu_support_task() -> list[OTXTaskType]:
         OTXTaskType.ROTATED_DETECTION,
         OTXTaskType.DETECTION_SEMI_SL,
         OTXTaskType.SEMANTIC_SEGMENTATION,
+    ]
+
+
+@pytest.fixture()
+def fxt_export_list() -> list[ExportCase2Test]:
+    return [
+        ExportCase2Test("ONNX", False, "exported_model.onnx"),
+        ExportCase2Test("OPENVINO", False, "exported_model.xml"),
+        ExportCase2Test("OPENVINO", True, "exportable_code.zip"),
     ]

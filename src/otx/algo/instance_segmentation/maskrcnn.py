@@ -609,6 +609,17 @@ class MaskRCNNEfficientNet(OTXMaskRCNN):
             test_cfg=test_cfg,
         )
 
+    @property
+    def _optimization_config(self) -> dict[str, Any]:
+        """PTQ config for MaskRCNN-Eff."""
+        return {
+            "ignored_scope": {
+                "types": ["Add", "Divide", "Multiply", "Sigmoid"],
+                "validate": False,
+            },
+            "preset": "mixed",
+        }
+
 
 class MaskRCNNSwinT(OTXMaskRCNN):
     """MaskRCNNSwinT Model."""
@@ -809,3 +820,19 @@ class MaskRCNNSwinT(OTXMaskRCNN):
             train_cfg=train_cfg,
             test_cfg=test_cfg,
         )
+
+    @property
+    def _optimization_config(self) -> dict[str, Any]:
+        """PTQ config for MaskRCNN-SwinT."""
+        return {
+            "ignored_scope": {
+                "types": [
+                    "Add",
+                    "MVN",
+                    "Divide",
+                    "Multiply",
+                ],
+                "validate": False,
+            },
+            "preset": "mixed",
+        }

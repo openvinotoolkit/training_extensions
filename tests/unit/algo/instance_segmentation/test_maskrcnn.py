@@ -5,6 +5,7 @@
 import pytest
 import torch
 from otx.algo.instance_segmentation.maskrcnn import MaskRCNNEfficientNet, MaskRCNNResNet50, MaskRCNNSwinT
+from otx.algo.instance_segmentation.maskrcnn_tv import TVMaskRCNNR50
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.data.entity.instance_segmentation import InstanceSegBatchPredEntity
 from otx.core.types.export import TaskLevelExportParameters
@@ -21,22 +22,29 @@ class TestMaskRCNN:
 
     @pytest.mark.parametrize(
         "model",
-        [MaskRCNNResNet50(3), MaskRCNNEfficientNet(3), MaskRCNNSwinT(3)],
+        [MaskRCNNResNet50(3), MaskRCNNEfficientNet(3), MaskRCNNSwinT(3), TVMaskRCNNR50(3)],
     )
     def test_loss(self, model, fxt_data_module):
         data = next(iter(fxt_data_module.train_dataloader()))
         data.images = torch.randn([2, 3, 32, 32])
 
         output = model(data)
-        assert "loss_cls" in output
-        assert "loss_bbox" in output
-        assert "loss_mask" in output
-        assert "loss_rpn_cls" in output
-        assert "loss_rpn_bbox" in output
+        if isinstance(model, TVMaskRCNNR50):
+            assert "loss_classifier" in output
+            assert "loss_box_reg" in output
+            assert "loss_mask" in output
+            assert "loss_objectness" in output
+            assert "loss_rpn_box_reg" in output
+        else:
+            assert "loss_cls" in output
+            assert "loss_bbox" in output
+            assert "loss_mask" in output
+            assert "loss_rpn_cls" in output
+            assert "loss_rpn_bbox" in output
 
     @pytest.mark.parametrize(
         "model",
-        [MaskRCNNResNet50(3), MaskRCNNEfficientNet(3), MaskRCNNSwinT(3)],
+        [MaskRCNNResNet50(3), MaskRCNNEfficientNet(3), MaskRCNNSwinT(3), TVMaskRCNNR50(3)],
     )
     def test_predict(self, model, fxt_data_module):
         data = next(iter(fxt_data_module.train_dataloader()))
@@ -47,7 +55,7 @@ class TestMaskRCNN:
 
     @pytest.mark.parametrize(
         "model",
-        [MaskRCNNResNet50(3), MaskRCNNEfficientNet(3), MaskRCNNSwinT(3)],
+        [MaskRCNNResNet50(3), MaskRCNNEfficientNet(3), MaskRCNNSwinT(3), TVMaskRCNNR50(3)],
     )
     def test_export(self, model):
         model.eval()
