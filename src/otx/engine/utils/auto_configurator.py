@@ -14,7 +14,7 @@ from warnings import warn
 import datumaro
 from jsonargparse import ArgumentParser, Namespace
 
-from otx.core.config.data import SamplerConfig, SubsetConfig, TileConfig, UnlabeledDataConfig
+from otx.core.config.data import SamplerConfig, SubsetConfig, TileConfig, UnlabeledDataConfig, VisualPromptingConfig
 from otx.core.data.module import OTXDataModule
 from otx.core.model.base import OTXModel, OVModel
 from otx.core.types import PathLike
@@ -215,15 +215,18 @@ class AutoConfigurator:
         """
         if self.data_root is None:
             return None
-        self.config["data"]["config"]["data_root"] = self.data_root
-        data_config = deepcopy(self.config["data"]["config"])
+        self.config["data"]["data_root"] = self.data_root
+        data_config = deepcopy(self.config["data"])
         train_config = data_config.pop("train_subset")
         val_config = data_config.pop("val_subset")
         test_config = data_config.pop("test_subset")
         unlabeled_config = data_config.pop("unlabeled_subset", {})
+        tile_config = data_config.pop("tile_config", {})
+        vpm_config = data_config.pop("vpm_config", {})
+
+        _ = data_config.pop("__path__")
 
         return OTXDataModule(
-            task=self.config["data"]["task"],
             train_subset=SubsetConfig(sampler=SamplerConfig(**train_config.pop("sampler", {})), **train_config),
             val_subset=SubsetConfig(sampler=SamplerConfig(**val_config.pop("sampler", {})), **val_config),
             test_subset=SubsetConfig(sampler=SamplerConfig(**test_config.pop("sampler", {})), **test_config),
@@ -231,7 +234,8 @@ class AutoConfigurator:
                 sampler=SamplerConfig(**unlabeled_config.pop("sampler", {})),
                 **unlabeled_config,
             ),
-            tile_config=TileConfig(**data_config.pop("tile_config", {})),
+            tile_config=TileConfig(**tile_config),
+            vpm_config=VisualPromptingConfig(**vpm_config),
             **data_config,
         )
 
@@ -379,7 +383,7 @@ class AutoConfigurator:
         Returns:
             OTXDataModule: The modified OTXDataModule object with OpenVINO subset transforms applied.
         """
-        ov_config = self._load_default_config(model_name="openvino_model")["data"]["config"]
+        ov_config = self._load_default_config(model_name="openvino_model")["data"]
         subset_config = getattr(datamodule, f"{subset}_subset")
         subset_config.batch_size = ov_config[f"{subset}_subset"]["batch_size"]
         subset_config.transform_lib_type = ov_config[f"{subset}_subset"]["transform_lib_type"]

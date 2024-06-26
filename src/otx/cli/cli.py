@@ -174,8 +174,8 @@ class OTXCLI:
         parser.link_arguments("work_dir", "workspace.work_dir")
 
         parser.link_arguments("data_root", "engine.data_root")
-        parser.link_arguments("data_root", "data.config.data_root")
-        parser.link_arguments("engine.device", "data.config.device")
+        parser.link_arguments("data_root", "data.data_root")
+        parser.link_arguments("engine.device", "data.device")
 
         added_arguments = parser.add_method_arguments(
             Engine,
@@ -329,6 +329,8 @@ class OTXCLI:
         if self.subcommand in self.engine_subcommands():
             # For num_classes update, Model and Metric are instantiated separately.
             model_config = self.config[self.subcommand].pop("model")
+
+            print("###########", self.config)
 
             # Instantiate the things that don't need to special handling
             self.config_init = self.parser.instantiate_classes(self.config)

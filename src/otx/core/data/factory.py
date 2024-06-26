@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from otx.core.config.data import VisualPromptingConfig
+from otx.core.config.data import TileConfig, VisualPromptingConfig
 from otx.core.types.image import ImageColorChannel
 from otx.core.types.task import OTXTaskType
 from otx.core.types.transformer_libs import TransformLibType
@@ -79,6 +79,7 @@ class OTXDatasetFactory:
         include_polygons: bool = False,
         ignore_index: int = 255,
         vpm_config: VisualPromptingConfig = VisualPromptingConfig(),
+        tile_config: TileConfig = TileConfig(),
     ) -> OTXDataset:
         """Create OTXDataset."""
         transforms = TransformLibFactory.generate(cfg_subset)

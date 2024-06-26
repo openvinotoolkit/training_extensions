@@ -77,6 +77,9 @@ class OTXDataModule(LightningDataModule):
         self.tile_config = tile_config
         self.vpm_config = vpm_config
 
+        self.mem_cache_size = mem_cache_size
+        self.mem_cache_img_max_size = mem_cache_img_max_size
+
         self.image_color_channel = image_color_channel
         self.stack_images = stack_images
         self.include_polygons = include_polygons

@@ -17,6 +17,5 @@ data: ../_base_/data/torchvision_base.yaml
 overrides:
   data:
     task: ANOMALY_SEGMENTATION
-    config:
-      image_color_channel: RGB
-      data_format: mvtec
+    image_color_channel: RGB
+    data_format: mvtec
