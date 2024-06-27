@@ -489,8 +489,7 @@ class TestOVZeroShotVisualPromptingModel:
             used_indices=used_indices,
         )
 
-        for label, predicted_mask in results[0].items():
-            print(predicted_mask)
+        for predicted_mask in results[0].values():
             for pm, _ in zip(predicted_mask.mask, predicted_mask.points):
                 assert pm.shape == (1024, 1024)
 

@@ -68,7 +68,7 @@ class OTXVisualPromptingModelExporter(OTXNativeModelExporter):
             raise ValueError(msg)
 
         return {  # type: ignore[return-value]
-            module: fn(models[module], output_dir, f"{base_model_name}_{module}", precision, f"sam_{module}")
+            module: fn(models[module], output_dir, f"{base_model_name}_{module}", precision, model_type=f"sam_{module}")
             for module in ["image_encoder", "decoder"]
         }
 
@@ -95,7 +95,7 @@ class OTXVisualPromptingModelExporter(OTXNativeModelExporter):
                 tmp_dir,
                 base_model_name,
                 OTXPrecisionType.FP32,
-                False,
+                embed_metadata=False,
             )
             exported_model = openvino.convert_model(tmp_dir / (base_model_name + ".onnx"))
 
@@ -118,8 +118,8 @@ class OTXVisualPromptingModelExporter(OTXNativeModelExporter):
         output_dir: Path,
         base_model_name: str = "exported_model",
         precision: OTXPrecisionType = OTXPrecisionType.FP32,
-        model_type: str = "sam",
         embed_metadata: bool = True,
+        model_type: str = "sam",
     ) -> Path:
         """Export the given PyTorch model to ONNX format and save it to the specified output directory.
 
