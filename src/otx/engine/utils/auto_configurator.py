@@ -396,4 +396,21 @@ class AutoConfigurator:
             "And the tiler is disabled."
         )
         warn(msg, stacklevel=1)
-        return datamodule
+        return OTXDataModule(
+            task=datamodule.task,
+            data_format=datamodule.data_format,
+            data_root=datamodule.data_root,
+            train_subset=datamodule.train_subset,
+            val_subset=datamodule.val_subset,
+            test_subset=datamodule.test_subset,
+            unlabeled_subset=datamodule.unlabeled_subset,
+            tile_config=datamodule.tile_config,
+            vpm_config=datamodule.vpm_config,
+            image_color_channel=datamodule.image_color_channel,
+            stack_images=datamodule.stack_images,
+            include_polygons=datamodule.include_polygons,
+            ignore_index=datamodule.ignore_index,
+            unannotated_items_ratio=datamodule.unannotated_items_ratio,
+            auto_num_workers=datamodule.auto_num_workers,
+            device=datamodule.device,
+        )
