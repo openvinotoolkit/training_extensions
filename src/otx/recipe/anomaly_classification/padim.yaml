@@ -5,6 +5,7 @@ model:
     backbone: "resnet18"
     pre_trained: True
     n_features: null
+    task: ANOMALY_CLASSIFICATION
 
 engine:
   task: ANOMALY_CLASSIFICATION

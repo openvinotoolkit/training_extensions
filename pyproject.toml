@@ -82,7 +82,7 @@ xpu = [
     "timm",
     "openvino==2024.0",
     "openvino-dev==2024.0",
-    "openvino-model-api==0.2.0",
+    "openvino-model-api==0.2.1",
     "onnx==1.16.1",
     "onnxconverter-common==1.14.0",
     "nncf==2.9.0",
@@ -123,7 +123,7 @@ ci_publish = [
 ]
 
 ci_benchmark = [
-    "pandas==2.2.2",
+    "pandas<2.2",       # To avoid conflict with nncf==2.9.0
     "matplotlib==3.8.4",
     "nbconvert==7.16.3",
     "ipython==8.23.0",

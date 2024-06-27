@@ -3,6 +3,7 @@ model:
   init_args:
     layers: ["layer1", "layer2", "layer3"]
     backbone: "resnet18"
+    task: ANOMALY_SEGMENTATION
 
     optimizer:
       class_path: torch.optim.SGD
