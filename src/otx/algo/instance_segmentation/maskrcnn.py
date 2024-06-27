@@ -22,8 +22,8 @@ from otx.algo.instance_segmentation.backbones import SwinTransformer
 from otx.algo.instance_segmentation.heads import FCNMaskHead, RPNHead
 from otx.algo.instance_segmentation.mmdet.models.custom_roi_head import CustomConvFCBBoxHead, CustomRoIHead
 from otx.algo.instance_segmentation.mmdet.models.detectors import MaskRCNN
-from otx.algo.instance_segmentation.mmdet.models.roi_extractors import SingleRoIExtractor
 from otx.algo.instance_segmentation.necks import FPN
+from otx.algo.instance_segmentation.utils.roi_extractors import SingleRoIExtractor
 from otx.algo.utils.mmengine_utils import InstanceData, load_checkpoint
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.config.data import TileConfig
