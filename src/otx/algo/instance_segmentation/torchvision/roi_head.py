@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING
 
 import torch
 import torch.nn.functional as f
-from otx.algo.instance_segmentation.mmdet.structures.mask.mask_target import mask_target
+from otx.algo.instance_segmentation.utils.structures.mask import mask_target
 from torch import Tensor
 from torchvision.models.detection.roi_heads import RoIHeads, fastrcnn_loss, maskrcnn_inference
 

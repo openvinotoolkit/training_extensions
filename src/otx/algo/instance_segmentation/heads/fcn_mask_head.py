@@ -18,7 +18,7 @@ from torch import Tensor, nn
 from torch.nn.modules.utils import _pair
 
 from otx.algo.common.utils.structures import SamplingResult
-from otx.algo.instance_segmentation.mmdet.structures.mask import mask_target
+from otx.algo.instance_segmentation.utils.structures.mask import mask_target
 from otx.algo.instance_segmentation.utils.utils import empty_instances
 from otx.algo.modules.base_module import BaseModule, ModuleList
 from otx.algo.modules.conv import build_conv_layer

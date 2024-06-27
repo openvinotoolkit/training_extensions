@@ -21,7 +21,7 @@ from otx.algo.detection.heads.class_incremental_mixin import (
 )
 from otx.algo.instance_segmentation.heads import Shared2FCBBoxHead
 from otx.algo.instance_segmentation.losses import accuracy
-from otx.algo.instance_segmentation.mmdet.structures.bbox import bbox2roi
+from otx.algo.instance_segmentation.utils.structures.bbox import bbox2roi
 from otx.algo.instance_segmentation.utils.utils import empty_instances, unpack_inst_seg_entity
 from otx.core.data.entity.instance_segmentation import InstanceSegBatchDataEntity
 

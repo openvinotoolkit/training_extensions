@@ -25,8 +25,8 @@ from otx.algo.common.utils.utils import (
     select_single_mlvl,
 )
 from otx.algo.detection.heads.rtmdet_head import RTMDetHead
-from otx.algo.instance_segmentation.mmdet.structures.bbox.transforms import get_box_wh, scale_boxes
 from otx.algo.instance_segmentation.utils.roi_extractors import OTXRoIAlign
+from otx.algo.instance_segmentation.utils.structures.bbox.transforms import get_box_wh, scale_boxes
 from otx.algo.instance_segmentation.utils.utils import unpack_inst_seg_entity
 from otx.algo.modules.base_module import BaseModule
 from otx.algo.modules.conv_module import ConvModule

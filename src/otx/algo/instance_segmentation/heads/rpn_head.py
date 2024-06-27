@@ -19,10 +19,7 @@ from torch import Tensor, nn
 from otx.algo.common.utils.nms import batched_nms, multiclass_nms
 from otx.algo.common.utils.utils import dynamic_topk, gather_topk
 from otx.algo.detection.heads.anchor_head import AnchorHead
-from otx.algo.instance_segmentation.mmdet.structures.bbox import (
-    empty_box_as,
-    get_box_wh,
-)
+from otx.algo.instance_segmentation.utils.structures.bbox import empty_box_as, get_box_wh
 from otx.algo.instance_segmentation.utils.utils import unpack_inst_seg_entity
 from otx.algo.modules.conv_module import ConvModule
 from otx.algo.utils.mmengine_utils import InstanceData
