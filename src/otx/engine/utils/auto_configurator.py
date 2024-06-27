@@ -224,7 +224,8 @@ class AutoConfigurator:
         tile_config = data_config.pop("tile_config", {})
         vpm_config = data_config.pop("vpm_config", {})
 
-        _ = data_config.pop("__path__")
+        _ = data_config.pop("__path__", {})  # Remove __path__ key that for CLI
+        _ = data_config.pop("config", {})  # Remove config key that for CLI
 
         return OTXDataModule(
             train_subset=SubsetConfig(sampler=SamplerConfig(**train_config.pop("sampler", {})), **train_config),
