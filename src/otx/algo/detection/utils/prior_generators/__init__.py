@@ -3,7 +3,6 @@
 #
 """Anchor generators for detection task."""
 
-from .anchor_generator import AnchorGenerator, SSDAnchorGeneratorClustered
-from .point_generator import MlvlPointGenerator
+from .anchor_generator import SSDAnchorGeneratorClustered
 
-__all__ = ["AnchorGenerator", "SSDAnchorGeneratorClustered", "MlvlPointGenerator"]
+__all__ = ["SSDAnchorGeneratorClustered"]

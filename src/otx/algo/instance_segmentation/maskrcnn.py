@@ -12,13 +12,12 @@ from omegaconf import DictConfig
 from torchvision import tv_tensors
 from torchvision.ops import RoIAlign
 
-from otx.algo.common.backbones import ResNet
-from otx.algo.detection.backbones import build_model_including_pytorchcv
-from otx.algo.detection.losses import CrossEntropyLoss, CrossSigmoidFocalLoss, L1Loss
-from otx.algo.detection.utils.assigners import MaxIoUAssigner
-from otx.algo.detection.utils.coders import DeltaXYWHBBoxCoder
-from otx.algo.detection.utils.prior_generators import AnchorGenerator
-from otx.algo.detection.utils.samplers import RandomSampler
+from otx.algo.common.backbones import ResNet, build_model_including_pytorchcv
+from otx.algo.common.losses import CrossEntropyLoss, CrossSigmoidFocalLoss, L1Loss
+from otx.algo.common.utils.assigners import MaxIoUAssigner
+from otx.algo.common.utils.coders import DeltaXYWHBBoxCoder
+from otx.algo.common.utils.prior_generators import AnchorGenerator
+from otx.algo.common.utils.samplers import RandomSampler
 from otx.algo.instance_segmentation.mmdet.models.backbones import SwinTransformer
 from otx.algo.instance_segmentation.mmdet.models.custom_roi_head import CustomConvFCBBoxHead, CustomRoIHead
 from otx.algo.instance_segmentation.mmdet.models.dense_heads import RPNHead

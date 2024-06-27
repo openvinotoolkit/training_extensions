@@ -15,19 +15,19 @@ import torch.nn.functional
 from datumaro import Polygon
 from torch import Tensor, nn
 
-from otx.algo.detection.heads.rtmdet_head import RTMDetHead
-from otx.algo.detection.utils.nms import batched_nms, multiclass_nms
-from otx.algo.detection.utils.utils import (
+from otx.algo.common.utils.nms import batched_nms, multiclass_nms
+from otx.algo.common.utils.utils import (
     distance2bbox,
     filter_scores_and_topk,
     inverse_sigmoid,
     multi_apply,
     reduce_mean,
     select_single_mlvl,
-    unpack_inst_seg_entity,
 )
+from otx.algo.detection.heads.rtmdet_head import RTMDetHead
 from otx.algo.instance_segmentation.mmdet.models.roi_extractors.roi_align import OTXRoIAlign
 from otx.algo.instance_segmentation.mmdet.structures.bbox.transforms import get_box_wh, scale_boxes
+from otx.algo.instance_segmentation.utils.utils import unpack_inst_seg_entity
 from otx.algo.modules.base_module import BaseModule
 from otx.algo.modules.conv_module import ConvModule
 from otx.algo.modules.norm import is_norm

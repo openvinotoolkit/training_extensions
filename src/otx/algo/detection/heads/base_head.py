@@ -14,14 +14,9 @@ from abc import abstractmethod
 import torch
 from torch import Tensor
 
-from otx.algo.detection.utils.nms import batched_nms, multiclass_nms
-from otx.algo.detection.utils.utils import (
-    dynamic_topk,
-    filter_scores_and_topk,
-    gather_topk,
-    select_single_mlvl,
-    unpack_det_entity,
-)
+from otx.algo.common.utils.nms import batched_nms, multiclass_nms
+from otx.algo.common.utils.utils import dynamic_topk, filter_scores_and_topk, gather_topk, select_single_mlvl
+from otx.algo.detection.utils.utils import unpack_det_entity
 from otx.algo.modules.base_module import BaseModule
 from otx.algo.utils.mmengine_utils import InstanceData
 from otx.core.data.entity.base import OTXBatchDataEntity

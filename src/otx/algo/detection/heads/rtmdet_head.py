@@ -11,15 +11,12 @@ from __future__ import annotations
 import torch
 from torch import Tensor, nn
 
+from otx.algo.common.utils.nms import multiclass_nms
+from otx.algo.common.utils.utils import distance2bbox, inverse_sigmoid, multi_apply, reduce_mean
 from otx.algo.detection.heads import ATSSHead
-from otx.algo.detection.utils.nms import multiclass_nms
 from otx.algo.detection.utils.prior_generators.utils import anchor_inside_flags
 from otx.algo.detection.utils.utils import (
-    distance2bbox,
     images_to_levels,
-    inverse_sigmoid,
-    multi_apply,
-    reduce_mean,
     sigmoid_geometric_mean,
     unmap,
 )

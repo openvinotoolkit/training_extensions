@@ -9,9 +9,10 @@ from typing import TYPE_CHECKING, Any
 
 from omegaconf import DictConfig
 
+from otx.algo.common.losses import CrossEntropyLoss, L1Loss
 from otx.algo.detection.backbones import CSPDarknet
 from otx.algo.detection.heads import YOLOXHead
-from otx.algo.detection.losses import CrossEntropyLoss, IoULoss, L1Loss
+from otx.algo.detection.losses import IoULoss
 from otx.algo.detection.necks import YOLOXPAFPN
 from otx.algo.detection.ssd import SingleStageDetector
 from otx.algo.detection.utils.assigners import SimOTAAssigner

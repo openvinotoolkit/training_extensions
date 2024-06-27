@@ -11,13 +11,14 @@ import torch
 from omegaconf import DictConfig
 from torchvision import tv_tensors
 
-from otx.algo.detection.backbones import CSPNeXt
-from otx.algo.detection.losses import CrossEntropyLoss, DiceLoss, GIoULoss, QualityFocalLoss
+from otx.algo.common.backbones import CSPNeXt
+from otx.algo.common.losses import CrossEntropyLoss, GIoULoss, QualityFocalLoss
+from otx.algo.common.utils.assigners import DynamicSoftLabelAssigner
+from otx.algo.common.utils.coders import DistancePointBBoxCoder
+from otx.algo.common.utils.prior_generators import MlvlPointGenerator
+from otx.algo.common.utils.samplers import PseudoSampler
 from otx.algo.detection.necks import CSPNeXtPAFPN
-from otx.algo.detection.utils.assigners import DynamicSoftLabelAssigner
-from otx.algo.detection.utils.coders import DistancePointBBoxCoder
-from otx.algo.detection.utils.prior_generators import MlvlPointGenerator
-from otx.algo.detection.utils.samplers import PseudoSampler
+from otx.algo.instance_segmentation.losses import DiceLoss
 from otx.algo.instance_segmentation.mmdet.models.dense_heads.rtmdet_ins_head import RTMDetInsSepBNHead
 from otx.algo.instance_segmentation.mmdet.models.detectors.rtmdet import RTMDet
 from otx.algo.utils.mmengine_utils import InstanceData, load_checkpoint

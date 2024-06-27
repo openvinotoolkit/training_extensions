@@ -13,11 +13,10 @@ from typing import TYPE_CHECKING
 import torch
 from torch import Tensor, nn
 
+from otx.algo.common.losses import CrossEntropyLoss, smooth_l1_loss
+from otx.algo.common.utils.samplers import PseudoSampler
+from otx.algo.common.utils.utils import multi_apply
 from otx.algo.detection.heads.anchor_head import AnchorHead
-from otx.algo.detection.losses import CrossEntropyLoss
-from otx.algo.detection.losses.smooth_l1_loss import smooth_l1_loss
-from otx.algo.detection.utils.samplers import PseudoSampler
-from otx.algo.detection.utils.utils import multi_apply
 
 if TYPE_CHECKING:
     from otx.algo.utils.mmengine_utils import InstanceData
