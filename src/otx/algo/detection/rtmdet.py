@@ -7,6 +7,7 @@ from __future__ import annotations
 
 from otx.algo.common.backbones import CSPNeXt
 from otx.algo.common.losses import GIoULoss, QualityFocalLoss
+from otx.algo.common.losses.cross_entropy_loss import CrossEntropyLoss
 from otx.algo.common.utils.assigners import DynamicSoftLabelAssigner
 from otx.algo.common.utils.coders import DistancePointBBoxCoder
 from otx.algo.common.utils.prior_generators import MlvlPointGenerator
@@ -85,11 +86,8 @@ class RTMDetTiny(RTMDet):
         }
 
         backbone = CSPNeXt(
-            arch="P5",
             deepen_factor=0.167,
             widen_factor=0.375,
-            expand_ratio=0.5,
-            channel_attention=True,
             norm_cfg={"type": "BN"},
             act_cfg={"type": "SiLU", "inplace": True},
         )
@@ -98,7 +96,6 @@ class RTMDetTiny(RTMDet):
             in_channels=(96, 192, 384),
             out_channels=96,
             num_csp_blocks=1,
-            expand_ratio=0.5,
             norm_cfg={"type": "BN"},
             act_cfg={"type": "SiLU", "inplace": True},
         )
@@ -108,14 +105,12 @@ class RTMDetTiny(RTMDet):
             in_channels=96,
             stacked_convs=2,
             feat_channels=96,
+            with_objectness=False,
             anchor_generator=MlvlPointGenerator(offset=0, strides=[8, 16, 32]),
             bbox_coder=DistancePointBBoxCoder(),
             loss_cls=QualityFocalLoss(use_sigmoid=True, beta=2.0, loss_weight=1.0),
             loss_bbox=GIoULoss(loss_weight=2.0),
-            with_objectness=False,
-            exp_on_reg=False,
-            share_conv=True,
-            pred_kernel_size=1,
+            loss_centerness=CrossEntropyLoss(use_sigmoid=True, loss_weight=1.0),
             norm_cfg={"type": "BN"},
             act_cfg={"type": "SiLU", "inplace": True},
             train_cfg=train_cfg,

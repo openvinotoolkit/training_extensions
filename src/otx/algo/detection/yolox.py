@@ -128,11 +128,7 @@ class YOLOXTINY(YOLOX):
                 "max_per_img": 100,
             },
         )
-        backbone = CSPDarknet(
-            deepen_factor=0.33,
-            widen_factor=0.375,
-            out_indices=[2, 3, 4],
-        )
+        backbone = CSPDarknet(deepen_factor=0.33, widen_factor=0.375)
         neck = YOLOXPAFPN(
             in_channels=[96, 192, 384],
             out_channels=96,
@@ -173,11 +169,7 @@ class YOLOXS(YOLOX):
                 "max_per_img": 100,
             },
         )
-        backbone = CSPDarknet(
-            deepen_factor=0.33,
-            widen_factor=0.5,
-            out_indices=[2, 3, 4],
-        )
+        backbone = CSPDarknet(deepen_factor=0.33, widen_factor=0.5)
         neck = YOLOXPAFPN(
             in_channels=[128, 256, 512],
             out_channels=128,
@@ -218,20 +210,11 @@ class YOLOXL(YOLOX):
                 "max_per_img": 100,
             },
         )
-        backbone = CSPDarknet(
-            deepen_factor=1.0,
-            widen_factor=1.0,
-            out_indices=[2, 3, 4],
-        )
-        neck = YOLOXPAFPN(
-            in_channels=[256, 512, 1024],
-            out_channels=256,
-            num_csp_blocks=3,
-        )
+        backbone = CSPDarknet()
+        neck = YOLOXPAFPN(in_channels=[256, 512, 1024], out_channels=256)
         bbox_head = YOLOXHead(
             num_classes=num_classes,
             in_channels=256,
-            feat_channels=256,
             loss_cls=CrossEntropyLoss(use_sigmoid=True, reduction="sum", loss_weight=1.0),
             loss_bbox=IoULoss(mode="square", eps=1e-16, reduction="sum", loss_weight=5.0),
             loss_obj=CrossEntropyLoss(use_sigmoid=True, reduction="sum", loss_weight=1.0),
@@ -263,11 +246,7 @@ class YOLOXX(YOLOX):
                 "max_per_img": 100,
             },
         )
-        backbone = CSPDarknet(
-            deepen_factor=1.33,
-            widen_factor=1.25,
-            out_indices=[2, 3, 4],
-        )
+        backbone = CSPDarknet(deepen_factor=1.33, widen_factor=1.25)
         neck = YOLOXPAFPN(
             in_channels=[320, 640, 1280],
             out_channels=320,

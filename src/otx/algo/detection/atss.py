@@ -108,7 +108,6 @@ class MobileNetV2ATSS(ATSS):
         bbox_head = ATSSHead(
             num_classes=num_classes,
             in_channels=64,
-            stacked_convs=4,
             anchor_generator=AnchorGenerator(
                 ratios=[1.0],
                 octave_base_scale=8,
@@ -164,11 +163,7 @@ class ResNeXt101ATSS(ATSS):
         backbone = ResNeXt(
             depth=101,
             groups=64,
-            base_width=4,
-            num_stages=4,
-            out_indices=[0, 1, 2, 3],
             frozen_stages=1,
-            norm_cfg={"type": "BN", "requires_grad": True},
             init_cfg={"type": "Pretrained", "checkpoint": "open-mmlab://resnext101_64x4d"},
         )
         neck = FPN(
@@ -200,8 +195,6 @@ class ResNeXt101ATSS(ATSS):
             loss_centerness=CrossEntropyLoss(use_sigmoid=True, loss_weight=1.0),
             num_classes=num_classes,
             in_channels=256,
-            stacked_convs=4,
-            feat_channels=256,
             train_cfg=train_cfg,
             test_cfg=test_cfg,
         )
