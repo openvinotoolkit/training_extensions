@@ -50,9 +50,9 @@ class OTXDataModule(LightningDataModule):
         train_subset: SubsetConfig,
         val_subset: SubsetConfig,
         test_subset: SubsetConfig,
-        unlabeled_subset: UnlabeledDataConfig = UnlabeledDataConfig(data_root=None),
+        unlabeled_subset: UnlabeledDataConfig = UnlabeledDataConfig(data_root=None),  # noqa: B008
         tile_config: TileConfig = TileConfig(enable_tiler=False),
-        vpm_config: VisualPromptingConfig = VisualPromptingConfig(),
+        vpm_config: VisualPromptingConfig = VisualPromptingConfig(),  # noqa: B008
         mem_cache_size: str = "1GB",
         mem_cache_img_max_size: tuple[int, int] | None = None,
         image_color_channel: ImageColorChannel = ImageColorChannel.RGB,
