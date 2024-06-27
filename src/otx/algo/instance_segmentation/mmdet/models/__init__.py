@@ -6,10 +6,6 @@
 
 """MMDet model files."""
 
-from .dense_heads import RPNHead
 from .detectors import MaskRCNN
 
-__all__ = [
-    "RPNHead",
-    "MaskRCNN",
-]
+__all__ = ["MaskRCNN"]
