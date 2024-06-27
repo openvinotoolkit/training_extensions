@@ -4,7 +4,7 @@
 """Test Factory classes for dataset and transforms."""
 
 import pytest
-from otx.core.config.data import SubsetConfig, TileConfig, VisualPromptingConfig
+from otx.core.config.data import SubsetConfig, VisualPromptingConfig
 from otx.core.data.dataset.action_classification import OTXActionClsDataset
 from otx.core.data.dataset.anomaly import AnomalyDataset
 from otx.core.data.dataset.classification import (
@@ -88,8 +88,6 @@ class TestOTXDatasetFactory:
     ) -> None:
         mocker.patch.object(TransformLibFactory, "generate", return_value=None)
         cfg_subset = mocker.MagicMock(spec=SubsetConfig)
-        tile_config = mocker.MagicMock(spec=TileConfig)
-        tile_config.enable_tiler = False
         vpm_config = mocker.MagicMock(spec=VisualPromptingConfig)
         vpm_config.use_bbox = False
         vpm_config.use_point = False
@@ -102,7 +100,6 @@ class TestOTXDatasetFactory:
                 mem_cache_handler=fxt_mem_cache_handler,
                 cfg_subset=cfg_subset,
                 vpm_config=vpm_config,
-                tile_config=tile_config,
                 image_color_channel=image_color_channel,
             ),
             dataset_cls,
