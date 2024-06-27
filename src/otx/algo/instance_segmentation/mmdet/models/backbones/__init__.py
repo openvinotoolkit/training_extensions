@@ -5,10 +5,7 @@
 # Please refer to https://github.com/open-mmlab/mmdetection/
 
 """MMDet backbones."""
-from .resnet import ResNet
+
 from .swin import SwinTransformer
 
-__all__ = [
-    "ResNet",
-    "SwinTransformer",
-]
+__all__ = ["SwinTransformer"]

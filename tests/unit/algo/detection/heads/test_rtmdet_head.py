@@ -5,13 +5,12 @@
 import pytest
 import torch
 from omegaconf import DictConfig
-from otx.algo.detection.heads.base_sampler import PseudoSampler
-from otx.algo.detection.heads.distance_point_bbox_coder import DistancePointBBoxCoder
-from otx.algo.detection.heads.dynamic_soft_label_assigner import DynamicSoftLabelAssigner
-from otx.algo.detection.heads.point_generator import MlvlPointGenerator
+from otx.algo.common.losses import GIoULoss, QualityFocalLoss
+from otx.algo.common.utils.assigners import DynamicSoftLabelAssigner
+from otx.algo.common.utils.coders import DistancePointBBoxCoder
+from otx.algo.common.utils.prior_generators import MlvlPointGenerator
+from otx.algo.common.utils.samplers import PseudoSampler
 from otx.algo.detection.heads.rtmdet_head import RTMDetHead, RTMDetSepBNHead
-from otx.algo.detection.losses.gfocal_loss import QualityFocalLoss
-from otx.algo.detection.losses.iou_loss import GIoULoss
 
 
 @pytest.fixture()
