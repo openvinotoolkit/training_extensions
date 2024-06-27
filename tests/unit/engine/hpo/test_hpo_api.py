@@ -221,7 +221,7 @@ class TestHPOConfigurator:
                 "min": 0.0001,
                 "max": 0.1,
             },
-            "data.config.train_subset.batch_size": {
+            "data.train_subset.batch_size": {
                 "type": "quniform",
                 "min": 2,
                 "max": 512,

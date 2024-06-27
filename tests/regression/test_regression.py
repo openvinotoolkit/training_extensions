@@ -76,7 +76,7 @@ class BaseTest:
                     str(test_case.dataset.num_classes),
                     "--data_root",
                     str(data_root),
-                    "--data.config.data_format",
+                    "--data.data_format",
                     test_case.dataset.data_format,
                     "--work_dir",
                     str(test_case.output_dir),

@@ -277,10 +277,10 @@ class HPOConfigurator:
 
     def _align_hp_name(self, search_space: dict[str, Any]) -> None:
         available_hp_name_map: dict[str, Callable[[str], None]] = {
-            "data.config.train_subset.batch_size": lambda hp_name: self._replace_hp_name(
+            "data.train_subset.batch_size": lambda hp_name: self._replace_hp_name(
                 hp_name,
-                "data.config.train_subset.batch_size",
-                "datamodule.config.train_subset.batch_size",
+                "data.train_subset.batch_size",
+                "datamodule.train_subset.batch_size",
             ),
             "optimizer": lambda hp_name: self._replace_hp_name(
                 hp_name,
