@@ -940,6 +940,7 @@ class OVZeroShotVisualPromptingModel(
                         bboxes.append(Prompt(prompt.cpu().numpy(), label.cpu().numpy()))
                     elif isinstance(prompt, Points):
                         points.append(Prompt(prompt.cpu().numpy(), label.cpu().numpy()))
+                    # TODO (sungchul): support polygons
 
                 # preprocess decoder inputs
                 processed_prompts.append(
