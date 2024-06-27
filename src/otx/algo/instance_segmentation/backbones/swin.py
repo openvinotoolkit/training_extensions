@@ -21,7 +21,7 @@ import torch.utils.checkpoint as cp
 from timm.models.layers import DropPath, to_2tuple
 from torch import nn
 
-from otx.algo.instance_segmentation.mmdet.models.layers import PatchEmbed, PatchMerging
+from otx.algo.instance_segmentation.layers import PatchEmbed, PatchMerging
 from otx.algo.modules.base_module import BaseModule, ModuleList
 from otx.algo.modules.norm import build_norm_layer
 from otx.algo.modules.transformer import FFN

@@ -17,7 +17,7 @@ from torch import Tensor, nn
 from torch.nn.modules.utils import _pair
 
 from otx.algo.common.utils.nms import multiclass_nms
-from otx.algo.instance_segmentation.mmdet.models.layers import multiclass_nms_torch
+from otx.algo.instance_segmentation.layers import multiclass_nms_torch
 from otx.algo.instance_segmentation.mmdet.structures.bbox import scale_boxes
 from otx.algo.instance_segmentation.utils.utils import empty_instances
 from otx.algo.modules.base_module import BaseModule
