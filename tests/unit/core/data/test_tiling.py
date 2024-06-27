@@ -16,7 +16,6 @@ from datumaro import Polygon
 from omegaconf import DictConfig, OmegaConf
 from otx.algo.detection.atss import MobileNetV2ATSS
 from otx.core.config.data import (
-    DataModuleConfig,
     SubsetConfig,
     TileConfig,
     VisualPromptingConfig,
@@ -292,15 +291,17 @@ class TestOTXTiling:
         tile_datamodule.prepare_data()
 
         assert tile_datamodule.tile_config.tile_size == (6750, 6750), "Tile size should be [6750, 6750]"
-        assert (
-            pytest.approx(tile_datamodule.tile_config.overlap, rel=1e-3) == 0.03608
-        ), "Overlap should be 0.03608"
+        assert pytest.approx(tile_datamodule.tile_config.overlap, rel=1e-3) == 0.03608, "Overlap should be 0.03608"
         assert tile_datamodule.tile_config.max_num_instances == 3, "Max num instances should be 3"
 
     def test_tile_sampler(self, fxt_det_data_config):
         rng = np.random.default_rng()
         sampling_ratio = rng.random()
-        fxt_det_data_config["tile_config"] = TileConfig(enable_tiler=True, enable_adaptive_tiling=False, sampling_ratio=sampling_ratio)
+        fxt_det_data_config["tile_config"] = TileConfig(
+            enable_tiler=True,
+            enable_adaptive_tiling=False,
+            sampling_ratio=sampling_ratio,
+        )
         tile_datamodule = OTXDataModule(
             task=OTXTaskType.DETECTION,
             **fxt_det_data_config,
