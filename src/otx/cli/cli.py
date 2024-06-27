@@ -330,8 +330,6 @@ class OTXCLI:
             # For num_classes update, Model and Metric are instantiated separately.
             model_config = self.config[self.subcommand].pop("model")
 
-            print("###########", self.config)
-
             # Instantiate the things that don't need to special handling
             self.config_init = self.parser.instantiate_classes(self.config)
             self.workspace = self.get_config_value(self.config_init, "workspace")
