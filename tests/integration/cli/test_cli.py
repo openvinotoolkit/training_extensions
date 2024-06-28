@@ -14,6 +14,15 @@ from otx.engine.utils.auto_configurator import DEFAULT_CONFIG_PER_TASK
 from tests.utils import ExportCase2Test, run_main
 
 
+@pytest.fixture()
+def fxt_export_list() -> list[ExportCase2Test]:
+    return [
+        ExportCase2Test("ONNX", False, "exported_model.onnx"),
+        ExportCase2Test("OPENVINO", False, "exported_model.xml"),
+        ExportCase2Test("OPENVINO", True, "exportable_code.zip"),
+    ]
+
+
 @pytest.fixture(
     params=pytest.RECIPE_LIST,
     ids=lambda x: "/".join(Path(x).parts[-2:]),
