@@ -136,23 +136,6 @@ def _inference_step_for_zero_shot(
                 for ett in converted_entities["preds"]
             ]
             _target = converted_entities["target"]
-
-            # match #_preds and #_target
-            if len(_preds) > len(_target):
-                # interpolate _target
-                num_diff = len(_preds) - len(_target)
-                for idx in range(num_diff):
-                    _target.append(_target[idx])
-            elif len(_preds) < len(_target):
-                num_diff = len(_target) - len(_preds)
-                pad_prediction = {
-                    "masks": torch.zeros_like(_target[0]["masks"], dtype=_target[0]["masks"].dtype),
-                    "labels": torch.zeros_like(_target[0]["labels"], dtype=_target[0]["labels"].dtype),
-                    "scores": torch.zeros(len(_target[0]["labels"]), dtype=torch.float32),
-                }  # for empty prediction
-                for idx in range(num_diff):
-                    _preds.append(_preds[idx] if idx < len(_preds) else pad_prediction)
-
             _metric.update(preds=_preds, target=_target)
         elif _name in ["iou", "f1-score", "dice"]:
             # BinaryJaccardIndex, BinaryF1Score, Dice
@@ -577,8 +560,8 @@ class OVVisualPromptingModel(
     ) -> VisualPromptingBatchPredEntity:
         """Customize OTX output batch data entity if needed for model."""
         masks: list[tv_tensors.Mask] = []
-        scores: list[torch.Tensor] = []
-        labels: list[torch.Tensor] = []
+        scores: list[Tensor] = []
+        labels: list[Tensor] = []
         for output in outputs:
             masks.append(tv_tensors.Mask(np.concatenate([o["hard_prediction"] for o in output]), device=self.device))
             scores.append(torch.as_tensor(np.concatenate([o["scores"] for o in output]), device=self.device))
@@ -1027,32 +1010,46 @@ class OVZeroShotVisualPromptingModel(
 
         masks: list[tv_tensors.Mask] = []
         prompts: list[Points] = []
-        scores: list[torch.Tensor] = []
-        labels: list[torch.LongTensor] = []
-        for output in outputs:
-            predicted_masks, used_points = output
+        scores: list[Tensor] = []
+        labels: list[Tensor] = []
+        for idx, (predicted_masks, used_points) in enumerate(outputs):
+            _masks: list[np.ndarray] = []
+            _prompts: list[np.ndarray] = []
+            _scores: list[np.ndarray] = []
+            _labels: list[np.ndarray] = []
             for label, predicted_mask in predicted_masks.items():
                 if len(predicted_mask) == 0:
                     continue
+                _masks.append(np.stack(predicted_mask, axis=0))
+                _used_points_scores = np.stack(used_points[label], axis=0)
+                _prompts.append(_used_points_scores[:, :2])
+                _scores.append(_used_points_scores[:, 2])
+                _labels.append(np.array([label] * len(_used_points_scores)))
+
+            if len(_masks) == 0:
                 masks.append(
                     tv_tensors.Mask(
-                        torch.stack([torch.as_tensor(m) for m in predicted_mask], dim=0),
-                        dtype=torch.float32,
-                        device=self.device,
+                        torch.zeros((1, *inputs.imgs_info[idx].ori_shape), dtype=torch.float32, device=self.device),
                     ),
                 )
                 prompts.append(
-                    Points(
-                        torch.stack([torch.as_tensor(p[:2]) for p in used_points[label]], dim=0),
-                        canvas_size=inputs.imgs_info[0].ori_shape,
-                        dtype=torch.float32,
-                        device=self.device,
-                    ),
+                    Points([], canvas_size=inputs.imgs_info[idx].ori_shape, dtype=torch.float32, device=self.device),
                 )
-                scores.append(torch.stack([torch.as_tensor(p[2]) for p in used_points[label]], dim=0).to(self.device))
-                labels.append(
-                    torch.cat([torch.LongTensor([label]) for _ in range(len(scores[-1]))], dim=0).to(self.device),
-                )
+                scores.append(torch.tensor([-1.0], dtype=torch.float32, device=self.device))
+                labels.append(torch.tensor([-1], dtype=torch.int64, device=self.device))
+                continue
+
+            masks.append(tv_tensors.Mask(np.concatenate(_masks, axis=0), dtype=torch.float32, device=self.device))
+            prompts.append(
+                Points(
+                    np.concatenate(_prompts, axis=0),
+                    canvas_size=inputs.imgs_info[idx].ori_shape,
+                    dtype=torch.float32,
+                    device=self.device,
+                ),
+            )
+            scores.append(torch.as_tensor(np.concatenate(_scores, axis=0), dtype=torch.float32, device=self.device))
+            labels.append(torch.as_tensor(np.concatenate(_labels, axis=0), dtype=torch.int64, device=self.device))
 
         return ZeroShotVisualPromptingBatchPredEntity(
             batch_size=len(outputs),
