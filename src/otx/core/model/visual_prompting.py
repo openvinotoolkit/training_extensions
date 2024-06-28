@@ -516,12 +516,13 @@ class OVVisualPromptingModel(
             )
 
         images, metas, batch_prompts = self._customize_inputs(inputs)
-        outputs: list[dict[str, Any]] = []
+        outputs: list[list[dict[str, Any]]] = []
         for image, meta, prompts in zip(images, metas, batch_prompts):
             # forward image encoder
             image_embeddings = self.model["image_encoder"].infer_sync(image)
 
             # forward decoder
+            outputs_per_batch: list[dict[str, Any]] = []
             for prompt in prompts:
                 label = prompt.pop("label")
                 prompt.update(**image_embeddings)
@@ -531,8 +532,8 @@ class OVVisualPromptingModel(
                 prediction["scores"] = prediction["iou_predictions"]
                 prediction["labels"] = label
                 processed_prediction = self.model["decoder"].postprocess(prediction, meta)
-                outputs.append(processed_prediction)
-
+                outputs_per_batch.append(processed_prediction)
+            outputs.append(outputs_per_batch)
         return self._customize_outputs(outputs, inputs)
 
     def _customize_inputs(  # type: ignore[override]
@@ -577,20 +578,22 @@ class OVVisualPromptingModel(
         """Customize OTX output batch data entity if needed for model."""
         masks: list[tv_tensors.Mask] = []
         scores: list[torch.Tensor] = []
+        labels: list[torch.Tensor] = []
         for output in outputs:
-            masks.append(torch.as_tensor(output["hard_prediction"], device=self.device))
-            scores.append(torch.as_tensor(output["scores"], device=self.device))
+            masks.append(tv_tensors.Mask(np.concatenate([o["hard_prediction"] for o in output]), device=self.device))
+            scores.append(torch.as_tensor(np.concatenate([o["scores"] for o in output]), device=self.device))
+            labels.append(torch.as_tensor([o["labels"] for o in output], device=self.device))
 
         return VisualPromptingBatchPredEntity(
             batch_size=len(outputs),
             images=inputs.images,
             imgs_info=inputs.imgs_info,
-            scores=[torch.cat(scores, dim=0)],
-            masks=[tv_tensors.Mask(torch.cat(masks, dim=0))],
+            scores=scores,
+            masks=masks,
             polygons=[],
             points=[],
             bboxes=[],
-            labels=[torch.cat(list(labels.values())) for labels in inputs.labels],
+            labels=labels,
         )
 
     def optimize(  # type: ignore[override]
