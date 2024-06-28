@@ -19,8 +19,7 @@ from otx.algo.common.utils.coders import DeltaXYWHBBoxCoder
 from otx.algo.common.utils.prior_generators import AnchorGenerator
 from otx.algo.common.utils.samplers import RandomSampler
 from otx.algo.instance_segmentation.backbones import SwinTransformer
-from otx.algo.instance_segmentation.heads import FCNMaskHead, RPNHead
-from otx.algo.instance_segmentation.mmdet.models.custom_roi_head import CustomConvFCBBoxHead, CustomRoIHead
+from otx.algo.instance_segmentation.heads import CustomConvFCBBoxHead, CustomRoIHead, FCNMaskHead, RPNHead
 from otx.algo.instance_segmentation.mmdet.models.detectors import MaskRCNN
 from otx.algo.instance_segmentation.necks import FPN
 from otx.algo.instance_segmentation.utils.roi_extractors import SingleRoIExtractor
