@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING, Any
 
 import torch
 from omegaconf import DictConfig
+from torch import nn
 from torchvision import tv_tensors
 from torchvision.ops import RoIAlign
 
@@ -20,8 +21,8 @@ from otx.algo.common.utils.prior_generators import AnchorGenerator
 from otx.algo.common.utils.samplers import RandomSampler
 from otx.algo.instance_segmentation.backbones import SwinTransformer
 from otx.algo.instance_segmentation.heads import CustomConvFCBBoxHead, CustomRoIHead, FCNMaskHead, RPNHead
-from otx.algo.instance_segmentation.mmdet.models.detectors import MaskRCNN
 from otx.algo.instance_segmentation.necks import FPN
+from otx.algo.instance_segmentation.two_stage import TwoStageDetector
 from otx.algo.instance_segmentation.utils.roi_extractors import SingleRoIExtractor
 from otx.algo.utils.mmengine_utils import InstanceData, load_checkpoint
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
@@ -42,6 +43,52 @@ if TYPE_CHECKING:
     from torch.nn.modules import Module
 
     from otx.core.metrics import MetricCallable
+
+
+class MaskRCNN(TwoStageDetector):
+    """Implementation of `Mask R-CNN <https://arxiv.org/abs/1703.06870>`."""
+
+    def __init__(
+        self,
+        backbone: nn.Module,
+        neck: nn.Module,
+        rpn_head: nn.Module,
+        roi_head: nn.Module,
+        train_cfg: DictConfig,
+        test_cfg: DictConfig,
+        init_cfg: DictConfig | dict | list[DictConfig | dict] | None = None,
+        **kwargs,
+    ) -> None:
+        super().__init__(
+            backbone=backbone,
+            neck=neck,
+            rpn_head=rpn_head,
+            roi_head=roi_head,
+            train_cfg=train_cfg,
+            test_cfg=test_cfg,
+            init_cfg=init_cfg,
+        )
+
+    def export(
+        self,
+        batch_inputs: torch.Tensor,
+        batch_img_metas: list[dict],
+    ) -> tuple[torch.Tensor, ...]:
+        """Export MaskRCNN detector."""
+        x = self.extract_feat(batch_inputs)
+
+        rpn_results_list = self.rpn_head.export(
+            x,
+            batch_img_metas,
+            rescale=False,
+        )
+
+        return self.roi_head.export(
+            x,
+            rpn_results_list,
+            batch_img_metas,
+            rescale=False,
+        )
 
 
 class OTXMaskRCNN(ExplainableOTXInstanceSegModel):

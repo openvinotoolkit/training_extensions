@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING, Any
 
 import torch
 from omegaconf import DictConfig
+from torch import nn
 from torchvision import tv_tensors
 
 from otx.algo.common.backbones import CSPNeXt
@@ -18,9 +19,9 @@ from otx.algo.common.utils.coders import DistancePointBBoxCoder
 from otx.algo.common.utils.prior_generators import MlvlPointGenerator
 from otx.algo.common.utils.samplers import PseudoSampler
 from otx.algo.detection.necks import CSPNeXtPAFPN
+from otx.algo.detection.ssd import SingleStageDetector
 from otx.algo.instance_segmentation.heads import RTMDetInsSepBNHead
 from otx.algo.instance_segmentation.losses import DiceLoss
-from otx.algo.instance_segmentation.mmdet.models.detectors.rtmdet import RTMDet
 from otx.algo.utils.mmengine_utils import InstanceData, load_checkpoint
 from otx.core.config.data import TileConfig
 from otx.core.data.entity.base import OTXBatchLossEntity
@@ -39,6 +40,44 @@ if TYPE_CHECKING:
     from torch.nn.modules import Module
 
     from otx.core.metrics import MetricCallable
+
+
+class RTMDet(SingleStageDetector):
+    """Implementation of RTMDet.
+
+    Args:
+        backbone (:obj:`ConfigDict` or dict): The backbone module.
+        neck (:obj:`ConfigDict` or dict): The neck module.
+        bbox_head (:obj:`ConfigDict` or dict): The bbox head module.
+        train_cfg (:obj:`ConfigDict` or dict, optional): The training config
+            of ATSS. Defaults to None.
+        test_cfg (:obj:`ConfigDict` or dict, optional): The testing config
+            of ATSS. Defaults to None.
+        data_preprocessor (:obj:`ConfigDict` or dict, optional): Config of
+            :class:`DetDataPreprocessor` to process the input data.
+            Defaults to None.
+        init_cfg (:obj:`ConfigDict` or dict, optional): the config to control
+            the initialization. Defaults to None.
+        use_syncbn (bool): Whether to use SyncBatchNorm. Defaults to True.
+    """
+
+    def __init__(
+        self,
+        backbone: nn.Module,
+        neck: nn.Module,
+        bbox_head: nn.Module,
+        train_cfg: dict | None = None,
+        test_cfg: dict | None = None,
+        init_cfg: dict | None = None,
+    ) -> None:
+        super().__init__(
+            backbone=backbone,
+            neck=neck,
+            bbox_head=bbox_head,
+            train_cfg=train_cfg,
+            test_cfg=test_cfg,
+            init_cfg=init_cfg,
+        )
 
 
 class RTMDetInstTiny(ExplainableOTXInstanceSegModel):
