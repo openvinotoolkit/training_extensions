@@ -4,11 +4,12 @@
 # This class and its supporting functions are adapted from the mmdet.
 # Please refer to https://github.com/open-mmlab/mmdetection/
 """MMDet MaskRCNN."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from .two_stage import TwoStageDetector
+from otx.algo.instance_segmentation.two_stage import TwoStageDetector
 
 if TYPE_CHECKING:
     import torch

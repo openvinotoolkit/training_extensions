@@ -5,6 +5,7 @@
 # Please refer to https://github.com/open-mmlab/mmdetection/
 
 """MMDet TwoStageDetector."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -12,16 +13,15 @@ from typing import TYPE_CHECKING
 import torch
 from torch import Tensor, nn
 
+from otx.algo.modules.base_module import BaseModule
 from otx.algo.utils.mmengine_utils import InstanceData
 from otx.core.data.entity.instance_segmentation import InstanceSegBatchDataEntity
-
-from .base import BaseDetector
 
 if TYPE_CHECKING:
     from omegaconf import DictConfig
 
 
-class TwoStageDetector(BaseDetector):
+class TwoStageDetector(BaseModule):
     """Base class for two-stage detectors.
 
     Two-stage detectors typically consisting of a region proposal network and a
@@ -82,6 +82,59 @@ class TwoStageDetector(BaseDetector):
     def with_rpn(self) -> bool:
         """bool: whether the detector has RPN."""
         return hasattr(self, "rpn_head") and self.rpn_head is not None
+
+    @property
+    def with_neck(self) -> bool:
+        """bool: whether the detector has a neck."""
+        return hasattr(self, "neck") and self.neck is not None
+
+    @property
+    def with_bbox(self) -> bool:
+        """bool: whether the detector has a bbox head."""
+        return (hasattr(self, "roi_head") and self.roi_head.with_bbox) or (
+            hasattr(self, "bbox_head") and self.bbox_head is not None
+        )
+
+    def forward(
+        self,
+        entity: torch.Tensor,
+        mode: str = "tensor",
+    ) -> dict[str, torch.Tensor] | list[InstanceData] | tuple[torch.Tensor] | torch.Tensor:
+        """The unified entry for a forward process in both training and test.
+
+        The method should accept three modes: "tensor", "predict" and "loss":
+
+        - "tensor": Forward the whole network and return tensor or tuple of
+        tensor without any post-processing, same as a common nn.Module.
+        - "predict": Forward and return the predictions, which are fully
+        processed to a list of :obj:`DetDataSample`.
+        - "loss": Forward and return a dict of losses according to the given
+        inputs and data samples.
+
+        Note that this method doesn't handle either back propagation or
+        parameter update, which are supposed to be done in :meth:`train_step`.
+
+        Args:
+            inputs (torch.Tensor): The input tensor with shape
+                (N, C, ...) in general.
+            data_samples (list[:obj:`DetDataSample`], optional): A batch of
+                data samples that contain annotations and predictions.
+                Defaults to None.
+            mode (str): Return what kind of value. Defaults to 'tensor'.
+
+        Returns:
+            The return type depends on ``mode``.
+
+            - If ``mode="tensor"``, return a tensor or a tuple of tensor.
+            - If ``mode="predict"``, return a list of :obj:`DetDataSample`.
+            - If ``mode="loss"``, return a dict of tensor.
+        """
+        if mode == "loss":
+            return self.loss(entity)
+        if mode == "predict":
+            return self.predict(entity)
+        msg = f"Invalid mode {mode}. Only supports loss and predict mode."
+        raise RuntimeError(msg)
 
     def extract_feat(self, batch_inputs: Tensor) -> tuple[Tensor]:
         """Extract features.

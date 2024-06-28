@@ -7,9 +7,5 @@
 """MMDet Detectors."""
 
 from .mask_rcnn import MaskRCNN
-from .two_stage import TwoStageDetector
 
-__all__ = [
-    "MaskRCNN",
-    "TwoStageDetector",
-]
+__all__ = ["MaskRCNN"]

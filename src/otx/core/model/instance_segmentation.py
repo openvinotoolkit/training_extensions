@@ -17,7 +17,7 @@ from torchmetrics import Metric, MetricCollection
 from torchvision import tv_tensors
 
 from otx.algo.explain.explain_algo import InstSegExplainAlgo, feature_vector_fn
-from otx.algo.instance_segmentation.mmdet.models.detectors.two_stage import TwoStageDetector
+from otx.algo.instance_segmentation.two_stage import TwoStageDetector
 from otx.algo.utils.mmengine_utils import InstanceData
 from otx.core.config.data import TileConfig
 from otx.core.data.entity.base import OTXBatchLossEntity
