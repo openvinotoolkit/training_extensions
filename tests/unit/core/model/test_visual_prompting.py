@@ -339,6 +339,7 @@ class TestOVVisualPromptingModel:
                 "hard_prediction": np.zeros((1, 1, 1024, 1024), dtype=np.float32),
                 "soft_prediction": np.zeros((1, 1, 1024, 1024), dtype=np.float32),
                 "scores": np.zeros((1, 1), dtype=np.float32),
+                "labels": 1,
             },
         )
 
@@ -518,8 +519,10 @@ class TestOVZeroShotVisualPromptingModel:
         ov_zero_shot_visual_prompting_model.training = False
 
         outputs = [
-            ({1: [[1, 2, 3], [4, 5, 6]]}, {1: [[7, 8, 9], [10, 11, 12]]}),
-            ({2: [[13, 14, 15], [16, 17, 18]]}, {2: [[19, 20, 21], [22, 23, 24]]}),
+            [
+                {1: [[1, 2, 3], [4, 5, 6]], 2: [[7, 8, 9], [10, 11, 12]]},
+                {1: [[13, 14, 15], [16, 17, 18]], 2: [[19, 20, 21], [22, 23, 24]]},
+            ],
         ]
 
         result = ov_zero_shot_visual_prompting_model._customize_outputs(outputs, fxt_zero_shot_vpm_data_entity[1])
