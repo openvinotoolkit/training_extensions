@@ -5,7 +5,7 @@
 
    ```bash
    training_extensions/.ci/docker$ ./build.sh --help
-      USAGE: .ci/docker/build.sh <tag> [Options]
+      USAGE: ./build.sh <tag> [Options]
       Positional args
          <tag>               Tag name to be tagged to newly built image
       Options
@@ -18,7 +18,7 @@
    Below example builds an image using actions-runner v2.317.0 based on NVIDIA cuda image and tag it as `2.317.0`.
 
    ```bash
-   training_extensions$ .ci/build.sh 2.317.0 -u https://github.com/actions/runner/releases/download/v2.305.0/actions-runner-linux-x64-2.305.0.tar.gz
+   training_extensions/.ci/docker$ ./build.sh 2.317.0 -u https://github.com/actions/runner/releases/download/v2.305.0/actions-runner-linux-x64-2.305.0.tar.gz
    ```
 
    > **_Note_**: While building an image, script will use your system's environment variables `http_proxy`, `https_proxy`, and `no_proxy`. If you need to use proxy to access external entity, please check those settings before using this script.
@@ -55,7 +55,7 @@
    Below example starts a runner named as `<container-prefix>-0` with GPU ID 0 (GPU ID will be attached to both container and runner name)
 
    ```bash
-   training_extensions$ .ci/start-runner.sh <container-prefix> <github-token> -g 0
+   training_extensions$ .ci/docker/start-runner.sh <container-prefix> <github-token> -g 0
    ```
 
    If there exist the container named as same, it will be stopped before starting a new container.
@@ -86,14 +86,14 @@
    Below example stops a runner named as `otx-ci-container`
 
    ```bash
-   training_extensions$ .ci/stop-runner.sh otx-ci-container <github-token>
+   training_extensions$ .ci/docker/stop-runner.sh otx-ci-container <github-token>
    ```
 
    > **_Note_**: If there is an action in progress on the actions-runner which you want to stop, this script will be resulted with an error. To perform force stopping the runner, you can stop the docker container using `docker stop` command on the host machine.
 
 1. Monitor the running runner
    ```bash
-   training_extensions$ .ci/check-runner.sh --help
+   training_extensions$ .ci/docker/check-runner.sh --help
    USAGE: .ci/check-runner.sh <container-name> [Options]
    Options
        -r|--runner         Check runner's log instead of Job one
