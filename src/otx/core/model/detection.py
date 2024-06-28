@@ -45,6 +45,63 @@ if TYPE_CHECKING:
 class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity]):
     """Base class for the detection models used in OTX."""
 
+    def test_step(self, batch: DetBatchDataEntity, batch_idx: int) -> None:
+        """Perform a single test step on a batch of data from the test set.
+
+        :param batch: A batch of data (a tuple) containing the input tensor of images and target
+            labels.
+        :param batch_idx: The index of the current batch.
+        """
+        preds = self._filter_outputs_by_threshold(self.forward(inputs=batch))  # type: ignore[arg-type]
+
+        if isinstance(preds, OTXBatchLossEntity):
+            raise TypeError(preds)
+
+        metric_inputs = self._convert_pred_entity_to_compute_metric(preds, batch)
+
+        if isinstance(metric_inputs, dict):
+            self.metric.update(**metric_inputs)
+            return
+
+        if isinstance(metric_inputs, list) and all(isinstance(inp, dict) for inp in metric_inputs):
+            for inp in metric_inputs:
+                self.metric.update(**inp)
+            return
+
+        raise TypeError(metric_inputs)
+
+    def predict_step(
+        self,
+        batch: DetBatchDataEntity,
+        batch_idx: int,
+        dataloader_idx: int = 0,
+    ) -> DetBatchPredEntity:
+        """Step function called during PyTorch Lightning Trainer's predict."""
+        if self.explain_mode:
+            return self.forward_explain(inputs=batch)
+
+        outputs = self._filter_outputs_by_threshold(self.forward(inputs=batch))  # type: ignore[arg-type]
+
+        if isinstance(outputs, OTXBatchLossEntity):
+            raise TypeError(outputs)
+
+        return outputs
+
+    def _filter_outputs_by_threshold(self, outputs: DetBatchPredEntity) -> DetBatchPredEntity:
+        scores = []
+        bboxes = []
+        labels = []
+        for score, bbox, label in zip(outputs.scores, outputs.bboxes, outputs.labels):
+            filtered_idx = torch.where(score > self.best_confidence_threshold)
+            scores.append(score[filtered_idx])
+            bboxes.append(tv_tensors.wrap(bbox[filtered_idx], like=bbox))
+            labels.append(label[filtered_idx])
+
+        outputs.scores = scores
+        outputs.bboxes = bboxes
+        outputs.labels = labels
+        return outputs
+
     @abstractmethod
     def _build_model(self, num_classes: int) -> nn.Module:
         raise NotImplementedError
@@ -105,16 +162,15 @@ class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity]):
             if not isinstance(prediction, InstanceData):
                 raise TypeError(prediction)
 
-            filtered_idx = torch.where(prediction.scores > self.best_confidence_threshold)  # type: ignore[attr-defined]
-            scores.append(prediction.scores[filtered_idx])  # type: ignore[attr-defined]
+            scores.append(prediction.scores)  # type: ignore[attr-defined]
             bboxes.append(
                 tv_tensors.BoundingBoxes(
-                    prediction.bboxes[filtered_idx],  # type: ignore[attr-defined]
+                    prediction.bboxes,  # type: ignore[attr-defined]
                     format="XYXY",
                     canvas_size=img_info.ori_shape,
                 ),
             )
-            labels.append(prediction.labels[filtered_idx])  # type: ignore[attr-defined]
+            labels.append(prediction.labels)  # type: ignore[attr-defined]
 
         if self.explain_mode:
             if not isinstance(outputs, dict):
