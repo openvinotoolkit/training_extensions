@@ -215,8 +215,8 @@ class AutoConfigurator:
         """
         if self.data_root is None:
             return None
-        self.config["data"]["config"]["data_root"] = self.data_root
-        data_config = deepcopy(self.config["data"]["config"])
+        self.config["data"]["data_root"] = self.data_root
+        data_config = deepcopy(self.config["data"])
         train_config = data_config.pop("train_subset")
         val_config = data_config.pop("val_subset")
         test_config = data_config.pop("test_subset")
@@ -379,7 +379,7 @@ class AutoConfigurator:
         Returns:
             OTXDataModule: The modified OTXDataModule object with OpenVINO subset transforms applied.
         """
-        ov_config = self._load_default_config(model_name="openvino_model")["data"]["config"]
+        ov_config = self._load_default_config(model_name="openvino_model")["data"]
         subset_config = getattr(datamodule, f"{subset}_subset")
         subset_config.batch_size = ov_config[f"{subset}_subset"]["batch_size"]
         subset_config.transform_lib_type = ov_config[f"{subset}_subset"]["transform_lib_type"]
