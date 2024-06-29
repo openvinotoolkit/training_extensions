@@ -1,74 +1,32 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-#
-"""Base object detector head implementation."""
+# Copyright (c) OpenMMLab. All rights reserved.
+"""Implementation modified from mmdet.models.dense_heads.base_dense_head.py.
+
+Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/dense_heads/base_dense_head.py
+"""
 
 from __future__ import annotations
 
 import copy
 from abc import abstractmethod
-from typing import TYPE_CHECKING
 
 import torch
 from torch import Tensor
 
-from otx.algo.detection.ops.nms import batched_nms, multiclass_nms
-from otx.algo.detection.utils.utils import (
-    dynamic_topk,
-    filter_scores_and_topk,
-    gather_topk,
-    select_single_mlvl,
-    unpack_det_entity,
-)
+from otx.algo.common.utils.nms import batched_nms, multiclass_nms
+from otx.algo.common.utils.utils import dynamic_topk, filter_scores_and_topk, gather_topk, select_single_mlvl
+from otx.algo.detection.utils.utils import unpack_det_entity
 from otx.algo.modules.base_module import BaseModule
 from otx.algo.utils.mmengine_utils import InstanceData
 from otx.core.data.entity.base import OTXBatchDataEntity
 from otx.core.data.entity.detection import DetBatchDataEntity
 
-if TYPE_CHECKING:
-    from omegaconf import DictConfig
 
-
-# This class and its supporting functions below lightly adapted from the mmdet BaseDenseHead available at:
-# https://github.com/open-mmlab/mmdetection/blob/fe3f809a0a514189baf889aa358c498d51ee36cd/mmdet/models/dense_heads/base_dense_head.py
 class BaseDenseHead(BaseModule):
-    """Base class for DenseHeads.
+    """Base class for DenseHeads."""
 
-    1. The ``init_weights`` method is used to initialize densehead's
-    model parameters. After detector initialization, ``init_weights``
-    is triggered when ``detector.init_weights()`` is called externally.
-
-    2. The ``loss`` method is used to calculate the loss of densehead,
-    which includes two steps: (1) the densehead model performs forward
-    propagation to obtain the feature maps (2) The ``loss_by_feat`` method
-    is called based on the feature maps to calculate the loss.
-
-    .. code:: text
-
-    loss(): forward() -> loss_by_feat()
-
-    3. The ``predict`` method is used to predict detection results,
-    which includes two steps: (1) the densehead model performs forward
-    propagation to obtain the feature maps (2) The ``predict_by_feat`` method
-    is called based on the feature maps to predict detection results including
-    post-processing.
-
-    .. code:: text
-
-    predict(): forward() -> predict_by_feat()
-
-    4. The ``loss_and_predict`` method is used to return loss and detection
-    results at the same time. It will call densehead's ``forward``,
-    ``loss_by_feat`` and ``predict_by_feat`` methods in order.  If one-stage is
-    used as RPN, the densehead needs to return both losses and predictions.
-    This predictions is used as the proposal of roihead.
-
-    .. code:: text
-
-    loss_and_predict(): forward() -> loss_by_feat() -> predict_by_feat()
-    """
-
-    def __init__(self, init_cfg: DictConfig | list[DictConfig] | None = None) -> None:
+    def __init__(self, init_cfg: dict | list[dict] | None = None) -> None:
         super().__init__(init_cfg=init_cfg)
         # `_raw_positive_infos` will be used in `get_positive_infos`, which
         # can get positive information.
@@ -78,7 +36,7 @@ class BaseDenseHead(BaseModule):
         """Get positive information from sampling results.
 
         Returns:
-            list[:obj:`InstanceData`]: Positive information of each image,
+            list[InstanceData]: Positive information of each image,
             usually including positive bboxes, positive labels, positive
             priors, etc.
         """
@@ -142,7 +100,7 @@ class BaseDenseHead(BaseModule):
                 Defaults to False.
 
         Returns:
-            list[obj:`InstanceData`]: Detection results of each image
+            list[InstanceData]: Detection results of each image
             after the post process.
         """
         batch_img_metas = [
@@ -166,7 +124,7 @@ class BaseDenseHead(BaseModule):
         bbox_preds: list[Tensor],
         score_factors: list[Tensor] | None = None,
         batch_img_metas: list[dict] | None = None,
-        cfg: DictConfig | None = None,
+        cfg: dict | None = None,
         rescale: bool = False,
         with_nms: bool = True,
     ) -> list[InstanceData]:
@@ -188,8 +146,7 @@ class BaseDenseHead(BaseModule):
                 (batch_size, num_priors * 1, H, W). Defaults to None.
             batch_img_metas (list[dict], Optional): Batch image meta info.
                 Defaults to None.
-            cfg (DictConfig, optional): Test / postprocessing
-                configuration, if None, test_cfg would be used.
+            cfg (dict, optional): Test / postprocessing configuration, if None, test_cfg would be used.
                 Defaults to None.
             rescale (bool): If True, return boxes in original image space.
                 Defaults to False.
@@ -197,7 +154,7 @@ class BaseDenseHead(BaseModule):
                 Defaults to True.
 
         Returns:
-            list[:obj:`InstanceData`]: Object detection results of each image
+            list[InstanceData]: Object detection results of each image
             after the post process. Each item usually contains following keys.
 
                 - scores (Tensor): Classification scores, has a shape
@@ -250,7 +207,7 @@ class BaseDenseHead(BaseModule):
         score_factor_list: list[Tensor],
         mlvl_priors: list[Tensor],
         img_meta: dict,
-        cfg: DictConfig,
+        cfg: dict | None = None,
         rescale: bool = False,
         with_nms: bool = True,
     ) -> InstanceData:
@@ -273,7 +230,7 @@ class BaseDenseHead(BaseModule):
                 when `with_stride=True`, otherwise it still has shape
                 (num_priors, 4).
             img_meta (dict): Image meta info.
-            cfg (DictConfig): Test / postprocessing configuration,
+            cfg (dict, optional): Test / postprocessing configuration,
                 if None, test_cfg would be used.
             rescale (bool): If True, return boxes in original image space.
                 Defaults to False.
@@ -281,9 +238,8 @@ class BaseDenseHead(BaseModule):
                 Defaults to True.
 
         Returns:
-            :obj:`InstanceData`: Detection results of each image
-            after the post process.
-            Each item usually contains following keys.
+            InstanceData: Detection results of each image
+            after the post process. Each item usually contains following keys.
 
                 - scores (Tensor): Classification scores, has a shape
                   (num_instance, )
@@ -374,7 +330,7 @@ class BaseDenseHead(BaseModule):
     def _bbox_post_process(
         self,
         results: InstanceData,
-        cfg: DictConfig,
+        cfg: dict,
         img_meta: dict,
         rescale: bool = False,
         with_nms: bool = True,
@@ -385,9 +341,9 @@ class BaseDenseHead(BaseModule):
         the nms operation. Usually `with_nms` is False is used for aug test.
 
         Args:
-            results (:obj:`InstaceData`): Detection instance results,
+            results (InstaceData): Detection instance results,
                 each item has shape (num_bboxes, ).
-            cfg (DictConfig): Test / postprocessing configuration,
+            cfg (dict): Test / postprocessing configuration,
                 if None, test_cfg would be used.
             rescale (bool): If True, return boxes in original image space.
                 Default to False.
@@ -396,9 +352,8 @@ class BaseDenseHead(BaseModule):
             img_meta (dict, optional): Image meta info. Defaults to None.
 
         Returns:
-            :obj:`InstanceData`: Detection results of each image
-            after the post process.
-            Each item usually contains following keys.
+            InstanceData: Detection results of each image
+            after the post process. Each item usually contains following keys.
 
                 - scores (Tensor): Classification scores, has a shape
                   (num_instance, )
@@ -418,20 +373,20 @@ class BaseDenseHead(BaseModule):
             results.scores = results.scores * score_factors  # type: ignore[attr-defined]
 
         # filter small size bboxes
-        if cfg.get("min_bbox_size", -1) >= 0:
+        if (min_bbox_size := cfg.get("min_bbox_size", -1)) >= 0:
             w = results.bboxes[:, 2] - results.bboxes[:, 0]  # type: ignore[attr-defined]
             h = results.bboxes[:, 3] - results.bboxes[:, 1]  # type: ignore[attr-defined]
-            valid_mask = (w > cfg.min_bbox_size) & (h > cfg.min_bbox_size)
+            valid_mask = (w > min_bbox_size) & (h > min_bbox_size)
             if not valid_mask.all():
                 results = results[valid_mask]
 
         if with_nms and results.bboxes.numel() > 0:  # type: ignore[attr-defined]
             bboxes = results.bboxes  # type: ignore[attr-defined]
-            det_bboxes, keep_idxs = batched_nms(bboxes, results.scores, results.labels, cfg.nms)  # type: ignore[attr-defined]
+            det_bboxes, keep_idxs = batched_nms(bboxes, results.scores, results.labels, cfg["nms"])  # type: ignore[attr-defined]
             results = results[keep_idxs]
             # some nms would reweight the score, such as softnms
             results.scores = det_bboxes[:, -1]
-            results = results[: cfg.max_per_img]
+            results = results[: cfg["max_per_img"]]
 
         return results
 
@@ -440,20 +395,18 @@ class BaseDenseHead(BaseModule):
         x: tuple[Tensor],
         batch_img_metas: list[dict],
         rescale: bool = False,
-    ) -> tuple[torch.Tensor, torch.Tensor] | tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    ) -> tuple[Tensor, Tensor] | tuple[Tensor, Tensor, Tensor]:
         """Perform forward propagation of the detection head and predict detection results.
 
         Args:
-            x (tuple[Tensor]): Multi-level features from the
-                upstream network, each is a 4D-tensor.
-            batch_data_samples (List[:obj:`DetDataSample`]): The Data
-                Samples. It usually includes information such as
+            x (tuple[Tensor]): Multi-level features from the upstream network, each is a 4D-tensor.
+            batch_data_samples (list[dict]): The Data Samples. It usually includes information such as
                 `gt_instance`, `gt_panoptic_seg` and `gt_sem_seg`.
             rescale (bool, optional): Whether to rescale the results.
                 Defaults to False.
 
         Returns:
-            list[tuple[torch.Tensor, torch.Tensor] | tuple[torch.Tensor, torch.Tensor, torch.Tensor]]:
+            list[tuple[Tensor, Tensor] | tuple[Tensor, Tensor, Tensor]]:
                 Detection results of each image after the post process.
         """
         outs = self(x)
@@ -466,11 +419,13 @@ class BaseDenseHead(BaseModule):
         bbox_preds: list[Tensor],
         score_factors: list[Tensor] | None = None,
         batch_img_metas: list[dict] | None = None,
-        cfg: DictConfig | None = None,
+        cfg: dict | None = None,
         rescale: bool = False,
         with_nms: bool = True,
-    ) -> tuple[torch.Tensor, torch.Tensor] | tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    ) -> tuple[Tensor, Tensor] | tuple[Tensor, Tensor, Tensor]:
         """Transform a batch of output features extracted from the head into bbox results.
+
+        Reference : https://github.com/open-mmlab/mmdeploy/blob/v1.3.1/mmdeploy/codebase/mmdet/models/dense_heads/base_dense_head.py#L26-L206
 
         Note: When score_factors is not None, the cls_scores are
         usually multiplied by it then obtain the real score used in NMS,
@@ -488,7 +443,7 @@ class BaseDenseHead(BaseModule):
                 (batch_size, num_priors * 1, H, W). Defaults to None.
             batch_img_metas (list[dict], Optional): Batch image meta info.
                 Defaults to None.
-            cfg (DictConfig, optional): Test / postprocessing
+            cfg (dict, optional): Test / postprocessing
                 configuration, if None, test_cfg would be used.
                 Defaults to None.
             rescale (bool): If True, return boxes in original image space.
@@ -497,7 +452,7 @@ class BaseDenseHead(BaseModule):
                 Defaults to True.
 
         Returns:
-            tuple[torch.Tensor, torch.Tensor] | tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+            tuple[Tensor, Tensor] | tuple[Tensor, Tensor, Tensor]:
                 - scores (Tensor): Classification scores, has a shape
                     (num_instance, )
                 - labels (Tensor): Labels of bboxes, has a shape
@@ -532,7 +487,7 @@ class BaseDenseHead(BaseModule):
 
         img_shape = batch_img_metas[0]["img_shape"]
         batch_size = cls_scores[0].shape[0]
-        cfg = self.test_cfg
+        cfg = cfg or self.test_cfg
         pre_topk = cfg.get("nms_pre", -1)
 
         mlvl_valid_bboxes = []
@@ -607,8 +562,8 @@ class BaseDenseHead(BaseModule):
             batch_bboxes,
             batch_scores,
             max_output_boxes_per_class=200,  # TODO (sungchul): temporarily set to mmdeploy cfg, will be updated
-            iou_threshold=cfg.nms.iou_threshold,
-            score_threshold=cfg.score_thr,
+            iou_threshold=cfg["nms"]["iou_threshold"],
+            score_threshold=cfg["score_thr"],
             pre_top_k=5000,
-            keep_top_k=cfg.max_per_img,
+            keep_top_k=cfg["max_per_img"],
         )

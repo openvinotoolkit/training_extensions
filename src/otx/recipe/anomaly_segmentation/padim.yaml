@@ -5,6 +5,7 @@ model:
     backbone: "resnet18"
     pre_trained: True
     n_features: null
+    task: ANOMALY_SEGMENTATION
 
 engine:
   task: ANOMALY_SEGMENTATION

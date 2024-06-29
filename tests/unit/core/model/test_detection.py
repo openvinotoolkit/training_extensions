@@ -16,7 +16,6 @@ from omegaconf import OmegaConf
 from otx.algo.detection.atss import MobileNetV2ATSS
 from otx.algo.explain.explain_algo import feature_vector_fn
 from otx.core.metrics.fmeasure import FMeasureCallable
-from otx.core.model.detection import OTXDetectionModel
 from otx.core.types.export import TaskLevelExportParameters
 from torch.optim import Optimizer
 
@@ -64,7 +63,7 @@ class TestOTXDetectionModel:
         mock_scheduler,
         mock_ckpt,
     ) -> None:
-        model = OTXDetectionModel(
+        model = MobileNetV2ATSS(
             label_info=1,
             torch_compile=False,
             optimizer=mock_optimizer,

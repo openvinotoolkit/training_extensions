@@ -1,27 +1,25 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-"""FPN implementation."""
+# Copyright (c) OpenMMLab. All rights reserved.
+"""FPN (Feature Pyramid Network) implementation.
+
+Implementation modified from mmdet.models.necks.fpn.py.
+
+Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/necks/fpn.py
+"""
 
 from __future__ import annotations
-
-from typing import TYPE_CHECKING
 
 from torch import Tensor, nn
 
 from otx.algo.modules.base_module import BaseModule
 from otx.algo.modules.conv_module import ConvModule
 
-if TYPE_CHECKING:
-    from omegaconf import DictConfig
 
-
-# This class come from mmdet and is slightly modified
-# https://github.com/open-mmlab/mmdetection/blob/ecac3a77becc63f23d9f6980b2a36f86acd00a8a/mmdet/models/necks/fpn.py
 class FPN(BaseModule):
     r"""Feature Pyramid Network.
 
-    This is an implementation of paper `Feature Pyramid Networks for Object
-    Detection <https://arxiv.org/abs/1612.03144>`_.
+    This is an implementation of paper `Feature Pyramid Networks for Object Detection <https://arxiv.org/abs/1612.03144>`_.
 
     Args:
         in_channels (list[int]): Number of input channels per scale.
@@ -45,31 +43,15 @@ class FPN(BaseModule):
             conv. Defaults to False.
         no_norm_on_lateral (bool): Whether to apply norm on lateral.
             Defaults to False.
-        conv_cfg (:obj:`DictConfig` or dict, optional): Config dict for
+        conv_cfg (dict, optional): Config dict for
             convolution layer. Defaults to None.
-        norm_cfg (:obj:`DictConfig` or dict, optional): Config dict for
+        norm_cfg (dict, optional): Config dict for
             normalization layer. Defaults to None.
-        act_cfg (:obj:`DictConfig` or dict, optional): Config dict for
+        act_cfg (dict, optional): Config dict for
             activation layer in ConvModule. Defaults to None.
-        upsample_cfg (:obj:`DictConfig` or dict, optional): Config dict
+        upsample_cfg (dict, optional): Config dict
             for interpolate layer. Defaults to dict(mode='nearest').
-        init_cfg (:obj:`DictConfig` or dict or list[:obj:`DictConfig` or \
-            dict]): Initialization config dict.
-
-    Example:
-        >>> import torch
-        >>> in_channels = [2, 3, 5, 7]
-        >>> scales = [340, 170, 84, 43]
-        >>> inputs = [torch.rand(1, c, s, s)
-        ...           for c, s in zip(in_channels, scales)]
-        >>> self = FPN(in_channels, 11, len(in_channels)).eval()
-        >>> outputs = self.forward(inputs)
-        >>> for i in range(len(outputs)):
-        ...     print(f'outputs[{i}].shape = {outputs[i].shape}')
-        outputs[0].shape = torch.Size([1, 11, 340, 340])
-        outputs[1].shape = torch.Size([1, 11, 170, 170])
-        outputs[2].shape = torch.Size([1, 11, 84, 84])
-        outputs[3].shape = torch.Size([1, 11, 43, 43])
+        init_cfg (dict, list[dict], optional): Initialization config dict.
     """
 
     def __init__(
@@ -82,14 +64,13 @@ class FPN(BaseModule):
         add_extra_convs: bool | str = False,
         relu_before_extra_convs: bool = False,
         no_norm_on_lateral: bool = False,
-        conv_cfg: DictConfig | dict | None = None,
-        norm_cfg: DictConfig | dict | None = None,
-        act_cfg: DictConfig | dict | None = None,
-        upsample_cfg: DictConfig | dict | None = None,
-        init_cfg: DictConfig | dict | list[DictConfig] | list[dict] | None = None,
+        conv_cfg: dict | None = None,
+        norm_cfg: dict | None = None,
+        act_cfg: dict | None = None,
+        upsample_cfg: dict | None = None,
+        init_cfg: dict | list[dict] | None = None,
     ) -> None:
-        if init_cfg is None:
-            init_cfg = {"type": "Xavier", "layer": "Conv2d", "distribution": "uniform"}
+        init_cfg = init_cfg or {"type": "Xavier", "layer": "Conv2d", "distribution": "uniform"}
         super().__init__(init_cfg=init_cfg)
         self.in_channels = in_channels
         self.out_channels = out_channels
@@ -168,8 +149,7 @@ class FPN(BaseModule):
         """Forward function.
 
         Args:
-            inputs (tuple[Tensor]): Features from the upstream network, each
-                is a 4D-tensor.
+            inputs (tuple[Tensor]): Features from the upstream network, each is a 4D-tensor.
 
         Returns:
             tuple: Feature maps, each is a 4D-tensor.

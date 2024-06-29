@@ -3,7 +3,6 @@
 
 from __future__ import annotations
 
-from collections import namedtuple
 from pathlib import Path
 
 import cv2
@@ -12,9 +11,7 @@ import yaml
 from otx.core.types.task import OTXTaskType
 from otx.engine.utils.auto_configurator import DEFAULT_CONFIG_PER_TASK
 
-from tests.utils import run_main
-
-ExportCase2Test = namedtuple("ExportCase2Test", ["export_format", "export_demo_package", "expected_output"])
+from tests.utils import ExportCase2Test, run_main
 
 
 @pytest.fixture()
@@ -159,20 +156,20 @@ def test_otx_e2e(
     if any(
         task_name in recipe
         for task_name in [
-            "h_label_cls",
-            "detection",
             "dino_v2",
-            "instance_segmentation",
-            "action",
         ]
     ):
         return
-
     if task in ("visual_prompting", "zero_shot_visual_prompting"):
         fxt_export_list = [
             ExportCase2Test("ONNX", False, "exported_model_decoder.onnx"),
             ExportCase2Test("OPENVINO", False, "exported_model_decoder.xml"),
         ]  # TODO (sungchul): EXPORTABLE_CODE will be supported
+    elif "anomaly" in task:
+        fxt_export_list = [
+            ExportCase2Test("ONNX", False, "exported_model.onnx"),
+            ExportCase2Test("OPENVINO", False, "exported_model.xml"),
+        ]  # anomaly doesn't support exportable code
 
     overrides = fxt_cli_override_command_per_task[task]
     if "anomaly" in task:
@@ -257,6 +254,8 @@ def test_otx_e2e(
     assert latest_dir.exists()
 
     # 5) otx export with XAI
+    if "instance_segmentation/rtmdet_inst_tiny" in recipe:
+        return
     if ("_cls" not in task) and (task not in ["detection", "instance_segmentation"]):
         return  # Supported only for classification, detection and instance segmentation task.
 

@@ -12,15 +12,13 @@ from omegaconf import DictConfig
 from torchvision import tv_tensors
 from torchvision.ops import RoIAlign
 
-from otx.algo.detection.backbones.pytorchcv_backbones import _build_model_including_pytorchcv
-from otx.algo.detection.heads.anchor_generator import AnchorGenerator
-from otx.algo.detection.heads.base_sampler import RandomSampler
-from otx.algo.detection.heads.delta_xywh_bbox_coder import DeltaXYWHBBoxCoder
-from otx.algo.detection.heads.max_iou_assigner import MaxIoUAssigner
-from otx.algo.detection.losses.cross_entropy_loss import CrossEntropyLoss
-from otx.algo.detection.losses.cross_focal_loss import CrossSigmoidFocalLoss
-from otx.algo.detection.losses.smooth_l1_loss import L1Loss
-from otx.algo.instance_segmentation.mmdet.models.backbones import ResNet, SwinTransformer
+from otx.algo.common.backbones import ResNet, build_model_including_pytorchcv
+from otx.algo.common.losses import CrossEntropyLoss, CrossSigmoidFocalLoss, L1Loss
+from otx.algo.common.utils.assigners import MaxIoUAssigner
+from otx.algo.common.utils.coders import DeltaXYWHBBoxCoder
+from otx.algo.common.utils.prior_generators import AnchorGenerator
+from otx.algo.common.utils.samplers import RandomSampler
+from otx.algo.instance_segmentation.mmdet.models.backbones import SwinTransformer
 from otx.algo.instance_segmentation.mmdet.models.custom_roi_head import CustomConvFCBBoxHead, CustomRoIHead
 from otx.algo.instance_segmentation.mmdet.models.dense_heads import RPNHead
 from otx.algo.instance_segmentation.mmdet.models.detectors import MaskRCNN
@@ -518,7 +516,7 @@ class MaskRCNNEfficientNet(OTXMaskRCNN):
             },
         )
 
-        backbone = _build_model_including_pytorchcv(
+        backbone = build_model_including_pytorchcv(
             cfg={
                 "type": "efficientnet_b2b",
                 "out_indices": [2, 3, 4, 5],
@@ -820,3 +818,19 @@ class MaskRCNNSwinT(OTXMaskRCNN):
             train_cfg=train_cfg,
             test_cfg=test_cfg,
         )
+
+    @property
+    def _optimization_config(self) -> dict[str, Any]:
+        """PTQ config for MaskRCNN-SwinT."""
+        return {
+            "ignored_scope": {
+                "types": [
+                    "Add",
+                    "MVN",
+                    "Divide",
+                    "Multiply",
+                ],
+                "validate": False,
+            },
+            "preset": "mixed",
+        }

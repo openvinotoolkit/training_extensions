@@ -5,6 +5,7 @@
 # Please refer to https://github.com/open-mmlab/mmdetection/
 
 """MMDetection StandardRoIHead."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -12,14 +13,16 @@ from typing import TYPE_CHECKING
 import torch
 from torch import Tensor
 
+from otx.algo.common.losses import CrossSigmoidFocalLoss
+from otx.algo.common.utils.structures import SamplingResult
+from otx.algo.common.utils.utils import multi_apply
 from otx.algo.detection.heads.class_incremental_mixin import (
     ClassIncrementalMixin,
 )
-from otx.algo.detection.losses import CrossSigmoidFocalLoss, accuracy
-from otx.algo.detection.utils.structures import SamplingResult
-from otx.algo.detection.utils.utils import empty_instances, multi_apply, unpack_inst_seg_entity
+from otx.algo.instance_segmentation.losses import accuracy
 from otx.algo.instance_segmentation.mmdet.models.bbox_heads.convfc_bbox_head import Shared2FCBBoxHead
 from otx.algo.instance_segmentation.mmdet.structures.bbox import bbox2roi
+from otx.algo.instance_segmentation.utils.utils import empty_instances, unpack_inst_seg_entity
 from otx.core.data.entity.instance_segmentation import InstanceSegBatchDataEntity
 
 from .base_roi_head import BaseRoIHead

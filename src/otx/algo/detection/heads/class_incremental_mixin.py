@@ -10,7 +10,8 @@ from typing import TYPE_CHECKING
 import torch
 from torch import Tensor
 
-from otx.algo.detection.utils.utils import images_to_levels, multi_apply
+from otx.algo.common.utils.utils import multi_apply
+from otx.algo.detection.utils.utils import images_to_levels
 
 if TYPE_CHECKING:
     from otx.algo.utils.mmengine_utils import InstanceData
