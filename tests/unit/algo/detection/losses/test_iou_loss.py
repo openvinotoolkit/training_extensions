@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import pytest
 import torch
-from otx.algo.detection.losses.iou_loss import IoULoss
+from otx.algo.detection.losses import IoULoss
 
 
 class TestIoULoss:

@@ -4,6 +4,7 @@ model:
     model_name: openvino.xml
     async_inference: True
     use_throughput_mode: False
+    task: ANOMALY_CLASSIFICATION
 
 engine:
   task: ANOMALY_CLASSIFICATION
