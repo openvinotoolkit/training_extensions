@@ -9,9 +9,10 @@ from typing import TYPE_CHECKING
 
 import torch
 import torch.nn.functional as f
-from otx.algo.instance_segmentation.utils.structures.mask import mask_target
 from torch import Tensor
 from torchvision.models.detection.roi_heads import RoIHeads, fastrcnn_loss, maskrcnn_inference
+
+from otx.algo.instance_segmentation.utils.structures.mask import mask_target
 
 if TYPE_CHECKING:
     from datumaro import Polygon
@@ -51,7 +52,7 @@ def maskrcnn_loss(
     )
 
 
-class OTXTVRoIHeads(RoIHeads):
+class TVRoIHeads(RoIHeads):
     """Customised RoIHeads class with support for polygons as ground truth masks."""
 
     def forward(
@@ -61,10 +62,10 @@ class OTXTVRoIHeads(RoIHeads):
         image_shapes: list[tuple[int, int]],
         targets: list[dict[str, Tensor]] | None = None,
     ) -> tuple[list[dict[str, Tensor]], dict[str, Tensor]]:
-        """Support both polgyons and masks as ground truth masks.
+        """Support both polygons and masks as ground truth masks.
 
         Note: This method is a copy of the original forward method from RoIHeads.
-        TODO(Eugene): Add support for increamental learning.
+        TODO(Eugene): Add support for incremental learning.
         """
         if self.training:
             proposals, matched_idxs, labels, regression_targets = self.select_training_samples(proposals, targets)
