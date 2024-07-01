@@ -45,11 +45,8 @@ class TestOTXTVModel:
     def test_create_model(self, fxt_tv_model):
         assert isinstance(fxt_tv_model.model, TVClassificationModel)
 
-        with pytest.raises(NotImplementedError):
-            OTXTVModel(backbone="mobilenet_v3_small", label_info=10, task="not_supported_task")
-
         semi_sl_model = OTXTVModel(backbone="mobilenet_v3_small", label_info=10, train_type="semi_supervised")
-        assert isinstance(semi_sl_model.head, OTXSemiSLLinearClsHead)
+        assert isinstance(semi_sl_model.model.head, OTXSemiSLLinearClsHead)
 
     @pytest.mark.parametrize(
         "fxt_tv_model_and_data_entity",
