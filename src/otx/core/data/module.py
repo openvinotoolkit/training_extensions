@@ -436,6 +436,8 @@ class OTXDataModule(LightningDataModule):
                 self.unlabeled_subset,
                 self.tile_config,
                 self.vpm_config,
+                self.mem_cache_size,
+                self.mem_cache_img_max_size,
                 self.image_color_channel,
                 self.stack_images,
                 self.include_polygons,
