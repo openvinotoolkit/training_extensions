@@ -4,13 +4,12 @@
 # This class and its supporting functions are adapted from the mmdet.
 # Please refer to https://github.com/open-mmlab/mmdetection/
 
-""""MMDet model files."""
-from .backbones import ResNet
+"""MMDet model files."""
+
 from .dense_heads import RPNHead
 from .detectors import MaskRCNN
 
 __all__ = [
-    "ResNet",
     "RPNHead",
     "MaskRCNN",
 ]

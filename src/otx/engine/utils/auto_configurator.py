@@ -387,6 +387,7 @@ class AutoConfigurator:
         subset_config.transform_lib_type = ov_config[f"{subset}_subset"]["transform_lib_type"]
         subset_config.transforms = ov_config[f"{subset}_subset"]["transforms"]
         subset_config.to_tv_image = ov_config[f"{subset}_subset"]["to_tv_image"]
+        data_configuration.unlabeled_subset.data_root = None
         data_configuration.image_color_channel = ov_config["image_color_channel"]
         data_configuration.tile_config.enable_tiler = False
         msg = (
