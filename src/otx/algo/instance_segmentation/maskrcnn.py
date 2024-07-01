@@ -9,7 +9,6 @@ from typing import TYPE_CHECKING, Any
 
 import torch
 from omegaconf import DictConfig
-from torch import nn
 from torchvision import tv_tensors
 from torchvision.ops import RoIAlign
 
@@ -45,53 +44,7 @@ if TYPE_CHECKING:
     from otx.core.metrics import MetricCallable
 
 
-class MaskRCNN(TwoStageDetector):
-    """Implementation of `Mask R-CNN <https://arxiv.org/abs/1703.06870>`."""
-
-    def __init__(
-        self,
-        backbone: nn.Module,
-        neck: nn.Module,
-        rpn_head: nn.Module,
-        roi_head: nn.Module,
-        train_cfg: DictConfig,
-        test_cfg: DictConfig,
-        init_cfg: DictConfig | dict | list[DictConfig | dict] | None = None,
-        **kwargs,
-    ) -> None:
-        super().__init__(
-            backbone=backbone,
-            neck=neck,
-            rpn_head=rpn_head,
-            roi_head=roi_head,
-            train_cfg=train_cfg,
-            test_cfg=test_cfg,
-            init_cfg=init_cfg,
-        )
-
-    def export(
-        self,
-        batch_inputs: torch.Tensor,
-        batch_img_metas: list[dict],
-    ) -> tuple[torch.Tensor, ...]:
-        """Export MaskRCNN detector."""
-        x = self.extract_feat(batch_inputs)
-
-        rpn_results_list = self.rpn_head.export(
-            x,
-            batch_img_metas,
-            rescale=False,
-        )
-
-        return self.roi_head.export(
-            x,
-            rpn_results_list,
-            batch_img_metas,
-            rescale=False,
-        )
-
-
-class OTXMaskRCNN(ExplainableOTXInstanceSegModel):
+class MaskRCNN(ExplainableOTXInstanceSegModel):
     """MaskRCNN Model."""
 
     def __init__(
@@ -153,7 +106,7 @@ class OTXMaskRCNN(ExplainableOTXInstanceSegModel):
             load_checkpoint(detector, self.load_from, map_location="cpu")
         return detector
 
-    def _build_model(self, num_classes: int) -> OTXMaskRCNN:
+    def _build_model(self, num_classes: int) -> MaskRCNN:
         raise NotImplementedError
 
     def _customize_inputs(self, entity: InstanceSegBatchDataEntity) -> dict[str, Any]:
@@ -302,7 +255,7 @@ class OTXMaskRCNN(ExplainableOTXInstanceSegModel):
         return OTXv1Helper.load_iseg_ckpt(state_dict, add_prefix)
 
 
-class MaskRCNNResNet50(OTXMaskRCNN):
+class MaskRCNNResNet50(MaskRCNN):
     """MaskRCNN with ResNet50 backbone."""
 
     load_from = (
@@ -313,7 +266,7 @@ class MaskRCNNResNet50(OTXMaskRCNN):
     mean = (123.675, 116.28, 103.53)
     std = (58.395, 57.12, 57.375)
 
-    def _build_model(self, num_classes: int) -> MaskRCNN:
+    def _build_model(self, num_classes: int) -> TwoStageDetector:
         train_cfg = {
             "rpn": {
                 "allowed_border": -1,
@@ -465,7 +418,7 @@ class MaskRCNNResNet50(OTXMaskRCNN):
             test_cfg=test_cfg["rcnn"],
         )
 
-        return MaskRCNN(
+        return TwoStageDetector(
             backbone=backbone,
             neck=neck,
             rpn_head=rpn_head,
@@ -475,7 +428,7 @@ class MaskRCNNResNet50(OTXMaskRCNN):
         )
 
 
-class MaskRCNNEfficientNet(OTXMaskRCNN):
+class MaskRCNNEfficientNet(MaskRCNN):
     """MaskRCNN with efficientnet_b2b backbone."""
 
     load_from = (
@@ -486,7 +439,7 @@ class MaskRCNNEfficientNet(OTXMaskRCNN):
     mean = (123.675, 116.28, 103.53)
     std = (1.0, 1.0, 1.0)
 
-    def _build_model(self, num_classes: int) -> MaskRCNN:
+    def _build_model(self, num_classes: int) -> TwoStageDetector:
         train_cfg = {
             "rpn": {
                 "assigner": MaxIoUAssigner(
@@ -643,7 +596,7 @@ class MaskRCNNEfficientNet(OTXMaskRCNN):
             test_cfg=test_cfg["rcnn"],
         )
 
-        return MaskRCNN(
+        return TwoStageDetector(
             backbone=backbone,
             neck=neck,
             rpn_head=rpn_head,
@@ -664,7 +617,7 @@ class MaskRCNNEfficientNet(OTXMaskRCNN):
         }
 
 
-class MaskRCNNSwinT(OTXMaskRCNN):
+class MaskRCNNSwinT(MaskRCNN):
     """MaskRCNNSwinT Model."""
 
     load_from = (
@@ -695,7 +648,7 @@ class MaskRCNNSwinT(OTXMaskRCNN):
         )
         self.image_size = (1, 3, 1344, 1344)
 
-    def _build_model(self, num_classes: int) -> MaskRCNN:
+    def _build_model(self, num_classes: int) -> TwoStageDetector:
         train_cfg = {
             "rpn": {
                 "assigner": MaxIoUAssigner(
@@ -855,7 +808,7 @@ class MaskRCNNSwinT(OTXMaskRCNN):
             test_cfg=test_cfg["rcnn"],
         )
 
-        return MaskRCNN(
+        return TwoStageDetector(
             backbone=backbone,
             neck=neck,
             rpn_head=rpn_head,

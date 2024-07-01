@@ -210,3 +210,24 @@ class TwoStageDetector(BaseModule):
         rpn_results_list = self.rpn_head.predict(x, entity, rescale=False)
 
         return self.roi_head.predict(x, rpn_results_list, entity, rescale=rescale)
+
+    def export(
+        self,
+        batch_inputs: torch.Tensor,
+        batch_img_metas: list[dict],
+    ) -> tuple[torch.Tensor, ...]:
+        """Export for two stage detectors."""
+        x = self.extract_feat(batch_inputs)
+
+        rpn_results_list = self.rpn_head.export(
+            x,
+            batch_img_metas,
+            rescale=False,
+        )
+
+        return self.roi_head.export(
+            x,
+            rpn_results_list,
+            batch_img_metas,
+            rescale=False,
+        )
