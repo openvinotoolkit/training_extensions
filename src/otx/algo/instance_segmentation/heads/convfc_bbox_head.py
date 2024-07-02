@@ -8,14 +8,9 @@ Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/r
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 from torch import Tensor, nn
 
 from .bbox_head import BBoxHead
-
-if TYPE_CHECKING:
-    from omegaconf import DictConfig
 
 
 class ConvFCBBoxHead(BBoxHead):
@@ -38,9 +33,9 @@ class ConvFCBBoxHead(BBoxHead):
         num_reg_fcs: int = 0,
         conv_out_channels: int = 256,
         fc_out_channels: int = 1024,
-        conv_cfg: dict | DictConfig | None = None,
-        norm_cfg: dict | DictConfig | None = None,
-        init_cfg: dict | DictConfig | None = None,
+        conv_cfg: dict | None = None,
+        norm_cfg: dict | None = None,
+        init_cfg: dict | None = None,
         *args,
         **kwargs,
     ) -> None:

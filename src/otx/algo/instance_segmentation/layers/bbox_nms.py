@@ -8,22 +8,17 @@ Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/u
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 import torch
 from torch import Tensor
 
 from otx.algo.common.utils.nms import batched_nms
-
-if TYPE_CHECKING:
-    from omegaconf import DictConfig
 
 
 def multiclass_nms_torch(
     multi_bboxes: Tensor,
     multi_scores: Tensor,
     score_thr: float,
-    nms_cfg: DictConfig | dict,
+    nms_cfg: dict,
     max_num: int = -1,
     score_factors: Tensor | None = None,
     return_inds: bool = False,
@@ -37,7 +32,7 @@ def multiclass_nms_torch(
             contains scores of the background class, but this will be ignored.
         score_thr (float): bbox threshold, bboxes with scores lower than it
             will not be considered.
-        nms_cfg (Union[DictConfig, dict]): a dict that contains
+        nms_cfg (dict): a dict that contains
             the arguments of nms operations.
         max_num (int, optional): if there are more than max_num bboxes after
             NMS, only top max_num will be kept. Default to -1.

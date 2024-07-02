@@ -7,7 +7,6 @@ from __future__ import annotations
 
 from typing import Any
 
-from omegaconf import DictConfig
 from torchvision.ops import RoIAlign
 
 from otx.algo.common.backbones import ResNet, build_model_including_pytorchcv
@@ -128,28 +127,26 @@ class MaskRCNNResNet50(MaskRCNN):
             },
         }
 
-        test_cfg = DictConfig(
-            {
-                "rpn": {
-                    "max_per_img": 1000,
-                    "min_bbox_size": 0,
-                    "nms": {
-                        "type": "nms",
-                        "iou_threshold": 0.7,
-                    },
-                    "nms_pre": 1000,
+        test_cfg = {
+            "rpn": {
+                "max_per_img": 1000,
+                "min_bbox_size": 0,
+                "nms": {
+                    "type": "nms",
+                    "iou_threshold": 0.7,
                 },
-                "rcnn": {
-                    "mask_thr_binary": 0.5,
-                    "max_per_img": 100,
-                    "nms": {
-                        "type": "nms",
-                        "iou_threshold": 0.5,
-                    },
-                    "score_thr": 0.05,
-                },
+                "nms_pre": 1000,
             },
-        )
+            "rcnn": {
+                "mask_thr_binary": 0.5,
+                "max_per_img": 100,
+                "nms": {
+                    "type": "nms",
+                    "iou_threshold": 0.5,
+                },
+                "score_thr": 0.05,
+            },
+        }
 
         backbone = ResNet(
             depth=50,
@@ -304,29 +301,27 @@ class MaskRCNNEfficientNet(MaskRCNN):
             },
         }
 
-        test_cfg = DictConfig(
-            {
-                "rpn": {
-                    "nms_across_levels": False,
-                    "nms_pre": 800,
-                    "max_per_img": 500,
-                    "min_bbox_size": 0,
-                    "nms": {
-                        "type": "nms",
-                        "iou_threshold": 0.8,
-                    },
-                },
-                "rcnn": {
-                    "mask_thr_binary": 0.5,
-                    "max_per_img": 500,
-                    "nms": {
-                        "type": "nms",
-                        "iou_threshold": 0.5,
-                    },
-                    "score_thr": 0.05,
+        test_cfg = {
+            "rpn": {
+                "nms_across_levels": False,
+                "nms_pre": 800,
+                "max_per_img": 500,
+                "min_bbox_size": 0,
+                "nms": {
+                    "type": "nms",
+                    "iou_threshold": 0.8,
                 },
             },
-        )
+            "rcnn": {
+                "mask_thr_binary": 0.5,
+                "max_per_img": 500,
+                "nms": {
+                    "type": "nms",
+                    "iou_threshold": 0.5,
+                },
+                "score_thr": 0.05,
+            },
+        }
 
         backbone = build_model_including_pytorchcv(
             cfg={
@@ -493,28 +488,26 @@ class MaskRCNNSwinT(MaskRCNN):
             },
         }
 
-        test_cfg = DictConfig(
-            {
-                "rpn": {
-                    "max_per_img": 1000,
-                    "min_bbox_size": 0,
-                    "nms": {
-                        "type": "nms",
-                        "iou_threshold": 0.7,
-                    },
-                    "nms_pre": 1000,
+        test_cfg = {
+            "rpn": {
+                "max_per_img": 1000,
+                "min_bbox_size": 0,
+                "nms": {
+                    "type": "nms",
+                    "iou_threshold": 0.7,
                 },
-                "rcnn": {
-                    "mask_thr_binary": 0.5,
-                    "max_per_img": 100,
-                    "nms": {
-                        "type": "nms",
-                        "iou_threshold": 0.5,
-                    },
-                    "score_thr": 0.05,
-                },
+                "nms_pre": 1000,
             },
-        )
+            "rcnn": {
+                "mask_thr_binary": 0.5,
+                "max_per_img": 100,
+                "nms": {
+                    "type": "nms",
+                    "iou_threshold": 0.5,
+                },
+                "score_thr": 0.05,
+            },
+        }
 
         backbone = SwinTransformer(
             embed_dims=96,

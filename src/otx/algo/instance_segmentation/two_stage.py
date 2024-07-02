@@ -8,17 +8,12 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 import torch
 from torch import Tensor, nn
 
 from otx.algo.modules.base_module import BaseModule
 from otx.algo.utils.mmengine_utils import InstanceData
 from otx.core.data.entity.instance_segmentation import InstanceSegBatchDataEntity
-
-if TYPE_CHECKING:
-    from omegaconf import DictConfig
 
 
 class TwoStageDetector(BaseModule):
@@ -34,9 +29,9 @@ class TwoStageDetector(BaseModule):
         neck: nn.Module,
         rpn_head: nn.Module,
         roi_head: nn.Module,
-        train_cfg: DictConfig | dict,
-        test_cfg: DictConfig | dict,
-        init_cfg: DictConfig | dict | list[DictConfig | dict] | None = None,
+        train_cfg: dict,
+        test_cfg: dict,
+        init_cfg: dict | list[dict] | None = None,
         **kwargs,
     ) -> None:
         super().__init__(init_cfg=init_cfg)

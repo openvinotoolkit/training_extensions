@@ -10,7 +10,6 @@ from __future__ import annotations
 
 import copy
 import math
-from typing import TYPE_CHECKING
 
 import numpy as np
 import torch
@@ -40,10 +39,6 @@ from otx.core.data.entity.instance_segmentation import InstanceSegBatchDataEntit
 from otx.core.utils.mask_util import polygon_to_bitmap
 
 from .utils import sigmoid_geometric_mean
-
-if TYPE_CHECKING:
-    from omegaconf import DictConfig
-
 
 # mypy: disable-error-code="call-overload, index, override, attr-defined, misc"
 
@@ -381,7 +376,7 @@ class RTMDetInsHead(RTMDetHead):
         self,
         results: InstanceData,
         mask_feat: Tensor,
-        cfg: DictConfig,
+        cfg: dict | None = None,
         rescale: bool = False,
         with_nms: bool = True,
         img_meta: dict | None = None,
@@ -395,7 +390,7 @@ class RTMDetInsHead(RTMDetHead):
             results (InstaceData): Detection instance results,
                 each item has shape (num_bboxes, ).
             mask_feat (Tensor): Mask prototype features of a single image
-            cfg (DictConfig): Test / postprocessing configuration,
+            cfg (dict): Test / postprocessing configuration,
                 if None, test_cfg would be used.
             rescale (bool): If True, return boxes in original image space.
                 Default to False.
@@ -429,9 +424,9 @@ class RTMDetInsHead(RTMDetHead):
             results.scores = results.scores * score_factors
 
         # filter small size bboxes
-        if cfg.min_bbox_size >= 0:
+        if cfg["min_bbox_size"] >= 0:
             w, h = get_box_wh(results.bboxes)
-            valid_mask = (w > cfg.min_bbox_size) & (h > cfg.min_bbox_size)
+            valid_mask = (w > cfg["min_bbox_size"]) & (h > cfg["min_bbox_size"])
             if not valid_mask.all():
                 results = results[valid_mask]
 
@@ -440,11 +435,11 @@ class RTMDetInsHead(RTMDetHead):
             raise RuntimeError(msg)
 
         if results.bboxes.numel() > 0:
-            det_bboxes, keep_idxs = batched_nms(results.bboxes, results.scores, results.labels, cfg.nms)
+            det_bboxes, keep_idxs = batched_nms(results.bboxes, results.scores, results.labels, cfg["nms"])
             results = results[keep_idxs]
             # some nms would reweight the score, such as softnms
             results.scores = det_bboxes[:, -1]
-            results = results[: cfg.max_per_img]
+            results = results[: cfg["max_per_img"]]
 
             # process masks
             mask_logits = self._mask_predict_by_feat_single(mask_feat, results.kernels, results.priors)
@@ -460,12 +455,12 @@ class RTMDetInsHead(RTMDetHead):
                     mask_logits,
                     math.ceil(mask_logits.shape[-1] * scale_factor[1]),
                     math.ceil(mask_logits.shape[-2] * scale_factor[0]),
-                    threshold=cfg.mask_thr_binary,
+                    threshold=cfg["mask_thr_binary"],
                 )[..., :ori_h, :ori_w]
                 masks = masks.squeeze(0)
             else:
                 masks = mask_logits.sigmoid().squeeze(0)
-                masks = masks > cfg.mask_thr_binary
+                masks = masks > cfg["mask_thr_binary"]
             results.masks = masks
         else:
             h, w = img_meta["ori_shape"][:2] if rescale else img_meta["img_shape"][:2]
@@ -1013,7 +1008,7 @@ class RTMDetInsSepBNHead(RTMDetInsHead):
         kernel_preds: list[Tensor],
         mask_feat: Tensor,
         batch_img_metas: list[dict] | None = None,
-        cfg: DictConfig | None = None,
+        cfg: dict | None = None,
         rescale: bool = False,
     ) -> tuple[Tensor, Tensor] | tuple[Tensor, Tensor, Tensor]:
         """Export the detection head."""
@@ -1046,7 +1041,7 @@ class RTMDetInsSepBNHead(RTMDetInsHead):
         scores = flatten_cls_scores
 
         max_output_boxes_per_class = 100
-        iou_threshold = cfg.nms.get("iou_threshold", 0.5)  # type: ignore[union-attr]
+        iou_threshold = cfg["nms"].get("iou_threshold", 0.5)  # type: ignore[union-attr]
         score_threshold = cfg.get("score_thr", 0.05)  # type: ignore[union-attr]
         pre_top_k = 300
         keep_top_k = cfg.get("max_per_img", 100)  # type: ignore[union-attr]

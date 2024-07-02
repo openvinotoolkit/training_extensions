@@ -8,15 +8,10 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 from otx.algo.modules.base_module import BaseModule, Sequential
 from otx.algo.modules.conv import build_conv_layer
 from otx.algo.modules.norm import build_norm_layer
 from torch import nn
-
-if TYPE_CHECKING:
-    from omegaconf import DictConfig
 
 
 class ResLayer(Sequential):
@@ -47,7 +42,7 @@ class ResLayer(Sequential):
         norm_cfg: dict,
         stride: int = 1,
         avg_down: bool = False,
-        conv_cfg: DictConfig | dict | None = None,
+        conv_cfg: dict | None = None,
         downsample_first: bool = True,
         **kwargs,
     ) -> None:

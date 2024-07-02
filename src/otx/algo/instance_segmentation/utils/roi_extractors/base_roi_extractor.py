@@ -9,16 +9,12 @@ Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/r
 from __future__ import annotations
 
 from abc import ABCMeta, abstractmethod
-from typing import TYPE_CHECKING
 
 import torch
 from torch import Tensor, nn
 from torchvision.ops import RoIAlign
 
 from otx.algo.modules.base_module import BaseModule
-
-if TYPE_CHECKING:
-    from omegaconf import DictConfig
 
 
 class BaseRoIExtractor(BaseModule, metaclass=ABCMeta):
@@ -28,8 +24,7 @@ class BaseRoIExtractor(BaseModule, metaclass=ABCMeta):
         roi_layer (nn.Module): RoI layer module.
         out_channels (int): Output channels of RoI layers.
         featmap_strides (list[int]): Strides of input feature maps.
-        init_cfg (DictConfig or dict or list[DictConfig or \
-            dict], optional): Initialization config dict. Defaults to None.
+        init_cfg (dict or list[dict], optional): Initialization config dict. Defaults to None.
     """
 
     def __init__(
@@ -37,7 +32,7 @@ class BaseRoIExtractor(BaseModule, metaclass=ABCMeta):
         roi_layer: nn.Module,
         out_channels: int,
         featmap_strides: list[int],
-        init_cfg: DictConfig | dict | list[DictConfig | dict] | None = None,
+        init_cfg: dict | list[dict] | None = None,
     ) -> None:
         super().__init__(init_cfg=init_cfg)
         self.roi_layers = self.build_roi_layers(roi_layer, featmap_strides)

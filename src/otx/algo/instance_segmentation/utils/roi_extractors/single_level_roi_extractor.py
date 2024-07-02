@@ -8,17 +8,11 @@ Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/r
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 import torch
 from torch import Graph, Tensor
 from torch.autograd import Function
 
 from .base_roi_extractor import BaseRoIExtractor
-
-if TYPE_CHECKING:
-    from omegaconf import DictConfig
-
 
 # ruff: noqa: ARG004
 
@@ -85,23 +79,22 @@ class SingleRoIExtractor(BaseRoIExtractor):
     `FPN <https://arxiv.org/abs/1612.03144>`_.
 
     Args:
-        roi_layer (DictConfig or dict): Specify RoI layer type and
+        roi_layer (dict): Specify RoI layer type and
             arguments.
         out_channels (int): Output channels of RoI layers.
         featmap_strides (list[int]): Strides of input feature maps.
         finest_scale (int): Scale threshold of mapping to level 0.
             Defaults to 56.
-        init_cfg (DictConfig or dict or list[DictConfig or \
-            dict], optional): Initialization config dict. Defaults to None.
+        init_cfg (dict or list[dict], optional): Initialization config dict. Defaults to None.
     """
 
     def __init__(
         self,
-        roi_layer: DictConfig | dict,
+        roi_layer: dict,
         out_channels: int,
         featmap_strides: list[int],
         finest_scale: int = 56,
-        init_cfg: DictConfig | dict | list[DictConfig | dict] | None = None,
+        init_cfg: dict | list[dict] | None = None,
     ) -> None:
         super().__init__(
             roi_layer=roi_layer,

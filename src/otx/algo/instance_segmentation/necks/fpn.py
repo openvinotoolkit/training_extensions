@@ -8,16 +8,11 @@ Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/n
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 import torch.nn.functional
 from torch import Tensor, nn
 
 from otx.algo.modules.base_module import BaseModule
 from otx.algo.modules.conv_module import ConvModule
-
-if TYPE_CHECKING:
-    from omegaconf import DictConfig
 
 
 class FPN(BaseModule):
@@ -39,11 +34,11 @@ class FPN(BaseModule):
             conv. Defaults to False.
         no_norm_on_lateral (bool): Whether to apply norm on lateral.
             Defaults to False.
-        conv_cfg (DictConfig or dict, optional): Config dict for
+        conv_cfg (dict, optional): Config dict for
             convolution layer. Defaults to None.
-        norm_cfg (DictConfig or dict, optional): Config dict for
+        norm_cfg (dict, optional): Config dict for
             normalization layer. Defaults to None.
-        act_cfg (DictConfig or dict, optional): Config dict for
+        act_cfg (dict, optional): Config dict for
             activation layer in ConvModule. Defaults to None.
         upsample_cfg (dict, optional): Config dict
             for interpolate layer. Defaults to dict(mode='nearest').
@@ -59,9 +54,9 @@ class FPN(BaseModule):
         end_level: int = -1,
         relu_before_extra_convs: bool = False,
         no_norm_on_lateral: bool = False,
-        conv_cfg: DictConfig | dict | None = None,
-        norm_cfg: DictConfig | dict | None = None,
-        act_cfg: DictConfig | dict | None = None,
+        conv_cfg: dict | None = None,
+        norm_cfg: dict | None = None,
+        act_cfg: dict | None = None,
         upsample_cfg: dict | None = None,
         init_cfg: dict | list[dict] | None = None,
     ) -> None:

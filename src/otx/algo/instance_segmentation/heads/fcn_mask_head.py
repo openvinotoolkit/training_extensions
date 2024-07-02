@@ -30,8 +30,6 @@ GPU_MEM_LIMIT = 1024**3  # 1 GB memory limit
 
 
 if TYPE_CHECKING:
-    from omegaconf import DictConfig
-
     from otx.algo.utils.mmengine_utils import InstanceData
 
 
@@ -48,9 +46,9 @@ class FCNMaskHead(BaseModule):
         conv_out_channels: int = 256,
         num_classes: int = 80,
         class_agnostic: int = False,
-        conv_cfg: DictConfig | dict | None = None,
-        norm_cfg: DictConfig | dict | None = None,
-        init_cfg: DictConfig | dict | list[DictConfig | dict] | None = None,
+        conv_cfg: dict | None = None,
+        norm_cfg: dict | None = None,
+        init_cfg: dict | list[dict] | None = None,
     ) -> None:
         if init_cfg is not None:
             msg = "To prevent abnormal initialization behavior, init_cfg is not allowed to be set"
@@ -131,7 +129,7 @@ class FCNMaskHead(BaseModule):
         self,
         sampling_results: list[SamplingResult],
         batch_gt_instances: list[InstanceData],
-        rcnn_train_cfg: DictConfig,
+        rcnn_train_cfg: dict,
     ) -> Tensor:
         """Calculate the ground truth for all samples in a batch according to the sampling_results.
 
@@ -141,7 +139,7 @@ class FCNMaskHead(BaseModule):
             batch_gt_instances (list[InstanceData]): Batch of
                 gt_instance. It usually includes ``bboxes``, ``labels``, and
                 ``masks`` attributes.
-            rcnn_train_cfg (DictConfig): `train_cfg` of RCNN.
+            rcnn_train_cfg (dict): `train_cfg` of RCNN.
 
         Returns:
             Tensor: Mask target of each positive proposals in the image.
@@ -163,7 +161,7 @@ class FCNMaskHead(BaseModule):
         mask_preds: Tensor,
         sampling_results: list[SamplingResult],
         batch_gt_instances: list[InstanceData],
-        rcnn_train_cfg: DictConfig,
+        rcnn_train_cfg: dict,
     ) -> dict:
         """Calculate the loss based on the features extracted by the mask head.
 
@@ -175,7 +173,7 @@ class FCNMaskHead(BaseModule):
             batch_gt_instances (list[InstanceData]): Batch of
                 gt_instance. It usually includes ``bboxes``, ``labels``, and
                 ``masks`` attributes.
-            rcnn_train_cfg (DictConfig): `train_cfg` of RCNN.
+            rcnn_train_cfg (dict): `train_cfg` of RCNN.
 
         Returns:
             dict: A dictionary of loss and targets components.
@@ -203,7 +201,7 @@ class FCNMaskHead(BaseModule):
         mask_preds: tuple[Tensor],
         results_list: list[InstanceData],
         batch_img_metas: list[dict],
-        rcnn_test_cfg: DictConfig,
+        rcnn_test_cfg: dict,
         rescale: bool = False,
         activate_map: bool = False,
     ) -> list[InstanceData]:
@@ -215,7 +213,7 @@ class FCNMaskHead(BaseModule):
             results_list (list[InstanceData]): Detection results of
                 each image.
             batch_img_metas (list[dict]): List of image information.
-            rcnn_test_cfg (DictConfig): `test_cfg` of Bbox Head.
+            rcnn_test_cfg (dict): `test_cfg` of Bbox Head.
             rescale (bool): If True, return boxes in original image space.
                 Defaults to False.
             activate_map (book): Whether get results with augmentations test.
@@ -248,7 +246,7 @@ class FCNMaskHead(BaseModule):
                     bboxes.device,
                     task_type="mask",
                     instance_results=[results],
-                    mask_thr_binary=rcnn_test_cfg.mask_thr_binary,
+                    mask_thr_binary=rcnn_test_cfg["mask_thr_binary"],
                 )[0]
             else:
                 im_mask = self._predict_by_feat_single(
@@ -269,7 +267,7 @@ class FCNMaskHead(BaseModule):
         bboxes: Tensor,
         labels: Tensor,
         img_meta: dict,
-        rcnn_test_cfg: DictConfig,
+        rcnn_test_cfg: dict,
         rescale: bool = False,
         activate_map: bool = False,
     ) -> Tensor:
@@ -281,7 +279,7 @@ class FCNMaskHead(BaseModule):
             bboxes (Tensor): Predicted bboxes, has shape (n, 4)
             labels (Tensor): Labels of bboxes, has shape (n, )
             img_meta (dict): image information.
-            rcnn_test_cfg (DictConfig): `test_cfg` of Bbox Head.
+            rcnn_test_cfg (dict): `test_cfg` of Bbox Head.
                 Defaults to None.
             rescale (bool): If True, return boxes in original image space.
                 Defaults to False.
@@ -327,7 +325,7 @@ class FCNMaskHead(BaseModule):
                 raise ValueError(msg)
         chunks = torch.chunk(torch.arange(num_preds, device=device), num_chunks)
 
-        threshold = rcnn_test_cfg.mask_thr_binary
+        threshold = rcnn_test_cfg["mask_thr_binary"]
         im_mask = torch.zeros(
             num_preds,
             img_h,
@@ -357,7 +355,7 @@ class FCNMaskHead(BaseModule):
         mask_preds: Tensor,
         results_list: tuple[Tensor, ...],
         batch_img_metas: list[dict],
-        rcnn_test_cfg: DictConfig,
+        rcnn_test_cfg: dict,
         rescale: bool = False,
         activate_map: bool = False,
     ) -> torch.Tensor:

@@ -10,7 +10,6 @@ from __future__ import annotations
 
 import copy
 import warnings
-from typing import TYPE_CHECKING
 
 import torch
 import torch.nn.functional
@@ -27,9 +26,6 @@ from otx.core.data.entity.base import OTXBatchDataEntity
 from otx.core.data.entity.instance_segmentation import InstanceSegBatchDataEntity
 
 # ruff: noqa: PLW2901
-
-if TYPE_CHECKING:
-    from omegaconf import DictConfig
 
 
 class RPNHead(AnchorHead):
@@ -106,7 +102,7 @@ class RPNHead(AnchorHead):
         self,
         x: tuple[Tensor],
         rpn_entity: InstanceSegBatchDataEntity,
-        proposal_cfg: DictConfig | None = None,
+        proposal_cfg: dict | None = None,
     ) -> tuple[dict, list[InstanceData]]:
         """Forward propagation of the head, then calculate loss and predictions from the features and data samples.
 
@@ -115,7 +111,7 @@ class RPNHead(AnchorHead):
             batch_data_samples (list[InstanceSegBatchDataEntity]): Each item contains
                 the meta information of each image and corresponding
                 annotations.
-            proposal_cfg (DictConfig, optional): Test / postprocessing
+            proposal_cfg (dict, optional): Test / postprocessing
                 configuration, if None, test_cfg would be used.
                 Defaults to None.
 
@@ -223,7 +219,7 @@ class RPNHead(AnchorHead):
         score_factor_list: list[Tensor],
         mlvl_priors: list[Tensor],
         img_meta: dict,
-        cfg: DictConfig,
+        cfg: dict,
         rescale: bool = False,
         with_nms: bool = True,
     ) -> InstanceData:
@@ -245,7 +241,7 @@ class RPNHead(AnchorHead):
                 when `with_stride=True`, otherwise it still has shape
                 (num_priors, 4).
             img_meta (dict): Image meta info.
-            cfg (DictConfig, optional): Test / postprocessing configuration,
+            cfg (dict, optional): Test / postprocessing configuration,
                 if None, test_cfg would be used.
             rescale (bool): If True, return boxes in original image space.
                 Defaults to False.
@@ -325,7 +321,7 @@ class RPNHead(AnchorHead):
         Args:
             results (InstaceData): Detection instance results,
                 each item has shape (num_bboxes, ).
-            cfg (DictConfig): Test / postprocessing configuration.
+            cfg (dict): Test / postprocessing configuration.
             img_meta (dict, optional): Image meta info. Defaults to None.
             rescale (bool): If True, return boxes in original image space.
                 Defaults to False.
@@ -385,7 +381,7 @@ class RPNHead(AnchorHead):
         bbox_preds: list[Tensor],
         score_factors: list[Tensor] | None = None,
         batch_img_metas: list[dict] | None = None,
-        cfg: DictConfig | None = None,
+        cfg: dict | None = None,
         rescale: bool = False,
         with_nms: bool = True,
     ) -> tuple[torch.Tensor, torch.Tensor] | tuple[torch.Tensor, torch.Tensor, torch.Tensor]:

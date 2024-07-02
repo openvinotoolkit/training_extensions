@@ -7,8 +7,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from omegaconf import DictConfig
-
 from otx.algo.common.backbones import CSPNeXt
 from otx.algo.common.losses import CrossEntropyLoss, GIoULoss, QualityFocalLoss
 from otx.algo.common.utils.assigners import DynamicSoftLabelAssigner
@@ -97,16 +95,14 @@ class RTMDetInstTiny(RTMDetInst):
             "debug": False,
         }
 
-        test_cfg = DictConfig(
-            {
-                "nms": {"type": "nms", "iou_threshold": 0.5},
-                "score_thr": 0.05,
-                "mask_thr_binary": 0.5,
-                "max_per_img": 100,
-                "min_bbox_size": 0,
-                "nms_pre": 300,
-            },
-        )
+        test_cfg = {
+            "nms": {"type": "nms", "iou_threshold": 0.5},
+            "score_thr": 0.05,
+            "mask_thr_binary": 0.5,
+            "max_per_img": 100,
+            "min_bbox_size": 0,
+            "nms_pre": 300,
+        }
 
         backbone = CSPNeXt(
             arch="P5",

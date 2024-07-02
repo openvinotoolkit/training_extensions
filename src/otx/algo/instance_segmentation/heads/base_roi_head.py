@@ -14,7 +14,6 @@ from otx.algo.modules.base_module import BaseModule
 from otx.core.data.entity.instance_segmentation import InstanceSegBatchDataEntity
 
 if TYPE_CHECKING:
-    from omegaconf import DictConfig
     from torch import Tensor, nn
 
     from otx.algo.utils.mmengine_utils import InstanceData
@@ -29,9 +28,9 @@ class BaseRoIHead(BaseModule):
         bbox_head: nn.Module,
         mask_roi_extractor: nn.Module,
         mask_head: nn.Module,
-        train_cfg: DictConfig | dict,
-        test_cfg: DictConfig | dict,
-        init_cfg: DictConfig | dict | list[DictConfig | dict] | None = None,
+        train_cfg: dict,
+        test_cfg: dict,
+        init_cfg: dict | list[dict] | None = None,
     ) -> None:
         super().__init__(init_cfg=init_cfg)
         self.train_cfg = train_cfg

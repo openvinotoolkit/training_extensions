@@ -9,7 +9,6 @@ Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/r
 from __future__ import annotations
 
 import warnings
-from typing import TYPE_CHECKING
 
 import torch
 import torch.nn.functional
@@ -22,9 +21,6 @@ from otx.algo.instance_segmentation.utils.structures.bbox import scale_boxes
 from otx.algo.instance_segmentation.utils.utils import empty_instances
 from otx.algo.modules.base_module import BaseModule
 from otx.algo.utils.mmengine_utils import InstanceData
-
-if TYPE_CHECKING:
-    from omegaconf import DictConfig
 
 
 class BBoxHead(BaseModule):
@@ -44,7 +40,7 @@ class BBoxHead(BaseModule):
         predict_box_type: str = "hbox",
         reg_class_agnostic: bool = False,
         reg_decoded_bbox: bool = False,
-        init_cfg: DictConfig | dict | list[DictConfig | dict] | None = None,
+        init_cfg: dict | list[dict] | None = None,
     ) -> None:
         super().__init__(init_cfg=init_cfg)
         if not with_cls and not with_reg:
@@ -179,7 +175,7 @@ class BBoxHead(BaseModule):
         cls_scores: tuple[Tensor],
         bbox_preds: tuple[Tensor],
         batch_img_metas: list[dict],
-        rcnn_test_cfg: DictConfig | None = None,
+        rcnn_test_cfg: dict,
         rescale: bool = False,
     ) -> list[InstanceData]:
         """Transform a batch of output features extracted from the head into bbox results.
@@ -193,7 +189,7 @@ class BBoxHead(BaseModule):
             bbox_preds (tuple[Tensor]): Tuple of box energies / deltas, each
                 has shape (num_boxes, num_classes * 4).
             batch_img_metas (list[dict]): List of image information.
-            rcnn_test_cfg (DictConfig, optional): `test_cfg` of R-CNN.
+            rcnn_test_cfg (dict, optional): `test_cfg` of R-CNN.
                 Defaults to None.
             rescale (bool): If True, return boxes in original image space.
                 Defaults to False.
@@ -234,7 +230,7 @@ class BBoxHead(BaseModule):
         cls_score: Tensor,
         bbox_pred: Tensor,
         img_meta: dict,
-        rcnn_test_cfg: DictConfig,
+        rcnn_test_cfg: dict,
         rescale: bool = False,
     ) -> InstanceData:
         """Transform a single image's features extracted from the head into bbox results.
@@ -249,7 +245,7 @@ class BBoxHead(BaseModule):
             img_meta (dict): image information.
             rescale (bool): If True, return boxes in original image space.
                 Defaults to False.
-            rcnn_test_cfg (DictConfig): `test_cfg` of Bbox Head.
+            rcnn_test_cfg (dict): `test_cfg` of Bbox Head.
                 Defaults to None.
 
         Returns:
@@ -299,9 +295,9 @@ class BBoxHead(BaseModule):
         det_bboxes, det_labels = multiclass_nms_torch(  # type: ignore [misc]
             bboxes,
             scores,
-            rcnn_test_cfg.score_thr,
-            rcnn_test_cfg.nms,
-            rcnn_test_cfg.max_per_img,
+            rcnn_test_cfg["score_thr"],
+            rcnn_test_cfg["nms"],
+            rcnn_test_cfg["max_per_img"],
             box_dim=box_dim,
         )
         results.bboxes = det_bboxes[:, :-1]
