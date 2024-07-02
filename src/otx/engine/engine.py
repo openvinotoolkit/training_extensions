@@ -888,8 +888,8 @@ class Engine:
 
             If you want to override configuration from default config:
                 >>> overriding = {
-                ...     "data.config.train_subset.batch_size": 2,
-                ...     "data.config.test_subset.subset_name": "TESTING",
+                ...     "data.train_subset.batch_size": 2,
+                ...     "data.test_subset.subset_name": "TESTING",
                 ... }
                 >>> engine = Engine(
                 ...     model_name="atss_mobilenetv2",

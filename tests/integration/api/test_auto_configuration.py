@@ -59,7 +59,7 @@ def test_auto_configuration(
     from otx.cli.utils.jsonargparse import get_configuration
 
     default_config = get_configuration(DEFAULT_CONFIG_PER_TASK[task])
-    default_config["data"]["config"]["data_root"] = data_root
+    default_config["data"]["data_root"] = data_root
     num_classes = engine.datamodule.label_info.num_classes
 
     default_config["model"]["init_args"]["num_classes"] = num_classes

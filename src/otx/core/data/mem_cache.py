@@ -82,8 +82,9 @@ class MemCacheHandlerBase:
     It will be combined with LoadImageFromOTXDataset to store/retrieve the samples in memory.
     """
 
-    def __init__(self, mem_size: int):
+    def __init__(self, mem_size: int, mem_cache_img_max_size: tuple[int, int] | None = None):
         self._mem_size = mem_size
+        self._mem_cache_img_max_size = mem_cache_img_max_size
         self._init_data_structs(mem_size)
 
     def _init_data_structs(self, mem_size: int) -> None:
@@ -107,6 +108,11 @@ class MemCacheHandlerBase:
     def mem_size(self) -> int:
         """Get the reserved memory pool size (bytes)."""
         return len(self._arr)
+
+    @property
+    def mem_cache_img_max_size(self) -> tuple[int, int] | None:
+        """Get the image max size in mem cache."""
+        return self._mem_cache_img_max_size
 
     def get(self, key: Any) -> tuple[np.ndarray | None, dict | None]:  # noqa: ANN401
         """Try to look up the cached item with the given key.
