@@ -6,5 +6,6 @@ from .atss_head import ATSSHead
 from .rtmdet_head import RTMDetSepBNHead
 from .ssd_head import SSDHead
 from .yolox_head import YOLOXHead
+from .rtdetr_decoder import RTDETRTransformer
 
-__all__ = ["ATSSHead", "RTMDetSepBNHead", "SSDHead", "YOLOXHead"]
+__all__ = ["ATSSHead", "RTMDetSepBNHead", "SSDHead", "YOLOXHead", "RTDETRTransformer"]
