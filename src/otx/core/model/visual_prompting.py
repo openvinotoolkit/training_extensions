@@ -1118,7 +1118,7 @@ class OVZeroShotVisualPromptingModel(
         # ticket no. : CVS-135462
         # There is segmentation fault issue when using num_workers > 0 during releasing memory.
         # To avoid this issue, force num_workers to 0.
-        data_module.config.train_subset.num_workers = 0
+        data_module.config.val_subset.num_workers = 0
 
         output_model_paths: dict[str, Path] = {}
         for module in ["image_encoder", "decoder"]:
@@ -1129,7 +1129,7 @@ class OVZeroShotVisualPromptingModel(
                 msg = "Model is already optimized by PTQ"
                 raise RuntimeError(msg)
 
-            train_dataset = data_module.train_dataloader()
+            val_dataset = data_module.val_dataloader()
 
             ptq_config_from_ir = self._read_ptq_config_from_ir(ov_model)
             if ptq_config is not None:
@@ -1138,7 +1138,7 @@ class OVZeroShotVisualPromptingModel(
             else:
                 ptq_config = ptq_config_from_ir
 
-            quantization_dataset = nncf.Dataset(train_dataset, partial(transform_fn, module=module))  # type: ignore[attr-defined]
+            quantization_dataset = nncf.Dataset(val_dataset, partial(transform_fn, module=module))  # type: ignore[attr-defined]
 
             compressed_model = nncf.quantize(  # type: ignore[attr-defined]
                 ov_model,
