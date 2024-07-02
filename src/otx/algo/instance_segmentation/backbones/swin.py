@@ -1,12 +1,10 @@
-"""MMDet SwinTransformer."""
-
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-#
-# This class and its supporting functions are adapted from the mmdet.
-# Please refer to https://github.com/open-mmlab/mmdetection/
-
 # Copyright (c) OpenMMLab. All rights reserved.
+"""Implementation modified from mmdet.models.backbones.swin.py.
+
+Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/backbones/swin.py
+"""
 
 from __future__ import annotations
 
@@ -19,7 +17,7 @@ import torch
 import torch.nn.functional
 import torch.utils.checkpoint as cp
 from timm.models.layers import DropPath, to_2tuple
-from torch import nn
+from torch import Tensor, nn
 
 from otx.algo.instance_segmentation.layers import PatchEmbed, PatchMerging
 from otx.algo.modules.base_module import BaseModule, ModuleList
@@ -91,12 +89,12 @@ class WindowMSA(BaseModule):
         """Initialize the weights."""
         trunc_normal_(self.relative_position_bias_table, std=0.02)
 
-    def forward(self, x: torch.Tensor, mask: torch.Tensor | None = None) -> torch.Tensor:
+    def forward(self, x: Tensor, mask: Tensor | None = None) -> Tensor:
         """Swin Transformer layer computation.
 
         Args:
-            x (tensor): input features with shape of (num_windows*B, N, C)
-            mask (tensor | None, Optional): mask with shape of (num_windows, Wh*Ww, Wh*Ww), value between (-inf, 0].
+            x (Tensor): input features with shape of (num_windows*B, N, C)
+            mask (Tensor | None, Optional): mask with shape of (num_windows, Wh*Ww, Wh*Ww), value between (-inf, 0].
         """
         batch_size, num_pred, channels = x.shape
         qkv = (
@@ -131,7 +129,7 @@ class WindowMSA(BaseModule):
         return self.proj_drop(x)
 
     @staticmethod
-    def double_step_seq(step1: int, len1: int, step2: int, len2: int) -> torch.Tensor:
+    def double_step_seq(step1: int, len1: int, step2: int, len2: int) -> Tensor:
         """Generate double step sequence."""
         seq1 = torch.arange(0, step1 * len1, step1)
         seq2 = torch.arange(0, step2 * len2, step2)
@@ -172,7 +170,7 @@ class ShiftWindowMSA(BaseModule):
         attn_drop_rate: float = 0,
         proj_drop_rate: float = 0,
         dropout_layer: dict | None = None,
-        init_cfg: None = None,
+        init_cfg: dict | None = None,
     ):
         super().__init__(init_cfg)
 
@@ -201,7 +199,7 @@ class ShiftWindowMSA(BaseModule):
             raise ValueError(msg)
         self.drop = DropPath(**_dropout_layer)
 
-    def forward(self, query: torch.Tensor, hw_shape: tuple[int, int]) -> torch.Tensor:
+    def forward(self, query: Tensor, hw_shape: tuple[int, int]) -> Tensor:
         """Forward function."""
         b, length, c = query.shape
         h, w = hw_shape
@@ -273,29 +271,29 @@ class ShiftWindowMSA(BaseModule):
 
         return self.drop(x)
 
-    def window_reverse(self, windows: torch.Tensor, h: int, w: int) -> torch.Tensor:
+    def window_reverse(self, windows: Tensor, h: int, w: int) -> Tensor:
         """Reverse the window partition process.
 
         Args:
-            windows: (num_windows*B, window_size, window_size, C)
-            H (int): Height of image
-            W (int): Width of image
+            windows (Tensor): (num_windows*B, window_size, window_size, C)
+            h (int): Height of image
+            w (int): Width of image
         Returns:
-            x: (B, H, W, C)
+            Tensor: (B, H, W, C)
         """
         window_size = self.window_size
         batch_size = int(windows.shape[0] / (h * w / window_size / window_size))
         x = windows.view(batch_size, h // window_size, w // window_size, window_size, window_size, -1)
         return x.permute(0, 1, 3, 2, 4, 5).contiguous().view(batch_size, h, w, -1)
 
-    def window_partition(self, x: torch.Tensor) -> torch.Tensor:
+    def window_partition(self, x: Tensor) -> Tensor:
         """Split x into multi windows.
 
         Args:
-            x: (B, H, W, C)
+            x (Tensor): (B, H, W, C)
 
         Returns:
-            windows: (num_windows*B, window_size, window_size, C)
+            Tensor: (num_windows*B, window_size, window_size, C)
         """
         batch_size, h, w, c = x.shape
         window_size = self.window_size
@@ -381,10 +379,10 @@ class SwinBlock(BaseModule):
             init_cfg=None,
         )
 
-    def forward(self, x: torch.Tensor, hw_shape: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: Tensor, hw_shape: Tensor) -> Tensor:
         """Forward function."""
 
-        def _inner_forward(x: torch.Tensor) -> torch.Tensor:
+        def _inner_forward(x: Tensor) -> Tensor:
             """Inner forward function."""
             identity = x
             x = self.norm1(x)
@@ -481,7 +479,7 @@ class SwinBlockSequence(BaseModule):
 
         self.downsample = downsample
 
-    def forward(self, x: torch.Tensor, hw_shape: tuple[int, int]) -> torch.Tensor:
+    def forward(self, x: Tensor, hw_shape: tuple[int, int]) -> Tensor:
         """Forward function."""
         for block in self.blocks:
             x = block(x, hw_shape)
@@ -530,8 +528,6 @@ class SwinTransformer(BaseModule):
         drop_rate (float): Dropout rate. Defaults: 0.
         attn_drop_rate (float): Attention dropout rate. Default: 0.
         drop_path_rate (float): Stochastic depth rate. Defaults: 0.1.
-        use_abs_pos_embed (bool): If True, add absolute position embedding to
-            the patch embedding. Defaults: False.
         act_cfg (dict): Config dict for activation layer.
             Default: dict(type='GELU').
         norm_cfg (dict): Config dict for normalization layer at
@@ -773,7 +769,7 @@ class SwinTransformer(BaseModule):
             # load state_dict
             self.load_state_dict(state_dict, False)
 
-    def forward(self, x: torch.Tensor) -> list[torch.Tensor]:
+    def forward(self, x: Tensor) -> list[Tensor]:
         """Forward function."""
         x, hw_shape = self.patch_embed(x)
         x = self.drop_after_pos(x)
@@ -793,12 +789,12 @@ def swin_converter(ckpt: dict) -> OrderedDict:
     """Convert the key of pre-trained model from original repo."""
     new_ckpt = OrderedDict()
 
-    def correct_unfold_reduction_order(x: torch.Tensor) -> torch.Tensor:
+    def correct_unfold_reduction_order(x: Tensor) -> Tensor:
         out_channel, in_channel = x.shape
         x = x.reshape(out_channel, 4, in_channel // 4)
         return x[:, [0, 2, 1, 3], :].transpose(1, 2).reshape(out_channel, in_channel)
 
-    def correct_unfold_norm_order(x: torch.Tensor) -> torch.Tensor:
+    def correct_unfold_norm_order(x: Tensor) -> Tensor:
         in_channel = x.shape[0]
         x = x.reshape(4, in_channel // 4)
         return x[[0, 2, 1, 3], :].transpose(0, 1).reshape(in_channel)
