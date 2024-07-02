@@ -11,10 +11,10 @@ __resize_target_size = 224
 __train_pipeline = [
     dict(
         type="LoadResizeDataFromOTXDataset",
-        resize_cfg=dict(type="Resize", size=__resize_target_size, downscale_only=True),
+        # resize_cfg=dict(type="Resize", size=__resize_target_size, downscale_only=True),
         # To be resized in this op only if input is larger than expected size
         # for speed & cache memory efficiency.
-        enable_memcache=True,  # Cache after resizing image
+        # enable_memcache=True,  # Cache after resizing image
     ),
     dict(type="RandomResizedCrop", size=__resize_target_size, efficientnet_style=True),
     dict(type="RandomFlip", flip_prob=0.5, direction="horizontal"),
@@ -42,11 +42,8 @@ __train_pipeline = [
 ]
 
 __val_pipeline = [
-    dict(
-        type="LoadResizeDataFromOTXDataset",
-        resize_cfg=dict(type="Resize", size=__resize_target_size),
-        enable_memcache=True,  # Cache after resizing image
-    ),
+    dict(type="LoadImageFromOTXDataset"),
+    dict(type="ResizeTo", size=__resize_target_size),
     dict(type="Normalize", **__img_norm_cfg),
     dict(type="ImageToTensor", keys=["img"]),
     dict(type="Collect", keys=["img"]),
