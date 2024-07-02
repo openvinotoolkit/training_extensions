@@ -1,10 +1,11 @@
-# Copyright (C) 2023 Intel Corporation
+# Copyright (C) 2023-2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-#
-# This class and its supporting functions are adapted from the mmdet.
-# Please refer to https://github.com/open-mmlab/mmdetection/
+# Copyright (c) OpenMMLab. All rights reserved.
+"""Implementation modified from mmdet.models.necks.fpn.py.
 
-"""MMDet Feature Pyramid Network."""
+Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/necks/fpn.py
+"""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -34,29 +35,19 @@ class FPN(BaseModule):
         end_level (int): Index of the end input backbone level (exclusive) to
             build the feature pyramid. Defaults to -1, which means the
             last level.
-        add_extra_convs (bool | str): If bool, it decides whether to add conv
-            layers on top of the original feature maps. Defaults to False.
-            If True, it is equivalent to `add_extra_convs='on_input'`.
-            If str, it specifies the source feature map of the extra convs.
-            Only the following options are allowed
-
-            - 'on_input': Last feat map of neck inputs (i.e. backbone feature).
-            - 'on_lateral': Last feature map after lateral convs.
-            - 'on_output': The last output feature map after fpn convs.
         relu_before_extra_convs (bool): Whether to apply relu before the extra
             conv. Defaults to False.
         no_norm_on_lateral (bool): Whether to apply norm on lateral.
             Defaults to False.
-        conv_cfg (:obj:`ConfigDict` or dict, optional): Config dict for
+        conv_cfg (DictConfig or dict, optional): Config dict for
             convolution layer. Defaults to None.
-        norm_cfg (:obj:`ConfigDict` or dict, optional): Config dict for
+        norm_cfg (DictConfig or dict, optional): Config dict for
             normalization layer. Defaults to None.
-        act_cfg (:obj:`ConfigDict` or dict, optional): Config dict for
+        act_cfg (DictConfig or dict, optional): Config dict for
             activation layer in ConvModule. Defaults to None.
-        upsample_cfg (:obj:`ConfigDict` or dict, optional): Config dict
+        upsample_cfg (dict, optional): Config dict
             for interpolate layer. Defaults to dict(mode='nearest').
-        init_cfg (:obj:`ConfigDict` or dict or list[:obj:`ConfigDict` or \
-            dict]): Initialization config dict.
+        init_cfg (dict or list[dict]): Initialization config dict.
     """
 
     def __init__(
@@ -72,7 +63,7 @@ class FPN(BaseModule):
         norm_cfg: DictConfig | dict | None = None,
         act_cfg: DictConfig | dict | None = None,
         upsample_cfg: dict | None = None,
-        init_cfg: dict | None = None,
+        init_cfg: dict | list[dict] | None = None,
     ) -> None:
         init_cfg = {"type": "Xavier", "layer": "Conv2d", "distribution": "uniform"} if init_cfg is None else init_cfg
         super().__init__(init_cfg=init_cfg)

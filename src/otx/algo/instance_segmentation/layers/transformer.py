@@ -1,17 +1,15 @@
-"""MMDet Transformer layers."""
-
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-#
-# This class and its supporting functions are adapted from the mmdet.
-# Please refer to https://github.com/open-mmlab/mmdetection/
-
 # Copyright (c) OpenMMLab. All rights reserved.
+"""Implementation modified from mmdet.models.layers.transformer.utils.py.
+
+Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/layers/transformer/utils.py
+"""
 
 from __future__ import annotations
 
 import math
-from typing import TYPE_CHECKING, Sequence
+from typing import Sequence
 
 import torch
 import torch.nn.functional
@@ -21,9 +19,6 @@ from torch import nn
 from otx.algo.modules.base_module import BaseModule
 from otx.algo.modules.conv import build_conv_layer
 from otx.algo.modules.norm import build_norm_layer
-
-if TYPE_CHECKING:
-    from omegaconf import DictConfig
 
 
 class AdaptivePadding(nn.Module):
@@ -112,10 +107,7 @@ class PatchEmbed(BaseModule):
         bias (bool): Bias of embed conv. Default: True.
         norm_cfg (dict, optional): Config dict for normalization layer.
             Default: None.
-        input_size (int | tuple | None): The size of input, which will be
-            used to calculate the out size. Only work when `dynamic_size`
-            is False. Default: None.
-        init_cfg (`mmengine.ConfigDict`, optional): The Config for
+        init_cfg (dict, optional): The Config for
             initialization. Default: None.
     """
 
@@ -129,8 +121,8 @@ class PatchEmbed(BaseModule):
         padding: int | tuple | str = "corner",
         dilation: int = 1,
         bias: bool = True,
-        norm_cfg: DictConfig | dict | None = None,
-        init_cfg: DictConfig | dict | None = None,
+        norm_cfg: dict | None = None,
+        init_cfg: dict | None = None,
     ) -> None:
         super().__init__(init_cfg=init_cfg)
 
@@ -236,8 +228,8 @@ class PatchMerging(BaseModule):
         padding: int | tuple | str = "corner",
         dilation: int | tuple = 1,
         bias: bool = False,
-        norm_cfg: DictConfig | dict | None = None,
-        init_cfg: DictConfig | dict | None = None,
+        norm_cfg: dict | None = None,
+        init_cfg: dict | None = None,
     ) -> None:
         super().__init__(init_cfg=init_cfg)
         norm_cfg = norm_cfg if norm_cfg is not None else {"type": "LN"}
@@ -274,7 +266,7 @@ class PatchMerging(BaseModule):
 
         self.reduction = nn.Linear(sample_dim, out_channels, bias=bias)
 
-    def forward(self, x: torch.Tensor, input_size: tuple[torch.Tensor, ...]) -> tuple[torch.Tensor, tuple[int, int]]:
+    def forward(self, x: torch.Tensor, input_size: tuple[int, ...]) -> tuple[torch.Tensor, tuple[int, int]]:
         """Forward function for PatchMerging.
 
         Args:

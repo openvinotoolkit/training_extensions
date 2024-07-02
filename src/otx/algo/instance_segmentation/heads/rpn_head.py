@@ -1,10 +1,10 @@
 # Copyright (C) 2023-2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-#
-# This class and its supporting functions are adapted from the mmdet.
-# Please refer to https://github.com/open-mmlab/mmdetection/
+# Copyright (c) OpenMMLab. All rights reserved.
+"""Implementation modified from mmdet.models.dense_heads.rpn_head.py.
 
-"""MMDet RPNHead."""
+Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/dense_heads/rpn_head.py
+"""
 
 from __future__ import annotations
 
@@ -39,8 +39,7 @@ class RPNHead(AnchorHead):
         in_channels (int): Number of channels in the input feature map.
         num_classes (int): Number of categories excluding the background
             category. Defaults to 1.
-        init_cfg (:obj:`ConfigDict` or list[:obj:`ConfigDict`] or dict or \
-            list[dict]): Initialization config dict.
+        init_cfg (dict or list[dict]): Initialization config dict.
         num_convs (int): Number of convolution layers in the head.
             Defaults to 1.
     """
@@ -49,7 +48,7 @@ class RPNHead(AnchorHead):
         self,
         in_channels: int,
         num_classes: int = 1,
-        init_cfg: dict | None = None,
+        init_cfg: dict | list[dict] | None = None,
         num_convs: int = 1,
         **kwargs,
     ) -> None:
@@ -113,10 +112,10 @@ class RPNHead(AnchorHead):
 
         Args:
             x (tuple[Tensor]): Features from FPN.
-            batch_data_samples (list[:obj:`DetDataSample`]): Each item contains
+            batch_data_samples (list[InstanceSegBatchDataEntity]): Each item contains
                 the meta information of each image and corresponding
                 annotations.
-            proposal_cfg (ConfigDict, optional): Test / postprocessing
+            proposal_cfg (DictConfig, optional): Test / postprocessing
                 configuration, if None, test_cfg would be used.
                 Defaults to None.
 
@@ -124,7 +123,7 @@ class RPNHead(AnchorHead):
             tuple: the return value is a tuple contains:
 
                 - losses: (dict[str, Tensor]): A dictionary of loss components.
-                - predictions (list[:obj:`InstanceData`]): Detection
+                - predictions (list[InstanceData]): Detection
                   results of each image after the post process.
         """
         batch_gt_instances, batch_img_metas = unpack_inst_seg_entity(rpn_entity)
@@ -157,14 +156,14 @@ class RPNHead(AnchorHead):
         Args:
             x (tuple[Tensor]): Multi-level features from the
                 upstream network, each is a 4D-tensor.
-            batch_data_samples (List[:obj:`DetDataSample`]): The Data
+            entity (OTXBatchDataEntity): The Data
                 Samples. It usually includes information such as
                 `gt_instance`, `gt_panoptic_seg` and `gt_sem_seg`.
             rescale (bool, optional): Whether to rescale the results.
                 Defaults to False.
 
         Returns:
-            list[obj:`InstanceData`]: Detection results of each image
+            list[InstanceData]: Detection results of each image
             after the post process.
         """
         batch_img_metas = [
@@ -197,11 +196,11 @@ class RPNHead(AnchorHead):
                 has shape (N, num_anchors * num_classes, H, W).
             bbox_preds (list[Tensor]): Box energies / deltas for each scale
                 level with shape (N, num_anchors * 4, H, W).
-            batch_gt_instances (list[obj:InstanceData]): Batch of gt_instance.
+            batch_gt_instances (list[InstanceData]): Batch of gt_instance.
                 It usually includes ``bboxes`` and ``labels`` attributes.
             batch_img_metas (list[dict]): Meta information of each image, e.g.,
                 image size, scaling factor, etc.
-            batch_gt_instances_ignore (list[obj:InstanceData], Optional):
+            batch_gt_instances_ignore (list[InstanceData], Optional):
                 Batch of gt_instances_ignore. It includes ``bboxes`` attribute
                 data that is ignored during training and testing.
 
@@ -246,13 +245,13 @@ class RPNHead(AnchorHead):
                 when `with_stride=True`, otherwise it still has shape
                 (num_priors, 4).
             img_meta (dict): Image meta info.
-            cfg (ConfigDict, optional): Test / postprocessing configuration,
+            cfg (DictConfig, optional): Test / postprocessing configuration,
                 if None, test_cfg would be used.
             rescale (bool): If True, return boxes in original image space.
                 Defaults to False.
 
         Returns:
-            :obj:`InstanceData`: Detection results of each image
+            InstanceData: Detection results of each image
             after the post process.
             Each item usually contains following keys.
 
@@ -324,17 +323,17 @@ class RPNHead(AnchorHead):
         the nms operation.
 
         Args:
-            results (:obj:`InstaceData`): Detection instance results,
+            results (InstaceData): Detection instance results,
                 each item has shape (num_bboxes, ).
-            cfg (ConfigDict): Test / postprocessing configuration.
+            cfg (DictConfig): Test / postprocessing configuration.
+            img_meta (dict, optional): Image meta info. Defaults to None.
             rescale (bool): If True, return boxes in original image space.
                 Defaults to False.
             with_nms (bool): If True, do nms before return boxes.
                 Default to True.
-            img_meta (dict, optional): Image meta info. Defaults to None.
 
         Returns:
-            :obj:`InstanceData`: Detection results of each image
+            InstanceData: Detection results of each image
             after the post process.
             Each item usually contains following keys.
 

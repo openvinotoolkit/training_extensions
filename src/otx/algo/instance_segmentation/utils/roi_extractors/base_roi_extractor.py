@@ -1,10 +1,11 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-#
-# This class and its supporting functions are adapted from the mmdet.
-# Please refer to https://github.com/open-mmlab/mmdetection/
+# Copyright (c) OpenMMLab. All rights reserved.
+"""Implementation modified from mmdet.models.roi_heads.roi_extractors.base_roi_extractor.py.
 
-"""MMDet RoI Extractors."""
+Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/roi_heads/roi_extractors/base_roi_extractor.py
+"""
+
 from __future__ import annotations
 
 from abc import ABCMeta, abstractmethod
@@ -24,11 +25,10 @@ class BaseRoIExtractor(BaseModule, metaclass=ABCMeta):
     """Base class for RoI extractor.
 
     Args:
-        roi_layer (:obj:`ConfigDict` or dict): Specify RoI layer type and
-            arguments.
+        roi_layer (nn.Module): RoI layer module.
         out_channels (int): Output channels of RoI layers.
         featmap_strides (list[int]): Strides of input feature maps.
-        init_cfg (:obj:`ConfigDict` or dict or list[:obj:`ConfigDict` or \
+        init_cfg (DictConfig or dict or list[DictConfig or \
             dict], optional): Initialization config dict. Defaults to None.
     """
 
@@ -53,17 +53,14 @@ class BaseRoIExtractor(BaseModule, metaclass=ABCMeta):
         """Build RoI operator to extract feature from each level feature map.
 
         Args:
-            layer_cfg (:obj:`ConfigDict` or dict): Dictionary to construct and
-                config RoI layer operation. Options are modules under
-                ``mmcv/ops`` such as ``RoIAlign``.
+            layer_cfg (nn.Module): RoI layer module such as ``RoIAlign``.
             featmap_strides (list[int]): The stride of input feature map w.r.t
                 to the original image size, which would be used to scale RoI
                 coordinate (original image coordinate system) to feature
                 coordinate system.
 
         Returns:
-            :obj:`nn.ModuleList`: The RoI extractor modules for each level
-                feature map.
+            nn.ModuleList: The RoI extractor modules for each level feature map.
         """
         if not isinstance(roi_layer, RoIAlign):
             msg = f"Unsupported RoI layer type {roi_layer.__name__}"
@@ -110,7 +107,7 @@ class BaseRoIExtractor(BaseModule, metaclass=ABCMeta):
             feats (Tuple[Tensor]): Multi-scale features.
             rois (Tensor): RoIs with the shape (n, 5) where the first
                 column indicates batch id of each RoI.
-            roi_scale_factor (Optional[float]): RoI scale factor.
+            roi_scale_factor (float, optional): RoI scale factor.
                 Defaults to None.
 
         Returns:

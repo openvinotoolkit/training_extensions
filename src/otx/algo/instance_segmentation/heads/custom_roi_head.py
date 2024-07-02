@@ -1,10 +1,10 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-#
-# This class and its supporting functions are adapted from the mmdet.
-# Please refer to https://github.com/open-mmlab/mmdetection/
+# Copyright (c) OpenMMLab. All rights reserved.
+"""Implementation modified from mmdet.models.roi_heads.bbox_heads.convfc_bbox_head.py.
 
-"""MMDetection StandardRoIHead."""
+Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/roi_heads/bbox_heads/convfc_bbox_head.py
+"""
 
 from __future__ import annotations
 
@@ -74,9 +74,9 @@ class StandardRoIHead(BaseRoIHead):
 
         Args:
             x (tuple[Tensor]): Tuple of multi-level img features.
-            sampling_results (list["obj:`SamplingResult`]): Sampling results.
+            sampling_results (list[SamplingResult]): Sampling results.
             bbox_feats (Tensor): Extract bbox RoI features.
-            batch_gt_instances (list[:obj:`InstanceData`]): Batch of
+            batch_gt_instances (list[InstanceData]): Batch of
                 gt_instance. It usually includes ``bboxes``, ``labels``, and
                 ``masks`` attributes.
 
@@ -154,14 +154,14 @@ class StandardRoIHead(BaseRoIHead):
         Args:
             x (tuple[Tensor]): Feature maps of all scale level.
             batch_img_metas (list[dict]): List of image information.
-            rpn_results_list (list[:obj:`InstanceData`]): List of region
+            rpn_results_list (list[InstanceData]): List of region
                 proposals.
-            rcnn_test_cfg (obj:`ConfigDict`): `test_cfg` of R-CNN.
+            rcnn_test_cfg (DictConfig or dict): `test_cfg` of R-CNN.
             rescale (bool): If True, return boxes in original image space.
                 Defaults to False.
 
         Returns:
-            list[:obj:`InstanceData`]: Detection results of each image
+            list[InstanceData]: Detection results of each image
             after the post process.
             Each item usually contains following keys.
 
@@ -224,13 +224,13 @@ class StandardRoIHead(BaseRoIHead):
         Args:
             x (tuple[Tensor]): Feature maps of all scale level.
             batch_img_metas (list[dict]): List of image information.
-            results_list (list[:obj:`InstanceData`]): Detection results of
+            results_list (list[InstanceData]): Detection results of
                 each image.
             rescale (bool): If True, return boxes in original image space.
                 Defaults to False.
 
         Returns:
-            list[:obj:`InstanceData`]: Detection results of each image
+            list[InstanceData]: Detection results of each image
             after the post process.
             Each item usually contains following keys.
 
@@ -376,7 +376,7 @@ class StandardRoIHead(BaseRoIHead):
             batch_img_metas (list[dict]): List of image information.
             rpn_results_list (list[Tensor]): List of region
                 proposals.
-            rcnn_test_cfg (obj:`ConfigDict`): `test_cfg` of R-CNN.
+            rcnn_test_cfg (DictConfig or dict): `test_cfg` of R-CNN.
             rescale (bool): If True, return boxes in original image space.
                 Defaults to False.
 
@@ -431,7 +431,7 @@ class StandardRoIHead(BaseRoIHead):
         Args:
             x (tuple[Tensor]): Feature maps of all scale level.
             batch_img_metas (list[dict]): List of image information.
-            results_list (list[:obj:`InstanceData`]): Detection results of
+            results_list (list[InstanceData]): Detection results of
                 each image.
             rescale (bool): If True, return boxes in original image space.
                 Defaults to False.
@@ -521,8 +521,8 @@ class CustomRoIHead(StandardRoIHead):
 
         Args:
             x (tuple[Tensor]): list of multi-level img features.
-            sampling_results (list["obj:`SamplingResult`]): Sampling results.
-            batch_img_metas (list[Dict]): Meta information of each image, e.g., image size, scaling factor, etc.
+            sampling_results (list[SamplingResult]): Sampling results.
+            batch_img_metas (list[dict]): Meta information of each image, e.g., image size, scaling factor, etc.
 
         Returns:
             dict[str, Tensor]: Usually returns a dictionary with keys:
@@ -575,10 +575,10 @@ class CustomConvFCBBoxHead(Shared2FCBBoxHead, ClassIncrementalMixin):
             rois (Tensor): RoIs with the shape
                 (batch_size * num_proposals_single_image, 5) where the first
                 column indicates batch id of each RoI.
-            sampling_results (list[obj:SamplingResult]): Assign results of
+            sampling_results (list[SamplingResult]): Assign results of
                 all images in a batch after sampling.
-            rcnn_train_cfg (obj:ConfigDict): `train_cfg` of RCNN.
-            batch_img_metas (list[Dict]): Meta information of each image, e.g., image size, scaling factor, etc.
+            rcnn_train_cfg (DictConfig): `train_cfg` of RCNN.
+            batch_img_metas (list[dict]): Meta information of each image, e.g., image size, scaling factor, etc.
             concat (bool): Whether to concatenate the results of all
                 the images in a single batch. Defaults to True.
             reduction_override (str, optional): The reduction
@@ -623,8 +623,8 @@ class CustomConvFCBBoxHead(Shared2FCBBoxHead, ClassIncrementalMixin):
         Args:
             sampling_results (list[obj:SamplingResult]): Assign results of
                 all images in a batch after sampling.
-            rcnn_train_cfg (obj:ConfigDict): `train_cfg` of RCNN.
-            batch_img_metas (list[Dict]): Meta information of each image, e.g., image size, scaling factor, etc.
+            rcnn_train_cfg (DictConfig): `train_cfg` of RCNN.
+            batch_img_metas (list[dict]): Meta information of each image, e.g., image size, scaling factor, etc.
             concat (bool): Whether to concatenate the results of all
                 the images in a single batch.
 

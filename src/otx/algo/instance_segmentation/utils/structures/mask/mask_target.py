@@ -1,9 +1,10 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-#
-# This class and its supporting functions are adapted from the mmdet.
-# Please refer to https://github.com/open-mmlab/mmdetection/
-"""MMDet Mask Structure."""
+# Copyright (c) OpenMMLab. All rights reserved.
+"""Implementation modified from mmdet.structures.mask.mask_target.py.
+
+Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/structures/mask/mask_target.py
+"""
 
 from __future__ import annotations
 
@@ -11,17 +12,18 @@ import numpy as np
 import torch
 from datumaro.components.annotation import Polygon
 from otx.core.utils.mask_util import crop_and_resize_masks, crop_and_resize_polygons
+from torch import Tensor
 from torch.nn.modules.utils import _pair
 from torchvision import tv_tensors
 
 
 def mask_target(
-    pos_proposals_list: list[torch.Tensor],
-    pos_assigned_gt_inds_list: list[torch.Tensor],
+    pos_proposals_list: list[Tensor],
+    pos_assigned_gt_inds_list: list[Tensor],
     gt_masks_list: list[list[Polygon]] | list[tv_tensors.Mask],
     cfg: dict,
     meta_infos: list[dict],
-) -> torch.Tensor:
+) -> Tensor:
     """Compute mask target for positive proposals in multiple images.
 
     Args:
@@ -29,9 +31,10 @@ def mask_target(
             images, each has shape (num_pos, 4).
         pos_assigned_gt_inds_list (list[Tensor]): Assigned GT indices for each
             positive proposals, each has shape (num_pos,).
-        gt_masks_list (list[:obj:`BaseInstanceMasks`]): Ground truth masks of
+        gt_masks_list (list[list[Polygon]] or list[tv_tensors.Mask]): Ground truth masks of
             each image.
-        cfg (dict): Config dict that specifies the mask size.
+        cfg (dict): Dict that specifies the mask size.
+        meta_infos (list[dict]): Meta information of each image.
 
     Returns:
         Tensor: Mask target of each image, has shape (num_pos, w, h).
@@ -52,12 +55,12 @@ def mask_target(
 
 
 def mask_target_single(
-    pos_proposals: torch.Tensor,
-    pos_assigned_gt_inds: torch.Tensor,
+    pos_proposals: Tensor,
+    pos_assigned_gt_inds: Tensor,
     gt_masks: list[Polygon] | tv_tensors.Mask,
     cfg: dict,
     meta_info: dict,
-) -> torch.Tensor:
+) -> Tensor:
     """Compute mask target for each positive proposal in the image."""
     if isinstance(gt_masks[0], Polygon):
         crop_and_resize = crop_and_resize_polygons

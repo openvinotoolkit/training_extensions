@@ -1,7 +1,11 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 # Copyright (c) OpenMMLab. All rights reserved.
-"""Rewrite mmcv RoIAlign to support export."""
+"""Implementation modified from mmdeploy.mmcv.ops.roi_align.py.
+
+Reference : https://github.com/open-mmlab/mmdeploy/blob/v1.3.1/mmdeploy/mmcv/ops/roi_align.py
+"""
+
 from __future__ import annotations
 
 import torch

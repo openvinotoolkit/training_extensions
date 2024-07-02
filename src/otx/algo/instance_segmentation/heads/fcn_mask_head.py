@@ -1,10 +1,10 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-#
-# This class and its supporting functions are adapted from the mmdet.
-# Please refer to https://github.com/open-mmlab/mmdetection/
+# Copyright (c) OpenMMLab. All rights reserved.
+"""Implementation modified from mmdet.models.roi_heads.mask_heads.fcn_mask_head.py.
 
-"""MMDet FCNMaskHead."""
+Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/roi_heads/mask_heads/fcn_mask_head.py
+"""
 
 from __future__ import annotations
 
@@ -136,12 +136,12 @@ class FCNMaskHead(BaseModule):
         """Calculate the ground truth for all samples in a batch according to the sampling_results.
 
         Args:
-            sampling_results (List[obj:SamplingResult]): Assign results of
+            sampling_results (List[SamplingResult]): Assign results of
                 all images in a batch after sampling.
-            batch_gt_instances (list[:obj:`InstanceData`]): Batch of
+            batch_gt_instances (list[InstanceData]): Batch of
                 gt_instance. It usually includes ``bboxes``, ``labels``, and
                 ``masks`` attributes.
-            rcnn_train_cfg (obj:ConfigDict): `train_cfg` of RCNN.
+            rcnn_train_cfg (DictConfig): `train_cfg` of RCNN.
 
         Returns:
             Tensor: Mask target of each positive proposals in the image.
@@ -170,12 +170,12 @@ class FCNMaskHead(BaseModule):
         Args:
             mask_preds (Tensor): Predicted foreground masks, has shape
                 (num_pos, num_classes, h, w).
-            sampling_results (List[obj:SamplingResult]): Assign results of
+            sampling_results (List[SamplingResult]): Assign results of
                 all images in a batch after sampling.
-            batch_gt_instances (list[:obj:`InstanceData`]): Batch of
+            batch_gt_instances (list[InstanceData]): Batch of
                 gt_instance. It usually includes ``bboxes``, ``labels``, and
                 ``masks`` attributes.
-            rcnn_train_cfg (obj:ConfigDict): `train_cfg` of RCNN.
+            rcnn_train_cfg (DictConfig): `train_cfg` of RCNN.
 
         Returns:
             dict: A dictionary of loss and targets components.
@@ -212,10 +212,10 @@ class FCNMaskHead(BaseModule):
         Args:
             mask_preds (tuple[Tensor]): Tuple of predicted foreground masks,
                 each has shape (n, num_classes, h, w).
-            results_list (list[:obj:`InstanceData`]): Detection results of
+            results_list (list[InstanceData]): Detection results of
                 each image.
             batch_img_metas (list[dict]): List of image information.
-            rcnn_test_cfg (obj:`ConfigDict`): `test_cfg` of Bbox Head.
+            rcnn_test_cfg (DictConfig): `test_cfg` of Bbox Head.
             rescale (bool): If True, return boxes in original image space.
                 Defaults to False.
             activate_map (book): Whether get results with augmentations test.
@@ -223,7 +223,7 @@ class FCNMaskHead(BaseModule):
                 Defaults to False.
 
         Returns:
-            list[:obj:`InstanceData`]: Detection results of each image
+            list[InstanceData]: Detection results of each image
             after the post process. Each item usually contains following keys.
 
                 - scores (Tensor): Classification scores, has a shape
@@ -281,7 +281,7 @@ class FCNMaskHead(BaseModule):
             bboxes (Tensor): Predicted bboxes, has shape (n, 4)
             labels (Tensor): Labels of bboxes, has shape (n, )
             img_meta (dict): image information.
-            rcnn_test_cfg (obj:`ConfigDict`): `test_cfg` of Bbox Head.
+            rcnn_test_cfg (DictConfig): `test_cfg` of Bbox Head.
                 Defaults to None.
             rescale (bool): If True, return boxes in original image space.
                 Defaults to False.

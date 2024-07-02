@@ -1,7 +1,10 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 # Copyright (c) OpenMMLab. All rights reserved.
-"""RTMDet-Ins head."""
+"""Implementation modified from mmdet.models.dense_heads.rtmdet_ins_head.py.
+
+Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/dense_heads/rtmdet_ins_head.py
+"""
 
 from __future__ import annotations
 
@@ -49,6 +52,7 @@ class RTMDetInsHead(RTMDetHead):
     """Detection Head of RTMDet-Ins.
 
     Args:
+        loss_mask (nn.Module): A module for mask loss.
         num_prototypes (int): Number of mask prototype features extracted
             from the mask head. Defaults to 8.
         dyconv_channels (int): Channel of the dynamic conv layers.
@@ -57,7 +61,6 @@ class RTMDetInsHead(RTMDetHead):
             Defaults to 3.
         mask_loss_stride (int): Down sample stride of the masks for loss
             computation. Defaults to 4.
-        loss_mask (:obj:`ConfigDict` or dict): Config dict for mask loss.
     """
 
     def __init__(
@@ -327,23 +330,23 @@ class RTMDetInsHead(RTMDetHead):
 
     def mask_postprocess(
         self,
-        mask_logits: torch.Tensor,
+        mask_logits: Tensor,
         img_h: int,
         img_w: int,
         gpu_mem_limit: float = 1.0,
         threshold: float = 0.5,
-    ) -> torch.Tensor:
+    ) -> Tensor:
         """Postprocess mask logits to binary masks.
 
         Args:
-            masks (_type_): Mask Logits with shape (B, N, H, W).
+            mask_logits (Tensor): Mask Logits with shape (B, N, H, W).
             img_h (int): Image height resizes to.
             img_w (int): Image width resizes to.
             gpu_mem_limit (float, optional): GPU memory limit in GB. Defaults to 1.0.
             threshold (float, optional): Threshold for binary masks. Defaults to 0.5.
 
         Returns:
-            torch.Tensor: Binary masks with shape (B, N, img_h, img_w).
+            Tensor: Binary masks with shape (B, N, img_h, img_w).
         """
         masks = torch.zeros(
             size=(mask_logits.shape[:2] + (img_h, img_w)),
@@ -377,7 +380,7 @@ class RTMDetInsHead(RTMDetHead):
     def _bbox_mask_post_process(
         self,
         results: InstanceData,
-        mask_feat: torch.Tensor,
+        mask_feat: Tensor,
         cfg: DictConfig,
         rescale: bool = False,
         with_nms: bool = True,
@@ -389,10 +392,10 @@ class RTMDetInsHead(RTMDetHead):
         the nms operation. Usually `with_nms` is False is used for aug test.
 
         Args:
-            results (:obj:`InstaceData`): Detection instance results,
+            results (InstaceData): Detection instance results,
                 each item has shape (num_bboxes, ).
             mask_feat (Tensor): Mask prototype features of a single image
-            cfg (ConfigDict): Test / postprocessing configuration,
+            cfg (DictConfig): Test / postprocessing configuration,
                 if None, test_cfg would be used.
             rescale (bool): If True, return boxes in original image space.
                 Default to False.
@@ -401,7 +404,7 @@ class RTMDetInsHead(RTMDetHead):
             img_meta (dict, optional): Image meta info. Defaults to None.
 
         Returns:
-            :obj:`InstanceData`: Detection results of each image
+            InstanceData: Detection results of each image
             after the post process.
             Each item usually contains following keys.
                 - scores (Tensor): Classification scores, has a shape
@@ -549,9 +552,9 @@ class RTMDetInsHead(RTMDetHead):
                 the mask head. Has shape (N, num_prototypes, H, W)
             flatten_kernels (list[Tensor]): Kernels of the dynamic conv layers.
                 Has shape (N, num_instances, num_params)
-            sampling_results_list (list[:obj:`SamplingResults`]) Batch of
+            sampling_results_list (list[SamplingResults]) Batch of
                 assignment results.
-            batch_gt_instances (list[:obj:`InstanceData`]): Batch of
+            batch_gt_instances (list[InstanceData]): Batch of
                 gt_instance.  It usually includes ``bboxes`` and ``labels``
                 attributes.
 
@@ -713,9 +716,9 @@ class MaskFeatModule(BaseModule):
              feature map that to be dynamically convolved with the predicted
              kernel.
         stacked_convs (int): Number of convs in mask feature branch.
-        act_cfg (:obj:`ConfigDict` or dict): Config dict for activation layer.
+        act_cfg (dict): Config dict for activation layer.
             Default: dict(type='ReLU', inplace=True)
-        norm_cfg (dict): Config dict for normalization layer. Default: None.
+        norm_cfg (dict): Config dict for normalization layer. Default: dict(type='BN').
     """
 
     def __init__(
@@ -769,9 +772,9 @@ class RTMDetInsSepBNHead(RTMDetInsHead):
         in_channels (int): Number of channels in the input feature map.
         share_conv (bool): Whether to share conv layers between stages.
             Defaults to True.
-        norm_cfg (:obj:`ConfigDict` or dict)): Config dict for normalization
+        norm_cfg (dict): Config dict for normalization
             layer. Defaults to dict(type='BN').
-        act_cfg (:obj:`ConfigDict` or dict)): Config dict for activation layer.
+        act_cfg (dict): Config dict for activation layer.
             Defaults to dict(type='SiLU', inplace=True).
         pred_kernel_size (int): Kernel size of prediction layer. Defaults to 1.
     """
@@ -1005,10 +1008,10 @@ class RTMDetInsSepBNHead(RTMDetInsHead):
 
     def export_by_feat(
         self,
-        cls_scores: list[torch.Tensor],
-        bbox_preds: list[torch.Tensor],
-        kernel_preds: list[torch.Tensor],
-        mask_feat: torch.Tensor,
+        cls_scores: list[Tensor],
+        bbox_preds: list[Tensor],
+        kernel_preds: list[Tensor],
+        mask_feat: Tensor,
         batch_img_metas: list[dict] | None = None,
         cfg: DictConfig | None = None,
         rescale: bool = False,
@@ -1063,17 +1066,17 @@ class RTMDetInsSepBNHead(RTMDetInsHead):
 
     def _nms_with_mask_static(
         self,
-        priors: torch.Tensor,
-        bboxes: torch.Tensor,
-        scores: torch.Tensor,
-        kernels: torch.Tensor,
-        mask_feats: torch.Tensor,
+        priors: Tensor,
+        bboxes: Tensor,
+        scores: Tensor,
+        kernels: Tensor,
+        mask_feats: Tensor,
         max_output_boxes_per_class: int = 1000,
         iou_threshold: float = 0.5,
         score_threshold: float = 0.05,
         pre_top_k: int = -1,
         keep_top_k: int = -1,
-    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    ) -> tuple[Tensor, Tensor, Tensor]:
         """Wrapper for `multiclass_nms` with ONNXRuntime.
 
         Note:
@@ -1083,7 +1086,7 @@ class RTMDetInsSepBNHead(RTMDetInsHead):
         Args:
             self: The instance of `RTMDetInsHead`.
             priors (Tensor): The prior boxes of shape [num_boxes, 4].
-            boxes (Tensor): The bounding boxes of shape [N, num_boxes, 4].
+            bboxes (Tensor): The bounding boxes of shape [N, num_boxes, 4].
             scores (Tensor): The detection scores of shape
                 [N, num_boxes, num_classes].
             kernels (Tensor): The dynamic conv kernels.
@@ -1135,10 +1138,10 @@ class RTMDetInsSepBNHead(RTMDetInsHead):
 
     def export_mask_predict_by_feat_single(
         self,
-        mask_feat: torch.Tensor,
-        kernels: torch.Tensor,
-        priors: torch.Tensor,
-    ) -> torch.Tensor:
+        mask_feat: Tensor,
+        kernels: Tensor,
+        priors: Tensor,
+    ) -> Tensor:
         """Decode mask with dynamic conv.
 
         Note: Prior Generator has cuda device set as default.
@@ -1172,7 +1175,7 @@ class RTMDetInsSepBNHead(RTMDetInsHead):
                 x = x.clamp_(min=0)
         return x.reshape(batch_size, num_inst, hw[0], hw[1])
 
-    def _parse_dynamic_params(self, flatten_kernels: torch.Tensor) -> tuple:
+    def _parse_dynamic_params(self, flatten_kernels: Tensor) -> tuple:
         """Split kernel head prediction to conv weight and bias."""
         batch_size = flatten_kernels.shape[0]
         n_inst = flatten_kernels.shape[1]

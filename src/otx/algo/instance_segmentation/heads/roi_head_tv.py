@@ -1,7 +1,6 @@
-"""Customised torchvision RoIHeads class with support for polygons as ground truth masks."""
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-#
+"""Customised torchvision RoIHeads class with support for polygons as ground truth masks."""
 
 from __future__ import annotations
 
@@ -19,13 +18,13 @@ if TYPE_CHECKING:
 
 
 def maskrcnn_loss(
-    mask_logits: torch.Tensor,
-    proposals: list[torch.Tensor],
-    gt_masks: list[list[torch.Tensor]] | list[list[Polygon]],
-    gt_labels: list[torch.Tensor],
-    mask_matched_idxs: list[torch.Tensor],
+    mask_logits: Tensor,
+    proposals: list[Tensor],
+    gt_masks: list[list[Tensor]] | list[list[Polygon]],
+    gt_labels: list[Tensor],
+    mask_matched_idxs: list[Tensor],
     image_shapes: list[tuple[int, int]],
-) -> torch.Tensor:
+) -> Tensor:
     """Compute the mask prediction loss."""
     cfg = {"mask_size": mask_logits.shape[-1]}
     meta_infos = [{"img_shape": img_shape} for img_shape in image_shapes]

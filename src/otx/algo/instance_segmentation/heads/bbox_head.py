@@ -1,10 +1,10 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-#
-# This class and its supporting functions are adapted from the mmdet.
-# Please refer to https://github.com/open-mmlab/mmdetection/
+# Copyright (c) OpenMMLab. All rights reserved.
+"""Implementation modified from mmdet.models.roi_heads.bbox_heads.bbox_head.py.
 
-"""MMDet BBox Head."""
+Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/roi_heads/bbox_heads/bbox_head.py
+"""
 
 from __future__ import annotations
 
@@ -126,10 +126,10 @@ class BBoxHead(BaseModule):
                 represents [tl_x, tl_y, br_x, br_y].
             pos_gt_labels (Tensor): Contains gt_labels for
                 all positive samples, has shape (num_pos, ).
-            cfg (obj:`ConfigDict`): `train_cfg` of R-CNN.
+            cfg (dict): `train_cfg` of R-CNN.
 
         Returns:
-            Tuple[Tensor]: Ground truth for proposals
+            tuple[Tensor]: Ground truth for proposals
             in a single image. Containing the following Tensors:
 
                 - labels(Tensor): Gt_labels for all proposals, has
@@ -179,7 +179,7 @@ class BBoxHead(BaseModule):
         cls_scores: tuple[Tensor],
         bbox_preds: tuple[Tensor],
         batch_img_metas: list[dict],
-        rcnn_test_cfg: DictConfig,
+        rcnn_test_cfg: DictConfig | None = None,
         rescale: bool = False,
     ) -> list[InstanceData]:
         """Transform a batch of output features extracted from the head into bbox results.
@@ -193,13 +193,13 @@ class BBoxHead(BaseModule):
             bbox_preds (tuple[Tensor]): Tuple of box energies / deltas, each
                 has shape (num_boxes, num_classes * 4).
             batch_img_metas (list[dict]): List of image information.
-            rcnn_test_cfg (obj:`ConfigDict`, optional): `test_cfg` of R-CNN.
+            rcnn_test_cfg (DictConfig, optional): `test_cfg` of R-CNN.
                 Defaults to None.
             rescale (bool): If True, return boxes in original image space.
                 Defaults to False.
 
         Returns:
-            list[:obj:`InstanceData`]: Instance segmentation
+            list[InstanceData]: Instance segmentation
             results of each image after the post process.
             Each item usually contains following keys.
 
@@ -249,11 +249,11 @@ class BBoxHead(BaseModule):
             img_meta (dict): image information.
             rescale (bool): If True, return boxes in original image space.
                 Defaults to False.
-            rcnn_test_cfg (obj:`ConfigDict`): `test_cfg` of Bbox Head.
-                Defaults to None
+            rcnn_test_cfg (DictConfig): `test_cfg` of Bbox Head.
+                Defaults to None.
 
         Returns:
-            :obj:`InstanceData`: Detection results of each image\
+            InstanceData: Detection results of each image\
             Each item usually contains following keys.
 
                 - scores (Tensor): Classification scores, has a shape
@@ -317,7 +317,7 @@ class BBoxHead(BaseModule):
         batch_img_metas: list[dict],
         rcnn_test_cfg: dict,
         rescale: bool = False,
-    ) -> tuple[torch.Tensor, torch.Tensor] | tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    ) -> tuple[Tensor, Tensor] | tuple[Tensor, Tensor, Tensor]:
         """Rewrite `predict_by_feat` of `BBoxHead` for default backend.
 
         Transform network output for a batch into bbox predictions. Support
@@ -332,7 +332,7 @@ class BBoxHead(BaseModule):
             bbox_preds (tuple[Tensor]): Tuple of box energies / deltas, each
                 has shape (num_boxes, num_classes * 4).
             batch_img_metas (list[dict]): List of image information.
-            rcnn_test_cfg (obj:`ConfigDict`, optional): `test_cfg` of R-CNN.
+            rcnn_test_cfg (dict, optional): `test_cfg` of R-CNN.
                 Defaults to None.
             rescale (bool): If True, return boxes in original image space.
                 Defaults to False.

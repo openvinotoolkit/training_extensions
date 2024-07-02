@@ -1,10 +1,10 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-#
-# This class and its supporting functions are adapted from the mmdet.
-# Please refer to https://github.com/open-mmlab/mmdetection/
+# Copyright (c) OpenMMLab. All rights reserved.
+"""Implementation modified from mmdet.models.roi_heads.roi_extractors.single_level_roi_extractor.py.
 
-"""MMdet Single RoI Extractor."""
+Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/roi_heads/roi_extractors/single_level_roi_extractor.py
+"""
 
 from __future__ import annotations
 
@@ -85,13 +85,13 @@ class SingleRoIExtractor(BaseRoIExtractor):
     `FPN <https://arxiv.org/abs/1612.03144>`_.
 
     Args:
-        roi_layer (:obj:`ConfigDict` or dict): Specify RoI layer type and
+        roi_layer (DictConfig or dict): Specify RoI layer type and
             arguments.
         out_channels (int): Output channels of RoI layers.
-        featmap_strides (List[int]): Strides of input feature maps.
+        featmap_strides (list[int]): Strides of input feature maps.
         finest_scale (int): Scale threshold of mapping to level 0.
             Defaults to 56.
-        init_cfg (:obj:`ConfigDict` or dict or list[:obj:`ConfigDict` or \
+        init_cfg (DictConfig or dict or list[DictConfig or \
             dict], optional): Initialization config dict. Defaults to None.
     """
 
@@ -134,10 +134,10 @@ class SingleRoIExtractor(BaseRoIExtractor):
         """Extractor ROI feats.
 
         Args:
-            feats (Tuple[Tensor]): Multi-scale features.
+            feats (tuple[Tensor]): Multi-scale features.
             rois (Tensor): RoIs with the shape (n, 5) where the first
                 column indicates batch id of each RoI.
-            roi_scale_factor (Optional[float]): RoI scale factor.
+            roi_scale_factor (float, optional): RoI scale factor.
                 Defaults to None.
 
         Returns:

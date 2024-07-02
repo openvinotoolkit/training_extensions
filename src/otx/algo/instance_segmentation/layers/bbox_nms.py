@@ -1,10 +1,10 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-#
-# This class and its supporting functions are adapted from the mmdet.
-# Please refer to https://github.com/open-mmlab/mmdetection/
+# Copyright (c) OpenMMLab. All rights reserved.
+"""Implementation modified from mmdet.models.utils.misc.py.
 
-"""MMDet NMS."""
+Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/utils/misc.py
+"""
 
 from __future__ import annotations
 
@@ -37,7 +37,7 @@ def multiclass_nms_torch(
             contains scores of the background class, but this will be ignored.
         score_thr (float): bbox threshold, bboxes with scores lower than it
             will not be considered.
-        nms_cfg (Union[:obj:`ConfigDict`, dict]): a dict that contains
+        nms_cfg (Union[DictConfig, dict]): a dict that contains
             the arguments of nms operations.
         max_num (int, optional): if there are more than max_num bboxes after
             NMS, only top max_num will be kept. Default to -1.
