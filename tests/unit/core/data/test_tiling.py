@@ -15,6 +15,7 @@ from datumaro import Dataset as DmDataset
 from datumaro import Polygon
 from omegaconf import DictConfig, OmegaConf
 from otx.algo.detection.atss import MobileNetV2ATSS
+from otx.algo.instance_segmentation.maskrcnn import MaskRCNNEfficientNet
 from otx.core.config.data import (
     DataModuleConfig,
     SubsetConfig,
@@ -27,7 +28,6 @@ from otx.core.data.entity.instance_segmentation import InstanceSegBatchDataEntit
 from otx.core.data.entity.tile import TileBatchDetDataEntity
 from otx.core.data.module import OTXDataModule
 from otx.core.model.detection import OTXDetectionModel
-from otx.core.model.instance_segmentation import OTXInstanceSegModel
 from otx.core.types.task import OTXTaskType
 from otx.core.types.transformer_libs import TransformLibType
 from torchvision import tv_tensors
@@ -383,7 +383,7 @@ class TestOTXTiling:
         self.explain_mode = False
 
     def test_instseg_tile_merge(self, fxt_instseg_data_config):
-        model = OTXInstanceSegModel(label_info=3)
+        model = MaskRCNNEfficientNet(label_info=3)
         # Enable tile adapter
         fxt_instseg_data_config.tile_config.enable_tiler = True
         tile_datamodule = OTXDataModule(
@@ -399,7 +399,7 @@ class TestOTXTiling:
             model.forward_tiles(batch)
 
     def test_explain_instseg_tile_merge(self, fxt_instseg_data_config):
-        model = OTXInstanceSegModel(label_info=3)
+        model = MaskRCNNEfficientNet(label_info=3)
         # Enable tile adapter
         fxt_instseg_data_config.tile_config.enable_tiler = True
         fxt_instseg_data_config.tile_config.enable_adaptive_tiling = False
