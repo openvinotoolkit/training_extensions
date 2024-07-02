@@ -3,6 +3,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 
 """This implementation copy from mmengine BaseModule."""
+
 from __future__ import annotations
 
 import copy

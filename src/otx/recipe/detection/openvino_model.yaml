@@ -17,8 +17,7 @@ data: ../_base_/data/torchvision_base.yaml
 overrides:
   data:
     task: DETECTION
-    config:
-      image_color_channel: RGB
-      data_format: coco_instances
-      test_subset:
-        batch_size: 64
+    image_color_channel: RGB
+    data_format: coco_instances
+    test_subset:
+      batch_size: 64

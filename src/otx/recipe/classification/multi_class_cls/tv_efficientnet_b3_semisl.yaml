@@ -3,6 +3,7 @@ model:
   init_args:
     backbone: efficientnet_b3
     label_info: 1000
+    task: MULTI_CLASS_CLS
     train_type: semi_supervised
 
     optimizer:

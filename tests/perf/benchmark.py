@@ -197,7 +197,7 @@ class Benchmark:
                 # Add unlabeled data path if exists
                 if dataset.unlabeled_data_path is not None:
                     command.extend(
-                        ["--data.config.unlabeled_subset.data_root", str(self.data_root / dataset.unlabeled_data_path)],
+                        ["--data.unlabeled_subset.data_root", str(self.data_root / dataset.unlabeled_data_path)],
                     )
 
                 for key, value in dataset.extra_overrides.get("train", {}).items():

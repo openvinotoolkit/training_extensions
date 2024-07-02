@@ -7,13 +7,14 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Sequence
+from typing import TYPE_CHECKING, Literal, Sequence
 
 from anomalib.models.image.stfpm import Stfpm as AnomalibStfpm
 
 from otx.core.model.anomaly import OTXAnomaly
 from otx.core.model.base import OTXModel
 from otx.core.types.label import AnomalyLabelInfo
+from otx.core.types.task import OTXTaskType
 
 if TYPE_CHECKING:
     from lightning.pytorch.utilities.types import STEP_OUTPUT
@@ -28,14 +29,20 @@ class Stfpm(OTXAnomaly, OTXModel, AnomalibStfpm):
     Args:
         layers (Sequence[str]): Feature extractor layers.
         backbone (str, optional): Feature extractor backbone. Defaults to "resnet18".
-        num_classes (int, optional): Anoamly don't use num_classes ,
-            but OTXModel always receives num_classes, so need this.
+        task (Literal[
+                OTXTaskType.ANOMALY_CLASSIFICATION, OTXTaskType.ANOMALY_DETECTION, OTXTaskType.ANOMALY_SEGMENTATION
+            ], optional): Task type of Anomaly Task. Defaults to OTXTaskType.ANOMALY_CLASSIFICATION.
     """
 
     def __init__(
         self,
         layers: Sequence[str] = ["layer1", "layer2", "layer3"],
         backbone: str = "resnet18",
+        task: Literal[
+            OTXTaskType.ANOMALY_CLASSIFICATION,
+            OTXTaskType.ANOMALY_DETECTION,
+            OTXTaskType.ANOMALY_SEGMENTATION,
+        ] = OTXTaskType.ANOMALY_CLASSIFICATION,
         **kwargs,
     ) -> None:
         OTXAnomaly.__init__(self)
@@ -45,6 +52,7 @@ class Stfpm(OTXAnomaly, OTXModel, AnomalibStfpm):
             backbone=backbone,
             layers=layers,
         )
+        self.task = task
 
     @property
     def trainable_model(self) -> str:

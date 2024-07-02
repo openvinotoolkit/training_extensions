@@ -1,9 +1,14 @@
+# Copyright (C) 2024 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+
 import pytest
 import torch
+from otx.algo.classification.heads import OTXSemiSLLinearClsHead
 from otx.algo.classification.torchvision_model import OTXTVModel, TVClassificationModel
-from otx.core.data.entity.base import OTXBatchLossEntity
+from otx.core.data.entity.base import OTXBatchLossEntity, OTXBatchPredEntity
 from otx.core.data.entity.classification import MulticlassClsBatchPredEntity
 from otx.core.types.export import TaskLevelExportParameters
+from otx.core.types.task import OTXTaskType
 
 
 @pytest.fixture()
@@ -11,25 +16,65 @@ def fxt_tv_model():
     return OTXTVModel(backbone="mobilenet_v3_small", label_info=10)
 
 
+@pytest.fixture()
+def fxt_tv_model_and_data_entity(
+    request,
+    fxt_multiclass_cls_batch_data_entity,
+    fxt_multilabel_cls_batch_data_entity,
+    fxt_hlabel_cls_batch_data_entity,
+    fxt_hlabel_multilabel_info,
+):
+    if request.param == OTXTaskType.MULTI_CLASS_CLS:
+        return OTXTVModel(backbone="mobilenet_v3_small", label_info=10), fxt_multiclass_cls_batch_data_entity
+    if request.param == OTXTaskType.MULTI_LABEL_CLS:
+        return OTXTVModel(
+            backbone="mobilenet_v3_small",
+            label_info=10,
+            task=OTXTaskType.MULTI_LABEL_CLS,
+        ), fxt_multilabel_cls_batch_data_entity
+    if request.param == OTXTaskType.H_LABEL_CLS:
+        return OTXTVModel(
+            backbone="mobilenet_v3_small",
+            label_info=fxt_hlabel_multilabel_info,
+            task=OTXTaskType.H_LABEL_CLS,
+        ), fxt_hlabel_cls_batch_data_entity
+    return None
+
+
 class TestOTXTVModel:
     def test_create_model(self, fxt_tv_model):
         assert isinstance(fxt_tv_model.model, TVClassificationModel)
 
-    def test_customize_inputs(self, fxt_tv_model, fxt_multiclass_cls_batch_data_entity):
-        outputs = fxt_tv_model._customize_inputs(fxt_multiclass_cls_batch_data_entity)
+        semi_sl_model = OTXTVModel(backbone="mobilenet_v3_small", label_info=10, train_type="semi_supervised")
+        assert isinstance(semi_sl_model.model.head, OTXSemiSLLinearClsHead)
+
+    @pytest.mark.parametrize(
+        "fxt_tv_model_and_data_entity",
+        [OTXTaskType.MULTI_CLASS_CLS, OTXTaskType.MULTI_LABEL_CLS, OTXTaskType.H_LABEL_CLS],
+        indirect=True,
+    )
+    def test_customize_inputs(self, fxt_tv_model_and_data_entity):
+        tv_model, data_entity = fxt_tv_model_and_data_entity
+        outputs = tv_model._customize_inputs(data_entity)
         assert "images" in outputs
         assert "labels" in outputs
         assert "mode" in outputs
 
-    def test_customize_outputs(self, fxt_tv_model, fxt_multiclass_cls_batch_data_entity):
+    @pytest.mark.parametrize(
+        "fxt_tv_model_and_data_entity",
+        [OTXTaskType.MULTI_CLASS_CLS, OTXTaskType.MULTI_LABEL_CLS, OTXTaskType.H_LABEL_CLS],
+        indirect=True,
+    )
+    def test_customize_outputs(self, fxt_tv_model_and_data_entity):
+        tv_model, data_entity = fxt_tv_model_and_data_entity
         outputs = torch.randn(2, 10)
-        fxt_tv_model.training = True
-        preds = fxt_tv_model._customize_outputs(outputs, fxt_multiclass_cls_batch_data_entity)
+        tv_model.training = True
+        preds = tv_model._customize_outputs(outputs, data_entity)
         assert isinstance(preds, OTXBatchLossEntity)
 
-        fxt_tv_model.training = False
-        preds = fxt_tv_model._customize_outputs(outputs, fxt_multiclass_cls_batch_data_entity)
-        assert isinstance(preds, MulticlassClsBatchPredEntity)
+        tv_model.training = False
+        preds = tv_model._customize_outputs(outputs, data_entity)
+        assert isinstance(preds, OTXBatchPredEntity)
 
     def test_export_parameters(self, fxt_tv_model):
         export_parameters = fxt_tv_model._export_parameters

@@ -11,7 +11,7 @@ All anomaly models use the same AnomalyDetection model from ModelAPI.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Sequence
+from typing import TYPE_CHECKING, Any, Literal, Sequence
 
 import numpy as np
 import openvino
@@ -26,6 +26,7 @@ from otx.core.metrics.types import MetricCallable, NullMetricCallable
 from otx.core.model.anomaly import AnomalyModelInputs
 from otx.core.model.base import OVModel
 from otx.core.types.label import AnomalyLabelInfo
+from otx.core.types.task import OTXTaskType
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -103,6 +104,11 @@ class AnomalyOpenVINO(OVModel):
         use_throughput_mode: bool = True,
         model_api_configuration: dict[str, Any] | None = None,
         metric: MetricCallable = NullMetricCallable,  # Metrics is computed using Anomalib's metric
+        task: Literal[
+            OTXTaskType.ANOMALY_CLASSIFICATION,
+            OTXTaskType.ANOMALY_DETECTION,
+            OTXTaskType.ANOMALY_SEGMENTATION,
+        ] = OTXTaskType.ANOMALY_CLASSIFICATION,
         **kwargs,
     ) -> None:
         super().__init__(
@@ -117,6 +123,7 @@ class AnomalyOpenVINO(OVModel):
         metric_names = ["AUROC", "F1Score"]
         self.image_metrics: AnomalibMetricCollection = create_metric_collection(metric_names, prefix="image_")
         self.pixel_metrics: AnomalibMetricCollection = create_metric_collection(metric_names, prefix="pixel_")
+        self.task = task
 
     def _create_model(self) -> Model:
         from model_api.adapters import OpenvinoAdapter, create_core, get_user_config

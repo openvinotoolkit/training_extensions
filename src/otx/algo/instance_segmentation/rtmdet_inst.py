@@ -11,16 +11,14 @@ import torch
 from omegaconf import DictConfig
 from torchvision import tv_tensors
 
-from otx.algo.detection.backbones.cspnext import CSPNeXt
-from otx.algo.detection.heads.base_sampler import PseudoSampler
-from otx.algo.detection.heads.distance_point_bbox_coder import DistancePointBBoxCoder
-from otx.algo.detection.heads.dynamic_soft_label_assigner import DynamicSoftLabelAssigner
-from otx.algo.detection.heads.point_generator import MlvlPointGenerator
-from otx.algo.detection.losses.cross_entropy_loss import CrossEntropyLoss
-from otx.algo.detection.losses.dice_loss import DiceLoss
-from otx.algo.detection.losses.gfocal_loss import QualityFocalLoss
-from otx.algo.detection.losses.iou_loss import GIoULoss
-from otx.algo.detection.necks.cspnext_pafpn import CSPNeXtPAFPN
+from otx.algo.common.backbones import CSPNeXt
+from otx.algo.common.losses import CrossEntropyLoss, GIoULoss, QualityFocalLoss
+from otx.algo.common.utils.assigners import DynamicSoftLabelAssigner
+from otx.algo.common.utils.coders import DistancePointBBoxCoder
+from otx.algo.common.utils.prior_generators import MlvlPointGenerator
+from otx.algo.common.utils.samplers import PseudoSampler
+from otx.algo.detection.necks import CSPNeXtPAFPN
+from otx.algo.instance_segmentation.losses import DiceLoss
 from otx.algo.instance_segmentation.mmdet.models.dense_heads.rtmdet_ins_head import RTMDetInsSepBNHead
 from otx.algo.instance_segmentation.mmdet.models.detectors.rtmdet import RTMDet
 from otx.algo.utils.mmengine_utils import InstanceData, load_checkpoint

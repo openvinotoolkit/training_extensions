@@ -4,6 +4,7 @@ model:
     model_name: openvino.xml
     async_inference: True
     use_throughput_mode: False
+    task: ANOMALY_SEGMENTATION
 
 engine:
   task: ANOMALY_SEGMENTATION
@@ -16,6 +17,5 @@ data: ../_base_/data/torchvision_base.yaml
 overrides:
   data:
     task: ANOMALY_SEGMENTATION
-    config:
-      image_color_channel: RGB
-      data_format: mvtec
+    image_color_channel: RGB
+    data_format: mvtec
