@@ -271,7 +271,7 @@
 <span class="kn">from</span> <span class="nn">omegaconf</span> <span class="kn">import</span> <span class="n">DictConfig</span><span class="p">,</span> <span class="n">OmegaConf</span>
 <span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="kn">import</span> <span class="n">DataLoader</span><span class="p">,</span> <span class="n">RandomSampler</span>
 
-<span class="kn">from</span> <span class="nn">otx.core.config.data</span> <span class="kn">import</span> <span class="n">TileConfig</span>
+<span class="kn">from</span> <span class="nn">otx.core.config.data</span> <span class="kn">import</span> <span class="n">TileConfig</span><span class="p">,</span> <span class="n">UnlabeledDataConfig</span><span class="p">,</span> <span class="n">VisualPromptingConfig</span>
 <span class="kn">from</span> <span class="nn">otx.core.data.dataset.tile</span> <span class="kn">import</span> <span class="n">OTXTileDatasetFactory</span>
 <span class="kn">from</span> <span class="nn">otx.core.data.factory</span> <span class="kn">import</span> <span class="n">OTXDatasetFactory</span>
 <span class="kn">from</span> <span class="nn">otx.core.data.mem_cache</span> <span class="kn">import</span> <span class="p">(</span>
@@ -281,6 +281,7 @@
 <span class="kn">from</span> <span class="nn">otx.core.data.pre_filtering</span> <span class="kn">import</span> <span class="n">pre_filtering</span>
 <span class="kn">from</span> <span class="nn">otx.core.data.tile_adaptor</span> <span class="kn">import</span> <span class="n">adapt_tile_config</span>
 <span class="kn">from</span> <span class="nn">otx.core.types.device</span> <span class="kn">import</span> <span class="n">DeviceType</span>
+<span class="kn">from</span> <span class="nn">otx.core.types.image</span> <span class="kn">import</span> <span class="n">ImageColorChannel</span>
 <span class="kn">from</span> <span class="nn">otx.core.types.label</span> <span class="kn">import</span> <span class="n">LabelInfo</span>
 <span class="kn">from</span> <span class="nn">otx.core.types.task</span> <span class="kn">import</span> <span class="n">OTXTaskType</span>
 <span class="kn">from</span> <span class="nn">otx.core.utils.instantiators</span> <span class="kn">import</span> <span class="n">instantiate_sampler</span>
@@ -289,7 +290,7 @@
 <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
     <span class="kn">from</span> <span class="nn">lightning.pytorch.utilities.parsing</span> <span class="kn">import</span> <span class="n">AttributeDict</span>
 
-    <span class="kn">from</span> <span class="nn">otx.core.config.data</span> <span class="kn">import</span> <span class="n">DataModuleConfig</span>
+    <span class="kn">from</span> <span class="nn">otx.core.config.data</span> <span class="kn">import</span> <span class="n">SubsetConfig</span>
     <span class="kn">from</span> <span class="nn">otx.core.data.dataset.base</span> <span class="kn">import</span> <span class="n">OTXDataset</span>
 
 
@@ -301,12 +302,50 @@
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">task</span><span class="p">:</span> <span class="n">OTXTaskType</span><span class="p">,</span>
-        <span class="n">config</span><span class="p">:</span> <span class="n">DataModuleConfig</span><span class="p">,</span>
+        <span class="n">data_format</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">data_root</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">train_subset</span><span class="p">:</span> <span class="n">SubsetConfig</span><span class="p">,</span>
+        <span class="n">val_subset</span><span class="p">:</span> <span class="n">SubsetConfig</span><span class="p">,</span>
+        <span class="n">test_subset</span><span class="p">:</span> <span class="n">SubsetConfig</span><span class="p">,</span>
+        <span class="n">unlabeled_subset</span><span class="p">:</span> <span class="n">UnlabeledDataConfig</span> <span class="o">=</span> <span class="n">UnlabeledDataConfig</span><span class="p">(</span><span class="n">data_root</span><span class="o">=</span><span class="kc">None</span><span class="p">),</span>  <span class="c1"># noqa: B008</span>
+        <span class="n">tile_config</span><span class="p">:</span> <span class="n">TileConfig</span> <span class="o">=</span> <span class="n">TileConfig</span><span class="p">(</span><span class="n">enable_tiler</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+        <span class="n">vpm_config</span><span class="p">:</span> <span class="n">VisualPromptingConfig</span> <span class="o">=</span> <span class="n">VisualPromptingConfig</span><span class="p">(),</span>  <span class="c1"># noqa: B008</span>
+        <span class="n">mem_cache_size</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;1GB&quot;</span><span class="p">,</span>
+        <span class="n">mem_cache_img_max_size</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">image_color_channel</span><span class="p">:</span> <span class="n">ImageColorChannel</span> <span class="o">=</span> <span class="n">ImageColorChannel</span><span class="o">.</span><span class="n">RGB</span><span class="p">,</span>
+        <span class="n">stack_images</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">include_polygons</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">ignore_index</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">255</span><span class="p">,</span>
+        <span class="n">unannotated_items_ratio</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+        <span class="n">auto_num_workers</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">device</span><span class="p">:</span> <span class="n">DeviceType</span> <span class="o">=</span> <span class="n">DeviceType</span><span class="o">.</span><span class="n">auto</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Constructor.&quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">task</span> <span class="o">=</span> <span class="n">task</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">config</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_format</span> <span class="o">=</span> <span class="n">data_format</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_root</span> <span class="o">=</span> <span class="n">data_root</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">train_subset</span> <span class="o">=</span> <span class="n">train_subset</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">val_subset</span> <span class="o">=</span> <span class="n">val_subset</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">test_subset</span> <span class="o">=</span> <span class="n">test_subset</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">unlabeled_subset</span> <span class="o">=</span> <span class="n">unlabeled_subset</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">tile_config</span> <span class="o">=</span> <span class="n">tile_config</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">vpm_config</span> <span class="o">=</span> <span class="n">vpm_config</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">mem_cache_size</span> <span class="o">=</span> <span class="n">mem_cache_size</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mem_cache_img_max_size</span> <span class="o">=</span> <span class="n">mem_cache_img_max_size</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">image_color_channel</span> <span class="o">=</span> <span class="n">image_color_channel</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stack_images</span> <span class="o">=</span> <span class="n">stack_images</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">include_polygons</span> <span class="o">=</span> <span class="n">include_polygons</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ignore_index</span> <span class="o">=</span> <span class="n">ignore_index</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">unannotated_items_ratio</span> <span class="o">=</span> <span class="n">unannotated_items_ratio</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">auto_num_workers</span> <span class="o">=</span> <span class="n">auto_num_workers</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">device</span> <span class="o">=</span> <span class="n">device</span>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">subsets</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">OTXDataset</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">save_hyperparameters</span><span class="p">()</span>
 
@@ -318,53 +357,52 @@
         <span class="n">VIDEO_EXTENSIONS</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;.mp4&quot;</span><span class="p">)</span>
 
         <span class="c1"># Data Format Check</span>
-        <span class="n">available_data_formats</span> <span class="o">=</span> <span class="n">Environment</span><span class="p">()</span><span class="o">.</span><span class="n">detect_dataset</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">data_root</span><span class="p">))</span>
+        <span class="n">available_data_formats</span> <span class="o">=</span> <span class="n">Environment</span><span class="p">()</span><span class="o">.</span><span class="n">detect_dataset</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_root</span><span class="p">))</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">available_data_formats</span><span class="p">:</span>
-            <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Invalid data root: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">data_root</span><span class="si">}</span><span class="s2">. Please check if the data root is valid.&quot;</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Invalid data root: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">data_root</span><span class="si">}</span><span class="s2">. Please check if the data root is valid.&quot;</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">data_format</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">available_data_formats</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_format</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">available_data_formats</span><span class="p">:</span>
             <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;Invalid data format: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">data_format</span><span class="si">}</span><span class="s2">. Available formats: </span><span class="si">{</span><span class="n">available_data_formats</span><span class="si">}</span><span class="s2"> &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;Replace data_format: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">data_format</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="n">available_data_formats</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">,</span>
+                <span class="sa">f</span><span class="s2">&quot;Invalid data format: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">data_format</span><span class="si">}</span><span class="s2">. Available formats: </span><span class="si">{</span><span class="n">available_data_formats</span><span class="si">}</span><span class="s2"> &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;Replace data_format: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">data_format</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="n">available_data_formats</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">,</span>
             <span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">data_format</span> <span class="o">=</span> <span class="n">available_data_formats</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data_format</span> <span class="o">=</span> <span class="n">available_data_formats</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
-        <span class="n">dataset</span> <span class="o">=</span> <span class="n">DmDataset</span><span class="o">.</span><span class="n">import_from</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">data_root</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">data_format</span><span class="p">)</span>
+        <span class="n">dataset</span> <span class="o">=</span> <span class="n">DmDataset</span><span class="o">.</span><span class="n">import_from</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_root</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">data_format</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">task</span> <span class="o">!=</span> <span class="s2">&quot;H_LABEL_CLS&quot;</span><span class="p">:</span>
-            <span class="n">ignore_index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">ignore_index</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">task</span> <span class="o">==</span> <span class="s2">&quot;SEMANTIC_SEGMENTATION&quot;</span> <span class="k">else</span> <span class="kc">None</span>
             <span class="n">dataset</span> <span class="o">=</span> <span class="n">pre_filtering</span><span class="p">(</span>
                 <span class="n">dataset</span><span class="p">,</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">data_format</span><span class="p">,</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">unannotated_items_ratio</span><span class="p">,</span>
-                <span class="n">ignore_index</span><span class="o">=</span><span class="n">ignore_index</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">data_format</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">unannotated_items_ratio</span><span class="p">,</span>
+                <span class="n">ignore_index</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ignore_index</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">task</span> <span class="o">==</span> <span class="s2">&quot;SEMANTIC_SEGMENTATION&quot;</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
             <span class="p">)</span>
 
         <span class="n">unlabeled_dataset</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">unlabeled_subset</span><span class="o">.</span><span class="n">data_root</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">unlabeled_subset</span><span class="o">.</span><span class="n">data_root</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="c1"># If unlabeled_subset&#39;s data_root is not None, use that folder as the Unlabeled dataset root.</span>
             <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;Unlabeled dataset is loaded from </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">unlabeled_subset</span><span class="o">.</span><span class="n">data_root</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">,</span>
+                <span class="sa">f</span><span class="s2">&quot;Unlabeled dataset is loaded from </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">unlabeled_subset</span><span class="o">.</span><span class="n">data_root</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">,</span>
             <span class="p">)</span>
             <span class="n">unlabeled_dataset</span> <span class="o">=</span> <span class="n">DmDataset</span><span class="o">.</span><span class="n">import_from</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">unlabeled_subset</span><span class="o">.</span><span class="n">data_root</span><span class="p">,</span>
-                <span class="nb">format</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">unlabeled_subset</span><span class="o">.</span><span class="n">data_format</span><span class="p">,</span>
-                <span class="n">subset</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">unlabeled_subset</span><span class="o">.</span><span class="n">subset_name</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">unlabeled_subset</span><span class="o">.</span><span class="n">data_root</span><span class="p">,</span>
+                <span class="nb">format</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">unlabeled_subset</span><span class="o">.</span><span class="n">data_format</span><span class="p">,</span>
+                <span class="n">subset</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">unlabeled_subset</span><span class="o">.</span><span class="n">subset_name</span><span class="p">,</span>
             <span class="p">)</span>
 
-        <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">tile_config</span><span class="o">.</span><span class="n">enable_tiler</span> <span class="ow">and</span> <span class="n">config</span><span class="o">.</span><span class="n">tile_config</span><span class="o">.</span><span class="n">enable_adaptive_tiling</span><span class="p">:</span>
-            <span class="n">adapt_tile_config</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">tile_config</span><span class="p">,</span> <span class="n">dataset</span><span class="o">=</span><span class="n">dataset</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">tile_config</span><span class="o">.</span><span class="n">enable_tiler</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">tile_config</span><span class="o">.</span><span class="n">enable_adaptive_tiling</span><span class="p">:</span>
+            <span class="n">adapt_tile_config</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tile_config</span><span class="p">,</span> <span class="n">dataset</span><span class="o">=</span><span class="n">dataset</span><span class="p">)</span>
 
         <span class="n">config_mapping</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">train_subset</span><span class="o">.</span><span class="n">subset_name</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">train_subset</span><span class="p">,</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">val_subset</span><span class="o">.</span><span class="n">subset_name</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">val_subset</span><span class="p">,</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">test_subset</span><span class="o">.</span><span class="n">subset_name</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">test_subset</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">train_subset</span><span class="o">.</span><span class="n">subset_name</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">train_subset</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">val_subset</span><span class="o">.</span><span class="n">subset_name</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">val_subset</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">test_subset</span><span class="o">.</span><span class="n">subset_name</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">test_subset</span><span class="p">,</span>
         <span class="p">}</span>
 
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">auto_num_workers</span><span class="p">:</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">device</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="n">DeviceType</span><span class="o">.</span><span class="n">gpu</span><span class="p">,</span> <span class="n">DeviceType</span><span class="o">.</span><span class="n">auto</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">auto_num_workers</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">device</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="n">DeviceType</span><span class="o">.</span><span class="n">gpu</span><span class="p">,</span> <span class="n">DeviceType</span><span class="o">.</span><span class="n">auto</span><span class="p">]:</span>
                 <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
                     <span class="s2">&quot;Only GPU device type support auto_num_workers. &quot;</span>
-                    <span class="sa">f</span><span class="s2">&quot;Current deveice type is </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">device</span><span class="si">!s}</span><span class="s2">. auto_num_workers is skipped.&quot;</span><span class="p">,</span>
+                    <span class="sa">f</span><span class="s2">&quot;Current deveice type is </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="si">!s}</span><span class="s2">. auto_num_workers is skipped.&quot;</span><span class="p">,</span>
                 <span class="p">)</span>
             <span class="k">elif</span> <span class="p">(</span><span class="n">num_workers</span> <span class="o">:=</span> <span class="n">get_adaptive_num_workers</span><span class="p">())</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">for</span> <span class="n">subset_name</span><span class="p">,</span> <span class="n">subset_config</span> <span class="ow">in</span> <span class="n">config_mapping</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
@@ -374,7 +412,7 @@
                     <span class="p">)</span>
                     <span class="n">subset_config</span><span class="o">.</span><span class="n">num_workers</span> <span class="o">=</span> <span class="n">num_workers</span>
 
-        <span class="n">mem_size</span> <span class="o">=</span> <span class="n">parse_mem_cache_size_to_int</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">mem_cache_size</span><span class="p">)</span>
+        <span class="n">mem_size</span> <span class="o">=</span> <span class="n">parse_mem_cache_size_to_int</span><span class="p">(</span><span class="n">mem_cache_size</span><span class="p">)</span>
         <span class="n">mem_cache_mode</span> <span class="o">=</span> <span class="p">(</span>
             <span class="s2">&quot;singleprocessing&quot;</span>
             <span class="k">if</span> <span class="nb">all</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">num_workers</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">for</span> <span class="n">config</span> <span class="ow">in</span> <span class="n">config_mapping</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
@@ -394,16 +432,21 @@
             <span class="n">dataset</span> <span class="o">=</span> <span class="n">OTXDatasetFactory</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
                 <span class="n">task</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">task</span><span class="p">,</span>
                 <span class="n">dm_subset</span><span class="o">=</span><span class="n">dm_subset</span><span class="o">.</span><span class="n">as_dataset</span><span class="p">(),</span>
-                <span class="n">mem_cache_handler</span><span class="o">=</span><span class="n">mem_cache_handler</span><span class="p">,</span>
                 <span class="n">cfg_subset</span><span class="o">=</span><span class="n">config_mapping</span><span class="p">[</span><span class="n">name</span><span class="p">],</span>
-                <span class="n">cfg_data_module</span><span class="o">=</span><span class="n">config</span><span class="p">,</span>
+                <span class="n">mem_cache_handler</span><span class="o">=</span><span class="n">mem_cache_handler</span><span class="p">,</span>
+                <span class="n">mem_cache_img_max_size</span><span class="o">=</span><span class="n">mem_cache_img_max_size</span><span class="p">,</span>
+                <span class="n">image_color_channel</span><span class="o">=</span><span class="n">image_color_channel</span><span class="p">,</span>
+                <span class="n">stack_images</span><span class="o">=</span><span class="n">stack_images</span><span class="p">,</span>
+                <span class="n">include_polygons</span><span class="o">=</span><span class="n">include_polygons</span><span class="p">,</span>
+                <span class="n">ignore_index</span><span class="o">=</span><span class="n">ignore_index</span><span class="p">,</span>
+                <span class="n">vpm_config</span><span class="o">=</span><span class="n">vpm_config</span><span class="p">,</span>
             <span class="p">)</span>
 
-            <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">tile_config</span><span class="o">.</span><span class="n">enable_tiler</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">tile_config</span><span class="o">.</span><span class="n">enable_tiler</span><span class="p">:</span>
                 <span class="n">dataset</span> <span class="o">=</span> <span class="n">OTXTileDatasetFactory</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
                     <span class="n">task</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">task</span><span class="p">,</span>
                     <span class="n">dataset</span><span class="o">=</span><span class="n">dataset</span><span class="p">,</span>
-                    <span class="n">tile_config</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">tile_config</span><span class="p">,</span>
+                    <span class="n">tile_config</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tile_config</span><span class="p">,</span>
                 <span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">subsets</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">dataset</span>
 
@@ -411,34 +454,44 @@
             <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Add name: </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">, self.subsets: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">subsets</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">unlabeled_dataset</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">unlabeled_subset</span><span class="o">.</span><span class="n">subset_name</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">unlabeled_subset</span><span class="o">.</span><span class="n">subset_name</span>
             <span class="n">dm_subset</span> <span class="o">=</span> <span class="n">unlabeled_dataset</span><span class="o">.</span><span class="n">subsets</span><span class="p">()[</span><span class="n">name</span><span class="p">]</span>
 
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">unlabeled_subset</span><span class="o">.</span><span class="n">transforms</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">unlabeled_subset</span><span class="o">.</span><span class="n">transforms</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
                 <span class="c1"># When applying multi-transforms to a single unlabeled dataset</span>
                 <span class="c1"># This adds as many subsets as the number of keys in the transforms. The dataset is the same,</span>
                 <span class="c1"># only the transforms are different.</span>
                 <span class="n">dm_subset</span> <span class="o">=</span> <span class="n">dm_subset</span><span class="o">.</span><span class="n">as_dataset</span><span class="p">()</span>
-                <span class="k">for</span> <span class="n">transform_key</span><span class="p">,</span> <span class="n">transforms</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">unlabeled_subset</span><span class="o">.</span><span class="n">transforms</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                    <span class="n">unlabeled_config</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">unlabeled_subset</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">transform_key</span><span class="p">,</span> <span class="n">transforms</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">unlabeled_subset</span><span class="o">.</span><span class="n">transforms</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="n">unlabeled_config</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">unlabeled_subset</span><span class="p">)</span>
                     <span class="c1"># TODO (harimkang): Revisit this with core.config.data.UnlabeledDataConfig.transforms.</span>
                     <span class="n">unlabeled_config</span><span class="o">.</span><span class="n">transforms</span> <span class="o">=</span> <span class="n">transforms</span>  <span class="c1"># type: ignore[assignment]</span>
 
                     <span class="n">unlabeled_dataset</span> <span class="o">=</span> <span class="n">OTXDatasetFactory</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
                         <span class="n">task</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">task</span><span class="p">,</span>
                         <span class="n">dm_subset</span><span class="o">=</span><span class="n">dm_subset</span><span class="p">,</span>
-                        <span class="n">mem_cache_handler</span><span class="o">=</span><span class="n">mem_cache_handler</span><span class="p">,</span>
                         <span class="n">cfg_subset</span><span class="o">=</span><span class="n">unlabeled_config</span><span class="p">,</span>
-                        <span class="n">cfg_data_module</span><span class="o">=</span><span class="n">config</span><span class="p">,</span>
+                        <span class="n">mem_cache_handler</span><span class="o">=</span><span class="n">mem_cache_handler</span><span class="p">,</span>
+                        <span class="n">mem_cache_img_max_size</span><span class="o">=</span><span class="n">mem_cache_img_max_size</span><span class="p">,</span>
+                        <span class="n">image_color_channel</span><span class="o">=</span><span class="n">image_color_channel</span><span class="p">,</span>
+                        <span class="n">stack_images</span><span class="o">=</span><span class="n">stack_images</span><span class="p">,</span>
+                        <span class="n">include_polygons</span><span class="o">=</span><span class="n">include_polygons</span><span class="p">,</span>
+                        <span class="n">ignore_index</span><span class="o">=</span><span class="n">ignore_index</span><span class="p">,</span>
+                        <span class="n">vpm_config</span><span class="o">=</span><span class="n">vpm_config</span><span class="p">,</span>
                     <span class="p">)</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">subsets</span><span class="p">[</span><span class="n">transform_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">unlabeled_dataset</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">unlabeled_dataset</span> <span class="o">=</span> <span class="n">OTXDatasetFactory</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
                     <span class="n">task</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">task</span><span class="p">,</span>
                     <span class="n">dm_subset</span><span class="o">=</span><span class="n">dm_subset</span><span class="o">.</span><span class="n">as_dataset</span><span class="p">(),</span>
+                    <span class="n">cfg_subset</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">unlabeled_subset</span><span class="p">,</span>
                     <span class="n">mem_cache_handler</span><span class="o">=</span><span class="n">mem_cache_handler</span><span class="p">,</span>
-                    <span class="n">cfg_subset</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">unlabeled_subset</span><span class="p">,</span>
-                    <span class="n">cfg_data_module</span><span class="o">=</span><span class="n">config</span><span class="p">,</span>
+                    <span class="n">mem_cache_img_max_size</span><span class="o">=</span><span class="n">mem_cache_img_max_size</span><span class="p">,</span>
+                    <span class="n">image_color_channel</span><span class="o">=</span><span class="n">image_color_channel</span><span class="p">,</span>
+                    <span class="n">stack_images</span><span class="o">=</span><span class="n">stack_images</span><span class="p">,</span>
+                    <span class="n">include_polygons</span><span class="o">=</span><span class="n">include_polygons</span><span class="p">,</span>
+                    <span class="n">ignore_index</span><span class="o">=</span><span class="n">ignore_index</span><span class="p">,</span>
+                    <span class="n">vpm_config</span><span class="o">=</span><span class="n">vpm_config</span><span class="p">,</span>
                 <span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">subsets</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">unlabeled_dataset</span>
 
@@ -464,7 +517,7 @@
 <a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.data.html#otx.core.data.OTXDataModule.train_dataloader">[docs]</a>
     <span class="k">def</span> <span class="nf">train_dataloader</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get train dataloader.&quot;&quot;&quot;</span>
-        <span class="n">config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">train_subset</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">train_subset</span>
         <span class="n">dataset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_dataset</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">subset_name</span><span class="p">)</span>
         <span class="n">sampler</span> <span class="o">=</span> <span class="n">instantiate_sampler</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">sampler</span><span class="p">,</span> <span class="n">dataset</span><span class="o">=</span><span class="n">dataset</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">batch_size</span><span class="p">)</span>
 
@@ -479,7 +532,7 @@
             <span class="s2">&quot;shuffle&quot;</span><span class="p">:</span> <span class="n">sampler</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">,</span>
         <span class="p">}</span>
 
-        <span class="n">tile_config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">tile_config</span>
+        <span class="n">tile_config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tile_config</span>
         <span class="k">if</span> <span class="n">tile_config</span><span class="o">.</span><span class="n">enable_tiler</span> <span class="ow">and</span> <span class="n">tile_config</span><span class="o">.</span><span class="n">sampling_ratio</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
             <span class="n">num_samples</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span> <span class="o">*</span> <span class="n">tile_config</span><span class="o">.</span><span class="n">sampling_ratio</span><span class="p">))</span>
             <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Using tiled sampling with </span><span class="si">{</span><span class="n">num_samples</span><span class="si">}</span><span class="s2"> samples&quot;</span><span class="p">)</span>
@@ -507,7 +560,7 @@
 <a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.data.html#otx.core.data.OTXDataModule.val_dataloader">[docs]</a>
     <span class="k">def</span> <span class="nf">val_dataloader</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataLoader</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get val dataloader.&quot;&quot;&quot;</span>
-        <span class="n">config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">val_subset</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">val_subset</span>
         <span class="n">dataset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_dataset</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">subset_name</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">DataLoader</span><span class="p">(</span>
@@ -525,7 +578,7 @@
 <a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.data.html#otx.core.data.OTXDataModule.test_dataloader">[docs]</a>
     <span class="k">def</span> <span class="nf">test_dataloader</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataLoader</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get test dataloader.&quot;&quot;&quot;</span>
-        <span class="n">config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">test_subset</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">test_subset</span>
         <span class="n">dataset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_dataset</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">subset_name</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">DataLoader</span><span class="p">(</span>
@@ -543,7 +596,7 @@
 <a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.data.html#otx.core.data.OTXDataModule.predict_dataloader">[docs]</a>
     <span class="k">def</span> <span class="nf">predict_dataloader</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataLoader</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get test dataloader.&quot;&quot;&quot;</span>
-        <span class="n">config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">test_subset</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">test_subset</span>
         <span class="n">dataset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_dataset</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">subset_name</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">DataLoader</span><span class="p">(</span>
@@ -569,8 +622,8 @@
 <span class="sd">            dict[str, DataLoader] | None: A dictionary containing unlabeled dataloaders, where the keys are the names of</span>
 <span class="sd">            the datasets and the values are the corresponding DataLoader objects.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">unlabeled_subset</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">unlabeled_subset</span><span class="o">.</span><span class="n">data_root</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">unlabeled_subset</span>
+        <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">data_root</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">None</span>
 
         <span class="n">common_args</span> <span class="o">=</span> <span class="p">{</span>
@@ -647,14 +700,31 @@
 
         <span class="k">return</span> <span class="n">hp</span>
 
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">tile_config</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TileConfig</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Tiling configuration. It is a shortcut for `self.config.tile_config`.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">tile_config</span>
-
     <span class="k">def</span> <span class="nf">__reduce__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Re-initialize object when unpickled.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">,</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">task</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">))</span></div>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">,</span>
+            <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">task</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">data_format</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">data_root</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">train_subset</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">val_subset</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">test_subset</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">unlabeled_subset</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">tile_config</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">vpm_config</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">mem_cache_size</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">mem_cache_img_max_size</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">image_color_channel</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">stack_images</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">include_polygons</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">ignore_index</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">unannotated_items_ratio</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">auto_num_workers</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">,</span>
+            <span class="p">),</span>
+        <span class="p">)</span></div>
 
 </pre></div>
 

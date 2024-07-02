@@ -264,10 +264,8 @@
 
 <span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
 <span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">field</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Optional</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span>
 
-<span class="kn">from</span> <span class="nn">otx.core.types.device</span> <span class="kn">import</span> <span class="n">DeviceType</span>
-<span class="kn">from</span> <span class="nn">otx.core.types.image</span> <span class="kn">import</span> <span class="n">ImageColorChannel</span>
 <span class="kn">from</span> <span class="nn">otx.core.types.transformer_libs</span> <span class="kn">import</span> <span class="n">TransformLibType</span>
 
 
@@ -376,37 +374,6 @@
     <span class="n">transform_lib_type</span><span class="p">:</span> <span class="n">TransformLibType</span> <span class="o">=</span> <span class="n">TransformLibType</span><span class="o">.</span><span class="n">TORCHVISION</span>
     <span class="n">num_workers</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span>
     <span class="n">to_tv_image</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span></div>
-
-
-
-<div class="viewcode-block" id="DataModuleConfig">
-<a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.config.data.html#otx.core.config.data.DataModuleConfig">[docs]</a>
-<span class="nd">@dataclass</span>
-<span class="k">class</span> <span class="nc">DataModuleConfig</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;DTO for data module configuration.&quot;&quot;&quot;</span>
-
-    <span class="n">data_format</span><span class="p">:</span> <span class="nb">str</span>
-    <span class="n">data_root</span><span class="p">:</span> <span class="nb">str</span>
-
-    <span class="n">train_subset</span><span class="p">:</span> <span class="n">SubsetConfig</span>
-    <span class="n">val_subset</span><span class="p">:</span> <span class="n">SubsetConfig</span>
-    <span class="n">test_subset</span><span class="p">:</span> <span class="n">SubsetConfig</span>
-    <span class="n">unlabeled_subset</span><span class="p">:</span> <span class="n">UnlabeledDataConfig</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">UnlabeledDataConfig</span><span class="p">())</span>
-
-    <span class="n">tile_config</span><span class="p">:</span> <span class="n">TileConfig</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">TileConfig</span><span class="p">())</span>
-    <span class="n">vpm_config</span><span class="p">:</span> <span class="n">VisualPromptingConfig</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">VisualPromptingConfig</span><span class="p">())</span>
-
-    <span class="n">mem_cache_size</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;1GB&quot;</span>
-    <span class="n">mem_cache_img_max_size</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="n">image_color_channel</span><span class="p">:</span> <span class="n">ImageColorChannel</span> <span class="o">=</span> <span class="n">ImageColorChannel</span><span class="o">.</span><span class="n">RGB</span>
-    <span class="n">stack_images</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
-
-    <span class="n">include_polygons</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
-    <span class="n">ignore_index</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">255</span>
-    <span class="n">unannotated_items_ratio</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span>
-
-    <span class="n">auto_num_workers</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
-    <span class="n">device</span><span class="p">:</span> <span class="n">DeviceType</span> <span class="o">=</span> <span class="n">DeviceType</span><span class="o">.</span><span class="n">auto</span></div>
 
 
 

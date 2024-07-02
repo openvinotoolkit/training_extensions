@@ -262,6 +262,8 @@
 
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TYPE_CHECKING</span>
 
+<span class="kn">from</span> <span class="nn">otx.core.config.data</span> <span class="kn">import</span> <span class="n">VisualPromptingConfig</span>
+<span class="kn">from</span> <span class="nn">otx.core.types.image</span> <span class="kn">import</span> <span class="n">ImageColorChannel</span>
 <span class="kn">from</span> <span class="nn">otx.core.types.task</span> <span class="kn">import</span> <span class="n">OTXTaskType</span>
 <span class="kn">from</span> <span class="nn">otx.core.types.transformer_libs</span> <span class="kn">import</span> <span class="n">TransformLibType</span>
 
@@ -270,7 +272,7 @@
 <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
     <span class="kn">from</span> <span class="nn">datumaro</span> <span class="kn">import</span> <span class="n">Dataset</span> <span class="k">as</span> <span class="n">DmDataset</span>
 
-    <span class="kn">from</span> <span class="nn">otx.core.config.data</span> <span class="kn">import</span> <span class="n">DataModuleConfig</span><span class="p">,</span> <span class="n">SubsetConfig</span>
+    <span class="kn">from</span> <span class="nn">otx.core.config.data</span> <span class="kn">import</span> <span class="n">SubsetConfig</span>
     <span class="kn">from</span> <span class="nn">otx.core.data.mem_cache</span> <span class="kn">import</span> <span class="n">MemCacheHandlerBase</span>
 
 
@@ -334,9 +336,14 @@
         <span class="bp">cls</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">OTXDatasetFactory</span><span class="p">],</span>
         <span class="n">task</span><span class="p">:</span> <span class="n">OTXTaskType</span><span class="p">,</span>
         <span class="n">dm_subset</span><span class="p">:</span> <span class="n">DmDataset</span><span class="p">,</span>
-        <span class="n">mem_cache_handler</span><span class="p">:</span> <span class="n">MemCacheHandlerBase</span><span class="p">,</span>
         <span class="n">cfg_subset</span><span class="p">:</span> <span class="n">SubsetConfig</span><span class="p">,</span>
-        <span class="n">cfg_data_module</span><span class="p">:</span> <span class="n">DataModuleConfig</span><span class="p">,</span>
+        <span class="n">mem_cache_handler</span><span class="p">:</span> <span class="n">MemCacheHandlerBase</span><span class="p">,</span>
+        <span class="n">mem_cache_img_max_size</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">image_color_channel</span><span class="p">:</span> <span class="n">ImageColorChannel</span> <span class="o">=</span> <span class="n">ImageColorChannel</span><span class="o">.</span><span class="n">RGB</span><span class="p">,</span>
+        <span class="n">stack_images</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">include_polygons</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">ignore_index</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">255</span><span class="p">,</span>
+        <span class="n">vpm_config</span><span class="p">:</span> <span class="n">VisualPromptingConfig</span> <span class="o">=</span> <span class="n">VisualPromptingConfig</span><span class="p">(),</span>  <span class="c1"># noqa: B008</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OTXDataset</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Create OTXDataset.&quot;&quot;&quot;</span>
         <span class="n">transforms</span> <span class="o">=</span> <span class="n">TransformLibFactory</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="n">cfg_subset</span><span class="p">)</span>
@@ -344,9 +351,9 @@
             <span class="s2">&quot;dm_subset&quot;</span><span class="p">:</span> <span class="n">dm_subset</span><span class="p">,</span>
             <span class="s2">&quot;transforms&quot;</span><span class="p">:</span> <span class="n">transforms</span><span class="p">,</span>
             <span class="s2">&quot;mem_cache_handler&quot;</span><span class="p">:</span> <span class="n">mem_cache_handler</span><span class="p">,</span>
-            <span class="s2">&quot;mem_cache_img_max_size&quot;</span><span class="p">:</span> <span class="n">cfg_data_module</span><span class="o">.</span><span class="n">mem_cache_img_max_size</span><span class="p">,</span>
-            <span class="s2">&quot;image_color_channel&quot;</span><span class="p">:</span> <span class="n">cfg_data_module</span><span class="o">.</span><span class="n">image_color_channel</span><span class="p">,</span>
-            <span class="s2">&quot;stack_images&quot;</span><span class="p">:</span> <span class="n">cfg_data_module</span><span class="o">.</span><span class="n">stack_images</span><span class="p">,</span>
+            <span class="s2">&quot;mem_cache_img_max_size&quot;</span><span class="p">:</span> <span class="n">mem_cache_img_max_size</span><span class="p">,</span>
+            <span class="s2">&quot;image_color_channel&quot;</span><span class="p">:</span> <span class="n">image_color_channel</span><span class="p">,</span>
+            <span class="s2">&quot;stack_images&quot;</span><span class="p">:</span> <span class="n">stack_images</span><span class="p">,</span>
             <span class="s2">&quot;to_tv_image&quot;</span><span class="p">:</span> <span class="n">cfg_subset</span><span class="o">.</span><span class="n">to_tv_image</span><span class="p">,</span>
         <span class="p">}</span>
 
@@ -382,14 +389,12 @@
         <span class="k">if</span> <span class="n">task</span> <span class="ow">in</span> <span class="p">[</span><span class="n">OTXTaskType</span><span class="o">.</span><span class="n">ROTATED_DETECTION</span><span class="p">,</span> <span class="n">OTXTaskType</span><span class="o">.</span><span class="n">INSTANCE_SEGMENTATION</span><span class="p">]:</span>
             <span class="kn">from</span> <span class="nn">.dataset.instance_segmentation</span> <span class="kn">import</span> <span class="n">OTXInstanceSegDataset</span>
 
-            <span class="c1"># NOTE: DataModuleConfig does not have include_polygons attribute</span>
-            <span class="n">include_polygons</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">cfg_data_module</span><span class="p">,</span> <span class="s2">&quot;include_polygons&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">OTXInstanceSegDataset</span><span class="p">(</span><span class="n">include_polygons</span><span class="o">=</span><span class="n">include_polygons</span><span class="p">,</span> <span class="o">**</span><span class="n">common_kwargs</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">task</span> <span class="o">==</span> <span class="n">OTXTaskType</span><span class="o">.</span><span class="n">SEMANTIC_SEGMENTATION</span><span class="p">:</span>
             <span class="kn">from</span> <span class="nn">.dataset.segmentation</span> <span class="kn">import</span> <span class="n">OTXSegmentationDataset</span>
 
-            <span class="k">return</span> <span class="n">OTXSegmentationDataset</span><span class="p">(</span><span class="o">**</span><span class="n">common_kwargs</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=</span><span class="n">cfg_data_module</span><span class="o">.</span><span class="n">ignore_index</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">OTXSegmentationDataset</span><span class="p">(</span><span class="n">ignore_index</span><span class="o">=</span><span class="n">ignore_index</span><span class="p">,</span> <span class="o">**</span><span class="n">common_kwargs</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">task</span> <span class="o">==</span> <span class="n">OTXTaskType</span><span class="o">.</span><span class="n">ACTION_CLASSIFICATION</span><span class="p">:</span>
             <span class="kn">from</span> <span class="nn">.dataset.action_classification</span> <span class="kn">import</span> <span class="n">OTXActionClsDataset</span>
@@ -399,15 +404,15 @@
         <span class="k">if</span> <span class="n">task</span> <span class="o">==</span> <span class="n">OTXTaskType</span><span class="o">.</span><span class="n">VISUAL_PROMPTING</span><span class="p">:</span>
             <span class="kn">from</span> <span class="nn">.dataset.visual_prompting</span> <span class="kn">import</span> <span class="n">OTXVisualPromptingDataset</span>
 
-            <span class="n">use_bbox</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">cfg_data_module</span><span class="o">.</span><span class="n">vpm_config</span><span class="p">,</span> <span class="s2">&quot;use_bbox&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
-            <span class="n">use_point</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">cfg_data_module</span><span class="o">.</span><span class="n">vpm_config</span><span class="p">,</span> <span class="s2">&quot;use_point&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+            <span class="n">use_bbox</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">vpm_config</span><span class="p">,</span> <span class="s2">&quot;use_bbox&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+            <span class="n">use_point</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">vpm_config</span><span class="p">,</span> <span class="s2">&quot;use_point&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">OTXVisualPromptingDataset</span><span class="p">(</span><span class="n">use_bbox</span><span class="o">=</span><span class="n">use_bbox</span><span class="p">,</span> <span class="n">use_point</span><span class="o">=</span><span class="n">use_point</span><span class="p">,</span> <span class="o">**</span><span class="n">common_kwargs</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">task</span> <span class="o">==</span> <span class="n">OTXTaskType</span><span class="o">.</span><span class="n">ZERO_SHOT_VISUAL_PROMPTING</span><span class="p">:</span>
             <span class="kn">from</span> <span class="nn">.dataset.visual_prompting</span> <span class="kn">import</span> <span class="n">OTXZeroShotVisualPromptingDataset</span>
 
-            <span class="n">use_bbox</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">cfg_data_module</span><span class="o">.</span><span class="n">vpm_config</span><span class="p">,</span> <span class="s2">&quot;use_bbox&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
-            <span class="n">use_point</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">cfg_data_module</span><span class="o">.</span><span class="n">vpm_config</span><span class="p">,</span> <span class="s2">&quot;use_point&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+            <span class="n">use_bbox</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">vpm_config</span><span class="p">,</span> <span class="s2">&quot;use_bbox&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+            <span class="n">use_point</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">vpm_config</span><span class="p">,</span> <span class="s2">&quot;use_point&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">OTXZeroShotVisualPromptingDataset</span><span class="p">(</span><span class="n">use_bbox</span><span class="o">=</span><span class="n">use_bbox</span><span class="p">,</span> <span class="n">use_point</span><span class="o">=</span><span class="n">use_point</span><span class="p">,</span> <span class="o">**</span><span class="n">common_kwargs</span><span class="p">)</span>
 
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="n">task</span><span class="p">)</span></div>

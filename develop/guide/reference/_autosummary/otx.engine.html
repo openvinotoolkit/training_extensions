@@ -639,8 +639,8 @@ Defaults to None. If work_dir is None, use the work_dir from the configuration f
 </div>
 <dl>
 <dt>If you want to override configuration from default config:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">overriding</span> <span class="o">=</span> <span class="p">{</span>
-<span class="gp">... </span>    <span class="s2">&quot;data.config.train_subset.batch_size&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
-<span class="gp">... </span>    <span class="s2">&quot;data.config.test_subset.subset_name&quot;</span><span class="p">:</span> <span class="s2">&quot;TESTING&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="s2">&quot;data.train_subset.batch_size&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="s2">&quot;data.test_subset.subset_name&quot;</span><span class="p">:</span> <span class="s2">&quot;TESTING&quot;</span><span class="p">,</span>
 <span class="gp">... </span><span class="p">}</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">engine</span> <span class="o">=</span> <span class="n">Engine</span><span class="p">(</span>
 <span class="gp">... </span>    <span class="n">model_name</span><span class="o">=</span><span class="s2">&quot;atss_mobilenetv2&quot;</span><span class="p">,</span>

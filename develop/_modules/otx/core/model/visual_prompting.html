@@ -956,7 +956,7 @@
         <span class="c1"># ticket no. : CVS-135462</span>
         <span class="c1"># There is segmentation fault issue when using num_workers &gt; 0 during releasing memory.</span>
         <span class="c1"># To avoid this issue, force num_workers to 0.</span>
-        <span class="n">data_module</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">train_subset</span><span class="o">.</span><span class="n">num_workers</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">data_module</span><span class="o">.</span><span class="n">train_subset</span><span class="o">.</span><span class="n">num_workers</span> <span class="o">=</span> <span class="mi">0</span>
 
         <span class="n">output_model_paths</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">for</span> <span class="n">module</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;image_encoder&quot;</span><span class="p">,</span> <span class="s2">&quot;decoder&quot;</span><span class="p">]:</span>
@@ -1446,7 +1446,7 @@
         <span class="c1"># ticket no. : CVS-135462</span>
         <span class="c1"># There is segmentation fault issue when using num_workers &gt; 0 during releasing memory.</span>
         <span class="c1"># To avoid this issue, force num_workers to 0.</span>
-        <span class="n">data_module</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">train_subset</span><span class="o">.</span><span class="n">num_workers</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">data_module</span><span class="o">.</span><span class="n">train_subset</span><span class="o">.</span><span class="n">num_workers</span> <span class="o">=</span> <span class="mi">0</span>
 
         <span class="n">output_model_paths</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">for</span> <span class="n">module</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;image_encoder&quot;</span><span class="p">,</span> <span class="s2">&quot;decoder&quot;</span><span class="p">]:</span>
