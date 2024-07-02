@@ -29,17 +29,16 @@ overrides:
   limit_val_batches: 0
   data:
     task: ZERO_SHOT_VISUAL_PROMPTING
-    config:
-      data_format: coco_instances
-      vpm_config:
-        use_bbox: True
-        use_point: False
-      train_subset:
-        batch_size: 1
-        num_workers: 4
-      val_subset:
-        batch_size: 1
-        num_workers: 4
-      test_subset:
-        batch_size: 1
-        num_workers: 4
+    data_format: coco_instances
+    vpm_config:
+      use_bbox: True
+      use_point: False
+    train_subset:
+      batch_size: 1
+      num_workers: 4
+    val_subset:
+      batch_size: 1
+      num_workers: 4
+    test_subset:
+      batch_size: 1
+      num_workers: 4

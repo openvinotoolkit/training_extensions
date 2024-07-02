@@ -167,7 +167,7 @@ class TestAutoConfigurator:
         auto_configurator = AutoConfigurator(data_root=data_root, task="DETECTION")
 
         datamodule = auto_configurator.get_datamodule()
-        assert datamodule.config.test_subset.transforms == [
+        assert datamodule.test_subset.transforms == [
             {
                 "class_path": "otx.core.data.transform_libs.torchvision.Resize",
                 "init_args": {
@@ -184,9 +184,9 @@ class TestAutoConfigurator:
             },
         ]
 
-        assert datamodule.config.test_subset.transform_lib_type == TransformLibType.TORCHVISION
+        assert datamodule.test_subset.transform_lib_type == TransformLibType.TORCHVISION
 
         updated_datamodule = auto_configurator.update_ov_subset_pipeline(datamodule, subset="test")
-        assert updated_datamodule.config.test_subset.transforms == [{"class_path": "torchvision.transforms.v2.ToImage"}]
+        assert updated_datamodule.test_subset.transforms == [{"class_path": "torchvision.transforms.v2.ToImage"}]
 
-        assert updated_datamodule.config.test_subset.transform_lib_type == TransformLibType.TORCHVISION
+        assert updated_datamodule.test_subset.transform_lib_type == TransformLibType.TORCHVISION

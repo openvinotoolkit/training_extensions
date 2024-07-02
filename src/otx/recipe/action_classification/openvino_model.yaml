@@ -17,30 +17,29 @@ data: ../_base_/data/torchvision_base.yaml
 overrides:
   data:
     task: ACTION_CLASSIFICATION
-    config:
-      image_color_channel: BGR
-      data_format: kinetics
-      train_subset:
-        batch_size: 8
-        num_workers: 2
-        transforms:
-          - class_path: otx.core.data.transform_libs.torchvision.DecodeVideo
-            init_args:
-              test_mode: False
-          - class_path: otx.core.data.transform_libs.torchvision.PackVideo
-      val_subset:
-        batch_size: 8
-        num_workers: 2
-        transforms:
-          - class_path: otx.core.data.transform_libs.torchvision.DecodeVideo
-            init_args:
-              test_mode: true
-          - class_path: otx.core.data.transform_libs.torchvision.PackVideo
-      test_subset:
-        batch_size: 8
-        num_workers: 2
-        transforms:
-          - class_path: otx.core.data.transform_libs.torchvision.DecodeVideo
-            init_args:
-              test_mode: true
-          - class_path: otx.core.data.transform_libs.torchvision.PackVideo
+    image_color_channel: BGR
+    data_format: kinetics
+    train_subset:
+      batch_size: 8
+      num_workers: 2
+      transforms:
+        - class_path: otx.core.data.transform_libs.torchvision.DecodeVideo
+          init_args:
+            test_mode: False
+        - class_path: otx.core.data.transform_libs.torchvision.PackVideo
+    val_subset:
+      batch_size: 8
+      num_workers: 2
+      transforms:
+        - class_path: otx.core.data.transform_libs.torchvision.DecodeVideo
+          init_args:
+            test_mode: true
+        - class_path: otx.core.data.transform_libs.torchvision.PackVideo
+    test_subset:
+      batch_size: 8
+      num_workers: 2
+      transforms:
+        - class_path: otx.core.data.transform_libs.torchvision.DecodeVideo
+          init_args:
+            test_mode: true
+        - class_path: otx.core.data.transform_libs.torchvision.PackVideo

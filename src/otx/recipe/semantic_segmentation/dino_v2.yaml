@@ -72,67 +72,66 @@ callback_monitor: val/Dice
 data: ../_base_/data/mmseg_base.yaml
 overrides:
   data:
-    config:
-      train_subset:
-        transforms:
-          - class_path: torchvision.transforms.v2.RandomResizedCrop
-            init_args:
-              size:
-                - 560
-                - 560
-              scale:
-                - 0.2
-                - 1.0
-              ratio:
-                - 0.5
-                - 2.0
-              antialias: True
-          - class_path: otx.core.data.transform_libs.torchvision.PhotoMetricDistortion
-            init_args:
-              is_numpy_to_tvtensor: true
-          - class_path: torchvision.transforms.v2.RandomHorizontalFlip
-            init_args:
-              p: 0.5
-          - class_path: torchvision.transforms.v2.ToDtype
-            init_args:
-              dtype: ${as_torch_dtype:torch.float32}
-              scale: False
-          - class_path: torchvision.transforms.v2.Normalize
-            init_args:
-              mean: [123.675, 116.28, 103.53]
-              std: [58.395, 57.12, 57.375]
+    train_subset:
+      transforms:
+        - class_path: torchvision.transforms.v2.RandomResizedCrop
+          init_args:
+            size:
+              - 560
+              - 560
+            scale:
+              - 0.2
+              - 1.0
+            ratio:
+              - 0.5
+              - 2.0
+            antialias: True
+        - class_path: otx.core.data.transform_libs.torchvision.PhotoMetricDistortion
+          init_args:
+            is_numpy_to_tvtensor: true
+        - class_path: torchvision.transforms.v2.RandomHorizontalFlip
+          init_args:
+            p: 0.5
+        - class_path: torchvision.transforms.v2.ToDtype
+          init_args:
+            dtype: ${as_torch_dtype:torch.float32}
+            scale: False
+        - class_path: torchvision.transforms.v2.Normalize
+          init_args:
+            mean: [123.675, 116.28, 103.53]
+            std: [58.395, 57.12, 57.375]
 
-      val_subset:
-        transforms:
-          - class_path: torchvision.transforms.v2.Resize
-            init_args:
-              size:
-                - 560
-                - 560
-          - class_path: torchvision.transforms.v2.ToDtype
-            init_args:
-              dtype: ${as_torch_dtype:torch.float32}
-              scale: False
-          - class_path: torchvision.transforms.v2.Normalize
-            init_args:
-              mean: [123.675, 116.28, 103.53]
-              std: [58.395, 57.12, 57.375]
+    val_subset:
+      transforms:
+        - class_path: torchvision.transforms.v2.Resize
+          init_args:
+            size:
+              - 560
+              - 560
+        - class_path: torchvision.transforms.v2.ToDtype
+          init_args:
+            dtype: ${as_torch_dtype:torch.float32}
+            scale: False
+        - class_path: torchvision.transforms.v2.Normalize
+          init_args:
+            mean: [123.675, 116.28, 103.53]
+            std: [58.395, 57.12, 57.375]
 
-      test_subset:
-        transforms:
-          - class_path: torchvision.transforms.v2.Resize
-            init_args:
-              size:
-                - 560
-                - 560
-          - class_path: torchvision.transforms.v2.ToDtype
-            init_args:
-              dtype: ${as_torch_dtype:torch.float32}
-              scale: False
-          - class_path: torchvision.transforms.v2.Normalize
-            init_args:
-              mean: [123.675, 116.28, 103.53]
-              std: [58.395, 57.12, 57.375]
+    test_subset:
+      transforms:
+        - class_path: torchvision.transforms.v2.Resize
+          init_args:
+            size:
+              - 560
+              - 560
+        - class_path: torchvision.transforms.v2.ToDtype
+          init_args:
+            dtype: ${as_torch_dtype:torch.float32}
+            scale: False
+        - class_path: torchvision.transforms.v2.Normalize
+          init_args:
+            mean: [123.675, 116.28, 103.53]
+            std: [58.395, 57.12, 57.375]
 
   callbacks:
     - class_path: otx.algo.callbacks.adaptive_early_stopping.EarlyStoppingWithWarmup
