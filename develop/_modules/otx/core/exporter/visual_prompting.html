@@ -262,6 +262,7 @@
 
 <span class="kn">import</span> <span class="nn">logging</span> <span class="k">as</span> <span class="nn">log</span>
 <span class="kn">import</span> <span class="nn">tempfile</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
 <span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Literal</span>
 
@@ -320,13 +321,13 @@
                 <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
             <span class="n">fn</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_openvino</span>
         <span class="k">elif</span> <span class="n">export_format</span> <span class="o">==</span> <span class="n">OTXExportFormatType</span><span class="o">.</span><span class="n">ONNX</span><span class="p">:</span>
-            <span class="n">fn</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_onnx</span>
+            <span class="n">fn</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">to_onnx</span><span class="p">,</span> <span class="n">embed_metadata</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Unsupported export format: </span><span class="si">{</span><span class="n">export_format</span><span class="si">}</span><span class="s2">&quot;</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="p">{</span>  <span class="c1"># type: ignore[return-value]</span>
-            <span class="n">module</span><span class="p">:</span> <span class="n">fn</span><span class="p">(</span><span class="n">models</span><span class="p">[</span><span class="n">module</span><span class="p">],</span> <span class="n">output_dir</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">base_model_name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">module</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">precision</span><span class="p">)</span>
+            <span class="n">module</span><span class="p">:</span> <span class="n">fn</span><span class="p">(</span><span class="n">models</span><span class="p">[</span><span class="n">module</span><span class="p">],</span> <span class="n">output_dir</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">base_model_name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">module</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">precision</span><span class="p">,</span> <span class="n">model_type</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;sam_</span><span class="si">{</span><span class="n">module</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">module</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;image_encoder&quot;</span><span class="p">,</span> <span class="s2">&quot;decoder&quot;</span><span class="p">]</span>
         <span class="p">}</span></div>
 
@@ -335,10 +336,11 @@
 <a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.exporter.visual_prompting.html#otx.core.exporter.visual_prompting.OTXVisualPromptingModelExporter.to_openvino">[docs]</a>
     <span class="k">def</span> <span class="nf">to_openvino</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">model</span><span class="p">:</span> <span class="n">OTXModel</span><span class="p">,</span>
+        <span class="n">model</span><span class="p">:</span> <span class="n">OTXModel</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span>
         <span class="n">output_dir</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span>
         <span class="n">base_model_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;exported_model&quot;</span><span class="p">,</span>
         <span class="n">precision</span><span class="p">:</span> <span class="n">OTXPrecisionType</span> <span class="o">=</span> <span class="n">OTXPrecisionType</span><span class="o">.</span><span class="n">FP32</span><span class="p">,</span>
+        <span class="n">model_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;sam&quot;</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Export to OpenVINO Intermediate Representation format.</span>
 
@@ -355,11 +357,16 @@
                 <span class="n">tmp_dir</span><span class="p">,</span>
                 <span class="n">base_model_name</span><span class="p">,</span>
                 <span class="n">OTXPrecisionType</span><span class="o">.</span><span class="n">FP32</span><span class="p">,</span>
-                <span class="kc">False</span><span class="p">,</span>
+                <span class="n">embed_metadata</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
             <span class="p">)</span>
             <span class="n">exported_model</span> <span class="o">=</span> <span class="n">openvino</span><span class="o">.</span><span class="n">convert_model</span><span class="p">(</span><span class="n">tmp_dir</span> <span class="o">/</span> <span class="p">(</span><span class="n">base_model_name</span> <span class="o">+</span> <span class="s2">&quot;.onnx&quot;</span><span class="p">))</span>
 
         <span class="n">exported_model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_postprocess_openvino_model</span><span class="p">(</span><span class="n">exported_model</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">export_metadata</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_extend_model_metadata</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">)</span>
+            <span class="n">export_metadata</span><span class="p">[(</span><span class="s2">&quot;model_info&quot;</span><span class="p">,</span> <span class="s2">&quot;model_type&quot;</span><span class="p">)]</span> <span class="o">=</span> <span class="n">model_type</span>
+            <span class="n">exported_model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_embed_openvino_ir_metadata</span><span class="p">(</span><span class="n">exported_model</span><span class="p">,</span> <span class="n">export_metadata</span><span class="p">)</span>
 
         <span class="n">save_path</span> <span class="o">=</span> <span class="n">output_dir</span> <span class="o">/</span> <span class="p">(</span><span class="n">base_model_name</span> <span class="o">+</span> <span class="s2">&quot;.xml&quot;</span><span class="p">)</span>
         <span class="n">openvino</span><span class="o">.</span><span class="n">save_model</span><span class="p">(</span><span class="n">exported_model</span><span class="p">,</span> <span class="n">save_path</span><span class="p">,</span> <span class="n">compress_to_fp16</span><span class="o">=</span><span class="p">(</span><span class="n">precision</span> <span class="o">==</span> <span class="n">OTXPrecisionType</span><span class="o">.</span><span class="n">FP16</span><span class="p">))</span>
@@ -372,11 +379,12 @@
 <a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.exporter.visual_prompting.html#otx.core.exporter.visual_prompting.OTXVisualPromptingModelExporter.to_onnx">[docs]</a>
     <span class="k">def</span> <span class="nf">to_onnx</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">model</span><span class="p">:</span> <span class="n">OTXModel</span><span class="p">,</span>
+        <span class="n">model</span><span class="p">:</span> <span class="n">OTXModel</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span>
         <span class="n">output_dir</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span>
         <span class="n">base_model_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;exported_model&quot;</span><span class="p">,</span>
         <span class="n">precision</span><span class="p">:</span> <span class="n">OTXPrecisionType</span> <span class="o">=</span> <span class="n">OTXPrecisionType</span><span class="o">.</span><span class="n">FP32</span><span class="p">,</span>
         <span class="n">embed_metadata</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">model_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;sam&quot;</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Export the given PyTorch model to ONNX format and save it to the specified output directory.</span>
 
@@ -401,7 +409,12 @@
         <span class="p">)</span>
 
         <span class="n">onnx_model</span> <span class="o">=</span> <span class="n">onnx</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">save_path</span><span class="p">)</span>
-        <span class="n">onnx_model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_postprocess_onnx_model</span><span class="p">(</span><span class="n">onnx_model</span><span class="p">,</span> <span class="n">embed_metadata</span><span class="p">,</span> <span class="n">precision</span><span class="p">)</span>
+        <span class="n">onnx_model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_postprocess_onnx_model</span><span class="p">(</span><span class="n">onnx_model</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="n">precision</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">embed_metadata</span><span class="p">:</span>
+            <span class="n">export_metadata</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_extend_model_metadata</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">)</span>
+            <span class="n">export_metadata</span><span class="p">[(</span><span class="s2">&quot;model_info&quot;</span><span class="p">,</span> <span class="s2">&quot;model_type&quot;</span><span class="p">)]</span> <span class="o">=</span> <span class="n">model_type</span>
+            <span class="n">onnx_model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_embed_onnx_metadata</span><span class="p">(</span><span class="n">onnx_model</span><span class="p">,</span> <span class="n">export_metadata</span><span class="p">)</span>
 
         <span class="n">onnx</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">onnx_model</span><span class="p">,</span> <span class="n">save_path</span><span class="p">)</span>
         <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Converting to ONNX is done.&quot;</span><span class="p">)</span>
