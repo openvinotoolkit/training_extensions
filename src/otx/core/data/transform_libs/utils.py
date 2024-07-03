@@ -294,12 +294,12 @@ def translate_polygons(
         border_value is None or border_value == 0
     ), f"Here border_value is not used, and defaultly should be None or 0. got {border_value}."
 
+    axis = 0 if direction == "horizontal" else 1
+    out = out_shape[1] if direction == "horizontal" else out_shape[0]
+
     for polygon in polygons:
         p = np.asarray(polygon.points)
-        if direction == "horizontal":
-            p[0::2] = np.clip(p[0::2] + offset, 0, out_shape[1])
-        elif direction == "vertical":
-            p[1::2] = np.clip(p[1::2] + offset, 0, out_shape[0])
+        p[axis::2] = np.clip(p[axis::2] + offset, 0, out)
         polygon.points = p.tolist()
     return polygons
 
@@ -801,7 +801,7 @@ def crop_polygons(polygons: list[Polygon], bbox: np.ndarray, height: int, width:
 
     # reference: https://github.com/facebookresearch/fvcore/blob/main/fvcore/transforms/transform.py
     crop_box = geometry.box(x1, y1, x2, y2).buffer(0.0)
-    cropped_polygons: list[Polygon] = []
+    # cropped_polygons: list[Polygon] = []
     # suppress shapely warnings util it incorporates GEOS>=3.11.2
     # reference: https://github.com/shapely/shapely/issues/1345
     initial_settings = np.seterr()
@@ -814,13 +814,15 @@ def crop_polygons(polygons: list[Polygon], bbox: np.ndarray, height: int, width:
         # polygon must be valid to perform intersection.
         if not p.is_valid:
             # a dummy polygon to avoid misalignment between masks and boxes
-            cropped_polygons.append(Polygon(points=[0, 0, 0, 0, 0, 0], label=polygon.label, z_order=polygon.z_order))
+            # cropped_polygons.append(Polygon(points=[0, 0, 0, 0, 0, 0], label=polygon.label, z_order=polygon.z_order))
+            polygon.points = [0, 0, 0, 0, 0, 0]
             continue
 
         cropped = p.intersection(crop_box)
         if cropped.is_empty:
             # a dummy polygon to avoid misalignment between masks and boxes
-            cropped_polygons.append(Polygon(points=[0, 0, 0, 0, 0, 0], label=polygon.label, z_order=polygon.z_order))
+            # cropped_polygons.append(Polygon(points=[0, 0, 0, 0, 0, 0], label=polygon.label, z_order=polygon.z_order))
+            polygon.points = [0, 0, 0, 0, 0, 0]
             continue
 
         cropped = cropped.geoms if isinstance(cropped, geometry.collection.BaseMultipartGeometry) else [cropped]
@@ -843,12 +845,12 @@ def crop_polygons(polygons: list[Polygon], bbox: np.ndarray, height: int, width:
         if len(cropped_poly_per_obj) == 0:
             cropped_poly_per_obj.append([0, 0, 0, 0, 0, 0])
 
-        cropped_polygons.append(
-            Polygon(points=list(itertools.chain(*cropped_poly_per_obj)), label=polygon.label, z_order=polygon.z_order),
-        )
-
+        polygon.points = list(itertools.chain(*cropped_poly_per_obj))
+        # cropped_polygons.append(
+        #     Polygon(points=list(itertools.chain(*cropped_poly_per_obj)), label=polygon.label, z_order=polygon.z_order),
+        # )
     np.seterr(**initial_settings)
-    return cropped_polygons
+    return polygons
 
 
 def get_bboxes_from_masks(masks: Tensor) -> np.ndarray:
