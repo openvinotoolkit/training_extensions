@@ -804,7 +804,6 @@ def crop_polygons(polygons: list[Polygon], bbox: np.ndarray, height: int, width:
 
     # reference: https://github.com/facebookresearch/fvcore/blob/main/fvcore/transforms/transform.py
     crop_box = geometry.box(x1, y1, x2, y2).buffer(0.0)
-    # cropped_polygons: list[Polygon] = []
     # suppress shapely warnings util it incorporates GEOS>=3.11.2
     # reference: https://github.com/shapely/shapely/issues/1345
     initial_settings = np.seterr()
