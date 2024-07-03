@@ -192,13 +192,12 @@ def rescale_polygons(polygons: list[Polygon], scale_factor: float | tuple[float,
     else:
         h_scale, w_scale = scale_factor
 
-    resized_polygons = []
     for polygon in polygons:
-        p = np.asarray(polygon.points).copy()
+        p = np.asarray(polygon.points)
         p[0::2] *= w_scale
         p[1::2] *= h_scale
-        resized_polygons.append(Polygon(points=p.tolist(), label=polygon.label, z_order=polygon.z_order))
-    return resized_polygons
+        polygon.points = p.tolist()
+    return polygons
 
 
 def translate_bboxes(boxes: Tensor, distances: Sequence[float]) -> Tensor:
@@ -295,15 +294,14 @@ def translate_polygons(
         border_value is None or border_value == 0
     ), f"Here border_value is not used, and defaultly should be None or 0. got {border_value}."
 
-    translated_polygons = []
     for polygon in polygons:
-        p = np.asarray(polygon.points).copy()
+        p = np.asarray(polygon.points)
         if direction == "horizontal":
             p[0::2] = np.clip(p[0::2] + offset, 0, out_shape[1])
         elif direction == "vertical":
             p[1::2] = np.clip(p[1::2] + offset, 0, out_shape[0])
-        translated_polygons.append(Polygon(points=p.tolist(), label=polygon.label, z_order=polygon.z_order))
-    return translated_polygons
+        polygon.points = p.tolist()
+    return polygons
 
 
 def _get_translate_matrix(offset: int | float, direction: str = "horizontal") -> np.ndarray:
@@ -701,9 +699,8 @@ def flip_masks(masks: np.ndarray, direction: str = "horizontal") -> np.ndarray:
 
 def flip_polygons(polygons: list[Polygon], height: int, width: int, direction: str = "horizontal") -> list[Polygon]:
     """Flip polygons alone the given direction."""
-    flipped_masks = []
     for polygon in polygons:
-        p = np.asarray(polygon.points).copy()
+        p = np.asarray(polygon.points)
         if direction == "horizontal":
             p[0::2] = width - p[0::2]
         elif direction == "vertical":
@@ -711,8 +708,8 @@ def flip_polygons(polygons: list[Polygon], height: int, width: int, direction: s
         else:
             p[0::2] = width - p[0::2]
             p[1::2] = height - p[1::2]
-        flipped_masks.append(Polygon(points=p.tolist(), label=polygon.label, z_order=polygon.z_order))
-    return flipped_masks
+        polygon.points = p.tolist()
+    return polygons
 
 
 def project_bboxes(boxes: Tensor, homography_matrix: Tensor | np.ndarray) -> Tensor:
