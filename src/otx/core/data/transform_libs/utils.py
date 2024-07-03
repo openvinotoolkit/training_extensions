@@ -10,14 +10,17 @@ import functools
 import inspect
 import itertools
 import weakref
-from typing import Sequence
+from typing import TYPE_CHECKING, Sequence
 
 import cv2
 import numpy as np
 import torch
-from datumaro import Polygon
 from shapely import geometry
 from torch import BoolTensor, Tensor
+
+if TYPE_CHECKING:
+    from datumaro import Polygon
+
 
 CV2_INTERP_CODES = {
     "nearest": cv2.INTER_NEAREST,
@@ -193,7 +196,7 @@ def rescale_polygons(polygons: list[Polygon], scale_factor: float | tuple[float,
         h_scale, w_scale = scale_factor
 
     for polygon in polygons:
-        p = np.asarray(polygon.points)
+        p = np.asarray(polygon.points, dtype=np.float32)
         p[0::2] *= w_scale
         p[1::2] *= h_scale
         polygon.points = p.tolist()
@@ -814,14 +817,12 @@ def crop_polygons(polygons: list[Polygon], bbox: np.ndarray, height: int, width:
         # polygon must be valid to perform intersection.
         if not p.is_valid:
             # a dummy polygon to avoid misalignment between masks and boxes
-            # cropped_polygons.append(Polygon(points=[0, 0, 0, 0, 0, 0], label=polygon.label, z_order=polygon.z_order))
             polygon.points = [0, 0, 0, 0, 0, 0]
             continue
 
         cropped = p.intersection(crop_box)
         if cropped.is_empty:
             # a dummy polygon to avoid misalignment between masks and boxes
-            # cropped_polygons.append(Polygon(points=[0, 0, 0, 0, 0, 0], label=polygon.label, z_order=polygon.z_order))
             polygon.points = [0, 0, 0, 0, 0, 0]
             continue
 
@@ -846,9 +847,6 @@ def crop_polygons(polygons: list[Polygon], bbox: np.ndarray, height: int, width:
             cropped_poly_per_obj.append([0, 0, 0, 0, 0, 0])
 
         polygon.points = list(itertools.chain(*cropped_poly_per_obj))
-        # cropped_polygons.append(
-        #     Polygon(points=list(itertools.chain(*cropped_poly_per_obj)), label=polygon.label, z_order=polygon.z_order),
-        # )
     np.seterr(**initial_settings)
     return polygons
 
