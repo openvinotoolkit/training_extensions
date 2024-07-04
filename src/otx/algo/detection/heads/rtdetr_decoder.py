@@ -12,7 +12,7 @@ import torch.nn.init as init
 import torchvision
 
 from otx.algo.detection.utils import bias_init_with_prob, deformable_attention_core_func, get_activation, inverse_sigmoid, box_cxcywh_to_xyxy, box_xyxy_to_cxcywh
-
+from otx.algo.detection.losses import RTDetrCriterion
 
 __all__ = ['RTDETRTransformer']
 
@@ -28,8 +28,8 @@ def get_contrastive_denoising_training_group(targets,
     if num_denoising <= 0:
         return None, None, None, None
 
-    num_gts = [len(t['labels']) for t in targets]
-    device = targets[0]['labels'].device
+    num_gts = [len(t) for t in targets["labels"]]
+    device = targets['labels'][0].device
 
     max_gt_num = max(num_gts)
     if max_gt_num == 0:
@@ -47,8 +47,8 @@ def get_contrastive_denoising_training_group(targets,
     for i in range(bs):
         num_gt = num_gts[i]
         if num_gt > 0:
-            input_query_class[i, :num_gt] = targets[i]['labels']
-            input_query_bbox[i, :num_gt] = targets[i]['boxes']
+            input_query_class[i, :num_gt] = targets['labels'][i]
+            input_query_bbox[i, :num_gt] = targets['boxes'][i]
             pad_gt_mask[i, :num_gt] = 1
     # each group has positive and negative queries.
     input_query_class = input_query_class.tile([1, 2 * num_group])
@@ -355,7 +355,7 @@ class TransformerDecoder(nn.Module):
 class RTDETRPostProcessor(nn.Module):
     __share__ = ['num_classes', 'use_focal_loss', 'num_top_queries', 'remap_mscoco_category']
 
-    def __init__(self, num_classes=80, use_focal_loss=True, num_top_queries=300, remap_mscoco_category=False) -> None:
+    def __init__(self, num_classes=80, use_focal_loss=True, num_top_queries=300, remap_mscoco_category=True) -> None:
         super().__init__()
         self.use_focal_loss = use_focal_loss
         self.num_top_queries = num_top_queries
@@ -432,7 +432,8 @@ class RTDETRTransformer(nn.Module):
                  eval_spatial_size=None,
                  eval_idx=-1,
                  eps=1e-2,
-                 aux_loss=True):
+                 aux_loss=True,
+                 orig_image_size=(640,640)):
 
         super(RTDETRTransformer, self).__init__()
         assert position_embed_type in ['sine', 'learned'], \
@@ -452,6 +453,8 @@ class RTDETRTransformer(nn.Module):
         self.num_decoder_layers = num_decoder_layers
         self.eval_spatial_size = eval_spatial_size
         self.aux_loss = aux_loss
+        self.main_loss = RTDetrCriterion({"loss_vfl": 1, "loss_bbox": 5, "loss_giou": 2}, ['vfl', 'boxes'], num_classes=num_classes)
+        self.orig_image_size = orig_image_size
 
         # backbone feature projection
         self._build_input_proj_layer(feat_channels)
@@ -694,10 +697,10 @@ class RTDETRTransformer(nn.Module):
                 out['dn_aux_outputs'] = self._set_aux_loss(dn_out_logits, dn_out_bboxes)
                 out['dn_meta'] = dn_meta
 
-        if not self.training:
-            return self.postprocessor(out)
+        if self.training:
+            return self.main_loss(out, targets)
 
-        return out
+        return self.postprocessor(out, torch.tensor(self.orig_image_size, device=feats[0].device))
 
 
     @torch.jit.unused
@@ -707,3 +710,6 @@ class RTDETRTransformer(nn.Module):
         # as a dict having both a Tensor and a list.
         return [{'pred_logits': a, 'pred_boxes': b}
                 for a, b in zip(outputs_class, outputs_coord)]
+
+    def init_weights(self):
+        pass

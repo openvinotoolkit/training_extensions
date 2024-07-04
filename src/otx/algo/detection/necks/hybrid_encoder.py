@@ -316,3 +316,6 @@ class HybridEncoder(nn.Module):
             outs.append(out)
 
         return outs
+
+    def init_weights(self):
+        pass

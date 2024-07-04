@@ -4,7 +4,7 @@ import torch.nn.functional as F
 import torchvision
 
 # from torchvision.ops import box_convert, generalized_box_iou
-from otx.algo.detection.utils import box_cxcywh_to_xyxy, box_iou, generalized_box_iou, HungarianMatcher
+from otx.algo.detection.utils import box_cxcywh_to_xyxy, box_iou, generalized_box_iou, HungarianMatcher, normalize_bounding_boxes
 # from src.misc.dist import get_world_size, is_dist_available_and_initialized
 
 
@@ -48,7 +48,7 @@ class RTDetrCriterion(nn.Module):
         src_logits = outputs['pred_logits']
 
         idx = self._get_src_permutation_idx(indices)
-        target_classes_o = torch.cat([t["labels"][J] for t, (_, J) in zip(targets, indices)])
+        target_classes_o = torch.cat([t[J] for t, (_, J) in zip(targets["labels"], indices)])
         target_classes = torch.full(src_logits.shape[:2], self.num_classes,
                                     dtype=torch.int64, device=src_logits.device)
         target_classes[idx] = target_classes_o
@@ -61,7 +61,7 @@ class RTDetrCriterion(nn.Module):
     def loss_labels_bce(self, outputs, targets, indices, num_boxes, log=True):
         src_logits = outputs['pred_logits']
         idx = self._get_src_permutation_idx(indices)
-        target_classes_o = torch.cat([t["labels"][J] for t, (_, J) in zip(targets, indices)])
+        target_classes_o = torch.cat([t[J] for t, (_, J) in zip(targets["labels"], indices)])
         target_classes = torch.full(src_logits.shape[:2], self.num_classes,
                                     dtype=torch.int64, device=src_logits.device)
         target_classes[idx] = target_classes_o
@@ -76,7 +76,7 @@ class RTDetrCriterion(nn.Module):
         src_logits = outputs['pred_logits']
 
         idx = self._get_src_permutation_idx(indices)
-        target_classes_o = torch.cat([t["labels"][J] for t, (_, J) in zip(targets, indices)])
+        target_classes_o = torch.cat([t[J] for t, (_, J) in zip(targets["labels"], indices)])
         target_classes = torch.full(src_logits.shape[:2], self.num_classes,
                                     dtype=torch.int64, device=src_logits.device)
         target_classes[idx] = target_classes_o
@@ -98,12 +98,12 @@ class RTDetrCriterion(nn.Module):
         idx = self._get_src_permutation_idx(indices)
 
         src_boxes = outputs['pred_boxes'][idx]
-        target_boxes = torch.cat([t['boxes'][i] for t, (_, i) in zip(targets, indices)], dim=0)
+        target_boxes = normalize_bounding_boxes(torch.cat([t[i] for t, (_, i) in zip(targets['boxes'], indices)], dim=0), *targets['boxes'][0].canvas_size)
         ious, _ = box_iou(box_cxcywh_to_xyxy(src_boxes), box_cxcywh_to_xyxy(target_boxes))
         ious = torch.diag(ious).detach()
 
         src_logits = outputs['pred_logits']
-        target_classes_o = torch.cat([t["labels"][J] for t, (_, J) in zip(targets, indices)])
+        target_classes_o = torch.cat([t[J] for t, (_, J) in zip(targets["labels"], indices)])
         target_classes = torch.full(src_logits.shape[:2], self.num_classes,
                                     dtype=torch.int64, device=src_logits.device)
         target_classes[idx] = target_classes_o
@@ -127,7 +127,7 @@ class RTDetrCriterion(nn.Module):
         """
         pred_logits = outputs['pred_logits']
         device = pred_logits.device
-        tgt_lengths = torch.as_tensor([len(v["labels"]) for v in targets], device=device)
+        tgt_lengths = torch.as_tensor([len(v) for v in targets["labels"]], device=device)
         # Count the number of predictions that are NOT "no-object" (which is the last class)
         card_pred = (pred_logits.argmax(-1) != pred_logits.shape[-1] - 1).sum(1)
         card_err = F.l1_loss(card_pred.float(), tgt_lengths.float())
@@ -142,10 +142,9 @@ class RTDetrCriterion(nn.Module):
         assert 'pred_boxes' in outputs
         idx = self._get_src_permutation_idx(indices)
         src_boxes = outputs['pred_boxes'][idx]
-        target_boxes = torch.cat([t['boxes'][i] for t, (_, i) in zip(targets, indices)], dim=0)
+        target_boxes = normalize_bounding_boxes(torch.cat([t[i] for t, (_, i) in zip(targets['boxes'], indices)], dim=0), *targets['boxes'][0].canvas_size)
 
         losses = {}
-
         loss_bbox = F.l1_loss(src_boxes, target_boxes, reduction='none')
         losses['loss_bbox'] = loss_bbox.sum() / num_boxes
 
@@ -223,7 +222,7 @@ class RTDetrCriterion(nn.Module):
         indices = self.matcher(outputs_without_aux, targets)
 
         # Compute the average number of target boxes accross all nodes, for normalization purposes
-        num_boxes = sum(len(t["labels"]) for t in targets)
+        num_boxes = sum(len(t) for t in targets["labels"])
         num_boxes = torch.as_tensor([num_boxes], dtype=torch.float, device=next(iter(outputs.values())).device)
         #TODO: make distributed training
         # if is_dist_available_and_initialized():
@@ -285,8 +284,8 @@ class RTDetrCriterion(nn.Module):
         '''get_cdn_matched_indices
         '''
         dn_positive_idx, dn_num_group = dn_meta["dn_positive_idx"], dn_meta["dn_num_group"]
-        num_gts = [len(t['labels']) for t in targets]
-        device = targets[0]['labels'].device
+        num_gts = [len(t) for t in targets['labels']]
+        device = targets['labels'][0].device
 
         dn_match_indices = []
         for i, num_gt in enumerate(num_gts):

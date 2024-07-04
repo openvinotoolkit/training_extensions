@@ -276,3 +276,6 @@ class PResNet(nn.Module):
             if idx in self.return_idx:
                 outs.append(x)
         return outs
+
+    def init_weights(self):
+        pass

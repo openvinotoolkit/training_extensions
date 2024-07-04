@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import torch
 from torch import Tensor, nn
+import torch.nn.functional as F
 from torch.autograd import Function
 from torchvision.ops.boxes import box_area
 import math
@@ -323,3 +324,18 @@ def generalized_box_iou(boxes1, boxes2):
     area = wh[:, :, 0] * wh[:, :, 1]
 
     return iou - (area - union) / area
+
+
+def normalize_bounding_boxes(target_boxes: torch.Tensor, image_width: int, image_height: int):
+    # Convert BoundingBoxes to tensor; shape: [N, 4], where N is the number of boxes,
+    # and each box is [xmin, ymin, xmax, ymax]
+    # Normalize xmin and xmax by image width
+    bounding_boxes = target_boxes.clone()
+    bounding_boxes[:, 0] = bounding_boxes[:, 0] / image_width
+    bounding_boxes[:, 2] = bounding_boxes[:, 2] / image_width
+
+    # Normalize ymin and ymax by image height
+    bounding_boxes[:, 1] = bounding_boxes[:, 1] / image_height
+    bounding_boxes[:, 3] = bounding_boxes[:, 3] / image_height
+
+    return bounding_boxes
