@@ -502,7 +502,7 @@ class TestOVZeroShotVisualPromptingModel:
     ) -> None:
         ov_zero_shot_visual_prompting_model.training = True
 
-        outputs = [torch.tensor([1, 2, 3]), torch.tensor([4, 5, 6])]
+        outputs = ({"foo": np.array(1), "bar": np.array(2)}, [torch.tensor([1, 2, 3]), torch.tensor([4, 5, 6])])
 
         result = ov_zero_shot_visual_prompting_model._customize_outputs(outputs, fxt_zero_shot_vpm_data_entity[1])
 

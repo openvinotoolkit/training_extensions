@@ -879,7 +879,7 @@ class OVZeroShotVisualPromptingModel(
     def forward(  # type: ignore[override]
         self,
         inputs: ZeroShotVisualPromptingBatchDataEntity,  # type: ignore[override]
-    ) -> dict | ZeroShotVisualPromptingBatchPredEntity:
+    ) -> tuple[dict[str, np.ndarray], list[np.ndarray]] | ZeroShotVisualPromptingBatchPredEntity:
         """Model forward function."""
         kwargs: dict[str, Any] = {}
         fn = self.learn if self.training else self.infer
@@ -940,11 +940,11 @@ class OVZeroShotVisualPromptingModel(
 
     def _customize_outputs(  # type: ignore[override]
         self,
-        outputs: dict | list[dict[int, PredictedMask]],
+        outputs: tuple[dict[str, np.ndarray], list[np.ndarray]] | list[dict[int, PredictedMask]],
         inputs: ZeroShotVisualPromptingBatchDataEntity,  # type: ignore[override]
-    ) -> dict | ZeroShotVisualPromptingBatchPredEntity:
+    ) -> tuple[dict[str, np.ndarray], list[np.ndarray]] | ZeroShotVisualPromptingBatchPredEntity:
         """Customize OTX output batch data entity if needed for model."""
-        if self.training and isinstance(outputs, dict):
+        if self.training and isinstance(outputs, tuple):
             return outputs
 
         masks: list[tv_tensors.Mask] = []
@@ -952,6 +952,8 @@ class OVZeroShotVisualPromptingModel(
         scores: list[Tensor] = []
         labels: list[Tensor] = []
         for idx, output in enumerate(outputs):
+            if not isinstance(output, dict):
+                continue
             _masks: list[np.ndarray] = []
             _prompts: list[np.ndarray] = []
             _scores: list[np.ndarray] = []
