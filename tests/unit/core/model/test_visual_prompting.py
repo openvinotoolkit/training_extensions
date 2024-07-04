@@ -519,6 +519,11 @@ class TestOVZeroShotVisualPromptingModel:
             ],
             [
                 {
+                    1: PredictedMask(mask=[], points=[]),
+                },
+            ],
+            [
+                {
                     1: PredictedMask(mask=[[1, 2, 3], [4, 5, 6]], points=[[13, 14, 15], [16, 17, 18]]),
                     2: PredictedMask(mask=[[7, 8, 9], [10, 11, 12]], points=[[19, 20, 21], [22, 23, 24]]),
                 },
