@@ -926,15 +926,19 @@ class OTXZeroShotSegmentAnything(OTXZeroShotVisualPromptingModel):
             log.info(f"reference info saved at {path_to_directly_load} was successfully loaded.")
 
         else:
-            _infer_reference_info_root: Path = (
-                self.infer_reference_info_root
-                if self.infer_reference_info_root == self.infer_reference_info_root.absolute()
-                else Path(default_root_dir) / self.infer_reference_info_root
-            )
+            if str(self.infer_reference_info_root) == "../.latest/train":
+                # for default setting
+                path_reference_info = (
+                    Path(default_root_dir)
+                    / self.infer_reference_info_root
+                    / self.reference_info_dir
+                    / "reference_info.pt"
+                )
+            else:
+                # for user input
+                path_reference_info = self.infer_reference_info_root / self.reference_info_dir / "reference_info.pt"
 
-            if (
-                path_reference_info := _infer_reference_info_root / self.reference_info_dir / "reference_info.pt"
-            ).is_file():
+            if path_reference_info.is_file():
                 reference_info = torch.load(path_reference_info)
                 retval = True
                 log.info(f"reference info saved at {path_reference_info} was successfully loaded.")
