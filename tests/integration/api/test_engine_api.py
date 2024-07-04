@@ -48,7 +48,7 @@ def test_engine_from_config(
         device=fxt_accelerator,
     )
     if task.lower() == "zero_shot_visual_prompting":
-        engine.model.infer_reference_info_root = Path()
+        engine.model.infer_reference_info_root = Path(tmp_path_train)
         # update litmodule.hparams to reflect changed hparams
         engine.model.hparams.update({"infer_reference_info_root": str(engine.model.infer_reference_info_root)})
 
@@ -97,7 +97,7 @@ def test_engine_from_config(
                     model_name=str(exported_model_path["decoder"]),
                     label_info=engine.datamodule.label_info,
                 )
-                engine.model.infer_reference_info_root = Path()
+                engine.model.infer_reference_info_root = Path(tmp_path_train)
                 # update litmodule.hparams to reflect changed hparams
                 engine.model.hparams.update({"infer_reference_info_root": str(engine.model.infer_reference_info_root)})
             test_metric_from_ov_model = engine.test(checkpoint=exported_model_path["decoder"], accelerator="cpu")

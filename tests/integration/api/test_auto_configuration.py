@@ -44,7 +44,7 @@ def test_auto_configuration(
         device=fxt_accelerator,
     )
     if task.lower() == "zero_shot_visual_prompting":
-        engine.model.infer_reference_info_root = Path()
+        engine.model.infer_reference_info_root = Path(tmp_path_train)
         # update litmodule.hparams to reflect changed hparams
         engine.model.hparams.update({"infer_reference_info_root": str(engine.model.infer_reference_info_root)})
 
