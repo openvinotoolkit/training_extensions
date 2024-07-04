@@ -157,14 +157,6 @@ class Engine:
             )
         )
 
-        # [TODO](ashwinvaidya17): Need to revisit how task, optimizer, and scheduler are assigned to the model
-        if self.task in (
-            OTXTaskType.ANOMALY_CLASSIFICATION,
-            OTXTaskType.ANOMALY_DETECTION,
-            OTXTaskType.ANOMALY_SEGMENTATION,
-        ):
-            self._model = self._get_anomaly_model(self._model)
-
     # ------------------------------------------------------------------------ #
     # General OTX Entry Points
     # ------------------------------------------------------------------------ #
@@ -896,8 +888,8 @@ class Engine:
 
             If you want to override configuration from default config:
                 >>> overriding = {
-                ...     "data.config.train_subset.batch_size": 2,
-                ...     "data.config.test_subset.subset_name": "TESTING",
+                ...     "data.train_subset.batch_size": 2,
+                ...     "data.test_subset.subset_name": "TESTING",
                 ... }
                 >>> engine = Engine(
                 ...     model_name="atss_mobilenetv2",
@@ -1029,8 +1021,3 @@ class Engine:
             msg = "Please include the `data_root` or `datamodule` when creating the Engine."
             raise RuntimeError(msg)
         return self._datamodule
-
-    def _get_anomaly_model(self, model: OTXModel) -> OTXModel:
-        # [TODO](ashwinvaidya17): Need to revisit how task, optimizer, and scheduler are assigned to the model
-        model.task = self.task
-        return model

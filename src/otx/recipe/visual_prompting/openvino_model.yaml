@@ -5,7 +5,7 @@ model:
     model_name: segment_anything
     model_type: Visual_Prompting
     async_inference: False
-    use_throughput_mode: True
+    use_throughput_mode: False
 
 engine:
   task: VISUAL_PROMPTING
@@ -17,13 +17,12 @@ data: ../_base_/data/torchvision_base.yaml
 overrides:
   data:
     task: VISUAL_PROMPTING
-    config:
-      data_format: coco_instances
-      vpm_config:
-        use_bbox: True
-        use_point: False
-      train_subset:
-        batch_size: 1
-        num_workers: 0 # TODO (sungchul): CVS-135462
-      test_subset:
-        batch_size: 1
+    data_format: coco_instances
+    vpm_config:
+      use_bbox: True
+      use_point: False
+    train_subset:
+      batch_size: 1
+      num_workers: 0 # TODO (sungchul): CVS-135462
+    test_subset:
+      batch_size: 1

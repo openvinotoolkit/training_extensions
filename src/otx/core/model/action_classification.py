@@ -355,4 +355,4 @@ class OVActionClsModel(
     @property
     def model_adapter_parameters(self) -> dict:
         """Model parameters for export."""
-        return {"input_layouts": "?NCTHW"}
+        return {"input_layouts": "NSCTHW"}

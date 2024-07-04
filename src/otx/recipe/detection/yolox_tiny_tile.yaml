@@ -33,94 +33,93 @@ overrides:
   gradient_clip_val: 35.0
   data:
     task: DETECTION
-    config:
-      tile_config:
-        enable_tiler: true
-        enable_adaptive_tiling: true
-      stack_images: True
-      data_format: coco_instances
-      train_subset:
-        num_workers: 4
-        batch_size: 8
-        transforms:
-          - class_path: otx.core.data.transform_libs.torchvision.PhotoMetricDistortion
-            init_args:
-              brightness_delta: 32
-              contrast_range:
-                - 0.5
-                - 1.5
-              saturation_range:
-                - 0.5
-                - 1.5
-              hue_delta: 18
-          - class_path: otx.core.data.transform_libs.torchvision.Resize
-            init_args:
-              scale:
-                - 640
-                - 640
-              keep_ratio: false
-              transform_bbox: true
-          - class_path: otx.core.data.transform_libs.torchvision.RandomFlip
-            init_args:
-              prob: 0.5
-          - class_path: otx.core.data.transform_libs.torchvision.Pad
-            init_args:
-              pad_to_square: true
-              pad_val: 114
-              is_numpy_to_tvtensor: true
-          - class_path: torchvision.transforms.v2.ToDtype
-            init_args:
-              dtype: ${as_torch_dtype:torch.float32}
-              scale: False
-          - class_path: torchvision.transforms.v2.Normalize
-            init_args:
-              mean: [123.675, 116.28, 103.53]
-              std: [58.395, 57.12, 57.375]
-      val_subset:
-        num_workers: 4
-        batch_size: 8
-        transforms:
-          - class_path: otx.core.data.transform_libs.torchvision.Resize
-            init_args:
-              scale:
-                - 416
-                - 416
-              keep_ratio: false
-              transform_bbox: false
-          - class_path: otx.core.data.transform_libs.torchvision.Pad
-            init_args:
-              pad_to_square: true
-              pad_val: 114
-              is_numpy_to_tvtensor: true
-          - class_path: torchvision.transforms.v2.ToDtype
-            init_args:
-              dtype: ${as_torch_dtype:torch.float32}
-              scale: False
-          - class_path: torchvision.transforms.v2.Normalize
-            init_args:
-              mean: [123.675, 116.28, 103.53]
-              std: [58.395, 57.12, 57.375]
-      test_subset:
-        num_workers: 4
-        batch_size: 8
-        transforms:
-          - class_path: otx.core.data.transform_libs.torchvision.Resize
-            init_args:
-              scale:
-                - 416
-                - 416
-              keep_ratio: false
-              transform_bbox: false
-          - class_path: otx.core.data.transform_libs.torchvision.Pad
-            init_args:
-              pad_to_square: true
-              pad_val: 114
-              is_numpy_to_tvtensor: true
-          - class_path: torchvision.transforms.v2.ToDtype
-            init_args:
-              dtype: ${as_torch_dtype:torch.float32}
-              scale: False
-          - class_path: torchvision.transforms.v2.Normalize
-            init_args:
-              mean: [123.675, 116.28, 103.53]
-              std: [58.395, 57.12, 57.375]
+    tile_config:
+      enable_tiler: true
+      enable_adaptive_tiling: true
+    stack_images: True
+    data_format: coco_instances
+    train_subset:
+      num_workers: 4
+      batch_size: 8
+      transforms:
+        - class_path: otx.core.data.transform_libs.torchvision.PhotoMetricDistortion
+          init_args:
+            brightness_delta: 32
+            contrast_range:
+              - 0.5
+              - 1.5
+            saturation_range:
+              - 0.5
+              - 1.5
+            hue_delta: 18
+        - class_path: otx.core.data.transform_libs.torchvision.Resize
+          init_args:
+            scale:
+              - 640
+              - 640
+            keep_ratio: false
+            transform_bbox: true
+        - class_path: otx.core.data.transform_libs.torchvision.RandomFlip
+          init_args:
+            prob: 0.5
+        - class_path: otx.core.data.transform_libs.torchvision.Pad
+          init_args:
+            pad_to_square: true
+            pad_val: 114
+            is_numpy_to_tvtensor: true
+        - class_path: torchvision.transforms.v2.ToDtype
+          init_args:
+            dtype: ${as_torch_dtype:torch.float32}
+            scale: False
+        - class_path: torchvision.transforms.v2.Normalize
+          init_args:
+            mean: [123.675, 116.28, 103.53]
+            std: [58.395, 57.12, 57.375]
+    val_subset:
+      num_workers: 4
+      batch_size: 8
+      transforms:
+        - class_path: otx.core.data.transform_libs.torchvision.Resize
+          init_args:
+            scale:
+              - 416
+              - 416
+            keep_ratio: false
+            transform_bbox: false
+        - class_path: otx.core.data.transform_libs.torchvision.Pad
+          init_args:
+            pad_to_square: true
+            pad_val: 114
+            is_numpy_to_tvtensor: true
+        - class_path: torchvision.transforms.v2.ToDtype
+          init_args:
+            dtype: ${as_torch_dtype:torch.float32}
+            scale: False
+        - class_path: torchvision.transforms.v2.Normalize
+          init_args:
+            mean: [123.675, 116.28, 103.53]
+            std: [58.395, 57.12, 57.375]
+    test_subset:
+      num_workers: 4
+      batch_size: 8
+      transforms:
+        - class_path: otx.core.data.transform_libs.torchvision.Resize
+          init_args:
+            scale:
+              - 416
+              - 416
+            keep_ratio: false
+            transform_bbox: false
+        - class_path: otx.core.data.transform_libs.torchvision.Pad
+          init_args:
+            pad_to_square: true
+            pad_val: 114
+            is_numpy_to_tvtensor: true
+        - class_path: torchvision.transforms.v2.ToDtype
+          init_args:
+            dtype: ${as_torch_dtype:torch.float32}
+            scale: False
+        - class_path: torchvision.transforms.v2.Normalize
+          init_args:
+            mean: [123.675, 116.28, 103.53]
+            std: [58.395, 57.12, 57.375]

@@ -11,22 +11,37 @@ import torch
 from torch import Tensor, nn
 from torchvision.models import get_model, get_model_weights
 
-from otx.algo.classification.heads import OTXSemiSLLinearClsHead
+from otx.algo.classification.heads import HierarchicalLinearClsHead, MultiLabelLinearClsHead, OTXSemiSLLinearClsHead
+from otx.algo.classification.losses import AsymmetricAngularLossWithIgnore
 from otx.algo.explain.explain_algo import ReciproCAM, feature_vector_fn
 from otx.core.data.entity.base import OTXBatchLossEntity
-from otx.core.data.entity.classification import MulticlassClsBatchDataEntity, MulticlassClsBatchPredEntity
+from otx.core.data.entity.classification import (
+    HlabelClsBatchDataEntity,
+    HlabelClsBatchPredEntity,
+    MulticlassClsBatchDataEntity,
+    MulticlassClsBatchPredEntity,
+    MultilabelClsBatchDataEntity,
+    MultilabelClsBatchPredEntity,
+)
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter
-from otx.core.metrics.accuracy import MultiClassClsMetricCallable
-from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
-from otx.core.model.classification import OTXMulticlassClsModel
+from otx.core.metrics import MetricInput
+from otx.core.metrics.accuracy import HLabelClsMetricCallble, MultiClassClsMetricCallable, MultiLabelClsMetricCallable
+from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable, OTXModel
 from otx.core.schedulers import LRSchedulerListCallable
-from otx.core.types.label import LabelInfoTypes
+from otx.core.types.export import TaskLevelExportParameters
+from otx.core.types.label import HLabelInfo, LabelInfoTypes
+from otx.core.types.task import OTXTaskType
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
 
-    from otx.core.metrics import MetricCallable
+CLASSIFICATION_BATCH_DATA_ENTITY = (
+    MulticlassClsBatchDataEntity | MultilabelClsBatchDataEntity | HlabelClsBatchDataEntity
+)
+CLASSIFICATION_BATCH_PRED_ENTITY = (
+    MulticlassClsBatchPredEntity | MultilabelClsBatchPredEntity | HlabelClsBatchPredEntity
+)
 
 
 TVModelType = Literal[
@@ -102,8 +117,10 @@ class TVClassificationModel(nn.Module):
         num_classes (int): The number of classes for the classification task.
         loss (Callable | None, optional): The loss function to use.
         freeze_backbone (bool, optional): Whether to freeze the backbone model. Defaults to False.
-        task (Literal["multiclass", "multilabel", "hlabel"], optional): The type of classification task.
+        task (Literal[OTXTaskType.MULTI_CLASS_CLS, OTXTaskType.MULTI_LABEL_CLS, OTXTaskType.H_LABEL_CLS], optional):
+            The type of classification task.
         train_type (Literal["supervised", "semi_supervised"], optional): The type of training.
+        head_config (dict | None, optional): The configuration for the head module.
 
     Methods:
         forward(images: torch.Tensor, labels: torch.Tensor) -> torch.Tensor:
@@ -117,13 +134,19 @@ class TVClassificationModel(nn.Module):
         num_classes: int,
         loss: nn.Module,
         freeze_backbone: bool = False,
-        task: Literal["multiclass", "multilabel", "hlabel"] = "multiclass",
+        task: Literal[
+            OTXTaskType.MULTI_CLASS_CLS,
+            OTXTaskType.MULTI_LABEL_CLS,
+            OTXTaskType.H_LABEL_CLS,
+        ] = OTXTaskType.MULTI_CLASS_CLS,
         train_type: Literal["supervised", "semi_supervised"] = "supervised",
+        head_config: dict | None = None,
     ) -> None:
         super().__init__()
         self.num_classes = num_classes
         self.task = task
         self.train_type = train_type
+        self.head_config = head_config if head_config else {}
 
         net = get_model(name=backbone, weights=get_model_weights(backbone))
 
@@ -156,31 +179,46 @@ class TVClassificationModel(nn.Module):
 
     def _get_head(self, net: nn.Module) -> nn.Module:
         """Returns the head of the model."""
-        head: nn.Module
         last_layer = list(net.children())[-1]
         layers = []
-        if self.task == "multiclass":
-            classifier_len = len(list(last_layer.children()))
-            if classifier_len >= 1:
-                feature_channel = list(last_layer.children())[-1].in_features
-                layers = list(last_layer.children())[:-1]
-                self.use_layer_norm_2d = layers[0].__class__.__name__ == "LayerNorm2d"
-            else:
-                feature_channel = last_layer.in_features
-
+        classifier_len = len(list(last_layer.children()))
+        if classifier_len >= 1:
+            feature_channel = list(last_layer.children())[-1].in_features
+            layers = list(last_layer.children())[:-1]
+            self.use_layer_norm_2d = layers[0].__class__.__name__ == "LayerNorm2d"
+        else:
+            feature_channel = last_layer.in_features
+        if self.task == OTXTaskType.MULTI_CLASS_CLS:
             if self.train_type == "semi_supervised":
                 self.neck = nn.Sequential(*layers) if layers else None
-                head = OTXSemiSLLinearClsHead(
+                return OTXSemiSLLinearClsHead(
                     num_classes=self.num_classes,
                     in_channels=feature_channel,
                     loss=self.loss_module,
                 )
-            elif classifier_len >= 1:
-                head = nn.Sequential(*layers, nn.Linear(feature_channel, self.num_classes))
-            else:
-                head = nn.Linear(feature_channel, self.num_classes)
+            if classifier_len >= 1:
+                return nn.Sequential(*layers, nn.Linear(feature_channel, self.num_classes))
+            return nn.Linear(feature_channel, self.num_classes)
+        if self.task == OTXTaskType.MULTI_LABEL_CLS:
+            self.neck = nn.Sequential(*layers) if layers else None
+            return MultiLabelLinearClsHead(
+                num_classes=self.num_classes,
+                in_channels=feature_channel,
+                scale=7.0,
+                normalized=True,
+                loss=self.loss_module,
+            )
+        if self.task == OTXTaskType.H_LABEL_CLS:
+            self.neck = nn.Sequential(*layers) if layers else None
+            return HierarchicalLinearClsHead(
+                in_channels=feature_channel,
+                multiclass_loss=nn.CrossEntropyLoss(),
+                multilabel_loss=self.loss_module,
+                **self.head_config,
+            )
 
-        return head
+        msg = f"Task type {self.task} is not supported."
+        raise NotImplementedError(msg)
 
     def forward(
         self,
@@ -205,6 +243,9 @@ class TVClassificationModel(nn.Module):
         if mode == "loss":
             feats = self.extract_feat(images, stage="neck")
             return self.loss(feats, labels)
+        if mode == "predict":
+            feats = self.extract_feat(images, stage="neck")
+            return self.predict(feats, **kwargs)
         if mode == "explain":
             return self._forward_explain(images)
         logits = self.extract_feat(images, stage="head")
@@ -226,8 +267,6 @@ class TVClassificationModel(nn.Module):
                   including multiple stages features.
                 - "neck": The output of neck module. Returns a tuple including
                   multiple stages features.
-                - "pre_logits": The feature before the final classification
-                  linear layer. Usually returns a tensor.
 
                 Defaults to "neck".
 
@@ -292,6 +331,19 @@ class TVClassificationModel(nn.Module):
         logits = self.head(inputs)
         return self.loss_module(logits, labels).sum() / logits.size(0)
 
+    def predict(self, inputs: torch.Tensor, **kwargs) -> list[torch.Tensor]:
+        """Predict results from a batch of inputs.
+
+        Args:
+            inputs (torch.Tensor): The input tensor with shape
+                (N, C, ...) in general.
+            **kwargs: Other keyword arguments accepted by the ``predict``
+                method of :attr:`head`.
+        """
+        if hasattr(self.head, "predict"):
+            return self.head.predict(inputs, **kwargs)
+        return self.softmax(self.head(inputs))
+
     @torch.no_grad()
     def _forward_explain(self, images: torch.Tensor) -> dict[str, torch.Tensor | list[torch.Tensor]]:
         backbone_feat = self.feature_extractor(images)
@@ -303,6 +355,7 @@ class TVClassificationModel(nn.Module):
         if self.neck is not None:
             x = self.neck(x)
         logits = self.head(x)
+        pred_results = self.head.predict(x) if hasattr(self.head, "predict") else self.softmax(logits)
 
         outputs = {
             "logits": logits,
@@ -311,8 +364,12 @@ class TVClassificationModel(nn.Module):
         }
 
         if not torch.jit.is_tracing():
-            outputs["scores"] = self.softmax(logits)
-            outputs["preds"] = logits.argmax(-1, keepdim=False)
+            if isinstance(pred_results, dict):
+                outputs["scores"] = pred_results["scores"]
+                outputs["preds"] = pred_results["labels"]
+            else:
+                outputs["scores"] = pred_results.unbind(0)
+                outputs["preds"] = logits.argmax(-1, keepdim=True).unbind(0)
 
         return outputs
 
@@ -331,8 +388,8 @@ class TVClassificationModel(nn.Module):
         return x
 
 
-class OTXTVModel(OTXMulticlassClsModel):
-    """OTXTVModel is that represents a TorchVision model for multiclass classification.
+class OTXTVModel(OTXModel):
+    """OTXTVModel is that represents a TorchVision model for classification.
 
     Args:
         backbone (TVModelType): The backbone architecture of the model.
@@ -344,6 +401,8 @@ class OTXTVModel(OTXMulticlassClsModel):
         metric (MetricCallable, optional): The metric to use for evaluation. Defaults to MultiClassClsMetricCallable.
         torch_compile (bool, optional): Whether to compile the model using TorchScript. Defaults to False.
         freeze_backbone (bool, optional): Whether to freeze the backbone model. Defaults to False.
+        task (Literal[OTXTaskType.MULTI_CLASS_CLS, OTXTaskType.MULTI_LABEL_CLS, OTXTaskType.H_LABEL_CLS], optional):
+            The type of classification task.
         train_type (Literal["supervised", "semi_supervised"], optional): The type of training.
     """
 
@@ -355,14 +414,27 @@ class OTXTVModel(OTXMulticlassClsModel):
         label_info: LabelInfoTypes,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
-        metric: MetricCallable = MultiClassClsMetricCallable,
         torch_compile: bool = False,
         freeze_backbone: bool = False,
+        task: Literal[
+            OTXTaskType.MULTI_CLASS_CLS,
+            OTXTaskType.MULTI_LABEL_CLS,
+            OTXTaskType.H_LABEL_CLS,
+        ] = OTXTaskType.MULTI_CLASS_CLS,
         train_type: Literal["supervised", "semi_supervised"] = "supervised",
     ) -> None:
         self.backbone = backbone
         self.freeze_backbone = freeze_backbone
         self.train_type = train_type
+        self.task = task
+
+        # TODO(@harimkang): Need to make it configurable.
+        if task == OTXTaskType.MULTI_CLASS_CLS:
+            metric = MultiClassClsMetricCallable
+        elif task == OTXTaskType.MULTI_LABEL_CLS:
+            metric = MultiLabelClsMetricCallable
+        elif task == OTXTaskType.H_LABEL_CLS:
+            metric = HLabelClsMetricCallble
 
         super().__init__(
             label_info=label_info,
@@ -373,16 +445,28 @@ class OTXTVModel(OTXMulticlassClsModel):
         )
 
     def _create_model(self) -> nn.Module:
+        if self.task == OTXTaskType.MULTI_CLASS_CLS:
+            loss = nn.CrossEntropyLoss(reduction="none")
+        else:
+            loss = AsymmetricAngularLossWithIgnore(gamma_pos=0.0, gamma_neg=1.0, reduction="sum")
+        head_config = {}
+        if self.task == OTXTaskType.H_LABEL_CLS:
+            if not isinstance(self.label_info, HLabelInfo):
+                msg = "LabelInfo should be HLabelInfo for hierarchical classification."
+                raise ValueError(msg)
+            head_config = self.label_info.as_head_config_dict()
+
         return TVClassificationModel(
             backbone=self.backbone,
             num_classes=self.num_classes,
-            loss=nn.CrossEntropyLoss(reduction="none"),
+            loss=loss,
             freeze_backbone=self.freeze_backbone,
-            task="multiclass",
+            task=self.task,
             train_type=self.train_type,
+            head_config=head_config,
         )
 
-    def _customize_inputs(self, inputs: MulticlassClsBatchDataEntity) -> dict[str, Any]:
+    def _customize_inputs(self, inputs: CLASSIFICATION_BATCH_DATA_ENTITY) -> dict[str, Any]:
         if self.training:
             mode = "loss"
         elif self.explain_mode:
@@ -402,32 +486,66 @@ class OTXTVModel(OTXMulticlassClsModel):
                 "mode": mode,
             }
 
+        labels = (
+            torch.cat(inputs.labels, dim=0) if self.task == OTXTaskType.MULTI_CLASS_CLS else torch.stack(inputs.labels)
+        )
         return {
             "images": inputs.stacked_images,
-            "labels": torch.cat(inputs.labels, dim=0),
+            "labels": labels,
+            "imgs_info": inputs.imgs_info,
             "mode": mode,
         }
 
     def _customize_outputs(
         self,
         outputs: Any,  # noqa: ANN401
-        inputs: MulticlassClsBatchDataEntity,
-    ) -> MulticlassClsBatchPredEntity | OTXBatchLossEntity:
+        inputs: CLASSIFICATION_BATCH_DATA_ENTITY,
+    ) -> CLASSIFICATION_BATCH_PRED_ENTITY | OTXBatchLossEntity:
         if self.training:
             return OTXBatchLossEntity(loss=outputs)
 
         # To list, batch-wise
-        logits = outputs if isinstance(outputs, torch.Tensor) else outputs["logits"]
-        scores = torch.unbind(logits, 0)
-        preds = logits.argmax(-1, keepdim=True).unbind(0)
+        if self.task == OTXTaskType.H_LABEL_CLS:
+            # To list, batch-wise
+            if isinstance(outputs, dict):
+                scores = outputs["scores"]
+                labels = outputs["labels"]
+            else:
+                scores = outputs
+                labels = outputs.argmax(-1, keepdim=True).unbind(0)
+        else:
+            logits = outputs if isinstance(outputs, torch.Tensor) else outputs["logits"]
+            scores = torch.unbind(logits, 0)
+            labels = logits.argmax(-1, keepdim=True).unbind(0)
 
-        return MulticlassClsBatchPredEntity(
-            batch_size=inputs.batch_size,
-            images=inputs.images,
-            imgs_info=inputs.imgs_info,
-            scores=scores,
-            labels=preds,
-        )
+        entity_kwargs = {
+            "batch_size": inputs.batch_size,
+            "images": inputs.images,
+            "imgs_info": inputs.imgs_info,
+            "scores": scores,
+            "labels": labels,
+        }
+
+        if self.task == OTXTaskType.MULTI_CLASS_CLS:
+            return MulticlassClsBatchPredEntity(**entity_kwargs)
+        if self.task == OTXTaskType.MULTI_LABEL_CLS:
+            return MultilabelClsBatchPredEntity(**entity_kwargs)
+        if self.task == OTXTaskType.H_LABEL_CLS:
+            return HlabelClsBatchPredEntity(**entity_kwargs)
+        msg = f"Task type {self.task} is not supported."
+        raise NotImplementedError(msg)
+
+    @property
+    def _export_parameters(self) -> TaskLevelExportParameters:
+        """Defines parameters required to export a particular model implementation."""
+        export_params = {
+            "model_type": "Classification",
+            "task_type": "classification",
+            "multilabel": self.task == OTXTaskType.MULTI_LABEL_CLS,
+            "hierarchical": self.task == OTXTaskType.H_LABEL_CLS,
+        }
+
+        return super()._export_parameters.wrap(**export_params)
 
     @property
     def _exporter(self) -> OTXModelExporter:
@@ -445,7 +563,7 @@ class OTXTVModel(OTXMulticlassClsModel):
             output_names=["logits", "feature_vector", "saliency_map"] if self.explain_mode else None,
         )
 
-    def training_step(self, batch: MulticlassClsBatchDataEntity, batch_idx: int) -> Tensor:
+    def training_step(self, batch: CLASSIFICATION_BATCH_DATA_ENTITY, batch_idx: int) -> Tensor:
         """Performs a single training step on a batch of data.
 
         Args:
@@ -474,19 +592,27 @@ class OTXTVModel(OTXMulticlassClsModel):
             )
         return loss
 
-    def forward_explain(self, inputs: MulticlassClsBatchDataEntity) -> MulticlassClsBatchPredEntity:
+    def forward_explain(self, inputs: CLASSIFICATION_BATCH_DATA_ENTITY) -> CLASSIFICATION_BATCH_PRED_ENTITY:
         """Model forward explain function."""
         outputs = self.model(images=inputs.stacked_images, mode="explain")
+        entity_kwargs = {
+            "batch_size": inputs.batch_size,
+            "images": inputs.images,
+            "imgs_info": inputs.imgs_info,
+            "labels": outputs["preds"],
+            "scores": outputs["scores"],
+            "saliency_map": outputs["saliency_map"],
+            "feature_vector": outputs["feature_vector"],
+        }
 
-        return MulticlassClsBatchPredEntity(
-            batch_size=len(outputs["preds"]),
-            images=inputs.images,
-            imgs_info=inputs.imgs_info,
-            labels=outputs["preds"],
-            scores=outputs["scores"],
-            saliency_map=outputs["saliency_map"],
-            feature_vector=outputs["feature_vector"],
-        )
+        if self.task == OTXTaskType.MULTI_CLASS_CLS:
+            return MulticlassClsBatchPredEntity(**entity_kwargs)
+        if self.task == OTXTaskType.MULTI_LABEL_CLS:
+            return MultilabelClsBatchPredEntity(**entity_kwargs)
+        if self.task == OTXTaskType.H_LABEL_CLS:
+            return HlabelClsBatchPredEntity(**entity_kwargs)
+        msg = f"Task type {self.task} is not supported."
+        raise NotImplementedError(msg)
 
     def forward_for_tracing(self, image: Tensor) -> Tensor | dict[str, Tensor]:
         """Model forward function used for the model tracing during model exportation."""
@@ -494,3 +620,30 @@ class OTXTVModel(OTXMulticlassClsModel):
             return self.model(images=image, mode="explain")
 
         return self.model(images=image, mode="tensor")
+
+    def _convert_pred_entity_to_compute_metric(
+        self,
+        preds: CLASSIFICATION_BATCH_PRED_ENTITY,
+        inputs: CLASSIFICATION_BATCH_DATA_ENTITY,
+    ) -> MetricInput:
+        if self.task == OTXTaskType.MULTI_CLASS_CLS:
+            pred = torch.tensor(preds.labels)
+            target = torch.tensor(inputs.labels)
+        elif self.task == OTXTaskType.MULTI_LABEL_CLS:
+            pred = torch.stack(preds.scores)
+            target = torch.stack(inputs.labels)
+        elif self.task == OTXTaskType.H_LABEL_CLS:
+            hlabel_info: HLabelInfo = self.label_info  # type: ignore[assignment]
+            _labels = torch.stack(preds.labels) if isinstance(preds.labels, list) else preds.labels
+            _scores = torch.stack(preds.scores) if isinstance(preds.scores, list) else preds.scores
+            target = torch.stack(inputs.labels)
+            if hlabel_info.num_multilabel_classes > 0:
+                preds_multiclass = _labels[:, : hlabel_info.num_multiclass_heads]
+                preds_multilabel = _scores[:, hlabel_info.num_multiclass_heads :]
+                pred = torch.cat([preds_multiclass, preds_multilabel], dim=1)
+            else:
+                pred = _labels
+        return {
+            "preds": pred,
+            "target": target,
+        }

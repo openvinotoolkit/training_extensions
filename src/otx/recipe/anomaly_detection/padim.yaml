@@ -5,6 +5,7 @@ model:
     backbone: "resnet18"
     pre_trained: True
     n_features: null
+    task: ANOMALY_DETECTION
 
 engine:
   task: ANOMALY_DETECTION
@@ -22,60 +23,59 @@ overrides:
         max_interval: 1
   data:
     task: ANOMALY_DETECTION
-    config:
-      data_format: mvtec
-      vpm_config:
-        use_bbox: True
-        use_point: False
-      train_subset:
-        batch_size: 32
-        num_workers: 4
-        transforms:
-          - class_path: otx.core.data.transform_libs.torchvision.ResizetoLongestEdge
-            init_args:
-              size: 256
-              antialias: True
-          - class_path: otx.core.data.transform_libs.torchvision.PadtoSquare
-          - class_path: torchvision.transforms.v2.ToDtype
-            init_args:
-              dtype: ${as_torch_dtype:torch.float32}
-              scale: False
-          - class_path: torchvision.transforms.v2.Normalize
-            init_args:
-              mean: [123.675, 116.28, 103.53]
-              std: [58.395, 57.12, 57.375]
-      val_subset:
-        batch_size: 32
-        num_workers: 4
-        subset_name: test
-        transforms:
-          - class_path: otx.core.data.transform_libs.torchvision.ResizetoLongestEdge
-            init_args:
-              size: 256
-              antialias: True
-          - class_path: otx.core.data.transform_libs.torchvision.PadtoSquare
-          - class_path: torchvision.transforms.v2.ToDtype
-            init_args:
-              dtype: ${as_torch_dtype:torch.float32}
-              scale: False
-          - class_path: torchvision.transforms.v2.Normalize
-            init_args:
-              mean: [123.675, 116.28, 103.53]
-              std: [58.395, 57.12, 57.375]
-      test_subset:
-        batch_size: 32
-        num_workers: 4
-        transforms:
-          - class_path: otx.core.data.transform_libs.torchvision.ResizetoLongestEdge
-            init_args:
-              size: 256
-              antialias: True
-          - class_path: otx.core.data.transform_libs.torchvision.PadtoSquare
-          - class_path: torchvision.transforms.v2.ToDtype
-            init_args:
-              dtype: ${as_torch_dtype:torch.float32}
-              scale: False
-          - class_path: torchvision.transforms.v2.Normalize
-            init_args:
-              mean: [123.675, 116.28, 103.53]
-              std: [58.395, 57.12, 57.375]
+    data_format: mvtec
+    vpm_config:
+      use_bbox: True
+      use_point: False
+    train_subset:
+      batch_size: 32
+      num_workers: 4
+      transforms:
+        - class_path: otx.core.data.transform_libs.torchvision.ResizetoLongestEdge
+          init_args:
+            size: 256
+            antialias: True
+        - class_path: otx.core.data.transform_libs.torchvision.PadtoSquare
+        - class_path: torchvision.transforms.v2.ToDtype
+          init_args:
+            dtype: ${as_torch_dtype:torch.float32}
+            scale: False
+        - class_path: torchvision.transforms.v2.Normalize
+          init_args:
+            mean: [123.675, 116.28, 103.53]
+            std: [58.395, 57.12, 57.375]
+    val_subset:
+      batch_size: 32
+      num_workers: 4
+      subset_name: test
+      transforms:
+        - class_path: otx.core.data.transform_libs.torchvision.ResizetoLongestEdge
+          init_args:
+            size: 256
+            antialias: True
+        - class_path: otx.core.data.transform_libs.torchvision.PadtoSquare
+        - class_path: torchvision.transforms.v2.ToDtype
+          init_args:
+            dtype: ${as_torch_dtype:torch.float32}
+            scale: False
+        - class_path: torchvision.transforms.v2.Normalize
+          init_args:
+            mean: [123.675, 116.28, 103.53]
+            std: [58.395, 57.12, 57.375]
+    test_subset:
+      batch_size: 32
+      num_workers: 4
+      transforms:
+        - class_path: otx.core.data.transform_libs.torchvision.ResizetoLongestEdge
+          init_args:
+            size: 256
+            antialias: True
+        - class_path: otx.core.data.transform_libs.torchvision.PadtoSquare
+        - class_path: torchvision.transforms.v2.ToDtype
+          init_args:
+            dtype: ${as_torch_dtype:torch.float32}
+            scale: False
+        - class_path: torchvision.transforms.v2.Normalize
+          init_args:
+            mean: [123.675, 116.28, 103.53]
+            std: [58.395, 57.12, 57.375]

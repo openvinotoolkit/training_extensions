@@ -164,8 +164,8 @@ def test_engine_from_tile_recipe(
         label_info=engine.datamodule.label_info,
     )
     assert isinstance(ov_model.model, Tiler), "Model should be an instance of Tiler"
-    assert engine.datamodule.config.tile_config.tile_size[0] == ov_model.model.tile_size
-    assert engine.datamodule.config.tile_config.overlap == ov_model.model.tiles_overlap
+    assert engine.datamodule.tile_config.tile_size[0] == ov_model.model.tile_size
+    assert engine.datamodule.tile_config.overlap == ov_model.model.tiles_overlap
 
 
 METRIC_NAME = {
