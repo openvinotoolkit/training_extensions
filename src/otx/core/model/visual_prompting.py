@@ -363,6 +363,7 @@ class OTXZeroShotVisualPromptingModel(
         if not self.load_reference_info(self.trainer.default_root_dir, self.device):
             log.warning("No reference info found. `Learn` will be automatically executed first.")
             self.trainer.lightning_module.automatic_optimization = False
+            self.training = True
             self.trainer.fit_loop.run()
             # to use infer logic
             self.training = False
@@ -1244,6 +1245,7 @@ class OVZeroShotVisualPromptingModel(
         if not self.load_reference_info(self.trainer.default_root_dir):
             log.warning("No reference info found. `Learn` will be automatically executed first.")
             self.trainer.lightning_module.automatic_optimization = False
+            self.training = True
             self.trainer.fit_loop.run()
             # to use infer logic
             self.training = False
