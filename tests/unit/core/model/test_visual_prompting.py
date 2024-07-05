@@ -5,6 +5,7 @@
 
 from __future__ import annotations
 
+from copy import deepcopy
 from pathlib import Path
 from unittest.mock import Mock
 
@@ -12,6 +13,7 @@ import numpy as np
 import pytest
 import torch
 from model_api.models import SAMLearnableVisualPrompter, SAMVisualPrompter
+from model_api.models.utils import PredictedMask
 from otx.core.data.entity.base import Points
 from otx.core.data.entity.visual_prompting import (
     VisualPromptingBatchPredEntity,
@@ -500,32 +502,58 @@ class TestOVZeroShotVisualPromptingModel:
     ) -> None:
         ov_zero_shot_visual_prompting_model.training = True
 
-        outputs = [torch.tensor([1, 2, 3]), torch.tensor([4, 5, 6])]
+        outputs = ({"foo": np.array(1), "bar": np.array(2)}, [torch.tensor([1, 2, 3]), torch.tensor([4, 5, 6])])
 
         result = ov_zero_shot_visual_prompting_model._customize_outputs(outputs, fxt_zero_shot_vpm_data_entity[1])
 
         assert result == outputs
 
+    @pytest.mark.parametrize(
+        "outputs",
+        [
+            [
+                {
+                    1: PredictedMask(mask=[[1, 2, 3], [4, 5, 6]], points=[[13, 14, 15], [16, 17, 18]]),
+                    2: PredictedMask(mask=[[7, 8, 9], [10, 11, 12]], points=[[19, 20, 21], [22, 23, 24]]),
+                },
+            ],
+            [
+                {
+                    1: PredictedMask(mask=[], points=[]),
+                },
+            ],
+            [
+                {
+                    1: PredictedMask(mask=[[1, 2, 3], [4, 5, 6]], points=[[13, 14, 15], [16, 17, 18]]),
+                    2: PredictedMask(mask=[[7, 8, 9], [10, 11, 12]], points=[[19, 20, 21], [22, 23, 24]]),
+                },
+                {
+                    1: PredictedMask(mask=[[1, 2, 3], [4, 5, 6]], points=[[13, 14, 15], [16, 17, 18]]),
+                    2: PredictedMask(mask=[[7, 8, 9], [10, 11, 12]], points=[[19, 20, 21], [22, 23, 24]]),
+                },
+            ],
+        ],
+    )
     def test_customize_outputs_inference(
         self,
         ov_zero_shot_visual_prompting_model,
         fxt_zero_shot_vpm_data_entity,
+        outputs: list[dict[int, PredictedMask]],
     ) -> None:
         ov_zero_shot_visual_prompting_model.training = False
+        entity = deepcopy(fxt_zero_shot_vpm_data_entity[1])
+        if len(outputs) > 1:
+            # for multi batch testing
+            entity.batch_size = 2
+            entity.images = [entity.images[0], entity.images[0]]
+            entity.imgs_info = [entity.imgs_info[0], entity.imgs_info[0]]
 
-        from model_api.models.utils import PredictedMask
-
-        outputs = [
-            {1: PredictedMask([], [4, 5, 6])},
-            {2: PredictedMask([], [16, 17, 18])},
-        ]
-
-        result = ov_zero_shot_visual_prompting_model._customize_outputs(outputs, fxt_zero_shot_vpm_data_entity[1])
+        result = ov_zero_shot_visual_prompting_model._customize_outputs(outputs, entity)
 
         assert isinstance(result, ZeroShotVisualPromptingBatchPredEntity)
         assert result.batch_size == len(outputs)
-        assert result.images == fxt_zero_shot_vpm_data_entity[1].images
-        assert result.imgs_info == fxt_zero_shot_vpm_data_entity[1].imgs_info
+        assert result.images == entity.images
+        assert result.imgs_info == entity.imgs_info
 
         assert isinstance(result.masks, list)
         assert all(isinstance(mask, tv_tensors.Mask) for mask in result.masks)

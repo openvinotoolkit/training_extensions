@@ -43,6 +43,7 @@ from otx.core.utils.mask_util import polygon_to_bitmap
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
+    from model_api.models.utils import PredictedMask, VisualPromptingResult
     from torchmetrics import MetricCollection
 
     from otx.core.data.module import OTXDataModule
@@ -139,23 +140,6 @@ def _inference_step_for_zero_shot(
                 for ett in converted_entities["preds"]
             ]
             _target = converted_entities["target"]
-
-            # match #_preds and #_target
-            if len(_preds) > len(_target):
-                # interpolate _target
-                num_diff = len(_preds) - len(_target)
-                for idx in range(num_diff):
-                    _target.append(_target[idx])
-            elif len(_preds) < len(_target):
-                num_diff = len(_target) - len(_preds)
-                pad_prediction = {
-                    "masks": torch.zeros_like(_target[0]["masks"], dtype=_target[0]["masks"].dtype),
-                    "labels": torch.zeros_like(_target[0]["labels"], dtype=_target[0]["labels"].dtype),
-                    "scores": torch.zeros(len(_target[0]["labels"]), dtype=torch.float32),
-                }  # for empty prediction
-                for idx in range(num_diff):
-                    _preds.append(_preds[idx] if idx < len(_preds) else pad_prediction)
-
             _metric.update(preds=_preds, target=_target)
         elif _name in ["iou", "f1-score", "dice"]:
             # BinaryJaccardIndex, BinaryF1Score, Dice
@@ -530,7 +514,7 @@ class OVVisualPromptingModel(
             )
 
         images, batch_prompts = self._customize_inputs(inputs)
-        outputs: list[Any] = []
+        outputs: list[VisualPromptingResult] = []
         for image, prompt in zip(images, batch_prompts):
             outputs.append(self.model(image, **prompt))
 
@@ -576,31 +560,28 @@ class OVVisualPromptingModel(
 
     def _customize_outputs(
         self,
-        outputs: Any,  # noqa: ANN401
+        outputs: list[VisualPromptingResult],
         inputs: VisualPromptingBatchDataEntity,  # type: ignore[override]
     ) -> VisualPromptingBatchPredEntity:
         """Customize OTX output batch data entity if needed for model."""
         masks: list[tv_tensors.Mask] = []
-        scores: list[torch.Tensor] = []
+        scores: list[Tensor] = []
+        labels: list[Tensor] = []
         for image_output in outputs:
-            masks.extend(
-                [
-                    torch.as_tensor(hard_prediction, device=self.device)
-                    for hard_prediction in image_output.hard_predictions
-                ],
-            )
-            scores.extend([torch.as_tensor(score, device=self.device) for score in image_output.scores])
+            masks.append(tv_tensors.Mask(np.concatenate(image_output.hard_predictions), device=self.device))
+            scores.append(torch.as_tensor(np.concatenate(image_output.scores), device=self.device))
+            labels.append(torch.as_tensor(image_output.labels, device=self.device))
 
         return VisualPromptingBatchPredEntity(
             batch_size=len(outputs),
             images=inputs.images,
             imgs_info=inputs.imgs_info,
-            scores=[torch.cat(scores, dim=0)],
-            masks=[tv_tensors.Mask(torch.cat(masks, dim=0))],
+            scores=scores,
+            masks=masks,
             polygons=[],
             points=[],
             bboxes=[],
-            labels=[torch.cat(list(labels.values())) for labels in inputs.labels],
+            labels=labels,
         )
 
     def optimize(  # type: ignore[override]
@@ -884,11 +865,11 @@ class OVZeroShotVisualPromptingModel(
         inputs: ZeroShotVisualPromptingBatchDataEntity,
         reference_feats: np.ndarray,
         used_indices: np.ndarray,
-    ) -> list[list[defaultdict[int, list]]]:
+    ) -> list[dict[int, PredictedMask]]:
         """`Infer` for target predictions."""
         images, _ = self._customize_inputs(inputs)
 
-        total_results: list[list[defaultdict[int, list]]] = []
+        total_results: list[dict[int, PredictedMask]] = []
         for image in images:
             result = self.model(image, VisualPromptingFeatures(reference_feats, used_indices))
             total_results.append(result.data)
@@ -898,7 +879,7 @@ class OVZeroShotVisualPromptingModel(
     def forward(  # type: ignore[override]
         self,
         inputs: ZeroShotVisualPromptingBatchDataEntity,  # type: ignore[override]
-    ) -> ZeroShotVisualPromptingBatchPredEntity:
+    ) -> tuple[dict[str, np.ndarray], list[np.ndarray]] | ZeroShotVisualPromptingBatchPredEntity:
         """Model forward function."""
         kwargs: dict[str, Any] = {}
         fn = self.learn if self.training else self.infer
@@ -959,42 +940,57 @@ class OVZeroShotVisualPromptingModel(
 
     def _customize_outputs(  # type: ignore[override]
         self,
-        outputs: Any,  # noqa: ANN401
+        outputs: tuple[dict[str, np.ndarray], list[np.ndarray]] | list[dict[int, PredictedMask]],
         inputs: ZeroShotVisualPromptingBatchDataEntity,  # type: ignore[override]
-    ) -> ZeroShotVisualPromptingBatchPredEntity:
+    ) -> tuple[dict[str, np.ndarray], list[np.ndarray]] | ZeroShotVisualPromptingBatchPredEntity:
         """Customize OTX output batch data entity if needed for model."""
-        if self.training:
+        if self.training and isinstance(outputs, tuple):
             return outputs
 
         masks: list[tv_tensors.Mask] = []
         prompts: list[Points] = []
-        scores: list[torch.Tensor] = []
-        labels: list[torch.LongTensor] = []
-        for output in outputs:
+        scores: list[Tensor] = []
+        labels: list[Tensor] = []
+        for idx, output in enumerate(outputs):
+            if not isinstance(output, dict):
+                continue
+            _masks: list[np.ndarray] = []
+            _prompts: list[np.ndarray] = []
+            _scores: list[np.ndarray] = []
+            _labels: list[np.ndarray] = []
             for label, predicted_mask in output.items():
                 if len(predicted_mask.mask) == 0:
                     continue
+                _masks.append(np.stack(predicted_mask.mask, axis=0))
+                _used_points_scores = np.stack(predicted_mask.points, axis=0)
+                _prompts.append(_used_points_scores[:, :2])
+                _scores.append(_used_points_scores[:, 2])
+                _labels.append(np.array([label] * len(_used_points_scores)))
+
+            if len(_masks) == 0:
                 masks.append(
                     tv_tensors.Mask(
-                        torch.stack([torch.as_tensor(m) for m in predicted_mask.mask], dim=0),
-                        dtype=torch.float32,
-                        device=self.device,
+                        torch.zeros((1, *inputs.imgs_info[idx].ori_shape), dtype=torch.float32, device=self.device),
                     ),
                 )
                 prompts.append(
-                    Points(
-                        torch.stack([torch.as_tensor(p[:2]) for p in predicted_mask.points], dim=0),
-                        canvas_size=inputs.imgs_info[0].ori_shape,
-                        dtype=torch.float32,
-                        device=self.device,
-                    ),
+                    Points([], canvas_size=inputs.imgs_info[idx].ori_shape, dtype=torch.float32, device=self.device),
                 )
-                scores.append(
-                    torch.stack([torch.as_tensor(p[2]) for p in predicted_mask.points], dim=0).to(self.device),
-                )
-                labels.append(
-                    torch.cat([torch.LongTensor([label]) for _ in range(len(scores[-1]))], dim=0).to(self.device),
-                )
+                scores.append(torch.tensor([-1.0], dtype=torch.float32, device=self.device))
+                labels.append(torch.tensor([-1], dtype=torch.int64, device=self.device))
+                continue
+
+            masks.append(tv_tensors.Mask(np.concatenate(_masks, axis=0), dtype=torch.float32, device=self.device))
+            prompts.append(
+                Points(
+                    np.concatenate(_prompts, axis=0),
+                    canvas_size=inputs.imgs_info[idx].ori_shape,
+                    dtype=torch.float32,
+                    device=self.device,
+                ),
+            )
+            scores.append(torch.as_tensor(np.concatenate(_scores, axis=0), dtype=torch.float32, device=self.device))
+            labels.append(torch.as_tensor(np.concatenate(_labels, axis=0), dtype=torch.int64, device=self.device))
 
         return ZeroShotVisualPromptingBatchPredEntity(
             batch_size=len(outputs),
