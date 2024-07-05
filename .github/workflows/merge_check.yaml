@@ -4,7 +4,7 @@ on:
   merge_group:
     branches:
       - develop
-  womerge_group:rkflow_dispatch: # run on request (no need for PR)
+  workflow_dispatch: # run on request (no need for PR)
 
 # Declare default permissions as read only.
 permissions: read-all

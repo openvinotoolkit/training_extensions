@@ -5,9 +5,6 @@ on:
     branches:
       - develop
       - releases/**
-  merge_group:
-    branches:
-      - develop
   pull_request:
     types:
       - opened
