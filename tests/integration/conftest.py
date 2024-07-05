@@ -42,7 +42,9 @@ def find_recipe_folder(base_path: Path, folder_name: str) -> Path:
 def get_task_list(task: str) -> list[OTXTaskType]:
     if task == "all":
         return [task_type for task_type in OTXTaskType if task_type != OTXTaskType.DETECTION_SEMI_SL]
-    if task == "classification":
+    if task == "multi-classification":
+        return [OTXTaskType.MULTI_CLASS_CLS, OTXTaskType.MULTI_LABEL_CLS, OTXTaskType.H_LABEL_CLS]
+    if task == "hlabel-classification":
         return [OTXTaskType.MULTI_CLASS_CLS, OTXTaskType.MULTI_LABEL_CLS, OTXTaskType.H_LABEL_CLS]
     if task == "action":
         return [OTXTaskType.ACTION_CLASSIFICATION]
