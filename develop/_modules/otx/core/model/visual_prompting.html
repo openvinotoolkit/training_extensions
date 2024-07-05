@@ -600,6 +600,7 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_reference_info</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">default_root_dir</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">):</span>
             <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;No reference info found. `Learn` will be automatically executed first.&quot;</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">lightning_module</span><span class="o">.</span><span class="n">automatic_optimization</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">training</span> <span class="o">=</span> <span class="kc">True</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">fit_loop</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
             <span class="c1"># to use infer logic</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">training</span> <span class="o">=</span> <span class="kc">False</span>
@@ -620,6 +621,7 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_reference_info</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">default_root_dir</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">):</span>
             <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;No reference info found. `Learn` will be automatically executed first.&quot;</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">lightning_module</span><span class="o">.</span><span class="n">automatic_optimization</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">training</span> <span class="o">=</span> <span class="kc">True</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">fit_loop</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
             <span class="c1"># to use infer logic</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">training</span> <span class="o">=</span> <span class="kc">False</span>
@@ -1526,15 +1528,19 @@
             <span class="c1"># if `path_to_directly_load` is given, forcely load</span>
             <span class="k">return</span> <span class="n">_load_and_assign_reference_info</span><span class="p">(</span><span class="n">path_to_directly_load</span><span class="p">)</span>
 
-        <span class="n">_infer_reference_info_root</span><span class="p">:</span> <span class="n">Path</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">infer_reference_info_root</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">infer_reference_info_root</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">infer_reference_info_root</span><span class="o">.</span><span class="n">absolute</span><span class="p">()</span>
-            <span class="k">else</span> <span class="n">Path</span><span class="p">(</span><span class="n">default_root_dir</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">infer_reference_info_root</span>
-        <span class="p">)</span>
+        <span class="k">if</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">infer_reference_info_root</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;../.latest/train&quot;</span><span class="p">:</span>
+            <span class="c1"># for default setting</span>
+            <span class="n">path_reference_info</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">Path</span><span class="p">(</span><span class="n">default_root_dir</span><span class="p">)</span>
+                <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">infer_reference_info_root</span>
+                <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">reference_info_dir</span>
+                <span class="o">/</span> <span class="s2">&quot;reference_info.pickle&quot;</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># for user input</span>
+            <span class="n">path_reference_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">infer_reference_info_root</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">reference_info_dir</span> <span class="o">/</span> <span class="s2">&quot;reference_info.pickle&quot;</span>
 
-        <span class="k">if</span> <span class="p">(</span>
-            <span class="n">path_reference_info</span> <span class="o">:=</span> <span class="n">_infer_reference_info_root</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">reference_info_dir</span> <span class="o">/</span> <span class="s2">&quot;reference_info.pickle&quot;</span>
-        <span class="p">)</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">path_reference_info</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
             <span class="k">return</span> <span class="n">_load_and_assign_reference_info</span><span class="p">(</span><span class="n">path_reference_info</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="kc">False</span></div>
@@ -1561,6 +1567,7 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_reference_info</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">default_root_dir</span><span class="p">):</span>
             <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;No reference info found. `Learn` will be automatically executed first.&quot;</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">lightning_module</span><span class="o">.</span><span class="n">automatic_optimization</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">training</span> <span class="o">=</span> <span class="kc">True</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">fit_loop</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
             <span class="c1"># to use infer logic</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">training</span> <span class="o">=</span> <span class="kc">False</span>
@@ -1580,6 +1587,7 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_reference_info</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">default_root_dir</span><span class="p">):</span>
             <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;No reference info found. `Learn` will be automatically executed first.&quot;</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">lightning_module</span><span class="o">.</span><span class="n">automatic_optimization</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">training</span> <span class="o">=</span> <span class="kc">True</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">fit_loop</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
             <span class="c1"># to use infer logic</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">training</span> <span class="o">=</span> <span class="kc">False</span>
