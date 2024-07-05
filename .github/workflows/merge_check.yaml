@@ -2,7 +2,9 @@ name: Merge Checks
 
 on:
   merge_group:
-  workflow_dispatch: # run on request (no need for PR)
+    branches:
+      - develop
+  womerge_group:rkflow_dispatch: # run on request (no need for PR)
 
 # Declare default permissions as read only.
 permissions: read-all

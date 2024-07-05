@@ -5,12 +5,14 @@ on:
     branches:
       - develop
       - releases/**
+  merge_group:
+    branches:
+      - develop
   pull_request:
     types:
       - opened
       - reopened
       - synchronize
-  merge_group:
   workflow_dispatch: # run on request (no need for PR)
 
 # Declare default permissions as read only.
