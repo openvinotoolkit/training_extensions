@@ -329,6 +329,7 @@ class OTXZeroShotVisualPromptingModel(
         if not self.load_reference_info(self.trainer.default_root_dir, self.device):
             log.warning("No reference info found. `Learn` will be automatically executed first.")
             self.trainer.lightning_module.automatic_optimization = False
+            self.training = True
             self.trainer.fit_loop.run()
             # to use infer logic
             self.training = False
@@ -346,6 +347,7 @@ class OTXZeroShotVisualPromptingModel(
         if not self.load_reference_info(self.trainer.default_root_dir, self.device):
             log.warning("No reference info found. `Learn` will be automatically executed first.")
             self.trainer.lightning_module.automatic_optimization = False
+            self.training = True
             self.trainer.fit_loop.run()
             # to use infer logic
             self.training = False
@@ -1189,15 +1191,19 @@ class OVZeroShotVisualPromptingModel(
             # if `path_to_directly_load` is given, forcely load
             return _load_and_assign_reference_info(path_to_directly_load)
 
-        _infer_reference_info_root: Path = (
-            self.infer_reference_info_root
-            if self.infer_reference_info_root == self.infer_reference_info_root.absolute()
-            else Path(default_root_dir) / self.infer_reference_info_root
-        )
+        if str(self.infer_reference_info_root) == "../.latest/train":
+            # for default setting
+            path_reference_info = (
+                Path(default_root_dir)
+                / self.infer_reference_info_root
+                / self.reference_info_dir
+                / "reference_info.pickle"
+            )
+        else:
+            # for user input
+            path_reference_info = self.infer_reference_info_root / self.reference_info_dir / "reference_info.pickle"
 
-        if (
-            path_reference_info := _infer_reference_info_root / self.reference_info_dir / "reference_info.pickle"
-        ).is_file():
+        if path_reference_info.is_file():
             return _load_and_assign_reference_info(path_reference_info)
 
         return False
@@ -1218,6 +1224,7 @@ class OVZeroShotVisualPromptingModel(
         if not self.load_reference_info(self.trainer.default_root_dir):
             log.warning("No reference info found. `Learn` will be automatically executed first.")
             self.trainer.lightning_module.automatic_optimization = False
+            self.training = True
             self.trainer.fit_loop.run()
             # to use infer logic
             self.training = False
@@ -1234,6 +1241,7 @@ class OVZeroShotVisualPromptingModel(
         if not self.load_reference_info(self.trainer.default_root_dir):
             log.warning("No reference info found. `Learn` will be automatically executed first.")
             self.trainer.lightning_module.automatic_optimization = False
+            self.training = True
             self.trainer.fit_loop.run()
             # to use infer logic
             self.training = False

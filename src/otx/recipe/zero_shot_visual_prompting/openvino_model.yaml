@@ -7,7 +7,7 @@ model:
     async_inference: False
     use_throughput_mode: True
     reference_info_dir: reference_infos
-    infer_reference_info_root: ../.latest/train # set absolute path for using reference_info saved in other location
+    infer_reference_info_root: ../.latest/train
     save_outputs: True
 
 engine:
