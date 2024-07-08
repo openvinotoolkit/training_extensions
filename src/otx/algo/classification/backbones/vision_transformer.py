@@ -9,6 +9,7 @@ from typing import Literal, Sequence
 
 import numpy as np
 import torch
+from timm.models.vision_transformer import VisionTransformer as _TimmVisionTransformer
 from torch import nn
 
 from otx.algo.classification.utils.attention import MultiheadAttention
@@ -614,3 +615,15 @@ class VisionTransformer(BaseModule):
             layer_depth = num_layers - 1
 
         return layer_depth, num_layers
+
+
+class TimmVisionTransformer(_TimmVisionTransformer):
+    """Timm implementation for vision Transformer.
+
+    refer to https://github.com/open-mmlab/mmpretrain/blob/main/mmpretrain/models/backbones/vision_transformer.py
+    """
+
+    def forward(self, x: torch.Tensor) -> tuple:
+        """Forward pass of the VisionTransformer model."""
+        feat = self.forward_features(x)[:, 0]  # extract only cls_token
+        return (feat,)

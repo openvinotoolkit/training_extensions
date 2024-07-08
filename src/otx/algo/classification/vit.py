@@ -12,7 +12,7 @@ import numpy as np
 import torch
 from torch import Tensor, nn
 
-from otx.algo.classification.backbones.vision_transformer import VIT_ARCH_TYPE, VisionTransformer
+from otx.algo.classification.backbones.vision_transformer import VIT_ARCH_TYPE, TimmVisionTransformer, VisionTransformer
 from otx.algo.classification.classifier import ImageClassifier, SemiSLClassifier
 from otx.algo.classification.heads import (
     HierarchicalLinearClsHead,
@@ -54,9 +54,12 @@ if TYPE_CHECKING:
     from otx.core.metrics import MetricCallable
 
 
-pretrained_root = "https://download.openmmlab.com/mmclassification/v0/"
+# pretrained_root = "https://download.openmmlab.com/mmclassification/v0/"
+# pretrained_urls = {
+#     "deit-tiny": pretrained_root + "deit/deit-tiny_pt-4xb256_in1k_20220218-13b382a0.pth",
+# }
 pretrained_urls = {
-    "deit-tiny": pretrained_root + "deit/deit-tiny_pt-4xb256_in1k_20220218-13b382a0.pth",
+    "deit-tiny": "https://github.com/huggingface/pytorch-image-models/releases/download/v0.1-rsb-weights/deit_tiny_patch16_a2_0-324fe5ea.pth",
 }
 
 
@@ -279,7 +282,7 @@ class VisionTransformerForMulticlassCls(ForwardExplainMixInForViT, OTXMulticlass
         if self.pretrained and self.arch in pretrained_urls:
             print(f"init weight - {pretrained_urls[self.arch]}")
             checkpoint = load_from_http(pretrained_urls[self.arch], map_location="cpu")
-            load_checkpoint_to_model(model, checkpoint)
+            load_checkpoint_to_model(model.backbone, checkpoint)
         return model
 
     def _build_model(self, num_classes: int) -> nn.Module:
@@ -288,7 +291,8 @@ class VisionTransformerForMulticlassCls(ForwardExplainMixInForViT, OTXMulticlass
             {"bias": 0.0, "val": 1.0, "layer": "LayerNorm", "type": "Constant"},
         ]
         return ImageClassifier(
-            backbone=VisionTransformer(arch=self.arch, img_size=224, patch_size=16),
+            # backbone=VisionTransformer(arch=self.arch, img_size=224, patch_size=16),
+            backbone=TimmVisionTransformer(img_size=224, patch_size=16, embed_dim=192),
             neck=None,
             head=VisionTransformerClsHead(
                 num_classes=num_classes,
