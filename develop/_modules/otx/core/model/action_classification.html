@@ -623,8 +623,7 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Data transform function for PTQ.&quot;&quot;&quot;</span>
         <span class="n">np_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_customize_inputs</span><span class="p">(</span><span class="n">data_batch</span><span class="p">)</span>
         <span class="n">vid</span> <span class="o">=</span> <span class="n">np_data</span><span class="p">[</span><span class="s2">&quot;inputs&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
-        <span class="n">vid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">preprocess</span><span class="p">(</span><span class="n">vid</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">image_blob_name</span><span class="p">]</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">_change_layout</span><span class="p">(</span><span class="n">vid</span><span class="p">)</span>  <span class="c1"># noqa: SLF001</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">preprocess</span><span class="p">(</span><span class="n">vid</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">image_blob_name</span><span class="p">]</span></div>
 
 
     <span class="nd">@property</span>
