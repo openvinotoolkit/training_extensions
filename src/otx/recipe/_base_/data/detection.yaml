@@ -1,0 +1,12 @@
+data: ../_base_/data/torchvision_base.yaml
+overrides:
+  data:
+    task: DETECTION
+    data_format: coco_instances
+    stack_images: true
+    train_subset:
+      to_tv_image: false
+    val_subset:
+      to_tv_image: false
+    test_subset:
+      to_tv_image: false

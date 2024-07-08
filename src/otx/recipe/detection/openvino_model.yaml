@@ -13,11 +13,10 @@ engine:
 
 callback_monitor: val/map_50
 
-data: ../_base_/data/torchvision_base.yaml
+data: ../_base_/data/detection.yaml
 overrides:
   data:
-    task: DETECTION
-    image_color_channel: RGB
-    data_format: coco_instances
+    stack_images: false
     test_subset:
+      to_tv_image: true
       batch_size: 64
