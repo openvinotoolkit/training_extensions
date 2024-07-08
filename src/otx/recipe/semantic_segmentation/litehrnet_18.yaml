@@ -133,4 +133,4 @@ overrides:
       init_args:
         warmup_iters: 100
 
-data: ../_base_/data/mmseg_base.yaml
+data: ../_base_/data/semantic_segmentation.yaml
