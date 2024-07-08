@@ -7,14 +7,12 @@ model:
     model_type: "SSD"
     async_inference: True
 
-engine:
-  task: DETECTION
-  device: cpu
-
-callback_monitor: val/map_50
-
+engine: ../_base_/engine/detection.yaml
 data: ../_base_/data/detection.yaml
 overrides:
+  engine:
+    device: cpu
+
   data:
     stack_images: false
     test_subset:

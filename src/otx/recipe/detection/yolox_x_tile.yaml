@@ -1,9 +1,4 @@
-engine:
-  task: DETECTION
-  device: auto
-
-callback_monitor: val/map_50
-
+engine: ../_base_/engine/detection.yaml
 model: ../_base_/model/detection.yaml
 data: ../_base_/data/detection.yaml
 overrides:
