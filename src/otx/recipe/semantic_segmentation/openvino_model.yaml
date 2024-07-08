@@ -21,14 +21,14 @@ overrides:
       batch_size: 1
       num_workers: 2
       transforms:
-      - class_path: torchvision.transforms.v2.ToImage
+        - class_path: torchvision.transforms.v2.ToImage
     val_subset:
       batch_size: 1
       num_workers: 2
       transforms:
-      - class_path: torchvision.transforms.v2.ToImage
+        - class_path: torchvision.transforms.v2.ToImage
     test_subset:
       batch_size: 64
       num_workers: 2
       transforms:
-      - class_path: torchvision.transforms.v2.ToImage
+        - class_path: torchvision.transforms.v2.ToImage
