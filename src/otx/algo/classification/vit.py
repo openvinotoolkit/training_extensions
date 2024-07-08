@@ -15,7 +15,7 @@ import torch
 from torch import Tensor, nn
 from torch.hub import download_url_to_file
 
-from otx.algo.classification.backbones.vision_transformer import VIT_ARCH_TYPE, VisionTransformer
+from otx.algo.classification.backbones.vision_transformer import VIT_ARCH_TYPE, TimmVisionTransformer, VisionTransformer
 from otx.algo.classification.classifier import ImageClassifier, SemiSLClassifier
 from otx.algo.classification.heads import (
     HierarchicalLinearClsHead,
