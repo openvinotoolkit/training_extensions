@@ -16,18 +16,14 @@ engine:
 
 callback_monitor: step
 
-data: ../_base_/data/torchvision_base.yaml
+data: ../_base_/data/zero_shot_visual_prompting.yaml
 overrides:
   max_epochs: 1
   limit_val_batches: 0
   data:
-    task: ZERO_SHOT_VISUAL_PROMPTING
-    data_format: coco_instances
-    vpm_config:
-      use_bbox: True
-      use_point: False
     train_subset:
-      batch_size: 1
+      num_workers: 0 # TODO (sungchul): CVS-135462
+    val_subset:
       num_workers: 0 # TODO (sungchul): CVS-135462
     test_subset:
-      batch_size: 1
+      num_workers: 0 # TODO (sungchul): CVS-135462
