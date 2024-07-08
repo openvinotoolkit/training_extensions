@@ -18,4 +18,5 @@ overrides:
   data:
     stack_images: false
     test_subset:
+      to_tv_image: true
       batch_size: 64
