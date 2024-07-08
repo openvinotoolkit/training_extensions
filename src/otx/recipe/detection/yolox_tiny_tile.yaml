@@ -70,7 +70,6 @@ overrides:
             scale:
               - 416
               - 416
-            transform_bbox: false
         - class_path: otx.core.data.transform_libs.torchvision.Pad
           init_args:
             pad_to_square: true
@@ -92,7 +91,6 @@ overrides:
             scale:
               - 416
               - 416
-            transform_bbox: false
         - class_path: otx.core.data.transform_libs.torchvision.Pad
           init_args:
             pad_to_square: true

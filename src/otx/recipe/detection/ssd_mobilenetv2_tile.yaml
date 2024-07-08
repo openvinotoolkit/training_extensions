@@ -67,7 +67,6 @@ overrides:
             scale:
               - 864
               - 864
-            transform_bbox: false
             is_numpy_to_tvtensor: true
         - class_path: torchvision.transforms.v2.ToDtype
           init_args:
@@ -84,7 +83,6 @@ overrides:
             scale:
               - 864
               - 864
-            transform_bbox: false
             is_numpy_to_tvtensor: true
         - class_path: torchvision.transforms.v2.ToDtype
           init_args:
