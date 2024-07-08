@@ -13,7 +13,7 @@ config:
     transforms:
       - class_path: torchvision.transforms.v2.ToImage
     batch_size: 1
-    num_workers: 2
+    num_workers: 0
     sampler:
       class_path: torch.utils.data.RandomSampler
   val_subset:
@@ -23,7 +23,7 @@ config:
     transforms:
       - class_path: torchvision.transforms.v2.ToImage
     batch_size: 1
-    num_workers: 2
+    num_workers: 0
     sampler:
       class_path: torch.utils.data.RandomSampler
   test_subset:
@@ -33,6 +33,6 @@ config:
     transforms:
       - class_path: torchvision.transforms.v2.ToImage
     batch_size: 1
-    num_workers: 2
+    num_workers: 0
     sampler:
       class_path: torch.utils.data.RandomSampler

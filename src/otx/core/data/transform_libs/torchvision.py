@@ -19,6 +19,7 @@ import numpy as np
 import PIL.Image
 import torch
 import torchvision.transforms.v2 as tvt_v2
+import torchvision
 from datumaro.components.media import Video
 from lightning.pytorch.cli import instantiate_class
 from numpy import random
@@ -990,6 +991,45 @@ class EfficientNetRandomCrop(RandomResizedCrop):
         repr_str += f", min_covered={self.min_covered}"
         repr_str += f", crop_padding={self.crop_padding})"
         return repr_str
+
+
+class RandomIoUCrop(tvt_v2.RandomIoUCrop):
+    def __init__(self, min_scale: float = 0.3, max_scale: float = 1, min_aspect_ratio: float = 0.5, max_aspect_ratio: float = 2, sampler_options: list | None = None, trials: int = 40, p: float = 1.0):
+        super().__init__(min_scale, max_scale, min_aspect_ratio, max_aspect_ratio, sampler_options, trials)
+        self.p = p
+
+    def __call__(self, *inputs: Any) -> Any:
+        if torch.rand(1) >= self.p:
+            return inputs if len(inputs) > 1 else inputs[0]
+
+        return super().forward(*inputs)
+
+
+class ConvertBox(tvt_v2.Transform):
+    _transformed_types = (
+        tv_tensors.BoundingBoxes,
+    )
+    def __init__(self, out_fmt='', normalize=False) -> None:
+        super().__init__()
+        self.out_fmt = out_fmt
+        self.normalize = normalize
+
+        self.data_fmt = {
+            'xyxy': tv_tensors.BoundingBoxFormat.XYXY,
+            'cxcywh': tv_tensors.BoundingBoxFormat.CXCYWH
+        }
+
+    def _transform(self, inpt: Any, params: dict[str, Any]) -> Any:
+        if self.out_fmt:
+            spatial_size = inpt.canvas_size
+            in_fmt = inpt.format.value.lower()
+            inpt = torchvision.ops.box_convert(inpt, in_fmt=in_fmt, out_fmt=self.out_fmt)
+            inpt = tv_tensors.BoundingBoxes(inpt, format=self.data_fmt[self.out_fmt], canvas_size=spatial_size)
+
+        if self.normalize:
+            inpt = inpt / torch.tensor(inpt.canvas_size[::-1]).tile(2)[None]
+
+        return inpt
 
 
 class RandomFlip(tvt_v2.Transform, NumpytoTVTensorMixin):
@@ -2616,8 +2656,47 @@ class Compose(tvt_v2.Compose):
 
     def forward(self, *inputs: T_OTXDataEntity) -> T_OTXDataEntity | None:
         """Forward with skipping None."""
+        assert len(inputs) == 1
+        inputs = inputs[0]
+        new_inputs = (inputs.image, {"bboxes": inputs.bboxes, "labels": inputs.labels, "img_info": inputs.img_info})
+        try:
+            outputs = super().forward(*new_inputs)
+        except:
+            breakpoint()
+        # for transform in self.transforms:
+        #     assert len(inputs) == 1
+        #     inputs = inputs[0]
+        #     images, boxes, labels = inputs.image, inputs.bboxes, inputs.labels
+        #     breakpoint()
+        #     out_images, out_boxes, out_labels = transform(images, {boxes, labels})
+        #     # MMCV transform can produce None. Please see
+        #     # https://github.com/open-mmlab/mmengine/blob/26f22ed283ae4ac3a24b756809e5961efe6f9da8/mmengine/dataset/base_dataset.py#L59-L66
+        #     inputs.image = out_images
+        #     inputs.bboxes = out_boxes
+        #     inputs.labels = out_labels
+        #     breakpoint()
+
+        #     if out_images is None:
+        #         return inputs
+        #     inputs = inputs if needs_unpacking else (inputs,)
+        inputs.image = outputs[0]
+        inputs.bboxes = outputs[1]["bboxes"]
+        inputs.labels = outputs[1]["labels"]
+        inputs.img_info = outputs[1]["img_info"]
+
+        return inputs
+
+
+class Compose2(tvt_v2.Compose):
+    """Re-implementation of torchvision.transforms.v2.Compose.
+
+    MMCV transforms can produce None, so it is required to skip the result.
+    """
+    def forward(self, *inputs: T_OTXDataEntity) -> T_OTXDataEntity | None:
+        """Forward with skipping None."""
         needs_unpacking = len(inputs) > 1
         for transform in self.transforms:
+            breakpoint()
             outputs = transform(*inputs)
             # MMCV transform can produce None. Please see
             # https://github.com/open-mmlab/mmengine/blob/26f22ed283ae4ac3a24b756809e5961efe6f9da8/mmengine/dataset/base_dataset.py#L59-L66

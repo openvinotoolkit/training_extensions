@@ -9,10 +9,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.nn.init as init
-import torchvision
 
 from otx.algo.detection.utils import bias_init_with_prob, deformable_attention_core_func, get_activation, inverse_sigmoid, box_cxcywh_to_xyxy, box_xyxy_to_cxcywh
-from otx.algo.detection.losses import RTDetrCriterion
 
 __all__ = ['RTDETRTransformer']
 
@@ -28,8 +26,8 @@ def get_contrastive_denoising_training_group(targets,
     if num_denoising <= 0:
         return None, None, None, None
 
-    num_gts = [len(t) for t in targets["labels"]]
-    device = targets['labels'][0].device
+    num_gts = [len(t['labels']) for t in targets]
+    device = targets[0]['labels'].device
 
     max_gt_num = max(num_gts)
     if max_gt_num == 0:
@@ -47,8 +45,8 @@ def get_contrastive_denoising_training_group(targets,
     for i in range(bs):
         num_gt = num_gts[i]
         if num_gt > 0:
-            input_query_class[i, :num_gt] = targets['labels'][i]
-            input_query_bbox[i, :num_gt] = targets['boxes'][i]
+            input_query_class[i, :num_gt] = targets[i]['labels']
+            input_query_bbox[i, :num_gt] = targets[i]['boxes']
             pad_gt_mask[i, :num_gt] = 1
     # each group has positive and negative queries.
     input_query_class = input_query_class.tile([1, 2 * num_group])
@@ -274,7 +272,6 @@ class TransformerDecoderLayer(nn.Module):
                 attn_mask=None,
                 memory_mask=None,
                 query_pos_embed=None):
-
         # self attention
         q = k = self.with_pos_embed(tgt, query_pos_embed)
         tgt2, _ = self.self_attn(q, k, value=tgt, attn_mask=attn_mask)
@@ -352,63 +349,6 @@ class TransformerDecoder(nn.Module):
         return torch.stack(dec_out_bboxes), torch.stack(dec_out_logits)
 
 
-class RTDETRPostProcessor(nn.Module):
-    __share__ = ['num_classes', 'use_focal_loss', 'num_top_queries', 'remap_mscoco_category']
-
-    def __init__(self, num_classes=80, use_focal_loss=True, num_top_queries=300, remap_mscoco_category=True) -> None:
-        super().__init__()
-        self.use_focal_loss = use_focal_loss
-        self.num_top_queries = num_top_queries
-        self.num_classes = num_classes
-        self.remap_mscoco_category = remap_mscoco_category
-        self.deploy_mode = False
-
-    def extra_repr(self) -> str:
-        return f'use_focal_loss={self.use_focal_loss}, num_classes={self.num_classes}, num_top_queries={self.num_top_queries}'
-
-    # def forward(self, outputs, orig_target_sizes):
-    def forward(self, outputs, orig_target_sizes):
-
-        logits, boxes = outputs['pred_logits'], outputs['pred_boxes']
-        # orig_target_sizes = torch.stack([t["orig_size"] for t in targets], dim=0)
-
-        bbox_pred = torchvision.ops.box_convert(boxes, in_fmt='cxcywh', out_fmt='xyxy')
-        bbox_pred *= orig_target_sizes.repeat(1, 2).unsqueeze(1)
-
-        if self.use_focal_loss:
-            scores = F.sigmoid(logits)
-            scores, index = torch.topk(scores.flatten(1), self.num_top_queries, axis=-1)
-            labels = index % self.num_classes
-            index = index // self.num_classes
-            boxes = bbox_pred.gather(dim=1, index=index.unsqueeze(-1).repeat(1, 1, bbox_pred.shape[-1]))
-
-        else:
-            scores = F.softmax(logits)[:, :, :-1]
-            scores, labels = scores.max(dim=-1)
-            boxes = bbox_pred
-            if scores.shape[1] > self.num_top_queries:
-                scores, index = torch.topk(scores, self.num_top_queries, dim=-1)
-                labels = torch.gather(labels, dim=1, index=index)
-                boxes = torch.gather(boxes, dim=1, index=index.unsqueeze(-1).tile(1, 1, boxes.shape[-1]))
-
-        results = []
-        for lab, box, sco in zip(labels, boxes, scores):
-            result = dict(labels=lab, boxes=box, scores=sco)
-            results.append(result)
-
-        return results
-
-
-    def deploy(self, ):
-        self.eval()
-        self.deploy_mode = True
-        return self
-
-    @property
-    def iou_types(self, ):
-        return ('bbox', )
-
-
 class RTDETRTransformer(nn.Module):
     __share__ = ['num_classes']
     def __init__(self,
@@ -432,8 +372,7 @@ class RTDETRTransformer(nn.Module):
                  eval_spatial_size=None,
                  eval_idx=-1,
                  eps=1e-2,
-                 aux_loss=True,
-                 orig_image_size=(640,640)):
+                 aux_loss=True):
 
         super(RTDETRTransformer, self).__init__()
         assert position_embed_type in ['sine', 'learned'], \
@@ -453,8 +392,6 @@ class RTDETRTransformer(nn.Module):
         self.num_decoder_layers = num_decoder_layers
         self.eval_spatial_size = eval_spatial_size
         self.aux_loss = aux_loss
-        self.main_loss = RTDetrCriterion({"loss_vfl": 1, "loss_bbox": 5, "loss_giou": 2}, ['vfl', 'boxes'], num_classes=num_classes)
-        self.orig_image_size = orig_image_size
 
         # backbone feature projection
         self._build_input_proj_layer(feat_channels)
@@ -466,11 +403,8 @@ class RTDETRTransformer(nn.Module):
         self.num_denoising = num_denoising
         self.label_noise_ratio = label_noise_ratio
         self.box_noise_scale = box_noise_scale
-        self.postprocessor = RTDETRPostProcessor(num_classes)
-
         # denoising part
         if num_denoising > 0:
-            # self.denoising_class_embed = nn.Embedding(num_classes, hidden_dim, padding_idx=num_classes-1) # TODO for load paddle weights
             self.denoising_class_embed = nn.Embedding(num_classes+1, hidden_dim, padding_idx=num_classes)
 
         # decoder embedding
@@ -596,8 +530,6 @@ class RTDETRTransformer(nn.Module):
         anchors = torch.concat(anchors, 1).to(device)
         valid_mask = ((anchors > self.eps) * (anchors < 1 - self.eps)).all(-1, keepdim=True)
         anchors = torch.log(anchors / (1 - anchors))
-        # anchors = torch.where(valid_mask, anchors, float('inf'))
-        # anchors[valid_mask] = torch.inf # valid_mask [1, 8400, 1]
         anchors = torch.where(valid_mask, anchors, torch.inf)
 
         return anchors, valid_mask
@@ -615,7 +547,6 @@ class RTDETRTransformer(nn.Module):
         else:
             anchors, valid_mask = self.anchors.to(memory.device), self.valid_mask.to(memory.device)
 
-        # memory = torch.where(valid_mask, memory, 0)
         memory = valid_mask.to(memory.dtype) * memory  # TODO fix type error for onnx export
 
         output_memory = self.enc_output(memory)
@@ -648,7 +579,6 @@ class RTDETRTransformer(nn.Module):
             target = torch.concat([denoising_class, target], 1)
 
         return target, reference_points_unact.detach(), enc_topk_bboxes, enc_topk_logits
-
 
     def forward(self, feats, targets=None):
 
@@ -697,11 +627,7 @@ class RTDETRTransformer(nn.Module):
                 out['dn_aux_outputs'] = self._set_aux_loss(dn_out_logits, dn_out_bboxes)
                 out['dn_meta'] = dn_meta
 
-        if self.training:
-            return self.main_loss(out, targets)
-
-        return self.postprocessor(out, torch.tensor(self.orig_image_size, device=feats[0].device))
-
+        return out
 
     @torch.jit.unused
     def _set_aux_loss(self, outputs_class, outputs_coord):
@@ -713,3 +639,15 @@ class RTDETRTransformer(nn.Module):
 
     def init_weights(self):
         pass
+        # for m in self.modules():
+        #     if isinstance(m, nn.Conv2d):
+        #         nn.init.xavier_uniform_(m.weight)
+        #         if m.bias is not None:
+        #             nn.init.constant_(m.bias, 0)
+        #     elif isinstance(m, nn.BatchNorm2d):
+        #         nn.init.constant_(m.weight, 1)
+        #         nn.init.constant_(m.bias, 0)
+        #     elif isinstance(m, nn.Linear):
+        #         nn.init.xavier_uniform_(m.weight)
+        #         if m.bias is not None:
+        #             nn.init.constant_(m.bias, 0)

@@ -325,17 +325,10 @@ def generalized_box_iou(boxes1, boxes2):
 
     return iou - (area - union) / area
 
+def is_dist_available_and_initialized():
+    return torch.distributed.is_available() and torch.distributed.is_initialized()
 
-def normalize_bounding_boxes(target_boxes: torch.Tensor, image_width: int, image_height: int):
-    # Convert BoundingBoxes to tensor; shape: [N, 4], where N is the number of boxes,
-    # and each box is [xmin, ymin, xmax, ymax]
-    # Normalize xmin and xmax by image width
-    bounding_boxes = target_boxes.clone()
-    bounding_boxes[:, 0] = bounding_boxes[:, 0] / image_width
-    bounding_boxes[:, 2] = bounding_boxes[:, 2] / image_width
-
-    # Normalize ymin and ymax by image height
-    bounding_boxes[:, 1] = bounding_boxes[:, 1] / image_height
-    bounding_boxes[:, 3] = bounding_boxes[:, 3] / image_height
-
-    return bounding_boxes
+def get_world_size():
+    if is_dist_available_and_initialized():
+        return torch.distributed.get_world_size()
+    return 1

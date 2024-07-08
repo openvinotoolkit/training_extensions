@@ -52,9 +52,6 @@ from otx.core.types.precision import OTXPrecisionType
 from otx.core.utils.build import get_default_num_async_infer_requests
 from otx.core.utils.miscellaneous import ensure_callable
 from otx.core.utils.utils import is_ckpt_for_finetuning, is_ckpt_from_otx_v1
-from otx.algo.detection.utils import CocoEvaluator
-from pycocotools.coco import COCO
-from torchvision.ops import box_area
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -90,48 +87,6 @@ def _default_scheduler_callable(
 DefaultOptimizerCallable = _default_optimizer_callable
 DefaultSchedulerCallable = _default_scheduler_callable
 
-
-def convert_to_coco_api(ds):
-    coco_ds = COCO()
-    # annotation IDs need to start at 1, not 0, see torchvision issue #1530
-    ann_id = 1
-    dataset = {"images": [], "categories": [], "annotations": []}
-    categories = set()
-    for img_idx in range(len(ds)):
-        # find better way to get target
-        # targets = ds.get_annotations(img_idx)
-        item = ds[img_idx]
-        img = item.image
-        image_id = item.img_info.img_idx
-        img_dict = {}
-        img_dict["id"] = image_id
-        img_dict["height"] = img.shape[-2]
-        img_dict["width"] = img.shape[-1]
-        dataset["images"].append(img_dict)
-        bboxes = item.bboxes.clone()
-        areas = box_area(bboxes)
-        bboxes[:, 2:] -= bboxes[:, :2]
-        bboxes = bboxes.tolist()
-        labels = item.labels.tolist()
-        iscrowd = [False for i in range(len(bboxes))]
-
-        num_objs = len(bboxes)
-        for i in range(num_objs):
-            ann = {}
-            ann["image_id"] = image_id
-            ann["bbox"] = bboxes[i]
-            ann["category_id"] = labels[i]
-            categories.add(labels[i])
-            ann["area"] = areas[i]
-            ann["iscrowd"] = iscrowd[i]
-            ann["id"] = ann_id
-
-            dataset["annotations"].append(ann)
-            ann_id += 1
-    dataset["categories"] = [{"id": i} for i in sorted(categories)]
-    coco_ds.dataset = dataset
-    coco_ds.createIndex()
-    return coco_ds
 
 class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
     """Base class for the models used in OTX.
@@ -224,12 +179,6 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
         if isinstance(preds, OTXBatchLossEntity):
             raise TypeError(preds)
 
-        targets = batch.imgs_info
-        outputs = [{"boxes": bb, "labels": ll, "scores": sc} for bb, ll, sc in zip(preds.bboxes, preds.labels, preds.scores)]
-        res = {target.img_idx: output for target, output in zip(targets, outputs)}
-        if self.coco_evaluator is not None:
-            self.coco_evaluator.update(res)
-
         metric_inputs = self._convert_pred_entity_to_compute_metric(preds, batch)
 
         if isinstance(metric_inputs, dict):
@@ -254,12 +203,6 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
 
         if isinstance(preds, OTXBatchLossEntity):
             raise TypeError(preds)
-
-        targets = batch.imgs_info
-        outputs = [{"boxes": bb, "labels": ll, "scores": sc} for bb, ll, sc in zip(preds.bboxes, preds.labels, preds.scores)]
-        res = {target.img_idx: output for target, output in zip(targets, outputs)}
-        if self.coco_evaluator is not None:
-            self.coco_evaluator.update(res)
 
         metric_inputs = self._convert_pred_entity_to_compute_metric(preds, batch)
 
@@ -301,29 +244,19 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
 
     def on_validation_epoch_start(self) -> None:
         """Callback triggered when the validation epoch starts."""
-        base_coco_ds = convert_to_coco_api(self.trainer.val_dataloaders.dataset)
-        self.coco_evaluator = CocoEvaluator(base_coco_ds, ('bbox',))
         self.metric.reset()
 
     def on_test_epoch_start(self) -> None:
         """Callback triggered when the test epoch starts."""
         self.metric.reset()
-        base_coco_ds = convert_to_coco_api(self.trainer.test_dataloaders.dataset)
-        self.coco_evaluator = CocoEvaluator(base_coco_ds, ('bbox',))
 
     def on_validation_epoch_end(self) -> None:
         """Callback triggered when the validation epoch ends."""
-        self.coco_evaluator.synchronize_between_processes()
-        self.coco_evaluator.accumulate()
-        self.coco_evaluator.summarize()
         self._log_metrics(self.metric, "val")
 
     def on_test_epoch_end(self) -> None:
         """Callback triggered when the test epoch ends."""
         self._log_metrics(self.metric, "test")
-        self.coco_evaluator.synchronize_between_processes()
-        self.coco_evaluator.accumulate()
-        self.coco_evaluator.summarize()
 
     def setup(self, stage: str) -> None:
         """Lightning hook that is called at the beginning of fit (train + validate), validate, test, or predict.
