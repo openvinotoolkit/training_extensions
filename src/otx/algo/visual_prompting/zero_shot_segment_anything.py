@@ -16,7 +16,7 @@ from typing import TYPE_CHECKING, Any, Literal
 import torch
 import torchvision.transforms.v2 as tvt_v2
 from datumaro import Polygon as dmPolygon
-from torch import LongTensor, Tensor, nn
+from torch import Tensor, nn
 from torch.nn import functional as F  # noqa: N812
 from torchvision import tv_tensors
 from torchvision.tv_tensors import BoundingBoxes, Image, Mask, TVTensor
@@ -764,21 +764,38 @@ class OTXZeroShotSegmentAnything(OTXZeroShotVisualPromptingModel):
         masks: list[Mask] = []
         prompts: list[Points] = []
         scores: list[Tensor] = []
-        labels: list[LongTensor] = []
-        for predicted_masks, used_points in outputs:
+        labels: list[Tensor] = []
+        for idx, (predicted_masks, used_points) in enumerate(outputs):
+            _masks: list[Tensor] = []
+            _prompts: list[Tensor] = []
+            _scores: list[Tensor] = []
+            _labels: list[Tensor] = []
             for label, predicted_mask in predicted_masks.items():
                 if len(predicted_mask) == 0:
                     continue
-                masks.append(Mask(torch.stack(predicted_mask, dim=0), dtype=torch.float32))
-                prompts.append(
-                    Points(
-                        torch.stack([p[:2] for p in used_points[label]], dim=0),
-                        canvas_size=inputs.imgs_info[0].ori_shape,
-                        dtype=torch.float32,
+                _masks.append(torch.stack(predicted_mask, dim=0))
+                _used_points_scores = torch.stack(used_points[label], dim=0)
+                _prompts.append(_used_points_scores[:, :2])
+                _scores.append(_used_points_scores[:, 2])
+                _labels.append(torch.tensor([label] * len(_used_points_scores), dtype=torch.int64, device=self.device))
+
+            if len(_masks) == 0:
+                masks.append(
+                    tv_tensors.Mask(
+                        torch.zeros((1, *inputs.imgs_info[idx].ori_shape), dtype=torch.float32, device=self.device),
                     ),
                 )
-                scores.append(torch.stack([p[2] for p in used_points[label]], dim=0))
-                labels.append(torch.cat([LongTensor([label]) for _ in range(scores[-1].shape[0])], dim=0))
+                prompts.append(
+                    Points([], canvas_size=inputs.imgs_info[idx].ori_shape, dtype=torch.float32, device=self.device),
+                )
+                scores.append(torch.tensor([-1.0], dtype=torch.float32, device=self.device))
+                labels.append(torch.tensor([-1], dtype=torch.int64, device=self.device))
+                continue
+
+            masks.append(tv_tensors.Mask(torch.cat(_masks, dim=0)))
+            prompts.append(Points(torch.cat(_prompts, dim=0), canvas_size=inputs.imgs_info[idx].ori_shape))
+            scores.append(torch.cat(_scores, dim=0))
+            labels.append(torch.cat(_labels, dim=0))
 
         return ZeroShotVisualPromptingBatchPredEntity(
             batch_size=len(outputs),
@@ -926,15 +943,19 @@ class OTXZeroShotSegmentAnything(OTXZeroShotVisualPromptingModel):
             log.info(f"reference info saved at {path_to_directly_load} was successfully loaded.")
 
         else:
-            _infer_reference_info_root: Path = (
-                self.infer_reference_info_root
-                if self.infer_reference_info_root == self.infer_reference_info_root.absolute()
-                else Path(default_root_dir) / self.infer_reference_info_root
-            )
+            if str(self.infer_reference_info_root) == "../.latest/train":
+                # for default setting
+                path_reference_info = (
+                    Path(default_root_dir)
+                    / self.infer_reference_info_root
+                    / self.reference_info_dir
+                    / "reference_info.pt"
+                )
+            else:
+                # for user input
+                path_reference_info = self.infer_reference_info_root / self.reference_info_dir / "reference_info.pt"
 
-            if (
-                path_reference_info := _infer_reference_info_root / self.reference_info_dir / "reference_info.pt"
-            ).is_file():
+            if path_reference_info.is_file():
                 reference_info = torch.load(path_reference_info)
                 retval = True
                 log.info(f"reference info saved at {path_reference_info} was successfully loaded.")

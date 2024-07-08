@@ -10,7 +10,7 @@ model:
     default_threshold_target: 0.65
     save_outputs: True
     reference_info_dir: reference_infos
-    infer_reference_info_root: ../.latest/train # set absolute path for using reference_info saved in other location
+    infer_reference_info_root: ../.latest/train
     # options
     use_stability_score: False
     return_single_mask: False
