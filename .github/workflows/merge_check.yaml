@@ -20,8 +20,8 @@ jobs:
       matrix:
         include:
           - task: "action"
-          - task: "multi-classification"
-          - task: "hlabel-classification"
+          - task: "multi_classification"
+          - task: "hlabel_classification"
           - task: "detection"
           - task: "instance_segmentation"
           - task: "semantic_segmentation"
