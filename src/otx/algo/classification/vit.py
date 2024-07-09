@@ -25,7 +25,6 @@ from otx.algo.classification.heads import (
 )
 from otx.algo.classification.losses import AsymmetricAngularLossWithIgnore
 from otx.algo.classification.utils import get_classification_layers
-from otx.algo.classification.utils.embed import resize_pos_embed
 from otx.algo.explain.explain_algo import ViTReciproCAM, feature_vector_fn
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.data.entity.base import OTXBatchLossEntity, T_OTXBatchDataEntity, T_OTXBatchPredEntity
@@ -71,19 +70,16 @@ class ForwardExplainMixInForViT(Generic[T_OTXBatchPredEntity, T_OTXBatchDataEnti
     @torch.no_grad()
     def head_forward_fn(self, x: torch.Tensor) -> torch.Tensor:
         """Performs model's neck and head forward."""
-        if not hasattr(self.model.backbone, "layers"):
-            raise ValueError
-        if not hasattr(self.model.backbone, "final_norm"):
+        if not hasattr(self.model.backbone, "blocks"):
             raise ValueError
 
         # Part of the last transformer_encoder block (except first LayerNorm)
-        target_layer = self.model.backbone.layers[-1]
+        target_layer = self.model.backbone.blocks[-1]
         x = x + target_layer.attn(x)
-        x = target_layer.ffn(target_layer.norm2(x), identity=x)
+        x = target_layer.mlp(target_layer.norm2(x))
 
         # Final LayerNorm and neck
-        if self.model.backbone.final_norm:
-            x = self.model.backbone.norm1(x)
+        x = self.model.backbone.norm(x)
         if self.model.neck is not None:
             x = self.model.neck(x)
 
@@ -105,43 +101,10 @@ class ForwardExplainMixInForViT(Generic[T_OTXBatchPredEntity, T_OTXBatchDataEnti
         """Forward func of the ImageClassifier instance, which located in is in OTXModel().model."""
         backbone = self.backbone
 
-        ### Start of backbone forward
-        batch_size = images.shape[0]
-        x, patch_resolution = backbone.patch_embed(images)
+        feat = backbone.forward_explain(images)
+        x = (feat[:, 0],)
 
-        if backbone.cls_token is not None:
-            cls_token = backbone.cls_token.expand(batch_size, -1, -1)
-            x = torch.cat((cls_token, x), dim=1)
-
-        x = x + resize_pos_embed(
-            backbone.pos_embed,
-            backbone.patch_resolution,
-            patch_resolution,
-            mode=backbone.interpolate_mode,
-            num_extra_tokens=backbone.num_extra_tokens,
-        )
-        x = backbone.drop_after_pos(x)
-
-        x = backbone.pre_norm(x)
-
-        outs = []
-        layernorm_feat = None
-        for i, layer in enumerate(backbone.layers):
-            if i == len(backbone.layers) - 1:
-                layernorm_feat = layer.norm1(x)
-
-            x = layer(x)
-
-            if i == len(backbone.layers) - 1 and backbone.final_norm:
-                x = backbone.ln1(x)
-
-            if i in backbone.out_indices:
-                outs.append(backbone._format_output(x, patch_resolution))  # noqa: SLF001
-
-        x = tuple(outs)
-        ### End of backbone forward
-
-        saliency_map = self.explain_fn(layernorm_feat)
+        saliency_map = self.explain_fn(feat)
 
         if self.neck is not None:
             x = self.neck(x)
