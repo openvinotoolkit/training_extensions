@@ -10,16 +10,16 @@ model:
     infer_reference_info_root: ../.latest/train
     save_outputs: True
 
-engine:
-  task: ZERO_SHOT_VISUAL_PROMPTING
-  device: cpu
-
 callback_monitor: step
 
+engine: ../_base_/engine/zero_shot_visual_prompting.yaml
 data: ../_base_/data/zero_shot_visual_prompting.yaml
 overrides:
   max_epochs: 1
   limit_val_batches: 0
+  engine:
+    device: cpu
+
   data:
     train_subset:
       num_workers: 0 # TODO (sungchul): CVS-135462

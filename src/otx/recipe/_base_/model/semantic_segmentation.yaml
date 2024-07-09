@@ -1,0 +1,7 @@
+init_args:
+  label_info: 2
+
+  scheduler:
+    class_path: otx.core.schedulers.LinearWarmupSchedulerCallable
+    init_args:
+      num_warmup_steps: 100

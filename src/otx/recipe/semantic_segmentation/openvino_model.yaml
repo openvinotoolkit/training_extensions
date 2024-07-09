@@ -3,18 +3,19 @@ model:
   init_args:
     label_info: 19
     model_name: drn-d-38
-    async_inference: True
-    use_throughput_mode: True
     model_type: "Segmentation"
+    async_inference: true
+    use_throughput_mode: true
 
-engine:
-  task: SEMANTIC_SEGMENTATION
-  device: cpu
+engine: ../_base_/engine/semantic_segmentation.yaml
+data: ../_base_/data/semantic_segmentation.yaml
 
 callback_monitor: val/Dice
 
-data: ../_base_/data/semantic_segmentation.yaml
 overrides:
+  engine:
+    device: cpu
+
   data:
     stack_images: false
     train_subset:

@@ -63,12 +63,9 @@ model:
         power: 0.9
         last_epoch: -1
 
-engine:
-  task: SEMANTIC_SEGMENTATION
-  device: auto
-
 callback_monitor: val/Dice
 
+engine: ../_base_/engine/semantic_segmentation.yaml
 data: ../_base_/data/semantic_segmentation.yaml
 overrides:
   data:

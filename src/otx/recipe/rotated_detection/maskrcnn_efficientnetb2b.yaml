@@ -1,36 +1,21 @@
-model:
-  class_path: otx.algo.instance_segmentation.maskrcnn.MaskRCNNEfficientNet
-  init_args:
-    label_info: 80
-
-    optimizer:
-      class_path: torch.optim.SGD
-      init_args:
-        lr: 0.007
-        momentum: 0.9
-        weight_decay: 0.001
-
-    scheduler:
-      class_path: otx.core.schedulers.LinearWarmupSchedulerCallable
-      init_args:
-        num_warmup_steps: 100
-        main_scheduler_callable:
-          class_path: lightning.pytorch.cli.ReduceLROnPlateau
-          init_args:
-            mode: max
-            factor: 0.1
-            patience: 9
-            monitor: val/map_50
-
-engine:
-  task: ROTATED_DETECTION
-  device: auto
+engine: ../_base_/engine/rotated_detection.yaml
+model: ../_base_/model/rotated_detection.yaml
+data: ../_base_/data/rotated_detection.yaml
 
 callback_monitor: val/map_50
 
-data: ../_base_/data/rotated_detection.yaml
 overrides:
   max_epochs: 100
+  model:
+    class_path: otx.algo.instance_segmentation.maskrcnn.MaskRCNNEfficientNet
+    init_args:
+      optimizer:
+        class_path: torch.optim.SGD
+        init_args:
+          lr: 0.007
+          momentum: 0.9
+          weight_decay: 0.001
+
   data:
     train_subset:
       batch_size: 4

@@ -1,37 +1,22 @@
-model:
-  class_path: otx.algo.instance_segmentation.maskrcnn_tv.TVMaskRCNNR50
-  init_args:
-    label_info: 80
-
-    optimizer:
-      class_path: torch.optim.SGD
-      init_args:
-        lr: 0.007
-        momentum: 0.9
-        weight_decay: 0.001
-
-    scheduler:
-      class_path: otx.core.schedulers.LinearWarmupSchedulerCallable
-      init_args:
-        num_warmup_steps: 100
-        main_scheduler_callable:
-          class_path: lightning.pytorch.cli.ReduceLROnPlateau
-          init_args:
-            mode: max
-            factor: 0.1
-            patience: 4
-            monitor: val/map_50
-
-engine:
-  task: INSTANCE_SEGMENTATION
-  device: auto
+engine: ../_base_/engine/instance_segmentation.yaml
+model: ../_base_/model/instance_segmentation.yaml
+data: ../_base_/data/instance_segmentation.yaml
 
 callback_monitor: val/map_50
 
-data: ../_base_/data/instance_segmentation.yaml
 overrides:
   max_epochs: 100
   gradient_clip_val: 35.0
+  model:
+    class_path: otx.algo.instance_segmentation.maskrcnn_tv.TVMaskRCNNR50
+    init_args:
+      optimizer:
+        class_path: torch.optim.SGD
+        init_args:
+          lr: 0.007
+          momentum: 0.9
+          weight_decay: 0.001
+
   data:
     tile_config:
       enable_tiler: true

@@ -4,17 +4,18 @@ model:
     label_info: 0
     model_name: segment_anything
     model_type: Visual_Prompting
-    async_inference: False
-    use_throughput_mode: False
+    async_inference: false
+    use_throughput_mode: false
 
-engine:
-  task: VISUAL_PROMPTING
-  device: cpu
+engine: ../_base_/engine/visual_prompting.yaml
+data: ../_base_/data/visual_prompting.yaml
 
 callback_monitor: val/Dice
 
-data: ../_base_/data/visual_prompting.yaml
 overrides:
+  engine:
+    device: cpu
+
   data:
     train_subset:
       batch_size: 1

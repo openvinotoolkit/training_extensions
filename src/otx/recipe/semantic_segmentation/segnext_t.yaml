@@ -1,109 +1,105 @@
-model:
-  class_path: otx.algo.segmentation.segnext.OTXSegNext
-  init_args:
-    label_info: 2
-    name_base_model: SegNextT
-
-    criterion_configuration:
-      - type: CrossEntropyLoss
-        params:
-          ignore_index: 255
-
-    backbone_configuration:
-      act_cfg:
-        type: GELU
-      attention_kernel_paddings:
-        - 2
-        - - 0
-          - 3
-        - - 0
-          - 5
-        - - 0
-          - 10
-      attention_kernel_sizes:
-        - 5
-        - - 1
-          - 7
-        - - 1
-          - 11
-        - - 1
-          - 21
-      depths:
-        - 3
-        - 3
-        - 5
-        - 2
-      drop_path_rate: 0.1
-      drop_rate: 0.0
-      embed_dims:
-        - 32
-        - 64
-        - 160
-        - 256
-      mlp_ratios:
-        - 8
-        - 8
-        - 4
-        - 4
-      norm_cfg:
-        requires_grad: true
-        type: BN
-      pretrained_weights: https://download.openmmlab.com/mmsegmentation/v0.5/pretrain/segnext/mscan_t_20230227-119e8c9f.pth
-
-    decode_head_configuration:
-      ham_kwargs:
-        md_r: 16
-        md_s: 1
-        eval_steps: 7
-        rand_init: true
-        train_steps: 6
-      norm_cfg:
-        num_groups: 32
-        requires_grad: true
-        type: GN
-      in_channels:
-        - 64
-        - 160
-        - 256
-      in_index:
-        - 1
-        - 2
-        - 3
-      align_corners: false
-      channels: 256
-      dropout_ratio: 0.1
-      ham_channels: 256
-
-    optimizer:
-      class_path: torch.optim.AdamW
-      init_args:
-        lr: 0.00006
-        betas:
-          - 0.9
-          - 0.999
-        weight_decay: 0.01
-
-    scheduler:
-      class_path: otx.core.schedulers.LinearWarmupSchedulerCallable
-      init_args:
-        num_warmup_steps: 20
-        main_scheduler_callable:
-          class_path: torch.optim.lr_scheduler.PolynomialLR
-          init_args:
-            total_iters: 100
-            power: 0.9
-            last_epoch: -1
-
-engine:
-  task: SEMANTIC_SEGMENTATION
-  device: auto
+engine: ../_base_/engine/semantic_segmentation.yaml
+model: ../_base_/model/semantic_segmentation.yaml
+data: ../_base_/data/semantic_segmentation.yaml
 
 callback_monitor: val/Dice
 
 overrides:
+  model:
+    class_path: otx.algo.segmentation.segnext.OTXSegNext
+    init_args:
+      name_base_model: SegNextT
+
+      criterion_configuration:
+        - type: CrossEntropyLoss
+          params:
+            ignore_index: 255
+
+      backbone_configuration:
+        act_cfg:
+          type: GELU
+        attention_kernel_paddings:
+          - 2
+          - - 0
+            - 3
+          - - 0
+            - 5
+          - - 0
+            - 10
+        attention_kernel_sizes:
+          - 5
+          - - 1
+            - 7
+          - - 1
+            - 11
+          - - 1
+            - 21
+        depths:
+          - 3
+          - 3
+          - 5
+          - 2
+        drop_path_rate: 0.1
+        drop_rate: 0.0
+        embed_dims:
+          - 32
+          - 64
+          - 160
+          - 256
+        mlp_ratios:
+          - 8
+          - 8
+          - 4
+          - 4
+        norm_cfg:
+          requires_grad: true
+          type: BN
+        pretrained_weights: https://download.openmmlab.com/mmsegmentation/v0.5/pretrain/segnext/mscan_t_20230227-119e8c9f.pth
+
+      decode_head_configuration:
+        ham_kwargs:
+          md_r: 16
+          md_s: 1
+          eval_steps: 7
+          rand_init: true
+          train_steps: 6
+        norm_cfg:
+          num_groups: 32
+          requires_grad: true
+          type: GN
+        in_channels:
+          - 64
+          - 160
+          - 256
+        in_index:
+          - 1
+          - 2
+          - 3
+        align_corners: false
+        channels: 256
+        dropout_ratio: 0.1
+        ham_channels: 256
+
+      optimizer:
+        class_path: torch.optim.AdamW
+        init_args:
+          lr: 0.00006
+          betas:
+            - 0.9
+            - 0.999
+          weight_decay: 0.01
+
+      scheduler:
+        init_args:
+          num_warmup_steps: 20
+          main_scheduler_callable:
+            class_path: torch.optim.lr_scheduler.PolynomialLR
+            init_args:
+              total_iters: 100
+              power: 0.9
+              last_epoch: -1
+
   callbacks:
     - class_path: otx.algo.callbacks.adaptive_early_stopping.EarlyStoppingWithWarmup
       init_args:
         warmup_iters: 100
-
-data: ../_base_/data/semantic_segmentation.yaml

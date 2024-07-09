@@ -4,17 +4,18 @@ model:
     label_info: 80
     model_name: openvino.xml
     model_type: MaskRCNN
-    async_inference: True
-    use_throughput_mode: True
+    async_inference: true
+    use_throughput_mode: true
 
-engine:
-  task: INSTANCE_SEGMENTATION
-  device: cpu
+engine: ../_base_/engine/instance_segmentation.yaml
+data: ../_base_/data/instance_segmentation.yaml
 
 callback_monitor: val/map_50
 
-data: ../_base_/data/instance_segmentation.yaml
 overrides:
+  engine:
+    device: cpu
+
   data:
     stack_images: false
     test_subset:
