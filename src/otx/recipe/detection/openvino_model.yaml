@@ -9,6 +9,9 @@ model:
 
 engine: ../_base_/engine/detection.yaml
 data: ../_base_/data/detection.yaml
+
+callback_monitor: val/map_50
+
 overrides:
   engine:
     device: cpu

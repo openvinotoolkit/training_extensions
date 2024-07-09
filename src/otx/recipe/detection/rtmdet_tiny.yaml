@@ -1,6 +1,9 @@
 engine: ../_base_/engine/detection.yaml
 model: ../_base_/model/detection.yaml
 data: ../_base_/data/detection.yaml
+
+callback_monitor: val/map_50
+
 overrides:
   gradient_clip_val: 35.0
   model:

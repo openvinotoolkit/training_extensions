@@ -1,5 +1,2 @@
-engine:
-  task: DETECTION
-  device: auto
-
-callback_monitor: val/map_50
+task: DETECTION
+device: auto
