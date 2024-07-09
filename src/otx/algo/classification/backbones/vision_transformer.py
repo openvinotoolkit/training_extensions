@@ -365,6 +365,16 @@ class VisionTransformer(BaseModule):
         msg = f"Unsupported `out_type` {out_type}, please choose from {self.OUT_TYPES}"
         raise ValueError(msg)
 
+    def forward_explain(self, x: torch.Tensor) -> tuple:
+        """Forward pass of the VisionTransformer model."""
+        x = self.patch_embed(x)
+        x = self._pos_embed(x)
+        x = self.patch_drop(x)
+        x = self.norm_pre(x)
+
+        x = self.blocks(x)
+        return self.norm(x)
+
 
 @torch.no_grad()
 def _load_npz_weights(  # noqa: C901
