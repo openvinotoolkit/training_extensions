@@ -667,7 +667,7 @@ class OVVisualPromptingModel(
         # ticket no. : CVS-135462
         # There is segmentation fault issue when using num_workers > 0 during releasing memory.
         # To avoid this issue, force num_workers to 0.
-        data_module.config.train_subset.num_workers = 0
+        data_module.train_subset.num_workers = 0
 
         output_model_paths: dict[str, Path] = {}
         for module in ["image_encoder", "decoder"]:
@@ -1078,7 +1078,7 @@ class OVZeroShotVisualPromptingModel(
         # ticket no. : CVS-135462
         # There is segmentation fault issue when using num_workers > 0 during releasing memory.
         # To avoid this issue, force num_workers to 0.
-        data_module.config.val_subset.num_workers = 0
+        data_module.val_subset.num_workers = 0
 
         output_model_paths: dict[str, Path] = {}
         for module in ["image_encoder", "decoder"]:
