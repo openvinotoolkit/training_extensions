@@ -87,10 +87,10 @@ def execute_hpo(
     )
     if (
         train_args.get("adaptive_bs", None) == "Full"
-        and "datamodule.config.train_subset.batch_size" in hpo_configurator.hpo_config["search_space"]
+        and "datamodule.train_subset.batch_size" in hpo_configurator.hpo_config["search_space"]
     ):
         logger.info("Because adaptive_bs is set as Full, batch size is excluded from HPO.")
-        hpo_configurator.hpo_config["search_space"].pop("datamodule.config.train_subset.batch_size")
+        hpo_configurator.hpo_config["search_space"].pop("datamodule.train_subset.batch_size")
 
     if (hpo_algo := hpo_configurator.get_hpo_algo()) is None:
         logger.warning("HPO is skipped.")
@@ -167,7 +167,7 @@ class HPOConfigurator:
     @hpo_config.setter
     def hpo_config(self, hpo_config: HpoConfig) -> None:
         train_dataset_size = len(
-            self._engine.datamodule.subsets[self._engine.datamodule.config.train_subset.subset_name],
+            self._engine.datamodule.subsets[self._engine.datamodule.train_subset.subset_name],
         )
 
         if hpo_config.metric_name is None:
@@ -206,21 +206,20 @@ class HPOConfigurator:
             self._align_search_space()
 
         if hpo_config.adapt_bs_search_space_max_val != "None":
-            if "datamodule.config.train_subset.batch_size" not in self._hpo_config["search_space"]:
+            if "datamodule.train_subset.batch_size" not in self._hpo_config["search_space"]:
                 logger.warning("Batch size isn't included for HPO. 'adapt_batch_size_search_space' is ignored.")
             else:
                 self._adapt_batch_size_search_space(hpo_config.adapt_bs_search_space_max_val)
 
         if (  # align batch size to train set size
-            "datamodule.config.train_subset.batch_size" in self._hpo_config["search_space"]
-            and self._hpo_config["search_space"]["datamodule.config.train_subset.batch_size"]["max"]
-            > train_dataset_size
+            "datamodule.train_subset.batch_size" in self._hpo_config["search_space"]
+            and self._hpo_config["search_space"]["datamodule.train_subset.batch_size"]["max"] > train_dataset_size
         ):
             logger.info(
                 "Max value of batch size in HPO search space is lower than train dataset size. "
                 "Decrease it to train dataset size.",
             )
-            self._hpo_config["search_space"]["datamodule.config.train_subset.batch_size"]["max"] = train_dataset_size
+            self._hpo_config["search_space"]["datamodule.train_subset.batch_size"]["max"] = train_dataset_size
 
         self._remove_wrong_search_space(self._hpo_config["search_space"])
 
@@ -238,8 +237,8 @@ class HPOConfigurator:
             self._engine.model.optimizer_callable,
         )
 
-        cur_bs = self._engine.datamodule.config.train_subset.batch_size
-        search_space["datamodule.config.train_subset.batch_size"] = {
+        cur_bs = self._engine.datamodule.train_subset.batch_size
+        search_space["datamodule.train_subset.batch_size"] = {
             "type": "qloguniform",
             "min": cur_bs // 2 if cur_bs != 1 else 1,
             "max": cur_bs * 2 if cur_bs != 1 else 2,
@@ -277,10 +276,10 @@ class HPOConfigurator:
 
     def _align_hp_name(self, search_space: dict[str, Any]) -> None:
         available_hp_name_map: dict[str, Callable[[str], None]] = {
-            "data.config.train_subset.batch_size": lambda hp_name: self._replace_hp_name(
+            "data.train_subset.batch_size": lambda hp_name: self._replace_hp_name(
                 hp_name,
-                "data.config.train_subset.batch_size",
-                "datamodule.config.train_subset.batch_size",
+                "data.train_subset.batch_size",
+                "datamodule.train_subset.batch_size",
             ),
             "optimizer": lambda hp_name: self._replace_hp_name(
                 hp_name,
@@ -320,11 +319,11 @@ class HPOConfigurator:
         self._hpo_config["search_space"][new_hp_name] = self._hpo_config["search_space"].pop(ori_hp_name)
 
     def _adapt_batch_size_search_space(self, adapt_mode: Literal["Safe", "Full"]) -> None:
-        origin_bs = self._engine.datamodule.config.train_subset.batch_size
+        origin_bs = self._engine.datamodule.train_subset.batch_size
         origin_lr = self._engine.model.optimizer_callable.optimizer_kwargs["lr"]  # type: ignore[attr-defined]
 
-        self._engine.datamodule.config.train_subset.batch_size = \
-            self._hpo_config["search_space"]["datamodule.config.train_subset.batch_size"]["max"]  # fmt: off
+        self._engine.datamodule.train_subset.batch_size = \
+            self._hpo_config["search_space"]["datamodule.train_subset.batch_size"]["max"]  # fmt: off
 
         adapt_batch_size(
             self._engine,
@@ -333,11 +332,11 @@ class HPOConfigurator:
             **self._train_args,
         )
 
-        adapted_bs = self._engine.datamodule.config.train_subset.batch_size
+        adapted_bs = self._engine.datamodule.train_subset.batch_size
 
-        self._engine.datamodule.config.train_subset.batch_size = origin_bs
+        self._engine.datamodule.train_subset.batch_size = origin_bs
         self._engine.model.optimizer_callable.optimizer_kwargs["lr"] = origin_lr  # type: ignore[attr-defined]
-        self._hpo_config["search_space"]["datamodule.config.train_subset.batch_size"]["max"] = adapted_bs
+        self._hpo_config["search_space"]["datamodule.train_subset.batch_size"]["max"] = adapted_bs
         logger.info(f"Max value of batch size search space : {origin_bs} -> {adapted_bs}")
 
     @staticmethod

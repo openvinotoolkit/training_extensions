@@ -3,6 +3,7 @@ model:
   init_args:
     backbone: mobilenet_v3_small
     label_info: 1000
+    task: MULTI_CLASS_CLS
     train_type: semi_supervised
 
     optimizer:

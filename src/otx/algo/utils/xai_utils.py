@@ -287,7 +287,7 @@ def _convert_labels_from_hcls_format(
 
 def set_crop_padded_map_flag(explain_config: ExplainConfig, datamodule: OTXDataModule) -> ExplainConfig:
     """If resize with keep_ratio = True was used, set crop_padded_map flag to True."""
-    for transform in datamodule.config.test_subset.transforms:
+    for transform in datamodule.test_subset.transforms:
         tranf_name = transform["class_path"].split(".")[-1]
         if tranf_name == "Resize" and transform["init_args"].get("keep_ratio", False):
             explain_config.crop_padded_map = True

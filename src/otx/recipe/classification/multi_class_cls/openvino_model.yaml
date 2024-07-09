@@ -18,7 +18,6 @@ data: ../../_base_/data/torchvision_base.yaml
 overrides:
   data:
     task: MULTI_CLASS_CLS
-    config:
-      image_color_channel: RGB
-      test_subset:
-        batch_size: 128
+    image_color_channel: RGB
+    test_subset:
+      batch_size: 128

@@ -299,9 +299,9 @@ class TestPerfSemiSLMultiClass(PerfTestBase):
                 unlabeled_data_path=Path(f"multiclass_classification/semi-sl/cifar10@{num_label}_{idx}/unlabel_data"),
                 extra_overrides={
                     "train": {
-                        "data.config.train_subset.subset_name": "train_data",
-                        "data.config.val_subset.subset_name": "val_data",
-                        "data.config.test_subset.subset_name": "val_data",
+                        "data.train_subset.subset_name": "train_data",
+                        "data.val_subset.subset_name": "val_data",
+                        "data.test_subset.subset_name": "val_data",
                     },
                 },
             )
@@ -317,9 +317,9 @@ class TestPerfSemiSLMultiClass(PerfTestBase):
                 unlabeled_data_path=Path(f"multiclass_classification/semi-sl/svhn@{num_label}_{idx}/unlabel_data"),
                 extra_overrides={
                     "train": {
-                        "data.config.train_subset.subset_name": "train_data",
-                        "data.config.val_subset.subset_name": "val_data",
-                        "data.config.test_subset.subset_name": "val_data",
+                        "data.train_subset.subset_name": "train_data",
+                        "data.val_subset.subset_name": "val_data",
+                        "data.test_subset.subset_name": "val_data",
                     },
                 },
             )
@@ -335,9 +335,9 @@ class TestPerfSemiSLMultiClass(PerfTestBase):
                 unlabeled_data_path=Path(f"multiclass_classification/semi-sl/fmnist@{num_label}_{idx}/unlabel_data"),
                 extra_overrides={
                     "train": {
-                        "data.config.train_subset.subset_name": "train_data",
-                        "data.config.val_subset.subset_name": "val_data",
-                        "data.config.test_subset.subset_name": "val_data",
+                        "data.train_subset.subset_name": "train_data",
+                        "data.val_subset.subset_name": "val_data",
+                        "data.test_subset.subset_name": "val_data",
                     },
                 },
             )

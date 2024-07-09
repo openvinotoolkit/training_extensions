@@ -3,7 +3,7 @@ model:
   init_args:
     backbone: efficientnet_v2_l
     label_info: 1000
-    task: MULTI_CLASS_CLS
+    task: MULTI_LABEL_CLS
 
     optimizer:
       class_path: torch.optim.SGD
@@ -19,92 +19,80 @@ model:
         eta_min: 0
 
 engine:
-  task: MULTI_CLASS_CLS
+  task: MULTI_LABEL_CLS
   device: auto
 
 callback_monitor: val/accuracy
 
 data: ../../_base_/data/torchvision_base.yaml
-
 overrides:
-  max_epochs: 90
+  max_epochs: 200
   callbacks:
     - class_path: otx.algo.callbacks.adaptive_early_stopping.EarlyStoppingWithWarmup
       init_args:
-        patience: 3
+        patience: 4
+    - class_path: otx.algo.callbacks.adaptive_train_scheduling.AdaptiveTrainScheduling
+      init_args:
+        min_earlystop_patience: 4
+        min_lrschedule_patience: 3
   data:
+    task: MULTI_LABEL_CLS
+    data_format: datumaro
+    mem_cache_img_max_size:
+      - 500
+      - 500
+    stack_images: True
     train_subset:
       batch_size: 64
+      to_tv_image: False
       transforms:
-        - class_path: torchvision.transforms.v2.RandomResizedCrop
+        - class_path: otx.core.data.transform_libs.torchvision.EfficientNetRandomCrop
           init_args:
-            size:
-              - 224
-              - 224
-            antialias: True
-        - class_path: torchvision.transforms.v2.RandomHorizontalFlip
+            scale: 224
+            backend: cv2
+        - class_path: otx.core.data.transform_libs.torchvision.RandomFlip
           init_args:
-            p: 0.5
-        - class_path: torchvision.transforms.v2.ToImage
+            prob: 0.5
+            is_numpy_to_tvtensor: true
         - class_path: torchvision.transforms.v2.ToDtype
           init_args:
             dtype: ${as_torch_dtype:torch.float32}
-            scale: True
+            scale: False
         - class_path: torchvision.transforms.v2.Normalize
           init_args:
-            mean:
-              - 0.485
-              - 0.456
-              - 0.406
-            std:
-              - 0.229
-              - 0.224
-              - 0.225
+            mean: [123.675, 116.28, 103.53]
+            std: [58.395, 57.12, 57.375]
       sampler:
         class_path: otx.algo.samplers.balanced_sampler.BalancedSampler
     val_subset:
       batch_size: 64
+      to_tv_image: False
       transforms:
-        - class_path: torchvision.transforms.v2.Resize
+        - class_path: otx.core.data.transform_libs.torchvision.Resize
           init_args:
-            size:
-              - 224
-              - 224
-        - class_path: torchvision.transforms.v2.ToImage
+            scale: 224
+            is_numpy_to_tvtensor: true
         - class_path: torchvision.transforms.v2.ToDtype
           init_args:
             dtype: ${as_torch_dtype:torch.float32}
-            scale: True
+            scale: False
         - class_path: torchvision.transforms.v2.Normalize
           init_args:
-            mean:
-              - 0.485
-              - 0.456
-              - 0.406
-            std:
-              - 0.229
-              - 0.224
-              - 0.225
+            mean: [123.675, 116.28, 103.53]
+            std: [58.395, 57.12, 57.375]
     test_subset:
       batch_size: 64
+      to_tv_image: False
       transforms:
-        - class_path: torchvision.transforms.v2.Resize
+        - class_path: otx.core.data.transform_libs.torchvision.Resize
           init_args:
-            size:
-              - 224
-              - 224
-        - class_path: torchvision.transforms.v2.ToImage
+            scale: 224
+            is_numpy_to_tvtensor: true
         - class_path: torchvision.transforms.v2.ToDtype
           init_args:
             dtype: ${as_torch_dtype:torch.float32}
-            scale: True
+            scale: False
         - class_path: torchvision.transforms.v2.Normalize
           init_args:
-            mean:
-              - 0.485
-              - 0.456
-              - 0.406
-            std:
-              - 0.229
-              - 0.224
-              - 0.225
+            mean: [123.675, 116.28, 103.53]
+            std: [58.395, 57.12, 57.375]

@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## \[unreleased\]
+
+### New features
+
+### Enhancements
+
+### Bug fixes
+
 ## \[v2.1.0\]
 
 ### New features
@@ -92,7 +100,7 @@ All notable changes to this project will be documented in this file.
 - Refactoring detection modules
   (<https://github.com/openvinotoolkit/training_extensions/pull/3636>)
 
-### Buf fixes
+### Bug fixes
 
 - Fix conflicts between develop and 2.0.0
   (<https://github.com/openvinotoolkit/training_extensions/pull/3490>)
