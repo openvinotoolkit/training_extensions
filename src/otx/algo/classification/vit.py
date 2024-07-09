@@ -6,13 +6,16 @@ from __future__ import annotations
 
 import types
 from copy import deepcopy
+from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, Generic
+from urllib.parse import urlparse
 
 import numpy as np
 import torch
 from torch import Tensor, nn
+from torch.hub import download_url_to_file
 
-from otx.algo.classification.backbones.vision_transformer import VIT_ARCH_TYPE, TimmVisionTransformer, VisionTransformer
+from otx.algo.classification.backbones.vision_transformer import VIT_ARCH_TYPE, TimmVisionTransformer
 from otx.algo.classification.classifier import ImageClassifier, SemiSLClassifier
 from otx.algo.classification.heads import (
     HierarchicalLinearClsHead,
@@ -24,7 +27,6 @@ from otx.algo.classification.losses import AsymmetricAngularLossWithIgnore
 from otx.algo.classification.utils import get_classification_layers
 from otx.algo.classification.utils.embed import resize_pos_embed
 from otx.algo.explain.explain_algo import ViTReciproCAM, feature_vector_fn
-from otx.algo.utils.mmengine_utils import load_checkpoint_to_model, load_from_http
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.data.entity.base import OTXBatchLossEntity, T_OTXBatchDataEntity, T_OTXBatchPredEntity
 from otx.core.data.entity.classification import (
@@ -54,12 +56,8 @@ if TYPE_CHECKING:
     from otx.core.metrics import MetricCallable
 
 
-# pretrained_root = "https://download.openmmlab.com/mmclassification/v0/"
-# pretrained_urls = {
-#     "deit-tiny": pretrained_root + "deit/deit-tiny_pt-4xb256_in1k_20220218-13b382a0.pth",
-# }
 pretrained_urls = {
-    "deit-tiny": "https://github.com/huggingface/pytorch-image-models/releases/download/v0.1-rsb-weights/deit_tiny_patch16_a2_0-324fe5ea.pth",
+    "deit-tiny": "https://storage.googleapis.com/vit_models/augreg/Ti_16-i21k-300ep-lr_0.001-aug_none-wd_0.03-do_0.0-sd_0.0--imagenet2012-steps_20k-lr_0.03-res_224.npz",
 }
 
 
@@ -281,8 +279,15 @@ class VisionTransformerForMulticlassCls(ForwardExplainMixInForViT, OTXMulticlass
         model.init_weights()
         if self.pretrained and self.arch in pretrained_urls:
             print(f"init weight - {pretrained_urls[self.arch]}")
-            checkpoint = load_from_http(pretrained_urls[self.arch], map_location="cpu")
-            load_checkpoint_to_model(model.backbone, checkpoint)
+            parts = urlparse(pretrained_urls[self.arch])
+            filename = Path(parts.path).name
+
+            cache_dir = Path.home() / ".cache" / "torch" / "hub" / "checkpoints"
+            cache_file = cache_dir / filename
+            if not Path.exists(cache_file):
+                download_url_to_file(pretrained_urls[self.arch], cache_file, "", progress=True)
+            model.backbone.load_pretrained(checkpoint_path=cache_file)
+
         return model
 
     def _build_model(self, num_classes: int) -> nn.Module:
@@ -291,8 +296,7 @@ class VisionTransformerForMulticlassCls(ForwardExplainMixInForViT, OTXMulticlass
             {"bias": 0.0, "val": 1.0, "layer": "LayerNorm", "type": "Constant"},
         ]
         return ImageClassifier(
-            # backbone=VisionTransformer(arch=self.arch, img_size=224, patch_size=16),
-            backbone=TimmVisionTransformer(img_size=224, patch_size=16, embed_dim=192),
+            backbone=TimmVisionTransformer(img_size=224, patch_size=16, embed_dim=192, num_heads=3),
             neck=None,
             head=VisionTransformerClsHead(
                 num_classes=num_classes,
@@ -383,7 +387,7 @@ class VisionTransformerForMulticlassClsSemiSL(VisionTransformerForMulticlassCls)
             {"bias": 0.0, "val": 1.0, "layer": "LayerNorm", "type": "Constant"},
         ]
         return SemiSLClassifier(
-            backbone=VisionTransformer(arch=self.arch, img_size=224, patch_size=16),
+            backbone=TimmVisionTransformer(img_size=224, patch_size=16, embed_dim=192, num_heads=3),
             neck=None,
             head=OTXSemiSLVisionTransformerClsHead(
                 num_classes=num_classes,
@@ -500,8 +504,14 @@ class VisionTransformerForMultilabelCls(ForwardExplainMixInForViT, OTXMultilabel
         model.init_weights()
         if self.pretrained and self.arch in pretrained_urls:
             print(f"init weight - {pretrained_urls[self.arch]}")
-            checkpoint = load_from_http(pretrained_urls[self.arch], map_location="cpu")
-            load_checkpoint_to_model(model, checkpoint)
+            parts = urlparse(pretrained_urls[self.arch])
+            filename = Path(parts.path).name
+
+            cache_dir = Path.home() / ".cache" / "torch" / "hub" / "checkpoints"
+            cache_file = cache_dir / filename
+            if not Path.exists(cache_file):
+                download_url_to_file(pretrained_urls[self.arch], cache_file, "", progress=True)
+            model.backbone.load_pretrained(checkpoint_path=cache_file)
         return model
 
     def _build_model(self, num_classes: int) -> nn.Module:
@@ -510,7 +520,7 @@ class VisionTransformerForMultilabelCls(ForwardExplainMixInForViT, OTXMultilabel
             {"bias": 0.0, "val": 1.0, "layer": "LayerNorm", "type": "Constant"},
         ]
         return ImageClassifier(
-            backbone=VisionTransformer(arch=self.arch, img_size=224, patch_size=16),
+            backbone=TimmVisionTransformer(img_size=224, patch_size=16, embed_dim=192, num_heads=3),
             neck=None,
             head=MultiLabelLinearClsHead(
                 num_classes=num_classes,
@@ -632,8 +642,14 @@ class VisionTransformerForHLabelCls(ForwardExplainMixInForViT, OTXHlabelClsModel
         model.init_weights()
         if self.pretrained and self.arch in pretrained_urls:
             print(f"init weight - {pretrained_urls[self.arch]}")
-            checkpoint = load_from_http(pretrained_urls[self.arch], map_location="cpu")
-            load_checkpoint_to_model(model, checkpoint)
+            parts = urlparse(pretrained_urls[self.arch])
+            filename = Path(parts.path).name
+
+            cache_dir = Path.home() / ".cache" / "torch" / "hub" / "checkpoints"
+            cache_file = cache_dir / filename
+            if not Path.exists(cache_file):
+                download_url_to_file(pretrained_urls[self.arch], cache_file, "", progress=True)
+            model.backbone.load_pretrained(checkpoint_path=cache_file)
         return model
 
     def _build_model(self, head_config: dict) -> nn.Module:
@@ -644,7 +660,7 @@ class VisionTransformerForHLabelCls(ForwardExplainMixInForViT, OTXHlabelClsModel
             {"bias": 0.0, "val": 1.0, "layer": "LayerNorm", "type": "Constant"},
         ]
         return ImageClassifier(
-            backbone=VisionTransformer(arch=self.arch, img_size=224, patch_size=16),
+            backbone=TimmVisionTransformer(img_size=224, patch_size=16, embed_dim=192, num_heads=3),
             neck=None,
             head=HierarchicalLinearClsHead(
                 in_channels=192,
