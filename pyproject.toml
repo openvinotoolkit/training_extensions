@@ -103,6 +103,10 @@ base = [
     "anomalib[core]==1.1.0",
 ]
 
+transformers = [
+    "transformers==4.42.3",
+]
+
 mmlab = [
     "mmdet==3.2.0",
     "mmpretrain==1.1.1",
