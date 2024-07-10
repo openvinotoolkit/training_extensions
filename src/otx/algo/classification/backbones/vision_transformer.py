@@ -373,7 +373,14 @@ class VisionTransformer(BaseModule):
         x = self.norm_pre(x)
 
         x = self.blocks(x)
-        return self.norm(x)
+        x = self.norm(x)
+
+        if out_type == "raw":
+            return (x,)
+        if out_type == "cls_token":
+            return (x[:, 0],)
+        msg = f"Unsupported `out_type` {out_type}, please choose from {self.OUT_TYPES}"
+        raise ValueError(msg)
 
 
 @torch.no_grad()
