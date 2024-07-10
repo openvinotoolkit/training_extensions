@@ -17,8 +17,9 @@ data: ../_base_/data/torchvision_base.yaml
 overrides:
   data:
     task: ROTATED_DETECTION
-    include_polygons: true
-    image_color_channel: RGB
-    data_format: coco_instances
-    test_subset:
-      batch_size: 24
+    config:
+      include_polygons: true
+      image_color_channel: RGB
+      data_format: coco_instances
+      test_subset:
+        batch_size: 24
