@@ -14,7 +14,7 @@ import time
 from copy import deepcopy
 from dataclasses import dataclass
 from functools import partial
-from pickle import PicklingError
+from pickle import PicklingError  # nosec B403 used pickle for internal state dump/load
 from typing import TYPE_CHECKING, Callable, Literal, NoReturn
 
 from otx.core.types.device import DeviceType
