@@ -1,7 +1,10 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 # Copyright (c) OpenMMLab. All rights reserved.
-"""Utils for OTX instance segmentation."""
+"""Implementation modified from mmdet.models.utils.misc.py.
+
+Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/utils/misc.py
+"""
 
 from __future__ import annotations
 

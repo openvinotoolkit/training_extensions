@@ -110,11 +110,11 @@ class DiceLoss(nn.Module):
                 shape (n, *), same shape of pred.
             weight (Tensor, optional): The weight of loss for each
                 prediction, has a shape (n,). Defaults to None.
-            avg_factor (int, optional): Average factor that is used to average
-                the loss. Defaults to None.
             reduction_override (str, optional): The reduction method used to
                 override the original reduction method of the loss.
                 Options are "none", "mean" and "sum".
+            avg_factor (int, optional): Average factor that is used to average
+                the loss. Defaults to None.
 
         Returns:
             Tensor: The calculated loss
