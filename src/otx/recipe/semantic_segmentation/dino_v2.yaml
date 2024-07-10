@@ -8,38 +8,6 @@ model:
         params:
           ignore_index: 255
 
-    backbone_configuration:
-      name: dinov2_vits14
-      freeze_backbone: true
-      out_index:
-        - 8
-        - 9
-        - 10
-        - 11
-
-    decode_head_configuration:
-      norm_cfg:
-        type: SyncBN
-        requires_grad: true
-      in_channels:
-        - 384
-        - 384
-        - 384
-        - 384
-      in_index:
-        - 0
-        - 1
-        - 2
-        - 3
-      input_transform: resize_concat
-      channels: 1536
-      kernel_size: 1
-      num_convs: 1
-      concat_input: false
-      dropout_ratio: -1
-      align_corners: false
-      pretrained_weights: https://dl.fbaipublicfiles.com/dinov2/dinov2_vits14/dinov2_vits14_ade20k_linear_head.pth
-
     optimizer:
       class_path: torch.optim.AdamW
       init_args:
@@ -63,14 +31,13 @@ model:
         power: 0.9
         last_epoch: -1
 
-data: ../_base_/data/semantic_segmentation.yaml
-
 engine:
   task: SEMANTIC_SEGMENTATION
   device: auto
 
 callback_monitor: val/Dice
 
+data: ../_base_/data/semantic_segmentation.yaml
 overrides:
   data:
     train_subset:

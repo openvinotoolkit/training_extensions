@@ -4,13 +4,11 @@ model:
     label_info: 0
     model_name: segment_anything
     model_type: Zero_Shot_Visual_Prompting
-    async_inference: False
-    use_throughput_mode: True
+    async_inference: false
+    use_throughput_mode: true
     reference_info_dir: reference_infos
     infer_reference_info_root: ../.latest/train
-    save_outputs: True
-
-data: ../_base_/data/zero_shot_visual_prompting.yaml
+    save_outputs: true
 
 engine:
   task: ZERO_SHOT_VISUAL_PROMPTING
@@ -18,6 +16,7 @@ engine:
 
 callback_monitor: step
 
+data: ../_base_/data/zero_shot_visual_prompting.yaml
 overrides:
   max_epochs: 1
   limit_val_batches: 0

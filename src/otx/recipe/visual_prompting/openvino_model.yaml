@@ -7,14 +7,13 @@ model:
     async_inference: false
     use_throughput_mode: false
 
-data: ../_base_/data/visual_prompting.yaml
-
 engine:
   task: VISUAL_PROMPTING
   device: cpu
 
 callback_monitor: val/Dice
 
+data: ../_base_/data/visual_prompting.yaml
 overrides:
   data:
     train_subset:

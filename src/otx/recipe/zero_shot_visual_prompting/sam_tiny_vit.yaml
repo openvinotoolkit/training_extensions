@@ -1,5 +1,21 @@
-model: ../_base_/model/zero_shot_visual_prompting.yaml
-data: ../_base_/data/zero_shot_visual_prompting.yaml
+model:
+  class_path: otx.algo.visual_prompting.zero_shot_segment_anything.OTXZeroShotSegmentAnything
+  init_args:
+    backbone: tiny_vit
+    label_info: 0
+    freeze_image_encoder: true
+    freeze_prompt_encoder: true
+    freeze_mask_decoder: true
+    default_threshold_reference: 0.3
+    default_threshold_target: 0.65
+    save_outputs: true
+    reference_info_dir: reference_infos
+    infer_reference_info_root: ../.latest/train
+    # options
+    use_stability_score: false
+    return_single_mask: false
+    return_extra_metrics: false
+    stability_score_offset: 1.
 
 engine:
   task: ZERO_SHOT_VISUAL_PROMPTING
@@ -7,9 +23,7 @@ engine:
 
 callback_monitor: step
 
+data: ../_base_/data/zero_shot_visual_prompting.yaml
 overrides:
   max_epochs: 1
   limit_val_batches: 0
-  model:
-    init_args:
-      backbone: tiny_vit
