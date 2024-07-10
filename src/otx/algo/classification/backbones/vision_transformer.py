@@ -729,12 +729,11 @@ class TimmVisionTransformer(BaseModule):
         )
         num_patches = self.patch_embed.num_patches
 
-        self.with_cls_token = class_token
         self.cls_token = nn.Parameter(torch.zeros(1, 1, embed_dim)) if class_token else None
         self.reg_token = nn.Parameter(torch.zeros(1, reg_tokens, embed_dim)) if reg_tokens else None
 
         embed_len = num_patches if no_embed_class else num_patches + self.num_prefix_tokens
-        self.pos_embed = nn.Parameter(torch.randn(1, embed_len, embed_dim) * 0.02)
+        self.pos_embed = nn.Parameter(torch.zeros(1, embed_len, embed_dim))
 
         self.pos_drop = nn.Dropout(p=pos_drop_rate)
         if patch_drop_rate > 0:
@@ -773,9 +772,7 @@ class TimmVisionTransformer(BaseModule):
         """Initializes the weights of the VisionTransformer."""
         super().init_weights()
 
-        if not (
-            isinstance(self.init_cfg, dict) and self.init_cfg["type"] == "Pretrained"
-        ) and self.pos_embed is not None:
+        if self.pos_embed is not None:
             trunc_normal_(self.pos_embed, std=0.02)
 
     @torch.jit.ignore()
@@ -817,7 +814,11 @@ class TimmVisionTransformer(BaseModule):
 
         return self.pos_drop(x)
 
-    def forward(self, x: torch.Tensor) -> tuple:
+    def forward(
+        self,
+        x: torch.Tensor,
+        out_type: Literal["raw", "cls_token", "featmap", "avg_featmap"] = "cls_token",
+    ) -> tuple:
         """Forward pass of the VisionTransformer model."""
         x = self.patch_embed(x)
         x = self._pos_embed(x)
@@ -825,18 +826,14 @@ class TimmVisionTransformer(BaseModule):
         x = self.norm_pre(x)
 
         x = self.blocks(x)
-        x = self.norm(x)[:, 0]  # extract cls_token only
-        return (x,)
+        x = self.norm(x)
 
-    def forward_explain(self, x: torch.Tensor) -> tuple:
-        """Forward pass of the VisionTransformer model."""
-        x = self.patch_embed(x)
-        x = self._pos_embed(x)
-        x = self.patch_drop(x)
-        x = self.norm_pre(x)
-
-        x = self.blocks(x)
-        return self.norm(x)
+        if out_type == "raw":
+            return (x,)
+        if out_type == "cls_token":
+            return (x[:, 0],)
+        msg = f"Unsupported `out_type` {out_type}, please choose from {self.OUT_TYPES}"
+        raise ValueError(msg)
 
 
 @torch.no_grad()

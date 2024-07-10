@@ -8,7 +8,7 @@ from copy import deepcopy
 
 import pytest
 import torch
-from otx.algo.classification.backbones import VisionTransformer
+from otx.algo.classification.backbones import TimmVisionTransformer, VisionTransformer
 from otx.algo.utils.mmengine_utils import load_checkpoint_to_model
 from torch.nn import functional
 
@@ -235,3 +235,54 @@ class TestVisionTransformer:
         layer_depth, num_layers = model.get_layer_depth("layers.1")
         assert layer_depth == 2
         assert num_layers == model.num_layers + 2
+
+
+class TestTimmVisionTransformer:
+    @pytest.fixture()
+    def config(self) -> dict:
+        return {"img_size": 224, "patch_size": 16, "drop_path_rate": 0.1}
+
+    def test_init_weights(self, tmp_path, config):
+        # test weight init cfg
+        cfg = deepcopy(config)
+        model = TimmVisionTransformer(**cfg)
+        ori_weight = model.patch_embed.proj.weight.clone().detach()
+        # The pos_embed is all zero before initialize
+        assert torch.allclose(model.pos_embed, torch.tensor(0.0))
+
+        model.init_weights()
+        initialized_weight = model.patch_embed.proj.weight
+        assert torch.allclose(ori_weight, initialized_weight)
+        assert not torch.allclose(model.pos_embed, torch.tensor(0.0))
+
+        # test load checkpoint
+        pretrain_pos_embed = model.pos_embed.clone().detach()
+        checkpoint = tmp_path / "test.pth"
+        torch.save(model.state_dict(), str(checkpoint))
+
+        cfg = deepcopy(config)
+        model = TimmVisionTransformer(**cfg)
+        state_dict = torch.load(str(checkpoint), None)
+        load_checkpoint_to_model(model, state_dict, strict=True)
+        assert torch.allclose(model.pos_embed, pretrain_pos_embed)
+
+        checkpoint.unlink()
+
+    def test_forward(self, config):
+        imgs = torch.randn(1, 3, 224, 224)
+
+        # test with output cls_token
+        cfg = deepcopy(config)
+        model = TimmVisionTransformer(**cfg)
+        outs = model(imgs)
+        assert isinstance(outs, tuple)
+        assert len(outs) == 1
+        cls_token = outs[-1]
+        assert cls_token.shape == (1, 768)
+
+        # test forward output raw
+        outs = model(imgs, out_type="raw")
+        assert isinstance(outs, tuple)
+        assert len(outs) == 1
+        feat = outs[-1]
+        assert feat.shape == (1, 197, 768)

@@ -101,7 +101,7 @@ class ForwardExplainMixInForViT(Generic[T_OTXBatchPredEntity, T_OTXBatchDataEnti
         """Forward func of the ImageClassifier instance, which located in is in OTXModel().model."""
         backbone = self.backbone
 
-        feat = backbone.forward_explain(images)
+        feat = backbone.forward(images, out_type="raw")
         x = (feat[:, 0],)
 
         saliency_map = self.explain_fn(feat)
