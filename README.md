@@ -170,8 +170,6 @@ In addition to the examples above, please refer to the documentation for tutoria
 
 ### v2.1.0 (3Q24)
 
-[Product name, version X.X] does not include the latest functional and security updates. [Product name, Version X.X] is targeted to be released in [Month 20XX] and will include additional functional and security updates. Customers should update to the latest version as it becomes available.
-
 > _**NOTES**_
 >
 > OpenVINO™ Training Extensions, version 2.1.0 does not include the latest functional and security updates. OpenVINO™ Training Extensions, version 2.2.0 is targeted to be released in September 2024 and will include additional functional and security updates. Customers should update to the latest version as it becomes available.
