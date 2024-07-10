@@ -9,7 +9,7 @@ unannotated_items_ratio: 0.0
 train_subset:
   subset_name: train
   transform_lib_type: TORCHVISION
-  to_tv_image: false
+  to_tv_image: true
   transforms:
     - class_path: torchvision.transforms.v2.ToImage
   batch_size: 1
@@ -19,7 +19,7 @@ train_subset:
 val_subset:
   subset_name: val
   transform_lib_type: TORCHVISION
-  to_tv_image: false
+  to_tv_image: true
   transforms:
     - class_path: torchvision.transforms.v2.ToImage
   batch_size: 1
@@ -29,7 +29,7 @@ val_subset:
 test_subset:
   subset_name: test
   transform_lib_type: TORCHVISION
-  to_tv_image: false
+  to_tv_image: true
   transforms:
     - class_path: torchvision.transforms.v2.ToImage
   batch_size: 1
