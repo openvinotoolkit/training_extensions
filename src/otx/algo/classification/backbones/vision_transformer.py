@@ -208,6 +208,7 @@ class VisionTransformer(BaseModule):
         mlp_layer: nn.Module | None = None,
         act_layer: LayerType | None = None,
         norm_layer: LayerType | None = None,
+        use_lora: bool = False,
     ) -> None:
         super().__init__()
         if isinstance(arch, str):
@@ -290,6 +291,25 @@ class VisionTransformer(BaseModule):
         )
 
         self.norm = norm_layer(embed_dim)
+
+        self.use_lora = use_lora
+        if self.use_lora:
+            lora_rank = 8
+            lora_alpha = 1.0
+            assign_lora = partial(QkvWithLoRA, rank=lora_rank, alpha=lora_alpha)
+            for block in self.blocks:
+                block.attn.qkv = assign_lora(block.attn.qkv)
+
+            # Freeze all params
+            for param in self.parameters():
+                param.requires_grad = False
+
+            # Unfreeze LoRA layers
+            for block in self.blocks:
+                for param in block.attn.qkv.lora_q.parameters():
+                    param.requires_grad = True
+                for param in block.attn.qkv.lora_v.parameters():
+                    param.requires_grad = True
 
     def init_weights(self) -> None:
         """Initializes the weights of the VisionTransformer."""
@@ -463,29 +483,93 @@ def _load_npz_weights(  # noqa: C901
             block_prefix = f"{prefix}Transformer/encoderblock/"
             idx = i
         else:
-            block_prefix = f"{prefix}Transformer/encoderblock_{i}/"
-            idx = None
-        mha_prefix = block_prefix + f"MultiHeadDotProductAttention_{mha_sub}/"
-        block.norm1.weight.copy_(_n2p(w[f"{block_prefix}LayerNorm_0/scale"], idx=idx))
-        block.norm1.bias.copy_(_n2p(w[f"{block_prefix}LayerNorm_0/bias"], idx=idx))
-        block.attn.qkv.weight.copy_(
-            torch.cat(
-                [_n2p(w[f"{mha_prefix}{n}/kernel"], t=False, idx=idx).flatten(1).T for n in ("query", "key", "value")],
-            ),
-        )
-        block.attn.qkv.bias.copy_(
-            torch.cat(
-                [_n2p(w[f"{mha_prefix}{n}/bias"], t=False, idx=idx).reshape(-1) for n in ("query", "key", "value")],
-            ),
-        )
-        block.attn.proj.weight.copy_(_n2p(w[f"{mha_prefix}out/kernel"], idx=idx).flatten(1))
-        block.attn.proj.bias.copy_(_n2p(w[f"{mha_prefix}out/bias"], idx=idx))
-        block.norm2.weight.copy_(_n2p(w[f"{block_prefix}LayerNorm_{ln1_sub}/scale"], idx=idx))
-        block.norm2.bias.copy_(_n2p(w[f"{block_prefix}LayerNorm_{ln1_sub}/bias"], idx=idx))
-        for r in range(2):
-            getattr(block.mlp, f"fc{r + 1}").weight.copy_(
-                _n2p(w[f"{block_prefix}MlpBlock_{b_sub}/Dense_{r}/kernel"], idx=idx),
+            embed_conv_w = adapt_input_conv(
+                model.patch_embed.proj.weight.shape[1], _n2p(w[f"{prefix}embedding/kernel"])
             )
-            getattr(block.mlp, f"fc{r + 1}").bias.copy_(
-                _n2p(w[f"{block_prefix}MlpBlock_{b_sub}/Dense_{r}/bias"], idx=idx),
+        if embed_conv_w.shape[-2:] != model.patch_embed.proj.weight.shape[-2:]:
+            embed_conv_w = resample_patch_embed(
+                embed_conv_w,
+                model.patch_embed.proj.weight.shape[-2:],
+                interpolation=interpolation,
+                antialias=antialias,
+                verbose=True,
             )
+
+        model.patch_embed.proj.weight.copy_(embed_conv_w)
+        model.patch_embed.proj.bias.copy_(_n2p(w[f"{prefix}embedding/bias"]))
+        if model.cls_token is not None:
+            model.cls_token.copy_(_n2p(w[f"{prefix}cls"], t=False))
+        if big_vision:
+            pos_embed_w = _n2p(w[f"{prefix}pos_embedding"], t=False)
+        else:
+            pos_embed_w = _n2p(w[f"{prefix}Transformer/posembed_input/pos_embedding"], t=False)
+        if pos_embed_w.shape != model.pos_embed.shape:
+            num_prefix_tokens = 0 if getattr(model, "no_embed_class", False) else getattr(model, "num_prefix_tokens", 1)
+            pos_embed_w = resample_abs_pos_embed(  # resize pos embedding when different size from pretrained weights
+                pos_embed_w,
+                new_size=model.patch_embed.grid_size,
+                num_prefix_tokens=num_prefix_tokens,
+                interpolation=interpolation,
+                antialias=antialias,
+                verbose=True,
+            )
+        model.pos_embed.copy_(pos_embed_w)
+        model.norm.weight.copy_(_n2p(w[f"{prefix}Transformer/encoder_norm/scale"]))
+        model.norm.bias.copy_(_n2p(w[f"{prefix}Transformer/encoder_norm/bias"]))
+
+        mha_sub, b_sub, ln1_sub = (0, 0, 1) if big_vision else (1, 3, 2)
+        for i, block in enumerate(model.blocks.children()):
+            if f"{prefix}Transformer/encoderblock/LayerNorm_0/scale" in w:
+                block_prefix = f"{prefix}Transformer/encoderblock/"
+                idx = i
+            else:
+                block_prefix = f"{prefix}Transformer/encoderblock_{i}/"
+                idx = None
+            mha_prefix = block_prefix + f"MultiHeadDotProductAttention_{mha_sub}/"
+            block.norm1.weight.copy_(_n2p(w[f"{block_prefix}LayerNorm_0/scale"], idx=idx))
+            block.norm1.bias.copy_(_n2p(w[f"{block_prefix}LayerNorm_0/bias"], idx=idx))
+            if not use_lora:
+                block.attn.qkv.weight.copy_(
+                    torch.cat(
+                        [
+                            _n2p(w[f"{mha_prefix}{n}/kernel"], t=False, idx=idx).flatten(1).T
+                            for n in ("query", "key", "value")
+                        ],
+                    ),
+                )
+                block.attn.qkv.bias.copy_(
+                    torch.cat(
+                        [
+                            _n2p(w[f"{mha_prefix}{n}/bias"], t=False, idx=idx).reshape(-1)
+                            for n in ("query", "key", "value")
+                        ],
+                    ),
+                )
+            else:
+                block.attn.qkv.qkv.weight.copy_(
+                    torch.cat(
+                        [
+                            _n2p(w[f"{mha_prefix}{n}/kernel"], t=False, idx=idx).flatten(1).T
+                            for n in ("query", "key", "value")
+                        ],
+                    ),
+                )
+                block.attn.qkv.qkv.bias.copy_(
+                    torch.cat(
+                        [
+                            _n2p(w[f"{mha_prefix}{n}/bias"], t=False, idx=idx).reshape(-1)
+                            for n in ("query", "key", "value")
+                        ],
+                    ),
+                )
+            block.attn.proj.weight.copy_(_n2p(w[f"{mha_prefix}out/kernel"], idx=idx).flatten(1))
+            block.attn.proj.bias.copy_(_n2p(w[f"{mha_prefix}out/bias"], idx=idx))
+            block.norm2.weight.copy_(_n2p(w[f"{block_prefix}LayerNorm_{ln1_sub}/scale"], idx=idx))
+            block.norm2.bias.copy_(_n2p(w[f"{block_prefix}LayerNorm_{ln1_sub}/bias"], idx=idx))
+            for r in range(2):
+                getattr(block.mlp, f"fc{r + 1}").weight.copy_(
+                    _n2p(w[f"{block_prefix}MlpBlock_{b_sub}/Dense_{r}/kernel"], idx=idx),
+                )
+                getattr(block.mlp, f"fc{r + 1}").bias.copy_(
+                    _n2p(w[f"{block_prefix}MlpBlock_{b_sub}/Dense_{r}/bias"], idx=idx),
+                )
