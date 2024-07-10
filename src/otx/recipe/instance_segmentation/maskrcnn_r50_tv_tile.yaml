@@ -1,52 +1,32 @@
-model:
-  class_path: otx.algo.instance_segmentation.maskrcnn_tv.TVMaskRCNNR50
-  init_args:
-    label_info: 80
-
-    optimizer:
-      class_path: torch.optim.SGD
-      init_args:
-        lr: 0.007
-        momentum: 0.9
-        weight_decay: 0.001
-
-    scheduler:
-      class_path: otx.core.schedulers.LinearWarmupSchedulerCallable
-      init_args:
-        num_warmup_steps: 100
-        main_scheduler_callable:
-          class_path: lightning.pytorch.cli.ReduceLROnPlateau
-          init_args:
-            mode: max
-            factor: 0.1
-            patience: 4
-            monitor: val/map_50
-
-engine:
-  task: INSTANCE_SEGMENTATION
-  device: auto
+engine: ../_base_/engine/instance_segmentation.yaml
+model: ../_base_/model/instance_segmentation.yaml
+data: ../_base_/data/instance_segmentation.yaml
 
 callback_monitor: val/map_50
 
-data: ../_base_/data/torchvision_base.yaml
 overrides:
   max_epochs: 100
   gradient_clip_val: 35.0
+  model:
+    class_path: otx.algo.instance_segmentation.maskrcnn_tv.TVMaskRCNNR50
+    init_args:
+      optimizer:
+        class_path: torch.optim.SGD
+        init_args:
+          lr: 0.007
+          momentum: 0.9
+          weight_decay: 0.001
+
   data:
-    task: INSTANCE_SEGMENTATION
-    stack_images: true
     tile_config:
       enable_tiler: true
       enable_adaptive_tiling: true
-    data_format: coco_instances
-    include_polygons: true
     train_subset:
       batch_size: 4
       num_workers: 8
       transforms:
         - class_path: otx.core.data.transform_libs.torchvision.Resize
           init_args:
-            keep_ratio: false
             transform_bbox: true
             transform_mask: true
             scale:
@@ -63,7 +43,6 @@ overrides:
         - class_path: torchvision.transforms.v2.ToDtype
           init_args:
             dtype: ${as_torch_dtype:torch.float32}
-            scale: False
         - class_path: torchvision.transforms.v2.Normalize
           init_args:
             mean: [123.675, 116.28, 103.53]
@@ -74,21 +53,16 @@ overrides:
       transforms:
         - class_path: otx.core.data.transform_libs.torchvision.Resize
           init_args:
-            keep_ratio: false
-            transform_bbox: false
-            transform_mask: false
             scale:
               - 512
               - 512
         - class_path: otx.core.data.transform_libs.torchvision.Pad
           init_args:
             size_divisor: 32
-            transform_mask: false
             is_numpy_to_tvtensor: true
         - class_path: torchvision.transforms.v2.ToDtype
           init_args:
             dtype: ${as_torch_dtype:torch.float32}
-            scale: False
         - class_path: torchvision.transforms.v2.Normalize
           init_args:
             mean: [123.675, 116.28, 103.53]
@@ -99,21 +73,16 @@ overrides:
       transforms:
         - class_path: otx.core.data.transform_libs.torchvision.Resize
           init_args:
-            keep_ratio: false
-            transform_bbox: false
-            transform_mask: false
             scale:
               - 512
               - 512
         - class_path: otx.core.data.transform_libs.torchvision.Pad
           init_args:
             size_divisor: 32
-            transform_mask: false
             is_numpy_to_tvtensor: true
         - class_path: torchvision.transforms.v2.ToDtype
           init_args:
             dtype: ${as_torch_dtype:torch.float32}
-            scale: False
         - class_path: torchvision.transforms.v2.Normalize
           init_args:
             mean: [123.675, 116.28, 103.53]
