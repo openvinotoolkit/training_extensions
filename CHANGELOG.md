@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## \[v2.1.0\]
 
+> _**NOTES**_
+>
+> OpenVINO™ Training Extensions, version 2.1.0 does not include the latest functional and security updates. OpenVINO™ Training Extensions, version 2.2.0 is targeted to be released in September 2024 and will include additional functional and security updates. Customers should update to the latest version as it becomes available.
+
 ### New features
 
 - Add a flag to enable OV inference on dGPU
