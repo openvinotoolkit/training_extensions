@@ -442,7 +442,7 @@ for explain results during the model graph tracing.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>x</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><em>tuple</em></a><em>[</em><em>torch.Tensor</em><em>]</em>) – The features from backbone and neck.</p></li>
+<li><p><strong>x</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><em>tuple</em></a><em>[</em><em>Tensor</em><em>]</em>) – The features from backbone and neck.</p></li>
 <li><p><strong>data_samples</strong> (<em>OptSampleList</em><em> | </em><em>None</em>) – A list of data samples.</p></li>
 </ul>
 </dd>
@@ -451,7 +451,7 @@ for explain results during the model graph tracing.</p>
 Tuple for the Export case, list for the Predict case.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)">tuple</a>[torch.Tensor] | <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.12)">list</a>[InstanceData]</p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)">tuple</a>[Tensor] | <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.12)">list</a>[InstanceData]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -471,6 +471,12 @@ Tuple for the Export case, list for the Predict case.</p>
 <dd><p>Bases: <a class="reference internal" href="otx.core.model.base.html#otx.core.model.base.OTXModel" title="otx.core.model.base.OTXModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">OTXModel</span></code></a>[<code class="xref py py-class docutils literal notranslate"><span class="pre">InstanceSegBatchDataEntity</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">InstanceSegBatchPredEntity</span></code>]</p>
 <p>Base class for the Instance Segmentation models used in OTX.</p>
 <dl class="py method">
+<dt class="sig sig-object py" id="otx.core.model.instance_segmentation.OTXInstanceSegModel.forward_for_tracing">
+<span class="sig-name descname"><span class="pre">forward_for_tracing</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/otx/core/model/instance_segmentation.html#OTXInstanceSegModel.forward_for_tracing"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.instance_segmentation.OTXInstanceSegModel.forward_for_tracing" title="Link to this definition">#</a></dt>
+<dd><p>Forward function for export.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="otx.core.model.instance_segmentation.OTXInstanceSegModel.forward_tiles">
 <span class="sig-name descname"><span class="pre">forward_tiles</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">OTXTileBatchDataEntity</span><span class="p"><span class="pre">[</span></span><span class="pre">InstanceSegBatchDataEntity</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">InstanceSegBatchPredEntity</span></span></span><a class="reference internal" href="../../../_modules/otx/core/model/instance_segmentation.html#OTXInstanceSegModel.forward_tiles"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.instance_segmentation.OTXInstanceSegModel.forward_tiles" title="Link to this definition">#</a></dt>
 <dd><p>Unpack instance segmentation tiles.</p>
@@ -483,6 +489,30 @@ Tuple for the Export case, list for the Predict case.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>InstanceSegBatchPredEntity</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.core.model.instance_segmentation.OTXInstanceSegModel.get_classification_layers">
+<span class="sig-name descname"><span class="pre">get_classification_layers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prefix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/otx/core/model/instance_segmentation.html#OTXInstanceSegModel.get_classification_layers"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.instance_segmentation.OTXInstanceSegModel.get_classification_layers" title="Link to this definition">#</a></dt>
+<dd><p>Return classification layer names by comparing two different number of classes models.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>config</strong> (<em>DictConfig</em>) – Config for building model.</p></li>
+<li><p><strong>model_registry</strong> (<em>Registry</em>) – Registry for building model.</p></li>
+<li><p><strong>prefix</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – Prefix of model param name.
+Normally it is “model.” since OTXModel set it’s nn.Module model as self.model</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict[str, dict[str, int]]
+A dictionary contain classification layer’s name and information.
+Stride means dimension of each classes, normally stride is 1, but sometimes it can be 4
+if the layer is related bbox regression for object detection.
+Extra classes is default class except class from data.
+Normally it is related with background classes.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -612,10 +642,28 @@ and create the OTX detection model compatible for OTX testing pipeline.</p>
   </a>
   <ul class="nav section-nav flex-column">
    <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.core.model.instance_segmentation.OTXInstanceSegModel.forward_for_tracing">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       OTXInstanceSegModel.forward_for_tracing()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
     <a class="reference internal nav-link" href="#otx.core.model.instance_segmentation.OTXInstanceSegModel.forward_tiles">
      <code class="docutils literal notranslate">
       <span class="pre">
        OTXInstanceSegModel.forward_tiles()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.core.model.instance_segmentation.OTXInstanceSegModel.get_classification_layers">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       OTXInstanceSegModel.get_classification_layers()
       </span>
      </code>
     </a>

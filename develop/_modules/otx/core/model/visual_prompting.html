@@ -1406,7 +1406,7 @@
         <span class="c1"># ticket no. : CVS-135462</span>
         <span class="c1"># There is segmentation fault issue when using num_workers &gt; 0 during releasing memory.</span>
         <span class="c1"># To avoid this issue, force num_workers to 0.</span>
-        <span class="n">data_module</span><span class="o">.</span><span class="n">train_subset</span><span class="o">.</span><span class="n">num_workers</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">data_module</span><span class="o">.</span><span class="n">val_subset</span><span class="o">.</span><span class="n">num_workers</span> <span class="o">=</span> <span class="mi">0</span>
 
         <span class="n">output_model_paths</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">for</span> <span class="n">module</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;image_encoder&quot;</span><span class="p">,</span> <span class="s2">&quot;decoder&quot;</span><span class="p">]:</span>
@@ -1417,7 +1417,7 @@
                 <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Model is already optimized by PTQ&quot;</span>
                 <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
 
-            <span class="n">train_dataset</span> <span class="o">=</span> <span class="n">data_module</span><span class="o">.</span><span class="n">train_dataloader</span><span class="p">()</span>
+            <span class="n">val_dataset</span> <span class="o">=</span> <span class="n">data_module</span><span class="o">.</span><span class="n">val_dataloader</span><span class="p">()</span>
 
             <span class="n">ptq_config_from_ir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_ptq_config_from_ir</span><span class="p">(</span><span class="n">ov_model</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">ptq_config</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -1426,7 +1426,7 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">ptq_config</span> <span class="o">=</span> <span class="n">ptq_config_from_ir</span>
 
-            <span class="n">quantization_dataset</span> <span class="o">=</span> <span class="n">nncf</span><span class="o">.</span><span class="n">Dataset</span><span class="p">(</span><span class="n">train_dataset</span><span class="p">,</span> <span class="n">partial</span><span class="p">(</span><span class="n">transform_fn</span><span class="p">,</span> <span class="n">module</span><span class="o">=</span><span class="n">module</span><span class="p">))</span>  <span class="c1"># type: ignore[attr-defined]</span>
+            <span class="n">quantization_dataset</span> <span class="o">=</span> <span class="n">nncf</span><span class="o">.</span><span class="n">Dataset</span><span class="p">(</span><span class="n">val_dataset</span><span class="p">,</span> <span class="n">partial</span><span class="p">(</span><span class="n">transform_fn</span><span class="p">,</span> <span class="n">module</span><span class="o">=</span><span class="n">module</span><span class="p">))</span>  <span class="c1"># type: ignore[attr-defined]</span>
 
             <span class="n">compressed_model</span> <span class="o">=</span> <span class="n">nncf</span><span class="o">.</span><span class="n">quantize</span><span class="p">(</span>  <span class="c1"># type: ignore[attr-defined]</span>
                 <span class="n">ov_model</span><span class="p">,</span>
