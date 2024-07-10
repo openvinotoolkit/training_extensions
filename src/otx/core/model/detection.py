@@ -78,7 +78,7 @@ class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity]):
     ) -> DetBatchPredEntity:
         """Step function called during PyTorch Lightning Trainer's predict."""
         if self.explain_mode:
-            return self.forward_explain(inputs=batch)
+            return self._filter_outputs_by_threshold(self.forward_explain(inputs=batch))
 
         outputs = self._filter_outputs_by_threshold(self.forward(inputs=batch))  # type: ignore[arg-type]
 
@@ -189,7 +189,7 @@ class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity]):
             feature_vector = outputs["feature_vector"].detach().cpu().numpy()
 
             return DetBatchPredEntity(
-                batch_size=len(outputs),
+                batch_size=len(predictions),
                 images=inputs.images,
                 imgs_info=inputs.imgs_info,
                 scores=scores,
@@ -200,7 +200,7 @@ class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity]):
             )
 
         return DetBatchPredEntity(
-            batch_size=len(outputs),
+            batch_size=len(predictions),
             images=inputs.images,
             imgs_info=inputs.imgs_info,
             scores=scores,
