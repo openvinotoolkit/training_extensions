@@ -7,15 +7,15 @@ model:
     async_inference: true
     use_throughput_mode: true
 
-engine: ../_base_/engine/instance_segmentation.yaml
 data: ../_base_/data/instance_segmentation.yaml
+
+engine:
+  task: INSTANCE_SEGMENTATION
+  device: cpu
 
 callback_monitor: val/map_50
 
 overrides:
-  engine:
-    device: cpu
-
   data:
     stack_images: false
     test_subset:

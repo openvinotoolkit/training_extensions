@@ -7,15 +7,15 @@ model:
     async_inference: true
     use_throughput_mode: true
 
-engine: ../_base_/engine/semantic_segmentation.yaml
 data: ../_base_/data/semantic_segmentation.yaml
+
+engine:
+  task: SEMANTIC_SEGMENTATION
+  device: cpu
 
 callback_monitor: val/Dice
 
 overrides:
-  engine:
-    device: cpu
-
   data:
     stack_images: false
     train_subset:

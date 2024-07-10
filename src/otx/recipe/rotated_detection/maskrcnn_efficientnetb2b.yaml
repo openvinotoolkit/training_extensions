@@ -1,6 +1,9 @@
-engine: ../_base_/engine/rotated_detection.yaml
 model: ../_base_/model/rotated_detection.yaml
 data: ../_base_/data/rotated_detection.yaml
+
+engine:
+  task: ROTATED_DETECTION
+  device: auto
 
 callback_monitor: val/map_50
 

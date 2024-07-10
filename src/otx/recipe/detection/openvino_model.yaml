@@ -7,15 +7,15 @@ model:
     async_inference: true
     use_throughput_mode: true
 
-engine: ../_base_/engine/detection.yaml
 data: ../_base_/data/detection.yaml
+
+engine:
+  task: DETECTION
+  device: cpu
 
 callback_monitor: val/map_50
 
 overrides:
-  engine:
-    device: cpu
-
   data:
     stack_images: false
     test_subset:

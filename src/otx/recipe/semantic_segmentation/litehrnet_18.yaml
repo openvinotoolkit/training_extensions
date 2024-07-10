@@ -1,6 +1,9 @@
-engine: ../_base_/engine/semantic_segmentation.yaml
 model: ../_base_/model/semantic_segmentation.yaml
 data: ../_base_/data/semantic_segmentation.yaml
+
+engine:
+  task: SEMANTIC_SEGMENTATION
+  device: auto
 
 callback_monitor: val/Dice
 

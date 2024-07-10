@@ -1,6 +1,9 @@
-engine: ../_base_/engine/zero_shot_visual_prompting.yaml
 model: ../_base_/model/zero_shot_visual_prompting.yaml
 data: ../_base_/data/zero_shot_visual_prompting.yaml
+
+engine:
+  task: ZERO_SHOT_VISUAL_PROMPTING
+  device: auto
 
 callback_monitor: step
 

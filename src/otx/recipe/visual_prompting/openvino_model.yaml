@@ -7,15 +7,15 @@ model:
     async_inference: false
     use_throughput_mode: false
 
-engine: ../_base_/engine/visual_prompting.yaml
 data: ../_base_/data/visual_prompting.yaml
+
+engine:
+  task: VISUAL_PROMPTING
+  device: cpu
 
 callback_monitor: val/Dice
 
 overrides:
-  engine:
-    device: cpu
-
   data:
     train_subset:
       batch_size: 1

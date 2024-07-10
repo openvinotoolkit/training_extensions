@@ -7,15 +7,15 @@ model:
     async_inference: true
     use_throughput_mode: true
 
-engine: ../_base_/engine/rotated_detection.yaml
 data: ../_base_/data/rotated_detection.yaml
+
+engine:
+  task: ROTATED_DETECTION
+  device: cpu
 
 callback_monitor: val/map_50
 
 overrides:
-  engine:
-    device: cpu
-
   data:
     stack_images: false
     test_subset:
