@@ -12,6 +12,8 @@ vpm_config:
 train_subset:
   subset_name: train
   transform_lib_type: TORCHVISION
+  batch_size: 2
+  num_workers: 4
   to_tv_image: true
   transforms:
     - class_path: otx.core.data.transform_libs.torchvision.Resize
@@ -23,6 +25,7 @@ train_subset:
     - class_path: otx.core.data.transform_libs.torchvision.Pad
       init_args:
         pad_to_square: true
+        is_numpy_to_tvtensor: true
     - class_path: torchvision.transforms.v2.ToDtype
       init_args:
         dtype: ${as_torch_dtype:torch.float32}
@@ -30,14 +33,14 @@ train_subset:
       init_args:
         mean: [123.675, 116.28, 103.53]
         std: [58.395, 57.12, 57.375]
-  batch_size: 2
-  num_workers: 4
   sampler:
     class_path: torch.utils.data.RandomSampler
 
 val_subset:
   subset_name: val
   transform_lib_type: TORCHVISION
+  batch_size: 1
+  num_workers: 4
   to_tv_image: true
   transforms:
     - class_path: otx.core.data.transform_libs.torchvision.Resize
@@ -49,6 +52,7 @@ val_subset:
     - class_path: otx.core.data.transform_libs.torchvision.Pad
       init_args:
         pad_to_square: true
+        is_numpy_to_tvtensor: true
     - class_path: torchvision.transforms.v2.ToDtype
       init_args:
         dtype: ${as_torch_dtype:torch.float32}
@@ -56,14 +60,14 @@ val_subset:
       init_args:
         mean: [123.675, 116.28, 103.53]
         std: [58.395, 57.12, 57.375]
-  batch_size: 1
-  num_workers: 4
   sampler:
     class_path: torch.utils.data.RandomSampler
 
 test_subset:
   subset_name: test
   transform_lib_type: TORCHVISION
+  batch_size: 1
+  num_workers: 4
   to_tv_image: true
   transforms:
     - class_path: otx.core.data.transform_libs.torchvision.Resize
@@ -75,6 +79,7 @@ test_subset:
     - class_path: otx.core.data.transform_libs.torchvision.Pad
       init_args:
         pad_to_square: true
+        is_numpy_to_tvtensor: true
     - class_path: torchvision.transforms.v2.ToDtype
       init_args:
         dtype: ${as_torch_dtype:torch.float32}
@@ -82,7 +87,5 @@ test_subset:
       init_args:
         mean: [123.675, 116.28, 103.53]
         std: [58.395, 57.12, 57.375]
-  batch_size: 1
-  num_workers: 4
   sampler:
     class_path: torch.utils.data.RandomSampler

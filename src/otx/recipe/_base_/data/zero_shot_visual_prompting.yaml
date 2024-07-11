@@ -13,32 +13,32 @@ vpm_config:
 train_subset:
   subset_name: train
   transform_lib_type: TORCHVISION
+  batch_size: 1
+  num_workers: 4
   to_tv_image: true
   transforms:
     - class_path: torchvision.transforms.v2.ToImage
-  batch_size: 1
-  num_workers: 4
   sampler:
     class_path: torch.utils.data.RandomSampler
 
 val_subset:
   subset_name: val
   transform_lib_type: TORCHVISION
+  batch_size: 1
+  num_workers: 4
   to_tv_image: true
   transforms:
     - class_path: torchvision.transforms.v2.ToImage
-  batch_size: 1
-  num_workers: 4
   sampler:
     class_path: torch.utils.data.RandomSampler
 
 test_subset:
   subset_name: test
   transform_lib_type: TORCHVISION
+  batch_size: 1
+  num_workers: 4
   to_tv_image: true
   transforms:
     - class_path: torchvision.transforms.v2.ToImage
-  batch_size: 1
-  num_workers: 4
   sampler:
     class_path: torch.utils.data.RandomSampler
