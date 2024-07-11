@@ -15,7 +15,7 @@ import torch
 from torch import Tensor, nn
 from torch.hub import download_url_to_file
 
-from otx.algo.classification.backbones.vision_transformer import VIT_ARCH_TYPE, TimmVisionTransformer
+from otx.algo.classification.backbones.vision_transformer import VIT_ARCH_TYPE, VisionTransformer
 from otx.algo.classification.classifier import ImageClassifier, SemiSLClassifier
 from otx.algo.classification.heads import (
     HierarchicalLinearClsHead,
@@ -54,9 +54,21 @@ if TYPE_CHECKING:
 
     from otx.core.metrics import MetricCallable
 
-
+augreg_url = "https://storage.googleapis.com/vit_models/augreg/"
+dinov2_url = "https://dl.fbaipublicfiles.com/dinov2/"
 pretrained_urls = {
-    "deit-tiny": "https://storage.googleapis.com/vit_models/augreg/Ti_16-i21k-300ep-lr_0.001-aug_none-wd_0.03-do_0.0-sd_0.0--imagenet2012-steps_20k-lr_0.03-res_224.npz",
+    "vit-tiny": augreg_url
+    + "Ti_16-i21k-300ep-lr_0.001-aug_none-wd_0.03-do_0.0-sd_0.0--imagenet2012-steps_20k-lr_0.03-res_224.npz",
+    "vit-small": augreg_url
+    + "S_16-i21k-300ep-lr_0.001-aug_light1-wd_0.03-do_0.0-sd_0.0--imagenet2012-steps_20k-lr_0.03-res_224.npz",
+    "vit-base": augreg_url
+    + "B_16-i21k-300ep-lr_0.001-aug_medium1-wd_0.1-do_0.0-sd_0.0--imagenet2012-steps_20k-lr_0.01-res_224.npz",
+    "vit-large": augreg_url
+    + "L_16-i21k-300ep-lr_0.001-aug_medium1-wd_0.1-do_0.1-sd_0.1--imagenet2012-steps_20k-lr_0.01-res_224.npz",
+    "dinov2-small": dinov2_url + "dinov2_vits14/dinov2_vits14_reg4_pretrain.pth",
+    "dinov2-base": dinov2_url + "dinov2_vitb14/dinov2_vitb14_reg4_pretrain.pth",
+    "dinov2-large": dinov2_url + "dinov2_vitl14/dinov2_vitl14_reg4_pretrain.pth",
+    "dinov2-giant": dinov2_url + "dinov2_vitg14/dinov2_vitg14_reg4_pretrain.pth",
 }
 
 
@@ -207,7 +219,7 @@ class VisionTransformerForMulticlassCls(ForwardExplainMixInForViT, OTXMulticlass
     def __init__(
         self,
         label_info: LabelInfoTypes,
-        arch: VIT_ARCH_TYPE = "deit-tiny",
+        arch: VIT_ARCH_TYPE = "vit-tiny",
         pretrained: bool = True,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
@@ -249,7 +261,7 @@ class VisionTransformerForMulticlassCls(ForwardExplainMixInForViT, OTXMulticlass
             cache_file = cache_dir / filename
             if not Path.exists(cache_file):
                 download_url_to_file(pretrained_urls[self.arch], cache_file, "", progress=True)
-            model.backbone.load_pretrained(checkpoint_path=cache_file)
+            model.backbone.load_pretrained(checkpoint_path=str(cache_file))
 
         return model
 
@@ -258,12 +270,13 @@ class VisionTransformerForMulticlassCls(ForwardExplainMixInForViT, OTXMulticlass
             {"std": 0.2, "layer": "Linear", "type": "TruncNormal"},
             {"bias": 0.0, "val": 1.0, "layer": "LayerNorm", "type": "Constant"},
         ]
+        vit_backbone = VisionTransformer(arch=self.arch, img_size=224)
         return ImageClassifier(
-            backbone=TimmVisionTransformer(img_size=224, patch_size=16, embed_dim=192, num_heads=3),
+            backbone=vit_backbone,
             neck=None,
             head=VisionTransformerClsHead(
                 num_classes=num_classes,
-                in_channels=192,
+                in_channels=vit_backbone.embed_dim,
                 topk=(1, 5) if num_classes >= 5 else (1,),
                 loss=nn.CrossEntropyLoss(reduction="none"),
             ),
@@ -349,12 +362,13 @@ class VisionTransformerForMulticlassClsSemiSL(VisionTransformerForMulticlassCls)
             {"std": 0.2, "layer": "Linear", "type": "TruncNormal"},
             {"bias": 0.0, "val": 1.0, "layer": "LayerNorm", "type": "Constant"},
         ]
+        vit_backbone = VisionTransformer(arch=self.arch, img_size=224)
         return SemiSLClassifier(
-            backbone=TimmVisionTransformer(img_size=224, patch_size=16, embed_dim=192, num_heads=3),
+            backbone=vit_backbone,
             neck=None,
             head=OTXSemiSLVisionTransformerClsHead(
                 num_classes=num_classes,
-                in_channels=192,
+                in_channels=vit_backbone.embed_dim,
                 loss=nn.CrossEntropyLoss(reduction="none"),
             ),
             init_cfg=init_cfg,
@@ -431,7 +445,7 @@ class VisionTransformerForMultilabelCls(ForwardExplainMixInForViT, OTXMultilabel
     def __init__(
         self,
         label_info: LabelInfoTypes,
-        arch: VIT_ARCH_TYPE = "deit-tiny",
+        arch: VIT_ARCH_TYPE = "vit-tiny",
         pretrained: bool = True,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
@@ -474,7 +488,7 @@ class VisionTransformerForMultilabelCls(ForwardExplainMixInForViT, OTXMultilabel
             cache_file = cache_dir / filename
             if not Path.exists(cache_file):
                 download_url_to_file(pretrained_urls[self.arch], cache_file, "", progress=True)
-            model.backbone.load_pretrained(checkpoint_path=cache_file)
+            model.backbone.load_pretrained(checkpoint_path=str(cache_file))
         return model
 
     def _build_model(self, num_classes: int) -> nn.Module:
@@ -482,12 +496,13 @@ class VisionTransformerForMultilabelCls(ForwardExplainMixInForViT, OTXMultilabel
             {"std": 0.2, "layer": "Linear", "type": "TruncNormal"},
             {"bias": 0.0, "val": 1.0, "layer": "LayerNorm", "type": "Constant"},
         ]
+        vit_backbone = VisionTransformer(arch=self.arch, img_size=224)
         return ImageClassifier(
-            backbone=TimmVisionTransformer(img_size=224, patch_size=16, embed_dim=192, num_heads=3),
+            backbone=vit_backbone,
             neck=None,
             head=MultiLabelLinearClsHead(
                 num_classes=num_classes,
-                in_channels=192,
+                in_channels=vit_backbone.embed_dim,
                 loss=AsymmetricAngularLossWithIgnore(gamma_pos=0.0, gamma_neg=1.0, reduction="sum"),
             ),
             init_cfg=init_cfg,
@@ -566,7 +581,7 @@ class VisionTransformerForHLabelCls(ForwardExplainMixInForViT, OTXHlabelClsModel
     def __init__(
         self,
         label_info: HLabelInfo,
-        arch: VIT_ARCH_TYPE = "deit-tiny",
+        arch: VIT_ARCH_TYPE = "vit-tiny",
         pretrained: bool = True,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
@@ -612,7 +627,7 @@ class VisionTransformerForHLabelCls(ForwardExplainMixInForViT, OTXHlabelClsModel
             cache_file = cache_dir / filename
             if not Path.exists(cache_file):
                 download_url_to_file(pretrained_urls[self.arch], cache_file, "", progress=True)
-            model.backbone.load_pretrained(checkpoint_path=cache_file)
+            model.backbone.load_pretrained(checkpoint_path=str(cache_file))
         return model
 
     def _build_model(self, head_config: dict) -> nn.Module:
@@ -622,11 +637,12 @@ class VisionTransformerForHLabelCls(ForwardExplainMixInForViT, OTXHlabelClsModel
             {"std": 0.2, "layer": "Linear", "type": "TruncNormal"},
             {"bias": 0.0, "val": 1.0, "layer": "LayerNorm", "type": "Constant"},
         ]
+        vit_backbone = VisionTransformer(arch=self.arch, img_size=224)
         return ImageClassifier(
-            backbone=TimmVisionTransformer(img_size=224, patch_size=16, embed_dim=192, num_heads=3),
+            backbone=vit_backbone,
             neck=None,
             head=HierarchicalLinearClsHead(
-                in_channels=192,
+                in_channels=vit_backbone.embed_dim,
                 multiclass_loss=nn.CrossEntropyLoss(),
                 multilabel_loss=AsymmetricAngularLossWithIgnore(gamma_pos=0.0, gamma_neg=1.0, reduction="sum"),
                 **head_config,
