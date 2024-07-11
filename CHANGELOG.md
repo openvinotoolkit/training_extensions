@@ -96,7 +96,7 @@ All notable changes to this project will be documented in this file.
 - Refactoring detection modules
   (<https://github.com/openvinotoolkit/training_extensions/pull/3636>)
 
-### Buf fixes
+### Bug fixes
 
 - Fix conflicts between develop and 2.0.0
   (<https://github.com/openvinotoolkit/training_extensions/pull/3490>)
@@ -138,6 +138,10 @@ All notable changes to this project will be documented in this file.
   (<https://github.com/openvinotoolkit/training_extensions/pull/3684>)
 - Fix MaskRCNN SwinT NNCF Accuracy Drop
   (<https://github.com/openvinotoolkit/training_extensions/pull/3685>)
+
+### Known issues
+
+- Post-Training Quantization (PTQ) optimization applied to maskrcnn_swint in the instance segmentation task may result in significantly reduced accuracy. This issue is expected to be addressed with an upgrade to OpenVINO and NNCF in a future release.
 
 ## \[v2.0.0\]
 

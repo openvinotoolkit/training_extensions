@@ -221,7 +221,7 @@ In addition to the examples above, please refer to the documentation for tutoria
 - Move assigning tasks to Models from Engine to Anomaly Model Classes
 - Refactoring detection modules
 
-### Buf fixes
+### Bug fixes
 
 - Fix conflicts between develop and 2.0.0
 - Fix polygon mask
@@ -243,6 +243,10 @@ In addition to the examples above, please refer to the documentation for tutoria
 - Fix NNCF MaskRCNN-Eff accuracy drop
 - Fix optimize with Semi-SL data pipeline
 - Fix MaskRCNN SwinT NNCF Accuracy Drop
+
+### Known issues
+
+- Post-Training Quantization (PTQ) optimization applied to maskrcnn_swint in the instance segmentation task may result in significantly reduced accuracy. This issue is expected to be addressed with an upgrade to OpenVINO and NNCF in a future release.
 
 ### Release History
 
