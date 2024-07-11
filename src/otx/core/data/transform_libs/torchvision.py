@@ -120,82 +120,6 @@ class NumpytoTVTensorMixin:
         return inputs
 
 
-class PerturbBoundingBoxes(tvt_v2.Transform):
-    """Perturb bounding boxes with random offset value."""
-
-    def __init__(self, offset: int) -> None:
-        super().__init__()
-        self.offset = offset
-
-    def _transform(self, inpt: Any, params: dict[str, Any]) -> Any:  # noqa: ANN401
-        output = self._perturb_bounding_boxes(inpt, self.offset)
-        return tv_tensors.wrap(output, like=inpt)
-
-    def _perturb_bounding_boxes(self, inpt: torch.Tensor, offset: int) -> torch.Tensor:
-        mean = torch.zeros_like(inpt)
-        repeated_size = torch.tensor(inpt.canvas_size).repeat(len(inpt), 2)
-        std = torch.minimum(repeated_size * 0.1, torch.tensor(offset))
-        noise = torch.normal(mean, std)
-        return (inpt + noise).clamp(mean, repeated_size - 1)
-
-
-class PadtoSquare(tvt_v2.Transform):
-    """Pad skewed image to square with zero padding."""
-
-    def __init__(self, pad_val: int = 0) -> None:
-        super().__init__()
-        self.pad_val = pad_val
-
-    def _get_params(self, flat_inputs: list[Any]) -> dict[str, Any]:
-        height, width = tvt_v2._utils.query_size(flat_inputs)  # noqa: SLF001
-        max_dim = max(width, height)
-        pad_w = max_dim - width
-        pad_h = max_dim - height
-        padding = (0, 0, pad_w, pad_h)
-        return {"padding": padding}
-
-    def _transform(self, inpt: Any, params: dict[str, Any]) -> Any:  # noqa: ANN401
-        return self._call_kernel(F.pad, inpt, padding=params["padding"], fill=self.pad_val, padding_mode="constant")
-
-
-class ResizetoLongestEdge(tvt_v2.Transform):
-    """Resize image along with the longest edge."""
-
-    def __init__(
-        self,
-        size: int,
-        interpolation: F.InterpolationMode | int = F.InterpolationMode.BILINEAR,
-        antialias: str | bool = "warn",
-    ) -> None:
-        super().__init__()
-
-        self.size = size
-        self.interpolation = F._geometry._check_interpolation(interpolation)  # noqa: SLF001
-        self.antialias = antialias
-
-    def _get_params(self, flat_inputs: list[Any]) -> dict[str, Any]:
-        height, width = tvt_v2._utils.query_size(flat_inputs)  # noqa: SLF001
-        target_size = self._get_preprocess_shape(height, width, self.size)
-        return {"target_size": target_size}
-
-    def _transform(self, inpt: Any, params: dict[str, Any]) -> Any:  # noqa: ANN401
-        return self._call_kernel(
-            F.resize,
-            inpt,
-            params["target_size"],
-            interpolation=self.interpolation,
-            max_size=None,
-            antialias=self.antialias,
-        )
-
-    def _get_preprocess_shape(self, oldh: int, oldw: int, long_side_length: int) -> tuple[int, int]:
-        scale = long_side_length * 1.0 / max(oldh, oldw)
-        newh, neww = oldh * scale, oldw * scale
-        neww = int(neww + 0.5)
-        newh = int(newh + 0.5)
-        return (newh, neww)
-
-
 class DecodeVideo(tvt_v2.Transform):
     """Sample video frames from original data video."""
 
@@ -2601,11 +2525,6 @@ class FilterAnnotations(tvt_v2.Transform, NumpytoTVTensorMixin):
             f"keep_empty={self.keep_empty}, "
             f"is_numpy_to_tvtensor={self.is_numpy_to_tvtensor})"
         )
-
-
-tvt_v2.PerturbBoundingBoxes = PerturbBoundingBoxes
-tvt_v2.PadtoSquare = PadtoSquare
-tvt_v2.ResizetoLongestEdge = ResizetoLongestEdge
 
 
 class Compose(tvt_v2.Compose):
