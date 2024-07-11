@@ -28,6 +28,8 @@ from torch import nn
 from otx.algo.modules.base_module import BaseModule
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
     import numpy as np
 
 
@@ -297,12 +299,12 @@ class VisionTransformer(BaseModule):
             trunc_normal_(self.pos_embed, std=0.02)
 
     @torch.jit.ignore()
-    def load_pretrained(self, checkpoint_path: str, prefix: str = "") -> None:
+    def load_pretrained(self, checkpoint_path: Path, prefix: str = "") -> None:
         """Loads the pretrained weight to the VisionTransformer."""
-        checkpoint_ext = checkpoint_path.split(".")[-1]
-        if checkpoint_ext == "npz":
+        checkpoint_ext = checkpoint_path.suffix
+        if checkpoint_ext == ".npz":
             _load_npz_weights(self, checkpoint_path, prefix)
-        elif checkpoint_ext == "pth":
+        elif checkpoint_ext == ".pth":
             self.load_state_dict(torch.load(checkpoint_path), strict=False)
         else:
             msg = f"Unsupported `checkpoint_extension` {checkpoint_ext}, please choose from 'npz' or 'pth'."
