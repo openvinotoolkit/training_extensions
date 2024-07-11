@@ -208,7 +208,7 @@ class VisionTransformer(BaseModule):
         mlp_layer: nn.Module | None = None,
         act_layer: LayerType | None = None,
         norm_layer: LayerType | None = None,
-        use_lora: bool = False,
+        use_lora: bool = True,
     ) -> None:
         super().__init__()
         if isinstance(arch, str):
@@ -323,7 +323,7 @@ class VisionTransformer(BaseModule):
         """Loads the pretrained weight to the VisionTransformer."""
         checkpoint_ext = checkpoint_path.suffix
         if checkpoint_ext == ".npz":
-            _load_npz_weights(self, checkpoint_path, prefix)
+            self._load_npz_weights(self, checkpoint_path, prefix)
         elif checkpoint_ext == ".pth":
             self.load_state_dict(torch.load(checkpoint_path), strict=False)
         else:
@@ -385,103 +385,65 @@ class VisionTransformer(BaseModule):
         msg = f"Unsupported `out_type` {out_type}, please choose from {self.OUT_TYPES}"
         raise ValueError(msg)
 
+    @torch.no_grad()
+    def _load_npz_weights(  # noqa: C901
+        self,
+        model: VisionTransformer,
+        checkpoint_path: str,
+        prefix: str = "",
+    ) -> None:
+        """Load weights from .npz checkpoints for official Google Brain Flax implementation."""
+        import numpy as np
 
-@torch.no_grad()
-def _load_npz_weights(  # noqa: C901
-    model: VisionTransformer,
-    checkpoint_path: str,
-    prefix: str = "",
-) -> None:
-    """Load weights from .npz checkpoints for official Google Brain Flax implementation."""
-    import numpy as np
+        def _n2p(w: np.ndarray, t: bool = True, idx: int | None = None) -> torch.Tensor:
+            if idx is not None:
+                w = w[idx]
+            if w.ndim == 4 and w.shape[0] == w.shape[1] == w.shape[2] == 1:
+                w = w.flatten()
+            if t:
+                if w.ndim == 4:
+                    w = w.transpose([3, 2, 0, 1])
+                elif w.ndim == 3:
+                    w = w.transpose([2, 0, 1])
+                elif w.ndim == 2:
+                    w = w.transpose([1, 0])
+            return torch.from_numpy(w)
 
-    def _n2p(w: np.ndarray, t: bool = True, idx: int | None = None) -> torch.Tensor:
-        if idx is not None:
-            w = w[idx]
-        if w.ndim == 4 and w.shape[0] == w.shape[1] == w.shape[2] == 1:
-            w = w.flatten()
-        if t:
-            if w.ndim == 4:
-                w = w.transpose([3, 2, 0, 1])
-            elif w.ndim == 3:
-                w = w.transpose([2, 0, 1])
-            elif w.ndim == 2:
-                w = w.transpose([1, 0])
-        return torch.from_numpy(w)
+        w = np.load(checkpoint_path)
+        interpolation = "bilinear"
+        antialias = False
+        big_vision = False
+        if not prefix:
+            if "opt/target/embedding/kernel" in w:
+                prefix = "opt/target/"
+            elif "params/embedding/kernel" in w:
+                prefix = "params/"
+                big_vision = True
+            elif "params/img/embedding/kernel" in w:
+                prefix = "params/img/"
+                big_vision = True
 
-    w = np.load(checkpoint_path)
-    interpolation = "bilinear"
-    antialias = False
-    big_vision = False
-    if not prefix:
-        if "opt/target/embedding/kernel" in w:
-            prefix = "opt/target/"
-        elif "params/embedding/kernel" in w:
-            prefix = "params/"
-            big_vision = True
-        elif "params/img/embedding/kernel" in w:
-            prefix = "params/img/"
-            big_vision = True
-
-    if hasattr(model.patch_embed, "backbone"):
-        # hybrid
-        backbone = model.patch_embed.backbone
-        stem_only = not hasattr(backbone, "stem")
-        stem = backbone if stem_only else backbone.stem
-        stem.conv.weight.copy_(adapt_input_conv(stem.conv.weight.shape[1], _n2p(w[f"{prefix}conv_root/kernel"])))
-        stem.norm.weight.copy_(_n2p(w[f"{prefix}gn_root/scale"]))
-        stem.norm.bias.copy_(_n2p(w[f"{prefix}gn_root/bias"]))
-        if not stem_only:
-            for i, stage in enumerate(backbone.stages):
-                for j, block in enumerate(stage.blocks):
-                    bp = f"{prefix}block{i + 1}/unit{j + 1}/"
-                    for r in range(3):
-                        getattr(block, f"conv{r + 1}").weight.copy_(_n2p(w[f"{bp}conv{r + 1}/kernel"]))
-                        getattr(block, f"norm{r + 1}").weight.copy_(_n2p(w[f"{bp}gn{r + 1}/scale"]))
-                        getattr(block, f"norm{r + 1}").bias.copy_(_n2p(w[f"{bp}gn{r + 1}/bias"]))
-                    if block.downsample is not None:
-                        block.downsample.conv.weight.copy_(_n2p(w[f"{bp}conv_proj/kernel"]))
-                        block.downsample.norm.weight.copy_(_n2p(w[f"{bp}gn_proj/scale"]))
-                        block.downsample.norm.bias.copy_(_n2p(w[f"{bp}gn_proj/bias"]))
-        embed_conv_w = _n2p(w[f"{prefix}embedding/kernel"])
-    else:
-        embed_conv_w = adapt_input_conv(model.patch_embed.proj.weight.shape[1], _n2p(w[f"{prefix}embedding/kernel"]))
-    if embed_conv_w.shape[-2:] != model.patch_embed.proj.weight.shape[-2:]:
-        embed_conv_w = resample_patch_embed(
-            embed_conv_w,
-            model.patch_embed.proj.weight.shape[-2:],
-            interpolation=interpolation,
-            antialias=antialias,
-            verbose=True,
-        )
-
-    model.patch_embed.proj.weight.copy_(embed_conv_w)
-    model.patch_embed.proj.bias.copy_(_n2p(w[f"{prefix}embedding/bias"]))
-    if model.cls_token is not None:
-        model.cls_token.copy_(_n2p(w[f"{prefix}cls"], t=False))
-    if big_vision:
-        pos_embed_w = _n2p(w[f"{prefix}pos_embedding"], t=False)
-    else:
-        pos_embed_w = _n2p(w[f"{prefix}Transformer/posembed_input/pos_embedding"], t=False)
-    if pos_embed_w.shape != model.pos_embed.shape:
-        num_prefix_tokens = 0 if getattr(model, "no_embed_class", False) else getattr(model, "num_prefix_tokens", 1)
-        pos_embed_w = resample_abs_pos_embed(  # resize pos embedding when different size from pretrained weights
-            pos_embed_w,
-            new_size=model.patch_embed.grid_size,
-            num_prefix_tokens=num_prefix_tokens,
-            interpolation=interpolation,
-            antialias=antialias,
-            verbose=True,
-        )
-    model.pos_embed.copy_(pos_embed_w)
-    model.norm.weight.copy_(_n2p(w[f"{prefix}Transformer/encoder_norm/scale"]))
-    model.norm.bias.copy_(_n2p(w[f"{prefix}Transformer/encoder_norm/bias"]))
-
-    mha_sub, b_sub, ln1_sub = (0, 0, 1) if big_vision else (1, 3, 2)
-    for i, block in enumerate(model.blocks.children()):
-        if f"{prefix}Transformer/encoderblock/LayerNorm_0/scale" in w:
-            block_prefix = f"{prefix}Transformer/encoderblock/"
-            idx = i
+        if hasattr(model.patch_embed, "backbone"):
+            # hybrid
+            backbone = model.patch_embed.backbone
+            stem_only = not hasattr(backbone, "stem")
+            stem = backbone if stem_only else backbone.stem
+            stem.conv.weight.copy_(adapt_input_conv(stem.conv.weight.shape[1], _n2p(w[f"{prefix}conv_root/kernel"])))
+            stem.norm.weight.copy_(_n2p(w[f"{prefix}gn_root/scale"]))
+            stem.norm.bias.copy_(_n2p(w[f"{prefix}gn_root/bias"]))
+            if not stem_only:
+                for i, stage in enumerate(backbone.stages):
+                    for j, block in enumerate(stage.blocks):
+                        bp = f"{prefix}block{i + 1}/unit{j + 1}/"
+                        for r in range(3):
+                            getattr(block, f"conv{r + 1}").weight.copy_(_n2p(w[f"{bp}conv{r + 1}/kernel"]))
+                            getattr(block, f"norm{r + 1}").weight.copy_(_n2p(w[f"{bp}gn{r + 1}/scale"]))
+                            getattr(block, f"norm{r + 1}").bias.copy_(_n2p(w[f"{bp}gn{r + 1}/bias"]))
+                        if block.downsample is not None:
+                            block.downsample.conv.weight.copy_(_n2p(w[f"{bp}conv_proj/kernel"]))
+                            block.downsample.norm.weight.copy_(_n2p(w[f"{bp}gn_proj/scale"]))
+                            block.downsample.norm.bias.copy_(_n2p(w[f"{bp}gn_proj/bias"]))
+            embed_conv_w = _n2p(w[f"{prefix}embedding/kernel"])
         else:
             embed_conv_w = adapt_input_conv(
                 model.patch_embed.proj.weight.shape[1], _n2p(w[f"{prefix}embedding/kernel"])
@@ -523,53 +485,126 @@ def _load_npz_weights(  # noqa: C901
                 block_prefix = f"{prefix}Transformer/encoderblock/"
                 idx = i
             else:
-                block_prefix = f"{prefix}Transformer/encoderblock_{i}/"
-                idx = None
-            mha_prefix = block_prefix + f"MultiHeadDotProductAttention_{mha_sub}/"
-            block.norm1.weight.copy_(_n2p(w[f"{block_prefix}LayerNorm_0/scale"], idx=idx))
-            block.norm1.bias.copy_(_n2p(w[f"{block_prefix}LayerNorm_0/bias"], idx=idx))
-            if not use_lora:
-                block.attn.qkv.weight.copy_(
-                    torch.cat(
-                        [
-                            _n2p(w[f"{mha_prefix}{n}/kernel"], t=False, idx=idx).flatten(1).T
-                            for n in ("query", "key", "value")
-                        ],
-                    ),
+                embed_conv_w = adapt_input_conv(
+                    model.patch_embed.proj.weight.shape[1],
+                    _n2p(w[f"{prefix}embedding/kernel"]),
                 )
-                block.attn.qkv.bias.copy_(
-                    torch.cat(
-                        [
-                            _n2p(w[f"{mha_prefix}{n}/bias"], t=False, idx=idx).reshape(-1)
-                            for n in ("query", "key", "value")
-                        ],
-                    ),
+            if embed_conv_w.shape[-2:] != model.patch_embed.proj.weight.shape[-2:]:
+                embed_conv_w = resample_patch_embed(
+                    embed_conv_w,
+                    model.patch_embed.proj.weight.shape[-2:],
+                    interpolation=interpolation,
+                    antialias=antialias,
+                    verbose=True,
                 )
+
+            model.patch_embed.proj.weight.copy_(embed_conv_w)
+            model.patch_embed.proj.bias.copy_(_n2p(w[f"{prefix}embedding/bias"]))
+            if model.cls_token is not None:
+                model.cls_token.copy_(_n2p(w[f"{prefix}cls"], t=False))
+            if big_vision:
+                pos_embed_w = _n2p(w[f"{prefix}pos_embedding"], t=False)
             else:
-                block.attn.qkv.qkv.weight.copy_(
-                    torch.cat(
-                        [
-                            _n2p(w[f"{mha_prefix}{n}/kernel"], t=False, idx=idx).flatten(1).T
-                            for n in ("query", "key", "value")
-                        ],
-                    ),
+                pos_embed_w = _n2p(w[f"{prefix}Transformer/posembed_input/pos_embedding"], t=False)
+            if pos_embed_w.shape != model.pos_embed.shape:
+                num_prefix_tokens = (
+                    0 if getattr(model, "no_embed_class", False) else getattr(model, "num_prefix_tokens", 1)
                 )
-                block.attn.qkv.qkv.bias.copy_(
-                    torch.cat(
-                        [
-                            _n2p(w[f"{mha_prefix}{n}/bias"], t=False, idx=idx).reshape(-1)
-                            for n in ("query", "key", "value")
-                        ],
-                    ),
+                pos_embed_w = (
+                    resample_abs_pos_embed(  # resize pos embedding when different size from pretrained weights
+                        pos_embed_w,
+                        new_size=model.patch_embed.grid_size,
+                        num_prefix_tokens=num_prefix_tokens,
+                        interpolation=interpolation,
+                        antialias=antialias,
+                        verbose=True,
+                    )
                 )
-            block.attn.proj.weight.copy_(_n2p(w[f"{mha_prefix}out/kernel"], idx=idx).flatten(1))
-            block.attn.proj.bias.copy_(_n2p(w[f"{mha_prefix}out/bias"], idx=idx))
-            block.norm2.weight.copy_(_n2p(w[f"{block_prefix}LayerNorm_{ln1_sub}/scale"], idx=idx))
-            block.norm2.bias.copy_(_n2p(w[f"{block_prefix}LayerNorm_{ln1_sub}/bias"], idx=idx))
-            for r in range(2):
-                getattr(block.mlp, f"fc{r + 1}").weight.copy_(
-                    _n2p(w[f"{block_prefix}MlpBlock_{b_sub}/Dense_{r}/kernel"], idx=idx),
-                )
-                getattr(block.mlp, f"fc{r + 1}").bias.copy_(
-                    _n2p(w[f"{block_prefix}MlpBlock_{b_sub}/Dense_{r}/bias"], idx=idx),
-                )
+            model.pos_embed.copy_(pos_embed_w)
+            model.norm.weight.copy_(_n2p(w[f"{prefix}Transformer/encoder_norm/scale"]))
+            model.norm.bias.copy_(_n2p(w[f"{prefix}Transformer/encoder_norm/bias"]))
+
+            mha_sub, b_sub, ln1_sub = (0, 0, 1) if big_vision else (1, 3, 2)
+            for i, block in enumerate(model.blocks.children()):
+                if f"{prefix}Transformer/encoderblock/LayerNorm_0/scale" in w:
+                    block_prefix = f"{prefix}Transformer/encoderblock/"
+                    idx = i
+                else:
+                    block_prefix = f"{prefix}Transformer/encoderblock_{i}/"
+                    idx = None
+                mha_prefix = block_prefix + f"MultiHeadDotProductAttention_{mha_sub}/"
+                block.norm1.weight.copy_(_n2p(w[f"{block_prefix}LayerNorm_0/scale"], idx=idx))
+                block.norm1.bias.copy_(_n2p(w[f"{block_prefix}LayerNorm_0/bias"], idx=idx))
+                if not self.use_lora:
+                    block.attn.qkv.weight.copy_(
+                        torch.cat(
+                            [
+                                _n2p(w[f"{mha_prefix}{n}/kernel"], t=False, idx=idx).flatten(1).T
+                                for n in ("query", "key", "value")
+                            ],
+                        ),
+                    )
+                    block.attn.qkv.bias.copy_(
+                        torch.cat(
+                            [
+                                _n2p(w[f"{mha_prefix}{n}/bias"], t=False, idx=idx).reshape(-1)
+                                for n in ("query", "key", "value")
+                            ],
+                        ),
+                    )
+                else:
+                    block.attn.qkv.qkv.weight.copy_(
+                        torch.cat(
+                            [
+                                _n2p(w[f"{mha_prefix}{n}/kernel"], t=False, idx=idx).flatten(1).T
+                                for n in ("query", "key", "value")
+                            ],
+                        ),
+                    )
+                    block.attn.qkv.qkv.bias.copy_(
+                        torch.cat(
+                            [
+                                _n2p(w[f"{mha_prefix}{n}/bias"], t=False, idx=idx).reshape(-1)
+                                for n in ("query", "key", "value")
+                            ],
+                        ),
+                    )
+                block.attn.proj.weight.copy_(_n2p(w[f"{mha_prefix}out/kernel"], idx=idx).flatten(1))
+                block.attn.proj.bias.copy_(_n2p(w[f"{mha_prefix}out/bias"], idx=idx))
+                block.norm2.weight.copy_(_n2p(w[f"{block_prefix}LayerNorm_{ln1_sub}/scale"], idx=idx))
+                block.norm2.bias.copy_(_n2p(w[f"{block_prefix}LayerNorm_{ln1_sub}/bias"], idx=idx))
+                for r in range(2):
+                    getattr(block.mlp, f"fc{r + 1}").weight.copy_(
+                        _n2p(w[f"{block_prefix}MlpBlock_{b_sub}/Dense_{r}/kernel"], idx=idx),
+                    )
+                    getattr(block.mlp, f"fc{r + 1}").bias.copy_(
+                        _n2p(w[f"{block_prefix}MlpBlock_{b_sub}/Dense_{r}/bias"], idx=idx),
+                    )
+
+
+class LoRALayer(torch.nn.Module):
+    def __init__(self, in_dim, out_dim, rank, alpha):
+        super().__init__()
+        std = torch.sqrt(torch.tensor(rank).float())
+        self.A = torch.nn.Parameter(torch.randn(in_dim, rank) / std)
+        self.B = torch.nn.Parameter(torch.zeros(rank, out_dim))
+        self.alpha = alpha
+
+    def forward(self, x):
+        x = self.alpha * (x @ self.A @ self.B)
+        return x
+
+
+class QkvWithLoRA(torch.nn.Module):
+    def __init__(self, qkv, rank, alpha):
+        super().__init__()
+        self.qkv = qkv
+        self.dim = qkv.in_features
+        self.lora_q = LoRALayer(self.dim, self.dim, rank, alpha)
+        self.lora_v = LoRALayer(self.dim, self.dim, rank, alpha)
+
+    def forward(self, x):
+        qkv = self.qkv(x)
+        qkv[:, :, : self.dim] += self.lora_q(x)
+        qkv[:, :, -self.dim :] += self.lora_v(x)
+        return qkv
