@@ -1,10 +1,15 @@
-task: MULTI_CLASS_CLS
+task: ZERO_SHOT_VISUAL_PROMPTING
 mem_cache_size: 1GB
 mem_cache_img_max_size: null
 image_color_channel: RGB
 stack_images: false
-data_format: imagenet_with_subset_dirs
+data_format: coco_instances
 unannotated_items_ratio: 0.0
+
+vpm_config:
+  use_bbox: True
+  use_point: False
+
 train_subset:
   subset_name: train
   transform_lib_type: TORCHVISION
@@ -12,9 +17,10 @@ train_subset:
   transforms:
     - class_path: torchvision.transforms.v2.ToImage
   batch_size: 1
-  num_workers: 2
+  num_workers: 4
   sampler:
     class_path: torch.utils.data.RandomSampler
+
 val_subset:
   subset_name: val
   transform_lib_type: TORCHVISION
@@ -22,9 +28,10 @@ val_subset:
   transforms:
     - class_path: torchvision.transforms.v2.ToImage
   batch_size: 1
-  num_workers: 2
+  num_workers: 4
   sampler:
     class_path: torch.utils.data.RandomSampler
+
 test_subset:
   subset_name: test
   transform_lib_type: TORCHVISION
@@ -32,6 +39,6 @@ test_subset:
   transforms:
     - class_path: torchvision.transforms.v2.ToImage
   batch_size: 1
-  num_workers: 2
+  num_workers: 4
   sampler:
     class_path: torch.utils.data.RandomSampler
