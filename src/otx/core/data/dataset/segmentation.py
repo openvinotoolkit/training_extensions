@@ -213,11 +213,10 @@ class OTXSegmentationDataset(OTXDataset[SegDataEntity]):
                 image_color_channel=self.image_color_channel,
                 ignored_labels=ignored_labels,
             ),
-            gt_seg_map=tv_tensors.Mask(
-                mask,
-            ),
+            masks=tv_tensors.Mask(mask[None]),
         )
-        return self._apply_transforms(entity)
+        transformed_entity = self._apply_transforms(entity)
+        return transformed_entity.wrap(masks=transformed_entity.masks[0]) if transformed_entity else None
 
     @property
     def collate_fn(self) -> Callable:
