@@ -270,7 +270,7 @@ class VisionTransformerForMulticlassCls(ForwardExplainMixInForViT, OTXMulticlass
             cache_file = cache_dir / filename
             if not Path.exists(cache_file):
                 download_url_to_file(pretrained_urls[self.arch], cache_file, "", progress=True)
-            model.backbone.load_pretrained(checkpoint_path=cache_file)
+            model.backbone.load_pretrained(checkpoint_path=str(cache_file))
 
         return model
 
@@ -506,7 +506,7 @@ class VisionTransformerForMultilabelCls(ForwardExplainMixInForViT, OTXMultilabel
             cache_file = cache_dir / filename
             if not Path.exists(cache_file):
                 download_url_to_file(pretrained_urls[self.arch], cache_file, "", progress=True)
-            model.backbone.load_pretrained(checkpoint_path=cache_file)
+            model.backbone.load_pretrained(checkpoint_path=str(cache_file))
         return model
 
     def _build_model(self, num_classes: int) -> nn.Module:
@@ -654,7 +654,7 @@ class VisionTransformerForHLabelCls(ForwardExplainMixInForViT, OTXHlabelClsModel
             cache_file = cache_dir / filename
             if not Path.exists(cache_file):
                 download_url_to_file(pretrained_urls[self.arch], cache_file, "", progress=True)
-            model.backbone.load_pretrained(checkpoint_path=cache_file)
+            model.backbone.load_pretrained(checkpoint_path=str(cache_file))
         return model
 
     def _build_model(self, head_config: dict) -> nn.Module:
