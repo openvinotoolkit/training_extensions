@@ -37,50 +37,67 @@ overrides:
       batch_size: 32
       num_workers: 4
       transforms:
-        - class_path: otx.core.data.transform_libs.torchvision.ResizetoLongestEdge
+        - class_path: otx.core.data.transform_libs.torchvision.Resize
           init_args:
-            size: 256
-            antialias: True
-        - class_path: otx.core.data.transform_libs.torchvision.PadtoSquare
+            scale:
+              - 256
+              - 256
+            keep_ratio: true
+        - class_path: otx.core.data.transform_libs.torchvision.Pad
+          init_args:
+            pad_to_square: true
+            is_numpy_to_tvtensor: true
         - class_path: torchvision.transforms.v2.ToDtype
           init_args:
             dtype: ${as_torch_dtype:torch.float32}
-            scale: False
+            scale: false
         - class_path: torchvision.transforms.v2.Normalize
           init_args:
             mean: [123.675, 116.28, 103.53]
             std: [58.395, 57.12, 57.375]
+
     val_subset:
       batch_size: 32
       num_workers: 4
       subset_name: test
       transforms:
-        - class_path: otx.core.data.transform_libs.torchvision.ResizetoLongestEdge
+        - class_path: otx.core.data.transform_libs.torchvision.Resize
           init_args:
-            size: 256
-            antialias: True
-        - class_path: otx.core.data.transform_libs.torchvision.PadtoSquare
+            scale:
+              - 256
+              - 256
+            keep_ratio: true
+        - class_path: otx.core.data.transform_libs.torchvision.Pad
+          init_args:
+            pad_to_square: true
+            is_numpy_to_tvtensor: true
         - class_path: torchvision.transforms.v2.ToDtype
           init_args:
             dtype: ${as_torch_dtype:torch.float32}
-            scale: False
+            scale: false
         - class_path: torchvision.transforms.v2.Normalize
           init_args:
             mean: [123.675, 116.28, 103.53]
             std: [58.395, 57.12, 57.375]
+
     test_subset:
       batch_size: 32
       num_workers: 4
       transforms:
-        - class_path: otx.core.data.transform_libs.torchvision.ResizetoLongestEdge
+        - class_path: otx.core.data.transform_libs.torchvision.Resize
           init_args:
-            size: 256
-            antialias: True
-        - class_path: otx.core.data.transform_libs.torchvision.PadtoSquare
+            scale:
+              - 256
+              - 256
+            keep_ratio: true
+        - class_path: otx.core.data.transform_libs.torchvision.Pad
+          init_args:
+            pad_to_square: true
+            is_numpy_to_tvtensor: true
         - class_path: torchvision.transforms.v2.ToDtype
           init_args:
             dtype: ${as_torch_dtype:torch.float32}
-            scale: False
+            scale: false
         - class_path: torchvision.transforms.v2.Normalize
           init_args:
             mean: [123.675, 116.28, 103.53]
