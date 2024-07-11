@@ -1,7 +1,7 @@
 model:
   class_path: otx.algo.classification.vit.VisionTransformerForHLabelCls
   init_args:
-    arch: "deit-tiny"
+    arch: "vit-tiny"
 
     optimizer:
       class_path: torch.optim.AdamW
