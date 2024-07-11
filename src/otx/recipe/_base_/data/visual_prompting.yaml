@@ -14,11 +14,15 @@ train_subset:
   transform_lib_type: TORCHVISION
   to_tv_image: true
   transforms:
-    - class_path: otx.core.data.transform_libs.torchvision.ResizetoLongestEdge
+    - class_path: otx.core.data.transform_libs.torchvision.Resize
       init_args:
-        size: 1024
-        antialias: true
-    - class_path: otx.core.data.transform_libs.torchvision.PadtoSquare
+        scale:
+          - 1024
+          - 1024
+        keep_ratio: true
+    - class_path: otx.core.data.transform_libs.torchvision.Pad
+      init_args:
+        pad_to_square: true
     - class_path: torchvision.transforms.v2.ToDtype
       init_args:
         dtype: ${as_torch_dtype:torch.float32}
@@ -36,11 +40,15 @@ val_subset:
   transform_lib_type: TORCHVISION
   to_tv_image: true
   transforms:
-    - class_path: otx.core.data.transform_libs.torchvision.ResizetoLongestEdge
+    - class_path: otx.core.data.transform_libs.torchvision.Resize
       init_args:
-        size: 1024
-        antialias: true
-    - class_path: otx.core.data.transform_libs.torchvision.PadtoSquare
+        scale:
+          - 1024
+          - 1024
+        keep_ratio: true
+    - class_path: otx.core.data.transform_libs.torchvision.Pad
+      init_args:
+        pad_to_square: true
     - class_path: torchvision.transforms.v2.ToDtype
       init_args:
         dtype: ${as_torch_dtype:torch.float32}
@@ -58,11 +66,15 @@ test_subset:
   transform_lib_type: TORCHVISION
   to_tv_image: true
   transforms:
-    - class_path: otx.core.data.transform_libs.torchvision.ResizetoLongestEdge
+    - class_path: otx.core.data.transform_libs.torchvision.Resize
       init_args:
-        size: 1024
-        antialias: true
-    - class_path: otx.core.data.transform_libs.torchvision.PadtoSquare
+        scale:
+          - 1024
+          - 1024
+        keep_ratio: true
+    - class_path: otx.core.data.transform_libs.torchvision.Pad
+      init_args:
+        pad_to_square: true
     - class_path: torchvision.transforms.v2.ToDtype
       init_args:
         dtype: ${as_torch_dtype:torch.float32}
