@@ -205,6 +205,7 @@ def load_checkpoint_to_model(
     # get state_dict from checkpoint
     # state_dict = checkpoint.get("state_dict", checkpoint)
     state_dict = checkpoint["ema"]["module"]
+    # state_dict = checkpoint["model"]
 
     # strip prefix of state_dict
     metadata = getattr(state_dict, "_metadata", OrderedDict())

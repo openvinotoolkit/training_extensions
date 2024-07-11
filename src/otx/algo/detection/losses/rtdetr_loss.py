@@ -12,10 +12,7 @@ class RTDetrCriterion(nn.Module):
         1) we compute hungarian assignment between ground truth boxes and the outputs of the model
         2) we supervise each pair of matched ground-truth / prediction (supervise class and box)
     """
-    __share__ = ['num_classes', ]
-    __inject__ = ['matcher', ]
-
-    def __init__(self, weight_dict, losses, num_classes, alpha=0.75, gamma=2.0, eos_coef=1e-4):
+    def __init__(self, weight_dict, losses, alpha=0.2, gamma=2.0, eos_coef=1e-4, num_classes=80):
         """ Create the criterion.
         Parameters:
             num_classes: number of object categories, omitting the special no-object category
@@ -26,7 +23,7 @@ class RTDetrCriterion(nn.Module):
         """
         super().__init__()
         self.num_classes = num_classes
-        self.matcher = HungarianMatcher(weight_dict={"cost_class": 2, "cost_bbox": 5, "cost_giou": 2})
+        self.matcher = HungarianMatcher(weight_dict={"cost_class": 2, "cost_bbox": 5, "cost_giou": 2}, use_focal_loss=True)
         self.weight_dict = weight_dict
         self.losses = losses
 
@@ -83,7 +80,13 @@ class RTDetrCriterion(nn.Module):
         target_classes[idx] = target_classes_o
 
         target = F.one_hot(target_classes, num_classes=self.num_classes+1)[..., :-1]
-        loss = torchvision.ops.sigmoid_focal_loss(src_logits, target, self.alpha, self.gamma, reduction='none')
+        # ce_loss = F.binary_cross_entropy_with_logits(src_logits, target * 1., reduction="none")
+        # prob = F.sigmoid(src_logits) # TODO .detach()
+        # p_t = prob * target + (1 - prob) * (1 - target)
+        # alpha_t = self.alpha * target + (1 - self.alpha) * (1 - target)
+        # loss = alpha_t * ce_loss * ((1 - p_t) ** self.gamma)
+        # loss = loss.mean(1).sum() * src_logits.shape[1] / num_boxes
+        loss = torchvision.ops.sigmoid_focal_loss(src_logits, target.long(), self.alpha, self.gamma, reduction='none')
         loss = loss.mean(1).sum() * src_logits.shape[1] / num_boxes
 
         return {'loss_focal': loss}
@@ -280,7 +283,6 @@ class RTDetrCriterion(nn.Module):
         dn_positive_idx, dn_num_group = dn_meta["dn_positive_idx"], dn_meta["dn_num_group"]
         num_gts = [len(t['labels']) for t in targets]
         device = targets[0]['labels'].device
-
         dn_match_indices = []
         for i, num_gt in enumerate(num_gts):
             if num_gt > 0:

@@ -70,6 +70,20 @@ def get_contrastive_denoising_training_group(targets,
         new_label = torch.randint_like(mask, 0, num_classes, dtype=input_query_class.dtype)
         input_query_class = torch.where(mask & pad_gt_mask, new_label, input_query_class)
 
+    # if label_noise_ratio > 0:
+    #     input_query_class = input_query_class.flatten()
+    #     pad_gt_mask = pad_gt_mask.flatten()
+    #     # half of bbox prob
+    #     # mask = torch.rand(input_query_class.shape, device=device) < (label_noise_ratio * 0.5)
+    #     mask = torch.rand_like(input_query_class) < (label_noise_ratio * 0.5)
+    #     chosen_idx = torch.nonzero(mask * pad_gt_mask).squeeze(-1)
+    #     # randomly put a new one here
+    #     new_label = torch.randint_like(chosen_idx, 0, num_classes, dtype=input_query_class.dtype)
+    #     # input_query_class.scatter_(dim=0, index=chosen_idx, value=new_label)
+    #     input_query_class[chosen_idx] = new_label
+    #     input_query_class = input_query_class.reshape(bs, num_denoising)
+    #     pad_gt_mask = pad_gt_mask.reshape(bs, num_denoising)
+
     if box_noise_scale > 0:
         known_bbox = box_cxcywh_to_xyxy(input_query_bbox)
         diff = torch.tile(input_query_bbox[..., 2:] * 0.5, [1, 1, 2]) * box_noise_scale
@@ -82,9 +96,15 @@ def get_contrastive_denoising_training_group(targets,
         input_query_bbox = box_xyxy_to_cxcywh(known_bbox)
         input_query_bbox = inverse_sigmoid(input_query_bbox)
 
+    # class_embed = torch.concat([class_embed, torch.zeros([1, class_embed.shape[-1]], device=device)])
+    # input_query_class = torch.gather(
+    #     class_embed, input_query_class.flatten(),
+    #     axis=0).reshape(bs, num_denoising, -1)
+    # input_query_class = class_embed(input_query_class.flatten()).reshape(bs, num_denoising, -1)
     input_query_class = class_embed(input_query_class)
 
     tgt_size = num_denoising + num_queries
+    # attn_mask = torch.ones([tgt_size, tgt_size], device=device) < 0
     attn_mask = torch.full([tgt_size, tgt_size], False, dtype=torch.bool, device=device)
     # match query cannot see the reconstruction
     attn_mask[num_denoising:, :num_denoising] = True
@@ -104,6 +124,10 @@ def get_contrastive_denoising_training_group(targets,
         "dn_num_group": num_group,
         "dn_num_split": [num_denoising, num_queries]
     }
+
+    # print(input_query_class.shape) # torch.Size([4, 196, 256])
+    # print(input_query_bbox.shape) # torch.Size([4, 196, 4])
+    # print(attn_mask.shape) # torch.Size([496, 496])
 
     return input_query_class, input_query_bbox, attn_mask, dn_meta
 
@@ -257,6 +281,14 @@ class TransformerDecoderLayer(nn.Module):
         self.dropout4 = nn.Dropout(dropout)
         self.norm3 = nn.LayerNorm(d_model)
 
+        # self._reset_parameters()
+
+    # def _reset_parameters(self):
+    #     linear_init_(self.linear1)
+    #     linear_init_(self.linear2)
+    #     xavier_uniform_(self.linear1.weight)
+    #     xavier_uniform_(self.linear2.weight)
+
     def with_pos_embed(self, tensor, pos):
         return tensor if pos is None else tensor + pos
 
@@ -274,6 +306,13 @@ class TransformerDecoderLayer(nn.Module):
                 query_pos_embed=None):
         # self attention
         q = k = self.with_pos_embed(tgt, query_pos_embed)
+
+        # if attn_mask is not None:
+        #     attn_mask = torch.where(
+        #         attn_mask.to(torch.bool),
+        #         torch.zeros_like(attn_mask),
+        #         torch.full_like(attn_mask, float('-inf'), dtype=tgt.dtype))
+
         tgt2, _ = self.self_attn(q, k, value=tgt, attn_mask=attn_mask)
         tgt = tgt + self.dropout1(tgt2)
         tgt = self.norm1(tgt)
@@ -350,7 +389,6 @@ class TransformerDecoder(nn.Module):
 
 
 class RTDETRTransformer(nn.Module):
-    __share__ = ['num_classes']
     def __init__(self,
                  num_classes=80,
                  hidden_dim=256,
@@ -405,6 +443,7 @@ class RTDETRTransformer(nn.Module):
         self.box_noise_scale = box_noise_scale
         # denoising part
         if num_denoising > 0:
+            # self.denoising_class_embed = nn.Embedding(num_classes, hidden_dim, padding_idx=num_classes-1) # TODO for load paddle weights
             self.denoising_class_embed = nn.Embedding(num_classes+1, hidden_dim, padding_idx=num_classes)
 
         # decoder embedding
@@ -530,6 +569,8 @@ class RTDETRTransformer(nn.Module):
         anchors = torch.concat(anchors, 1).to(device)
         valid_mask = ((anchors > self.eps) * (anchors < 1 - self.eps)).all(-1, keepdim=True)
         anchors = torch.log(anchors / (1 - anchors))
+        # anchors = torch.where(valid_mask, anchors, float('inf'))
+        # anchors[valid_mask] = torch.inf # valid_mask [1, 8400, 1]
         anchors = torch.where(valid_mask, anchors, torch.inf)
 
         return anchors, valid_mask
@@ -547,6 +588,7 @@ class RTDETRTransformer(nn.Module):
         else:
             anchors, valid_mask = self.anchors.to(memory.device), self.valid_mask.to(memory.device)
 
+        # memory = torch.where(valid_mask, memory, 0)
         memory = valid_mask.to(memory.dtype) * memory  # TODO fix type error for onnx export
 
         output_memory = self.enc_output(memory)
@@ -579,6 +621,7 @@ class RTDETRTransformer(nn.Module):
             target = torch.concat([denoising_class, target], 1)
 
         return target, reference_points_unact.detach(), enc_topk_bboxes, enc_topk_logits
+
 
     def forward(self, feats, targets=None):
 
@@ -628,6 +671,7 @@ class RTDETRTransformer(nn.Module):
                 out['dn_meta'] = dn_meta
 
         return out
+
 
     @torch.jit.unused
     def _set_aux_loss(self, outputs_class, outputs_coord):

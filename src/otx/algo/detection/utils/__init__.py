@@ -10,5 +10,4 @@ from .utils import (images_to_levels, unmap,
                     bias_init_with_prob, deformable_attention_core_func,
                     get_activation, inverse_sigmoid, box_iou, generalized_box_iou,
                     is_dist_available_and_initialized, get_world_size)
-from .coco_eval import CocoEvaluator
 from .matchers import HungarianMatcher

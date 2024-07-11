@@ -436,6 +436,7 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
     @label_info.setter
     def label_info(self, label_info: LabelInfoTypes) -> None:
         """Set this model label information."""
+        label_info.num_classes = 2
         self._set_label_info(label_info)
 
     def _set_label_info(self, label_info: LabelInfoTypes) -> None:

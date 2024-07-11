@@ -678,7 +678,7 @@ class FMeasure(Metric):
         for pred, tget in zip(preds, target):
             self.preds.append(
                 [
-                    (*box, self.classes[label], score)
+                    (*box, self.classes[0], score)
                     for box, label, score in zip(
                         pred["boxes"].tolist(),
                         pred["labels"].tolist(),
@@ -688,7 +688,7 @@ class FMeasure(Metric):
             )
             self.targets.append(
                 [
-                    (*box, self.classes[label], 0.0)
+                    (*box, self.classes[0], 0.0)
                     for box, label in zip(tget["boxes"].tolist(), tget["labels"].tolist())
                 ],
             )

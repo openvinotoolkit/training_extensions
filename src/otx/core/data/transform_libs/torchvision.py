@@ -2659,26 +2659,21 @@ class Compose(tvt_v2.Compose):
         assert len(inputs) == 1
         inputs = inputs[0]
         new_inputs = (inputs.image, {"bboxes": inputs.bboxes, "labels": inputs.labels, "img_info": inputs.img_info})
-        try:
-            outputs = super().forward(*new_inputs)
-        except:
-            breakpoint()
+        outputs = super().forward(*new_inputs)
+        # needs_unpacking = len(inputs) > 1
+        # inputs = inputs[0]
         # for transform in self.transforms:
-        #     assert len(inputs) == 1
-        #     inputs = inputs[0]
         #     images, boxes, labels = inputs.image, inputs.bboxes, inputs.labels
-        #     breakpoint()
-        #     out_images, out_boxes, out_labels = transform(images, {boxes, labels})
+        #     out_images, out_targets = transform(images, {"boxes": boxes, "labels": labels})
         #     # MMCV transform can produce None. Please see
         #     # https://github.com/open-mmlab/mmengine/blob/26f22ed283ae4ac3a24b756809e5961efe6f9da8/mmengine/dataset/base_dataset.py#L59-L66
         #     inputs.image = out_images
-        #     inputs.bboxes = out_boxes
-        #     inputs.labels = out_labels
-        #     breakpoint()
+        #     inputs.bboxes = out_targets["boxes"]
+        #     inputs.labels = out_targets["labels"]
 
         #     if out_images is None:
         #         return inputs
-        #     inputs = inputs if needs_unpacking else (inputs,)
+            # inputs = inputs if needs_unpacking else (inputs,)
         inputs.image = outputs[0]
         inputs.bboxes = outputs[1]["bboxes"]
         inputs.labels = outputs[1]["labels"]

@@ -53,6 +53,8 @@ class RepVggBlock(nn.Module):
         kernel, bias = self.get_equivalent_kernel_bias()
         self.conv.weight.data = kernel
         self.conv.bias.data = bias
+        # self.__delattr__('conv1')
+        # self.__delattr__('conv2')
 
     def get_equivalent_kernel_bias(self):
         kernel3x3, bias3x3 = self._fuse_bn_tensor(self.conv1)
@@ -292,6 +294,7 @@ class HybridEncoder(nn.Module):
 
                 memory = self.encoder[i](src_flatten, pos_embed=pos_embed)
                 proj_feats[enc_ind] = memory.permute(0, 2, 1).reshape(-1, self.hidden_dim, h, w).contiguous()
+                # print([x.is_contiguous() for x in proj_feats ])
 
         # broadcasting and fusion
         inner_outs = [proj_feats[-1]]
