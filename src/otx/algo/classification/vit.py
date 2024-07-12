@@ -446,7 +446,7 @@ class VisionTransformerForMulticlassClsSemiSL(VisionTransformerForMulticlassCls)
         return loss
 
 
-class VisionTransformerForMultilabelCls(ForwardExplainMixInForViT, OTXMultilabelClsModel):
+class VisionTransformerForMultilabelCls(VisionTransformerForMulticlassCls, OTXMultilabelClsModel):
     """DeitTiny Model for multi-class classification task."""
 
     model: ImageClassifier
@@ -471,43 +471,6 @@ class VisionTransformerForMultilabelCls(ForwardExplainMixInForViT, OTXMultilabel
             metric=metric,
             torch_compile=torch_compile,
         )
-
-    def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.") -> dict:
-        """Load the previous OTX ckpt according to OTX2.0."""
-        for key in list(state_dict.keys()):
-            new_key = key.replace("patch_embed.projection", "patch_embed.proj")
-            new_key = new_key.replace("backbone.ln1", "backbone.norm")
-            new_key = new_key.replace("ffn.layers.0.0", "mlp.fc1")
-            new_key = new_key.replace("ffn.layers.1", "mlp.fc2")
-            new_key = new_key.replace("layers", "blocks")
-            new_key = new_key.replace("ln", "norm")
-            if new_key != key:
-                state_dict[new_key] = state_dict.pop(key)
-        return OTXv1Helper.load_cls_effnet_b0_ckpt(state_dict, "multiclass", add_prefix)
-
-    def _create_model(self) -> nn.Module:
-        # Get classification_layers for class-incr learning
-        sample_model_dict = self._build_model(num_classes=5).state_dict()
-        incremental_model_dict = self._build_model(num_classes=6).state_dict()
-        self.classification_layers = get_classification_layers(
-            sample_model_dict,
-            incremental_model_dict,
-            prefix="model.",
-        )
-
-        model = self._build_model(num_classes=self.num_classes)
-        model.init_weights()
-        if self.pretrained and self.arch in pretrained_urls:
-            print(f"init weight - {pretrained_urls[self.arch]}")
-            parts = urlparse(pretrained_urls[self.arch])
-            filename = Path(parts.path).name
-
-            cache_dir = Path.home() / ".cache" / "torch" / "hub" / "checkpoints"
-            cache_file = cache_dir / filename
-            if not Path.exists(cache_file):
-                download_url_to_file(pretrained_urls[self.arch], cache_file, "", progress=True)
-            model.backbone.load_pretrained(checkpoint_path=cache_file)
-        return model
 
     def _build_model(self, num_classes: int) -> nn.Module:
         init_cfg = [
@@ -573,24 +536,8 @@ class VisionTransformerForMultilabelCls(ForwardExplainMixInForViT, OTXMultilabel
             labels=preds,
         )
 
-    @property
-    def _exporter(self) -> OTXModelExporter:
-        """Creates OTXModelExporter object that can export the model."""
-        return OTXNativeModelExporter(
-            task_level_export_parameters=self._export_parameters,
-            input_size=(1, 3, 224, 224),
-            mean=(123.675, 116.28, 103.53),
-            std=(58.395, 57.12, 57.375),
-            resize_mode="standard",
-            pad_value=0,
-            swap_rgb=False,
-            via_onnx=True,  # NOTE: This should be done via onnx
-            onnx_export_configuration=None,
-            output_names=["logits", "feature_vector", "saliency_map"] if self.explain_mode else None,
-        )
 
-
-class VisionTransformerForHLabelCls(ForwardExplainMixInForViT, OTXHlabelClsModel):
+class VisionTransformerForHLabelCls(VisionTransformerForMulticlassCls, OTXHlabelClsModel):
     """DeitTiny Model for hierarchical label classification task."""
 
     model: ImageClassifier
@@ -616,46 +563,6 @@ class VisionTransformerForHLabelCls(ForwardExplainMixInForViT, OTXHlabelClsModel
             metric=metric,
             torch_compile=torch_compile,
         )
-
-    def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.") -> dict:
-        """Load the previous OTX ckpt according to OTX2.0."""
-        for key in list(state_dict.keys()):
-            new_key = key.replace("patch_embed.projection", "patch_embed.proj")
-            new_key = new_key.replace("backbone.ln1", "backbone.norm")
-            new_key = new_key.replace("ffn.layers.0.0", "mlp.fc1")
-            new_key = new_key.replace("ffn.layers.1", "mlp.fc2")
-            new_key = new_key.replace("layers", "blocks")
-            new_key = new_key.replace("ln", "norm")
-            if new_key != key:
-                state_dict[new_key] = state_dict.pop(key)
-        return OTXv1Helper.load_cls_effnet_b0_ckpt(state_dict, "multiclass", add_prefix)
-
-    def _create_model(self) -> nn.Module:
-        # Get classification_layers for class-incr learning
-        sample_config = deepcopy(self.label_info.as_head_config_dict())
-        sample_config["num_classes"] = 5
-        sample_model_dict = self._build_model(head_config=sample_config).state_dict()
-        sample_config["num_classes"] = 6
-        incremental_model_dict = self._build_model(head_config=sample_config).state_dict()
-        self.classification_layers = get_classification_layers(
-            sample_model_dict,
-            incremental_model_dict,
-            prefix="model.",
-        )
-
-        model = self._build_model(head_config=self.label_info.as_head_config_dict())
-        model.init_weights()
-        if self.pretrained and self.arch in pretrained_urls:
-            print(f"init weight - {pretrained_urls[self.arch]}")
-            parts = urlparse(pretrained_urls[self.arch])
-            filename = Path(parts.path).name
-
-            cache_dir = Path.home() / ".cache" / "torch" / "hub" / "checkpoints"
-            cache_file = cache_dir / filename
-            if not Path.exists(cache_file):
-                download_url_to_file(pretrained_urls[self.arch], cache_file, "", progress=True)
-            model.backbone.load_pretrained(checkpoint_path=cache_file)
-        return model
 
     def _build_model(self, head_config: dict) -> nn.Module:
         if not isinstance(self.label_info, HLabelInfo):
@@ -745,19 +652,3 @@ class VisionTransformerForHLabelCls(ForwardExplainMixInForViT, OTXHlabelClsModel
             "preds": pred_result,
             "target": torch.stack(inputs.labels),
         }
-
-    @property
-    def _exporter(self) -> OTXModelExporter:
-        """Creates OTXModelExporter object that can export the model."""
-        return OTXNativeModelExporter(
-            task_level_export_parameters=self._export_parameters,
-            input_size=(1, 3, 224, 224),
-            mean=(123.675, 116.28, 103.53),
-            std=(58.395, 57.12, 57.375),
-            resize_mode="standard",
-            pad_value=0,
-            swap_rgb=False,
-            via_onnx=True,  # NOTE: This should be done via onnx
-            onnx_export_configuration=None,
-            output_names=["logits", "feature_vector", "saliency_map"] if self.explain_mode else None,
-        )

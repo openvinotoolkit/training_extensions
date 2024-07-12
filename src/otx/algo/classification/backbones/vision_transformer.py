@@ -208,7 +208,7 @@ class VisionTransformer(BaseModule):
         mlp_layer: nn.Module | None = None,
         act_layer: LayerType | None = None,
         norm_layer: LayerType | None = None,
-        use_lora: bool = True,
+        use_lora: bool = False,
     ) -> None:
         super().__init__()
         if isinstance(arch, str):
@@ -446,7 +446,8 @@ class VisionTransformer(BaseModule):
             embed_conv_w = _n2p(w[f"{prefix}embedding/kernel"])
         else:
             embed_conv_w = adapt_input_conv(
-                model.patch_embed.proj.weight.shape[1], _n2p(w[f"{prefix}embedding/kernel"])
+                model.patch_embed.proj.weight.shape[1],
+                _n2p(w[f"{prefix}embedding/kernel"]),
             )
         if embed_conv_w.shape[-2:] != model.patch_embed.proj.weight.shape[-2:]:
             embed_conv_w = resample_patch_embed(
