@@ -15,12 +15,12 @@ on:
 # Declare default permissions as read only.
 permissions: read-all
 
+concurrency:
+  group: ${{ github.workflow }}-PreMerge-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   Code-Quality-Checks:
-    # This is what will cancel the job concurrency
-    concurrency:
-      group: ${{ github.workflow }}-Linting-${{ github.event.pull_request.number || github.ref }}
-      cancel-in-progress: true
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout repository
@@ -52,10 +52,6 @@ jobs:
           - python-version: "3.11.8"
             tox-env: "py311"
     name: Unit-Test-with-Python${{ matrix.python-version }}
-    # This is what will cancel the job concurrency
-    concurrency:
-      group: ${{ github.workflow }}-Unit-${{ github.event.pull_request.number || github.ref }}-${{ matrix.tox-env }}
-      cancel-in-progress: true
     steps:
       - name: Checkout repository
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
@@ -112,10 +108,6 @@ jobs:
           - task: "anomaly_detection"
           - task: "anomaly_segmentation"
     name: Integration-Test-${{ matrix.task }}-py310
-    # This is what will cancel the job concurrency
-    concurrency:
-      group: ${{ github.workflow }}-Integration-${{ github.event.pull_request.number || github.ref }}-${{ matrix.task }}
-      cancel-in-progress: true
     steps:
       - name: Checkout repository
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
