@@ -89,3 +89,45 @@ jobs:
           curl -Os https://uploader.codecov.io/latest/linux/codecov
           chmod +x codecov
           ./codecov -t ${{ secrets.CODECOV_TOKEN }} --sha $COMMIT_ID -U $HTTP_PROXY -f .tox/coverage_unit-test-${{ matrix.tox-env }}.xml -F ${{ matrix.tox-env }}
+  Integration-Test:
+    runs-on: [otx-gpu-a10g-1]
+    needs: Unit-Test
+    container:
+      image: 219678651685.dkr.ecr.eu-west-1.amazonaws.com/ote-ci:11.7.1.2-devel-ubuntu20.04
+      options: "--runtime=nvidia --env-file=/home/runner/.nvidia.env --ipc=host"
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - task: "action"
+          - task: "multi_cls_classification"
+          - task: "multi_label_classification"
+          - task: "hlabel_classification"
+          - task: "detection"
+          - task: "instance_segmentation"
+          - task: "semantic_segmentation"
+          - task: "visual_prompting"
+          - task: "zero_shot_visual_prompting"
+          - task: "anomaly_classification"
+          - task: "anomaly_detection"
+          - task: "anomaly_segmentation"
+    name: Integration-Test-${{ matrix.task }}-py310
+    # This is what will cancel the job concurrency
+    concurrency:
+      group: ${{ github.workflow }}-Integration-${{ github.event.pull_request.number || github.ref }}-${{ matrix.task }}
+      cancel-in-progress: true
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      - name: Install Python
+        uses: actions/setup-python@82c7e631bb3cdc910f68e0081d67478d79c6982d # v5.1.0
+        with:
+          python-version: "3.10"
+      - name: Install tox
+        run: |
+          python -m pip install --require-hashes --no-deps -r .ci/requirements.txt
+          pip-compile --generate-hashes --output-file=/tmp/requirements.txt --extra=ci_tox pyproject.toml
+          python -m pip install --require-hashes --no-deps -r /tmp/requirements.txt
+          rm /tmp/requirements.txt
+      - name: Run Integration Test
+        run: tox -vv -e integration-test-${{ matrix.task }}
