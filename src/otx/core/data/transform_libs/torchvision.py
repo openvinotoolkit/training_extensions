@@ -2339,7 +2339,7 @@ class RandomCrop(tvt_v2.Transform, NumpytoTVTensorMixin):
         self,
         crop_size: tuple,  # (H, W)
         crop_type: str = "absolute",
-        cat_max_ratio: float = 1,
+        cat_max_ratio: int | float = 1,
         allow_negative_crop: bool = False,
         recompute_bbox: bool = False,
         bbox_clip_border: bool = True,
