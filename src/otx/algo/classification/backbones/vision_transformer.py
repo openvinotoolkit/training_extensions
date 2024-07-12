@@ -13,6 +13,7 @@ from timm.layers import (
     LayerType,
     Mlp,
     PatchDropout,
+    PatchEmbed,
     SwiGLUPacked,
     get_act_layer,
     get_norm_layer,
@@ -20,9 +21,8 @@ from timm.layers import (
     resample_patch_embed,
     trunc_normal_,
 )
-from timm.layers import PatchEmbed as TimmPatchEmbed
 from timm.models._manipulate import adapt_input_conv
-from timm.models.vision_transformer import Block
+from timm.models.vision_transformer import Attention, Block
 from torch import nn
 
 from otx.algo.modules.base_module import BaseModule
@@ -203,12 +203,12 @@ class VisionTransformer(BaseModule):
         proj_drop_rate: float = 0.0,
         attn_drop_rate: float = 0.0,
         drop_path_rate: float = 0.0,
-        embed_layer: Callable = TimmPatchEmbed,
+        embed_layer: Callable = PatchEmbed,
         block_fn: nn.Module = Block,
         mlp_layer: nn.Module | None = None,
         act_layer: LayerType | None = None,
         norm_layer: LayerType | None = None,
-        use_lora: bool = False,
+        lora: bool = False,
     ) -> None:
         super().__init__()
         if isinstance(arch, str):
@@ -292,11 +292,11 @@ class VisionTransformer(BaseModule):
 
         self.norm = norm_layer(embed_dim)
 
-        self.use_lora = use_lora
-        if self.use_lora:
+        self.lora = lora
+        if self.lora:
             lora_rank = 8
             lora_alpha = 1.0
-            assign_lora = partial(QkvWithLoRA, rank=lora_rank, alpha=lora_alpha)
+            assign_lora = partial(AttentionWithLoRA, rank=lora_rank, alpha=lora_alpha)
             for block in self.blocks:
                 block.attn.qkv = assign_lora(block.attn.qkv)
 
@@ -481,6 +481,7 @@ class VisionTransformer(BaseModule):
         model.norm.bias.copy_(_n2p(w[f"{prefix}Transformer/encoder_norm/bias"]))
 
         mha_sub, b_sub, ln1_sub = (0, 0, 1) if big_vision else (1, 3, 2)
+        idx: int | None = None
         for i, block in enumerate(model.blocks.children()):
             if f"{prefix}Transformer/encoderblock/LayerNorm_0/scale" in w:
                 block_prefix = f"{prefix}Transformer/encoderblock/"
@@ -526,7 +527,7 @@ class VisionTransformer(BaseModule):
             model.norm.bias.copy_(_n2p(w[f"{prefix}Transformer/encoder_norm/bias"]))
 
             mha_sub, b_sub, ln1_sub = (0, 0, 1) if big_vision else (1, 3, 2)
-            for i, block in enumerate(model.blocks.children()):
+            for i, block in enumerate(model.blocks.children()):  # noqa: PLW2901
                 if f"{prefix}Transformer/encoderblock/LayerNorm_0/scale" in w:
                     block_prefix = f"{prefix}Transformer/encoderblock/"
                     idx = i
@@ -536,7 +537,7 @@ class VisionTransformer(BaseModule):
                 mha_prefix = block_prefix + f"MultiHeadDotProductAttention_{mha_sub}/"
                 block.norm1.weight.copy_(_n2p(w[f"{block_prefix}LayerNorm_0/scale"], idx=idx))
                 block.norm1.bias.copy_(_n2p(w[f"{block_prefix}LayerNorm_0/bias"], idx=idx))
-                if not self.use_lora:
+                if not self.lora:
                     block.attn.qkv.weight.copy_(
                         torch.cat(
                             [
@@ -584,27 +585,32 @@ class VisionTransformer(BaseModule):
 
 
 class LoRALayer(torch.nn.Module):
-    def __init__(self, in_dim, out_dim, rank, alpha):
+    """LoRA layer implementation for computing A, B composition."""
+
+    def __init__(self, in_dim: int, out_dim: int, rank: int, alpha: float):
         super().__init__()
         std = torch.sqrt(torch.tensor(rank).float())
         self.A = torch.nn.Parameter(torch.randn(in_dim, rank) / std)
         self.B = torch.nn.Parameter(torch.zeros(rank, out_dim))
         self.alpha = alpha
 
-    def forward(self, x):
-        x = self.alpha * (x @ self.A @ self.B)
-        return x
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """Forward pass of the LoRA layer."""
+        return self.alpha * (x @ self.A @ self.B)
 
 
-class QkvWithLoRA(torch.nn.Module):
-    def __init__(self, qkv, rank, alpha):
+class AttentionWithLoRA(torch.nn.Module):
+    """Add LoRA layer into QKV attention layer in VisionTransformer."""
+
+    def __init__(self, qkv: Attention, rank: int, alpha: float):
         super().__init__()
         self.qkv = qkv
         self.dim = qkv.in_features
         self.lora_q = LoRALayer(self.dim, self.dim, rank, alpha)
         self.lora_v = LoRALayer(self.dim, self.dim, rank, alpha)
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """Forward pass of the AttentionWithLoRA."""
         qkv = self.qkv(x)
         qkv[:, :, : self.dim] += self.lora_q(x)
         qkv[:, :, -self.dim :] += self.lora_v(x)

@@ -220,6 +220,7 @@ class VisionTransformerForMulticlassCls(ForwardExplainMixInForViT, OTXMulticlass
         self,
         label_info: LabelInfoTypes,
         arch: VIT_ARCH_TYPE = "vit-tiny",
+        lora: bool = False,
         pretrained: bool = True,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
@@ -227,6 +228,7 @@ class VisionTransformerForMulticlassCls(ForwardExplainMixInForViT, OTXMulticlass
         torch_compile: bool = False,
     ) -> None:
         self.arch = arch
+        self.lora = lora
         self.pretrained = pretrained
         super().__init__(
             label_info=label_info,
@@ -279,7 +281,7 @@ class VisionTransformerForMulticlassCls(ForwardExplainMixInForViT, OTXMulticlass
             {"std": 0.2, "layer": "Linear", "type": "TruncNormal"},
             {"bias": 0.0, "val": 1.0, "layer": "LayerNorm", "type": "Constant"},
         ]
-        vit_backbone = VisionTransformer(arch=self.arch, img_size=224)
+        vit_backbone = VisionTransformer(arch=self.arch, img_size=224, lora=self.lora)
         return ImageClassifier(
             backbone=vit_backbone,
             neck=None,
@@ -446,7 +448,7 @@ class VisionTransformerForMulticlassClsSemiSL(VisionTransformerForMulticlassCls)
         return loss
 
 
-class VisionTransformerForMultilabelCls(VisionTransformerForMulticlassCls, OTXMultilabelClsModel):
+class VisionTransformerForMultilabelCls(ForwardExplainMixInForViT, OTXMultilabelClsModel):
     """DeitTiny Model for multi-class classification task."""
 
     model: ImageClassifier
@@ -455,6 +457,7 @@ class VisionTransformerForMultilabelCls(VisionTransformerForMulticlassCls, OTXMu
         self,
         label_info: LabelInfoTypes,
         arch: VIT_ARCH_TYPE = "vit-tiny",
+        lora: bool = False,
         pretrained: bool = True,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
@@ -462,6 +465,7 @@ class VisionTransformerForMultilabelCls(VisionTransformerForMulticlassCls, OTXMu
         torch_compile: bool = False,
     ) -> None:
         self.arch = arch
+        self.lora = lora
         self.pretrained = pretrained
 
         super().__init__(
@@ -472,12 +476,49 @@ class VisionTransformerForMultilabelCls(VisionTransformerForMulticlassCls, OTXMu
             torch_compile=torch_compile,
         )
 
+    def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.") -> dict:
+        """Load the previous OTX ckpt according to OTX2.0."""
+        for key in list(state_dict.keys()):
+            new_key = key.replace("patch_embed.projection", "patch_embed.proj")
+            new_key = new_key.replace("backbone.ln1", "backbone.norm")
+            new_key = new_key.replace("ffn.layers.0.0", "mlp.fc1")
+            new_key = new_key.replace("ffn.layers.1", "mlp.fc2")
+            new_key = new_key.replace("layers", "blocks")
+            new_key = new_key.replace("ln", "norm")
+            if new_key != key:
+                state_dict[new_key] = state_dict.pop(key)
+        return OTXv1Helper.load_cls_effnet_b0_ckpt(state_dict, "multiclass", add_prefix)
+
+    def _create_model(self) -> nn.Module:
+        # Get classification_layers for class-incr learning
+        sample_model_dict = self._build_model(num_classes=5).state_dict()
+        incremental_model_dict = self._build_model(num_classes=6).state_dict()
+        self.classification_layers = get_classification_layers(
+            sample_model_dict,
+            incremental_model_dict,
+            prefix="model.",
+        )
+
+        model = self._build_model(num_classes=self.num_classes)
+        model.init_weights()
+        if self.pretrained and self.arch in pretrained_urls:
+            print(f"init weight - {pretrained_urls[self.arch]}")
+            parts = urlparse(pretrained_urls[self.arch])
+            filename = Path(parts.path).name
+
+            cache_dir = Path.home() / ".cache" / "torch" / "hub" / "checkpoints"
+            cache_file = cache_dir / filename
+            if not Path.exists(cache_file):
+                download_url_to_file(pretrained_urls[self.arch], cache_file, "", progress=True)
+            model.backbone.load_pretrained(checkpoint_path=cache_file)
+        return model
+
     def _build_model(self, num_classes: int) -> nn.Module:
         init_cfg = [
             {"std": 0.2, "layer": "Linear", "type": "TruncNormal"},
             {"bias": 0.0, "val": 1.0, "layer": "LayerNorm", "type": "Constant"},
         ]
-        vit_backbone = VisionTransformer(arch=self.arch, img_size=224)
+        vit_backbone = VisionTransformer(arch=self.arch, img_size=224, lora=self.lora)
         return ImageClassifier(
             backbone=vit_backbone,
             neck=None,
@@ -537,7 +578,7 @@ class VisionTransformerForMultilabelCls(VisionTransformerForMulticlassCls, OTXMu
         )
 
 
-class VisionTransformerForHLabelCls(VisionTransformerForMulticlassCls, OTXHlabelClsModel):
+class VisionTransformerForHLabelCls(ForwardExplainMixInForViT, OTXHlabelClsModel):
     """DeitTiny Model for hierarchical label classification task."""
 
     model: ImageClassifier
@@ -547,6 +588,7 @@ class VisionTransformerForHLabelCls(VisionTransformerForMulticlassCls, OTXHlabel
         self,
         label_info: HLabelInfo,
         arch: VIT_ARCH_TYPE = "vit-tiny",
+        lora: bool = False,
         pretrained: bool = True,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
@@ -554,6 +596,7 @@ class VisionTransformerForHLabelCls(VisionTransformerForMulticlassCls, OTXHlabel
         torch_compile: bool = False,
     ) -> None:
         self.arch = arch
+        self.lora = lora
         self.pretrained = pretrained
 
         super().__init__(
@@ -564,6 +607,46 @@ class VisionTransformerForHLabelCls(VisionTransformerForMulticlassCls, OTXHlabel
             torch_compile=torch_compile,
         )
 
+    def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.") -> dict:
+        """Load the previous OTX ckpt according to OTX2.0."""
+        for key in list(state_dict.keys()):
+            new_key = key.replace("patch_embed.projection", "patch_embed.proj")
+            new_key = new_key.replace("backbone.ln1", "backbone.norm")
+            new_key = new_key.replace("ffn.layers.0.0", "mlp.fc1")
+            new_key = new_key.replace("ffn.layers.1", "mlp.fc2")
+            new_key = new_key.replace("layers", "blocks")
+            new_key = new_key.replace("ln", "norm")
+            if new_key != key:
+                state_dict[new_key] = state_dict.pop(key)
+        return OTXv1Helper.load_cls_effnet_b0_ckpt(state_dict, "multiclass", add_prefix)
+
+    def _create_model(self) -> nn.Module:
+        # Get classification_layers for class-incr learning
+        sample_config = deepcopy(self.label_info.as_head_config_dict())
+        sample_config["num_classes"] = 5
+        sample_model_dict = self._build_model(head_config=sample_config).state_dict()
+        sample_config["num_classes"] = 6
+        incremental_model_dict = self._build_model(head_config=sample_config).state_dict()
+        self.classification_layers = get_classification_layers(
+            sample_model_dict,
+            incremental_model_dict,
+            prefix="model.",
+        )
+
+        model = self._build_model(head_config=self.label_info.as_head_config_dict())
+        model.init_weights()
+        if self.pretrained and self.arch in pretrained_urls:
+            print(f"init weight - {pretrained_urls[self.arch]}")
+            parts = urlparse(pretrained_urls[self.arch])
+            filename = Path(parts.path).name
+
+            cache_dir = Path.home() / ".cache" / "torch" / "hub" / "checkpoints"
+            cache_file = cache_dir / filename
+            if not Path.exists(cache_file):
+                download_url_to_file(pretrained_urls[self.arch], cache_file, "", progress=True)
+            model.backbone.load_pretrained(checkpoint_path=cache_file)
+        return model
+
     def _build_model(self, head_config: dict) -> nn.Module:
         if not isinstance(self.label_info, HLabelInfo):
             raise TypeError(self.label_info)
@@ -571,7 +654,7 @@ class VisionTransformerForHLabelCls(VisionTransformerForMulticlassCls, OTXHlabel
             {"std": 0.2, "layer": "Linear", "type": "TruncNormal"},
             {"bias": 0.0, "val": 1.0, "layer": "LayerNorm", "type": "Constant"},
         ]
-        vit_backbone = VisionTransformer(arch=self.arch, img_size=224)
+        vit_backbone = VisionTransformer(arch=self.arch, img_size=224, lora=self.lora)
         return ImageClassifier(
             backbone=vit_backbone,
             neck=None,
