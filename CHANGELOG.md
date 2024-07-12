@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## \[unreleased\]
+
+### New features
+
+### Enhancements
+
+### Bug fixes
+
 ## \[v2.1.0\]
 
 > _**NOTES**_

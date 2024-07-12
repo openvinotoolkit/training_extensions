@@ -349,10 +349,9 @@ class OVActionClsModel(
         """Data transform function for PTQ."""
         np_data = self._customize_inputs(data_batch)
         vid = np_data["inputs"][0]
-        vid = self.model.preprocess(vid)[0][self.model.image_blob_name]
-        return self.model._change_layout(vid)  # noqa: SLF001
+        return self.model.preprocess(vid)[0][self.model.image_blob_name]
 
     @property
     def model_adapter_parameters(self) -> dict:
         """Model parameters for export."""
-        return {"input_layouts": "?NCTHW"}
+        return {"input_layouts": "NSCTHW"}

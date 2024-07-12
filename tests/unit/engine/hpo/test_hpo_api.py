@@ -29,7 +29,7 @@ if TYPE_CHECKING:
 
 HPO_NAME_MAP: dict[str, str] = {
     "lr": "model.optimizer_callable.optimizer_kwargs.lr",
-    "bs": "datamodule.config.train_subset.batch_size",
+    "bs": "datamodule.train_subset.batch_size",
 }
 
 
@@ -57,8 +57,8 @@ def default_lr() -> float:
 def mock_engine(engine_work_dir: Path, dataset_size: int, default_bs: int, default_lr: float) -> MagicMock:
     engine = MagicMock()
     engine.work_dir = engine_work_dir
-    engine.datamodule.subsets = {engine.datamodule.config.train_subset.subset_name: range(dataset_size)}
-    engine.datamodule.config.train_subset.batch_size = default_bs
+    engine.datamodule.subsets = {engine.datamodule.train_subset.subset_name: range(dataset_size)}
+    engine.datamodule.train_subset.batch_size = default_bs
     engine.model.optimizer_callable = MagicMock(spec=OptimizerCallableSupportHPO)
     engine.model.optimizer_callable.lr = default_lr
     engine.model.optimizer_callable.optimizer_kwargs = {"lr": default_lr}
@@ -204,7 +204,7 @@ class TestHPOConfigurator:
 
     def test_get_default_search_space_bs1(self, mock_engine: MagicMock, hpo_config: HpoConfig):
         """Check batch sizes search space is set as [1, 2] if default bs is 1."""
-        mock_engine.datamodule.config.train_subset.batch_size = 1
+        mock_engine.datamodule.train_subset.batch_size = 1
         hpo_configurator = HPOConfigurator(mock_engine, 10, hpo_config)
         search_sapce = hpo_configurator._get_default_search_space()
 
@@ -221,7 +221,7 @@ class TestHPOConfigurator:
                 "min": 0.0001,
                 "max": 0.1,
             },
-            "data.config.train_subset.batch_size": {
+            "data.train_subset.batch_size": {
                 "type": "quniform",
                 "min": 2,
                 "max": 512,
@@ -339,9 +339,9 @@ class TestHPOConfigurator:
     @pytest.fixture()
     def mock_adapt_batch_size(self, mocker, max_bs_for_memory) -> MagicMock:
         def func(engine, not_increase: bool = True, *args, **kwargs) -> None:
-            origin_bs = engine.datamodule.config.train_subset.batch_size
+            origin_bs = engine.datamodule.train_subset.batch_size
             if not not_increase:
-                engine.datamodule.config.train_subset.batch_size = max_bs_for_memory
+                engine.datamodule.train_subset.batch_size = max_bs_for_memory
                 engine.model.optimizer_callable.optimizer_kwargs["lr"] *= sqrt(max_bs_for_memory / origin_bs)
 
         return mocker.patch.object(target_file, "adapt_batch_size", side_effect=func)
@@ -363,8 +363,7 @@ class TestHPOConfigurator:
         hpo_configurator = HPOConfigurator(mock_engine, 10, hpo_config)
 
         assert (
-            hpo_configurator.hpo_config["search_space"]["datamodule.config.train_subset.batch_size"]["max"]
-            == expected_bs
+            hpo_configurator.hpo_config["search_space"]["datamodule.train_subset.batch_size"]["max"] == expected_bs
         )  # check batch size is adapted
         mock_adapt_batch_size.assert_called_once()
         assert mock_adapt_batch_size.call_args.args[1] == (adapt_mode != "Full")

@@ -3,9 +3,9 @@ model:
   init_args:
     label_info: 19
     model_name: drn-d-38
-    async_inference: True
-    use_throughput_mode: True
     model_type: "Segmentation"
+    async_inference: true
+    use_throughput_mode: true
 
 engine:
   task: SEMANTIC_SEGMENTATION
@@ -13,12 +13,22 @@ engine:
 
 callback_monitor: val/Dice
 
-data: ../_base_/data/torchvision_base.yaml
+data: ../_base_/data/semantic_segmentation.yaml
 overrides:
   data:
-    task: SEMANTIC_SEGMENTATION
-    config:
-      image_color_channel: RGB
-      data_format: common_semantic_segmentation_with_subset_dirs
-      test_subset:
-        batch_size: 64
+    stack_images: false
+    train_subset:
+      batch_size: 1
+      num_workers: 2
+      transforms:
+        - class_path: torchvision.transforms.v2.ToImage
+    val_subset:
+      batch_size: 1
+      num_workers: 2
+      transforms:
+        - class_path: torchvision.transforms.v2.ToImage
+    test_subset:
+      batch_size: 64
+      num_workers: 2
+      transforms:
+        - class_path: torchvision.transforms.v2.ToImage

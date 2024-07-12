@@ -174,8 +174,8 @@ class OTXCLI:
         parser.link_arguments("work_dir", "workspace.work_dir")
 
         parser.link_arguments("data_root", "engine.data_root")
-        parser.link_arguments("data_root", "data.config.data_root")
-        parser.link_arguments("engine.device", "data.config.device")
+        parser.link_arguments("data_root", "data.data_root")
+        parser.link_arguments("engine.device", "data.device")
 
         added_arguments = parser.add_method_arguments(
             Engine,

@@ -14,7 +14,7 @@ from warnings import warn
 
 from jsonargparse import ArgumentParser, Namespace
 
-from otx.core.config.data import DataModuleConfig, SamplerConfig, SubsetConfig, TileConfig, UnlabeledDataConfig
+from otx.core.config.data import SamplerConfig, SubsetConfig, TileConfig, UnlabeledDataConfig
 from otx.core.data.module import OTXDataModule
 from otx.core.model.base import OTXModel
 from otx.core.types import PathLike
@@ -226,14 +226,14 @@ class ConfigConverter:
         unused_params = deepcopy(param_dict)
 
         def update_mem_cache_size(param_value: int) -> None:
-            config["data"]["config"]["mem_cache_size"] = f"{int(param_value / 1000000)}MB"
+            config["data"]["mem_cache_size"] = f"{int(param_value / 1000000)}MB"
 
         def update_batch_size(param_value: int) -> None:
-            config["data"]["config"]["train_subset"]["batch_size"] = param_value
+            config["data"]["train_subset"]["batch_size"] = param_value
 
         def update_inference_batch_size(param_value: int) -> None:
-            config["data"]["config"]["val_subset"]["batch_size"] = param_value
-            config["data"]["config"]["test_subset"]["batch_size"] = param_value
+            config["data"]["val_subset"]["batch_size"] = param_value
+            config["data"]["test_subset"]["batch_size"] = param_value
 
         def update_learning_rate(param_value: float) -> None:
             config["model"]["init_args"]["optimizer"]["init_args"]["lr"] = param_value
@@ -247,9 +247,9 @@ class ConfigConverter:
             config["max_epochs"] = param_value
 
         def update_num_workers(param_value: int) -> None:
-            config["data"]["config"]["train_subset"]["num_workers"] = param_value
-            config["data"]["config"]["val_subset"]["num_workers"] = param_value
-            config["data"]["config"]["test_subset"]["num_workers"] = param_value
+            config["data"]["train_subset"]["num_workers"] = param_value
+            config["data"]["val_subset"]["num_workers"] = param_value
+            config["data"]["test_subset"]["num_workers"] = param_value
 
         def update_enable_early_stopping(param_value: bool) -> None:
             idx = ConfigConverter._get_callback_idx(config["callbacks"], "lightning.pytorch.callbacks.EarlyStopping")
@@ -271,20 +271,20 @@ class ConfigConverter:
                 config["callbacks"].pop(idx)
 
         def update_auto_num_workers(param_value: bool) -> None:
-            config["data"]["config"]["auto_num_workers"] = param_value
+            config["data"]["auto_num_workers"] = param_value
 
         def update_enable_tiling(param_value: bool) -> None:
-            config["data"]["config"]["tile_config"]["enable_tiler"] = param_value
+            config["data"]["tile_config"]["enable_tiler"] = param_value
             if param_value:
-                config["data"]["config"]["tile_config"]["enable_adaptive_tiling"] = param_dict["enable_adaptive_params"]
-                config["data"]["config"]["tile_config"]["tile_size"] = (
+                config["data"]["tile_config"]["enable_adaptive_tiling"] = param_dict["enable_adaptive_params"]
+                config["data"]["tile_config"]["tile_size"] = (
                     param_dict["tile_size"],
                     param_dict["tile_size"],
                 )
-                config["data"]["config"]["tile_config"]["overlap"] = param_dict["tile_overlap"]
-                config["data"]["config"]["tile_config"]["max_num_instances"] = param_dict["tile_max_number"]
-                config["data"]["config"]["tile_config"]["sampling_ratio"] = param_dict["tile_sampling_ratio"]
-                config["data"]["config"]["tile_config"]["object_tile_ratio"] = param_dict["object_tile_ratio"]
+                config["data"]["tile_config"]["overlap"] = param_dict["tile_overlap"]
+                config["data"]["tile_config"]["max_num_instances"] = param_dict["tile_max_number"]
+                config["data"]["tile_config"]["sampling_ratio"] = param_dict["tile_sampling_ratio"]
+                config["data"]["tile_config"]["object_tile_ratio"] = param_dict["object_tile_ratio"]
                 tile_params = [
                     "enable_adaptive_params",
                     "tile_size",
@@ -360,22 +360,19 @@ class ConfigConverter:
         # Instantiate datamodule
         data_config = config.pop("data")
         if data_root is not None:
-            data_config["config"]["data_root"] = data_root
+            data_config["data_root"] = data_root
 
-        train_config = data_config["config"].pop("train_subset")
-        val_config = data_config["config"].pop("val_subset")
-        test_config = data_config["config"].pop("test_subset")
-        unlabeled_config = data_config["config"].pop("unlabeled_subset")
+        train_config = data_config.pop("train_subset")
+        val_config = data_config.pop("val_subset")
+        test_config = data_config.pop("test_subset")
+        unlabeled_config = data_config.pop("unlabeled_subset")
         datamodule = OTXDataModule(
-            task=data_config["task"],
-            config=DataModuleConfig(
-                train_subset=SubsetConfig(sampler=SamplerConfig(**train_config.pop("sampler", {})), **train_config),
-                val_subset=SubsetConfig(sampler=SamplerConfig(**val_config.pop("sampler", {})), **val_config),
-                test_subset=SubsetConfig(sampler=SamplerConfig(**test_config.pop("sampler", {})), **test_config),
-                unlabeled_subset=UnlabeledDataConfig(**unlabeled_config),
-                tile_config=TileConfig(**data_config["config"].pop("tile_config", {})),
-                **data_config["config"],
-            ),
+            train_subset=SubsetConfig(sampler=SamplerConfig(**train_config.pop("sampler", {})), **train_config),
+            val_subset=SubsetConfig(sampler=SamplerConfig(**val_config.pop("sampler", {})), **val_config),
+            test_subset=SubsetConfig(sampler=SamplerConfig(**test_config.pop("sampler", {})), **test_config),
+            unlabeled_subset=UnlabeledDataConfig(**unlabeled_config),
+            tile_config=TileConfig(**data_config.pop("tile_config", {})),
+            **data_config,
         )
 
         # Update num_classes & Instantiate Model
