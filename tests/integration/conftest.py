@@ -40,7 +40,6 @@ def find_recipe_folder(base_path: Path, folder_name: str) -> Path:
 
 
 def get_task_list(task: str) -> list[OTXTaskType]:
-    tasks = [OTXTaskType(task.upper())]
     if task == "all":
         tasks = [task_type for task_type in OTXTaskType if task_type != OTXTaskType.DETECTION_SEMI_SL]
     elif task == "multi_cls_classification":
@@ -67,6 +66,8 @@ def get_task_list(task: str) -> list[OTXTaskType]:
         tasks = [OTXTaskType.ANOMALY_DETECTION]
     elif task == "anomaly_segmentation":
         tasks = [OTXTaskType.ANOMALY_SEGMENTATION]
+    else:
+        tasks = [OTXTaskType(task.upper())]
     return tasks
 
 
