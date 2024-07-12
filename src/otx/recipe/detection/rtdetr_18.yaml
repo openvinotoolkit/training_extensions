@@ -30,7 +30,6 @@ callback_monitor: val/map_50
 
 data: ../_base_/data/torchvision_base.yaml
 overrides:
-  # gradient_clip_val: 0.1
   callbacks:
     - class_path: otx.algo.callbacks.adaptive_train_scheduling.AdaptiveTrainScheduling
       init_args:
@@ -43,7 +42,7 @@ overrides:
       stack_images: True
       data_format: coco_instances
       train_subset:
-        batch_size: 8
+        batch_size: 4
         to_tv_image: True
         transforms:
           - class_path: torchvision.transforms.v2.RandomPhotometricDistort

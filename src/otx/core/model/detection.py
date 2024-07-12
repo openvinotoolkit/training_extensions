@@ -695,6 +695,7 @@ class OVDetectionModel(OVModel[DetBatchDataEntity, DetBatchPredEntity]):
             output_objects = output.objects
             if len(output_objects):
                 bbox = [[output.xmin, output.ymin, output.xmax, output.ymax] for output in output_objects]
+                breakpoint()
             else:
                 bbox = torch.empty(size=(0, 0))
             bboxes.append(

@@ -9,6 +9,8 @@ from torch import Tensor
 import torch
 from typing import Any
 import torchvision
+import copy
+import re
 
 from otx.core.model.detection import ExplainableOTXDetModel
 from otx.core.data.entity.detection import DetBatchDataEntity, DetBatchPredEntity
@@ -16,7 +18,9 @@ from otx.algo.detection.backbones import PResNet
 from otx.algo.detection.necks import HybridEncoder
 from otx.algo.detection.heads import RTDETRTransformer
 from otx.algo.detection.losses import RTDetrCriterion
-
+from otx.core.exporter.base import OTXModelExporter
+from otx.core.exporter.native import OTXNativeModelExporter
+from otx.core.types.export import TaskLevelExportParameters
 import numpy as np
 
 
@@ -90,7 +94,7 @@ class RTDETRPostProcessor(nn.Module):
 
 class RTDETR(nn.Module):
     def __init__(self, backbone: nn.Module, encoder: nn.Module, decoder: nn.Module, num_classes:int, criterion: nn.Module,
-                 postprocessor: nn.Module, multi_scale: list[int] | None = None, num_top_queries=300):
+                 postprocessor: nn.Module, optimizer_configuration: list[dict] | None = None, multi_scale: list[int] | None = None, num_top_queries=300):
         super().__init__()
         self.backbone = backbone
         self.decoder = decoder
@@ -100,8 +104,9 @@ class RTDETR(nn.Module):
         self.num_top_queries = num_top_queries
         self.criterion = criterion
         self.postprocessor = postprocessor
+        self.optimizer_configuration = optimizer_configuration
 
-    def forward(self, images, targets=None):
+    def forward(self, images, targets=None, deploy_mode=False):
         original_size = images.shape[-2:]
 
         if self.multi_scale and self.training:
@@ -115,10 +120,9 @@ class RTDETR(nn.Module):
         if self.training:
             return self.criterion(output, targets)
 
-        return self.postprocess(output, original_size)
+        return self.postprocess(output, original_size, deploy_mode)
 
-
-    def postprocess(self, outputs, original_size):
+    def postprocess(self, outputs, original_size, deploy_mode):
         logits, boxes = outputs['pred_logits'], outputs['pred_boxes']
 
         # convert bbox to xyxy and rescale back to original size (resize in OTX)
@@ -132,6 +136,9 @@ class RTDETR(nn.Module):
         labels = index % self.num_classes
         index = index // self.num_classes
         boxes = bbox_pred.gather(dim=1, index=index.unsqueeze(-1).repeat(1, 1, bbox_pred.shape[-1]))
+
+        if deploy_mode:
+            return {"bboxes": boxes, "labels": labels, "scores": scores}
 
         scores_list = []
         boxes_list = []
@@ -148,6 +155,20 @@ class RTDETR(nn.Module):
         self.backbone.init_weights()
         self.encoder.init_weights()
         self.decoder.init_weights()
+
+    def deploy(self, ):
+        self.eval()
+        for m in self.modules():
+            if hasattr(m, 'convert_to_deploy'):
+                m.convert_to_deploy()
+        return self
+
+    def export(self, *inputs, **kwargs):
+        images = inputs[0]
+        images = self.backbone(images)
+        images = self.encoder(images)
+        output = self.decoder(images, None)
+        return self.postprocess(output, inputs[1][0]["batch_input_shape"], deploy_mode=True)
 
 
 class OTX_RTDETR(ExplainableOTXDetModel):
@@ -198,6 +219,101 @@ class OTX_RTDETR(ExplainableOTXDetModel):
 
         return [1] * 10
 
+    def configure_optimizers(self):
+        """Configure an optimizer and learning-rate schedulers.
+
+        Configure an optimizer and learning-rate schedulers
+        from the given optimizer and scheduler or scheduler list callable in the constructor.
+        Generally, there is two lr schedulers. One is for a linear warmup scheduler and
+        the other is the main scheduler working after the warmup period.
+
+        Returns:
+            Two list. The former is a list that contains an optimizer
+            The latter is a list of lr scheduler configs which has a dictionary format.
+        """
+        param_groups = self.get_optim_params(self.model.optimizer_configuration, self.model)
+        optimizer = torch.optim.AdamW(param_groups, lr=1e-4, weight_decay=1e-4)
+        # optimizer = self.optimizer_callable(param_groups)
+        schedulers = self.scheduler_callable(optimizer)
+
+        def ensure_list(item: Any) -> list:  # noqa: ANN401
+            return item if isinstance(item, list) else [item]
+
+        lr_scheduler_configs = []
+        for scheduler in ensure_list(schedulers):
+            lr_scheduler_config = {"scheduler": scheduler}
+            if hasattr(scheduler, "interval"):
+                lr_scheduler_config["interval"] = scheduler.interval
+            if hasattr(scheduler, "monitor"):
+                lr_scheduler_config["monitor"] = scheduler.monitor
+            lr_scheduler_configs.append(lr_scheduler_config)
+
+        return [optimizer], lr_scheduler_configs
+
+    @staticmethod
+    def get_optim_params(cfg: list[dict[str, Any]], model: nn.Module):
+        '''
+        E.g.:
+            ^(?=.*a)(?=.*b).*$         means including a and b
+            ^((?!b.)*a((?!b).)*$       means including a but not b
+            ^((?!b|c).)*a((?!b|c).)*$  means including a but not (b | c)
+        '''
+
+        if cfg is None:
+            return model.parameters()
+
+        cfg = copy.deepcopy(cfg)
+
+        param_groups = []
+        visited = []
+        for pg in cfg:
+            pattern = pg['params']
+            params = {k: v for k, v in model.named_parameters() if v.requires_grad and len(re.findall(pattern, k)) > 0}
+            pg['params'] = params.values()
+            param_groups.append(pg)
+            visited.extend(list(params.keys()))
+
+        names = [k for k, v in model.named_parameters() if v.requires_grad]
+
+        if len(visited) < len(names):
+            unseen = set(names) - set(visited)
+            params = {k: v for k, v in model.named_parameters() if v.requires_grad and k in unseen}
+            param_groups.append({'params': params.values()})
+            visited.extend(list(params.keys()))
+
+        return param_groups
+
+    @property
+    def _exporter(self) -> OTXModelExporter:
+        """Creates OTXModelExporter object that can export the model."""
+        if self.image_size is None:
+            raise ValueError(self.image_size)
+
+        return OTXNativeModelExporter(
+            task_level_export_parameters=self._export_parameters,
+            input_size=self.image_size,
+            mean=self.mean,
+            std=self.std,
+            resize_mode="fit_to_window_letterbox",
+            swap_rgb=False,
+            via_onnx=False,
+            onnx_export_configuration={
+                "input_names": ["images"],
+                "output_names": ["bboxes", "labels", "scores"],
+                "dynamic_axes": {
+                    "images": {0: "batch", 2: "height", 3: "width"},
+                },
+                "autograd_inlining": False,
+                "opset_version": 16
+            },
+            output_names=["bboxes", "labels", "scores"],
+        )
+
+    @property
+    def _optimization_config(self) -> dict[str, Any]:
+        """PTQ config for DinoV2Seg."""
+        return {"model_type": "transformer"}
+
 
 class OTX_RTDETR_18(OTX_RTDETR):
     load_from = (
@@ -213,12 +329,20 @@ class OTX_RTDETR_18(OTX_RTDETR):
         criterion = RTDetrCriterion(weight_dict={'loss_vfl': 1.0, 'loss_bbox': 5, 'loss_giou': 2},
                                     losses=['vfl', 'boxes'], num_classes=num_classes, gamma=2.0, alpha=0.75)
 
+        optimizer_configuration = [
+            {"params": '^(?=.*backbone)(?=.*norm).*$', "weight_decay": 0., "lr": 0.00001},
+            {"params": '^(?=.*backbone)(?!.*norm).*$', "lr": 0.00001},
+            {"params": '^(?=.*decoder(?=.*bias|.*norm.*weight)).*$', "weight_decay": 0.},
+            {"params": '^(?=.*encoder(?=.*bias|.*norm.*weight)).*$', "weight_decay": 0.}
+        ]
+
         return RTDETR(backbone=backbone,
                       encoder=encoder,
                       decoder=decoder,
                       num_classes=num_classes,
                       postprocessor=postprocessor,
                       criterion=criterion,
+                      optimizer_configuration=optimizer_configuration,
                       multi_scale=[480, 512, 544, 576, 608, 640, 640, 640, 672, 704, 736, 768, 800])
 
 
@@ -226,6 +350,10 @@ class OTX_RTDETR_50(OTX_RTDETR):
     load_from = (
         "https://github.com/lyuwenyu/storage/releases/download/v0.1/rtdetr_r50vd_2x_coco_objects365_from_paddle.pth"
     )
+    image_size = (1, 3, 640, 640)
+    mean = (0., 0., 0.)
+    std = (255., 255., 255.)
+
     def _build_model(self, num_classes: int) -> nn.Module:
         backbone = PResNet(depth=50, return_idx=[1, 2, 3], num_stages=4, freeze_norm=True, pretrained=True, freeze_at=0)
         encoder = HybridEncoder(in_channels=[512, 1024, 2048], feat_strides=[8, 16, 32], hidden_dim=256, expansion=1.0, dim_feedforward=1024, eval_spatial_size=[640, 640])
@@ -235,12 +363,19 @@ class OTX_RTDETR_50(OTX_RTDETR):
                                     losses=['vfl', 'boxes'], num_classes=num_classes, gamma=2.0, alpha=0.75)
         postprocessor = RTDETRPostProcessor(num_classes=num_classes, use_focal_loss=True, num_top_queries=300, remap_mscoco_category=False)
 
+        optimizer_configuration = [
+            {"params": "backbone", "lr": 0.00001},
+            {"params": '^(?=.*decoder(?=.*bias|.*norm.*weight)).*$', "weight_decay": 0.},
+            {"params": '^(?=.*encoder(?=.*bias|.*norm.*weight)).*$', "weight_decay": 0.}
+        ]
+
         return RTDETR(backbone=backbone,
                       encoder=encoder,
                       decoder=decoder,
                       num_classes=num_classes,
                       postprocessor=postprocessor,
                       criterion=criterion,
+                      optimizer_configuration=optimizer_configuration,
                       multi_scale=[480, 512, 544, 576, 608, 640, 640, 640, 672, 704, 736, 768, 800])
 
 
@@ -264,10 +399,18 @@ class OTX_RTDETR_101(OTX_RTDETR):
 
         postprocessor = RTDETRPostProcessor(num_classes=num_classes, use_focal_loss=True, num_top_queries=300, remap_mscoco_category=False)
 
+        # no bias decay and learning rate correction for the backbone. Without this correction gradients explosion will take place.
+        optimizer_configuration = [
+            {"params": "backbone", "lr": 0.000001},
+            {"params": '^(?=.*encoder(?=.*bias|.*norm.*weight)).*$', "weight_decay": 0.},
+            {"params": '^(?=.*decoder(?=.*bias|.*norm.*weight)).*$', "weight_decay": 0.}
+        ]
+
         return RTDETR(backbone=backbone,
                       encoder=encoder,
                       decoder=decoder,
                       num_classes=num_classes,
                       criterion=criterion,
                       postprocessor=postprocessor,
+                      optimizer_configuration=optimizer_configuration,
                       multi_scale=[480, 512, 544, 576, 608, 640, 640, 640, 672, 704, 736, 768, 800])

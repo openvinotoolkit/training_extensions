@@ -585,7 +585,6 @@ class Resize(tvt_v2.Transform, NumpytoTVTensorMixin):
         """Transform function to resize images, bounding boxes, and masks."""
         assert len(_inputs) == 1, "[tmp] Multiple entity is not supported yet."  # noqa: S101
         inputs = _inputs[0]
-
         inputs, scale_factor = self._resize_img(inputs)
         if self.transform_bbox:
             inputs = self._resize_bboxes(inputs, scale_factor)  # type: ignore[arg-type, assignment]
@@ -2648,7 +2647,7 @@ tvt_v2.PadtoSquare = PadtoSquare
 tvt_v2.ResizetoLongestEdge = ResizetoLongestEdge
 
 
-class Compose(tvt_v2.Compose):
+class Compose2(tvt_v2.Compose):
     """Re-implementation of torchvision.transforms.v2.Compose.
 
     MMCV transforms can produce None, so it is required to skip the result.
@@ -2682,7 +2681,7 @@ class Compose(tvt_v2.Compose):
         return inputs
 
 
-class Compose2(tvt_v2.Compose):
+class Compose(tvt_v2.Compose):
     """Re-implementation of torchvision.transforms.v2.Compose.
 
     MMCV transforms can produce None, so it is required to skip the result.
@@ -2691,7 +2690,6 @@ class Compose2(tvt_v2.Compose):
         """Forward with skipping None."""
         needs_unpacking = len(inputs) > 1
         for transform in self.transforms:
-            breakpoint()
             outputs = transform(*inputs)
             # MMCV transform can produce None. Please see
             # https://github.com/open-mmlab/mmengine/blob/26f22ed283ae4ac3a24b756809e5961efe6f9da8/mmengine/dataset/base_dataset.py#L59-L66
