@@ -26,103 +26,41 @@ import numpy as np
 
 __all__ = ['RTDETR', ]
 
-class RTDETRPostProcessor(nn.Module):
-    __share__ = ['num_classes', 'use_focal_loss', 'num_top_queries', 'remap_mscoco_category']
-
-    def __init__(self, num_classes=80, use_focal_loss=True, num_top_queries=300, remap_mscoco_category=False) -> None:
-        super().__init__()
-        self.use_focal_loss = use_focal_loss
-        self.num_top_queries = num_top_queries
-        self.num_classes = num_classes
-        self.remap_mscoco_category = remap_mscoco_category
-        self.deploy_mode = False
-
-    def extra_repr(self) -> str:
-        return f'use_focal_loss={self.use_focal_loss}, num_classes={self.num_classes}, num_top_queries={self.num_top_queries}'
-
-    # def forward(self, outputs, orig_target_sizes):
-    def forward(self, outputs, orig_target_sizes):
-        logits, boxes = outputs['pred_logits'], outputs['pred_boxes']
-        # orig_target_sizes = torch.stack([t["orig_size"] for t in targets], dim=0)
-
-        bbox_pred = torchvision.ops.box_convert(boxes, in_fmt='cxcywh', out_fmt='xyxy')
-        bbox_pred *= orig_target_sizes.repeat(1, 2).unsqueeze(1)
-
-        if self.use_focal_loss:
-            scores = F.sigmoid(logits)
-            scores, index = torch.topk(scores.flatten(1), self.num_top_queries, axis=-1)
-            labels = index % self.num_classes
-            index = index // self.num_classes
-            boxes = bbox_pred.gather(dim=1, index=index.unsqueeze(-1).repeat(1, 1, bbox_pred.shape[-1]))
-
-        else:
-            scores = F.softmax(logits)
-            scores, labels = scores.max(dim=-1)
-            boxes = bbox_pred
-            if scores.shape[1] > self.num_top_queries:
-                scores, index = torch.topk(scores, self.num_top_queries, dim=-1)
-                labels = torch.gather(labels, dim=1, index=index)
-                boxes = torch.gather(boxes, dim=1, index=index.unsqueeze(-1).tile(1, 1, boxes.shape[-1]))
-
-        # TODO for onnx export
-        if self.deploy_mode:
-            return labels, boxes, scores
-
-        # TODO
-        if self.remap_mscoco_category:
-            from ...data.coco import mscoco_label2category
-            labels = torch.tensor([mscoco_label2category[int(x.item())] for x in labels.flatten()])\
-                .to(boxes.device).reshape(labels.shape)
-
-        results = []
-        for lab, box, sco in zip(labels, boxes, scores):
-            result = dict(labels=lab, boxes=box, scores=sco)
-            results.append(result)
-
-        return results
-
-
-    def deploy(self, ):
-        self.eval()
-        self.deploy_mode = True
-        return self
-
-    @property
-    def iou_types(self, ):
-        return ('bbox', )
-
 
 class RTDETR(nn.Module):
-    def __init__(self, backbone: nn.Module, encoder: nn.Module, decoder: nn.Module, num_classes:int, criterion: nn.Module,
-                 postprocessor: nn.Module, optimizer_configuration: list[dict] | None = None, multi_scale: list[int] | None = None, num_top_queries=300):
+    def __init__(self, backbone: nn.Module, encoder: nn.Module, decoder: nn.Module, num_classes:int, criterion: nn.Module | None = None,
+                 optimizer_configuration: list[dict] | None = None, multi_scale: list[int] | None = None, num_top_queries: int = 300):
         super().__init__()
         self.backbone = backbone
         self.decoder = decoder
         self.encoder = encoder
-        self.multi_scale = multi_scale
+        self.multi_scale = (multi_scale if multi_scale is not None
+                            else [480, 512, 544, 576, 608, 640, 640, 640, 672, 704, 736, 768, 800])
         self.num_classes = num_classes
         self.num_top_queries = num_top_queries
-        self.criterion = criterion
-        self.postprocessor = postprocessor
+        default_criterion = RTDetrCriterion(weight_dict={'loss_vfl': 1.0, 'loss_bbox': 5, 'loss_giou': 2},
+                                            losses=['vfl', 'boxes'], num_classes=num_classes, gamma=2.0, alpha=0.75)
+        self.criterion = criterion if criterion is not None else default_criterion
         self.optimizer_configuration = optimizer_configuration
 
-    def forward(self, images, targets=None, deploy_mode=False):
+    def _forward_features(self, images: Tensor, targets: dict[str, Any] | None = None):
+        images = self.backbone(images)
+        images = self.encoder(images)
+        return self.decoder(images, targets)
+
+    def forward(self, images: Tensor, targets: dict[str, Any] | None = None):
         original_size = images.shape[-2:]
 
         if self.multi_scale and self.training:
             sz = int(np.random.choice(self.multi_scale))
             images = F.interpolate(images, size=[sz, sz])
 
-        images = self.backbone(images)
-        images = self.encoder(images)
-        output = self.decoder(images, targets)
-
+        output = self._forward_features(images, targets)
         if self.training:
             return self.criterion(output, targets)
+        return self.postprocess(output, original_size)
 
-        return self.postprocess(output, original_size, deploy_mode)
-
-    def postprocess(self, outputs, original_size, deploy_mode):
+    def postprocess(self, outputs, original_size, deploy_mode=False):
         logits, boxes = outputs['pred_logits'], outputs['pred_boxes']
 
         # convert bbox to xyxy and rescale back to original size (resize in OTX)
@@ -140,38 +78,25 @@ class RTDETR(nn.Module):
         if deploy_mode:
             return {"bboxes": boxes, "labels": labels, "scores": scores}
 
-        scores_list = []
-        boxes_list = []
-        labels_list = []
+        scores_list, boxes_list, labels_list = [], [], []
 
         for sc, bb, ll in zip(scores, boxes, labels):
             scores_list.append(sc)
-            boxes_list.append(bb)
-            labels_list.append(ll)
+            boxes_list.append(torchvision.tv_tensors.BoundingBoxes(bb, format='xyxy', canvas_size=original_size.tolist()))
+            labels_list.append(ll.long())
 
         return scores_list, boxes_list, labels_list
 
-    def init_weights(self):
-        self.backbone.init_weights()
-        self.encoder.init_weights()
-        self.decoder.init_weights()
-
-    def deploy(self, ):
-        self.eval()
-        for m in self.modules():
-            if hasattr(m, 'convert_to_deploy'):
-                m.convert_to_deploy()
-        return self
-
     def export(self, *inputs, **kwargs):
         images = inputs[0]
-        images = self.backbone(images)
-        images = self.encoder(images)
-        output = self.decoder(images, None)
-        return self.postprocess(output, inputs[1][0]["batch_input_shape"], deploy_mode=True)
+        return self.postprocess(self._forward_features(images), inputs[1][0]["batch_input_shape"], deploy_mode=True)
 
 
 class OTX_RTDETR(ExplainableOTXDetModel):
+    image_size = (1, 3, 640, 640)
+    mean = (0., 0., 0.)
+    std = (255., 255., 255.)
+
     def _customize_inputs(
         self,
         entity: DetBatchDataEntity,
@@ -251,8 +176,9 @@ class OTX_RTDETR(ExplainableOTXDetModel):
         return [optimizer], lr_scheduler_configs
 
     @staticmethod
-    def get_optim_params(cfg: list[dict[str, Any]], model: nn.Module):
+    def get_optim_params(cfg: list[dict[str, Any]] | None, model: nn.Module):
         '''
+        Perform no bias decay and learning rate correction for the modules.
         E.g.:
             ^(?=.*a)(?=.*b).*$         means including a and b
             ^((?!b.)*a((?!b).)*$       means including a but not b
@@ -306,7 +232,7 @@ class OTX_RTDETR(ExplainableOTXDetModel):
                 "autograd_inlining": False,
                 "opset_version": 16
             },
-            output_names=["bboxes", "labels", "scores"],
+            output_names=["bboxes", "labels", "feature_vector", "saliency_map"] if self.explain_mode else None,
         )
 
     @property
@@ -321,47 +247,37 @@ class OTX_RTDETR_18(OTX_RTDETR):
     )
     def _build_model(self, num_classes: int) -> nn.Module:
         backbone = PResNet(depth=18, pretrained=True, freeze_at=-1, return_idx=[1, 2, 3], num_stages=4, freeze_norm=False)
-        encoder = HybridEncoder(in_channels=[128, 256, 512], feat_strides=[8, 16, 32], hidden_dim=256, expansion=0.5, dim_feedforward=1024, eval_spatial_size=[640, 640])
-        decoder = RTDETRTransformer(num_classes=num_classes, eval_idx=-1, num_decoder_layers=3, num_denoising=100,
-                                      feat_channels=[256, 256, 256], feat_strides=[8, 16, 32], hidden_dim=256, num_levels=3,
-                                      num_queries=300, eval_spatial_size=[640, 640], aux_loss=True)
-        postprocessor = RTDETRPostProcessor(num_classes=num_classes, use_focal_loss=True, num_top_queries=300, remap_mscoco_category=False)
+        encoder = HybridEncoder(in_channels=[128, 256, 512], feat_strides=[8, 16, 32], hidden_dim=256, expansion=0.5,
+                                dim_feedforward=1024, eval_spatial_size=self.image_size[2:])
+        decoder = RTDETRTransformer(num_classes=num_classes, num_decoder_layers=3,
+                                      feat_channels=[256, 256, 256], feat_strides=[8, 16, 32], hidden_dim=256,
+                                      eval_spatial_size=self.image_size[2:])
         criterion = RTDetrCriterion(weight_dict={'loss_vfl': 1.0, 'loss_bbox': 5, 'loss_giou': 2},
-                                    losses=['vfl', 'boxes'], num_classes=num_classes, gamma=2.0, alpha=0.75)
-
+                                            losses=['vfl', 'boxes'], num_classes=num_classes, gamma=2.0, alpha=0.75)
         optimizer_configuration = [
             {"params": '^(?=.*backbone)(?=.*norm).*$', "weight_decay": 0., "lr": 0.00001},
             {"params": '^(?=.*backbone)(?!.*norm).*$', "lr": 0.00001},
-            {"params": '^(?=.*decoder(?=.*bias|.*norm.*weight)).*$', "weight_decay": 0.},
-            {"params": '^(?=.*encoder(?=.*bias|.*norm.*weight)).*$', "weight_decay": 0.}
+            {"params": '^(?=.*(?:encoder|decoder))(?=.*(?:norm|bias)).*$', "weight_decay": 0.}
         ]
 
         return RTDETR(backbone=backbone,
                       encoder=encoder,
                       decoder=decoder,
                       num_classes=num_classes,
-                      postprocessor=postprocessor,
                       criterion=criterion,
-                      optimizer_configuration=optimizer_configuration,
-                      multi_scale=[480, 512, 544, 576, 608, 640, 640, 640, 672, 704, 736, 768, 800])
+                      optimizer_configuration=optimizer_configuration)
 
 
 class OTX_RTDETR_50(OTX_RTDETR):
     load_from = (
         "https://github.com/lyuwenyu/storage/releases/download/v0.1/rtdetr_r50vd_2x_coco_objects365_from_paddle.pth"
     )
-    image_size = (1, 3, 640, 640)
-    mean = (0., 0., 0.)
-    std = (255., 255., 255.)
 
     def _build_model(self, num_classes: int) -> nn.Module:
         backbone = PResNet(depth=50, return_idx=[1, 2, 3], num_stages=4, freeze_norm=True, pretrained=True, freeze_at=0)
-        encoder = HybridEncoder(in_channels=[512, 1024, 2048], feat_strides=[8, 16, 32], hidden_dim=256, expansion=1.0, dim_feedforward=1024, eval_spatial_size=[640, 640])
+        encoder = HybridEncoder(in_channels=[512, 1024, 2048], feat_strides=[8, 16, 32], hidden_dim=256, expansion=1.0, dim_feedforward=1024, eval_spatial_size=self.image_size[2:])
         decoder = RTDETRTransformer(num_classes=num_classes, feat_channels=[256, 256, 256], feat_strides=[8, 16, 32], hidden_dim=256,
-                                    num_levels=3, num_queries=300, eval_spatial_size=[640, 640], num_decoder_layers=6, num_denoising=100, eval_idx=-1)
-        criterion = RTDetrCriterion(weight_dict={'loss_vfl': 1, 'loss_bbox': 5, 'loss_giou': 2},
-                                    losses=['vfl', 'boxes'], num_classes=num_classes, gamma=2.0, alpha=0.75)
-        postprocessor = RTDETRPostProcessor(num_classes=num_classes, use_focal_loss=True, num_top_queries=300, remap_mscoco_category=False)
+                                    num_levels=3, num_queries=300, eval_spatial_size=self.image_size[2:], num_decoder_layers=6, num_denoising=100, eval_idx=-1)
 
         optimizer_configuration = [
             {"params": "backbone", "lr": 0.00001},
@@ -373,10 +289,7 @@ class OTX_RTDETR_50(OTX_RTDETR):
                       encoder=encoder,
                       decoder=decoder,
                       num_classes=num_classes,
-                      postprocessor=postprocessor,
-                      criterion=criterion,
-                      optimizer_configuration=optimizer_configuration,
-                      multi_scale=[480, 512, 544, 576, 608, 640, 640, 640, 672, 704, 736, 768, 800])
+                      optimizer_configuration=optimizer_configuration)
 
 
 class OTX_RTDETR_101(OTX_RTDETR):
@@ -384,20 +297,13 @@ class OTX_RTDETR_101(OTX_RTDETR):
         "https://github.com/lyuwenyu/storage/releases/download/v0.1/rtdetr_r101vd_2x_coco_objects365_from_paddle.pth"
     )
     def _build_model(self, num_classes: int) -> nn.Module:
-        num_classes = 1
-
         backbone = PResNet(depth=101, return_idx=[1, 2, 3], num_stages=4, freeze_norm=True, pretrained=True, freeze_at=0)
 
         encoder = HybridEncoder(hidden_dim=384, dim_feedforward=2048, in_channels=[512, 1024, 2048], feat_strides=[8, 16, 32],
-                                expansion=1.0, eval_spatial_size=[640, 640])
+                                expansion=1.0, eval_spatial_size=self.image_size[2:])
 
         decoder = RTDETRTransformer(num_classes=num_classes, feat_channels=[384, 384, 384], feat_strides=[8, 16, 32], hidden_dim=256,
-                                    num_levels=3, num_queries=300, eval_spatial_size=[640, 640], num_decoder_layers=6, nhead=8, num_denoising=100, eval_idx=-1)
-
-        criterion = RTDetrCriterion(weight_dict={'loss_vfl': 1, 'loss_bbox': 5, 'loss_giou': 2},
-                                    losses=['vfl', 'boxes'], num_classes=num_classes, gamma=2.0, alpha=0.75)
-
-        postprocessor = RTDETRPostProcessor(num_classes=num_classes, use_focal_loss=True, num_top_queries=300, remap_mscoco_category=False)
+                                    num_levels=3, num_queries=300, eval_spatial_size=self.image_size[2:], num_decoder_layers=6, nhead=8, num_denoising=100, eval_idx=-1)
 
         # no bias decay and learning rate correction for the backbone. Without this correction gradients explosion will take place.
         optimizer_configuration = [
@@ -410,7 +316,4 @@ class OTX_RTDETR_101(OTX_RTDETR):
                       encoder=encoder,
                       decoder=decoder,
                       num_classes=num_classes,
-                      criterion=criterion,
-                      postprocessor=postprocessor,
-                      optimizer_configuration=optimizer_configuration,
-                      multi_scale=[480, 512, 544, 576, 608, 640, 640, 640, 672, 704, 736, 768, 800])
+                      optimizer_configuration=optimizer_configuration)

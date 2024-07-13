@@ -51,7 +51,8 @@ class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity]):
 
     def _create_model(self) -> nn.Module:
         detector = self._build_model(num_classes=self.label_info.num_classes)
-        detector.init_weights()
+        if hasattr(detector, "init_weights"):
+            detector.init_weights()
         self.classification_layers = self.get_classification_layers(prefix="model.")
         if self.load_from is not None:
             load_checkpoint(detector, self.load_from, map_location="cpu")

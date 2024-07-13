@@ -316,18 +316,3 @@ class HybridEncoder(nn.Module):
             outs.append(out)
 
         return outs
-
-    def init_weights(self):
-        pass
-        # for m in self.modules():
-        #     if isinstance(m, nn.Conv2d):
-        #         nn.init.xavier_uniform_(m.weight)
-        #         if m.bias is not None:
-        #             nn.init.constant_(m.bias, 0)
-        #     elif isinstance(m, nn.BatchNorm2d):
-        #         nn.init.constant_(m.weight, 1)
-        #         nn.init.constant_(m.bias, 0)
-        #     elif isinstance(m, nn.Linear):
-        #         nn.init.xavier_uniform_(m.weight)
-        #         if m.bias is not None:
-        #             nn.init.constant_(m.bias, 0)
