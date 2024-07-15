@@ -17,6 +17,10 @@ data: ../_base_/data/detection.yaml
 overrides:
   data:
     stack_images: false
+    train_subset:
+      to_tv_image: true
+    val_subset:
+      to_tv_image: true
     test_subset:
       to_tv_image: true
       batch_size: 64

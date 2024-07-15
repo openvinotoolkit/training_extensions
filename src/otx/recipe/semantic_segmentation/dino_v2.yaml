@@ -42,22 +42,23 @@ overrides:
   data:
     train_subset:
       transforms:
-        - class_path: torchvision.transforms.v2.RandomResizedCrop
+        - class_path: otx.core.data.transform_libs.torchvision.RandomResizedCrop
           init_args:
-            size:
-              - 560
-              - 560
             scale:
+              - 560
+              - 560
+            crop_ratio_range:
               - 0.2
               - 1.0
-            ratio:
+            aspect_ratio_range:
               - 0.5
               - 2.0
-            antialias: true
+            transform_mask: true
         - class_path: otx.core.data.transform_libs.torchvision.PhotoMetricDistortion
+        - class_path: otx.core.data.transform_libs.torchvision.RandomFlip
           init_args:
+            prob: 0.5
             is_numpy_to_tvtensor: true
-        - class_path: torchvision.transforms.v2.RandomHorizontalFlip
         - class_path: torchvision.transforms.v2.ToDtype
           init_args:
             dtype: ${as_torch_dtype:torch.float32}
@@ -68,11 +69,13 @@ overrides:
 
     val_subset:
       transforms:
-        - class_path: torchvision.transforms.v2.Resize
+        - class_path: otx.core.data.transform_libs.torchvision.Resize
           init_args:
-            size:
+            scale:
               - 560
               - 560
+            transform_mask: true
+            is_numpy_to_tvtensor: true
         - class_path: torchvision.transforms.v2.ToDtype
           init_args:
             dtype: ${as_torch_dtype:torch.float32}
@@ -83,11 +86,13 @@ overrides:
 
     test_subset:
       transforms:
-        - class_path: torchvision.transforms.v2.Resize
+        - class_path: otx.core.data.transform_libs.torchvision.Resize
           init_args:
-            size:
+            scale:
               - 560
               - 560
+            transform_mask: true
+            is_numpy_to_tvtensor: true
         - class_path: torchvision.transforms.v2.ToDtype
           init_args:
             dtype: ${as_torch_dtype:torch.float32}

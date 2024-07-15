@@ -6,7 +6,8 @@ scan:
     - vuln
     - secret
   slow: false
-severity: UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL
+severity: MEDIUM,HIGH,CRITICAL
+exit-code: 1
 vulnerability:
   ignore-unfixed: false
 format: template

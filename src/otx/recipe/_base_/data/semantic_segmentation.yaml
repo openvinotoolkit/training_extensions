@@ -13,22 +13,23 @@ train_subset:
   transform_lib_type: TORCHVISION
   to_tv_image: true
   transforms:
-    - class_path: torchvision.transforms.v2.RandomResizedCrop
+    - class_path: otx.core.data.transform_libs.torchvision.RandomResizedCrop
       init_args:
-        size:
-          - 512
-          - 512
         scale:
+          - 512
+          - 512
+        crop_ratio_range:
           - 0.2
           - 1.0
-        ratio:
+        aspect_ratio_range:
           - 0.5
           - 2.0
-        antialias: true
+        transform_mask: true
     - class_path: otx.core.data.transform_libs.torchvision.PhotoMetricDistortion
+    - class_path: otx.core.data.transform_libs.torchvision.RandomFlip
       init_args:
+        prob: 0.5
         is_numpy_to_tvtensor: true
-    - class_path: torchvision.transforms.v2.RandomHorizontalFlip
     - class_path: torchvision.transforms.v2.ToDtype
       init_args:
         dtype: ${as_torch_dtype:torch.float32}
@@ -38,6 +39,7 @@ train_subset:
         std: [58.395, 57.12, 57.375]
   sampler:
     class_path: torch.utils.data.RandomSampler
+
 val_subset:
   subset_name: val
   batch_size: 8
@@ -45,11 +47,13 @@ val_subset:
   transform_lib_type: TORCHVISION
   to_tv_image: true
   transforms:
-    - class_path: torchvision.transforms.v2.Resize
+    - class_path: otx.core.data.transform_libs.torchvision.Resize
       init_args:
-        size:
+        scale:
           - 512
           - 512
+        transform_mask: true
+        is_numpy_to_tvtensor: true
     - class_path: torchvision.transforms.v2.ToDtype
       init_args:
         dtype: ${as_torch_dtype:torch.float32}
@@ -59,6 +63,7 @@ val_subset:
         std: [58.395, 57.12, 57.375]
   sampler:
     class_path: torch.utils.data.RandomSampler
+
 test_subset:
   subset_name: test
   num_workers: 4
@@ -66,11 +71,13 @@ test_subset:
   transform_lib_type: TORCHVISION
   to_tv_image: true
   transforms:
-    - class_path: torchvision.transforms.v2.Resize
+    - class_path: otx.core.data.transform_libs.torchvision.Resize
       init_args:
-        size:
+        scale:
           - 512
           - 512
+        transform_mask: true
+        is_numpy_to_tvtensor: true
     - class_path: torchvision.transforms.v2.ToDtype
       init_args:
         dtype: ${as_torch_dtype:torch.float32}

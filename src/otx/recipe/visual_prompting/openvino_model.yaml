@@ -19,17 +19,20 @@ overrides:
     train_subset:
       batch_size: 1
       num_workers: 0 # TODO (sungchul): CVS-135462
+      to_tv_image: true
       transforms:
         - class_path: torchvision.transforms.v2.ToImage
 
     val_subset:
       batch_size: 1
       num_workers: 0 # TODO (sungchul): CVS-135462
+      to_tv_image: true
       transforms:
         - class_path: torchvision.transforms.v2.ToImage
 
     test_subset:
       batch_size: 1
       num_workers: 0 # TODO (sungchul): CVS-135462
+      to_tv_image: true
       transforms:
         - class_path: torchvision.transforms.v2.ToImage
