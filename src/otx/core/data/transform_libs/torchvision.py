@@ -116,6 +116,8 @@ class NumpytoTVTensorMixin:
                 inputs.image = F.to_image(image.copy())
             if (bboxes := getattr(inputs, "bboxes", None)) is not None and isinstance(bboxes, np.ndarray):
                 inputs.bboxes = tv_tensors.BoundingBoxes(bboxes, format="xyxy", canvas_size=inputs.img_info.img_shape)  # type: ignore[attr-defined]
+            if (points := getattr(inputs, "points", None)) is not None and isinstance(points, np.ndarray):
+                inputs.points = Points(points, canvas_size=inputs.img_info.img_shape)
             if (masks := getattr(inputs, "masks", None)) is not None and isinstance(masks, np.ndarray):
                 inputs.masks = tv_tensors.Mask(masks)
         return inputs

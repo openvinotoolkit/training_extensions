@@ -13,7 +13,7 @@ import pytest
 import torch
 from datumaro import Polygon
 from otx.core.data.entity.action_classification import ActionClsDataEntity
-from otx.core.data.entity.base import ImageInfo, OTXDataEntity, VideoInfo
+from otx.core.data.entity.base import ImageInfo, OTXDataEntity, Points, VideoInfo
 from otx.core.data.entity.detection import DetBatchDataEntity, DetDataEntity
 from otx.core.data.entity.instance_segmentation import InstanceSegBatchDataEntity, InstanceSegDataEntity
 from otx.core.data.transform_libs.torchvision import (
@@ -22,6 +22,7 @@ from otx.core.data.transform_libs.torchvision import (
     DecodeVideo,
     FilterAnnotations,
     MinIoURandomCrop,
+    NumpytoTVTensorMixin,
     PackVideo,
     Pad,
     PhotoMetricDistortion,
@@ -53,6 +54,26 @@ class MockVideo:
 
     def close(self):
         return
+
+
+class TestNumpytoTVTensorMixin:
+    def test_convert(self, fxt_vpm_data_entity) -> None:
+        entity = deepcopy(fxt_vpm_data_entity[0])
+        # convert entity components to array
+        entity.image = entity.image.numpy().transpose(1, 2, 0)
+        entity.bboxes = entity.bboxes.data.numpy()
+        entity.points = entity.points.data.numpy()
+        entity.masks = entity.masks.data.numpy()
+
+        mixin = NumpytoTVTensorMixin()
+        mixin.is_numpy_to_tvtensor = True
+
+        results = mixin.convert(entity)
+
+        assert isinstance(results.image, tv_tensors.Image)
+        assert isinstance(results.bboxes, tv_tensors.BoundingBoxes)
+        assert isinstance(results.points, Points)
+        assert isinstance(results.masks, tv_tensors.Mask)
 
 
 class TestDecodeVideo:
