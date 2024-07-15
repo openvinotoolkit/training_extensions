@@ -472,8 +472,8 @@ class Resize(tvt_v2.Transform, NumpytoTVTensorMixin):
     TODO : optimize logic to torcivision pipeline
 
     Args:
-        scale (int or tuple): Images scales for resizing with (height, width). Defaults to None
-        scale_factor (float or tuple[float]): Scale factors for resizing with (height, width).
+        scale (int or Sequence[int]): Images scales for resizing with (height, width). Defaults to None
+        scale_factor (float or Sequence[float]): Scale factors for resizing with (height, width).
             Defaults to None.
         keep_ratio (bool): Whether to keep the aspect ratio when resizing the
             image. Defaults to False.
@@ -489,10 +489,12 @@ class Resize(tvt_v2.Transform, NumpytoTVTensorMixin):
         is_numpy_to_tvtensor (bool): Whether convert outputs to tensor. Defaults to False.
     """
 
+    scale_factor: float | Sequence[float] | None
+
     def __init__(
         self,
-        scale: int | tuple[int, int] | None = None,  # (H, W)
-        scale_factor: float | tuple[float, float] | None = None,  # (H, W)
+        scale: int | Sequence[int] | None = None,  # (H, W)
+        scale_factor: float | Sequence[float] | None = None,  # (H, W)
         keep_ratio: bool = False,
         clip_object_border: bool = True,
         interpolation: str = "bilinear",
@@ -524,10 +526,10 @@ class Resize(tvt_v2.Transform, NumpytoTVTensorMixin):
             self.scale_factor = None
         elif isinstance(scale_factor, float):
             self.scale_factor = (scale_factor, scale_factor)
-        elif isinstance(scale_factor, tuple) and len(scale_factor) == 2:
-            self.scale_factor = scale_factor
+        elif isinstance(scale_factor, Sequence) and len(scale_factor) == 2:
+            self.scale_factor = tuple(scale_factor)
         else:
-            msg = f"expect scale_factor is float or Tuple(float), butget {type(scale_factor)}"
+            msg = f"expect scale_factor is float or Sequence[float], but get {type(scale_factor)}"
             raise TypeError(msg)
 
         self.is_numpy_to_tvtensor = is_numpy_to_tvtensor
@@ -633,12 +635,12 @@ class RandomResizedCrop(tvt_v2.Transform, NumpytoTVTensorMixin):
     is made. This crop is finally resized to given size.
 
     Args:
-        scale (sequence | int): Desired output scale of the crop. If size is an
-            int instead of sequence like (h, w), a square crop (size, size) is
+        scale (Sequence[int] or int): Desired output scale of the crop. If size is an
+            int instead of Sequence[int] like (h, w), a square crop (size, size) is
             made.
-        crop_ratio_range (tuple): Range of the random size of the cropped
+        crop_ratio_range (Sequence[float]): Range of the random size of the cropped
             image compared to the original image. Defaults to (0.08, 1.0).
-        aspect_ratio_range (tuple): Range of the random aspect ratio of the
+        aspect_ratio_range (Sequence[float]): Range of the random aspect ratio of the
             cropped image compared to the original image.
             Defaults to (3. / 4., 4. / 3.).
         max_attempts (int): Maximum number of attempts before falling back to
@@ -652,9 +654,9 @@ class RandomResizedCrop(tvt_v2.Transform, NumpytoTVTensorMixin):
 
     def __init__(
         self,
-        scale: Sequence | int,
-        crop_ratio_range: tuple[float, float] = (0.08, 1.0),
-        aspect_ratio_range: tuple[float, float] = (3.0 / 4.0, 4.0 / 3.0),
+        scale: Sequence[int] | int,
+        crop_ratio_range: Sequence[float] = (0.08, 1.0),
+        aspect_ratio_range: Sequence[float] = (3.0 / 4.0, 4.0 / 3.0),
         max_attempts: int = 10,
         interpolation: str = "bilinear",
         transform_mask: bool = False,
@@ -795,7 +797,7 @@ class RandomResizedCrop(tvt_v2.Transform, NumpytoTVTensorMixin):
             bboxes (ndarray): Shape (k, 4) or (4, ), location of cropped bboxes.
             scale (float, optional): Scale ratio of bboxes, the default value
                 1.0 means no scaling.
-            pad_fill (Number | list[Number]): Value to be filled for padding.
+            pad_fill (float | list | list[float | list]): Value to be filled for padding.
                 Default: None, which means no padding.
 
         Returns:
@@ -897,7 +899,7 @@ class EfficientNetRandomCrop(RandomResizedCrop):
     Args:
         scale (int): Desired output scale of the crop. Only int size is
             accepted, a square crop (size, size) is made.
-        min_covered (Number): Minimum ratio of the cropped area to the original
+        min_covered (float): Minimum ratio of the cropped area to the original
              area. Defaults to 0.1.
         crop_padding (int): The crop padding parameter in efficientnet style
             center crop. Defaults to 32.
@@ -911,8 +913,6 @@ class EfficientNetRandomCrop(RandomResizedCrop):
         interpolation (str): Interpolation method, accepted values are
             'nearest', 'bilinear', 'bicubic', 'area', 'lanczos'. Defaults to
             'bicubic'.
-        backend (str): The image resize backend type, accepted values are
-            'cv2' and 'pillow'. Defaults to 'cv2'.
     """
 
     def __init__(
@@ -1027,9 +1027,9 @@ class RandomFlip(tvt_v2.Transform, NumpytoTVTensorMixin):
         probability of 0.3, vertically with probability of 0.5.
 
     Args:
-        prob (float | list[float], optional): The flipping probability.
+        prob (float | Iterable[float], optional): The flipping probability.
             Defaults to None.
-        direction(str | list[str]): The flipping direction. Options
+        direction(str | Sequence[str]): The flipping direction. Options
             If input is a list, the length must equal ``prob``. Each
             element in ``prob`` indicates the flip probability of
             corresponding direction. Defaults to 'horizontal'.
@@ -1150,8 +1150,8 @@ class PhotoMetricDistortion(tvt_v2.Transform, NumpytoTVTensorMixin):
 
     Args:
         brightness_delta (int): delta of brightness.
-        contrast_range (sequence): range of contrast.
-        saturation_range (sequence): range of saturation.
+        contrast_range (Sequence[int | float]): range of contrast.
+        saturation_range (Sequence[int | float]): range of saturation.
         hue_delta (int): delta of hue.
         is_numpy_to_tvtensor (bool): Whether convert outputs to tensor. Defaults to False.
     """
@@ -1290,14 +1290,14 @@ class RandomAffine(tvt_v2.Transform, NumpytoTVTensorMixin):
             Defaults to 10.
         max_translate_ratio (float): Maximum ratio of translation.
             Defaults to 0.1.
-        scaling_ratio_range (tuple[float]): Min and max ratio of
+        scaling_ratio_range (Sequence[float]): Min and max ratio of
             scaling transform. Defaults to (0.5, 1.5).
         max_shear_degree (float): Maximum degrees of shear
             transform. Defaults to 2.
-        border (tuple[int]): Distance from height and width sides of input
+        border (Sequence[int]): Distance from height and width sides of input
             image to adjust output shape. Only used in mosaic dataset.
             Defaults to (0, 0).
-        border_val (tuple[int]): Border padding values of 3 channels.
+        border_val (Sequence[int]): Border padding values of 3 channels.
             Defaults to (114, 114, 114).
         bbox_clip_border (bool, optional): Whether to clip the objects outside
             the border of the image. In some dataset like MOT17, the gt bboxes
@@ -1310,10 +1310,10 @@ class RandomAffine(tvt_v2.Transform, NumpytoTVTensorMixin):
         self,
         max_rotate_degree: float = 10.0,
         max_translate_ratio: float = 0.1,
-        scaling_ratio_range: tuple[float, float] = (0.5, 1.5),
+        scaling_ratio_range: Sequence[float] = (0.5, 1.5),
         max_shear_degree: float = 2.0,
-        border: tuple[int, int] = (0, 0),  # (H, W)
-        border_val: tuple[int, int, int] = (114, 114, 114),
+        border: Sequence[int] = (0, 0),  # (H, W)
+        border_val: Sequence[int] = (114, 114, 114),
         bbox_clip_border: bool = True,
         is_numpy_to_tvtensor: bool = False,
     ) -> None:
@@ -1368,13 +1368,13 @@ class RandomAffine(tvt_v2.Transform, NumpytoTVTensorMixin):
         inputs.image = img
         inputs.img_info = _resize_image_info(inputs.img_info, img.shape[:2])
 
-        bboxes = inputs.bboxes
-        num_bboxes = len(bboxes)
-        if num_bboxes:
+        if (bboxes := getattr(inputs, "bboxes", None)) is not None and len(bboxes) > 0:
             bboxes = project_bboxes(bboxes, warp_matrix)
             if self.bbox_clip_border:
                 bboxes = clip_bboxes(bboxes, (height, width))
             # remove outside bbox
+            # TODO (sungchul): fix the case about no valid index when height < 0 or width < 0
+            # due to border * 2 > height and width
             valid_index = is_inside_bboxes(bboxes, (height, width))
             inputs.bboxes = tv_tensors.BoundingBoxes(bboxes[valid_index], format="XYXY", canvas_size=(height, width))
             inputs.labels = inputs.labels[valid_index]
@@ -1430,7 +1430,7 @@ class CachedMosaic(tvt_v2.Transform, NumpytoTVTensorMixin):
         img_scale (Sequence[int]): Image size before mosaic pipeline of single
             image. The shape order should be (height, width).
             Defaults to (640, 640).
-        center_ratio_range (tuple[float]): Center ratio range of mosaic
+        center_ratio_range (Sequence[float]): Center ratio range of mosaic
             output. Defaults to (0.5, 1.5).
         bbox_clip_border (bool, optional): Whether to clip the objects outside
             the border of the image. In some dataset like MOT17, the gt bboxes
@@ -1451,8 +1451,8 @@ class CachedMosaic(tvt_v2.Transform, NumpytoTVTensorMixin):
 
     def __init__(
         self,
-        img_scale: tuple[int, int] | list[int] = (640, 640),  # (H, W)
-        center_ratio_range: tuple[float, float] = (0.5, 1.5),
+        img_scale: Sequence[int] = (640, 640),  # (H, W)
+        center_ratio_range: Sequence[float] = (0.5, 1.5),
         bbox_clip_border: bool = True,
         pad_val: float = 114.0,
         prob: float = 1.0,
@@ -1755,8 +1755,8 @@ class CachedMixUp(tvt_v2.Transform, NumpytoTVTensorMixin):
 
     def __init__(
         self,
-        img_scale: tuple[int, int] | list[int] = (640, 640),  # (H, W)
-        ratio_range: tuple[float, float] = (0.5, 1.5),
+        img_scale: Sequence[int] = (640, 640),  # (H, W)
+        ratio_range: Sequence[float] = (0.5, 1.5),
         flip_ratio: float = 0.5,
         pad_val: float = 114.0,
         max_iters: int = 15,
@@ -2063,7 +2063,7 @@ class Pad(tvt_v2.Transform, NumpytoTVTensorMixin):
     TODO : optimize logic to torcivision pipeline
 
     Args:
-        size (tuple, optional): Fixed padding size.
+        size (Sequence[int], optional): Fixed padding size.
             Expected padding shape (height, width). Defaults to None.
         size_divisor (int, optional): The divisor of padded size. Defaults to
             None.
@@ -2106,7 +2106,7 @@ class Pad(tvt_v2.Transform, NumpytoTVTensorMixin):
 
     def __init__(
         self,
-        size: tuple[int, int] | None = None,  # (H, W)
+        size: Sequence[int] | None = None,  # (H, W)
         size_divisor: int | None = None,
         pad_to_square: bool = False,
         pad_val: int | float | dict | None = None,
@@ -2142,7 +2142,7 @@ class Pad(tvt_v2.Transform, NumpytoTVTensorMixin):
         img: np.ndarray = to_np_image(inputs.image)
         pad_val = self.pad_val.get("img", 0)
 
-        size: tuple[int, int]
+        size: Sequence[int]
         if self.pad_to_square:
             max_size = max(img.shape[:2])
             size = (max_size, max_size)
@@ -2231,8 +2231,9 @@ class RandomResize(tvt_v2.Transform, NumpytoTVTensorMixin):
     Reference : https://github.com/open-mmlab/mmcv/blob/v2.1.0/mmcv/transforms/processing.py#L1381-L1562
 
     Args:
-        scale (Sequence): Images scales for resizing with (height, width). Defaults to None.
-        ratio_range (tuple[float], optional): (min_ratio, max_ratio). Defaults to None.
+        scale (Sequence[int | tuple[int, int]]): Images scales for resizing with (height, width).
+            Defaults to None.
+        ratio_range (Sequence[float], optional): (min_ratio, max_ratio). Defaults to None.
         is_numpy_to_tvtensor (bool): Whether convert outputs to tensor. Defaults to False.
         **resize_kwargs: Other keyword arguments for the ``resize_type``.
     """
@@ -2240,7 +2241,7 @@ class RandomResize(tvt_v2.Transform, NumpytoTVTensorMixin):
     def __init__(
         self,
         scale: Sequence[int | tuple[int, int]],  # (H, W)
-        ratio_range: tuple[float, float] | None = None,
+        ratio_range: Sequence[float] | None = None,
         is_numpy_to_tvtensor: bool = False,
         **resize_kwargs,
     ) -> None:
@@ -2275,7 +2276,7 @@ class RandomResize(tvt_v2.Transform, NumpytoTVTensorMixin):
         return (edge_0, edge_1)
 
     @staticmethod
-    def _random_sample_ratio(scale: tuple, ratio_range: tuple[float, float]) -> tuple:
+    def _random_sample_ratio(scale: Sequence, ratio_range: Sequence[float]) -> tuple:
         """Private function to randomly sample a scale from a tuple.
 
         A ratio will be randomly sampled from the range specified by
@@ -2283,14 +2284,14 @@ class RandomResize(tvt_v2.Transform, NumpytoTVTensorMixin):
         generate sampled scale.
 
         Args:
-            scale (tuple): Images scale base to multiply with ratio.
-            ratio_range (tuple[float]): The minimum and maximum ratio to scale
+            scale (Sequence): Images scale base to multiply with ratio.
+            ratio_range (Sequence[float]): The minimum and maximum ratio to scale
                 the ``scale``.
 
         Returns:
             (tuple): The targeted scale of the image to be resized.
         """
-        assert isinstance(scale, tuple)  # noqa: S101
+        assert isinstance(scale, Sequence)  # noqa: S101
         assert len(scale) == 2  # noqa: S101
         min_ratio, max_ratio = ratio_range
         assert min_ratio <= max_ratio  # noqa: S101
@@ -2340,7 +2341,7 @@ class RandomCrop(tvt_v2.Transform, NumpytoTVTensorMixin):
     The absolute `crop_size` is sampled based on `crop_type` and `image_size`, then the cropped results are generated.
 
     Args:
-        crop_size (tuple): The relative ratio or absolute pixels of
+        crop_size (Sequence[int | float]): The relative ratio or absolute pixels of
             (height, width).
         crop_type (str, optional): One of "relative_range", "relative",
             "absolute", "absolute_range". "relative" randomly crops
@@ -2365,7 +2366,7 @@ class RandomCrop(tvt_v2.Transform, NumpytoTVTensorMixin):
 
     def __init__(
         self,
-        crop_size: tuple,  # (H, W)
+        crop_size: Sequence[int | float],  # (H, W)
         crop_type: str = "absolute",
         cat_max_ratio: int | float = 1,
         allow_negative_crop: bool = False,
@@ -2517,7 +2518,7 @@ class RandomCrop(tvt_v2.Transform, NumpytoTVTensorMixin):
         return offset_h, offset_w
 
     @cache_randomness
-    def _get_crop_size(self, image_size: tuple[int, int]) -> tuple[int, int]:
+    def _get_crop_size(self, image_size: tuple[int, int]) -> tuple[int | float, int | float]:
         """Randomly generates the absolute crop size based on `crop_type` and `image_size`.
 
         Args:
@@ -2571,7 +2572,7 @@ class FilterAnnotations(tvt_v2.Transform, NumpytoTVTensorMixin):
     Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/datasets/transforms/loading.py#L713-L800
 
     Args:
-        min_gt_bbox_wh (tuple[float]): Minimum width and height of ground truth
+        min_gt_bbox_wh (Sequence[float | int]): Minimum width and height of ground truth
             boxes. Default: (1., 1.)
         min_gt_mask_area (int): Minimum foreground area of ground truth masks.
             Default: 1
@@ -2588,7 +2589,7 @@ class FilterAnnotations(tvt_v2.Transform, NumpytoTVTensorMixin):
 
     def __init__(
         self,
-        min_gt_bbox_wh: tuple[int, int] = (1, 1),
+        min_gt_bbox_wh: Sequence[float | int] = (1, 1),
         min_gt_mask_area: int = 1,
         by_box: bool = True,
         by_mask: bool = False,
@@ -3086,7 +3087,7 @@ class DecordDecode(tvt_v2.Transform):
 class Normalize3D(tvt_v2.Normalize):
     """Using normalize the 3D video data."""
 
-    def __init__(self, mean: list[float], std: list[float], inplace: bool = False) -> None:
+    def __init__(self, mean: Sequence[float], std: Sequence[float], inplace: bool = False) -> None:
         self.mean = torch.Tensor(mean).view(1, 3, 1, 1, 1)
         self.std = torch.Tensor(std).view(1, 3, 1, 1, 1)
         self.inplace = inplace
