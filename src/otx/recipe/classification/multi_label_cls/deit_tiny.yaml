@@ -2,7 +2,7 @@ model:
   class_path: otx.algo.classification.vit.VisionTransformerForMultilabelCls
   init_args:
     label_info: 1000
-    arch: "deit-tiny"
+    arch: "vit-tiny"
 
     optimizer:
       class_path: torch.optim.AdamW
@@ -49,7 +49,6 @@ overrides:
         - class_path: otx.core.data.transform_libs.torchvision.RandomResizedCrop
           init_args:
             scale: 224
-            backend: cv2
         - class_path: otx.core.data.transform_libs.torchvision.RandomFlip
           init_args:
             prob: 0.5

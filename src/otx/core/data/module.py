@@ -246,9 +246,7 @@ class OTXDataModule(LightningDataModule):
 
     def _is_meta_info_valid(self, label_infos: list[LabelInfo]) -> bool:
         """Check whether there are mismatches in the metainfo for the all subsets."""
-        if all(label_info == label_infos[0] for label_info in label_infos):
-            return True
-        return False
+        return bool(all(label_info == label_infos[0] for label_info in label_infos))
 
     def _get_dataset(self, subset: str) -> OTXDataset:
         if (dataset := self.subsets.get(subset)) is None:
@@ -293,7 +291,12 @@ class OTXDataModule(LightningDataModule):
                 "labeled": dataloader,
                 **unlabeled_dataloader,
             }
-            return CombinedLoader(iterables, mode="min_size")
+            # CombinedLoader should always behave relative to the labeled dataloader.
+            # if len(labeled_dataloader) < len(unlabeled_dataloader), the mode should be "min_size"
+            # if len(labeled_dataloader) > len(unlabeled_dataloader), the mode should be "max_size_cycle"
+            min_unlabeled_length = min(len(loader) for loader in unlabeled_dataloader.values())
+            mode = "min_size" if len(dataloader) < min_unlabeled_length else "max_size_cycle"
+            return CombinedLoader(iterables, mode=mode)
         return dataloader
 
     def val_dataloader(self) -> DataLoader:
