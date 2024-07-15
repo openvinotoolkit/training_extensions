@@ -133,7 +133,7 @@ class TestNMSop:
         assert (mock_torch_nms.call_args[0][1] == mock_scores[0]).all()
         assert list(nms) == [0]
 
-    def test_forward_cpu_bfx(
+    def test_forward_cpu_bf16(
         self,
         mock_torch_nms: MagicMock,
         mock_torch_autocast: MagicMock,
