@@ -359,19 +359,35 @@ class TestPhotoMetricDistortion:
 class TestRandomAffine:
     @pytest.fixture()
     def random_affine(self) -> RandomAffine:
-        return RandomAffine()
+        return RandomAffine(input_size=(112, 224))
 
-    @pytest.mark.xfail(raises=AssertionError)
+    def test_init_without_input_size(self) -> None:
+        with pytest.raises(TypeError):
+            RandomAffine()
+
     def test_init_invalid_translate_ratio(self) -> None:
-        RandomAffine(max_translate_ratio=1.5)
+        with pytest.raises(AssertionError):
+            RandomAffine(input_size=(112, 224), max_translate_ratio=1.5)
 
-    @pytest.mark.xfail(raises=AssertionError)
     def test_init_invalid_scaling_ratio_range_inverse_order(self) -> None:
-        RandomAffine(scaling_ratio_range=(1.5, 0.5))
+        with pytest.raises(AssertionError):
+            RandomAffine(input_size=(112, 224), scaling_ratio_range=(1.5, 0.5))
 
-    @pytest.mark.xfail(raises=AssertionError)
     def test_init_invalid_scaling_ratio_range_zero_value(self) -> None:
-        RandomAffine(scaling_ratio_range=(0, 0.5))
+        with pytest.raises(AssertionError):
+            RandomAffine(input_size=(112, 224), scaling_ratio_range=(0, 0.5))
+
+    def test_init_set_border_automatically(self, random_affine: RandomAffine) -> None:
+        # use default value of `border_scale`
+        assert random_affine.border == (-56, -112)
+
+        # use given value of `border_scale`
+        random_affine = RandomAffine(input_size=(112, 224), border_scale=(1.0, 1.0))
+        assert random_affine.border == (112, 224)
+
+        # use `border` value first if it is given
+        random_affine = RandomAffine(input_size=(112, 224), border=(0, 0), border_scale=(1.0, 1.0))
+        assert random_affine.border == (0, 0)
 
     def test_forward(self, random_affine: RandomAffine, det_data_entity: DetDataEntity) -> None:
         """Test forward."""

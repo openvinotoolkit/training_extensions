@@ -1286,6 +1286,9 @@ class RandomAffine(tvt_v2.Transform, NumpytoTVTensorMixin):
     TODO : optimize logic to torcivision pipeline
 
     Args:
+        input_size (Sequence[int]): Final transformed image size.
+            It can be set in each recipe and is assigned
+            in otx.core.data.factory.TransformLibFactory (?).
         max_rotate_degree (float): Maximum degrees of rotation transform.
             Defaults to 10.
         max_translate_ratio (float): Maximum ratio of translation.
@@ -1296,7 +1299,9 @@ class RandomAffine(tvt_v2.Transform, NumpytoTVTensorMixin):
             transform. Defaults to 2.
         border (Sequence[int]): Distance from height and width sides of input
             image to adjust output shape. Only used in mosaic dataset.
-            Defaults to (0, 0).
+            If this is manually given through recipe or cli, the given value will be used with high priority.
+            If it is not given, it is automatically calculated by `input_size` and `border_scale`.
+            Defaults to None.
         border_val (Sequence[int]): Border padding values of 3 channels.
             Defaults to (114, 114, 114).
         bbox_clip_border (bool, optional): Whether to clip the objects outside
@@ -1308,11 +1313,13 @@ class RandomAffine(tvt_v2.Transform, NumpytoTVTensorMixin):
 
     def __init__(
         self,
+        input_size: Sequence[int],
         max_rotate_degree: float = 10.0,
         max_translate_ratio: float = 0.1,
         scaling_ratio_range: Sequence[float] = (0.5, 1.5),
         max_shear_degree: float = 2.0,
-        border: Sequence[int] = (0, 0),  # (H, W)
+        border: Sequence[int] | None = None,  # (H, W)
+        border_scale: Sequence[float] = (-0.5, -0.5),
         border_val: Sequence[int] = (114, 114, 114),
         bbox_clip_border: bool = True,
         is_numpy_to_tvtensor: bool = False,
@@ -1322,14 +1329,28 @@ class RandomAffine(tvt_v2.Transform, NumpytoTVTensorMixin):
         assert 0 <= max_translate_ratio <= 1  # noqa: S101
         assert scaling_ratio_range[0] <= scaling_ratio_range[1]  # noqa: S101
         assert scaling_ratio_range[0] > 0  # noqa: S101
+        self.input_size = input_size
         self.max_rotate_degree = max_rotate_degree
         self.max_translate_ratio = max_translate_ratio
         self.scaling_ratio_range = scaling_ratio_range
         self.max_shear_degree = max_shear_degree
-        self.border = border  # (H, W)
         self.border_val = border_val
         self.bbox_clip_border = bbox_clip_border
         self.is_numpy_to_tvtensor = is_numpy_to_tvtensor
+
+        # for configurable input size
+        self._border = border  # (H, W)
+        self.border_scale = border_scale
+
+    @property
+    def border(self) -> Sequence[int]:
+        """Get border size."""
+        if self._border is None:
+            self._border = (
+                int(self.input_size[0] * self.border_scale[0]),
+                int(self.input_size[1] * self.border_scale[1]),
+            )
+        return self._border
 
     @cache_randomness
     def _get_random_homography_matrix(self, height: int, width: int) -> np.ndarray:
