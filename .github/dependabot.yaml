@@ -4,13 +4,22 @@ updates:
     directory: /
     schedule:
       interval: weekly
+    groups:
+      dockerfile-dependency:
+        applies-to: version-updates
 
   - package-ecosystem: github-actions
     directory: /
     schedule:
       interval: weekly
+    groups:
+      github-actions-dependency:
+        applies-to: version-updates
 
   - package-ecosystem: pip
     directory: /
     schedule:
       interval: weekly
+    groups:
+      pip-dependency:
+        applies-to: version-updates
