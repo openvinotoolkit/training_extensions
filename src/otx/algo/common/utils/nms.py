@@ -39,7 +39,11 @@ class NMSop(torch.autograd.Function):
             valid_mask = scores > score_threshold
             bboxes, scores = bboxes[valid_mask], scores[valid_mask]
             valid_inds = torch.nonzero(valid_mask, as_tuple=False).squeeze(dim=1)
-        inds = torch_nms(bboxes, scores, iou_threshold)
+        if bboxes.get_device() == -1 and bboxes.dtype == torch.bfloat16:  # torch nms kernel doesn't support bfloat16
+            with torch.autocast(device_type="cpu", dtype=torch.bfloat16, enabled=False):
+                inds = torch_nms(bboxes.float(), scores.float(), iou_threshold)
+        else:
+            inds = torch_nms(bboxes, scores, iou_threshold)
 
         if max_num > 0:
             inds = inds[:max_num]
