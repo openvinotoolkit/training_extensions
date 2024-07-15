@@ -56,11 +56,14 @@ overrides:
               p: 0.8
           - class_path: torchvision.transforms.v2.SanitizeBoundingBoxes
           - class_path: torchvision.transforms.v2.RandomHorizontalFlip
-          - class_path: torchvision.transforms.v2.Resize
+          - class_path: otx.core.data.transform_libs.torchvision.Resize
             init_args:
-              size:
+              scale:
                 - 640
                 - 640
+              keep_ratio: false
+              transform_bbox: true
+              is_numpy_to_tvtensor: true
           - class_path: torchvision.transforms.v2.ToImage
           - class_path: torchvision.transforms.v2.ToDtype
             init_args:
@@ -77,11 +80,14 @@ overrides:
         batch_size: 8
         to_tv_image: True
         transforms:
-          - class_path: torchvision.transforms.v2.Resize
+          - class_path: otx.core.data.transform_libs.torchvision.Resize
             init_args:
-              size:
+              scale:
                 - 640
                 - 640
+              keep_ratio: false
+              transform_bbox: true
+              is_numpy_to_tvtensor: true
           - class_path: torchvision.transforms.v2.ToImage
           - class_path: torchvision.transforms.v2.ToDtype
             init_args:
@@ -91,11 +97,14 @@ overrides:
         batch_size: 8
         to_tv_image: True
         transforms:
-          - class_path: torchvision.transforms.v2.Resize
+          - class_path: otx.core.data.transform_libs.torchvision.Resize
             init_args:
-              size:
+              scale:
                 - 640
                 - 640
+              keep_ratio: false
+              transform_bbox: true
+              is_numpy_to_tvtensor: true
           - class_path: torchvision.transforms.v2.ToImage
           - class_path: torchvision.transforms.v2.ToDtype
             init_args:

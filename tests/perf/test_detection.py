@@ -29,14 +29,14 @@ class TestPerfObjectDetection(PerfTestBase):
     """Benchmark object detection."""
 
     MODEL_TEST_CASES = [  # noqa: RUF012
-        # Benchmark.Model(task="detection", name="atss_mobilenetv2", category="accuracy"),
-        # Benchmark.Model(task="detection", name="atss_resnext101", category="other"),
-        # Benchmark.Model(task="detection", name="ssd_mobilenetv2", category="balance"),
-        # Benchmark.Model(task="detection", name="yolox_tiny", category="speed"),
-        # Benchmark.Model(task="detection", name="yolox_s", category="other"),
-        # Benchmark.Model(task="detection", name="yolox_l", category="other"),
-        # Benchmark.Model(task="detection", name="yolox_x", category="other"),
-        # Benchmark.Model(task="detection", name="rtmdet_tiny", category="other"),
+        Benchmark.Model(task="detection", name="atss_mobilenetv2", category="accuracy"),
+        Benchmark.Model(task="detection", name="atss_resnext101", category="other"),
+        Benchmark.Model(task="detection", name="ssd_mobilenetv2", category="balance"),
+        Benchmark.Model(task="detection", name="yolox_tiny", category="speed"),
+        Benchmark.Model(task="detection", name="yolox_s", category="other"),
+        Benchmark.Model(task="detection", name="yolox_l", category="other"),
+        Benchmark.Model(task="detection", name="yolox_x", category="other"),
+        Benchmark.Model(task="detection", name="rtmdet_tiny", category="other"),
         Benchmark.Model(task="detection", name="rtdetr_18", category="other"),
         Benchmark.Model(task="detection", name="rtdetr_50", category="other"),
         Benchmark.Model(task="detection", name="rtdetr_101", category="other"),

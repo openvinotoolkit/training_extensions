@@ -56,11 +56,6 @@ overrides:
               p: 0.8
           - class_path: torchvision.transforms.v2.SanitizeBoundingBoxes
           - class_path: torchvision.transforms.v2.RandomHorizontalFlip
-          # - class_path: torchvision.transforms.v2.Resize
-          #   init_args:
-          #     size:
-          #       - 640
-          #       - 640
           - class_path: otx.core.data.transform_libs.torchvision.Resize
             init_args:
               scale:
@@ -84,11 +79,6 @@ overrides:
         batch_size: 8
         to_tv_image: True
         transforms:
-          # - class_path: torchvision.transforms.v2.Resize
-          #   init_args:
-          #     size:
-          #       - 640
-          #       - 640
           - class_path: otx.core.data.transform_libs.torchvision.Resize
             init_args:
               scale:
@@ -105,11 +95,6 @@ overrides:
         batch_size: 8
         to_tv_image: True
         transforms:
-          # - class_path: torchvision.transforms.v2.Resize
-          #   init_args:
-          #     size:
-          #       - 640
-          #       - 640
           - class_path: otx.core.data.transform_libs.torchvision.Resize
             init_args:
               scale:
