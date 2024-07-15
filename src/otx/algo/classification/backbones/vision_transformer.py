@@ -87,6 +87,7 @@ class VisionTransformer(BaseModule):
         norm_layer: Normalization layer.
         act_layer: MLP activation layer.
         block_fn: Transformer block layer.
+        lora: Enable LoRA training.
     """
 
     arch_zoo = {  # noqa: RUF012
