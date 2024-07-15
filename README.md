@@ -168,29 +168,85 @@ In addition to the examples above, please refer to the documentation for tutoria
 
 ## Updates
 
-### v2.1.0 (2Q24)
+### v2.1.0 (3Q24)
 
-TBD
-
-### v2.0.0 (1Q24)
+> _**NOTES**_
+>
+> OpenVINO™ Training Extensions, version 2.1.0 does not include the latest functional and security updates. OpenVINO™ Training Extensions, version 2.2.0 is targeted to be released in September 2024 and will include additional functional and security updates. Customers should update to the latest version as it becomes available.
 
 ### New features
 
-- Enable New design to provide a more seamless API/CLI that delivers the value of OTX: [Product Design](https://openvinotoolkit.github.io/training_extensions/latest/guide/explanation/product_design.html)
-- Moved away from MMLab's libraries to provide a Lightning-based core and training pipeline
-- Use Lightning-based modules and trainers to deliver APIs/CLIs in a more user-friendly way
-- Support Intel devices for accelerating deep learning model training
+- Add a flag to enable OV inference on dGPU
+- Add early stopping with warmup. Remove mandatory background label in semantic segmentation task
+- RTMDet-tiny enablement for detection task
+- Add data_format validation and update in OTXDataModule
+- Add torchvision.MaskRCNN
+- Add Semi-SL for Multi-class Classification (EfficientNet-B0)
+- Decoupling mmaction for action classification (MoviNet, X3D)
+- Add Semi-SL Algorithms for mv3-large, effnet-v2, deit-tiny, dino-v2
+- RTMDet-tiny enablement for detection task (export/optimize)
+- Enable ruff & ruff-format into otx/algo/classification/backbones
+- Add TV MaskRCNN Tile Recipe
+- Add rotated det OV recipe
 
 ### Enhancements
 
-- Support more models for each task
-- Improve the API so user can configure efficient training with shorter code
-- Provide more customize settings through the CLI and API
-- Enhance the Auto-Configuration feature and made it available in the API
+- Change load_stat_dict to on_load_checkpoint
+- Add try - except to keep running the remaining tests
+- Update instance_segmentation.py to resolve conflict with 2.0.0
+- Update XPU install
+- Sync rgb order between torch and ov inference of action classification task
+- Make Perf test available to load pervious Perf test to skip training stage
+- Reenable e2e classification XAI tests
+- Remove action detection task support
+- Increase readability of pickling error log during HPO & fix minor bug
+- Update RTMDet checkpoint url
+- Refactor Torchvision Model for Classification Semi-SL
+- Add coverage omit mm-related code
+- Add docs semi-sl part
+- Refactor docs design & Add contents
+- Add execution example of auto batch size in docs
+- Add Semi-SL for cls Benchmark Test
+- Move value to device before logging for metric
+- Add .codecov.yaml
+- Update benchmark tool for otx2.1
+- Collect pretrained weight binary files in one place
+- Minimize compiled dependency files
+- Update README & CODEOWNERS
+- Update Engine's docstring & CLI --help outputs
+- Align integration test to exportable code interface update for release branch
+- Refactor exporter for anomaly task and fix a bug with exportable code
+- Update pandas version constraint
+- Include more models to export test into test_otx_e2e
+- Move assigning tasks to Models from Engine to Anomaly Model Classes
+- Refactoring detection modules
 
 ### Bug fixes
 
-- Fixing some issues
+- Fix conflicts between develop and 2.0.0
+- Fix polygon mask
+- Fix vpm intg test error
+- Fix anomaly
+- Bug fix in Semantic Segmentation + enable DINOV2 export in ONNX
+- Fix some export issues. Remove EXPORTABLE_CODE as export parameter.
+- Fix `load_from_checkpoint` to apply original model's hparams
+- Fix `load_from_checkpoint` args to apply original model's hparams
+- Fix zero-shot `learn` for ov model
+- Various fixes for XAI in 2.1
+- Fix tests to work in a mm-free environment
+- Fix a bug in benchmark code
+- Update exportable code dependency & fix a bug
+- Fix getting wrong shape during resizing
+- Fix detection prediction outputs
+- Fix RTMDet PTQ performance
+- Fix segmentation fault on VPM PTQ
+- Fix NNCF MaskRCNN-Eff accuracy drop
+- Fix optimize with Semi-SL data pipeline
+- Fix MaskRCNN SwinT NNCF Accuracy Drop
+
+### Known issues
+
+- Post-Training Quantization (PTQ) optimization applied to maskrcnn_swint in the instance segmentation task may result in significantly reduced accuracy. This issue is expected to be addressed with an upgrade to OpenVINO and NNCF in a future release.
 
 ### Release History
 
