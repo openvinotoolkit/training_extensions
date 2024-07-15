@@ -1448,9 +1448,14 @@ class CachedMosaic(tvt_v2.Transform, NumpytoTVTensorMixin):
     TODO : optimize logic to torcivision pipeline
 
     Args:
-        img_scale (Sequence[int]): Image size before mosaic pipeline of single
+        input_size (Sequence[int]): Final transformed image size.
+            It can be set in each recipe and is assigned
+            in otx.core.data.factory.TransformLibFactory (?).
+        mosaic_size (int or Sequence[int], optional): Image size before mosaic pipeline of single
             image. The shape order should be (height, width).
-            Defaults to (640, 640).
+            If it is an int instead of Sequence[int] like (h, w),
+            a square crop (mosaic_size, mosaic_size) is made.
+            Defaults to None.
         center_ratio_range (Sequence[float]): Center ratio range of mosaic
             output. Defaults to (0.5, 1.5).
         bbox_clip_border (bool, optional): Whether to clip the objects outside
@@ -1472,7 +1477,9 @@ class CachedMosaic(tvt_v2.Transform, NumpytoTVTensorMixin):
 
     def __init__(
         self,
-        img_scale: Sequence[int] = (640, 640),  # (H, W)
+        input_size: Sequence[int],  # (H, W)
+        mosaic_size: int | Sequence[int] | None = None,
+        mosaic_size_scale: Sequence[float] = (1.0, 1.0),  # (H, W)
         center_ratio_range: Sequence[float] = (0.5, 1.5),
         bbox_clip_border: bool = True,
         pad_val: float = 114.0,
@@ -1483,10 +1490,17 @@ class CachedMosaic(tvt_v2.Transform, NumpytoTVTensorMixin):
     ) -> None:
         super().__init__()
 
-        assert isinstance(img_scale, (tuple, list))  # noqa: S101
-        assert 0 <= prob <= 1.0, f"The probability should be in range [0,1]. got {prob}."  # noqa: S101
+        if mosaic_size is not None and not (
+            isinstance(mosaic_size, int) or (isinstance(mosaic_size, Sequence) and isinstance(mosaic_size[0], int))
+        ):
+            msg = f"mosaic_size must be int or Sequence[int], but got `{type(mosaic_size)}`."
+            raise TypeError(msg)
 
-        self.img_scale = img_scale  # (H, W)
+        if prob < 0 or prob > 1.0:
+            msg = f"The probability should be in range [0,1]. got {prob}."
+            raise ValueError(msg)
+
+        self.input_size = input_size  # (H, W)
         self.center_ratio_range = center_ratio_range
         self.bbox_clip_border = bbox_clip_border
         self.pad_val = pad_val
@@ -1494,11 +1508,31 @@ class CachedMosaic(tvt_v2.Transform, NumpytoTVTensorMixin):
 
         self.results_cache: list[OTXDataEntity] = []
         self.random_pop = random_pop
-        assert max_cached_images >= 4, f"The length of cache must >= 4, but got {max_cached_images}."  # noqa: S101
+        if max_cached_images < 4:
+            msg = f"The length of cache must >= 4, but got {max_cached_images}."
+            raise ValueError(msg)
+
         self.max_cached_images = max_cached_images
 
         self.cnt_cached_images = 0
         self.is_numpy_to_tvtensor = is_numpy_to_tvtensor
+
+        # for configurable input size
+        self._mosaic_size = mosaic_size  # (H, W)
+        self.mosaic_size_scale = mosaic_size_scale  # (H, W)
+
+    @property
+    def mosaic_size(self) -> Sequence[int]:
+        """Get mosaic size."""
+        if self._mosaic_size is None:
+            self._mosaic_size = (
+                int(self.input_size[0] * self.mosaic_size_scale[0]),
+                int(self.input_size[1] * self.mosaic_size_scale[1]),
+            )
+        elif isinstance(self._mosaic_size, int):
+            self._mosaic_size = (self._mosaic_size, self._mosaic_size)
+
+        return self._mosaic_size
 
     @cache_randomness
     def get_indexes(self, cache: list) -> list:
@@ -1542,20 +1576,20 @@ class CachedMosaic(tvt_v2.Transform, NumpytoTVTensorMixin):
         inp_img: np.ndarray = to_np_image(inputs.image)
         if len(inp_img.shape) == 3:
             mosaic_img = np.full(
-                (int(self.img_scale[0] * 2), int(self.img_scale[1] * 2), 3),
+                (int(self.mosaic_size[0] * 2), int(self.mosaic_size[1] * 2), 3),
                 self.pad_val,
                 dtype=inp_img.dtype,
             )
         else:
             mosaic_img = np.full(
-                (int(self.img_scale[0] * 2), int(self.img_scale[1] * 2)),
+                (int(self.mosaic_size[0] * 2), int(self.mosaic_size[1] * 2)),
                 self.pad_val,
                 dtype=inp_img.dtype,
             )
 
         # mosaic center x, y
-        center_x = int(random.uniform(*self.center_ratio_range) * self.img_scale[1])
-        center_y = int(random.uniform(*self.center_ratio_range) * self.img_scale[0])
+        center_x = int(random.uniform(*self.center_ratio_range) * self.mosaic_size[1])
+        center_y = int(random.uniform(*self.center_ratio_range) * self.mosaic_size[0])
         center_position = (center_x, center_y)
 
         loc_strs = ("top_left", "top_right", "bottom_left", "bottom_right")
@@ -1565,7 +1599,7 @@ class CachedMosaic(tvt_v2.Transform, NumpytoTVTensorMixin):
             img_i: np.ndarray = to_np_image(results_patch.image)
             h_i, w_i = img_i.shape[:2]
             # keep_ratio resize
-            scale_ratio_i = min(self.img_scale[0] / h_i, self.img_scale[1] / w_i)
+            scale_ratio_i = min(self.mosaic_size[0] / h_i, self.mosaic_size[1] / w_i)
             img_i = cv2.resize(
                 img_i,
                 (int(w_i * scale_ratio_i), int(h_i * scale_ratio_i)),
@@ -1596,13 +1630,13 @@ class CachedMosaic(tvt_v2.Transform, NumpytoTVTensorMixin):
                     gt_masks_i = rescale_masks(gt_masks_i, float(scale_ratio_i))
                     gt_masks_i = translate_masks(
                         gt_masks_i,
-                        out_shape=(int(self.img_scale[0] * 2), int(self.img_scale[1] * 2)),
+                        out_shape=(int(self.mosaic_size[0] * 2), int(self.mosaic_size[1] * 2)),
                         offset=padw,
                         direction="horizontal",
                     )
                     gt_masks_i = translate_masks(
                         gt_masks_i,
-                        out_shape=(int(self.img_scale[0] * 2), int(self.img_scale[1] * 2)),
+                        out_shape=(int(self.mosaic_size[0] * 2), int(self.mosaic_size[1] * 2)),
                         offset=padh,
                         direction="vertical",
                     )
@@ -1612,13 +1646,13 @@ class CachedMosaic(tvt_v2.Transform, NumpytoTVTensorMixin):
                     gt_polygons_i = rescale_polygons(gt_polygons_i, float(scale_ratio_i))
                     gt_polygons_i = translate_polygons(
                         gt_polygons_i,
-                        out_shape=(int(self.img_scale[0] * 2), int(self.img_scale[1] * 2)),
+                        out_shape=(int(self.mosaic_size[0] * 2), int(self.mosaic_size[1] * 2)),
                         offset=padw,
                         direction="horizontal",
                     )
                     gt_polygons_i = translate_polygons(
                         gt_polygons_i,
-                        out_shape=(int(self.img_scale[0] * 2), int(self.img_scale[1] * 2)),
+                        out_shape=(int(self.mosaic_size[0] * 2), int(self.mosaic_size[1] * 2)),
                         offset=padh,
                         direction="vertical",
                     )
@@ -1628,10 +1662,10 @@ class CachedMosaic(tvt_v2.Transform, NumpytoTVTensorMixin):
         mosaic_bboxes_labels = torch.cat(mosaic_bboxes_labels, dim=0)
 
         if self.bbox_clip_border:
-            mosaic_bboxes = clip_bboxes(mosaic_bboxes, (2 * self.img_scale[0], 2 * self.img_scale[1]))
+            mosaic_bboxes = clip_bboxes(mosaic_bboxes, (2 * self.mosaic_size[0], 2 * self.mosaic_size[1]))
 
         # remove outside bboxes
-        inside_inds = is_inside_bboxes(mosaic_bboxes, (2 * self.img_scale[0], 2 * self.img_scale[1])).numpy()
+        inside_inds = is_inside_bboxes(mosaic_bboxes, (2 * self.mosaic_size[0], 2 * self.mosaic_size[1])).numpy()
         mosaic_bboxes = mosaic_bboxes[inside_inds]
         mosaic_bboxes_labels = mosaic_bboxes_labels[inside_inds]
 
@@ -1693,7 +1727,7 @@ class CachedMosaic(tvt_v2.Transform, NumpytoTVTensorMixin):
                 (
                     center_position_xy[0],
                     max(center_position_xy[1] - img_shape_wh[1], 0),
-                    min(center_position_xy[0] + img_shape_wh[0], self.img_scale[1] * 2),
+                    min(center_position_xy[0] + img_shape_wh[0], self.mosaic_size[1] * 2),
                     center_position_xy[1],
                 ),
             )
@@ -1707,7 +1741,7 @@ class CachedMosaic(tvt_v2.Transform, NumpytoTVTensorMixin):
                     max(center_position_xy[0] - img_shape_wh[0], 0),
                     center_position_xy[1],
                     center_position_xy[0],
-                    min(self.img_scale[0] * 2, center_position_xy[1] + img_shape_wh[1]),
+                    min(self.mosaic_size[0] * 2, center_position_xy[1] + img_shape_wh[1]),
                 ),
             )
             crop_coord = img_shape_wh[0] - (x2 - x1), 0, img_shape_wh[0], min(y2 - y1, img_shape_wh[1])
@@ -1719,8 +1753,8 @@ class CachedMosaic(tvt_v2.Transform, NumpytoTVTensorMixin):
                 (
                     center_position_xy[0],
                     center_position_xy[1],
-                    min(center_position_xy[0] + img_shape_wh[0], self.img_scale[1] * 2),
-                    min(self.img_scale[0] * 2, center_position_xy[1] + img_shape_wh[1]),
+                    min(center_position_xy[0] + img_shape_wh[0], self.mosaic_size[1] * 2),
+                    min(self.mosaic_size[0] * 2, center_position_xy[1] + img_shape_wh[1]),
                 ),
             )
             crop_coord = 0, 0, min(img_shape_wh[0], x2 - x1), min(y2 - y1, img_shape_wh[1])
@@ -1730,7 +1764,7 @@ class CachedMosaic(tvt_v2.Transform, NumpytoTVTensorMixin):
 
     def __repr__(self):
         repr_str = self.__class__.__name__
-        repr_str += f"(img_scale={self.img_scale}, "
+        repr_str += f"(img_scale={self.mosaic_size}, "
         repr_str += f"center_ratio_range={self.center_ratio_range}, "
         repr_str += f"pad_val={self.pad_val}, "
         repr_str += f"prob={self.prob}, "
