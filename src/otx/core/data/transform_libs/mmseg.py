@@ -37,7 +37,7 @@ class LoadAnnotations(MMSegLoadAnnotations):
             msg = "__otx__ key should be passed from the previous pipeline (LoadImageFromFile)"
             raise RuntimeError(msg)
         if isinstance(otx_data_entity, SegDataEntity):
-            gt_masks = otx_data_entity.gt_seg_map.numpy()
+            gt_masks = otx_data_entity.masks.numpy()
             results["gt_seg_map"] = gt_masks
             # we need this to properly handle seg maps during transforms
             results["seg_fields"] = ["gt_seg_map"]
@@ -69,7 +69,7 @@ class PackSegInputs(MMSegPackInputs):
         return SegDataEntity(
             image=image,
             img_info=image_info,
-            gt_seg_map=masks,
+            masks=masks,
         )
 
 

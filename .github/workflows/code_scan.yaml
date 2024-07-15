@@ -27,18 +27,25 @@ jobs:
         run: python -m pip install --require-hashes --no-deps -r .ci/requirements.txt
       - name: Freeze dependencies
         run: pip-compile --extra=docs,base,mmlab,anomaly -o requirements.txt pyproject.toml
+      - name: Trivy Scanning (spdx.json)
+        uses: aquasecurity/trivy-action@7c2007bcb556501da015201bcba5aa14069b74e2 # 0.23.0
+        with:
+          trivy-config: ".ci/trivy-json.yaml"
+          scan-type: "fs"
+          scan-ref: .
       - name: Trivy Scanning
-        uses: aquasecurity/trivy-action@595be6a0f6560a0a8fc419ddf630567fc623531d # 0.22.0
+        uses: aquasecurity/trivy-action@7c2007bcb556501da015201bcba5aa14069b74e2 # 0.23.0
         with:
           trivy-config: ".ci/trivy.yaml"
           scan-type: "fs"
           scan-ref: .
-          scanners: vuln,secret
       - name: Upload Trivy results artifact
         uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
         with:
           name: trivy-results
-          path: "${{ github.workspace }}/trivy-results.csv"
+          path: "${{ github.workspace }}/trivy-results.*"
+        # Use always() to always run this step to publish scan results when there are test failures
+        if: ${{ always() }}
   Bandit:
     runs-on: ubuntu-latest
     steps:

@@ -8,6 +8,149 @@ All notable changes to this project will be documented in this file.
 
 ### Enhancements
 
+### Bug fixes
+
+## \[v2.1.0\]
+
+> _**NOTES**_
+>
+> OpenVINO™ Training Extensions, version 2.1.0 does not include the latest functional and security updates. OpenVINO™ Training Extensions, version 2.2.0 is targeted to be released in September 2024 and will include additional functional and security updates. Customers should update to the latest version as it becomes available.
+
+### New features
+
+- Add a flag to enable OV inference on dGPU
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3503>)
+- Add early stopping with warmup. Remove mandatory background label in semantic segmentation task
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3515>)
+- RTMDet-tiny enablement for detection task
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3542>)
+- Add data_format validation and update in OTXDataModule
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3579>)
+- Add torchvision.MaskRCNN
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3504>)
+- Add Semi-SL for Multi-class Classification (EfficientNet-B0)
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3566>)
+- Decoupling mmaction for action classification (MoviNet, X3D)
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3582>)
+- Add Semi-SL Algorithms for mv3-large, effnet-v2, deit-tiny, dino-v2
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3602>)
+- RTMDet-tiny enablement for detection task (export/optimize)
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3564>)
+- Enable ruff & ruff-format into otx/algo/classification/backbones
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3667>)
+- Add TV MaskRCNN Tile Recipe
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3655>)
+- Add rotated det OV recipe
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3687>)
+
+### Enhancements
+
+- Change load_stat_dict to on_load_checkpoint
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3443>)
+- Add try - except to keep running the remaining tests
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3448>)
+- Update instance_segmentation.py to resolve conflict with 2.0.0
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3506>)
+- Update XPU install
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3516>)
+- Sync rgb order between torch and ov inference of action classification task
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3551>)
+- Make Perf test available to load pervious Perf test to skip training stage
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3556>)
+- Reenable e2e classification XAI tests
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3591>)
+- Remove action detection task support
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3605>)
+- Increase readability of pickling error log during HPO & fix minor bug
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3606>)
+- Update RTMDet checkpoint url
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3631>)
+- Refactor Torchvision Model for Classification Semi-SL
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3614>)
+- Add coverage omit mm-related code
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3641>)
+- Add docs semi-sl part
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3640>)
+- Refactor docs design & Add contents
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3645>)
+- Add execution example of auto batch size in docs
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3648>)
+- Add Semi-SL for cls Benchmark Test
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3647>)
+- Move value to device before logging for metric
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3649>)
+- Add .codecov.yaml
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3650>)
+- Update benchmark tool for otx2.1
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3652>)
+- Collect pretrained weight binary files in one place
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3656>)
+- Minimize compiled dependency files
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3653>)
+- Update README & CODEOWNERS
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3659>)
+- Update Engine's docstring & CLI --help outputs
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3658>)
+- Align integration test to exportable code interface update for release branch
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3676>)
+- Refactor exporter for anomaly task and fix a bug with exportable code
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3672>)
+- Update pandas version constraint
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3679>)
+- Include more models to export test into test_otx_e2e
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3678>)
+- Move assigning tasks to Models from Engine to Anomaly Model Classes
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3683>)
+- Refactoring detection modules
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3636>)
+
+### Bug fixes
+
+- Fix conflicts between develop and 2.0.0
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3490>)
+- Fix polygon mask
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3549>)
+- Fix vpm intg test error
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3554>)
+- Fix anomaly
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3557>)
+- Bug fix in Semantic Segmentation + enable DINOV2 export in ONNX
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3569>)
+- Fix some export issues. Remove EXPORTABLE_CODE as export parameter.
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3577>)
+- Fix `load_from_checkpoint` to apply original model's hparams
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3607>)
+- Fix `load_from_checkpoint` args to apply original model's hparams
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3611>)
+- Fix zero-shot `learn` for ov model
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3601>)
+- Various fixes for XAI in 2.1
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3615>)
+- Fix tests to work in a mm-free environment
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3632>)
+- Fix a bug in benchmark code
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3643>)
+- Update exportable code dependency & fix a bug
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3642>)
+- Fix getting wrong shape during resizing
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3644>)
+- Fix detection prediction outputs
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3634>)
+- Fix RTMDet PTQ performance
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3651>)
+- Fix segmentation fault on VPM PTQ
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3654>, <https://github.com/openvinotoolkit/training_extensions/pull/3689>)
+- Fix NNCF MaskRCNN-Eff accuracy drop
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3680>)
+- Fix optimize with Semi-SL data pipeline
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3684>)
+- Fix MaskRCNN SwinT NNCF Accuracy Drop
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3685>)
+
+### Known issues
+
+- Post-Training Quantization (PTQ) optimization applied to maskrcnn_swint in the instance segmentation task may result in significantly reduced accuracy. This issue is expected to be addressed with an upgrade to OpenVINO and NNCF in a future release.
+
 ## \[v2.0.0\]
 
 > _**NOTES**_

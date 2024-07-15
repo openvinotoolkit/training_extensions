@@ -3,9 +3,9 @@ model:
   init_args:
     label_info: 80
     model_name: ssd-resnet34-1200-onnx
-    use_throughput_mode: True
     model_type: "SSD"
-    async_inference: True
+    async_inference: true
+    use_throughput_mode: true
 
 engine:
   task: DETECTION
@@ -13,12 +13,14 @@ engine:
 
 callback_monitor: val/map_50
 
-data: ../_base_/data/torchvision_base.yaml
+data: ../_base_/data/detection.yaml
 overrides:
   data:
-    task: DETECTION
-    config:
-      image_color_channel: RGB
-      data_format: coco_instances
-      test_subset:
-        batch_size: 64
+    stack_images: false
+    train_subset:
+      to_tv_image: true
+    val_subset:
+      to_tv_image: true
+    test_subset:
+      to_tv_image: true
+      batch_size: 64

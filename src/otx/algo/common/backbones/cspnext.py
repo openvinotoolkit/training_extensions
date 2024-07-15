@@ -11,7 +11,7 @@ from __future__ import annotations
 import math
 from typing import ClassVar
 
-from otx.algo.detection.backbones.csp_darknet import SPPBottleneck  # TODO (sungchul): move csp_darknet to common?
+from otx.algo.common.layers import SPPBottleneck
 from otx.algo.detection.layers import CSPLayer
 from otx.algo.modules.base_module import BaseModule
 from otx.algo.modules.conv_module import ConvModule

@@ -485,7 +485,7 @@ class Points(tv_tensors.TVTensor):
 def resize_points(
     points: torch.Tensor,
     canvas_size: tuple[int, int],
-    size: list[int],
+    size: tuple[int, int] | list[int],
     max_size: int | None = None,
 ) -> tuple[torch.Tensor, tuple[int, int]]:
     """Resize points."""
@@ -511,7 +511,7 @@ def resize_points(
 @F.register_kernel(functional=F.resize, tv_tensor_cls=Points)
 def _resize_points_dispatch(
     inpt: Points,
-    size: list[int],
+    size: tuple[int, int] | list[int],
     max_size: int | None = None,
     **kwargs,  # noqa: ARG001
 ) -> Points:
@@ -527,7 +527,7 @@ def _resize_points_dispatch(
 def pad_points(
     points: torch.Tensor,
     canvas_size: tuple[int, int],
-    padding: list[int],
+    padding: tuple[int, ...] | list[int],
     padding_mode: str = "constant",
 ) -> tuple[torch.Tensor, tuple[int, int]]:
     """Pad points."""
@@ -549,9 +549,9 @@ def pad_points(
 
 
 @F.register_kernel(functional=F.pad, tv_tensor_cls=Points)
-def _pad_bounding_boxes_dispatch(
+def _pad_points_dispatch(
     inpt: Points,
-    padding: list[int],
+    padding: tuple[int, ...] | list[int],
     padding_mode: str = "constant",
     **kwargs,  # noqa: ARG001
 ) -> Points:

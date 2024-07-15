@@ -133,6 +133,7 @@ class TestPerfTilingInstanceSegmentation(PerfTestBase):
         Benchmark.Model(task="instance_segmentation", name="maskrcnn_r50_tile", category="accuracy"),
         Benchmark.Model(task="instance_segmentation", name="maskrcnn_swint_tile", category="other"),
         Benchmark.Model(task="instance_segmentation", name="rtmdet_inst_tiny_tile", category="other"),
+        Benchmark.Model(task="instance_segmentation", name="maskrcnn_r50_tv_tile", category="other"),
     ]
 
     DATASET_TEST_CASES = [

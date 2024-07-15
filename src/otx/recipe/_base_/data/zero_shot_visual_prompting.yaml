@@ -1,0 +1,44 @@
+task: ZERO_SHOT_VISUAL_PROMPTING
+mem_cache_size: 1GB
+mem_cache_img_max_size: null
+image_color_channel: RGB
+stack_images: false
+data_format: coco_instances
+unannotated_items_ratio: 0.0
+
+vpm_config:
+  use_bbox: True
+  use_point: False
+
+train_subset:
+  subset_name: train
+  transform_lib_type: TORCHVISION
+  batch_size: 1
+  num_workers: 4
+  to_tv_image: true
+  transforms:
+    - class_path: torchvision.transforms.v2.ToImage
+  sampler:
+    class_path: torch.utils.data.RandomSampler
+
+val_subset:
+  subset_name: val
+  transform_lib_type: TORCHVISION
+  batch_size: 1
+  num_workers: 4
+  to_tv_image: true
+  transforms:
+    - class_path: torchvision.transforms.v2.ToImage
+  sampler:
+    class_path: torch.utils.data.RandomSampler
+
+test_subset:
+  subset_name: test
+  transform_lib_type: TORCHVISION
+  batch_size: 1
+  num_workers: 4
+  to_tv_image: true
+  transforms:
+    - class_path: torchvision.transforms.v2.ToImage
+  sampler:
+    class_path: torch.utils.data.RandomSampler

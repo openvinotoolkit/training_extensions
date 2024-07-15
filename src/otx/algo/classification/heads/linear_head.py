@@ -97,6 +97,7 @@ class LinearClsHead(BaseModule):
     def predict(
         self,
         feats: tuple[torch.Tensor],
+        **kwargs,
     ) -> torch.Tensor:
         """Inference without augmentation.
 

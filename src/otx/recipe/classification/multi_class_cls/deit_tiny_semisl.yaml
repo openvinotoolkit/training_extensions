@@ -2,7 +2,7 @@ model:
   class_path: otx.algo.classification.vit.VisionTransformerForMulticlassClsSemiSL
   init_args:
     label_info: 1000
-    arch: "deit-tiny"
+    arch: "vit-tiny"
 
     optimizer:
       class_path: torch.optim.AdamW

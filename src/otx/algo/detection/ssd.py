@@ -1,7 +1,11 @@
 # Copyright (C) 2023-2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-#
-"""SSD object detector for the OTX detection."""
+# Copyright (c) OpenMMLab. All rights reserved.
+"""SSD object detector for the OTX detection.
+
+Implementation modified from mmdet.models.detectors.single_stage.
+Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/detectors/single_stage.py
+"""
 
 from __future__ import annotations
 
@@ -34,10 +38,8 @@ if TYPE_CHECKING:
 logger = logging.getLogger()
 
 
-# This class and its supporting functions below lightly adapted from the mmdet SingleStageDetector available at:
-# https://github.com/open-mmlab/mmdetection/blob/cfd5d3a985b0249de009b67d04f37263e11cdf3d/mmdet/models/detectors/single_stage.py
 class SingleStageDetector(BaseModule):
-    """Single stage detector implementation from mmdet."""
+    """Single stage detector implementation."""
 
     def __init__(
         self,
