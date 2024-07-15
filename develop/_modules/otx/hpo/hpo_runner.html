@@ -269,7 +269,7 @@
 <span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
 <span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">dataclass</span>
 <span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
-<span class="kn">from</span> <span class="nn">pickle</span> <span class="kn">import</span> <span class="n">PicklingError</span>
+<span class="kn">from</span> <span class="nn">pickle</span> <span class="kn">import</span> <span class="n">PicklingError</span>  <span class="c1"># nosec B403 used pickle for internal state dump/load</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">NoReturn</span>
 
 <span class="kn">from</span> <span class="nn">otx.core.types.device</span> <span class="kn">import</span> <span class="n">DeviceType</span>

@@ -393,6 +393,95 @@
 <h1>Releases<a class="headerlink" href="#releases" title="Link to this heading">#</a></h1>
 <div class="toctree-wrapper compound">
 </div>
+<section id="v2-1-0-2024-07">
+<h2>v2.1.0 (2024.07)<a class="headerlink" href="#v2-1-0-2024-07" title="Link to this heading">#</a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>OpenVINO™ Training Extensions, version 2.1.0 does not include the latest functional and security updates. OpenVINO™ Training Extensions, version 2.2.0 is targeted to be released in September 2024 and will include additional functional and security updates. Customers should update to the latest version as it becomes available.</p>
+</div>
+<section id="new-features">
+<h3>New features<a class="headerlink" href="#new-features" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Add a flag to enable OV inference on dGPU</p></li>
+<li><p>Add early stopping with warmup. Remove mandatory background label in semantic segmentation task</p></li>
+<li><p>RTMDet-tiny enablement for detection task</p></li>
+<li><p>Add data_format validation and update in OTXDataModule</p></li>
+<li><p>Add torchvision.MaskRCNN</p></li>
+<li><p>Add Semi-SL for Multi-class Classification (EfficientNet-B0)</p></li>
+<li><p>Decoupling mmaction for action classification (MoviNet, X3D)</p></li>
+<li><p>Add Semi-SL Algorithms for mv3-large, effnet-v2, deit-tiny, dino-v2</p></li>
+<li><p>RTMDet-tiny enablement for detection task (export/optimize)</p></li>
+<li><p>Enable ruff &amp; ruff-format into otx/algo/classification/backbones</p></li>
+<li><p>Add TV MaskRCNN Tile Recipe</p></li>
+<li><p>Add rotated det OV recipe</p></li>
+</ul>
+</section>
+<section id="enhancements">
+<h3>Enhancements<a class="headerlink" href="#enhancements" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Change load_stat_dict to on_load_checkpoint</p></li>
+<li><p>Add try - except to keep running the remaining tests</p></li>
+<li><p>Update instance_segmentation.py to resolve conflict with 2.0.0</p></li>
+<li><p>Update XPU install</p></li>
+<li><p>Sync rgb order between torch and ov inference of action classification task</p></li>
+<li><p>Make Perf test available to load pervious Perf test to skip training stage</p></li>
+<li><p>Reenable e2e classification XAI tests</p></li>
+<li><p>Remove action detection task support</p></li>
+<li><p>Increase readability of pickling error log during HPO &amp; fix minor bug</p></li>
+<li><p>Update RTMDet checkpoint url</p></li>
+<li><p>Refactor Torchvision Model for Classification Semi-SL</p></li>
+<li><p>Add coverage omit mm-related code</p></li>
+<li><p>Add docs semi-sl part</p></li>
+<li><p>Refactor docs design &amp; Add contents</p></li>
+<li><p>Add execution example of auto batch size in docs</p></li>
+<li><p>Add Semi-SL for cls Benchmark Test</p></li>
+<li><p>Move value to device before logging for metric</p></li>
+<li><p>Add .codecov.yaml</p></li>
+<li><p>Update benchmark tool for otx2.1</p></li>
+<li><p>Collect pretrained weight binary files in one place</p></li>
+<li><p>Minimize compiled dependency files</p></li>
+<li><p>Update README &amp; CODEOWNERS</p></li>
+<li><p>Update Engine’s docstring &amp; CLI –help outputs</p></li>
+<li><p>Align integration test to exportable code interface update for release branch</p></li>
+<li><p>Refactor exporter for anomaly task and fix a bug with exportable code</p></li>
+<li><p>Update pandas version constraint</p></li>
+<li><p>Include more models to export test into test_otx_e2e</p></li>
+<li><p>Move assigning tasks to Models from Engine to Anomaly Model Classes</p></li>
+<li><p>Refactoring detection modules</p></li>
+</ul>
+</section>
+<section id="bug-fixes">
+<h3>Bug fixes<a class="headerlink" href="#bug-fixes" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Fix conflicts between develop and 2.0.0</p></li>
+<li><p>Fix polygon mask</p></li>
+<li><p>Fix vpm intg test error</p></li>
+<li><p>Fix anomaly</p></li>
+<li><p>Bug fix in Semantic Segmentation + enable DINOV2 export in ONNX</p></li>
+<li><p>Fix some export issues. Remove EXPORTABLE_CODE as export parameter.</p></li>
+<li><p>Fix <cite>load_from_checkpoint</cite> to apply original model’s hparams</p></li>
+<li><p>Fix <cite>load_from_checkpoint</cite> args to apply original model’s hparams</p></li>
+<li><p>Fix zero-shot <cite>learn</cite> for ov model</p></li>
+<li><p>Various fixes for XAI in 2.1</p></li>
+<li><p>Fix tests to work in a mm-free environment</p></li>
+<li><p>Fix a bug in benchmark code</p></li>
+<li><p>Update exportable code dependency &amp; fix a bug</p></li>
+<li><p>Fix getting wrong shape during resizing</p></li>
+<li><p>Fix detection prediction outputs</p></li>
+<li><p>Fix RTMDet PTQ performance</p></li>
+<li><p>Fix segmentation fault on VPM PTQ</p></li>
+<li><p>Fix NNCF MaskRCNN-Eff accuracy drop</p></li>
+<li><p>Fix optimize with Semi-SL data pipeline</p></li>
+<li><p>Fix MaskRCNN SwinT NNCF Accuracy Drop</p></li>
+</ul>
+</section>
+<section id="known-issues">
+<h3>Known issues<a class="headerlink" href="#known-issues" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Post-Training Quantization (PTQ) optimization applied to maskrcnn_swint in the instance segmentation task may result in significantly reduced accuracy. This issue is expected to be addressed with an upgrade to OpenVINO and NNCF in a future release.</p></li>
+</ul>
+</section>
+</section>
 <section id="v2-0-0-2q24">
 <h2>v2.0.0 (2Q24)<a class="headerlink" href="#v2-0-0-2q24" title="Link to this heading">#</a></h2>
 <div class="admonition note">
@@ -400,8 +489,8 @@
 <p>OpenVINO™ Training Extensions which version 2.0.0 has been updated to include refactoring of the overall
 architecture and functional updates. Users should [install the new environment](<a class="reference external" href="https://openvinotoolkit.github.io/training_extensions/latest/guide/get_started/installation.html">https://openvinotoolkit.github.io/training_extensions/latest/guide/get_started/installation.html</a>).</p>
 </div>
-<section id="new-features">
-<h3>New features<a class="headerlink" href="#new-features" title="Link to this heading">#</a></h3>
+<section id="id1">
+<h3>New features<a class="headerlink" href="#id1" title="Link to this heading">#</a></h3>
 <ul class="simple">
 <li><p>Enable New design to provide a more seamless API/CLI that delivers the value of OTX: [Product Design](<a class="reference external" href="https://openvinotoolkit.github.io/training_extensions/latest/guide/explanation/product_design.html">https://openvinotoolkit.github.io/training_extensions/latest/guide/explanation/product_design.html</a>)</p></li>
 <li><p>Moved away from MMLab’s libraries to provide a Lightning-based core and training pipeline</p></li>
@@ -409,8 +498,8 @@ architecture and functional updates. Users should [install the new environment](
 <li><p>Support Intel devices for accelerating deep learning model training</p></li>
 </ul>
 </section>
-<section id="enhancements">
-<h3>Enhancements<a class="headerlink" href="#enhancements" title="Link to this heading">#</a></h3>
+<section id="id2">
+<h3>Enhancements<a class="headerlink" href="#id2" title="Link to this heading">#</a></h3>
 <ul class="simple">
 <li><p>Support more models for each task</p></li>
 <li><p>Improve the API so user can configure efficient training with shorter code</p></li>
@@ -418,14 +507,14 @@ architecture and functional updates. Users should [install the new environment](
 <li><p>Enhance the Auto-Configuration feature and made it available in the API</p></li>
 </ul>
 </section>
-<section id="bug-fixes">
-<h3>Bug fixes<a class="headerlink" href="#bug-fixes" title="Link to this heading">#</a></h3>
+<section id="id3">
+<h3>Bug fixes<a class="headerlink" href="#id3" title="Link to this heading">#</a></h3>
 <ul class="simple">
 <li><p>Fixing some minor issues</p></li>
 </ul>
 </section>
-<section id="known-issues">
-<h3>Known issues<a class="headerlink" href="#known-issues" title="Link to this heading">#</a></h3>
+<section id="id4">
+<h3>Known issues<a class="headerlink" href="#id4" title="Link to this heading">#</a></h3>
 <ul class="simple">
 <li><p>Anomaly task processing times have increased compared with v1.* version, with anomaly classification experiencing a slowdown of approximately 26%, anomaly detection by approximately 213%, and anomaly segmentation by approximately 78%.
 (<a class="github reference external" href="https://github.com/openvinotoolkit/training_extensions/issues/3592">openvinotoolkit/training_extensions#3592</a>)</p></li>
@@ -436,8 +525,8 @@ architecture and functional updates. Users should [install the new environment](
 </section>
 <section id="v1-6-1-2024-05">
 <h2>v1.6.1 (2024.05)<a class="headerlink" href="#v1-6-1-2024-05" title="Link to this heading">#</a></h2>
-<section id="id1">
-<h3>Enhancements<a class="headerlink" href="#id1" title="Link to this heading">#</a></h3>
+<section id="id5">
+<h3>Enhancements<a class="headerlink" href="#id5" title="Link to this heading">#</a></h3>
 <ul class="simple">
 <li><p>Update pymongo version to 4.6.3 for resolving CVE-2024-21506</p></li>
 <li><p>Use torchvision in MRCNN on CUDA</p></li>
@@ -452,8 +541,8 @@ architecture and functional updates. Users should [install the new environment](
 <li><p>Add perf benchmark test cases for action and visual prompting</p></li>
 </ul>
 </section>
-<section id="id2">
-<h3>Bug fixes<a class="headerlink" href="#id2" title="Link to this heading">#</a></h3>
+<section id="id6">
+<h3>Bug fixes<a class="headerlink" href="#id6" title="Link to this heading">#</a></h3>
 <ul class="simple">
 <li><p>Explicitly cast incorrect output type in OV model</p></li>
 <li><p>Update QAT configs for rotated detection</p></li>
@@ -468,8 +557,8 @@ architecture and functional updates. Users should [install the new environment](
 </section>
 <section id="v1-6-0-2024-04">
 <h2>v1.6.0 (2024.04)<a class="headerlink" href="#v1-6-0-2024-04" title="Link to this heading">#</a></h2>
-<section id="id3">
-<h3>New features<a class="headerlink" href="#id3" title="Link to this heading">#</a></h3>
+<section id="id7">
+<h3>New features<a class="headerlink" href="#id7" title="Link to this heading">#</a></h3>
 <ul class="simple">
 <li><p>Changed supported Python version range (&gt;=3.9, &lt;=3.11)</p></li>
 <li><p>Support MMDetection COCO format</p></li>
@@ -482,8 +571,8 @@ architecture and functional updates. Users should [install the new environment](
 <li><p>Support bounding box import within Kaggle extractors and add <cite>KaggleCocoBase</cite></p></li>
 </ul>
 </section>
-<section id="id4">
-<h3>Enhancements<a class="headerlink" href="#id4" title="Link to this heading">#</a></h3>
+<section id="id8">
+<h3>Enhancements<a class="headerlink" href="#id8" title="Link to this heading">#</a></h3>
 <ul class="simple">
 <li><p>Optimize Python import to make CLI entrypoint faster</p></li>
 <li><p>Add ImageColorScale context manager</p></li>
@@ -497,8 +586,8 @@ architecture and functional updates. Users should [install the new environment](
 <li><p>Fix each method of the comparator to be used separately</p></li>
 </ul>
 </section>
-<section id="id5">
-<h3>Bug fixes<a class="headerlink" href="#id5" title="Link to this heading">#</a></h3>
+<section id="id9">
+<h3>Bug fixes<a class="headerlink" href="#id9" title="Link to this heading">#</a></h3>
 <ul class="simple">
 <li><p>Fix wrong example of Datumaro dataset creation in document</p></li>
 <li><p>Fix wrong command to install datumaro from github</p></li>
@@ -520,8 +609,8 @@ architecture and functional updates. Users should [install the new environment](
 </section>
 <section id="v1-5-2-2024-01">
 <h2>v1.5.2 (2024.01)<a class="headerlink" href="#v1-5-2-2024-01" title="Link to this heading">#</a></h2>
-<section id="id6">
-<h3>Enhancements<a class="headerlink" href="#id6" title="Link to this heading">#</a></h3>
+<section id="id10">
+<h3>Enhancements<a class="headerlink" href="#id10" title="Link to this heading">#</a></h3>
 <ul class="simple">
 <li><p>Add memory bounded datumaro data format detect</p></li>
 <li><p>Remove Protobuf version limitation (&lt;4)</p></li>
@@ -530,8 +619,8 @@ architecture and functional updates. Users should [install the new environment](
 </section>
 <section id="v1-5-1-2023-11">
 <h2>v1.5.1 (2023.11)<a class="headerlink" href="#v1-5-1-2023-11" title="Link to this heading">#</a></h2>
-<section id="id7">
-<h3>Enhancements<a class="headerlink" href="#id7" title="Link to this heading">#</a></h3>
+<section id="id11">
+<h3>Enhancements<a class="headerlink" href="#id11" title="Link to this heading">#</a></h3>
 <ul class="simple">
 <li><p>Enhance Datumaro data format stream importer performance</p></li>
 <li><p>Change image default dtype from float32 to uint8</p></li>
@@ -539,8 +628,8 @@ architecture and functional updates. Users should [install the new environment](
 <li><p>Add ImportError to catch GitPython import error</p></li>
 </ul>
 </section>
-<section id="id8">
-<h3>Bug fixes<a class="headerlink" href="#id8" title="Link to this heading">#</a></h3>
+<section id="id12">
+<h3>Bug fixes<a class="headerlink" href="#id12" title="Link to this heading">#</a></h3>
 <ul class="simple">
 <li><p>Modify the draw function in the visualizer not to raise an error for unsupported annotation types.</p></li>
 <li><p>Correct explore path in the related document.</p></li>
@@ -785,8 +874,8 @@ architecture and functional updates. Users should [install the new environment](
 <nav id="bd-toc-nav" class="page-toc">
     <ul class="visible nav section-nav flex-column">
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#v2-0-0-2q24">
-   v2.0.0 (2Q24)
+  <a class="reference internal nav-link" href="#v2-1-0-2024-07">
+   v2.1.0 (2024.07)
   </a>
   <ul class="nav section-nav flex-column">
    <li class="toc-h3 nav-item toc-entry">
@@ -812,17 +901,44 @@ architecture and functional updates. Users should [install the new environment](
   </ul>
  </li>
  <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#v2-0-0-2q24">
+   v2.0.0 (2Q24)
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#id1">
+     New features
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#id2">
+     Enhancements
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#id3">
+     Bug fixes
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#id4">
+     Known issues
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#v1-6-1-2024-05">
    v1.6.1 (2024.05)
   </a>
   <ul class="nav section-nav flex-column">
    <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#id1">
+    <a class="reference internal nav-link" href="#id5">
      Enhancements
     </a>
    </li>
    <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#id2">
+    <a class="reference internal nav-link" href="#id6">
      Bug fixes
     </a>
    </li>
@@ -834,17 +950,17 @@ architecture and functional updates. Users should [install the new environment](
   </a>
   <ul class="nav section-nav flex-column">
    <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#id3">
+    <a class="reference internal nav-link" href="#id7">
      New features
     </a>
    </li>
    <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#id4">
+    <a class="reference internal nav-link" href="#id8">
      Enhancements
     </a>
    </li>
    <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#id5">
+    <a class="reference internal nav-link" href="#id9">
      Bug fixes
     </a>
    </li>
@@ -856,7 +972,7 @@ architecture and functional updates. Users should [install the new environment](
   </a>
   <ul class="nav section-nav flex-column">
    <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#id6">
+    <a class="reference internal nav-link" href="#id10">
      Enhancements
     </a>
    </li>
@@ -868,12 +984,12 @@ architecture and functional updates. Users should [install the new environment](
   </a>
   <ul class="nav section-nav flex-column">
    <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#id7">
+    <a class="reference internal nav-link" href="#id11">
      Enhancements
     </a>
    </li>
    <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#id8">
+    <a class="reference internal nav-link" href="#id12">
      Bug fixes
     </a>
    </li>
