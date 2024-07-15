@@ -28,13 +28,13 @@ jobs:
       - name: Freeze dependencies
         run: pip-compile --extra=docs,base,mmlab,anomaly -o requirements.txt pyproject.toml
       - name: Trivy Scanning (spdx.json)
-        uses: aquasecurity/trivy-action@7c2007bcb556501da015201bcba5aa14069b74e2 # 0.23.0
+        uses: aquasecurity/trivy-action@6e7b7d1fd3e4fef0c5fa8cce1229c54b2c9bd0d8 # 0.24.0
         with:
           trivy-config: ".ci/trivy-json.yaml"
           scan-type: "fs"
           scan-ref: .
       - name: Trivy Scanning
-        uses: aquasecurity/trivy-action@7c2007bcb556501da015201bcba5aa14069b74e2 # 0.23.0
+        uses: aquasecurity/trivy-action@6e7b7d1fd3e4fef0c5fa8cce1229c54b2c9bd0d8 # 0.24.0
         with:
           trivy-config: ".ci/trivy.yaml"
           scan-type: "fs"
