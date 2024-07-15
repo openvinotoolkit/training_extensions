@@ -424,7 +424,7 @@ class TestCachedMosaic:
     def test_init_invalid_max_cached_images(self) -> None:
         max_cached_images: int = 3
         with pytest.raises(ValueError, match=f"The length of cache must >= 4, but got {max_cached_images}."):
-            CachedMosaic(input_size=(128, 128), max_cached_images=3)
+            CachedMosaic(input_size=(128, 128), max_cached_images=max_cached_images)
 
     def test_init_set_mosaic_size_automatically(self, cached_mosaic: CachedMosaic) -> None:
         # use default value of `mosaic_size_scale`
@@ -485,15 +485,50 @@ class TestCachedMosaic:
 class TestCachedMixUp:
     @pytest.fixture()
     def cached_mixup(self) -> CachedMixUp:
-        return CachedMixUp(ratio_range=(1.0, 1.0), prob=1.0, random_pop=False, max_cached_images=10)
+        return CachedMixUp(
+            input_size=(64, 64),
+            ratio_range=(1.0, 1.0),
+            prob=1.0,
+            random_pop=False,
+            max_cached_images=10,
+        )
 
-    @pytest.mark.xfail(raises=AssertionError)
-    def test_init_invalid_img_scale(self) -> None:
-        CachedMixUp(img_scale=640)
+    def test_init_without_input_size(self) -> None:
+        with pytest.raises(TypeError):
+            CachedMixUp()
 
-    @pytest.mark.xfail(raises=AssertionError)
+    def test_init_invalid_mixup_size(self) -> None:
+        with pytest.raises(TypeError):
+            CachedMixUp(input_size=(128, 128), mixup_size=640.0)
+
+        with pytest.raises(TypeError):
+            CachedMixUp(input_size=(128, 128), mixup_size=[640.0, 640.0])
+
     def test_init_invalid_probability(self) -> None:
-        CachedMosaic(prob=1.5)
+        prob: float = 1.5
+        with pytest.raises(ValueError, match=rf"The probability should be in range \[0,1\]\. got {prob}\."):
+            CachedMixUp(input_size=(128, 128), prob=prob)
+
+    def test_init_invalid_max_cached_images(self) -> None:
+        max_cached_images: int = 1
+        with pytest.raises(ValueError, match=f"The length of cache must >= 2, but got {max_cached_images}."):
+            CachedMixUp(input_size=(128, 128), max_cached_images=max_cached_images)
+
+    def test_init_set_mixup_size_automatically(self, cached_mixup: CachedMixUp) -> None:
+        # use default value of `mixup_size_scale`
+        assert cached_mixup.mixup_size == (64, 64)
+
+        # use given value of `mixup_size_scale`
+        cached_mixup = CachedMixUp(input_size=(128, 128), mixup_size_scale=(0.5, 2.0))
+        assert cached_mixup.mixup_size == (64, 256)
+
+        # use `mixup_size` value first if it is given
+        cached_mixup = CachedMixUp(input_size=(128, 128), mixup_size=(256, 64), mixup_size_scale=(0.5, 2.0))
+        assert cached_mixup.mixup_size == (256, 64)
+
+        # change int of `mixup_size` to tuple
+        cached_mixup = CachedMixUp(input_size=(128, 128), mixup_size=64)
+        assert cached_mixup.mixup_size == (64, 64)
 
     def test_forward_pop_small_cache(
         self,

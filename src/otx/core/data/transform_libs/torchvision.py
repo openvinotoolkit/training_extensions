@@ -1500,20 +1500,18 @@ class CachedMosaic(tvt_v2.Transform, NumpytoTVTensorMixin):
             msg = f"The probability should be in range [0,1]. got {prob}."
             raise ValueError(msg)
 
+        if max_cached_images < 4:
+            msg = f"The length of cache must >= 4, but got {max_cached_images}."
+            raise ValueError(msg)
+
         self.input_size = input_size  # (H, W)
         self.center_ratio_range = center_ratio_range
         self.bbox_clip_border = bbox_clip_border
         self.pad_val = pad_val
         self.prob = prob
-
         self.results_cache: list[OTXDataEntity] = []
         self.random_pop = random_pop
-        if max_cached_images < 4:
-            msg = f"The length of cache must >= 4, but got {max_cached_images}."
-            raise ValueError(msg)
-
         self.max_cached_images = max_cached_images
-
         self.cnt_cached_images = 0
         self.is_numpy_to_tvtensor = is_numpy_to_tvtensor
 
@@ -1782,8 +1780,14 @@ class CachedMixUp(tvt_v2.Transform, NumpytoTVTensorMixin):
     TODO : optimize logic to torcivision pipeline
 
     Args:
-        img_scale (Sequence[int]): Image output size after mixup pipeline.
-            The shape order should be (height, width). Defaults to (640, 640).
+        input_size (Sequence[int]): Final transformed image size.
+            It can be set in each recipe and is assigned
+            in otx.core.data.factory.TransformLibFactory (?).
+        mixup_size (Sequence[int]): Image output size after mixup pipeline.
+            The shape order should be (height, width).
+            If it is an int instead of Sequence[int] like (h, w),
+            a square crop (mixup_size, mixup_size) is made.
+            Defaults to None.
         ratio_range (Sequence[float]): Scale ratio of mixup image.
             Defaults to (0.5, 1.5).
         flip_ratio (float): Horizontal flip ratio of mixup image.
@@ -1810,7 +1814,9 @@ class CachedMixUp(tvt_v2.Transform, NumpytoTVTensorMixin):
 
     def __init__(
         self,
-        img_scale: Sequence[int] = (640, 640),  # (H, W)
+        input_size: Sequence[int],  # (H, W)
+        mixup_size: int | Sequence[int] | None = None,
+        mixup_size_scale: Sequence[float] = (1.0, 1.0),  # (H, W)
         ratio_range: Sequence[float] = (0.5, 1.5),
         flip_ratio: float = 0.5,
         pad_val: float = 114.0,
@@ -1823,21 +1829,48 @@ class CachedMixUp(tvt_v2.Transform, NumpytoTVTensorMixin):
     ) -> None:
         super().__init__()
 
-        assert isinstance(img_scale, (tuple, list))  # noqa: S101
-        assert max_cached_images >= 2, f"The length of cache must >= 2, but got {max_cached_images}."  # noqa: S101
-        assert 0 <= prob <= 1.0, f"The probability should be in range [0,1]. got {prob}."  # noqa: S101
-        self.dynamic_scale = img_scale  # (H, W)
+        if mixup_size is not None and not (
+            isinstance(mixup_size, int) or (isinstance(mixup_size, Sequence) and isinstance(mixup_size[0], int))
+        ):
+            msg = f"mixup_size must be int or Sequence[int], but got `{type(mixup_size)}`."
+            raise TypeError(msg)
+
+        if max_cached_images < 2:
+            msg = f"The length of cache must >= 2, but got {max_cached_images}."
+            raise ValueError(msg)
+
+        if prob < 0 or prob > 1.0:
+            msg = f"The probability should be in range [0,1]. got {prob}."
+            raise ValueError(msg)
+
+        self.input_size = input_size
         self.ratio_range = ratio_range
         self.flip_ratio = flip_ratio
         self.pad_val = pad_val
         self.max_iters = max_iters
         self.bbox_clip_border = bbox_clip_border
         self.results_cache: list[OTXDataEntity] = []
-
         self.max_cached_images = max_cached_images
         self.random_pop = random_pop
         self.prob = prob
         self.is_numpy_to_tvtensor = is_numpy_to_tvtensor
+
+        # for configurable input size
+        self._mixup_size = mixup_size
+        self.mixup_size_scale = mixup_size_scale  # (H, W)
+
+    @property
+    def mixup_size(self) -> Sequence[int]:
+        """Get mixup size."""
+        if self._mixup_size is None:
+            self._mixup_size = (
+                int(self.input_size[0] * self.mixup_size_scale[0]),
+                int(self.input_size[1] * self.mixup_size_scale[1]),
+            )
+        elif isinstance(self._mixup_size, int):
+            self._mixup_size = (self._mixup_size, self._mixup_size)
+
+        return self._mixup_size
 
     @cache_randomness
     def get_indexes(self, cache: list) -> int:
@@ -1889,14 +1922,12 @@ class CachedMixUp(tvt_v2.Transform, NumpytoTVTensorMixin):
         is_flip = random.uniform(0, 1) > self.flip_ratio
 
         if len(retrieve_img.shape) == 3:
-            out_img = (
-                np.ones((self.dynamic_scale[0], self.dynamic_scale[1], 3), dtype=retrieve_img.dtype) * self.pad_val
-            )
+            out_img = np.ones((self.mixup_size[0], self.mixup_size[1], 3), dtype=retrieve_img.dtype) * self.pad_val
         else:
-            out_img = np.ones(self.dynamic_scale, dtype=retrieve_img.dtype) * self.pad_val
+            out_img = np.ones(self.mixup_size, dtype=retrieve_img.dtype) * self.pad_val
 
         # 1. keep_ratio resize
-        scale_ratio = min(self.dynamic_scale[0] / retrieve_img.shape[0], self.dynamic_scale[1] / retrieve_img.shape[1])
+        scale_ratio = min(self.mixup_size[0] / retrieve_img.shape[0], self.mixup_size[1] / retrieve_img.shape[1])
         retrieve_img = cv2.resize(
             retrieve_img,
             (int(retrieve_img.shape[1] * scale_ratio), int(retrieve_img.shape[0] * scale_ratio)),
@@ -2030,7 +2061,7 @@ class CachedMixUp(tvt_v2.Transform, NumpytoTVTensorMixin):
 
     def __repr__(self):
         repr_str = self.__class__.__name__
-        repr_str += f"(dynamic_scale={self.dynamic_scale}, "
+        repr_str += f"(dynamic_scale={self.mixup_size}, "
         repr_str += f"ratio_range={self.ratio_range}, "
         repr_str += f"flip_ratio={self.flip_ratio}, "
         repr_str += f"pad_val={self.pad_val}, "
