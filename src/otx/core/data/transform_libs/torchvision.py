@@ -8,8 +8,9 @@ from __future__ import annotations
 import copy
 import io
 import itertools
+import importlib
 import math
-from inspect import isclass
+from inspect import isclass, signature
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, ClassVar, Iterable, Sequence
 
@@ -3112,17 +3113,30 @@ class TorchVisionTransformLib:
         ]
 
     @classmethod
-    def generate(cls, config: SubsetConfig) -> Compose:
+    def generate(cls, config: SubsetConfig, input_size: tuple[int, int] | None = None) -> Compose:
         """Generate TorchVision transforms from the configuration."""
         if isinstance(config.transforms, Compose):
             return config.transforms
 
         transforms = []
         for cfg_transform in config.transforms:
+            cls._insert_input_size_arg(cfg_transform, input_size)
             transform = cls._dispatch_transform(cfg_transform)
             transforms.append(transform)
 
         return Compose(transforms)
+
+    @classmethod
+    def _insert_input_size_arg(cls, cfg_transform: dict[str, Any], input_size: tuple[int, int] | None) -> None:
+        if input_size is None or "input_size" in cfg_transform["init_args"]:
+            return
+
+        class_module, class_name = cfg_transform["class_path"].rsplit(".", 1)
+        module = importlib.import_module(class_module)
+        model_cls = getattr(module, class_name)
+        arg_name = list(signature(model_cls.__init__).parameters.keys())
+        if "input_size" in arg_name:
+            cfg_transform["init_args"]["input_size"] = input_size
 
     @classmethod
     def _dispatch_transform(cls, cfg_transform: DictConfig | dict | tvt_v2.Transform) -> tvt_v2.Transform:
