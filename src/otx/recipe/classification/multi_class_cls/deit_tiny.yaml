@@ -3,6 +3,7 @@ model:
   init_args:
     label_info: 1000
     arch: "vit-tiny"
+    lora: False
 
     optimizer:
       class_path: torch.optim.AdamW
