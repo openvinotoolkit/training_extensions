@@ -177,9 +177,7 @@ class Benchmark:
                 tags["seed"] = str(seed)
 
                 # Train & test
-                if self.resume is not None:
-                    resume_from = self._prepare_resume(tags, sub_work_dir)
-
+                resume_from = self._prepare_resume(tags, sub_work_dir)
                 command = [
                     "otx",
                     "train",
@@ -245,9 +243,9 @@ class Benchmark:
                             command.append(str(value))
                         self._run_command(command)
 
-                        exported_model_path = sub_work_dir / ".latest" / "export" / "exported_model.xml"
-                        if not exported_model_path.exists():
-                            exported_model_path = sub_work_dir / ".latest" / "export" / "exported_model_decoder.xml"
+                    exported_model_path = sub_work_dir / ".latest" / "export" / "exported_model.xml"
+                    if not exported_model_path.exists():
+                        exported_model_path = sub_work_dir / ".latest" / "export" / "exported_model_decoder.xml"
 
                     self._run_test(
                         sub_work_dir,
@@ -274,9 +272,9 @@ class Benchmark:
                             command.append(str(value))
                         self._run_command(command)
 
-                        optimized_model_path = sub_work_dir / ".latest" / "optimize" / "optimized_model.xml"
-                        if not optimized_model_path.exists():
-                            optimized_model_path = sub_work_dir / ".latest" / "optimize" / "optimized_model_decoder.xml"
+                    optimized_model_path = sub_work_dir / ".latest" / "optimize" / "optimized_model.xml"
+                    if not optimized_model_path.exists():
+                        optimized_model_path = sub_work_dir / ".latest" / "optimize" / "optimized_model_decoder.xml"
 
                     self._run_test(
                         sub_work_dir,
@@ -315,7 +313,7 @@ class Benchmark:
         for otx_cmd in ["train", "export", "optimize"]:
             prev_symlink = prev_work_dir / ".latest" / otx_cmd
             try:  # check symlink exists
-                prev_symlink.resolve(strict=True)
+                prev_symlink.readlink()
             except FileNotFoundError:
                 break
             prev_cmd_dir_name = prev_symlink.resolve().name
