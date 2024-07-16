@@ -62,6 +62,7 @@ class OTXDataModule(LightningDataModule):
         unannotated_items_ratio: float = 0.0,
         auto_num_workers: bool = False,
         device: DeviceType = DeviceType.auto,
+        input_size: tuple[int, int] | None = None,
     ) -> None:
         """Constructor."""
         super().__init__()
@@ -88,6 +89,7 @@ class OTXDataModule(LightningDataModule):
 
         self.auto_num_workers = auto_num_workers
         self.device = device
+        self.input_size = input_size
 
         self.subsets: dict[str, OTXDataset] = {}
         self.save_hyperparameters()
@@ -183,6 +185,7 @@ class OTXDataModule(LightningDataModule):
                 include_polygons=include_polygons,
                 ignore_index=ignore_index,
                 vpm_config=vpm_config,
+                input_size=self.input_size,
             )
 
             if self.tile_config.enable_tiler:
