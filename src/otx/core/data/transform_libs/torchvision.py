@@ -2707,40 +2707,6 @@ tvt_v2.PadtoSquare = PadtoSquare
 tvt_v2.ResizetoLongestEdge = ResizetoLongestEdge
 
 
-class Compose2(tvt_v2.Compose):
-    """Re-implementation of torchvision.transforms.v2.Compose.
-
-    MMCV transforms can produce None, so it is required to skip the result.
-    """
-
-    def forward(self, *inputs: T_OTXDataEntity) -> T_OTXDataEntity | None:
-        """Forward with skipping None."""
-        assert len(inputs) == 1
-        inputs = inputs[0]
-        new_inputs = (inputs.image, {"bboxes": inputs.bboxes, "labels": inputs.labels, "img_info": inputs.img_info})
-        outputs = super().forward(*new_inputs)
-        # needs_unpacking = len(inputs) > 1
-        # inputs = inputs[0]
-        # for transform in self.transforms:
-        #     images, boxes, labels = inputs.image, inputs.bboxes, inputs.labels
-        #     out_images, out_targets = transform(images, {"boxes": boxes, "labels": labels})
-        #     # MMCV transform can produce None. Please see
-        #     # https://github.com/open-mmlab/mmengine/blob/26f22ed283ae4ac3a24b756809e5961efe6f9da8/mmengine/dataset/base_dataset.py#L59-L66
-        #     inputs.image = out_images
-        #     inputs.bboxes = out_targets["boxes"]
-        #     inputs.labels = out_targets["labels"]
-
-        #     if out_images is None:
-        #         return inputs
-            # inputs = inputs if needs_unpacking else (inputs,)
-        inputs.image = outputs[0]
-        inputs.bboxes = outputs[1]["bboxes"]
-        inputs.labels = outputs[1]["labels"]
-        inputs.img_info = outputs[1]["img_info"]
-
-        return inputs
-
-
 class Compose(tvt_v2.Compose):
     """Re-implementation of torchvision.transforms.v2.Compose.
 

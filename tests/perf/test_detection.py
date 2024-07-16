@@ -71,7 +71,7 @@ class TestPerfObjectDetection(PerfTestBase):
             name="vitens_large",
             path=Path("detection/vitens_large"),
             group="large",
-            num_repeat=3,
+            num_repeat=5,
             extra_overrides={
                 "test": {
                     "metric": "otx.core.metrics.fmeasure.FMeasureCallable",

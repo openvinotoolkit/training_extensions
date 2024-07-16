@@ -14,7 +14,7 @@ class RTDetrCriterion(nn.Module):
     """
     def __init__(self, weight_dict, losses, alpha=0.2, gamma=2.0, eos_coef=1e-4, num_classes=80):
         """ Create the criterion.
-        Parameters:
+        Args:
             num_classes: number of object categories, omitting the special no-object category
             matcher: module able to compute a matching between targets and proposals
             weight_dict: dict containing as key the names of the losses and as values their relative weight.
@@ -35,7 +35,7 @@ class RTDetrCriterion(nn.Module):
         self.gamma = gamma
 
 
-    def loss_labels(self, outputs, targets, indices, num_boxes, log=True):
+    def loss_labels(self, outputs, targets, indices, num_boxes):
         """Classification loss (NLL)
         targets dicts must contain the key "labels" containing a tensor of dim [nb_target_boxes]
         """
@@ -51,12 +51,9 @@ class RTDetrCriterion(nn.Module):
         loss_ce = F.cross_entropy(src_logits.transpose(1, 2), target_classes, self.empty_weight)
         losses = {'loss_ce': loss_ce}
 
-        if log:
-            # TODO this should probably be a separate loss, not hacked in this one here
-            losses['class_error'] = 100 - accuracy(src_logits[idx], target_classes_o)[0]
         return losses
 
-    def loss_labels_bce(self, outputs, targets, indices, num_boxes, log=True):
+    def loss_labels_bce(self, outputs, targets, indices, num_boxes):
         src_logits = outputs['pred_logits']
         idx = self._get_src_permutation_idx(indices)
         target_classes_o = torch.cat([t["labels"][J] for t, (_, J) in zip(targets, indices)])
@@ -69,7 +66,7 @@ class RTDetrCriterion(nn.Module):
         loss = loss.mean(1).sum() * src_logits.shape[1] / num_boxes
         return {'loss_bce': loss}
 
-    def loss_labels_focal(self, outputs, targets, indices, num_boxes, log=True):
+    def loss_labels_focal(self, outputs, targets, indices, num_boxes):
         assert 'pred_logits' in outputs
         src_logits = outputs['pred_logits']
 
@@ -80,18 +77,12 @@ class RTDetrCriterion(nn.Module):
         target_classes[idx] = target_classes_o
 
         target = F.one_hot(target_classes, num_classes=self.num_classes+1)[..., :-1]
-        # ce_loss = F.binary_cross_entropy_with_logits(src_logits, target * 1., reduction="none")
-        # prob = F.sigmoid(src_logits) # TODO .detach()
-        # p_t = prob * target + (1 - prob) * (1 - target)
-        # alpha_t = self.alpha * target + (1 - self.alpha) * (1 - target)
-        # loss = alpha_t * ce_loss * ((1 - p_t) ** self.gamma)
-        # loss = loss.mean(1).sum() * src_logits.shape[1] / num_boxes
         loss = torchvision.ops.sigmoid_focal_loss(src_logits, target.long(), self.alpha, self.gamma, reduction='none')
         loss = loss.mean(1).sum() * src_logits.shape[1] / num_boxes
 
         return {'loss_focal': loss}
 
-    def loss_labels_vfl(self, outputs, targets, indices, num_boxes, log=True):
+    def loss_labels_vfl(self, outputs, targets, indices, num_boxes):
         assert 'pred_boxes' in outputs
         idx = self._get_src_permutation_idx(indices)
 
@@ -119,7 +110,7 @@ class RTDetrCriterion(nn.Module):
         return {'loss_vfl': loss}
 
     @torch.no_grad()
-    def loss_cardinality(self, outputs, targets, indices, num_boxes):
+    def loss_cardinality(self, outputs, targets, num_boxes):
         """ Compute the cardinality error, ie the absolute error in the number of predicted non-empty boxes
         This is not really a loss, it is intended for logging purposes only. It doesn't propagate gradients
         """
@@ -153,35 +144,6 @@ class RTDetrCriterion(nn.Module):
         losses['loss_giou'] = loss_giou.sum() / num_boxes
         return losses
 
-    def loss_masks(self, outputs, targets, indices, num_boxes):
-        """Compute the losses related to the masks: the focal loss and the dice loss.
-           targets dicts must contain the key "masks" containing a tensor of dim [nb_target_boxes, h, w]
-        """
-        assert "pred_masks" in outputs
-
-        src_idx = self._get_src_permutation_idx(indices)
-        tgt_idx = self._get_tgt_permutation_idx(indices)
-        src_masks = outputs["pred_masks"]
-        src_masks = src_masks[src_idx]
-        masks = [t["masks"] for t in targets]
-        # TODO use valid to mask invalid areas due to padding in loss
-        target_masks, valid = nested_tensor_from_tensor_list(masks).decompose()
-        target_masks = target_masks.to(src_masks)
-        target_masks = target_masks[tgt_idx]
-
-        # upsample predictions to the target size
-        src_masks = interpolate(src_masks[:, None], size=target_masks.shape[-2:],
-                                mode="bilinear", align_corners=False)
-        src_masks = src_masks[:, 0].flatten(1)
-
-        target_masks = target_masks.flatten(1)
-        target_masks = target_masks.view(src_masks.shape)
-        losses = {
-            "loss_mask": sigmoid_focal_loss(src_masks, target_masks, num_boxes),
-            "loss_dice": dice_loss(src_masks, target_masks, num_boxes),
-        }
-        return losses
-
     def _get_src_permutation_idx(self, indices):
         # permute predictions following indices
         batch_idx = torch.cat([torch.full_like(src, i) for i, (src, _) in enumerate(indices)])
@@ -199,7 +161,6 @@ class RTDetrCriterion(nn.Module):
             'labels': self.loss_labels,
             'cardinality': self.loss_cardinality,
             'boxes': self.loss_boxes,
-            'masks': self.loss_masks,
 
             'bce': self.loss_labels_bce,
             'focal': self.loss_labels_focal,
@@ -295,22 +256,3 @@ class RTDetrCriterion(nn.Module):
                     torch.zeros(0, dtype=torch.int64,  device=device)))
 
         return dn_match_indices
-
-
-@torch.no_grad()
-def accuracy(output, target, topk=(1,)):
-    """Computes the precision@k for the specified values of k"""
-    if target.numel() == 0:
-        return [torch.zeros([], device=output.device)]
-    maxk = max(topk)
-    batch_size = target.size(0)
-
-    _, pred = output.topk(maxk, 1, True, True)
-    pred = pred.t()
-    correct = pred.eq(target.view(1, -1).expand_as(pred))
-
-    res = []
-    for k in topk:
-        correct_k = correct[:k].view(-1).float().sum(0)
-        res.append(correct_k.mul_(100.0 / batch_size))
-    return res
