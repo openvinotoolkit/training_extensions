@@ -137,6 +137,11 @@ class Benchmark:
         self.accelerator = accelerator
         self.reference_results = reference_results
         self.resume = resume
+        if (resume_from == "export" and eval_upto == "train") or (
+            resume_from == "optimize" and eval_upto in ["train", "export"]
+        ):
+            msg = "resume_from should be set to previous otx command than eval_upto."
+            raise ValueError(msg)
         self.resume_from = resume_from
 
     def run(
