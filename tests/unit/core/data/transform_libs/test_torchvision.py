@@ -833,38 +833,38 @@ class TestRandomCrop:
     def test_init_invalid_crop_type(self) -> None:
         # test invalid crop_type
         with pytest.raises(ValueError, match="Invalid crop_type"):
-            RandomCrop(crop_size=(10, 10), crop_type="unknown")
+            RandomCrop(input_size=(10, 10), crop_type="unknown")
 
     @pytest.mark.parametrize("crop_type", ["absolute", "absolute_range"])
     @pytest.mark.parametrize("crop_size", [(0, 0), (0, 1), (1, 0)])
     def test_init_invalid_value(self, crop_type: str, crop_size: tuple[int, int]) -> None:
         # test h > 0 and w > 0
-        with pytest.raises(AssertionError):
-            RandomCrop(crop_size=crop_size, crop_type=crop_type)
+        with pytest.raises(ValueError, match="The absolute crop size should be positive."):
+            RandomCrop(input_size=crop_size, crop_type=crop_type)
 
     @pytest.mark.parametrize("crop_type", ["absolute", "absolute_range"])
     @pytest.mark.parametrize("crop_size", [(1.0, 1), (1, 1.0), (1.0, 1.0)])
     def test_init_invalid_type(self, crop_type: str, crop_size: tuple[int, int]) -> None:
         # test type(h) = int and type(w) = int
-        with pytest.raises(AssertionError):
-            RandomCrop(crop_size=crop_size, crop_type=crop_type)
+        with pytest.raises(TypeError):
+            RandomCrop(input_size=crop_size, crop_size=crop_size, crop_type=crop_type)
 
     def test_init_invalid_size(self) -> None:
         # test crop_size[0] <= crop_size[1]
-        with pytest.raises(AssertionError):
-            RandomCrop(crop_size=(10, 5), crop_type="absolute_range")
+        with pytest.raises(ValueError, match="The min crop size should be less than the max crop size."):
+            RandomCrop(input_size=(10, 5), crop_type="absolute_range")
 
     @pytest.mark.parametrize("crop_type", ["relative_range", "relative"])
     @pytest.mark.parametrize("crop_size", [(0, 1), (1, 0), (1.1, 0.5), (0.5, 1.1)])
     def test_init_invalid_range(self, crop_type: str, crop_size: tuple[int | float]) -> None:
         # test h in (0, 1] and w in (0, 1]
-        with pytest.raises(AssertionError):
-            RandomCrop(crop_size=crop_size, crop_type=crop_type)
+        with pytest.raises(ValueError, match=r"Relative crop size should be in range \(0, 1\]."):
+            RandomCrop(input_size=crop_size, crop_type=crop_type)
 
     @pytest.mark.parametrize(("crop_type", "crop_size"), [("relative", (0.5, 0.5)), ("absolute", (12, 16))])
     def test_forward_relative_absolute(self, entity, crop_type: str, crop_size: tuple[float | int]) -> None:
         # test relative and absolute crop
-        transform = RandomCrop(crop_size=crop_size, crop_type=crop_type)
+        transform = RandomCrop(input_size=crop_size, crop_size=crop_size, crop_type=crop_type)
         target_shape = (12, 16)
 
         results = transform(deepcopy(entity))
@@ -873,7 +873,7 @@ class TestRandomCrop:
 
     def test_forward_absolute_range(self, entity) -> None:
         # test absolute_range crop
-        transform = RandomCrop(crop_size=(10, 20), crop_type="absolute_range")
+        transform = RandomCrop(input_size=(10, 20), crop_type="absolute_range")
 
         results = transform(deepcopy(entity))
 
@@ -884,7 +884,7 @@ class TestRandomCrop:
 
     def test_forward_relative_range(self, entity) -> None:
         # test relative_range crop
-        transform = RandomCrop(crop_size=(0.9, 0.8), crop_type="relative_range")
+        transform = RandomCrop(input_size=(0, 0), crop_size=(0.9, 0.8), crop_type="relative_range")
 
         results = transform(deepcopy(entity))
 
@@ -895,7 +895,12 @@ class TestRandomCrop:
 
     def test_forward_bboxes_labels_masks_polygons(self, iseg_entity) -> None:
         # test with bboxes, labels, masks, and polygons
-        transform = RandomCrop(crop_size=(7, 5), allow_negative_crop=False, recompute_bbox=False, bbox_clip_border=True)
+        transform = RandomCrop(
+            input_size=(7, 5),
+            allow_negative_crop=False,
+            recompute_bbox=False,
+            bbox_clip_border=True,
+        )
 
         results = transform(deepcopy(iseg_entity))
 
@@ -913,7 +918,7 @@ class TestRandomCrop:
         iseg_entity.polygons = []
         target_gt_bboxes = np.zeros((1, 4), dtype=np.float32)
         transform = RandomCrop(
-            crop_size=(10, 11),
+            input_size=(10, 11),
             allow_negative_crop=False,
             recompute_bbox=True,
             bbox_clip_border=True,
@@ -930,7 +935,7 @@ class TestRandomCrop:
         iseg_entity.masks = tv_tensors.Mask(np.zeros((0, *iseg_entity.img_info.img_shape), dtype=bool))
         target_gt_bboxes = np.array([[0.0, 0.0, 7.0, 7.0]], dtype=np.float32)
         transform = RandomCrop(
-            crop_size=(10, 11),
+            input_size=(10, 11),
             allow_negative_crop=False,
             recompute_bbox=True,
             bbox_clip_border=True,
@@ -945,7 +950,7 @@ class TestRandomCrop:
         det_entity.bboxes = tv_tensors.wrap(torch.tensor([[0.1, 0.1, 0.2, 0.2]]), like=det_entity.bboxes)
         det_entity.labels = torch.LongTensor([0])
         transform = RandomCrop(
-            crop_size=(10, 11),
+            input_size=(10, 11),
             allow_negative_crop=False,
             recompute_bbox=True,
             bbox_clip_border=False,
@@ -961,7 +966,7 @@ class TestRandomCrop:
         det_entity.image = np.random.randint(0, 255, size=(10, 10), dtype=np.uint8)
         det_entity.bboxes = tv_tensors.wrap(torch.zeros((0, 4)), like=det_entity.bboxes)
         det_entity.labels = torch.LongTensor()
-        transform = RandomCrop(crop_size=(5, 3), allow_negative_crop=allow_negative_crop)
+        transform = RandomCrop(input_size=(5, 3), allow_negative_crop=allow_negative_crop)
 
         results = transform(deepcopy(det_entity))
 
@@ -973,19 +978,19 @@ class TestRandomCrop:
 
     def test_repr(self):
         crop_type = "absolute"
-        crop_size = (10, 5)
+        input_size = (10, 5)
         allow_negative_crop = False
         recompute_bbox = True
         bbox_clip_border = False
         transform = RandomCrop(
-            crop_size=crop_size,
+            input_size=input_size,
             crop_type=crop_type,
             allow_negative_crop=allow_negative_crop,
             recompute_bbox=recompute_bbox,
             bbox_clip_border=bbox_clip_border,
         )
         assert (
-            repr(transform) == f"RandomCrop(crop_size={crop_size}, crop_type={crop_type}, "
+            repr(transform) == f"RandomCrop(crop_size={transform.crop_size}, crop_type={crop_type}, "
             f"allow_negative_crop={allow_negative_crop}, "
             f"recompute_bbox={recompute_bbox}, "
             f"bbox_clip_border={bbox_clip_border}, "

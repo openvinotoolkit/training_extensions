@@ -2606,7 +2606,9 @@ class RandomCrop(tvt_v2.Transform, NumpytoTVTensorMixin):
 
     def __init__(
         self,
-        crop_size: Sequence[int | float],  # (H, W)
+        input_size: Sequence[int],  # (H, W)
+        crop_size: Sequence[int | float] | None = None,  # (H, W)
+        crop_size_scale: Sequence[float] = (1.0, 1.0),  # (H, W)
         crop_type: str = "absolute",
         cat_max_ratio: int | float = 1,
         allow_negative_crop: bool = False,
@@ -2616,20 +2618,29 @@ class RandomCrop(tvt_v2.Transform, NumpytoTVTensorMixin):
         is_numpy_to_tvtensor: bool = False,
     ) -> None:
         super().__init__()
+
+        # for configurable input size
+        self.input_size = input_size  # (H, W)
+        self._crop_size = crop_size  # (H, W)
+        self.crop_size_scale = crop_size_scale
+
         if crop_type not in ["relative_range", "relative", "absolute", "absolute_range"]:
             msg = f"Invalid crop_type {crop_type}."
             raise ValueError(msg)
         if crop_type in ["absolute", "absolute_range"]:
-            assert crop_size[0] > 0  # noqa: S101
-            assert crop_size[1] > 0  # noqa: S101
-            assert isinstance(crop_size[0], int)  # noqa: S101
-            assert isinstance(crop_size[1], int)  # noqa: S101
-            if crop_type == "absolute_range":
-                assert crop_size[0] <= crop_size[1]  # noqa: S101
-        else:
-            assert 0 < crop_size[0] <= 1  # noqa: S101
-            assert 0 < crop_size[1] <= 1  # noqa: S101
-        self.crop_size = crop_size  # (H, W)
+            if self.crop_size[0] <= 0 or self.crop_size[1] <= 0:
+                msg = "The absolute crop size should be positive."
+                raise ValueError(msg)
+            if not (isinstance(self.crop_size[0], int) and isinstance(self.crop_size[1], int)):
+                msg = "The absolute crop size should be integers."
+                raise TypeError(msg)
+            if crop_type == "absolute_range" and self.crop_size[0] > self.crop_size[1]:
+                msg = "The min crop size should be less than the max crop size."
+                raise ValueError(msg)
+        elif self.crop_size[0] <= 0 or self.crop_size[0] > 1 or self.crop_size[1] <= 0 or self.crop_size[1] > 1:
+            msg = "Relative crop size should be in range (0, 1]."
+            raise ValueError(msg)
+
         self.crop_type = crop_type
         self.cat_max_ratio = cat_max_ratio
         self.allow_negative_crop = allow_negative_crop
@@ -2637,6 +2648,17 @@ class RandomCrop(tvt_v2.Transform, NumpytoTVTensorMixin):
         self.recompute_bbox = recompute_bbox
         self.ignore_index = ignore_index
         self.is_numpy_to_tvtensor = is_numpy_to_tvtensor
+
+    @property
+    def crop_size(self) -> Sequence[int | float]:
+        """Get crop size."""
+        if self._crop_size is None:
+            self._crop_size = (
+                int(self.input_size[0] * self.crop_size_scale[0]),
+                int(self.input_size[1] * self.crop_size_scale[1]),
+            )
+
+        return self._crop_size
 
     def _generate_crop_bbox(
         self,
@@ -2667,8 +2689,9 @@ class RandomCrop(tvt_v2.Transform, NumpytoTVTensorMixin):
         allow_negative_crop: bool,
     ) -> T_OTXDataEntity | None:
         """Function to randomly crop images, bounding boxes, masks, semantic segmentation maps."""
-        assert crop_size[0] > 0  # noqa: S101
-        assert crop_size[1] > 0  # noqa: S101
+        if crop_size[0] <= 0 or crop_size[1] <= 0:
+            msg = "The crop size should be positive."
+            raise ValueError(msg)
 
         img: np.ndarray = to_np_image(inputs.image)
         orig_shape = inputs.img_info.img_shape
