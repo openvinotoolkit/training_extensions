@@ -10,12 +10,13 @@ Reference :
 
 from __future__ import annotations
 
+import math
+
 import torch
-from torch import Tensor, nn
 import torch.nn.functional as F
+from torch import Tensor, nn
 from torch.autograd import Function
 from torchvision.ops.boxes import box_area
-import math
 
 from otx.algo.utils.mmengine_utils import InstanceData
 from otx.core.data.entity.detection import DetBatchDataEntity
@@ -184,26 +185,23 @@ sigmoid_geometric_mean = SigmoidGeometricMean.apply
 
 def box_cxcywh_to_xyxy(x):
     x_c, y_c, w, h = x.unbind(-1)
-    b = [(x_c - 0.5 * w), (y_c - 0.5 * h),
-         (x_c + 0.5 * w), (y_c + 0.5 * h)]
+    b = [(x_c - 0.5 * w), (y_c - 0.5 * h), (x_c + 0.5 * w), (y_c + 0.5 * h)]
     return torch.stack(b, dim=-1)
 
 
 def box_xyxy_to_cxcywh(x):
     x0, y0, x1, y1 = x.unbind(-1)
-    b = [(x0 + x1) / 2, (y0 + y1) / 2,
-         (x1 - x0), (y1 - y0)]
+    b = [(x0 + x1) / 2, (y0 + y1) / 2, (x1 - x0), (y1 - y0)]
     return torch.stack(b, dim=-1)
 
 
-def inverse_sigmoid(x: torch.Tensor, eps: float=1e-5) -> torch.Tensor:
-    x = x.clip(min=0., max=1.)
+def inverse_sigmoid(x: torch.Tensor, eps: float = 1e-5) -> torch.Tensor:
+    x = x.clip(min=0.0, max=1.0)
     return torch.log(x.clip(min=eps) / (1 - x).clip(min=eps))
 
 
 def deformable_attention_core_func(value, value_spatial_shapes, sampling_locations, attention_weights):
-    """
-    Args:
+    """Args:
         value (Tensor): [bs, value_length, n_head, c]
         value_spatial_shapes (Tensor|List): [n_levels, 2]
         value_level_start_index (Tensor|List): [n_levels]
@@ -222,50 +220,45 @@ def deformable_attention_core_func(value, value_spatial_shapes, sampling_locatio
     sampling_value_list = []
     for level, (h, w) in enumerate(value_spatial_shapes):
         # N_, H_*W_, M_, D_ -> N_, H_*W_, M_*D_ -> N_, M_*D_, H_*W_ -> N_*M_, D_, H_, W_
-        value_l_ = value_list[level].flatten(2).permute(
-            0, 2, 1).reshape(bs * n_head, c, h, w)
+        value_l_ = value_list[level].flatten(2).permute(0, 2, 1).reshape(bs * n_head, c, h, w)
         # N_, Lq_, M_, P_, 2 -> N_, M_, Lq_, P_, 2 -> N_*M_, Lq_, P_, 2
-        sampling_grid_l_ = sampling_grids[:, :, :, level].permute(
-            0, 2, 1, 3, 4).flatten(0, 1)
+        sampling_grid_l_ = sampling_grids[:, :, :, level].permute(0, 2, 1, 3, 4).flatten(0, 1)
         # N_*M_, D_, Lq_, P_
         sampling_value_l_ = F.grid_sample(
-            value_l_,
-            sampling_grid_l_,
-            mode='bilinear',
-            padding_mode='zeros',
-            align_corners=False)
+            value_l_, sampling_grid_l_, mode="bilinear", padding_mode="zeros", align_corners=False
+        )
         sampling_value_list.append(sampling_value_l_)
     # (N_, Lq_, M_, L_, P_) -> (N_, M_, Lq_, L_, P_) -> (N_*M_, 1, Lq_, L_*P_)
-    attention_weights = attention_weights.permute(0, 2, 1, 3, 4).reshape(
-        bs * n_head, 1, Len_q, n_levels * n_points)
-    output = (torch.stack(
-        sampling_value_list, dim=-2).flatten(-2) *
-              attention_weights).sum(-1).reshape(bs, n_head * c, Len_q)
+    attention_weights = attention_weights.permute(0, 2, 1, 3, 4).reshape(bs * n_head, 1, Len_q, n_levels * n_points)
+    output = (
+        (torch.stack(sampling_value_list, dim=-2).flatten(-2) * attention_weights)
+        .sum(-1)
+        .reshape(bs, n_head * c, Len_q)
+    )
 
     return output.permute(0, 2, 1)
 
 
 def bias_init_with_prob(prior_prob=0.01):
-    """initialize conv/fc bias value according to a given probability value."""
+    """Initialize conv/fc bias value according to a given probability value."""
     bias_init = float(-math.log((1 - prior_prob) / prior_prob))
     return bias_init
 
 
-def get_activation(act: str, inpace: bool=True):
-    '''get activation
-    '''
+def get_activation(act: str, inpace: bool = True):
+    """Get activation"""
     act = act.lower()
 
-    if act == 'silu':
+    if act == "silu":
         m = nn.SiLU()
 
-    elif act == 'relu':
+    elif act == "relu":
         m = nn.ReLU()
 
-    elif act == 'gelu':
+    elif act == "gelu":
         m = nn.GELU()
 
-    if hasattr(m, 'inplace'):
+    if hasattr(m, "inplace"):
         m.inplace = inpace
 
     return m
@@ -288,8 +281,7 @@ def box_iou(boxes1, boxes2):
 
 
 def generalized_box_iou(boxes1, boxes2):
-    """
-    Generalized IoU from https://giou.stanford.edu/
+    """Generalized IoU from https://giou.stanford.edu/
 
     The boxes should be in [x0, y0, x1, y1] format
 
@@ -310,8 +302,10 @@ def generalized_box_iou(boxes1, boxes2):
 
     return iou - (area - union) / area
 
+
 def is_dist_available_and_initialized():
     return torch.distributed.is_available() and torch.distributed.is_initialized()
+
 
 def get_world_size():
     if is_dist_available_and_initialized():

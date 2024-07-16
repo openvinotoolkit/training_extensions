@@ -1,5 +1,4 @@
-"""
-Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
+"""Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 Modules to compute the matching cost and solve the corresponding LSAP.
 
 by lyuwenyu
@@ -7,7 +6,6 @@ by lyuwenyu
 
 import torch
 import torch.nn.functional as F
-
 from scipy.optimize import linear_sum_assignment
 from torch import nn
 
@@ -22,7 +20,7 @@ class HungarianMatcher(nn.Module):
     while the others are un-matched (and thus treated as non-objects).
     """
 
-    __share__ = ['use_focal_loss', ]
+    __share__ = ["use_focal_loss"]
 
     def __init__(self, weight_dict, use_focal_loss=False, alpha=0.25, gamma=2.0):
         """Creates the matcher
@@ -33,9 +31,9 @@ class HungarianMatcher(nn.Module):
             cost_giou: This is the relative weight of the giou loss of the bounding box in the matching cost
         """
         super().__init__()
-        self.cost_class = weight_dict['cost_class']
-        self.cost_bbox = weight_dict['cost_bbox']
-        self.cost_giou = weight_dict['cost_giou']
+        self.cost_class = weight_dict["cost_class"]
+        self.cost_bbox = weight_dict["cost_bbox"]
+        self.cost_giou = weight_dict["cost_giou"]
 
         self.use_focal_loss = use_focal_loss
         self.alpha = alpha
@@ -45,7 +43,7 @@ class HungarianMatcher(nn.Module):
 
     @torch.no_grad()
     def forward(self, outputs, targets):
-        """ Performs the matching
+        """Performs the matching
 
         Params:
             outputs: This is a dict that contains at least these entries:
@@ -84,7 +82,7 @@ class HungarianMatcher(nn.Module):
         if self.use_focal_loss:
             out_prob = out_prob[:, tgt_ids]
             neg_cost_class = (1 - self.alpha) * (out_prob**self.gamma) * (-(1 - out_prob + 1e-8).log())
-            pos_cost_class = self.alpha * ((1 - out_prob)**self.gamma) * (-(out_prob + 1e-8).log())
+            pos_cost_class = self.alpha * ((1 - out_prob) ** self.gamma) * (-(out_prob + 1e-8).log())
             cost_class = pos_cost_class - neg_cost_class
         else:
             cost_class = -out_prob[:, tgt_ids]

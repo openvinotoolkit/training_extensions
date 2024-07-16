@@ -18,8 +18,8 @@ import decord
 import numpy as np
 import PIL.Image
 import torch
-import torchvision.transforms.v2 as tvt_v2
 import torchvision
+import torchvision.transforms.v2 as tvt_v2
 from datumaro.components.media import Video
 from lightning.pytorch.cli import instantiate_class
 from numpy import random
@@ -1002,7 +1002,16 @@ class EfficientNetRandomCrop(RandomResizedCrop):
 
 
 class RandomIoUCrop(tvt_v2.RandomIoUCrop):
-    def __init__(self, min_scale: float = 0.3, max_scale: float = 1, min_aspect_ratio: float = 0.5, max_aspect_ratio: float = 2, sampler_options: list | None = None, trials: int = 40, p: float = 1.0):
+    def __init__(
+        self,
+        min_scale: float = 0.3,
+        max_scale: float = 1,
+        min_aspect_ratio: float = 0.5,
+        max_aspect_ratio: float = 2,
+        sampler_options: list | None = None,
+        trials: int = 40,
+        p: float = 1.0,
+    ):
         super().__init__(min_scale, max_scale, min_aspect_ratio, max_aspect_ratio, sampler_options, trials)
         self.p = p
 
@@ -1014,17 +1023,16 @@ class RandomIoUCrop(tvt_v2.RandomIoUCrop):
 
 
 class ConvertBox(tvt_v2.Transform):
-    _transformed_types = (
-        tv_tensors.BoundingBoxes,
-    )
-    def __init__(self, out_fmt='', normalize=False) -> None:
+    _transformed_types = (tv_tensors.BoundingBoxes,)
+
+    def __init__(self, out_fmt="", normalize=False) -> None:
         super().__init__()
         self.out_fmt = out_fmt
         self.normalize = normalize
 
         self.data_fmt = {
-            'xyxy': tv_tensors.BoundingBoxFormat.XYXY,
-            'cxcywh': tv_tensors.BoundingBoxFormat.CXCYWH
+            "xyxy": tv_tensors.BoundingBoxFormat.XYXY,
+            "cxcywh": tv_tensors.BoundingBoxFormat.CXCYWH,
         }
 
     def _transform(self, inpt: Any, params: dict[str, Any]) -> Any:
@@ -2712,6 +2720,7 @@ class Compose(tvt_v2.Compose):
 
     MMCV transforms can produce None, so it is required to skip the result.
     """
+
     def forward(self, *inputs: T_OTXDataEntity) -> T_OTXDataEntity | None:
         """Forward with skipping None."""
         needs_unpacking = len(inputs) > 1

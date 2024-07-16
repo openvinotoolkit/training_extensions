@@ -4,7 +4,7 @@
 
 from .cspnext_pafpn import CSPNeXtPAFPN
 from .fpn import FPN
-from .yolox_pafpn import YOLOXPAFPN
 from .hybrid_encoder import HybridEncoder
+from .yolox_pafpn import YOLOXPAFPN
 
 __all__ = ["CSPNeXtPAFPN", "FPN", "YOLOXPAFPN", "HybridEncoder"]
