@@ -314,7 +314,9 @@ class Benchmark:
         prev_otx_cmd = None
         for otx_cmd in ["train", "export", "optimize"]:
             prev_symlink = prev_work_dir / ".latest" / otx_cmd
-            if not prev_symlink.exists():
+            try:  # check symlink exists
+                prev_symlink.resolve(strict=True)
+            except FileNotFoundError:
                 break
             prev_cmd_dir_name = prev_symlink.resolve().name
             prev_cmd_dir = prev_work_dir / prev_cmd_dir_name
