@@ -240,16 +240,26 @@ def fxt_tags(fxt_user_name: str, fxt_version_tags: dict[str, str], fxt_accelerat
     elif fxt_accelerator == "xpu":
         raw = subprocess.check_output(args=["xpu-smi", "discovery", "--dump", "1,2"]).decode().strip()
         tags["accelerator_info"] = "\n".join([ret.replace('"', "").replace(",", " : ") for ret in raw.split("\n")[1:]])
+    elif fxt_accelerator == "cpu":
+        tags["accelerator_info"] = "cpu"
     msg = f"{tags = }"
     log.info(msg)
     return tags
 
 
 @pytest.fixture(scope="session")
-def fxt_resume_from(request: pytest.FixtureRequest) -> Path | None:
+def fxt_resume(request: pytest.FixtureRequest) -> Path | None:
+    resume = request.config.getoption("--resume")
+    if resume is not None:
+        resume = Path(resume)
+    msg = f"{resume = }"
+    log.info(msg)
+    return resume
+
+
+@pytest.fixture(scope="session")
+def fxt_resume_from(request: pytest.FixtureRequest) -> str:
     resume_from = request.config.getoption("--resume-from")
-    if resume_from is not None:
-        resume_from = Path(resume_from)
     msg = f"{resume_from = }"
     log.info(msg)
     return resume_from
@@ -267,6 +277,8 @@ def fxt_benchmark(
     fxt_deterministic: bool,
     fxt_accelerator: str,
     fxt_benchmark_reference: pd.DataFrame | None,
+    fxt_resume: Path | None,
+    fxt_resume_from: str,
 ) -> Benchmark:
     """Configure benchmark."""
     return Benchmark(
@@ -280,6 +292,8 @@ def fxt_benchmark(
         deterministic=fxt_deterministic,
         accelerator=fxt_accelerator,
         reference_results=fxt_benchmark_reference,
+        resume=fxt_resume,
+        resume_from=fxt_resume_from,
     )
 
 
@@ -366,13 +380,11 @@ class PerfTestBase:
         dataset: Benchmark.Dataset,
         benchmark: Benchmark,
         criteria: list[Benchmark.Criterion],
-        resume_from: Path | None,
     ) -> None:
         result = benchmark.run(
             model=model,
             dataset=dataset,
             criteria=criteria,
-            resume_from=resume_from,
         )
         benchmark.check(
             result=result,
