@@ -2492,30 +2492,28 @@ class RandomResize(tvt_v2.Transform, NumpytoTVTensorMixin):
         **resize_kwargs,
     ) -> None:
         super().__init__()
-        if resize_size is not None and (
-            not isinstance(resize_size, Sequence)
+
+        # for configurable input size
+        self.input_size = input_size
+        self._resize_size = resize_size
+        self.resize_size_scale = resize_size_scale
+
+        if self.resize_size is not None and (
+            not isinstance(self.resize_size, Sequence)
             or not (
-                all(isinstance(rs, int) for rs in resize_size)
-                or all(isinstance(rs, tuple) and all(isinstance(ps, int) for ps in rs) for rs in resize_size)
+                all(isinstance(rs, int) for rs in self.resize_size)
+                or all(isinstance(rs, tuple) and all(isinstance(ps, int) for ps in rs) for rs in self.resize_size)
             )
         ):
-            msg = f"resize_size must be Sequence[int] or Sequence[tuple[int, int]], but got `{type(resize_size)}"
-            if isinstance(resize_size, Sequence):
-                msg += f"[{type(resize_size[0])}"
-                if isinstance(resize_size[0], tuple):
-                    msg += f"[{type(resize_size[0][0])}]"
+            msg = f"resize_size must be Sequence[int] or Sequence[tuple[int, int]], but got `{type(self.resize_size)}"
+            if isinstance(self.resize_size, Sequence):
+                msg += f"[{type(self.resize_size[0])}"
+                if isinstance(self.resize_size[0], tuple):
+                    msg += f"[{type(self.resize_size[0][0])}]"
                 msg += "]"
             msg += "`."
             raise TypeError(msg)
 
-        if isinstance(resize_size, list):
-            resize_size = tuple(resize_size)
-
-        # for configurable input size
-        self._resize_size = resize_size
-        self.resize_size_scale = resize_size_scale
-
-        self.input_size = input_size
         self.ratio_range = ratio_range
         self.resize_kwargs = resize_kwargs
         self.is_numpy_to_tvtensor = is_numpy_to_tvtensor
@@ -2529,6 +2527,8 @@ class RandomResize(tvt_v2.Transform, NumpytoTVTensorMixin):
                 int(self.input_size[0] * self.resize_size_scale[0]),
                 int(self.input_size[1] * self.resize_size_scale[1]),
             )
+        elif isinstance(self._resize_size, list):
+            self._resize_size = tuple(self._resize_size)
 
         return self._resize_size
 

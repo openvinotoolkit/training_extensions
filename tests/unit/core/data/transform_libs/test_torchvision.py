@@ -772,7 +772,7 @@ class TestRandomResize:
         assert transform.resize_size == (224, 224)
 
     def test_repr(self):
-        transform = RandomResize((224, 224), (1.0, 2.0))
+        transform = RandomResize(input_size=(224, 224), ratio_range=(1.0, 2.0))
         transform_str = str(transform)
         assert isinstance(transform_str, str)
 
@@ -845,7 +845,7 @@ class TestRandomResize:
         assert results.img_info.img_shape[0] <= 448
 
         # the type of resize_size is invalid in init
-        with pytest.raises(NotImplementedError):
+        with pytest.raises(TypeError):
             RandomResize(input_size=(224, 224), resize_size=[(448, 224), [224, 112]], keep_ratio=True)(deepcopy(entity))
 
 
