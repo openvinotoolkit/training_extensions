@@ -528,6 +528,12 @@ class Resize(tvt_v2.Transform, NumpytoTVTensorMixin):
             self.scale_factor = None
         elif isinstance(scale_factor, float):
             self.scale_factor = (scale_factor, scale_factor)
+        elif isinstance(scale_factor, Sequence) and not all(isinstance(sf, float) for sf in scale_factor):
+            msg = (
+                "scale_factor must be float or Sequence[float], "
+                f"but got `{type(scale_factor)}[{type(scale_factor[0])}]`."
+            )
+            raise TypeError(msg)
         elif isinstance(scale_factor, Sequence) and len(scale_factor) == 2:
             self.scale_factor = tuple(scale_factor)
         else:
@@ -669,7 +675,7 @@ class RandomResizedCrop(tvt_v2.Transform, NumpytoTVTensorMixin):
     is made. This crop is finally resized to given size.
 
     Args:
-        scale (Sequence[int] or int): Desired output scale of the crop. If size is an
+        resize_crop_size (Sequence[int] or int): Desired output scale of the crop. If size is an
             int instead of Sequence[int] like (h, w), a square crop (size, size) is
             made.
         crop_ratio_range (Sequence[float]): Range of the random size of the cropped
@@ -688,7 +694,9 @@ class RandomResizedCrop(tvt_v2.Transform, NumpytoTVTensorMixin):
 
     def __init__(
         self,
-        scale: Sequence[int] | int,
+        input_size: int | Sequence[int],  # (H, W)
+        resize_crop_size: int | Sequence[int] | None = None,  # (H, W)
+        resize_crop_size_scale: Sequence[float] = (1.0, 1.0),  # (H, W)
         crop_ratio_range: Sequence[float] = (0.08, 1.0),
         aspect_ratio_range: Sequence[float] = (3.0 / 4.0, 4.0 / 3.0),
         max_attempts: int = 10,
@@ -697,14 +705,36 @@ class RandomResizedCrop(tvt_v2.Transform, NumpytoTVTensorMixin):
         is_numpy_to_tvtensor: bool = False,
     ) -> None:
         super().__init__()
-        if isinstance(scale, Sequence):
-            assert len(scale) == 2  # noqa: S101
-            assert scale[0] > 0  # noqa: S101
-            assert scale[1] > 0  # noqa: S101
-            self.scale = scale
+
+        # for configurable input size
+        self.input_size = (input_size, input_size) if isinstance(input_size, int) else input_size
+        self._resize_crop_size = resize_crop_size
+        self.resize_crop_size_scale = resize_crop_size_scale
+
+        if isinstance(self.resize_crop_size, Sequence):
+            if not all(isinstance(rcs, int) for rcs in self.resize_crop_size):
+                msg = (
+                    "resize_crop_size must be int or Sequence[int], "
+                    f"but got `{type(self.resize_crop_size)}[{type(self.resize_crop_size[0])}]`."
+                )
+                raise TypeError(msg)
+            if len(self.resize_crop_size) != 2:
+                msg = (
+                    "resize_crop_size must be int or Sequence[int] with length 2, "
+                    f"but got `{len(self.resize_crop_size)}`."
+                )
+                raise ValueError(msg)
+            if self.resize_crop_size[0] <= 0 or self.resize_crop_size[1] <= 0:
+                msg = f"resize_crop_size must be positive, but got `{self.resize_crop_size}`."
+                raise ValueError(msg)
         else:
-            assert scale > 0  # noqa: S101
-            self.scale = (scale, scale)
+            if not isinstance(self.resize_crop_size, int):
+                msg = f"resize_crop_size must be int or Sequence[int], but got `{type(self.resize_crop_size)}`."
+                raise TypeError(msg)
+            if self.resize_crop_size <= 0:
+                msg = f"resize_crop_size must be positive, but got `{self.resize_crop_size}`."
+                raise ValueError(msg)
+
         if (crop_ratio_range[0] > crop_ratio_range[1]) or (aspect_ratio_range[0] > aspect_ratio_range[1]):
             msg = (
                 "range should be of kind (min, max). "
@@ -712,15 +742,20 @@ class RandomResizedCrop(tvt_v2.Transform, NumpytoTVTensorMixin):
                 f"and aspect_ratio_range {aspect_ratio_range}."
             )
             raise ValueError(msg)
-        assert isinstance(max_attempts, int)  # noqa: S101
-        assert max_attempts >= 0, "max_attempts mush be int and no less than 0."  # noqa: S101
-        assert interpolation in (  # noqa: S101
-            "nearest",
-            "bilinear",
-            "bicubic",
-            "area",
-            "lanczos",
-        )
+
+        if not isinstance(max_attempts, int):
+            msg = f"max_attempts must be int, but got `{type(max_attempts)}`."
+            raise TypeError(msg)
+        if max_attempts < 0:
+            msg = "max_attempts mush be int and no less than 0."
+            raise ValueError(msg)
+
+        if interpolation not in ("nearest", "bilinear", "bicubic", "area", "lanczos"):
+            msg = (
+                "interpolation must be one of 'nearest', 'bilinear', 'bicubic', 'area', 'lanczos', "
+                f"but got `{interpolation}`."
+            )
+            raise ValueError(msg)
 
         self.crop_ratio_range = crop_ratio_range
         self.aspect_ratio_range = aspect_ratio_range
@@ -728,6 +763,18 @@ class RandomResizedCrop(tvt_v2.Transform, NumpytoTVTensorMixin):
         self.interpolation = interpolation
         self.transform_mask = transform_mask
         self.is_numpy_to_tvtensor = is_numpy_to_tvtensor
+
+    @property
+    def resize_crop_size(self) -> Sequence[int]:
+        """Get resize crop size."""
+        if self._resize_crop_size is None:
+            self._resize_crop_size = (
+                int(self.input_size[0] * self.resize_crop_size_scale[0]),
+                int(self.input_size[1] * self.resize_crop_size_scale[1]),
+            )
+        elif isinstance(self._resize_crop_size, int):
+            self._resize_crop_size = (self._resize_crop_size, self._resize_crop_size)
+        return self._resize_crop_size
 
     @cache_randomness
     def rand_crop_params(self, img: np.ndarray) -> tuple[int, int, int, int]:
@@ -885,7 +932,7 @@ class RandomResizedCrop(tvt_v2.Transform, NumpytoTVTensorMixin):
             inputs.img_info = _crop_image_info(inputs.img_info, *img.shape[:2])
             img = cv2.resize(
                 img,
-                tuple(self.scale[::-1]),
+                tuple(self.resize_crop_size[::-1]),
                 dst=None,
                 interpolation=CV2_INTERP_CODES[self.interpolation],
             )
@@ -897,7 +944,7 @@ class RandomResizedCrop(tvt_v2.Transform, NumpytoTVTensorMixin):
                 masks = self._crop_img(masks, bboxes=bboxes)
                 masks = cv2.resize(
                     masks,
-                    tuple(self.scale[::-1]),
+                    tuple(self.resize_crop_size[::-1]),
                     dst=None,
                     interpolation=CV2_INTERP_CODES["nearest"],
                 )
@@ -913,7 +960,7 @@ class RandomResizedCrop(tvt_v2.Transform, NumpytoTVTensorMixin):
         Returns:
             str: Formatted string.
         """
-        repr_str = self.__class__.__name__ + f"(scale={self.scale}"
+        repr_str = self.__class__.__name__ + f"(scale={self.resize_crop_size}"
         repr_str += ", crop_ratio_range="
         repr_str += f"{tuple(round(s, 4) for s in self.crop_ratio_range)}"
         repr_str += ", aspect_ratio_range="
@@ -951,16 +998,27 @@ class EfficientNetRandomCrop(RandomResizedCrop):
 
     def __init__(
         self,
-        scale: int,
+        input_size: int | Sequence[int],  # (H, W)
+        resize_crop_size: int | Sequence[int] | None = None,  # (H, W)
+        resize_crop_size_scale: Sequence[float] = (1.0, 1.0),  # (H, W)
         min_covered: float = 0.1,
         crop_padding: int = 32,
         interpolation: str = "bicubic",
         **kwarg,
     ):
-        assert isinstance(scale, int)  # noqa: S101
-        super().__init__(scale, interpolation=interpolation, **kwarg)
-        assert min_covered >= 0, "min_covered should be no less than 0."  # noqa: S101
-        assert crop_padding >= 0, "crop_padding should be no less than 0."  # noqa: S101
+        super().__init__(
+            input_size,
+            resize_crop_size=resize_crop_size,
+            resize_crop_size_scale=resize_crop_size_scale,
+            interpolation=interpolation,
+            **kwarg,
+        )
+        if min_covered < 0:
+            msg = "min_covered should be no less than 0."
+            raise ValueError(msg)
+        if crop_padding < 0:
+            msg = "crop_padding should be no less than 0."
+            raise ValueError(msg)
 
         self.min_covered = min_covered
         self.crop_padding = crop_padding
@@ -1018,7 +1076,7 @@ class EfficientNetRandomCrop(RandomResizedCrop):
 
         # Fallback to central crop
         img_short = min(h, w)
-        crop_size = self.scale[0] / (self.scale[0] + self.crop_padding) * img_short
+        crop_size = self.resize_crop_size[0] / (self.resize_crop_size[0] + self.crop_padding) * img_short
 
         offset_h = max(0, int(round((h - crop_size) / 2.0)))
         offset_w = max(0, int(round((w - crop_size) / 2.0)))

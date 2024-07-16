@@ -20,6 +20,7 @@ from otx.core.data.transform_libs.torchvision import (
     CachedMixUp,
     CachedMosaic,
     DecodeVideo,
+    EfficientNetRandomCrop,
     FilterAnnotations,
     MinIoURandomCrop,
     NumpytoTVTensorMixin,
@@ -30,6 +31,7 @@ from otx.core.data.transform_libs.torchvision import (
     RandomCrop,
     RandomFlip,
     RandomResize,
+    RandomResizedCrop,
     Resize,
     YOLOXHSVRandomAug,
 )
@@ -153,17 +155,17 @@ class TestResize:
 
     def test_init_invalid_resize_size(self) -> None:
         with pytest.raises(TypeError):
-            RandomAffine(input_size=(128, 128), resize_size=640.0)
+            Resize(input_size=(128, 128), resize_size=640.0)
 
         with pytest.raises(TypeError):
-            RandomAffine(input_size=(128, 128), resize_size=[640.0, 640.0])
+            Resize(input_size=(128, 128), resize_size=[640.0, 640.0])
 
     def test_init_invalid_scale_factor(self) -> None:
         with pytest.raises(TypeError):
-            RandomAffine(input_size=(128, 128), scale_factor=640)
+            Resize(input_size=(128, 128), scale_factor=1)
 
         with pytest.raises(TypeError):
-            RandomAffine(input_size=(128, 128), scale_factor=[640, 640])
+            Resize(input_size=(128, 128), scale_factor=[1, 1])
 
     @pytest.mark.parametrize(
         ("keep_ratio", "expected_shape", "expected_scale_factor"),
@@ -290,6 +292,59 @@ class TestResize:
                 for rp, fp in zip(results.polygons, fxt_inst_seg_data_entity[0].polygons)
             ],
         )
+
+
+class TestRandomResizedCrop:
+    def test_init_without_input_size(self) -> None:
+        with pytest.raises(TypeError):
+            RandomResizedCrop()
+
+    def test_init_invalid_resize_crop_size(self) -> None:
+        with pytest.raises(TypeError):
+            RandomResizedCrop(input_size=(128, 128), resize_crop_size=(32.0, 32.0))
+
+        with pytest.raises(ValueError, match=r"resize_crop_size must be int or Sequence\[int\] with length 2"):
+            RandomResizedCrop(input_size=(128, 128), resize_crop_size=(32, 32, 32))
+
+        with pytest.raises(ValueError, match=r"resize_crop_size must be positive"):
+            RandomResizedCrop(input_size=(128, 128), resize_crop_size=(-1, -1))
+
+        with pytest.raises(TypeError):
+            RandomResizedCrop(input_size=(128, 128), resize_crop_size=640.0)
+
+        with pytest.raises(ValueError, match=r"resize_crop_size must be positive"):
+            RandomResizedCrop(input_size=(128, 128), resize_crop_size=-1)
+
+    def test_init_invalid_crop_ratio_range_and_aspect_ratio_range(self) -> None:
+        with pytest.raises(ValueError, match=r"range should be of kind \(min, max\)."):
+            RandomResizedCrop(input_size=(128, 128), crop_ratio_range=(1.0, 0.9))
+
+        with pytest.raises(ValueError, match=r"range should be of kind \(min, max\)."):
+            RandomResizedCrop(input_size=(128, 128), aspect_ratio_range=(1.0, 0.9))
+
+    def test_init_invalid_max_attempts(self) -> None:
+        with pytest.raises(TypeError):
+            RandomResizedCrop(input_size=(128, 128), max_attempts=1.0)
+
+        with pytest.raises(ValueError, match="max_attempts mush be int and no less than 0."):
+            RandomResizedCrop(input_size=(128, 128), max_attempts=-1)
+
+    def test_init_invalid_interpolation(self) -> None:
+        with pytest.raises(
+            ValueError,
+            match=r"interpolation must be one of 'nearest', 'bilinear', 'bicubic', 'area', 'lanczos'",
+        ):
+            RandomResizedCrop(input_size=(128, 128), interpolation="invalid")
+
+
+class TestEfficientNetRandomCrop:
+    def test_init_invalid_min_covered(self) -> None:
+        with pytest.raises(ValueError, match="min_covered should be no less than 0."):
+            EfficientNetRandomCrop(input_size=(128, 128), min_covered=-1)
+
+    def test_init_invalid_crop_padding(self) -> None:
+        with pytest.raises(ValueError, match="crop_padding should be no less than 0."):
+            EfficientNetRandomCrop(input_size=(128, 128), crop_padding=-1)
 
 
 class TestRandomFlip:
