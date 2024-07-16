@@ -7,6 +7,7 @@ from __future__ import annotations
 import copy
 import io
 import itertools
+import logging
 import math
 from inspect import isclass
 from pathlib import Path
@@ -70,6 +71,9 @@ if TYPE_CHECKING:
     from otx.core.config.data import SubsetConfig
     from otx.core.data.entity.base import T_OTXDataEntity
     # TODO (sungchul): refactor types
+
+
+logger = logging.getLogger()
 
 
 # mypy: disable-error-code="attr-defined"
@@ -2149,10 +2153,17 @@ class Pad(tvt_v2.Transform, NumpytoTVTensorMixin):
     TODO : optimize logic to torcivision pipeline
 
     Args:
-        size (Sequence[int], optional): Fixed padding size.
-            Expected padding shape (height, width). Defaults to None.
-        size_divisor (int, optional): The divisor of padded size. Defaults to
-            None.
+        input_size (Sequence[int]): Final transformed image size.
+            It can be set in each recipe and is assigned
+            in otx.core.data.factory.TransformLibFactory (?).
+        pad_size (int or Sequence[int], optional): Fixed padding size.
+            Expected padding shape (height, width).
+            If it is an int instead of Sequence[int] like (h, w),
+            a square crop (pad_size, pad_size) is made.
+            Defaults to None.
+        size_divisor (int, optional): The divisor of padded size.
+            It is used regardless of input_size.
+            Defaults to None.
         pad_to_square (bool): Whether to pad the image into a square.
             Currently only used for YOLOX. Defaults to False.
         pad_val (int | float | dict[str, int | float], optional) - Padding value for if
@@ -2192,7 +2203,9 @@ class Pad(tvt_v2.Transform, NumpytoTVTensorMixin):
 
     def __init__(
         self,
-        size: Sequence[int] | None = None,  # (H, W)
+        input_size: Sequence[int],  # (H, W)
+        pad_size: int | Sequence[int] | None = None,
+        pad_size_scale: Sequence[float] = (1.0, 1.0),  # (H, W)
         size_divisor: int | None = None,
         pad_to_square: bool = False,
         pad_val: int | float | dict | None = None,
@@ -2203,25 +2216,61 @@ class Pad(tvt_v2.Transform, NumpytoTVTensorMixin):
     ) -> None:
         super().__init__()
 
-        self.size = size
-        self.size_divisor = size_divisor
-        pad_val = pad_val or {"img": 0, "mask": 0}
-        if isinstance(pad_val, int):
-            pad_val = {"img": pad_val, "mask": 0}
-        assert isinstance(pad_val, dict), "pad_val "  # noqa: S101
-        self.pad_val = pad_val
-        self.pad_to_square = pad_to_square
+        if pad_size is not None and not (
+            isinstance(pad_size, int) or (isinstance(pad_size, Sequence) and isinstance(pad_size[0], int))
+        ):
+            msg = f"pad_size must be int or Sequence[int], but got `{type(pad_size)}`."
+            raise TypeError(msg)
 
-        if pad_to_square:
-            assert size is None, "The size and size_divisor must be None when pad2square is True"  # noqa: S101
-        else:
-            assert size is not None or size_divisor is not None, "only one of size and size_divisor should be valid"  # noqa: S101
-            assert size is None or size_divisor is None  # noqa: S101
-        assert padding_mode in ["constant", "edge", "reflect", "symmetric"]  # noqa: S101
+        if pad_val is not None and not isinstance(pad_val, (int, float, dict)):
+            msg = f"pad_val must be int, float or dict, but got `{type(pad_val)}`."
+            raise TypeError(msg)
+
+        if isinstance((pad_val := pad_val or {"img": 0, "mask": 0}), (int, float)):
+            pad_val = {"img": pad_val, "mask": 0}
+
+        # for configurable input size
+        self.input_size = input_size
+        self.size_divisor = size_divisor
+        self.pad_to_square = pad_to_square
+        self._pad_size = pad_size
+        self.pad_size_scale = pad_size_scale  # (H, W)
+
+        if pad_to_square and pad_size is not None:
+            msg = "pad_size will not be used because pad_to_square is True."
+            logger.warning(msg)
+        elif size_divisor is not None and pad_size is not None:
+            msg = "pad_size will not be used because size_divisor is valid."
+            logger.warning(msg)
+        elif size_divisor is None and pad_size is None:
+            msg = f"pad_size will be set to the default value, {self.pad_size}."
+            logger.warning(msg)
+
+        if padding_mode not in ["constant", "edge", "reflect", "symmetric"]:
+            msg = f"padding_mode must be one of 'constant', 'edge', 'reflect', 'symmetric', but got `{padding_mode}`."
+            raise ValueError(msg)
+
+        self.pad_val = pad_val
         self.padding_mode = padding_mode
         self.transform_point = transform_point
         self.transform_mask = transform_mask
         self.is_numpy_to_tvtensor = is_numpy_to_tvtensor
+
+    @property
+    def pad_size(self) -> Sequence[int] | None:
+        """Get pad size."""
+        if self.pad_to_square or self.size_divisor:
+            return None
+
+        if self._pad_size is None:
+            self._pad_size = (
+                int(self.input_size[0] * self.pad_size_scale[0]),
+                int(self.input_size[1] * self.pad_size_scale[1]),
+            )
+        elif isinstance(self._pad_size, int):
+            self._pad_size = (self._pad_size, self._pad_size)
+
+        return self._pad_size
 
     def _pad_img(self, inputs: T_OTXDataEntity) -> T_OTXDataEntity:
         """Pad images according to ``self.size``."""
@@ -2239,8 +2288,8 @@ class Pad(tvt_v2.Transform, NumpytoTVTensorMixin):
             pad_h = int(np.ceil(size[0] / self.size_divisor)) * self.size_divisor
             pad_w = int(np.ceil(size[1] / self.size_divisor)) * self.size_divisor
             size = (pad_h, pad_w)
-        elif self.size is not None:
-            size = self.size  # (H, W)
+        elif self.pad_size is not None:
+            size = self.pad_size  # (H, W)
 
         if isinstance(pad_val, int) and img.ndim == 3:
             pad_val = tuple(pad_val for _ in range(img.shape[2]))

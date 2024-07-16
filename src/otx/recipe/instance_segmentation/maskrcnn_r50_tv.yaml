@@ -47,6 +47,9 @@ overrides:
               - 1024
         - class_path: otx.core.data.transform_libs.torchvision.Pad
           init_args:
+            input_size: # TODO (eunwoo): integrate this into a common part
+              - 1024
+              - 1024
             pad_to_square: true
             transform_mask: true
         - class_path: otx.core.data.transform_libs.torchvision.RandomFlip
@@ -72,6 +75,9 @@ overrides:
               - 1024
         - class_path: otx.core.data.transform_libs.torchvision.Pad
           init_args:
+            input_size: # TODO (eunwoo): integrate this into a common part
+              - 1024
+              - 1024
             pad_to_square: true
             is_numpy_to_tvtensor: true
         - class_path: torchvision.transforms.v2.ToDtype
@@ -93,6 +99,9 @@ overrides:
               - 1024
         - class_path: otx.core.data.transform_libs.torchvision.Pad
           init_args:
+            input_size: # TODO (eunwoo): integrate this into a common part
+              - 1024
+              - 1024
             pad_to_square: true
             is_numpy_to_tvtensor: true
         - class_path: torchvision.transforms.v2.ToDtype

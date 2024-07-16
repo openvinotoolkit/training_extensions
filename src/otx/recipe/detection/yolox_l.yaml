@@ -75,6 +75,9 @@ overrides:
             prob: 0.5
         - class_path: otx.core.data.transform_libs.torchvision.Pad
           init_args:
+            input_size: # TODO (eunwoo): integrate this into a common part
+              - 640
+              - 640
             pad_to_square: true
             pad_val: 114
             is_numpy_to_tvtensor: true
@@ -99,6 +102,9 @@ overrides:
             keep_ratio: true
         - class_path: otx.core.data.transform_libs.torchvision.Pad
           init_args:
+            input_size: # TODO (eunwoo): integrate this into a common part
+              - 640
+              - 640
             pad_to_square: true
             pad_val: 114
             is_numpy_to_tvtensor: true
@@ -121,6 +127,9 @@ overrides:
             keep_ratio: true
         - class_path: otx.core.data.transform_libs.torchvision.Pad
           init_args:
+            input_size: # TODO (eunwoo): integrate this into a common part
+              - 640
+              - 640
             pad_to_square: true
             pad_val: 114
             is_numpy_to_tvtensor: true

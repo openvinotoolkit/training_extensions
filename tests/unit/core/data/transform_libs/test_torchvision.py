@@ -587,6 +587,46 @@ class TestYOLOXHSVRandomAug:
 
 
 class TestPad:
+    def test_init_without_input_size(self) -> None:
+        with pytest.raises(TypeError):
+            Pad()
+
+    def test_init_invalid_pad_size(self) -> None:
+        with pytest.raises(TypeError):
+            Pad(input_size=(128, 128), pad_size=640.0)
+
+        with pytest.raises(TypeError):
+            Pad(input_size=(128, 128), pad_size=[640.0, 640.0])
+
+    def test_init_invalid_pad_val(self) -> None:
+        with pytest.raises(TypeError):
+            Pad(input_size=(128, 128), pad_val="invalid")
+
+    def test_init_invalid_padding_mode(self) -> None:
+        padding_mode: str = "invalid"
+        with pytest.raises(
+            ValueError,
+            match=f"padding_mode must be one of 'constant', 'edge', 'reflect', 'symmetric', but got `{padding_mode}`.",
+        ):
+            Pad(input_size=(128, 128), padding_mode=padding_mode)
+
+    def test_init_set_pad_size_automatically(self) -> None:
+        # use default value of `pad_size_scale`
+        pad = Pad(input_size=(128, 128))
+        assert pad.pad_size == (128, 128)
+
+        # use given value of `pad_size_scale`
+        pad = Pad(input_size=(128, 128), pad_size_scale=(0.5, 2.0))
+        assert pad.pad_size == (64, 256)
+
+        # use `pad_size` value first if it is given
+        pad = Pad(input_size=(128, 128), pad_size=(256, 64), pad_size_scale=(0.5, 2.0))
+        assert pad.pad_size == (256, 64)
+
+        # change int of `pad_size` to tuple
+        pad = Pad(input_size=(128, 128), pad_size=64)
+        assert pad.pad_size == (64, 64)
+
     def test_forward(
         self,
         fxt_inst_seg_data_entity: tuple[tuple, InstanceSegDataEntity, InstanceSegBatchDataEntity],
@@ -595,7 +635,7 @@ class TestPad:
         entity.image = entity.image.transpose(1, 2, 0)
 
         # test pad img/masks with size
-        transform = Pad(size=(96, 128), transform_mask=True)
+        transform = Pad(input_size=(96, 128), transform_mask=True)
 
         results = transform(deepcopy(entity))
 
@@ -603,7 +643,7 @@ class TestPad:
         assert results.masks.shape[1:] == (96, 128)
 
         # test pad img/masks with size_divisor
-        transform = Pad(size_divisor=11, transform_mask=True)
+        transform = Pad(input_size=(96, 128), size_divisor=11, transform_mask=True)
 
         results = transform(deepcopy(entity))
 
@@ -612,9 +652,9 @@ class TestPad:
         assert results.masks.shape[1:] == (66, 66)
 
         # test pad img/masks with pad_to_square
-        _transform = Pad(size=(96, 128), transform_mask=True)
+        _transform = Pad(input_size=(96, 128), transform_mask=True)
         entity = _transform(deepcopy(entity))
-        transform = Pad(pad_to_square=True, transform_mask=True)
+        transform = Pad(input_size=(96, 128), pad_to_square=True, transform_mask=True)
 
         results = transform(deepcopy(entity))
 
@@ -622,9 +662,9 @@ class TestPad:
         assert results.masks.shape[1:] == (128, 128)
 
         # test pad img/masks with pad_to_square and size_divisor
-        _transform = Pad(size=(96, 128), transform_mask=True)
+        _transform = Pad(input_size=(96, 128), transform_mask=True)
         entity = _transform(deepcopy(entity))
-        transform = Pad(pad_to_square=True, size_divisor=11, transform_mask=True)
+        transform = Pad(input_size=(96, 128), pad_to_square=True, size_divisor=11, transform_mask=True)
 
         results = transform(deepcopy(entity))
 
