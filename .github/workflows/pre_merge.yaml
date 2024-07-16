@@ -3,7 +3,6 @@ name: PR Checks
 on:
   push:
     branches:
-      - develop
       - releases/**
   pull_request:
     types:
