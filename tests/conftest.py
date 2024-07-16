@@ -131,7 +131,7 @@ def pytest_addoption(parser: pytest.Parser):
         default="train",
         choices=("train", "export", "optimize"),
         help="Which otx command to start from when resume argument is given. "
-        "If it's set, previous commands are skipped and necessary OV IRs are copied from resume directory. "
+        "Commands executed before `resume_from` are skipped and necessary OV IRs are copied from resume directory. "
         "Choose train|export|optimize. Defaults to train.",
     )
     parser.addoption(

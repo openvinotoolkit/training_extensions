@@ -51,9 +51,12 @@ class Benchmark:
         deterministic (bool): Whether to turn on deterministic training mode. Defaults to False.
         accelerator (str): Accelerator device on which to run benchmark. Defaults to gpu.
         reference_results (pd.DataFrame): Reference benchmark results for performance checking.
-        resume(Path | None, optional):
+        resume (Path | None, optional):
             Previous performance directory to load. If training was already done in previous performance test,
             training is skipped and refer previous result.
+        resume_from (str):
+            Which otx command to start from when resume argument is given.
+            Commands executed before `resume_from` are skipped and necessary OV IRs are copied from resume directory.
     """
 
     @dataclass
