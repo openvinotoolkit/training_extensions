@@ -365,16 +365,26 @@ class TestRandomAffine:
         with pytest.raises(TypeError):
             RandomAffine()
 
-    def test_init_invalid_translate_ratio(self) -> None:
-        with pytest.raises(AssertionError):
+    def test_init_invalid_border(self) -> None:
+        with pytest.raises(TypeError):
+            RandomAffine(input_size=(128, 128), border=640.0)
+
+        with pytest.raises(TypeError):
+            RandomAffine(input_size=(128, 128), border=[640.0, 640.0])
+
+    def test_init_invalid_max_translate_ratio(self) -> None:
+        with pytest.raises(ValueError, match=r"max_translate_ratio must be in \[0, 1\]."):
             RandomAffine(input_size=(112, 224), max_translate_ratio=1.5)
 
+        with pytest.raises(ValueError, match=r"max_translate_ratio must be in \[0, 1\]."):
+            RandomAffine(input_size=(112, 224), max_translate_ratio=-1)
+
     def test_init_invalid_scaling_ratio_range_inverse_order(self) -> None:
-        with pytest.raises(AssertionError):
+        with pytest.raises(ValueError, match=r"scaling_ratio_range\[0\] must be less than scaling_ratio_range\[1\]."):
             RandomAffine(input_size=(112, 224), scaling_ratio_range=(1.5, 0.5))
 
     def test_init_invalid_scaling_ratio_range_zero_value(self) -> None:
-        with pytest.raises(AssertionError):
+        with pytest.raises(ValueError, match=r"scaling_ratio_range\[0\] must be greater than 0."):
             RandomAffine(input_size=(112, 224), scaling_ratio_range=(0, 0.5))
 
     def test_init_set_border_automatically(self, random_affine: RandomAffine) -> None:

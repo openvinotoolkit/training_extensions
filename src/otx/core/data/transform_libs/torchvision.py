@@ -1322,7 +1322,7 @@ class RandomAffine(tvt_v2.Transform, NumpytoTVTensorMixin):
         max_translate_ratio: float = 0.1,
         scaling_ratio_range: Sequence[float] = (0.5, 1.5),
         max_shear_degree: float = 2.0,
-        border: Sequence[int] | None = None,  # (H, W)
+        border: int | Sequence[int] | None = None,  # (H, W)
         border_scale: Sequence[float] = (-0.5, -0.5),
         border_val: Sequence[int] = (114, 114, 114),
         bbox_clip_border: bool = True,
@@ -1330,9 +1330,24 @@ class RandomAffine(tvt_v2.Transform, NumpytoTVTensorMixin):
     ) -> None:
         super().__init__()
 
-        assert 0 <= max_translate_ratio <= 1  # noqa: S101
-        assert scaling_ratio_range[0] <= scaling_ratio_range[1]  # noqa: S101
-        assert scaling_ratio_range[0] > 0  # noqa: S101
+        if border is not None and not (
+            isinstance(border, int) or (isinstance(border, Sequence) and all(isinstance(b, int) for b in border))
+        ):
+            msg = f"border must be int or Sequence[int], but got `{type(border)}`."
+            raise TypeError(msg)
+
+        if max_translate_ratio < 0 or max_translate_ratio > 1:
+            msg = "max_translate_ratio must be in [0, 1]."
+            raise ValueError(msg)
+
+        if scaling_ratio_range[0] > scaling_ratio_range[1]:
+            msg = "scaling_ratio_range[0] must be less than scaling_ratio_range[1]."
+            raise ValueError(msg)
+
+        if scaling_ratio_range[0] <= 0:
+            msg = "scaling_ratio_range[0] must be greater than 0."
+            raise ValueError(msg)
+
         self.input_size = input_size
         self.max_rotate_degree = max_rotate_degree
         self.max_translate_ratio = max_translate_ratio
@@ -1354,6 +1369,9 @@ class RandomAffine(tvt_v2.Transform, NumpytoTVTensorMixin):
                 int(self.input_size[0] * self.border_scale[0]),
                 int(self.input_size[1] * self.border_scale[1]),
             )
+        elif isinstance(self._border, int):
+            self._border = (self._border, self._border)
+
         return self._border
 
     @cache_randomness
@@ -1495,7 +1513,8 @@ class CachedMosaic(tvt_v2.Transform, NumpytoTVTensorMixin):
         super().__init__()
 
         if mosaic_size is not None and not (
-            isinstance(mosaic_size, int) or (isinstance(mosaic_size, Sequence) and isinstance(mosaic_size[0], int))
+            isinstance(mosaic_size, int)
+            or (isinstance(mosaic_size, Sequence) and all(isinstance(ms, int) for ms in mosaic_size))
         ):
             msg = f"mosaic_size must be int or Sequence[int], but got `{type(mosaic_size)}`."
             raise TypeError(msg)
@@ -1834,7 +1853,8 @@ class CachedMixUp(tvt_v2.Transform, NumpytoTVTensorMixin):
         super().__init__()
 
         if mixup_size is not None and not (
-            isinstance(mixup_size, int) or (isinstance(mixup_size, Sequence) and isinstance(mixup_size[0], int))
+            isinstance(mixup_size, int)
+            or (isinstance(mixup_size, Sequence) and all(isinstance(ms, int) for ms in mixup_size))
         ):
             msg = f"mixup_size must be int or Sequence[int], but got `{type(mixup_size)}`."
             raise TypeError(msg)
@@ -2217,7 +2237,8 @@ class Pad(tvt_v2.Transform, NumpytoTVTensorMixin):
         super().__init__()
 
         if pad_size is not None and not (
-            isinstance(pad_size, int) or (isinstance(pad_size, Sequence) and isinstance(pad_size[0], int))
+            isinstance(pad_size, int)
+            or (isinstance(pad_size, Sequence) and all(isinstance(ps, int) for ps in pad_size))
         ):
             msg = f"pad_size must be int or Sequence[int], but got `{type(pad_size)}`."
             raise TypeError(msg)
