@@ -38,75 +38,74 @@ overrides:
         min_lrschedule_patience: 3
   data:
     task: DETECTION
-    config:
-      stack_images: True
-      data_format: coco_instances
-      train_subset:
-        batch_size: 4
-        to_tv_image: True
-        transforms:
-          - class_path: torchvision.transforms.v2.RandomPhotometricDistort
-            init_args:
-              p: 0.5
-          - class_path: torchvision.transforms.v2.RandomZoomOut
-            init_args:
-              fill: 0
-          - class_path: otx.core.data.transform_libs.torchvision.RandomIoUCrop
-            init_args:
-              p: 0.8
-          - class_path: torchvision.transforms.v2.SanitizeBoundingBoxes
-          - class_path: torchvision.transforms.v2.RandomHorizontalFlip
-          - class_path: otx.core.data.transform_libs.torchvision.Resize
-            init_args:
-              scale:
-                - 640
-                - 640
-              keep_ratio: false
-              transform_bbox: true
-              is_numpy_to_tvtensor: true
-          - class_path: torchvision.transforms.v2.ToImage
-          - class_path: torchvision.transforms.v2.ToDtype
-            init_args:
-              dtype: ${as_torch_dtype:torch.float32}
-              scale: True
-          - class_path: torchvision.transforms.v2.SanitizeBoundingBoxes
-          - class_path: otx.core.data.transform_libs.torchvision.ConvertBox
-            init_args:
-              out_fmt: 'cxcywh'
-              normalize: True
-        sampler:
-          class_path: otx.algo.samplers.balanced_sampler.BalancedSampler
-      val_subset:
-        batch_size: 8
-        to_tv_image: True
-        transforms:
-          - class_path: otx.core.data.transform_libs.torchvision.Resize
-            init_args:
-              scale:
-                - 640
-                - 640
-              keep_ratio: false
-              transform_bbox: true
-              is_numpy_to_tvtensor: true
-          - class_path: torchvision.transforms.v2.ToImage
-          - class_path: torchvision.transforms.v2.ToDtype
-            init_args:
-              dtype: ${as_torch_dtype:torch.float32}
-              scale: True
-      test_subset:
-        batch_size: 8
-        to_tv_image: True
-        transforms:
-          - class_path: otx.core.data.transform_libs.torchvision.Resize
-            init_args:
-              scale:
-                - 640
-                - 640
-              keep_ratio: false
-              transform_bbox: true
-              is_numpy_to_tvtensor: true
-          - class_path: torchvision.transforms.v2.ToImage
-          - class_path: torchvision.transforms.v2.ToDtype
-            init_args:
-              dtype: ${as_torch_dtype:torch.float32}
-              scale: True
+    stack_images: True
+    data_format: coco_instances
+    train_subset:
+      batch_size: 4
+      to_tv_image: True
+      transforms:
+        - class_path: torchvision.transforms.v2.RandomPhotometricDistort
+          init_args:
+            p: 0.5
+        - class_path: torchvision.transforms.v2.RandomZoomOut
+          init_args:
+            fill: 0
+        - class_path: otx.core.data.transform_libs.torchvision.RandomIoUCrop
+          init_args:
+            p: 0.8
+        - class_path: torchvision.transforms.v2.SanitizeBoundingBoxes
+        - class_path: torchvision.transforms.v2.RandomHorizontalFlip
+        - class_path: otx.core.data.transform_libs.torchvision.Resize
+          init_args:
+            scale:
+              - 640
+              - 640
+            keep_ratio: false
+            transform_bbox: true
+            is_numpy_to_tvtensor: true
+        - class_path: torchvision.transforms.v2.ToImage
+        - class_path: torchvision.transforms.v2.ToDtype
+          init_args:
+            dtype: ${as_torch_dtype:torch.float32}
+            scale: True
+        - class_path: torchvision.transforms.v2.SanitizeBoundingBoxes
+        - class_path: otx.core.data.transform_libs.torchvision.ConvertBox
+          init_args:
+            out_fmt: 'cxcywh'
+            normalize: True
+      sampler:
+        class_path: otx.algo.samplers.balanced_sampler.BalancedSampler
+    val_subset:
+      batch_size: 8
+      to_tv_image: True
+      transforms:
+        - class_path: otx.core.data.transform_libs.torchvision.Resize
+          init_args:
+            scale:
+              - 640
+              - 640
+            keep_ratio: false
+            transform_bbox: true
+            is_numpy_to_tvtensor: true
+        - class_path: torchvision.transforms.v2.ToImage
+        - class_path: torchvision.transforms.v2.ToDtype
+          init_args:
+            dtype: ${as_torch_dtype:torch.float32}
+            scale: True
+    test_subset:
+      batch_size: 8
+      to_tv_image: True
+      transforms:
+        - class_path: otx.core.data.transform_libs.torchvision.Resize
+          init_args:
+            scale:
+              - 640
+              - 640
+            keep_ratio: false
+            transform_bbox: true
+            is_numpy_to_tvtensor: true
+        - class_path: torchvision.transforms.v2.ToImage
+        - class_path: torchvision.transforms.v2.ToDtype
+          init_args:
+            dtype: ${as_torch_dtype:torch.float32}
+            scale: True

@@ -383,7 +383,6 @@ class ONNXNMSop(torch.autograd.Function):
             [batch_index, class_index, box_index].
         """
         batch_size, num_class, _ = scores.shape
-
         score_threshold = float(score_threshold)
         iou_threshold = float(iou_threshold)
         indices = []

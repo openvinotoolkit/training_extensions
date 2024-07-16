@@ -60,13 +60,14 @@ class RTDETR(nn.Module):
             return self.criterion(output, targets)
         return self.postprocess(output, original_size)
 
-    def postprocess(self, outputs, original_size, deploy_mode=False):
+    def postprocess(self, outputs, original_size=None, deploy_mode=False):
         logits, boxes = outputs['pred_logits'], outputs['pred_boxes']
 
         # convert bbox to xyxy and rescale back to original size (resize in OTX)
         bbox_pred = torchvision.ops.box_convert(boxes, in_fmt='cxcywh', out_fmt='xyxy')
-        original_size = torch.tensor(original_size).to(bbox_pred.device)
-        bbox_pred *= original_size.repeat(1, 2).unsqueeze(1)
+        if not deploy_mode and original_size is not None:
+            original_size = torch.tensor(original_size).to(bbox_pred.device)
+            bbox_pred *= original_size.repeat(1, 2).unsqueeze(1)
 
         # perform scores computation and gather topk results
         scores = F.sigmoid(logits)
@@ -87,9 +88,13 @@ class RTDETR(nn.Module):
 
         return scores_list, boxes_list, labels_list
 
-    def export(self, *inputs, **kwargs):
-        images = inputs[0]
-        return self.postprocess(self._forward_features(images), inputs[1][0]["batch_input_shape"], deploy_mode=True)
+    def export(
+        self,
+        batch_inputs: Tensor,
+        batch_img_metas: list[dict],
+        explain_mode: bool = False,
+    ) -> dict[str, Any]:
+        return self.postprocess(self._forward_features(batch_inputs), deploy_mode=True)
 
 
 class OTX_RTDETR(ExplainableOTXDetModel):
@@ -220,7 +225,7 @@ class OTX_RTDETR(ExplainableOTXDetModel):
             input_size=self.image_size,
             mean=self.mean,
             std=self.std,
-            resize_mode="fit_to_window_letterbox",
+            resize_mode="standard",
             swap_rgb=False,
             via_onnx=False,
             onnx_export_configuration={
@@ -228,6 +233,9 @@ class OTX_RTDETR(ExplainableOTXDetModel):
                 "output_names": ["bboxes", "labels", "scores"],
                 "dynamic_axes": {
                     "images": {0: "batch", 2: "height", 3: "width"},
+                    "boxes": {0: "batch", 1: "num_dets"},
+                    "labels": {0: "batch", 1: "num_dets"},
+                    "scores": {0: "batch", 1: "num_dets"},
                 },
                 "autograd_inlining": False,
                 "opset_version": 16
