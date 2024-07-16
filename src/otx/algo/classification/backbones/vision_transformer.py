@@ -6,7 +6,7 @@
 from __future__ import annotations
 
 from functools import partial
-from typing import TYPE_CHECKING, Callable, Literal
+from typing import TYPE_CHECKING, Any, Callable, Literal
 
 import torch
 from timm.layers import (
@@ -90,7 +90,7 @@ class VisionTransformer(BaseModule):
         lora: Enable LoRA training.
     """
 
-    arch_zoo = {  # noqa: RUF012
+    arch_zoo: dict[str, dict] = {  # noqa: RUF012
         **dict.fromkeys(
             ["vit-t", "vit-tiny"],
             {
@@ -145,6 +145,9 @@ class VisionTransformer(BaseModule):
                 "embed_dim": 384,
                 "depth": 12,
                 "num_heads": 6,
+                "reg_tokens": 4,
+                "no_embed_class": True,
+                "init_values": 1e-5,
             },
         ),
         **dict.fromkeys(
@@ -154,6 +157,9 @@ class VisionTransformer(BaseModule):
                 "embed_dim": 768,
                 "depth": 12,
                 "num_heads": 12,
+                "reg_tokens": 4,
+                "no_embed_class": True,
+                "init_values": 1e-5,
             },
         ),
         **dict.fromkeys(
@@ -163,6 +169,9 @@ class VisionTransformer(BaseModule):
                 "embed_dim": 1024,
                 "depth": 24,
                 "num_heads": 16,
+                "reg_tokens": 4,
+                "no_embed_class": True,
+                "init_values": 1e-5,
             },
         ),
         **dict.fromkeys(
@@ -172,6 +181,9 @@ class VisionTransformer(BaseModule):
                 "embed_dim": 1536,
                 "depth": 40,
                 "num_heads": 24,
+                "reg_tokens": 4,
+                "no_embed_class": True,
+                "init_values": 1e-5,
                 "mlp_ratio": 2.66667 * 2,
                 "mlp_layer": SwiGLUPacked,
                 "act_layer": nn.SiLU,
@@ -194,8 +206,8 @@ class VisionTransformer(BaseModule):
         qk_norm: bool = False,
         init_values: float | None = None,
         class_token: bool = True,
-        no_embed_class: bool = False,
-        reg_tokens: int = 0,
+        no_embed_class: bool | None = None,
+        reg_tokens: int | None = None,
         pre_norm: bool = False,
         dynamic_img_size: bool = False,
         dynamic_img_pad: bool = False,
@@ -216,21 +228,22 @@ class VisionTransformer(BaseModule):
             if arch not in set(self.arch_zoo):
                 msg = f"Arch {arch} is not in default archs {set(self.arch_zoo)}"
                 raise ValueError(msg)
-            arch_settings = self.arch_zoo[arch]
+            arch_settings: dict[str, Any] = self.arch_zoo[arch]
 
-        patch_size = patch_size or arch_settings["patch_size"]
-        embed_dim = embed_dim or arch_settings["embed_dim"]
-        depth = depth or arch_settings["depth"]
-        num_heads = num_heads or arch_settings["num_heads"]
-        mlp_layer = mlp_layer or arch_settings.get("mlp_layer", None) or Mlp
-        mlp_ratio = mlp_ratio or arch_settings.get("mlp_ratio", None) or 4.0
-        norm_layer = (
-            get_norm_layer(norm_layer) or arch_settings.get("norm_layer", None) or partial(nn.LayerNorm, eps=1e-6)
-        )
-        act_layer = get_act_layer(act_layer) or arch_settings.get("act_layer", None) or nn.GELU
+        self.img_size = img_size
+        self.patch_size = patch_size or arch_settings.get("patch_size", 16)
+        self.embed_dim = embed_dim or arch_settings.get("embed_dim", 768)
+        depth = depth or arch_settings.get("depth", 12)
+        num_heads = num_heads or arch_settings.get("num_heads", 12)
+        no_embed_class = no_embed_class or arch_settings.get("no_embed_class", False)
+        reg_tokens = reg_tokens or arch_settings.get("reg_tokens", 0)
+        init_values = init_values or arch_settings.get("init_values", None)
+        mlp_layer = mlp_layer or arch_settings.get("mlp_layer", Mlp)
+        mlp_ratio = mlp_ratio or arch_settings.get("mlp_ratio", 4.0)
+        norm_layer = get_norm_layer(norm_layer) or arch_settings.get("norm_layer", partial(nn.LayerNorm, eps=1e-6))
+        act_layer = get_act_layer(act_layer) or arch_settings.get("act_layer", nn.GELU)
 
         self.num_classes = num_classes
-        self.embed_dim = embed_dim  # num_features for consistency with other models
         self.num_prefix_tokens = 1 if class_token else 0
         self.num_prefix_tokens += reg_tokens
         self.num_reg_tokens = reg_tokens
@@ -323,10 +336,33 @@ class VisionTransformer(BaseModule):
     def load_pretrained(self, checkpoint_path: Path, prefix: str = "") -> None:
         """Loads the pretrained weight to the VisionTransformer."""
         checkpoint_ext = checkpoint_path.suffix
-        if checkpoint_ext == ".npz":
+        if checkpoint_ext == ".npz":  # deit models
             self._load_npz_weights(self, checkpoint_path, prefix)
-        elif checkpoint_ext == ".pth":
-            self.load_state_dict(torch.load(checkpoint_path), strict=False)
+        elif checkpoint_ext == ".pth":  # dinov2 models
+
+            def resize_positional_embeddings(pos_embed: torch.Tensor, new_shape: tuple[int, int]) -> torch.Tensor:
+                # Resize the embeddings using bilinear interpolation.
+                pos_embed = pos_embed.permute(0, 2, 1).reshape(1, -1, 37, 37)  # 560 (img_size) / 14 (patch_size) = 37
+                pos_embed_resized = nn.functional.interpolate(
+                    pos_embed,
+                    size=(new_shape[0], new_shape[1]),
+                    mode="bilinear",
+                )
+                return pos_embed_resized.reshape(1, -1, new_shape[0] * new_shape[1]).permute(0, 2, 1)
+
+            # convert dinov2 pretrained weights
+            state_dict = torch.load(checkpoint_path)
+            state_dict.pop("mask_token", None)
+            state_dict["reg_token"] = state_dict.pop("register_tokens")
+            state_dict["cls_token"] = state_dict.pop("cls_token") + state_dict["pos_embed"][:, 0]
+
+            img_size = (self.img_size, self.img_size) if isinstance(self.img_size, int) else self.img_size
+            patch_size = (self.patch_size, self.patch_size) if isinstance(self.patch_size, int) else self.patch_size
+            state_dict["pos_embed"] = resize_positional_embeddings(
+                state_dict.pop("pos_embed")[:, 1:],
+                (img_size[0] // patch_size[0], img_size[1] // patch_size[1]),
+            )
+            self.load_state_dict(state_dict, strict=False)
         else:
             msg = f"Unsupported `checkpoint_extension` {checkpoint_ext}, please choose from 'npz' or 'pth'."
             raise ValueError(msg)
