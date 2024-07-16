@@ -145,7 +145,25 @@ class TestMinIoURandomCrop:
 class TestResize:
     @pytest.fixture()
     def resize(self) -> Resize:
-        return Resize(scale=(128, 96))  # (64, 64) -> (128, 96)
+        return Resize(input_size=(128, 96))  # (64, 64) -> (128, 96)
+
+    def test_init_without_input_size(self) -> None:
+        with pytest.raises(TypeError):
+            Resize()
+
+    def test_init_invalid_resize_size(self) -> None:
+        with pytest.raises(TypeError):
+            RandomAffine(input_size=(128, 128), resize_size=640.0)
+
+        with pytest.raises(TypeError):
+            RandomAffine(input_size=(128, 128), resize_size=[640.0, 640.0])
+
+    def test_init_invalid_scale_factor(self) -> None:
+        with pytest.raises(TypeError):
+            RandomAffine(input_size=(128, 128), scale_factor=640)
+
+        with pytest.raises(TypeError):
+            RandomAffine(input_size=(128, 128), scale_factor=[640, 640])
 
     @pytest.mark.parametrize(
         ("keep_ratio", "expected_shape", "expected_scale_factor"),
@@ -683,9 +701,20 @@ class TestPad:
 
 
 class TestRandomResize:
+    def test_init_without_input_size(self) -> None:
+        with pytest.raises(TypeError):
+            RandomResize()
+
+    def test_init_invalid_resize_size(self) -> None:
+        with pytest.raises(TypeError):
+            RandomResize(input_size=(128, 128), resize_size=[640.0])
+
+        with pytest.raises(TypeError):
+            RandomResize(input_size=(128, 128), resize_size=[[640.0, 640.0]])
+
     def test_init(self):
-        transform = RandomResize((224, 224), (1.0, 2.0))
-        assert transform.scale == (224, 224)
+        transform = RandomResize(input_size=(224, 224), ratio_range=(1.0, 2.0))
+        assert transform.resize_size == (224, 224)
 
     def test_repr(self):
         transform = RandomResize((224, 224), (1.0, 2.0))
@@ -696,8 +725,8 @@ class TestRandomResize:
         entity = deepcopy(fxt_inst_seg_data_entity[0])
         entity.image = entity.image.transpose(1, 2, 0)
 
-        # choose target scale from init when override is True
-        transform = RandomResize((224, 224), (1.0, 2.0))
+        # choose target resize_size from init when override is True
+        transform = RandomResize(input_size=(224, 224), ratio_range=(1.0, 2.0))
 
         results = transform(deepcopy(entity))
 
@@ -707,7 +736,13 @@ class TestRandomResize:
         assert results.img_info.img_shape[1] <= 448
 
         # keep ratio is True
-        transform = RandomResize((224, 224), (1.0, 2.0), keep_ratio=True, transform_bbox=True, transform_mask=True)
+        transform = RandomResize(
+            input_size=(224, 224),
+            ratio_range=(1.0, 2.0),
+            keep_ratio=True,
+            transform_bbox=True,
+            transform_mask=True,
+        )
 
         results = transform(deepcopy(entity))
 
@@ -728,12 +763,24 @@ class TestRandomResize:
         assert results.masks.shape[2] <= 448
 
         # keep ratio is False
-        transform = RandomResize((224, 224), (1.0, 2.0), keep_ratio=False, transform_bbox=True, transform_mask=True)
+        transform = RandomResize(
+            input_size=(224, 224),
+            ratio_range=(1.0, 2.0),
+            keep_ratio=False,
+            transform_bbox=True,
+            transform_mask=True,
+        )
 
         results = transform(deepcopy(entity))
 
-        # choose target scale from init when override is False and scale is a list of tuples
-        transform = RandomResize([(448, 224), (224, 112)], keep_ratio=False, transform_bbox=True, transform_mask=True)
+        # choose target resize_size from init when override is False and resize_size is a list of tuples
+        transform = RandomResize(
+            input_size=(224, 224),
+            resize_size=[(448, 224), (224, 112)],
+            keep_ratio=False,
+            transform_bbox=True,
+            transform_mask=True,
+        )
 
         results = transform(deepcopy(entity))
 
@@ -742,9 +789,9 @@ class TestRandomResize:
         assert results.img_info.img_shape[0] >= 224
         assert results.img_info.img_shape[0] <= 448
 
-        # the type of scale is invalid in init
+        # the type of resize_size is invalid in init
         with pytest.raises(NotImplementedError):
-            RandomResize([(448, 224), [224, 112]], keep_ratio=True)(deepcopy(entity))
+            RandomResize(input_size=(224, 224), resize_size=[(448, 224), [224, 112]], keep_ratio=True)(deepcopy(entity))
 
 
 class TestRandomCrop:

@@ -395,7 +395,7 @@ class SSD(ExplainableOTXDetModel):
         if isinstance(dataset.transforms, Compose):
             for transform in dataset.transforms.transforms:
                 if isinstance(transform, Resize):
-                    target_wh = transform.scale
+                    target_wh = transform.resize_size
         if target_wh is None:
             target_wh = (864, 864)
             msg = f"Cannot get target_wh from the dataset. Assign it with the default value: {target_wh}"

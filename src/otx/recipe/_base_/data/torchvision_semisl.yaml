@@ -16,7 +16,7 @@ train_subset:
   transforms:
     - class_path: otx.core.data.transform_libs.torchvision.Resize
       init_args:
-        scale: 224
+        input_size: 224 # TODO (eunwoo): integrate this into a common part
     - class_path: otx.core.data.transform_libs.torchvision.RandomFlip
       init_args:
         prob: 0.5
@@ -40,7 +40,7 @@ val_subset:
   transforms:
     - class_path: otx.core.data.transform_libs.torchvision.Resize
       init_args:
-        scale: 224
+        input_size: 224 # TODO (eunwoo): integrate this into a common part
         is_numpy_to_tvtensor: true
     - class_path: torchvision.transforms.v2.ToDtype
       init_args:
@@ -61,7 +61,7 @@ test_subset:
   transforms:
     - class_path: otx.core.data.transform_libs.torchvision.Resize
       init_args:
-        scale: 224
+        input_size: 224 # TODO (eunwoo): integrate this into a common part
         is_numpy_to_tvtensor: true
     - class_path: torchvision.transforms.v2.ToDtype
       init_args:
@@ -82,7 +82,7 @@ unlabeled_subset:
     weak_transforms:
       - class_path: otx.core.data.transform_libs.torchvision.Resize
         init_args:
-          scale: 224
+          input_size: 224 # TODO (eunwoo): integrate this into a common part
       - class_path: otx.core.data.transform_libs.torchvision.RandomFlip
         init_args:
           prob: 0.5
@@ -104,7 +104,7 @@ unlabeled_subset:
     strong_transforms:
       - class_path: otx.core.data.transform_libs.torchvision.Resize
         init_args:
-          scale: 224
+          input_size: 224 # TODO (eunwoo): integrate this into a common part
       - class_path: otx.core.data.transform_libs.torchvision.RandomFlip
         init_args:
           prob: 0.5

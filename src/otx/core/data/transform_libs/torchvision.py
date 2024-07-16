@@ -476,7 +476,8 @@ class Resize(tvt_v2.Transform, NumpytoTVTensorMixin):
     TODO : optimize logic to torcivision pipeline
 
     Args:
-        scale (int or Sequence[int]): Images scales for resizing with (height, width). Defaults to None
+        input_size (int or Sequence[int]): Images scales for resizing with (height, width).
+            Defaults to None
         scale_factor (float or Sequence[float]): Scale factors for resizing with (height, width).
             Defaults to None.
         keep_ratio (bool): Whether to keep the aspect ratio when resizing the
@@ -497,7 +498,9 @@ class Resize(tvt_v2.Transform, NumpytoTVTensorMixin):
 
     def __init__(
         self,
-        scale: int | Sequence[int] | None = None,  # (H, W)
+        input_size: Sequence[int],  # (H, W)
+        resize_size: int | Sequence[int] | None = None,
+        resize_size_scale: Sequence[float] = (1.0, 1.0),  # (H, W)
         scale_factor: float | Sequence[float] | None = None,  # (H, W)
         keep_ratio: bool = False,
         clip_object_border: bool = True,
@@ -510,22 +513,17 @@ class Resize(tvt_v2.Transform, NumpytoTVTensorMixin):
     ) -> None:
         super().__init__()
 
-        assert scale is not None or scale_factor is not None, "`scale` and`scale_factor` can not both be `None`"  # noqa: S101
+        if resize_size is None or scale_factor is None:
+            msg = "resize_size will be set to the default value because both resize_size and scale_factor are None."
+            logger.warning(msg)
 
-        if scale is None:
-            self.scale = None
-        elif isinstance(scale, int):
-            self.scale = (scale, scale)
-        else:
-            self.scale = tuple(scale)  # type: ignore[assignment]
+        if resize_size is not None and not (
+            isinstance(resize_size, int)
+            or (isinstance(resize_size, Sequence) and all(isinstance(r, int) for r in resize_size))
+        ):
+            msg = f"resize_size must be int or Sequence[int], but got `{type(resize_size)}`."
+            raise TypeError(msg)
 
-        self.transform_bbox = transform_bbox
-        self.transform_point = transform_point
-        self.transform_mask = transform_mask
-        self.interpolation = interpolation
-        self.interpolation_mask = interpolation_mask
-        self.keep_ratio = keep_ratio
-        self.clip_object_border = clip_object_border
         if scale_factor is None:
             self.scale_factor = None
         elif isinstance(scale_factor, float):
@@ -536,7 +534,39 @@ class Resize(tvt_v2.Transform, NumpytoTVTensorMixin):
             msg = f"expect scale_factor is float or Sequence[float], but get {type(scale_factor)}"
             raise TypeError(msg)
 
+        self.input_size = input_size
+        self.transform_bbox = transform_bbox
+        self.transform_point = transform_point
+        self.transform_mask = transform_mask
+        self.interpolation = interpolation
+        self.interpolation_mask = interpolation_mask
+        self.keep_ratio = keep_ratio
+        self.clip_object_border = clip_object_border
         self.is_numpy_to_tvtensor = is_numpy_to_tvtensor
+
+        # for configurable input size
+        self._resize_size = resize_size
+        self.resize_size_scale = resize_size_scale
+
+    @property
+    def resize_size(self) -> tuple[int, int] | None:
+        """Resize size for resizing with (height, width)."""
+        if self.scale_factor is not None:
+            return None
+
+        if self._resize_size is None:
+            self._resize_size = (
+                int(self.input_size[0] * self.resize_size_scale[0]),
+                int(self.input_size[1] * self.resize_size_scale[1]),
+            )
+        elif isinstance(self._resize_size, int):
+            self._resize_size = (self._resize_size, self._resize_size)
+
+        return (self._resize_size[0], self._resize_size[1])
+
+    @resize_size.setter
+    def resize_size(self, value: int | Sequence[int] | None) -> None:
+        self._resize_size = value
 
     def _resize_img(self, inputs: T_OTXDataEntity) -> tuple[T_OTXDataEntity, tuple[float, float] | None]:
         """Resize images with inputs.img_info.img_shape."""
@@ -544,7 +574,7 @@ class Resize(tvt_v2.Transform, NumpytoTVTensorMixin):
         if (img := getattr(inputs, "image", None)) is not None:
             img = to_np_image(img)
             img_shape = get_image_shape(img)
-            scale: tuple[int, int] = self.scale or scale_size(
+            scale: tuple[int, int] = self.resize_size or scale_size(
                 img_shape,
                 self.scale_factor,  # type: ignore[arg-type]
             )  # (H, W)
@@ -617,7 +647,7 @@ class Resize(tvt_v2.Transform, NumpytoTVTensorMixin):
 
     def __repr__(self) -> str:
         repr_str = self.__class__.__name__
-        repr_str += f"(scale={self.scale}, "
+        repr_str += f"(scale={self.resize_size}, "
         repr_str += f"scale_factor={self.scale_factor}, "
         repr_str += f"keep_ratio={self.keep_ratio}, "
         repr_str += f"clip_object_border={self.clip_object_border}, "
@@ -2387,7 +2417,7 @@ class RandomResize(tvt_v2.Transform, NumpytoTVTensorMixin):
     Reference : https://github.com/open-mmlab/mmcv/blob/v2.1.0/mmcv/transforms/processing.py#L1381-L1562
 
     Args:
-        scale (Sequence[int | tuple[int, int]]): Images scales for resizing with (height, width).
+        resize_size (Sequence[int | tuple[int, int]]): Images scales for resizing with (height, width).
             Defaults to None.
         ratio_range (Sequence[float], optional): (min_ratio, max_ratio). Defaults to None.
         is_numpy_to_tvtensor (bool): Whether convert outputs to tensor. Defaults to False.
@@ -2396,19 +2426,53 @@ class RandomResize(tvt_v2.Transform, NumpytoTVTensorMixin):
 
     def __init__(
         self,
-        scale: Sequence[int | tuple[int, int]],  # (H, W)
+        input_size: Sequence[int],  # (H, W)
+        resize_size: Sequence[int | tuple[int, int]] | None = None,  # (H, W)
+        resize_size_scale: Sequence[float] = (1.0, 1.0),  # (H, W)
         ratio_range: Sequence[float] | None = None,
         is_numpy_to_tvtensor: bool = False,
         **resize_kwargs,
     ) -> None:
         super().__init__()
-        if isinstance(scale, list):
-            scale = tuple(scale)
-        self.scale = scale
+        if resize_size is not None and (
+            not isinstance(resize_size, Sequence)
+            or not (
+                all(isinstance(rs, int) for rs in resize_size)
+                or all(isinstance(rs, tuple) and all(isinstance(ps, int) for ps in rs) for rs in resize_size)
+            )
+        ):
+            msg = f"resize_size must be Sequence[int] or Sequence[tuple[int, int]], but got `{type(resize_size)}"
+            if isinstance(resize_size, Sequence):
+                msg += f"[{type(resize_size[0])}"
+                if isinstance(resize_size[0], tuple):
+                    msg += f"[{type(resize_size[0][0])}]"
+                msg += "]"
+            msg += "`."
+            raise TypeError(msg)
+
+        if isinstance(resize_size, list):
+            resize_size = tuple(resize_size)
+
+        # for configurable input size
+        self._resize_size = resize_size
+        self.resize_size_scale = resize_size_scale
+
+        self.input_size = input_size
         self.ratio_range = ratio_range
         self.resize_kwargs = resize_kwargs
         self.is_numpy_to_tvtensor = is_numpy_to_tvtensor
-        self.resize = Resize(scale=0, **resize_kwargs)
+        self.resize = Resize(input_size=input_size, resize_size=0, **resize_kwargs)
+
+    @property
+    def resize_size(self) -> Sequence[int | tuple[int, int]]:
+        """Get resize size."""
+        if self._resize_size is None:
+            self._resize_size = (
+                int(self.input_size[0] * self.resize_size_scale[0]),
+                int(self.input_size[1] * self.resize_size_scale[1]),
+            )
+
+        return self._resize_size
 
     @staticmethod
     def _random_sample(scales: Sequence[tuple[int, int]]) -> tuple:
@@ -2422,9 +2486,16 @@ class RandomResize(tvt_v2.Transform, NumpytoTVTensorMixin):
         Returns:
             (tuple): The targeted scale of the image to be resized.
         """
-        assert isinstance(scales, Sequence)  # noqa: S101
-        assert all(isinstance(scale, tuple) for scale in scales)  # noqa: S101
-        assert len(scales) == 2  # noqa: S101
+        if not isinstance(scales, Sequence):
+            msg = f"scales must be Sequence, but got {type(scales)}."
+            raise TypeError(msg)
+        if not all(isinstance(scale, tuple) for scale in scales):
+            msg = f"All elements in scales must be tuple, but got {[type(scale) for scale in scales]}."
+            raise TypeError(msg)
+        if len(scales) != 2:
+            msg = f"scales must be a sequence of 2, but got {len(scales)}."
+            raise ValueError(msg)
+
         scale_0 = [scales[0][0], scales[1][0]]
         scale_1 = [scales[0][1], scales[1][1]]
         edge_0 = np.random.randint(min(scale_0), max(scale_0) + 1)
@@ -2447,10 +2518,18 @@ class RandomResize(tvt_v2.Transform, NumpytoTVTensorMixin):
         Returns:
             (tuple): The targeted scale of the image to be resized.
         """
-        assert isinstance(scale, Sequence)  # noqa: S101
-        assert len(scale) == 2  # noqa: S101
+        if not isinstance(scale, Sequence):
+            msg = f"scale must be Sequence, but got {type(scale)}."
+            raise TypeError(msg)
+        if len(scale) != 2:
+            msg = f"scale must be a sequence of 2, but got {len(scale)}."
+            raise ValueError(msg)
+
         min_ratio, max_ratio = ratio_range
-        assert min_ratio <= max_ratio  # noqa: S101
+        if min_ratio > max_ratio:
+            msg = f"min_ratio must be less than max_ratio, but got {min_ratio} and {max_ratio}."
+            raise ValueError(msg)
+
         ratio = np.random.random_sample() * (max_ratio - min_ratio) + min_ratio
         return int(scale[0] * ratio), int(scale[1] * ratio)
 
@@ -2461,28 +2540,33 @@ class RandomResize(tvt_v2.Transform, NumpytoTVTensorMixin):
         Returns:
             (tuple): The targeted scale of the image to be resized.
         """
-        if isinstance(self.scale, tuple) and all(isinstance(s, int) for s in self.scale):
-            assert self.ratio_range is not None  # noqa: S101
-            assert len(self.ratio_range) == 2  # noqa: S101
-            scale = self._random_sample_ratio(self.scale, self.ratio_range)
-        elif all(isinstance(s, tuple) for s in self.scale):
-            scale = self._random_sample(self.scale)  # type: ignore[arg-type]
+        if isinstance(self.resize_size, Sequence) and all(isinstance(s, int) for s in self.resize_size):
+            if self.ratio_range is None:
+                msg = "ratio_range must be specified when resize_size is a sequence of int."
+                raise ValueError(msg)
+            if len(self.ratio_range) != 2:
+                msg = f"ratio_range must be a sequence of 2, but got {len(self.ratio_range)}."
+                raise ValueError(msg)
+
+            scale = self._random_sample_ratio(self.resize_size, self.ratio_range)
+        elif all(isinstance(s, tuple) for s in self.resize_size):
+            scale = self._random_sample(self.resize_size)  # type: ignore[arg-type]
         else:
-            msg = f'Do not support sampling function for "{self.scale}"'
+            msg = f'Do not support sampling function for "{self.resize_size}"'
             raise NotImplementedError(msg)
 
         return scale
 
     def forward(self, *_inputs: T_OTXDataEntity) -> T_OTXDataEntity | None:
         """Transform function to resize images, bounding boxes, semantic segmentation map."""
-        self.resize.scale = self._random_scale()
+        self.resize.resize_size = self._random_scale()
         outputs = self.resize(*_inputs)
         return self.convert(outputs)
 
     def __repr__(self) -> str:
         # TODO (sungchul): update other's repr
         repr_str = self.__class__.__name__
-        repr_str += f"(scale={self.scale}, "
+        repr_str += f"(scale={self.resize_size}, "
         repr_str += f"ratio_range={self.ratio_range}, "
         repr_str += f"is_numpy_to_tvtensor={self.is_numpy_to_tvtensor}, "
         repr_str += f"resize_kwargs={self.resize_kwargs})"

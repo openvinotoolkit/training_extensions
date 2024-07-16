@@ -43,7 +43,7 @@ overrides:
         - class_path: otx.core.data.transform_libs.torchvision.MinIoURandomCrop
         - class_path: otx.core.data.transform_libs.torchvision.Resize
           init_args:
-            scale:
+            input_size: # TODO (eunwoo): integrate this into a common part
               - 864
               - 864
             transform_bbox: true
@@ -66,7 +66,7 @@ overrides:
       transforms:
         - class_path: otx.core.data.transform_libs.torchvision.Resize
           init_args:
-            scale:
+            input_size: # TODO (eunwoo): integrate this into a common part
               - 864
               - 864
             is_numpy_to_tvtensor: true
@@ -83,7 +83,7 @@ overrides:
       transforms:
         - class_path: otx.core.data.transform_libs.torchvision.Resize
           init_args:
-            scale:
+            input_size: # TODO (eunwoo): integrate this into a common part
               - 864
               - 864
             is_numpy_to_tvtensor: true

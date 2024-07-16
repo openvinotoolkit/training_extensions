@@ -18,7 +18,7 @@ train_subset:
   transforms:
     - class_path: otx.core.data.transform_libs.torchvision.Resize
       init_args:
-        scale:
+        input_size: # TODO (eunwoo): integrate this into a common part
           - 1024
           - 1024
         keep_ratio: true
@@ -50,7 +50,7 @@ val_subset:
   transforms:
     - class_path: otx.core.data.transform_libs.torchvision.Resize
       init_args:
-        scale:
+        input_size: # TODO (eunwoo): integrate this into a common part
           - 1024
           - 1024
         keep_ratio: true
@@ -82,7 +82,7 @@ test_subset:
   transforms:
     - class_path: otx.core.data.transform_libs.torchvision.Resize
       init_args:
-        scale:
+        input_size: # TODO (eunwoo): integrate this into a common part
           - 1024
           - 1024
         keep_ratio: true
