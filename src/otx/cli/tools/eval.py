@@ -36,11 +36,6 @@ from otx.cli.utils.parser import (
 from otx.core.data.adapter import get_dataset_adapter
 from otx.utils.logger import config_logger
 
-from otx.utils.logger import get_logger
-import time
-
-logger = get_logger()
-
 # pylint: disable=too-many-locals
 
 
@@ -143,7 +138,6 @@ def main():
     task = task_class(task_environment=environment)
 
     validation_dataset = dataset.get_subset(Subset.TESTING)
-    start_time = time.perf_counter()
     predicted_validation_dataset = task.infer(
         # temp (sungchul): remain annotation for visual prompting
         validation_dataset
@@ -151,8 +145,6 @@ def main():
         else validation_dataset.with_empty_annotations(),
         InferenceParameters(is_evaluation=False),
     )
-    total_time = time.perf_counter() - start_time
-    _avg_time_per_image = total_time / len(predicted_validation_dataset)
 
     resultset = ResultSetEntity(
         model=environment.model,
@@ -161,8 +153,6 @@ def main():
     )
     task.evaluate(resultset)
     assert resultset.performance is not None
-
-    logger.info(f"Avg time per image: {_avg_time_per_image} secs")
 
     output_path = Path(args.output) if args.output else config_manager.output_path
     performance = {resultset.performance.score.name: resultset.performance.score.value}
