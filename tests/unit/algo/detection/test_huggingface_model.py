@@ -43,7 +43,10 @@ class TestHuggingFaceModelForDetection:
                 ),
             ],
             images=[torch.randn(3, 48, 48), torch.randn(3, 48, 48)],
-            imgs_info=[ImageInfo(img_idx=1, img_shape=(48, 48), ori_shape=(48, 48)), ImageInfo(img_idx=2, img_shape=(48, 48), ori_shape=(48, 48))],
+            imgs_info=[
+                ImageInfo(img_idx=1, img_shape=(48, 48), ori_shape=(48, 48)),
+                ImageInfo(img_idx=2, img_shape=(48, 48), ori_shape=(48, 48)),
+            ],
             batch_size=2,
         )
 
