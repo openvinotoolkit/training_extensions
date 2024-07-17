@@ -9,7 +9,7 @@ import platform
 import subprocess
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal
 from urllib.parse import urlparse
 
 import pytest
@@ -248,21 +248,21 @@ def fxt_tags(fxt_user_name: str, fxt_version_tags: dict[str, str], fxt_accelerat
 
 
 @pytest.fixture(scope="session")
-def fxt_resume(request: pytest.FixtureRequest) -> Path | None:
-    resume = request.config.getoption("--resume")
-    if resume is not None:
-        resume = Path(resume)
-    msg = f"{resume = }"
-    log.info(msg)
-    return resume
-
-
-@pytest.fixture(scope="session")
-def fxt_resume_from(request: pytest.FixtureRequest) -> str:
+def fxt_resume_from(request: pytest.FixtureRequest) -> Path | None:
     resume_from = request.config.getoption("--resume-from")
+    if resume_from is not None:
+        resume_from = Path(resume_from)
     msg = f"{resume_from = }"
     log.info(msg)
     return resume_from
+
+
+@pytest.fixture(scope="session")
+def fxt_test_only(request: pytest.FixtureRequest) -> Literal["all", "train", "export", "optimize"] | None:
+    test_only = request.config.getoption("--test-only")
+    msg = f"{test_only = }"
+    log.info(msg)
+    return test_only
 
 
 @pytest.fixture()
@@ -277,8 +277,8 @@ def fxt_benchmark(
     fxt_deterministic: bool,
     fxt_accelerator: str,
     fxt_benchmark_reference: pd.DataFrame | None,
-    fxt_resume: Path | None,
-    fxt_resume_from: str,
+    fxt_resume_from: Path | None,
+    fxt_test_only: Literal["all", "train", "export", "optimize"] | None,
 ) -> Benchmark:
     """Configure benchmark."""
     return Benchmark(
@@ -292,8 +292,8 @@ def fxt_benchmark(
         deterministic=fxt_deterministic,
         accelerator=fxt_accelerator,
         reference_results=fxt_benchmark_reference,
-        resume=fxt_resume,
         resume_from=fxt_resume_from,
+        test_only=fxt_test_only,
     )
 
 

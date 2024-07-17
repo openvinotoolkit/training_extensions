@@ -120,19 +120,17 @@ def pytest_addoption(parser: pytest.Parser):
         "and reverted after run. Works only for v2.x assuming CLI compatibility.",
     )
     parser.addoption(
-        "--resume",
+        "--resume-from",
         type=str,
         help="Previous performance test directory which contains execution results. "
         "If training was already done in previous performance test, training is skipped and refer previous result.",
     )
     parser.addoption(
-        "--resume-from",
+        "--test-only",
         action="store",
-        default="train",
-        choices=("train", "export", "optimize"),
-        help="Which otx command to start from when resume argument is given. "
-        "Commands executed before `resume_from` are skipped and necessary OV IRs are copied from resume directory. "
-        "Choose train|export|optimize. Defaults to train.",
+        choices=("all", "train", "export", "optimize"),
+        help="Execute test only when resume argument is given. If necessary files are not found in resume directory, "
+        "necessary operations can be executed. Choose all|train|export|optimize.",
     )
     parser.addoption(
         "--open-subprocess",

@@ -51,12 +51,12 @@ class Benchmark:
         deterministic (bool): Whether to turn on deterministic training mode. Defaults to False.
         accelerator (str): Accelerator device on which to run benchmark. Defaults to gpu.
         reference_results (pd.DataFrame): Reference benchmark results for performance checking.
-        resume (Path | None, optional):
+        resume_from (Path | None, optional):
             Previous performance directory to load. If training was already done in previous performance test,
             training is skipped and refer previous result.
-        resume_from (str):
-            Which otx command to start from when resume argument is given.
-            Commands executed before `resume_from` are skipped and necessary OV IRs are copied from resume directory.
+        test_only (Literal["all", "train", "export", "optimize"] | None):
+            Execute test only when resume argument is given. If necessary files are not found in resume directory, 
+            necessary operations can be executed. Defaults to None.
     """
 
     @dataclass
@@ -123,8 +123,8 @@ class Benchmark:
         deterministic: bool = False,
         accelerator: str = "gpu",
         reference_results: pd.DataFrame | None = None,
-        resume: Path | None = None,
-        resume_from: str = "train",
+        resume_from: Path | None = None,
+        test_only: Literal["all", "train", "export", "optimize"] | None = None,
     ):
         self.data_root = data_root
         self.output_root = output_root
@@ -136,13 +136,12 @@ class Benchmark:
         self.deterministic = deterministic
         self.accelerator = accelerator
         self.reference_results = reference_results
-        self.resume = resume
-        if (resume_from == "export" and eval_upto == "train") or (
-            resume_from == "optimize" and eval_upto in ["train", "export"]
-        ):
-            msg = "resume_from should be set to previous otx command than eval_upto."
-            raise ValueError(msg)
         self.resume_from = resume_from
+        if (test_only == "export" and eval_upto == "train") or (
+            test_only == "optimize" and eval_upto in ["train", "export"]
+        ):
+            raise ValueError("test_only should be set to previous otx command than eval_upto.")
+        self.test_only = test_only
 
     def run(
         self,
@@ -185,7 +184,7 @@ class Benchmark:
                 tags["seed"] = str(seed)
 
                 # Train & test
-                resume_from = self._prepare_resume(tags, sub_work_dir)
+                copied_ops_dir = self._prepare_resume(tags, sub_work_dir)
                 command = [
                     "otx",
                     "train",
@@ -215,7 +214,7 @@ class Benchmark:
                 if self.num_epoch > 0:
                     command.extend(["--max_epochs", str(self.num_epoch)])
                 extra_metrics = {}
-                if resume_from is not None:
+                if "train" in copied_ops_dir:
                     command.append("--print_config")
                     with (sub_work_dir / ".latest" / "train" / "configs.yaml").open("w") as f:
                         self._run_command(command, stdout=f)  # replace previuos configs.yaml to new one
@@ -234,12 +233,11 @@ class Benchmark:
                     extra_metrics=extra_metrics,
                 )
 
-                if resume_from in [None, "train"]:
-                    self._run_test(sub_work_dir, dataset, tags, criteria, what2test="train")
+                self._run_test(sub_work_dir, dataset, tags, criteria, what2test="train")
 
                 # Export & test
-                if self.eval_upto in ["export", "optimize"] and resume_from != "optimize":
-                    if resume_from != "export":
+                if self.eval_upto in ["export", "optimize"]:
+                    if "export" not in copied_ops_dir:
                         command = [
                             "otx",
                             "export",
@@ -266,7 +264,7 @@ class Benchmark:
 
                 # Optimize & test
                 if self.eval_upto == "optimize":
-                    if resume_from != "optimize":
+                    if "optimize" not in copied_ops_dir:
                         command = [
                             "otx",
                             "optimize",
@@ -308,7 +306,7 @@ class Benchmark:
         result = summary.average(result, keys=["task", "model", "data_group", "data"])  # Average out seeds
         return result.set_index(["task", "model", "data_group", "data"])
 
-    def _prepare_resume(self, tags: dict[str, str], work_dir: Path) -> Literal["train", "export", "optimize"] | None:
+    def _prepare_resume(self, tags: dict[str, str], work_dir: Path) -> list[str]:
         if self.resume is None:
             return None
         prev_work_dir = self._find_corresponding_dir(tags)
@@ -317,7 +315,14 @@ class Benchmark:
 
         latest_dir = work_dir / ".latest"
 
-        prev_otx_cmd = None
+        if self.test_only is None:
+            copy_until = "train"
+        elif self.test_only == "all":
+            copy_until = "optimize"
+        else:
+            copy_until = self.test_only
+
+        copied_ops_dir = []
         for otx_cmd in ["train", "export", "optimize"]:
             prev_symlink = prev_work_dir / ".latest" / otx_cmd
             try:  # check symlink exists
@@ -335,18 +340,17 @@ class Benchmark:
             shutil.copytree(prev_cmd_dir, work_dir / prev_cmd_dir_name, ignore_dangling_symlinks=True)
             (latest_dir / otx_cmd).symlink_to(Path("..") / (work_dir / prev_cmd_dir_name).relative_to(work_dir))
 
-            prev_otx_cmd = otx_cmd
-            if otx_cmd == self.resume_from:
+            copied_ops_dir.append(otx_cmd)
+            if otx_cmd == copy_until:
                 break
 
-        if prev_otx_cmd != self.resume_from:
-            if prev_otx_cmd is None:
-                msg = f"{work_dir} starts from scratch."
-            else:
-                msg = f"resume_from is set to {prev_otx_cmd} for {work_dir}."
-            log.warning(f"There is no {otx_cmd} directory for {work_dir} in resume directory. " + msg)
+        if copy_until != otx_cmd:
+            log.warning(
+                f"There is no {otx_cmd} directory for {work_dir} in resume directory. "
+                f"{work_dir} starts from {otx_cmd}."
+            )
 
-        return prev_otx_cmd
+        return copied_ops_dir
 
     def _find_corresponding_dir(self, tags: dict[str, str]) -> Path | None:
         if self.resume is None:
@@ -372,6 +376,9 @@ class Benchmark:
         what2test: Literal["train", "export", "optimize"] = "train",
     ) -> None:
         """Run otx test and update result csv file to align it's indices to the current task."""
+        if self.test_only not in ["all", what2test, None]:
+            return
+
         replace_map = {
             "train": {"test_": "test/", "{pre}": "test/"},
             "export": {"test": what2test, "{pre}": f"{what2test}/"},
