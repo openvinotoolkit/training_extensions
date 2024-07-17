@@ -1,6 +1,8 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
+from copy import deepcopy
+
 import pytest
 from jsonargparse import Namespace
 from otx.cli.utils.jsonargparse import (
@@ -8,6 +10,7 @@ from otx.cli.utils.jsonargparse import (
     get_configuration,
     get_short_docstring,
     list_override,
+    namespace_override,
     patch_update_configs,
 )
 
@@ -15,7 +18,37 @@ from otx.cli.utils.jsonargparse import (
 @pytest.fixture()
 def fxt_configs() -> Namespace:
     return Namespace(
-        data=Namespace(batch_size=32, num_workers=4),
+        data=Namespace(
+            train_subset=Namespace(
+                batch_size=32,
+                num_workers=4,
+                transforms=[
+                    {
+                        "class_path": "otx.core.data.transform_libs.torchvision.Resize",
+                        "init_args": {
+                            "keep_ratio": True,
+                            "transform_bbox": True,
+                            "transform_mask": True,
+                            "scale": [1024, 1024],
+                        },
+                    },
+                    {
+                        "class_path": "otx.core.data.transform_libs.torchvision.Pad",
+                        "init_args": {"pad_to_square": True, "transform_mask": True},
+                    },
+                    {
+                        "class_path": "otx.core.data.transform_libs.torchvision.RandomFlip",
+                        "init_args": {"prob": 0.5, "is_numpy_to_tvtensor": True},
+                    },
+                    {"class_path": "torchvision.transforms.v2.ToDtype", "init_args": {"dtype": "torch.float32"}},
+                    {
+                        "class_path": "torchvision.transforms.v2.Normalize",
+                        "init_args": {"mean": [123.675, 116.28, 103.53], "std": [58.395, 57.12, 57.375]},
+                    },
+                ],
+                sampler=Namespace(class_path="torch.utils.data.RandomSampler", init_args={}),
+            ),
+        ),
         callbacks=[
             Namespace(
                 class_path="otx.algo.callbacks.iteration_timer.IterationTimer",
@@ -41,6 +74,104 @@ def fxt_configs() -> Namespace:
             ),
         ],
     )
+
+
+def test_namespace_override(fxt_configs) -> None:
+    cfg = deepcopy(fxt_configs)
+    with patch_update_configs():
+        # test for empty override
+        overrides = Namespace()
+        namespace_override(configs=cfg, key="data", overrides=overrides)
+        assert cfg.data.train_subset.batch_size == fxt_configs.data.train_subset.batch_size
+        assert cfg.data.train_subset.num_workers == fxt_configs.data.train_subset.num_workers
+        assert cfg.data.train_subset.transforms == fxt_configs.data.train_subset.transforms
+
+        # test for single key override
+        overrides = Namespace(train_subset=Namespace(batch_size=64, num_workers=8))
+
+        namespace_override(configs=cfg, key="data", overrides=overrides)
+
+        assert cfg.data.train_subset.batch_size == overrides.train_subset.batch_size
+        assert cfg.data.train_subset.num_workers == overrides.train_subset.num_workers
+
+        # test for dict of list by using list_override
+        overrides = Namespace(
+            train_subset=Namespace(
+                transforms=[
+                    {
+                        "class_path": "otx.core.data.transform_libs.torchvision.Resize",
+                        "init_args": {
+                            "keep_ratio": False,  # for boolean
+                            "scale": [512, 512],  # for tuple
+                        },
+                    },
+                    {
+                        "class_path": "otx.core.data.transform_libs.torchvision.Pad",
+                        "init_args": {"size_divisor": 32},  # add new key
+                    },
+                    {
+                        "class_path": "torchvision.transforms.v2.Normalize",
+                        "init_args": {"std": [1.0, 1.0, 1.0]},  # for the last component
+                    },
+                ],
+            ),
+        )
+
+        # to check before adding key
+        assert "size_divisor" not in cfg.data.train_subset.transforms[1]["init_args"]
+
+        namespace_override(configs=cfg, key="data", overrides=overrides)
+
+        # otx.core.data.transform_libs.torchvision.Resize
+        assert (
+            cfg.data.train_subset.transforms[0]["init_args"]["keep_ratio"]
+            == overrides.train_subset.transforms[0]["init_args"]["keep_ratio"]
+        )
+        assert (
+            cfg.data.train_subset.transforms[0]["init_args"]["scale"]
+            == overrides.train_subset.transforms[0]["init_args"]["scale"]
+        )
+        # otx.core.data.transform_libs.torchvision.Pad
+        assert "size_divisor" in cfg.data.train_subset.transforms[1]["init_args"]
+        assert (
+            cfg.data.train_subset.transforms[1]["init_args"]["size_divisor"]
+            == overrides.train_subset.transforms[1]["init_args"]["size_divisor"]
+        )
+        # torchvision.transforms.v2.Normalize
+        assert (
+            cfg.data.train_subset.transforms[-1]["init_args"]["std"]
+            == overrides.train_subset.transforms[-1]["init_args"]["std"]
+        )
+
+        # test for namespace override to update init_args
+        overrides = Namespace(
+            train_subset=Namespace(
+                sampler=Namespace(
+                    class_path="torch.utils.data.RandomSampler",
+                    init_args={"efficient_mode": True},
+                ),
+            ),
+        )
+
+        namespace_override(configs=cfg, key="data", overrides=overrides)
+
+        assert (
+            cfg.data.train_subset.sampler.init_args["efficient_mode"]
+            == overrides.train_subset.sampler.init_args["efficient_mode"]
+        )
+
+        # test for namespace override to update class_path
+        overrides = Namespace(
+            train_subset=Namespace(
+                sampler=Namespace(
+                    class_path="otx.algo.samplers.balanced_sampler.BalancedSampler",
+                ),
+            ),
+        )
+
+        namespace_override(configs=cfg, key="data", overrides=overrides)
+
+        assert cfg.data.train_subset.sampler.class_path == overrides.train_subset.sampler.class_path
 
 
 def test_list_override(fxt_configs) -> None:

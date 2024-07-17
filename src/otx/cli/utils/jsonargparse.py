@@ -1,6 +1,6 @@
 """Functions related to jsonargparse."""
 
-# Copyright (C) 2023 Intel Corporation
+# Copyright (C) 2023-2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
 from __future__ import annotations
@@ -139,10 +139,26 @@ def apply_config(self: ActionConfigFile, parser: ArgumentParser, cfg: Namespace,
             # This is a feature to handle the callbacks & logger override for user-convinience
             list_override(configs=cfg, key="callbacks", overrides=overrides.pop("callbacks", []))
             list_override(configs=cfg, key="logger", overrides=overrides.pop("logger", []))
+            namespace_override(configs=cfg, key="data", overrides=overrides.pop("data", Namespace()))
             cfg.update(overrides)
         if cfg.get(dest) is None:
             cfg[dest] = []
         cfg[dest].append(cfg_path)
+
+
+def namespace_override(configs: Namespace, key: str, overrides: Namespace) -> None:
+    """Overrides the nested dictionary type in the given configs with the provided override_dict.
+
+    Args:
+        configs (Namespace): The configuration object containing the key.
+        key (str): key of the configs want to override.
+        overrides (Namespace): The configuration object to override the existing ones.
+    """
+    for sub_key, sub_value in overrides.items():
+        if isinstance(sub_value, list):
+            list_override(configs=configs[key], key=sub_key, overrides=sub_value)
+        else:
+            configs[key].update(sub_value, sub_key)
 
 
 def list_override(configs: Namespace, key: str, overrides: list) -> None:
