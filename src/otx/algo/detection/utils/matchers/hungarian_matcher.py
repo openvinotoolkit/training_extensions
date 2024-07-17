@@ -1,15 +1,19 @@
-"""Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
-Modules to compute the matching cost and solve the corresponding LSAP.
+# Copyright (C) 2024 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 
-by lyuwenyu
 """
+Modules to compute the matching cost and solve the corresponding LSAP.
+"""
+
 
 import torch
 import torch.nn.functional as F
 from scipy.optimize import linear_sum_assignment
 from torch import nn
+from typing import Dict, List, Tuple
 
-from otx.algo.detection.utils import box_cxcywh_to_xyxy, generalized_box_iou
+from otx.algo.detection.utils.utils import box_cxcywh_to_xyxy, generalized_box_iou
 
 
 class HungarianMatcher(nn.Module):
@@ -22,7 +26,7 @@ class HungarianMatcher(nn.Module):
 
     __share__ = ["use_focal_loss"]
 
-    def __init__(self, weight_dict, use_focal_loss=False, alpha=0.25, gamma=2.0):
+    def __init__(self, weight_dict: Dict[str, float | int], alpha: float=0.25, gamma: float=2.0):
         """Creates the matcher
 
         Params:
@@ -34,15 +38,11 @@ class HungarianMatcher(nn.Module):
         self.cost_class = weight_dict["cost_class"]
         self.cost_bbox = weight_dict["cost_bbox"]
         self.cost_giou = weight_dict["cost_giou"]
-
-        self.use_focal_loss = use_focal_loss
         self.alpha = alpha
         self.gamma = gamma
 
-        assert self.cost_class != 0 or self.cost_bbox != 0 or self.cost_giou != 0, "all costs cant be 0"
-
     @torch.no_grad()
-    def forward(self, outputs, targets):
+    def forward(self, outputs: Dict[str, torch.Tensor], targets: List[Dict[str, torch.Tensor]]) -> List[Tuple[torch.Tensor, torch.Tensor]]:
         """Performs the matching
 
         Params:
@@ -65,11 +65,7 @@ class HungarianMatcher(nn.Module):
         bs, num_queries = outputs["pred_logits"].shape[:2]
 
         # We flatten to compute the cost matrices in a batch
-        if self.use_focal_loss:
-            out_prob = F.sigmoid(outputs["pred_logits"].flatten(0, 1))
-        else:
-            out_prob = outputs["pred_logits"].flatten(0, 1).softmax(-1)  # [batch_size * num_queries, num_classes]
-
+        out_prob = F.sigmoid(outputs["pred_logits"].flatten(0, 1))
         out_bbox = outputs["pred_boxes"].flatten(0, 1)  # [batch_size * num_queries, 4]
 
         # Also concat the target labels and boxes
@@ -79,13 +75,10 @@ class HungarianMatcher(nn.Module):
         # Compute the classification cost. Contrary to the loss, we don't use the NLL,
         # but approximate it in 1 - proba[target class].
         # The 1 is a constant that doesn't change the matching, it can be ommitted.
-        if self.use_focal_loss:
-            out_prob = out_prob[:, tgt_ids]
-            neg_cost_class = (1 - self.alpha) * (out_prob**self.gamma) * (-(1 - out_prob + 1e-8).log())
-            pos_cost_class = self.alpha * ((1 - out_prob) ** self.gamma) * (-(out_prob + 1e-8).log())
-            cost_class = pos_cost_class - neg_cost_class
-        else:
-            cost_class = -out_prob[:, tgt_ids]
+        out_prob = out_prob[:, tgt_ids]
+        neg_cost_class = (1 - self.alpha) * (out_prob**self.gamma) * (-(1 - out_prob + 1e-8).log())
+        pos_cost_class = self.alpha * ((1 - out_prob) ** self.gamma) * (-(out_prob + 1e-8).log())
+        cost_class = pos_cost_class - neg_cost_class
 
         # Compute the L1 cost between boxes
         cost_bbox = torch.cdist(out_bbox, tgt_bbox, p=1)

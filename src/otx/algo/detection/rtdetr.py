@@ -50,7 +50,6 @@ class RTDETR(nn.Module):
         self.num_top_queries = num_top_queries
         default_criterion = RTDetrCriterion(
             weight_dict={"loss_vfl": 1.0, "loss_bbox": 5, "loss_giou": 2},
-            losses=["vfl", "boxes"],
             num_classes=num_classes,
             gamma=2.0,
             alpha=0.75,
@@ -182,8 +181,8 @@ class OTX_RTDETR(ExplainableOTXDetModel):
             The latter is a list of lr scheduler configs which has a dictionary format.
         """
         param_groups = self.get_optim_params(self.model.optimizer_configuration, self.model)
-        optimizer = torch.optim.AdamW(param_groups, lr=1e-4, weight_decay=1e-4)
-        # optimizer = self.optimizer_callable(param_groups)
+        optimizer = self.optimizer_callable(param_groups)
+        optimizer = optimizer.__class__(optimizer.param_groups, **optimizer.defaults)
         schedulers = self.scheduler_callable(optimizer)
 
         def ensure_list(item: Any) -> list:  # noqa: ANN401

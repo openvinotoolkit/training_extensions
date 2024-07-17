@@ -1,16 +1,20 @@
+# Copyright (C) 2024 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+
+from __future__ import annotations
 import torch
 import torch.nn.functional as F
-import torchvision
 from torch import nn
 
-from otx.algo.detection.utils import (
-    HungarianMatcher,
+from otx.algo.detection.utils.utils import (
     box_cxcywh_to_xyxy,
     box_iou,
     generalized_box_iou,
     get_world_size,
     is_dist_available_and_initialized,
 )
+from otx.algo.detection.utils.matchers import HungarianMatcher
+from typing import Dict, List, Tuple
 
 
 class RTDetrCriterion(nn.Module):
@@ -20,77 +24,26 @@ class RTDetrCriterion(nn.Module):
         2) we supervise each pair of matched ground-truth / prediction (supervise class and box)
     """
 
-    def __init__(self, weight_dict, losses, alpha=0.2, gamma=2.0, eos_coef=1e-4, num_classes=80):
+    def __init__(self, weight_dict: Dict[str, int], alpha: float = 0.2,
+                 gamma: float = 2.0, num_classes: int = 80) -> None:
         """Create the criterion.
 
         Args:
             num_classes: number of object categories, omitting the special no-object category
             matcher: module able to compute a matching between targets and proposals
             weight_dict: dict containing as key the names of the losses and as values their relative weight.
-            eos_coef: relative classification weight applied to the no-object category
             losses: list of all the losses to be applied. See get_loss for list of available losses.
         """
         super().__init__()
         self.num_classes = num_classes
-        self.matcher = HungarianMatcher(
-            weight_dict={"cost_class": 2, "cost_bbox": 5, "cost_giou": 2}, use_focal_loss=True
-        )
+        self.matcher = HungarianMatcher(weight_dict={"cost_class": 2, "cost_bbox": 5, "cost_giou": 2})
         self.weight_dict = weight_dict
-        self.losses = losses
-
-        empty_weight = torch.ones(self.num_classes + 1)
-        empty_weight[-1] = eos_coef
-        self.register_buffer("empty_weight", empty_weight)
-
         self.alpha = alpha
         self.gamma = gamma
 
-    def loss_labels(self, outputs, targets, indices, num_boxes):
-        """Classification loss (NLL)
-        targets dicts must contain the key "labels" containing a tensor of dim [nb_target_boxes]
-        """
-        assert "pred_logits" in outputs
-        src_logits = outputs["pred_logits"]
-
-        idx = self._get_src_permutation_idx(indices)
-        target_classes_o = torch.cat([t["labels"][J] for t, (_, J) in zip(targets, indices)])
-        target_classes = torch.full(src_logits.shape[:2], self.num_classes, dtype=torch.int64, device=src_logits.device)
-        target_classes[idx] = target_classes_o
-
-        loss_ce = F.cross_entropy(src_logits.transpose(1, 2), target_classes, self.empty_weight)
-        losses = {"loss_ce": loss_ce}
-
-        return losses
-
-    def loss_labels_bce(self, outputs, targets, indices, num_boxes):
-        src_logits = outputs["pred_logits"]
-        idx = self._get_src_permutation_idx(indices)
-        target_classes_o = torch.cat([t["labels"][J] for t, (_, J) in zip(targets, indices)])
-        target_classes = torch.full(src_logits.shape[:2], self.num_classes, dtype=torch.int64, device=src_logits.device)
-        target_classes[idx] = target_classes_o
-
-        target = F.one_hot(target_classes, num_classes=self.num_classes + 1)[..., :-1]
-        loss = F.binary_cross_entropy_with_logits(src_logits, target * 1.0, reduction="none")
-        loss = loss.mean(1).sum() * src_logits.shape[1] / num_boxes
-        return {"loss_bce": loss}
-
-    def loss_labels_focal(self, outputs, targets, indices, num_boxes):
-        assert "pred_logits" in outputs
-        src_logits = outputs["pred_logits"]
-
-        idx = self._get_src_permutation_idx(indices)
-        target_classes_o = torch.cat([t["labels"][J] for t, (_, J) in zip(targets, indices)])
-        target_classes = torch.full(src_logits.shape[:2], self.num_classes, dtype=torch.int64, device=src_logits.device)
-        target_classes[idx] = target_classes_o
-
-        target = F.one_hot(target_classes, num_classes=self.num_classes + 1)[..., :-1]
-        loss = torchvision.ops.sigmoid_focal_loss(src_logits, target.long(), self.alpha, self.gamma, reduction="none")
-        loss = loss.mean(1).sum() * src_logits.shape[1] / num_boxes
-
-        return {"loss_focal": loss}
-
-    def loss_labels_vfl(self, outputs, targets, indices, num_boxes):
-        assert "pred_boxes" in outputs
+    def loss_labels_vfl(self, outputs: Dict[str, torch.Tensor], targets:List[Dict[str, torch.Tensor]],
+                   indices: Tuple[int], num_boxes: int) -> Dict[str, torch.Tensor]:
+        '''Compute the vfl loss'''
         idx = self._get_src_permutation_idx(indices)
 
         src_boxes = outputs["pred_boxes"][idx]
@@ -115,26 +68,13 @@ class RTDetrCriterion(nn.Module):
         loss = loss.mean(1).sum() * src_logits.shape[1] / num_boxes
         return {"loss_vfl": loss}
 
-    @torch.no_grad()
-    def loss_cardinality(self, outputs, targets, num_boxes):
-        """Compute the cardinality error, ie the absolute error in the number of predicted non-empty boxes
-        This is not really a loss, it is intended for logging purposes only. It doesn't propagate gradients
-        """
-        pred_logits = outputs["pred_logits"]
-        device = pred_logits.device
-        tgt_lengths = torch.as_tensor([len(v["labels"]) for v in targets], device=device)
-        # Count the number of predictions that are NOT "no-object" (which is the last class)
-        card_pred = (pred_logits.argmax(-1) != pred_logits.shape[-1] - 1).sum(1)
-        card_err = F.l1_loss(card_pred.float(), tgt_lengths.float())
-        losses = {"cardinality_error": card_err}
-        return losses
+    def loss_boxes(self, outputs: Dict[str, torch.Tensor], targets:List[Dict[str, torch.Tensor]],
+                   indices: Tuple[int], num_boxes: int) -> Dict[str, torch.Tensor]:
+        """Compute the losses re)L1 regression loss and the GIoU loss.
 
-    def loss_boxes(self, outputs, targets, indices, num_boxes):
-        """Compute the losses related to the bounding boxes, the L1 regression loss and the GIoU loss
-        targets dicts must contain the key "boxes" containing a tensor of dim [nb_target_boxes, 4]
+        Targets dicts must contain the key "boxes" containing a tensor of dim [nb_target_boxes, 4]
         The target boxes are expected in format (center_x, center_y, w, h), normalized by the image size.
         """
-        assert "pred_boxes" in outputs
         idx = self._get_src_permutation_idx(indices)
         src_boxes = outputs["pred_boxes"][idx]
         target_boxes = torch.cat([t["boxes"][i] for t, (_, i) in zip(targets, indices)], dim=0)
@@ -154,31 +94,21 @@ class RTDetrCriterion(nn.Module):
         src_idx = torch.cat([src for (src, _) in indices])
         return batch_idx, src_idx
 
-    def _get_tgt_permutation_idx(self, indices):
-        # permute targets following indices
-        batch_idx = torch.cat([torch.full_like(tgt, i) for i, (_, tgt) in enumerate(indices)])
-        tgt_idx = torch.cat([tgt for (_, tgt) in indices])
-        return batch_idx, tgt_idx
+    @property
+    def _available_losses(self):
+        return (self.loss_boxes, self.loss_labels_vfl)
 
-    def get_loss(self, loss, outputs, targets, indices, num_boxes, **kwargs):
-        loss_map = {
-            "labels": self.loss_labels,
-            "cardinality": self.loss_cardinality,
-            "boxes": self.loss_boxes,
-            "bce": self.loss_labels_bce,
-            "focal": self.loss_labels_focal,
-            "vfl": self.loss_labels_vfl,
-        }
-        assert loss in loss_map, f"do you really want to compute {loss} loss?"
-        return loss_map[loss](outputs, targets, indices, num_boxes, **kwargs)
-
-    def forward(self, outputs, targets):
+    def forward(self, outputs: Dict[str, torch.Tensor], targets: List[Dict[str, torch.Tensor]]) -> Dict[str, torch.Tensor]:
         """This performs the loss computation.
-        Parameters:
+        Args:
              outputs: dict of tensors, see the output specification of the model for the format
              targets: list of dicts, such that len(targets) == batch_size.
                       The expected keys in each dict depends on the losses applied, see each loss' doc
         """
+        if "pred_boxes" not in outputs or "pred_logits" not in outputs:
+            msg = "The model should return the predicted boxes and logits"
+            raise ValueError(msg)
+
         outputs_without_aux = {k: v for k, v in outputs.items() if "aux" not in k}
 
         # Retrieve the matching between the outputs of the last layer and the targets
@@ -193,8 +123,8 @@ class RTDetrCriterion(nn.Module):
 
         # Compute all the requested losses
         losses = {}
-        for loss in self.losses:
-            l_dict = self.get_loss(loss, outputs, targets, indices, num_boxes)
+        for loss in self._available_losses:
+            l_dict = loss(outputs, targets, indices, num_boxes)
             l_dict = {k: l_dict[k] * self.weight_dict[k] for k in l_dict if k in self.weight_dict}
             losses.update(l_dict)
 
@@ -202,7 +132,7 @@ class RTDetrCriterion(nn.Module):
         if "aux_outputs" in outputs:
             for i, aux_outputs in enumerate(outputs["aux_outputs"]):
                 indices = self.matcher(aux_outputs, targets)
-                for loss in self.losses:
+                for loss in self._available_losses:
                     if loss == "masks":
                         # Intermediate masks losses are too costly to compute, we ignore them.
                         continue
@@ -211,7 +141,7 @@ class RTDetrCriterion(nn.Module):
                         # Logging is enabled only for the last layer
                         kwargs = {"log": False}
 
-                    l_dict = self.get_loss(loss, aux_outputs, targets, indices, num_boxes, **kwargs)
+                    l_dict = loss(aux_outputs, targets, indices, num_boxes, **kwargs)
                     l_dict = {k: l_dict[k] * self.weight_dict[k] for k in l_dict if k in self.weight_dict}
                     l_dict = {k + f"_aux_{i}": v for k, v in l_dict.items()}
                     losses.update(l_dict)
@@ -224,16 +154,9 @@ class RTDetrCriterion(nn.Module):
 
             for i, aux_outputs in enumerate(outputs["dn_aux_outputs"]):
                 # indices = self.matcher(aux_outputs, targets)
-                for loss in self.losses:
-                    if loss == "masks":
-                        # Intermediate masks losses are too costly to compute, we ignore them.
-                        continue
+                for loss in self._available_losses:
                     kwargs = {}
-                    if loss == "labels":
-                        # Logging is enabled only for the last layer
-                        kwargs = {"log": False}
-
-                    l_dict = self.get_loss(loss, aux_outputs, targets, indices, num_boxes, **kwargs)
+                    l_dict = loss(aux_outputs, targets, indices, num_boxes, **kwargs)
                     l_dict = {k: l_dict[k] * self.weight_dict[k] for k in l_dict if k in self.weight_dict}
                     l_dict = {k + f"_dn_{i}": v for k, v in l_dict.items()}
                     losses.update(l_dict)
@@ -241,7 +164,7 @@ class RTDetrCriterion(nn.Module):
         return losses
 
     @staticmethod
-    def get_cdn_matched_indices(dn_meta, targets):
+    def get_cdn_matched_indices(dn_meta: Dict[str, List[float]], targets: List[Dict[str, torch.Tensor]]) -> List[Tuple[torch.Tensor, torch.Tensor]]:
         """get_cdn_matched_indices"""
         dn_positive_idx, dn_num_group = dn_meta["dn_positive_idx"], dn_meta["dn_num_group"]
         num_gts = [len(t["labels"]) for t in targets]

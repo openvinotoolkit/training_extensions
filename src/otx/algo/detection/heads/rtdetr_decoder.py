@@ -1,16 +1,21 @@
-"""by lyuwenyu
-"""
+# Copyright (C) 2024 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+#
+"""RTDETR decoder."""
+
+from __future__ import annotations
 
 import copy
 import math
 from collections import OrderedDict
+from typing import List, Dict, Tuple
 
 import torch
 import torch.nn.functional as F
 from torch import nn
 from torch.nn import init
 
-from otx.algo.detection.utils import (
+from otx.algo.detection.utils.utils import (
     bias_init_with_prob,
     box_cxcywh_to_xyxy,
     box_xyxy_to_cxcywh,
@@ -23,9 +28,30 @@ __all__ = ["RTDETRTransformer"]
 
 
 def get_contrastive_denoising_training_group(
-    targets, num_classes, num_queries, class_embed, num_denoising=100, label_noise_ratio=0.5, box_noise_scale=1.0
-):
-    """Cnd"""
+    targets: List[Dict[str, torch.Tensor]],
+    num_classes: int,
+    num_queries: int,
+    class_embed: torch.nn.Module,
+    num_denoising: int = 100,
+    label_noise_ratio: float = 0.5,
+    box_noise_scale: float = 1.0
+) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, Dict[str, torch.Tensor]]:
+    """
+    Generate contrastive denoising training group.
+
+    Args:
+        targets (List[Dict[str, torch.Tensor]]): List of target dictionaries.
+        num_classes (int): Number of classes.
+        num_queries (int): Number of queries.
+        class_embed (torch.nn.Module): Class embedding module.
+        num_denoising (int, optional): Number of denoising queries. Defaults to 100.
+        label_noise_ratio (float, optional): Ratio of label noise. Defaults to 0.5.
+        box_noise_scale (float, optional): Scale of box noise. Defaults to 1.0.
+
+    Returns:
+        Tuple[torch.Tensor, torch.Tensor, torch.Tensor, Dict[str, torch.Tensor]]: Tuple containing input query class,
+        input query bbox, attention mask, and denoising metadata.
+    """
     if num_denoising <= 0:
         return None, None, None, None
 
@@ -126,7 +152,7 @@ class MLP(nn.Module):
 
 
 class MSDeformableAttention(nn.Module):
-    def __init__(self, embed_dim=256, num_heads=8, num_levels=4, num_points=4):
+    def __init__(self, embed_dim: int=256, num_heads: int=8, num_levels: int=4, num_points: int=4) -> None:
         """Multi-Scale Deformable Attention Module"""
         super(MSDeformableAttention, self).__init__()
         self.embed_dim = embed_dim
@@ -147,7 +173,7 @@ class MSDeformableAttention(nn.Module):
 
         self._reset_parameters()
 
-    def _reset_parameters(self):
+    def _reset_parameters(self) -> None:
         # sampling_offsets
         init.constant_(self.sampling_offsets.weight, 0)
         thetas = torch.arange(self.num_heads, dtype=torch.float32) * (2.0 * math.pi / self.num_heads)
@@ -168,7 +194,14 @@ class MSDeformableAttention(nn.Module):
         init.xavier_uniform_(self.output_proj.weight)
         init.constant_(self.output_proj.bias, 0)
 
-    def forward(self, query, reference_points, value, value_spatial_shapes, value_mask=None):
+    def forward(
+        self,
+        query: torch.Tensor,
+        reference_points: torch.Tensor,
+        value: torch.Tensor,
+        value_spatial_shapes: List[Tuple[int, int]],
+        value_mask: torch.Tensor | None = None
+    ) -> torch.Tensor:
         """Args:
             query (Tensor): [bs, query_length, C]
             reference_points (Tensor): [bs, query_length, n_levels, 2], range in [0, 1], top-left (0,0),
@@ -233,7 +266,8 @@ class MSDeformableAttention(nn.Module):
 
 class TransformerDecoderLayer(nn.Module):
     def __init__(
-        self, d_model=256, n_head=8, dim_feedforward=1024, dropout=0.0, activation="relu", n_levels=4, n_points=4
+        self, d_model: int=256, n_head: int=8, dim_feedforward: int=1024,
+        dropout: int=0.0, activation: str="relu", n_levels: int=4, n_points: int=4
     ):
         super(TransformerDecoderLayer, self).__init__()
 
@@ -255,23 +289,23 @@ class TransformerDecoderLayer(nn.Module):
         self.dropout4 = nn.Dropout(dropout)
         self.norm3 = nn.LayerNorm(d_model)
 
-    def with_pos_embed(self, tensor, pos):
+    def with_pos_embed(self, tensor: torch.Tensor, pos: torch.Tensor | None = None) -> torch.Tensor:
         return tensor if pos is None else tensor + pos
 
-    def forward_ffn(self, tgt):
+    def forward_ffn(self, tgt: torch.Tensor) -> torch.Tensor:
         return self.linear2(self.dropout3(self.activation(self.linear1(tgt))))
 
     def forward(
         self,
-        tgt,
-        reference_points,
-        memory,
-        memory_spatial_shapes,
-        memory_level_start_index,
-        attn_mask=None,
-        memory_mask=None,
-        query_pos_embed=None,
-    ):
+        tgt: torch.Tensor,
+        reference_points: torch.Tensor,
+        memory: torch.Tensor,
+        memory_spatial_shapes: List[Tuple[int, int]],
+        memory_level_start_index: torch.Tensor,
+        attn_mask: torch.Tensor | None = None,
+        memory_mask: torch.Tensor | None = None,
+        query_pos_embed: torch.Tensor | None = None,
+    ) -> torch.Tensor:
         # self attention
         q = k = self.with_pos_embed(tgt, query_pos_embed)
 
@@ -295,7 +329,7 @@ class TransformerDecoderLayer(nn.Module):
 
 
 class TransformerDecoder(nn.Module):
-    def __init__(self, hidden_dim, decoder_layer, num_layers, eval_idx=-1):
+    def __init__(self, hidden_dim: int, decoder_layer: nn.Module, num_layers: int, eval_idx: int=-1) -> None :
         super(TransformerDecoder, self).__init__()
         self.layers = nn.ModuleList([copy.deepcopy(decoder_layer) for _ in range(num_layers)])
         self.hidden_dim = hidden_dim
@@ -304,17 +338,17 @@ class TransformerDecoder(nn.Module):
 
     def forward(
         self,
-        tgt,
-        ref_points_unact,
-        memory,
-        memory_spatial_shapes,
-        memory_level_start_index,
-        bbox_head,
-        score_head,
-        query_pos_head,
-        attn_mask=None,
-        memory_mask=None,
-    ):
+        tgt: torch.Tensor,
+        ref_points_unact: torch.Tensor,
+        memory: torch.Tensor,
+        memory_spatial_shapes: List[Tuple[int, int]],
+        memory_level_start_index: torch.Tensor,
+        bbox_head: List[nn.Module],
+        score_head: List[nn.Module],
+        query_pos_head: nn.Module,
+        attn_mask: torch.Tensor | None = None,
+        memory_mask: torch.Tensor | None = None,
+    ) -> Tuple[torch.Tensor, torch.Tensor]:
         output = tgt
         dec_out_bboxes = []
         dec_out_logits = []
@@ -358,28 +392,54 @@ class TransformerDecoder(nn.Module):
 class RTDETRTransformer(nn.Module):
     def __init__(
         self,
-        num_classes=80,
-        hidden_dim=256,
-        num_queries=300,
-        position_embed_type="sine",
-        feat_channels=[512, 1024, 2048],
-        feat_strides=[8, 16, 32],
-        num_levels=3,
-        num_decoder_points=4,
-        nhead=8,
-        num_decoder_layers=6,
-        dim_feedforward=1024,
-        dropout=0.0,
-        activation="relu",
-        num_denoising=100,
-        label_noise_ratio=0.5,
-        box_noise_scale=1.0,
-        learnt_init_query=False,
-        eval_spatial_size=None,
-        eval_idx=-1,
-        eps=1e-2,
-        aux_loss=True,
+        num_classes: int = 80,
+        hidden_dim: int = 256,
+        num_queries: int = 300,
+        position_embed_type: str = "sine",
+        feat_channels: List[int] = [512, 1024, 2048],
+        feat_strides: List[int] = [8, 16, 32],
+        num_levels: int = 3,
+        num_decoder_points: int = 4,
+        nhead: int = 8,
+        num_decoder_layers: int = 6,
+        dim_feedforward: int = 1024,
+        dropout: float = 0.0,
+        activation: str = "relu",
+        num_denoising: int = 100,
+        label_noise_ratio: float = 0.5,
+        box_noise_scale: float = 1.0,
+        learnt_init_query: bool = False,
+        eval_spatial_size: Tuple[int, int] | None = None,
+        eval_idx: int = -1,
+        eps: float = 1e-2,
+        aux_loss: bool = True,
     ):
+        """
+        Initialize the RTDETRTransformer module.
+
+        Args:
+            num_classes (int): Number of object classes.
+            hidden_dim (int): Hidden dimension size.
+            num_queries (int): Number of queries.
+            position_embed_type (str): Type of position embedding.
+            feat_channels (List[int]): List of feature channels.
+            feat_strides (List[int]): List of feature strides.
+            num_levels (int): Number of levels.
+            num_decoder_points (int): Number of decoder points.
+            nhead (int): Number of attention heads.
+            num_decoder_layers (int): Number of decoder layers.
+            dim_feedforward (int): Dimension of the feedforward network.
+            dropout (float): Dropout rate.
+            activation (str): Activation function.
+            num_denoising (int): Number of denoising samples.
+            label_noise_ratio (float): Ratio of label noise.
+            box_noise_scale (float): Scale of box noise.
+            learnt_init_query (bool): Whether to learn initial queries.
+            eval_spatial_size (Optional[Tuple[int, int]]): Spatial size for evaluation.
+            eval_idx (int): Evaluation index.
+            eps (float): Epsilon value.
+            aux_loss (bool): Whether to include auxiliary loss.
+        """
         super(RTDETRTransformer, self).__init__()
         assert position_embed_type in [
             "sine",
@@ -443,7 +503,7 @@ class RTDETRTransformer(nn.Module):
 
         self._reset_parameters()
 
-    def _reset_parameters(self):
+    def _reset_parameters(self) -> None:
         bias = bias_init_with_prob(0.01)
 
         init.constant_(self.enc_score_head.bias, bias)
@@ -461,7 +521,7 @@ class RTDETRTransformer(nn.Module):
         init.xavier_uniform_(self.query_pos_head.layers[0].weight)
         init.xavier_uniform_(self.query_pos_head.layers[1].weight)
 
-    def _build_input_proj_layer(self, feat_channels):
+    def _build_input_proj_layer(self, feat_channels: List[int]) -> None:
         self.input_proj = nn.ModuleList()
         for in_channels in feat_channels:
             self.input_proj.append(
@@ -490,7 +550,7 @@ class RTDETRTransformer(nn.Module):
             )
             in_channels = self.hidden_dim
 
-    def _get_encoder_input(self, feats):
+    def _get_encoder_input(self, feats: List[torch.Tensor]) -> Tuple[torch.Tensor, List[Tuple[int, int]], List[int]]:
         # get projection features
         proj_feats = [self.input_proj[i](feat) for i, feat in enumerate(feats)]
         if self.num_levels > len(proj_feats):
@@ -519,7 +579,8 @@ class RTDETRTransformer(nn.Module):
         level_start_index.pop()
         return (feat_flatten, spatial_shapes, level_start_index)
 
-    def _generate_anchors(self, spatial_shapes=None, grid_size=0.05, dtype=torch.float32, device="cpu"):
+    def _generate_anchors(self, spatial_shapes: List[int, int] | None=None, grid_size: float=0.05,
+                          dtype: torch.dtype =torch.float32, device: str="cpu") -> Tuple[torch.Tensor, torch.Tensor]:
         if spatial_shapes is None:
             spatial_shapes = [
                 [int(self.eval_spatial_size[0] / s), int(self.eval_spatial_size[1] / s)] for s in self.feat_strides
@@ -542,7 +603,8 @@ class RTDETRTransformer(nn.Module):
 
         return anchors, valid_mask
 
-    def _get_decoder_input(self, memory, spatial_shapes, denoising_class=None, denoising_bbox_unact=None):
+    def _get_decoder_input(self, memory: torch.Tensor, spatial_shapes: List[int,int], denoising_class: torch.Tensor | None =None,
+                           denoising_bbox_unact: torch.Tensor | None =None) -> Tuple[torch.Tensor, ...]:
         bs, _, _ = memory.shape
         # prepare input for decoder
         if self.training or self.eval_spatial_size is None:
@@ -583,7 +645,7 @@ class RTDETRTransformer(nn.Module):
 
         return target, reference_points_unact.detach(), enc_topk_bboxes, enc_topk_logits
 
-    def forward(self, feats, targets=None):
+    def forward(self, feats: torch.Tensor, targets:List[Dict[str, torch.Tensor]] | None =None) -> torch.Tensor:
         # input projection and embedding
         (memory, spatial_shapes, level_start_index) = self._get_encoder_input(feats)
 
@@ -635,7 +697,7 @@ class RTDETRTransformer(nn.Module):
         return out
 
     @torch.jit.unused
-    def _set_aux_loss(self, outputs_class, outputs_coord):
+    def _set_aux_loss(self, outputs_class: torch.Tensor, outputs_coord: torch.Tensor) -> List[Dict[str, torch.Tensor]]:
         # this is a workaround to make torchscript happy, as torchscript
         # doesn't support dictionary with non-homogeneous values, such
         # as a dict having both a Tensor and a list.

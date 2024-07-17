@@ -1,10 +1,12 @@
+from __future__ import annotations
 from collections import OrderedDict
 
 import torch
 import torch.nn.functional as F
 from torch import nn
+from typing import Any, Dict, List
 
-from otx.algo.detection.utils import get_activation
+from otx.algo.detection.utils.utils import get_activation
 
 __all__ = ["PResNet"]
 
@@ -26,7 +28,7 @@ donwload_url = {
 
 
 class ConvNormLayer(nn.Module):
-    def __init__(self, ch_in, ch_out, kernel_size, stride, padding=None, bias=False, act=None):
+    def __init__(self, ch_in, ch_out, kernel_size, stride, padding=None, bias=False, act=None) -> None:
         super().__init__()
         self.conv = nn.Conv2d(
             ch_in,
@@ -40,6 +42,7 @@ class ConvNormLayer(nn.Module):
         self.act = nn.Identity() if act is None else get_activation(act)
 
     def forward(self, x):
+        """forward"""
         return self.act(self.norm(self.conv(x)))
 
 
@@ -51,7 +54,7 @@ class FrozenBatchNorm2d(nn.Module):
     produce nans.
     """
 
-    def __init__(self, num_features, eps=1e-5):
+    def __init__(self, num_features: int, eps: float=1e-5) -> None:
         super(FrozenBatchNorm2d, self).__init__()
         n = num_features
         self.register_buffer("weight", torch.ones(n))
@@ -62,8 +65,10 @@ class FrozenBatchNorm2d(nn.Module):
         self.num_features = n
 
     def _load_from_state_dict(
-        self, state_dict, prefix, local_metadata, strict, missing_keys, unexpected_keys, error_msgs
-    ):
+        self, state_dict: Dict[str, torch.Tensor], prefix: str, local_metadata: Any,
+        strict: bool, missing_keys: List[str], unexpected_keys: List[str], error_msgs: List[str]
+    ) -> None:
+
         num_batches_tracked_key = prefix + "num_batches_tracked"
         if num_batches_tracked_key in state_dict:
             del state_dict[num_batches_tracked_key]
@@ -72,7 +77,8 @@ class FrozenBatchNorm2d(nn.Module):
             state_dict, prefix, local_metadata, strict, missing_keys, unexpected_keys, error_msgs
         )
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """forward"""
         # move reshapes to the beginning
         # to make it fuser-friendly
         w = self.weight.reshape(1, -1, 1, 1)
@@ -84,13 +90,14 @@ class FrozenBatchNorm2d(nn.Module):
         return x * scale + bias
 
     def extra_repr(self):
+        """str representation"""
         return "{num_features}, eps={eps}".format(**self.__dict__)
 
 
 class BasicBlock(nn.Module):
     expansion = 1
 
-    def __init__(self, ch_in, ch_out, stride, shortcut, act="relu", variant="b"):
+    def __init__(self, ch_in: int, ch_out: int, stride: int, shortcut: bool, act: str="relu", variant: str="b") -> None:
         super().__init__()
 
         self.shortcut = shortcut
@@ -112,7 +119,8 @@ class BasicBlock(nn.Module):
         self.branch2b = ConvNormLayer(ch_out, ch_out, 3, 1, act=None)
         self.act = nn.Identity() if act is None else get_activation(act)
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """forward"""
         out = self.branch2a(x)
         out = self.branch2b(out)
         if self.shortcut:
@@ -129,7 +137,7 @@ class BasicBlock(nn.Module):
 class BottleNeck(nn.Module):
     expansion = 4
 
-    def __init__(self, ch_in, ch_out, stride, shortcut, act="relu", variant="b"):
+    def __init__(self, ch_in: int, ch_out: int, stride: int, shortcut: bool, act: str="relu", variant: str="b") -> None:
         super().__init__()
 
         if variant == "a":
@@ -159,7 +167,8 @@ class BottleNeck(nn.Module):
 
         self.act = nn.Identity() if act is None else get_activation(act)
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """forward"""
         out = self.branch2a(x)
         out = self.branch2b(out)
         out = self.branch2c(out)
@@ -176,7 +185,7 @@ class BottleNeck(nn.Module):
 
 
 class Blocks(nn.Module):
-    def __init__(self, block, ch_in, ch_out, count, stage_num, act="relu", variant="b"):
+    def __init__(self, block: nn.Module, ch_in: int, ch_out: int, count: int, stage_num: int, act: str="relu", variant: str="b") -> None:
         super().__init__()
 
         self.blocks = nn.ModuleList()
@@ -195,7 +204,8 @@ class Blocks(nn.Module):
             if i == 0:
                 ch_in = ch_out * block.expansion
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """forward"""
         out = x
         for block in self.blocks:
             out = block(out)
@@ -205,15 +215,15 @@ class Blocks(nn.Module):
 class PResNet(nn.Module):
     def __init__(
         self,
-        depth,
-        variant="d",
-        num_stages=4,
-        return_idx=[0, 1, 2, 3],
-        act="relu",
-        freeze_at=-1,
-        freeze_norm=True,
-        pretrained=False,
-    ):
+        depth: int,
+        variant: str="d",
+        num_stages: int=4,
+        return_idx: List[int]=[0, 1, 2, 3],
+        act: str="relu",
+        freeze_at: int=-1,
+        freeze_norm: bool=True,
+        pretrained: bool=False,
+    ) -> None:
         super().__init__()
 
         block_nums = ResNet_cfg[depth]
@@ -262,11 +272,11 @@ class PResNet(nn.Module):
             self.load_state_dict(state)
             print(f"Load PResNet{depth} state_dict")
 
-    def _freeze_parameters(self, m: nn.Module):
+    def _freeze_parameters(self, m: nn.Module) -> None:
         for p in m.parameters():
             p.requires_grad = False
 
-    def _freeze_norm(self, m: nn.Module):
+    def _freeze_norm(self, m: nn.Module) -> None:
         if isinstance(m, nn.BatchNorm2d):
             m = FrozenBatchNorm2d(m.num_features)
         else:
@@ -276,7 +286,8 @@ class PResNet(nn.Module):
                     setattr(m, name, _child)
         return m
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """forward"""
         conv1 = self.conv1(x)
         x = F.max_pool2d(conv1, kernel_size=3, stride=2, padding=1)
         outs = []
@@ -285,6 +296,3 @@ class PResNet(nn.Module):
             if idx in self.return_idx:
                 outs.append(x)
         return outs
-
-    def init_weights(self):
-        pass
