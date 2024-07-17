@@ -476,8 +476,12 @@ class Resize(tvt_v2.Transform, NumpytoTVTensorMixin):
     TODO : optimize logic to torcivision pipeline
 
     Args:
-        input_size (int or Sequence[int]): Images scales for resizing with (height, width).
-            Defaults to None
+        input_size (int or Sequence[int]): Final transformed image size.
+            It can be set in each recipe or cli, and is assigned in otx.core.data.factory.TransformLibFactory.
+        resize_size (int or Sequence[int]): Images scales for resizing with (height, width).
+            Defaults to None.
+        resize_size_scale (Sequence[float]): Scale factors to adjust `resize_size` using `input_size`
+            when `resize_size` is None. Defaults to (1.0, 1.0).
         scale_factor (float or Sequence[float]): Scale factors for resizing with (height, width).
             Defaults to None.
         keep_ratio (bool): Whether to keep the aspect ratio when resizing the
@@ -498,7 +502,7 @@ class Resize(tvt_v2.Transform, NumpytoTVTensorMixin):
 
     def __init__(
         self,
-        input_size: Sequence[int],  # (H, W)
+        input_size: int | Sequence[int],  # (H, W)
         resize_size: int | Sequence[int] | None = None,
         resize_size_scale: Sequence[float] = (1.0, 1.0),  # (H, W)
         scale_factor: float | Sequence[float] | None = None,  # (H, W)
@@ -540,7 +544,7 @@ class Resize(tvt_v2.Transform, NumpytoTVTensorMixin):
             msg = f"expect scale_factor is float or Sequence[float], but get {type(scale_factor)}"
             raise TypeError(msg)
 
-        self.input_size = input_size
+        self.input_size = (input_size, input_size) if isinstance(input_size, int) else input_size
         self.transform_bbox = transform_bbox
         self.transform_point = transform_point
         self.transform_mask = transform_mask
@@ -653,7 +657,8 @@ class Resize(tvt_v2.Transform, NumpytoTVTensorMixin):
 
     def __repr__(self) -> str:
         repr_str = self.__class__.__name__
-        repr_str += f"(scale={self.resize_size}, "
+        repr_str += f"(resize_size={self.resize_size}, "
+        repr_str += f"resize_size_scale={self.resize_size_scale}, "
         repr_str += f"scale_factor={self.scale_factor}, "
         repr_str += f"keep_ratio={self.keep_ratio}, "
         repr_str += f"clip_object_border={self.clip_object_border}, "
@@ -675,9 +680,12 @@ class RandomResizedCrop(tvt_v2.Transform, NumpytoTVTensorMixin):
     is made. This crop is finally resized to given size.
 
     Args:
-        resize_crop_size (Sequence[int] or int): Desired output scale of the crop. If size is an
-            int instead of Sequence[int] like (h, w), a square crop (size, size) is
-            made.
+        input_size (int or Sequence[int]): Final transformed image size.
+            It can be set in each recipe or cli, and is assigned in otx.core.data.factory.TransformLibFactory.
+        resize_crop_size (int or Sequence[int]): Desired output scale of the crop. If size is an
+            int instead of Sequence[int] like (h, w), a square crop (size, size) is made.
+        resize_size_scale (Sequence[float]): Scale factors to adjust `resize_crop_size` using `input_size`
+            when `resize_crop_size` is None. Defaults to (1.0, 1.0).
         crop_ratio_range (Sequence[float]): Range of the random size of the cropped
             image compared to the original image. Defaults to (0.08, 1.0).
         aspect_ratio_range (Sequence[float]): Range of the random aspect ratio of the
@@ -960,7 +968,8 @@ class RandomResizedCrop(tvt_v2.Transform, NumpytoTVTensorMixin):
         Returns:
             str: Formatted string.
         """
-        repr_str = self.__class__.__name__ + f"(scale={self.resize_crop_size}"
+        repr_str = self.__class__.__name__ + f"(resize_crop_size={self.resize_crop_size}"
+        repr_str += f", resize_crop_size_scale={self.resize_crop_size_scale}"
         repr_str += ", crop_ratio_range="
         repr_str += f"{tuple(round(s, 4) for s in self.crop_ratio_range)}"
         repr_str += ", aspect_ratio_range="
@@ -978,8 +987,12 @@ class EfficientNetRandomCrop(RandomResizedCrop):
     This class implements mmpretrain.datasets.transforms.EfficientNetRandomCrop reimplemented as torchvision.transform.
 
     Args:
-        scale (int): Desired output scale of the crop. Only int size is
+        input_size (int or Sequence[int]): Final transformed image size.
+            It can be set in each recipe or cli, and is assigned in otx.core.data.factory.TransformLibFactory.
+        resize_crop_size (int or Sequence[int]): Desired output scale of the crop. Only int size is
             accepted, a square crop (size, size) is made.
+        resize_size_scale (Sequence[float]): Scale factors to adjust `resize_crop_size` using `input_size`
+            when `resize_crop_size` is None. Defaults to (1.0, 1.0).
         min_covered (float): Minimum ratio of the cropped area to the original
              area. Defaults to 0.1.
         crop_padding (int): The crop padding parameter in efficientnet style
@@ -999,7 +1012,7 @@ class EfficientNetRandomCrop(RandomResizedCrop):
     def __init__(
         self,
         input_size: int | Sequence[int],  # (H, W)
-        resize_crop_size: int | Sequence[int] | None = None,  # (H, W)
+        resize_crop_size: int | None = None,  # (H, W)
         resize_crop_size_scale: Sequence[float] = (1.0, 1.0),  # (H, W)
         min_covered: float = 0.1,
         crop_padding: int = 32,
@@ -1378,9 +1391,8 @@ class RandomAffine(tvt_v2.Transform, NumpytoTVTensorMixin):
     TODO : optimize logic to torcivision pipeline
 
     Args:
-        input_size (Sequence[int]): Final transformed image size.
-            It can be set in each recipe and is assigned
-            in otx.core.data.factory.TransformLibFactory (?).
+        input_size (int or Sequence[int]): Final transformed image size.
+            It can be set in each recipe or cli, and is assigned in otx.core.data.factory.TransformLibFactory.
         max_rotate_degree (float): Maximum degrees of rotation transform.
             Defaults to 10.
         max_translate_ratio (float): Maximum ratio of translation.
@@ -1389,11 +1401,13 @@ class RandomAffine(tvt_v2.Transform, NumpytoTVTensorMixin):
             scaling transform. Defaults to (0.5, 1.5).
         max_shear_degree (float): Maximum degrees of shear
             transform. Defaults to 2.
-        border (Sequence[int]): Distance from height and width sides of input
+        border (int or Sequence[int]): Distance from height and width sides of input
             image to adjust output shape. Only used in mosaic dataset.
             If this is manually given through recipe or cli, the given value will be used with high priority.
             If it is not given, it is automatically calculated by `input_size` and `border_scale`.
             Defaults to None.
+        border_scale (Sequence[float]): Scale factors to adjust `border` using `input_size` when `border` is None.
+            Defaults to (-0.5, -0.5).
         border_val (Sequence[int]): Border padding values of 3 channels.
             Defaults to (114, 114, 114).
         bbox_clip_border (bool, optional): Whether to clip the objects outside
@@ -1405,7 +1419,7 @@ class RandomAffine(tvt_v2.Transform, NumpytoTVTensorMixin):
 
     def __init__(
         self,
-        input_size: Sequence[int],
+        input_size: int | Sequence[int],
         max_rotate_degree: float = 10.0,
         max_translate_ratio: float = 0.1,
         scaling_ratio_range: Sequence[float] = (0.5, 1.5),
@@ -1436,7 +1450,7 @@ class RandomAffine(tvt_v2.Transform, NumpytoTVTensorMixin):
             msg = "scaling_ratio_range[0] must be greater than 0."
             raise ValueError(msg)
 
-        self.input_size = input_size
+        self.input_size = (input_size, input_size) if isinstance(input_size, int) else input_size
         self.max_rotate_degree = max_rotate_degree
         self.max_translate_ratio = max_translate_ratio
         self.scaling_ratio_range = scaling_ratio_range
@@ -1519,6 +1533,7 @@ class RandomAffine(tvt_v2.Transform, NumpytoTVTensorMixin):
         repr_str += f"scaling_ratio_range={self.scaling_ratio_range}, "
         repr_str += f"max_shear_degree={self.max_shear_degree}, "
         repr_str += f"border={self.border}, "
+        repr_str += f"border_scale={self.border_scale}, "
         repr_str += f"border_val={self.border_val}, "
         repr_str += f"bbox_clip_border={self.bbox_clip_border}, "
         repr_str += f"is_numpy_to_tvtensor={self.is_numpy_to_tvtensor})"
@@ -1558,14 +1573,15 @@ class CachedMosaic(tvt_v2.Transform, NumpytoTVTensorMixin):
     TODO : optimize logic to torcivision pipeline
 
     Args:
-        input_size (Sequence[int]): Final transformed image size.
-            It can be set in each recipe and is assigned
-            in otx.core.data.factory.TransformLibFactory (?).
+        input_size (int or Sequence[int]): Final transformed image size.
+            It can be set in each recipe or cli, and is assigned in otx.core.data.factory.TransformLibFactory.
         mosaic_size (int or Sequence[int], optional): Image size before mosaic pipeline of single
             image. The shape order should be (height, width).
             If it is an int instead of Sequence[int] like (h, w),
             a square crop (mosaic_size, mosaic_size) is made.
             Defaults to None.
+        mosaic_size_scale (Sequence[float]): Scale factors to adjust `mosaic_size` using `input_size`
+            if `mosaic_size` is None. Defaults to (1.0, 1.0).
         center_ratio_range (Sequence[float]): Center ratio range of mosaic
             output. Defaults to (0.5, 1.5).
         bbox_clip_border (bool, optional): Whether to clip the objects outside
@@ -1587,7 +1603,7 @@ class CachedMosaic(tvt_v2.Transform, NumpytoTVTensorMixin):
 
     def __init__(
         self,
-        input_size: Sequence[int],  # (H, W)
+        input_size: int | Sequence[int],  # (H, W)
         mosaic_size: int | Sequence[int] | None = None,
         mosaic_size_scale: Sequence[float] = (1.0, 1.0),  # (H, W)
         center_ratio_range: Sequence[float] = (0.5, 1.5),
@@ -1615,7 +1631,7 @@ class CachedMosaic(tvt_v2.Transform, NumpytoTVTensorMixin):
             msg = f"The length of cache must >= 4, but got {max_cached_images}."
             raise ValueError(msg)
 
-        self.input_size = input_size  # (H, W)
+        self.input_size = (input_size, input_size) if isinstance(input_size, int) else input_size
         self.center_ratio_range = center_ratio_range
         self.bbox_clip_border = bbox_clip_border
         self.pad_val = pad_val
@@ -1873,7 +1889,8 @@ class CachedMosaic(tvt_v2.Transform, NumpytoTVTensorMixin):
 
     def __repr__(self):
         repr_str = self.__class__.__name__
-        repr_str += f"(img_scale={self.mosaic_size}, "
+        repr_str += f"(mosaic_size={self.mosaic_size}, "
+        repr_str += f"mosaic_size_scale={self.mosaic_size_scale}, "
         repr_str += f"center_ratio_range={self.center_ratio_range}, "
         repr_str += f"pad_val={self.pad_val}, "
         repr_str += f"prob={self.prob}, "
@@ -1891,14 +1908,15 @@ class CachedMixUp(tvt_v2.Transform, NumpytoTVTensorMixin):
     TODO : optimize logic to torcivision pipeline
 
     Args:
-        input_size (Sequence[int]): Final transformed image size.
-            It can be set in each recipe and is assigned
-            in otx.core.data.factory.TransformLibFactory (?).
-        mixup_size (Sequence[int]): Image output size after mixup pipeline.
+        input_size (int or Sequence[int]): Final transformed image size.
+            It can be set in each recipe or cli, and is assigned in otx.core.data.factory.TransformLibFactory.
+        mixup_size (int or Sequence[int]): Image output size after mixup pipeline.
             The shape order should be (height, width).
             If it is an int instead of Sequence[int] like (h, w),
             a square crop (mixup_size, mixup_size) is made.
             Defaults to None.
+        mixup_size_scale (Sequence[float]): Scale factors to adjust `mixup_size` using `input_size`
+            if `mixup_size` is None. Defaults to (1.0, 1.0).
         ratio_range (Sequence[float]): Scale ratio of mixup image.
             Defaults to (0.5, 1.5).
         flip_ratio (float): Horizontal flip ratio of mixup image.
@@ -1925,7 +1943,7 @@ class CachedMixUp(tvt_v2.Transform, NumpytoTVTensorMixin):
 
     def __init__(
         self,
-        input_size: Sequence[int],  # (H, W)
+        input_size: int | Sequence[int],  # (H, W)
         mixup_size: int | Sequence[int] | None = None,
         mixup_size_scale: Sequence[float] = (1.0, 1.0),  # (H, W)
         ratio_range: Sequence[float] = (0.5, 1.5),
@@ -1955,7 +1973,7 @@ class CachedMixUp(tvt_v2.Transform, NumpytoTVTensorMixin):
             msg = f"The probability should be in range [0,1]. got {prob}."
             raise ValueError(msg)
 
-        self.input_size = input_size
+        self.input_size = (input_size, input_size) if isinstance(input_size, int) else input_size
         self.ratio_range = ratio_range
         self.flip_ratio = flip_ratio
         self.pad_val = pad_val
@@ -2173,7 +2191,8 @@ class CachedMixUp(tvt_v2.Transform, NumpytoTVTensorMixin):
 
     def __repr__(self):
         repr_str = self.__class__.__name__
-        repr_str += f"(dynamic_scale={self.mixup_size}, "
+        repr_str += f"(mixup_size={self.mixup_size}, "
+        repr_str += f"mixup_size={self.mixup_size}, "
         repr_str += f"ratio_range={self.ratio_range}, "
         repr_str += f"flip_ratio={self.flip_ratio}, "
         repr_str += f"pad_val={self.pad_val}, "
@@ -2261,16 +2280,17 @@ class Pad(tvt_v2.Transform, NumpytoTVTensorMixin):
     TODO : optimize logic to torcivision pipeline
 
     Args:
-        input_size (Sequence[int]): Final transformed image size.
-            It can be set in each recipe and is assigned
-            in otx.core.data.factory.TransformLibFactory (?).
+        input_size (int or Sequence[int]): Final transformed image size.
+            It can be set in each recipe or cli, and is assigned in otx.core.data.factory.TransformLibFactory.
         pad_size (int or Sequence[int], optional): Fixed padding size.
             Expected padding shape (height, width).
             If it is an int instead of Sequence[int] like (h, w),
             a square crop (pad_size, pad_size) is made.
             Defaults to None.
+        pad_size_scale (Sequence[float]): Scale factors to adjust `pad_size` using `input_size` if `pad_size` is None.
+            Defaults to (1.0, 1.0).
         size_divisor (int, optional): The divisor of padded size.
-            It is used regardless of input_size.
+            It is used regardless of `input_size`.
             Defaults to None.
         pad_to_square (bool): Whether to pad the image into a square.
             Currently only used for YOLOX. Defaults to False.
@@ -2311,7 +2331,7 @@ class Pad(tvt_v2.Transform, NumpytoTVTensorMixin):
 
     def __init__(
         self,
-        input_size: Sequence[int],  # (H, W)
+        input_size: int | Sequence[int],  # (H, W)
         pad_size: int | Sequence[int] | None = None,
         pad_size_scale: Sequence[float] = (1.0, 1.0),  # (H, W)
         size_divisor: int | None = None,
@@ -2339,7 +2359,7 @@ class Pad(tvt_v2.Transform, NumpytoTVTensorMixin):
             pad_val = {"img": pad_val, "mask": 0}
 
         # for configurable input size
-        self.input_size = input_size
+        self.input_size = (input_size, input_size) if isinstance(input_size, int) else input_size
         self.size_divisor = size_divisor
         self.pad_to_square = pad_to_square
         self._pad_size = pad_size
@@ -2475,8 +2495,12 @@ class RandomResize(tvt_v2.Transform, NumpytoTVTensorMixin):
     Reference : https://github.com/open-mmlab/mmcv/blob/v2.1.0/mmcv/transforms/processing.py#L1381-L1562
 
     Args:
+        input_size (int or Sequence[int]): Final transformed image size.
+            It can be set in each recipe or cli, and is assigned in otx.core.data.factory.TransformLibFactory.
         resize_size (Sequence[int | tuple[int, int]]): Images scales for resizing with (height, width).
             Defaults to None.
+        resize_size_scale (Sequence[float]): Scale factors to adjust `resize_size` using `input_size`
+            if `resize_size` is None. Defaults to (1.0, 1.0).
         ratio_range (Sequence[float], optional): (min_ratio, max_ratio). Defaults to None.
         is_numpy_to_tvtensor (bool): Whether convert outputs to tensor. Defaults to False.
         **resize_kwargs: Other keyword arguments for the ``resize_type``.
@@ -2484,7 +2508,7 @@ class RandomResize(tvt_v2.Transform, NumpytoTVTensorMixin):
 
     def __init__(
         self,
-        input_size: Sequence[int],  # (H, W)
+        input_size: int | Sequence[int],  # (H, W)
         resize_size: Sequence[int | tuple[int, int]] | None = None,  # (H, W)
         resize_size_scale: Sequence[float] = (1.0, 1.0),  # (H, W)
         ratio_range: Sequence[float] | None = None,
@@ -2494,7 +2518,7 @@ class RandomResize(tvt_v2.Transform, NumpytoTVTensorMixin):
         super().__init__()
 
         # for configurable input size
-        self.input_size = input_size
+        self.input_size = (input_size, input_size) if isinstance(input_size, int) else input_size
         self._resize_size = resize_size
         self.resize_size_scale = resize_size_scale
 
@@ -2624,7 +2648,8 @@ class RandomResize(tvt_v2.Transform, NumpytoTVTensorMixin):
     def __repr__(self) -> str:
         # TODO (sungchul): update other's repr
         repr_str = self.__class__.__name__
-        repr_str += f"(scale={self.resize_size}, "
+        repr_str += f"(resize_size={self.resize_size}, "
+        repr_str += f"resize_size_scale={self.resize_size_scale}, "
         repr_str += f"ratio_range={self.ratio_range}, "
         repr_str += f"is_numpy_to_tvtensor={self.is_numpy_to_tvtensor}, "
         repr_str += f"resize_kwargs={self.resize_kwargs})"
@@ -2639,8 +2664,12 @@ class RandomCrop(tvt_v2.Transform, NumpytoTVTensorMixin):
     The absolute `crop_size` is sampled based on `crop_type` and `image_size`, then the cropped results are generated.
 
     Args:
+        input_size (int or Sequence[int]): Final transformed image size.
+            It can be set in each recipe or cli, and is assigned in otx.core.data.factory.TransformLibFactory.
         crop_size (Sequence[int | float]): The relative ratio or absolute pixels of
             (height, width).
+        crop_size_scale (Sequence[float]): Scale factors to adjust `crop_size` using `input_size`
+            if `crop_size` is None. Defaults to (1.0, 1.0).
         crop_type (str, optional): One of "relative_range", "relative",
             "absolute", "absolute_range". "relative" randomly crops
             (h * crop_size[0], w * crop_size[1]) part from an input of size
@@ -2664,7 +2693,7 @@ class RandomCrop(tvt_v2.Transform, NumpytoTVTensorMixin):
 
     def __init__(
         self,
-        input_size: Sequence[int],  # (H, W)
+        input_size: int | Sequence[int],  # (H, W)
         crop_size: Sequence[int | float] | None = None,  # (H, W)
         crop_size_scale: Sequence[float] = (1.0, 1.0),  # (H, W)
         crop_type: str = "absolute",
@@ -2678,7 +2707,7 @@ class RandomCrop(tvt_v2.Transform, NumpytoTVTensorMixin):
         super().__init__()
 
         # for configurable input size
-        self.input_size = input_size  # (H, W)
+        self.input_size = (input_size, input_size) if isinstance(input_size, int) else input_size
         self._crop_size = crop_size  # (H, W)
         self.crop_size_scale = crop_size_scale
 
@@ -2879,6 +2908,7 @@ class RandomCrop(tvt_v2.Transform, NumpytoTVTensorMixin):
     def __repr__(self) -> str:
         repr_str = self.__class__.__name__
         repr_str += f"(crop_size={self.crop_size}, "
+        repr_str += f"crop_size_scale={self.crop_size_scale}, "
         repr_str += f"crop_type={self.crop_type}, "
         repr_str += f"allow_negative_crop={self.allow_negative_crop}, "
         repr_str += f"recompute_bbox={self.recompute_bbox}, "
