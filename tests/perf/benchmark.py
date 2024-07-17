@@ -55,7 +55,7 @@ class Benchmark:
             Previous performance directory to load. If training was already done in previous performance test,
             training is skipped and refer previous result.
         test_only (Literal["all", "train", "export", "optimize"] | None):
-            Execute test only when resume argument is given. If necessary files are not found in resume directory, 
+            Execute test only when resume argument is given. If necessary files are not found in resume directory,
             necessary operations can be executed. Defaults to None.
     """
 
@@ -140,7 +140,8 @@ class Benchmark:
         if (test_only == "export" and eval_upto == "train") or (
             test_only == "optimize" and eval_upto in ["train", "export"]
         ):
-            raise ValueError("test_only should be set to previous otx command than eval_upto.")
+            msg = "test_only should be set to previous otx command than eval_upto."
+            raise ValueError(msg)
         self.test_only = test_only
 
     def run(
@@ -347,7 +348,7 @@ class Benchmark:
         if copy_until != otx_cmd:
             log.warning(
                 f"There is no {otx_cmd} directory for {work_dir} in resume directory. "
-                f"{work_dir} starts from {otx_cmd}."
+                f"{work_dir} starts from {otx_cmd}.",
             )
 
         return copied_ops_dir
