@@ -307,7 +307,7 @@ class Benchmark:
         return result.set_index(["task", "model", "data_group", "data"])
 
     def _prepare_resume(self, tags: dict[str, str], work_dir: Path) -> list[str]:
-        if self.resume is None:
+        if self.resume_from is None:
             return None
         prev_work_dir = self._find_corresponding_dir(tags)
         if prev_work_dir is None:
@@ -353,9 +353,9 @@ class Benchmark:
         return copied_ops_dir
 
     def _find_corresponding_dir(self, tags: dict[str, str]) -> Path | None:
-        if self.resume is None:
+        if self.resume_from is None:
             return None
-        for csv_file in self.resume.rglob("benchmark.raw.csv"):
+        for csv_file in self.resume_from.rglob("benchmark.raw.csv"):
             if csv_file.parent.name == ".latest":
                 continue
             raw_data = pd.read_csv(csv_file)
