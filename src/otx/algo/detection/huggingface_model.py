@@ -21,7 +21,6 @@ from otx.core.metrics.fmeasure import MeanAveragePrecisionFMeasureCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
 from otx.core.model.detection import OTXDetectionModel
 from otx.core.schedulers import LRSchedulerListCallable
-from otx.core.types.export import TaskLevelExportParameters
 from otx.core.types.label import LabelInfoTypes
 
 if TYPE_CHECKING:
@@ -147,16 +146,11 @@ class HuggingFaceModelForDetection(OTXDetectionModel):
         )
 
     @property
-    def _export_parameters(self) -> TaskLevelExportParameters:
-        """Defines parameters required to export a particular model implementation."""
-        return super()._export_parameters.wrap(model_type="DETR")
-
-    @property
     def _exporter(self) -> OTXModelExporter:
         """Creates OTXModelExporter object that can export the model."""
         image_size = (1, 3, *self.image_processor.size.values())
-        image_mean = tuple(self.image_processor.image_mean)
-        image_std = tuple(self.image_processor.image_std)
+        image_mean = (0.0, 0.0, 0.0)
+        image_std = (255.0, 255.0, 255.0)
 
         return OTXNativeModelExporter(
             task_level_export_parameters=self._export_parameters,

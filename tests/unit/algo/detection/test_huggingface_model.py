@@ -20,7 +20,7 @@ except ImportError:
 @pytest.mark.skipif(SKIP_TRANSFORMERS_TEST, reason="'transformers' is not installed")
 class TestHuggingFaceModelForDetection:
     @pytest.fixture()
-    def fxt_detection_model(self) -> HuggingFaceModelForDetection:
+    def fxt_detection_model(self):
         return HuggingFaceModelForDetection(
             model_name_or_path="facebook/detr-resnet-50",
             label_info=2,
