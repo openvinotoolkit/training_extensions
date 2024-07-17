@@ -307,11 +307,12 @@ class Benchmark:
         return result.set_index(["task", "model", "data_group", "data"])
 
     def _prepare_resume(self, tags: dict[str, str], work_dir: Path) -> list[str]:
+        copied_ops_dir = []
         if self.resume_from is None:
-            return None
+            return copied_ops_dir
         prev_work_dir = self._find_corresponding_dir(tags)
         if prev_work_dir is None:
-            return None
+            return copied_ops_dir
 
         latest_dir = work_dir / ".latest"
 
@@ -322,7 +323,6 @@ class Benchmark:
         else:
             copy_until = self.test_only
 
-        copied_ops_dir = []
         for otx_cmd in ["train", "export", "optimize"]:
             prev_symlink = prev_work_dir / ".latest" / otx_cmd
             try:  # check symlink exists
