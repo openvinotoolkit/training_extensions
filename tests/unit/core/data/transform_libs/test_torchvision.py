@@ -1045,7 +1045,9 @@ class TestRandomCrop:
             bbox_clip_border=bbox_clip_border,
         )
         assert (
-            repr(transform) == f"RandomCrop(crop_size={transform.crop_size}, crop_type={crop_type}, "
+            repr(transform) == f"RandomCrop(crop_size={transform.crop_size}, "
+            f"crop_size_scale={transform.crop_size_scale}, "
+            f"crop_type={crop_type}, "
             f"allow_negative_crop={allow_negative_crop}, "
             f"recompute_bbox={recompute_bbox}, "
             f"bbox_clip_border={bbox_clip_border}, "
