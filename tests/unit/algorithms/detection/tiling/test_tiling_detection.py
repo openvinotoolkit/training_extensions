@@ -438,6 +438,8 @@ class TestTilingDetection:
 
         default_tile_size = hp.tiling_parameters.tile_size
         default_tile_overlap = hp.tiling_parameters.tile_overlap
+        # manually set tile max number
+        hp.tiling_parameters.tile_max_number = np.random.randint(low=1, high=5000)
         default_tile_max_number = hp.tiling_parameters.tile_max_number
 
         adaptive_tile_params(hp.tiling_parameters, self.otx_dataset)
@@ -448,5 +450,5 @@ class TestTilingDetection:
         # check tile overlap is changed
         assert hp.tiling_parameters.tile_overlap != default_tile_overlap
 
-        # check max output prediction size is changed
-        assert hp.tiling_parameters.tile_max_number != default_tile_max_number
+        # check tile max number is being manually set and not changed by adaptive_tile_params
+        assert hp.tiling_parameters.tile_max_number == default_tile_max_number
