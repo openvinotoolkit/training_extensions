@@ -13,7 +13,6 @@ train_subset:
   num_workers: 2
   to_tv_image: true
   transforms:
-    # - class_path: torchvision.transforms.v2.ToImage
     - class_path: otx.core.data.transform_libs.torchvision.Resize
       init_args:
         keep_ratio: true
@@ -47,7 +46,6 @@ val_subset:
   num_workers: 2
   to_tv_image: true
   transforms:
-    # - class_path: torchvision.transforms.v2.ToImage
     - class_path: otx.core.data.transform_libs.torchvision.Resize
       init_args:
         keep_ratio: true
@@ -75,7 +73,6 @@ test_subset:
   num_workers: 2
   to_tv_image: true
   transforms:
-    # - class_path: torchvision.transforms.v2.ToImage
     - class_path: otx.core.data.transform_libs.torchvision.Resize
       init_args:
         keep_ratio: true
