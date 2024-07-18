@@ -432,14 +432,15 @@ class TestTilingDetection:
             assert len(data["gt_masks"].data[0][0]) <= max_annotation
 
     @e2e_pytest_unit
-    def test_adaptive_tile_parameters(self):
+    @pytest.mark.parametrize("max_num_img", [100, 300, 1500, 1501])
+    def test_adaptive_tile_parameters(self, max_num_img):
         model_template = parse_model_template(os.path.join(DEFAULT_ISEG_TEMPLATE_DIR, "template.yaml"))
         hp = create(model_template.hyper_parameters.data)
 
         default_tile_size = hp.tiling_parameters.tile_size
         default_tile_overlap = hp.tiling_parameters.tile_overlap
         # manually set tile max number
-        hp.tiling_parameters.tile_max_number = np.random.randint(low=1, high=5000)
+        hp.tiling_parameters.tile_max_number = max_num_img
         default_tile_max_number = hp.tiling_parameters.tile_max_number
 
         adaptive_tile_params(hp.tiling_parameters, self.otx_dataset)
@@ -450,5 +451,9 @@ class TestTilingDetection:
         # check tile overlap is changed
         assert hp.tiling_parameters.tile_overlap != default_tile_overlap
 
-        # check tile max number is being manually set and not changed by adaptive_tile_params
-        assert hp.tiling_parameters.tile_max_number == default_tile_max_number
+        if default_tile_max_number == 1500:
+            # check tile max number is being set by adaptive_tile_params
+            assert hp.tiling_parameters.tile_max_number != default_tile_max_number
+        else:
+            # check tile max number is being manually set
+            assert hp.tiling_parameters.tile_max_number == default_tile_max_number

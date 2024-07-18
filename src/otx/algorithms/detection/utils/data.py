@@ -434,7 +434,7 @@ def adaptive_tile_params(
     """Config tile parameters.
 
     Adapt based on annotation statistics.
-    i.e. tile size, tile overlap, and ratio.
+    i.e. tile size, tile overlap, ratio and max objects per sample
 
     Args:
         tiling_parameters (BaseTilingParameters): tiling parameters of the model
@@ -447,6 +447,7 @@ def adaptive_tile_params(
     assert rule in ["min", "avg"], f"Unknown rule: {rule}"
 
     stat = compute_robust_dataset_statistics(dataset, ann_stat=True)
+    max_num_objects = round(stat["annotation"]["num_per_image"]["max"])
     avg_size = stat["annotation"]["size_of_shape"]["avg"]
     min_size = stat["annotation"]["size_of_shape"]["robust_min"]
     max_size = stat["annotation"]["size_of_shape"]["robust_max"]
@@ -483,6 +484,18 @@ def adaptive_tile_params(
         tiling_parameters.get_metadata("tile_overlap")["min_value"],
         min(tiling_parameters.get_metadata("tile_overlap")["max_value"], tile_overlap),
     )
+    max_num_objects = max(
+        tiling_parameters.get_metadata("tile_max_number")["min_value"],
+        min(tiling_parameters.get_metadata("tile_max_number")["max_value"], max_num_objects),
+    )
 
     tiling_parameters.tile_size = tile_size
     tiling_parameters.tile_overlap = tile_overlap
+
+    if tiling_parameters.tile_max_number == 1500:
+        logger.info(
+            f"----> tile max number is set to default (1500), replace with adaptive max_num_objects: {max_num_objects}"
+        )
+        tiling_parameters.tile_max_number = max_num_objects
+    else:
+        logger.info(f"----> tile max number is manually set to: {tiling_parameters.tile_max_number}")
