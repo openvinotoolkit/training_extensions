@@ -409,7 +409,7 @@ class BaseConfig(ConfigurableParameters):
 
         tile_max_number = configurable_integer(
             header="Max object per image",
-            description="description: Maximum number of objects per tile. If set to 1500, the tile adaptor "
+            description="Maximum number of objects per tile. If set to 1500, the tile adaptor "
             "will automatically determine the value. Otherwise, the manually set value will be used.",
             default_value=1500,
             min_value=1,
