@@ -163,7 +163,8 @@ def namespace_override(configs: Namespace, key: str, overrides: Namespace) -> No
         overrides (Namespace): The configuration object to override the existing ones.
     """
     for sub_key, sub_value in overrides.items():
-        if isinstance(sub_value, list):
+        if isinstance(sub_value, list) and all(isinstance(sv, dict) for sv in sub_value):
+            # only enable list of dictionary items
             list_override(configs=configs[key], key=sub_key, overrides=sub_value)
         else:
             configs[key].update(sub_value, sub_key)
