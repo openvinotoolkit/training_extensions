@@ -163,12 +163,6 @@ class HuggingFaceModelForDetection(OTXDetectionModel):
             onnx_export_configuration={
                 "input_names": ["images"],
                 "output_names": ["bboxes", "labels", "scores"],
-                "dynamic_axes": {
-                    "images": {0: "batch", 2: "height", 3: "width"},
-                    "boxes": {0: "batch", 1: "num_dets"},
-                    "labels": {0: "batch", 1: "num_dets"},
-                    "scores": {0: "batch", 1: "num_dets"},
-                },
                 "autograd_inlining": False,
                 "opset_version": 16,
             },
