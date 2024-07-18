@@ -1,25 +1,35 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
+#
+"""RT-Detr loss, modified from https://github.com/lyuwenyu/RT-DETR."""
 
 from __future__ import annotations
+
+from typing import Callable
+
 import torch
 from torch import nn
 from torchvision.ops import box_convert
 
 from otx.algo.common.utils.bbox_overlaps import bbox_overlaps
 from otx.algo.detection.utils.matchers import HungarianMatcher
-from typing import Dict, List, Tuple
 
 
 class RTDetrCriterion(nn.Module):
     """This class computes the loss for DETR.
+
     The process happens in two steps:
         1) we compute hungarian assignment between ground truth boxes and the outputs of the model
         2) we supervise each pair of matched ground-truth / prediction (supervise class and box)
     """
 
-    def __init__(self, weight_dict: Dict[str, int], alpha: float = 0.2,
-                 gamma: float = 2.0, num_classes: int = 80) -> None:
+    def __init__(
+        self,
+        weight_dict: dict[str, int | float],
+        alpha: float = 0.2,
+        gamma: float = 2.0,
+        num_classes: int = 80,
+    ) -> None:
         """Create the criterion.
 
         Args:
@@ -35,14 +45,22 @@ class RTDetrCriterion(nn.Module):
         self.alpha = alpha
         self.gamma = gamma
 
-    def loss_labels_vfl(self, outputs: Dict[str, torch.Tensor], targets:List[Dict[str, torch.Tensor]],
-                   indices: Tuple[int], num_boxes: int) -> Dict[str, torch.Tensor]:
-        '''Compute the vfl loss'''
+    def loss_labels_vfl(
+        self,
+        outputs: dict[str, torch.Tensor],
+        targets: list[dict[str, torch.Tensor]],
+        indices: list[tuple[int, int]],
+        num_boxes: int,
+    ) -> dict[str, torch.Tensor]:
+        """Compute the vfl loss."""
         idx = self._get_src_permutation_idx(indices)
 
         src_boxes = outputs["pred_boxes"][idx]
         target_boxes = torch.cat([t["boxes"][i] for t, (_, i) in zip(targets, indices)], dim=0)
-        ious = bbox_overlaps(box_convert(src_boxes, in_fmt="cxcywh", out_fmt="xyxy"), box_convert(target_boxes, in_fmt="cxcywh", out_fmt="xyxy"))
+        ious = bbox_overlaps(
+            box_convert(src_boxes, in_fmt="cxcywh", out_fmt="xyxy"),
+            box_convert(target_boxes, in_fmt="cxcywh", out_fmt="xyxy"),
+        )
         ious = torch.diag(ious).detach()
 
         src_logits = outputs["pred_logits"]
@@ -62,8 +80,13 @@ class RTDetrCriterion(nn.Module):
         loss = loss.mean(1).sum() * src_logits.shape[1] / num_boxes
         return {"loss_vfl": loss}
 
-    def loss_boxes(self, outputs: Dict[str, torch.Tensor], targets:List[Dict[str, torch.Tensor]],
-                   indices: Tuple[int], num_boxes: int) -> Dict[str, torch.Tensor]:
+    def loss_boxes(
+        self,
+        outputs: dict[str, torch.Tensor],
+        targets: list[dict[str, torch.Tensor]],
+        indices: list[tuple[int, int]],
+        num_boxes: int,
+    ) -> dict[str, torch.Tensor]:
         """Compute the losses re)L1 regression loss and the GIoU loss.
 
         Targets dicts must contain the key "boxes" containing a tensor of dim [nb_target_boxes, 4]
@@ -78,24 +101,36 @@ class RTDetrCriterion(nn.Module):
         loss_bbox = nn.functional.l1_loss(src_boxes, target_boxes, reduction="none")
         losses["loss_bbox"] = loss_bbox.sum() / num_boxes
 
-        loss_giou = 1 - torch.diag(bbox_overlaps(box_convert(src_boxes, in_fmt="cxcywh", out_fmt="xyxy"),
-                                                 box_convert(target_boxes, in_fmt="cxcywh", out_fmt="xyxy"),
-                                                 mode="giou"))
+        loss_giou = 1 - torch.diag(
+            bbox_overlaps(
+                box_convert(src_boxes, in_fmt="cxcywh", out_fmt="xyxy"),
+                box_convert(target_boxes, in_fmt="cxcywh", out_fmt="xyxy"),
+                mode="giou",
+            ),
+        )
         losses["loss_giou"] = loss_giou.sum() / num_boxes
         return losses
 
-    def _get_src_permutation_idx(self, indices):
+    def _get_src_permutation_idx(
+        self,
+        indices: list[tuple[torch.Tensor, torch.Tensor]],
+    ) -> tuple[torch.Tensor, torch.Tensor]:
         # permute predictions following indices
         batch_idx = torch.cat([torch.full_like(src, i) for i, (src, _) in enumerate(indices)])
         src_idx = torch.cat([src for (src, _) in indices])
         return batch_idx, src_idx
 
     @property
-    def _available_losses(self):
-        return (self.loss_boxes, self.loss_labels_vfl)
+    def _available_losses(self) -> tuple[Callable]:
+        return (self.loss_boxes, self.loss_labels_vfl)  # type: ignore[return-value]
 
-    def forward(self, outputs: Dict[str, torch.Tensor], targets: List[Dict[str, torch.Tensor]]) -> Dict[str, torch.Tensor]:
+    def forward(
+        self,
+        outputs: dict[str, torch.Tensor],
+        targets: list[dict[str, torch.Tensor]],
+    ) -> dict[str, torch.Tensor]:
         """This performs the loss computation.
+
         Args:
              outputs: dict of tensors, see the output specification of the model for the format
              targets: list of dicts, such that len(targets) == batch_size.
@@ -146,7 +181,9 @@ class RTDetrCriterion(nn.Module):
 
         # In case of cdn auxiliary losses. For rtdetr
         if "dn_aux_outputs" in outputs:
-            assert "dn_meta" in outputs, ""
+            if "dn_meta" not in outputs:
+                msg = "dn_meta is not in outputs"
+                raise ValueError(msg)
             indices = self.get_cdn_matched_indices(outputs["dn_meta"], targets)
             num_boxes = num_boxes * outputs["dn_meta"]["dn_num_group"]
 
@@ -162,8 +199,11 @@ class RTDetrCriterion(nn.Module):
         return losses
 
     @staticmethod
-    def get_cdn_matched_indices(dn_meta: Dict[str, List[float]], targets: List[Dict[str, torch.Tensor]]) -> List[Tuple[torch.Tensor, torch.Tensor]]:
-        """get_cdn_matched_indices"""
+    def get_cdn_matched_indices(
+        dn_meta: dict[str, list[torch.Tensor]],
+        targets: list[dict[str, torch.Tensor]],
+    ) -> list[tuple[torch.Tensor, torch.Tensor]]:
+        """get_cdn_matched_indices."""
         dn_positive_idx, dn_num_group = dn_meta["dn_positive_idx"], dn_meta["dn_num_group"]
         num_gts = [len(t["labels"]) for t in targets]
         device = targets[0]["labels"].device
@@ -172,11 +212,16 @@ class RTDetrCriterion(nn.Module):
             if num_gt > 0:
                 gt_idx = torch.arange(num_gt, dtype=torch.int64, device=device)
                 gt_idx = gt_idx.tile(dn_num_group)
-                assert len(dn_positive_idx[i]) == len(gt_idx)
+                if len(dn_positive_idx[i]) != len(gt_idx):
+                    msg = f"len(dn_positive_idx[i]) != len(gt_idx), {len(dn_positive_idx[i])} != {len(gt_idx)}"
+                    raise ValueError(msg)
                 dn_match_indices.append((dn_positive_idx[i], gt_idx))
             else:
                 dn_match_indices.append(
-                    (torch.zeros(0, dtype=torch.int64, device=device), torch.zeros(0, dtype=torch.int64, device=device))
+                    (
+                        torch.zeros(0, dtype=torch.int64, device=device),
+                        torch.zeros(0, dtype=torch.int64, device=device),
+                    ),
                 )
 
         return dn_match_indices

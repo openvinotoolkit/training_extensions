@@ -226,7 +226,7 @@ class ConvModule(nn.Module):
         self.init_weights()
 
     @property
-    def norm_layer(self) -> str | None:
+    def norm_layer(self) -> nn.Module | None:
         """Get the normalization layer.
 
         Returns:
@@ -309,7 +309,12 @@ class ConvModule(nn.Module):
         """
         # efficient_conv_bn_eval works for conv + bn
         # with `track_running_stats` option
-        if efficient_conv_bn_eval and self.norm_layer and isinstance(self.norm_layer, BatchNorm) and self.norm_layer.track_running_stats:
+        if (
+            efficient_conv_bn_eval
+            and self.norm_layer
+            and isinstance(self.norm_layer, BatchNorm)
+            and self.norm_layer.track_running_stats
+        ):
             self.efficient_conv_bn_eval_forward = efficient_conv_bn_eval_forward
         else:
             self.efficient_conv_bn_eval_forward = None

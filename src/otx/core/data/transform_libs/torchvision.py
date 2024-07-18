@@ -1002,6 +1002,8 @@ class EfficientNetRandomCrop(RandomResizedCrop):
 
 
 class RandomIoUCrop(tvt_v2.RandomIoUCrop):
+    """RandomIoUCrop with torchvision format."""
+
     def __init__(
         self,
         min_scale: float = 0.3,
@@ -1011,11 +1013,12 @@ class RandomIoUCrop(tvt_v2.RandomIoUCrop):
         sampler_options: list | None = None,
         trials: int = 40,
         p: float = 1.0,
-    ):
+    ) -> None:
         super().__init__(min_scale, max_scale, min_aspect_ratio, max_aspect_ratio, sampler_options, trials)
         self.p = p
 
-    def __call__(self, *inputs: Any) -> Any:
+    def __call__(self, *inputs: tuple[torch.Tensor, ...]) -> tuple[torch.Tensor, ...]:
+        """Randomly crop the input data."""
         if torch.rand(1) >= self.p:
             return inputs if len(inputs) > 1 else inputs[0]
 
@@ -1023,9 +1026,11 @@ class RandomIoUCrop(tvt_v2.RandomIoUCrop):
 
 
 class ConvertBox(tvt_v2.Transform):
+    """Convert bounding boxes to a different format."""
+
     _transformed_types = (tv_tensors.BoundingBoxes,)
 
-    def __init__(self, out_fmt="", normalize=False) -> None:
+    def __init__(self, out_fmt: str = "", normalize: bool = False) -> None:
         super().__init__()
         self.out_fmt = out_fmt
         self.normalize = normalize
@@ -1035,7 +1040,7 @@ class ConvertBox(tvt_v2.Transform):
             "cxcywh": tv_tensors.BoundingBoxFormat.CXCYWH,
         }
 
-    def _transform(self, inpt: Any, params: dict[str, Any]) -> Any:
+    def _transform(self, inpt: torch.Tensor, params: dict[str, Any]) -> torch.Tensor:
         if self.out_fmt:
             spatial_size = inpt.canvas_size
             in_fmt = inpt.format.value.lower()

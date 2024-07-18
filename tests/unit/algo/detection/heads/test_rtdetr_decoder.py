@@ -9,11 +9,11 @@ from otx.algo.detection.heads.rtdetr_decoder import RTDETRTransformer
 
 
 class TestRTDETRTransformer:
-    @pytest.fixture
+    @pytest.fixture()
     def rt_detr_transformer(self):
         return RTDETRTransformer(num_classes=10, feat_channels=[128, 128, 128], num_decoder_layers=1)
 
-    @pytest.fixture
+    @pytest.fixture()
     def targets(self):
         return [
             {"boxes": torch.tensor([[0.2, 0.3, 0.4, 0.5], [0.6, 0.7, 0.8, 0.9]]), "labels": torch.tensor([1, 0])},
@@ -22,7 +22,7 @@ class TestRTDETRTransformer:
     def test_rt_detr_transformer_init(self, rt_detr_transformer):
         assert isinstance(rt_detr_transformer, RTDETRTransformer)
         assert rt_detr_transformer.num_classes == 10
-        assert rt_detr_transformer.aux_loss == True
+        assert rt_detr_transformer.aux_loss
 
     def test_rt_detr_transformer_forward(self, rt_detr_transformer, targets):
         feats = [torch.randn(1, 128, 60, 60), torch.randn(1, 128, 30, 30), torch.randn(1, 128, 15, 15)]

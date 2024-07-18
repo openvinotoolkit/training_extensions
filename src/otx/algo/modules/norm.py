@@ -15,6 +15,8 @@ from torch.nn import SyncBatchNorm
 from torch.nn.modules.batchnorm import _BatchNorm
 from torch.nn.modules.instancenorm import _InstanceNorm
 
+from otx.algo.modules.norm_module import FrozenBatchNorm2d
+
 NORM_DICT = {
     "BN": nn.BatchNorm2d,
     "BN1d": nn.BatchNorm1d,
@@ -27,10 +29,11 @@ NORM_DICT = {
     "IN1d": nn.InstanceNorm1d,
     "IN2d": nn.InstanceNorm2d,
     "IN3d": nn.InstanceNorm3d,
+    "FBN": FrozenBatchNorm2d,
 }
 
 
-def infer_abbr(class_type: type, layer_name: str | None = None) -> str:
+def infer_abbr(class_type: type, layer_name: str | None = None) -> str:  # noqa: PLR0911
     """Infer abbreviation from the class name.
 
     When we build a norm layer with `build_norm_layer()`, we want to preserve

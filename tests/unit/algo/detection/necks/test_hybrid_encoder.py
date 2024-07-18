@@ -6,6 +6,7 @@
 import torch
 from otx.algo.detection.necks.hybrid_encoder import HybridEncoder
 
+
 def test_hybrid_encoder_forward():
     hidden_dim = 256
     feat_strides = [8, 16, 32]
@@ -15,9 +16,11 @@ def test_hybrid_encoder_forward():
     # Create dummy input
     batch_size = 2
     input_sizes = [(128, 64, 64), (256, 32, 32), (512, 16, 16)]
-    dummy_input = [torch.randn(batch_size, *input_sizes[0]),
-                   torch.randn(batch_size, *input_sizes[1]),
-                   torch.randn(batch_size, *input_sizes[2])]
+    dummy_input = [
+        torch.randn(batch_size, *input_sizes[0]),
+        torch.randn(batch_size, *input_sizes[1]),
+        torch.randn(batch_size, *input_sizes[2]),
+    ]
 
     # Forward pass
     outputs = encoder(dummy_input)

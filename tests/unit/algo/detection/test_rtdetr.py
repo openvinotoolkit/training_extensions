@@ -8,45 +8,57 @@ import torch
 import torchvision
 from otx.algo.detection.backbones import PResNet
 from otx.algo.detection.heads import RTDETRTransformer
-from otx.algo.detection.necks import HybridEncoder
 from otx.algo.detection.losses import RTDetrCriterion
+from otx.algo.detection.necks import HybridEncoder
 from otx.algo.detection.rtdetr import RTDETR
 
 
-class TestRTDETR():
-    @pytest.fixture
+class TestRTDETR:
+    @pytest.fixture()
     def rt_detr_model(self):
         num_classes = 10
         backbone = PResNet(
-                depth=18, pretrained=False, return_idx=[1, 2, 3]
-            )
+            depth=18,
+            pretrained=False,
+            return_idx=[1, 2, 3],
+        )
         encoder = HybridEncoder(
             in_channels=[128, 256, 512],
             dim_feedforward=1024,
-            eval_spatial_size=(640,640),
+            eval_spatial_size=(640, 640),
         )
         decoder = RTDETRTransformer(
             num_classes=num_classes,
             num_decoder_layers=1,
             feat_channels=[256, 256, 256],
-            eval_spatial_size=(640,640),
+            eval_spatial_size=(640, 640),
         )
         criterion = RTDetrCriterion(
             weight_dict={"loss_vfl": 1.0, "loss_bbox": 1.0, "loss_giou": 1.0},
             num_classes=num_classes,
         )
-        model = RTDETR(backbone=backbone, encoder=encoder, decoder=decoder, num_classes=10, criterion=criterion)
-        return model
+        return RTDETR(backbone=backbone, encoder=encoder, decoder=decoder, num_classes=10, criterion=criterion)
 
-    @pytest.fixture
+    @pytest.fixture()
     def targets(self):
-        return [{"boxes": torch.tensor([[0.2739, 0.2848, 0.3239, 0.3348],
-                                        [0.1652, 0.1109, 0.2152, 0.1609]]),  "labels": torch.tensor([2, 2])},
-                {"boxes": torch.tensor([[0.6761, 0.8174, 0.7261, 0.8674],
-                                        [0.1652, 0.1109, 0.2152, 0.1609],
-                                        [0.2848, 0.9370, 0.3348, 0.9870]]),  "labels": torch.tensor([8, 2, 7])}]
+        return [
+            {
+                "boxes": torch.tensor([[0.2739, 0.2848, 0.3239, 0.3348], [0.1652, 0.1109, 0.2152, 0.1609]]),
+                "labels": torch.tensor([2, 2]),
+            },
+            {
+                "boxes": torch.tensor(
+                    [
+                        [0.6761, 0.8174, 0.7261, 0.8674],
+                        [0.1652, 0.1109, 0.2152, 0.1609],
+                        [0.2848, 0.9370, 0.3348, 0.9870],
+                    ],
+                ),
+                "labels": torch.tensor([8, 2, 7]),
+            },
+        ]
 
-    @pytest.fixture
+    @pytest.fixture()
     def images(self):
         return torch.randn(2, 3, 640, 640)
 
@@ -54,7 +66,8 @@ class TestRTDETR():
         rt_detr_model.train()
         output = rt_detr_model(images, targets)
         assert isinstance(output, dict)
-        assert all([key.startswith("loss_") for key in output])
+        for key in output:
+            assert key.startswith("loss_")
         assert "loss_bbox" in output
         assert "loss_vfl" in output
         assert "loss_giou" in output
@@ -62,7 +75,7 @@ class TestRTDETR():
     def test_rt_detr_postprocess(self, rt_detr_model):
         outputs = {
             "pred_logits": torch.randn(2, 100, 10),
-            "pred_boxes": torch.randn(2, 100, 4)
+            "pred_boxes": torch.randn(2, 100, 4),
         }
         original_size = [640, 640]
         result = rt_detr_model.postprocess(outputs, original_size)

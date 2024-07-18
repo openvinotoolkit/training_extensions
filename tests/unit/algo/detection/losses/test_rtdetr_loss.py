@@ -8,20 +8,20 @@ import torch
 from otx.algo.detection.losses.rtdetr_loss import RTDetrCriterion
 
 
-class TestRTDETRCriterion():
-    @pytest.fixture
+class TestRTDETRCriterion:
+    @pytest.fixture()
     def criterion(self):
         weight_dict = {"loss_vfl": 1.0, "loss_bbox": 5, "loss_giou": 2}
         return RTDetrCriterion(weight_dict, num_classes=2)
 
-    @pytest.fixture
+    @pytest.fixture()
     def outputs(self):
         return {
             "pred_boxes": torch.tensor([[[0.1, 0.2, 0.3, 0.4], [0.5, 0.6, 0.7, 0.8]]]),
             "pred_logits": torch.tensor([[[0.9, 0.1], [0.2, 0.8]]]),
         }
 
-    @pytest.fixture
+    @pytest.fixture()
     def targets(self):
         return [
             {"boxes": torch.tensor([[0.2, 0.3, 0.4, 0.5], [0.6, 0.7, 0.8, 0.9]]), "labels": torch.tensor([1, 0])},

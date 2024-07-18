@@ -319,8 +319,15 @@ class FFN(BaseModule):
         return identity + self.dropout_layer(out)
 
 
-def deformable_attention_core_func(value, value_spatial_shapes, sampling_locations, attention_weights):
-    """Args:
+def deformable_attention_core_func(
+    value: torch.Tensor,
+    value_spatial_shapes: torch.Tensor | list[tuple[int, int]],
+    sampling_locations: torch.Tensor,
+    attention_weights: torch.Tensor,
+) -> torch.Tensor:
+    """Deformable attention core function.
+
+    Args:
         value (Tensor): [bs, value_length, n_head, c]
         value_spatial_shapes (Tensor|List): [n_levels, 2]
         value_level_start_index (Tensor|List): [n_levels]
@@ -331,7 +338,7 @@ def deformable_attention_core_func(value, value_spatial_shapes, sampling_locatio
         output (Tensor): [bs, Length_{query}, C]
     """
     bs, _, n_head, c = value.shape
-    _, Len_q, _, n_levels, n_points, _ = sampling_locations.shape
+    _, len_q, _, n_levels, n_points, _ = sampling_locations.shape
 
     split_shape = [h * w for h, w in value_spatial_shapes]
     value_list = value.split(split_shape, dim=1)
@@ -344,15 +351,19 @@ def deformable_attention_core_func(value, value_spatial_shapes, sampling_locatio
         sampling_grid_l_ = sampling_grids[:, :, :, level].permute(0, 2, 1, 3, 4).flatten(0, 1)
         # N_*M_, D_, Lq_, P_
         sampling_value_l_ = nn.functional.grid_sample(
-            value_l_, sampling_grid_l_, mode="bilinear", padding_mode="zeros", align_corners=False
+            value_l_,
+            sampling_grid_l_,
+            mode="bilinear",
+            padding_mode="zeros",
+            align_corners=False,
         )
         sampling_value_list.append(sampling_value_l_)
     # (N_, Lq_, M_, L_, P_) -> (N_, M_, Lq_, L_, P_) -> (N_*M_, 1, Lq_, L_*P_)
-    attention_weights = attention_weights.permute(0, 2, 1, 3, 4).reshape(bs * n_head, 1, Len_q, n_levels * n_points)
+    attention_weights = attention_weights.permute(0, 2, 1, 3, 4).reshape(bs * n_head, 1, len_q, n_levels * n_points)
     output = (
         (torch.stack(sampling_value_list, dim=-2).flatten(-2) * attention_weights)
         .sum(-1)
-        .reshape(bs, n_head * c, Len_q)
+        .reshape(bs, n_head * c, len_q)
     )
 
     return output.permute(0, 2, 1)
