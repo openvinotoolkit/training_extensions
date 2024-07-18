@@ -6,7 +6,7 @@ import torch.nn.functional as F
 from torch import nn
 from typing import Any, Dict, List
 
-from otx.algo.detection.utils.utils import get_activation
+from otx.algo.modules import ConvModule, build_activation_layer
 
 __all__ = ["PResNet"]
 
@@ -39,7 +39,7 @@ class ConvNormLayer(nn.Module):
             bias=bias,
         )
         self.norm = nn.BatchNorm2d(ch_out)
-        self.act = nn.Identity() if act is None else get_activation(act)
+        self.act = nn.Identity() if act is None else build_activation_layer(act)
 
     def forward(self, x):
         """forward"""
@@ -97,7 +97,7 @@ class FrozenBatchNorm2d(nn.Module):
 class BasicBlock(nn.Module):
     expansion = 1
 
-    def __init__(self, ch_in: int, ch_out: int, stride: int, shortcut: bool, act: str="relu", variant: str="b") -> None:
+    def __init__(self, ch_in: int, ch_out: int, stride: int, shortcut: bool, act_cfg: Dict[str, str] | None = None, variant: str="b", norm_cfg: Dict[str, str] | None = None) -> None:
         super().__init__()
 
         self.shortcut = shortcut
@@ -108,16 +108,16 @@ class BasicBlock(nn.Module):
                     OrderedDict(
                         [
                             ("pool", nn.AvgPool2d(2, 2, 0, ceil_mode=True)),
-                            ("conv", ConvNormLayer(ch_in, ch_out, 1, 1)),
+                            ("conv", ConvModule(ch_in, ch_out, 1, 1, act_cfg=None, norm_cfg=norm_cfg)),
                         ]
                     )
                 )
             else:
-                self.short = ConvNormLayer(ch_in, ch_out, 1, stride)
+                self.short = ConvModule(ch_in, ch_out, 1, stride, act_cfg=None, norm_cfg=norm_cfg)
 
-        self.branch2a = ConvNormLayer(ch_in, ch_out, 3, stride, act=act)
-        self.branch2b = ConvNormLayer(ch_out, ch_out, 3, 1, act=None)
-        self.act = nn.Identity() if act is None else get_activation(act)
+        self.branch2a = ConvModule(ch_in, ch_out, 3, stride, padding=1, act_cfg=act_cfg, norm_cfg=norm_cfg)
+        self.branch2b = ConvModule(ch_out, ch_out, 3, 1, padding=1, act_cfg=None, norm_cfg=norm_cfg)
+        self.act = nn.Identity() if act_cfg is None else build_activation_layer(act_cfg)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """forward"""
@@ -137,7 +137,7 @@ class BasicBlock(nn.Module):
 class BottleNeck(nn.Module):
     expansion = 4
 
-    def __init__(self, ch_in: int, ch_out: int, stride: int, shortcut: bool, act: str="relu", variant: str="b") -> None:
+    def __init__(self, ch_in: int, ch_out: int, stride: int, shortcut: bool, act_cfg: Dict[str, str] | None = None, variant: str="b", norm_cfg: Dict[str, str] | None = None) -> None:
         super().__init__()
 
         if variant == "a":
@@ -147,9 +147,9 @@ class BottleNeck(nn.Module):
 
         width = ch_out
 
-        self.branch2a = ConvNormLayer(ch_in, width, 1, stride1, act=act)
-        self.branch2b = ConvNormLayer(width, width, 3, stride2, act=act)
-        self.branch2c = ConvNormLayer(width, ch_out * self.expansion, 1, 1)
+        self.branch2a = ConvModule(ch_in, width, 1, stride1, act_cfg=act_cfg, norm_cfg=norm_cfg)
+        self.branch2b = ConvModule(width, width, 3, stride2, padding=1, act_cfg=act_cfg, norm_cfg=norm_cfg)
+        self.branch2c = ConvModule(width, ch_out * self.expansion, 1, 1, act_cfg=None, norm_cfg=norm_cfg)
 
         self.shortcut = shortcut
         if not shortcut:
@@ -158,14 +158,14 @@ class BottleNeck(nn.Module):
                     OrderedDict(
                         [
                             ("pool", nn.AvgPool2d(2, 2, 0, ceil_mode=True)),
-                            ("conv", ConvNormLayer(ch_in, ch_out * self.expansion, 1, 1)),
+                            ("conv", ConvModule(ch_in, ch_out * self.expansion, 1, 1, act_cfg=None, norm_cfg=norm_cfg)),
                         ]
                     )
                 )
             else:
-                self.short = ConvNormLayer(ch_in, ch_out * self.expansion, 1, stride)
+                self.short = ConvModule(ch_in, ch_out * self.expansion, 1, stride, act_cfg=None, norm_cfg=norm_cfg)
 
-        self.act = nn.Identity() if act is None else get_activation(act)
+        self.act = nn.Identity() if act_cfg is None else build_activation_layer(act_cfg)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """forward"""
@@ -185,7 +185,7 @@ class BottleNeck(nn.Module):
 
 
 class Blocks(nn.Module):
-    def __init__(self, block: nn.Module, ch_in: int, ch_out: int, count: int, stage_num: int, act: str="relu", variant: str="b") -> None:
+    def __init__(self, block: nn.Module, ch_in: int, ch_out: int, count: int, stage_num: int, act_cfg: Dict[str, str] | None = None, variant: str="b", norm_cfg: Dict[str, str] | None = None) -> None:
         super().__init__()
 
         self.blocks = nn.ModuleList()
@@ -197,7 +197,8 @@ class Blocks(nn.Module):
                     stride=2 if i == 0 and stage_num != 2 else 1,
                     shortcut=False if i == 0 else True,
                     variant=variant,
-                    act=act,
+                    act_cfg=act_cfg,
+                    norm_cfg=norm_cfg
                 ),
             )
 
@@ -219,7 +220,8 @@ class PResNet(nn.Module):
         variant: str="d",
         num_stages: int=4,
         return_idx: List[int]=[0, 1, 2, 3],
-        act: str="relu",
+        act_cfg: Dict[str, str] | None= None,
+        norm_cfg: Dict[str, str] | None= None,
         freeze_at: int=-1,
         freeze_norm: bool=True,
         pretrained: bool=False,
@@ -236,9 +238,10 @@ class PResNet(nn.Module):
             ]
         else:
             conv_def = [[3, ch_in, 7, 2, "conv1_1"]]
-
+        act_cfg = act_cfg if act_cfg is not None else {"type": "ReLU"}
+        norm_cfg = norm_cfg if norm_cfg is not None else {"type": "BN", "name": "norm"}
         self.conv1 = nn.Sequential(
-            OrderedDict([(_name, ConvNormLayer(c_in, c_out, k, s, act=act)) for c_in, c_out, k, s, _name in conv_def])
+            OrderedDict([(_name, ConvModule(c_in, c_out, k, s, padding=(k - 1) // 2, act_cfg=act_cfg, norm_cfg=norm_cfg)) for c_in, c_out, k, s, _name in conv_def])
         )
 
         ch_out_list = [64, 128, 256, 512]
@@ -251,7 +254,7 @@ class PResNet(nn.Module):
         for i in range(num_stages):
             stage_num = i + 2
             self.res_layers.append(
-                Blocks(block, ch_in, ch_out_list[i], block_nums[i], stage_num, act=act, variant=variant),
+                Blocks(block, ch_in, ch_out_list[i], block_nums[i], stage_num, act_cfg=act_cfg, variant=variant, norm_cfg=norm_cfg),
             )
             ch_in = _out_channels[i]
 

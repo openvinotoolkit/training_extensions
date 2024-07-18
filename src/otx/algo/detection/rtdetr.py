@@ -20,7 +20,7 @@ from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.detection import DetBatchDataEntity, DetBatchPredEntity
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter
-from otx.core.model.detection import ExplainableOTXDetModel
+from otx.core.model.detection import OTXDetectionModel, ExplainableOTXDetModel
 
 __all__ = ["RTDETR"]
 
@@ -108,7 +108,6 @@ class RTDETR(nn.Module):
         self,
         batch_inputs: Tensor,
         batch_img_metas: list[dict],
-        explain_mode: bool = False,
     ) -> dict[str, Any]:
         return self.postprocess(self._forward_features(batch_inputs), deploy_mode=True)
 
@@ -257,7 +256,7 @@ class OTX_RTDETR(ExplainableOTXDetModel):
                 "autograd_inlining": False,
                 "opset_version": 16,
             },
-            output_names=["bboxes", "labels", "feature_vector", "saliency_map"] if self.explain_mode else None,
+            output_names=["bboxes", "labels", "scores"]
         )
 
     @property

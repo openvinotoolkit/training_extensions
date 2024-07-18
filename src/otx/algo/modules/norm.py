@@ -30,7 +30,7 @@ NORM_DICT = {
 }
 
 
-def infer_abbr(class_type: type) -> str:
+def infer_abbr(class_type: type, layer_name: str | None = None) -> str:
     """Infer abbreviation from the class name.
 
     When we build a norm layer with `build_norm_layer()`, we want to preserve
@@ -55,6 +55,8 @@ def infer_abbr(class_type: type) -> str:
     if not inspect.isclass(class_type):
         msg = f"class_type must be a type, but got {type(class_type)}"
         raise TypeError(msg)
+    if layer_name is not None:
+        return layer_name
     if hasattr(class_type, "_abbr_"):
         return class_type._abbr_  # noqa: SLF001
     if issubclass(class_type, _InstanceNorm):  # IN is a subclass of BN
@@ -104,6 +106,7 @@ def build_norm_layer(cfg: dict, num_features: int, postfix: int | str = "") -> t
     cfg_ = cfg.copy()
 
     layer_type = cfg_.pop("type")
+    layer_name = cfg_.pop("name", None)
 
     if inspect.isclass(layer_type):
         norm_layer = layer_type
@@ -115,10 +118,9 @@ def build_norm_layer(cfg: dict, num_features: int, postfix: int | str = "") -> t
         if norm_layer is None:
             msg = f"Cannot find {norm_layer} in {NORM_DICT.keys()} "
             raise KeyError(msg)
-    abbr = infer_abbr(norm_layer)
+    abbr = infer_abbr(norm_layer, layer_name)
 
     name = abbr + str(postfix)
-
     requires_grad = cfg_.pop("requires_grad", True)
     cfg_.setdefault("eps", 1e-5)
     if norm_layer is not nn.GroupNorm:

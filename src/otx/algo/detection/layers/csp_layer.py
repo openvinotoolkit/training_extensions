@@ -8,6 +8,7 @@ from __future__ import annotations
 import torch
 from torch import Tensor, nn
 
+from otx.algo.modules import build_activation_layer
 from otx.algo.detection.layers import ChannelAttention
 from otx.algo.modules.base_module import BaseModule
 from otx.algo.modules.conv_module import ConvModule
@@ -155,6 +156,58 @@ class CSPNeXtBlock(BaseModule):
         return out
 
 
+class RepVggBlock(nn.Module):
+    def __init__(self, ch_in: int, ch_out: int, act_cfg: dict[str, str] | None = None,
+                 norm_cfg: dict[str, str] | None = None) -> None:
+        super().__init__()
+        self.ch_in = ch_in
+        self.ch_out = ch_out
+        self.conv1 = ConvModule(ch_in, ch_out, 3, 1, padding=1, act_cfg=None, norm_cfg=norm_cfg)
+        self.conv2 = ConvModule(ch_in, ch_out, 1, 1, act_cfg=None, norm_cfg=norm_cfg)
+        self.act = nn.Identity() if act_cfg is None else build_activation_layer(act_cfg)
+
+    def forward(self, x):
+        if hasattr(self, "conv"):
+            y = self.conv(x)
+        else:
+            y = self.conv1(x) + self.conv2(x)
+
+        return self.act(y)
+
+    def convert_to_deploy(self):
+        if not hasattr(self, "conv"):
+            self.conv = nn.Conv2d(self.ch_in, self.ch_out, 3, 1, padding=1)
+
+        kernel, bias = self.get_equivalent_kernel_bias()
+        self.conv.weight.data = kernel
+        self.conv.bias.data = bias
+
+    def get_equivalent_kernel_bias(self):
+        kernel3x3, bias3x3 = self._fuse_bn_tensor(self.conv1)
+        kernel1x1, bias1x1 = self._fuse_bn_tensor(self.conv2)
+
+        return kernel3x3 + self._pad_1x1_to_3x3_tensor(kernel1x1), bias3x3 + bias1x1
+
+    def _pad_1x1_to_3x3_tensor(self, kernel1x1):
+        if kernel1x1 is None:
+            return 0
+        else:
+            return nn.functional.pad(kernel1x1, [1, 1, 1, 1])
+
+    def _fuse_bn_tensor(self, branch: ConvModule):
+        if branch is None:
+            return 0, 0
+        kernel = branch.conv.weight
+        running_mean = branch.norm_layer.running_mean
+        running_var = branch.norm_layer.running_var
+        gamma = branch.norm_layer.weight
+        beta = branch.norm_layer.bias
+        eps = branch.norm_layer.eps
+        std = (running_var + eps).sqrt()
+        t = (gamma / std).reshape(-1, 1, 1, 1)
+        return kernel * t, beta - running_mean * gamma / std
+
+
 class CSPLayer(BaseModule):
     """Cross Stage Partial Layer.
 
@@ -256,3 +309,25 @@ class CSPLayer(BaseModule):
         if self.channel_attention:
             x_final = self.attention(x_final)
         return self.final_conv(x_final)
+
+
+class CSPRepLayer(nn.Module):
+    def __init__(self, in_channels: int, out_channels: int, num_blocks: int=3, expansion: float=1.0, bias: bool=False,
+                 act_cfg: dict[str, str] | None = None, norm_cfg: dict[str, str] | None = None) -> None:
+        super(CSPRepLayer, self).__init__()
+        hidden_channels = int(out_channels * expansion)
+        self.conv1 = ConvModule(in_channels, hidden_channels, 1, 1, bias=bias, act_cfg=act_cfg, norm_cfg=norm_cfg)
+        self.conv2 = ConvModule(in_channels, hidden_channels, 1, 1, bias=bias, act_cfg=act_cfg, norm_cfg=norm_cfg)
+        self.bottlenecks = nn.Sequential(
+            *[RepVggBlock(hidden_channels, hidden_channels, act_cfg=act_cfg, norm_cfg=norm_cfg) for _ in range(num_blocks)]
+        )
+        if hidden_channels != out_channels:
+            self.conv3 = ConvModule(hidden_channels, out_channels, 1, 1, bias=bias, act_cfg=act_cfg, norm_cfg=norm_cfg)
+        else:
+            self.conv3 = nn.Identity()
+
+    def forward(self, x):
+        x_1 = self.conv1(x)
+        x_1 = self.bottlenecks(x_1)
+        x_2 = self.conv2(x)
+        return self.conv3(x_1 + x_2)

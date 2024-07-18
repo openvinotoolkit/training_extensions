@@ -3,16 +3,10 @@
 
 from __future__ import annotations
 import torch
-import torch.nn.functional as F
 from torch import nn
+from torchvision.ops import box_convert
 
-from otx.algo.detection.utils.utils import (
-    box_cxcywh_to_xyxy,
-    box_iou,
-    generalized_box_iou,
-    get_world_size,
-    is_dist_available_and_initialized,
-)
+from otx.algo.common.utils.bbox_overlaps import bbox_overlaps
 from otx.algo.detection.utils.matchers import HungarianMatcher
 from typing import Dict, List, Tuple
 
@@ -48,23 +42,23 @@ class RTDetrCriterion(nn.Module):
 
         src_boxes = outputs["pred_boxes"][idx]
         target_boxes = torch.cat([t["boxes"][i] for t, (_, i) in zip(targets, indices)], dim=0)
-        ious, _ = box_iou(box_cxcywh_to_xyxy(src_boxes), box_cxcywh_to_xyxy(target_boxes))
+        ious = bbox_overlaps(box_convert(src_boxes, in_fmt="cxcywh", out_fmt="xyxy"), box_convert(target_boxes, in_fmt="cxcywh", out_fmt="xyxy"))
         ious = torch.diag(ious).detach()
 
         src_logits = outputs["pred_logits"]
         target_classes_o = torch.cat([t["labels"][J] for t, (_, J) in zip(targets, indices)])
         target_classes = torch.full(src_logits.shape[:2], self.num_classes, dtype=torch.int64, device=src_logits.device)
         target_classes[idx] = target_classes_o
-        target = F.one_hot(target_classes, num_classes=self.num_classes + 1)[..., :-1]
+        target = nn.functional.one_hot(target_classes, num_classes=self.num_classes + 1)[..., :-1]
 
         target_score_o = torch.zeros_like(target_classes, dtype=src_logits.dtype)
         target_score_o[idx] = ious.to(target_score_o.dtype)
         target_score = target_score_o.unsqueeze(-1) * target
 
-        pred_score = F.sigmoid(src_logits).detach()
+        pred_score = nn.functional.sigmoid(src_logits).detach()
         weight = self.alpha * pred_score.pow(self.gamma) * (1 - target) + target_score
 
-        loss = F.binary_cross_entropy_with_logits(src_logits, target_score, weight=weight, reduction="none")
+        loss = nn.functional.binary_cross_entropy_with_logits(src_logits, target_score, weight=weight, reduction="none")
         loss = loss.mean(1).sum() * src_logits.shape[1] / num_boxes
         return {"loss_vfl": loss}
 
@@ -81,10 +75,12 @@ class RTDetrCriterion(nn.Module):
 
         losses = {}
 
-        loss_bbox = F.l1_loss(src_boxes, target_boxes, reduction="none")
+        loss_bbox = nn.functional.l1_loss(src_boxes, target_boxes, reduction="none")
         losses["loss_bbox"] = loss_bbox.sum() / num_boxes
 
-        loss_giou = 1 - torch.diag(generalized_box_iou(box_cxcywh_to_xyxy(src_boxes), box_cxcywh_to_xyxy(target_boxes)))
+        loss_giou = 1 - torch.diag(bbox_overlaps(box_convert(src_boxes, in_fmt="cxcywh", out_fmt="xyxy"),
+                                                 box_convert(target_boxes, in_fmt="cxcywh", out_fmt="xyxy"),
+                                                 mode="giou"))
         losses["loss_giou"] = loss_giou.sum() / num_boxes
         return losses
 
@@ -117,9 +113,11 @@ class RTDetrCriterion(nn.Module):
         # Compute the average number of target boxes accross all nodes, for normalization purposes
         num_boxes = sum(len(t["labels"]) for t in targets)
         num_boxes = torch.as_tensor([num_boxes], dtype=torch.float, device=next(iter(outputs.values())).device)
-        if is_dist_available_and_initialized():
+        world_size = 1
+        if torch.distributed.is_available() and torch.distributed.is_initialized():
             torch.distributed.all_reduce(num_boxes)
-        num_boxes = torch.clamp(num_boxes / get_world_size(), min=1).item()
+            world_size = torch.distributed.get_world_size()
+        num_boxes = torch.clamp(num_boxes / world_size, min=1).item()
 
         # Compute all the requested losses
         losses = {}

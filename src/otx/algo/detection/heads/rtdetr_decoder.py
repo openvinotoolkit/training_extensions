@@ -11,16 +11,13 @@ from collections import OrderedDict
 from typing import List, Dict, Tuple
 
 import torch
-import torch.nn.functional as F
 from torch import nn
 from torch.nn import init
+import torchvision
 
+from otx.algo.modules import build_activation_layer
+from otx.algo.modules.transformer import deformable_attention_core_func
 from otx.algo.detection.utils.utils import (
-    bias_init_with_prob,
-    box_cxcywh_to_xyxy,
-    box_xyxy_to_cxcywh,
-    deformable_attention_core_func,
-    get_activation,
     inverse_sigmoid,
 )
 
@@ -100,7 +97,7 @@ def get_contrastive_denoising_training_group(
         input_query_class = torch.where(mask & pad_gt_mask, new_label, input_query_class)
 
     if box_noise_scale > 0:
-        known_bbox = box_cxcywh_to_xyxy(input_query_bbox)
+        known_bbox = torchvision.ops.box_convert(input_query_bbox, in_fmt="cxcywh", out_fmt="xyxy")
         diff = torch.tile(input_query_bbox[..., 2:] * 0.5, [1, 1, 2]) * box_noise_scale
         rand_sign = torch.randint_like(input_query_bbox, 0, 2) * 2.0 - 1.0
         rand_part = torch.rand_like(input_query_bbox)
@@ -108,7 +105,7 @@ def get_contrastive_denoising_training_group(
         rand_part *= rand_sign
         known_bbox += rand_part * diff
         known_bbox.clip_(min=0.0, max=1.0)
-        input_query_bbox = box_xyxy_to_cxcywh(known_bbox)
+        input_query_bbox = torchvision.ops.box_convert(known_bbox, in_fmt="xyxy", out_fmt="cxcywh")
         input_query_bbox = inverse_sigmoid(input_query_bbox)
 
     input_query_class = class_embed(input_query_class)
@@ -138,12 +135,12 @@ def get_contrastive_denoising_training_group(
 
 
 class MLP(nn.Module):
-    def __init__(self, input_dim, hidden_dim, output_dim, num_layers, act="relu"):
+    def __init__(self, input_dim, hidden_dim, output_dim, num_layers, act_cfg: Dict[str, str] | None = None):
         super().__init__()
         self.num_layers = num_layers
         h = [hidden_dim] * (num_layers - 1)
         self.layers = nn.ModuleList(nn.Linear(n, k) for n, k in zip([input_dim] + h, h + [output_dim]))
-        self.act = nn.Identity() if act is None else get_activation(act)
+        self.act = nn.Identity() if act_cfg is None else build_activation_layer(act_cfg)
 
     def forward(self, x):
         for i, layer in enumerate(self.layers):
@@ -229,7 +226,7 @@ class MSDeformableAttention(nn.Module):
         attention_weights = self.attention_weights(query).reshape(
             bs, Len_q, self.num_heads, self.num_levels * self.num_points
         )
-        attention_weights = F.softmax(attention_weights, dim=-1).reshape(
+        attention_weights = nn.functional.softmax(attention_weights, dim=-1).reshape(
             bs, Len_q, self.num_heads, self.num_levels, self.num_points
         )
 
@@ -267,7 +264,7 @@ class MSDeformableAttention(nn.Module):
 class TransformerDecoderLayer(nn.Module):
     def __init__(
         self, d_model: int=256, n_head: int=8, dim_feedforward: int=1024,
-        dropout: int=0.0, activation: str="relu", n_levels: int=4, n_points: int=4
+        dropout: int=0.0, activation: Dict[str, str] | None = None, n_levels: int=4, n_points: int=4
     ):
         super(TransformerDecoderLayer, self).__init__()
 
@@ -283,7 +280,7 @@ class TransformerDecoderLayer(nn.Module):
 
         # ffn
         self.linear1 = nn.Linear(d_model, dim_feedforward)
-        self.activation = get_activation(activation)
+        self.activation = build_activation_layer(activation)
         self.dropout3 = nn.Dropout(dropout)
         self.linear2 = nn.Linear(dim_feedforward, d_model)
         self.dropout4 = nn.Dropout(dropout)
@@ -352,7 +349,7 @@ class TransformerDecoder(nn.Module):
         output = tgt
         dec_out_bboxes = []
         dec_out_logits = []
-        ref_points_detach = F.sigmoid(ref_points_unact)
+        ref_points_detach = nn.functional.sigmoid(ref_points_unact)
 
         for i, layer in enumerate(self.layers):
             ref_points_input = ref_points_detach.unsqueeze(2)
@@ -369,14 +366,14 @@ class TransformerDecoder(nn.Module):
                 query_pos_embed,
             )
 
-            inter_ref_bbox = F.sigmoid(bbox_head[i](output) + inverse_sigmoid(ref_points_detach))
+            inter_ref_bbox = nn.functional.sigmoid(bbox_head[i](output) + inverse_sigmoid(ref_points_detach))
 
             if self.training:
                 dec_out_logits.append(score_head[i](output))
                 if i == 0:
                     dec_out_bboxes.append(inter_ref_bbox)
                 else:
-                    dec_out_bboxes.append(F.sigmoid(bbox_head[i](output) + inverse_sigmoid(ref_points)))
+                    dec_out_bboxes.append(nn.functional.sigmoid(bbox_head[i](output) + inverse_sigmoid(ref_points)))
 
             elif i == self.eval_idx:
                 dec_out_logits.append(score_head[i](output))
@@ -404,7 +401,7 @@ class RTDETRTransformer(nn.Module):
         num_decoder_layers: int = 6,
         dim_feedforward: int = 1024,
         dropout: float = 0.0,
-        activation: str = "relu",
+        activation: Dict[str, str] | None = None,
         num_denoising: int = 100,
         label_noise_ratio: float = 0.5,
         box_noise_scale: float = 1.0,
@@ -460,7 +457,7 @@ class RTDETRTransformer(nn.Module):
         self.num_decoder_layers = num_decoder_layers
         self.eval_spatial_size = eval_spatial_size
         self.aux_loss = aux_loss
-
+        activation = activation if activation is not None else {"type": "ReLU"}
         # backbone feature projection
         self._build_input_proj_layer(feat_channels)
 
@@ -481,7 +478,7 @@ class RTDETRTransformer(nn.Module):
         self.learnt_init_query = learnt_init_query
         if learnt_init_query:
             self.tgt_embed = nn.Embedding(num_queries, hidden_dim)
-        self.query_pos_head = MLP(4, 2 * hidden_dim, hidden_dim, num_layers=2)
+        self.query_pos_head = MLP(4, 2 * hidden_dim, hidden_dim, num_layers=2, act_cfg=activation)
 
         # encoder head
         self.enc_output = nn.Sequential(
@@ -489,12 +486,12 @@ class RTDETRTransformer(nn.Module):
             nn.LayerNorm(hidden_dim),
         )
         self.enc_score_head = nn.Linear(hidden_dim, num_classes)
-        self.enc_bbox_head = MLP(hidden_dim, hidden_dim, 4, num_layers=3)
+        self.enc_bbox_head = MLP(hidden_dim, hidden_dim, 4, num_layers=3, act_cfg=activation)
 
         # decoder head
         self.dec_score_head = nn.ModuleList([nn.Linear(hidden_dim, num_classes) for _ in range(num_decoder_layers)])
         self.dec_bbox_head = nn.ModuleList(
-            [MLP(hidden_dim, hidden_dim, 4, num_layers=3) for _ in range(num_decoder_layers)]
+            [MLP(hidden_dim, hidden_dim, 4, num_layers=3, act_cfg=activation) for _ in range(num_decoder_layers)]
         )
 
         # init encoder output anchors and valid_mask
@@ -504,7 +501,8 @@ class RTDETRTransformer(nn.Module):
         self._reset_parameters()
 
     def _reset_parameters(self) -> None:
-        bias = bias_init_with_prob(0.01)
+        prob = 0.01
+        bias = float(-math.log((1 - prob) / prob))
 
         init.constant_(self.enc_score_head.bias, bias)
         init.constant_(self.enc_bbox_head.layers[-1].weight, 0)
@@ -625,7 +623,7 @@ class RTDETRTransformer(nn.Module):
             dim=1, index=topk_ind.unsqueeze(-1).repeat(1, 1, enc_outputs_coord_unact.shape[-1])
         )
 
-        enc_topk_bboxes = F.sigmoid(reference_points_unact)
+        enc_topk_bboxes = nn.functional.sigmoid(reference_points_unact)
         if denoising_bbox_unact is not None:
             reference_points_unact = torch.concat([denoising_bbox_unact, reference_points_unact], 1)
 
