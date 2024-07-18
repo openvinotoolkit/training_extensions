@@ -11,7 +11,11 @@ permissions: read-all
 
 jobs:
   Daily-e2e-tests:
-    runs-on: [self-hosted, linux, x64, dev]
+    runs-on: [otx-gpu-a10g-1]
+    needs: Unit-Test
+    container:
+      image: 219678651685.dkr.ecr.eu-west-1.amazonaws.com/ote-ci:11.7.1.2-devel-ubuntu20.04
+      options: "--runtime=nvidia --env-file=/home/runner/.nvidia.env --ipc=host"
     strategy:
       fail-fast: false
       matrix:
