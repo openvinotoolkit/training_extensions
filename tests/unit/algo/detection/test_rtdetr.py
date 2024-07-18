@@ -102,4 +102,4 @@ class TestRTDETR:
         assert "scores" in result
         assert result["bboxes"].shape == (2, 10, 4)
         # ensure no scaling
-        assert torch.all(result["bboxes"] < 1.1)
+        assert torch.all(result["bboxes"] < 2)

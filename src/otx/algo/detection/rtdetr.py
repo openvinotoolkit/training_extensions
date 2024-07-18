@@ -128,8 +128,12 @@ class RTDETR(nn.Module):
         self,
         batch_inputs: Tensor,
         batch_img_metas: list[dict],
+        explain_mode: bool = False,
     ) -> dict[str, Any] | tuple[list[Any], list[Any], list[Any]]:
         """Exports the model."""
+        if explain_mode:
+            msg = "Explain mode is not supported for RTDETR model yet."
+            raise NotImplementedError(msg)
         return self.postprocess(self._forward_features(batch_inputs), deploy_mode=True)
 
 
@@ -180,12 +184,6 @@ class OTXRtDetr(ExplainableOTXDetModel):
             labels=labels,
         )
 
-    def get_num_anchors(self) -> list[int]:
-        """Gets the anchor configuration from model."""
-        # TODO(Any): update anchor configuration
-
-        return [1] * 10
-
     def configure_optimizers(self) -> tuple[list[torch.optim.Optimizer], list[dict[str, Any]]]:
         """Configure an optimizer and learning-rate schedulers.
 
@@ -200,7 +198,6 @@ class OTXRtDetr(ExplainableOTXDetModel):
         """
         param_groups = self._get_optim_params(self.model.optimizer_configuration, self.model)
         optimizer = self.optimizer_callable(param_groups)
-        optimizer = optimizer.__class__(optimizer.param_groups, **optimizer.defaults)
         schedulers = self.scheduler_callable(optimizer)
 
         def ensure_list(item: Any) -> list:  # noqa: ANN401
@@ -268,7 +265,7 @@ class OTXRtDetr(ExplainableOTXDetModel):
                 "input_names": ["images"],
                 "output_names": ["bboxes", "labels", "scores"],
                 "dynamic_axes": {
-                    "images": {0: "batch", 2: "height", 3: "width"},
+                    "images": {0: "batch"},
                     "boxes": {0: "batch", 1: "num_dets"},
                     "labels": {0: "batch", 1: "num_dets"},
                     "scores": {0: "batch", 1: "num_dets"},
@@ -281,7 +278,7 @@ class OTXRtDetr(ExplainableOTXDetModel):
 
     @property
     def _optimization_config(self) -> dict[str, Any]:
-        """PTQ config for DinoV2Seg."""
+        """PTQ config for RT-DETR."""
         return {"model_type": "transformer"}
 
 

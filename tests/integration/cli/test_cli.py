@@ -86,7 +86,6 @@ def test_otx_e2e(
         None
     """
     recipe, task, model_name, tmp_path_train = fxt_trained_model
-
     outputs_dir = tmp_path_train / "outputs"
     latest_dir = max(
         (p for p in outputs_dir.iterdir() if p.is_dir() and p.name != ".latest"),

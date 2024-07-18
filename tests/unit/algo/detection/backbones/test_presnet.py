@@ -4,7 +4,8 @@
 """Test of Presnet."""
 
 import torch
-from otx.algo.detection.backbones.presnet import FrozenBatchNorm2d, PResNet
+from otx.algo.detection.backbones.presnet import PResNet
+from otx.algo.modules import FrozenBatchNorm2d
 
 
 class TestPresnet:
@@ -25,7 +26,7 @@ class TestPresnet:
                 assert not param.requires_grad
 
     def test_presnet_freeze_norm(self):
-        model = PResNet(depth=50, freeze_norm=True)
+        model = PResNet(depth=50, norm_cfg={"type": "FBN", "name": "norm"})
         for name, param in model.named_parameters():
             if "norm" in name:
                 assert isinstance(param, FrozenBatchNorm2d)
