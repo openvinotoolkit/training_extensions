@@ -1,11 +1,14 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
+from __future__ import annotations
 
 from copy import deepcopy
+from unittest.mock import Mock
 
 import pytest
-from jsonargparse import Namespace
+from jsonargparse import ArgumentParser, Namespace
 from otx.cli.utils.jsonargparse import (
+    apply_config,
     flatten_dict,
     get_configuration,
     get_short_docstring,
@@ -76,12 +79,70 @@ def fxt_configs() -> Namespace:
     )
 
 
+@pytest.mark.parametrize(
+    "reset",
+    [
+        "data.train_subset.transforms",
+        ["data.train_subset.transforms"],
+        ["data.train_subset.transforms", "callbacks"],
+    ],
+)
+def test_apply_config(fxt_configs: Namespace, reset: str | list[str]) -> None:
+    cfg = deepcopy(fxt_configs)
+    with patch_update_configs():
+        # test for reset
+        overrides = Namespace(
+            overrides=Namespace(
+                reset=reset,
+                callbacks=[
+                    Namespace(class_path="new_callbacks"),
+                ],
+                data=Namespace(
+                    train_subset=Namespace(
+                        transforms=[
+                            {
+                                "class_path": "torchvision.transforms.v2.ToImage",
+                            },
+                        ],
+                    ),
+                ),
+            ),
+        )
+
+        mock_parser = Mock(spec=ArgumentParser)
+        mock_parser.parse_path.return_value = overrides
+        mock_parser.merge_config = ArgumentParser().merge_config
+
+        apply_config(None, mock_parser, cfg, "dest", "value")
+
+        assert str(cfg.dest[0]) == "value"
+
+        # check values that should not to be changed
+        assert cfg.data.train_subset.batch_size == fxt_configs.data.train_subset.batch_size
+        assert cfg.data.train_subset.num_workers == fxt_configs.data.train_subset.num_workers
+        assert cfg.data.train_subset.sampler == fxt_configs.data.train_subset.sampler
+        assert cfg.logger == fxt_configs.logger
+
+        # check values that should be changed
+        assert len(cfg.data.train_subset.transforms) == len(overrides.overrides.data.train_subset.transforms)
+        assert cfg.data.train_subset.transforms[0]["class_path"] == "torchvision.transforms.v2.ToImage"
+        if isinstance(reset, list) and "callbacks" in reset:
+            assert len(cfg.callbacks) == len(overrides.overrides.callbacks)
+            assert cfg.callbacks[0].class_path == "new_callbacks"
+        else:
+            assert len(cfg.callbacks) == len(fxt_configs.callbacks) + 1
+            assert cfg.callbacks[:-1] == fxt_configs.callbacks
+            assert cfg.callbacks[-1].class_path == "new_callbacks"
+
+
 def test_namespace_override(fxt_configs) -> None:
     cfg = deepcopy(fxt_configs)
     with patch_update_configs():
         # test for empty override
         overrides = Namespace()
+
         namespace_override(configs=cfg, key="data", overrides=overrides)
+
         assert cfg.data.train_subset.batch_size == fxt_configs.data.train_subset.batch_size
         assert cfg.data.train_subset.num_workers == fxt_configs.data.train_subset.num_workers
         assert cfg.data.train_subset.transforms == fxt_configs.data.train_subset.transforms

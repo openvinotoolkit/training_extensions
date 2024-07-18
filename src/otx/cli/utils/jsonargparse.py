@@ -136,7 +136,15 @@ def apply_config(self: ActionConfigFile, parser: ArgumentParser, cfg: Namespace,
         cfg.__dict__.update(cfg_merged.__dict__)
         overrides = cfg.__dict__.pop("overrides", None)
         if overrides is not None:
-            # This is a feature to handle the callbacks & logger override for user-convinience
+            # replace the config with the overrides for keys in reset list
+            reset = overrides.pop("reset", [])
+            if isinstance(reset, str):
+                reset = [reset]
+            for key in reset:
+                if key in overrides:
+                    cfg[key] = overrides.pop(key)
+
+            # This is a feature to handle the callbacks, logger, and data override for user-convinience
             list_override(configs=cfg, key="callbacks", overrides=overrides.pop("callbacks", []))
             list_override(configs=cfg, key="logger", overrides=overrides.pop("logger", []))
             namespace_override(configs=cfg, key="data", overrides=overrides.pop("data", Namespace()))
