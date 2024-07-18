@@ -20,7 +20,7 @@ log = logging.getLogger(__name__)
 def fxt_deterministic(request: pytest.FixtureRequest) -> bool:
     """Override the deterministic setting for detection task."""
     deterministic = request.config.getoption("--deterministic")
-    deterministic = True if deterministic is None else deterministic == "true"
+    deterministic = "warn" if deterministic is None or deterministic == "warn" else deterministic == "true"
     log.info(f"{deterministic=}")
     return deterministic
 

@@ -36,6 +36,15 @@ overrides:
         max_interval: 1
         decay: -0.025
         min_lrschedule_patience: 3
+    - class_path: otx.algo.callbacks.adaptive_early_stopping.EarlyStoppingWithWarmup
+      init_args:
+        monitor: null
+        mode: max
+        patience: 10
+        check_on_train_epoch_end: false
+        min_delta: 0.001
+        warmup_iters: 100
+        warmup_epochs: 7
   data:
     task: DETECTION
     stack_images: True
@@ -50,8 +59,9 @@ overrides:
         - class_path: torchvision.transforms.v2.RandomZoomOut
           init_args:
             fill: 0
-        - class_path: otx.core.data.transform_libs.torchvision.MinIoURandomCrop
-        - class_path: torchvision.transforms.v2.RandomHorizontalFlip
+        - class_path: otx.core.data.transform_libs.torchvision.RandomFlip
+          init_args:
+            prob: 0.5
         - class_path: otx.core.data.transform_libs.torchvision.Resize
           init_args:
             scale:
@@ -60,7 +70,6 @@ overrides:
             keep_ratio: false
             transform_bbox: true
             is_numpy_to_tvtensor: true
-        - class_path: torchvision.transforms.v2.ToImage
         - class_path: torchvision.transforms.v2.ToDtype
           init_args:
             dtype: ${as_torch_dtype:torch.float32}
@@ -84,7 +93,6 @@ overrides:
             keep_ratio: false
             transform_bbox: true
             is_numpy_to_tvtensor: true
-        - class_path: torchvision.transforms.v2.ToImage
         - class_path: torchvision.transforms.v2.ToDtype
           init_args:
             dtype: ${as_torch_dtype:torch.float32}
@@ -101,7 +109,6 @@ overrides:
             keep_ratio: false
             transform_bbox: true
             is_numpy_to_tvtensor: true
-        - class_path: torchvision.transforms.v2.ToImage
         - class_path: torchvision.transforms.v2.ToDtype
           init_args:
             dtype: ${as_torch_dtype:torch.float32}

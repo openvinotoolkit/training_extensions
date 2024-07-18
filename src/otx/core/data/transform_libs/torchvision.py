@@ -369,6 +369,7 @@ class MinIoURandomCrop(tvt_v2.Transform, NumpytoTVTensorMixin):
         min_ious: Sequence[float] = (0.1, 0.3, 0.5, 0.7, 0.9),
         min_crop_size: float = 0.3,
         bbox_clip_border: bool = True,
+        p: float = 1.0,
         is_numpy_to_tvtensor: bool = False,
     ) -> None:
         super().__init__()
@@ -377,6 +378,7 @@ class MinIoURandomCrop(tvt_v2.Transform, NumpytoTVTensorMixin):
         self.min_crop_size = min_crop_size
         self.bbox_clip_border = bbox_clip_border
         self.is_numpy_to_tvtensor = is_numpy_to_tvtensor
+        self.p = p
 
     @cache_randomness
     def _random_mode(self) -> int | float:
@@ -386,6 +388,9 @@ class MinIoURandomCrop(tvt_v2.Transform, NumpytoTVTensorMixin):
         """Forward for MinIoURandomCrop."""
         assert len(_inputs) == 1, "[tmp] Multiple entity is not supported yet."  # noqa: S101
         inputs = _inputs[0]
+
+        if torch.rand(1) >= self.p:
+            return self.convert(inputs)
 
         img: np.ndarray = to_np_image(inputs.image)
         boxes = inputs.bboxes
@@ -999,30 +1004,6 @@ class EfficientNetRandomCrop(RandomResizedCrop):
         repr_str += f", min_covered={self.min_covered}"
         repr_str += f", crop_padding={self.crop_padding})"
         return repr_str
-
-
-class RandomIoUCrop(tvt_v2.RandomIoUCrop):
-    """RandomIoUCrop with torchvision format."""
-
-    def __init__(
-        self,
-        min_scale: float = 0.3,
-        max_scale: float = 1,
-        min_aspect_ratio: float = 0.5,
-        max_aspect_ratio: float = 2,
-        sampler_options: list | None = None,
-        trials: int = 40,
-        p: float = 1.0,
-    ) -> None:
-        super().__init__(min_scale, max_scale, min_aspect_ratio, max_aspect_ratio, sampler_options, trials)
-        self.p = p
-
-    def __call__(self, *inputs: tuple[torch.Tensor, ...]) -> tuple[torch.Tensor, ...]:
-        """Randomly crop the input data."""
-        if torch.rand(1) >= self.p:
-            return inputs if len(inputs) > 1 else inputs[0]
-
-        return super().forward(*inputs)
 
 
 class ConvertBox(tvt_v2.Transform):
