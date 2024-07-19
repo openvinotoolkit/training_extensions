@@ -15,12 +15,12 @@ on:
 # Declare default permissions as read only.
 permissions: read-all
 
+concurrency:
+  group: ${{ github.workflow }}-PreMerge-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   Code-Quality-Checks:
-    # This is what will cancel the job concurrency
-    concurrency:
-      group: ${{ github.workflow }}-Linting-${{ github.event.pull_request.number || github.ref }}
-      cancel-in-progress: true
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout repository
@@ -46,10 +46,6 @@ jobs:
           - python-version: "3.9"
             tox-env: "py39"
     name: Unit-Test-with-Python${{ matrix.python-version }}
-    # This is what will cancel the job concurrency
-    concurrency:
-      group: ${{ github.workflow }}-Unit-${{ github.event.pull_request.number || github.ref }}-${{ matrix.tox-env }}
-      cancel-in-progress: true
     uses: ./.github/workflows/run_tests_in_tox_custom.yml
     with:
       python-version: ${{ matrix.python-version }}
@@ -61,9 +57,6 @@ jobs:
       artifact-prefix: "unit-test-results"
   Coverage-Test:
     needs: Code-Quality-Checks
-    concurrency:
-      group: ${{ github.workflow }}-Coverage-${{ github.event.pull_request.number || github.ref }}}
-      cancel-in-progress: true
     runs-on: [otx-gpu-a10g-1]
     container:
       image: 219678651685.dkr.ecr.eu-west-1.amazonaws.com/ote-ci:11.7.1.2-devel-ubuntu20.04
@@ -129,10 +122,6 @@ jobs:
           - task: "visprompt"
             test_dir: "tests/integration/cli/visual_prompting"
     name: Integration-Test-py310-${{ matrix.task }}
-    # This is what will cancel the job concurrency
-    concurrency:
-      group: ${{ github.workflow }}-Integration-${{ github.event.pull_request.number || github.ref }}-${{ matrix.task }}
-      cancel-in-progress: true
     uses: ./.github/workflows/run_tests_in_tox_custom.yml
     with:
       python-version: "3.10"
