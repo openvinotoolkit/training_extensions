@@ -490,5 +490,12 @@ def adaptive_tile_params(
     )
 
     tiling_parameters.tile_size = tile_size
-    tiling_parameters.tile_max_number = max_num_objects
     tiling_parameters.tile_overlap = tile_overlap
+
+    if tiling_parameters.tile_max_number == 1500:
+        logger.info(
+            f"----> tile max number is set to default (1500), replace with adaptive max_num_objects: {max_num_objects}"
+        )
+        tiling_parameters.tile_max_number = max_num_objects
+    else:
+        logger.info(f"----> tile max number is manually set to: {tiling_parameters.tile_max_number}")

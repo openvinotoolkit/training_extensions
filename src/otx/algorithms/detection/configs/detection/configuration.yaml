@@ -645,7 +645,7 @@ tiling_parameters:
 
   tile_max_number:
     header: Max object per tile
-    description: Maximum number of objects per tile
+    description: Maximum number of objects per tile. If set to 1500, the tile adaptor will automatically determine the value. Otherwise, the manually set value will be used.
     affects_outcome_of: TRAINING
     default_value: 1500
     min_value: 1

@@ -29,7 +29,6 @@ tile_cfg = dict(
 img_norm_cfg = dict(mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
 
 train_pipeline = [
-    dict(type="RandomAffine", scaling_ratio_range=(0.5, 1.5), border=(-img_scale[0] // 2, -img_scale[1] // 2)),
     dict(
         type="PhotoMetricDistortion",
         brightness_delta=32,
@@ -62,12 +61,12 @@ train_pipeline = [
 test_pipeline = [
     dict(
         type="MultiScaleFlipAug",
-        img_scale=(416, 416),
+        img_scale=img_scale,
         flip=False,
         transforms=[
             dict(type="Resize", keep_ratio=False),
             dict(type="RandomFlip"),
-            dict(type="Pad", size=(416, 416), pad_val=114.0),
+            dict(type="Pad", size=img_scale, pad_val=114.0),
             dict(type="Normalize", **img_norm_cfg),
             dict(type="ImageToTensor", keys=["img"]),
             dict(type="Collect", keys=["img"]),
