@@ -4,7 +4,7 @@
 # FIXME: specified torch wheel to build torch cpp extension should be fixed in some
 # different way instead of using static link url
 requires = [
-    "setuptools>=42",
+    "setuptools>=42,<70",
     "wheel",
     "Cython~=0.29.32",
     "numpy~=1.23.4"
