@@ -30,6 +30,11 @@ callback_monitor: val/map_50
 
 data: ../_base_/data/detection.yaml
 overrides:
+  reset:
+    - data.train_subset.transforms
+    - data.val_subset.transforms
+    - data.test_subset.transforms
+
   gradient_clip_val: 35.0
   data:
     tile_config:

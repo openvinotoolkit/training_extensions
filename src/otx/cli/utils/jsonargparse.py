@@ -142,41 +142,64 @@ def apply_config(self: ActionConfigFile, parser: ArgumentParser, cfg: Namespace,
                 reset = [reset]
             for key in reset:
                 if key in overrides:
-                    cfg[key] = overrides.pop(key)
+                    # callbacks, logger -> update to namespace
+                    # rest -> use dict as is
+                    cfg[key] = (
+                        [dict_to_namespace(o) for o in overrides.pop(key)]
+                        if key in ("callbacks", "logger")
+                        else overrides.pop(key)
+                    )
 
             # This is a feature to handle the callbacks, logger, and data override for user-convinience
             list_override(configs=cfg, key="callbacks", overrides=overrides.pop("callbacks", []))
             list_override(configs=cfg, key="logger", overrides=overrides.pop("logger", []))
-            namespace_override(configs=cfg, key="data", overrides=overrides.pop("data", Namespace()))
+            namespace_override(
+                configs=cfg,
+                key="data",
+                overrides=overrides.pop("data", Namespace()),
+                convert_dict_to_namespace=False,
+            )
             cfg.update(overrides)
         if cfg.get(dest) is None:
             cfg[dest] = []
         cfg[dest].append(cfg_path)
 
 
-def namespace_override(configs: Namespace, key: str, overrides: Namespace) -> None:
+def namespace_override(
+    configs: Namespace,
+    key: str,
+    overrides: Namespace,
+    convert_dict_to_namespace: bool = True,
+) -> None:
     """Overrides the nested dictionary type in the given configs with the provided override_dict.
 
     Args:
         configs (Namespace): The configuration object containing the key.
         key (str): key of the configs want to override.
         overrides (Namespace): The configuration object to override the existing ones.
+        convert_dict_to_namespace (bool): Whether to convert the dictionary to Namespace. Defaults to True.
     """
     for sub_key, sub_value in overrides.items():
         if isinstance(sub_value, list) and all(isinstance(sv, dict) for sv in sub_value):
             # only enable list of dictionary items
-            list_override(configs=configs[key], key=sub_key, overrides=sub_value)
+            list_override(
+                configs=configs[key],
+                key=sub_key,
+                overrides=sub_value,
+                convert_dict_to_namespace=convert_dict_to_namespace,
+            )
         else:
             configs[key].update(sub_value, sub_key)
 
 
-def list_override(configs: Namespace, key: str, overrides: list) -> None:
+def list_override(configs: Namespace, key: str, overrides: list, convert_dict_to_namespace: bool = True) -> None:
     """Overrides the nested list type in the given configs with the provided override_list.
 
     Args:
         configs (Namespace): The configuration object containing the key.
         key (str): key of the configs want to override.
         overrides (list): The list of dictionary item to override the existing ones.
+        convert_dict_to_namespace (bool): Whether to convert the dictionary to Namespace. Defaults to True.
 
     Example:
         >>> configs = [
@@ -204,6 +227,28 @@ def list_override(configs: Namespace, key: str, overrides: list) -> None:
         ...     ),
         ...     ...
         ... ]
+        >>> append_callbacks = [
+        ...     {
+        ...         'class_path': 'new_callbacks',
+        ...     },
+        ... ]
+        >>> list_override(configs=configs, key="callbacks", overrides=append_callbacks)
+        >>> configs = [
+        ...     ...
+        ...     Namespace(class_path='new_callbacks'),
+        ... ]
+        >>> append_callbacks_as_dict = [
+        ...     {
+        ...         'class_path': 'new_callbacks1',
+        ...     },
+        ... ]
+        >>> list_override(
+        ...     configs=configs, key="callbacks", overrides=append_callbacks_as_dict, convert_dict_to_namespace=False
+        ... )
+        >>> configs = [
+        ...     ...
+        ...     {'class_path': 'new_callbacks1'},
+        ... ]
     """
     if key not in configs or configs[key] is None:
         return
@@ -217,7 +262,8 @@ def list_override(configs: Namespace, key: str, overrides: list) -> None:
         if item is not None:
             Namespace(item).update(target)
         else:
-            configs[key].append(dict_to_namespace(target))
+            converted_target = dict_to_namespace(target) if convert_dict_to_namespace else target
+            configs[key].append(converted_target)
 
 
 # [FIXME] harimkang: have to see if there's a better way to do it. (For now, Added 2 lines to existing function)

@@ -88,16 +88,14 @@ def fxt_configs() -> Namespace:
         ["data.train_subset.transforms", "callbacks"],
     ],
 )
-def test_apply_config(fxt_configs: Namespace, reset: str | list[str]) -> None:
+def test_apply_config_with_reset(fxt_configs: Namespace, reset: str | list[str]) -> None:
     cfg = deepcopy(fxt_configs)
     with patch_update_configs():
         # test for reset
         overrides = Namespace(
             overrides=Namespace(
                 reset=reset,
-                callbacks=[
-                    Namespace(class_path="new_callbacks"),
-                ],
+                callbacks=[{"class_path": "new_callbacks"}],
                 data=Namespace(
                     train_subset=Namespace(
                         transforms=[
@@ -142,7 +140,7 @@ def test_namespace_override(fxt_configs) -> None:
         # test for empty override
         overrides = Namespace()
 
-        namespace_override(configs=cfg, key="data", overrides=overrides)
+        namespace_override(configs=cfg, key="data", overrides=overrides, convert_dict_to_namespace=False)
 
         assert cfg.data.stack_images == fxt_configs.data.stack_images
         assert cfg.data.train_subset.batch_size == fxt_configs.data.train_subset.batch_size
@@ -159,7 +157,7 @@ def test_namespace_override(fxt_configs) -> None:
             train_subset=Namespace(batch_size=64, num_workers=8),
         )
 
-        namespace_override(configs=cfg, key="data", overrides=overrides)
+        namespace_override(configs=cfg, key="data", overrides=overrides, convert_dict_to_namespace=False)
 
         assert cfg.data.mem_cache_img_max_size == overrides.mem_cache_img_max_size
         assert cfg.data.stack_images == overrides.stack_images
@@ -192,7 +190,7 @@ def test_namespace_override(fxt_configs) -> None:
         # to check before adding key
         assert "size_divisor" not in cfg.data.train_subset.transforms[1]["init_args"]
 
-        namespace_override(configs=cfg, key="data", overrides=overrides)
+        namespace_override(configs=cfg, key="data", overrides=overrides, convert_dict_to_namespace=False)
 
         # otx.core.data.transform_libs.torchvision.Resize
         assert (
@@ -215,6 +213,22 @@ def test_namespace_override(fxt_configs) -> None:
             == overrides.train_subset.transforms[-1]["init_args"]["std"]
         )
 
+        # test for appending new transform
+        overrides = Namespace(
+            train_subset=Namespace(
+                transforms=[
+                    {
+                        "class_path": "torchvision.transforms.v2.ToImage",
+                    },
+                ],
+            ),
+        )
+
+        namespace_override(configs=cfg, key="data", overrides=overrides, convert_dict_to_namespace=False)
+
+        assert all(isinstance(transform, dict) for transform in cfg.data.train_subset.transforms)
+        assert cfg.data.train_subset.transforms[-1]["class_path"] == "torchvision.transforms.v2.ToImage"
+
         # test for namespace override to update init_args
         overrides = Namespace(
             train_subset=Namespace(
@@ -225,7 +239,7 @@ def test_namespace_override(fxt_configs) -> None:
             ),
         )
 
-        namespace_override(configs=cfg, key="data", overrides=overrides)
+        namespace_override(configs=cfg, key="data", overrides=overrides, convert_dict_to_namespace=False)
 
         assert (
             cfg.data.train_subset.sampler.init_args["efficient_mode"]
@@ -241,7 +255,7 @@ def test_namespace_override(fxt_configs) -> None:
             ),
         )
 
-        namespace_override(configs=cfg, key="data", overrides=overrides)
+        namespace_override(configs=cfg, key="data", overrides=overrides, convert_dict_to_namespace=False)
 
         assert cfg.data.train_subset.sampler.class_path == overrides.train_subset.sampler.class_path
 
@@ -299,14 +313,14 @@ def test_update(fxt_configs) -> None:
             fxt_configs.update(value=8, key=None)
 
         # Test updating a single key
-        updated_configs = fxt_configs.update(8, "data.batch_size")
-        assert updated_configs.data.batch_size == 8
+        updated_configs = fxt_configs.update(8, "data.train_subset.batch_size")
+        assert updated_configs.data.train_subset.batch_size == 8
 
-        updated_configs = fxt_configs.update("8", "data.batch_size")
-        assert updated_configs.data.batch_size == 8
+        updated_configs = fxt_configs.update("8", "data.train_subset.batch_size")
+        assert updated_configs.data.train_subset.batch_size == 8
 
-        updated_configs = fxt_configs.update(None, "data.num_workers")
-        assert "num_workers" not in updated_configs.data
+        updated_configs = fxt_configs.update(None, "data.train_subset.num_workers")
+        assert "num_workers" not in updated_configs.data.train_subset
 
         # Test updating multiple values using a namespace
         new_values = Namespace(

@@ -3,8 +3,8 @@ model:
   class_path: otx.core.model.classification.OVHlabelClassificationModel
   init_args:
     model_name: openvino.xml
-    async_inference: True
-    use_throughput_mode: False
+    async_inference: true
+    use_throughput_mode: false
     model_type: Classification
 
 engine:
