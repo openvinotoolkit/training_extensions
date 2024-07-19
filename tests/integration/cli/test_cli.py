@@ -323,6 +323,9 @@ def test_otx_explain_e2e(
     if "maskrcnn_r50_tv" in model_name:
         pytest.skip("MaskRCNN R50 Torchvision model doesn't support explain.")
 
+    if "rtdetr" in recipe:
+        pytest.skip("rtdetr model is not supported yet with explain.")
+
     # otx explain
     tmp_path_explain = tmp_path / f"otx_explain_{model_name}"
     command_cfg = [
