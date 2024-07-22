@@ -51,6 +51,12 @@ class Benchmark:
         deterministic (bool): Whether to turn on deterministic training mode. Defaults to False.
         accelerator (str): Accelerator device on which to run benchmark. Defaults to gpu.
         reference_results (pd.DataFrame): Reference benchmark results for performance checking.
+        resume_from (Path | None, optional):
+            Previous performance directory to load. If training was already done in previous performance test,
+            training is skipped and refer previous result.
+        test_only (Literal["all", "train", "export", "optimize"] | None):
+            Execute test only when resume argument is given. If necessary files are not found in resume directory,
+            necessary operations can be executed. Defaults to None.
     """
 
     @dataclass
@@ -117,6 +123,8 @@ class Benchmark:
         deterministic: bool = False,
         accelerator: str = "gpu",
         reference_results: pd.DataFrame | None = None,
+        resume_from: Path | None = None,
+        test_only: Literal["all", "train", "export", "optimize"] | None = None,
     ):
         self.data_root = data_root
         self.output_root = output_root
@@ -128,13 +136,19 @@ class Benchmark:
         self.deterministic = deterministic
         self.accelerator = accelerator
         self.reference_results = reference_results
+        self.resume_from = resume_from
+        if (test_only == "export" and eval_upto == "train") or (
+            test_only == "optimize" and eval_upto in ["train", "export"]
+        ):
+            msg = "test_only should be set to previous otx command than eval_upto."
+            raise ValueError(msg)
+        self.test_only = test_only
 
     def run(
         self,
         model: Model,
         dataset: Dataset,
         criteria: list[Criterion],
-        resume_from: Path | None = None,
     ) -> pd.DataFrame | None:
         """Run configured benchmark with given dataset and model and return the result.
 
@@ -142,9 +156,6 @@ class Benchmark:
             model (Model): Target model settings
             dataset (Dataset): Target dataset settings
             criteria (list[Criterion]): Target criteria settings
-            resume_from(Path | None, optional):
-                Previous performance directory to load. If training was already done in previous performance test,
-                training is skipped and refer previous result.
 
         Retruns:
             pd.DataFrame | None: Table with benchmark metrics
@@ -174,13 +185,7 @@ class Benchmark:
                 tags["seed"] = str(seed)
 
                 # Train & test
-                copied_train_dir = None
-                if (
-                    resume_from is not None
-                    and (prev_train_dir := self._find_corresponding_dir(resume_from, tags)) is not None
-                ):
-                    copied_train_dir = self._copy_prev_train_dir(prev_train_dir, sub_work_dir)
-
+                copied_ops_dir = self._prepare_resume(tags, sub_work_dir)
                 command = [
                     "otx",
                     "train",
@@ -210,9 +215,9 @@ class Benchmark:
                 if self.num_epoch > 0:
                     command.extend(["--max_epochs", str(self.num_epoch)])
                 extra_metrics = {}
-                if copied_train_dir is not None:
+                if "train" in copied_ops_dir:
                     command.append("--print_config")
-                    with (copied_train_dir / "configs.yaml").open("w") as f:
+                    with (sub_work_dir / ".latest" / "train" / "configs.yaml").open("w") as f:
                         self._run_command(command, stdout=f)  # replace previuos configs.yaml to new one
                 else:
                     start_time = time()
@@ -233,16 +238,17 @@ class Benchmark:
 
                 # Export & test
                 if self.eval_upto in ["export", "optimize"]:
-                    command = [
-                        "otx",
-                        "export",
-                        "--work_dir",
-                        str(sub_work_dir),
-                    ]
-                    for key, value in dataset.extra_overrides.get("export", {}).items():
-                        command.append(f"--{key}")
-                        command.append(str(value))
-                    self._run_command(command)
+                    if "export" not in copied_ops_dir:
+                        command = [
+                            "otx",
+                            "export",
+                            "--work_dir",
+                            str(sub_work_dir),
+                        ]
+                        for key, value in dataset.extra_overrides.get("export", {}).items():
+                            command.append(f"--{key}")
+                            command.append(str(value))
+                        self._run_command(command)
 
                     exported_model_path = sub_work_dir / ".latest" / "export" / "exported_model.xml"
                     if not exported_model_path.exists():
@@ -259,18 +265,19 @@ class Benchmark:
 
                 # Optimize & test
                 if self.eval_upto == "optimize":
-                    command = [
-                        "otx",
-                        "optimize",
-                        "--checkpoint",
-                        str(exported_model_path),
-                        "--work_dir",
-                        str(sub_work_dir),
-                    ]
-                    for key, value in dataset.extra_overrides.get("optimize", {}).items():
-                        command.append(f"--{key}")
-                        command.append(str(value))
-                    self._run_command(command)
+                    if "optimize" not in copied_ops_dir:
+                        command = [
+                            "otx",
+                            "optimize",
+                            "--checkpoint",
+                            str(exported_model_path),
+                            "--work_dir",
+                            str(sub_work_dir),
+                        ]
+                        for key, value in dataset.extra_overrides.get("optimize", {}).items():
+                            command.append(f"--{key}")
+                            command.append(str(value))
+                        self._run_command(command)
 
                     optimized_model_path = sub_work_dir / ".latest" / "optimize" / "optimized_model.xml"
                     if not optimized_model_path.exists():
@@ -300,28 +307,65 @@ class Benchmark:
         result = summary.average(result, keys=["task", "model", "data_group", "data"])  # Average out seeds
         return result.set_index(["task", "model", "data_group", "data"])
 
-    def _find_corresponding_dir(self, resume_from: Path, tags: dict[str, str]) -> Path | None:
-        for csv_file in resume_from.rglob("benchmark.raw.csv"):
+    def _prepare_resume(self, tags: dict[str, str], work_dir: Path) -> list[str]:
+        copied_ops_dir = []
+        if self.resume_from is None:
+            return copied_ops_dir
+        prev_work_dir = self._find_corresponding_dir(tags)
+        if prev_work_dir is None:
+            return copied_ops_dir
+
+        latest_dir = work_dir / ".latest"
+
+        if self.test_only is None:
+            copy_until = "train"
+        elif self.test_only == "all":
+            copy_until = "optimize"
+        else:
+            copy_until = self.test_only
+
+        for otx_cmd in ["train", "export", "optimize"]:
+            prev_symlink = prev_work_dir / ".latest" / otx_cmd
+            try:  # check symlink exists
+                prev_symlink.readlink()
+            except FileNotFoundError:
+                break
+            prev_cmd_dir_name = prev_symlink.resolve().name
+            prev_cmd_dir = prev_work_dir / prev_cmd_dir_name
+            if not prev_cmd_dir.exists():
+                break
+
+            if not latest_dir.exists():
+                latest_dir.mkdir(parents=True)
+
+            shutil.copytree(prev_cmd_dir, work_dir / prev_cmd_dir_name, ignore_dangling_symlinks=True)
+            (latest_dir / otx_cmd).symlink_to(Path("..") / (work_dir / prev_cmd_dir_name).relative_to(work_dir))
+
+            copied_ops_dir.append(otx_cmd)
+            if otx_cmd == copy_until:
+                break
+
+        if copy_until != otx_cmd:
+            log.warning(
+                f"There is no {otx_cmd} directory for {work_dir} in resume directory. "
+                f"{work_dir} starts from {otx_cmd}.",
+            )
+
+        return copied_ops_dir
+
+    def _find_corresponding_dir(self, tags: dict[str, str]) -> Path | None:
+        if self.resume_from is None:
+            return None
+        for csv_file in self.resume_from.rglob("benchmark.raw.csv"):
+            if csv_file.parent.name == ".latest":
+                continue
             raw_data = pd.read_csv(csv_file)
-            if (
-                "train/epoch" in raw_data.columns  # check it's csv of train result
-                and all(  # check meta info is same
-                    str(raw_data.iloc[0].get(key, "NOT_IN_CSV")) == tags.get(key, "NOT_IN_TAG")
-                    for key in ["data_group", "data", "model", "task", "seed"]
-                )
+            if all(  # check meta info is same
+                str(raw_data.iloc[0].get(key, "NOT_IN_CSV")) == tags.get(key, "NOT_IN_TAG")
+                for key in ["data_group", "data", "model", "task", "seed"]
             ):
-                return csv_file.parent
+                return csv_file.parent.parent
         return None
-
-    def _copy_prev_train_dir(self, prev_train_dir: Path, work_dir: Path) -> Path:
-        work_dir.mkdir(parents=True, exist_ok=True)
-        new_train_dir = work_dir / prev_train_dir.name
-        shutil.copytree(prev_train_dir, new_train_dir, ignore_dangling_symlinks=True)
-        cache_dir = work_dir / ".latest" / "train"
-        cache_dir.parent.mkdir(exist_ok=True)
-        cache_dir.symlink_to(Path("..") / new_train_dir.relative_to(work_dir))
-
-        return new_train_dir
 
     def _run_test(
         self,
@@ -333,6 +377,9 @@ class Benchmark:
         what2test: Literal["train", "export", "optimize"] = "train",
     ) -> None:
         """Run otx test and update result csv file to align it's indices to the current task."""
+        if self.test_only not in ["all", what2test, None]:
+            return
+
         replace_map = {
             "train": {"test_": "test/", "{pre}": "test/"},
             "export": {"test": what2test, "{pre}": f"{what2test}/"},
