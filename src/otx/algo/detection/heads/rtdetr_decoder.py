@@ -486,12 +486,12 @@ class RTDETRTransformer(nn.Module):
             num_decoder_layers (int): Number of decoder layers.
             dim_feedforward (int): Dimension of the feedforward network.
             dropout (float): Dropout rate.
-            activation (str): Activation function.
+            activation (dict[str, str] | None): Activation function.
             num_denoising (int): Number of denoising samples.
             label_noise_ratio (float): Ratio of label noise.
             box_noise_scale (float): Scale of box noise.
             learnt_init_query (bool): Whether to learn initial queries.
-            eval_spatial_size (Optional[Tuple[int, int]]): Spatial size for evaluation.
+            eval_spatial_size (Tuple[int, int] | None): Spatial size for evaluation.
             eval_idx (int): Evaluation index.
             eps (float): Epsilon value.
             aux_loss (bool): Whether to include auxiliary loss.

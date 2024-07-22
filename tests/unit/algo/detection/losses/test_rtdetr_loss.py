@@ -1,18 +1,18 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
-"""Test of RTDETRCriterion."""
+"""Test of DetrCriterion."""
 
 import pytest
 import torch
-from otx.algo.detection.losses.rtdetr_loss import RTDetrCriterion
+from otx.algo.detection.losses.rtdetr_loss import DetrCriterion
 
 
-class TestRTDETRCriterion:
+class TestDetrCriterion:
     @pytest.fixture()
     def criterion(self):
         weight_dict = {"loss_vfl": 1.0, "loss_bbox": 5, "loss_giou": 2}
-        return RTDetrCriterion(weight_dict, num_classes=2)
+        return DetrCriterion(weight_dict, num_classes=2)
 
     @pytest.fixture()
     def outputs(self):

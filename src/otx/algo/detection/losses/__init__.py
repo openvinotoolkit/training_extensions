@@ -4,6 +4,6 @@
 """Custom OTX Losses for Object Detection."""
 
 from .iou_loss import IoULoss
-from .rtdetr_loss import RTDetrCriterion
+from .rtdetr_loss import DetrCriterion
 
-__all__ = ["IoULoss", "RTDetrCriterion"]
+__all__ = ["IoULoss", "DetrCriterion"]

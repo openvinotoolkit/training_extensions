@@ -176,7 +176,7 @@ def fxt_dry_run(request: pytest.FixtureRequest) -> str:
 def fxt_deterministic(request: pytest.FixtureRequest) -> bool:
     """Option to turn on deterministic training."""
     deterministic = request.config.getoption("--deterministic")
-    deterministic = False if deterministic is None else deterministic == "true"
+    deterministic = "warn" if deterministic is None or deterministic == "warn" else deterministic == "true"
     log.info(f"{deterministic=}")
     return deterministic
 

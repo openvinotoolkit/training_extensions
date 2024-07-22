@@ -166,6 +166,15 @@ class RepVggBlock(nn.Module):
         act_cfg: dict[str, str] | None = None,
         norm_cfg: dict[str, str] | None = None,
     ) -> None:
+        """Initialize RepVggBlock.
+
+        Args:
+            ch_in (int): The input channels of this Module.
+            ch_out (int): The output channels of this Module.
+            act_cfg (dict[str, str] | None): Config dict for activation layer.
+            norm_cfg (dict[str, str] | None): Config dict for normalization layer.
+
+        """
         super().__init__()
         self.ch_in = ch_in
         self.ch_out = ch_out
@@ -322,6 +331,22 @@ class CSPRepLayer(nn.Module):
         act_cfg: dict[str, str] | None = None,
         norm_cfg: dict[str, str] | None = None,
     ) -> None:
+        """Initialize CSPRepLayer.
+
+        Args:
+            in_channels (int): The input channels of the CSP layer.
+            out_channels (int): The output channels of the CSP layer.
+            num_blocks (int): Number of blocks. Defaults to 3.
+            expansion (float): Ratio to adjust the number of channels of the
+                hidden layer. Defaults to 1.0.
+            bias (bool): Whether to use bias in the convolution layer.
+                Defaults to False.
+            act_cfg (dict[str, str] | None): Config dict for activation layer.
+                Defaults to None, which means using the activation config in
+                conv_cfg.
+            norm_cfg (dict[str, str] | None): Config dict for normalization
+                layer. Defaults to None.
+        """
         super().__init__()
         hidden_channels = int(out_channels * expansion)
         self.conv1 = ConvModule(in_channels, hidden_channels, 1, 1, bias=bias, act_cfg=act_cfg, norm_cfg=norm_cfg)

@@ -11,11 +11,12 @@ import torch
 from torch import nn
 from torchvision.ops import box_convert
 
+from otx.algo.common.losses import GIoULoss, L1Loss
 from otx.algo.common.utils.bbox_overlaps import bbox_overlaps
 from otx.algo.detection.utils.matchers import HungarianMatcher
 
 
-class RTDetrCriterion(nn.Module):
+class DetrCriterion(nn.Module):
     """This class computes the loss for DETR.
 
     The process happens in two steps:
@@ -41,9 +42,13 @@ class RTDetrCriterion(nn.Module):
         super().__init__()
         self.num_classes = num_classes
         self.matcher = HungarianMatcher(weight_dict={"cost_class": 2, "cost_bbox": 5, "cost_giou": 2})
-        self.weight_dict = weight_dict
+        loss_bbox_weight = weight_dict["loss_bbox"] if "loss_bbox" in weight_dict else 1.0
+        loss_giou_weight = weight_dict["loss_giou"] if "loss_giou" in weight_dict else 1.0
+        self.loss_vfl_weight = weight_dict["loss_vfl"] if "loss_vfl" in weight_dict else 1.0
         self.alpha = alpha
         self.gamma = gamma
+        self.lossl1 = L1Loss(loss_weight=loss_bbox_weight)
+        self.giou = GIoULoss(loss_weight=loss_giou_weight)
 
     def loss_labels_vfl(
         self,
@@ -78,7 +83,7 @@ class RTDetrCriterion(nn.Module):
 
         loss = nn.functional.binary_cross_entropy_with_logits(src_logits, target_score, weight=weight, reduction="none")
         loss = loss.mean(1).sum() * src_logits.shape[1] / num_boxes
-        return {"loss_vfl": loss}
+        return {"loss_vfl": loss * self.loss_vfl_weight}
 
     def loss_boxes(
         self,
@@ -98,17 +103,15 @@ class RTDetrCriterion(nn.Module):
 
         losses = {}
 
-        loss_bbox = nn.functional.l1_loss(src_boxes, target_boxes, reduction="none")
-        losses["loss_bbox"] = loss_bbox.sum() / num_boxes
-
-        loss_giou = 1 - torch.diag(
-            bbox_overlaps(
-                box_convert(src_boxes, in_fmt="cxcywh", out_fmt="xyxy"),
-                box_convert(target_boxes, in_fmt="cxcywh", out_fmt="xyxy"),
-                mode="giou",
-            ),
+        loss_bbox = self.lossl1(src_boxes, target_boxes, avg_factor=num_boxes)
+        loss_giou = self.giou(
+            box_convert(src_boxes, in_fmt="cxcywh", out_fmt="xyxy"),
+            box_convert(target_boxes, in_fmt="cxcywh", out_fmt="xyxy"),
+            avg_factor=num_boxes,
         )
-        losses["loss_giou"] = loss_giou.sum() / num_boxes
+        losses["loss_giou"] = loss_giou
+        losses["loss_bbox"] = loss_bbox
+
         return losses
 
     def _get_src_permutation_idx(
@@ -158,7 +161,6 @@ class RTDetrCriterion(nn.Module):
         losses = {}
         for loss in self._available_losses:
             l_dict = loss(outputs, targets, indices, num_boxes)
-            l_dict = {k: l_dict[k] * self.weight_dict[k] for k in l_dict if k in self.weight_dict}
             losses.update(l_dict)
 
         # In case of auxiliary losses, we repeat this process with the output of each intermediate layer.
@@ -175,7 +177,6 @@ class RTDetrCriterion(nn.Module):
                         kwargs = {"log": False}
 
                     l_dict = loss(aux_outputs, targets, indices, num_boxes, **kwargs)
-                    l_dict = {k: l_dict[k] * self.weight_dict[k] for k in l_dict if k in self.weight_dict}
                     l_dict = {k + f"_aux_{i}": v for k, v in l_dict.items()}
                     losses.update(l_dict)
 
@@ -192,7 +193,6 @@ class RTDetrCriterion(nn.Module):
                 for loss in self._available_losses:
                     kwargs = {}
                     l_dict = loss(aux_outputs, targets, indices, num_boxes, **kwargs)
-                    l_dict = {k: l_dict[k] * self.weight_dict[k] for k in l_dict if k in self.weight_dict}
                     l_dict = {k + f"_dn_{i}": v for k, v in l_dict.items()}
                     losses.update(l_dict)
 

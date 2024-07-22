@@ -1,5 +1,5 @@
 model:
-  class_path: otx.algo.detection.rtdetr.OTXRtDetr50
+  class_path: otx.algo.detection.rtdetr.RTDETR50
   init_args:
     label_info: 80
 

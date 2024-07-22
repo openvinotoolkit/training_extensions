@@ -10,12 +10,78 @@ from __future__ import annotations
 
 import inspect
 
+import torch
 from torch import nn
 from torch.nn import SyncBatchNorm
 from torch.nn.modules.batchnorm import _BatchNorm
 from torch.nn.modules.instancenorm import _InstanceNorm
 
-from otx.algo.modules.norm_module import FrozenBatchNorm2d
+
+class FrozenBatchNorm2d(nn.Module):
+    """Copy and modified from https://github.com/facebookresearch/detr/blob/master/models/backbone.py.
+
+    BatchNorm2d where the batch statistics and the affine parameters are fixed.
+    Copy-paste from torchvision.misc.ops with added eps before rqsrt,
+    without which any other models than torchvision.models.resnet[18,34,50,101]
+    produce nans.
+    """
+
+    def __init__(self, num_features: int, eps: float = 1e-5) -> None:
+        """Initialize FrozenBatchNorm2d.
+
+        Args:
+            num_features (int): Number of input features.
+            eps (float): Epsilon for batch norm. Defaults to 1e-5.
+        """
+        super().__init__()
+        n = num_features
+        self.register_buffer("weight", torch.ones(n))
+        self.register_buffer("bias", torch.zeros(n))
+        self.register_buffer("running_mean", torch.zeros(n))
+        self.register_buffer("running_var", torch.ones(n))
+        self.eps = eps
+        self.num_features = n
+
+    def _load_from_state_dict(
+        self,
+        state_dict: dict[str, torch.Tensor],
+        prefix: str,
+        local_metadata: dict,
+        strict: bool,
+        missing_keys: list[str],
+        unexpected_keys: list[str],
+        error_msgs: list[str],
+    ) -> None:
+        num_batches_tracked_key = prefix + "num_batches_tracked"
+        if num_batches_tracked_key in state_dict:
+            del state_dict[num_batches_tracked_key]
+
+        super()._load_from_state_dict(
+            state_dict,
+            prefix,
+            local_metadata,
+            strict,
+            missing_keys,
+            unexpected_keys,
+            error_msgs,
+        )
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """Forward."""
+        # move reshapes to the beginning
+        # to make it fuser-friendly
+        w = self.weight.reshape(1, -1, 1, 1)
+        b = self.bias.reshape(1, -1, 1, 1)
+        rv = self.running_var.reshape(1, -1, 1, 1)
+        rm = self.running_mean.reshape(1, -1, 1, 1)
+        scale = w * (rv + self.eps).rsqrt()
+        bias = b - rm * scale
+        return x * scale + bias
+
+    def extra_repr(self) -> str:
+        """Str representation."""
+        return "{num_features}, eps={eps}".format(**self.__dict__)
+
 
 NORM_DICT = {
     "BN": nn.BatchNorm2d,
@@ -33,7 +99,7 @@ NORM_DICT = {
 }
 
 
-def infer_abbr(class_type: type, layer_name: str | None = None) -> str:  # noqa: PLR0911
+def infer_abbr(class_type: type) -> str:
     """Infer abbreviation from the class name.
 
     When we build a norm layer with `build_norm_layer()`, we want to preserve
@@ -58,8 +124,6 @@ def infer_abbr(class_type: type, layer_name: str | None = None) -> str:  # noqa:
     if not inspect.isclass(class_type):
         msg = f"class_type must be a type, but got {type(class_type)}"
         raise TypeError(msg)
-    if layer_name is not None:
-        return layer_name
     if hasattr(class_type, "_abbr_"):
         return class_type._abbr_  # noqa: SLF001
     if issubclass(class_type, _InstanceNorm):  # IN is a subclass of BN
@@ -79,7 +143,7 @@ def infer_abbr(class_type: type, layer_name: str | None = None) -> str:  # noqa:
         return "ln"
     if "instance" in class_name:
         return "in"
-    return "norm_layer"
+    return "norm"
 
 
 def build_norm_layer(cfg: dict, num_features: int, postfix: int | str = "") -> tuple[str, nn.Module]:
@@ -91,6 +155,7 @@ def build_norm_layer(cfg: dict, num_features: int, postfix: int | str = "") -> t
             - type (str): Layer type.
             - layer args: Args needed to instantiate a norm layer.
             - requires_grad (bool, optional): Whether stop gradient updates.
+            - name (str, optional): The name of the layer.
         num_features (int): Number of input channels.
         postfix (int | str): The postfix to be appended into norm abbreviation
             to create named layer.
@@ -121,7 +186,7 @@ def build_norm_layer(cfg: dict, num_features: int, postfix: int | str = "") -> t
         if norm_layer is None:
             msg = f"Cannot find {norm_layer} in {NORM_DICT.keys()} "
             raise KeyError(msg)
-    abbr = infer_abbr(norm_layer, layer_name)
+    abbr = infer_abbr(norm_layer) if layer_name is None else layer_name
 
     name = abbr + str(postfix)
     requires_grad = cfg_.pop("requires_grad", True)

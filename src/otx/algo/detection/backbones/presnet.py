@@ -6,7 +6,7 @@
 from __future__ import annotations
 
 from collections import OrderedDict
-from typing import Any
+from typing import Any, ClassVar
 
 import torch
 from torch import nn
@@ -14,22 +14,6 @@ from torch import nn
 from otx.algo.modules import ConvModule, build_activation_layer
 
 __all__ = ["PResNet"]
-
-
-ResNet_cfg = {
-    18: [2, 2, 2, 2],
-    34: [3, 4, 6, 3],
-    50: [3, 4, 6, 3],
-    101: [3, 4, 23, 3],
-}
-
-
-donwload_url = {
-    18: "https://github.com/lyuwenyu/storage/releases/download/v0.1/ResNet18_vd_pretrained_from_paddle.pth",
-    34: "https://github.com/lyuwenyu/storage/releases/download/v0.1/ResNet34_vd_pretrained_from_paddle.pth",
-    50: "https://github.com/lyuwenyu/storage/releases/download/v0.1/ResNet50_vd_ssld_v2_pretrained_from_paddle.pth",
-    101: "https://github.com/lyuwenyu/storage/releases/download/v0.1/ResNet101_vd_ssld_pretrained_from_paddle.pth",
-}
 
 
 class BasicBlock(nn.Module):
@@ -177,6 +161,20 @@ class Blocks(nn.Module):
 class PResNet(nn.Module):
     """PResNet backbone."""
 
+    num_resnet_blocks: ClassVar = {
+        18: [2, 2, 2, 2],
+        34: [3, 4, 6, 3],
+        50: [3, 4, 6, 3],
+        101: [3, 4, 23, 3],
+    }
+
+    donwload_url: ClassVar = {
+        18: "https://github.com/lyuwenyu/storage/releases/download/v0.1/ResNet18_vd_pretrained_from_paddle.pth",
+        34: "https://github.com/lyuwenyu/storage/releases/download/v0.1/ResNet34_vd_pretrained_from_paddle.pth",
+        50: "https://github.com/lyuwenyu/storage/releases/download/v0.1/ResNet50_vd_ssld_v2_pretrained_from_paddle.pth",
+        101: "https://github.com/lyuwenyu/storage/releases/download/v0.1/ResNet101_vd_ssld_pretrained_from_paddle.pth",
+    }
+
     def __init__(
         self,
         depth: int,
@@ -188,9 +186,21 @@ class PResNet(nn.Module):
         freeze_at: int = -1,
         pretrained: bool = False,
     ) -> None:
+        """Initialize the PResNet backbone.
+
+        Args:
+            depth (int): The depth of the PResNet backbone.
+            variant (str, optional): The variant of the PResNet backbone. Defaults to "d".
+            num_stages (int, optional): The number of stages in the PResNet backbone. Defaults to 4.
+            return_idx (list[int], optional): The indices of the stages to return as output. Defaults to [0, 1, 2, 3].
+            act_cfg (dict[str, str] | None, optional): The activation configuration. Defaults to None.
+            norm_cfg (dict[str, str] | None, optional): The normalization configuration. Defaults to None.
+            freeze_at (int, optional): The stage at which to freeze the parameters. Defaults to -1.
+            pretrained (bool, optional): Whether to load pretrained weights. Defaults to False.
+        """
         super().__init__()
 
-        block_nums = ResNet_cfg[depth]
+        block_nums = self.num_resnet_blocks[depth]
         ch_in = 64
         if variant in ["c", "d"]:
             conv_def: list[list[Any]] = [
@@ -244,7 +254,7 @@ class PResNet(nn.Module):
                 self._freeze_parameters(self.res_layers[i])
 
         if pretrained:
-            state = torch.hub.load_state_dict_from_url(donwload_url[depth])
+            state = torch.hub.load_state_dict_from_url(self.donwload_url[depth])
             self.load_state_dict(state)
             print(f"Load PResNet{depth} state_dict")
 

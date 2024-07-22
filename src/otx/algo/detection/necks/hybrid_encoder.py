@@ -120,20 +120,34 @@ class HybridEncoder(nn.Module):
         """Initialize the HybridEncoder module.
 
         Args:
-            in_channels: List of input channel sizes for each feature map.
-            feat_strides: List of stride values for each feature map.
-            hidden_dim: Hidden dimension size.
-            nhead: Number of attention heads in the transformer encoder.
-            dim_feedforward: Dimension of the feedforward network in the transformer encoder.
-            dropout: Dropout rate.
-            enc_act: Activation function for the transformer encoder.
-            use_encoder_idx: List of indices indicating which feature maps to use for the transformer encoder.
-            num_encoder_layers: Number of layers in the transformer encoder.
-            pe_temperature: Temperature parameter for the position embedding.
-            expansion: Expansion factor for the CSPRepLayer.
-            depth_mult: Depth multiplier for the CSPRepLayer.
-            act: Activation function for the CSPRepLayer.
-            eval_spatial_size: Optional tuple specifying the spatial size of the input during evaluation.
+            in_channels (list[int], optional): List of input channels for each feature map.
+                Defaults to [512, 1024, 2048].
+            feat_strides (list[int], optional): List of stride values for
+                each feature map. Defaults to [8, 16, 32].
+            hidden_dim (int, optional): Hidden dimension size. Defaults to 256.
+            nhead (int, optional): Number of attention heads in the transformer encoder.
+                 Defaults to 8.
+            dim_feedforward (int, optional): Dimension of the feedforward network
+                in the transformer encoder. Defaults to 1024.
+            dropout (float, optional): Dropout rate. Defaults to 0.0.
+            enc_act_cfg (dict[str, str] | None, optional): Activation configuration
+                for the encoder. Defaults to None.
+            norm_cfg (dict[str, str] | None, optional): Normalization configuration.
+                Defaults to None.
+            use_encoder_idx (list[int], optional): List of indices of the encoder to use.
+                Defaults to [2].
+            num_encoder_layers (int, optional): Number of layers in the transformer encoder.
+                Defaults to 1.
+            pe_temperature (float, optional): Temperature parameter for positional encoding.
+                Defaults to 10000.
+            expansion (float, optional): Expansion factor for the CSPRepLayer.
+                Defaults to 1.0.
+            depth_mult (float, optional): Depth multiplier for the CSPRepLayer.
+                Defaults to 1.0.
+            act_cfg (dict[str, str] | None, optional): Activation configuration
+                for the CSPRepLayer. Defaults to None.
+            eval_spatial_size (tuple[int, int] | None, optional): Spatial size for
+                evaluation. Defaults to None.
         """
         super().__init__()
         self.in_channels = in_channels

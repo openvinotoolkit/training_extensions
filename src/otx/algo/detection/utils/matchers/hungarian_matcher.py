@@ -1,8 +1,7 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 #
-"""Modules to compute the matching cost and solve the corresponding LSAP."""
+"""Modules to compute the matching cost and solve the corresponding LSAP. Modified from https://github.com/lyuwenyu/RT-DETR."""
 
 from __future__ import annotations
 
@@ -26,9 +25,13 @@ class HungarianMatcher(nn.Module):
         """Creates the matcher.
 
         Args:
-            cost_class: This is the relative weight of the classification error in the matching cost
-            cost_bbox: This is the relative weight of the L1 error of the bounding box coordinates in the matching cost
-            cost_giou: This is the relative weight of the giou loss of the bounding box in the matching cost
+            weight_dict (dict[str, float | int]): A dictionary containing the weights for different costs.
+                The dictionary may have the following keys:
+                - "cost_class" (float | int): The weight for the class cost.
+                - "cost_bbox" (float | int): The weight for the bounding box cost.
+                - "cost_giou" (float | int): The weight for the generalized intersection over union (IoU) cost.
+            alpha (float, optional): The alpha parameter for the cost computation. Defaults to 0.25.
+            gamma (float, optional): The gamma parameter for the cost computation. Defaults to 2.0.
         """
         super().__init__()
         self.cost_class = weight_dict["cost_class"]
@@ -46,21 +49,20 @@ class HungarianMatcher(nn.Module):
         """Performs the matching.
 
         Args:
-            outputs: This is a dict that contains at least these entries:
-                 "pred_logits": Tensor of dim [batch_size, num_queries, num_classes] with the classification logits
-                 "pred_boxes": Tensor of dim [batch_size, num_queries, 4] with the predicted box coordinates
-
-            targets: This is a list of targets (len(targets) = batch_size), where each target is a dict containing:
-                 "labels": Tensor of dim [num_target_boxes] (where num_target_boxes is the number of ground-truth
-                           objects in the target) containing the class labels
-                 "boxes": Tensor of dim [num_target_boxes, 4] containing the target box coordinates
+            outputs (dict[str, torch.Tensor]): A dictionary that contains at least these entries:
+                - "pred_logits": Tensor of dim [batch_size, num_queries, num_classes] with the classification logits
+                    for each query.
+                - "pred_boxes": Tensor of dim [batch_size, num_queries, 4] with the predicted box coordinates
+                    for each query.
+            targets (list[dict[str, torch.Tensor]]): A list of N targets where each target is a dict containing:
+                - "labels": Tensor of dim [num_target_boxes] (where num_target_boxes is the number of ground-truth
+                    boxes in the target) containing the class labels
+                - "boxes": Tensor of dim [num_target_boxes, 4] containing the target box coordinates.
 
         Returns:
-            A list of size batch_size, containing tuples of (index_i, index_j) where:
-                - index_i is the indices of the selected predictions (in order)
-                - index_j is the indices of the corresponding selected targets (in order)
-            For each batch element, it holds:
-                len(index_i) = len(index_j) = min(num_queries, num_target_boxes)
+            list[tuple[Tensor, Tensor]]: A list of size batch_size, containing tuples of (indexes, scores).
+                During training, indexes are returned as (-1, -1), and scores are returned as None.
+                During testing, indexes are returned as (y_index, x_index), and scores are returned as
         """
         bs, num_queries = outputs["pred_logits"].shape[:2]
 
