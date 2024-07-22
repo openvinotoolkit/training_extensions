@@ -15,6 +15,11 @@ callback_monitor: val/accuracy
 
 data: ../_base_/data/torchvision_base.yaml
 overrides:
+  reset:
+    - data.train_subset.transforms
+    - data.val_subset.transforms
+    - data.test_subset.transforms
+
   data:
     task: ACTION_CLASSIFICATION
     image_color_channel: BGR
@@ -27,6 +32,7 @@ overrides:
           init_args:
             test_mode: False
         - class_path: otx.core.data.transform_libs.torchvision.PackVideo
+
     val_subset:
       batch_size: 8
       num_workers: 2
@@ -35,6 +41,7 @@ overrides:
           init_args:
             test_mode: true
         - class_path: otx.core.data.transform_libs.torchvision.PackVideo
+
     test_subset:
       batch_size: 8
       num_workers: 2
