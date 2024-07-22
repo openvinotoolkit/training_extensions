@@ -30,7 +30,7 @@ jobs:
           - task: "visprompt"
             test_dir: "tests/e2e/cli/visual_prompting"
     name: E2E-Test-py310-${{ matrix.task }}
-    uses: ./.github/workflows/run_tests_in_tox.yml
+    uses: ./.github/workflows/run_tests_in_tox_custom.yml
     with:
       python-version: "3.10"
       toxenv-pyver: "py310"

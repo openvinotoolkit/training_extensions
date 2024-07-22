@@ -23,7 +23,7 @@ on:
         default: false
       runs-on:
         type: string
-        default: "['self-hosted', 'Linux', 'X64', 'dev']"
+        default: "['otx-gpu-a10g-1']"
       task:
         type: string
         default: "undefined"
@@ -35,7 +35,7 @@ on:
         default: "pt1"
       container-options:
         type: string
-        default: "--runtime=nvidia --env-file=/home/runner/.nvidia.env --shm-size=24g"
+        default: "--runtime=nvidia --env-file=/home/runner/.nvidia.env --ipc=host"
 
 # Declare default permissions as read only.
 permissions: read-all
@@ -46,7 +46,7 @@ jobs:
     # https://github.com/orgs/community/discussions/11692
     runs-on: ${{ fromJson(inputs.runs-on) }}
     container:
-      image: 219678651685.dkr.ecr.eu-central-1.amazonaws.com/ote-ci:11.7.1.1-devel-ubuntu20.04
+      image: 219678651685.dkr.ecr.eu-west-1.amazonaws.com/ote-ci:11.7.1.2-devel-ubuntu20.04
       options: ${{ inputs.container-options }}
     timeout-minutes: ${{ inputs.timeout-minutes }}
     steps:
