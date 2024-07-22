@@ -561,7 +561,7 @@ class Engine:
             export_demo_package = False
 
         if is_ir_ckpt and not export_demo_package:
-            msg = "IR model is passed as a checkpoint, export automaticaly switched to exportable code."
+            msg = "IR model is passed as a checkpoint, export automatically switched to exportable code."
             warn(msg, stacklevel=1)
             export_demo_package = True
 
@@ -777,6 +777,15 @@ class Engine:
             )
         model.explain_mode = False
         return predict_result
+
+    def benchmark(
+        self,
+        checkpoint: PathLike | None = None,
+        batch_size: int = 1,
+        n_iters: int = 10,
+    ) -> dict[str, str]:
+        return {}
+
 
     @classmethod
     def from_config(
