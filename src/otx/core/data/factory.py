@@ -28,16 +28,12 @@ class TransformLibFactory:
     """Factory class for transform."""
 
     @classmethod
-    def generate(
-        cls: type[TransformLibFactory],
-        config: SubsetConfig,
-        input_size: tuple[int, int] | None = None,
-    ) -> Transforms:
+    def generate(cls: type[TransformLibFactory], config: SubsetConfig) -> Transforms:
         """Create transforms from factory."""
         if config.transform_lib_type == TransformLibType.TORCHVISION:
             from .transform_libs.torchvision import TorchVisionTransformLib
 
-            return TorchVisionTransformLib.generate(config, input_size)
+            return TorchVisionTransformLib.generate(config)
 
         if config.transform_lib_type == TransformLibType.MMCV:
             from .transform_libs.mmcv import MMCVTransformLib
@@ -83,10 +79,9 @@ class OTXDatasetFactory:
         include_polygons: bool = False,
         ignore_index: int = 255,
         vpm_config: VisualPromptingConfig = VisualPromptingConfig(),  # noqa: B008
-        input_size: tuple[int, int] | None = None,
     ) -> OTXDataset:
         """Create OTXDataset."""
-        transforms = TransformLibFactory.generate(cfg_subset, input_size)
+        transforms = TransformLibFactory.generate(cfg_subset)
         common_kwargs = {
             "dm_subset": dm_subset,
             "transforms": transforms,

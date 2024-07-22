@@ -8,7 +8,6 @@ from __future__ import annotations
 import copy
 import io
 import itertools
-import importlib
 import math
 import typing
 from inspect import isclass
@@ -69,7 +68,7 @@ from otx.core.data.transform_libs.utils import (
     translate_masks,
     translate_polygons,
 )
-from otx.utils.utils import get_obj_from_str
+from otx.core.utils.utils import get_obj_from_str
 
 if TYPE_CHECKING:
     from otx.core.config.data import SubsetConfig
@@ -3116,7 +3115,7 @@ class TorchVisionTransformLib:
         ]
 
     @classmethod
-    def generate(cls, config: SubsetConfig, input_size: int | tuple[int, int] | None = None) -> Compose:
+    def generate(cls, config: SubsetConfig) -> Compose:
         """Generate TorchVision transforms from the configuration."""
         if isinstance(config.transforms, Compose):
             return config.transforms
@@ -3124,8 +3123,8 @@ class TorchVisionTransformLib:
         transforms = []
         for cfg_transform in config.transforms:
             for val in cfg_transform["init_args"].values():
-                if "^{input_size}" in val:
-                    cls._eval_input_size(cfg_transform, input_size)
+                if isinstance(val, str) and "^{input_size}" in val:
+                    cls._eval_input_size(cfg_transform, config.input_size)
             transform = cls._dispatch_transform(cfg_transform)
             transforms.append(transform)
 
@@ -3154,7 +3153,7 @@ class TorchVisionTransformLib:
 
         model_cls = None
         for key, val in cfg_transform["init_args"].items():
-            if "^{input_size}" not in val:
+            if not (isinstance(val, str) and "^{input_size}" in val):
                 continue
             if model_cls is None:
                 model_cls = get_obj_from_str(cfg_transform["class_path"])

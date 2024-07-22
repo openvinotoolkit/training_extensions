@@ -5,9 +5,10 @@
 
 from __future__ import annotations
 
+import importlib
 from collections import defaultdict
 from multiprocessing import cpu_count
-from typing import TYPE_CHECKING
+from typing import Any, TYPE_CHECKING
 
 import torch
 from datumaro.components.annotation import AnnotationType, LabelCategories
@@ -84,3 +85,10 @@ def get_idx_list_per_classes(dm_dataset: DmDataset, use_string_label: bool = Fal
     for k in stats:
         stats[k] = list(dict.fromkeys(stats[k]))
     return stats
+
+
+def get_obj_from_str(obj_path: str) -> Any:
+    """Get object from import format string."""
+    module_name, obj_name = obj_path.rsplit(".", 1)
+    module = importlib.import_module(module_name)
+    return getattr(module, obj_name)
