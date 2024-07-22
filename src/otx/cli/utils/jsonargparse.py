@@ -136,29 +136,7 @@ def apply_config(self: ActionConfigFile, parser: ArgumentParser, cfg: Namespace,
         cfg.__dict__.update(cfg_merged.__dict__)
         overrides = cfg.__dict__.pop("overrides", None)
         if overrides is not None:
-            # replace the config with the overrides for keys in reset list
-            reset = overrides.pop("reset", [])
-            if isinstance(reset, str):
-                reset = [reset]
-            for key in reset:
-                if key in overrides:
-                    # callbacks, logger -> update to namespace
-                    # rest -> use dict as is
-                    cfg[key] = (
-                        [dict_to_namespace(o) for o in overrides.pop(key)]
-                        if key in ("callbacks", "logger")
-                        else overrides.pop(key)
-                    )
-
-            # This is a feature to handle the callbacks, logger, and data override for user-convinience
-            list_override(configs=cfg, key="callbacks", overrides=overrides.pop("callbacks", []))
-            list_override(configs=cfg, key="logger", overrides=overrides.pop("logger", []))
-            namespace_override(
-                configs=cfg,
-                key="data",
-                overrides=overrides.pop("data", Namespace()),
-                convert_dict_to_namespace=False,
-            )
+            apply_override(cfg, overrides)
             cfg.update(overrides)
         if cfg.get(dest) is None:
             cfg[dest] = []
@@ -171,7 +149,7 @@ def namespace_override(
     overrides: Namespace,
     convert_dict_to_namespace: bool = True,
 ) -> None:
-    """Overrides the nested dictionary type in the given configs with the provided override_dict.
+    """Overrides the nested namespace type in the given configs with the provided overrides.
 
     Args:
         configs (Namespace): The configuration object containing the key.
@@ -266,6 +244,38 @@ def list_override(configs: Namespace, key: str, overrides: list, convert_dict_to
             configs[key].append(converted_target)
 
 
+def apply_override(cfg: Namespace, overrides: Namespace) -> None:
+    """Overrides the provided overrides in the given configs.
+
+    Args:
+        configs (Namespace): The configuration object containing the key.
+        overrides (Namespace): The configuration object to override the existing ones.
+    """
+    # replace the config with the overrides for keys in reset list
+    reset = overrides.pop("reset", [])
+    if isinstance(reset, str):
+        reset = [reset]
+    for key in reset:
+        if key in overrides:
+            # callbacks, logger -> update to namespace
+            # rest -> use dict as is
+            cfg[key] = (
+                [dict_to_namespace(o) for o in overrides.pop(key)]
+                if key in ("callbacks", "logger")
+                else overrides.pop(key)
+            )
+
+    # This is a feature to handle the callbacks, logger, and data override for user-convinience
+    list_override(configs=cfg, key="callbacks", overrides=overrides.pop("callbacks", []))
+    list_override(configs=cfg, key="logger", overrides=overrides.pop("logger", []))
+    namespace_override(
+        configs=cfg,
+        key="data",
+        overrides=overrides.pop("data", Namespace()),
+        convert_dict_to_namespace=False,
+    )
+
+
 # [FIXME] harimkang: have to see if there's a better way to do it. (For now, Added 2 lines to existing function)
 # The thing called `overrides` is only available in OTXCLI via `apply_config`.
 # Currently, default_config_files in jsonargparse is loading the default config file without using the ActionConfigFile,
@@ -306,8 +316,7 @@ def get_defaults_with_overrides(self: ArgumentParser, skip_check: bool = False) 
             cfg_file = self._load_config_parser_mode(default_config_file.get_content(), key=key)
             cfg = self.merge_config(cfg_file, cfg)
             overrides = cfg.__dict__.pop("overrides", {})
-            list_override(configs=cfg, key="callbacks", overrides=overrides.pop("callbacks", []))
-            list_override(configs=cfg, key="logger", overrides=overrides.pop("logger", []))
+            apply_override(cfg, overrides)
             if overrides is not None:
                 cfg.update(overrides)
             try:
