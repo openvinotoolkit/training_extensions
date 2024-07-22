@@ -1,0 +1,23 @@
+otx.algorithms.action.configs.detection.base.data\_pipeline
+===========================================================
+
+.. automodule:: otx.algorithms.action.configs.detection.base.data_pipeline
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

@@ -1,0 +1,29 @@
+otx.api.usecases.tasks.image\_deep\_learning\_task
+==================================================
+
+.. automodule:: otx.api.usecases.tasks.image_deep_learning_task
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      ImageDeepLearningTask
+   
+   
+
+   
+   
+   
+
+
+

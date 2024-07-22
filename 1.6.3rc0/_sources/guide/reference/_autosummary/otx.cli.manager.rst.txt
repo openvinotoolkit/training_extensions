@@ -1,0 +1,29 @@
+otx.cli.manager
+===============
+
+.. automodule:: otx.cli.manager
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      ConfigManager
+   
+   
+
+   
+   
+   
+
+
+

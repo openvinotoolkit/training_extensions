@@ -1,0 +1,23 @@
+otx.recipes.stages.instance\_segmentation.semisl
+================================================
+
+.. automodule:: otx.recipes.stages.instance_segmentation.semisl
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

@@ -1,0 +1,29 @@
+otx.core.data.adapter.detection\_dataset\_adapter
+=================================================
+
+.. automodule:: otx.core.data.adapter.detection_dataset_adapter
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      DetectionDatasetAdapter
+   
+   
+
+   
+   
+   
+
+
+

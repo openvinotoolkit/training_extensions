@@ -1,0 +1,29 @@
+otx.algorithms.anomaly.adapters.anomalib.plugins
+================================================
+
+.. automodule:: otx.algorithms.anomaly.adapters.anomalib.plugins
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      MixedPrecisionXPUPlugin
+   
+   
+
+   
+   
+   
+
+
+

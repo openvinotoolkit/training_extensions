@@ -1,0 +1,36 @@
+otx.api.utils.time\_utils
+=========================
+
+.. automodule:: otx.api.utils.time_utils
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      now
+      timeit
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      TimeEstimator
+   
+   
+
+   
+   
+   
+
+
+

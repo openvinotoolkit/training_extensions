@@ -1,0 +1,29 @@
+otx.api.entities.image
+======================
+
+.. automodule:: otx.api.entities.image
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      Image
+   
+   
+
+   
+   
+   
+
+
+

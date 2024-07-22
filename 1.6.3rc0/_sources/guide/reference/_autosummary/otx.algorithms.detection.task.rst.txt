@@ -1,0 +1,29 @@
+otx.algorithms.detection.task
+=============================
+
+.. automodule:: otx.algorithms.detection.task
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      OTXDetectionTask
+   
+   
+
+   
+   
+   
+
+
+
