@@ -144,15 +144,19 @@ def is_xpu_available() -> bool:
 
 def get_model_cls_from_config(model_config: Namespace) -> type[OTXModel]:
     """Get Python model class from jsonargparse Namespace."""
-    splited = model_config.class_path.split(".")
-    module_path, class_name = ".".join(splited[:-1]), splited[-1]
-    module = importlib.import_module(module_path)
-    model_cls = getattr(module, class_name)
+    model_cls = get_obj_from_str(model_config.class_path)
 
     if not issubclass(model_cls, OTXModel):
         raise TypeError(model_cls)
 
     return model_cls
+
+
+def get_obj_from_str(obj_path: str) -> Any:
+    """Get object from import format string."""
+    module_name, obj_name = obj_path.rsplit(".", 1)
+    module = importlib.import_module(module_name)
+    return getattr(module, obj_name)
 
 
 def should_pass_label_info(model_cls: type[OTXModel]) -> bool:

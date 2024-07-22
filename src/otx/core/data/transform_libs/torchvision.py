@@ -10,7 +10,8 @@ import io
 import itertools
 import importlib
 import math
-from inspect import isclass, signature
+import typing
+from inspect import isclass
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, ClassVar, Iterable, Sequence
 
@@ -20,6 +21,7 @@ import numpy as np
 import PIL.Image
 import torch
 import torchvision.transforms.v2 as tvt_v2
+import typeguard
 from datumaro.components.media import Video
 from lightning.pytorch.cli import instantiate_class
 from numpy import random
@@ -67,6 +69,7 @@ from otx.core.data.transform_libs.utils import (
     translate_masks,
     translate_polygons,
 )
+from otx.utils.utils import get_obj_from_str
 
 if TYPE_CHECKING:
     from otx.core.config.data import SubsetConfig
@@ -3113,30 +3116,57 @@ class TorchVisionTransformLib:
         ]
 
     @classmethod
-    def generate(cls, config: SubsetConfig, input_size: tuple[int, int] | None = None) -> Compose:
+    def generate(cls, config: SubsetConfig, input_size: int | tuple[int, int] | None = None) -> Compose:
         """Generate TorchVision transforms from the configuration."""
         if isinstance(config.transforms, Compose):
             return config.transforms
 
         transforms = []
         for cfg_transform in config.transforms:
-            cls._insert_input_size_arg(cfg_transform, input_size)
+            for val in cfg_transform["init_args"].values():
+                if "^{input_size}" in val:
+                    cls._eval_input_size(cfg_transform, input_size)
             transform = cls._dispatch_transform(cfg_transform)
             transforms.append(transform)
 
         return Compose(transforms)
 
     @classmethod
-    def _insert_input_size_arg(cls, cfg_transform: dict[str, Any], input_size: tuple[int, int] | None) -> None:
-        if input_size is None or "input_size" in cfg_transform["init_args"]:
-            return
+    def _eval_input_size(cls, cfg_transform: dict[str, Any], input_size: int | tuple[int, int] | None) -> None:
+        """Evaluate the input_size and replace the placeholder in the init_args.
 
-        class_module, class_name = cfg_transform["class_path"].rsplit(".", 1)
-        module = importlib.import_module(class_module)
-        model_cls = getattr(module, class_name)
-        arg_name = list(signature(model_cls.__init__).parameters.keys())
-        if "input_size" in arg_name:
-            cfg_transform["init_args"]["input_size"] = input_size
+            Input size should be specified as ^{input_size}. (e.g. ^{input_size} * 0.5)
+            Built-in eval function is used for evaluation. So, everything `eval` function can evaluate is available.
+            The function decides to pass tuple type or int type based on the type hint of the argument.
+            So, Please make sure that the type hint is correct.
+        """
+        if input_size is None:
+            return
+        if isinstance(input_size, int):
+            input_size = (input_size, input_size)
+
+        def check_type(value, expected_type) -> bool:
+            try:
+                typeguard.check_type(value, expected_type)
+            except typeguard.TypeCheckError:
+                return False
+            return True
+
+        model_cls = None
+        for key, val in cfg_transform["init_args"].items():
+            if "^{input_size}" not in val:
+                continue
+            if model_cls is None:
+                model_cls = get_obj_from_str(cfg_transform["class_path"])
+
+            available_types = typing.get_type_hints(model_cls.__init__).get(key)
+            if available_types is None or check_type(input_size, available_types):  # pass tuple[int, int]
+                cfg_transform["init_args"][key] = eval(val.replace("^{input_size}", "np.array(input_size)")).tolist()
+            elif check_type(input_size[0], available_types):  # pass int
+                cfg_transform["init_args"][key] = eval(val.replace("^{input_size}", "input_size[0]"))
+            else:
+                msg = f"{key} argument should be able to get int or tuple[int, int], but it can get {available_types}"
+                raise RuntimeError(msg)
 
     @classmethod
     def _dispatch_transform(cls, cfg_transform: DictConfig | dict | tvt_v2.Transform) -> tvt_v2.Transform:
