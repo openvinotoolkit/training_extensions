@@ -46,11 +46,11 @@ overrides:
         warmup_epochs: 7
   data:
     task: DETECTION
-    stack_images: True
+    stack_images: true
     data_format: coco_instances
     train_subset:
       batch_size: 4
-      to_tv_image: True
+      to_tv_image: true
       transforms:
         - class_path: torchvision.transforms.v2.RandomPhotometricDistort
           init_args:
@@ -72,17 +72,18 @@ overrides:
         - class_path: torchvision.transforms.v2.ToDtype
           init_args:
             dtype: ${as_torch_dtype:torch.float32}
-            scale: True
+            scale: true
         - class_path: torchvision.transforms.v2.SanitizeBoundingBoxes
         - class_path: otx.core.data.transform_libs.torchvision.ConvertBox
           init_args:
             out_fmt: "cxcywh"
-            normalize: True
+            normalize: true
       sampler:
         class_path: otx.algo.samplers.balanced_sampler.BalancedSampler
+
     val_subset:
       batch_size: 8
-      to_tv_image: True
+      to_tv_image: true
       transforms:
         - class_path: otx.core.data.transform_libs.torchvision.Resize
           init_args:
@@ -95,10 +96,11 @@ overrides:
         - class_path: torchvision.transforms.v2.ToDtype
           init_args:
             dtype: ${as_torch_dtype:torch.float32}
-            scale: True
+            scale: true
+
     test_subset:
       batch_size: 8
-      to_tv_image: True
+      to_tv_image: true
       transforms:
         - class_path: otx.core.data.transform_libs.torchvision.Resize
           init_args:
@@ -111,4 +113,4 @@ overrides:
         - class_path: torchvision.transforms.v2.ToDtype
           init_args:
             dtype: ${as_torch_dtype:torch.float32}
-            scale: True
+            scale: true

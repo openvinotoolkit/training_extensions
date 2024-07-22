@@ -486,7 +486,8 @@ class RTDETRTransformer(nn.Module):
             num_decoder_layers (int): Number of decoder layers.
             dim_feedforward (int): Dimension of the feedforward network.
             dropout (float): Dropout rate.
-            activation (dict[str, str] | None): Activation function.
+            activation (dict[str, str] | None): The activation function of intermediate layer.
+                ReLu by default.
             num_denoising (int): Number of denoising samples.
             label_noise_ratio (float): Ratio of label noise.
             box_noise_scale (float): Scale of box noise.

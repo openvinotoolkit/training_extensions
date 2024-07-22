@@ -190,13 +190,13 @@ class PResNet(nn.Module):
 
         Args:
             depth (int): The depth of the PResNet backbone.
-            variant (str, optional): The variant of the PResNet backbone. Defaults to "d".
-            num_stages (int, optional): The number of stages in the PResNet backbone. Defaults to 4.
-            return_idx (list[int], optional): The indices of the stages to return as output. Defaults to [0, 1, 2, 3].
+            variant (str): The variant of the PResNet backbone. Defaults to "d".
+            num_stages (int): The number of stages in the PResNet backbone. Defaults to 4.
+            return_idx (list[int]): The indices of the stages to return as output. Defaults to [0, 1, 2, 3].
             act_cfg (dict[str, str] | None, optional): The activation configuration. Defaults to None.
             norm_cfg (dict[str, str] | None, optional): The normalization configuration. Defaults to None.
-            freeze_at (int, optional): The stage at which to freeze the parameters. Defaults to -1.
-            pretrained (bool, optional): Whether to load pretrained weights. Defaults to False.
+            freeze_at (int): The stage at which to freeze the parameters. Defaults to -1.
+            pretrained (bool): Whether to load pretrained weights. Defaults to False.
         """
         super().__init__()
 
