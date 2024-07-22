@@ -98,26 +98,11 @@ You can find more details with examples in the [CLI command intro](https://openv
 
 ## Updates
 
-### v1.6.2 (2Q24)
+### v1.6.3 (3Q24)
 
-- Pin OTX version to requirements.txt file for the exportable package (<https://github.com/openvinotoolkit/training_extensions/pull/3555>)
-- Add augmentation details page to the docs (<https://github.com/openvinotoolkit/training_extensions/pull/3533>)
-
-### v1.6.1 (2Q24)
-
-- Replace the default model for rotated_det/ins_seg task from resnet50_maskrcnn to efficientnetb2b_maskrcnn (<https://github.com/openvinotoolkit/training_extensions/pull/3478>)
-- Update pymongo version to 4.6.3 for resolving CVE-2024-21506 (<https://github.com/openvinotoolkit/training_extensions/pull/3396>)
-- Use torchvision in MRCNN on CUDA (<https://github.com/openvinotoolkit/training_extensions/pull/3347>)
-- Update IPEX version in installation guide documentation (<https://github.com/openvinotoolkit/training_extensions/pull/3343>)
-- Update benchmark (<https://github.com/openvinotoolkit/training_extensions/pull/3338>)
-- Bump idan version to 3.7 (<https://github.com/openvinotoolkit/training_extensions/pull/3332>)
-- Support benchmark history summary (<https://github.com/openvinotoolkit/training_extensions/pull/3307>)
-- Pin pymongo version to 4.5.0 (<https://github.com/openvinotoolkit/training_extensions/pull/3316>)
-- Upgrade MAPI (<https://github.com/openvinotoolkit/training_extensions/pull/3304>)
-- Add NMS iou threshold configurable parameter (<https://github.com/openvinotoolkit/training_extensions/pull/3287>)
-- Remedy some medium/low severity bandit issues (<https://github.com/openvinotoolkit/training_extensions/pull/3208>)
-- Update documentations (<https://github.com/openvinotoolkit/training_extensions/pull/3280>)
-- Add perf benchmark test cases for action and visual prompting (<https://github.com/openvinotoolkit/training_extensions/pull/3292>)
+- Improve Vitens Kiemgetal OTX 1.6.x
+- Fix rotated detection data pipeline
+- Update dependencies to omit vulnerabilities
 
 ### Release History
 

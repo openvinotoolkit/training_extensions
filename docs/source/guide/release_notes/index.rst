@@ -4,6 +4,13 @@ Releases
 .. toctree::
    :maxdepth: 1
 
+v1.6.3 (3Q24)
+-------------
+
+- Improve Vitens Kiemgetal OTX 1.6.x
+- Fix rotated detection data pipeline
+- Update dependencies to omit vulnerabilities
+
 v1.6.2 (2Q24)
 -------------
 

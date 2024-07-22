@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## \[v1.6.3\]
+
+### Enhancements
+
+- Improve Vitens Kiemgetal OTX 1.6.x (<https://github.com/openvinotoolkit/training_extensions/pull/3671>)
+- Update dependencies (<https://github.com/openvinotoolkit/training_extensions/pull/3750>)
+
+### Bug fixes
+
+- Fix rotated detection data pipeline (<https://github.com/openvinotoolkit/training_extensions/pull/3627>)
+
 ## \[v1.6.2\]
 
 ### Enhancements
