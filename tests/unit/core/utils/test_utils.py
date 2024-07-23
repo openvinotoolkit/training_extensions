@@ -9,9 +9,9 @@ from otx.core.utils.utils import (
     get_adaptive_num_workers,
     get_idx_list_per_classes,
     get_mean_std_from_data_processing,
+    get_obj_from_str,
     is_ckpt_for_finetuning,
     is_ckpt_from_otx_v1,
-    get_obj_from_str,
 )
 
 
@@ -114,6 +114,7 @@ def test_get_idx_list_per_classes(fxt_dm_dataset):
     expected_result["0"] = list(range(100))
     expected_result["1"] = list(range(100, 108))
     assert result == expected_result
+
 
 def test_get_obj_from_str():
     obj_path = "otx.core.utils.utils.get_mean_std_from_data_processing"

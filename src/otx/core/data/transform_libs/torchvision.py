@@ -5,10 +5,12 @@
 
 from __future__ import annotations
 
+import ast
 import copy
 import io
 import itertools
 import math
+import operator
 import typing
 from inspect import isclass
 from pathlib import Path
@@ -3132,19 +3134,19 @@ class TorchVisionTransformLib:
     def _eval_input_size(cls, cfg_transform: dict[str, Any], input_size: int | tuple[int, int] | None) -> None:
         """Evaluate the input_size and replace the placeholder in the init_args.
 
-            Input size should be specified as ^{input_size}. (e.g. ^{input_size} * 0.5)
-            Built-in eval function is used for evaluation. So, everything `eval` function can evaluate is available.
-            The function decides to pass tuple type or int type based on the type hint of the argument.
-            So, Please make sure that the type hint is correct.
+        Input size should be specified as ^{input_size}. (e.g. ^{input_size} * 0.5)
+        Only simple multiplication or division evaluation is supported. For example,
+        ^{input_size} * -0.5    => supported
+        ^{input_size} * 2.1 / 3 => supported
+        ^{input_size} + 1       => not supported
+        The function decides to pass tuple type or int type based on the type hint of the argument.
+        float point values are rounded to int.
         """
         if input_size is None:
             return
-        if isinstance(input_size, int):
-            input_size = (input_size, input_size)
-        else:
-            input_size = tuple(input_size)
+        _input_size: tuple[int, int] = (input_size, input_size) if isinstance(input_size, int) else tuple(input_size)  # type: ignore[assignment]
 
-        def check_type(value, expected_type) -> bool:
+        def check_type(value: Any, expected_type: Any) -> bool:  # noqa: ANN401
             try:
                 typeguard.check_type(value, expected_type)
             except typeguard.TypeCheckError:
@@ -3159,15 +3161,61 @@ class TorchVisionTransformLib:
                 model_cls = get_obj_from_str(cfg_transform["class_path"])
 
             available_types = typing.get_type_hints(model_cls.__init__).get(key)
-            if available_types is None or check_type(input_size, available_types):  # pass tuple[int, int]
-                cfg_transform["init_args"][key] = tuple(
-                    eval(val.replace("^{input_size}", "np.array(input_size)")).round().astype(np.int32).tolist()
+            if available_types is None or check_type(_input_size, available_types):  # pass tuple[int, int]
+                cfg_transform["init_args"][key] = cls._safe_eval(
+                    val.replace("^{input_size}", f"({','.join(str(val) for val in _input_size)})"),
                 )
-            elif check_type(input_size[0], available_types):  # pass int
-                cfg_transform["init_args"][key] = round(eval(val.replace("^{input_size}", "input_size[0]")))
+            elif check_type(_input_size[0], available_types):  # pass int
+                cfg_transform["init_args"][key] = cls._safe_eval(val.replace("^{input_size}", str(_input_size[0])))
             else:
                 msg = f"{key} argument should be able to get int or tuple[int, int], but it can get {available_types}"
                 raise RuntimeError(msg)
+
+    @classmethod
+    def _safe_eval(cls, str_to_eval: str) -> tuple[int, ...] | int:
+        """Safe eval function for _eval_input_size.
+
+        The function is implemented for `_eval_input_size`, so implementation is aligned to it as below
+        - Only multiplication or division evaluation are supported.
+        - Only constant and tuple can be operand.
+        - tuple is changed to numpy array before evaluation.
+        - result value is rounded to int.
+        """
+        bin_ops = {
+            ast.Mult: operator.mul,
+            ast.Div: operator.truediv,
+        }
+
+        un_ops = {
+            ast.USub: operator.neg,
+            ast.UAdd: operator.pos,
+        }
+
+        available_ops = tuple(bin_ops) + tuple(un_ops) + (ast.BinOp, ast.UnaryOp)
+
+        tree = ast.parse(str_to_eval, mode="eval")
+
+        def _eval(node: Any) -> Any:  # noqa: ANN401
+            if isinstance(node, ast.Expression):
+                return _eval(node.body)
+            if isinstance(node, ast.Constant):
+                return node.value
+            if isinstance(node, ast.Tuple):
+                return np.array([_eval(val) for val in node.elts])
+            if isinstance(node, ast.BinOp) and type(node.op) in bin_ops:
+                left = _eval(node.left)
+                right = _eval(node.right)
+                return bin_ops[type(node.op)](left, right)
+            if isinstance(node, ast.UnaryOp) and type(node.op) in un_ops:
+                operand = _eval(node.operand) if isinstance(node.operand, available_ops) else node.operand.value
+                return un_ops[type(node.op)](operand)  # type: ignore[operator]
+            msg = f"Bad syntax, {type(node)}. Available operations for calcualting input size are {available_ops}"
+            raise SyntaxError(msg)
+
+        ret = _eval(tree)
+        if isinstance(ret, np.ndarray):
+            return tuple(ret.round().astype(np.int32).tolist())
+        return round(ret)
 
     @classmethod
     def _dispatch_transform(cls, cfg_transform: DictConfig | dict | tvt_v2.Transform) -> tvt_v2.Transform:

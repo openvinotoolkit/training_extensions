@@ -186,25 +186,25 @@ class TestTorchVisionTransformLib:
         item = dataset[0]
         assert isinstance(item, data_entity_cls)
 
-    @pytest.fixture
+    @pytest.fixture()
     def fxt_config_w_input_size(self) -> list[dict[str, Any]]:
-        cfg = f"""
+        cfg = """
         input_size:
         - 224
         - 224
         transforms:
           - class_path: otx.core.data.transform_libs.torchvision.ResizetoLongestEdge
             init_args:
-                size: ^{{input_size}} * 2
+                size: ^{input_size} * 2
           - class_path: otx.core.data.transform_libs.torchvision.RandomResize
             init_args:
-                scale: ^{{input_size}} * 0.5
+                scale: ^{input_size} * 0.5
           - class_path: otx.core.data.transform_libs.torchvision.RandomCrop
             init_args:
-                crop_size: ^{{input_size}}
+                crop_size: ^{input_size}
           - class_path: otx.core.data.transform_libs.torchvision.RandomResize
             init_args:
-                scale: ^{{input_size}} * 1.1
+                scale: ^{input_size} * 1.1
         """
         return OmegaConf.create(cfg)
 
@@ -215,6 +215,19 @@ class TestTorchVisionTransformLib:
         assert transform.transforms[1].scale == (112, 112)  # RandomResize gets sequence of integer
         assert transform.transforms[2].crop_size == (224, 224)  # RandomCrop gets sequence of integer
         assert transform.transforms[3].scale == (round(224 * 1.1), round(224 * 1.1))  # check round
+
+    def test_safe_eval(self):
+        assert TorchVisionTransformLib._safe_eval("2") == 2
+        assert TorchVisionTransformLib._safe_eval("(2, 3)") == (2, 3)
+        assert TorchVisionTransformLib._safe_eval("2*3") == 6
+        assert TorchVisionTransformLib._safe_eval("(2, 3) *3") == (6, 9)
+        assert TorchVisionTransformLib._safe_eval("(5, 5) / 2") == (2, 2)
+        assert TorchVisionTransformLib._safe_eval("(10, 11) * -0.5") == (-5, -6)
+
+    @pytest.mark.parametrize("input_str", ["1+1", "1+-5", "rm fake", "hoho", "DecordDecode()"])
+    def test_safe_eval_wrong_value(self, input_str):
+        with pytest.raises(SyntaxError):
+            assert TorchVisionTransformLib._safe_eval(input_str)
 
     @pytest.fixture(params=["RGB", "BGR"])
     def fxt_image_color_channel(self, request) -> ImageColorChannel:
