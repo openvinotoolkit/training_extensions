@@ -11,7 +11,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-
 from otx.algo.modules.base_module import BaseModule
 from otx.algo.utils.mmengine_utils import InstanceData
 from otx.core.data.entity.detection import DetBatchDataEntity
@@ -22,7 +21,16 @@ if TYPE_CHECKING:
 
 
 class SingleStageDetector(BaseModule):
-    """Single stage detector implementation."""
+    """Single stage detector implementation.
+
+    Args:
+        backbone (nn.Module): Backbone module.
+        bbox_head (nn.Module): Bbox head module.
+        neck (nn.Module | None, optional): Neck module. Defaults to None.
+        train_cfg (dict | None, optional): Training config. Defaults to None.
+        test_cfg (dict | None, optional): Test config. Defaults to None.
+        init_cfg (dict | list[dict], optional): Initialization config. Defaults to None.
+    """
 
     def __init__(
         self,

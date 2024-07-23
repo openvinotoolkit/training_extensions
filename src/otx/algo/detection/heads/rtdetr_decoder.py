@@ -224,9 +224,9 @@ class MSDeformableAttention(nn.Module):
             reference_points (Tensor): [bs, query_length, n_levels, 2], range in [0, 1], top-left (0,0),
                 bottom-right (1, 1), including padding area
             value (Tensor): [bs, value_length, C]
-            value_spatial_shapes (List): [n_levels, 2], [(H_0, W_0), (H_1, W_1), ..., (H_{L-1}, W_{L-1})]
-            value_level_start_index (List): [n_levels], [0, H_0*W_0, H_0*W_0+H_1*W_1, ...]
-            value_mask (Tensor): [bs, value_length], True for non-padding elements, False for padding elements
+            value_spatial_shapes (list[tuple[int, int]]): [n_levels, 2], [(H_0, W_0), (H_1, W_1), ...]
+            value_mask (Tensor | None, optional): [bs, value_length], True for non-padding elements,
+                False for padding elements. Defaults to None.
 
         Returns:
             output (Tensor): [bs, Length_{query}, C]
@@ -382,7 +382,14 @@ class TransformerDecoderLayer(nn.Module):
 
 
 class TransformerDecoder(nn.Module):
-    """TransformerDecoder."""
+    """TransformerDecoder.
+
+    Args:
+        hidden_dim (int): The number of expected features in the input.
+        decoder_layer (nn.Module): The decoder layer module.
+        num_layers (int): The number of layers.
+        eval_idx (int, optional): The index of evaluation layer.
+    """
 
     def __init__(self, hidden_dim: int, decoder_layer: nn.Module, num_layers: int, eval_idx: int = -1) -> None:
         super().__init__()

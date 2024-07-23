@@ -9,9 +9,9 @@ from typing import Any
 
 import numpy as np
 import torch
-from torchvision.tv_tensors import BoundingBoxes
-from torchvision.ops import box_convert
 from torch import Tensor, nn
+from torchvision.ops import box_convert
+from torchvision.tv_tensors import BoundingBoxes
 
 from otx.algo.detection.losses import DetrCriterion
 from otx.algo.modules.base_module import BaseModule

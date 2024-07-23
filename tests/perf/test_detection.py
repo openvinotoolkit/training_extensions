@@ -16,6 +16,15 @@ from .conftest import PerfTestBase
 log = logging.getLogger(__name__)
 
 
+@pytest.fixture(scope="session")
+def fxt_deterministic(request: pytest.FixtureRequest) -> bool:
+    """Override the deterministic setting for detection task."""
+    deterministic = request.config.getoption("--deterministic")
+    deterministic = "warn" if deterministic is None or deterministic == "warn" else deterministic == "true"
+    log.info(f"{deterministic=}")
+    return deterministic
+
+
 class TestPerfObjectDetection(PerfTestBase):
     """Benchmark object detection."""
 

@@ -5,22 +5,22 @@
 
 import pytest
 import torch
-from torch import nn
 from otx.algo.detection.base_models.single_stage_detector import SingleStageDetector
 from otx.core.data.entity.detection import DetBatchDataEntity
 from otx.core.types import LabelInfo
+from torch import nn
 
 
 class TestSingleStageDetector:
-    @pytest.fixture
+    @pytest.fixture()
     def backbone(self):
         return nn.Sequential(
             nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=1),
             nn.ReLU(),
-            nn.MaxPool2d(kernel_size=2, stride=2)
+            nn.MaxPool2d(kernel_size=2, stride=2),
         )
 
-    @pytest.fixture
+    @pytest.fixture()
     def bbox_head(self):
         class BboxHead(nn.Module):
             def __init__(self):
@@ -30,31 +30,31 @@ class TestSingleStageDetector:
                 self.linear2 = nn.Linear(10, 4)
                 self.loss = lambda x, _: {"loss": torch.sum(x)}
 
-            def forward(self, x):
+            def forward(self, x: torch.Tensor) -> torch.Tensor:
                 x = self.linear(x)
                 x = self.relu(x)
-                x = self.linear2(x)
-                return x
+                return self.linear2(x)
 
-            def predict(self, x, *args, **kwargs):
+            def predict(self, x: torch.Tensor, *args, **kwargs) -> torch.Tensor:
                 return self.forward(x)
 
-            def export(self, x, *args, **kwargs):
+            def export(self, x: torch.Tensor, *args, **kwargs) -> torch.Tensor:
                 return self.forward(x)
 
         return BboxHead()
 
-    @pytest.fixture
+    @pytest.fixture()
     def batch(self):
         inputs = torch.randn(1, 3, 32, 32)
-        return DetBatchDataEntity(batch_size=1,
-                        imgs_info=[LabelInfo(["a"], [["a"]])],
-                        images=inputs,
-                        bboxes=[torch.tensor([[0.5, 0.5, 0.5, 0.5]])],
-                        labels=[torch.tensor([0])])
+        return DetBatchDataEntity(
+            batch_size=1,
+            imgs_info=[LabelInfo(["a"], [["a"]])],
+            images=inputs,
+            bboxes=[torch.tensor([[0.5, 0.5, 0.5, 0.5]])],
+            labels=[torch.tensor([0])],
+        )
 
-
-    @pytest.fixture
+    @pytest.fixture()
     def detector(self, backbone, bbox_head):
         return SingleStageDetector(backbone=backbone, bbox_head=bbox_head)
 

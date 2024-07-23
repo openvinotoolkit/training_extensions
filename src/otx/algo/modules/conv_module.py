@@ -230,7 +230,7 @@ class ConvModule(nn.Module):
         """Get the normalization layer.
 
         Returns:
-            str | None: The normalization layer.
+            nn.Module | None: The normalization layer.
         """
         if self.norm_name:
             return getattr(self, self.norm_name)
