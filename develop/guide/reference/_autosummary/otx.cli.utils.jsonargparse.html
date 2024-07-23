@@ -402,23 +402,29 @@
 <tr class="row-even"><td><p><a class="reference internal" href="#otx.cli.utils.jsonargparse.apply_config" title="otx.cli.utils.jsonargparse.apply_config"><code class="xref py py-obj docutils literal notranslate"><span class="pre">apply_config</span></code></a>(self, parser, cfg, dest, value)</p></td>
 <td><p>Applies the configuration to the parser.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#otx.cli.utils.jsonargparse.flatten_dict" title="otx.cli.utils.jsonargparse.flatten_dict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">flatten_dict</span></code></a>(config[, parent_key, sep])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.cli.utils.jsonargparse.apply_override" title="otx.cli.utils.jsonargparse.apply_override"><code class="xref py py-obj docutils literal notranslate"><span class="pre">apply_override</span></code></a>(cfg, overrides)</p></td>
+<td><p>Overrides the provided overrides in the given configs.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#otx.cli.utils.jsonargparse.flatten_dict" title="otx.cli.utils.jsonargparse.flatten_dict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">flatten_dict</span></code></a>(config[, parent_key, sep])</p></td>
 <td><p>Flatten a nested dictionary into a single-level dictionary.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#otx.cli.utils.jsonargparse.get_configuration" title="otx.cli.utils.jsonargparse.get_configuration"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_configuration</span></code></a>(config_path[, subcommand])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.cli.utils.jsonargparse.get_configuration" title="otx.cli.utils.jsonargparse.get_configuration"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_configuration</span></code></a>(config_path[, subcommand])</p></td>
 <td><p>Get the configuration from the given path.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#otx.cli.utils.jsonargparse.get_defaults_with_overrides" title="otx.cli.utils.jsonargparse.get_defaults_with_overrides"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_defaults_with_overrides</span></code></a>(self[, skip_check])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#otx.cli.utils.jsonargparse.get_defaults_with_overrides" title="otx.cli.utils.jsonargparse.get_defaults_with_overrides"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_defaults_with_overrides</span></code></a>(self[, skip_check])</p></td>
 <td><p>Returns a namespace with all default values.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#otx.cli.utils.jsonargparse.get_instantiated_classes" title="otx.cli.utils.jsonargparse.get_instantiated_classes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_instantiated_classes</span></code></a>(config, work_dir, ...)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.cli.utils.jsonargparse.get_instantiated_classes" title="otx.cli.utils.jsonargparse.get_instantiated_classes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_instantiated_classes</span></code></a>(config, work_dir, ...)</p></td>
 <td><p>Get the instantiated classes for training.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#otx.cli.utils.jsonargparse.get_short_docstring" title="otx.cli.utils.jsonargparse.get_short_docstring"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_short_docstring</span></code></a>(component)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#otx.cli.utils.jsonargparse.get_short_docstring" title="otx.cli.utils.jsonargparse.get_short_docstring"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_short_docstring</span></code></a>(component)</p></td>
 <td><p>Get the short description from the docstring.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#otx.cli.utils.jsonargparse.list_override" title="otx.cli.utils.jsonargparse.list_override"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list_override</span></code></a>(configs, key, overrides)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.cli.utils.jsonargparse.list_override" title="otx.cli.utils.jsonargparse.list_override"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list_override</span></code></a>(configs, key, overrides[, ...])</p></td>
 <td><p>Overrides the nested list type in the given configs with the provided override_list.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#otx.cli.utils.jsonargparse.namespace_override" title="otx.cli.utils.jsonargparse.namespace_override"><code class="xref py py-obj docutils literal notranslate"><span class="pre">namespace_override</span></code></a>(configs, key, overrides)</p></td>
+<td><p>Overrides the nested namespace type in the given configs with the provided overrides.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#otx.cli.utils.jsonargparse.patch_update_configs" title="otx.cli.utils.jsonargparse.patch_update_configs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">patch_update_configs</span></code></a>()</p></td>
 <td><p>Patch the update and apply_config methods of the given namespace and action_config_file objects.</p></td>
@@ -462,6 +468,20 @@ Copy from jsonargparse._signatures.SignatureArguments.add_subclass_arguments.</p
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="otx.cli.utils.jsonargparse.apply_override">
+<span class="sig-prename descclassname"><span class="pre">otx.cli.utils.jsonargparse.</span></span><span class="sig-name descname"><span class="pre">apply_override</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cfg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Namespace</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overrides</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Namespace</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../_modules/otx/cli/utils/jsonargparse.html#apply_override"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.cli.utils.jsonargparse.apply_override" title="Link to this definition">#</a></dt>
+<dd><p>Overrides the provided overrides in the given configs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>configs</strong> (<em>Namespace</em>) – The configuration object containing the key.</p></li>
+<li><p><strong>overrides</strong> (<em>Namespace</em>) – The configuration object to override the existing ones.</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
@@ -558,7 +578,7 @@ Copy from jsonargparse._signatures.SignatureArguments.add_subclass_arguments.</p
 
 <dl class="py function">
 <dt class="sig sig-object py" id="otx.cli.utils.jsonargparse.list_override">
-<span class="sig-prename descclassname"><span class="pre">otx.cli.utils.jsonargparse.</span></span><span class="sig-name descname"><span class="pre">list_override</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">configs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Namespace</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">overrides</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.12)"><span class="pre">list</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../_modules/otx/cli/utils/jsonargparse.html#list_override"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.cli.utils.jsonargparse.list_override" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">otx.cli.utils.jsonargparse.</span></span><span class="sig-name descname"><span class="pre">list_override</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">configs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Namespace</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">overrides</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.12)"><span class="pre">list</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">convert_dict_to_namespace</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../_modules/otx/cli/utils/jsonargparse.html#list_override"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.cli.utils.jsonargparse.list_override" title="Link to this definition">#</a></dt>
 <dd><p>Overrides the nested list type in the given configs with the provided override_list.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -566,6 +586,7 @@ Copy from jsonargparse._signatures.SignatureArguments.add_subclass_arguments.</p
 <li><p><strong>configs</strong> (<em>Namespace</em>) – The configuration object containing the key.</p></li>
 <li><p><strong>key</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – key of the configs want to override.</p></li>
 <li><p><strong>overrides</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.12)"><em>list</em></a>) – The list of dictionary item to override the existing ones.</p></li>
+<li><p><strong>convert_dict_to_namespace</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a>) – Whether to convert the dictionary to Namespace. Defaults to True.</p></li>
 </ul>
 </dd>
 </dl>
@@ -595,8 +616,46 @@ Copy from jsonargparse._signatures.SignatureArguments.add_subclass_arguments.</p
 <span class="gp">... </span>    <span class="p">),</span>
 <span class="gp">... </span>    <span class="o">...</span>
 <span class="gp">... </span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">append_callbacks</span> <span class="o">=</span> <span class="p">[</span>
+<span class="gp">... </span>    <span class="p">{</span>
+<span class="gp">... </span>        <span class="s1">&#39;class_path&#39;</span><span class="p">:</span> <span class="s1">&#39;new_callbacks&#39;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="p">},</span>
+<span class="gp">... </span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">list_override</span><span class="p">(</span><span class="n">configs</span><span class="o">=</span><span class="n">configs</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="s2">&quot;callbacks&quot;</span><span class="p">,</span> <span class="n">overrides</span><span class="o">=</span><span class="n">append_callbacks</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">configs</span> <span class="o">=</span> <span class="p">[</span>
+<span class="gp">... </span>    <span class="o">...</span>
+<span class="gp">... </span>    <span class="n">Namespace</span><span class="p">(</span><span class="n">class_path</span><span class="o">=</span><span class="s1">&#39;new_callbacks&#39;</span><span class="p">),</span>
+<span class="gp">... </span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">append_callbacks_as_dict</span> <span class="o">=</span> <span class="p">[</span>
+<span class="gp">... </span>    <span class="p">{</span>
+<span class="gp">... </span>        <span class="s1">&#39;class_path&#39;</span><span class="p">:</span> <span class="s1">&#39;new_callbacks1&#39;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="p">},</span>
+<span class="gp">... </span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">list_override</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">configs</span><span class="o">=</span><span class="n">configs</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="s2">&quot;callbacks&quot;</span><span class="p">,</span> <span class="n">overrides</span><span class="o">=</span><span class="n">append_callbacks_as_dict</span><span class="p">,</span> <span class="n">convert_dict_to_namespace</span><span class="o">=</span><span class="kc">False</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">configs</span> <span class="o">=</span> <span class="p">[</span>
+<span class="gp">... </span>    <span class="o">...</span>
+<span class="gp">... </span>    <span class="p">{</span><span class="s1">&#39;class_path&#39;</span><span class="p">:</span> <span class="s1">&#39;new_callbacks1&#39;</span><span class="p">},</span>
+<span class="gp">... </span><span class="p">]</span>
 </pre></div>
 </div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="otx.cli.utils.jsonargparse.namespace_override">
+<span class="sig-prename descclassname"><span class="pre">otx.cli.utils.jsonargparse.</span></span><span class="sig-name descname"><span class="pre">namespace_override</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">configs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Namespace</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">overrides</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Namespace</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">convert_dict_to_namespace</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../_modules/otx/cli/utils/jsonargparse.html#namespace_override"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.cli.utils.jsonargparse.namespace_override" title="Link to this definition">#</a></dt>
+<dd><p>Overrides the nested namespace type in the given configs with the provided overrides.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>configs</strong> (<em>Namespace</em>) – The configuration object containing the key.</p></li>
+<li><p><strong>key</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – key of the configs want to override.</p></li>
+<li><p><strong>overrides</strong> (<em>Namespace</em>) – The configuration object to override the existing ones.</p></li>
+<li><p><strong>convert_dict_to_namespace</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a>) – Whether to convert the dictionary to Namespace. Defaults to True.</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
@@ -679,6 +738,15 @@ Copy from jsonargparse._signatures.SignatureArguments.add_subclass_arguments.</p
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.cli.utils.jsonargparse.apply_override">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     apply_override()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#otx.cli.utils.jsonargparse.flatten_dict">
    <code class="docutils literal notranslate">
     <span class="pre">
@@ -728,6 +796,15 @@ Copy from jsonargparse._signatures.SignatureArguments.add_subclass_arguments.</p
    <code class="docutils literal notranslate">
     <span class="pre">
      list_override()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.cli.utils.jsonargparse.namespace_override">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     namespace_override()
     </span>
    </code>
   </a>

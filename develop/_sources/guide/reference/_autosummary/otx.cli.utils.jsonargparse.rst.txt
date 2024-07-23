@@ -15,12 +15,14 @@ otx.cli.utils.jsonargparse
    
       add_list_type_arguments
       apply_config
+      apply_override
       flatten_dict
       get_configuration
       get_defaults_with_overrides
       get_instantiated_classes
       get_short_docstring
       list_override
+      namespace_override
       patch_update_configs
       update
    
