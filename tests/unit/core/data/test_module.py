@@ -46,18 +46,21 @@ class TestModule:
         )
         train_subset.num_workers = 0
         train_subset.batch_size = 4
+        train_subset.input_size = None
         val_subset = MagicMock(spec=SubsetConfig)
         val_subset.sampler = DictConfig(
             {"class_path": "torch.utils.data.RandomSampler", "init_args": {"num_samples": 3}},
         )
         val_subset.num_workers = 0
         val_subset.batch_size = 3
+        val_subset.input_size = None
         test_subset = MagicMock(spec=SubsetConfig)
         test_subset.sampler = DictConfig(
             {"class_path": "torch.utils.data.RandomSampler", "init_args": {"num_samples": 3}},
         )
         test_subset.num_workers = 0
         test_subset.batch_size = 1
+        test_subset.input_size = None
         unlabeled_subset = MagicMock(spec=UnlabeledDataConfig)
         unlabeled_subset.data_root = None
         tile_config = MagicMock(spec=TileConfig)
@@ -101,6 +104,7 @@ class TestModule:
         fxt_config.train_subset.subset_name = "train_1"
         fxt_config.val_subset.subset_name = "val_1"
         fxt_config.test_subset.subset_name = "test_1"
+        input_size = (512, 512)
 
         # Dataset will have "train_0", "train_1", "val_0", ..., "test_1" subsets
         mock_dm_subsets = {f"{name}_{idx}": MagicMock() for name in ["train", "val", "test"] for idx in range(2)}
@@ -115,6 +119,7 @@ class TestModule:
             train_subset=fxt_config.train_subset,
             val_subset=fxt_config.val_subset,
             test_subset=fxt_config.test_subset,
+            input_size=input_size,
         )
 
         assert module.train_dataloader().batch_size == 4
@@ -122,6 +127,9 @@ class TestModule:
         assert module.test_dataloader().batch_size == 1
         assert module.predict_dataloader().batch_size == 1
         assert mock_otx_dataset_factory.create.call_count == 3
+        assert fxt_config.train_subset.input_size == input_size
+        assert fxt_config.val_subset.input_size == input_size
+        assert fxt_config.test_subset.input_size == input_size
 
     @patch("otx.core.data.module.OTXDatasetFactory")
     @patch("otx.core.data.module.DmDataset.import_from")

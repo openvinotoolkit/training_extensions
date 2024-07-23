@@ -186,6 +186,36 @@ class TestTorchVisionTransformLib:
         item = dataset[0]
         assert isinstance(item, data_entity_cls)
 
+    @pytest.fixture
+    def fxt_config_w_input_size(self) -> list[dict[str, Any]]:
+        cfg = f"""
+        input_size:
+        - 224
+        - 224
+        transforms:
+          - class_path: otx.core.data.transform_libs.torchvision.ResizetoLongestEdge
+            init_args:
+                size: ^{{input_size}} * 2
+          - class_path: otx.core.data.transform_libs.torchvision.RandomResize
+            init_args:
+                scale: ^{{input_size}} * 0.5
+          - class_path: otx.core.data.transform_libs.torchvision.RandomCrop
+            init_args:
+                crop_size: ^{{input_size}}
+          - class_path: otx.core.data.transform_libs.torchvision.RandomResize
+            init_args:
+                scale: ^{{input_size}} * 1.1
+        """
+        return OmegaConf.create(cfg)
+
+    def test_eval_input_size(self, fxt_config_w_input_size):
+        transform = TorchVisionTransformLib.generate(fxt_config_w_input_size)
+        assert isinstance(transform, v2.Compose)
+        assert transform.transforms[0].size == 448  # ResizetoLongestEdge gets an integer
+        assert transform.transforms[1].scale == (112, 112)  # RandomResize gets sequence of integer
+        assert transform.transforms[2].crop_size == (224, 224)  # RandomCrop gets sequence of integer
+        assert transform.transforms[3].scale == (round(224 * 1.1), round(224 * 1.1))  # check round
+
     @pytest.fixture(params=["RGB", "BGR"])
     def fxt_image_color_channel(self, request) -> ImageColorChannel:
         return ImageColorChannel(request.param)

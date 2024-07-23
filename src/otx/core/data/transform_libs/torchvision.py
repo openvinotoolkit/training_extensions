@@ -635,7 +635,7 @@ class RandomResizedCrop(tvt_v2.Transform, NumpytoTVTensorMixin):
     is made. This crop is finally resized to given size.
 
     Args:
-        scale (sequence | int): Desired output scale of the crop. If size is an
+        scale (Sequence[int] | int): Desired output scale of the crop. If size is an
             int instead of sequence like (h, w), a square crop (size, size) is
             made.
         crop_ratio_range (tuple): Range of the random size of the cropped
@@ -654,7 +654,7 @@ class RandomResizedCrop(tvt_v2.Transform, NumpytoTVTensorMixin):
 
     def __init__(
         self,
-        scale: Sequence | int,
+        scale: Sequence[int] | int,
         crop_ratio_range: tuple[float, float] = (0.08, 1.0),
         aspect_ratio_range: tuple[float, float] = (3.0 / 4.0, 4.0 / 3.0),
         max_attempts: int = 10,
@@ -2342,7 +2342,7 @@ class RandomCrop(tvt_v2.Transform, NumpytoTVTensorMixin):
     The absolute `crop_size` is sampled based on `crop_type` and `image_size`, then the cropped results are generated.
 
     Args:
-        crop_size (tuple): The relative ratio or absolute pixels of
+        crop_size (tuple[int, int]): The relative ratio or absolute pixels of
             (height, width).
         crop_type (str, optional): One of "relative_range", "relative",
             "absolute", "absolute_range". "relative" randomly crops
@@ -2367,7 +2367,7 @@ class RandomCrop(tvt_v2.Transform, NumpytoTVTensorMixin):
 
     def __init__(
         self,
-        crop_size: tuple,  # (H, W)
+        crop_size: tuple[int, int],  # (H, W)
         crop_type: str = "absolute",
         cat_max_ratio: int | float = 1,
         allow_negative_crop: bool = False,
@@ -3122,9 +3122,7 @@ class TorchVisionTransformLib:
 
         transforms = []
         for cfg_transform in config.transforms:
-            for val in cfg_transform["init_args"].values():
-                if isinstance(val, str) and "^{input_size}" in val:
-                    cls._eval_input_size(cfg_transform, config.input_size)
+            cls._eval_input_size(cfg_transform, config.input_size)
             transform = cls._dispatch_transform(cfg_transform)
             transforms.append(transform)
 
@@ -3143,6 +3141,8 @@ class TorchVisionTransformLib:
             return
         if isinstance(input_size, int):
             input_size = (input_size, input_size)
+        else:
+            input_size = tuple(input_size)
 
         def check_type(value, expected_type) -> bool:
             try:
@@ -3160,9 +3160,11 @@ class TorchVisionTransformLib:
 
             available_types = typing.get_type_hints(model_cls.__init__).get(key)
             if available_types is None or check_type(input_size, available_types):  # pass tuple[int, int]
-                cfg_transform["init_args"][key] = eval(val.replace("^{input_size}", "np.array(input_size)")).tolist()
+                cfg_transform["init_args"][key] = tuple(
+                    eval(val.replace("^{input_size}", "np.array(input_size)")).round().astype(np.int32).tolist()
+                )
             elif check_type(input_size[0], available_types):  # pass int
-                cfg_transform["init_args"][key] = eval(val.replace("^{input_size}", "input_size[0]"))
+                cfg_transform["init_args"][key] = round(eval(val.replace("^{input_size}", "input_size[0]")))
             else:
                 msg = f"{key} argument should be able to get int or tuple[int, int], but it can get {available_types}"
                 raise RuntimeError(msg)
