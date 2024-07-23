@@ -115,6 +115,7 @@ def test_get_idx_list_per_classes(fxt_dm_dataset):
     expected_result["1"] = list(range(100, 108))
     assert result == expected_result
 
+
 def test_remove_state_dict_prefix():
     state_dict = {
         "model._orig_mod.backbone.0.weight": 1,
