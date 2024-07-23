@@ -6,6 +6,9 @@ All notable changes to this project will be documented in this file.
 
 ### New features
 
+- Add RT-DETR model for object detection task
+  (https://github.com/openvinotoolkit/training_extensions/pull/3741)
+
 ### Enhancements
 
 ### Bug fixes
