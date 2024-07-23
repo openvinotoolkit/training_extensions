@@ -192,10 +192,9 @@ class OTXSegmentationDataset(OTXDataset[SegDataEntity]):
     @property
     def has_polygons(self) -> bool:
         """Check if the dataset has polygons in annotations."""
-        for subset in self.dm_subset.subsets().values():
-            annot_types = set(subset.get_annotated_type())
-            if annot_types & {"polygon", "ellipse"}:
-                return True
+        ann_types = {str(ann_type).split(".")[-1] for ann_type in self.dm_subset.ann_types()}
+        if ann_types & {"polygon", "ellipse"}:
+            return True
         return False
 
     def _get_item_impl(self, index: int) -> SegDataEntity | None:
@@ -214,11 +213,10 @@ class OTXSegmentationDataset(OTXDataset[SegDataEntity]):
                 image_color_channel=self.image_color_channel,
                 ignored_labels=ignored_labels,
             ),
-            gt_seg_map=tv_tensors.Mask(
-                mask,
-            ),
+            masks=tv_tensors.Mask(mask[None]),
         )
-        return self._apply_transforms(entity)
+        transformed_entity = self._apply_transforms(entity)
+        return transformed_entity.wrap(masks=transformed_entity.masks[0]) if transformed_entity else None
 
     @property
     def collate_fn(self) -> Callable:

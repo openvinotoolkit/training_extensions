@@ -1,13 +1,19 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
+from __future__ import annotations
+
+from copy import deepcopy
+from unittest.mock import Mock
 
 import pytest
-from jsonargparse import Namespace
+from jsonargparse import ArgumentParser, Namespace
 from otx.cli.utils.jsonargparse import (
+    apply_config,
     flatten_dict,
     get_configuration,
     get_short_docstring,
     list_override,
+    namespace_override,
     patch_update_configs,
 )
 
@@ -15,7 +21,38 @@ from otx.cli.utils.jsonargparse import (
 @pytest.fixture()
 def fxt_configs() -> Namespace:
     return Namespace(
-        data=Namespace(batch_size=32, num_workers=4),
+        data=Namespace(
+            stack_images=True,
+            train_subset=Namespace(
+                batch_size=32,
+                num_workers=4,
+                transforms=[
+                    {
+                        "class_path": "otx.core.data.transform_libs.torchvision.Resize",
+                        "init_args": {
+                            "keep_ratio": True,
+                            "transform_bbox": True,
+                            "transform_mask": True,
+                            "scale": [1024, 1024],
+                        },
+                    },
+                    {
+                        "class_path": "otx.core.data.transform_libs.torchvision.Pad",
+                        "init_args": {"pad_to_square": True, "transform_mask": True},
+                    },
+                    {
+                        "class_path": "otx.core.data.transform_libs.torchvision.RandomFlip",
+                        "init_args": {"prob": 0.5, "is_numpy_to_tvtensor": True},
+                    },
+                    {"class_path": "torchvision.transforms.v2.ToDtype", "init_args": {"dtype": "torch.float32"}},
+                    {
+                        "class_path": "torchvision.transforms.v2.Normalize",
+                        "init_args": {"mean": [123.675, 116.28, 103.53], "std": [58.395, 57.12, 57.375]},
+                    },
+                ],
+                sampler=Namespace(class_path="torch.utils.data.RandomSampler", init_args={}),
+            ),
+        ),
         callbacks=[
             Namespace(
                 class_path="otx.algo.callbacks.iteration_timer.IterationTimer",
@@ -41,6 +78,186 @@ def fxt_configs() -> Namespace:
             ),
         ],
     )
+
+
+@pytest.mark.parametrize(
+    "reset",
+    [
+        "data.train_subset.transforms",
+        ["data.train_subset.transforms"],
+        ["data.train_subset.transforms", "callbacks"],
+    ],
+)
+def test_apply_config_with_reset(fxt_configs: Namespace, reset: str | list[str]) -> None:
+    cfg = deepcopy(fxt_configs)
+    with patch_update_configs():
+        # test for reset
+        overrides = Namespace(
+            overrides=Namespace(
+                reset=reset,
+                callbacks=[{"class_path": "new_callbacks"}],
+                data=Namespace(
+                    train_subset=Namespace(
+                        transforms=[
+                            {
+                                "class_path": "torchvision.transforms.v2.ToImage",
+                            },
+                        ],
+                    ),
+                ),
+            ),
+        )
+
+        mock_parser = Mock(spec=ArgumentParser)
+        mock_parser.parse_path.return_value = overrides
+        mock_parser.merge_config = ArgumentParser().merge_config
+
+        apply_config(None, mock_parser, cfg, "dest", "value")
+
+        assert str(cfg.dest[0]) == "value"
+
+        # check values that should not to be changed
+        assert cfg.data.train_subset.batch_size == fxt_configs.data.train_subset.batch_size
+        assert cfg.data.train_subset.num_workers == fxt_configs.data.train_subset.num_workers
+        assert cfg.data.train_subset.sampler == fxt_configs.data.train_subset.sampler
+        assert cfg.logger == fxt_configs.logger
+
+        # check values that should be changed
+        assert len(cfg.data.train_subset.transforms) == len(overrides.overrides.data.train_subset.transforms)
+        assert cfg.data.train_subset.transforms[0]["class_path"] == "torchvision.transforms.v2.ToImage"
+        if isinstance(reset, list) and "callbacks" in reset:
+            assert len(cfg.callbacks) == len(overrides.overrides.callbacks)
+            assert cfg.callbacks[0].class_path == "new_callbacks"
+        else:
+            assert len(cfg.callbacks) == len(fxt_configs.callbacks) + 1
+            assert cfg.callbacks[:-1] == fxt_configs.callbacks
+            assert cfg.callbacks[-1].class_path == "new_callbacks"
+
+
+def test_namespace_override(fxt_configs) -> None:
+    cfg = deepcopy(fxt_configs)
+    with patch_update_configs():
+        # test for empty override
+        overrides = Namespace()
+
+        namespace_override(configs=cfg, key="data", overrides=overrides, convert_dict_to_namespace=False)
+
+        assert cfg.data.stack_images == fxt_configs.data.stack_images
+        assert cfg.data.train_subset.batch_size == fxt_configs.data.train_subset.batch_size
+        assert cfg.data.train_subset.num_workers == fxt_configs.data.train_subset.num_workers
+        assert cfg.data.train_subset.transforms == fxt_configs.data.train_subset.transforms
+        assert cfg.data.train_subset.sampler == fxt_configs.data.train_subset.sampler
+        assert cfg.callbacks == fxt_configs.callbacks
+        assert cfg.logger == fxt_configs.logger
+
+        # test for single key override
+        overrides = Namespace(
+            mem_cache_img_max_size=[100, 100],
+            stack_images=False,
+            train_subset=Namespace(batch_size=64, num_workers=8),
+        )
+
+        namespace_override(configs=cfg, key="data", overrides=overrides, convert_dict_to_namespace=False)
+
+        assert cfg.data.mem_cache_img_max_size == overrides.mem_cache_img_max_size
+        assert cfg.data.stack_images == overrides.stack_images
+        assert cfg.data.train_subset.batch_size == overrides.train_subset.batch_size
+        assert cfg.data.train_subset.num_workers == overrides.train_subset.num_workers
+
+        # test for dict of list by using list_override
+        overrides = Namespace(
+            train_subset=Namespace(
+                transforms=[
+                    {
+                        "class_path": "otx.core.data.transform_libs.torchvision.Resize",
+                        "init_args": {
+                            "keep_ratio": False,  # for boolean
+                            "scale": [512, 512],  # for tuple
+                        },
+                    },
+                    {
+                        "class_path": "otx.core.data.transform_libs.torchvision.Pad",
+                        "init_args": {"size_divisor": 32},  # add new key
+                    },
+                    {
+                        "class_path": "torchvision.transforms.v2.Normalize",
+                        "init_args": {"std": [1.0, 1.0, 1.0]},  # for the last component
+                    },
+                ],
+            ),
+        )
+
+        # to check before adding key
+        assert "size_divisor" not in cfg.data.train_subset.transforms[1]["init_args"]
+
+        namespace_override(configs=cfg, key="data", overrides=overrides, convert_dict_to_namespace=False)
+
+        # otx.core.data.transform_libs.torchvision.Resize
+        assert (
+            cfg.data.train_subset.transforms[0]["init_args"]["keep_ratio"]
+            == overrides.train_subset.transforms[0]["init_args"]["keep_ratio"]
+        )
+        assert (
+            cfg.data.train_subset.transforms[0]["init_args"]["scale"]
+            == overrides.train_subset.transforms[0]["init_args"]["scale"]
+        )
+        # otx.core.data.transform_libs.torchvision.Pad
+        assert "size_divisor" in cfg.data.train_subset.transforms[1]["init_args"]
+        assert (
+            cfg.data.train_subset.transforms[1]["init_args"]["size_divisor"]
+            == overrides.train_subset.transforms[1]["init_args"]["size_divisor"]
+        )
+        # torchvision.transforms.v2.Normalize
+        assert (
+            cfg.data.train_subset.transforms[-1]["init_args"]["std"]
+            == overrides.train_subset.transforms[-1]["init_args"]["std"]
+        )
+
+        # test for appending new transform
+        overrides = Namespace(
+            train_subset=Namespace(
+                transforms=[
+                    {
+                        "class_path": "torchvision.transforms.v2.ToImage",
+                    },
+                ],
+            ),
+        )
+
+        namespace_override(configs=cfg, key="data", overrides=overrides, convert_dict_to_namespace=False)
+
+        assert all(isinstance(transform, dict) for transform in cfg.data.train_subset.transforms)
+        assert cfg.data.train_subset.transforms[-1]["class_path"] == "torchvision.transforms.v2.ToImage"
+
+        # test for namespace override to update init_args
+        overrides = Namespace(
+            train_subset=Namespace(
+                sampler=Namespace(
+                    class_path="torch.utils.data.RandomSampler",
+                    init_args={"efficient_mode": True},
+                ),
+            ),
+        )
+
+        namespace_override(configs=cfg, key="data", overrides=overrides, convert_dict_to_namespace=False)
+
+        assert (
+            cfg.data.train_subset.sampler.init_args["efficient_mode"]
+            == overrides.train_subset.sampler.init_args["efficient_mode"]
+        )
+
+        # test for namespace override to update class_path
+        overrides = Namespace(
+            train_subset=Namespace(
+                sampler=Namespace(
+                    class_path="otx.algo.samplers.balanced_sampler.BalancedSampler",
+                ),
+            ),
+        )
+
+        namespace_override(configs=cfg, key="data", overrides=overrides, convert_dict_to_namespace=False)
+
+        assert cfg.data.train_subset.sampler.class_path == overrides.train_subset.sampler.class_path
 
 
 def test_list_override(fxt_configs) -> None:
@@ -96,14 +313,14 @@ def test_update(fxt_configs) -> None:
             fxt_configs.update(value=8, key=None)
 
         # Test updating a single key
-        updated_configs = fxt_configs.update(8, "data.batch_size")
-        assert updated_configs.data.batch_size == 8
+        updated_configs = fxt_configs.update(8, "data.train_subset.batch_size")
+        assert updated_configs.data.train_subset.batch_size == 8
 
-        updated_configs = fxt_configs.update("8", "data.batch_size")
-        assert updated_configs.data.batch_size == 8
+        updated_configs = fxt_configs.update("8", "data.train_subset.batch_size")
+        assert updated_configs.data.train_subset.batch_size == 8
 
-        updated_configs = fxt_configs.update(None, "data.num_workers")
-        assert "num_workers" not in updated_configs.data
+        updated_configs = fxt_configs.update(None, "data.train_subset.num_workers")
+        assert "num_workers" not in updated_configs.data.train_subset
 
         # Test updating multiple values using a namespace
         new_values = Namespace(

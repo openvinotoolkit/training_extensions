@@ -9,90 +9,6 @@ model:
         params:
           ignore_index: 255
 
-    backbone_configuration:
-      norm_cfg:
-        type: BN
-        requires_grad: true
-      norm_eval: false
-      extra:
-        stem:
-          stem_channels: 32
-          out_channels: 32
-          expand_ratio: 1
-          strides:
-            - 2
-            - 2
-          extra_stride: true
-          input_norm: false
-        num_stages: 2
-        stages_spec:
-          num_modules:
-            - 4
-            - 4
-          num_branches:
-            - 2
-            - 3
-          num_blocks:
-            - 2
-            - 2
-          module_type:
-            - LITE
-            - LITE
-          with_fuse:
-            - true
-            - true
-          reduce_ratios:
-            - 8
-            - 8
-          num_channels:
-            - - 60
-              - 120
-            - - 60
-              - 120
-              - 240
-        out_modules:
-          conv:
-            enable: false
-            channels: 160
-          position_att:
-            enable: false
-            key_channels: 64
-            value_channels: 240
-            psp_size:
-              - 1
-              - 3
-              - 6
-              - 8
-          local_att:
-            enable: false
-        out_aggregator:
-          enable: false
-        add_input: false
-      pretrained_weights: "https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/custom_semantic_segmentation/litehrnetsv2_imagenet1k_rsc.pth"
-
-    decode_head_configuration:
-      norm_cfg:
-        type: BN
-        requires_grad: true
-      in_channels:
-        - 60
-        - 120
-        - 240
-      in_index:
-        - 0
-        - 1
-        - 2
-      input_transform: "multiple_select"
-      channels: 60
-      kernel_size: 1
-      num_convs: 1
-      concat_input: false
-      enable_aggregator: True
-      aggregator_merge_norm: None
-      aggregator_use_concat: False
-      dropout_ratio: -1
-      align_corners: false
-
     optimizer:
       class_path: torch.optim.Adam
       init_args:
@@ -120,10 +36,9 @@ engine:
 
 callback_monitor: val/Dice
 
+data: ../_base_/data/semantic_segmentation.yaml
 overrides:
   callbacks:
     - class_path: otx.algo.callbacks.adaptive_early_stopping.EarlyStoppingWithWarmup
       init_args:
         warmup_iters: 100
-
-data: ../_base_/data/mmseg_base.yaml

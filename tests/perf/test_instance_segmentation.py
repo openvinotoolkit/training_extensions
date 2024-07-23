@@ -110,7 +110,6 @@ class TestPerfInstanceSegmentation(PerfTestBase):
         fxt_model: Benchmark.Model,
         fxt_dataset: Benchmark.Dataset,
         fxt_benchmark: Benchmark,
-        fxt_resume_from: Path | None,
         fxt_accelerator: str,
     ):
         if fxt_model.name == "maskrcnn_r50" and fxt_accelerator == "xpu":
@@ -121,7 +120,6 @@ class TestPerfInstanceSegmentation(PerfTestBase):
             dataset=fxt_dataset,
             benchmark=fxt_benchmark,
             criteria=self.BENCHMARK_CRITERIA,
-            resume_from=fxt_resume_from,
         )
 
 
@@ -133,6 +131,7 @@ class TestPerfTilingInstanceSegmentation(PerfTestBase):
         Benchmark.Model(task="instance_segmentation", name="maskrcnn_r50_tile", category="accuracy"),
         Benchmark.Model(task="instance_segmentation", name="maskrcnn_swint_tile", category="other"),
         Benchmark.Model(task="instance_segmentation", name="rtmdet_inst_tiny_tile", category="other"),
+        Benchmark.Model(task="instance_segmentation", name="maskrcnn_r50_tv_tile", category="other"),
     ]
 
     DATASET_TEST_CASES = [
@@ -206,7 +205,6 @@ class TestPerfTilingInstanceSegmentation(PerfTestBase):
         fxt_model: Benchmark.Model,
         fxt_dataset: Benchmark.Dataset,
         fxt_benchmark: Benchmark,
-        fxt_resume_from: Path | None,
         fxt_accelerator: str,
     ):
         if fxt_model.name == "maskrcnn_r50" and fxt_accelerator == "xpu":
@@ -217,5 +215,4 @@ class TestPerfTilingInstanceSegmentation(PerfTestBase):
             dataset=fxt_dataset,
             benchmark=fxt_benchmark,
             criteria=self.BENCHMARK_CRITERIA,
-            resume_from=fxt_resume_from,
         )

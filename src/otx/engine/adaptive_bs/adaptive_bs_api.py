@@ -51,7 +51,7 @@ def adapt_batch_size(
         raise RuntimeError(msg)
 
     engine.model.patch_optimizer_and_scheduler_for_hpo()
-    default_bs = engine.datamodule.config.train_subset.batch_size
+    default_bs = engine.datamodule.train_subset.batch_size
 
     if "ADAPTIVE_BS_FOR_DIST" in os.environ:  # main process of distributed training already executes adapt_batch_size
         new_batch_size = int(os.environ["ADAPTIVE_BS_FOR_DIST"])
@@ -63,9 +63,7 @@ def adapt_batch_size(
     bs_search_algo = BsSearchAlgo(
         train_func=train_func,
         default_bs=default_bs,
-        max_bs=(
-            len(engine.datamodule.subsets[engine.datamodule.config.train_subset.subset_name]) // engine.device.devices
-        ),
+        max_bs=(len(engine.datamodule.subsets[engine.datamodule.train_subset.subset_name]) // engine.device.devices),
     )
     if not_increase:
         new_batch_size = bs_search_algo.auto_decrease_batch_size()
@@ -103,7 +101,7 @@ def _train_model(bs: int, engine: Engine, callbacks: list[Callback] | Callback |
     if engine.device.devices != 1:  # TODO(Eunwoo): Need to change after device api is updated
         engine._cache.update(devices=1)  # noqa: SLF001
 
-    engine.datamodule.config.train_subset.batch_size = bs
+    engine.datamodule.train_subset.batch_size = bs
     engine.train(callbacks=_register_callback(callbacks), **train_args)
 
 
@@ -170,8 +168,8 @@ def _scale_batch_reset_params(trainer: Trainer, steps_per_trial: int) -> None:
 
 
 def _apply_new_batch_size(engine: Engine, new_batch_size: int) -> None:
-    origin_bs = engine.datamodule.config.train_subset.batch_size
+    origin_bs = engine.datamodule.train_subset.batch_size
     if new_batch_size == origin_bs:
         return
-    engine.datamodule.config.train_subset.batch_size = new_batch_size
+    engine.datamodule.train_subset.batch_size = new_batch_size
     engine.model.optimizer_callable.optimizer_kwargs["lr"] *= sqrt(new_batch_size / origin_bs)  # type: ignore[attr-defined]

@@ -26,7 +26,7 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
 ]
 dependencies = [
-    "datumaro==1.6.1",
+    "datumaro==1.7.0",
     "omegaconf==2.3.0",
     "rich==13.7.1",
     "jsonargparse==4.30.0",
@@ -79,10 +79,10 @@ xpu = [
     "oneccl_bind_pt==2.1.300+xpu",
     "lightning==2.2",
     "pytorchcv",
-    "timm",
+    "timm==1.0.3",
     "openvino==2024.0",
     "openvino-dev==2024.0",
-    "openvino-model-api==0.2.0",
+    "openvino-model-api==0.2.1",
     "onnx==1.16.1",
     "onnxconverter-common==1.14.0",
     "nncf==2.9.0",
@@ -93,14 +93,18 @@ base = [
     "torch==2.1.1",
     "lightning==2.2",
     "pytorchcv",
-    "timm",
+    "timm==1.0.3",
     "openvino==2024.0",
     "openvino-dev==2024.0",
-    "openvino-model-api==0.2.0",
+    "openvino-model-api==0.2.1",
     "onnx==1.16.1",
     "onnxconverter-common==1.14.0",
     "nncf==2.9.0",
     "anomalib[core]==1.1.0",
+]
+
+transformers = [
+    "transformers==4.42.3",
 ]
 
 mmlab = [
@@ -115,7 +119,7 @@ mmlab = [
 ]
 
 ci_tox = [
-    "tox==4.14.1",
+    "tox==4.15.0",
 ]
 
 ci_publish = [
@@ -123,12 +127,12 @@ ci_publish = [
 ]
 
 ci_benchmark = [
-    "pandas==2.2.2",
+    "pandas<2.2",       # To avoid conflict with nncf==2.9.0
     "matplotlib==3.8.4",
     "nbconvert==7.16.3",
     "ipython==8.23.0",
     "ipykernel==6.29.4",
-    "openpyxl==3.1.2",
+    "openpyxl==3.1.4",
 ]
 
 [project.scripts]
@@ -318,7 +322,6 @@ exclude = [
     "src/otx/algo/**/mmdeploy/",
 
     # it will be cleaned up later
-    "src/otx/algo/classification/backbones/*",
     "for_developers/helpers.py",
 
     # Ruff complains it but don't know how to fix since it literally showed no useful logs.

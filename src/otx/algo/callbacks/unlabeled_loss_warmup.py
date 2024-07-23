@@ -36,7 +36,12 @@ class UnlabeledLossWarmUpCallback(Callback):
         """Calculate the unlabeled warm-up loss coefficient before training iteration."""
         if self.unlabeled_coef < 1.0:
             if self.total_steps == 0:
-                self.total_steps = int(trainer.max_epochs * len(trainer.train_dataloader) * self.warmup_steps_ratio)
+                dataloader = (
+                    trainer.train_dataloader["labeled"]
+                    if isinstance(trainer.train_dataloader, dict)
+                    else trainer.train_dataloader
+                )
+                self.total_steps = int(trainer.max_epochs * len(dataloader) * self.warmup_steps_ratio)
             self.unlabeled_coef = 0.5 * (
                 1 - math.cos(min(math.pi, (2 * math.pi * self.current_step) / self.total_steps))
             )

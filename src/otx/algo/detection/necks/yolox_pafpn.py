@@ -1,7 +1,10 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 # Copyright (c) OpenMMLab. All rights reserved.
-"""Implementations copied from mmdet.models.necks.yolox_pafpn.py."""
+"""Implementation modified from mmdet.models.necks.yolox_pafpn.py.
+
+Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/necks/yolox_pafpn.py
+"""
 
 from __future__ import annotations
 
@@ -50,24 +53,17 @@ class YOLOXPAFPN(BaseModule):
         act_cfg: dict | None = None,
         init_cfg: dict | list[dict] | None = None,
     ):
-        if upsample_cfg is None:
-            upsample_cfg = {"scale_factor": 2, "mode": "nearest"}
-
-        if norm_cfg is None:
-            norm_cfg = {"type": "BN", "momentum": 0.03, "eps": 0.001}
-
-        if act_cfg is None:
-            act_cfg = {"type": "Swish"}
-
-        if init_cfg is None:
-            init_cfg = {
-                "type": "Kaiming",
-                "layer": "Conv2d",
-                "a": math.sqrt(5),
-                "distribution": "uniform",
-                "mode": "fan_in",
-                "nonlinearity": "leaky_relu",
-            }
+        upsample_cfg = upsample_cfg or {"scale_factor": 2, "mode": "nearest"}
+        norm_cfg = norm_cfg or {"type": "BN", "momentum": 0.03, "eps": 0.001}
+        act_cfg = act_cfg or {"type": "Swish"}
+        init_cfg = init_cfg or {
+            "type": "Kaiming",
+            "layer": "Conv2d",
+            "a": math.sqrt(5),
+            "distribution": "uniform",
+            "mode": "fan_in",
+            "nonlinearity": "leaky_relu",
+        }
 
         super().__init__(init_cfg=init_cfg)
 

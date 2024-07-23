@@ -1,4 +1,4 @@
-# Copyright (C) 2023 Intel Corporation
+# Copyright (C) 2023-2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 """Class definition for detection model entity used in OTX."""
@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import logging as log
 import types
+from abc import abstractmethod
 from contextlib import contextmanager
 from typing import TYPE_CHECKING, Any, Callable, Iterator, Literal
 
@@ -15,10 +16,12 @@ from model_api.tilers import DetectionTiler
 from torchmetrics import Metric, MetricCollection
 from torchvision import tv_tensors
 
+from otx.algo.utils.mmengine_utils import InstanceData, load_checkpoint
 from otx.core.config.data import TileConfig
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.detection import DetBatchDataEntity, DetBatchPredEntity
 from otx.core.data.entity.tile import OTXTileBatchDataEntity
+from otx.core.data.entity.utils import stack_batch
 from otx.core.metrics import MetricCallable, MetricInput
 from otx.core.metrics.fmeasure import FMeasure, MeanAveragePrecisionFMeasureCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable, OTXModel, OVModel
@@ -42,23 +45,183 @@ if TYPE_CHECKING:
 class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity]):
     """Base class for the detection models used in OTX."""
 
-    def __init__(
+    def test_step(self, batch: DetBatchDataEntity, batch_idx: int) -> None:
+        """Perform a single test step on a batch of data from the test set.
+
+        :param batch: A batch of data (a tuple) containing the input tensor of images and target
+            labels.
+        :param batch_idx: The index of the current batch.
+        """
+        preds = self._filter_outputs_by_threshold(self.forward(inputs=batch))  # type: ignore[arg-type]
+
+        if isinstance(preds, OTXBatchLossEntity):
+            raise TypeError(preds)
+
+        metric_inputs = self._convert_pred_entity_to_compute_metric(preds, batch)
+
+        if isinstance(metric_inputs, dict):
+            self.metric.update(**metric_inputs)
+            return
+
+        if isinstance(metric_inputs, list) and all(isinstance(inp, dict) for inp in metric_inputs):
+            for inp in metric_inputs:
+                self.metric.update(**inp)
+            return
+
+        raise TypeError(metric_inputs)
+
+    def predict_step(
         self,
-        label_info: LabelInfoTypes,
-        optimizer: OptimizerCallable = DefaultOptimizerCallable,
-        scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
-        metric: MetricCallable = MeanAveragePrecisionFMeasureCallable,
-        torch_compile: bool = False,
-        tile_config: TileConfig = TileConfig(enable_tiler=False),
-    ) -> None:
-        super().__init__(
-            label_info=label_info,
-            optimizer=optimizer,
-            scheduler=scheduler,
-            metric=metric,
-            torch_compile=torch_compile,
-            tile_config=tile_config,
+        batch: DetBatchDataEntity,
+        batch_idx: int,
+        dataloader_idx: int = 0,
+    ) -> DetBatchPredEntity:
+        """Step function called during PyTorch Lightning Trainer's predict."""
+        if self.explain_mode:
+            return self._filter_outputs_by_threshold(self.forward_explain(inputs=batch))
+
+        outputs = self._filter_outputs_by_threshold(self.forward(inputs=batch))  # type: ignore[arg-type]
+
+        if isinstance(outputs, OTXBatchLossEntity):
+            raise TypeError(outputs)
+
+        return outputs
+
+    def _filter_outputs_by_threshold(self, outputs: DetBatchPredEntity) -> DetBatchPredEntity:
+        scores = []
+        bboxes = []
+        labels = []
+        for score, bbox, label in zip(outputs.scores, outputs.bboxes, outputs.labels):
+            filtered_idx = torch.where(score > self.best_confidence_threshold)
+            scores.append(score[filtered_idx])
+            bboxes.append(tv_tensors.wrap(bbox[filtered_idx], like=bbox))
+            labels.append(label[filtered_idx])
+
+        outputs.scores = scores
+        outputs.bboxes = bboxes
+        outputs.labels = labels
+        return outputs
+
+    @abstractmethod
+    def _build_model(self, num_classes: int) -> nn.Module:
+        raise NotImplementedError
+
+    def _create_model(self) -> nn.Module:
+        detector = self._build_model(num_classes=self.label_info.num_classes)
+        detector.init_weights()
+        self.classification_layers = self.get_classification_layers(prefix="model.")
+        if self.load_from is not None:
+            load_checkpoint(detector, self.load_from, map_location="cpu")
+        return detector
+
+    def _customize_inputs(
+        self,
+        entity: DetBatchDataEntity,
+        pad_size_divisor: int = 32,
+        pad_value: int = 0,
+    ) -> dict[str, Any]:
+        if isinstance(entity.images, list):
+            entity.images, entity.imgs_info = stack_batch(
+                entity.images,
+                entity.imgs_info,
+                pad_size_divisor=pad_size_divisor,
+                pad_value=pad_value,
+            )
+        inputs: dict[str, Any] = {}
+
+        inputs["entity"] = entity
+        inputs["mode"] = "loss" if self.training else "predict"
+
+        return inputs
+
+    def _customize_outputs(
+        self,
+        outputs: list[InstanceData] | dict,
+        inputs: DetBatchDataEntity,
+    ) -> DetBatchPredEntity | OTXBatchLossEntity:
+        if self.training:
+            if not isinstance(outputs, dict):
+                raise TypeError(outputs)
+
+            losses = OTXBatchLossEntity()
+            for k, v in outputs.items():
+                if isinstance(v, list):
+                    losses[k] = sum(v)
+                elif isinstance(v, torch.Tensor):
+                    losses[k] = v
+                else:
+                    msg = f"Loss output should be list or torch.tensor but got {type(v)}"
+                    raise TypeError(msg)
+            return losses
+
+        scores = []
+        bboxes = []
+        labels = []
+        predictions = outputs["predictions"] if isinstance(outputs, dict) else outputs
+        for img_info, prediction in zip(inputs.imgs_info, predictions):
+            if not isinstance(prediction, InstanceData):
+                raise TypeError(prediction)
+
+            scores.append(prediction.scores)  # type: ignore[attr-defined]
+            bboxes.append(
+                tv_tensors.BoundingBoxes(
+                    prediction.bboxes,  # type: ignore[attr-defined]
+                    format="XYXY",
+                    canvas_size=img_info.ori_shape,
+                ),
+            )
+            labels.append(prediction.labels)  # type: ignore[attr-defined]
+
+        if self.explain_mode:
+            if not isinstance(outputs, dict):
+                msg = f"Model output should be a dict, but got {type(outputs)}."
+                raise ValueError(msg)
+
+            if "feature_vector" not in outputs:
+                msg = "No feature vector in the model output."
+                raise ValueError(msg)
+
+            if "saliency_map" not in outputs:
+                msg = "No saliency maps in the model output."
+                raise ValueError(msg)
+
+            saliency_map = outputs["saliency_map"].detach().cpu().numpy()
+            feature_vector = outputs["feature_vector"].detach().cpu().numpy()
+
+            return DetBatchPredEntity(
+                batch_size=len(predictions),
+                images=inputs.images,
+                imgs_info=inputs.imgs_info,
+                scores=scores,
+                bboxes=bboxes,
+                labels=labels,
+                saliency_map=saliency_map,
+                feature_vector=feature_vector,
+            )
+
+        return DetBatchPredEntity(
+            batch_size=len(predictions),
+            images=inputs.images,
+            imgs_info=inputs.imgs_info,
+            scores=scores,
+            bboxes=bboxes,
+            labels=labels,
         )
+
+    def get_classification_layers(self, prefix: str = "model.") -> dict[str, dict[str, int]]:
+        """Get final classification layer information for incremental learning case."""
+        sample_model_dict = self._build_model(num_classes=5).state_dict()
+        incremental_model_dict = self._build_model(num_classes=6).state_dict()
+
+        classification_layers = {}
+        for key in sample_model_dict:
+            if sample_model_dict[key].shape != incremental_model_dict[key].shape:
+                sample_model_dim = sample_model_dict[key].shape[0]
+                incremental_model_dim = incremental_model_dict[key].shape[0]
+                stride = incremental_model_dim - sample_model_dim
+                num_extra_classes = 6 * sample_model_dim - 5 * incremental_model_dim
+                classification_layers[prefix + key] = {"stride": stride, "num_extra_classes": num_extra_classes}
+        return classification_layers
 
     def forward_tiles(self, inputs: OTXTileBatchDataEntity[DetBatchDataEntity]) -> DetBatchPredEntity:
         """Unpack detection tiles.
@@ -98,6 +261,18 @@ class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity]):
             pred_entity.feature_vector = [pred_entity.feature_vector for pred_entity in pred_entities]
 
         return pred_entity
+
+    def forward_for_tracing(self, inputs: torch.Tensor) -> list[InstanceData]:
+        """Forward function for export."""
+        shape = (int(inputs.shape[2]), int(inputs.shape[3]))
+        meta_info = {
+            "pad_shape": shape,
+            "batch_input_shape": shape,
+            "img_shape": shape,
+            "scale_factor": (1.0, 1.0),
+        }
+        meta_info_list = [meta_info] * len(inputs)
+        return self.model.export(inputs, meta_info_list, explain_mode=self.explain_mode)
 
     @property
     def _export_parameters(self) -> TaskLevelExportParameters:
@@ -267,7 +442,7 @@ class ExplainableOTXDetModel(OTXDetectionModel):
 
     def get_explain_fn(self) -> Callable:
         """Returns explain function."""
-        from otx.algo.detection.heads.ssd_head import SSDHead
+        from otx.algo.detection.heads import SSDHead
         from otx.algo.explain.explain_algo import DetClassProbabilityMap
 
         # SSD-like heads also have background class
@@ -380,7 +555,8 @@ class MMDetCompatibleModel(ExplainableOTXDetModel):
             },
         ]
 
-    def _customize_inputs(self, entity: DetBatchDataEntity) -> dict[str, Any]:
+    def _customize_inputs(self, entity: DetBatchDataEntity) -> dict[str, Any]:  # type: ignore[override]
+        # TODO (sungchul): update input arguments
         from mmdet.structures import DetDataSample
         from mmengine.structures import InstanceData
 
@@ -417,7 +593,7 @@ class MMDetCompatibleModel(ExplainableOTXDetModel):
 
     def _customize_outputs(
         self,
-        outputs: dict[str, Any],
+        outputs: dict[str, Any],  # type: ignore[override]
         inputs: DetBatchDataEntity,
     ) -> DetBatchPredEntity | OTXBatchLossEntity:
         from mmdet.structures import DetDataSample

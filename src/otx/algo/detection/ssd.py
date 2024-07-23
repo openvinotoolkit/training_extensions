@@ -1,7 +1,11 @@
-# Copyright (C) 2023 Intel Corporation
+# Copyright (C) 2023-2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-#
-"""SSD object detector for the OTX detection."""
+# Copyright (c) OpenMMLab. All rights reserved.
+"""SSD object detector for the OTX detection.
+
+Implementation modified from mmdet.models.detectors.single_stage.
+Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/detectors/single_stage.py
+"""
 
 from __future__ import annotations
 
@@ -9,47 +13,33 @@ import logging
 from typing import TYPE_CHECKING, Any
 
 import numpy as np
-import torch
 from datumaro.components.annotation import Bbox
-from omegaconf import DictConfig
-from torch import nn
-from torchvision import tv_tensors
 
-from otx.algo.detection.backbones.pytorchcv_backbones import _build_model_including_pytorchcv
-from otx.algo.detection.heads.anchor_generator import SSDAnchorGeneratorClustered
-from otx.algo.detection.heads.delta_xywh_bbox_coder import DeltaXYWHBBoxCoder
-from otx.algo.detection.heads.max_iou_assigner import MaxIoUAssigner
-from otx.algo.detection.heads.ssd_head import SSDHead
+from otx.algo.common.backbones import build_model_including_pytorchcv
+from otx.algo.common.utils.assigners import MaxIoUAssigner
+from otx.algo.common.utils.coders import DeltaXYWHBBoxCoder
+from otx.algo.detection.heads import SSDHead
+from otx.algo.detection.utils.prior_generators import SSDAnchorGeneratorClustered
 from otx.algo.modules.base_module import BaseModule
-from otx.algo.utils.mmengine_utils import InstanceData, load_checkpoint
+from otx.algo.utils.mmengine_utils import InstanceData
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
-from otx.core.config.data import TileConfig
-from otx.core.data.entity.base import OTXBatchLossEntity
-from otx.core.data.entity.detection import DetBatchDataEntity, DetBatchPredEntity
-from otx.core.data.entity.utils import stack_batch
+from otx.core.data.entity.detection import DetBatchDataEntity
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter
-from otx.core.metrics.fmeasure import MeanAveragePrecisionFMeasureCallable
-from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
 from otx.core.model.detection import ExplainableOTXDetModel
-from otx.core.schedulers import LRSchedulerListCallable
-from otx.core.types.label import LabelInfoTypes
 
 if TYPE_CHECKING:
-    from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
-    from torch import Tensor
+    import torch
+    from torch import Tensor, nn
 
     from otx.core.data.dataset.base import OTXDataset
-    from otx.core.metrics import MetricCallable
 
 
 logger = logging.getLogger()
 
 
-# This class and its supporting functions below lightly adapted from the mmdet SingleStageDetector available at:
-# https://github.com/open-mmlab/mmdetection/blob/cfd5d3a985b0249de009b67d04f37263e11cdf3d/mmdet/models/detectors/single_stage.py
 class SingleStageDetector(BaseModule):
-    """Single stage detector implementation from mmdet."""
+    """Single stage detector implementation."""
 
     def __init__(
         self,
@@ -57,8 +47,8 @@ class SingleStageDetector(BaseModule):
         bbox_head: nn.Module,
         neck: nn.Module | None = None,
         train_cfg: dict | None = None,
-        test_cfg: DictConfig | None = None,
-        init_cfg: DictConfig | list[DictConfig] = None,
+        test_cfg: dict | None = None,
+        init_cfg: dict | list[dict] | None = None,
     ) -> None:
         super().__init__()
         self._is_init = False
@@ -302,37 +292,14 @@ class SingleStageDetector(BaseModule):
 class SSD(ExplainableOTXDetModel):
     """Detecion model class for SSD."""
 
-    def __init__(
-        self,
-        label_info: LabelInfoTypes,
-        optimizer: OptimizerCallable = DefaultOptimizerCallable,
-        scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
-        metric: MetricCallable = MeanAveragePrecisionFMeasureCallable,
-        torch_compile: bool = False,
-        tile_config: TileConfig = TileConfig(enable_tiler=False),
-    ) -> None:
-        self.load_from = (
-            "https://storage.openvinotoolkit.org/repositories/openvino_training_extensions"
-            "/models/object_detection/v2/mobilenet_v2-2s_ssd-992x736.pth"
-        )
-        super().__init__(
-            label_info=label_info,
-            optimizer=optimizer,
-            scheduler=scheduler,
-            metric=metric,
-            torch_compile=torch_compile,
-            tile_config=tile_config,
-        )
-        self.image_size = (1, 3, 864, 864)
-        self.tile_image_size = self.image_size
-
-    def _create_model(self) -> nn.Module:
-        detector = self._build_model(num_classes=self.label_info.num_classes)
-        detector.init_weights()
-        self.classification_layers = self.get_classification_layers(prefix="model.")
-        if self.load_from is not None:
-            load_checkpoint(detector, self.load_from, map_location="cpu")
-        return detector
+    load_from = (
+        "https://storage.openvinotoolkit.org/repositories/openvino_training_extensions"
+        "/models/object_detection/v2/mobilenet_v2-2s_ssd-992x736.pth"
+    )
+    image_size = (1, 3, 864, 864)
+    tile_image_size = (1, 3, 864, 864)
+    mean = (0.0, 0.0, 0.0)
+    std = (255.0, 255.0, 255.0)
 
     def _build_model(self, num_classes: int) -> SingleStageDetector:
         train_cfg = {
@@ -351,15 +318,13 @@ class SSD(ExplainableOTXDetModel):
             "use_giou": False,
             "use_focal": False,
         }
-        test_cfg = DictConfig(
-            {
-                "nms": {"type": "nms", "iou_threshold": 0.45},
-                "min_bbox_size": 0,
-                "score_thr": 0.02,
-                "max_per_img": 200,
-            },
-        )
-        backbone = _build_model_including_pytorchcv(
+        test_cfg = {
+            "nms": {"type": "nms", "iou_threshold": 0.45},
+            "min_bbox_size": 0,
+            "score_thr": 0.02,
+            "max_per_img": 200,
+        }
+        backbone = build_model_including_pytorchcv(
             cfg={
                 "type": "mobilenetv2_w1",
                 "out_indices": [4, 5],
@@ -392,91 +357,6 @@ class SSD(ExplainableOTXDetModel):
             test_cfg=test_cfg,
         )
         return SingleStageDetector(backbone, bbox_head, train_cfg=train_cfg, test_cfg=test_cfg)
-
-    def _customize_inputs(self, entity: DetBatchDataEntity) -> dict[str, Any]:
-        if isinstance(entity.images, list):
-            entity.images, entity.imgs_info = stack_batch(entity.images, entity.imgs_info, pad_size_divisor=32)
-        inputs: dict[str, Any] = {}
-
-        inputs["entity"] = entity
-        inputs["mode"] = "loss" if self.training else "predict"
-
-        return inputs
-
-    def _customize_outputs(
-        self,
-        outputs: list[InstanceData] | dict,
-        inputs: DetBatchDataEntity,
-    ) -> DetBatchPredEntity | OTXBatchLossEntity:
-        if self.training:
-            if not isinstance(outputs, dict):
-                raise TypeError(outputs)
-
-            losses = OTXBatchLossEntity()
-            for k, v in outputs.items():
-                if isinstance(v, list):
-                    losses[k] = sum(v)
-                elif isinstance(v, torch.Tensor):
-                    losses[k] = v
-                else:
-                    msg = f"Loss output should be list or torch.tensor but got {type(v)}"
-                    raise TypeError(msg)
-            return losses
-
-        scores = []
-        bboxes = []
-        labels = []
-        predictions = outputs["predictions"] if isinstance(outputs, dict) else outputs
-        for img_info, prediction in zip(inputs.imgs_info, predictions):
-            if not isinstance(prediction, InstanceData):
-                raise TypeError(prediction)
-
-            filtered_idx = torch.where(prediction.scores > self.best_confidence_threshold)  # type: ignore[attr-defined]
-            scores.append(prediction.scores[filtered_idx])  # type: ignore[attr-defined]
-            bboxes.append(
-                tv_tensors.BoundingBoxes(
-                    prediction.bboxes[filtered_idx],  # type: ignore[attr-defined]
-                    format="XYXY",
-                    canvas_size=img_info.ori_shape,
-                ),
-            )
-            labels.append(prediction.labels[filtered_idx])  # type: ignore[attr-defined]
-
-        if self.explain_mode:
-            if not isinstance(outputs, dict):
-                msg = f"Model output should be a dict, but got {type(outputs)}."
-                raise ValueError(msg)
-
-            if "feature_vector" not in outputs:
-                msg = "No feature vector in the model output."
-                raise ValueError(msg)
-
-            if "saliency_map" not in outputs:
-                msg = "No saliency maps in the model output."
-                raise ValueError(msg)
-
-            saliency_map = outputs["saliency_map"].detach().cpu().numpy()
-            feature_vector = outputs["feature_vector"].detach().cpu().numpy()
-
-            return DetBatchPredEntity(
-                batch_size=len(outputs),
-                images=inputs.images,
-                imgs_info=inputs.imgs_info,
-                scores=scores,
-                bboxes=bboxes,
-                labels=labels,
-                saliency_map=saliency_map,
-                feature_vector=feature_vector,
-            )
-
-        return DetBatchPredEntity(
-            batch_size=len(outputs),
-            images=inputs.images,
-            imgs_info=inputs.imgs_info,
-            scores=scores,
-            bboxes=bboxes,
-            labels=labels,
-        )
 
     def setup(self, stage: str) -> None:
         """Callback for setup OTX SSD Model.
@@ -574,15 +454,10 @@ class SSD(ExplainableOTXDetModel):
         heights = [height.tolist() for height in heights]
         return widths, heights
 
-    def get_classification_layers(
-        self,
-        prefix: str,
-    ) -> dict[str, dict[str, bool | int]]:
+    def get_classification_layers(self, prefix: str = "model.") -> dict[str, dict[str, bool | int]]:
         """Return classification layer names by comparing two different number of classes models.
 
         Args:
-            config (DictConfig): Config for building model.
-            model_registry (Registry): Registry for building model.
             prefix (str): Prefix of model param name.
                 Normally it is "model." since OTXModel set it's nn.Module model as self.model
 
@@ -647,14 +522,11 @@ class SSD(ExplainableOTXDetModel):
         """Creates OTXModelExporter object that can export the model."""
         if self.image_size is None:
             raise ValueError(self.image_size)
-
-        mean, std = (0.0, 0.0, 0.0), (255.0, 255.0, 255.0)
-
         return OTXNativeModelExporter(
             task_level_export_parameters=self._export_parameters,
             input_size=self.image_size,
-            mean=mean,
-            std=std,
+            mean=self.mean,
+            std=self.std,
             resize_mode="standard",
             pad_value=0,
             swap_rgb=False,
@@ -671,18 +543,6 @@ class SSD(ExplainableOTXDetModel):
             },
             output_names=["bboxes", "labels", "feature_vector", "saliency_map"] if self.explain_mode else None,
         )
-
-    def forward_for_tracing(self, inputs: Tensor) -> list[InstanceData]:
-        """Forward function for export."""
-        shape = (int(inputs.shape[2]), int(inputs.shape[3]))
-        meta_info = {
-            "pad_shape": shape,
-            "batch_input_shape": shape,
-            "img_shape": shape,
-            "scale_factor": (1.0, 1.0),
-        }
-        meta_info_list = [meta_info] * len(inputs)
-        return self.model.export(inputs, meta_info_list, explain_mode=self.explain_mode)
 
     def on_load_checkpoint(self, checkpoint: dict[str, Any]) -> None:
         """Callback on load checkpoint."""

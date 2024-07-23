@@ -6,11 +6,14 @@ from __future__ import annotations
 
 import types
 from copy import deepcopy
+from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, Generic
+from urllib.parse import urlparse
 
 import numpy as np
 import torch
 from torch import Tensor, nn
+from torch.hub import download_url_to_file
 
 from otx.algo.classification.backbones.vision_transformer import VIT_ARCH_TYPE, VisionTransformer
 from otx.algo.classification.classifier import ImageClassifier, SemiSLClassifier
@@ -22,9 +25,7 @@ from otx.algo.classification.heads import (
 )
 from otx.algo.classification.losses import AsymmetricAngularLossWithIgnore
 from otx.algo.classification.utils import get_classification_layers
-from otx.algo.classification.utils.embed import resize_pos_embed
 from otx.algo.explain.explain_algo import ViTReciproCAM, feature_vector_fn
-from otx.algo.utils.mmengine_utils import load_checkpoint_to_model, load_from_http
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.data.entity.base import OTXBatchLossEntity, T_OTXBatchDataEntity, T_OTXBatchPredEntity
 from otx.core.data.entity.classification import (
@@ -53,10 +54,21 @@ if TYPE_CHECKING:
 
     from otx.core.metrics import MetricCallable
 
-
-pretrained_root = "https://download.openmmlab.com/mmclassification/v0/"
+augreg_url = "https://storage.googleapis.com/vit_models/augreg/"
+dinov2_url = "https://dl.fbaipublicfiles.com/dinov2/"
 pretrained_urls = {
-    "deit-tiny": pretrained_root + "deit/deit-tiny_pt-4xb256_in1k_20220218-13b382a0.pth",
+    "vit-tiny": augreg_url
+    + "Ti_16-i21k-300ep-lr_0.001-aug_none-wd_0.03-do_0.0-sd_0.0--imagenet2012-steps_20k-lr_0.03-res_224.npz",
+    "vit-small": augreg_url
+    + "S_16-i21k-300ep-lr_0.001-aug_light1-wd_0.03-do_0.0-sd_0.0--imagenet2012-steps_20k-lr_0.03-res_224.npz",
+    "vit-base": augreg_url
+    + "B_16-i21k-300ep-lr_0.001-aug_medium1-wd_0.1-do_0.0-sd_0.0--imagenet2012-steps_20k-lr_0.01-res_224.npz",
+    "vit-large": augreg_url
+    + "L_16-i21k-300ep-lr_0.001-aug_medium1-wd_0.1-do_0.1-sd_0.1--imagenet2012-steps_20k-lr_0.01-res_224.npz",
+    "dinov2-small": dinov2_url + "dinov2_vits14/dinov2_vits14_reg4_pretrain.pth",
+    "dinov2-base": dinov2_url + "dinov2_vitb14/dinov2_vitb14_reg4_pretrain.pth",
+    "dinov2-large": dinov2_url + "dinov2_vitl14/dinov2_vitl14_reg4_pretrain.pth",
+    "dinov2-giant": dinov2_url + "dinov2_vitg14/dinov2_vitg14_reg4_pretrain.pth",
 }
 
 
@@ -70,19 +82,16 @@ class ForwardExplainMixInForViT(Generic[T_OTXBatchPredEntity, T_OTXBatchDataEnti
     @torch.no_grad()
     def head_forward_fn(self, x: torch.Tensor) -> torch.Tensor:
         """Performs model's neck and head forward."""
-        if not hasattr(self.model.backbone, "layers"):
-            raise ValueError
-        if not hasattr(self.model.backbone, "final_norm"):
+        if not hasattr(self.model.backbone, "blocks"):
             raise ValueError
 
         # Part of the last transformer_encoder block (except first LayerNorm)
-        target_layer = self.model.backbone.layers[-1]
+        target_layer = self.model.backbone.blocks[-1]
         x = x + target_layer.attn(x)
-        x = target_layer.ffn(target_layer.norm2(x), identity=x)
+        x = target_layer.mlp(target_layer.norm2(x))
 
         # Final LayerNorm and neck
-        if self.model.backbone.final_norm:
-            x = self.model.backbone.norm1(x)
+        x = self.model.backbone.norm(x)
         if self.model.neck is not None:
             x = self.model.neck(x)
 
@@ -104,43 +113,10 @@ class ForwardExplainMixInForViT(Generic[T_OTXBatchPredEntity, T_OTXBatchDataEnti
         """Forward func of the ImageClassifier instance, which located in is in OTXModel().model."""
         backbone = self.backbone
 
-        ### Start of backbone forward
-        batch_size = images.shape[0]
-        x, patch_resolution = backbone.patch_embed(images)
+        feat = backbone.forward(images, out_type="raw")[-1]
+        x = (feat[:, 0],)
 
-        if backbone.cls_token is not None:
-            cls_token = backbone.cls_token.expand(batch_size, -1, -1)
-            x = torch.cat((cls_token, x), dim=1)
-
-        x = x + resize_pos_embed(
-            backbone.pos_embed,
-            backbone.patch_resolution,
-            patch_resolution,
-            mode=backbone.interpolate_mode,
-            num_extra_tokens=backbone.num_extra_tokens,
-        )
-        x = backbone.drop_after_pos(x)
-
-        x = backbone.pre_norm(x)
-
-        outs = []
-        layernorm_feat = None
-        for i, layer in enumerate(backbone.layers):
-            if i == len(backbone.layers) - 1:
-                layernorm_feat = layer.norm1(x)
-
-            x = layer(x)
-
-            if i == len(backbone.layers) - 1 and backbone.final_norm:
-                x = backbone.ln1(x)
-
-            if i in backbone.out_indices:
-                outs.append(backbone._format_output(x, patch_resolution))  # noqa: SLF001
-
-        x = tuple(outs)
-        ### End of backbone forward
-
-        saliency_map = self.explain_fn(layernorm_feat)
+        saliency_map = self.explain_fn(feat)
 
         if self.neck is not None:
             x = self.neck(x)
@@ -243,7 +219,8 @@ class VisionTransformerForMulticlassCls(ForwardExplainMixInForViT, OTXMulticlass
     def __init__(
         self,
         label_info: LabelInfoTypes,
-        arch: VIT_ARCH_TYPE = "deit-tiny",
+        arch: VIT_ARCH_TYPE = "vit-tiny",
+        lora: bool = False,
         pretrained: bool = True,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
@@ -251,6 +228,7 @@ class VisionTransformerForMulticlassCls(ForwardExplainMixInForViT, OTXMulticlass
         torch_compile: bool = False,
     ) -> None:
         self.arch = arch
+        self.lora = lora
         self.pretrained = pretrained
         super().__init__(
             label_info=label_info,
@@ -262,6 +240,15 @@ class VisionTransformerForMulticlassCls(ForwardExplainMixInForViT, OTXMulticlass
 
     def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.") -> dict:
         """Load the previous OTX ckpt according to OTX2.0."""
+        for key in list(state_dict.keys()):
+            new_key = key.replace("patch_embed.projection", "patch_embed.proj")
+            new_key = new_key.replace("backbone.ln1", "backbone.norm")
+            new_key = new_key.replace("ffn.layers.0.0", "mlp.fc1")
+            new_key = new_key.replace("ffn.layers.1", "mlp.fc2")
+            new_key = new_key.replace("layers", "blocks")
+            new_key = new_key.replace("ln", "norm")
+            if new_key != key:
+                state_dict[new_key] = state_dict.pop(key)
         return OTXv1Helper.load_cls_effnet_b0_ckpt(state_dict, "multiclass", add_prefix)
 
     def _create_model(self) -> nn.Module:
@@ -278,8 +265,15 @@ class VisionTransformerForMulticlassCls(ForwardExplainMixInForViT, OTXMulticlass
         model.init_weights()
         if self.pretrained and self.arch in pretrained_urls:
             print(f"init weight - {pretrained_urls[self.arch]}")
-            checkpoint = load_from_http(pretrained_urls[self.arch], map_location="cpu")
-            load_checkpoint_to_model(model, checkpoint)
+            parts = urlparse(pretrained_urls[self.arch])
+            filename = Path(parts.path).name
+
+            cache_dir = Path.home() / ".cache" / "torch" / "hub" / "checkpoints"
+            cache_file = cache_dir / filename
+            if not Path.exists(cache_file):
+                download_url_to_file(pretrained_urls[self.arch], cache_file, "", progress=True)
+            model.backbone.load_pretrained(checkpoint_path=cache_file)
+
         return model
 
     def _build_model(self, num_classes: int) -> nn.Module:
@@ -287,12 +281,13 @@ class VisionTransformerForMulticlassCls(ForwardExplainMixInForViT, OTXMulticlass
             {"std": 0.2, "layer": "Linear", "type": "TruncNormal"},
             {"bias": 0.0, "val": 1.0, "layer": "LayerNorm", "type": "Constant"},
         ]
+        vit_backbone = VisionTransformer(arch=self.arch, img_size=224, lora=self.lora)
         return ImageClassifier(
-            backbone=VisionTransformer(arch=self.arch, img_size=224, patch_size=16),
+            backbone=vit_backbone,
             neck=None,
             head=VisionTransformerClsHead(
                 num_classes=num_classes,
-                in_channels=192,
+                in_channels=vit_backbone.embed_dim,
                 topk=(1, 5) if num_classes >= 5 else (1,),
                 loss=nn.CrossEntropyLoss(reduction="none"),
             ),
@@ -378,12 +373,13 @@ class VisionTransformerForMulticlassClsSemiSL(VisionTransformerForMulticlassCls)
             {"std": 0.2, "layer": "Linear", "type": "TruncNormal"},
             {"bias": 0.0, "val": 1.0, "layer": "LayerNorm", "type": "Constant"},
         ]
+        vit_backbone = VisionTransformer(arch=self.arch, img_size=224)
         return SemiSLClassifier(
-            backbone=VisionTransformer(arch=self.arch, img_size=224, patch_size=16),
+            backbone=vit_backbone,
             neck=None,
             head=OTXSemiSLVisionTransformerClsHead(
                 num_classes=num_classes,
-                in_channels=192,
+                in_channels=vit_backbone.embed_dim,
                 loss=nn.CrossEntropyLoss(reduction="none"),
             ),
             init_cfg=init_cfg,
@@ -460,7 +456,8 @@ class VisionTransformerForMultilabelCls(ForwardExplainMixInForViT, OTXMultilabel
     def __init__(
         self,
         label_info: LabelInfoTypes,
-        arch: VIT_ARCH_TYPE = "deit-tiny",
+        arch: VIT_ARCH_TYPE = "vit-tiny",
+        lora: bool = False,
         pretrained: bool = True,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
@@ -468,6 +465,7 @@ class VisionTransformerForMultilabelCls(ForwardExplainMixInForViT, OTXMultilabel
         torch_compile: bool = False,
     ) -> None:
         self.arch = arch
+        self.lora = lora
         self.pretrained = pretrained
 
         super().__init__(
@@ -480,6 +478,15 @@ class VisionTransformerForMultilabelCls(ForwardExplainMixInForViT, OTXMultilabel
 
     def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.") -> dict:
         """Load the previous OTX ckpt according to OTX2.0."""
+        for key in list(state_dict.keys()):
+            new_key = key.replace("patch_embed.projection", "patch_embed.proj")
+            new_key = new_key.replace("backbone.ln1", "backbone.norm")
+            new_key = new_key.replace("ffn.layers.0.0", "mlp.fc1")
+            new_key = new_key.replace("ffn.layers.1", "mlp.fc2")
+            new_key = new_key.replace("layers", "blocks")
+            new_key = new_key.replace("ln", "norm")
+            if new_key != key:
+                state_dict[new_key] = state_dict.pop(key)
         return OTXv1Helper.load_cls_effnet_b0_ckpt(state_dict, "multiclass", add_prefix)
 
     def _create_model(self) -> nn.Module:
@@ -496,8 +503,14 @@ class VisionTransformerForMultilabelCls(ForwardExplainMixInForViT, OTXMultilabel
         model.init_weights()
         if self.pretrained and self.arch in pretrained_urls:
             print(f"init weight - {pretrained_urls[self.arch]}")
-            checkpoint = load_from_http(pretrained_urls[self.arch], map_location="cpu")
-            load_checkpoint_to_model(model, checkpoint)
+            parts = urlparse(pretrained_urls[self.arch])
+            filename = Path(parts.path).name
+
+            cache_dir = Path.home() / ".cache" / "torch" / "hub" / "checkpoints"
+            cache_file = cache_dir / filename
+            if not Path.exists(cache_file):
+                download_url_to_file(pretrained_urls[self.arch], cache_file, "", progress=True)
+            model.backbone.load_pretrained(checkpoint_path=cache_file)
         return model
 
     def _build_model(self, num_classes: int) -> nn.Module:
@@ -505,12 +518,13 @@ class VisionTransformerForMultilabelCls(ForwardExplainMixInForViT, OTXMultilabel
             {"std": 0.2, "layer": "Linear", "type": "TruncNormal"},
             {"bias": 0.0, "val": 1.0, "layer": "LayerNorm", "type": "Constant"},
         ]
+        vit_backbone = VisionTransformer(arch=self.arch, img_size=224, lora=self.lora)
         return ImageClassifier(
-            backbone=VisionTransformer(arch=self.arch, img_size=224, patch_size=16),
+            backbone=vit_backbone,
             neck=None,
             head=MultiLabelLinearClsHead(
                 num_classes=num_classes,
-                in_channels=192,
+                in_channels=vit_backbone.embed_dim,
                 loss=AsymmetricAngularLossWithIgnore(gamma_pos=0.0, gamma_neg=1.0, reduction="sum"),
             ),
             init_cfg=init_cfg,
@@ -589,7 +603,8 @@ class VisionTransformerForHLabelCls(ForwardExplainMixInForViT, OTXHlabelClsModel
     def __init__(
         self,
         label_info: HLabelInfo,
-        arch: VIT_ARCH_TYPE = "deit-tiny",
+        arch: VIT_ARCH_TYPE = "vit-tiny",
+        lora: bool = False,
         pretrained: bool = True,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
@@ -597,6 +612,7 @@ class VisionTransformerForHLabelCls(ForwardExplainMixInForViT, OTXHlabelClsModel
         torch_compile: bool = False,
     ) -> None:
         self.arch = arch
+        self.lora = lora
         self.pretrained = pretrained
 
         super().__init__(
@@ -609,6 +625,15 @@ class VisionTransformerForHLabelCls(ForwardExplainMixInForViT, OTXHlabelClsModel
 
     def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.") -> dict:
         """Load the previous OTX ckpt according to OTX2.0."""
+        for key in list(state_dict.keys()):
+            new_key = key.replace("patch_embed.projection", "patch_embed.proj")
+            new_key = new_key.replace("backbone.ln1", "backbone.norm")
+            new_key = new_key.replace("ffn.layers.0.0", "mlp.fc1")
+            new_key = new_key.replace("ffn.layers.1", "mlp.fc2")
+            new_key = new_key.replace("layers", "blocks")
+            new_key = new_key.replace("ln", "norm")
+            if new_key != key:
+                state_dict[new_key] = state_dict.pop(key)
         return OTXv1Helper.load_cls_effnet_b0_ckpt(state_dict, "multiclass", add_prefix)
 
     def _create_model(self) -> nn.Module:
@@ -628,8 +653,14 @@ class VisionTransformerForHLabelCls(ForwardExplainMixInForViT, OTXHlabelClsModel
         model.init_weights()
         if self.pretrained and self.arch in pretrained_urls:
             print(f"init weight - {pretrained_urls[self.arch]}")
-            checkpoint = load_from_http(pretrained_urls[self.arch], map_location="cpu")
-            load_checkpoint_to_model(model, checkpoint)
+            parts = urlparse(pretrained_urls[self.arch])
+            filename = Path(parts.path).name
+
+            cache_dir = Path.home() / ".cache" / "torch" / "hub" / "checkpoints"
+            cache_file = cache_dir / filename
+            if not Path.exists(cache_file):
+                download_url_to_file(pretrained_urls[self.arch], cache_file, "", progress=True)
+            model.backbone.load_pretrained(checkpoint_path=cache_file)
         return model
 
     def _build_model(self, head_config: dict) -> nn.Module:
@@ -639,11 +670,12 @@ class VisionTransformerForHLabelCls(ForwardExplainMixInForViT, OTXHlabelClsModel
             {"std": 0.2, "layer": "Linear", "type": "TruncNormal"},
             {"bias": 0.0, "val": 1.0, "layer": "LayerNorm", "type": "Constant"},
         ]
+        vit_backbone = VisionTransformer(arch=self.arch, img_size=224, lora=self.lora)
         return ImageClassifier(
-            backbone=VisionTransformer(arch=self.arch, img_size=224, patch_size=16),
+            backbone=vit_backbone,
             neck=None,
             head=HierarchicalLinearClsHead(
-                in_channels=192,
+                in_channels=vit_backbone.embed_dim,
                 multiclass_loss=nn.CrossEntropyLoss(),
                 multilabel_loss=AsymmetricAngularLossWithIgnore(gamma_pos=0.0, gamma_neg=1.0, reduction="sum"),
                 **head_config,

@@ -85,7 +85,6 @@ class TestPerfSemanticSegmentation(PerfTestBase):
         fxt_model: Benchmark.Model,
         fxt_dataset: Benchmark.Dataset,
         fxt_benchmark: Benchmark,
-        fxt_resume_from: Path | None,
         fxt_accelerator: str,
     ):
         if fxt_model.name == "dino_v2" and fxt_accelerator == "xpu":
@@ -96,5 +95,4 @@ class TestPerfSemanticSegmentation(PerfTestBase):
             dataset=fxt_dataset,
             benchmark=fxt_benchmark,
             criteria=self.BENCHMARK_CRITERIA,
-            resume_from=fxt_resume_from,
         )

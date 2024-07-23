@@ -44,7 +44,7 @@ def test_auto_configuration(
         device=fxt_accelerator,
     )
     if task.lower() == "zero_shot_visual_prompting":
-        engine.model.infer_reference_info_root = Path()
+        engine.model.infer_reference_info_root = Path(tmp_path_train)
         # update litmodule.hparams to reflect changed hparams
         engine.model.hparams.update({"infer_reference_info_root": str(engine.model.infer_reference_info_root)})
 
@@ -59,7 +59,7 @@ def test_auto_configuration(
     from otx.cli.utils.jsonargparse import get_configuration
 
     default_config = get_configuration(DEFAULT_CONFIG_PER_TASK[task])
-    default_config["data"]["config"]["data_root"] = data_root
+    default_config["data"]["data_root"] = data_root
     num_classes = engine.datamodule.label_info.num_classes
 
     default_config["model"]["init_args"]["num_classes"] = num_classes

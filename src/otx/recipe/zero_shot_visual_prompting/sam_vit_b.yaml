@@ -3,18 +3,18 @@ model:
   init_args:
     backbone: vit_b
     label_info: 0
-    freeze_image_encoder: True
-    freeze_prompt_encoder: True
-    freeze_mask_decoder: True
+    freeze_image_encoder: true
+    freeze_prompt_encoder: true
+    freeze_mask_decoder: true
     default_threshold_reference: 0.3
     default_threshold_target: 0.65
-    save_outputs: True
+    save_outputs: true
     reference_info_dir: reference_infos
-    infer_reference_info_root: ../.latest/train # set absolute path for using reference_info saved in other location
+    infer_reference_info_root: ../.latest/train
     # options
-    use_stability_score: False
-    return_single_mask: False
-    return_extra_metrics: False
+    use_stability_score: false
+    return_single_mask: false
+    return_extra_metrics: false
     stability_score_offset: 1.
 
 engine:
@@ -23,23 +23,7 @@ engine:
 
 callback_monitor: step
 
-data: ../_base_/data/torchvision_base.yaml
+data: ../_base_/data/zero_shot_visual_prompting.yaml
 overrides:
   max_epochs: 1
   limit_val_batches: 0
-  data:
-    task: ZERO_SHOT_VISUAL_PROMPTING
-    config:
-      data_format: coco_instances
-      vpm_config:
-        use_bbox: True
-        use_point: False
-      train_subset:
-        batch_size: 1
-        num_workers: 4
-      val_subset:
-        batch_size: 1
-        num_workers: 4
-      test_subset:
-        batch_size: 1
-        num_workers: 4

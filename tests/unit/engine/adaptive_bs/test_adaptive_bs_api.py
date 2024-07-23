@@ -39,8 +39,8 @@ def default_lr() -> float:
 @pytest.fixture()
 def mock_engine(default_bs: int, train_set_size: int, default_lr: float) -> MagicMock:
     engine = MagicMock()
-    engine.datamodule.config.train_subset.batch_size = default_bs
-    engine.datamodule.config.train_subset.subset_name = "train"
+    engine.datamodule.train_subset.batch_size = default_bs
+    engine.datamodule.train_subset.subset_name = "train"
     engine.datamodule.subsets = {"train": range(train_set_size)}
     engine.device.devices = 1
     engine._cache = {"devices": 1}
@@ -72,7 +72,7 @@ def train_args() -> dict[str, Any]:
 
 
 def get_bs(engine) -> int:
-    return engine.datamodule.config.train_subset.batch_size
+    return engine.datamodule.train_subset.batch_size
 
 
 def get_lr(engine) -> float:

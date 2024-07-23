@@ -3,6 +3,7 @@ model:
   init_args:
     backbone: efficientnet_b3
     label_info: 1000
+    task: MULTI_CLASS_CLS
 
     optimizer:
       class_path: torch.optim.SGD
@@ -26,85 +27,92 @@ callback_monitor: val/accuracy
 data: ../../_base_/data/torchvision_base.yaml
 
 overrides:
+  reset:
+    - data.train_subset.transforms
+    - data.val_subset.transforms
+    - data.test_subset.transforms
+
   max_epochs: 90
   callbacks:
     - class_path: otx.algo.callbacks.adaptive_early_stopping.EarlyStoppingWithWarmup
       init_args:
         patience: 3
+
   data:
-    config:
-      train_subset:
-        batch_size: 64
-        transforms:
-          - class_path: torchvision.transforms.v2.RandomResizedCrop
-            init_args:
-              size:
-                - 224
-                - 224
-              antialias: True
-          - class_path: torchvision.transforms.v2.RandomHorizontalFlip
-            init_args:
-              p: 0.5
-          - class_path: torchvision.transforms.v2.ToImage
-          - class_path: torchvision.transforms.v2.ToDtype
-            init_args:
-              dtype: ${as_torch_dtype:torch.float32}
-              scale: True
-          - class_path: torchvision.transforms.v2.Normalize
-            init_args:
-              mean:
-                - 0.485
-                - 0.456
-                - 0.406
-              std:
-                - 0.229
-                - 0.224
-                - 0.225
-        sampler:
-          class_path: otx.algo.samplers.balanced_sampler.BalancedSampler
-      val_subset:
-        batch_size: 64
-        transforms:
-          - class_path: torchvision.transforms.v2.Resize
-            init_args:
-              size:
-                - 224
-                - 224
-          - class_path: torchvision.transforms.v2.ToImage
-          - class_path: torchvision.transforms.v2.ToDtype
-            init_args:
-              dtype: ${as_torch_dtype:torch.float32}
-              scale: True
-          - class_path: torchvision.transforms.v2.Normalize
-            init_args:
-              mean:
-                - 0.485
-                - 0.456
-                - 0.406
-              std:
-                - 0.229
-                - 0.224
-                - 0.225
-      test_subset:
-        batch_size: 64
-        transforms:
-          - class_path: torchvision.transforms.v2.Resize
-            init_args:
-              size:
-                - 224
-                - 224
-          - class_path: torchvision.transforms.v2.ToImage
-          - class_path: torchvision.transforms.v2.ToDtype
-            init_args:
-              dtype: ${as_torch_dtype:torch.float32}
-              scale: True
-          - class_path: torchvision.transforms.v2.Normalize
-            init_args:
-              mean:
-                - 0.485
-                - 0.456
-                - 0.406
-              std:
-                - 0.229
-                - 0.224
-                - 0.225
+    train_subset:
+      batch_size: 64
+      transforms:
+        - class_path: torchvision.transforms.v2.RandomResizedCrop
+          init_args:
+            size:
+              - 224
+              - 224
+            antialias: true
+        - class_path: torchvision.transforms.v2.RandomHorizontalFlip
+          init_args:
+            p: 0.5
+        - class_path: torchvision.transforms.v2.ToImage
+        - class_path: torchvision.transforms.v2.ToDtype
+          init_args:
+            dtype: ${as_torch_dtype:torch.float32}
+            scale: true
+        - class_path: torchvision.transforms.v2.Normalize
+          init_args:
+            mean:
+              - 0.485
+              - 0.456
+              - 0.406
+            std:
+              - 0.229
+              - 0.224
+              - 0.225
+      sampler:
+        class_path: otx.algo.samplers.balanced_sampler.BalancedSampler
+
+    val_subset:
+      batch_size: 64
+      transforms:
+        - class_path: torchvision.transforms.v2.Resize
+          init_args:
+            size:
+              - 224
+              - 224
+        - class_path: torchvision.transforms.v2.ToImage
+        - class_path: torchvision.transforms.v2.ToDtype
+          init_args:
+            dtype: ${as_torch_dtype:torch.float32}
+            scale: true
+        - class_path: torchvision.transforms.v2.Normalize
+          init_args:
+            mean:
+              - 0.485
+              - 0.456
+              - 0.406
+            std:
+              - 0.229
+              - 0.224
+              - 0.225
+
+    test_subset:
+      batch_size: 64
+      transforms:
+        - class_path: torchvision.transforms.v2.Resize
+          init_args:
+            size:
+              - 224
+              - 224
+        - class_path: torchvision.transforms.v2.ToImage
+        - class_path: torchvision.transforms.v2.ToDtype
+          init_args:
+            dtype: ${as_torch_dtype:torch.float32}
+            scale: true
+        - class_path: torchvision.transforms.v2.Normalize
+          init_args:
+            mean:
+              - 0.485
+              - 0.456
+              - 0.406
+            std:
+              - 0.229
+              - 0.224
+              - 0.225

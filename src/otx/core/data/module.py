@@ -16,7 +16,7 @@ from lightning import LightningDataModule
 from omegaconf import DictConfig, OmegaConf
 from torch.utils.data import DataLoader, RandomSampler
 
-from otx.core.config.data import TileConfig
+from otx.core.config.data import TileConfig, UnlabeledDataConfig, VisualPromptingConfig
 from otx.core.data.dataset.tile import OTXTileDatasetFactory
 from otx.core.data.factory import OTXDatasetFactory
 from otx.core.data.mem_cache import (
@@ -26,6 +26,7 @@ from otx.core.data.mem_cache import (
 from otx.core.data.pre_filtering import pre_filtering
 from otx.core.data.tile_adaptor import adapt_tile_config
 from otx.core.types.device import DeviceType
+from otx.core.types.image import ImageColorChannel
 from otx.core.types.label import LabelInfo
 from otx.core.types.task import OTXTaskType
 from otx.core.utils.instantiators import instantiate_sampler
@@ -34,7 +35,7 @@ from otx.core.utils.utils import get_adaptive_num_workers
 if TYPE_CHECKING:
     from lightning.pytorch.utilities.parsing import AttributeDict
 
-    from otx.core.config.data import DataModuleConfig
+    from otx.core.config.data import SubsetConfig
     from otx.core.data.dataset.base import OTXDataset
 
 
@@ -44,12 +45,50 @@ class OTXDataModule(LightningDataModule):
     def __init__(
         self,
         task: OTXTaskType,
-        config: DataModuleConfig,
+        data_format: str,
+        data_root: str,
+        train_subset: SubsetConfig,
+        val_subset: SubsetConfig,
+        test_subset: SubsetConfig,
+        unlabeled_subset: UnlabeledDataConfig = UnlabeledDataConfig(data_root=None),  # noqa: B008
+        tile_config: TileConfig = TileConfig(enable_tiler=False),
+        vpm_config: VisualPromptingConfig = VisualPromptingConfig(),  # noqa: B008
+        mem_cache_size: str = "1GB",
+        mem_cache_img_max_size: tuple[int, int] | None = None,
+        image_color_channel: ImageColorChannel = ImageColorChannel.RGB,
+        stack_images: bool = True,
+        include_polygons: bool = False,
+        ignore_index: int = 255,
+        unannotated_items_ratio: float = 0.0,
+        auto_num_workers: bool = False,
+        device: DeviceType = DeviceType.auto,
     ) -> None:
         """Constructor."""
         super().__init__()
         self.task = task
-        self.config = config
+        self.data_format = data_format
+        self.data_root = data_root
+
+        self.train_subset = train_subset
+        self.val_subset = val_subset
+        self.test_subset = test_subset
+        self.unlabeled_subset = unlabeled_subset
+
+        self.tile_config = tile_config
+        self.vpm_config = vpm_config
+
+        self.mem_cache_size = mem_cache_size
+        self.mem_cache_img_max_size = mem_cache_img_max_size
+
+        self.image_color_channel = image_color_channel
+        self.stack_images = stack_images
+        self.include_polygons = include_polygons
+        self.ignore_index = ignore_index
+        self.unannotated_items_ratio = unannotated_items_ratio
+
+        self.auto_num_workers = auto_num_workers
+        self.device = device
+
         self.subsets: dict[str, OTXDataset] = {}
         self.save_hyperparameters()
 
@@ -61,53 +100,52 @@ class OTXDataModule(LightningDataModule):
         VIDEO_EXTENSIONS.append(".mp4")
 
         # Data Format Check
-        available_data_formats = Environment().detect_dataset(str(self.config.data_root))
+        available_data_formats = Environment().detect_dataset(str(self.data_root))
         if not available_data_formats:
-            msg = f"Invalid data root: {self.config.data_root}. Please check if the data root is valid."
+            msg = f"Invalid data root: {self.data_root}. Please check if the data root is valid."
             raise ValueError(msg)
-        if self.config.data_format not in available_data_formats:
+        if self.data_format not in available_data_formats:
             log.warning(
-                f"Invalid data format: {self.config.data_format}. Available formats: {available_data_formats} "
-                f"Replace data_format: {self.config.data_format} -> {available_data_formats[0]}.",
+                f"Invalid data format: {self.data_format}. Available formats: {available_data_formats} "
+                f"Replace data_format: {self.data_format} -> {available_data_formats[0]}.",
             )
-            self.config.data_format = available_data_formats[0]
+            self.data_format = available_data_formats[0]
 
-        dataset = DmDataset.import_from(self.config.data_root, format=self.config.data_format)
+        dataset = DmDataset.import_from(self.data_root, format=self.data_format)
         if self.task != "H_LABEL_CLS":
-            ignore_index = self.config.ignore_index if self.task == "SEMANTIC_SEGMENTATION" else None
             dataset = pre_filtering(
                 dataset,
-                self.config.data_format,
-                self.config.unannotated_items_ratio,
-                ignore_index=ignore_index,
+                self.data_format,
+                self.unannotated_items_ratio,
+                ignore_index=self.ignore_index if self.task == "SEMANTIC_SEGMENTATION" else None,
             )
 
         unlabeled_dataset = None
-        if self.config.unlabeled_subset.data_root is not None:
+        if self.unlabeled_subset.data_root is not None:
             # If unlabeled_subset's data_root is not None, use that folder as the Unlabeled dataset root.
             log.info(
-                f"Unlabeled dataset is loaded from {self.config.unlabeled_subset.data_root}.",
+                f"Unlabeled dataset is loaded from {self.unlabeled_subset.data_root}.",
             )
             unlabeled_dataset = DmDataset.import_from(
-                self.config.unlabeled_subset.data_root,
-                format=self.config.unlabeled_subset.data_format,
-                subset=self.config.unlabeled_subset.subset_name,
+                self.unlabeled_subset.data_root,
+                format=self.unlabeled_subset.data_format,
+                subset=self.unlabeled_subset.subset_name,
             )
 
-        if config.tile_config.enable_tiler and config.tile_config.enable_adaptive_tiling:
-            adapt_tile_config(config.tile_config, dataset=dataset)
+        if self.tile_config.enable_tiler and self.tile_config.enable_adaptive_tiling:
+            adapt_tile_config(self.tile_config, dataset=dataset)
 
         config_mapping = {
-            self.config.train_subset.subset_name: self.config.train_subset,
-            self.config.val_subset.subset_name: self.config.val_subset,
-            self.config.test_subset.subset_name: self.config.test_subset,
+            self.train_subset.subset_name: self.train_subset,
+            self.val_subset.subset_name: self.val_subset,
+            self.test_subset.subset_name: self.test_subset,
         }
 
-        if self.config.auto_num_workers:
-            if self.config.device not in [DeviceType.gpu, DeviceType.auto]:
+        if self.auto_num_workers:
+            if self.device not in [DeviceType.gpu, DeviceType.auto]:
                 log.warning(
                     "Only GPU device type support auto_num_workers. "
-                    f"Current deveice type is {self.config.device!s}. auto_num_workers is skipped.",
+                    f"Current deveice type is {self.device!s}. auto_num_workers is skipped.",
                 )
             elif (num_workers := get_adaptive_num_workers()) is not None:
                 for subset_name, subset_config in config_mapping.items():
@@ -117,7 +155,7 @@ class OTXDataModule(LightningDataModule):
                     )
                     subset_config.num_workers = num_workers
 
-        mem_size = parse_mem_cache_size_to_int(config.mem_cache_size)
+        mem_size = parse_mem_cache_size_to_int(mem_cache_size)
         mem_cache_mode = (
             "singleprocessing"
             if all(config.num_workers == 0 for config in config_mapping.values())
@@ -137,16 +175,21 @@ class OTXDataModule(LightningDataModule):
             dataset = OTXDatasetFactory.create(
                 task=self.task,
                 dm_subset=dm_subset.as_dataset(),
-                mem_cache_handler=mem_cache_handler,
                 cfg_subset=config_mapping[name],
-                cfg_data_module=config,
+                mem_cache_handler=mem_cache_handler,
+                mem_cache_img_max_size=mem_cache_img_max_size,
+                image_color_channel=image_color_channel,
+                stack_images=stack_images,
+                include_polygons=include_polygons,
+                ignore_index=ignore_index,
+                vpm_config=vpm_config,
             )
 
-            if config.tile_config.enable_tiler:
+            if self.tile_config.enable_tiler:
                 dataset = OTXTileDatasetFactory.create(
                     task=self.task,
                     dataset=dataset,
-                    tile_config=config.tile_config,
+                    tile_config=self.tile_config,
                 )
             self.subsets[name] = dataset
 
@@ -154,34 +197,44 @@ class OTXDataModule(LightningDataModule):
             log.info(f"Add name: {name}, self.subsets: {self.subsets}")
 
         if unlabeled_dataset is not None:
-            name = self.config.unlabeled_subset.subset_name
+            name = self.unlabeled_subset.subset_name
             dm_subset = unlabeled_dataset.subsets()[name]
 
-            if isinstance(self.config.unlabeled_subset.transforms, dict):
+            if isinstance(self.unlabeled_subset.transforms, dict):
                 # When applying multi-transforms to a single unlabeled dataset
                 # This adds as many subsets as the number of keys in the transforms. The dataset is the same,
                 # only the transforms are different.
                 dm_subset = dm_subset.as_dataset()
-                for transform_key, transforms in self.config.unlabeled_subset.transforms.items():
-                    unlabeled_config = deepcopy(self.config.unlabeled_subset)
+                for transform_key, transforms in self.unlabeled_subset.transforms.items():
+                    unlabeled_config = deepcopy(self.unlabeled_subset)
                     # TODO (harimkang): Revisit this with core.config.data.UnlabeledDataConfig.transforms.
                     unlabeled_config.transforms = transforms  # type: ignore[assignment]
 
                     unlabeled_dataset = OTXDatasetFactory.create(
                         task=self.task,
                         dm_subset=dm_subset,
-                        mem_cache_handler=mem_cache_handler,
                         cfg_subset=unlabeled_config,
-                        cfg_data_module=config,
+                        mem_cache_handler=mem_cache_handler,
+                        mem_cache_img_max_size=mem_cache_img_max_size,
+                        image_color_channel=image_color_channel,
+                        stack_images=stack_images,
+                        include_polygons=include_polygons,
+                        ignore_index=ignore_index,
+                        vpm_config=vpm_config,
                     )
                     self.subsets[transform_key] = unlabeled_dataset
             else:
                 unlabeled_dataset = OTXDatasetFactory.create(
                     task=self.task,
                     dm_subset=dm_subset.as_dataset(),
+                    cfg_subset=self.unlabeled_subset,
                     mem_cache_handler=mem_cache_handler,
-                    cfg_subset=self.config.unlabeled_subset,
-                    cfg_data_module=config,
+                    mem_cache_img_max_size=mem_cache_img_max_size,
+                    image_color_channel=image_color_channel,
+                    stack_images=stack_images,
+                    include_polygons=include_polygons,
+                    ignore_index=ignore_index,
+                    vpm_config=vpm_config,
                 )
                 self.subsets[name] = unlabeled_dataset
 
@@ -193,9 +246,7 @@ class OTXDataModule(LightningDataModule):
 
     def _is_meta_info_valid(self, label_infos: list[LabelInfo]) -> bool:
         """Check whether there are mismatches in the metainfo for the all subsets."""
-        if all(label_info == label_infos[0] for label_info in label_infos):
-            return True
-        return False
+        return bool(all(label_info == label_infos[0] for label_info in label_infos))
 
     def _get_dataset(self, subset: str) -> OTXDataset:
         if (dataset := self.subsets.get(subset)) is None:
@@ -205,7 +256,7 @@ class OTXDataModule(LightningDataModule):
 
     def train_dataloader(self) -> Iterable:
         """Get train dataloader."""
-        config = self.config.train_subset
+        config = self.train_subset
         dataset = self._get_dataset(config.subset_name)
         sampler = instantiate_sampler(config.sampler, dataset=dataset, batch_size=config.batch_size)
 
@@ -220,7 +271,7 @@ class OTXDataModule(LightningDataModule):
             "shuffle": sampler is None,
         }
 
-        tile_config = self.config.tile_config
+        tile_config = self.tile_config
         if tile_config.enable_tiler and tile_config.sampling_ratio < 1:
             num_samples = max(1, int(len(dataset) * tile_config.sampling_ratio))
             log.info(f"Using tiled sampling with {num_samples} samples")
@@ -240,12 +291,17 @@ class OTXDataModule(LightningDataModule):
                 "labeled": dataloader,
                 **unlabeled_dataloader,
             }
-            return CombinedLoader(iterables, mode="min_size")
+            # CombinedLoader should always behave relative to the labeled dataloader.
+            # if len(labeled_dataloader) < len(unlabeled_dataloader), the mode should be "min_size"
+            # if len(labeled_dataloader) > len(unlabeled_dataloader), the mode should be "max_size_cycle"
+            min_unlabeled_length = min(len(loader) for loader in unlabeled_dataloader.values())
+            mode = "min_size" if len(dataloader) < min_unlabeled_length else "max_size_cycle"
+            return CombinedLoader(iterables, mode=mode)
         return dataloader
 
     def val_dataloader(self) -> DataLoader:
         """Get val dataloader."""
-        config = self.config.val_subset
+        config = self.val_subset
         dataset = self._get_dataset(config.subset_name)
 
         return DataLoader(
@@ -260,7 +316,7 @@ class OTXDataModule(LightningDataModule):
 
     def test_dataloader(self) -> DataLoader:
         """Get test dataloader."""
-        config = self.config.test_subset
+        config = self.test_subset
         dataset = self._get_dataset(config.subset_name)
 
         return DataLoader(
@@ -275,7 +331,7 @@ class OTXDataModule(LightningDataModule):
 
     def predict_dataloader(self) -> DataLoader:
         """Get test dataloader."""
-        config = self.config.test_subset
+        config = self.test_subset
         dataset = self._get_dataset(config.subset_name)
 
         return DataLoader(
@@ -298,8 +354,8 @@ class OTXDataModule(LightningDataModule):
             dict[str, DataLoader] | None: A dictionary containing unlabeled dataloaders, where the keys are the names of
             the datasets and the values are the corresponding DataLoader objects.
         """
-        config = self.config.unlabeled_subset
-        if self.config.unlabeled_subset.data_root is None:
+        config = self.unlabeled_subset
+        if config.data_root is None:
             return None
 
         common_args = {
@@ -369,11 +425,28 @@ class OTXDataModule(LightningDataModule):
 
         return hp
 
-    @property
-    def tile_config(self) -> TileConfig:
-        """Tiling configuration. It is a shortcut for `self.config.tile_config`."""
-        return self.config.tile_config
-
     def __reduce__(self):
         """Re-initialize object when unpickled."""
-        return (self.__class__, (self.task, self.config))
+        return (
+            self.__class__,
+            (
+                self.task,
+                self.data_format,
+                self.data_root,
+                self.train_subset,
+                self.val_subset,
+                self.test_subset,
+                self.unlabeled_subset,
+                self.tile_config,
+                self.vpm_config,
+                self.mem_cache_size,
+                self.mem_cache_img_max_size,
+                self.image_color_channel,
+                self.stack_images,
+                self.include_polygons,
+                self.ignore_index,
+                self.unannotated_items_ratio,
+                self.auto_num_workers,
+                self.device,
+            ),
+        )

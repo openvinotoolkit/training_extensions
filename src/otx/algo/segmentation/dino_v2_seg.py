@@ -22,7 +22,7 @@ class DinoV2Seg(BaseSegmModel):
     """DinoV2Seg Model."""
 
     default_backbone_configuration: ClassVar[dict[str, Any]] = {
-        "name": "dinov2_vits14_reg",
+        "name": "dinov2_vits14",
         "freeze_backbone": True,
         "out_index": [8, 9, 10, 11],
     }

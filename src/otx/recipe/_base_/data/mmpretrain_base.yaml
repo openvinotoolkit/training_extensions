@@ -1,55 +1,54 @@
 task: MULTI_CLASS_CLS
-config:
-  data_format: imagenet_with_subset_dirs
-  mem_cache_img_max_size:
-    - 500
-    - 500
-  mem_cache_size: 1GB
-  image_color_channel: RGB
-  include_polygons: false
-  unannotated_items_ratio: 0.0
-  train_subset:
-    subset_name: train
-    num_workers: 2
-    batch_size: 64
-    transform_lib_type: MMPRETRAIN
-    to_tv_image: False
-    transforms:
-      - type: LoadImageFromFile
-      - backend: cv2
-        scale: 224
-        type: RandomResizedCrop
-      - type: PackInputs
-    sampler:
-      class_path: otx.algo.samplers.balanced_sampler.BalancedSampler
-  val_subset:
-    subset_name: val
-    num_workers: 2
-    batch_size: 64
-    transform_lib_type: MMPRETRAIN
-    to_tv_image: False
-    transforms:
-      - type: LoadImageFromFile
-      - backend: cv2
-        edge: short
-        scale: 256
-        type: ResizeEdge
-      - crop_size: 224
-        type: CenterCrop
-      - type: PackInputs
-    sampler:
-      class_path: torch.utils.data.RandomSampler
-  test_subset:
-    subset_name: test
-    num_workers: 2
-    batch_size: 64
-    transform_lib_type: MMPRETRAIN
-    to_tv_image: False
-    transforms:
-      - type: LoadImageFromFile
-      - backend: cv2
-        scale: 224
-        type: Resize
-      - type: PackInputs
-    sampler:
-      class_path: torch.utils.data.RandomSampler
+data_format: imagenet_with_subset_dirs
+mem_cache_img_max_size:
+  - 500
+  - 500
+mem_cache_size: 1GB
+image_color_channel: RGB
+include_polygons: false
+unannotated_items_ratio: 0.0
+train_subset:
+  subset_name: train
+  num_workers: 2
+  batch_size: 64
+  transform_lib_type: MMPRETRAIN
+  to_tv_image: False
+  transforms:
+    - type: LoadImageFromFile
+    - backend: cv2
+      scale: 224
+      type: RandomResizedCrop
+    - type: PackInputs
+  sampler:
+    class_path: otx.algo.samplers.balanced_sampler.BalancedSampler
+val_subset:
+  subset_name: val
+  num_workers: 2
+  batch_size: 64
+  transform_lib_type: MMPRETRAIN
+  to_tv_image: False
+  transforms:
+    - type: LoadImageFromFile
+    - backend: cv2
+      edge: short
+      scale: 256
+      type: ResizeEdge
+    - crop_size: 224
+      type: CenterCrop
+    - type: PackInputs
+  sampler:
+    class_path: torch.utils.data.RandomSampler
+test_subset:
+  subset_name: test
+  num_workers: 2
+  batch_size: 64
+  transform_lib_type: MMPRETRAIN
+  to_tv_image: False
+  transforms:
+    - type: LoadImageFromFile
+    - backend: cv2
+      scale: 224
+      type: Resize
+    - type: PackInputs
+  sampler:
+    class_path: torch.utils.data.RandomSampler

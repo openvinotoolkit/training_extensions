@@ -28,6 +28,7 @@ def test_tile_transform_consistency(mocker):
     mocker.patch.multiple(Tiler, __abstractmethods__=set())
 
     tiler = Tiler(model=mock_model)
+    tiler.tile_with_full_img = True
     tiler.tile_size = rnd_tile_size
     tiler.tiles_overlap = rnd_tile_overlap
 
