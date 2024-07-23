@@ -12,6 +12,7 @@ import torch
 from torch import nn
 
 from otx.algo.modules import ConvModule, build_activation_layer
+from otx.algo.modules.base_module import BaseModule
 
 __all__ = ["PResNet"]
 
@@ -158,8 +159,19 @@ class Blocks(nn.Module):
         return out
 
 
-class PResNet(nn.Module):
-    """PResNet backbone."""
+class PResNet(BaseModule):
+    """PResNet backbone.
+
+    Args:
+        depth (int): The depth of the PResNet backbone.
+        variant (str): The variant of the PResNet backbone. Defaults to "d".
+        num_stages (int): The number of stages in the PResNet backbone. Defaults to 4.
+        return_idx (list[int]): The indices of the stages to return as output. Defaults to [0, 1, 2, 3].
+        act_cfg (dict[str, str] | None, optional): The activation configuration. Defaults to None.
+        norm_cfg (dict[str, str] | None, optional): The normalization configuration. Defaults to None.
+        freeze_at (int): The stage at which to freeze the parameters. Defaults to -1.
+        pretrained (bool): Whether to load pretrained weights. Defaults to False.
+    """
 
     num_resnet_blocks: ClassVar = {
         18: [2, 2, 2, 2],
@@ -186,18 +198,7 @@ class PResNet(nn.Module):
         freeze_at: int = -1,
         pretrained: bool = False,
     ) -> None:
-        """Initialize the PResNet backbone.
-
-        Args:
-            depth (int): The depth of the PResNet backbone.
-            variant (str): The variant of the PResNet backbone. Defaults to "d".
-            num_stages (int): The number of stages in the PResNet backbone. Defaults to 4.
-            return_idx (list[int]): The indices of the stages to return as output. Defaults to [0, 1, 2, 3].
-            act_cfg (dict[str, str] | None, optional): The activation configuration. Defaults to None.
-            norm_cfg (dict[str, str] | None, optional): The normalization configuration. Defaults to None.
-            freeze_at (int): The stage at which to freeze the parameters. Defaults to -1.
-            pretrained (bool): Whether to load pretrained weights. Defaults to False.
-        """
+        """Initialize the PResNet backbone."""
         super().__init__()
 
         block_nums = self.num_resnet_blocks[depth]

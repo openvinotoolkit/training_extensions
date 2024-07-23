@@ -22,6 +22,12 @@ class DetrCriterion(nn.Module):
     The process happens in two steps:
         1) we compute hungarian assignment between ground truth boxes and the outputs of the model
         2) we supervise each pair of matched ground-truth / prediction (supervise class and box)
+
+    Args:
+        weight_dict (dict[str, int | float]): A dictionary containing the weights for different loss components.
+        alpha (float, optional): The alpha parameter for the loss calculation. Defaults to 0.2.
+        gamma (float, optional): The gamma parameter for the loss calculation. Defaults to 2.0.
+        num_classes (int, optional): The number of classes. Defaults to 80.
     """
 
     def __init__(
@@ -31,14 +37,7 @@ class DetrCriterion(nn.Module):
         gamma: float = 2.0,
         num_classes: int = 80,
     ) -> None:
-        """Create the criterion.
-
-        Args:
-            num_classes: number of object categories, omitting the special no-object category
-            matcher: module able to compute a matching between targets and proposals
-            weight_dict: dict containing as key the names of the losses and as values their relative weight.
-            losses: list of all the losses to be applied. See get_loss for list of available losses.
-        """
+        """Create the criterion."""
         super().__init__()
         self.num_classes = num_classes
         self.matcher = HungarianMatcher(weight_dict={"cost_class": 2, "cost_bbox": 5, "cost_giou": 2})
@@ -57,7 +56,14 @@ class DetrCriterion(nn.Module):
         indices: list[tuple[int, int]],
         num_boxes: int,
     ) -> dict[str, torch.Tensor]:
-        """Compute the vfl loss."""
+        """Compute the vfl loss.
+
+        Args:
+            outputs (dict[str, torch.Tensor]): Model outputs.
+            targets (List[Dict[str, torch.Tensor]]): List of target dictionaries.
+            indices (List[Tuple[int, int]]): List of tuples of indices.
+            num_boxes (int): Number of predicted boxes.
+        """
         idx = self._get_src_permutation_idx(indices)
 
         src_boxes = outputs["pred_boxes"][idx]
@@ -96,6 +102,15 @@ class DetrCriterion(nn.Module):
 
         Targets dicts must contain the key "boxes" containing a tensor of dim [nb_target_boxes, 4]
         The target boxes are expected in format (center_x, center_y, w, h), normalized by the image size.
+
+        Args:
+            outputs (dict[str, torch.Tensor]): The outputs of the model.
+            targets (list[dict[str, torch.Tensor]]): The targets.
+            indices (list[tuple[int, int]]): The indices of the matched boxes.
+            num_boxes (int): The number of boxes.
+
+        Returns:
+            dict[str, torch.Tensor]: The losses.
         """
         idx = self._get_src_permutation_idx(indices)
         src_boxes = outputs["pred_boxes"][idx]
@@ -135,8 +150,9 @@ class DetrCriterion(nn.Module):
         """This performs the loss computation.
 
         Args:
-             outputs: dict of tensors, see the output specification of the model for the format
-             targets: list of dicts, such that len(targets) == batch_size.
+             outputs (dict[str, torch.Tensor]): dict of tensors, see the output
+                specification of the model for the format
+             targets (list[dict[str, torch.Tensor]]): list of dicts, such that len(targets) == batch_size.
                       The expected keys in each dict depends on the losses applied, see each loss' doc
         """
         if "pred_boxes" not in outputs or "pred_logits" not in outputs:
@@ -203,7 +219,12 @@ class DetrCriterion(nn.Module):
         dn_meta: dict[str, list[torch.Tensor]],
         targets: list[dict[str, torch.Tensor]],
     ) -> list[tuple[torch.Tensor, torch.Tensor]]:
-        """get_cdn_matched_indices."""
+        """get_cdn_matched_indices.
+
+        Args:
+            dn_meta (dict[str, list[torch.Tensor]]): meta data for cdn
+            targets (list[dict[str, torch.Tensor]]): targets
+        """
         dn_positive_idx, dn_num_group = dn_meta["dn_positive_idx"], dn_meta["dn_num_group"]
         num_gts = [len(t["labels"]) for t in targets]
         device = targets[0]["labels"].device

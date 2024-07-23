@@ -12,6 +12,7 @@ from torch import nn
 
 from otx.algo.detection.layers import CSPRepLayer
 from otx.algo.modules import ConvModule, build_activation_layer
+from otx.algo.modules.base_module import BaseModule
 
 __all__ = ["HybridEncoder"]
 
@@ -96,7 +97,7 @@ class TransformerEncoder(nn.Module):
         return output
 
 
-class HybridEncoder(nn.Module):
+class HybridEncoder(BaseModule):
     """HybridEncoder for RTDetr."""
 
     def __init__(
@@ -220,9 +221,8 @@ class HybridEncoder(nn.Module):
                 ),
             )
 
-        self._reset_parameters()
-
-    def _reset_parameters(self) -> None:
+    def init_weights(self) -> None:
+        """Initialize weights."""
         if self.eval_spatial_size:
             for idx in self.use_encoder_idx:
                 stride = self.feat_strides[idx]

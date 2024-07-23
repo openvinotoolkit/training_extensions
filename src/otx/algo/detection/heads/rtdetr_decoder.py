@@ -19,6 +19,7 @@ from otx.algo.detection.utils.utils import (
     inverse_sigmoid,
 )
 from otx.algo.modules import build_activation_layer
+from otx.algo.modules.base_module import BaseModule
 from otx.algo.modules.transformer import deformable_attention_core_func
 
 __all__ = ["RTDETRTransformer"]
@@ -155,17 +156,17 @@ class MLP(nn.Module):
 
 
 class MSDeformableAttention(nn.Module):
-    """Multi-Scale Deformable Attention Module."""
+    """Multi-Scale Deformable Attention Module.
+
+    Args:
+        embed_dim (int): The number of expected features in the input.
+        num_heads (int): The number of heads in the multiheadattention models.
+        num_levels (int): The number of levels in MSDeformableAttention.
+        num_points (int): The number of points in MSDeformableAttention.
+    """
 
     def __init__(self, embed_dim: int = 256, num_heads: int = 8, num_levels: int = 4, num_points: int = 4) -> None:
-        """Multi-Scale Deformable Attention Module.
-
-        Args:
-            embed_dim (int): The number of expected features in the input.
-            num_heads (int): The number of heads in the multiheadattention models.
-            num_levels (int): The number of levels in MSDeformableAttention.
-            num_points (int): The number of points in MSDeformableAttention.
-        """
+        """Multi-Scale Deformable Attention Module."""
         super().__init__()
         self.embed_dim = embed_dim
         self.num_heads = num_heads
@@ -292,7 +293,17 @@ class MSDeformableAttention(nn.Module):
 
 
 class TransformerDecoderLayer(nn.Module):
-    """TransformerDecoderLayer."""
+    """TransformerDecoderLayer.
+
+    Args:
+        d_model (int): The number of expected features in the input.
+        n_head (int): The number of heads in the multiheadattention models.
+        dim_feedforward (int): The dimension of the feedforward network model.
+        dropout (float): The dropout value.
+        activation (dict[str, str] | None, optional): The activation function of intermediate layer, ReLU by default.
+        n_levels (int): The number of levels in MSDeformableAttention.
+        n_points (int): The number of points in MSDeformableAttention.
+    """
 
     def __init__(
         self,
@@ -304,17 +315,7 @@ class TransformerDecoderLayer(nn.Module):
         n_levels: int = 4,
         n_points: int = 4,
     ):
-        """Initialize the TransformerDecoderLayer module.
-
-        Args:
-            d_model (int): The number of expected features in the input.
-            n_head (int): The number of heads in the multiheadattention models.
-            dim_feedforward (int): The dimension of the feedforward network model.
-            dropout (float): The dropout value.
-            activation (dict[str, str]): The activation function of intermediate layer, relu by default.
-            n_levels (int): The number of levels in MSDeformableAttention.
-            n_points (int): The number of points in MSDeformableAttention.
-        """
+        """Initialize the TransformerDecoderLayer module."""
         super().__init__()
 
         # self attention
@@ -444,8 +445,33 @@ class TransformerDecoder(nn.Module):
         return torch.stack(dec_out_bboxes), torch.stack(dec_out_logits)
 
 
-class RTDETRTransformer(nn.Module):
-    """RTDETRTransformer."""
+class RTDETRTransformer(BaseModule):
+    """RTDETRTransformer.
+
+    Args:
+        num_classes (int): Number of object classes.
+        hidden_dim (int): Hidden dimension size.
+        num_queries (int): Number of queries.
+        position_embed_type (str): Type of position embedding.
+        feat_channels (List[int]): List of feature channels.
+        feat_strides (List[int]): List of feature strides.
+        num_levels (int): Number of levels.
+        num_decoder_points (int): Number of decoder points.
+        nhead (int): Number of attention heads.
+        num_decoder_layers (int): Number of decoder layers.
+        dim_feedforward (int): Dimension of the feedforward network.
+        dropout (float): Dropout rate.
+        activation (dict[str, str] | None): The activation function of intermediate layer.
+            ReLu by default.
+        num_denoising (int): Number of denoising samples.
+        label_noise_ratio (float): Ratio of label noise.
+        box_noise_scale (float): Scale of box noise.
+        learnt_init_query (bool): Whether to learn initial queries.
+        eval_spatial_size (Tuple[int, int] | None): Spatial size for evaluation.
+        eval_idx (int): Evaluation index.
+        eps (float): Epsilon value.
+        aux_loss (bool): Whether to include auxiliary loss.
+    """
 
     def __init__(  # noqa: PLR0913
         self,
@@ -471,32 +497,7 @@ class RTDETRTransformer(nn.Module):
         eps: float = 1e-2,
         aux_loss: bool = True,
     ):
-        """Initialize the RTDETRTransformer module.
-
-        Args:
-            num_classes (int): Number of object classes.
-            hidden_dim (int): Hidden dimension size.
-            num_queries (int): Number of queries.
-            position_embed_type (str): Type of position embedding.
-            feat_channels (List[int]): List of feature channels.
-            feat_strides (List[int]): List of feature strides.
-            num_levels (int): Number of levels.
-            num_decoder_points (int): Number of decoder points.
-            nhead (int): Number of attention heads.
-            num_decoder_layers (int): Number of decoder layers.
-            dim_feedforward (int): Dimension of the feedforward network.
-            dropout (float): Dropout rate.
-            activation (dict[str, str] | None): The activation function of intermediate layer.
-                ReLu by default.
-            num_denoising (int): Number of denoising samples.
-            label_noise_ratio (float): Ratio of label noise.
-            box_noise_scale (float): Scale of box noise.
-            learnt_init_query (bool): Whether to learn initial queries.
-            eval_spatial_size (Tuple[int, int] | None): Spatial size for evaluation.
-            eval_idx (int): Evaluation index.
-            eps (float): Epsilon value.
-            aux_loss (bool): Whether to include auxiliary loss.
-        """
+        """Initialize the RTDETRTransformer module."""
         super().__init__()
         if position_embed_type not in [
             "sine",
@@ -570,9 +571,8 @@ class RTDETRTransformer(nn.Module):
         if self.eval_spatial_size is not None:
             self.anchors, self.valid_mask = self._generate_anchors()
 
-        self._reset_parameters()
-
-    def _reset_parameters(self) -> None:
+    def init_weights(self) -> None:
+        """Initialize the weights of the RTDETRTransformer."""
         prob = 0.01
         bias = float(-math.log((1 - prob) / prob))
 

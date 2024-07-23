@@ -18,7 +18,6 @@ import decord
 import numpy as np
 import PIL.Image
 import torch
-import torchvision
 import torchvision.transforms.v2 as tvt_v2
 from datumaro.components.media import Video
 from lightning.pytorch.cli import instantiate_class
@@ -1004,34 +1003,6 @@ class EfficientNetRandomCrop(RandomResizedCrop):
         repr_str += f", min_covered={self.min_covered}"
         repr_str += f", crop_padding={self.crop_padding})"
         return repr_str
-
-
-class ConvertBox(tvt_v2.Transform):
-    """Convert bounding boxes to a different format."""
-
-    _transformed_types = (tv_tensors.BoundingBoxes,)
-
-    def __init__(self, out_fmt: str = "", normalize: bool = False) -> None:
-        super().__init__()
-        self.out_fmt = out_fmt
-        self.normalize = normalize
-
-        self.data_fmt = {
-            "xyxy": tv_tensors.BoundingBoxFormat.XYXY,
-            "cxcywh": tv_tensors.BoundingBoxFormat.CXCYWH,
-        }
-
-    def _transform(self, inpt: torch.Tensor, params: dict[str, Any]) -> torch.Tensor:
-        if self.out_fmt:
-            spatial_size = inpt.canvas_size
-            in_fmt = inpt.format.value.lower()
-            inpt = torchvision.ops.box_convert(inpt, in_fmt=in_fmt, out_fmt=self.out_fmt)
-            inpt = tv_tensors.BoundingBoxes(inpt, format=self.data_fmt[self.out_fmt], canvas_size=spatial_size)
-
-        if self.normalize:
-            inpt = inpt / torch.tensor(inpt.canvas_size[::-1]).tile(2)[None]
-
-        return inpt
 
 
 class RandomFlip(tvt_v2.Transform, NumpytoTVTensorMixin):
