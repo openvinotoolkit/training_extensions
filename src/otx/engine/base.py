@@ -1,13 +1,22 @@
 from abc import ABC, abstractmethod
 from typing import Any
 
+from torch import nn
+
 METRICS = dict[str, float]
 ANNOTATIONS = Any
 
 
-class Adapter(ABC):
+class BaseEngine(ABC):
+    BASE_MODEL: nn.Module  # Use this to register models to the CLI
+
+    @classmethod
     @abstractmethod
-    def train(self, **kwargs) -> METRICS:
+    def is_valid_model(cls, model: nn.Module) -> bool:
+        pass
+
+    @abstractmethod
+    def train(self, model: nn.Module, **kwargs) -> METRICS:
         pass
 
     @abstractmethod

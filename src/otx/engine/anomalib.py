@@ -3,7 +3,7 @@ from anomalib.engine import Engine as AnomalibEngine
 from anomalib.models import AnomalyModule
 
 from otx.core.data.module import OTXDataModule
-from otx.engine.base import METRICS, Adapter
+from otx.engine.base import METRICS, BaseEngine
 
 
 def wrap_to_anomalib_datamodule(datamodule: OTXDataModule) -> AnomalibDataModule:
@@ -19,30 +19,31 @@ def wrap_to_anomalib_datamodule(datamodule: OTXDataModule) -> AnomalibDataModule
     )
 
 
-class AnomalibAdapter(Adapter):
-    def __init__(self):
+class AnomalyEngine(BaseEngine):
+    BASE_MODEL = AnomalyModule
+
+    def __init__(self, model: AnomalyModule, **kwargs):
+        self.model = model
         self._engine = AnomalibEngine()
+
+    @classmethod
+    def is_valid_model(cls, model: AnomalyModule) -> bool:
+        return isinstance(model, AnomalyModule)
 
     def train(
         self,
-        model: AnomalyModule,
         datamodule: OTXDataModule | AnomalibDataModule,
-        max_epochs: int = 1,
         **kwargs,
     ) -> METRICS:
         if not isinstance(datamodule, AnomalibDataModule):
             datamodule = wrap_to_anomalib_datamodule(datamodule)
-        self._engine = AnomalibEngine(max_epochs=max_epochs, **kwargs)
-        return self._engine.train(model=model, datamodule=datamodule)
+        print("Pseudo training...")
 
     def test(
         self,
-        model: AnomalyModule,
         datamodule: OTXDataModule | AnomalibDataModule,
-        max_epochs: int = 1,
         **kwargs,
     ) -> METRICS:
         if not isinstance(datamodule, AnomalibDataModule):
             datamodule = wrap_to_anomalib_datamodule(datamodule)
-        self._engine = AnomalibEngine(max_epochs=max_epochs, **kwargs)
-        return self._engine.test(model=model, datamodule=datamodule)
+        print("Pseudo testing...")

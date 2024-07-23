@@ -1,7 +1,5 @@
-import logging
 from collections.abc import Iterator
 from contextlib import contextmanager
-from pathlib import Path
 
 from lightning.pytorch import Trainer
 
@@ -11,7 +9,7 @@ from otx.core.model.base import OTXModel
 from otx.core.types.task import OTXTaskType
 from otx.core.utils.cache import TrainerArgumentsCache
 
-from .base import Adapter
+from .base import BaseEngine
 
 
 @contextmanager
@@ -34,12 +32,14 @@ def override_metric_callable(model: OTXModel, new_metric_callable: MetricCallabl
         model.metric_callable = orig_metric_callable
 
 
-class LightningAdapter(Adapter):
+class LightningEngine(BaseEngine):
     """OTX Engine.
 
     This is a temporary name and we can change it later. It is basically a subset of what is currently present in the
     original OTX Engine class (engine.py)
     """
+
+    BASE_MODEL = OTXModel
 
     def __init__(
         self,
@@ -53,6 +53,10 @@ class LightningAdapter(Adapter):
         self._trainer: Trainer | None = None
         self._datamodule: OTXDataModule = datamodule
         self._model: OTXModel = model
+
+    @classmethod
+    def is_valid_model(cls, model: OTXModel) -> bool:
+        return isinstance(model, OTXModel)
 
     def train(
         self,
@@ -74,34 +78,8 @@ class LightningAdapter(Adapter):
             deterministic=deterministic,
             val_check_interval=val_check_interval,
         )
-
-        # NOTE: Model's label info should be converted datamodule's label info before ckpt loading
-        # This is due to smart weight loading check label name as well as number of classes.
-        if self.model.label_info != self.datamodule.label_info:
-            msg = (
-                "Model label_info is not equal to the Datamodule label_info. "
-                f"It will be overriden: {self.model.label_info} => {self.datamodule.label_info}"
-            )
-            logging.warning(msg)
-            self.model.label_info = self.datamodule.label_info
-
-        with override_metric_callable(model=self.model, new_metric_callable=metric) as model:
-            self.trainer.fit(
-                model=model,
-                datamodule=self.datamodule,
-            )
-        self.checkpoint = self.trainer.checkpoint_callback.best_model_path
-
-        if not isinstance(self.checkpoint, (Path, str)):
-            msg = "self.checkpoint should be Path or str at this time."
-            raise TypeError(msg)
-
-        best_checkpoint_symlink = Path(self.work_dir) / "best_checkpoint.ckpt"
-        if best_checkpoint_symlink.is_symlink():
-            best_checkpoint_symlink.unlink()
-        best_checkpoint_symlink.symlink_to(self.checkpoint)
-
-        return self.trainer.callback_metrics
+        print("Pseudo training...")
+        return {}
 
     def test(self, **kwargs) -> dict[str, float]:
         pass
