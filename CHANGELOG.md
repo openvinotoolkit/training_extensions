@@ -11,6 +11,9 @@ All notable changes to this project will be documented in this file.
 
 ### Enhancements
 
+- Enable to override data configurations
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3748>)
+
 ### Bug fixes
 
 ## \[v2.1.0\]

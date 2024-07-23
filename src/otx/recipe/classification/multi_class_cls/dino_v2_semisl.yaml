@@ -2,7 +2,7 @@ model:
   class_path: otx.algo.classification.dino_v2.DINOv2ForMulticlassClsSemiSL
   init_args:
     label_info: 1000
-    freeze_backbone: False
+    freeze_backbone: false
     backbone: dinov2_vits14_reg
 
     optimizer:

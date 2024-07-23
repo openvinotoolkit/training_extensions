@@ -15,6 +15,11 @@ callback_monitor: val/Dice
 
 data: ../_base_/data/visual_prompting.yaml
 overrides:
+  reset:
+    - data.train_subset.transforms
+    - data.val_subset.transforms
+    - data.test_subset.transforms
+
   data:
     train_subset:
       batch_size: 1
@@ -24,14 +29,12 @@ overrides:
         - class_path: torchvision.transforms.v2.ToImage
 
     val_subset:
-      batch_size: 1
       num_workers: 0 # TODO (sungchul): CVS-135462
       to_tv_image: true
       transforms:
         - class_path: torchvision.transforms.v2.ToImage
 
     test_subset:
-      batch_size: 1
       num_workers: 0 # TODO (sungchul): CVS-135462
       to_tv_image: true
       transforms:

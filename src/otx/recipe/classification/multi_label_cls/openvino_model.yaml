@@ -3,8 +3,8 @@ model:
   init_args:
     label_info: 1000
     model_name: openvino.xml
-    async_inference: True
-    use_throughput_mode: False
+    async_inference: true
+    use_throughput_mode: false
     model_type: Classification
 
 engine:

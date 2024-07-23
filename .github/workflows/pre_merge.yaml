@@ -1,15 +1,16 @@
 name: PR Checks
 
 on:
-  push:
-    branches:
-      - develop
-      - releases/**
   pull_request:
     types:
       - opened
       - reopened
       - synchronize
+      - ready_for_review
+  merge_group:
+    branches:
+      - develop
+      - releases/**
   workflow_dispatch: # run on request (no need for PR)
 
 # Declare default permissions as read only.
@@ -86,6 +87,9 @@ jobs:
           chmod +x codecov
           ./codecov -t ${{ secrets.CODECOV_TOKEN }} --sha $COMMIT_ID -U $HTTP_PROXY -f .tox/coverage_unit-test-${{ matrix.tox-env }}.xml -F ${{ matrix.tox-env }}
   Integration-Test:
+    if: |
+      github.event.pull_request.draft == false &&
+      !(startsWith(github.event.pull_request.title, '[WIP]'))
     runs-on: [otx-gpu-a10g-1]
     needs: Unit-Test
     container:

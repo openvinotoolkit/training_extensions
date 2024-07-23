@@ -30,6 +30,9 @@ callback_monitor: val/map_50
 
 data: ../_base_/data/detection.yaml
 overrides:
+  reset:
+    - data.train_subset.transforms
+
   gradient_clip_val: 35.0
   data:
     tile_config:
@@ -69,14 +72,6 @@ overrides:
             scale:
               - 864
               - 864
-            is_numpy_to_tvtensor: true
-        - class_path: torchvision.transforms.v2.ToDtype
-          init_args:
-            dtype: ${as_torch_dtype:torch.float32}
-        - class_path: torchvision.transforms.v2.Normalize
-          init_args:
-            mean: [0.0, 0.0, 0.0]
-            std: [255.0, 255.0, 255.0]
 
     test_subset:
       batch_size: 8
@@ -86,11 +81,3 @@ overrides:
             scale:
               - 864
               - 864
-            is_numpy_to_tvtensor: true
-        - class_path: torchvision.transforms.v2.ToDtype
-          init_args:
-            dtype: ${as_torch_dtype:torch.float32}
-        - class_path: torchvision.transforms.v2.Normalize
-          init_args:
-            mean: [0.0, 0.0, 0.0]
-            std: [255.0, 255.0, 255.0]
