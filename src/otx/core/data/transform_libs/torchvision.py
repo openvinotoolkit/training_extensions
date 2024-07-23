@@ -3124,7 +3124,8 @@ class TorchVisionTransformLib:
 
         transforms = []
         for cfg_transform in config.transforms:
-            cls._eval_input_size(cfg_transform, config.input_size)
+            if (input_size := getattr(config, "input_size", None)) is not None:
+                cls._eval_input_size(cfg_transform, input_size)
             transform = cls._dispatch_transform(cfg_transform)
             transforms.append(transform)
 
