@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from collections import defaultdict
 from multiprocessing import cpu_count
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import torch
 from datumaro.components.annotation import AnnotationType, LabelCategories
@@ -84,3 +84,12 @@ def get_idx_list_per_classes(dm_dataset: DmDataset, use_string_label: bool = Fal
     for k in stats:
         stats[k] = list(dict.fromkeys(stats[k]))
     return stats
+
+
+def remove_state_dict_prefix(state_dict: dict[str, Any], prefix: str) -> dict[str, Any]:
+    """Remove prefix from state_dict keys."""
+    new_state_dict = {}
+    for key, value in state_dict.items():
+        new_key = key.replace(prefix, "")
+        new_state_dict[new_key] = value
+    return new_state_dict
