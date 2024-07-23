@@ -195,16 +195,16 @@ class TestTorchVisionTransformLib:
         transforms:
           - class_path: otx.core.data.transform_libs.torchvision.ResizetoLongestEdge
             init_args:
-                size: ^{input_size} * 2
+                size: $(input_size) * 2
           - class_path: otx.core.data.transform_libs.torchvision.RandomResize
             init_args:
-                scale: ^{input_size} * 0.5
+                scale: $(input_size) * 0.5
           - class_path: otx.core.data.transform_libs.torchvision.RandomCrop
             init_args:
-                crop_size: ^{input_size}
+                crop_size: $(input_size)
           - class_path: otx.core.data.transform_libs.torchvision.RandomResize
             init_args:
-                scale: ^{input_size} * 1.1
+                scale: $(input_size) * 1.1
         """
         return OmegaConf.create(cfg)
 

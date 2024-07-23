@@ -3135,11 +3135,11 @@ class TorchVisionTransformLib:
     def _eval_input_size(cls, cfg_transform: dict[str, Any], input_size: int | tuple[int, int] | None) -> None:
         """Evaluate the input_size and replace the placeholder in the init_args.
 
-        Input size should be specified as ^{input_size}. (e.g. ^{input_size} * 0.5)
+        Input size should be specified as $(input_size). (e.g. $(input_size) * 0.5)
         Only simple multiplication or division evaluation is supported. For example,
-        ^{input_size} * -0.5    => supported
-        ^{input_size} * 2.1 / 3 => supported
-        ^{input_size} + 1       => not supported
+        $(input_size) * -0.5    => supported
+        $(input_size) * 2.1 / 3 => supported
+        $(input_size) + 1       => not supported
         The function decides to pass tuple type or int type based on the type hint of the argument.
         float point values are rounded to int.
         """
@@ -3156,7 +3156,7 @@ class TorchVisionTransformLib:
 
         model_cls = None
         for key, val in cfg_transform["init_args"].items():
-            if not (isinstance(val, str) and "^{input_size}" in val):
+            if not (isinstance(val, str) and "$(input_size)" in val):
                 continue
             if model_cls is None:
                 model_cls = get_obj_from_str(cfg_transform["class_path"])
@@ -3164,10 +3164,10 @@ class TorchVisionTransformLib:
             available_types = typing.get_type_hints(model_cls.__init__).get(key)
             if available_types is None or check_type(_input_size, available_types):  # pass tuple[int, int]
                 cfg_transform["init_args"][key] = cls._safe_eval(
-                    val.replace("^{input_size}", f"({','.join(str(val) for val in _input_size)})"),
+                    val.replace("$(input_size)", f"({','.join(str(val) for val in _input_size)})"),
                 )
             elif check_type(_input_size[0], available_types):  # pass int
-                cfg_transform["init_args"][key] = cls._safe_eval(val.replace("^{input_size}", str(_input_size[0])))
+                cfg_transform["init_args"][key] = cls._safe_eval(val.replace("$(input_size)", str(_input_size[0])))
             else:
                 msg = f"{key} argument should be able to get int or tuple[int, int], but it can get {available_types}"
                 raise RuntimeError(msg)
