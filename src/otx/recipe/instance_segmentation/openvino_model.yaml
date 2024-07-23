@@ -15,7 +15,22 @@ callback_monitor: val/map_50
 
 data: ../_base_/data/instance_segmentation.yaml
 overrides:
+  reset:
+    - data.train_subset.transforms
+    - data.val_subset.transforms
+    - data.test_subset.transforms
+
   data:
     stack_images: false
+    train_subset:
+      transforms:
+        - class_path: torchvision.transforms.v2.ToImage
+
+    val_subset:
+      transforms:
+        - class_path: torchvision.transforms.v2.ToImage
+
     test_subset:
       batch_size: 64
+      transforms:
+        - class_path: torchvision.transforms.v2.ToImage
