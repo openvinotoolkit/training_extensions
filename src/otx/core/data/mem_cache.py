@@ -169,9 +169,7 @@ class MemCacheHandlerBase:
 
                 if new_page > self.mem_size:
                     self.freeze()
-                    if os.getenv("DEBUG_MODE", "false").lower() == "true":
-                        msg = "Memory pool reaches it's limit. Cannot cache more. Freeze it."
-                        logger.warning(msg)
+                    logger.debug(msg)
                     return None
 
                 offset = ct.byref(self._arr, self._cur_page.value)
