@@ -8,6 +8,7 @@ from __future__ import annotations
 import ctypes as ct
 import logging
 import multiprocessing as mp
+import os
 import re
 import signal
 from typing import TYPE_CHECKING, Any, ClassVar
@@ -168,8 +169,9 @@ class MemCacheHandlerBase:
 
                 if new_page > self.mem_size:
                     self.freeze()
-                    msg = "Memory pool reaches it's limit. Cannot cache more. Freeze it."
-                    logger.warning(msg)
+                    if os.getenv("DEBUG_MODE", "false").lower() == "true":
+                        msg = "Memory pool reaches it's limit. Cannot cache more. Freeze it."
+                        logger.warning(msg)
                     return None
 
                 offset = ct.byref(self._arr, self._cur_page.value)
