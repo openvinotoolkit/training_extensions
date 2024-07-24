@@ -9,7 +9,7 @@ from otx.core.utils.utils import (
     get_adaptive_num_workers,
     get_idx_list_per_classes,
     get_mean_std_from_data_processing,
-    get_obj_from_str,
+    import_object_from_module,
     is_ckpt_for_finetuning,
     is_ckpt_from_otx_v1,
 )
@@ -116,7 +116,7 @@ def test_get_idx_list_per_classes(fxt_dm_dataset):
     assert result == expected_result
 
 
-def test_get_obj_from_str():
+def test_import_object_from_module():
     obj_path = "otx.core.utils.utils.get_mean_std_from_data_processing"
-    obj = get_obj_from_str(obj_path)
+    obj = import_object_from_module(obj_path)
     assert obj == get_mean_std_from_data_processing

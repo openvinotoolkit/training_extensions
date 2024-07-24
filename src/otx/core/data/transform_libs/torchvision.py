@@ -70,7 +70,7 @@ from otx.core.data.transform_libs.utils import (
     translate_masks,
     translate_polygons,
 )
-from otx.core.utils.utils import get_obj_from_str
+from otx.core.utils.utils import import_object_from_module
 
 if TYPE_CHECKING:
     from otx.core.config.data import SubsetConfig
@@ -3125,14 +3125,14 @@ class TorchVisionTransformLib:
         transforms = []
         for cfg_transform in config.transforms:
             if (input_size := getattr(config, "input_size", None)) is not None:
-                cls._eval_input_size(cfg_transform, input_size)
+                cls._configure_input_size(cfg_transform, input_size)
             transform = cls._dispatch_transform(cfg_transform)
             transforms.append(transform)
 
         return Compose(transforms)
 
     @classmethod
-    def _eval_input_size(cls, cfg_transform: dict[str, Any], input_size: int | tuple[int, int] | None) -> None:
+    def _configure_input_size(cls, cfg_transform: dict[str, Any], input_size: int | tuple[int, int] | None) -> None:
         """Evaluate the input_size and replace the placeholder in the init_args.
 
         Input size should be specified as $(input_size). (e.g. $(input_size) * 0.5)
@@ -3159,24 +3159,24 @@ class TorchVisionTransformLib:
             if not (isinstance(val, str) and "$(input_size)" in val):
                 continue
             if model_cls is None:
-                model_cls = get_obj_from_str(cfg_transform["class_path"])
+                model_cls = import_object_from_module(cfg_transform["class_path"])
 
             available_types = typing.get_type_hints(model_cls.__init__).get(key)
             if available_types is None or check_type(_input_size, available_types):  # pass tuple[int, int]
-                cfg_transform["init_args"][key] = cls._safe_eval(
+                cfg_transform["init_args"][key] = cls._eval_input_size_str(
                     val.replace("$(input_size)", f"({','.join(str(val) for val in _input_size)})"),
                 )
             elif check_type(_input_size[0], available_types):  # pass int
-                cfg_transform["init_args"][key] = cls._safe_eval(val.replace("$(input_size)", str(_input_size[0])))
+                cfg_transform["init_args"][key] = cls._eval_input_size_str(val.replace("$(input_size)", str(_input_size[0])))
             else:
                 msg = f"{key} argument should be able to get int or tuple[int, int], but it can get {available_types}"
                 raise RuntimeError(msg)
 
     @classmethod
-    def _safe_eval(cls, str_to_eval: str) -> tuple[int, ...] | int:
-        """Safe eval function for _eval_input_size.
+    def _eval_input_size_str(cls, str_to_eval: str) -> tuple[int, ...] | int:
+        """Safe eval function for _configure_input_size.
 
-        The function is implemented for `_eval_input_size`, so implementation is aligned to it as below
+        The function is implemented for `_configure_input_size`, so implementation is aligned to it as below
         - Only multiplication or division evaluation are supported.
         - Only constant and tuple can be operand.
         - tuple is changed to numpy array before evaluation.

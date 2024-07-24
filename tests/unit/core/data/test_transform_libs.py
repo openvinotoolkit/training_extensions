@@ -208,7 +208,7 @@ class TestTorchVisionTransformLib:
         """
         return OmegaConf.create(cfg)
 
-    def test_eval_input_size(self, fxt_config_w_input_size):
+    def test_configure_input_size(self, fxt_config_w_input_size):
         transform = TorchVisionTransformLib.generate(fxt_config_w_input_size)
         assert isinstance(transform, v2.Compose)
         assert transform.transforms[0].size == 448  # ResizetoLongestEdge gets an integer
@@ -216,18 +216,18 @@ class TestTorchVisionTransformLib:
         assert transform.transforms[2].crop_size == (224, 224)  # RandomCrop gets sequence of integer
         assert transform.transforms[3].scale == (round(224 * 1.1), round(224 * 1.1))  # check round
 
-    def test_safe_eval(self):
-        assert TorchVisionTransformLib._safe_eval("2") == 2
-        assert TorchVisionTransformLib._safe_eval("(2, 3)") == (2, 3)
-        assert TorchVisionTransformLib._safe_eval("2*3") == 6
-        assert TorchVisionTransformLib._safe_eval("(2, 3) *3") == (6, 9)
-        assert TorchVisionTransformLib._safe_eval("(5, 5) / 2") == (2, 2)
-        assert TorchVisionTransformLib._safe_eval("(10, 11) * -0.5") == (-5, -6)
+    def test_eval_input_size_str(self):
+        assert TorchVisionTransformLib._eval_input_size_str("2") == 2
+        assert TorchVisionTransformLib._eval_input_size_str("(2, 3)") == (2, 3)
+        assert TorchVisionTransformLib._eval_input_size_str("2*3") == 6
+        assert TorchVisionTransformLib._eval_input_size_str("(2, 3) *3") == (6, 9)
+        assert TorchVisionTransformLib._eval_input_size_str("(5, 5) / 2") == (2, 2)
+        assert TorchVisionTransformLib._eval_input_size_str("(10, 11) * -0.5") == (-5, -6)
 
     @pytest.mark.parametrize("input_str", ["1+1", "1+-5", "rm fake", "hoho", "DecordDecode()"])
-    def test_safe_eval_wrong_value(self, input_str):
+    def test_eval_input_size_str_wrong_value(self, input_str):
         with pytest.raises(SyntaxError):
-            assert TorchVisionTransformLib._safe_eval(input_str)
+            assert TorchVisionTransformLib._eval_input_size_str(input_str)
 
     @pytest.fixture(params=["RGB", "BGR"])
     def fxt_image_color_channel(self, request) -> ImageColorChannel:
