@@ -3125,7 +3125,8 @@ class TorchVisionTransformLib:
         input_size = getattr(config, "input_size", None)
         transforms = []
         for cfg_transform in config.transforms:
-            cls._configure_input_size(cfg_transform, input_size)
+            if isinstance(cfg_transform, (dict, DictConfig)):
+                cls._configure_input_size(cfg_transform, input_size)
             transform = cls._dispatch_transform(cfg_transform)
             transforms.append(transform)
 
@@ -3156,7 +3157,7 @@ class TorchVisionTransformLib:
             return True
 
         model_cls = None
-        for key, val in cfg_transform["init_args"].items():
+        for key, val in cfg_transform.get("init_args", {}).items():
             if not (isinstance(val, str) and "$(input_size)" in val):
                 continue
             if input_size is None:
