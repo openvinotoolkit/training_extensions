@@ -190,8 +190,8 @@ class TestTorchVisionTransformLib:
     def fxt_config_w_input_size(self) -> list[dict[str, Any]]:
         cfg = """
         input_size:
-        - 224
-        - 224
+        - 300
+        - 200
         transforms:
           - class_path: otx.core.data.transform_libs.torchvision.ResizetoLongestEdge
             init_args:
@@ -211,10 +211,10 @@ class TestTorchVisionTransformLib:
     def test_configure_input_size(self, fxt_config_w_input_size):
         transform = TorchVisionTransformLib.generate(fxt_config_w_input_size)
         assert isinstance(transform, v2.Compose)
-        assert transform.transforms[0].size == 448  # ResizetoLongestEdge gets an integer
-        assert transform.transforms[1].scale == (112, 112)  # RandomResize gets sequence of integer
-        assert transform.transforms[2].crop_size == (224, 224)  # RandomCrop gets sequence of integer
-        assert transform.transforms[3].scale == (round(224 * 1.1), round(224 * 1.1))  # check round
+        assert transform.transforms[0].size == 600  # ResizetoLongestEdge gets an integer
+        assert transform.transforms[1].scale == (150, 100)  # RandomResize gets sequence of integer
+        assert transform.transforms[2].crop_size == (300, 200)  # RandomCrop gets sequence of integer
+        assert transform.transforms[3].scale == (round(300 * 1.1), round(200 * 1.1))  # check round
 
     def test_eval_input_size_str(self):
         assert TorchVisionTransformLib._eval_input_size_str("2") == 2
