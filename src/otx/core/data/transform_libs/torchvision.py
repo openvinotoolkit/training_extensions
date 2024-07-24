@@ -3125,8 +3125,7 @@ class TorchVisionTransformLib:
         input_size = getattr(config, "input_size", None)
         transforms = []
         for cfg_transform in config.transforms:
-            if input_size is not None:
-                cls._configure_input_size(cfg_transform, input_size)
+            cls._configure_input_size(cfg_transform, input_size)
             transform = cls._dispatch_transform(cfg_transform)
             transforms.append(transform)
 
@@ -3144,9 +3143,10 @@ class TorchVisionTransformLib:
         The function decides to pass tuple type or int type based on the type hint of the argument.
         float point values are rounded to int.
         """
-        if input_size is None:
-            return
-        _input_size: tuple[int, int] = (input_size, input_size) if isinstance(input_size, int) else tuple(input_size)  # type: ignore[assignment]
+        if input_size is not None:
+            _input_size: tuple[int, int] = (
+                (input_size, input_size) if isinstance(input_size, int) else tuple(input_size)
+            )  # type: ignore[assignment]
 
         def check_type(value: Any, expected_type: Any) -> bool:  # noqa: ANN401
             try:
@@ -3159,6 +3159,13 @@ class TorchVisionTransformLib:
         for key, val in cfg_transform["init_args"].items():
             if not (isinstance(val, str) and "$(input_size)" in val):
                 continue
+            if input_size is None:
+                msg = (
+                    f"{cfg_transform['class_path'].split('.')[-1]} initial argument has `$(input_size)`, "
+                    "but input_size is set to None."
+                )
+                raise RuntimeError(msg)
+
             if model_cls is None:
                 model_cls = import_object_from_module(cfg_transform["class_path"])
 

@@ -216,6 +216,12 @@ class TestTorchVisionTransformLib:
         assert transform.transforms[2].crop_size == (300, 200)  # RandomCrop gets sequence of integer
         assert transform.transforms[3].scale == (round(300 * 1.1), round(200 * 1.1))  # check round
 
+    def test_configure_input_size_none(self, fxt_config_w_input_size):
+        """Check input size is None but transform has $(ipnput_size)."""
+        fxt_config_w_input_size.input_size = None
+        with pytest.raises(RuntimeError, match="input_size is set to None"):
+            TorchVisionTransformLib.generate(fxt_config_w_input_size)
+
     def test_eval_input_size_str(self):
         assert TorchVisionTransformLib._eval_input_size_str("2") == 2
         assert TorchVisionTransformLib._eval_input_size_str("(2, 3)") == (2, 3)
