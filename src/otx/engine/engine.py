@@ -784,8 +784,51 @@ class Engine:
         batch_size: int = 1,
         n_iters: int = 10,
     ) -> dict[str, str]:
-        return {}
+        checkpoint = checkpoint if checkpoint is not None else self.checkpoint
 
+        if checkpoint is not None:
+            is_ir_ckpt = Path(checkpoint).suffix in [".xml"]
+            if is_ir_ckpt and not isinstance(self.model, OVModel):
+                # create OVModel
+                self.model = self._auto_configurator.get_ov_model(
+                    model_name=str(checkpoint),
+                    label_info=self.datamodule.label_info,
+                )
+
+            if not is_ir_ckpt:
+                model_cls = self.model.__class__
+                self.model = model_cls.load_from_checkpoint(
+                    checkpoint_path=checkpoint,
+                    map_location="cpu",
+                    **self.model.hparams,
+                )
+        elif isinstance(self.model, OVModel):
+            msg = "To run benchmark on OV model, checkpoint must be specified."
+            raise RuntimeError(msg)
+
+        self.model.eval()
+
+        warmup_iters = max(1, int(n_iters / 10))
+        for _ in range(warmup_iters):
+            self.model.dummy_infer(batch_size)
+
+        total_time = 0
+        for _ in range(n_iters):
+            inference_stats = self.model.dummy_infer(batch_size)
+            total_time += inference_stats["elapsed"]
+        total_time /= (n_iters * batch_size)
+
+        final_stats = {"latency": f"{total_time:.3f}", "troughput": f"{(1 / total_time):.3f}"}
+
+        if not isinstance(self.model, OVModel):
+            inference_stats = self.model.dummy_infer(1, extra_stats=True)
+            final_stats["complexity"] = inference_stats["flops"]
+            final_stats["parameters_number"] = inference_stats["params"]
+
+        for name, val in final_stats.items():
+            print(f"{name:<20}", val)
+
+        return final_stats
 
     @classmethod
     def from_config(

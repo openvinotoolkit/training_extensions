@@ -86,6 +86,15 @@ class OTXMulticlassClsModel(OTXModel[MulticlassClsBatchDataEntity, MulticlassCls
             "target": target,
         }
 
+    def get_dummy_input(self, batch_size: int = 1) -> MulticlassClsBatchDataEntity:
+        from torchvision import tv_tensors
+        #images = tv_tensors.Image(torch.rand(batch_size, 3, 224, 224))
+        labels = [torch.LongTensor([0])] * batch_size
+        images = [torch.rand(3, 224, 224) for _ in range(batch_size)]
+        labels = [torch.LongTensor([0])] * batch_size
+        data = MulticlassClsBatchDataEntity(batch_size, images, [], labels=labels)
+        return data
+
 
 class MMPretrainMulticlassClsModel(OTXMulticlassClsModel):
     """Multi-class Classification model compatible for MMPretrain.
@@ -711,6 +720,13 @@ class OVMulticlassClassificationModel(
             "target": target,
         }
 
+    def get_dummy_input(self, batch_size: int = 1) -> MulticlassClsBatchDataEntity:
+        """Returns a dummy input for classification OV model"""
+        # Resize is embedded to the OV model, which means we don't need to know the actual size
+        images = [torch.rand(3, 224, 224) for _ in range(batch_size)]
+        labels = [torch.LongTensor([0])] * batch_size
+        data = MulticlassClsBatchDataEntity(batch_size, images, [], labels=labels)
+        return data
 
 class OVMultilabelClassificationModel(OVModel[MultilabelClsBatchDataEntity, MultilabelClsBatchPredEntity]):
     """Multilabel classification model compatible for OpenVINO IR inference.
