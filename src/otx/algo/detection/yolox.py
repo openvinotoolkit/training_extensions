@@ -9,10 +9,10 @@ from typing import TYPE_CHECKING, Any
 
 from otx.algo.common.losses import CrossEntropyLoss, L1Loss
 from otx.algo.detection.backbones import CSPDarknet
+from otx.algo.detection.base_models import SingleStageDetector
 from otx.algo.detection.heads import YOLOXHead
 from otx.algo.detection.losses import IoULoss
 from otx.algo.detection.necks import YOLOXPAFPN
-from otx.algo.detection.ssd import SingleStageDetector
 from otx.algo.detection.utils.assigners import SimOTAAssigner
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.data.entity.detection import DetBatchDataEntity
