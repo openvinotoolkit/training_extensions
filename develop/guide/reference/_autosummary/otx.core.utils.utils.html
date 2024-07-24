@@ -405,10 +405,13 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#otx.core.utils.utils.get_mean_std_from_data_processing" title="otx.core.utils.utils.get_mean_std_from_data_processing"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_mean_std_from_data_processing</span></code></a>(config)</p></td>
 <td><p>Get mean and std value from data_processing.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#otx.core.utils.utils.is_ckpt_for_finetuning" title="otx.core.utils.utils.is_ckpt_for_finetuning"><code class="xref py py-obj docutils literal notranslate"><span class="pre">is_ckpt_for_finetuning</span></code></a>(ckpt)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#otx.core.utils.utils.import_object_from_module" title="otx.core.utils.utils.import_object_from_module"><code class="xref py py-obj docutils literal notranslate"><span class="pre">import_object_from_module</span></code></a>(obj_path)</p></td>
+<td><p>Get object from import format string.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.core.utils.utils.is_ckpt_for_finetuning" title="otx.core.utils.utils.is_ckpt_for_finetuning"><code class="xref py py-obj docutils literal notranslate"><span class="pre">is_ckpt_for_finetuning</span></code></a>(ckpt)</p></td>
 <td><p>Check the checkpoint will be used to finetune.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#otx.core.utils.utils.is_ckpt_from_otx_v1" title="otx.core.utils.utils.is_ckpt_from_otx_v1"><code class="xref py py-obj docutils literal notranslate"><span class="pre">is_ckpt_from_otx_v1</span></code></a>(ckpt)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#otx.core.utils.utils.is_ckpt_from_otx_v1" title="otx.core.utils.utils.is_ckpt_from_otx_v1"><code class="xref py py-obj docutils literal notranslate"><span class="pre">is_ckpt_from_otx_v1</span></code></a>(ckpt)</p></td>
 <td><p>Check the checkpoint where it comes from.</p></td>
 </tr>
 </tbody>
@@ -444,6 +447,12 @@
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">mean</span><span class="p">,</span> <span class="n">std</span> <span class="o">=</span> <span class="n">get_mean_std_from_data_processing</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
 </pre></div>
 </div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="otx.core.utils.utils.import_object_from_module">
+<span class="sig-prename descclassname"><span class="pre">otx.core.utils.utils.</span></span><span class="sig-name descname"><span class="pre">import_object_from_module</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.12)"><span class="pre">Any</span></a></span></span><a class="reference internal" href="../../../_modules/otx/core/utils/utils.html#import_object_from_module"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.utils.utils.import_object_from_module" title="Link to this definition">#</a></dt>
+<dd><p>Get object from import format string.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -543,6 +552,15 @@
    <code class="docutils literal notranslate">
     <span class="pre">
      get_mean_std_from_data_processing()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.core.utils.utils.import_object_from_module">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     import_object_from_module()
     </span>
    </code>
   </a>
