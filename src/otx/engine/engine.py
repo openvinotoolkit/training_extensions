@@ -820,7 +820,7 @@ class Engine:
                 model_fwd = lambda: model.forward(input_batch)
                 depth = 3 if extended_stats else 0
                 fwd_flops = measure_flops(model.model, model_fwd, print_stats_depth=depth)
-                stats["flops"] = convert_num_with_suffix(fwd_flops, get_suffix_str(fwd_flops*100))
+                stats["flops"] = convert_num_with_suffix(fwd_flops, get_suffix_str(fwd_flops*10**4))
 
                 params_num = sum(p.numel() for p in self.model.parameters() if p.requires_grad)
                 stats["params"] = convert_num_with_suffix(params_num, get_suffix_str(params_num*100))
@@ -841,11 +841,11 @@ class Engine:
             total_time += inference_stats["elapsed"]
         total_time /= (n_iters * batch_size)
 
-        final_stats = {"latency": f"{total_time:.3f}", "troughput": f"{(1 / total_time):.3f}"}
+        final_stats = {"latency": f"{total_time:.3f} s", "troughput": f"{(1 / total_time):.3f} FPS"}
 
         if not isinstance(self.model, OVModel):
             inference_stats = dummy_infer(self.model, 1, extra_stats=True)
-            final_stats["complexity"] = inference_stats["flops"]
+            final_stats["complexity"] = inference_stats["flops"] + " MACs"
             final_stats["parameters_number"] = inference_stats["params"]
 
         for name, val in final_stats.items():
