@@ -3145,8 +3145,8 @@ class TorchVisionTransformLib:
         """
         if input_size is not None:
             _input_size: tuple[int, int] = (
-                (input_size, input_size) if isinstance(input_size, int) else tuple(input_size)
-            )  # type: ignore[assignment]
+                (input_size, input_size) if isinstance(input_size, int) else tuple(input_size)  # type: ignore[assignment]
+            )
 
         def check_type(value: Any, expected_type: Any) -> bool:  # noqa: ANN401
             try:
