@@ -5,10 +5,13 @@
 
 from __future__ import annotations
 
+import ast
 import copy
 import io
 import itertools
 import math
+import operator
+import typing
 from inspect import isclass
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, ClassVar, Iterable, Sequence
@@ -19,6 +22,7 @@ import numpy as np
 import PIL.Image
 import torch
 import torchvision.transforms.v2 as tvt_v2
+import typeguard
 from datumaro.components.media import Video
 from lightning.pytorch.cli import instantiate_class
 from numpy import random
@@ -66,6 +70,7 @@ from otx.core.data.transform_libs.utils import (
     translate_masks,
     translate_polygons,
 )
+from otx.core.utils.utils import import_object_from_module
 
 if TYPE_CHECKING:
     from otx.core.config.data import SubsetConfig
@@ -632,7 +637,7 @@ class RandomResizedCrop(tvt_v2.Transform, NumpytoTVTensorMixin):
     is made. This crop is finally resized to given size.
 
     Args:
-        scale (sequence | int): Desired output scale of the crop. If size is an
+        scale (Sequence[int] | int): Desired output scale of the crop. If size is an
             int instead of sequence like (h, w), a square crop (size, size) is
             made.
         crop_ratio_range (tuple): Range of the random size of the cropped
@@ -651,7 +656,7 @@ class RandomResizedCrop(tvt_v2.Transform, NumpytoTVTensorMixin):
 
     def __init__(
         self,
-        scale: Sequence | int,
+        scale: Sequence[int] | int,
         crop_ratio_range: tuple[float, float] = (0.08, 1.0),
         aspect_ratio_range: tuple[float, float] = (3.0 / 4.0, 4.0 / 3.0),
         max_attempts: int = 10,
@@ -2339,7 +2344,7 @@ class RandomCrop(tvt_v2.Transform, NumpytoTVTensorMixin):
     The absolute `crop_size` is sampled based on `crop_type` and `image_size`, then the cropped results are generated.
 
     Args:
-        crop_size (tuple): The relative ratio or absolute pixels of
+        crop_size (tuple[int, int]): The relative ratio or absolute pixels of
             (height, width).
         crop_type (str, optional): One of "relative_range", "relative",
             "absolute", "absolute_range". "relative" randomly crops
@@ -2364,7 +2369,7 @@ class RandomCrop(tvt_v2.Transform, NumpytoTVTensorMixin):
 
     def __init__(
         self,
-        crop_size: tuple,  # (H, W)
+        crop_size: tuple[int, int],  # (H, W)
         crop_type: str = "absolute",
         cat_max_ratio: int | float = 1,
         allow_negative_crop: bool = False,
@@ -3117,12 +3122,112 @@ class TorchVisionTransformLib:
         if isinstance(config.transforms, Compose):
             return config.transforms
 
+        input_size = getattr(config, "input_size", None)
         transforms = []
         for cfg_transform in config.transforms:
+            if isinstance(cfg_transform, (dict, DictConfig)):
+                cls._configure_input_size(cfg_transform, input_size)
             transform = cls._dispatch_transform(cfg_transform)
             transforms.append(transform)
 
         return Compose(transforms)
+
+    @classmethod
+    def _configure_input_size(cls, cfg_transform: dict[str, Any], input_size: int | tuple[int, int] | None) -> None:
+        """Evaluate the input_size and replace the placeholder in the init_args.
+
+        Input size should be specified as $(input_size). (e.g. $(input_size) * 0.5)
+        Only simple multiplication or division evaluation is supported. For example,
+        $(input_size) * -0.5    => supported
+        $(input_size) * 2.1 / 3 => supported
+        $(input_size) + 1       => not supported
+        The function decides to pass tuple type or int type based on the type hint of the argument.
+        float point values are rounded to int.
+        """
+        if input_size is not None:
+            _input_size: tuple[int, int] = (
+                (input_size, input_size) if isinstance(input_size, int) else tuple(input_size)  # type: ignore[assignment]
+            )
+
+        def check_type(value: Any, expected_type: Any) -> bool:  # noqa: ANN401
+            try:
+                typeguard.check_type(value, expected_type)
+            except typeguard.TypeCheckError:
+                return False
+            return True
+
+        model_cls = None
+        for key, val in cfg_transform.get("init_args", {}).items():
+            if not (isinstance(val, str) and "$(input_size)" in val):
+                continue
+            if input_size is None:
+                msg = (
+                    f"{cfg_transform['class_path'].split('.')[-1]} initial argument has `$(input_size)`, "
+                    "but input_size is set to None."
+                )
+                raise RuntimeError(msg)
+
+            if model_cls is None:
+                model_cls = import_object_from_module(cfg_transform["class_path"])
+
+            available_types = typing.get_type_hints(model_cls.__init__).get(key)
+            if available_types is None or check_type(_input_size, available_types):  # pass tuple[int, int]
+                cfg_transform["init_args"][key] = cls._eval_input_size_str(
+                    val.replace("$(input_size)", str(_input_size)),
+                )
+            elif check_type(_input_size[0], available_types):  # pass int
+                cfg_transform["init_args"][key] = cls._eval_input_size_str(
+                    val.replace("$(input_size)", str(_input_size[0])),
+                )
+            else:
+                msg = f"{key} argument should be able to get int or tuple[int, int], but it can get {available_types}"
+                raise RuntimeError(msg)
+
+    @classmethod
+    def _eval_input_size_str(cls, str_to_eval: str) -> tuple[int, ...] | int:
+        """Safe eval function for _configure_input_size.
+
+        The function is implemented for `_configure_input_size`, so implementation is aligned to it as below
+        - Only multiplication or division evaluation are supported.
+        - Only constant and tuple can be operand.
+        - tuple is changed to numpy array before evaluation.
+        - result value is rounded to int.
+        """
+        bin_ops = {
+            ast.Mult: operator.mul,
+            ast.Div: operator.truediv,
+        }
+
+        un_ops = {
+            ast.USub: operator.neg,
+            ast.UAdd: operator.pos,
+        }
+
+        available_ops = tuple(bin_ops) + tuple(un_ops) + (ast.BinOp, ast.UnaryOp)
+
+        tree = ast.parse(str_to_eval, mode="eval")
+
+        def _eval(node: Any) -> Any:  # noqa: ANN401
+            if isinstance(node, ast.Expression):
+                return _eval(node.body)
+            if isinstance(node, ast.Constant):
+                return node.value
+            if isinstance(node, ast.Tuple):
+                return np.array([_eval(val) for val in node.elts])
+            if isinstance(node, ast.BinOp) and type(node.op) in bin_ops:
+                left = _eval(node.left)
+                right = _eval(node.right)
+                return bin_ops[type(node.op)](left, right)
+            if isinstance(node, ast.UnaryOp) and type(node.op) in un_ops:
+                operand = _eval(node.operand) if isinstance(node.operand, available_ops) else node.operand.value
+                return un_ops[type(node.op)](operand)  # type: ignore[operator]
+            msg = f"Bad syntax, {type(node)}. Available operations for calcualting input size are {available_ops}"
+            raise SyntaxError(msg)
+
+        ret = _eval(tree)
+        if isinstance(ret, np.ndarray):
+            return tuple(ret.round().astype(np.int32).tolist())
+        return round(ret)
 
     @classmethod
     def _dispatch_transform(cls, cfg_transform: DictConfig | dict | tvt_v2.Transform) -> tvt_v2.Transform:

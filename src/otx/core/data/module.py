@@ -62,12 +62,18 @@ class OTXDataModule(LightningDataModule):
         unannotated_items_ratio: float = 0.0,
         auto_num_workers: bool = False,
         device: DeviceType = DeviceType.auto,
+        input_size: int | tuple[int, int] | None = None,
     ) -> None:
         """Constructor."""
         super().__init__()
         self.task = task
         self.data_format = data_format
         self.data_root = data_root
+
+        if input_size is not None:
+            for subset_cfg in [train_subset, val_subset, test_subset, unlabeled_subset]:
+                if subset_cfg.input_size is None:
+                    subset_cfg.input_size = input_size
 
         self.train_subset = train_subset
         self.val_subset = val_subset
