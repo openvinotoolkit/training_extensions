@@ -11,7 +11,7 @@ import pickle  # nosec B403 used pickle for internal state dump/load
 from decimal import Decimal
 from functools import partial
 from types import LambdaType
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Callable
 
 import torch
 
@@ -260,3 +260,21 @@ def check_pickleable(obj: Any) -> bool:  # noqa: ANN401
     except Exception:
         return False
     return True
+
+
+def measure_flops(
+    model: torch.nn.Module,
+    forward_fn: Callable[[], torch.Tensor],
+    loss_fn: Callable[[torch.Tensor], torch.Tensor] | None = None,
+    print_stats_depth: int = 0,
+) -> int:
+    """Utility to compute the total number of FLOPs used by a module during training or during inference."""
+    from torch.utils.flop_counter import FlopCounterMode
+
+    flop_counter = FlopCounterMode(model, display=print_stats_depth > 0, depth=print_stats_depth)
+    with flop_counter:
+        if loss_fn is None:
+            forward_fn()
+        else:
+            loss_fn(forward_fn()).backward()
+    return flop_counter.get_total_flops()

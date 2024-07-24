@@ -11,7 +11,6 @@ import contextlib
 import inspect
 import json
 import logging
-import time
 import warnings
 from abc import abstractmethod
 from collections.abc import Sequence
@@ -785,30 +784,6 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
 
     def get_dummy_input(self, batch_size: int = 1) -> OTXBatchDataEntity[Any]:
         raise RuntimeError("get_dummy_input() is not implemented")
-
-    def dummy_infer(self, batch_size: int = 1, extra_stats: bool = False):
-        input_batch = self.get_dummy_input(batch_size)
-
-        stats = {}
-
-        start = time.time()
-        if extra_stats:
-            from lightning.fabric.utilities.throughput import measure_flops
-            from torch.utils.flop_counter import get_suffix_str, convert_num_with_suffix
-
-            model_fwd = lambda: self.forward(input_batch)
-            fwd_flops = measure_flops(self.model, model_fwd)
-            stats["flops"] = convert_num_with_suffix(fwd_flops, get_suffix_str(fwd_flops*100))
-
-            params_num = sum(p.numel() for p in self.model.parameters() if p.requires_grad)
-            stats["params"] = convert_num_with_suffix(params_num, get_suffix_str(params_num*100))
-        else:
-            self.forward(input_batch)
-        end = time.time()
-
-        stats["elapsed"] = end - start
-
-        return stats
 
     @staticmethod
     def _dispatch_label_info(label_info: LabelInfoTypes) -> LabelInfo:

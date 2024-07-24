@@ -8,6 +8,7 @@ from __future__ import annotations
 import inspect
 import logging
 import tempfile
+import time
 from contextlib import contextmanager
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, ClassVar, Iterable, Iterator, Literal
@@ -28,7 +29,7 @@ from otx.core.types.export import OTXExportFormatType
 from otx.core.types.precision import OTXPrecisionType
 from otx.core.types.task import OTXTaskType
 from otx.core.utils.cache import TrainerArgumentsCache
-from otx.utils.utils import is_xpu_available
+from otx.utils.utils import is_xpu_available, measure_flops
 
 from .adaptive_bs import adapt_batch_size
 from .hpo import execute_hpo, update_hyper_parameter
@@ -783,6 +784,7 @@ class Engine:
         checkpoint: PathLike | None = None,
         batch_size: int = 1,
         n_iters: int = 10,
+        extended_stats: bool = False,
     ) -> dict[str, str]:
         checkpoint = checkpoint if checkpoint is not None else self.checkpoint
 
@@ -808,25 +810,46 @@ class Engine:
 
         self.model.eval()
 
+        def dummy_infer(model: OTXModel, batch_size: int = 1, extra_stats: bool = False) -> dict[str, Any]:
+            input_batch = model.get_dummy_input(batch_size)
+            stats = {}
+            start = time.time()
+            if extra_stats:
+                from torch.utils.flop_counter import get_suffix_str, convert_num_with_suffix
+
+                model_fwd = lambda: model.forward(input_batch)
+                depth = 3 if extended_stats else 0
+                fwd_flops = measure_flops(model.model, model_fwd, print_stats_depth=depth)
+                stats["flops"] = convert_num_with_suffix(fwd_flops, get_suffix_str(fwd_flops*100))
+
+                params_num = sum(p.numel() for p in self.model.parameters() if p.requires_grad)
+                stats["params"] = convert_num_with_suffix(params_num, get_suffix_str(params_num*100))
+            else:
+                model.forward(input_batch)
+            end = time.time()
+            stats["elapsed"] = end - start
+
+            return stats
+
         warmup_iters = max(1, int(n_iters / 10))
         for _ in range(warmup_iters):
-            self.model.dummy_infer(batch_size)
+            dummy_infer(self.model, batch_size)
 
         total_time = 0
         for _ in range(n_iters):
-            inference_stats = self.model.dummy_infer(batch_size)
+            inference_stats = dummy_infer(self.model, batch_size)
             total_time += inference_stats["elapsed"]
         total_time /= (n_iters * batch_size)
 
         final_stats = {"latency": f"{total_time:.3f}", "troughput": f"{(1 / total_time):.3f}"}
 
         if not isinstance(self.model, OVModel):
-            inference_stats = self.model.dummy_infer(1, extra_stats=True)
+            inference_stats = dummy_infer(self.model, 1, extra_stats=True)
             final_stats["complexity"] = inference_stats["flops"]
             final_stats["parameters_number"] = inference_stats["params"]
 
         for name, val in final_stats.items():
-            print(f"{name:<20}", val)
+            print(f"{name:<20} | {val}")
 
         return final_stats
 
