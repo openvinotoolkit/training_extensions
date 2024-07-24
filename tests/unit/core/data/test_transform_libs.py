@@ -186,6 +186,55 @@ class TestTorchVisionTransformLib:
         item = dataset[0]
         assert isinstance(item, data_entity_cls)
 
+    @pytest.fixture()
+    def fxt_config_w_input_size(self) -> list[dict[str, Any]]:
+        cfg = """
+        input_size:
+        - 300
+        - 200
+        transforms:
+          - class_path: otx.core.data.transform_libs.torchvision.ResizetoLongestEdge
+            init_args:
+                size: $(input_size) * 2
+          - class_path: otx.core.data.transform_libs.torchvision.RandomResize
+            init_args:
+                scale: $(input_size) * 0.5
+          - class_path: otx.core.data.transform_libs.torchvision.RandomCrop
+            init_args:
+                crop_size: $(input_size)
+          - class_path: otx.core.data.transform_libs.torchvision.RandomResize
+            init_args:
+                scale: $(input_size) * 1.1
+        """
+        return OmegaConf.create(cfg)
+
+    def test_configure_input_size(self, fxt_config_w_input_size):
+        transform = TorchVisionTransformLib.generate(fxt_config_w_input_size)
+        assert isinstance(transform, v2.Compose)
+        assert transform.transforms[0].size == 600  # ResizetoLongestEdge gets an integer
+        assert transform.transforms[1].scale == (150, 100)  # RandomResize gets sequence of integer
+        assert transform.transforms[2].crop_size == (300, 200)  # RandomCrop gets sequence of integer
+        assert transform.transforms[3].scale == (round(300 * 1.1), round(200 * 1.1))  # check round
+
+    def test_configure_input_size_none(self, fxt_config_w_input_size):
+        """Check input size is None but transform has $(ipnput_size)."""
+        fxt_config_w_input_size.input_size = None
+        with pytest.raises(RuntimeError, match="input_size is set to None"):
+            TorchVisionTransformLib.generate(fxt_config_w_input_size)
+
+    def test_eval_input_size_str(self):
+        assert TorchVisionTransformLib._eval_input_size_str("2") == 2
+        assert TorchVisionTransformLib._eval_input_size_str("(2, 3)") == (2, 3)
+        assert TorchVisionTransformLib._eval_input_size_str("2*3") == 6
+        assert TorchVisionTransformLib._eval_input_size_str("(2, 3) *3") == (6, 9)
+        assert TorchVisionTransformLib._eval_input_size_str("(5, 5) / 2") == (2, 2)
+        assert TorchVisionTransformLib._eval_input_size_str("(10, 11) * -0.5") == (-5, -6)
+
+    @pytest.mark.parametrize("input_str", ["1+1", "1+-5", "rm fake", "hoho", "DecordDecode()"])
+    def test_eval_input_size_str_wrong_value(self, input_str):
+        with pytest.raises(SyntaxError):
+            assert TorchVisionTransformLib._eval_input_size_str(input_str)
+
     @pytest.fixture(params=["RGB", "BGR"])
     def fxt_image_color_channel(self, request) -> ImageColorChannel:
         return ImageColorChannel(request.param)

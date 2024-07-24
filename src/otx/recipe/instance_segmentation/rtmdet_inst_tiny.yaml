@@ -31,6 +31,7 @@ callback_monitor: val/map_50
 
 data: ../_base_/data/instance_segmentation.yaml
 overrides:
+  reset: data.train_subset.transforms
   precision: 16
   max_epochs: 100
   gradient_clip_val: 35.0
@@ -92,8 +93,8 @@ overrides:
           init_args:
             mean: [123.675, 116.28, 103.53]
             std: [58.395, 57.12, 57.375]
+
     val_subset:
-      batch_size: 1
       num_workers: 4
       transforms:
         - class_path: otx.core.data.transform_libs.torchvision.Resize
@@ -101,21 +102,11 @@ overrides:
             scale:
               - 640
               - 640
-            keep_ratio: true
         - class_path: otx.core.data.transform_libs.torchvision.Pad
           init_args:
-            pad_to_square: true
             pad_val: 114
-            is_numpy_to_tvtensor: true
-        - class_path: torchvision.transforms.v2.ToDtype
-          init_args:
-            dtype: ${as_torch_dtype:torch.float32}
-        - class_path: torchvision.transforms.v2.Normalize
-          init_args:
-            mean: [123.675, 116.28, 103.53]
-            std: [58.395, 57.12, 57.375]
+
     test_subset:
-      batch_size: 1
       num_workers: 4
       transforms:
         - class_path: otx.core.data.transform_libs.torchvision.Resize
@@ -123,16 +114,6 @@ overrides:
             scale:
               - 640
               - 640
-            keep_ratio: true
         - class_path: otx.core.data.transform_libs.torchvision.Pad
           init_args:
-            pad_to_square: true
             pad_val: 114
-            is_numpy_to_tvtensor: true
-        - class_path: torchvision.transforms.v2.ToDtype
-          init_args:
-            dtype: ${as_torch_dtype:torch.float32}
-        - class_path: torchvision.transforms.v2.Normalize
-          init_args:
-            mean: [123.675, 116.28, 103.53]
-            std: [58.395, 57.12, 57.375]
