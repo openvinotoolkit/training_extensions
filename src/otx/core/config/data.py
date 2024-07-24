@@ -60,7 +60,9 @@ class SubsetConfig:
     num_workers: int = 2
     sampler: SamplerConfig = field(default_factory=lambda: SamplerConfig())
     to_tv_image: bool = True
-    input_size: int | tuple[int, int] | None = None
+    input_size: (
+        Any
+    ) = None  # type is `int | tuple[int, int] | None` TODO (eunwoosh): Revisit after error above is solved
 
 
 @dataclass

@@ -3168,7 +3168,9 @@ class TorchVisionTransformLib:
                     val.replace("$(input_size)", str(_input_size)),
                 )
             elif check_type(_input_size[0], available_types):  # pass int
-                cfg_transform["init_args"][key] = cls._eval_input_size_str(val.replace("$(input_size)", str(_input_size[0])))
+                cfg_transform["init_args"][key] = cls._eval_input_size_str(
+                    val.replace("$(input_size)", str(_input_size[0])),
+                )
             else:
                 msg = f"{key} argument should be able to get int or tuple[int, int], but it can get {available_types}"
                 raise RuntimeError(msg)
