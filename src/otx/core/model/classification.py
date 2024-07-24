@@ -63,6 +63,7 @@ class OTXMulticlassClsModel(OTXModel[MulticlassClsBatchDataEntity, MulticlassCls
             metric=metric,
             torch_compile=torch_compile,
         )
+        self.image_size = (1, 3, 224, 224)
 
     @property
     def _export_parameters(self) -> TaskLevelExportParameters:
@@ -88,7 +89,7 @@ class OTXMulticlassClsModel(OTXModel[MulticlassClsBatchDataEntity, MulticlassCls
 
     def get_dummy_input(self, batch_size: int = 1) -> MulticlassClsBatchDataEntity:
         labels = [torch.LongTensor([0])] * batch_size
-        images = [torch.rand(3, 224, 224) for _ in range(batch_size)]
+        images = [torch.rand(*self.image_size[1:]) for _ in range(batch_size)]
         labels = [torch.LongTensor([0])] * batch_size
         data = MulticlassClsBatchDataEntity(batch_size, images, [], labels=labels)
         return data
@@ -114,7 +115,6 @@ class MMPretrainMulticlassClsModel(OTXMulticlassClsModel):
         config = inplace_num_classes(cfg=config, num_classes=self._dispatch_label_info(label_info).num_classes)
         self.config = config
         self.load_from = config.pop("load_from", None)
-        self.image_size = (1, 3, 224, 224)
         super().__init__(
             label_info=label_info,
             optimizer=optimizer,
@@ -262,6 +262,7 @@ class OTXMultilabelClsModel(OTXModel[MultilabelClsBatchDataEntity, MultilabelCls
             metric=metric,
             torch_compile=torch_compile,
         )
+        self.image_size = (1, 3, 224, 224)
 
     @property
     def _export_parameters(self) -> TaskLevelExportParameters:
@@ -288,6 +289,12 @@ class OTXMultilabelClsModel(OTXModel[MultilabelClsBatchDataEntity, MultilabelCls
         """Model forward function used for the model tracing during model exportation."""
         return self.model.forward(image, mode="tensor")
 
+    def get_dummy_input(self, batch_size: int = 1) -> MultilabelClsBatchDataEntity:
+        """Returns a dummy input for classification OV model"""
+        images = [torch.rand(*self.image_size[1:]) for _ in range(batch_size)]
+        labels = [torch.LongTensor([0])] * batch_size
+        data = MultilabelClsBatchDataEntity(batch_size, images, [], labels=labels)
+        return data
 
 class MMPretrainMultilabelClsModel(OTXMultilabelClsModel):
     """Multi-label Classification model compatible for MMPretrain.
@@ -309,7 +316,6 @@ class MMPretrainMultilabelClsModel(OTXMultilabelClsModel):
         config = inplace_num_classes(cfg=config, num_classes=self._dispatch_label_info(label_info).num_classes)
         self.config = config
         self.load_from = config.pop("load_from", None)
-        self.image_size = (1, 3, 224, 224)
         super().__init__(
             label_info=label_info,
             optimizer=optimizer,
@@ -451,6 +457,7 @@ class OTXHlabelClsModel(OTXModel[HlabelClsBatchDataEntity, HlabelClsBatchPredEnt
             metric=metric,
             torch_compile=torch_compile,
         )
+        self.image_size = (1, 3, 224, 224)
 
     @property
     def _export_parameters(self) -> TaskLevelExportParameters:
@@ -488,6 +495,12 @@ class OTXHlabelClsModel(OTXModel[HlabelClsBatchDataEntity, HlabelClsBatchPredEnt
 
         return label_info
 
+    def get_dummy_input(self, batch_size: int = 1) -> HlabelClsBatchDataEntity:
+        """Returns a dummy input for classification OV model"""
+        images = [torch.rand(*self.image_size[1:]) for _ in range(batch_size)]
+        labels = [torch.LongTensor([0])] * batch_size
+        data = HlabelClsBatchDataEntity(batch_size, images, [], labels=labels)
+        return data
 
 class MMPretrainHlabelClsModel(OTXHlabelClsModel):
     """H-label Classification model compatible for MMPretrain.
@@ -516,7 +529,6 @@ class MMPretrainHlabelClsModel(OTXHlabelClsModel):
 
         self.config = config
         self.load_from = config.pop("load_from", None)
-        self.image_size = (1, 3, 224, 224)
         super().__init__(
             label_info=label_info,
             optimizer=optimizer,
@@ -799,6 +811,13 @@ class OVMultilabelClassificationModel(OVModel[MultilabelClsBatchDataEntity, Mult
             "target": torch.stack(inputs.labels),
         }
 
+    def get_dummy_input(self, batch_size: int = 1) -> MultilabelClsBatchDataEntity:
+        """Returns a dummy input for classification OV model"""
+        # Resize is embedded to the OV model, which means we don't need to know the actual size
+        images = [torch.rand(3, 224, 224) for _ in range(batch_size)]
+        labels = [torch.LongTensor([0])] * batch_size
+        data = MultilabelClsBatchDataEntity(batch_size, images, [], labels=labels)
+        return data
 
 class OVHlabelClassificationModel(OVModel[HlabelClsBatchDataEntity, HlabelClsBatchPredEntity]):
     """Hierarchical classification model compatible for OpenVINO IR inference.
@@ -915,3 +934,11 @@ class OVHlabelClassificationModel(OVModel[HlabelClsBatchDataEntity, HlabelClsBat
 
         msg = "Cannot construct LabelInfo from OpenVINO IR. Please check this model is trained by OTX."
         raise ValueError(msg)
+
+    def get_dummy_input(self, batch_size: int = 1) -> HlabelClsBatchDataEntity:
+        """Returns a dummy input for classification OV model"""
+        # Resize is embedded to the OV model, which means we don't need to know the actual size
+        images = [torch.rand(3, 224, 224) for _ in range(batch_size)]
+        labels = [torch.LongTensor([0])] * batch_size
+        data = HlabelClsBatchDataEntity(batch_size, images, [], labels=labels)
+        return data
