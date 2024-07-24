@@ -10,7 +10,7 @@ All notable changes to this project will be documented in this file.
 
 - Enable to override data configurations
   (<https://github.com/openvinotoolkit/training_extensions/pull/3748>)
-- Enable to use input_size at transforms in reipce
+- Enable to use input_size at transforms in recipe
   (<https://github.com/openvinotoolkit/training_extensions/pull/3759>)
 
 ### Bug fixes

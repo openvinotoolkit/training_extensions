@@ -3122,9 +3122,10 @@ class TorchVisionTransformLib:
         if isinstance(config.transforms, Compose):
             return config.transforms
 
+        input_size = getattr(config, "input_size", None)
         transforms = []
         for cfg_transform in config.transforms:
-            if (input_size := getattr(config, "input_size", None)) is not None:
+            if input_size is not None:
                 cls._configure_input_size(cfg_transform, input_size)
             transform = cls._dispatch_transform(cfg_transform)
             transforms.append(transform)
@@ -3164,7 +3165,7 @@ class TorchVisionTransformLib:
             available_types = typing.get_type_hints(model_cls.__init__).get(key)
             if available_types is None or check_type(_input_size, available_types):  # pass tuple[int, int]
                 cfg_transform["init_args"][key] = cls._eval_input_size_str(
-                    val.replace("$(input_size)", f"({','.join(str(val) for val in _input_size)})"),
+                    val.replace("$(input_size)", str(_input_size)),
                 )
             elif check_type(_input_size[0], available_types):  # pass int
                 cfg_transform["init_args"][key] = cls._eval_input_size_str(val.replace("$(input_size)", str(_input_size[0])))
