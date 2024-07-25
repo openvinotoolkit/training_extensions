@@ -1,6 +1,6 @@
-# Copyright (C) 2023 Intel Corporation
+# Copyright (C) 2023-2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-#
+
 """Module for OTX visual prompting data entities."""
 
 from __future__ import annotations
@@ -10,19 +10,15 @@ from typing import TYPE_CHECKING
 
 from torchvision import tv_tensors
 
-from otx.core.data.entity.base import (
-    OTXBatchDataEntity,
-    OTXBatchPredEntity,
-    OTXDataEntity,
-    OTXPredEntity,
-    Points,
-)
+from otx.core.data.entity.base import OTXBatchDataEntity, OTXBatchPredEntity, OTXDataEntity, OTXPredEntity, Points
 from otx.core.data.entity.utils import register_pytree_node
 from otx.core.types.task import OTXTaskType
 
 if TYPE_CHECKING:
-    from datumaro import Polygon
+    from datumaro import Polygon as dmPolygon
     from torch import LongTensor
+    from torchvision.tv_tensors import BoundingBoxes as tvBoundingBoxes
+    from torchvision.tv_tensors import Mask as tvMask
 
 
 @register_pytree_node
@@ -31,10 +27,10 @@ class VisualPromptingDataEntity(OTXDataEntity):
     """Data entity for visual prompting task.
 
     Attributes:
-        masks (tv_tensors.Mask): The masks of the instances.
-        labels (LongTensor): The labels of the instances.
-        polygons (list[Polygon]): The polygons of the instances.
-        bboxes (tv_tensors.BoundingBoxes): The bounding boxes of the instances.
+        masks (tvMask): The masks of the instances.
+        labels (dict[str, LongTensor]): The labels of the instances.
+        polygons (list[dmPolygon]): The polygons of the instances.
+        bboxes (tvBoundingBoxes): The bounding boxes of the instances.
         points (Points): The points of the instances.
     """
 
@@ -43,10 +39,10 @@ class VisualPromptingDataEntity(OTXDataEntity):
         """OTX Task type definition."""
         return OTXTaskType.VISUAL_PROMPTING
 
-    masks: tv_tensors.Mask
+    masks: tvMask
     labels: dict[str, LongTensor]
-    polygons: list[Polygon]
-    bboxes: tv_tensors.BoundingBoxes
+    polygons: list[dmPolygon]
+    bboxes: tvBoundingBoxes
     points: Points
 
 
@@ -60,17 +56,17 @@ class VisualPromptingBatchDataEntity(OTXBatchDataEntity[VisualPromptingDataEntit
     """Data entity for visual prompting task.
 
     Attributes:
-        masks (list[tv_tensors.Mask]): List of masks.
-        labels (list[LongTensor]): List of labels.
-        polygons (list[list[Polygon]]): List of polygons.
-        bboxes (list[tv_tensors.BoundingBoxes]): List of bounding boxes.
+        masks (list[tvMask]): List of masks.
+        labels (list[dict[str, LongTensor]]): List of labels.
+        polygons (list[list[dmPolygon]]): List of polygons.
+        bboxes (list[tvBoundingBoxes]): List of bounding boxes.
         points (list[Points]): List of points.
     """
 
-    masks: list[tv_tensors.Mask]
+    masks: list[tvMask]
     labels: list[dict[str, LongTensor]]
-    polygons: list[list[Polygon]]
-    bboxes: list[tv_tensors.BoundingBoxes]
+    polygons: list[list[dmPolygon]]
+    bboxes: list[tvBoundingBoxes]
     points: list[Points]
 
     @property
@@ -137,10 +133,10 @@ class ZeroShotVisualPromptingDataEntity(OTXDataEntity):
     """Data entity for zero-shot visual prompting task.
 
     Attributes:
-        masks (tv_tensors.Mask): The masks of the instances.
-        labels (LongTensor): The labels of the instances.
-        polygons (list[Polygon]): The polygons of the instances.
-        prompts (list[tv_tensors.TVTensor]): The prompts of the instances.
+        masks (tvMask): The masks of the instances.
+        labels (dict[str, list[LongTensor]]): The labels of the instances for each prompt.
+        polygons (list[dmPolygon]): The polygons of the instances.
+        prompts (list[tvBoundingBoxes | Points]): The prompts of the instances.
     """
 
     @property
@@ -148,10 +144,10 @@ class ZeroShotVisualPromptingDataEntity(OTXDataEntity):
         """OTX Task type definition."""
         return OTXTaskType.ZERO_SHOT_VISUAL_PROMPTING
 
-    masks: tv_tensors.Mask
-    labels: list[LongTensor]
-    polygons: list[Polygon]
-    prompts: list[tv_tensors.TVTensor]
+    masks: tvMask
+    labels: dict[str, LongTensor]
+    polygons: list[dmPolygon]
+    prompts: list[tvBoundingBoxes | Points]
 
 
 @dataclass
@@ -159,16 +155,16 @@ class ZeroShotVisualPromptingBatchDataEntity(OTXBatchDataEntity[ZeroShotVisualPr
     """Data entity for zero-shot visual prompting task.
 
     Attributes:
-        masks (list[tv_tensors.Mask]): List of masks.
-        labels (list[LongTensor]): List of labels.
-        polygons (list[list[Polygon]]): List of polygons.
-        prompts (list[list[tv_tensors.TVTensor]]): List of prompts.
+        masks (list[tvMask]): List of masks.
+        labels (list[dict[str, LongTensor]]): List of labels.
+        polygons (list[list[dmPolygon]]): List of polygons.
+        prompts (list[list[tvBoundingBoxes | Points]]): List of prompts.
     """
 
-    masks: list[tv_tensors.Mask]
-    labels: list[LongTensor]
-    polygons: list[list[Polygon]]
-    prompts: list[list[tv_tensors.TVTensor]]
+    masks: list[tvMask]
+    labels: list[dict[str, LongTensor]]
+    polygons: list[list[dmPolygon]]
+    prompts: list[list[tvBoundingBoxes | Points]]
 
     @property
     def task(self) -> OTXTaskType:
