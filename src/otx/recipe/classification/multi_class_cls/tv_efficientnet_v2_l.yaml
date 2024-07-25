@@ -39,14 +39,15 @@ overrides:
         patience: 3
 
   data:
+    input_size:
+      - 224
+      - 224
     train_subset:
       batch_size: 64
       transforms:
         - class_path: torchvision.transforms.v2.RandomResizedCrop
           init_args:
-            size:
-              - 224
-              - 224
+            size: $(input_size)
             antialias: true
         - class_path: torchvision.transforms.v2.RandomHorizontalFlip
           init_args:
@@ -74,9 +75,7 @@ overrides:
       transforms:
         - class_path: torchvision.transforms.v2.Resize
           init_args:
-            size:
-              - 224
-              - 224
+            size: $(input_size)
         - class_path: torchvision.transforms.v2.ToImage
         - class_path: torchvision.transforms.v2.ToDtype
           init_args:
@@ -98,9 +97,7 @@ overrides:
       transforms:
         - class_path: torchvision.transforms.v2.Resize
           init_args:
-            size:
-              - 224
-              - 224
+            size: $(input_size)
         - class_path: torchvision.transforms.v2.ToImage
         - class_path: torchvision.transforms.v2.ToDtype
           init_args:

@@ -1,4 +1,7 @@
 task: SEMANTIC_SEGMENTATION
+input_size:
+  - 512
+  - 512
 mem_cache_size: 1GB
 mem_cache_img_max_size: null
 image_color_channel: RGB
@@ -15,9 +18,7 @@ train_subset:
   transforms:
     - class_path: otx.core.data.transform_libs.torchvision.RandomResizedCrop
       init_args:
-        scale:
-          - 512
-          - 512
+        scale: $(input_size)
         crop_ratio_range:
           - 0.2
           - 1.0
@@ -49,9 +50,7 @@ val_subset:
   transforms:
     - class_path: otx.core.data.transform_libs.torchvision.Resize
       init_args:
-        scale:
-          - 512
-          - 512
+        scale: $(input_size)
         transform_mask: true
         is_numpy_to_tvtensor: true
     - class_path: torchvision.transforms.v2.ToDtype
@@ -73,9 +72,7 @@ test_subset:
   transforms:
     - class_path: otx.core.data.transform_libs.torchvision.Resize
       init_args:
-        scale:
-          - 512
-          - 512
+        scale: $(input_size)
         transform_mask: true
         is_numpy_to_tvtensor: true
     - class_path: torchvision.transforms.v2.ToDtype

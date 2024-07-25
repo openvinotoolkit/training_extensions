@@ -33,6 +33,9 @@ overrides:
   max_epochs: 100
   gradient_clip_val: 35.0
   data:
+    input_size:
+      - 512
+      - 512
     tile_config:
       enable_tiler: true
       enable_adaptive_tiling: true
@@ -44,9 +47,7 @@ overrides:
         - class_path: otx.core.data.transform_libs.torchvision.Resize
           init_args:
             keep_ratio: false
-            scale:
-              - 512
-              - 512
+            scale: $(input_size)
         - class_path: otx.core.data.transform_libs.torchvision.Pad
           init_args:
             pad_to_square: false
@@ -58,9 +59,7 @@ overrides:
         - class_path: otx.core.data.transform_libs.torchvision.Resize
           init_args:
             keep_ratio: false
-            scale:
-              - 512
-              - 512
+            scale: $(input_size)
         - class_path: otx.core.data.transform_libs.torchvision.Pad
           init_args:
             pad_to_square: false
@@ -72,9 +71,7 @@ overrides:
         - class_path: otx.core.data.transform_libs.torchvision.Resize
           init_args:
             keep_ratio: false
-            scale:
-              - 512
-              - 512
+            scale: $(input_size)
         - class_path: otx.core.data.transform_libs.torchvision.Pad
           init_args:
             pad_to_square: false

@@ -31,7 +31,7 @@ def test_conv_module():
     assert conv.with_activation
     assert hasattr(conv, "activate")
     assert conv.with_norm
-    assert hasattr(conv, "norm")
+    assert hasattr(conv, "norm_layer")
     x = torch.rand(1, 3, 256, 256)
     output = conv(x)
     assert output.shape == (1, 8, 255, 255)
@@ -51,7 +51,7 @@ def test_conv_module():
     new_conv = nn.Conv2d(3, 8, 2).eval()
     efficient_conv.conv = new_conv
     efficient_mode_output = efficient_conv(x)
-    plain_mode_output = efficient_conv.activate(efficient_conv.norm(new_conv(x)))
+    plain_mode_output = efficient_conv.activate(efficient_conv.norm_layer(new_conv(x)))
     assert torch.allclose(efficient_mode_output, plain_mode_output, atol=1e-5)
 
     # conv + act
@@ -59,7 +59,7 @@ def test_conv_module():
     assert conv.with_activation
     assert hasattr(conv, "activate")
     assert not conv.with_norm
-    assert conv.norm is None
+    assert conv.norm_layer is None
     x = torch.rand(1, 3, 256, 256)
     output = conv(x)
     assert output.shape == (1, 8, 255, 255)
@@ -67,7 +67,7 @@ def test_conv_module():
     # conv
     conv = ConvModule(3, 8, 2, act_cfg=None)
     assert not conv.with_norm
-    assert conv.norm is None
+    assert conv.norm_layer is None
     assert not conv.with_activation
     assert not hasattr(conv, "activate")
     x = torch.rand(1, 3, 256, 256)
@@ -111,6 +111,15 @@ def test_conv_module():
     assert isinstance(conv.activate, nn.PReLU)
     output = conv(x)
     assert output.shape == (1, 8, 256, 256)
+
+    # Test norm layer with name
+    conv = ConvModule(3, 8, 2, norm_cfg={"type": "BN", "name": "some_norm_layer"})
+    assert conv.norm_layer.__class__.__name__ == "BatchNorm2d"
+    assert conv.norm_name == "some_norm_layer"
+    assert hasattr(conv, "norm_layer")
+    assert hasattr(conv, "some_norm_layer")
+    assert not hasattr(conv, "bn")
+    assert conv.some_norm_layer == conv.norm_layer
 
 
 def test_bias():

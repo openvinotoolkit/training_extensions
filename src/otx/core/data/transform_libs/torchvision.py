@@ -366,6 +366,7 @@ class MinIoURandomCrop(tvt_v2.Transform, NumpytoTVTensorMixin):
         min_crop_size (float): minimum crop's size (i.e. h,w := a*h, a*w, where a >= min_crop_size).
         bbox_clip_border (bool, optional): Whether clip the objects outside the border of the image. Defaults to True.
         is_numpy_to_tvtensor (bool): Whether convert outputs to tensor. Defaults to False.
+        prob (float): probability of applying this transformation. Defaults to 1.
     """
 
     def __init__(
@@ -374,6 +375,7 @@ class MinIoURandomCrop(tvt_v2.Transform, NumpytoTVTensorMixin):
         min_crop_size: float = 0.3,
         bbox_clip_border: bool = True,
         is_numpy_to_tvtensor: bool = False,
+        prob: float = 1.0,
     ) -> None:
         super().__init__()
         self.min_ious = min_ious
@@ -381,6 +383,7 @@ class MinIoURandomCrop(tvt_v2.Transform, NumpytoTVTensorMixin):
         self.min_crop_size = min_crop_size
         self.bbox_clip_border = bbox_clip_border
         self.is_numpy_to_tvtensor = is_numpy_to_tvtensor
+        self.prob = prob
 
     @cache_randomness
     def _random_mode(self) -> int | float:
@@ -390,6 +393,9 @@ class MinIoURandomCrop(tvt_v2.Transform, NumpytoTVTensorMixin):
         """Forward for MinIoURandomCrop."""
         assert len(_inputs) == 1, "[tmp] Multiple entity is not supported yet."  # noqa: S101
         inputs = _inputs[0]
+
+        if torch.rand(1) >= self.prob:
+            return self.convert(inputs)
 
         img: np.ndarray = to_np_image(inputs.image)
         boxes = inputs.bboxes
@@ -600,7 +606,6 @@ class Resize(tvt_v2.Transform, NumpytoTVTensorMixin):
         """Transform function to resize images, bounding boxes, and masks."""
         assert len(_inputs) == 1, "[tmp] Multiple entity is not supported yet."  # noqa: S101
         inputs = _inputs[0]
-
         inputs, scale_factor = self._resize_img(inputs)
         if self.transform_bbox:
             inputs = self._resize_bboxes(inputs, scale_factor)  # type: ignore[arg-type, assignment]

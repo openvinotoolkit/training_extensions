@@ -1,4 +1,7 @@
 task: VISUAL_PROMPTING
+input_size:
+  - 1024
+  - 1024
 mem_cache_size: 1GB
 mem_cache_img_max_size: null
 image_color_channel: RGB
@@ -8,7 +11,6 @@ unannotated_items_ratio: 0.0
 vpm_config:
   use_bbox: true
   use_point: false
-
 train_subset:
   subset_name: train
   transform_lib_type: TORCHVISION
@@ -18,9 +20,7 @@ train_subset:
   transforms:
     - class_path: otx.core.data.transform_libs.torchvision.Resize
       init_args:
-        scale:
-          - 1024
-          - 1024
+        scale: $(input_size)
         keep_ratio: true
         transform_bbox: true
         transform_point: true
@@ -47,9 +47,7 @@ val_subset:
   transforms:
     - class_path: otx.core.data.transform_libs.torchvision.Resize
       init_args:
-        scale:
-          - 1024
-          - 1024
+        scale: $(input_size)
         keep_ratio: true
         transform_bbox: true
         transform_point: true
@@ -76,9 +74,7 @@ test_subset:
   transforms:
     - class_path: otx.core.data.transform_libs.torchvision.Resize
       init_args:
-        scale:
-          - 1024
-          - 1024
+        scale: $(input_size)
         keep_ratio: true
         transform_bbox: true
         transform_point: true

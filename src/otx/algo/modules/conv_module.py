@@ -217,6 +217,7 @@ class ConvModule(nn.Module):
                 "HSigmoid",
                 "Swish",
                 "GELU",
+                "SiLU",
             ]:
                 act_cfg_.setdefault("inplace", inplace)
             self.activate = build_activation_layer(act_cfg_)
@@ -225,11 +226,11 @@ class ConvModule(nn.Module):
         self.init_weights()
 
     @property
-    def norm(self) -> str | None:
+    def norm_layer(self) -> nn.Module | None:
         """Get the normalization layer.
 
         Returns:
-            str | None: The normalization layer.
+            nn.Module | None: The normalization layer.
         """
         if self.norm_name:
             return getattr(self, self.norm_name)
@@ -255,7 +256,7 @@ class ConvModule(nn.Module):
                 a = 0
             kaiming_init(self.conv, a=a, nonlinearity=nonlinearity)
         if self.with_norm:
-            constant_init(self.norm, 1, bias=0)
+            constant_init(self.norm_layer, 1, bias=0)
 
     def forward(self, x: torch.Tensor, activate: bool = True, norm: bool = True) -> torch.Tensor:
         """Forward pass of the ConvModule.
@@ -283,17 +284,17 @@ class ConvModule(nn.Module):
                     and self.order[layer_index + 1] == "norm"
                     and norm
                     and self.with_norm
-                    and not self.norm.training
+                    and not self.norm_layer.training
                     and self.efficient_conv_bn_eval_forward is not None
                 ):
-                    self.conv.forward = partial(self.efficient_conv_bn_eval_forward, self.norm, self.conv)
+                    self.conv.forward = partial(self.efficient_conv_bn_eval_forward, self.norm_layer, self.conv)
                     layer_index += 1
                     x = self.conv(x)
                     del self.conv.forward
                 else:
                     x = self.conv(x)
             elif layer == "norm" and norm and self.with_norm:
-                x = self.norm(x)
+                x = self.norm_layer(x)
             elif layer == "act" and activate and self.with_activation:
                 x = self.activate(x)
             layer_index += 1
@@ -308,7 +309,12 @@ class ConvModule(nn.Module):
         """
         # efficient_conv_bn_eval works for conv + bn
         # with `track_running_stats` option
-        if efficient_conv_bn_eval and self.norm and isinstance(self.norm, BatchNorm) and self.norm.track_running_stats:
+        if (
+            efficient_conv_bn_eval
+            and self.norm_layer
+            and isinstance(self.norm_layer, BatchNorm)
+            and self.norm_layer.track_running_stats
+        ):
             self.efficient_conv_bn_eval_forward = efficient_conv_bn_eval_forward
         else:
             self.efficient_conv_bn_eval_forward = None

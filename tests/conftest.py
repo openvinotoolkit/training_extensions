@@ -96,9 +96,9 @@ def pytest_addoption(parser: pytest.Parser):
     )
     parser.addoption(
         "--deterministic",
-        choices=["true", "false"],
+        choices=["true", "false", "warn"],
         default=None,
-        help="Turn on deterministic training (true/false).",
+        help="Turn on deterministic training (true/false/warn).",
     )
     parser.addoption(
         "--user-name",

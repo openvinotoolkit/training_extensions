@@ -25,6 +25,9 @@ callback_monitor: val/accuracy
 
 data:
   task: ACTION_CLASSIFICATION
+  input_size:
+    - 224
+    - 224
   data_format: kinetics
   mem_cache_size: 1GB
   mem_cache_img_max_size:
@@ -48,9 +51,7 @@ data:
       - class_path: otx.core.data.transform_libs.torchvision.DecordDecode
       - class_path: otx.core.data.transform_libs.torchvision.Resize
         init_args:
-          scale:
-            - 224
-            - 224
+          scale: $(input_size)
           keep_ratio: false
       - class_path: otx.core.data.transform_libs.torchvision.RandomFlip
         init_args:
@@ -68,6 +69,7 @@ data:
           std: [57.38, 57.38, 57.38]
     sampler:
       class_path: torch.utils.data.RandomSampler
+
   val_subset:
     subset_name: val
     transform_lib_type: TORCHVISION
@@ -83,9 +85,7 @@ data:
       - class_path: otx.core.data.transform_libs.torchvision.DecordDecode
       - class_path: otx.core.data.transform_libs.torchvision.Resize
         init_args:
-          scale:
-            - 224
-            - 224
+          scale: $(input_size)
           keep_ratio: false
       - class_path: otx.core.data.transform_libs.torchvision.RandomFlip
         init_args:
@@ -101,6 +101,7 @@ data:
         init_args:
           mean: [114.75, 114.75, 114.75]
           std: [57.38, 57.38, 57.38]
+
   test_subset:
     subset_name: test
     transform_lib_type: TORCHVISION
@@ -116,9 +117,7 @@ data:
       - class_path: otx.core.data.transform_libs.torchvision.DecordDecode
       - class_path: otx.core.data.transform_libs.torchvision.Resize
         init_args:
-          scale:
-            - 224
-            - 224
+          scale: $(input_size)
           keep_ratio: false
       - class_path: otx.core.data.transform_libs.torchvision.RandomFlip
         init_args:

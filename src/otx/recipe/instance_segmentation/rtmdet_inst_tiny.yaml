@@ -36,22 +36,21 @@ overrides:
   max_epochs: 100
   gradient_clip_val: 35.0
   data:
+    input_size:
+      - 640
+      - 640
     train_subset:
       batch_size: 4
       num_workers: 8
       transforms:
         - class_path: otx.core.data.transform_libs.torchvision.CachedMosaic
           init_args:
-            img_scale:
-              - 640
-              - 640
+            img_scale: $(input_size)
             max_cached_images: 20
             random_pop: false
         - class_path: otx.core.data.transform_libs.torchvision.RandomResize
           init_args:
-            scale:
-              - 1280
-              - 1280
+            scale: $(input_size) * 2
             ratio_range:
               - 0.5
               - 2.0
@@ -60,9 +59,7 @@ overrides:
             transform_mask: true
         - class_path: otx.core.data.transform_libs.torchvision.RandomCrop
           init_args:
-            crop_size:
-              - 640
-              - 640
+            crop_size: $(input_size)
         - class_path: otx.core.data.transform_libs.torchvision.YOLOXHSVRandomAug
         - class_path: otx.core.data.transform_libs.torchvision.RandomFlip
           init_args:
@@ -74,9 +71,7 @@ overrides:
             transform_mask: true
         - class_path: otx.core.data.transform_libs.torchvision.CachedMixUp
           init_args:
-            img_scale:
-              - 640
-              - 640
+            img_scale: $(input_size)
             ratio_range:
               - 1.0
               - 1.0
@@ -99,9 +94,7 @@ overrides:
       transforms:
         - class_path: otx.core.data.transform_libs.torchvision.Resize
           init_args:
-            scale:
-              - 640
-              - 640
+            scale: $(input_size)
         - class_path: otx.core.data.transform_libs.torchvision.Pad
           init_args:
             pad_val: 114
@@ -111,9 +104,7 @@ overrides:
       transforms:
         - class_path: otx.core.data.transform_libs.torchvision.Resize
           init_args:
-            scale:
-              - 640
-              - 640
+            scale: $(input_size)
         - class_path: otx.core.data.transform_libs.torchvision.Pad
           init_args:
             pad_val: 114
