@@ -39,7 +39,7 @@ if TYPE_CHECKING:
     from omegaconf import DictConfig
     from torch import nn
 
-    from otx.algo.detection.ssd import SingleStageDetector
+    from otx.algo.detection.base_models import SingleStageDetector
 
 
 class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity]):
