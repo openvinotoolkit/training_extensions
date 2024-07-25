@@ -40,6 +40,7 @@ overrides:
 
   data:
     task: MULTI_LABEL_CLS
+    input_size: 224
     data_format: datumaro
     mem_cache_img_max_size:
       - 500
@@ -51,7 +52,7 @@ overrides:
       transforms:
         - class_path: otx.core.data.transform_libs.torchvision.EfficientNetRandomCrop
           init_args:
-            scale: 224
+            scale: $(input_size)
         - class_path: otx.core.data.transform_libs.torchvision.RandomFlip
           init_args:
             prob: 0.5
@@ -73,7 +74,7 @@ overrides:
       transforms:
         - class_path: otx.core.data.transform_libs.torchvision.Resize
           init_args:
-            scale: 224
+            scale: $(input_size)
             is_numpy_to_tvtensor: true
         - class_path: torchvision.transforms.v2.ToDtype
           init_args:
@@ -90,7 +91,7 @@ overrides:
       transforms:
         - class_path: otx.core.data.transform_libs.torchvision.Resize
           init_args:
-            scale: 224
+            scale: $(input_size)
             is_numpy_to_tvtensor: true
         - class_path: torchvision.transforms.v2.ToDtype
           init_args:

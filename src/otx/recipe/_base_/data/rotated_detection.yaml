@@ -1,4 +1,7 @@
 task: ROTATED_DETECTION
+input_size:
+  - 1024
+  - 1024
 mem_cache_size: 1GB
 mem_cache_img_max_size: null
 image_color_channel: RGB
@@ -16,9 +19,7 @@ train_subset:
         keep_ratio: true
         transform_bbox: true
         transform_mask: true
-        scale:
-          - 1024
-          - 1024
+        scale: $(input_size)
     - class_path: otx.core.data.transform_libs.torchvision.Pad
       init_args:
         size_divisor: 32
@@ -47,9 +48,7 @@ val_subset:
     - class_path: otx.core.data.transform_libs.torchvision.Resize
       init_args:
         keep_ratio: true
-        scale:
-          - 1024
-          - 1024
+        scale: $(input_size)
     - class_path: otx.core.data.transform_libs.torchvision.Pad
       init_args:
         size_divisor: 32
@@ -74,9 +73,7 @@ test_subset:
     - class_path: otx.core.data.transform_libs.torchvision.Resize
       init_args:
         keep_ratio: true
-        scale:
-          - 1024
-          - 1024
+        scale: $(input_size)
     - class_path: otx.core.data.transform_libs.torchvision.Pad
       init_args:
         size_divisor: 32
