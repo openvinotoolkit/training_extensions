@@ -294,7 +294,7 @@
     <span class="kn">from</span> <span class="nn">omegaconf</span> <span class="kn">import</span> <span class="n">DictConfig</span>
     <span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">nn</span>
 
-    <span class="kn">from</span> <span class="nn">otx.algo.detection.ssd</span> <span class="kn">import</span> <span class="n">SingleStageDetector</span>
+    <span class="kn">from</span> <span class="nn">otx.algo.detection.base_models</span> <span class="kn">import</span> <span class="n">SingleStageDetector</span>
 
 
 <div class="viewcode-block" id="OTXDetectionModel">
@@ -371,7 +371,8 @@
 
     <span class="k">def</span> <span class="nf">_create_model</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">:</span>
         <span class="n">detector</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_model</span><span class="p">(</span><span class="n">num_classes</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">label_info</span><span class="o">.</span><span class="n">num_classes</span><span class="p">)</span>
-        <span class="n">detector</span><span class="o">.</span><span class="n">init_weights</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">detector</span><span class="p">,</span> <span class="s2">&quot;init_weights&quot;</span><span class="p">):</span>
+            <span class="n">detector</span><span class="o">.</span><span class="n">init_weights</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">classification_layers</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_classification_layers</span><span class="p">(</span><span class="n">prefix</span><span class="o">=</span><span class="s2">&quot;model.&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_from</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">load_checkpoint</span><span class="p">(</span><span class="n">detector</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_from</span><span class="p">,</span> <span class="n">map_location</span><span class="o">=</span><span class="s2">&quot;cpu&quot;</span><span class="p">)</span>
@@ -729,7 +730,7 @@
         <span class="kn">from</span> <span class="nn">otx.algo.explain.explain_algo</span> <span class="kn">import</span> <span class="n">DetClassProbabilityMap</span>
 
         <span class="c1"># SSD-like heads also have background class</span>
-        <span class="n">background_class</span> <span class="o">=</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">bbox_head</span><span class="p">,</span> <span class="n">SSDHead</span><span class="p">)</span>
+        <span class="n">background_class</span> <span class="o">=</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="s2">&quot;bbox_head&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">bbox_head</span><span class="p">,</span> <span class="n">SSDHead</span><span class="p">)</span>
         <span class="n">tiling_mode</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tile_config</span><span class="o">.</span><span class="n">enable_tiler</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;tile_config&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="kc">False</span>
         <span class="n">explainer</span> <span class="o">=</span> <span class="n">DetClassProbabilityMap</span><span class="p">(</span>
             <span class="n">num_classes</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">num_classes</span> <span class="o">+</span> <span class="n">background_class</span><span class="p">,</span>
@@ -785,7 +786,9 @@
 <a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.model.detection.html#otx.core.model.detection.ExplainableOTXDetModel.get_num_anchors">[docs]</a>
     <span class="k">def</span> <span class="nf">get_num_anchors</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the anchor configuration from model.&quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">anchor_generator</span> <span class="o">:=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">bbox_head</span><span class="p">,</span> <span class="s2">&quot;prior_generator&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="s2">&quot;bbox_head&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span>
+            <span class="n">anchor_generator</span> <span class="o">:=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">bbox_head</span><span class="p">,</span> <span class="s2">&quot;prior_generator&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="p">):</span>
             <span class="k">return</span> <span class="p">(</span>
                 <span class="n">anchor_generator</span><span class="o">.</span><span class="n">num_base_anchors</span>
                 <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">anchor_generator</span><span class="p">,</span> <span class="s2">&quot;num_base_anchors&quot;</span><span class="p">)</span>
