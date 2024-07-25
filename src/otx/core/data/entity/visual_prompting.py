@@ -6,7 +6,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal
 
 from torchvision import tv_tensors
 
@@ -134,7 +134,8 @@ class ZeroShotVisualPromptingDataEntity(OTXDataEntity):
 
     Attributes:
         masks (tvMask): The masks of the instances.
-        labels (dict[str, list[LongTensor]]): The labels of the instances for each prompt.
+        labels (dict[Literal["prompts", "polygons", "masks"], list[LongTensor]]): The labels of the instances
+            for each prompt.
         polygons (list[dmPolygon]): The polygons of the instances.
         prompts (list[tvBoundingBoxes | Points]): The prompts of the instances.
     """
@@ -145,7 +146,7 @@ class ZeroShotVisualPromptingDataEntity(OTXDataEntity):
         return OTXTaskType.ZERO_SHOT_VISUAL_PROMPTING
 
     masks: tvMask
-    labels: dict[str, LongTensor]
+    labels: dict[Literal["prompts", "polygons", "masks"], LongTensor]
     polygons: list[dmPolygon]
     prompts: list[tvBoundingBoxes | Points]
 
@@ -156,13 +157,13 @@ class ZeroShotVisualPromptingBatchDataEntity(OTXBatchDataEntity[ZeroShotVisualPr
 
     Attributes:
         masks (list[tvMask]): List of masks.
-        labels (list[dict[str, LongTensor]]): List of labels.
+        labels (list[dict[Literal["prompts", "polygons", "masks"], LongTensor]]): List of labels.
         polygons (list[list[dmPolygon]]): List of polygons.
         prompts (list[list[tvBoundingBoxes | Points]]): List of prompts.
     """
 
     masks: list[tvMask]
-    labels: list[dict[str, LongTensor]]
+    labels: list[dict[Literal["prompts", "polygons", "masks"], LongTensor]]
     polygons: list[list[dmPolygon]]
     prompts: list[list[tvBoundingBoxes | Points]]
 
@@ -207,7 +208,7 @@ class ZeroShotVisualPromptingBatchDataEntity(OTXBatchDataEntity[ZeroShotVisualPr
                     for prompts in self.prompts
                 ],
                 masks=[tv_tensors.wrap(mask.pin_memory(), like=mask) for mask in self.masks],
-                labels=[label.pin_memory() for label in self.labels],
+                labels=[{k: v.pin_memory() for k, v in label.items()} for label in self.labels],
             )
         )
 

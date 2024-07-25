@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from collections import defaultdict
 from functools import partial
-from typing import Callable
+from typing import Callable, Literal
 
 import torch
 from datumaro import Bbox as dmBbox
@@ -217,7 +217,7 @@ class OTXZeroShotVisualPromptingDataset(OTXDataset[ZeroShotVisualPromptingDataEn
         gt_prompts: list[tvBoundingBoxes | Points] = []
         gt_masks: list[tvMask] = []
         gt_polygons: list[dmPolygon] = []
-        gt_labels: dict[str, list[int]] = defaultdict(list)
+        gt_labels: dict[Literal["prompts", "polygons", "masks"], list[int]] = defaultdict(list)
         for annotation in item.annotations:
             if isinstance(annotation, dmPolygon):
                 # generate prompts from polygon
