@@ -39,7 +39,9 @@ overrides:
         patience: 3
 
   data:
-    input_size: 224
+    input_size:
+      - 224
+      - 224
     train_subset:
       batch_size: 64
       transforms:
