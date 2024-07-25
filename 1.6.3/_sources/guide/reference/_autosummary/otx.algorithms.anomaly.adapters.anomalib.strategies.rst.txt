@@ -1,0 +1,29 @@
+otx.algorithms.anomaly.adapters.anomalib.strategies
+===================================================
+
+.. automodule:: otx.algorithms.anomaly.adapters.anomalib.strategies
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      SingleXPUStrategy
+   
+   
+
+   
+   
+   
+
+
+

@@ -1,0 +1,23 @@
+otx.algorithms.detection.adapters.openvino.model\_wrappers
+==========================================================
+
+.. automodule:: otx.algorithms.detection.adapters.openvino.model_wrappers
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

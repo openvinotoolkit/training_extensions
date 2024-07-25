@@ -1,0 +1,30 @@
+otx.cli.tools.optimize
+======================
+
+.. automodule:: otx.cli.tools.optimize
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      get_args
+      main
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

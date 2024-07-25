@@ -1,0 +1,29 @@
+otx.api.entities.coordinate
+===========================
+
+.. automodule:: otx.api.entities.coordinate
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      Coordinate
+   
+   
+
+   
+   
+   
+
+
+

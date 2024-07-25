@@ -1,0 +1,34 @@
+otx.algorithms.detection.adapters.mmdet.models.layers
+=====================================================
+
+.. automodule:: otx.algorithms.detection.adapters.mmdet.models.layers
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      CustomDINOTransformer
+      DINOTransformerDecoder
+      CdnQueryGenerator
+      EfficientTransformerEncoder
+      EfficientTransformerLayer
+      SmallExpandFFN
+   
+   
+
+   
+   
+   
+
+
+

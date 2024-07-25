@@ -1,0 +1,41 @@
+otx.algorithms.detection.configs.detection
+==========================================
+
+.. automodule:: otx.algorithms.detection.configs.detection
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   otx.algorithms.detection.configs.detection.cspdarknet_yolox_l
+   otx.algorithms.detection.configs.detection.cspdarknet_yolox_s
+   otx.algorithms.detection.configs.detection.cspdarknet_yolox_tiny
+   otx.algorithms.detection.configs.detection.cspdarknet_yolox_x
+   otx.algorithms.detection.configs.detection.mobilenetv2_atss
+   otx.algorithms.detection.configs.detection.mobilenetv2_ssd
+   otx.algorithms.detection.configs.detection.resnet50_deformable_detr
+   otx.algorithms.detection.configs.detection.resnet50_dino
+   otx.algorithms.detection.configs.detection.resnet50_lite_dino
+   otx.algorithms.detection.configs.detection.resnet50_vfnet
+   otx.algorithms.detection.configs.detection.resnext101_atss
+

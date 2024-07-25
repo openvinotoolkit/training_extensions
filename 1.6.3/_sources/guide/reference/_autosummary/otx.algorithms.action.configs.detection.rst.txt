@@ -1,0 +1,32 @@
+otx.algorithms.action.configs.detection
+=======================================
+
+.. automodule:: otx.algorithms.action.configs.detection
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   otx.algorithms.action.configs.detection.base
+   otx.algorithms.action.configs.detection.x3d_fast_rcnn
+
