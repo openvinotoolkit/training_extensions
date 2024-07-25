@@ -437,42 +437,152 @@
 </ul>
 <p>The basic configuration is the same as the configuration configuration format for jsonargparse.
 <cite>Jsonargparse Documentation &lt;https://jsonargparse.readthedocs.io/en/v4.27.4/#configuration-files&gt;_</cite></p>
-<p>### Configuration overrides</p>
-<p>Here we provide a feature called <code class="docutils literal notranslate"><span class="pre">overrides</span></code>.</p>
+</section>
+<section id="configuration-overrides">
+<h2>Configuration Overrides<a class="headerlink" href="#configuration-overrides" title="Link to this heading">#</a></h2>
+<p>Here we provide a feature called <code class="docutils literal notranslate"><span class="pre">overrides</span></code>.
+This feature allows you to override the values need from the default configuration.
+Currently, you can overrides <code class="docutils literal notranslate"><span class="pre">data</span></code>, <code class="docutils literal notranslate"><span class="pre">callbacks</span></code>, <code class="docutils literal notranslate"><span class="pre">logger</span></code>, and other single value configurations.
+Also, you can use <code class="docutils literal notranslate"><span class="pre">reset</span></code> to reset the configurations from the default values to the new values.</p>
+<p>To update single value configurations, just set them in the overrides.</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nn">...</span>
-
 <span class="nt">overrides</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">data</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">config</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">train_subset</span><span class="p">:</span>
-<span class="w">            </span><span class="nt">transforms</span><span class="p">:</span>
-<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">LoadImageFromFile</span>
-<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">backend</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">cv2</span>
-<span class="w">                </span><span class="l l-Scalar l-Scalar-Plain">scale</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">224</span>
-<span class="w">                </span><span class="l l-Scalar l-Scalar-Plain">type</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">RandomResizedCrop</span>
-<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">direction</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">horizontal</span>
-<span class="w">                </span><span class="l l-Scalar l-Scalar-Plain">prob</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.5</span>
-<span class="w">                </span><span class="l l-Scalar l-Scalar-Plain">type</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">RandomFlip</span>
-<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PackInputs</span>
+<span class="w">  </span><span class="nt">max_epochs</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10</span><span class="w"> </span><span class="c1"># update to 10</span>
+<span class="w">  </span><span class="nt">data</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">image_color_channel</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">BGR</span><span class="w"> </span><span class="c1"># update to BGR</span>
 <span class="nn">...</span>
 </pre></div>
 </div>
-<p>This feature allows you to override the values need from the default configuration.
-You can see the final configuration with the command below.</p>
+<p>If you want to add new configuration which isn’t set before, just set them in the overrides and it will be appended.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nn">...</span>
+<span class="nt">overrides</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">new_configuration</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span><span class="w"> </span><span class="c1"># add new_configuration with 1</span>
+<span class="nn">...</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>You can see the final configuration with the command below.</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>otx<span class="w"> </span>train<span class="w"> </span>--config<span class="w"> </span>&lt;config-file-path&gt;<span class="w"> </span>--print_config
 </pre></div>
 </div>
-<p>### Callbacks &amp; Logger overrides</p>
-<p><code class="docutils literal notranslate"><span class="pre">callbacks</span></code> and <code class="docutils literal notranslate"><span class="pre">logger</span></code> can currently be provided as a list of different callbacks and loggers. The way to override this is as follows.</p>
+</div>
+<section id="data-overrides">
+<h3>Data overrides<a class="headerlink" href="#data-overrides" title="Link to this heading">#</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">data</span></code> can currently be provided as a list of different transforms.
+The way to override this is as follows.</p>
+<p>Let’s try to change the size of Resize and the prob of RandomFlip which are already set in <a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/recipe/_base_/data/instance_segmentation.yaml">base data configuration of instance segmentation</a>.
+To change them, you can just set the values in the overrides.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nn">...</span>
+<span class="nt">overrides</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">data</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">train_subset</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">transforms</span><span class="p">:</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">class_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">otx.core.data.transform_libs.torchvision.Resize</span>
+<span class="w">          </span><span class="nt">init_args</span><span class="p">:</span>
+<span class="w">            </span><span class="nt">size</span><span class="p">:</span><span class="w"> </span><span class="c1"># update `size` from 1024 to 512</span>
+<span class="w">              </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">512</span>
+<span class="w">              </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">512</span>
+<span class="w">        </span><span class="c1"># Pad is used as is because it is not set here</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">class_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">otx.core.data.transform_libs.torchvision.RandomFlip</span>
+<span class="w">          </span><span class="nt">init_args</span><span class="p">:</span>
+<span class="w">            </span><span class="nt">prob</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0</span><span class="w"> </span><span class="c1"># update `prob` from 0.5 to 0</span>
+<span class="w">        </span><span class="c1"># ToDtype and Normalize are used as is because they are not set here</span>
+<span class="nn">...</span>
+</pre></div>
+</div>
+<p>Like single value configurations, when adding new transforms in overrides it will be appended.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nn">...</span>
+<span class="nt">overrides</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">data</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">train_subset</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">transforms</span><span class="p">:</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">class_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">new_transform</span>
+<span class="nn">...</span>
+</pre></div>
+</div>
+</section>
+<section id="callbacks-logger-overrides">
+<h3>Callbacks &amp; Logger overrides<a class="headerlink" href="#callbacks-logger-overrides" title="Link to this heading">#</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">callbacks</span></code> and <code class="docutils literal notranslate"><span class="pre">logger</span></code> can currently be provided as a list of different callbacks and loggers.
+The way to override this is as follows.</p>
 <p>For example, if you want to change the patience of EarlyStopping, you can configure the overrides like this</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">overrides</span><span class="p">:</span>
 <span class="nn">...</span>
 <span class="w">    </span><span class="nt">callbacks</span><span class="p">:</span>
-<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">class_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ligthning.pytorch.callbacks.EarlyStopping</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">class_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ligthning.pytorch.callbacks.EarlyStopping</span>
 <span class="w">        </span><span class="nt">init_args</span><span class="p">:</span>
-<span class="w">            </span><span class="nt">patience</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3</span>
+<span class="w">          </span><span class="nt">patience</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3</span>
 </pre></div>
 </div>
+</section>
+<section id="reset-overrides">
+<h3>Reset overrides<a class="headerlink" href="#reset-overrides" title="Link to this heading">#</a></h3>
+<p>If you want to <strong>reset</strong> the configurations to the default values, especially <code class="docutils literal notranslate"><span class="pre">data</span></code>, <code class="docutils literal notranslate"><span class="pre">callbacks</span></code>, or <code class="docutils literal notranslate"><span class="pre">logger</span></code> that are difficult to be reset, you can use the <code class="docutils literal notranslate"><span class="pre">reset</span></code> keyword.
+The way to override this is as follows.</p>
+<p>Let’s try to reset all transforms which are already set in <a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/recipe/_base_/data/instance_segmentation.yaml">base data configuration of instance segmentation</a>.
+To reset them, you can just add the keys in <code class="docutils literal notranslate"><span class="pre">reset</span></code> in the overrides.
+<code class="docutils literal notranslate"><span class="pre">reset</span></code> also supports both types, string and list.
+If you want to reset single one, string or list can be used.
+But if you want to reset multiple ones, list should be used.</p>
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-0" name="sd-tab-set-0" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-0">
+single one</label><div class="sd-tab-content docutils">
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nn">...</span>
+<span class="nt">overrides</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">reset</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">data.train_subset.transforms</span>
+<span class="w">  </span><span class="c1"># or</span>
+<span class="w">  </span><span class="c1"># reset: data.train_subset.transforms</span>
+<span class="w">  </span><span class="nt">data</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">train_subset</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">transforms</span><span class="p">:</span>
+<span class="w">        </span><span class="c1"># previous ones are not used anymore</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">class_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">new_transform_1</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">class_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">new_transform_2</span>
+<span class="nn">...</span>
+</pre></div>
+</div>
+</div>
+<input id="sd-tab-item-1" name="sd-tab-set-0" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-1">
+multiple ones</label><div class="sd-tab-content docutils">
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nn">...</span>
+<span class="nt">overrides</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">reset</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">data.train_subset.transforms</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">data.val_subset.transforms</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">data.test_subset.transforms</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">callbacks</span>
+<span class="w">  </span><span class="c1"># reset: data.train_subset.transforms cannot be used because there are multiple resets</span>
+<span class="w">  </span><span class="nt">data</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">train_subset</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">transforms</span><span class="p">:</span>
+<span class="w">        </span><span class="c1"># previous ones are not used anymore</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">class_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">new_transform_1</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">class_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">new_transform_2</span>
+<span class="w">    </span><span class="nt">val_subset</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">transforms</span><span class="p">:</span>
+<span class="w">        </span><span class="c1"># previous ones are not used anymore</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">class_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">new_transform_1</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">class_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">new_transform_2</span>
+<span class="w">    </span><span class="nt">test_subset</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">transforms</span><span class="p">:</span>
+<span class="w">        </span><span class="c1"># previous ones are not used anymore</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">class_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">new_transform_1</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">class_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">new_transform_2</span>
+<span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">...</span>
+<span class="w">  </span><span class="nt">callbacks</span><span class="p">:</span>
+<span class="w">    </span><span class="c1"># previous ones are not used anymore</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">class_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">new_callback_1</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">class_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">new_callback_2</span>
+<span class="nn">...</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
 </section>
 </section>
 
@@ -518,6 +628,28 @@ You can see the final configuration with the command below.</p>
   <a class="reference internal nav-link" href="#configuration">
    Configuration
   </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#configuration-overrides">
+   Configuration Overrides
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#data-overrides">
+     Data overrides
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#callbacks-logger-overrides">
+     Callbacks &amp; Logger overrides
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#reset-overrides">
+     Reset overrides
+    </a>
+   </li>
+  </ul>
  </li>
 </ul>
 
