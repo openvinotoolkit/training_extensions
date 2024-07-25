@@ -1,6 +1,6 @@
-# Copyright (C) 2023 Intel Corporation
+# Copyright (C) 2023-2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-#
+
 """Module for OTXVisualPromptingDataset."""
 
 from __future__ import annotations
@@ -38,6 +38,14 @@ class OTXVisualPromptingDataset(OTXDataset[VisualPromptingDataEntity]):
     Args:
         dm_subset (dmDataset): The subset of the dataset.
         transforms (Transforms): Data transformations to be applied.
+        use_bbox (bool): Whether to use bounding box prompt.
+            If both use_bbox and use_point are False, use_bbox is set to True as default.
+            If both are True, divide the probability into both.
+            Defaults to True.
+        use_point (bool): Whether to use point prompt.
+            If both use_bbox and use_point are False, use_bbox is set to True as default.
+            If both are True, divide the probability into both.
+            Defaults to False.
         **kwargs: Additional keyword arguments passed to the base class.
     """
 
@@ -168,6 +176,14 @@ class OTXZeroShotVisualPromptingDataset(OTXDataset[ZeroShotVisualPromptingDataEn
     Args:
         dm_subset (dmDataset): The subset of the dataset.
         transforms (Transforms): Data transformations to be applied.
+        use_bbox (bool): Whether to use bounding box prompt.
+            If both use_bbox and use_point are False, use_bbox is set to True as default.
+            If both are True, divide the probability into both.
+            Defaults to True.
+        use_point (bool): Whether to use point prompt.
+            If both use_bbox and use_point are False, use_bbox is set to True as default.
+            If both are True, divide the probability into both.
+            Defaults to False.
         **kwargs: Additional keyword arguments passed to the base class.
     """
 
