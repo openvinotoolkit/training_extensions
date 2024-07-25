@@ -56,6 +56,9 @@ def test_forward_explain(
         # TODO (sungchul): enable xai for rtmdet_tiny (CVS-142651)
         pytest.skip("rtmdet_tiny on detection is not supported yet.")
 
+    if "rtdetr" in recipe:
+        pytest.skip("rtdetr on detection is not supported yet.")
+
     engine = Engine.from_config(
         config_path=recipe,
         data_root=fxt_target_dataset_per_task[task],
@@ -115,6 +118,9 @@ def test_predict_with_explain(
     if "yolox_tiny_tile" in recipe:
         # TODO (Galina): required to update model-api to 2.1
         pytest.skip("yolox_tiny_tile on detection requires model-api update")
+
+    if "rtdetr" in recipe:
+        pytest.skip("rtdetr on detection is not supported yet.")
 
     tmp_path = tmp_path / f"otx_xai_{model_name}"
     engine = Engine.from_config(

@@ -86,7 +86,6 @@ def test_otx_e2e(
         None
     """
     recipe, task, model_name, tmp_path_train = fxt_trained_model
-
     outputs_dir = tmp_path_train / "outputs"
     latest_dir = max(
         (p for p in outputs_dir.iterdir() if p.is_dir() and p.name != ".latest"),
@@ -253,6 +252,9 @@ def test_otx_e2e(
     if "dino" in model_name:
         return  # DINO is not supported.
 
+    if "rtdetr" in model_name:
+        return  # RT-DETR currently is not supported.
+
     tmp_path_test = tmp_path / f"otx_export_xai_{model_name}"
     for export_case in fxt_export_list:
         command_cfg = [
@@ -320,6 +322,9 @@ def test_otx_explain_e2e(
 
     if "maskrcnn_r50_tv" in model_name:
         pytest.skip("MaskRCNN R50 Torchvision model doesn't support explain.")
+
+    if "rtdetr" in recipe:
+        pytest.skip("rtdetr model is not supported yet with explain.")
 
     # otx explain
     tmp_path_explain = tmp_path / f"otx_explain_{model_name}"

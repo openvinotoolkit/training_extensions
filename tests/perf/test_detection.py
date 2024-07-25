@@ -20,7 +20,7 @@ log = logging.getLogger(__name__)
 def fxt_deterministic(request: pytest.FixtureRequest) -> bool:
     """Override the deterministic setting for detection task."""
     deterministic = request.config.getoption("--deterministic")
-    deterministic = True if deterministic is None else deterministic == "true"
+    deterministic = "warn" if deterministic is None or deterministic == "warn" else deterministic == "true"
     log.info(f"{deterministic=}")
     return deterministic
 
@@ -37,6 +37,9 @@ class TestPerfObjectDetection(PerfTestBase):
         Benchmark.Model(task="detection", name="yolox_l", category="other"),
         Benchmark.Model(task="detection", name="yolox_x", category="other"),
         Benchmark.Model(task="detection", name="rtmdet_tiny", category="other"),
+        Benchmark.Model(task="detection", name="rtdetr_18", category="other"),
+        Benchmark.Model(task="detection", name="rtdetr_50", category="other"),
+        Benchmark.Model(task="detection", name="rtdetr_101", category="other"),
     ]
 
     DATASET_TEST_CASES = [

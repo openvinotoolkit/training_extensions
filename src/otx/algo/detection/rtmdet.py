@@ -12,9 +12,9 @@ from otx.algo.common.utils.assigners import DynamicSoftLabelAssigner
 from otx.algo.common.utils.coders import DistancePointBBoxCoder
 from otx.algo.common.utils.prior_generators import MlvlPointGenerator
 from otx.algo.common.utils.samplers import PseudoSampler
+from otx.algo.detection.base_models import SingleStageDetector
 from otx.algo.detection.heads import RTMDetSepBNHead
 from otx.algo.detection.necks import CSPNeXtPAFPN
-from otx.algo.detection.ssd import SingleStageDetector
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.model.detection import ExplainableOTXDetModel
