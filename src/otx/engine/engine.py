@@ -831,11 +831,11 @@ class Engine:
 
         if not isinstance(self.model, OVModel):
             from torch.utils.flop_counter import get_suffix_str, convert_num_with_suffix
-            input_batch = self.model.get_dummy_input(batch_size)
+            input_batch = self.model.get_dummy_input(1)
             model_fwd = lambda: self.model.forward(input_batch)
             depth = 3 if extended_stats else 0
             fwd_flops = measure_flops(self.model.model, model_fwd, print_stats_depth=depth)
-            flops_str = convert_num_with_suffix(fwd_flops, get_suffix_str(fwd_flops*10**4))
+            flops_str = convert_num_with_suffix(fwd_flops, get_suffix_str(fwd_flops*10**3))
             params_num = sum(p.numel() for p in self.model.parameters() if p.requires_grad)
             params_num_str = convert_num_with_suffix(params_num, get_suffix_str(params_num*100))
 
