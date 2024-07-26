@@ -45,6 +45,8 @@ if TYPE_CHECKING:
 class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity]):
     """Base class for the detection models used in OTX."""
 
+    image_size: tuple[int, int, int, int] | None = None
+
     def test_step(self, batch: DetBatchDataEntity, batch_idx: int) -> None:
         """Perform a single test step on a batch of data from the test set.
 
@@ -364,6 +366,22 @@ class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity]):
                 self._best_confidence_threshold = 0.5
         return self._best_confidence_threshold
 
+    def get_dummy_input(self, batch_size: int = 1) -> DetBatchDataEntity:
+        """Returns a dummy input for classification OV model"""
+        # Resize is embedded to the OV model, which means we don't need to know the actual size
+        if self.image_size is None:
+            raise ValueError(self.image_size)
+
+        images = [torch.rand(*self.image_size[1:]) for _ in range(batch_size)]
+        infos = []
+        for i, img in enumerate(images):
+            infos.append(ImageInfo(
+                img_idx=i,
+                img_shape=img.shape,
+                ori_shape=img.shape,
+            ))
+        data = DetBatchDataEntity(batch_size, images, infos, bboxes=[], labels=[])
+        return data
 
 class ExplainableOTXDetModel(OTXDetectionModel):
     """OTX detection model which can attach a XAI (Explainable AI) branch."""
@@ -530,7 +548,6 @@ class MMDetCompatibleModel(ExplainableOTXDetModel):
         config = inplace_num_classes(cfg=config, num_classes=self._dispatch_label_info(label_info).num_classes)
         self.config = config
         self.load_from = config.pop("load_from", None)
-        self.image_size: tuple[int, int, int, int] | None = None
         super().__init__(
             label_info=label_info,
             optimizer=optimizer,
@@ -829,7 +846,6 @@ class OVDetectionModel(OVModel[DetBatchDataEntity, DetBatchPredEntity]):
         """Returns a dummy input for classification OV model"""
         # Resize is embedded to the OV model, which means we don't need to know the actual size
         images = [torch.rand(3, 224, 224) for _ in range(batch_size)]
-        #labels = [torch.LongTensor([0])] * batch_size
         infos = []
         for i, img in enumerate(images):
             infos.append(ImageInfo(
