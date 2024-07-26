@@ -1,5 +1,5 @@
-OpenVINO™ Training Extensions Product Update: Training with Hugging Face pretrained vision models
-=================================================================================================
+Training with Hugging Face pretrained vision models
+===================================================
 
 Overview
 --------
