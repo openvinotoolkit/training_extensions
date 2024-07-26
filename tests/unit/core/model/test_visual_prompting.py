@@ -120,7 +120,9 @@ def test_inference_step_for_zero_shot_with_more_target(
 ) -> None:
     """Test _inference_step_for_zero_shot with more target."""
     otx_visual_prompting_model.configure_metric()
-    mocker.patch.object(otx_visual_prompting_model, "forward", return_value=fxt_zero_shot_vpm_data_entity[2])
+    pred_entity = deepcopy(fxt_zero_shot_vpm_data_entity[2])
+    pred_entity.labels = [label["prompts"] for label in pred_entity.labels]
+    mocker.patch.object(otx_visual_prompting_model, "forward", return_value=pred_entity)
     mocker_updates = {}
     for k, v in otx_visual_prompting_model.metric.items():
         mocker_updates[k] = mocker.patch.object(v, "update")
@@ -460,9 +462,9 @@ class TestOVZeroShotVisualPromptingModel:
             reset_feat=False,
         )
 
-        assert reference_info["reference_feats"].shape == torch.Size((2, 1, 256))
+        assert reference_info["reference_feats"].shape == torch.Size((3, 1, 256))
         assert 1 in reference_info["used_indices"]
-        assert ref_masks[0].shape == torch.Size((2, 1024, 1024))
+        assert ref_masks[0].shape == torch.Size((3, 1024, 1024))
 
     def test_infer(self, mocker, ov_zero_shot_visual_prompting_model, fxt_zero_shot_vpm_data_entity) -> None:
         """Test infer."""

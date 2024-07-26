@@ -579,9 +579,9 @@ class TestOTXZeroShotSegmentAnything:
     def test_gather_prompts_with_labels(self, model) -> None:
         """Test _gather_prompts_with_labels."""
         prompts = [[torch.tensor(0), torch.tensor(1), torch.tensor(2), torch.tensor(2), torch.tensor(4)]]
-        labels = [torch.tensor([0, 1, 2, 2, 4])]
+        labels = [{"prompts": torch.tensor([0, 1, 2, 2, 4])}]
 
-        results = model._gather_prompts_with_labels(prompts, labels)
+        results = model._gather_prompts_with_labels(labels, prompts)
 
         assert results[0][0][0] == prompts[0][0]
         assert results[0][1][0] == prompts[0][1]
