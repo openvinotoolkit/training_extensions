@@ -892,16 +892,14 @@ class OTXZeroShotSegmentAnything(OTXZeroShotVisualPromptingModel):
         newh = int(newh + 0.5)
         return (newh, neww)
 
-    def preprocess(self, x: Image | Mask) -> Image | Mask:
+    def preprocess(self, x: Image) -> Image:
         """Normalize pixel values and pad to a square input."""
-        # TODO (sungchul): get type to convert tensor at L912
-        if isinstance(x, Image):
-            # Normalize colors
-            x = (x - self.pixel_mean) / self.pixel_std
+        # Normalize colors
+        x = (x - self.pixel_mean) / self.pixel_std
 
         # Pad
         x = self.model.pad_to_square(x)
-        return Image(x)  # TODO (sungchul): convert type
+        return Image(x)
 
     def transforms(self, entity: ZeroShotVisualPromptingBatchDataEntity) -> ZeroShotVisualPromptingBatchDataEntity:
         """Transforms for ZeroShotVisualPromptingBatchDataEntity."""
