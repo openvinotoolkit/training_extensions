@@ -810,43 +810,37 @@ class Engine:
 
         self.model.eval()
 
-        def dummy_infer(model: OTXModel, batch_size: int = 1, extra_stats: bool = False) -> dict[str, Any]:
+        def dummy_infer(model: OTXModel, batch_size: int = 1) -> float:
             input_batch = model.get_dummy_input(batch_size)
-            stats = {}
-            start = time.time()
-            if extra_stats:
-                from torch.utils.flop_counter import get_suffix_str, convert_num_with_suffix
-
-                model_fwd = lambda: model.forward(input_batch)
-                depth = 3 if extended_stats else 0
-                fwd_flops = measure_flops(model.model, model_fwd, print_stats_depth=depth)
-                stats["flops"] = convert_num_with_suffix(fwd_flops, get_suffix_str(fwd_flops*10**4))
-
-                params_num = sum(p.numel() for p in self.model.parameters() if p.requires_grad)
-                stats["params"] = convert_num_with_suffix(params_num, get_suffix_str(params_num*100))
-            else:
-                model.forward(input_batch)
-            end = time.time()
-            stats["elapsed"] = end - start
-
-            return stats
+            start = time.perf_counter()
+            model.forward(input_batch)
+            end = time.perf_counter()
+            return end - start
 
         warmup_iters = max(1, int(n_iters / 10))
         for _ in range(warmup_iters):
             dummy_infer(self.model, batch_size)
 
-        total_time = 0
+        total_time = 0.
         for _ in range(n_iters):
-            inference_stats = dummy_infer(self.model, batch_size)
-            total_time += inference_stats["elapsed"]
-        total_time /= (n_iters * batch_size)
+            total_time += dummy_infer(self.model, batch_size)
+        latency = total_time / n_iters
+        fps = batch_size / latency
 
-        final_stats = {"latency": f"{total_time:.3f} s", "troughput": f"{(1 / total_time):.3f} FPS"}
+        final_stats = {"latency": f"{latency:.3f} s", "troughput": f"{(fps):.3f} FPS"}
 
         if not isinstance(self.model, OVModel):
-            inference_stats = dummy_infer(self.model, 1, extra_stats=True)
-            final_stats["complexity"] = inference_stats["flops"] + " MACs"
-            final_stats["parameters_number"] = inference_stats["params"]
+            from torch.utils.flop_counter import get_suffix_str, convert_num_with_suffix
+            input_batch = self.model.get_dummy_input(batch_size)
+            model_fwd = lambda: self.model.forward(input_batch)
+            depth = 3 if extended_stats else 0
+            fwd_flops = measure_flops(self.model.model, model_fwd, print_stats_depth=depth)
+            flops_str = convert_num_with_suffix(fwd_flops, get_suffix_str(fwd_flops*10**4))
+            params_num = sum(p.numel() for p in self.model.parameters() if p.requires_grad)
+            params_num_str = convert_num_with_suffix(params_num, get_suffix_str(params_num*100))
+
+            final_stats["complexity"] = flops_str + " MACs"
+            final_stats["parameters_number"] = params_num_str
 
         for name, val in final_stats.items():
             print(f"{name:<20} | {val}")

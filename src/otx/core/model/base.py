@@ -782,7 +782,7 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
         self._tile_config = tile_config
 
     def get_dummy_input(self, batch_size: int = 1) -> OTXBatchDataEntity[Any]:
-        raise RuntimeError("get_dummy_input() is not implemented")
+        raise NotImplementedError
 
     @staticmethod
     def _dispatch_label_info(label_info: LabelInfoTypes) -> LabelInfo:
