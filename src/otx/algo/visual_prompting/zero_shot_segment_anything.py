@@ -272,6 +272,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
                         # directly use annotation information as a mask
                         ref_mask[input_prompt] += 1
                     elif isinstance(input_prompt, dmPolygon):
+                        # TODO (sungchul): polygon support
                         continue
                     else:
                         if isinstance(input_prompt, BoundingBoxes):
@@ -841,7 +842,7 @@ class OTXZeroShotSegmentAnything(OTXZeroShotVisualPromptingModel):
                         processed_prompts[int(_label)].append(_prompts[batch][idx])
                     else:
                         # for mask
-                        processed_prompts[int(_label)].append(Mask(_prompts[idx] == _label))
+                        processed_prompts[int(_label)].append(Mask(_prompts[batch][idx]))
 
             sorted_processed_prompts = dict(sorted(processed_prompts.items(), key=lambda x: x))
             total_processed_prompts.append(sorted_processed_prompts)
@@ -920,9 +921,8 @@ class OTXZeroShotSegmentAnything(OTXZeroShotVisualPromptingModel):
                 self.apply_prompts(prompt, info.ori_shape, self.model.image_size)
                 for prompt, info in zip(entity.prompts, entity.imgs_info)
             ],
-            # TODO (sungchul): add masks and polygons
-            masks=None,
-            polygons=None,
+            masks=entity.masks,
+            polygons=entity.polygons,
         )
 
     def initialize_reference_info(self) -> None:
