@@ -19,6 +19,7 @@ otx.core.utils.utils
       import_object_from_module
       is_ckpt_for_finetuning
       is_ckpt_from_otx_v1
+      remove_state_dict_prefix
    
    
 

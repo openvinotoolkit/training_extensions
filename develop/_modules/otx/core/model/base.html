@@ -306,7 +306,7 @@
 <span class="kn">from</span> <span class="nn">otx.core.types.precision</span> <span class="kn">import</span> <span class="n">OTXPrecisionType</span>
 <span class="kn">from</span> <span class="nn">otx.core.utils.build</span> <span class="kn">import</span> <span class="n">get_default_num_async_infer_requests</span>
 <span class="kn">from</span> <span class="nn">otx.core.utils.miscellaneous</span> <span class="kn">import</span> <span class="n">ensure_callable</span>
-<span class="kn">from</span> <span class="nn">otx.core.utils.utils</span> <span class="kn">import</span> <span class="n">is_ckpt_for_finetuning</span><span class="p">,</span> <span class="n">is_ckpt_from_otx_v1</span>
+<span class="kn">from</span> <span class="nn">otx.core.utils.utils</span> <span class="kn">import</span> <span class="n">is_ckpt_for_finetuning</span><span class="p">,</span> <span class="n">is_ckpt_from_otx_v1</span><span class="p">,</span> <span class="n">remove_state_dict_prefix</span>
 
 <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
     <span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
@@ -650,6 +650,10 @@
 <a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.model.base.html#otx.core.model.base.OTXModel.on_save_checkpoint">[docs]</a>
     <span class="k">def</span> <span class="nf">on_save_checkpoint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">checkpoint</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Callback on saving checkpoint.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">torch_compile</span><span class="p">:</span>
+            <span class="c1"># If torch_compile is True, a prefix key named _orig_mod. is added to the state_dict. Remove this.</span>
+            <span class="n">compiled_state_dict</span> <span class="o">=</span> <span class="n">checkpoint</span><span class="p">[</span><span class="s2">&quot;state_dict&quot;</span><span class="p">]</span>
+            <span class="n">checkpoint</span><span class="p">[</span><span class="s2">&quot;state_dict&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">remove_state_dict_prefix</span><span class="p">(</span><span class="n">compiled_state_dict</span><span class="p">,</span> <span class="s2">&quot;_orig_mod.&quot;</span><span class="p">)</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">on_save_checkpoint</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">)</span>
 
         <span class="n">checkpoint</span><span class="p">[</span><span class="s2">&quot;label_info&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">label_info</span>
