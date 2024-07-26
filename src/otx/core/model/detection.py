@@ -367,8 +367,7 @@ class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity]):
         return self._best_confidence_threshold
 
     def get_dummy_input(self, batch_size: int = 1) -> DetBatchDataEntity:
-        """Returns a dummy input for classification OV model"""
-        # Resize is embedded to the OV model, which means we don't need to know the actual size
+        """Returns a dummy input for detection model"""
         if self.image_size is None:
             raise ValueError(self.image_size)
 
@@ -843,7 +842,7 @@ class OVDetectionModel(OVModel[DetBatchDataEntity, DetBatchPredEntity]):
         return super()._log_metrics(meter, key, **compute_kwargs)
 
     def get_dummy_input(self, batch_size: int = 1) -> DetBatchDataEntity:
-        """Returns a dummy input for classification OV model"""
+        """Returns a dummy input for detection OV model"""
         # Resize is embedded to the OV model, which means we don't need to know the actual size
         images = [torch.rand(3, 224, 224) for _ in range(batch_size)]
         infos = []

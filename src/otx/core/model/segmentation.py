@@ -37,6 +37,8 @@ if TYPE_CHECKING:
 class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity]):
     """Base class for the semantic segmentation models used in OTX."""
 
+    image_size: tuple[int, int, int, int] | None = None
+
     def __init__(
         self,
         label_info: LabelInfoTypes,
@@ -104,6 +106,22 @@ class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity]):
     def forward_for_tracing(self, image: Tensor) -> Tensor | dict[str, Tensor]:
         """Model forward function used for the model tracing during model exportation."""
         return self.model(inputs=image, mode="tensor")
+
+    def get_dummy_input(self, batch_size: int = 1) -> SegBatchDataEntity:
+        """Returns a dummy input for semantic segmentation model"""
+        if self.image_size is None:
+            raise ValueError(self.image_size)
+
+        images = torch.rand(batch_size, *self.image_size[1:])
+        infos = []
+        for i, img in enumerate(images):
+            infos.append(ImageInfo(
+                img_idx=i,
+                img_shape=img.shape,
+                ori_shape=img.shape,
+            ))
+        data = SegBatchDataEntity(batch_size, images, infos, masks=[])
+        return data
 
 
 class TorchVisionCompatibleModel(OTXSegmentationModel):
@@ -401,7 +419,7 @@ class OVSegmentationModel(OVModel[SegBatchDataEntity, SegBatchPredEntity]):
         raise ValueError(msg)
 
     def get_dummy_input(self, batch_size: int = 1) -> SegBatchDataEntity:
-        """Returns a dummy input for classification OV model"""
+        """Returns a dummy input for semantic segmentation OV model"""
         # Resize is embedded to the OV model, which means we don't need to know the actual size
         images = [torch.rand(3, 224, 224) for _ in range(batch_size)]
         infos = []
