@@ -23,6 +23,11 @@ Getting Started
 1. **Environment Setup**: Set up the OpenVINO™ Training Extensions environment and install the necessary libraries and toolkits.
 
 You can follow the installation process from a :doc:`quick start guide <../../get_started/installation>` to create a universal virtual environment for OpenVINO™ Training Extensions.
+Then install transformers with the command below.
+
+.. code-block:: shell
+
+    (otx) ...$ pip install transformers
 
 2. **Dataset Preparation**: Set up dataset for training.
 
