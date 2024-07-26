@@ -14,6 +14,7 @@ from typing import TYPE_CHECKING, Any, Literal
 
 import numpy as np
 import torch
+from datumaro import Polygon as dmPolygon
 from model_api.models import Model
 from model_api.models.visual_prompting import (
     Prompt,
@@ -914,9 +915,10 @@ class OVZeroShotVisualPromptingModel(
         images: list[np.ndarray] = []
         processed_prompts: list[dict[str, Any]] = []
 
-        for image, prompts, labels in zip(
+        for image, prompts, polygons, labels in zip(
             entity.images,
             entity.prompts,
+            entity.polygons,
             entity.labels,
         ):
             # preprocess image encoder inputs
@@ -924,20 +926,27 @@ class OVZeroShotVisualPromptingModel(
             images.append(numpy_image)
 
             if self.training:
-                points: list[Prompt] = []
-                bboxes: list[Prompt] = []
+                _bboxes: list[Prompt] = []
+                _points: list[Prompt] = []
+                _polygons: list[Prompt] = []
                 for prompt, label in zip(prompts, labels["prompts"]):  # type: ignore[arg-type]
                     if isinstance(prompt, tv_tensors.BoundingBoxes):
-                        bboxes.append(Prompt(prompt.cpu().numpy(), label.cpu().numpy()))
+                        _bboxes.append(Prompt(prompt.cpu().numpy(), label.cpu().numpy()))
                     elif isinstance(prompt, Points):
-                        points.append(Prompt(prompt.cpu().numpy(), label.cpu().numpy()))
-                    # TODO (sungchul): support polygons
+                        _points.append(Prompt(prompt.cpu().numpy(), label.cpu().numpy()))
+
+                if polygons:
+                    for polygon, label in zip(polygons, labels["polygons"]):
+                        _polygons.append(Prompt(np.array(polygon.points, dtype=np.int32), label.cpu().numpy()))
+
+                # TODO (sungchul, sovrasov): support mask?
 
                 # preprocess decoder inputs
                 processed_prompts.append(
                     {
-                        "boxes": bboxes,
-                        "points": points,
+                        "boxes": _bboxes,
+                        "points": _points,
+                        "polygons": _polygons,
                     },
                 )
 
