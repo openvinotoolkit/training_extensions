@@ -830,16 +830,19 @@ class Engine:
         final_stats = {"latency": f"{latency:.3f} s", "troughput": f"{(fps):.3f} FPS"}
 
         if not isinstance(self.model, OVModel):
-            from torch.utils.flop_counter import get_suffix_str, convert_num_with_suffix
-            input_batch = self.model.get_dummy_input(1)
-            model_fwd = lambda: self.model.forward(input_batch)
-            depth = 3 if extended_stats else 0
-            fwd_flops = measure_flops(self.model.model, model_fwd, print_stats_depth=depth)
-            flops_str = convert_num_with_suffix(fwd_flops, get_suffix_str(fwd_flops*10**3))
+            try:
+                from torch.utils.flop_counter import get_suffix_str, convert_num_with_suffix
+                input_batch = self.model.get_dummy_input(1)
+                model_fwd = lambda: self.model.forward(input_batch)
+                depth = 3 if extended_stats else 0
+                fwd_flops = measure_flops(self.model.model, model_fwd, print_stats_depth=depth)
+                flops_str = convert_num_with_suffix(fwd_flops, get_suffix_str(fwd_flops*10**3))
+                final_stats["complexity"] = flops_str + " MACs"
+            except:
+                logging.warning("Failed to complete complexity estimation")
+
             params_num = sum(p.numel() for p in self.model.parameters() if p.requires_grad)
             params_num_str = convert_num_with_suffix(params_num, get_suffix_str(params_num*100))
-
-            final_stats["complexity"] = flops_str + " MACs"
             final_stats["parameters_number"] = params_num_str
 
         for name, val in final_stats.items():
