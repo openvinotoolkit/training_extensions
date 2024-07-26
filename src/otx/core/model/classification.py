@@ -88,7 +88,6 @@ class OTXMulticlassClsModel(OTXModel[MulticlassClsBatchDataEntity, MulticlassCls
         }
 
     def get_dummy_input(self, batch_size: int = 1) -> MulticlassClsBatchDataEntity:
-        labels = [torch.LongTensor([0])] * batch_size
         images = [torch.rand(*self.image_size[1:]) for _ in range(batch_size)]
         labels = [torch.LongTensor([0])] * batch_size
         data = MulticlassClsBatchDataEntity(batch_size, images, [], labels=labels)
