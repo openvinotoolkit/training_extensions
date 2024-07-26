@@ -8,6 +8,16 @@ All notable changes to this project will be documented in this file.
 
 - Add RT-DETR model for object detection task
   (https://github.com/openvinotoolkit/training_extensions/pull/3741)
+- Add Multi-Label & H-label Classification with torchvision models
+  (https://github.com/openvinotoolkit/training_extensions/pull/3697)
+- Add Hugging-Face Model Wrapper for Classification
+  (https://github.com/openvinotoolkit/training_extensions/pull/3710)
+- Add Hugging-Face Model Wrapper for Detection
+  (https://github.com/openvinotoolkit/training_extensions/pull/3747)
+- Add Hugging-Face Model Wrapper for Semantic Segmentation
+  (https://github.com/openvinotoolkit/training_extensions/pull/3749)
+- Enable torch.compile to work with classification
+  (https://github.com/openvinotoolkit/training_extensions/pull/3758)
 
 ### Enhancements
 
@@ -17,6 +27,11 @@ All notable changes to this project will be documented in this file.
   (<https://github.com/openvinotoolkit/training_extensions/pull/3759>)
 
 ### Bug fixes
+
+- Fix Combined Dataloader & unlabeled warmup loss in Semi-SL
+  (https://github.com/openvinotoolkit/training_extensions/pull/3723)
+- Revert #3579 to fix issues with replacing coco_instance with a different format in some dataset
+  (https://github.com/openvinotoolkit/training_extensions/pull/3753)
 
 ## \[v2.1.0\]
 
