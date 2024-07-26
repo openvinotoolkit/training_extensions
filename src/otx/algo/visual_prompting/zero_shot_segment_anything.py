@@ -32,6 +32,7 @@ from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallab
 from otx.core.model.visual_prompting import OTXZeroShotVisualPromptingModel
 from otx.core.schedulers import LRSchedulerListCallable
 from otx.core.types.label import LabelInfoTypes, NullLabelInfo
+from otx.core.utils.mask_util import polygon_to_bitmap
 
 if TYPE_CHECKING:
     import numpy as np
@@ -272,8 +273,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
                         # directly use annotation information as a mask
                         ref_mask[input_prompt] += 1
                     elif isinstance(input_prompt, dmPolygon):
-                        # TODO (sungchul): polygon support
-                        continue
+                        ref_mask[torch.as_tensor(polygon_to_bitmap([input_prompt], *ori_shape)[0])] += 1
                     else:
                         if isinstance(input_prompt, BoundingBoxes):
                             point_coords = input_prompt.reshape(-1, 2, 2)
@@ -617,16 +617,6 @@ class ZeroShotSegmentAnything(SegmentAnything):
 
             best_idx = torch.argmax(scores[0])
         return logits[:, [best_idx]], masks[0, best_idx]
-
-    # def _polygon_to_mask(self, polygon: np.ndarray | list[np.ndarray], height: int, width: int) -> np.ndarray:
-    #     """Converts a polygon represented as an array of 2D points into a mask."""
-    #     if isinstance(polygon, np.ndarray) and np.issubdtype(polygon.dtype, np.integer):
-    #         contour = polygon.reshape(-1, 2)
-    #     else:
-    #         contour = [[int(point[0]), int(point[1])] for point in polygon]
-    #     gt_mask = np.zeros((height, width), dtype=np.uint8)
-    #     gt_mask = cv2.drawContours(gt_mask, np.asarray([contour]), 0, 1, cv2.FILLED)
-    #     return gt_mask
 
 
 class OTXZeroShotSegmentAnything(OTXZeroShotVisualPromptingModel):
