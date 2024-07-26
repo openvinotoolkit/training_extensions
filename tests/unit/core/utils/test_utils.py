@@ -12,6 +12,7 @@ from otx.core.utils.utils import (
     import_object_from_module,
     is_ckpt_for_finetuning,
     is_ckpt_from_otx_v1,
+    remove_state_dict_prefix,
 )
 
 
@@ -120,3 +121,20 @@ def test_import_object_from_module():
     obj_path = "otx.core.utils.utils.get_mean_std_from_data_processing"
     obj = import_object_from_module(obj_path)
     assert obj == get_mean_std_from_data_processing
+
+
+def test_remove_state_dict_prefix():
+    state_dict = {
+        "model._orig_mod.backbone.0.weight": 1,
+        "model._orig_mod.backbone.0.bias": 2,
+        "model._orig_mod.backbone.1.weight": 3,
+        "model._orig_mod.backbone.1.bias": 4,
+    }
+    new_state_dict = remove_state_dict_prefix(state_dict=state_dict, prefix="_orig_mod.")
+    expected = {
+        "model.backbone.0.weight": 1,
+        "model.backbone.0.bias": 2,
+        "model.backbone.1.weight": 3,
+        "model.backbone.1.bias": 4,
+    }
+    assert new_state_dict == expected
