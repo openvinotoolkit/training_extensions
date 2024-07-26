@@ -11,25 +11,6 @@ Introduction to Hugging Face
 
 Hugging Face is an AI community and platform for machine learning that provides a vast repository of pre-trained models. These models span across various domains of natural language processing (NLP), computer vision, and more. Hugging Face's transformers library is widely recognized for its ease of use and state-of-the-art models, which can be fine-tuned for a wide range of tasks.
 
-Feature Introduction
---------------------
-
-Multi-Class Classification
-~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-- **Pre-trained Model Selection**: Choose the most suitable pre-trained model from Hugging Face's extensive library based on your data and requirements.
-- **Custom Training**: Fine-tune the selected model with your dataset using OpenVINO™ Training Extensions's user-friendly interface, which simplifies the training process.
-
-Object Detection
-~~~~~~~~~~~~~~~~
-
-- **Object Detection Model Training**: Train models for object detection tasks using pre-trained models from Hugging Face. Users can fine-tune models with datasets that include bounding boxes and class labels.
-
-Semantic Segmentation
-~~~~~~~~~~~~~~~~~~~~~
-
-- **Pixel-wise Labeling**: Prepare datasets with pixel-wise labeling for semantic segmentation and use them to train your models.
-
 OpenVINO IR Model Conversion
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -51,6 +32,13 @@ You can follow the preparation step per each tasks. :doc:`quick start guide <../
 
 You can find a list of pre-trained models provided by hugging-face `here <https://huggingface.co/models>`_.
 Currently, we support models in the Image Classification, Object Detection, and Image Segmentation categories, and some models may not be supported due to API policy.
+
+OTX provides the model classes below in three tasks for this purpose:
+- Classification: `otx.algo.classification.huggingface_model.HuggingFaceModelForMulticlassCls`
+- Detection: `otx.algo.detection.huggingface_model.HuggingFaceModelForDetection`
+- Semantic Segmentation: `otx.algo.segmentation.huggingface_model.HuggingFaceModelForSegmentation`
+
+You can run training on a Custom Dataset using the examples below.
 
 .. tab-set::
 
@@ -85,6 +73,11 @@ Currently, we support models in the Image Classification, Object Detection, and 
             )
 
             engine.train()
+
+.. note::
+
+    For detection, you can use the `otx.algo.detection.huggingface_model.HuggingFaceModelForDetection` class,
+    and for semantic segmentation, you can use the `otx.algo.segmentation.huggingface_model.HuggingFaceModelForSegmentation` class. Otherwise, the usage is the same.
 
 4. **Model Conversion**: Convert the trained model into the IR format using the OpenVINO toolkit.
 
