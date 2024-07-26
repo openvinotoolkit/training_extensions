@@ -12,6 +12,7 @@ All notable changes to this project will be documented in this file.
 - Add Hugging-Face Model Wrapper for Classification by @harimkang (https://github.com/openvinotoolkit/training_extensions/pull/3710)
 - Add Hugging-Face Model Wrapper for Detection by @harimkang (https://github.com/openvinotoolkit/training_extensions/pull/3747)
 - Add Hugging-Face Model Wrapper for Semantic Segmentation by @harimkang (https://github.com/openvinotoolkit/training_extensions/pull/3749)
+- Enable torch.compile to work with classification by @harimkang (https://github.com/openvinotoolkit/training_extensions/pull/3758)
 
 ### Enhancements
 
