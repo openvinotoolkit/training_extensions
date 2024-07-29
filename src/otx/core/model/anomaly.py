@@ -38,6 +38,7 @@ if TYPE_CHECKING:
     from lightning.pytorch import Trainer
     from lightning.pytorch.callbacks.callback import Callback
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
+    from lightning.pytorch.utilities.types import STEP_OUTPUT
     from torchmetrics import Metric
 
 
@@ -222,16 +223,25 @@ class OTXAnomaly:
             return optimizer(params=params)
         return super().configure_optimizers()  # type: ignore[misc]
 
+    def validation_step(
+        self,
+        inputs: AnomalyModelInputs,
+        batch_idx: int = 0,
+    ) -> STEP_OUTPUT:
+        """Call validation step of the anomalib model."""
+        raise NotImplementedError
+
     def forward(
         self,
         inputs: AnomalyModelInputs,
     ) -> AnomalyModelOutputs:
         """Wrap forward method of the Anomalib model."""
-        _inputs: dict = self._customize_inputs(inputs)
-        outputs = self.model.forward(_inputs["image"])
-        return outputs
-        # TODO Ashwin, Dick: restore _customize_outputs compatibility
-        #return self._customize_outputs(outputs=_inputs, inputs=inputs)
+        outputs = self.validation_step(inputs)
+        _PostProcessorCallback._post_process(outputs)
+        _PostProcessorCallback._compute_scores_and_labels(self, outputs)
+        _MinMaxNormalizationCallback._normalize_batch(outputs, self)
+
+        return self._customize_outputs(outputs=outputs, inputs=inputs)
 
     def _customize_inputs(
         self,
