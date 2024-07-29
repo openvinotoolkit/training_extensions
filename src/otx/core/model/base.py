@@ -32,6 +32,7 @@ from torchmetrics import Metric, MetricCollection
 from otx import __version__
 from otx.core.config.data import TileConfig
 from otx.core.data.entity.base import (
+    ImageInfo,
     OTXBatchDataEntity,
     OTXBatchLossEntity,
     T_OTXBatchDataEntity,
@@ -1095,3 +1096,16 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
 
         msg = "Cannot construct LabelInfo from OpenVINO IR. Please check this model is trained by OTX."
         raise ValueError(msg)
+
+    def get_dummy_input(self, batch_size: int = 1) -> OTXBatchDataEntity:
+        """Returns a dummy input for base OV model"""
+        # Resize is embedded to the OV model, which means we don't need to know the actual size
+        images = [torch.rand(3, 224, 224) for _ in range(batch_size)]
+        infos = []
+        for i, img in enumerate(images):
+            infos.append(ImageInfo(
+                img_idx=i,
+                img_shape=img.shape,
+                ori_shape=img.shape,
+            ))
+        return OTXBatchDataEntity(batch_size=batch_size, images=images, imgs_info=infos)

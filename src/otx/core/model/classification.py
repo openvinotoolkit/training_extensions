@@ -729,14 +729,6 @@ class OVMulticlassClassificationModel(
             "target": target,
         }
 
-    def get_dummy_input(self, batch_size: int = 1) -> MulticlassClsBatchDataEntity:
-        """Returns a dummy input for classification OV model"""
-        # Resize is embedded to the OV model, which means we don't need to know the actual size
-        images = [torch.rand(3, 224, 224) for _ in range(batch_size)]
-        labels = [torch.LongTensor([0])] * batch_size
-        data = MulticlassClsBatchDataEntity(batch_size, images, [], labels=labels)
-        return data
-
 class OVMultilabelClassificationModel(OVModel[MultilabelClsBatchDataEntity, MultilabelClsBatchPredEntity]):
     """Multilabel classification model compatible for OpenVINO IR inference.
 
@@ -809,14 +801,6 @@ class OVMultilabelClassificationModel(OVModel[MultilabelClsBatchDataEntity, Mult
             "preds": torch.stack(preds.scores),
             "target": torch.stack(inputs.labels),
         }
-
-    def get_dummy_input(self, batch_size: int = 1) -> MultilabelClsBatchDataEntity:
-        """Returns a dummy input for classification OV model"""
-        # Resize is embedded to the OV model, which means we don't need to know the actual size
-        images = [torch.rand(3, 224, 224) for _ in range(batch_size)]
-        labels = [torch.LongTensor([0])] * batch_size
-        data = MultilabelClsBatchDataEntity(batch_size, images, [], labels=labels)
-        return data
 
 class OVHlabelClassificationModel(OVModel[HlabelClsBatchDataEntity, HlabelClsBatchPredEntity]):
     """Hierarchical classification model compatible for OpenVINO IR inference.
@@ -933,11 +917,3 @@ class OVHlabelClassificationModel(OVModel[HlabelClsBatchDataEntity, HlabelClsBat
 
         msg = "Cannot construct LabelInfo from OpenVINO IR. Please check this model is trained by OTX."
         raise ValueError(msg)
-
-    def get_dummy_input(self, batch_size: int = 1) -> HlabelClsBatchDataEntity:
-        """Returns a dummy input for classification OV model"""
-        # Resize is embedded to the OV model, which means we don't need to know the actual size
-        images = [torch.rand(3, 224, 224) for _ in range(batch_size)]
-        labels = [torch.LongTensor([0])] * batch_size
-        data = HlabelClsBatchDataEntity(batch_size, images, [], labels=labels)
-        return data

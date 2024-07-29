@@ -213,9 +213,3 @@ class AnomalyOpenVINO(OVModel):
 
     def _create_label_info_from_ov_ir(self) -> AnomalyLabelInfo:
         return AnomalyLabelInfo()
-
-    def get_dummy_input(self, batch_size: int = 1) -> OTXBatchDataEntity:
-        """Returns a dummy input for anomaly OV model"""
-        # Resize is embedded to the OV model, which means we don't need to know the actual size
-        images = [torch.rand(3, 224, 224) for _ in range(batch_size)]
-        return OTXBatchDataEntity(batch_size=batch_size, images=images, imgs_info=[])
