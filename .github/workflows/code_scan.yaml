@@ -40,7 +40,7 @@ jobs:
           scan-type: "fs"
           scan-ref: .
       - name: Upload Trivy results artifact
-        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
+        uses: actions/upload-artifact@0b2256b8c012f0828dc542b3febcab082c67f72b # v4.3.4
         with:
           name: trivy-results
           path: "${{ github.workspace }}/trivy-results.*"
@@ -64,7 +64,7 @@ jobs:
       - name: Bandit Scanning
         run: tox -e bandit-scan
       - name: Upload Bandit artifact
-        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
+        uses: actions/upload-artifact@0b2256b8c012f0828dc542b3febcab082c67f72b # v4.3.4
         with:
           name: bandit-report
           path: .tox/bandit-report.txt

@@ -1,4 +1,4 @@
-# Copyright (C) 2023 Intel Corporation
+# Copyright (C) 2023-2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 """Unit tests of visual prompting datasets."""
 
@@ -9,7 +9,7 @@ import pytest
 from datumaro import Dataset as DmDataset
 from otx.core.data.dataset.visual_prompting import OTXVisualPromptingDataset, OTXZeroShotVisualPromptingDataset
 from otx.core.data.entity.base import ImageInfo, Points
-from torch import Tensor
+from otx.core.data.entity.visual_prompting import ZeroShotVisualPromptingLabel
 from torchvision.transforms.v2 import Identity, Transform
 from torchvision.tv_tensors import BoundingBoxes, Image, Mask
 
@@ -103,7 +103,7 @@ class TestOTXZeroShotVisualPromptingDataset:
         assert hasattr(entity, "masks")
         assert isinstance(entity.masks, Mask)
         assert hasattr(entity, "labels")
-        assert isinstance(entity.labels, Tensor)
+        assert isinstance(entity.labels, ZeroShotVisualPromptingLabel)
         assert hasattr(entity, "polygons")
         assert isinstance(entity.polygons, list)
         assert hasattr(entity, "prompts")

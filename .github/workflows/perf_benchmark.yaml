@@ -148,7 +148,7 @@ jobs:
           --user-name ${{ github.triggering_actor }}
           --otx-ref ${{ inputs.otx-ref }}
       - name: Upload test results
-        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
+        uses: actions/upload-artifact@0b2256b8c012f0828dc542b3febcab082c67f72b # v4.3.4
         with:
           name: perf-benchmark-${{ matrix.task-short }}
           path: .tox/perf-benchmark-*.*
@@ -180,7 +180,7 @@ jobs:
           python tests/perf/history/summary.py tests/perf/history ./perf-benchmark-summary --pattern "*raw*.csv" --normalize
           jupyter nbconvert --execute --to html --no-input tests/perf/history/summary.ipynb --output-dir ./perf-benchmark-summary --output perf-benchmark-summary
       - name: Upload benchmark summary
-        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
+        uses: actions/upload-artifact@0b2256b8c012f0828dc542b3febcab082c67f72b # v4.3.4
         with:
           name: perf-benchmark-summary
           path: perf-benchmark-summary
