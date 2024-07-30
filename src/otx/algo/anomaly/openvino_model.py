@@ -20,7 +20,6 @@ from anomalib.metrics import create_metric_collection
 from lightning import Callback, Trainer
 from torchvision.transforms.functional import resize
 
-from otx.core.data.entity.base import OTXBatchDataEntity
 from otx.core.data.entity.anomaly import AnomalyClassificationDataBatch
 from otx.core.data.module import OTXDataModule
 from otx.core.metrics.types import MetricCallable, NullMetricCallable

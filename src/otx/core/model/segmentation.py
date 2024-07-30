@@ -37,7 +37,7 @@ if TYPE_CHECKING:
 class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity]):
     """Base class for the semantic segmentation models used in OTX."""
 
-    image_size: tuple[int, int, int, int] | None = None
+    image_size: tuple | None = None
 
     def __init__(
         self,
@@ -108,20 +108,21 @@ class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity]):
         return self.model(inputs=image, mode="tensor")
 
     def get_dummy_input(self, batch_size: int = 1) -> SegBatchDataEntity:
-        """Returns a dummy input for semantic segmentation model"""
+        """Returns a dummy input for semantic segmentation model."""
         if self.image_size is None:
             raise ValueError(self.image_size)
 
         images = torch.rand(batch_size, *self.image_size[1:])
         infos = []
         for i, img in enumerate(images):
-            infos.append(ImageInfo(
-                img_idx=i,
-                img_shape=img.shape,
-                ori_shape=img.shape,
-            ))
-        data = SegBatchDataEntity(batch_size, images, infos, masks=[])
-        return data
+            infos.append(
+                ImageInfo(
+                    img_idx=i,
+                    img_shape=img.shape,
+                    ori_shape=img.shape,
+                ),
+            )
+        return SegBatchDataEntity(batch_size, images, infos, masks=[])
 
 
 class TorchVisionCompatibleModel(OTXSegmentationModel):
@@ -166,7 +167,7 @@ class TorchVisionCompatibleModel(OTXSegmentationModel):
         self.decode_head_configuration = decode_head_configuration if decode_head_configuration is not None else {}
         export_image_configuration = export_image_configuration if export_image_configuration is not None else {}
         self.criterion_configuration = criterion_configuration
-        self.image_size = tuple(export_image_configuration.get("image_size", (1, 3, 512, 512)))
+        self.image_size = tuple([int(i) for i in export_image_configuration.get("image_size", (1, 3, 512, 512))])
         self.mean = export_image_configuration.get("mean", [123.675, 116.28, 103.53])
         self.scale = export_image_configuration.get("std", [58.395, 57.12, 57.375])
         self.name_base_model = name_base_model
@@ -211,6 +212,9 @@ class TorchVisionCompatibleModel(OTXSegmentationModel):
     @property
     def _exporter(self) -> OTXModelExporter:
         """Creates OTXModelExporter object that can export the model."""
+        if self.image_size is None:
+            raise ValueError(self.image_size)
+
         return OTXNativeModelExporter(
             task_level_export_parameters=self._export_parameters,
             input_size=self.image_size,

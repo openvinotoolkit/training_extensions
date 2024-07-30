@@ -783,6 +783,14 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
         self._tile_config = tile_config
 
     def get_dummy_input(self, batch_size: int = 1) -> OTXBatchDataEntity[Any]:
+        """Generates a dummy input, suitable for launching forward() on it.
+
+        Args:
+            batch_size (int, optional): number of elements in a dummy input sequence. Defaults to 1.
+
+        Returns:
+            OTXBatchDataEntity[Any]: An entity containing randomly generated inference data.
+        """
         raise NotImplementedError
 
     @staticmethod
@@ -1098,14 +1106,16 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
         raise ValueError(msg)
 
     def get_dummy_input(self, batch_size: int = 1) -> OTXBatchDataEntity:
-        """Returns a dummy input for base OV model"""
+        """Returns a dummy input for base OV model."""
         # Resize is embedded to the OV model, which means we don't need to know the actual size
         images = [torch.rand(3, 224, 224) for _ in range(batch_size)]
         infos = []
         for i, img in enumerate(images):
-            infos.append(ImageInfo(
-                img_idx=i,
-                img_shape=img.shape,
-                ori_shape=img.shape,
-            ))
+            infos.append(
+                ImageInfo(
+                    img_idx=i,
+                    img_shape=img.shape,
+                    ori_shape=img.shape,
+                ),
+            )
         return OTXBatchDataEntity(batch_size=batch_size, images=images, imgs_info=infos)

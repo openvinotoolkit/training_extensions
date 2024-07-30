@@ -364,22 +364,22 @@ class OTXInstanceSegModel(OTXModel[InstanceSegBatchDataEntity, InstanceSegBatchP
         return {"preds": pred_info, "target": target_info}
 
     def get_dummy_input(self, batch_size: int = 1) -> InstanceSegBatchDataEntity:
-        """Returns a dummy input for instance segmentation model"""
+        """Returns a dummy input for instance segmentation model."""
         if self.image_size is None:
             raise ValueError(self.image_size)
 
-        #images = torch.rand(batch_size, *self.image_size[1:])
+        # images = torch.rand(batch_size, *self.image_size[1:])
         images = [torch.rand(*self.image_size[1:]) for _ in range(batch_size)]
         infos = []
         for i, img in enumerate(images):
-            infos.append(ImageInfo(
-                img_idx=i,
-                img_shape=img.shape,
-                ori_shape=img.shape,
-            ))
-        data = InstanceSegBatchDataEntity(batch_size, images, infos,
-                                          bboxes=[], masks=[], labels=[], polygons=[])
-        return data
+            infos.append(
+                ImageInfo(
+                    img_idx=i,
+                    img_shape=img.shape,
+                    ori_shape=img.shape,
+                ),
+            )
+        return InstanceSegBatchDataEntity(batch_size, images, infos, bboxes=[], masks=[], labels=[], polygons=[])
 
 
 class ExplainableOTXInstanceSegModel(OTXInstanceSegModel):

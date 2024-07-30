@@ -24,8 +24,7 @@ from model_api.models.visual_prompting import (
 from torch import Tensor
 from torchvision import tv_tensors
 
-from otx.core.data.entity.base import ImageInfo
-from otx.core.data.entity.base import Points
+from otx.core.data.entity.base import ImageInfo, Points
 from otx.core.data.entity.visual_prompting import (
     VisualPromptingBatchDataEntity,
     VisualPromptingBatchPredEntity,
@@ -256,12 +255,20 @@ class OTXVisualPromptingModel(OTXModel[VisualPromptingBatchDataEntity, VisualPro
         log.warning(msg)
 
     def get_dummy_input(self, batch_size: int = 1) -> VisualPromptingBatchDataEntity:
-        """Returns a dummy input for VPT model"""
+        """Returns a dummy input for VPT model."""
         images = [torch.rand(3, self.model.image_size, self.model.image_size) for _ in range(batch_size)]
         labels = [{"points": torch.LongTensor([0] * batch_size)}] * batch_size
         prompts = [torch.zeros((1, 2))] * batch_size
-        return VisualPromptingBatchDataEntity(batch_size, images, imgs_info=[], labels=labels, points=prompts,
-                                              masks=[None]*batch_size, polygons=[None]*batch_size, bboxes=[None]*batch_size)
+        return VisualPromptingBatchDataEntity(
+            batch_size,
+            images,
+            imgs_info=[],
+            labels=labels,
+            points=prompts,
+            masks=[None] * batch_size,
+            polygons=[[None]] * batch_size,
+            bboxes=[None] * batch_size,
+        )
 
 
 class OTXZeroShotVisualPromptingModel(
@@ -430,18 +437,28 @@ class OTXZeroShotVisualPromptingModel(
         log.warning(msg)
 
     def get_dummy_input(self, batch_size: int = 1) -> ZeroShotVisualPromptingBatchDataEntity:
-        """Returns a dummy input for ZSL VPT model"""
+        """Returns a dummy input for ZSL VPT model."""
         images = [torch.rand(3, self.model.image_size, self.model.image_size) for _ in range(batch_size)]
         labels = [{"points": torch.LongTensor([0] * batch_size)}] * batch_size
         prompts = [torch.zeros((1, 2))] * batch_size
         infos = []
         for i, img in enumerate(images):
-            infos.append(ImageInfo(
-                img_idx=i,
-                img_shape=img.shape,
-                ori_shape=img.shape,
-            ))
-        return ZeroShotVisualPromptingBatchDataEntity(batch_size, images, imgs_info=infos, labels=labels, prompts=prompts, masks=[], polygons=[])
+            infos.append(
+                ImageInfo(
+                    img_idx=i,
+                    img_shape=img.shape,
+                    ori_shape=img.shape,
+                ),
+            )
+        return ZeroShotVisualPromptingBatchDataEntity(
+            batch_size,
+            images,
+            imgs_info=infos,
+            labels=labels,
+            prompts=prompts,
+            masks=[],
+            polygons=[],
+        )
 
 
 class OVVisualPromptingModel(
@@ -616,8 +633,9 @@ class OVVisualPromptingModel(
         ptq_config: dict[str, Any] | None = None,
     ) -> dict[str, Path]:
         """Runs NNCF quantization."""
-        import nncf
         import openvino
+
+        import nncf
 
         def check_if_quantized(model: openvino.Model) -> bool:
             """Checks if OpenVINO model is already quantized."""
@@ -767,13 +785,21 @@ class OVVisualPromptingModel(
         log.warning(msg)
 
     def get_dummy_input(self, batch_size: int = 1) -> VisualPromptingBatchDataEntity:
-        """Returns a dummy input for classification OV model"""
+        """Returns a dummy input for classification OV model."""
         # Resize is embedded to the OV model, which means we don't need to know the actual size
         images = [torch.rand(3, 224, 224) for _ in range(batch_size)]
         labels = [{"points": torch.LongTensor([0] * batch_size)}] * batch_size
         prompts = [torch.zeros((1, 2))] * batch_size
-        return VisualPromptingBatchDataEntity(batch_size, images, imgs_info=[], labels=labels, points=prompts,
-                                              masks=[None]*batch_size, polygons=[None]*batch_size, bboxes=[None]*batch_size)
+        return VisualPromptingBatchDataEntity(
+            batch_size,
+            images,
+            imgs_info=[],
+            labels=labels,
+            points=prompts,
+            masks=[None] * batch_size,
+            polygons=[[None]] * batch_size,
+            bboxes=[None] * batch_size,
+        )
 
 
 class OVZeroShotVisualPromptingModel(
@@ -1044,8 +1070,9 @@ class OVZeroShotVisualPromptingModel(
         ptq_config: dict[str, Any] | None = None,
     ) -> dict[str, Path]:
         """Runs NNCF quantization."""
-        import nncf
         import openvino
+
+        import nncf
 
         def check_if_quantized(model: openvino.Model) -> bool:
             """Checks if OpenVINO model is already quantized."""
@@ -1350,16 +1377,26 @@ class OVZeroShotVisualPromptingModel(
         log.warning(msg)
 
     def get_dummy_input(self, batch_size: int = 1) -> ZeroShotVisualPromptingBatchDataEntity:
-        """Returns a dummy input for classification OV model"""
+        """Returns a dummy input for classification OV model."""
         # Resize is embedded to the OV model, which means we don't need to know the actual size
         images = [torch.rand(3, 224, 224) for _ in range(batch_size)]
         labels = [{"points": torch.LongTensor([0] * batch_size)}] * batch_size
         prompts = [torch.zeros((1, 2))] * batch_size
         infos = []
         for i, img in enumerate(images):
-            infos.append(ImageInfo(
-                img_idx=i,
-                img_shape=img.shape,
-                ori_shape=img.shape,
-            ))
-        return ZeroShotVisualPromptingBatchDataEntity(batch_size, images, imgs_info=infos, labels=labels, prompts=prompts, masks=[], polygons=[])
+            infos.append(
+                ImageInfo(
+                    img_idx=i,
+                    img_shape=img.shape,
+                    ori_shape=img.shape,
+                ),
+            )
+        return ZeroShotVisualPromptingBatchDataEntity(
+            batch_size,
+            images,
+            imgs_info=infos,
+            labels=labels,
+            prompts=prompts,
+            masks=[],
+            polygons=[],
+        )

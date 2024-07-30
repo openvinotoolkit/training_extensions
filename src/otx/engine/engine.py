@@ -5,8 +5,8 @@
 
 from __future__ import annotations
 
-import inspect
 import csv
+import inspect
 import logging
 import tempfile
 import time
@@ -787,6 +787,20 @@ class Engine:
         n_iters: int = 10,
         extended_stats: bool = False,
     ) -> dict[str, str]:
+        """_summary_.
+
+        Args:
+            checkpoint (PathLike | None, optional): _description_. Defaults to None.
+            batch_size (int, optional): _description_. Defaults to 1.
+            n_iters (int, optional): _description_. Defaults to 10.
+            extended_stats (bool, optional): _description_. Defaults to False.
+
+        Raises:
+            RuntimeError: _description_
+
+        Returns:
+            dict[str, str]: _description_
+        """
         checkpoint = checkpoint if checkpoint is not None else self.checkpoint
 
         if checkpoint is not None:
@@ -822,7 +836,7 @@ class Engine:
         for _ in range(warmup_iters):
             dummy_infer(self.model, batch_size)
 
-        total_time = 0.
+        total_time = 0.0
         for _ in range(n_iters):
             total_time += dummy_infer(self.model, batch_size)
         latency = total_time / n_iters
@@ -832,27 +846,28 @@ class Engine:
 
         if not isinstance(self.model, OVModel):
             try:
-                from torch.utils.flop_counter import get_suffix_str, convert_num_with_suffix
+                from torch.utils.flop_counter import convert_num_with_suffix, get_suffix_str
+
                 input_batch = self.model.get_dummy_input(1)
                 model_fwd = lambda: self.model.forward(input_batch)
                 depth = 3 if extended_stats else 0
                 fwd_flops = measure_flops(self.model.model, model_fwd, print_stats_depth=depth)
-                flops_str = convert_num_with_suffix(fwd_flops, get_suffix_str(fwd_flops*10**3))
+                flops_str = convert_num_with_suffix(fwd_flops, get_suffix_str(fwd_flops * 10**3))
                 final_stats["complexity"] = flops_str + " MACs"
-            except:
-                logging.warning("Failed to complete complexity estimation")
+            except Exception as e:
+                logging.warning(f"Failed to complete complexity estimation: {e}")
 
             params_num = sum(p.numel() for p in self.model.parameters() if p.requires_grad)
-            params_num_str = convert_num_with_suffix(params_num, get_suffix_str(params_num*100))
+            params_num_str = convert_num_with_suffix(params_num, get_suffix_str(params_num * 100))
             final_stats["parameters_number"] = params_num_str
 
         for name, val in final_stats.items():
             print(f"{name:<20} | {val}")
 
-        with open(Path(self.work_dir) / "benchmark_report.csv", "w") as f:
+        with (Path(self.work_dir) / "benchmark_report.csv").open("w") as f:
             writer = csv.writer(f)
-            writer.writerow([k for k in final_stats.keys()])
-            writer.writerow([v for v in final_stats.values()])
+            writer.writerow(list(final_stats))
+            writer.writerow(list(final_stats.values()))
 
         return final_stats
 

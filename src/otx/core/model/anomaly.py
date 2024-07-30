@@ -237,9 +237,9 @@ class OTXAnomaly:
     ) -> AnomalyModelOutputs:
         """Wrap forward method of the Anomalib model."""
         outputs = self.validation_step(inputs)
-        _PostProcessorCallback._post_process(outputs)
-        _PostProcessorCallback._compute_scores_and_labels(self, outputs)
-        _MinMaxNormalizationCallback._normalize_batch(outputs, self)
+        _PostProcessorCallback._post_process(outputs)  # noqa: SLF001
+        _PostProcessorCallback._compute_scores_and_labels(self, outputs)  # noqa: SLF001
+        _MinMaxNormalizationCallback._normalize_batch(outputs, self)  # noqa: SLF001
 
         return self._customize_outputs(outputs=outputs, inputs=inputs)
 
@@ -368,16 +368,18 @@ class OTXAnomaly:
         )
 
     def get_dummy_input(self, batch_size: int = 1) -> AnomalyModelInputs:
-        """Returns a dummy input for anomaly model"""
+        """Returns a dummy input for anomaly model."""
         image_size, _, _ = self._get_values_from_transforms()
         images = torch.rand(batch_size, 3, *image_size)
         infos = []
         for i, img in enumerate(images):
-            infos.append(ImageInfo(
-                img_idx=i,
-                img_shape=img.shape,
-                ori_shape=img.shape,
-            ))
+            infos.append(
+                ImageInfo(
+                    img_idx=i,
+                    img_shape=img.shape,
+                    ori_shape=img.shape,
+                ),
+            )
         if self.task == AnomalibTaskType.CLASSIFICATION:
             return AnomalyClassificationDataBatch(
                 batch_size=batch_size,
@@ -402,3 +404,6 @@ class OTXAnomaly:
                 boxes=torch.tensor(0),
                 masks=torch.tensor(0),
             )
+
+        msg = "Wrong anomaly task type"
+        raise RuntimeError(msg)

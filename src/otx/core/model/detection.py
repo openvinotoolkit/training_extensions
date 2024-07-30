@@ -367,20 +367,22 @@ class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity]):
         return self._best_confidence_threshold
 
     def get_dummy_input(self, batch_size: int = 1) -> DetBatchDataEntity:
-        """Returns a dummy input for detection model"""
+        """Returns a dummy input for detection model."""
         if self.image_size is None:
             raise ValueError(self.image_size)
 
         images = [torch.rand(*self.image_size[1:]) for _ in range(batch_size)]
         infos = []
         for i, img in enumerate(images):
-            infos.append(ImageInfo(
-                img_idx=i,
-                img_shape=img.shape,
-                ori_shape=img.shape,
-            ))
-        data = DetBatchDataEntity(batch_size, images, infos, bboxes=[], labels=[])
-        return data
+            infos.append(
+                ImageInfo(
+                    img_idx=i,
+                    img_shape=img.shape,
+                    ori_shape=img.shape,
+                ),
+            )
+        return DetBatchDataEntity(batch_size, images, infos, bboxes=[], labels=[])
+
 
 class ExplainableOTXDetModel(OTXDetectionModel):
     """OTX detection model which can attach a XAI (Explainable AI) branch."""

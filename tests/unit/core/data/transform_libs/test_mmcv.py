@@ -10,8 +10,9 @@ from otx.core.types.transformer_libs import TransformLibType
 
 SKIP_MMLAB_TEST = False
 try:
-    from mmcv.transforms.builder import TRANSFORMS
     from otx.core.data.transform_libs.mmcv import LoadImageFromFile, MMCVTransformLib
+
+    from mmcv.transforms.builder import TRANSFORMS
 except ImportError:
     SKIP_MMLAB_TEST = True
 
