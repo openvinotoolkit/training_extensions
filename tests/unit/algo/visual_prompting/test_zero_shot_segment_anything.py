@@ -1,8 +1,9 @@
-# Copyright (C) 2023 Intel Corporation
+# Copyright (C) 2023-2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
 from __future__ import annotations
 
+from copy import deepcopy
 from typing import Any, Callable
 
 import pytest
@@ -576,17 +577,16 @@ class TestOTXZeroShotSegmentAnything:
         assert result.labels[0] == label
         assert torch.all(result.prompts[0].data == outputs[0][1][label][0][:2].unsqueeze(0))
 
-    def test_gather_prompts_with_labels(self, model) -> None:
+    def test_gather_prompts_with_labels(self, model, fxt_zero_shot_vpm_data_entity) -> None:
         """Test _gather_prompts_with_labels."""
-        prompts = [[torch.tensor(0), torch.tensor(1), torch.tensor(2), torch.tensor(2), torch.tensor(4)]]
-        labels = [torch.tensor([0, 1, 2, 2, 4])]
+        entity = deepcopy(fxt_zero_shot_vpm_data_entity[1])
 
-        results = model._gather_prompts_with_labels(prompts, labels)
+        results = model._gather_prompts_with_labels(entity)
 
-        assert results[0][0][0] == prompts[0][0]
-        assert results[0][1][0] == prompts[0][1]
-        assert results[0][2] == prompts[0][2:4]
-        assert results[0][4][0] == prompts[0][4]
+        assert torch.all(results[0][1][0] == entity.prompts[0][0])
+        assert torch.all(results[0][1][1] == entity.masks[0])
+        assert torch.all(results[0][2][0] == entity.prompts[0][1])
+        assert results[0][2][1] == entity.polygons[0][0]
 
     @pytest.mark.parametrize(
         ("image", "expected"),
