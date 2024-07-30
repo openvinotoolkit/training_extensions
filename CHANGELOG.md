@@ -12,6 +12,8 @@ All notable changes to this project will be documented in this file.
   (<https://github.com/openvinotoolkit/training_extensions/pull/3748>)
 - Enable to use input_size at transforms in recipe
   (<https://github.com/openvinotoolkit/training_extensions/pull/3759>)
+- Enable to use polygon and bitmap mask as prompt inputs for zero-shot learning
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3769>)
 
 ### Bug fixes
 
