@@ -437,11 +437,12 @@
 <div class="viewcode-block" id="ConfigConverter.convert">
 <a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.tools.converter.html#otx.tools.converter.ConfigConverter.convert">[docs]</a>
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">convert</span><span class="p">(</span><span class="n">config_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">convert</span><span class="p">(</span><span class="n">config_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">task</span><span class="p">:</span> <span class="n">OTXTaskType</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert a configuration file to a default configuration dictionary.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            config_path (str): The path to the configuration file.</span>
+<span class="sd">            task (OTXTaskType | None): Value to override the task.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            dict: The default configuration dictionary.</span>
@@ -456,6 +457,8 @@
         <span class="n">task_info</span> <span class="o">=</span> <span class="n">TEMPLATE_ID_DICT</span><span class="p">[</span><span class="n">template_config</span><span class="p">[</span><span class="s2">&quot;model_template_id&quot;</span><span class="p">]]</span>
         <span class="k">if</span> <span class="n">param_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;enable_tiling&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">task_info</span><span class="p">[</span><span class="s2">&quot;model_name&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;_tile&quot;</span><span class="p">):</span>
             <span class="n">task_info</span><span class="p">[</span><span class="s2">&quot;model_name&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="s2">&quot;_tile&quot;</span>
+        <span class="k">if</span> <span class="n">task</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">task_info</span><span class="p">[</span><span class="s2">&quot;task&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">task</span>
         <span class="n">default_config</span> <span class="o">=</span> <span class="n">ConfigConverter</span><span class="o">.</span><span class="n">_get_default_config</span><span class="p">(</span><span class="n">task_info</span><span class="p">)</span>
         <span class="n">ConfigConverter</span><span class="o">.</span><span class="n">_update_params</span><span class="p">(</span><span class="n">default_config</span><span class="p">,</span> <span class="n">param_dict</span><span class="p">)</span>
         <span class="n">ConfigConverter</span><span class="o">.</span><span class="n">_remove_unused_key</span><span class="p">(</span><span class="n">default_config</span><span class="p">)</span>
