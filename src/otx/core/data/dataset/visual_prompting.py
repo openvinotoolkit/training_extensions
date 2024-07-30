@@ -19,6 +19,7 @@ from datumaro import Polygon as dmPolygon
 from torchvision import tv_tensors
 from torchvision.transforms.v2.functional import convert_bounding_box_format, to_image
 from torchvision.tv_tensors import BoundingBoxes as tvBoundingBoxes
+from torchvision.tv_tensors import BoundingBoxFormat as tvBoundingBoxFormat
 from torchvision.tv_tensors import Mask as tvMask
 
 from otx.core.data.entity.base import ImageInfo, Points
@@ -96,11 +97,11 @@ class OTXVisualPromptingDataset(OTXDataset[VisualPromptingDataEntity]):
                     # get bbox
                     bbox = tvBoundingBoxes(
                         annotation.get_bbox(),
-                        format="xywh",
+                        format=tvBoundingBoxFormat.XYWH,
                         canvas_size=img_shape,
                         dtype=torch.float32,
                     )
-                    bbox = convert_bounding_box_format(bbox, new_format="xyxy")
+                    bbox = convert_bounding_box_format(bbox, new_format=tvBoundingBoxFormat.XYXY)
                     gt_bboxes.append(bbox)
                     gt_labels["bboxes"].append(annotation.label)
                     gt_masks["bboxes"].append(mask)
@@ -231,11 +232,11 @@ class OTXZeroShotVisualPromptingDataset(OTXDataset[ZeroShotVisualPromptingDataEn
                     # get bbox
                     bbox = tvBoundingBoxes(
                         annotation.get_bbox(),
-                        format="xywh",
+                        format=tvBoundingBoxFormat.XYWH,
                         canvas_size=img_shape,
                         dtype=torch.float32,
                     )
-                    bbox = convert_bounding_box_format(bbox, new_format="xyxy")
+                    bbox = convert_bounding_box_format(bbox, new_format=tvBoundingBoxFormat.XYXY)
                     gt_prompts.append(bbox)
                 else:
                     # get center point
