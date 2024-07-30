@@ -132,7 +132,9 @@ def _inference_step_for_zero_shot(
         raise TypeError(preds)
 
     # filter labels using corresponding ground truth
-    inputs.labels = [label["masks"] if len(inputs.masks) > 0 else label["polygons"] for label in inputs.labels]
+    inputs.labels = [
+        label.masks if inputs.masks and label.masks is not None else label.polygons for label in inputs.labels
+    ]
 
     converted_entities: dict[str, list[dict[str, Tensor]]] = _convert_pred_entity_to_compute_metric(preds, inputs)  # type: ignore[assignment]
 
@@ -929,14 +931,14 @@ class OVZeroShotVisualPromptingModel(
                 _bboxes: list[Prompt] = []
                 _points: list[Prompt] = []
                 _polygons: list[Prompt] = []
-                for prompt, label in zip(prompts, labels["prompts"]):  # type: ignore[arg-type]
+                for prompt, label in zip(prompts, labels.prompts):  # type: ignore[arg-type]
                     if isinstance(prompt, tv_tensors.BoundingBoxes):
                         _bboxes.append(Prompt(prompt.cpu().numpy(), label.cpu().numpy()))
                     elif isinstance(prompt, Points):
                         _points.append(Prompt(prompt.cpu().numpy(), label.cpu().numpy()))
 
-                if polygons:
-                    for polygon, label in zip(polygons, labels["polygons"]):
+                if polygons and labels.polygons is not None:
+                    for polygon, label in zip(polygons, labels.polygons):
                         _polygons.append(Prompt(np.array(polygon.points, dtype=np.int32), label.cpu().numpy()))
 
                 # TODO (sungchul, sovrasov): support mask?
@@ -1059,7 +1061,7 @@ class OVZeroShotVisualPromptingModel(
             _labels: dict[str, list[int]] = defaultdict(list)
 
             # use only the first prompt
-            for prompt, label in zip(data_batch.prompts[0], data_batch.labels[0]["prompts"]):  # type: ignore[arg-type]
+            for prompt, label in zip(data_batch.prompts[0], data_batch.labels[0].prompts):  # type: ignore[arg-type]
                 if isinstance(prompt, tv_tensors.BoundingBoxes):
                     bboxes.append(prompt.cpu().numpy())
                     _labels["bboxes"].append(label.cpu().numpy())

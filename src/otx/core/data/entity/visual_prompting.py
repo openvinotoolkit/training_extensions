@@ -6,7 +6,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING
 
 from torchvision import tv_tensors
 
@@ -127,6 +127,15 @@ class VisualPromptingBatchPredEntity(OTXBatchPredEntity, VisualPromptingBatchDat
     """Data entity to represent model output predictions for visual prompting task."""
 
 
+@dataclass
+class ZeroShotVisualPromptingLabel:
+    """Label dataclass for zero-shot visual prompting data entity."""
+
+    prompts: LongTensor | None = None
+    polygons: LongTensor | None = None
+    masks: LongTensor | None = None
+
+
 @register_pytree_node
 @dataclass
 class ZeroShotVisualPromptingDataEntity(OTXDataEntity):
@@ -134,7 +143,7 @@ class ZeroShotVisualPromptingDataEntity(OTXDataEntity):
 
     Attributes:
         masks (tvMask): The masks of the instances.
-        labels (dict[Literal["prompts", "polygons", "masks"], list[LongTensor]]): The labels of the instances
+        labels (ZeroShotVisualPromptingLabel): The labels of the instances
             for each prompt.
         polygons (list[dmPolygon]): The polygons of the instances.
         prompts (list[tvBoundingBoxes | Points]): The prompts of the instances.
@@ -146,7 +155,7 @@ class ZeroShotVisualPromptingDataEntity(OTXDataEntity):
         return OTXTaskType.ZERO_SHOT_VISUAL_PROMPTING
 
     masks: tvMask
-    labels: dict[Literal["prompts", "polygons", "masks"], LongTensor]
+    labels: ZeroShotVisualPromptingLabel
     polygons: list[dmPolygon]
     prompts: list[tvBoundingBoxes | Points]
 
@@ -157,13 +166,13 @@ class ZeroShotVisualPromptingBatchDataEntity(OTXBatchDataEntity[ZeroShotVisualPr
 
     Attributes:
         masks (list[tvMask]): List of masks.
-        labels (list[dict[Literal["prompts", "polygons", "masks"], LongTensor]]): List of labels.
+        labels (list[ZeroShotVisualPromptingLabel]): List of labels.
         polygons (list[list[dmPolygon]]): List of polygons.
         prompts (list[list[tvBoundingBoxes | Points]]): List of prompts.
     """
 
     masks: list[tvMask]
-    labels: list[dict[Literal["prompts", "polygons", "masks"], LongTensor]]
+    labels: list[ZeroShotVisualPromptingLabel]
     polygons: list[list[dmPolygon]]
     prompts: list[list[tvBoundingBoxes | Points]]
 
@@ -208,7 +217,10 @@ class ZeroShotVisualPromptingBatchDataEntity(OTXBatchDataEntity[ZeroShotVisualPr
                     for prompts in self.prompts
                 ],
                 masks=[tv_tensors.wrap(mask.pin_memory(), like=mask) for mask in self.masks],
-                labels=[{k: v.pin_memory() for k, v in label.items()} for label in self.labels],
+                labels=[
+                    ZeroShotVisualPromptingLabel(**{k: v.pin_memory() for k, v in label.__dict__.items()})
+                    for label in self.labels
+                ],
             )
         )
 

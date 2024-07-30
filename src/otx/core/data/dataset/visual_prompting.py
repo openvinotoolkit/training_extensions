@@ -28,6 +28,7 @@ from otx.core.data.entity.visual_prompting import (
     VisualPromptingDataEntity,
     ZeroShotVisualPromptingBatchDataEntity,
     ZeroShotVisualPromptingDataEntity,
+    ZeroShotVisualPromptingLabel,
 )
 from otx.core.types.label import NullLabelInfo
 from otx.core.utils.mask_util import polygon_to_bitmap
@@ -260,7 +261,9 @@ class OTXZeroShotVisualPromptingDataset(OTXDataset[ZeroShotVisualPromptingDataEn
         if len(gt_prompts) == 0:
             return None
 
-        labels = {prompt_type: torch.as_tensor(values, dtype=torch.int64) for prompt_type, values in gt_labels.items()}
+        labels = {
+            str(prompt_type): torch.as_tensor(values, dtype=torch.int64) for prompt_type, values in gt_labels.items()
+        }
         masks = tvMask(torch.stack(gt_masks, dim=0), dtype=torch.uint8)
 
         return ZeroShotVisualPromptingDataEntity(
@@ -271,7 +274,7 @@ class OTXZeroShotVisualPromptingDataset(OTXDataset[ZeroShotVisualPromptingDataEn
                 ori_shape=img_shape,
             ),
             masks=masks,
-            labels=labels,
+            labels=ZeroShotVisualPromptingLabel(**labels),
             polygons=gt_polygons,
             prompts=gt_prompts,
         )

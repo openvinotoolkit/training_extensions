@@ -741,16 +741,7 @@ class OTXZeroShotSegmentAnything(OTXZeroShotVisualPromptingModel):
         }
         if self.training:
             # learn
-            forward_inputs.update(
-                {
-                    "processed_prompts": self._gather_prompts_with_labels(
-                        inputs.labels,
-                        inputs.prompts,
-                        inputs.polygons,
-                        inputs.masks,
-                    ),
-                },
-            )
+            forward_inputs.update({"processed_prompts": self._gather_prompts_with_labels(inputs)})
 
         return forward_inputs
 
@@ -814,19 +805,18 @@ class OTXZeroShotSegmentAnything(OTXZeroShotVisualPromptingModel):
 
     def _gather_prompts_with_labels(
         self,
-        labels: list[dict[Literal["prompts", "polygons", "masks"], Tensor]],
-        prompts: list[list[BoundingBoxes | Points]] | None = None,
-        polygons: list[list[dmPolygon]] | None = None,
-        masks: list[Mask] | None = None,
+        inputs: ZeroShotVisualPromptingBatchDataEntity,
     ) -> list[dict[int, list[BoundingBoxes | Points | dmPolygon | Mask]]]:
         """Gather prompts according to labels."""
         total_processed_prompts: list[dict[int, list[BoundingBoxes | Points | dmPolygon | Mask]]] = []
-        for batch, batch_labels in enumerate(labels):
+        for batch, batch_labels in enumerate(inputs.labels):
             processed_prompts = defaultdict(list)
-            for prompt_type, prompt_labels in batch_labels.items():
-                _prompts = locals()[prompt_type]
-                if _prompts is None:
+            for prompt_type in ["prompts", "polygons", "masks"]:
+                _prompts = getattr(inputs, prompt_type, None)
+                prompt_labels = getattr(batch_labels, prompt_type, None)
+                if _prompts is None or prompt_labels is None:
                     continue
+
                 for idx, _label in enumerate(prompt_labels):
                     if prompt_type in ("prompts", "polygons"):
                         processed_prompts[int(_label)].append(_prompts[batch][idx])
@@ -911,6 +901,7 @@ class OTXZeroShotSegmentAnything(OTXZeroShotVisualPromptingModel):
             ],
             masks=entity.masks,
             polygons=entity.polygons,
+            labels=entity.labels,
         )
 
     def initialize_reference_info(self) -> None:
