@@ -173,8 +173,8 @@ def test_otx_export_infer(
         if with_benchmark:
             benchmark_command_cfg = copy(command_cfg)
             updated = False
-            for i, token in enumerate(benchmark_command_cfg):
-                if token == "test":
+            for i, term in enumerate(benchmark_command_cfg):
+                if term == "test":
                     benchmark_command_cfg[i] = "benchmark"
                     updated = True
                     break

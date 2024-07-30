@@ -31,6 +31,7 @@ from otx.core.data.entity.visual_prompting import (
     VisualPromptingBatchPredEntity,
     ZeroShotVisualPromptingBatchDataEntity,
     ZeroShotVisualPromptingBatchPredEntity,
+    ZeroShotVisualPromptingLabel,
 )
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.visual_prompting import OTXVisualPromptingModelExporter
@@ -445,7 +446,7 @@ class OTXZeroShotVisualPromptingModel(
     def get_dummy_input(self, batch_size: int = 1) -> ZeroShotVisualPromptingBatchDataEntity:
         """Returns a dummy input for ZSL VPT model."""
         images = [torch.rand(3, self.model.image_size, self.model.image_size) for _ in range(batch_size)]
-        labels = [{"points": torch.LongTensor([0] * batch_size)}] * batch_size
+        labels = [ZeroShotVisualPromptingLabel(prompts=torch.LongTensor([0]))] * batch_size
         prompts = [torch.zeros((1, 2))] * batch_size
         infos = []
         for i, img in enumerate(images):
@@ -974,6 +975,9 @@ class OVZeroShotVisualPromptingModel(
         """Customize OTX input batch data entity."""
         images: list[np.ndarray] = []
         processed_prompts: list[dict[str, Any]] = []
+        print(entity.labels)
+        print(entity.prompts)
+        print(entity.polygons)
 
         for image, prompts, polygons, labels in zip(
             entity.images,
@@ -1394,7 +1398,7 @@ class OVZeroShotVisualPromptingModel(
         """Returns a dummy input for classification OV model."""
         # Resize is embedded to the OV model, which means we don't need to know the actual size
         images = [torch.rand(3, 224, 224) for _ in range(batch_size)]
-        labels = [{"points": torch.LongTensor([0] * batch_size)}] * batch_size
+        labels = [ZeroShotVisualPromptingLabel(prompts=torch.LongTensor([0]))] * batch_size
         prompts = [torch.zeros((1, 2))] * batch_size
         infos = []
         for i, img in enumerate(images):
@@ -1411,6 +1415,6 @@ class OVZeroShotVisualPromptingModel(
             imgs_info=infos,
             labels=labels,
             prompts=prompts,
-            masks=[],
-            polygons=[],
+            masks=[None] * batch_size,
+            polygons=[[None]] * batch_size,
         )
