@@ -113,7 +113,7 @@ class YOLOXTINY(YOLOX):
         "openvino_training_extensions/models/object_detection/v2/yolox_tiny_8x8.pth"
     )
     image_size = (1, 3, 416, 416)
-    tile_image_size = (1, 3, 416, 416)
+    tile_image_size = (1, 3, 640, 640)
     mean = (123.675, 116.28, 103.53)
     std = (58.395, 57.12, 57.375)
 
