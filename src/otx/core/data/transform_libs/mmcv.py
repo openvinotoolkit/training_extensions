@@ -8,9 +8,9 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Callable
 
 import numpy as np
-
 from mmcv.transforms import LoadImageFromFile as MMCVLoadImageFromFile
 from mmcv.transforms.builder import TRANSFORMS
+
 from otx.core.data.entity.base import OTXDataEntity
 from otx.core.utils.config import convert_conf_to_mmconfig_dict
 

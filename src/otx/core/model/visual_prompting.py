@@ -640,9 +640,8 @@ class OVVisualPromptingModel(
         ptq_config: dict[str, Any] | None = None,
     ) -> dict[str, Path]:
         """Runs NNCF quantization."""
-        import openvino
-
         import nncf
+        import openvino
 
         def check_if_quantized(model: openvino.Model) -> bool:
             """Checks if OpenVINO model is already quantized."""
@@ -1088,9 +1087,8 @@ class OVZeroShotVisualPromptingModel(
         ptq_config: dict[str, Any] | None = None,
     ) -> dict[str, Path]:
         """Runs NNCF quantization."""
-        import openvino
-
         import nncf
+        import openvino
 
         def check_if_quantized(model: openvino.Model) -> bool:
             """Checks if OpenVINO model is already quantized."""
