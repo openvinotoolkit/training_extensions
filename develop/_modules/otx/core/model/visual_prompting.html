@@ -253,9 +253,9 @@
             <article class="bd-article" role="main">
               
   <h1>Source code for otx.core.model.visual_prompting</h1><div class="highlight"><pre>
-<span></span><span class="c1"># Copyright (C) 2023 Intel Corporation</span>
+<span></span><span class="c1"># Copyright (C) 2023-2024 Intel Corporation</span>
 <span class="c1"># SPDX-License-Identifier: Apache-2.0</span>
-<span class="c1">#</span>
+
 <span class="sd">&quot;&quot;&quot;Class definition for visual prompting models entity used in OTX.&quot;&quot;&quot;</span>
 
 <span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
@@ -269,6 +269,7 @@
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">datumaro</span> <span class="kn">import</span> <span class="n">Polygon</span> <span class="k">as</span> <span class="n">dmPolygon</span>
 <span class="kn">from</span> <span class="nn">model_api.models</span> <span class="kn">import</span> <span class="n">Model</span>
 <span class="kn">from</span> <span class="nn">model_api.models.visual_prompting</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">Prompt</span><span class="p">,</span>
@@ -384,6 +385,11 @@
 
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">preds</span><span class="p">,</span> <span class="n">ZeroShotVisualPromptingBatchPredEntity</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">preds</span><span class="p">)</span>
+
+    <span class="c1"># filter labels using corresponding ground truth</span>
+    <span class="n">inputs</span><span class="o">.</span><span class="n">labels</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">label</span><span class="o">.</span><span class="n">masks</span> <span class="k">if</span> <span class="n">inputs</span><span class="o">.</span><span class="n">masks</span> <span class="ow">and</span> <span class="n">label</span><span class="o">.</span><span class="n">masks</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">label</span><span class="o">.</span><span class="n">polygons</span> <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">inputs</span><span class="o">.</span><span class="n">labels</span>
+    <span class="p">]</span>
 
     <span class="n">converted_entities</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]]]</span> <span class="o">=</span> <span class="n">_convert_pred_entity_to_compute_metric</span><span class="p">(</span><span class="n">preds</span><span class="p">,</span> <span class="n">inputs</span><span class="p">)</span>  <span class="c1"># type: ignore[assignment]</span>
 
@@ -1237,9 +1243,10 @@
         <span class="n">images</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">processed_prompts</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
 
-        <span class="k">for</span> <span class="n">image</span><span class="p">,</span> <span class="n">prompts</span><span class="p">,</span> <span class="n">labels</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span>
+        <span class="k">for</span> <span class="n">image</span><span class="p">,</span> <span class="n">prompts</span><span class="p">,</span> <span class="n">polygons</span><span class="p">,</span> <span class="n">labels</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span>
             <span class="n">entity</span><span class="o">.</span><span class="n">images</span><span class="p">,</span>
             <span class="n">entity</span><span class="o">.</span><span class="n">prompts</span><span class="p">,</span>
+            <span class="n">entity</span><span class="o">.</span><span class="n">polygons</span><span class="p">,</span>
             <span class="n">entity</span><span class="o">.</span><span class="n">labels</span><span class="p">,</span>
         <span class="p">):</span>
             <span class="c1"># preprocess image encoder inputs</span>
@@ -1247,20 +1254,27 @@
             <span class="n">images</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">numpy_image</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">training</span><span class="p">:</span>
-                <span class="n">points</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Prompt</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
-                <span class="n">bboxes</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Prompt</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
-                <span class="k">for</span> <span class="n">prompt</span><span class="p">,</span> <span class="n">label</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">prompts</span><span class="p">,</span> <span class="n">labels</span><span class="p">):</span>  <span class="c1"># type: ignore[arg-type]</span>
+                <span class="n">_bboxes</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Prompt</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="n">_points</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Prompt</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="n">_polygons</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Prompt</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="k">for</span> <span class="n">prompt</span><span class="p">,</span> <span class="n">label</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">prompts</span><span class="p">,</span> <span class="n">labels</span><span class="o">.</span><span class="n">prompts</span><span class="p">):</span>  <span class="c1"># type: ignore[arg-type]</span>
                     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">prompt</span><span class="p">,</span> <span class="n">tv_tensors</span><span class="o">.</span><span class="n">BoundingBoxes</span><span class="p">):</span>
-                        <span class="n">bboxes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Prompt</span><span class="p">(</span><span class="n">prompt</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">(),</span> <span class="n">label</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()))</span>
+                        <span class="n">_bboxes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Prompt</span><span class="p">(</span><span class="n">prompt</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">(),</span> <span class="n">label</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()))</span>
                     <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">prompt</span><span class="p">,</span> <span class="n">Points</span><span class="p">):</span>
-                        <span class="n">points</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Prompt</span><span class="p">(</span><span class="n">prompt</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">(),</span> <span class="n">label</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()))</span>
-                    <span class="c1"># TODO (sungchul): support polygons</span>
+                        <span class="n">_points</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Prompt</span><span class="p">(</span><span class="n">prompt</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">(),</span> <span class="n">label</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()))</span>
+
+                <span class="k">if</span> <span class="n">polygons</span> <span class="ow">and</span> <span class="n">labels</span><span class="o">.</span><span class="n">polygons</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">polygon</span><span class="p">,</span> <span class="n">label</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">polygons</span><span class="p">,</span> <span class="n">labels</span><span class="o">.</span><span class="n">polygons</span><span class="p">):</span>
+                        <span class="n">_polygons</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Prompt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">polygon</span><span class="o">.</span><span class="n">points</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">),</span> <span class="n">label</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()))</span>
+
+                <span class="c1"># TODO (sungchul, sovrasov): support mask?</span>
 
                 <span class="c1"># preprocess decoder inputs</span>
                 <span class="n">processed_prompts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
                     <span class="p">{</span>
-                        <span class="s2">&quot;boxes&quot;</span><span class="p">:</span> <span class="n">bboxes</span><span class="p">,</span>
-                        <span class="s2">&quot;points&quot;</span><span class="p">:</span> <span class="n">points</span><span class="p">,</span>
+                        <span class="s2">&quot;boxes&quot;</span><span class="p">:</span> <span class="n">_bboxes</span><span class="p">,</span>
+                        <span class="s2">&quot;points&quot;</span><span class="p">:</span> <span class="n">_points</span><span class="p">,</span>
+                        <span class="s2">&quot;polygons&quot;</span><span class="p">:</span> <span class="n">_polygons</span><span class="p">,</span>
                     <span class="p">},</span>
                 <span class="p">)</span>
 
@@ -1375,7 +1389,7 @@
             <span class="n">_labels</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
 
             <span class="c1"># use only the first prompt</span>
-            <span class="k">for</span> <span class="n">prompt</span><span class="p">,</span> <span class="n">label</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">data_batch</span><span class="o">.</span><span class="n">prompts</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">data_batch</span><span class="o">.</span><span class="n">labels</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>  <span class="c1"># type: ignore[arg-type]</span>
+            <span class="k">for</span> <span class="n">prompt</span><span class="p">,</span> <span class="n">label</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">data_batch</span><span class="o">.</span><span class="n">prompts</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">data_batch</span><span class="o">.</span><span class="n">labels</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">prompts</span><span class="p">):</span>  <span class="c1"># type: ignore[arg-type]</span>
                 <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">prompt</span><span class="p">,</span> <span class="n">tv_tensors</span><span class="o">.</span><span class="n">BoundingBoxes</span><span class="p">):</span>
                     <span class="n">bboxes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">prompt</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">())</span>
                     <span class="n">_labels</span><span class="p">[</span><span class="s2">&quot;bboxes&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">label</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">())</span>
