@@ -258,7 +258,7 @@ class OTXZeroShotVisualPromptingDataset(OTXDataset[ZeroShotVisualPromptingDataEn
             elif isinstance(annotation, (dmBbox, dmMask, dmPoints)):
                 pass
 
-        if len(gt_prompts) == 0:
+        if not gt_prompts:
             return None
 
         labels = {
