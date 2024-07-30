@@ -65,17 +65,15 @@ def test_inference_step(mocker, otx_visual_prompting_model, fxt_vpm_data_entity)
 
 def test_inference_step_for_zero_shot(mocker, otx_visual_prompting_model, fxt_zero_shot_vpm_data_entity) -> None:
     """Test _inference_step_for_zero_shot."""
+    entity = deepcopy(fxt_zero_shot_vpm_data_entity[1])
+    pred_entity = deepcopy(fxt_zero_shot_vpm_data_entity[2])
     otx_visual_prompting_model.configure_metric()
-    mocker.patch.object(otx_visual_prompting_model, "forward", return_value=fxt_zero_shot_vpm_data_entity[2])
+    mocker.patch.object(otx_visual_prompting_model, "forward", return_value=pred_entity)
     mocker_updates = {}
     for k, v in otx_visual_prompting_model.metric.items():
         mocker_updates[k] = mocker.patch.object(v, "update")
 
-    _inference_step_for_zero_shot(
-        otx_visual_prompting_model,
-        otx_visual_prompting_model.metric,
-        fxt_zero_shot_vpm_data_entity[1],
-    )
+    _inference_step_for_zero_shot(otx_visual_prompting_model, otx_visual_prompting_model.metric, entity)
 
     for v in mocker_updates.values():
         v.assert_called_once()
@@ -88,8 +86,10 @@ def test_inference_step_for_zero_shot_with_more_preds(
 ) -> None:
     """Test _inference_step_for_zero_shot with more preds."""
     otx_visual_prompting_model.configure_metric()
+    entity = deepcopy(fxt_zero_shot_vpm_data_entity[1])
+    pred_entity = deepcopy(fxt_zero_shot_vpm_data_entity[2])
     preds = {}
-    for k, v in fxt_zero_shot_vpm_data_entity[2].__dict__.items():
+    for k, v in pred_entity.__dict__.items():
         if k in ["batch_size", "polygons"]:
             preds[k] = v
         else:
@@ -103,11 +103,7 @@ def test_inference_step_for_zero_shot_with_more_preds(
     for k, v in otx_visual_prompting_model.metric.items():
         mocker_updates[k] = mocker.patch.object(v, "update")
 
-    _inference_step_for_zero_shot(
-        otx_visual_prompting_model,
-        otx_visual_prompting_model.metric,
-        fxt_zero_shot_vpm_data_entity[1],
-    )
+    _inference_step_for_zero_shot(otx_visual_prompting_model, otx_visual_prompting_model.metric, entity)
 
     for v in mocker_updates.values():
         v.assert_called_once()
@@ -120,14 +116,14 @@ def test_inference_step_for_zero_shot_with_more_target(
 ) -> None:
     """Test _inference_step_for_zero_shot with more target."""
     otx_visual_prompting_model.configure_metric()
+    entity = deepcopy(fxt_zero_shot_vpm_data_entity[1])
     pred_entity = deepcopy(fxt_zero_shot_vpm_data_entity[2])
-    pred_entity.labels = [label["prompts"] for label in pred_entity.labels]
     mocker.patch.object(otx_visual_prompting_model, "forward", return_value=pred_entity)
     mocker_updates = {}
     for k, v in otx_visual_prompting_model.metric.items():
         mocker_updates[k] = mocker.patch.object(v, "update")
     target = {}
-    for k, v in fxt_zero_shot_vpm_data_entity[1].__dict__.items():
+    for k, v in entity.__dict__.items():
         if k in ["batch_size"]:
             target[k] = v
         else:
@@ -446,6 +442,7 @@ class TestOVZeroShotVisualPromptingModel:
 
     def test_learn(self, mocker, ov_zero_shot_visual_prompting_model, fxt_zero_shot_vpm_data_entity) -> None:
         """Test learn."""
+        entity = deepcopy(fxt_zero_shot_vpm_data_entity[1])
         ov_zero_shot_visual_prompting_model.model._reference_features = np.zeros((0, 1, 256), dtype=np.float32)
         ov_zero_shot_visual_prompting_model.model._used_indices = np.array([], dtype=np.int64)
         ov_zero_shot_visual_prompting_model.model.decoder.mask_threshold = 0.0
@@ -458,7 +455,7 @@ class TestOVZeroShotVisualPromptingModel:
             return_value=np.random.rand(1, 256),
         )
         reference_info, ref_masks = ov_zero_shot_visual_prompting_model.learn(
-            inputs=fxt_zero_shot_vpm_data_entity[1],
+            inputs=entity,
             reset_feat=False,
         )
 
@@ -468,6 +465,7 @@ class TestOVZeroShotVisualPromptingModel:
 
     def test_infer(self, mocker, ov_zero_shot_visual_prompting_model, fxt_zero_shot_vpm_data_entity) -> None:
         """Test infer."""
+        entity = deepcopy(fxt_zero_shot_vpm_data_entity[1])
         ov_zero_shot_visual_prompting_model.model.decoder.mask_threshold = 0.0
         ov_zero_shot_visual_prompting_model.model.decoder.output_blob_name = "upscaled_masks"
 
@@ -488,7 +486,7 @@ class TestOVZeroShotVisualPromptingModel:
         used_indices = np.array([1])
 
         results = ov_zero_shot_visual_prompting_model.infer(
-            inputs=fxt_zero_shot_vpm_data_entity[1],
+            inputs=entity,
             reference_feats=reference_feats,
             used_indices=used_indices,
         )
@@ -502,11 +500,12 @@ class TestOVZeroShotVisualPromptingModel:
         ov_zero_shot_visual_prompting_model,
         fxt_zero_shot_vpm_data_entity,
     ) -> None:
+        entity = deepcopy(fxt_zero_shot_vpm_data_entity[1])
         ov_zero_shot_visual_prompting_model.training = True
 
         outputs = ({"foo": np.array(1), "bar": np.array(2)}, [torch.tensor([1, 2, 3]), torch.tensor([4, 5, 6])])
 
-        result = ov_zero_shot_visual_prompting_model._customize_outputs(outputs, fxt_zero_shot_vpm_data_entity[1])
+        result = ov_zero_shot_visual_prompting_model._customize_outputs(outputs, entity)
 
         assert result == outputs
 
