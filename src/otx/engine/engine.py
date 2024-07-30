@@ -6,6 +6,7 @@
 from __future__ import annotations
 
 import inspect
+import csv
 import logging
 import tempfile
 import time
@@ -847,6 +848,11 @@ class Engine:
 
         for name, val in final_stats.items():
             print(f"{name:<20} | {val}")
+
+        with open(Path(self.work_dir) / "benchmark_report.csv", "w") as f:
+            writer = csv.writer(f)
+            writer.writerow([k for k in final_stats.keys()])
+            writer.writerow([v for v in final_stats.values()])
 
         return final_stats
 
