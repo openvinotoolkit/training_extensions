@@ -842,7 +842,7 @@ class Engine:
         latency = total_time / n_iters
         fps = batch_size / latency
 
-        final_stats = {"latency": f"{latency:.3f} s", "troughput": f"{(fps):.3f} FPS"}
+        final_stats = {"latency": f"{latency:.3f} s", "throughput": f"{(fps):.3f} FPS"}
 
         if not isinstance(self.model, OVModel):
             try:

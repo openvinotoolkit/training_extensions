@@ -974,9 +974,6 @@ class OVZeroShotVisualPromptingModel(
         """Customize OTX input batch data entity."""
         images: list[np.ndarray] = []
         processed_prompts: list[dict[str, Any]] = []
-        print(entity.labels)
-        print(entity.prompts)
-        print(entity.polygons)
 
         for image, prompts, polygons, labels in zip(
             entity.images,
