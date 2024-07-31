@@ -179,6 +179,11 @@ class TestOTXVisualPromptingModel:
             },
         }
 
+    def test_dummy_input(self, otx_visual_prompting_model):
+        batch_size = 2
+        batch = otx_visual_prompting_model.get_dummy_input(batch_size)
+        assert batch.batch_size == batch_size
+
 
 class TestOTXZeroShotVisualPromptingModel:
     def test_exporter(self, otx_zero_shot_visual_prompting_model) -> None:
@@ -264,6 +269,11 @@ class TestOTXZeroShotVisualPromptingModel:
         mocker.patch.object(otx_zero_shot_visual_prompting_model.trainer, "default_root_dir")
 
         otx_zero_shot_visual_prompting_model.on_train_epoch_end()
+
+    def test_dummy_input(self, otx_zero_shot_visual_prompting_model):
+        batch_size = 2
+        batch = otx_zero_shot_visual_prompting_model.get_dummy_input(batch_size)
+        assert batch.batch_size == batch_size
 
 
 class TestOVVisualPromptingModel:
