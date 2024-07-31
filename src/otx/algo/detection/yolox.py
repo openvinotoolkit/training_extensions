@@ -44,10 +44,11 @@ class YOLOX(ExplainableOTXDetModel):
             raise ValueError(self.image_size)
 
         swap_rgb = not isinstance(self, YOLOXTINY)  # only YOLOX-TINY uses RGB
+        input_size = self.tile_image_size if self.tile_config.enable_tiler else self.image_size
 
         return OTXNativeModelExporter(
             task_level_export_parameters=self._export_parameters,
-            input_size=self.image_size,
+            input_size=input_size,
             mean=self.mean,
             std=self.std,
             resize_mode="fit_to_window_letterbox",
