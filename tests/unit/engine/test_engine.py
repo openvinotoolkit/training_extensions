@@ -367,3 +367,16 @@ class TestEngine:
         assert engine is not None
         assert engine.datamodule.train_subset.batch_size == 3
         assert engine.datamodule.test_subset.subset_name == "TESTING"
+
+    def test_num_devices(self, fxt_engine, tmp_path) -> None:
+        assert fxt_engine.num_devices == 1
+        assert fxt_engine._cache.args.get("devices") == 1
+
+        fxt_engine.num_devices = 2
+        assert fxt_engine.num_devices == 2
+        assert fxt_engine._cache.args.get("devices") == 2
+
+        data_root = "tests/assets/classification_dataset"
+        engine = Engine(work_dir=tmp_path, data_root=data_root, num_devices=3)
+        assert engine.num_devices == 3
+        assert engine._cache.args.get("devices") == 3
