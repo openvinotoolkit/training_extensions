@@ -376,7 +376,6 @@ class TestEngine:
         ],
     )
     def test_benchmark(self, fxt_engine, checkpoint, mocker: MockerFixture) -> None:
-        mock_test = mocker.patch("otx.engine.engine.Trainer.test")
         _ = mocker.patch("otx.engine.engine.AutoConfigurator.update_ov_subset_pipeline")
         mock_get_ov_model = mocker.patch("otx.engine.engine.AutoConfigurator.get_ov_model")
         mock_load_from_checkpoint = mocker.patch.object(fxt_engine.model.__class__, "load_from_checkpoint")
