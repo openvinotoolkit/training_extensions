@@ -951,12 +951,12 @@ class Engine:
 
     @property
     def num_devices(self) -> int:
-        """Device engine uses."""
+        """Number of devices for Engine use."""
         return self._device.devices
 
     @num_devices.setter
     def num_devices(self, num_devices: int) -> None:
-        """Number of GPUs for multi-gpu."""
+        """Setter function for multi-gpu."""
         self._device.devices = num_devices
         self._cache.update(devices=self._device.devices)
         self._cache.is_trainer_args_identical = False
