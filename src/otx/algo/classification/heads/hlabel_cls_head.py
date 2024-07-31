@@ -103,7 +103,7 @@ class HierarchicalClsHead(BaseModule):
                 head_gt = head_gt[valid_mask]
                 if len(head_gt) > 0:
                     head_logits = head_logits[valid_mask, :]
-                    loss_score += self.multiclass_loss(head_logits, head_gt)
+                    loss_score += self.multiclass_loss(head_logits, head_gt, logit_range[1]-logit_range[0])
                     num_effective_heads_in_batch += 1
 
         if num_effective_heads_in_batch > 0:
