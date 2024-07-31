@@ -787,19 +787,21 @@ class Engine:
         n_iters: int = 10,
         extended_stats: bool = False,
     ) -> dict[str, str]:
-        """_summary_.
+        """Executes model micro benchmarking on random data.
+
+        Benchmark can provide latency, throughput, number of parameters,
+        and theoretical computational complexity with batch size 1.
+        The latter two characteristics are available for torch model recipes only.
+        Before the measurements, a warm-up is done.
 
         Args:
-            checkpoint (PathLike | None, optional): _description_. Defaults to None.
-            batch_size (int, optional): _description_. Defaults to 1.
-            n_iters (int, optional): _description_. Defaults to 10.
-            extended_stats (bool, optional): _description_. Defaults to False.
-
-        Raises:
-            RuntimeError: _description_
+            checkpoint (PathLike | None, optional): Path to checkpoint. Optional for torch models. Defaults to None.
+            batch_size (int, optional): Batch size for benchmarking. Defaults to 1.
+            n_iters (int, optional): Number of iterations to average on. Defaults to 10.
+            extended_stats (bool, optional): Flag that enables printing of per module complexity for torch model. Defaults to False.
 
         Returns:
-            dict[str, str]: _description_
+            dict[str, str]: a dict with the benchmark results.
         """
         checkpoint = checkpoint if checkpoint is not None else self.checkpoint
 
