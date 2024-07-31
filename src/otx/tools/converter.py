@@ -178,11 +178,12 @@ class ConfigConverter:
     """
 
     @staticmethod
-    def convert(config_path: str) -> dict:
+    def convert(config_path: str, task: OTXTaskType | None = None) -> dict:
         """Convert a configuration file to a default configuration dictionary.
 
         Args:
             config_path (str): The path to the configuration file.
+            task (OTXTaskType | None): Value to override the task.
 
         Returns:
             dict: The default configuration dictionary.
@@ -197,6 +198,8 @@ class ConfigConverter:
         task_info = TEMPLATE_ID_DICT[template_config["model_template_id"]]
         if param_dict.get("enable_tiling", None) and not task_info["model_name"].endswith("_tile"):
             task_info["model_name"] += "_tile"
+        if task is not None:
+            task_info["task"] = task
         default_config = ConfigConverter._get_default_config(task_info)
         ConfigConverter._update_params(default_config, param_dict)
         ConfigConverter._remove_unused_key(default_config)
