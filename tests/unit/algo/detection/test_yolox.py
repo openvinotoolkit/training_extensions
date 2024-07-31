@@ -22,7 +22,7 @@ class TestYOLOX:
         assert otx_yolox_l.tile_image_size == (1, 3, 640, 640)
 
         otx_yolox_tiny = YOLOXTINY(label_info=3)
-        assert otx_yolox_tiny.image_size == (1, 3, 640, 640)
+        assert otx_yolox_tiny.image_size == (1, 3, 416, 416)
         assert otx_yolox_tiny.tile_image_size == (1, 3, 640, 640)
 
     def test_exporter(self) -> None:
