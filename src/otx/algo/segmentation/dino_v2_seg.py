@@ -5,7 +5,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar, Sequence
 
 from otx.algo.segmentation.backbones import DinoVisionTransformer
 from otx.algo.segmentation.heads import FCNHead
@@ -43,6 +43,15 @@ class DinoV2Seg(BaseSegmModel):
 
 class OTXDinoV2Seg(TorchVisionCompatibleModel):
     """DinoV2Seg Model."""
+    def __init__(
+        self,
+        input_size: Sequence[int] = (1, 3, 560, 560),
+        **kwargs
+    ) -> None:
+        super().__init__(
+            input_size=input_size,
+            **kwargs
+        )
 
     def _create_model(self) -> nn.Module:
         # merge configurations with defaults overriding them

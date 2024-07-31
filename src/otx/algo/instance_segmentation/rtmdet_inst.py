@@ -5,7 +5,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Sequence
 
 from otx.algo.common.backbones import CSPNeXt
 from otx.algo.common.losses import CrossEntropyLoss, GIoULoss, QualityFocalLoss
@@ -31,12 +31,12 @@ class RTMDetInst(ExplainableOTXInstanceSegModel):
     @property
     def _exporter(self) -> OTXModelExporter:
         """Creates OTXModelExporter object that can export the model."""
-        if self.image_size is None:
-            raise ValueError(self.image_size)
+        if self.input_size is None:
+            raise ValueError(self.input_size)
 
         return OTXNativeModelExporter(
             task_level_export_parameters=self._export_parameters,
-            input_size=self.image_size,
+            input_size=self.input_size,
             mean=self.mean,
             std=self.std,
             resize_mode="fit_to_window_letterbox",
@@ -81,10 +81,20 @@ class RTMDetInstTiny(RTMDetInst):
         "https://download.openmmlab.com/mmdetection/v3.0/rtmdet/rtmdet-ins_tiny_8xb32-300e_coco/"
         "rtmdet-ins_tiny_8xb32-300e_coco_20221130_151727-ec670f7e.pth"
     )
-    image_size = (1, 3, 640, 640)
-    tile_image_size = (1, 3, 640, 640)
     mean = (123.675, 116.28, 103.53)
     std = (58.395, 57.12, 57.375)
+
+    def __init__(
+        self,
+        input_size: Sequence[int] = (1, 3, 640, 640),
+        tile_image_size: Sequence[int] = (1, 3, 512, 512),
+        **kwargs
+    ) -> None:
+        super().__init__(
+            input_size=input_size,
+            **kwargs
+        )
+        self.tile_image_size = tile_image_size
 
     def _build_model(self, num_classes: int) -> SingleStageDetector:
         train_cfg = {

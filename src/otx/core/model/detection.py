@@ -371,23 +371,23 @@ class ExplainableOTXDetModel(OTXDetectionModel):
     def __init__(
         self,
         label_info: LabelInfoTypes,
+        input_size: Sequence[int],
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MeanAveragePrecisionFMeasureCallable,
         torch_compile: bool = False,
         tile_config: TileConfig = TileConfig(enable_tiler=False),
-        input_shape: Sequence[int] | None = None,
     ) -> None:
         from otx.algo.explain.explain_algo import feature_vector_fn
 
         super().__init__(
             label_info=label_info,
+            input_size=input_size,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
             torch_compile=torch_compile,
             tile_config=tile_config,
-            input_shape=input_shape,
         )
         self.model.feature_vector_fn = feature_vector_fn
         self.model.explain_fn = self.get_explain_fn()

@@ -40,16 +40,17 @@ class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity]):
     def __init__(
         self,
         label_info: LabelInfoTypes,
+        input_size: Sequence[int],
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = SegmCallable,  # type: ignore[assignment]
         torch_compile: bool = False,
-        input_shape: Sequence[int] | None = None,
     ):
         """Base semantic segmentation model.
 
         Args:
             label_info (LabelInfoTypes): The label information for the segmentation model.
+            input_size (Sequence[int]): The input shape of the model.
             optimizer (OptimizerCallable, optional): The optimizer to use for training.
                 Defaults to DefaultOptimizerCallable.
             scheduler (LRSchedulerCallable | LRSchedulerListCallable, optional):
@@ -58,15 +59,14 @@ class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity]):
                 Defaults to SegmCallable.
             torch_compile (bool, optional): Whether to compile the model using TorchScript.
                 Defaults to False.
-            input_shape (Sequence[int] | None, optional): The input shape of the model. Defaults to None.
         """
         super().__init__(
             label_info=label_info,
+            input_size=input_size,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
             torch_compile=torch_compile,
-            input_shape=input_shape,
         )
 
     @property
@@ -115,6 +115,7 @@ class TorchVisionCompatibleModel(OTXSegmentationModel):
     def __init__(
         self,
         label_info: LabelInfoTypes,
+        input_size: Sequence[int],
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = SegmCallable,  # type: ignore[assignment]
@@ -129,6 +130,7 @@ class TorchVisionCompatibleModel(OTXSegmentationModel):
 
         Args:
             label_info (LabelInfoTypes): The label information for the segmentation model.
+            input_size (Sequence[int]): The input shape of the model.
             optimizer (OptimizerCallable, optional): The optimizer callable for the model.
                 Defaults to DefaultOptimizerCallable.
             scheduler (LRSchedulerCallable | LRSchedulerListCallable, optional):
@@ -151,13 +153,13 @@ class TorchVisionCompatibleModel(OTXSegmentationModel):
         self.decode_head_configuration = decode_head_configuration if decode_head_configuration is not None else {}
         export_image_configuration = export_image_configuration if export_image_configuration is not None else {}
         self.criterion_configuration = criterion_configuration
-        self.image_size = tuple(export_image_configuration.get("image_size", (1, 3, 512, 512)))
         self.mean = export_image_configuration.get("mean", [123.675, 116.28, 103.53])
         self.scale = export_image_configuration.get("std", [58.395, 57.12, 57.375])
         self.name_base_model = name_base_model
 
         super().__init__(
             label_info=label_info,
+            input_size=input_size,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
@@ -198,7 +200,7 @@ class TorchVisionCompatibleModel(OTXSegmentationModel):
         """Creates OTXModelExporter object that can export the model."""
         return OTXNativeModelExporter(
             task_level_export_parameters=self._export_parameters,
-            input_size=self.image_size,
+            input_size=self.input_size,
             mean=self.mean,
             std=self.scale,
             resize_mode="standard",

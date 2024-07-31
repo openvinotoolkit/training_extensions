@@ -103,23 +103,23 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
     def __init__(
         self,
         label_info: LabelInfoTypes,
+        input_size: Sequence[int] | None = None,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = NullMetricCallable,
         torch_compile: bool = False,
         tile_config: TileConfig = TileConfig(enable_tiler=False),
-        input_shape: Sequence[int] | None = None,
     ) -> None:
         super().__init__()
 
         self._label_info = self._dispatch_label_info(label_info)
+        self.input_size = input_size
         self.classification_layers: dict[str, dict[str, Any]] = {}
         self.model = self._create_model()
         self._explain_mode = False
         self.optimizer_callable = ensure_callable(optimizer)
         self.scheduler_callable = ensure_callable(scheduler)
         self.metric_callable = ensure_callable(metric)
-        self.input_shape = input_shape
 
         self.torch_compile = torch_compile
         self._explain_mode = False

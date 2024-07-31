@@ -30,12 +30,12 @@ class ATSS(ExplainableOTXDetModel):
 
     def __init__(
         self,
-        input_shape: Sequence[int] = (1, 3, 800, 992),
+        input_size: Sequence[int] = (1, 3, 800, 992),
         tile_image_size: Sequence[int] = (1, 3, 800, 992),
         **kwargs
     ) -> None:
         super().__init__(
-            input_shape=input_shape,
+            input_size=input_size,
             **kwargs
         )
         self.tile_image_size = tile_image_size

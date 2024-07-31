@@ -51,19 +51,19 @@ class OTXMulticlassClsModel(OTXModel[MulticlassClsBatchDataEntity, MulticlassCls
     def __init__(
         self,
         label_info: LabelInfoTypes,
+        input_size: Sequence[int],
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MultiClassClsMetricCallable,
         torch_compile: bool = False,
-        input_shape: Sequence[int] | None = None,
     ) -> None:
         super().__init__(
             label_info=label_info,
+            input_size=input_size,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
             torch_compile=torch_compile,
-            input_shape=input_shape,
         )
 
     @property
@@ -101,22 +101,22 @@ class MMPretrainMulticlassClsModel(OTXMulticlassClsModel):
         self,
         label_info: LabelInfoTypes,
         config: DictConfig,
+        input_size: Sequence[int],
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MultiClassClsMetricCallable,
         torch_compile: bool = False,
-        input_shape: Sequence[int] | None = None,
     ) -> None:
         config = inplace_num_classes(cfg=config, num_classes=self._dispatch_label_info(label_info).num_classes)
         self.config = config
         self.load_from = config.pop("load_from", None)
         super().__init__(
             label_info=label_info,
+            input_size=input_size,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
             torch_compile=torch_compile,
-            input_shape=input_shape,
         )
 
     def _create_model(self) -> nn.Module:
@@ -220,7 +220,7 @@ class MMPretrainMulticlassClsModel(OTXMulticlassClsModel):
         mean, std = get_mean_std_from_data_processing(self.config)
         return OTXNativeModelExporter(
             task_level_export_parameters=self._export_parameters,
-            input_size=self.input_shape,
+            input_size=self.input_size,
             mean=mean,
             std=std,
             resize_mode="standard",
@@ -246,19 +246,19 @@ class OTXMultilabelClsModel(OTXModel[MultilabelClsBatchDataEntity, MultilabelCls
     def __init__(
         self,
         label_info: LabelInfoTypes,
+        input_size: Sequence[int],
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MultiLabelClsMetricCallable,
         torch_compile: bool = False,
-        input_shape: Sequence[int] | None = None,
     ) -> None:
         super().__init__(
             label_info=label_info,
+            input_size=input_size,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
             torch_compile=torch_compile,
-            input_shape=input_shape,
         )
 
     @property
@@ -299,22 +299,22 @@ class MMPretrainMultilabelClsModel(OTXMultilabelClsModel):
         self,
         label_info: LabelInfoTypes,
         config: DictConfig,
+        input_size: Sequence[int],
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = lambda num_labels: Accuracy(task="multilabel", num_labels=num_labels),
         torch_compile: bool = False,
-        input_shape: Sequence[int] | None = None,
     ) -> None:
         config = inplace_num_classes(cfg=config, num_classes=self._dispatch_label_info(label_info).num_classes)
         self.config = config
         self.load_from = config.pop("load_from", None)
         super().__init__(
             label_info=label_info,
+            input_size=input_size,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
             torch_compile=torch_compile,
-            input_shape=input_shape,
         )
 
     def _create_model(self) -> nn.Module:
@@ -420,7 +420,7 @@ class MMPretrainMultilabelClsModel(OTXMultilabelClsModel):
         mean, std = get_mean_std_from_data_processing(self.config)
         return OTXNativeModelExporter(
             task_level_export_parameters=self._export_parameters,
-            input_size=self.input_shape,
+            input_size=self.input_size,
             mean=mean,
             std=std,
             resize_mode="standard",
@@ -438,19 +438,19 @@ class OTXHlabelClsModel(OTXModel[HlabelClsBatchDataEntity, HlabelClsBatchPredEnt
     def __init__(
         self,
         label_info: HLabelInfo,
+        input_size: Sequence[int],
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = HLabelClsMetricCallble,
         torch_compile: bool = False,
-        input_shape: Sequence[int] | None = None,
     ) -> None:
         super().__init__(
             label_info=label_info,
+            input_size=input_size,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
             torch_compile=torch_compile,
-            input_shape=input_shape,
         )
 
     @property
@@ -502,11 +502,11 @@ class MMPretrainHlabelClsModel(OTXHlabelClsModel):
         self,
         label_info: HLabelInfo,
         config: DictConfig,
+        input_size: Sequence[int],
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = HLabelClsMetricCallble,
         torch_compile: bool = False,
-        input_shape: Sequence[int] | None = None,
     ) -> None:
         config = inplace_num_classes(cfg=config, num_classes=self._dispatch_label_info(label_info).num_classes)
 
@@ -520,11 +520,11 @@ class MMPretrainHlabelClsModel(OTXHlabelClsModel):
         self.load_from = config.pop("load_from", None)
         super().__init__(
             label_info=label_info,
+            input_size=input_size,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
             torch_compile=torch_compile,
-            input_shape=input_shape,
         )
 
     def _create_model(self) -> nn.Module:
@@ -630,7 +630,7 @@ class MMPretrainHlabelClsModel(OTXHlabelClsModel):
         mean, std = get_mean_std_from_data_processing(self.config)
         return OTXNativeModelExporter(
             task_level_export_parameters=self._export_parameters,
-            input_size=self.input_shape,
+            input_size=self.input_size,
             mean=mean,
             std=std,
             resize_mode="standard",

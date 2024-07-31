@@ -6,7 +6,7 @@
 from __future__ import annotations
 
 import logging as log
-from typing import TYPE_CHECKING, Any, Literal
+from typing import TYPE_CHECKING, Any, Literal, Sequence
 
 import torch
 from torch import Tensor, nn
@@ -494,6 +494,7 @@ class OTXSegmentAnything(OTXVisualPromptingModel):
         self,
         backbone: Literal["tiny_vit", "vit_b"],
         label_info: LabelInfoTypes = NullLabelInfo(),
+        input_size: Sequence[int] = (1, 3, 1024, 1024),
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = VisualPromptingMetricCallable,
@@ -506,8 +507,17 @@ class OTXSegmentAnything(OTXVisualPromptingModel):
         return_extra_metrics: bool = False,
         stability_score_offset: float = 1.0,
     ) -> None:
+        super().__init__(
+            label_info=label_info,
+            input_size=input_size,
+            optimizer=optimizer,
+            scheduler=scheduler,
+            metric=metric,
+            torch_compile=torch_compile,
+        )
         self.config = {
             "backbone": backbone,
+            "image_size": self.input_size[-1],
             "freeze_image_encoder": freeze_image_encoder,
             "freeze_prompt_encoder": freeze_prompt_encoder,
             "freeze_mask_decoder": freeze_mask_decoder,
@@ -517,13 +527,6 @@ class OTXSegmentAnything(OTXVisualPromptingModel):
             "stability_score_offset": stability_score_offset,
             **DEFAULT_CONFIG_SEGMENT_ANYTHING[backbone],
         }
-        super().__init__(
-            label_info=label_info,
-            optimizer=optimizer,
-            scheduler=scheduler,
-            metric=metric,
-            torch_compile=torch_compile,
-        )
 
     def _create_model(self) -> nn.Module:
         """Create a PyTorch model for this class."""

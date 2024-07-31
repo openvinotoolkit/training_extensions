@@ -7,7 +7,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING, Literal, Sequence
 
 from anomalib.models.image import Padim as AnomalibPadim
 
@@ -34,6 +34,7 @@ class Padim(OTXAnomaly, OTXModel, AnomalibPadim):
         task (Literal[
                 OTXTaskType.ANOMALY_CLASSIFICATION, OTXTaskType.ANOMALY_DETECTION, OTXTaskType.ANOMALY_SEGMENTATION
             ], optional): Task type of Anomaly Task. Defaults to OTXTaskType.ANOMALY_CLASSIFICATION.
+        input_size (Sequence[int]): The input shape of the model.
     """
 
     def __init__(
@@ -47,9 +48,10 @@ class Padim(OTXAnomaly, OTXModel, AnomalibPadim):
             OTXTaskType.ANOMALY_DETECTION,
             OTXTaskType.ANOMALY_SEGMENTATION,
         ] = OTXTaskType.ANOMALY_CLASSIFICATION,
+        input_size: Sequence[int] = (256, 256),
     ) -> None:
-        OTXAnomaly.__init__(self)
-        OTXModel.__init__(self, label_info=AnomalyLabelInfo())
+        OTXAnomaly.__init__(self, input_size)
+        OTXModel.__init__(self, label_info=AnomalyLabelInfo(), input_size=input_size)
         AnomalibPadim.__init__(
             self,
             backbone=backbone,

@@ -68,14 +68,16 @@ class HuggingFaceModelForDetection(OTXDetectionModel):
         self.model_name = model_name_or_path
         self.load_from = None
         self.image_processor = AutoImageProcessor.from_pretrained(self.model_name)
+        if len(input_size := self.image_processor.size.values()) == 1:
+            input_size = (*input_size, *input_size)
 
         super().__init__(
             label_info=label_info,
+            input_size=(1, 3, *input_size),
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
             torch_compile=torch_compile,
-            input_shape=(1, 3, *self.image_processor.size.values()),
         )
 
     def _build_model(self, num_classes: int) -> nn.Module:
@@ -154,7 +156,7 @@ class HuggingFaceModelForDetection(OTXDetectionModel):
 
         return OTXNativeModelExporter(
             task_level_export_parameters=self._export_parameters,
-            input_size=self.input_shape,
+            input_size=self.input_size,
             mean=image_mean,  # type: ignore[arg-type]
             std=image_std,  # type: ignore[arg-type]
             resize_mode="standard",

@@ -6,7 +6,7 @@
 from __future__ import annotations
 
 from collections import OrderedDict
-from typing import Any
+from typing import Any, Sequence
 
 import torch
 from torch import Tensor, nn
@@ -218,10 +218,10 @@ class TVMaskRCNN(ExplainableOTXInstanceSegModel):
     @property
     def _exporter(self) -> OTXModelExporter:
         """Creates OTXModelExporter object that can export the model."""
-        if self.image_size is None:
-            raise ValueError(self.image_size)
+        if self.input_size is None:
+            raise ValueError(self.input_size)
 
-        input_size = self.tile_image_size if self.tile_config.enable_tiler else self.image_size
+        input_size = self.tile_image_size if self.tile_config.enable_tiler else self.input_size
 
         return OTXNativeModelExporter(
             task_level_export_parameters=self._export_parameters,
@@ -260,10 +260,19 @@ class TVMaskRCNN(ExplainableOTXInstanceSegModel):
 class TVMaskRCNNR50(TVMaskRCNN):
     """Torchvision MaskRCNN model with ResNet50 backbone."""
 
-    image_size = (1, 3, 1024, 1024)
-    tile_image_size = (1, 3, 512, 512)
     mean = (123.675, 116.28, 103.53)
     std = (58.395, 57.12, 57.375)
+    def __init__(
+        self,
+        input_size: Sequence[int] = (1, 3, 1024, 1024),
+        tile_image_size: Sequence[int] = (1, 3, 512, 512),
+        **kwargs
+    ) -> None:
+        super().__init__(
+            input_size=input_size,
+            **kwargs
+        )
+        self.tile_image_size = tile_image_size
 
     def _create_model(self) -> nn.Module:
         """From torchvision tutorial."""

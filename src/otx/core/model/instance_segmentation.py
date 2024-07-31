@@ -8,7 +8,7 @@ from __future__ import annotations
 import logging as log
 import types
 from contextlib import contextmanager
-from typing import TYPE_CHECKING, Any, Callable, Iterator, Literal
+from typing import TYPE_CHECKING, Any, Callable, Iterator, Literal, Sequence
 
 import numpy as np
 import torch
@@ -53,6 +53,7 @@ class OTXInstanceSegModel(OTXModel[InstanceSegBatchDataEntity, InstanceSegBatchP
     def __init__(
         self,
         label_info: LabelInfoTypes,
+        input_size: Sequence[int],
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MaskRLEMeanAPFMeasureCallable,
@@ -61,6 +62,7 @@ class OTXInstanceSegModel(OTXModel[InstanceSegBatchDataEntity, InstanceSegBatchP
     ) -> None:
         super().__init__(
             label_info=label_info,
+            input_size=input_size,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
@@ -368,6 +370,7 @@ class ExplainableOTXInstanceSegModel(OTXInstanceSegModel):
     def __init__(
         self,
         label_info: LabelInfoTypes,
+        input_size: Sequence[int],
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MaskRLEMeanAPFMeasureCallable,
@@ -376,6 +379,7 @@ class ExplainableOTXInstanceSegModel(OTXInstanceSegModel):
     ) -> None:
         super().__init__(
             label_info=label_info,
+            input_size=input_size,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,

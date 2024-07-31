@@ -60,7 +60,7 @@ class EfficientNetForMulticlassCls(OTXMulticlassClsModel):
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MultiClassClsMetricCallable,
         torch_compile: bool = False,
-        input_shape: Sequence[int] = (1, 3, 224, 224),
+        input_size: Sequence[int] = (1, 3, 224, 224),
     ) -> None:
         self.version = version
 
@@ -70,7 +70,7 @@ class EfficientNetForMulticlassCls(OTXMulticlassClsModel):
             scheduler=scheduler,
             metric=metric,
             torch_compile=torch_compile,
-            input_shape=input_shape,
+            input_size=input_size,
         )
 
     def _create_model(self) -> nn.Module:
@@ -89,7 +89,7 @@ class EfficientNetForMulticlassCls(OTXMulticlassClsModel):
 
     def _build_model(self, num_classes: int) -> nn.Module:
         return ImageClassifier(
-            backbone=OTXEfficientNet(version=self.version, pretrained=True, in_size=self.input_shape[-2:]),
+            backbone=OTXEfficientNet(version=self.version, pretrained=True, in_size=self.input_size[-2:]),
             neck=GlobalAveragePooling(dim=2),
             head=LinearClsHead(
                 num_classes=num_classes,
@@ -147,7 +147,7 @@ class EfficientNetForMulticlassCls(OTXMulticlassClsModel):
         """Creates OTXModelExporter object that can export the model."""
         return OTXNativeModelExporter(
             task_level_export_parameters=self._export_parameters,
-            input_size=self.input_shape,
+            input_size=self.input_size,
             mean=(123.675, 116.28, 103.53),
             std=(58.395, 57.12, 57.375),
             resize_mode="standard",
@@ -278,7 +278,7 @@ class EfficientNetForMultilabelCls(OTXMultilabelClsModel):
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MultiLabelClsMetricCallable,
         torch_compile: bool = False,
-        input_shape: Sequence[int] = (1, 3, 224, 224),
+        input_size: Sequence[int] = (1, 3, 224, 224),
     ) -> None:
         self.version = version
 
@@ -288,7 +288,7 @@ class EfficientNetForMultilabelCls(OTXMultilabelClsModel):
             scheduler=scheduler,
             metric=metric,
             torch_compile=torch_compile,
-            input_shape=input_shape,
+            input_size=input_size,
         )
 
     def _create_model(self) -> nn.Module:
@@ -307,7 +307,7 @@ class EfficientNetForMultilabelCls(OTXMultilabelClsModel):
 
     def _build_model(self, num_classes: int) -> nn.Module:
         return ImageClassifier(
-            backbone=OTXEfficientNet(version=self.version, pretrained=True, in_size=self.input_shape[-2:]),
+            backbone=OTXEfficientNet(version=self.version, pretrained=True, in_size=self.input_size[-2:]),
             neck=GlobalAveragePooling(dim=2),
             head=MultiLabelLinearClsHead(
                 num_classes=num_classes,
@@ -362,7 +362,7 @@ class EfficientNetForMultilabelCls(OTXMultilabelClsModel):
         """Creates OTXModelExporter object that can export the model."""
         return OTXNativeModelExporter(
             task_level_export_parameters=self._export_parameters,
-            input_size=self.input_shape,
+            input_size=self.input_size,
             mean=(123.675, 116.28, 103.53),
             std=(58.395, 57.12, 57.375),
             resize_mode="standard",
@@ -408,7 +408,7 @@ class EfficientNetForHLabelCls(OTXHlabelClsModel):
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = HLabelClsMetricCallble,
         torch_compile: bool = False,
-        input_shape: Sequence[int] = (1, 3, 224, 224),
+        input_size: Sequence[int] = (1, 3, 224, 224),
     ) -> None:
         self.version = version
 
@@ -418,7 +418,7 @@ class EfficientNetForHLabelCls(OTXHlabelClsModel):
             scheduler=scheduler,
             metric=metric,
             torch_compile=torch_compile,
-            input_shape=input_shape,
+            input_size=input_size,
         )
 
     def _create_model(self) -> nn.Module:
@@ -443,7 +443,7 @@ class EfficientNetForHLabelCls(OTXHlabelClsModel):
             raise TypeError(self.label_info)
 
         return ImageClassifier(
-            backbone=OTXEfficientNet(version=self.version, pretrained=True, in_size=self.input_shape[-2:]),
+            backbone=OTXEfficientNet(version=self.version, pretrained=True, in_size=self.input_size[-2:]),
             neck=GlobalAveragePooling(dim=2),
             head=HierarchicalLinearClsHead(
                 in_channels=1280,
@@ -521,7 +521,7 @@ class EfficientNetForHLabelCls(OTXHlabelClsModel):
         """Creates OTXModelExporter object that can export the model."""
         return OTXNativeModelExporter(
             task_level_export_parameters=self._export_parameters,
-            input_size=self.input_shape,
+            input_size=self.input_size,
             mean=(123.675, 116.28, 103.53),
             std=(58.395, 57.12, 57.375),
             resize_mode="standard",

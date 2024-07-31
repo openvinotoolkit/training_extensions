@@ -422,7 +422,7 @@ class OTXTVModel(OTXModel):
             OTXTaskType.H_LABEL_CLS,
         ] = OTXTaskType.MULTI_CLASS_CLS,
         train_type: Literal["supervised", "semi_supervised"] = "supervised",
-        input_shape: Sequence[int] = (1, 3, 224, 224),
+        input_size: Sequence[int] = (1, 3, 224, 224),
     ) -> None:
         self.backbone = backbone
         self.freeze_backbone = freeze_backbone
@@ -443,7 +443,7 @@ class OTXTVModel(OTXModel):
             scheduler=scheduler,
             metric=metric,
             torch_compile=torch_compile,
-            input_shape=input_shape,
+            input_size=input_size,
         )
 
     def _create_model(self) -> nn.Module:
@@ -554,7 +554,7 @@ class OTXTVModel(OTXModel):
         """Creates OTXModelExporter object that can export the model."""
         return OTXNativeModelExporter(
             task_level_export_parameters=self._export_parameters,
-            input_size=self.image_size,
+            input_size=self.input_size,
             mean=(123.675, 116.28, 103.53),
             std=(58.395, 57.12, 57.375),
             resize_mode="standard",

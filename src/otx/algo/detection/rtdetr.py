@@ -34,11 +34,11 @@ class RTDETR(ExplainableOTXDetModel):
 
     def __init__(
         self,
-        input_shape: Sequence[int] = (1, 3, 640, 640),
+        input_size: Sequence[int] = (1, 3, 640, 640),
         **kwargs
     ) -> None:
         super().__init__(
-            input_shape=input_shape,
+            input_size=input_size,
             **kwargs
         )
 
@@ -172,12 +172,12 @@ class RTDETR(ExplainableOTXDetModel):
     @property
     def _exporter(self) -> OTXModelExporter:
         """Creates OTXModelExporter object that can export the model."""
-        if self.input_shape is None:
-            raise ValueError(self.input_shape)
+        if self.input_size is None:
+            raise ValueError(self.input_size)
 
         return OTXNativeModelExporter(
             task_level_export_parameters=self._export_parameters,
-            input_size=self.input_shape,
+            input_size=self.input_size,
             mean=self.mean,
             std=self.std,
             resize_mode="standard",
@@ -220,13 +220,13 @@ class RTDETR18(RTDETR):
         encoder = HybridEncoder(
             in_channels=[128, 256, 512],
             expansion=0.5,
-            eval_spatial_size=self.input_shape[2:],
+            eval_spatial_size=self.input_size[2:],
         )
         decoder = RTDETRTransformer(
             num_classes=num_classes,
             num_decoder_layers=3,
             feat_channels=[256, 256, 256],
-            eval_spatial_size=self.input_shape[2:],
+            eval_spatial_size=self.input_size[2:],
         )
 
         optimizer_configuration = [
@@ -263,12 +263,12 @@ class RTDETR50(RTDETR):
             norm_cfg={"type": "FBN", "name": "norm"},
         )
         encoder = HybridEncoder(
-            eval_spatial_size=self.input_shape[2:],
+            eval_spatial_size=self.input_size[2:],
         )
         decoder = RTDETRTransformer(
             num_classes=num_classes,
             feat_channels=[256, 256, 256],
-            eval_spatial_size=self.input_shape[2:],
+            eval_spatial_size=self.input_size[2:],
             num_decoder_layers=6,
         )
 
@@ -310,13 +310,13 @@ class RTDETR101(RTDETR):
             hidden_dim=384,
             dim_feedforward=2048,
             in_channels=[512, 1024, 2048],
-            eval_spatial_size=self.input_shape[2:],
+            eval_spatial_size=self.input_size[2:],
         )
 
         decoder = RTDETRTransformer(
             num_classes=num_classes,
             feat_channels=[384, 384, 384],
-            eval_spatial_size=self.input_shape[2:],
+            eval_spatial_size=self.input_size[2:],
         )
 
         # no bias decay and learning rate correction for the backbone.

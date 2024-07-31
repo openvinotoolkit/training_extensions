@@ -5,7 +5,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Sequence
 
 import torch
 from torch import nn
@@ -68,15 +68,18 @@ class HuggingFaceModelForSegmentation(OTXSegmentationModel):
     ) -> None:
         self.model_name = model_name_or_path
         self.load_from = None
+        self.image_processor = AutoImageProcessor.from_pretrained(self.model_name)
+        if len(input_size := self.image_processor.size.values()) == 1:
+            input_size = (*input_size, *input_size)
 
         super().__init__(
             label_info=label_info,
+            input_size=(1, 3, *input_size),
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
             torch_compile=torch_compile,
         )
-        self.image_processor = AutoImageProcessor.from_pretrained(self.model_name)
 
     def _create_model(self) -> nn.Module:
         return AutoModelForSemanticSegmentation.from_pretrained(
@@ -121,15 +124,12 @@ class HuggingFaceModelForSegmentation(OTXSegmentationModel):
     @property
     def _exporter(self) -> OTXModelExporter:
         """Creates OTXModelExporter object that can export the model."""
-        size = self.image_processor.size.values()
-        size = (*size, *size) if len(size) == 1 else size
-        image_size = (1, 3, *size)
         image_mean = (123.675, 116.28, 103.53)
         image_std = (58.395, 57.12, 57.375)
 
         return OTXNativeModelExporter(
             task_level_export_parameters=self._export_parameters,
-            input_size=image_size,
+            input_size=self.input_size,
             mean=image_mean,
             std=image_std,
             resize_mode="standard",

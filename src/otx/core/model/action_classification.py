@@ -46,7 +46,6 @@ class OTXActionClsModel(OTXModel[ActionClsBatchDataEntity, ActionClsBatchPredEnt
         metric: MetricCallable = MultiClassClsMetricCallable,
         torch_compile: bool = False,
     ) -> None:
-        self.image_size = (1, 1, 3, 8, 224, 224)
         self.mean = (0.0, 0.0, 0.0)
         self.std = (255.0, 255.0, 255.0)
         super().__init__(
@@ -135,7 +134,7 @@ class OTXActionClsModel(OTXModel[ActionClsBatchDataEntity, ActionClsBatchPredEnt
         """Creates OTXModelExporter object that can export the model."""
         return OTXNativeModelExporter(
             task_level_export_parameters=self._export_parameters,
-            input_size=self.image_size,
+            input_size=self.input_size,
             mean=self.mean,
             std=self.std,
             resize_mode="standard",
@@ -186,7 +185,6 @@ class MMActionCompatibleModel(OTXActionClsModel):
         config = inplace_num_classes(cfg=config, num_classes=self._dispatch_label_info(label_info).num_classes)
         self.config = config
         self.load_from = config.pop("load_from", None)
-        self.image_size = (1, 1, 3, 8, 224, 224)
         super().__init__(
             label_info=label_info,
             optimizer=optimizer,
@@ -266,7 +264,7 @@ class MMActionCompatibleModel(OTXActionClsModel):
 
         return OTXNativeModelExporter(
             task_level_export_parameters=self._export_parameters,
-            input_size=self.image_size,
+            input_size=self.input_size,
             mean=mean,
             std=std,
             resize_mode="standard",

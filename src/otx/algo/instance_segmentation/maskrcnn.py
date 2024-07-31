@@ -5,7 +5,7 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Sequence
 
 from torchvision.ops import RoIAlign
 
@@ -32,10 +32,10 @@ class MaskRCNN(ExplainableOTXInstanceSegModel):
     @property
     def _exporter(self) -> OTXModelExporter:
         """Creates OTXModelExporter object that can export the model."""
-        if self.image_size is None:
-            raise ValueError(self.image_size)
+        if self.input_size is None:
+            raise ValueError(self.input_size)
 
-        input_size = self.tile_image_size if self.tile_config.enable_tiler else self.image_size
+        input_size = self.tile_image_size if self.tile_config.enable_tiler else self.input_size
 
         return OTXNativeModelExporter(
             task_level_export_parameters=self._export_parameters,
@@ -73,10 +73,20 @@ class MaskRCNNResNet50(MaskRCNN):
         "https://download.openmmlab.com/mmdetection/v2.0/mask_rcnn/mask_rcnn_r50_fpn_mstrain-poly_3x_coco/"
         "mask_rcnn_r50_fpn_mstrain-poly_3x_coco_20210524_201154-21b550bb.pth"
     )
-    image_size = (1, 3, 1024, 1024)
-    tile_image_size = (1, 3, 512, 512)
     mean = (123.675, 116.28, 103.53)
     std = (58.395, 57.12, 57.375)
+
+    def __init__(
+        self,
+        input_size: Sequence[int] = (1, 3, 1024, 1024),
+        tile_image_size: Sequence[int] = (1, 3, 512, 512),
+        **kwargs
+    ) -> None:
+        super().__init__(
+            input_size=input_size,
+            **kwargs
+        )
+        self.tile_image_size = tile_image_size
 
     def _build_model(self, num_classes: int) -> TwoStageDetector:
         train_cfg = {
@@ -245,10 +255,20 @@ class MaskRCNNEfficientNet(MaskRCNN):
         "https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/"
         "models/instance_segmentation/v2/efficientnet_b2b-mask_rcnn-576x576.pth"
     )
-    image_size = (1, 3, 1024, 1024)
-    tile_image_size = (1, 3, 512, 512)
     mean = (123.675, 116.28, 103.53)
     std = (1.0, 1.0, 1.0)
+
+    def __init__(
+        self,
+        input_size: Sequence[int] = (1, 3, 1024, 1024),
+        tile_image_size: Sequence[int] = (1, 3, 512, 512),
+        **kwargs
+    ) -> None:
+        super().__init__(
+            input_size=input_size,
+            **kwargs
+        )
+        self.tile_image_size = tile_image_size
 
     def _build_model(self, num_classes: int) -> TwoStageDetector:
         train_cfg = {
@@ -434,10 +454,21 @@ class MaskRCNNSwinT(MaskRCNN):
         "mask_rcnn_swin-t-p4-w7_fpn_fp16_ms-crop-3x_coco/"
         "mask_rcnn_swin-t-p4-w7_fpn_fp16_ms-crop-3x_coco_20210908_165006-90a4008c.pth"
     )
-    image_size = (1, 3, 1344, 1344)
-    tile_image_size = (1, 3, 512, 512)
     mean = (123.675, 116.28, 103.53)
     std = (58.395, 57.12, 57.375)
+
+    def __init__(
+        self,
+        input_size: Sequence[int] = (1, 3, 1344, 1344),
+        tile_image_size: Sequence[int] = (1, 3, 512, 512),
+        **kwargs
+    ) -> None:
+        super().__init__(
+            input_size=input_size,
+            **kwargs
+        )
+        self.tile_image_size = tile_image_size
+
 
     def _build_model(self, num_classes: int) -> TwoStageDetector:
         train_cfg = {

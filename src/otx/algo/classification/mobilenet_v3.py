@@ -71,7 +71,7 @@ class MobileNetV3ForMulticlassCls(OTXMulticlassClsModel):
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MultiClassClsMetricCallable,
         torch_compile: bool = False,
-        input_shape: Sequence[int] = (1, 3, 224, 224),
+        input_size: Sequence[int] = (1, 3, 224, 224),
     ) -> None:
         self.mode = mode
         super().__init__(
@@ -80,7 +80,7 @@ class MobileNetV3ForMulticlassCls(OTXMulticlassClsModel):
             scheduler=scheduler,
             metric=metric,
             torch_compile=torch_compile,
-            input_shape=input_shape,
+            input_size=input_size,
         )
 
     def _create_model(self) -> nn.Module:
@@ -99,7 +99,7 @@ class MobileNetV3ForMulticlassCls(OTXMulticlassClsModel):
 
     def _build_model(self, num_classes: int) -> nn.Module:
         return ImageClassifier(
-            backbone=OTXMobileNetV3(mode=self.mode, input_size=self.input_shape[-2:]),
+            backbone=OTXMobileNetV3(mode=self.mode, input_size=self.input_size[-2:]),
             neck=GlobalAveragePooling(dim=2),
             head=LinearClsHead(
                 num_classes=num_classes,
@@ -154,7 +154,7 @@ class MobileNetV3ForMulticlassCls(OTXMulticlassClsModel):
         """Creates OTXModelExporter object that can export the model."""
         return OTXNativeModelExporter(
             task_level_export_parameters=self._export_parameters,
-            input_size=self.input_shape,
+            input_size=self.input_size,
             mean=(123.675, 116.28, 103.53),
             std=(58.395, 57.12, 57.375),
             resize_mode="standard",
@@ -202,7 +202,7 @@ class MobileNetV3ForMulticlassClsSemiSL(MobileNetV3ForMulticlassCls):
 
     def _build_model(self, num_classes: int) -> nn.Module:
         return SemiSLClassifier(
-            backbone=OTXMobileNetV3(mode=self.mode, input_size=self.input_shape[-2:]),
+            backbone=OTXMobileNetV3(mode=self.mode, input_size=self.input_size[-2:]),
             neck=GlobalAveragePooling(dim=2),
             head=OTXSemiSLLinearClsHead(
                 num_classes=num_classes,
@@ -285,7 +285,7 @@ class MobileNetV3ForMultilabelCls(OTXMultilabelClsModel):
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MultiLabelClsMetricCallable,
         torch_compile: bool = False,
-        input_shape: Sequence[int] = (1, 3, 224, 224),
+        input_size: Sequence[int] = (1, 3, 224, 224),
     ) -> None:
         self.mode = mode
         super().__init__(
@@ -294,7 +294,7 @@ class MobileNetV3ForMultilabelCls(OTXMultilabelClsModel):
             scheduler=scheduler,
             metric=metric,
             torch_compile=torch_compile,
-            input_shape=input_shape,
+            input_size=input_size,
         )
 
     def _create_model(self) -> nn.Module:
@@ -313,7 +313,7 @@ class MobileNetV3ForMultilabelCls(OTXMultilabelClsModel):
 
     def _build_model(self, num_classes: int) -> nn.Module:
         return ImageClassifier(
-            backbone=OTXMobileNetV3(mode=self.mode, input_size=self.input_shape[-2:]),
+            backbone=OTXMobileNetV3(mode=self.mode, input_size=self.input_size[-2:]),
             neck=GlobalAveragePooling(dim=2),
             head=MultiLabelNonLinearClsHead(
                 num_classes=num_classes,
@@ -370,7 +370,7 @@ class MobileNetV3ForMultilabelCls(OTXMultilabelClsModel):
         """Creates OTXModelExporter object that can export the model."""
         return OTXNativeModelExporter(
             task_level_export_parameters=self._export_parameters,
-            input_size=self.input_shape,
+            input_size=self.input_size,
             mean=(123.675, 116.28, 103.53),
             std=(58.395, 57.12, 57.375),
             resize_mode="standard",
@@ -416,7 +416,7 @@ class MobileNetV3ForHLabelCls(OTXHlabelClsModel):
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = HLabelClsMetricCallble,
         torch_compile: bool = False,
-        input_shape: Sequence[int] = (1, 3, 224, 224),
+        input_size: Sequence[int] = (1, 3, 224, 224),
     ) -> None:
         self.mode = mode
         super().__init__(
@@ -425,7 +425,7 @@ class MobileNetV3ForHLabelCls(OTXHlabelClsModel):
             scheduler=scheduler,
             metric=metric,
             torch_compile=torch_compile,
-            input_shape=input_shape,
+            input_size=input_size,
         )
 
     def _create_model(self) -> nn.Module:
@@ -450,7 +450,7 @@ class MobileNetV3ForHLabelCls(OTXHlabelClsModel):
             raise TypeError(self.label_info)
 
         return ImageClassifier(
-            backbone=OTXMobileNetV3(mode=self.mode, input_size=self.input_shape[-2:]),
+            backbone=OTXMobileNetV3(mode=self.mode, input_size=self.input_size[-2:]),
             neck=GlobalAveragePooling(dim=2),
             head=HierarchicalNonLinearClsHead(
                 in_channels=960,
@@ -528,7 +528,7 @@ class MobileNetV3ForHLabelCls(OTXHlabelClsModel):
         """Creates OTXModelExporter object that can export the model."""
         return OTXNativeModelExporter(
             task_level_export_parameters=self._export_parameters,
-            input_size=self.input_shape,
+            input_size=self.input_size,
             mean=(123.675, 116.28, 103.53),
             std=(58.395, 57.12, 57.375),
             resize_mode="standard",

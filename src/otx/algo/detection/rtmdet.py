@@ -28,12 +28,12 @@ class RTMDet(ExplainableOTXDetModel):
 
     def __init__(
         self,
-        input_shape: Sequence[int] = (1, 3, 640, 640),
+        input_size: Sequence[int] = (1, 3, 640, 640),
         tile_image_size: Sequence[int] = (1, 3, 640, 640),
         **kwargs
     ) -> None:
         super().__init__(
-            input_shape=input_shape,
+            input_size=input_size,
             **kwargs
         )
         self.tile_image_size = tile_image_size
@@ -41,12 +41,12 @@ class RTMDet(ExplainableOTXDetModel):
     @property
     def _exporter(self) -> OTXModelExporter:
         """Creates OTXModelExporter object that can export the model."""
-        if self.input_shape is None:
-            raise ValueError(self.input_shape)
+        if self.input_size is None:
+            raise ValueError(self.input_size)
 
         return OTXNativeModelExporter(
             task_level_export_parameters=self._export_parameters,
-            input_size=self.input_shape,
+            input_size=self.input_size,
             mean=self.mean,
             std=self.std,
             resize_mode="fit_to_window_letterbox",

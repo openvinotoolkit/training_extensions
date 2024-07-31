@@ -10,7 +10,7 @@ import pickle  # nosec: B403   used pickle dump and load only to share inference
 from collections import defaultdict
 from functools import partial
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Literal
+from typing import TYPE_CHECKING, Any, Literal, Sequence
 
 import numpy as np
 import torch
@@ -155,6 +155,7 @@ class OTXVisualPromptingModel(OTXModel[VisualPromptingBatchDataEntity, VisualPro
 
     def __init__(
         self,
+        input_size: Sequence[int],
         label_info: LabelInfoTypes = NullLabelInfo(),
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
@@ -165,6 +166,7 @@ class OTXVisualPromptingModel(OTXModel[VisualPromptingBatchDataEntity, VisualPro
         log.debug(msg)
         super().__init__(
             label_info=NullLabelInfo(),
+            input_size=input_size,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
@@ -262,6 +264,7 @@ class OTXZeroShotVisualPromptingModel(
 
     def __init__(
         self,
+        input_size: Sequence[int],
         label_info: LabelInfoTypes = NullLabelInfo(),
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
@@ -272,6 +275,7 @@ class OTXZeroShotVisualPromptingModel(
         log.debug(msg)
         super().__init__(
             label_info=NullLabelInfo(),
+            input_size=input_size,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
@@ -283,7 +287,7 @@ class OTXZeroShotVisualPromptingModel(
         """Creates OTXModelExporter object that can export the model."""
         return OTXVisualPromptingModelExporter(
             task_level_export_parameters=self._export_parameters,
-            input_size=(1, 3, self.model.image_size, self.model.image_size),
+            input_size=self.input_size,
             mean=(123.675, 116.28, 103.53),
             std=(58.395, 57.12, 57.375),
             resize_mode="fit_to_window",

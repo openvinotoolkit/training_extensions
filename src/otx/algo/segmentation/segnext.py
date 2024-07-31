@@ -4,7 +4,7 @@
 """SegNext model implementations."""
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar, Sequence
 
 from otx.algo.segmentation.backbones import MSCAN
 from otx.algo.segmentation.heads import LightHamHead
@@ -107,6 +107,15 @@ SEGNEXT_VARIANTS = {
 
 class OTXSegNext(TorchVisionCompatibleModel):
     """SegNext Model."""
+    def __init__(
+        self,
+        input_size: Sequence[int] = (1, 3, 512, 512),
+        **kwargs
+    ) -> None:
+        super().__init__(
+            input_size=input_size,
+            **kwargs
+        )
 
     def _create_model(self) -> nn.Module:
         segnext_model_class = SEGNEXT_VARIANTS[self.name_base_model]
