@@ -367,6 +367,12 @@ class TestOVVisualPromptingModel:
         assert "image_encoder" in results
         assert "decoder" in results
 
+    def test_dummy_input(self, set_ov_visual_prompting_model):
+        batch_size = 2
+        ov_visual_prompting_model = set_ov_visual_prompting_model()
+        batch = ov_visual_prompting_model.get_dummy_input(batch_size)
+        assert batch.batch_size == batch_size
+
 
 class TestOVZeroShotVisualPromptingModel:
     @pytest.fixture()
@@ -439,6 +445,11 @@ class TestOVZeroShotVisualPromptingModel:
 
         mocker_fn.assert_called_once()
         mocker_customize_outputs.assert_called_once()
+
+    def test_dummy_input(self, ov_zero_shot_visual_prompting_model: OVZeroShotVisualPromptingModel):
+        batch_size = 2
+        batch = ov_zero_shot_visual_prompting_model.get_dummy_input(batch_size)
+        assert batch.batch_size == batch_size
 
     def test_learn(self, mocker, ov_zero_shot_visual_prompting_model, fxt_zero_shot_vpm_data_entity) -> None:
         """Test learn."""

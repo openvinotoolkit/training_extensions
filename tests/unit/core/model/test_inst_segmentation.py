@@ -69,3 +69,8 @@ class TestOTXInstanceSegModel:
         parameters = otx_model._export_parameters
         assert isinstance(parameters, TaskLevelExportParameters)
         assert parameters.task_type == "instance_segmentation"
+
+    def test_dummy_input(self, otx_model: MMDetInstanceSegCompatibleModel):
+        batch_size = 2
+        batch = otx_model.get_dummy_input(batch_size)
+        assert batch.batch_size == batch_size
