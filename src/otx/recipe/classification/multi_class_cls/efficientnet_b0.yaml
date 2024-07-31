@@ -29,8 +29,6 @@ data: ../../_base_/data/classification.yaml
 overrides:
   reset:
     - data.train_subset.transforms
-    - data.val_subset.transforms
-    - data.test_subset.transforms
 
   max_epochs: 90
   callbacks:
