@@ -368,7 +368,6 @@ class OTXInstanceSegModel(OTXModel[InstanceSegBatchDataEntity, InstanceSegBatchP
         if self.image_size is None:
             raise ValueError(self.image_size)
 
-        # images = torch.rand(batch_size, *self.image_size[1:])
         images = [torch.rand(*self.image_size[1:]) for _ in range(batch_size)]
         infos = []
         for i, img in enumerate(images):
