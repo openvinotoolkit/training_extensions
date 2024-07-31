@@ -798,7 +798,8 @@ class Engine:
             checkpoint (PathLike | None, optional): Path to checkpoint. Optional for torch models. Defaults to None.
             batch_size (int, optional): Batch size for benchmarking. Defaults to 1.
             n_iters (int, optional): Number of iterations to average on. Defaults to 10.
-            extended_stats (bool, optional): Flag that enables printing of per module complexity for torch model. Defaults to False.
+            extended_stats (bool, optional): Flag that enables printing of per module complexity for torch model.
+            Defaults to False.
 
         Returns:
             dict[str, str]: a dict with the benchmark results.
