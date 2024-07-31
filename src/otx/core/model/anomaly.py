@@ -237,7 +237,7 @@ class OTXAnomaly:
     ) -> AnomalyModelOutputs:
         """Wrap forward method of the Anomalib model."""
         outputs = self.validation_step(inputs)
-        # TODO Ashwin: update forward implementation to comply with other OTX models
+        # TODO(Ashwin): update forward implementation to comply with other OTX models
         _PostProcessorCallback._post_process(outputs)  # noqa: SLF001
         _PostProcessorCallback._compute_scores_and_labels(self, outputs)  # noqa: SLF001
         _MinMaxNormalizationCallback._normalize_batch(outputs, self)  # noqa: SLF001

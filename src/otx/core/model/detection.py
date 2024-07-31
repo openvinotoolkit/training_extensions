@@ -372,7 +372,6 @@ class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity]):
             msg = f"Image size attribute is not set for {self.__class__}"
             raise ValueError(msg)
 
-
         images = [torch.rand(*self.image_size[1:]) for _ in range(batch_size)]
         infos = []
         for i, img in enumerate(images):
