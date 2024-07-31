@@ -132,7 +132,7 @@ ci_benchmark = [
     "matplotlib==3.8.4",
     "nbconvert==7.16.3",
     "ipython==8.26.0",
-    "ipykernel==6.29.4",
+    "ipykernel==6.29.5",
     "openpyxl==3.1.4",
 ]
 
