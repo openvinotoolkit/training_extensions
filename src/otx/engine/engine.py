@@ -119,6 +119,7 @@ class Engine:
         model: OTXModel | str | None = None,
         checkpoint: PathLike | None = None,
         device: DeviceType = DeviceType.auto,
+        num_devices: int = 1,
         **kwargs,
     ):
         """Initializes the OTX Engine.
@@ -131,12 +132,14 @@ class Engine:
             model (OTXModel | str | None, optional): The model for the engine. Defaults to None.
             checkpoint (PathLike | None, optional): Path to the checkpoint file. Defaults to None.
             device (DeviceType, optional): The device type to use. Defaults to DeviceType.auto.
+            num_devices (int, optional): The number of devices to use. If it is 2 or more, it will behave as multi-gpu.
             **kwargs: Additional keyword arguments for pl.Trainer.
         """
         self._cache = TrainerArgumentsCache(**kwargs)
         self.checkpoint = checkpoint
         self.work_dir = work_dir
         self.device = device  # type: ignore[assignment]
+        self.num_devices = num_devices
         self._auto_configurator = AutoConfigurator(
             data_root=data_root,
             task=datamodule.task if datamodule is not None else task,
@@ -944,6 +947,18 @@ class Engine:
             device = DeviceType.xpu
         self._device = DeviceConfig(accelerator=device)
         self._cache.update(accelerator=self._device.accelerator, devices=self._device.devices)
+        self._cache.is_trainer_args_identical = False
+
+    @property
+    def num_devices(self) -> int:
+        """Device engine uses."""
+        return self._device.devices
+
+    @num_devices.setter
+    def num_devices(self, num_devices: int) -> None:
+        """Number of GPUs for multi-gpu."""
+        self._device.devices = num_devices
+        self._cache.update(devices=self._device.devices)
         self._cache.is_trainer_args_identical = False
 
     @property
