@@ -9,6 +9,7 @@ import torch
 from torch import Tensor, nn
 
 from otx.algo.detection.layers import ChannelAttention
+from otx.algo.modules import build_activation_layer
 from otx.algo.modules.base_module import BaseModule
 from otx.algo.modules.conv_module import ConvModule
 from otx.algo.modules.depthwise_separable_conv_module import DepthwiseSeparableConvModule
@@ -155,6 +156,64 @@ class CSPNeXtBlock(BaseModule):
         return out
 
 
+class RepVggBlock(nn.Module):
+    """RepVggBlock.
+
+    Args:
+        ch_in (int): The input channels of this Module.
+        ch_out (int): The output channels of this Module.
+        act_cfg (dict[str, str] | None): Config dict for activation layer.
+        norm_cfg (dict[str, str] | None): Config dict for normalization layer.
+    """
+
+    def __init__(
+        self,
+        ch_in: int,
+        ch_out: int,
+        act_cfg: dict[str, str] | None = None,
+        norm_cfg: dict[str, str] | None = None,
+    ) -> None:
+        """Initialize RepVggBlock."""
+        super().__init__()
+        self.ch_in = ch_in
+        self.ch_out = ch_out
+        self.conv1 = ConvModule(ch_in, ch_out, 3, 1, padding=1, act_cfg=None, norm_cfg=norm_cfg)
+        self.conv2 = ConvModule(ch_in, ch_out, 1, 1, act_cfg=None, norm_cfg=norm_cfg)
+        self.act = nn.Identity() if act_cfg is None else build_activation_layer(act_cfg)
+
+    def forward(self, x: Tensor) -> Tensor:
+        """Forward function."""
+        y = self.conv(x) if hasattr(self, "conv") else self.conv1(x) + self.conv2(x)
+        return self.act(y)
+
+    def get_equivalent_kernel_bias(self) -> tuple[Tensor, Tensor]:
+        """Get the equivalent kernel and bias of the block."""
+        kernel3x3, bias3x3 = self._fuse_bn_tensor(self.conv1)
+        kernel1x1, bias1x1 = self._fuse_bn_tensor(self.conv2)
+
+        return kernel3x3 + self._pad_1x1_to_3x3_tensor(kernel1x1), bias3x3 + bias1x1
+
+    def _pad_1x1_to_3x3_tensor(self, kernel1x1: Tensor | None) -> Tensor:
+        """Pad the 1x1 kernel to 3x3 kernel."""
+        if kernel1x1 is None:
+            return 0
+        return nn.functional.pad(kernel1x1, [1, 1, 1, 1])
+
+    def _fuse_bn_tensor(self, branch: ConvModule) -> tuple[float, float]:
+        """Fuse the BN layer to the convolution layer."""
+        if branch is None or branch.norm_layer is None:
+            return 0, 0
+        kernel = branch.conv.weight
+        running_mean = branch.norm_layer.running_mean
+        running_var = branch.norm_layer.running_var
+        gamma = branch.norm_layer.weight
+        beta = branch.norm_layer.bias
+        eps = branch.norm_layer.eps
+        std = (running_var + eps).sqrt()
+        t = (gamma / std).reshape(-1, 1, 1, 1)
+        return kernel * t, beta - running_mean * gamma / std
+
+
 class CSPLayer(BaseModule):
     """Cross Stage Partial Layer.
 
@@ -256,3 +315,55 @@ class CSPLayer(BaseModule):
         if self.channel_attention:
             x_final = self.attention(x_final)
         return self.final_conv(x_final)
+
+
+class CSPRepLayer(nn.Module):
+    """Cross Stage Partial Layer with RepVGGBlock.
+
+    Args:
+        in_channels (int): The input channels of the CSP layer.
+        out_channels (int): The output channels of the CSP layer.
+        num_blocks (int): Number of blocks. Defaults to 3.
+        expansion (float): Ratio to adjust the number of channels of the
+            hidden layer. Defaults to 1.0.
+        bias (bool): Whether to use bias in the convolution layer.
+            Defaults to False.
+        act_cfg (dict[str, str] | None): Config dict for activation layer.
+            Defaults to None, which means using the activation config in
+            conv_cfg.
+        norm_cfg (dict[str, str] | None): Config dict for normalization
+            layer. Defaults to None.
+    """
+
+    def __init__(
+        self,
+        in_channels: int,
+        out_channels: int,
+        num_blocks: int = 3,
+        expansion: float = 1.0,
+        bias: bool = False,
+        act_cfg: dict[str, str] | None = None,
+        norm_cfg: dict[str, str] | None = None,
+    ) -> None:
+        """Initialize CSPRepLayer."""
+        super().__init__()
+        hidden_channels = int(out_channels * expansion)
+        self.conv1 = ConvModule(in_channels, hidden_channels, 1, 1, bias=bias, act_cfg=act_cfg, norm_cfg=norm_cfg)
+        self.conv2 = ConvModule(in_channels, hidden_channels, 1, 1, bias=bias, act_cfg=act_cfg, norm_cfg=norm_cfg)
+        self.bottlenecks = nn.Sequential(
+            *[
+                RepVggBlock(hidden_channels, hidden_channels, act_cfg=act_cfg, norm_cfg=norm_cfg)
+                for _ in range(num_blocks)
+            ],
+        )
+        if hidden_channels != out_channels:
+            self.conv3 = ConvModule(hidden_channels, out_channels, 1, 1, bias=bias, act_cfg=act_cfg, norm_cfg=norm_cfg)
+        else:
+            self.conv3 = nn.Identity()
+
+    def forward(self, x: Tensor) -> Tensor:
+        """Forward function."""
+        x_1 = self.conv1(x)
+        x_1 = self.bottlenecks(x_1)
+        x_2 = self.conv2(x)
+        return self.conv3(x_1 + x_2)

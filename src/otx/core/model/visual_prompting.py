@@ -1,6 +1,6 @@
-# Copyright (C) 2023 Intel Corporation
+# Copyright (C) 2023-2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-#
+
 """Class definition for visual prompting models entity used in OTX."""
 
 from __future__ import annotations
@@ -14,6 +14,7 @@ from typing import TYPE_CHECKING, Any, Literal
 
 import numpy as np
 import torch
+from datumaro import Polygon as dmPolygon
 from model_api.models import Model
 from model_api.models.visual_prompting import (
     Prompt,
@@ -129,6 +130,11 @@ def _inference_step_for_zero_shot(
 
     if not isinstance(preds, ZeroShotVisualPromptingBatchPredEntity):
         raise TypeError(preds)
+
+    # filter labels using corresponding ground truth
+    inputs.labels = [
+        label.masks if inputs.masks and label.masks is not None else label.polygons for label in inputs.labels
+    ]
 
     converted_entities: dict[str, list[dict[str, Tensor]]] = _convert_pred_entity_to_compute_metric(preds, inputs)  # type: ignore[assignment]
 
@@ -911,9 +917,10 @@ class OVZeroShotVisualPromptingModel(
         images: list[np.ndarray] = []
         processed_prompts: list[dict[str, Any]] = []
 
-        for image, prompts, labels in zip(
+        for image, prompts, polygons, labels in zip(
             entity.images,
             entity.prompts,
+            entity.polygons,
             entity.labels,
         ):
             # preprocess image encoder inputs
@@ -921,20 +928,27 @@ class OVZeroShotVisualPromptingModel(
             images.append(numpy_image)
 
             if self.training:
-                points: list[Prompt] = []
-                bboxes: list[Prompt] = []
-                for prompt, label in zip(prompts, labels):  # type: ignore[arg-type]
+                _bboxes: list[Prompt] = []
+                _points: list[Prompt] = []
+                _polygons: list[Prompt] = []
+                for prompt, label in zip(prompts, labels.prompts):  # type: ignore[arg-type]
                     if isinstance(prompt, tv_tensors.BoundingBoxes):
-                        bboxes.append(Prompt(prompt.cpu().numpy(), label.cpu().numpy()))
+                        _bboxes.append(Prompt(prompt.cpu().numpy(), label.cpu().numpy()))
                     elif isinstance(prompt, Points):
-                        points.append(Prompt(prompt.cpu().numpy(), label.cpu().numpy()))
-                    # TODO (sungchul): support polygons
+                        _points.append(Prompt(prompt.cpu().numpy(), label.cpu().numpy()))
+
+                if polygons and labels.polygons is not None:
+                    for polygon, label in zip(polygons, labels.polygons):
+                        _polygons.append(Prompt(np.array(polygon.points, dtype=np.int32), label.cpu().numpy()))
+
+                # TODO (sungchul, sovrasov): support mask?
 
                 # preprocess decoder inputs
                 processed_prompts.append(
                     {
-                        "boxes": bboxes,
-                        "points": points,
+                        "boxes": _bboxes,
+                        "points": _points,
+                        "polygons": _polygons,
                     },
                 )
 
@@ -1047,7 +1061,7 @@ class OVZeroShotVisualPromptingModel(
             _labels: dict[str, list[int]] = defaultdict(list)
 
             # use only the first prompt
-            for prompt, label in zip(data_batch.prompts[0], data_batch.labels[0]):  # type: ignore[arg-type]
+            for prompt, label in zip(data_batch.prompts[0], data_batch.labels[0].prompts):  # type: ignore[arg-type]
                 if isinstance(prompt, tv_tensors.BoundingBoxes):
                     bboxes.append(prompt.cpu().numpy())
                     _labels["bboxes"].append(label.cpu().numpy())

@@ -38,6 +38,7 @@ dependencies = [
     "rich_argparse==1.5.2", # CLI help-formatter
     "einops==0.8.0",
     "decord==0.6.0",
+    "typeguard==4.3.*",
     # TODO(ashwinvaidya17): https://github.com/openvinotoolkit/anomalib/issues/2126
     "setuptools<70",
 ]
@@ -130,7 +131,7 @@ ci_benchmark = [
     "pandas<2.2",       # To avoid conflict with nncf==2.9.0
     "matplotlib==3.8.4",
     "nbconvert==7.16.3",
-    "ipython==8.23.0",
+    "ipython==8.26.0",
     "ipykernel==6.29.4",
     "openpyxl==3.1.4",
 ]

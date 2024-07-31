@@ -14,6 +14,7 @@ from typing import Sequence
 import torch
 import torch.nn.functional as F  # noqa: N812
 from torch import Tensor, nn
+from torchvision.ops import box_convert
 
 from otx.algo.common.losses import CrossEntropyLoss, L1Loss
 from otx.algo.common.utils.nms import batched_nms, multiclass_nms
@@ -25,24 +26,6 @@ from otx.algo.detection.losses import IoULoss
 from otx.algo.modules.conv_module import ConvModule
 from otx.algo.modules.depthwise_separable_conv_module import DepthwiseSeparableConvModule
 from otx.algo.utils.mmengine_utils import InstanceData
-
-
-def bbox_xyxy_to_cxcywh(bbox: Tensor) -> Tensor:
-    """Convert bbox coordinates from (x1, y1, x2, y2) to (cx, cy, w, h).
-
-    Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/structures/bbox/transforms.py#L279-L290
-
-    TODO (sungchul): is there the same function in otx?
-
-    Args:
-        bbox (Tensor): Shape (n, 4) for bboxes.
-
-    Returns:
-        Tensor: Converted bboxes.
-    """
-    x1, y1, x2, y2 = bbox.split((1, 1, 1, 1), dim=-1)
-    bbox_new = [(x1 + x2) / 2, (y1 + y2) / 2, (x2 - x1), (y2 - y1)]
-    return torch.cat(bbox_new, dim=-1)
 
 
 class YOLOXHead(BaseDenseHead):
@@ -671,7 +654,7 @@ class YOLOXHead(BaseDenseHead):
 
     def _get_l1_target(self, l1_target: Tensor, gt_bboxes: Tensor, priors: Tensor, eps: float = 1e-8) -> Tensor:
         """Convert gt bboxes to center offset and log width height."""
-        gt_cxcywh = bbox_xyxy_to_cxcywh(gt_bboxes)
+        gt_cxcywh = box_convert(gt_bboxes, in_fmt="xyxy", out_fmt="cxcywh")
         l1_target[:, :2] = (gt_cxcywh[:, :2] - priors[:, :2]) / priors[:, 2:]
         l1_target[:, 2:] = torch.log(gt_cxcywh[:, 2:] / priors[:, 2:] + eps)
         return l1_target

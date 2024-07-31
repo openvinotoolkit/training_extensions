@@ -26,25 +26,32 @@ callback_monitor: val/accuracy
 
 data: ../../_base_/data/torchvision_base.yaml
 overrides:
+  reset:
+    - data.train_subset.transforms
+    - data.val_subset.transforms
+    - data.test_subset.transforms
+
   max_epochs: 200
   callbacks:
     - class_path: otx.algo.callbacks.adaptive_early_stopping.EarlyStoppingWithWarmup
       init_args:
         patience: 3
+
   data:
     task: MULTI_LABEL_CLS
+    input_size: 224
     data_format: datumaro
     mem_cache_img_max_size:
       - 500
       - 500
-    stack_images: True
+    stack_images: true
     train_subset:
       batch_size: 64
-      to_tv_image: False
+      to_tv_image: false
       transforms:
         - class_path: otx.core.data.transform_libs.torchvision.EfficientNetRandomCrop
           init_args:
-            scale: 224
+            scale: $(input_size)
         - class_path: otx.core.data.transform_libs.torchvision.RandomFlip
           init_args:
             prob: 0.5
@@ -52,41 +59,43 @@ overrides:
         - class_path: torchvision.transforms.v2.ToDtype
           init_args:
             dtype: ${as_torch_dtype:torch.float32}
-            scale: False
+            scale: false
         - class_path: torchvision.transforms.v2.Normalize
           init_args:
             mean: [123.675, 116.28, 103.53]
             std: [58.395, 57.12, 57.375]
       sampler:
         class_path: otx.algo.samplers.balanced_sampler.BalancedSampler
+
     val_subset:
       batch_size: 64
-      to_tv_image: False
+      to_tv_image: false
       transforms:
         - class_path: otx.core.data.transform_libs.torchvision.Resize
           init_args:
-            scale: 224
+            scale: $(input_size)
             is_numpy_to_tvtensor: true
         - class_path: torchvision.transforms.v2.ToDtype
           init_args:
             dtype: ${as_torch_dtype:torch.float32}
-            scale: False
+            scale: false
         - class_path: torchvision.transforms.v2.Normalize
           init_args:
             mean: [123.675, 116.28, 103.53]
             std: [58.395, 57.12, 57.375]
+
     test_subset:
       batch_size: 64
-      to_tv_image: False
+      to_tv_image: false
       transforms:
         - class_path: otx.core.data.transform_libs.torchvision.Resize
           init_args:
-            scale: 224
+            scale: $(input_size)
             is_numpy_to_tvtensor: true
         - class_path: torchvision.transforms.v2.ToDtype
           init_args:
             dtype: ${as_torch_dtype:torch.float32}
-            scale: False
+            scale: false
         - class_path: torchvision.transforms.v2.Normalize
           init_args:
             mean: [123.675, 116.28, 103.53]

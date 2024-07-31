@@ -96,9 +96,9 @@ def pytest_addoption(parser: pytest.Parser):
     )
     parser.addoption(
         "--deterministic",
-        choices=["true", "false"],
+        choices=["true", "false", "warn"],
         default=None,
-        help="Turn on deterministic training (true/false).",
+        help="Turn on deterministic training (true/false/warn).",
     )
     parser.addoption(
         "--user-name",
@@ -124,6 +124,13 @@ def pytest_addoption(parser: pytest.Parser):
         type=str,
         help="Previous performance test directory which contains execution results. "
         "If training was already done in previous performance test, training is skipped and refer previous result.",
+    )
+    parser.addoption(
+        "--test-only",
+        action="store",
+        choices=("all", "train", "export", "optimize"),
+        help="Execute test only when resume argument is given. If necessary files are not found in resume directory, "
+        "necessary operations can be executed. Choose all|train|export|optimize.",
     )
     parser.addoption(
         "--open-subprocess",

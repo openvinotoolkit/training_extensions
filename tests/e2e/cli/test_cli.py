@@ -221,6 +221,9 @@ def test_otx_e2e_cli(
     if "dino" in model_name:
         return  # DINO is not supported.
 
+    if "rtdetr" in model_name:
+        return  # RT-DETR currently is not supported.
+
     tmp_path_test = tmp_path / f"otx_export_xai_{model_name}"
     for export_case in fxt_export_list:
         command_cfg = [

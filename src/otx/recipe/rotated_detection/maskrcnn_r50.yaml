@@ -34,67 +34,9 @@ overrides:
   data:
     train_subset:
       batch_size: 4
-      transforms:
-        - class_path: otx.core.data.transform_libs.torchvision.Resize
-          init_args:
-            keep_ratio: true
-            transform_bbox: true
-            transform_mask: true
-            scale:
-              - 1024
-              - 1024
-        - class_path: otx.core.data.transform_libs.torchvision.Pad
-          init_args:
-            size_divisor: 32
-            transform_mask: true
-        - class_path: otx.core.data.transform_libs.torchvision.RandomFlip
-          init_args:
-            prob: 0.5
-            is_numpy_to_tvtensor: true
-        - class_path: torchvision.transforms.v2.ToDtype
-          init_args:
-            dtype: ${as_torch_dtype:torch.float32}
-        - class_path: torchvision.transforms.v2.Normalize
-          init_args:
-            mean: [123.675, 116.28, 103.53]
-            std: [58.395, 57.12, 57.375]
+
     val_subset:
       batch_size: 1
-      transforms:
-        - class_path: otx.core.data.transform_libs.torchvision.Resize
-          init_args:
-            keep_ratio: true
-            scale:
-              - 1024
-              - 1024
-        - class_path: otx.core.data.transform_libs.torchvision.Pad
-          init_args:
-            size_divisor: 32
-            is_numpy_to_tvtensor: true
-        - class_path: torchvision.transforms.v2.ToDtype
-          init_args:
-            dtype: ${as_torch_dtype:torch.float32}
-        - class_path: torchvision.transforms.v2.Normalize
-          init_args:
-            mean: [123.675, 116.28, 103.53]
-            std: [58.395, 57.12, 57.375]
+
     test_subset:
       batch_size: 1
-      transforms:
-        - class_path: otx.core.data.transform_libs.torchvision.Resize
-          init_args:
-            keep_ratio: true
-            scale:
-              - 1024
-              - 1024
-        - class_path: otx.core.data.transform_libs.torchvision.Pad
-          init_args:
-            size_divisor: 32
-            is_numpy_to_tvtensor: true
-        - class_path: torchvision.transforms.v2.ToDtype
-          init_args:
-            dtype: ${as_torch_dtype:torch.float32}
-        - class_path: torchvision.transforms.v2.Normalize
-          init_args:
-            mean: [123.675, 116.28, 103.53]
-            std: [58.395, 57.12, 57.375]
