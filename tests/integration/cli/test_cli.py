@@ -11,7 +11,7 @@ import yaml
 from otx.core.types.task import OTXTaskType
 from otx.engine.utils.auto_configurator import DEFAULT_CONFIG_PER_TASK
 
-from tests.utils import run_main
+from tests.utils import ExportCase2Test, run_main
 
 
 @pytest.fixture(
@@ -51,7 +51,7 @@ def fxt_trained_model(
     if model_name.endswith("_semisl") and "multi_class_cls" in recipe:
         command_cfg.extend(
             [
-                "--data.config.unlabeled_subset.data_root",
+                "--data.unlabeled_subset.data_root",
                 fxt_target_dataset_per_task["multi_class_cls_semisl"],
             ],
         )
@@ -67,6 +67,7 @@ def test_otx_e2e(
     fxt_target_dataset_per_task: dict,
     fxt_cli_override_command_per_task: dict,
     fxt_open_subprocess: bool,
+    fxt_export_list: list[ExportCase2Test],
     tmp_path: Path,
 ) -> None:
     """
@@ -85,7 +86,6 @@ def test_otx_e2e(
         None
     """
     recipe, task, model_name, tmp_path_train = fxt_trained_model
-
     outputs_dir = tmp_path_train / "outputs"
     latest_dir = max(
         (p for p in outputs_dir.iterdir() if p.is_dir() and p.name != ".latest"),
@@ -146,34 +146,27 @@ def test_otx_e2e(
     if any(
         task_name in recipe
         for task_name in [
-            "h_label_cls",
-            "detection",
             "dino_v2",
-            "instance_segmentation",
-            "action",
         ]
     ):
         return
-
     if task in ("visual_prompting", "zero_shot_visual_prompting"):
-        format_to_file = {
-            "ONNX": "exported_model_decoder.onnx",
-            "OPENVINO": "exported_model_decoder.xml",
-            # TODO (sungchul): EXPORTABLE_CODE will be supported
-        }
-    else:
-        format_to_file = {
-            "ONNX": "exported_model.onnx",
-            "OPENVINO": "exported_model.xml",
-            "EXPORTABLE_CODE": "exportable_code.zip",
-        }
+        fxt_export_list = [
+            ExportCase2Test("ONNX", False, "exported_model_decoder.onnx"),
+            ExportCase2Test("OPENVINO", False, "exported_model_decoder.xml"),
+        ]  # TODO (sungchul): EXPORTABLE_CODE will be supported
+    elif "anomaly" in task:
+        fxt_export_list = [
+            ExportCase2Test("ONNX", False, "exported_model.onnx"),
+            ExportCase2Test("OPENVINO", False, "exported_model.xml"),
+        ]  # anomaly doesn't support exportable code
 
     overrides = fxt_cli_override_command_per_task[task]
     if "anomaly" in task:
         overrides = {}  # Overrides are not needed in export
 
     tmp_path_test = tmp_path / f"otx_test_{model_name}"
-    for fmt in format_to_file:
+    for export_case in fxt_export_list:
         command_cfg = [
             "otx",
             "export",
@@ -182,35 +175,35 @@ def test_otx_e2e(
             "--data_root",
             fxt_target_dataset_per_task[task],
             "--work_dir",
-            str(tmp_path_test / "outputs" / fmt),
+            str(tmp_path_test / "outputs" / export_case.export_format),
             *overrides,
             "--checkpoint",
             str(ckpt_file),
             "--export_format",
-            f"{fmt}",
+            export_case.export_format,
+            "--export_demo_package",
+            str(export_case.export_demo_package),
         ]
 
         run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)
 
-        outputs_dir = tmp_path_test / "outputs" / fmt
+        outputs_dir = tmp_path_test / "outputs" / export_case.export_format
         latest_dir = max(
             (p for p in outputs_dir.iterdir() if p.is_dir() and p.name != ".latest"),
             key=lambda p: p.stat().st_mtime,
         )
         assert latest_dir.exists()
-        assert (latest_dir / f"{format_to_file[fmt]}").exists()
+        assert (latest_dir / export_case.expected_output).exists()
 
     # 4) infer of the exported models
     ov_output_dir = tmp_path_test / "outputs" / "OPENVINO"
-    ov_latest_dir = max(
-        (p for p in ov_output_dir.iterdir() if p.is_dir() and p.name != ".latest"),
-        key=lambda p: p.stat().st_mtime,
-    )
+    ov_files = list(ov_output_dir.rglob("exported*.xml"))
+    if not ov_files:
+        msg = "There is no OV IR."
+        raise RuntimeError(msg)
+    exported_model_path = str(ov_files[0])
     if task in ("visual_prompting", "zero_shot_visual_prompting"):
-        exported_model_path = str(ov_latest_dir / "exported_model_decoder.xml")
         recipe = str(Path(recipe).parents[0] / "openvino_model.yaml")
-    else:
-        exported_model_path = str(ov_latest_dir / "exported_model.xml")
 
     overrides = fxt_cli_override_command_per_task[task]
     if "anomaly" in task:
@@ -251,20 +244,19 @@ def test_otx_e2e(
     assert latest_dir.exists()
 
     # 5) otx export with XAI
+    if "instance_segmentation/rtmdet_inst_tiny" in recipe:
+        return
     if ("_cls" not in task) and (task not in ["detection", "instance_segmentation"]):
         return  # Supported only for classification, detection and instance segmentation task.
 
     if "dino" in model_name:
         return  # DINO is not supported.
 
-    format_to_file = {
-        "ONNX": "exported_model.onnx",
-        "OPENVINO": "exported_model.xml",
-        "EXPORTABLE_CODE": "exportable_code.zip",
-    }
+    if "rtdetr" in model_name:
+        return  # RT-DETR currently is not supported.
 
     tmp_path_test = tmp_path / f"otx_export_xai_{model_name}"
-    for fmt in format_to_file:
+    for export_case in fxt_export_list:
         command_cfg = [
             "otx",
             "export",
@@ -273,25 +265,27 @@ def test_otx_e2e(
             "--data_root",
             fxt_target_dataset_per_task[task],
             "--work_dir",
-            str(tmp_path_test / "outputs" / fmt),
+            str(tmp_path_test / "outputs" / export_case.export_format),
             *fxt_cli_override_command_per_task[task],
             "--checkpoint",
             str(ckpt_file),
             "--export_format",
-            f"{fmt}",
+            f"{export_case.export_format}",
+            "--export_demo_package",
+            str(export_case.export_demo_package),
             "--explain",
             "True",
         ]
 
         run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)
 
-        fmt_dir = tmp_path_test / "outputs" / fmt
+        fmt_dir = tmp_path_test / "outputs" / export_case.export_format
         assert fmt_dir.exists()
         fmt_latest_dir = max(
             (p for p in fmt_dir.iterdir() if p.is_dir() and p.name != ".latest"),
             key=lambda p: p.stat().st_mtime,
         )
-        assert (fmt_latest_dir / f"{format_to_file[fmt]}").exists()
+        assert (fmt_latest_dir / f"{export_case.expected_output}").exists()
 
 
 def test_otx_explain_e2e(
@@ -328,6 +322,9 @@ def test_otx_explain_e2e(
 
     if "maskrcnn_r50_tv" in model_name:
         pytest.skip("MaskRCNN R50 Torchvision model doesn't support explain.")
+
+    if "rtdetr" in recipe:
+        pytest.skip("rtdetr model is not supported yet with explain.")
 
     # otx explain
     tmp_path_explain = tmp_path / f"otx_explain_{model_name}"

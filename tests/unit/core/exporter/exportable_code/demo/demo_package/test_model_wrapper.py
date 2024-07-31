@@ -32,8 +32,8 @@ class TestModelWrapper:
             "get_parameters",
             return_value={
                 "model_parameters": {"labels": "label"},
-                "converter_type": "CLASSIFICATION",
-                "type_of_model": "type_of_model",
+                "task_type": "CLASSIFICATION",
+                "model_type": "type_of_model",
             },
         )
         mocker.patch.object(target_file, "get_model_path")

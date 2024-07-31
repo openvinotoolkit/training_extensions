@@ -4,9 +4,9 @@
 
 import pytest
 import torch
-from otx.algo.detection.backbones.csp_darknet import CSPDarknet
-from otx.algo.detection.heads.yolox_head import YOLOXHead
-from otx.algo.detection.necks.yolox_pafpn import YOLOXPAFPN
+from otx.algo.detection.backbones import CSPDarknet
+from otx.algo.detection.heads import YOLOXHead
+from otx.algo.detection.necks import YOLOXPAFPN
 from otx.algo.detection.yolox import YOLOXL, YOLOXS, YOLOXTINY, YOLOXX
 from otx.core.data.entity.detection import DetBatchPredEntity
 from otx.core.exporter.native import OTXNativeModelExporter

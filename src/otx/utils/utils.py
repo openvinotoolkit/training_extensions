@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import importlib
 import inspect
-import pickle
+import pickle  # nosec B403 used pickle for internal state dump/load
 from decimal import Decimal
 from functools import partial
 from types import LambdaType
@@ -256,7 +256,7 @@ def check_pickleable(obj: Any) -> bool:  # noqa: ANN401
     """Check object can be pickled."""
     try:
         pickled_data = pickle.dumps(obj)
-        pickle.loads(pickled_data)  # noqa: S301
+        pickle.loads(pickled_data)  # noqa: S301 # nosec B301 used pickle for internal state dump/load
     except Exception:
         return False
     return True

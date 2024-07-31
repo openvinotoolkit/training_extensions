@@ -13,16 +13,18 @@ from typing import TYPE_CHECKING, Any, Callable, Iterator, Literal
 import numpy as np
 import torch
 from model_api.tilers import InstanceSegmentationTiler
+from torch import Tensor
 from torchmetrics import Metric, MetricCollection
 from torchvision import tv_tensors
 
 from otx.algo.explain.explain_algo import InstSegExplainAlgo, feature_vector_fn
-from otx.algo.instance_segmentation.mmdet.models.detectors.two_stage import TwoStageDetector
-from otx.algo.utils.mmengine_utils import InstanceData
+from otx.algo.instance_segmentation.two_stage import TwoStageDetector
+from otx.algo.utils.mmengine_utils import InstanceData, load_checkpoint
 from otx.core.config.data import TileConfig
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.instance_segmentation import InstanceSegBatchDataEntity, InstanceSegBatchPredEntity
 from otx.core.data.entity.tile import OTXTileBatchDataEntity
+from otx.core.data.entity.utils import stack_batch
 from otx.core.metrics import MetricInput
 from otx.core.metrics.fmeasure import FMeasure
 from otx.core.metrics.mean_ap import MaskRLEMeanAPFMeasureCallable
@@ -66,6 +68,139 @@ class OTXInstanceSegModel(OTXModel[InstanceSegBatchDataEntity, InstanceSegBatchP
             tile_config=tile_config,
         )
 
+    def _build_model(self, num_classes: int) -> nn.Module:
+        raise NotImplementedError
+
+    def _create_model(self) -> nn.Module:
+        detector = self._build_model(num_classes=self.label_info.num_classes)
+        detector.init_weights()
+        self.classification_layers = self.get_classification_layers("model.")
+
+        if self.load_from is not None:
+            load_checkpoint(detector, self.load_from, map_location="cpu")
+        return detector
+
+    def _customize_inputs(self, entity: InstanceSegBatchDataEntity) -> dict[str, Any]:
+        if isinstance(entity.images, list):
+            entity.images, entity.imgs_info = stack_batch(entity.images, entity.imgs_info, pad_size_divisor=32)
+        inputs: dict[str, Any] = {}
+
+        inputs["entity"] = entity
+        inputs["mode"] = "loss" if self.training else "predict"
+
+        return inputs
+
+    def _customize_outputs(
+        self,
+        outputs: list[InstanceData] | dict,  # TODO (sungchul): Remove `InstanceData`.
+        inputs: InstanceSegBatchDataEntity,
+    ) -> InstanceSegBatchPredEntity | OTXBatchLossEntity:
+        if self.training:
+            if not isinstance(outputs, dict):
+                raise TypeError(outputs)
+
+            losses = OTXBatchLossEntity()
+            for loss_name, loss_value in outputs.items():
+                if isinstance(loss_value, Tensor):
+                    losses[loss_name] = loss_value
+                elif isinstance(loss_value, list):
+                    losses[loss_name] = sum(_loss.mean() for _loss in loss_value)
+            # pop acc from losses
+            losses.pop("acc", None)
+            return losses
+
+        scores: list[Tensor] = []
+        bboxes: list[tv_tensors.BoundingBoxes] = []
+        labels: list[torch.LongTensor] = []
+        masks: list[tv_tensors.Mask] = []
+
+        predictions = outputs["predictions"] if isinstance(outputs, dict) else outputs
+        for img_info, prediction in zip(inputs.imgs_info, predictions):
+            scores.append(prediction.scores)
+            bboxes.append(
+                tv_tensors.BoundingBoxes(
+                    prediction.bboxes,
+                    format="XYXY",
+                    canvas_size=img_info.ori_shape,
+                ),
+            )
+            output_masks = tv_tensors.Mask(
+                prediction.masks,
+                dtype=torch.bool,
+            )
+            masks.append(output_masks)
+            labels.append(prediction.labels)
+
+        if self.explain_mode:
+            if not isinstance(outputs, dict):
+                msg = f"Model output should be a dict, but got {type(outputs)}."
+                raise ValueError(msg)
+
+            if "feature_vector" not in outputs:
+                msg = "No feature vector in the model output."
+                raise ValueError(msg)
+
+            if "saliency_map" not in outputs:
+                msg = "No saliency maps in the model output."
+                raise ValueError(msg)
+
+            saliency_map = outputs["saliency_map"].detach().cpu().numpy()
+            feature_vector = outputs["feature_vector"].detach().cpu().numpy()
+
+            return InstanceSegBatchPredEntity(
+                batch_size=len(predictions),
+                images=inputs.images,
+                imgs_info=inputs.imgs_info,
+                scores=scores,
+                bboxes=bboxes,
+                masks=masks,
+                polygons=[],
+                labels=labels,
+                saliency_map=list(saliency_map),
+                feature_vector=list(feature_vector),
+            )
+
+        return InstanceSegBatchPredEntity(
+            batch_size=len(predictions),
+            images=inputs.images,
+            imgs_info=inputs.imgs_info,
+            scores=scores,
+            bboxes=bboxes,
+            masks=masks,
+            polygons=[],
+            labels=labels,
+        )
+
+    def get_classification_layers(self, prefix: str = "") -> dict[str, dict[str, int]]:
+        """Return classification layer names by comparing two different number of classes models.
+
+        Args:
+            config (DictConfig): Config for building model.
+            model_registry (Registry): Registry for building model.
+            prefix (str): Prefix of model param name.
+                Normally it is "model." since OTXModel set it's nn.Module model as self.model
+
+        Return:
+            dict[str, dict[str, int]]
+            A dictionary contain classification layer's name and information.
+            Stride means dimension of each classes, normally stride is 1, but sometimes it can be 4
+            if the layer is related bbox regression for object detection.
+            Extra classes is default class except class from data.
+            Normally it is related with background classes.
+        """
+        sample_model_dict = self._build_model(num_classes=5).state_dict()
+        incremental_model_dict = self._build_model(num_classes=6).state_dict()
+
+        classification_layers = {}
+        for key in sample_model_dict:
+            if sample_model_dict[key].shape != incremental_model_dict[key].shape:
+                sample_model_dim = sample_model_dict[key].shape[0]
+                incremental_model_dim = incremental_model_dict[key].shape[0]
+                stride = incremental_model_dim - sample_model_dim
+                num_extra_classes = 6 * sample_model_dim - 5 * incremental_model_dim
+                classification_layers[prefix + key] = {"stride": stride, "num_extra_classes": num_extra_classes}
+        return classification_layers
+
     def forward_tiles(self, inputs: OTXTileBatchDataEntity[InstanceSegBatchDataEntity]) -> InstanceSegBatchPredEntity:
         """Unpack instance segmentation tiles.
 
@@ -106,6 +241,18 @@ class OTXInstanceSegModel(OTXModel[InstanceSegBatchDataEntity, InstanceSegBatchP
             pred_entity.feature_vector = [pred_entity.feature_vector for pred_entity in pred_entities]
 
         return pred_entity
+
+    def forward_for_tracing(self, inputs: Tensor) -> tuple[Tensor, ...]:
+        """Forward function for export."""
+        shape = (int(inputs.shape[2]), int(inputs.shape[3]))
+        meta_info = {
+            "pad_shape": shape,
+            "batch_input_shape": shape,
+            "img_shape": shape,
+            "scale_factor": (1.0, 1.0),
+        }
+        meta_info_list = [meta_info] * len(inputs)
+        return self.model.export(inputs, meta_info_list)
 
     @property
     def _export_parameters(self) -> TaskLevelExportParameters:
@@ -267,14 +414,14 @@ class ExplainableOTXInstanceSegModel(OTXInstanceSegModel):
         self: TwoStageDetector,
         entity: InstanceSegBatchDataEntity,
         mode: str = "tensor",  # noqa: ARG004
-    ) -> dict[str, torch.Tensor]:
+    ) -> dict[str, Tensor]:
         """Forward func of the BaseDetector instance, which located in is in ExplainableOTXInstanceSegModel().model."""
         x = self.extract_feat(entity.images)
 
         feature_vector = self.feature_vector_fn(x)
         predictions = self.get_results_from_head(x, entity)
 
-        if isinstance(predictions, tuple) and isinstance(predictions[0], torch.Tensor):
+        if isinstance(predictions, tuple) and isinstance(predictions[0], Tensor):
             # Export case, consists of tensors
             # For OV task saliency map are generated on MAPI side
             saliency_map = torch.empty(1, dtype=torch.uint8)
@@ -293,17 +440,17 @@ class ExplainableOTXInstanceSegModel(OTXInstanceSegModel):
 
     def get_results_from_head(
         self,
-        x: tuple[torch.Tensor],
+        x: tuple[Tensor],
         entity: InstanceSegBatchDataEntity,
-    ) -> tuple[torch.Tensor] | list[InstanceData]:
+    ) -> tuple[Tensor] | list[InstanceData]:
         """Get the results from the head of the instance segmentation model.
 
         Args:
-            x (tuple[torch.Tensor]): The features from backbone and neck.
+            x (tuple[Tensor]): The features from backbone and neck.
             data_samples (OptSampleList | None): A list of data samples.
 
         Returns:
-            tuple[torch.Tensor] | list[InstanceData]: The predicted results from the head of the model.
+            tuple[Tensor] | list[InstanceData]: The predicted results from the head of the model.
             Tuple for the Export case, list for the Predict case.
         """
         from otx.algo.instance_segmentation.rtmdet_inst import RTMDetInstTiny
@@ -457,7 +604,7 @@ class MMDetInstanceSegCompatibleModel(ExplainableOTXInstanceSegModel):
 
     def _customize_outputs(
         self,
-        outputs: dict[str, Any],
+        outputs: dict[str, Any],  # type: ignore[override]
         inputs: InstanceSegBatchDataEntity,
     ) -> InstanceSegBatchPredEntity | OTXBatchLossEntity:
         from mmdet.structures import DetDataSample
@@ -468,7 +615,7 @@ class MMDetInstanceSegCompatibleModel(ExplainableOTXInstanceSegModel):
 
             losses = OTXBatchLossEntity()
             for loss_name, loss_value in outputs.items():
-                if isinstance(loss_value, torch.Tensor):
+                if isinstance(loss_value, Tensor):
                     losses[loss_name] = loss_value
                 elif isinstance(loss_value, list):
                     losses[loss_name] = sum(_loss.mean() for _loss in loss_value)
@@ -476,7 +623,7 @@ class MMDetInstanceSegCompatibleModel(ExplainableOTXInstanceSegModel):
             losses.pop("acc", None)
             return losses
 
-        scores: list[torch.Tensor] = []
+        scores: list[Tensor] = []
         bboxes: list[tv_tensors.BoundingBoxes] = []
         labels: list[torch.LongTensor] = []
         masks: list[tv_tensors.Mask] = []

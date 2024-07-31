@@ -1,0 +1,93 @@
+task: VISUAL_PROMPTING
+input_size:
+  - 1024
+  - 1024
+mem_cache_size: 1GB
+mem_cache_img_max_size: null
+image_color_channel: RGB
+stack_images: false
+data_format: coco_instances
+unannotated_items_ratio: 0.0
+vpm_config:
+  use_bbox: true
+  use_point: false
+train_subset:
+  subset_name: train
+  transform_lib_type: TORCHVISION
+  batch_size: 2
+  num_workers: 4
+  to_tv_image: false
+  transforms:
+    - class_path: otx.core.data.transform_libs.torchvision.Resize
+      init_args:
+        scale: $(input_size)
+        keep_ratio: true
+        transform_bbox: true
+        transform_point: true
+    - class_path: otx.core.data.transform_libs.torchvision.Pad
+      init_args:
+        pad_to_square: true
+        is_numpy_to_tvtensor: true
+    - class_path: torchvision.transforms.v2.ToDtype
+      init_args:
+        dtype: ${as_torch_dtype:torch.float32}
+    - class_path: torchvision.transforms.v2.Normalize
+      init_args:
+        mean: [123.675, 116.28, 103.53]
+        std: [58.395, 57.12, 57.375]
+  sampler:
+    class_path: torch.utils.data.RandomSampler
+
+val_subset:
+  subset_name: val
+  transform_lib_type: TORCHVISION
+  batch_size: 1
+  num_workers: 4
+  to_tv_image: false
+  transforms:
+    - class_path: otx.core.data.transform_libs.torchvision.Resize
+      init_args:
+        scale: $(input_size)
+        keep_ratio: true
+        transform_bbox: true
+        transform_point: true
+    - class_path: otx.core.data.transform_libs.torchvision.Pad
+      init_args:
+        pad_to_square: true
+        is_numpy_to_tvtensor: true
+    - class_path: torchvision.transforms.v2.ToDtype
+      init_args:
+        dtype: ${as_torch_dtype:torch.float32}
+    - class_path: torchvision.transforms.v2.Normalize
+      init_args:
+        mean: [123.675, 116.28, 103.53]
+        std: [58.395, 57.12, 57.375]
+  sampler:
+    class_path: torch.utils.data.RandomSampler
+
+test_subset:
+  subset_name: test
+  transform_lib_type: TORCHVISION
+  batch_size: 1
+  num_workers: 4
+  to_tv_image: false
+  transforms:
+    - class_path: otx.core.data.transform_libs.torchvision.Resize
+      init_args:
+        scale: $(input_size)
+        keep_ratio: true
+        transform_bbox: true
+        transform_point: true
+    - class_path: otx.core.data.transform_libs.torchvision.Pad
+      init_args:
+        pad_to_square: true
+        is_numpy_to_tvtensor: true
+    - class_path: torchvision.transforms.v2.ToDtype
+      init_args:
+        dtype: ${as_torch_dtype:torch.float32}
+    - class_path: torchvision.transforms.v2.Normalize
+      init_args:
+        mean: [123.675, 116.28, 103.53]
+        std: [58.395, 57.12, 57.375]
+  sampler:
+    class_path: torch.utils.data.RandomSampler

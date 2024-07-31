@@ -1,36 +1,25 @@
 version: 2
 updates:
   - package-ecosystem: docker
-    directory: /.ci
+    directory: /
     schedule:
       interval: weekly
+    groups:
+      dockerfile-dependency:
+        applies-to: version-updates
 
   - package-ecosystem: github-actions
     directory: /
     schedule:
       interval: weekly
-
-  - package-ecosystem: docker
-    directory: /docker
-    schedule:
-      interval: weekly
-
-  - package-ecosystem: pip
-    directory: /src/otx/core/exporter/exportable_code/demo
-    schedule:
-      interval: weekly
+    groups:
+      github-actions-dependency:
+        applies-to: version-updates
 
   - package-ecosystem: pip
     directory: /
     schedule:
       interval: weekly
-
-  - package-ecosystem: pip
-    directory: /for_developers/regression_test
-    schedule:
-      interval: weekly
-
-  - package-ecosystem: pip
-    directory: /.ci
-    schedule:
-      interval: weekly
+    groups:
+      pip-dependency:
+        applies-to: version-updates

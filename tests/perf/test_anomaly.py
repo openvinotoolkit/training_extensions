@@ -6,6 +6,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import ClassVar
 
 import pytest
 
@@ -16,21 +17,15 @@ from .conftest import PerfTestBase
 class TestPerfAnomalyClassification(PerfTestBase):
     """Benchmark anomaly classification."""
 
-    MODEL_TEST_CASES = [  # noqa: RUF012
+    MODEL_TEST_CASES: ClassVar[list[Benchmark.Model]] = [
         Benchmark.Model(task="anomaly_classification", name="padim", category="speed"),
         Benchmark.Model(task="anomaly_classification", name="stfpm", category="accuracy"),
     ]
 
-    DATASET_TEST_CASES = [
-        Benchmark.Dataset(
-            name=f"mvtec_bottle_small_{idx}",
-            path=Path("anomaly/mvtec/bottle_small") / f"{idx}",
-            group="small",
-            num_repeat=5,
-            extra_overrides={},
-        )
-        for idx in (1, 2, 3)
-    ] + [
+    DATASET_TEST_CASES: ClassVar[list[Benchmark.Dataset]] = [
+        # TODO(Emily): Need to replace small datasets with appropriate ones.
+        # Currently excluding small datasets from benchmark testing until replacements are ready.
+        # Small datasets to be replaced include: mvtec_bottle_small_1, mvtec_bottle_small_2, mvtec_bottle_small_3.
         Benchmark.Dataset(
             name="mvtec_wood_medium",
             path=Path("anomaly/mvtec/wood_medium"),
@@ -79,35 +74,27 @@ class TestPerfAnomalyClassification(PerfTestBase):
         fxt_model: Benchmark.Model,
         fxt_dataset: Benchmark.Dataset,
         fxt_benchmark: Benchmark,
-        fxt_resume_from: Path | None,
     ):
         self._test_perf(
             model=fxt_model,
             dataset=fxt_dataset,
             benchmark=fxt_benchmark,
             criteria=self.BENCHMARK_CRITERIA,
-            resume_from=fxt_resume_from,
         )
 
 
 class TestPerfAnomalyDetection(PerfTestBase):
     """Benchmark anomaly detection."""
 
-    MODEL_TEST_CASES = [  # noqa: RUF012
+    MODEL_TEST_CASES: ClassVar[list[Benchmark.Model]] = [
         Benchmark.Model(task="anomaly_detection", name="padim", category="speed"),
         Benchmark.Model(task="anomaly_detection", name="stfpm", category="accuracy"),
     ]
 
-    DATASET_TEST_CASES = [
-        Benchmark.Dataset(
-            name=f"mvtec_bottle_small_{idx}",
-            path=Path("anomaly/mvtec/bottle_small") / f"{idx}",
-            group="small",
-            num_repeat=5,
-            extra_overrides={},
-        )
-        for idx in (1, 2, 3)
-    ] + [
+    DATASET_TEST_CASES: ClassVar[list[Benchmark.Dataset]] = [
+        # TODO(Emily): Need to replace small datasets with appropriate ones.
+        # Currently excluding small datasets from benchmark testing until replacements are ready.
+        # Small datasets to be replaced include: mvtec_bottle_small_1, mvtec_bottle_small_2, mvtec_bottle_small_3.
         Benchmark.Dataset(
             name="mvtec_wood_medium",
             path=Path("anomaly/mvtec/wood_medium"),
@@ -156,35 +143,27 @@ class TestPerfAnomalyDetection(PerfTestBase):
         fxt_model: Benchmark.Model,
         fxt_dataset: Benchmark.Dataset,
         fxt_benchmark: Benchmark,
-        fxt_resume_from: Path | None,
     ):
         self._test_perf(
             model=fxt_model,
             dataset=fxt_dataset,
             benchmark=fxt_benchmark,
             criteria=self.BENCHMARK_CRITERIA,
-            resume_from=fxt_resume_from,
         )
 
 
 class TestPerfAnomalySegmentation(PerfTestBase):
     """Benchmark anomaly segmentation."""
 
-    MODEL_TEST_CASES = [  # noqa: RUF012
+    MODEL_TEST_CASES: ClassVar[list[Benchmark.Model]] = [
         Benchmark.Model(task="anomaly_segmentation", name="padim", category="speed"),
         Benchmark.Model(task="anomaly_segmentation", name="stfpm", category="accuracy"),
     ]
 
-    DATASET_TEST_CASES = [
-        Benchmark.Dataset(
-            name=f"mvtec_bottle_small_{idx}",
-            path=Path("anomaly/mvtec/bottle_small") / f"{idx}",
-            group="small",
-            num_repeat=5,
-            extra_overrides={},
-        )
-        for idx in (1, 2, 3)
-    ] + [
+    DATASET_TEST_CASES: ClassVar[list[Benchmark.Dataset]] = [
+        # TODO(Emily): Need to replace small datasets with appropriate ones.
+        # Currently excluding small datasets from benchmark testing until replacements are ready.
+        # Small datasets to be replaced include: mvtec_bottle_small_1, mvtec_bottle_small_2, mvtec_bottle_small_3.
         Benchmark.Dataset(
             name="mvtec_wood_medium",
             path=Path("anomaly/mvtec/wood_medium"),
@@ -233,12 +212,10 @@ class TestPerfAnomalySegmentation(PerfTestBase):
         fxt_model: Benchmark.Model,
         fxt_dataset: Benchmark.Dataset,
         fxt_benchmark: Benchmark,
-        fxt_resume_from: Path | None,
     ):
         self._test_perf(
             model=fxt_model,
             dataset=fxt_dataset,
             benchmark=fxt_benchmark,
             criteria=self.BENCHMARK_CRITERIA,
-            resume_from=fxt_resume_from,
         )
