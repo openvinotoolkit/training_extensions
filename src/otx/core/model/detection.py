@@ -9,7 +9,7 @@ import logging as log
 import types
 from abc import abstractmethod
 from contextlib import contextmanager
-from typing import TYPE_CHECKING, Any, Callable, Iterator, Literal
+from typing import TYPE_CHECKING, Any, Callable, Iterator, Literal, Sequence
 
 import torch
 from model_api.tilers import DetectionTiler
@@ -376,6 +376,7 @@ class ExplainableOTXDetModel(OTXDetectionModel):
         metric: MetricCallable = MeanAveragePrecisionFMeasureCallable,
         torch_compile: bool = False,
         tile_config: TileConfig = TileConfig(enable_tiler=False),
+        input_shape: Sequence[int] | None = None,
     ) -> None:
         from otx.algo.explain.explain_algo import feature_vector_fn
 
@@ -386,6 +387,7 @@ class ExplainableOTXDetModel(OTXDetectionModel):
             metric=metric,
             torch_compile=torch_compile,
             tile_config=tile_config,
+            input_shape=input_shape,
         )
         self.model.feature_vector_fn = feature_vector_fn
         self.model.explain_fn = self.get_explain_fn()

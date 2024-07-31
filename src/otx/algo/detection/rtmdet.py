@@ -5,6 +5,8 @@
 
 from __future__ import annotations
 
+from typing import Sequence
+
 from otx.algo.common.backbones import CSPNeXt
 from otx.algo.common.losses import GIoULoss, QualityFocalLoss
 from otx.algo.common.losses.cross_entropy_loss import CrossEntropyLoss
@@ -24,15 +26,27 @@ from otx.core.types.export import TaskLevelExportParameters
 class RTMDet(ExplainableOTXDetModel):
     """OTX Detection model class for RTMDet."""
 
+    def __init__(
+        self,
+        input_shape: Sequence[int] = (1, 3, 640, 640),
+        tile_image_size: Sequence[int] = (1, 3, 640, 640),
+        **kwargs
+    ) -> None:
+        super().__init__(
+            input_shape=input_shape,
+            **kwargs
+        )
+        self.tile_image_size = tile_image_size
+
     @property
     def _exporter(self) -> OTXModelExporter:
         """Creates OTXModelExporter object that can export the model."""
-        if self.image_size is None:
-            raise ValueError(self.image_size)
+        if self.input_shape is None:
+            raise ValueError(self.input_shape)
 
         return OTXNativeModelExporter(
             task_level_export_parameters=self._export_parameters,
-            input_size=self.image_size,
+            input_size=self.input_shape,
             mean=self.mean,
             std=self.std,
             resize_mode="fit_to_window_letterbox",
@@ -62,8 +76,6 @@ class RTMDetTiny(RTMDet):
     """RTMDet Tiny Model."""
 
     load_from = "https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/object_detection/v2/rtmdet_tiny.pth"
-    image_size = (1, 3, 640, 640)
-    tile_image_size = (1, 3, 640, 640)
     mean = (103.53, 116.28, 123.675)
     std = (57.375, 57.12, 58.395)
 

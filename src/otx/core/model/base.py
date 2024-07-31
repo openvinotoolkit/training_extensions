@@ -14,7 +14,7 @@ import logging
 import warnings
 from abc import abstractmethod
 from collections.abc import Sequence
-from typing import TYPE_CHECKING, Any, Callable, Generic, Literal, NamedTuple
+from typing import TYPE_CHECKING, Any, Callable, Generic, Literal, NamedTuple, Sequence
 
 import numpy as np
 import openvino
@@ -108,6 +108,7 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
         metric: MetricCallable = NullMetricCallable,
         torch_compile: bool = False,
         tile_config: TileConfig = TileConfig(enable_tiler=False),
+        input_shape: Sequence[int] | None = None,
     ) -> None:
         super().__init__()
 
@@ -118,6 +119,7 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
         self.optimizer_callable = ensure_callable(optimizer)
         self.scheduler_callable = ensure_callable(scheduler)
         self.metric_callable = ensure_callable(metric)
+        self.input_shape = input_shape
 
         self.torch_compile = torch_compile
         self._explain_mode = False

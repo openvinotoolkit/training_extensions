@@ -44,6 +44,7 @@ class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity]):
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = SegmCallable,  # type: ignore[assignment]
         torch_compile: bool = False,
+        input_shape: Sequence[int] | None = None,
     ):
         """Base semantic segmentation model.
 
@@ -57,6 +58,7 @@ class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity]):
                 Defaults to SegmCallable.
             torch_compile (bool, optional): Whether to compile the model using TorchScript.
                 Defaults to False.
+            input_shape (Sequence[int] | None, optional): The input shape of the model. Defaults to None.
         """
         super().__init__(
             label_info=label_info,
@@ -64,6 +66,7 @@ class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity]):
             scheduler=scheduler,
             metric=metric,
             torch_compile=torch_compile,
+            input_shape=input_shape,
         )
 
     @property

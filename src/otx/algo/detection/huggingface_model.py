@@ -67,6 +67,7 @@ class HuggingFaceModelForDetection(OTXDetectionModel):
     ) -> None:
         self.model_name = model_name_or_path
         self.load_from = None
+        self.image_processor = AutoImageProcessor.from_pretrained(self.model_name)
 
         super().__init__(
             label_info=label_info,
@@ -74,8 +75,8 @@ class HuggingFaceModelForDetection(OTXDetectionModel):
             scheduler=scheduler,
             metric=metric,
             torch_compile=torch_compile,
+            input_shape=(1, 3, *self.image_processor.size.values()),
         )
-        self.image_processor = AutoImageProcessor.from_pretrained(self.model_name)
 
     def _build_model(self, num_classes: int) -> nn.Module:
         return AutoModelForObjectDetection.from_pretrained(
@@ -148,13 +149,12 @@ class HuggingFaceModelForDetection(OTXDetectionModel):
     @property
     def _exporter(self) -> OTXModelExporter:
         """Creates OTXModelExporter object that can export the model."""
-        image_size = (1, 3, *self.image_processor.size.values())
         image_mean = (0.0, 0.0, 0.0)
         image_std = (255.0, 255.0, 255.0)
 
         return OTXNativeModelExporter(
             task_level_export_parameters=self._export_parameters,
-            input_size=image_size,
+            input_size=self.input_shape,
             mean=image_mean,  # type: ignore[arg-type]
             std=image_std,  # type: ignore[arg-type]
             resize_mode="standard",

@@ -5,7 +5,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Sequence
 
 from otx.algo.common.backbones import ResNeXt, build_model_including_pytorchcv
 from otx.algo.common.losses import CrossEntropyLoss, CrossSigmoidFocalLoss, GIoULoss
@@ -27,6 +27,18 @@ if TYPE_CHECKING:
 
 class ATSS(ExplainableOTXDetModel):
     """OTX Detection model class for ATSS."""
+
+    def __init__(
+        self,
+        input_shape: Sequence[int] = (1, 3, 800, 992),
+        tile_image_size: Sequence[int] = (1, 3, 800, 992),
+        **kwargs
+    ) -> None:
+        super().__init__(
+            input_shape=input_shape,
+            **kwargs
+        )
+        self.tile_image_size = tile_image_size
 
     @property
     def _exporter(self) -> OTXModelExporter:
@@ -68,8 +80,6 @@ class MobileNetV2ATSS(ATSS):
         "https://storage.openvinotoolkit.org/repositories/"
         "openvino_training_extensions/models/object_detection/v2/mobilenet_v2-atss.pth"
     )
-    image_size = (1, 3, 800, 992)
-    tile_image_size = (1, 3, 800, 992)
     mean = (0.0, 0.0, 0.0)
     std = (255.0, 255.0, 255.0)
 
@@ -140,8 +150,6 @@ class ResNeXt101ATSS(ATSS):
         "https://storage.openvinotoolkit.org/repositories/"
         "openvino_training_extensions/models/object_detection/v2/resnext101_atss_070623.pth"
     )
-    image_size = (1, 3, 800, 992)
-    tile_image_size = (1, 3, 800, 992)
     mean = (0.0, 0.0, 0.0)
     std = (255.0, 255.0, 255.0)
 

@@ -5,7 +5,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Sequence
 
 from otx.algo.common.losses import CrossEntropyLoss, L1Loss
 from otx.algo.detection.backbones import CSPDarknet
@@ -29,6 +29,18 @@ if TYPE_CHECKING:
 class YOLOX(ExplainableOTXDetModel):
     """OTX Detection model class for YOLOX."""
 
+    def __init__(
+        self,
+        input_shape: Sequence[int] = (1, 3, 640, 640),
+        tile_image_size: Sequence[int] = (1, 3, 640, 640),
+        **kwargs
+    ) -> None:
+        super().__init__(
+            input_shape=input_shape,
+            **kwargs
+        )
+        self.tile_image_size = tile_image_size
+
     def _customize_inputs(
         self,
         entity: DetBatchDataEntity,
@@ -40,14 +52,14 @@ class YOLOX(ExplainableOTXDetModel):
     @property
     def _exporter(self) -> OTXModelExporter:
         """Creates OTXModelExporter object that can export the model."""
-        if self.image_size is None:
-            raise ValueError(self.image_size)
+        if self.input_shape is None:
+            raise ValueError(self.input_shape)
 
         swap_rgb = not isinstance(self, YOLOXTINY)  # only YOLOX-TINY uses RGB
 
         return OTXNativeModelExporter(
             task_level_export_parameters=self._export_parameters,
-            input_size=self.image_size,
+            input_size=self.input_shape,
             mean=self.mean,
             std=self.std,
             resize_mode="fit_to_window_letterbox",
@@ -112,10 +124,20 @@ class YOLOXTINY(YOLOX):
         "https://storage.openvinotoolkit.org/repositories/"
         "openvino_training_extensions/models/object_detection/v2/yolox_tiny_8x8.pth"
     )
-    image_size = (1, 3, 416, 416)
-    tile_image_size = (1, 3, 416, 416)
     mean = (123.675, 116.28, 103.53)
     std = (58.395, 57.12, 57.375)
+
+    def __init__(
+        self,
+        input_shape: Sequence[int] = (1, 3, 416, 416),
+        tile_image_size: Sequence[int] = (1, 3, 416, 416),
+        **kwargs
+    ) -> None:
+        super().__init__(
+            input_shape=input_shape,
+            **kwargs
+        )
+        self.tile_image_size = tile_image_size
 
     def _build_model(self, num_classes: int) -> SingleStageDetector:
         train_cfg: dict[str, Any] = {"assigner": SimOTAAssigner(center_radius=2.5)}
@@ -151,8 +173,6 @@ class YOLOXS(YOLOX):
         "https://download.openmmlab.com/mmdetection/v2.0/yolox/yolox_s_8x8_300e_coco/"
         "yolox_s_8x8_300e_coco_20211121_095711-4592a793.pth"
     )
-    image_size = (1, 3, 640, 640)
-    tile_image_size = (1, 3, 640, 640)
     mean = (0.0, 0.0, 0.0)
     std = (1.0, 1.0, 1.0)
 
@@ -190,8 +210,6 @@ class YOLOXL(YOLOX):
         "https://download.openmmlab.com/mmdetection/v2.0/yolox/"
         "yolox_l_8x8_300e_coco/yolox_l_8x8_300e_coco_20211126_140236-d3bd2b23.pth"
     )
-    image_size = (1, 3, 640, 640)
-    tile_image_size = (1, 3, 640, 640)
     mean = (0.0, 0.0, 0.0)
     std = (1.0, 1.0, 1.0)
 
@@ -224,8 +242,6 @@ class YOLOXX(YOLOX):
         "https://download.openmmlab.com/mmdetection/v2.0/yolox/"
         "yolox_x_8x8_300e_coco/yolox_x_8x8_300e_coco_20211126_140254-1ef88d67.pth"
     )
-    image_size = (1, 3, 640, 640)
-    tile_image_size = (1, 3, 640, 640)
     mean = (0.0, 0.0, 0.0)
     std = (1.0, 1.0, 1.0)
 

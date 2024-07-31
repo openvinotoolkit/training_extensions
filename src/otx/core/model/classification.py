@@ -5,7 +5,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Sequence
 
 import numpy as np
 import torch
@@ -55,6 +55,7 @@ class OTXMulticlassClsModel(OTXModel[MulticlassClsBatchDataEntity, MulticlassCls
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MultiClassClsMetricCallable,
         torch_compile: bool = False,
+        input_shape: Sequence[int] | None = None,
     ) -> None:
         super().__init__(
             label_info=label_info,
@@ -62,6 +63,7 @@ class OTXMulticlassClsModel(OTXModel[MulticlassClsBatchDataEntity, MulticlassCls
             scheduler=scheduler,
             metric=metric,
             torch_compile=torch_compile,
+            input_shape=input_shape,
         )
 
     @property
@@ -103,17 +105,18 @@ class MMPretrainMulticlassClsModel(OTXMulticlassClsModel):
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MultiClassClsMetricCallable,
         torch_compile: bool = False,
+        input_shape: Sequence[int] | None = None,
     ) -> None:
         config = inplace_num_classes(cfg=config, num_classes=self._dispatch_label_info(label_info).num_classes)
         self.config = config
         self.load_from = config.pop("load_from", None)
-        self.image_size = (1, 3, 224, 224)
         super().__init__(
             label_info=label_info,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
             torch_compile=torch_compile,
+            input_shape=input_shape,
         )
 
     def _create_model(self) -> nn.Module:
@@ -217,7 +220,7 @@ class MMPretrainMulticlassClsModel(OTXMulticlassClsModel):
         mean, std = get_mean_std_from_data_processing(self.config)
         return OTXNativeModelExporter(
             task_level_export_parameters=self._export_parameters,
-            input_size=self.image_size,
+            input_size=self.input_shape,
             mean=mean,
             std=std,
             resize_mode="standard",
@@ -247,6 +250,7 @@ class OTXMultilabelClsModel(OTXModel[MultilabelClsBatchDataEntity, MultilabelCls
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MultiLabelClsMetricCallable,
         torch_compile: bool = False,
+        input_shape: Sequence[int] | None = None,
     ) -> None:
         super().__init__(
             label_info=label_info,
@@ -254,6 +258,7 @@ class OTXMultilabelClsModel(OTXModel[MultilabelClsBatchDataEntity, MultilabelCls
             scheduler=scheduler,
             metric=metric,
             torch_compile=torch_compile,
+            input_shape=input_shape,
         )
 
     @property
@@ -298,17 +303,18 @@ class MMPretrainMultilabelClsModel(OTXMultilabelClsModel):
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = lambda num_labels: Accuracy(task="multilabel", num_labels=num_labels),
         torch_compile: bool = False,
+        input_shape: Sequence[int] | None = None,
     ) -> None:
         config = inplace_num_classes(cfg=config, num_classes=self._dispatch_label_info(label_info).num_classes)
         self.config = config
         self.load_from = config.pop("load_from", None)
-        self.image_size = (1, 3, 224, 224)
         super().__init__(
             label_info=label_info,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
             torch_compile=torch_compile,
+            input_shape=input_shape,
         )
 
     def _create_model(self) -> nn.Module:
@@ -414,7 +420,7 @@ class MMPretrainMultilabelClsModel(OTXMultilabelClsModel):
         mean, std = get_mean_std_from_data_processing(self.config)
         return OTXNativeModelExporter(
             task_level_export_parameters=self._export_parameters,
-            input_size=self.image_size,
+            input_size=self.input_shape,
             mean=mean,
             std=std,
             resize_mode="standard",
@@ -436,6 +442,7 @@ class OTXHlabelClsModel(OTXModel[HlabelClsBatchDataEntity, HlabelClsBatchPredEnt
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = HLabelClsMetricCallble,
         torch_compile: bool = False,
+        input_shape: Sequence[int] | None = None,
     ) -> None:
         super().__init__(
             label_info=label_info,
@@ -443,6 +450,7 @@ class OTXHlabelClsModel(OTXModel[HlabelClsBatchDataEntity, HlabelClsBatchPredEnt
             scheduler=scheduler,
             metric=metric,
             torch_compile=torch_compile,
+            input_shape=input_shape,
         )
 
     @property
@@ -498,6 +506,7 @@ class MMPretrainHlabelClsModel(OTXHlabelClsModel):
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = HLabelClsMetricCallble,
         torch_compile: bool = False,
+        input_shape: Sequence[int] | None = None,
     ) -> None:
         config = inplace_num_classes(cfg=config, num_classes=self._dispatch_label_info(label_info).num_classes)
 
@@ -509,13 +518,13 @@ class MMPretrainHlabelClsModel(OTXHlabelClsModel):
 
         self.config = config
         self.load_from = config.pop("load_from", None)
-        self.image_size = (1, 3, 224, 224)
         super().__init__(
             label_info=label_info,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
             torch_compile=torch_compile,
+            input_shape=input_shape,
         )
 
     def _create_model(self) -> nn.Module:
@@ -621,7 +630,7 @@ class MMPretrainHlabelClsModel(OTXHlabelClsModel):
         mean, std = get_mean_std_from_data_processing(self.config)
         return OTXNativeModelExporter(
             task_level_export_parameters=self._export_parameters,
-            input_size=self.image_size,
+            input_size=self.input_shape,
             mean=mean,
             std=std,
             resize_mode="standard",

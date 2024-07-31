@@ -10,7 +10,7 @@ Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/d
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Sequence
 
 import numpy as np
 from datumaro.components.annotation import Bbox
@@ -42,10 +42,20 @@ class SSD(ExplainableOTXDetModel):
         "https://storage.openvinotoolkit.org/repositories/openvino_training_extensions"
         "/models/object_detection/v2/mobilenet_v2-2s_ssd-992x736.pth"
     )
-    image_size = (1, 3, 864, 864)
-    tile_image_size = (1, 3, 864, 864)
     mean = (0.0, 0.0, 0.0)
     std = (255.0, 255.0, 255.0)
+
+    def __init__(
+        self,
+        input_shape: Sequence[int] = (1, 3, 864, 864),
+        tile_image_size: Sequence[int] = (1, 3, 864, 864),
+        **kwargs
+    ) -> None:
+        super().__init__(
+            input_shape=input_shape,
+            **kwargs
+        )
+        self.tile_image_size = tile_image_size
 
     def _build_model(self, num_classes: int) -> SingleStageDetector:
         train_cfg = {

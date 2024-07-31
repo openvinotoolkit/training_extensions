@@ -5,7 +5,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Sequence
 
 import torch
 from torch import Tensor, nn
@@ -61,6 +61,7 @@ class HuggingFaceModelForMulticlassCls(OTXMulticlassClsModel):
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MultiClassClsMetricCallable,
         torch_compile: bool = False,
+        input_shape: Sequence[int] = (1, 3, 224, 224),
     ) -> None:
         self.model_name = model_name_or_path
 
@@ -70,6 +71,7 @@ class HuggingFaceModelForMulticlassCls(OTXMulticlassClsModel):
             scheduler=scheduler,
             metric=metric,
             torch_compile=torch_compile,
+            input_shape=input_shape,
         )
 
     def _create_model(self) -> nn.Module:
@@ -110,7 +112,7 @@ class HuggingFaceModelForMulticlassCls(OTXMulticlassClsModel):
         """Creates OTXModelExporter object that can export the model."""
         return OTXNativeModelExporter(
             task_level_export_parameters=self._export_parameters,
-            input_size=(1, 3, 224, 224),
+            input_size=self.input_shape,
             mean=(123.675, 116.28, 103.53),
             std=(58.395, 57.12, 57.375),
             resize_mode="standard",
