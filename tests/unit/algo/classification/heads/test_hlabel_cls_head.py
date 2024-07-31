@@ -8,7 +8,7 @@ from typing import Any
 
 import pytest
 import torch
-from otx.algo.classification.heads import HierarchicalLinearClsHead, HierarchicalNonLinearClsHead
+from otx.algo.classification.heads import HierarchicalLinearClsHead, HierarchicalNonLinearClsHead, HierarchicalCBAMClsHead
 from otx.algo.classification.losses import AsymmetricAngularLossWithIgnore
 from otx.core.data.entity.base import ImageInfo
 from torch import nn
@@ -65,7 +65,11 @@ class TestHierarchicalLinearClsHead:
     def fxt_hlabel_non_linear_head(self, fxt_head_attrs) -> nn.Module:
         return HierarchicalNonLinearClsHead(**fxt_head_attrs)
 
-    @pytest.fixture(params=["fxt_hlabel_linear_head", "fxt_hlabel_non_linear_head"])
+    @pytest.fixture()
+    def fxt_hlabel_cbam_head(self, fxt_head_attrs) -> nn.Module:
+        return HierarchicalCBAMClsHead(**fxt_head_attrs)
+
+    @pytest.fixture(params=["fxt_hlabel_linear_head", "fxt_hlabel_non_linear_head", "fxt_hlabel_cbam_head"])
     def fxt_hlabel_head(self, request) -> nn.Module:
         return request.getfixturevalue(request.param)
 

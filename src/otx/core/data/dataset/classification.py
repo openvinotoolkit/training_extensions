@@ -145,7 +145,8 @@ class OTXHlabelClsDataset(OTXDataset[HlabelClsDataEntity]):
 
         def _find_ancestor_recursively(label_name: str, ancestors: list) -> list[str]:
             _, dm_label_category = self.dm_categories.find(label_name)
-            parent_name = dm_label_category.parent
+            # parent_name = dm_label_category.parent
+            parent_name = dm_label_category.parent if dm_label_category else ""
 
             if parent_name != "":
                 ancestors.append(parent_name)

@@ -353,3 +353,138 @@ class HierarchicalNonLinearClsHead(HierarchicalClsHead):
         """The forward process."""
         pre_logits = self.pre_logits(feats)
         return self.classifier(pre_logits)
+
+class ChannelAttention(nn.Module):
+    def __init__(self, in_channels, reduction=16):
+        super(ChannelAttention, self).__init__()
+        self.fc1 = nn.Conv2d(in_channels, in_channels // reduction, kernel_size=1, bias=False)
+        self.fc2 = nn.Conv2d(in_channels // reduction, in_channels, kernel_size=1, bias=False)
+
+    def forward(self, x):
+        avg_out = self.fc2(torch.relu(self.fc1(torch.mean(x, dim=2, keepdim=True).mean(dim=3, keepdim=True))))
+        max_out = self.fc2(torch.relu(self.fc1(torch.max(x, dim=2, keepdim=True)[0].max(dim=3, keepdim=True)[0])))
+        return torch.sigmoid(avg_out + max_out)
+
+class SpatialAttention(nn.Module):
+    def __init__(self, kernel_size=7):
+        super(SpatialAttention, self).__init__()
+        self.conv = nn.Conv2d(2, 1, kernel_size, padding=kernel_size//2, bias=False)
+
+    def forward(self, x):
+        avg_out = torch.mean(x, dim=1, keepdim=True)
+        max_out = torch.max(x, dim=1, keepdim=True)[0]
+        x = torch.cat([avg_out, max_out], dim=1)
+        return torch.sigmoid(self.conv(x))
+
+class CBAM(nn.Module):
+    def __init__(self, in_channels, reduction=16, kernel_size=7):
+        super(CBAM, self).__init__()
+        self.channel_attention = ChannelAttention(in_channels, reduction)
+        self.spatial_attention = SpatialAttention(kernel_size)
+
+    def forward(self, x):
+        x = x * self.channel_attention(x)
+        x = x * self.spatial_attention(x)
+        return x
+
+class HierarchicalCBAMClsHead(HierarchicalClsHead):
+    """Custom classification CBAM head for hierarchical classification task.
+
+    Args:
+        num_multiclass_heads (int): Number of multi-class heads.
+        num_multilabel_classes (int): Number of multi-label classes.
+        head_idx_to_logits_range: the logit range of each heads
+        num_single_label_classes: the number of single label classes
+        empty_multiclass_head_indices: the index of head that doesn't include any label
+            due to the label removing
+        in_channels (int): Number of channels in the input feature map.
+        num_classes (int): Number of total classes.
+        multiclass_loss (dict | None): Config of multi-class loss.
+        multilabel_loss (dict | None): Config of multi-label loss.
+        thr (float | None): Predictions with scores under the thresholds are considered
+                            as negative. Defaults to 0.5.
+        hid_cahnnels (int): Number of channels in the hidden feature map at the classifier.
+        acivation_Cfg (dict | None): Config of activation layer at the classifier.
+        dropout (bool): Flag for the enabling the dropout at the classifier.
+
+    """
+
+    def __init__(
+        self,
+        num_multiclass_heads: int,
+        num_multilabel_classes: int,
+        head_idx_to_logits_range: dict[str, tuple[int, int]],
+        num_single_label_classes: int,
+        empty_multiclass_head_indices: list[int],
+        in_channels: int,
+        num_classes: int,
+        multiclass_loss: nn.Module,
+        multilabel_loss: nn.Module | None = None,
+        thr: float = 0.5,
+        hid_channels: int = 1280,
+        activation_callable: Callable[[], nn.Module] = nn.ReLU,
+        dropout: bool = False,
+        init_cfg: dict | None = None,
+        **kwargs,
+    ):
+        super().__init__(
+            num_multiclass_heads=num_multiclass_heads,
+            num_multilabel_classes=num_multilabel_classes,
+            head_idx_to_logits_range=head_idx_to_logits_range,
+            num_single_label_classes=num_single_label_classes,
+            empty_multiclass_head_indices=empty_multiclass_head_indices,
+            in_channels=in_channels,
+            num_classes=num_classes,
+            multiclass_loss=multiclass_loss,
+            multilabel_loss=multilabel_loss,
+            thr=thr,
+            init_cfg=init_cfg,
+            **kwargs,
+        )
+        self.hid_channels = hid_channels
+        self.dropout = dropout
+
+        self.activation_callable = activation_callable
+
+        self.fc_superclass = nn.Linear(in_channels, num_multiclass_heads)
+        self.attention_fc = nn.Linear(num_multiclass_heads, in_channels)
+        self.cbam = CBAM(in_channels)
+
+        classifier_modules = [
+            nn.Linear(in_channels, hid_channels),
+            nn.BatchNorm1d(hid_channels),
+            self.activation_callable if isinstance(self.activation_callable, nn.Module) else self.activation_callable(),
+        ]
+
+        if self.dropout:
+            classifier_modules.append(nn.Dropout(p=0.2))
+
+        classifier_modules.append(nn.Linear(hid_channels, num_classes))
+
+        self.fc_subclass = nn.Sequential(*classifier_modules)
+
+        self._init_layers()
+
+    def _init_layers(self) -> None:
+        """Iniitialize weights of classification head."""
+        normal_init(self.fc_superclass, mean=0, std=0.01, bias=0)
+        for module in self.fc_subclass:
+            if isinstance(module, nn.Linear):
+                normal_init(module, mean=0, std=0.01, bias=0)
+            elif isinstance(module, nn.BatchNorm1d):
+                constant_init(module, 1)
+
+    def forward(self, feats: tuple[torch.Tensor] | torch.Tensor) -> torch.Tensor:
+        """The forward process."""
+        pre_logits = self.pre_logits(feats)
+        out_superclass = self.fc_superclass(pre_logits)
+
+        attention_weights = torch.sigmoid(self.attention_fc(out_superclass))
+        attended_features = pre_logits * attention_weights
+
+        attended_features = attended_features.view(pre_logits.size(0), self.in_channels, 1, 1)
+        attended_features = self.cbam(attended_features)
+        attended_features = attended_features.view(pre_logits.size(0), self.in_channels)
+        out_subclass = self.fc_subclass(attended_features)
+
+        return out_subclass

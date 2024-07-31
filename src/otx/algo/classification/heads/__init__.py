@@ -3,7 +3,7 @@
 #
 """Head modules for OTX custom model."""
 
-from .hlabel_cls_head import HierarchicalLinearClsHead, HierarchicalNonLinearClsHead
+from .hlabel_cls_head import HierarchicalLinearClsHead, HierarchicalNonLinearClsHead, HierarchicalCBAMClsHead
 from .linear_head import LinearClsHead
 from .multilabel_cls_head import MultiLabelLinearClsHead, MultiLabelNonLinearClsHead
 from .semi_sl_head import OTXSemiSLLinearClsHead, OTXSemiSLVisionTransformerClsHead
@@ -15,6 +15,7 @@ __all__ = [
     "MultiLabelNonLinearClsHead",
     "HierarchicalLinearClsHead",
     "HierarchicalNonLinearClsHead",
+    "HierarchicalCBAMClsHead",
     "VisionTransformerClsHead",
     "OTXSemiSLLinearClsHead",
     "OTXSemiSLVisionTransformerClsHead",
