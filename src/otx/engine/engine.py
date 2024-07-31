@@ -803,6 +803,22 @@ class Engine:
 
         Returns:
             dict[str, str]: a dict with the benchmark results.
+
+        Example:
+            >>> engine.benchmark(
+            ...     datamodule=OTXDataModule(),
+            ...     batch_size=1,
+            ...     n_iters=20,
+            ...     extended_stats=True,
+            ... )
+
+        CLI Usage:
+            To run benchmark using the configuration, launch
+                ```shell
+                >>> otx benchmark \
+                ...     --config <CONFIG_PATH> --data_root <DATASET_PATH, str> \
+                ...     --checkpoint <CKPT_PATH, str>
+                ```
         """
         checkpoint = checkpoint if checkpoint is not None else self.checkpoint
 
