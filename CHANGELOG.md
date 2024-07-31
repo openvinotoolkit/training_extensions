@@ -27,8 +27,6 @@ All notable changes to this project will be documented in this file.
   (<https://github.com/openvinotoolkit/training_extensions/pull/3759>)
 - Enable to use polygon and bitmap mask as prompt inputs for zero-shot learning
   (<https://github.com/openvinotoolkit/training_extensions/pull/3769>)
-- Add num_devices in Engine for multi-gpu training
-  (<https://github.com/openvinotoolkit/training_extensions/pull/3778>)
 
 ### Bug fixes
 
@@ -36,6 +34,8 @@ All notable changes to this project will be documented in this file.
   (https://github.com/openvinotoolkit/training_extensions/pull/3723)
 - Revert #3579 to fix issues with replacing coco_instance with a different format in some dataset
   (https://github.com/openvinotoolkit/training_extensions/pull/3753)
+- Add num_devices in Engine for multi-gpu training
+  (https://github.com/openvinotoolkit/training_extensions/pull/3778)
 
 ## \[v2.1.0\]
 
