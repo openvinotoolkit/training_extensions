@@ -82,7 +82,7 @@ class SegmentAnything(nn.Module):
         self.return_extra_metrics = return_extra_metrics
         self.stability_score_offset = stability_score_offset
 
-        self.image_encoder = SAMImageEncoder(backbone=backbone)
+        self.image_encoder = SAMImageEncoder(backbone=backbone, img_size=image_size)
         self.prompt_encoder = SAMPromptEncoder(
             embed_dim=embed_dim,
             image_embedding_size=(image_embedding_size, image_embedding_size),

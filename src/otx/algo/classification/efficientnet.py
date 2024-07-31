@@ -60,18 +60,18 @@ class EfficientNetForMulticlassCls(OTXMulticlassClsModel):
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MultiClassClsMetricCallable,
         torch_compile: bool = False,
-        input_size: Sequence[int] = (1, 3, 224, 224),
     ) -> None:
         self.version = version
 
         super().__init__(
             label_info=label_info,
+            input_size=(1, 3, 224, 224),
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
             torch_compile=torch_compile,
-            input_size=input_size,
         )
+        self.input_size = (1, 3, *self.model.backbone.in_size)
 
     def _create_model(self) -> nn.Module:
         # Get classification_layers for class-incr learning
@@ -89,7 +89,7 @@ class EfficientNetForMulticlassCls(OTXMulticlassClsModel):
 
     def _build_model(self, num_classes: int) -> nn.Module:
         return ImageClassifier(
-            backbone=OTXEfficientNet(version=self.version, pretrained=True, in_size=self.input_size[-2:]),
+            backbone=OTXEfficientNet(version=self.version, pretrained=True),
             neck=GlobalAveragePooling(dim=2),
             head=LinearClsHead(
                 num_classes=num_classes,

@@ -569,43 +569,43 @@ class OTXEfficientNet(EfficientNet):
         in_size : tuple of two ints. Spatial size of the expected input image.
     """
 
-    def __init__(self, version: EFFICIENTNET_VERSION, in_size: tuple[int, int] | None = None, **kwargs):
+    def __init__(self, version: EFFICIENTNET_VERSION, **kwargs):
         self.model_name = "efficientnet_" + version
 
         if version == "b0":
-            in_size = in_size or (224, 224)
+            in_size = (224, 224)
             depth_factor = 1.0
             width_factor = 1.0
         elif version == "b1":
-            in_size = in_size or (240, 240)
+            in_size = (240, 240)
             depth_factor = 1.1
             width_factor = 1.0
         elif version == "b2":
-            in_size = in_size or (260, 260)
+            in_size = (260, 260)
             depth_factor = 1.2
             width_factor = 1.1
         elif version == "b3":
-            in_size = in_size or (300, 300)
+            in_size = (300, 300)
             depth_factor = 1.4
             width_factor = 1.2
         elif version == "b4":
-            in_size = in_size or (380, 380)
+            in_size = (380, 380)
             depth_factor = 1.8
             width_factor = 1.4
         elif version == "b5":
-            in_size = in_size or (456, 456)
+            in_size = (456, 456)
             depth_factor = 2.2
             width_factor = 1.6
         elif version == "b6":
-            in_size = in_size or (528, 528)
+            in_size = (528, 528)
             depth_factor = 2.6
             width_factor = 1.8
         elif version == "b7":
-            in_size = in_size or (600, 600)
+            in_size = (600, 600)
             depth_factor = 3.1
             width_factor = 2.0
         elif version == "b8":
-            in_size = in_size or (672, 672)
+            in_size = (672, 672)
             depth_factor = 3.6
             width_factor = 2.2
         else:
