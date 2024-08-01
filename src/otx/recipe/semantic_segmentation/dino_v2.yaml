@@ -40,66 +40,26 @@ callback_monitor: val/Dice
 data: ../_base_/data/semantic_segmentation.yaml
 overrides:
   data:
+    input_size:
+      - 560
+      - 560
     train_subset:
       transforms:
         - class_path: otx.core.data.transform_libs.torchvision.RandomResizedCrop
           init_args:
-            scale:
-              - 560
-              - 560
-            crop_ratio_range:
-              - 0.2
-              - 1.0
-            aspect_ratio_range:
-              - 0.5
-              - 2.0
-            transform_mask: true
-        - class_path: otx.core.data.transform_libs.torchvision.PhotoMetricDistortion
-        - class_path: otx.core.data.transform_libs.torchvision.RandomFlip
-          init_args:
-            prob: 0.5
-            is_numpy_to_tvtensor: true
-        - class_path: torchvision.transforms.v2.ToDtype
-          init_args:
-            dtype: ${as_torch_dtype:torch.float32}
-        - class_path: torchvision.transforms.v2.Normalize
-          init_args:
-            mean: [123.675, 116.28, 103.53]
-            std: [58.395, 57.12, 57.375]
+            scale: $(input_size)
 
     val_subset:
       transforms:
         - class_path: otx.core.data.transform_libs.torchvision.Resize
           init_args:
-            scale:
-              - 560
-              - 560
-            transform_mask: true
-            is_numpy_to_tvtensor: true
-        - class_path: torchvision.transforms.v2.ToDtype
-          init_args:
-            dtype: ${as_torch_dtype:torch.float32}
-        - class_path: torchvision.transforms.v2.Normalize
-          init_args:
-            mean: [123.675, 116.28, 103.53]
-            std: [58.395, 57.12, 57.375]
+            scale: $(input_size)
 
     test_subset:
       transforms:
         - class_path: otx.core.data.transform_libs.torchvision.Resize
           init_args:
-            scale:
-              - 560
-              - 560
-            transform_mask: true
-            is_numpy_to_tvtensor: true
-        - class_path: torchvision.transforms.v2.ToDtype
-          init_args:
-            dtype: ${as_torch_dtype:torch.float32}
-        - class_path: torchvision.transforms.v2.Normalize
-          init_args:
-            mean: [123.675, 116.28, 103.53]
-            std: [58.395, 57.12, 57.375]
+            scale: $(input_size)
 
   callbacks:
     - class_path: otx.algo.callbacks.adaptive_early_stopping.EarlyStoppingWithWarmup

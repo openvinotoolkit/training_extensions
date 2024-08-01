@@ -30,8 +30,16 @@ callback_monitor: val/map_50
 
 data: ../_base_/data/detection.yaml
 overrides:
+  reset:
+    - data.train_subset.transforms
+    - data.val_subset.transforms
+    - data.test_subset.transforms
+
   gradient_clip_val: 35.0
   data:
+    input_size:
+      - 640
+      - 640
     train_subset:
       batch_size: 8
       transforms:
@@ -39,20 +47,14 @@ overrides:
           init_args:
             random_pop: false
             max_cached_images: 20
-            img_scale: # (H, W)
-              - 640
-              - 640
+            img_scale: $(input_size) # (H, W)
         - class_path: otx.core.data.transform_libs.torchvision.RandomAffine
           init_args:
-            border:
-              - -320
-              - -320
+            border: $(input_size) * -0.5
         - class_path: otx.core.data.transform_libs.torchvision.PhotoMetricDistortion
         - class_path: otx.core.data.transform_libs.torchvision.Resize
           init_args:
-            scale:
-              - 640
-              - 640
+            scale: $(input_size)
             keep_ratio: true
             transform_bbox: true
         - class_path: otx.core.data.transform_libs.torchvision.RandomFlip
@@ -74,13 +76,14 @@ overrides:
         class_path: otx.algo.samplers.balanced_sampler.BalancedSampler
 
     val_subset:
+      input_size:
+        - 416
+        - 416
       batch_size: 8
       transforms:
         - class_path: otx.core.data.transform_libs.torchvision.Resize
           init_args:
-            scale:
-              - 416
-              - 416
+            scale: $(input_size)
             keep_ratio: true
         - class_path: otx.core.data.transform_libs.torchvision.Pad
           init_args:
@@ -96,13 +99,14 @@ overrides:
             std: [58.395, 57.12, 57.375]
 
     test_subset:
+      input_size:
+        - 416
+        - 416
       batch_size: 8
       transforms:
         - class_path: otx.core.data.transform_libs.torchvision.Resize
           init_args:
-            scale:
-              - 416
-              - 416
+            scale: $(input_size)
             keep_ratio: true
         - class_path: otx.core.data.transform_libs.torchvision.Pad
           init_args:

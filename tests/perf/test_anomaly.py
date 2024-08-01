@@ -74,14 +74,12 @@ class TestPerfAnomalyClassification(PerfTestBase):
         fxt_model: Benchmark.Model,
         fxt_dataset: Benchmark.Dataset,
         fxt_benchmark: Benchmark,
-        fxt_resume_from: Path | None,
     ):
         self._test_perf(
             model=fxt_model,
             dataset=fxt_dataset,
             benchmark=fxt_benchmark,
             criteria=self.BENCHMARK_CRITERIA,
-            resume_from=fxt_resume_from,
         )
 
 
@@ -145,14 +143,12 @@ class TestPerfAnomalyDetection(PerfTestBase):
         fxt_model: Benchmark.Model,
         fxt_dataset: Benchmark.Dataset,
         fxt_benchmark: Benchmark,
-        fxt_resume_from: Path | None,
     ):
         self._test_perf(
             model=fxt_model,
             dataset=fxt_dataset,
             benchmark=fxt_benchmark,
             criteria=self.BENCHMARK_CRITERIA,
-            resume_from=fxt_resume_from,
         )
 
 
@@ -216,12 +212,10 @@ class TestPerfAnomalySegmentation(PerfTestBase):
         fxt_model: Benchmark.Model,
         fxt_dataset: Benchmark.Dataset,
         fxt_benchmark: Benchmark,
-        fxt_resume_from: Path | None,
     ):
         self._test_perf(
             model=fxt_model,
             dataset=fxt_dataset,
             benchmark=fxt_benchmark,
             criteria=self.BENCHMARK_CRITERIA,
-            resume_from=fxt_resume_from,
         )

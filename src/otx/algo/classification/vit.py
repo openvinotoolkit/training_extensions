@@ -220,6 +220,7 @@ class VisionTransformerForMulticlassCls(ForwardExplainMixInForViT, OTXMulticlass
         self,
         label_info: LabelInfoTypes,
         arch: VIT_ARCH_TYPE = "vit-tiny",
+        lora: bool = False,
         pretrained: bool = True,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
@@ -227,6 +228,7 @@ class VisionTransformerForMulticlassCls(ForwardExplainMixInForViT, OTXMulticlass
         torch_compile: bool = False,
     ) -> None:
         self.arch = arch
+        self.lora = lora
         self.pretrained = pretrained
         super().__init__(
             label_info=label_info,
@@ -279,7 +281,7 @@ class VisionTransformerForMulticlassCls(ForwardExplainMixInForViT, OTXMulticlass
             {"std": 0.2, "layer": "Linear", "type": "TruncNormal"},
             {"bias": 0.0, "val": 1.0, "layer": "LayerNorm", "type": "Constant"},
         ]
-        vit_backbone = VisionTransformer(arch=self.arch, img_size=224)
+        vit_backbone = VisionTransformer(arch=self.arch, img_size=224, lora=self.lora)
         return ImageClassifier(
             backbone=vit_backbone,
             neck=None,
@@ -455,6 +457,7 @@ class VisionTransformerForMultilabelCls(ForwardExplainMixInForViT, OTXMultilabel
         self,
         label_info: LabelInfoTypes,
         arch: VIT_ARCH_TYPE = "vit-tiny",
+        lora: bool = False,
         pretrained: bool = True,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
@@ -462,6 +465,7 @@ class VisionTransformerForMultilabelCls(ForwardExplainMixInForViT, OTXMultilabel
         torch_compile: bool = False,
     ) -> None:
         self.arch = arch
+        self.lora = lora
         self.pretrained = pretrained
 
         super().__init__(
@@ -514,7 +518,7 @@ class VisionTransformerForMultilabelCls(ForwardExplainMixInForViT, OTXMultilabel
             {"std": 0.2, "layer": "Linear", "type": "TruncNormal"},
             {"bias": 0.0, "val": 1.0, "layer": "LayerNorm", "type": "Constant"},
         ]
-        vit_backbone = VisionTransformer(arch=self.arch, img_size=224)
+        vit_backbone = VisionTransformer(arch=self.arch, img_size=224, lora=self.lora)
         return ImageClassifier(
             backbone=vit_backbone,
             neck=None,
@@ -600,6 +604,7 @@ class VisionTransformerForHLabelCls(ForwardExplainMixInForViT, OTXHlabelClsModel
         self,
         label_info: HLabelInfo,
         arch: VIT_ARCH_TYPE = "vit-tiny",
+        lora: bool = False,
         pretrained: bool = True,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
@@ -607,6 +612,7 @@ class VisionTransformerForHLabelCls(ForwardExplainMixInForViT, OTXHlabelClsModel
         torch_compile: bool = False,
     ) -> None:
         self.arch = arch
+        self.lora = lora
         self.pretrained = pretrained
 
         super().__init__(
@@ -664,7 +670,7 @@ class VisionTransformerForHLabelCls(ForwardExplainMixInForViT, OTXHlabelClsModel
             {"std": 0.2, "layer": "Linear", "type": "TruncNormal"},
             {"bias": 0.0, "val": 1.0, "layer": "LayerNorm", "type": "Constant"},
         ]
-        vit_backbone = VisionTransformer(arch=self.arch, img_size=224)
+        vit_backbone = VisionTransformer(arch=self.arch, img_size=224, lora=self.lora)
         return ImageClassifier(
             backbone=vit_backbone,
             neck=None,

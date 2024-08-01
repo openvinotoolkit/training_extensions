@@ -15,8 +15,25 @@ callback_monitor: val/map_50
 
 data: ../_base_/data/rotated_detection.yaml
 overrides:
+  reset:
+    - data.train_subset.transforms
+    - data.val_subset.transforms
+    - data.test_subset.transforms
+
   data:
     stack_images: false
+    train_subset:
+      to_tv_image: true
+      transforms:
+        - class_path: torchvision.transforms.v2.ToImage
+
+    val_subset:
+      to_tv_image: true
+      transforms:
+        - class_path: torchvision.transforms.v2.ToImage
+
     test_subset:
       to_tv_image: true
       batch_size: 24
+      transforms:
+        - class_path: torchvision.transforms.v2.ToImage

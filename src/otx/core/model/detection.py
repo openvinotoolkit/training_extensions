@@ -39,7 +39,7 @@ if TYPE_CHECKING:
     from omegaconf import DictConfig
     from torch import nn
 
-    from otx.algo.detection.ssd import SingleStageDetector
+    from otx.algo.detection.base_models import SingleStageDetector
 
 
 class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity]):
@@ -108,7 +108,8 @@ class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity]):
 
     def _create_model(self) -> nn.Module:
         detector = self._build_model(num_classes=self.label_info.num_classes)
-        detector.init_weights()
+        if hasattr(detector, "init_weights"):
+            detector.init_weights()
         self.classification_layers = self.get_classification_layers(prefix="model.")
         if self.load_from is not None:
             load_checkpoint(detector, self.load_from, map_location="cpu")
@@ -446,7 +447,7 @@ class ExplainableOTXDetModel(OTXDetectionModel):
         from otx.algo.explain.explain_algo import DetClassProbabilityMap
 
         # SSD-like heads also have background class
-        background_class = isinstance(self.model.bbox_head, SSDHead)
+        background_class = hasattr(self.model, "bbox_head") and isinstance(self.model.bbox_head, SSDHead)
         tiling_mode = self.tile_config.enable_tiler if hasattr(self, "tile_config") else False
         explainer = DetClassProbabilityMap(
             num_classes=self.num_classes + background_class,
@@ -496,7 +497,9 @@ class ExplainableOTXDetModel(OTXDetectionModel):
 
     def get_num_anchors(self) -> list[int]:
         """Gets the anchor configuration from model."""
-        if anchor_generator := getattr(self.model.bbox_head, "prior_generator", None):
+        if hasattr(self.model, "bbox_head") and (
+            anchor_generator := getattr(self.model.bbox_head, "prior_generator", None)
+        ):
             return (
                 anchor_generator.num_base_anchors
                 if hasattr(anchor_generator, "num_base_anchors")

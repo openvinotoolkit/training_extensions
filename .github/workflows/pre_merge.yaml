@@ -1,15 +1,16 @@
 name: PR Checks
 
 on:
-  push:
-    branches:
-      - develop
-      - releases/**
   pull_request:
     types:
       - opened
       - reopened
       - synchronize
+      - ready_for_review
+  merge_group:
+    branches:
+      - develop
+      - releases/**
   workflow_dispatch: # run on request (no need for PR)
 
 # Declare default permissions as read only.
@@ -26,7 +27,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
       - name: Set up Python
-        uses: actions/setup-python@82c7e631bb3cdc910f68e0081d67478d79c6982d # v5.1.0
+        uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f # v5.1.1
         with:
           python-version: "3.10"
       - name: Install tox
@@ -56,7 +57,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
       - name: Install Python
-        uses: actions/setup-python@82c7e631bb3cdc910f68e0081d67478d79c6982d # v5.1.0
+        uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f # v5.1.1
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install tox
@@ -86,6 +87,9 @@ jobs:
           chmod +x codecov
           ./codecov -t ${{ secrets.CODECOV_TOKEN }} --sha $COMMIT_ID -U $HTTP_PROXY -f .tox/coverage_unit-test-${{ matrix.tox-env }}.xml -F ${{ matrix.tox-env }}
   Integration-Test:
+    if: |
+      github.event.pull_request.draft == false &&
+      !(startsWith(github.event.pull_request.title, '[WIP]'))
     runs-on: [otx-gpu-a10g-1]
     needs: Unit-Test
     container:
@@ -112,7 +116,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
       - name: Install Python
-        uses: actions/setup-python@82c7e631bb3cdc910f68e0081d67478d79c6982d # v5.1.0
+        uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f # v5.1.1
         with:
           python-version: "3.10"
       - name: Install tox

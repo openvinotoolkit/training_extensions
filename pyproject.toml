@@ -38,6 +38,7 @@ dependencies = [
     "rich_argparse==1.5.2", # CLI help-formatter
     "einops==0.8.0",
     "decord==0.6.0",
+    "typeguard==4.3.*",
     # TODO(ashwinvaidya17): https://github.com/openvinotoolkit/anomalib/issues/2126
     "setuptools<70",
 ]
@@ -53,7 +54,7 @@ dev = [
     "pytest-mock",
     "pytest-csv",
     "pytest-cov",
-    "mlflow==2.14.0",     # For perf benchmark
+    "mlflow==2.15.0",     # For perf benchmark
     "py-cpuinfo==9.0.0",  # For perf benchmark
     "openpyxl",           # For perf benchmark
 ]
@@ -80,12 +81,12 @@ xpu = [
     "lightning==2.2",
     "pytorchcv",
     "timm==1.0.3",
-    "openvino==2024.0",
-    "openvino-dev==2024.0",
+    "openvino==2024.3",
+    "openvino-dev==2024.3",
     "openvino-model-api==0.2.1",
     "onnx==1.16.1",
     "onnxconverter-common==1.14.0",
-    "nncf==2.9.0",
+    "nncf==2.12.0",
     "anomalib[core]==1.1.0",
 ]
 
@@ -94,12 +95,12 @@ base = [
     "lightning==2.2",
     "pytorchcv",
     "timm==1.0.3",
-    "openvino==2024.0",
-    "openvino-dev==2024.0",
+    "openvino==2024.3",
+    "openvino-dev==2024.3",
     "openvino-model-api==0.2.1",
     "onnx==1.16.1",
     "onnxconverter-common==1.14.0",
-    "nncf==2.9.0",
+    "nncf==2.12.0",
     "anomalib[core]==1.1.0",
 ]
 
@@ -130,7 +131,7 @@ ci_benchmark = [
     "pandas<2.2",       # To avoid conflict with nncf==2.9.0
     "matplotlib==3.8.4",
     "nbconvert==7.16.3",
-    "ipython==8.23.0",
+    "ipython==8.26.0",
     "ipykernel==6.29.4",
     "openpyxl==3.1.4",
 ]
