@@ -1,4 +1,4 @@
-# Copyright (C) 2023 Intel Corporation
+# Copyright (C) 2023-2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 """Utility functions for config files."""
@@ -58,16 +58,6 @@ def convert_conf_to_mmconfig_dict(
         return MMConfig(cfg_dict=to_list(dict_cfg))
 
     raise ValueError(to)
-
-
-def mmconfig_dict_to_dict(obj: MMConfig | list[MMConfig]) -> list | dict:
-    """Convert MMEngine config object to Python dictionary."""
-    if isinstance(obj, list):
-        return [mmconfig_dict_to_dict(x) for x in obj]
-    if hasattr(obj, "to_dict"):
-        return {k: mmconfig_dict_to_dict(v) for k, v in obj.to_dict().items()}
-
-    return obj
 
 
 def inplace_num_classes(
