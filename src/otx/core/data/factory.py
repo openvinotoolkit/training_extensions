@@ -67,7 +67,7 @@ class OTXDatasetFactory:
     """Factory class for OTXDataset."""
 
     @classmethod
-    def create(  # ignore too many return statements
+    def create(  # noqa: PLR0911
         cls: type[OTXDatasetFactory],
         task: OTXTaskType,
         dm_subset: DmDataset,
@@ -149,5 +149,10 @@ class OTXDatasetFactory:
             use_bbox = getattr(vpm_config, "use_bbox", False)
             use_point = getattr(vpm_config, "use_point", False)
             return OTXZeroShotVisualPromptingDataset(use_bbox=use_bbox, use_point=use_point, **common_kwargs)
+
+        if task == OTXTaskType.KEYPOINT_DETECTION:
+            from .dataset.keypoint_detection import OTXKeypointDetectionDataset
+
+            return OTXKeypointDetectionDataset(**common_kwargs)
 
         raise NotImplementedError(task)

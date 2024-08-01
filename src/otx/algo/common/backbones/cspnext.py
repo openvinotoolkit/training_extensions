@@ -79,7 +79,7 @@ class CSPNeXt(BaseModule):
         arch: str = "P5",
         deepen_factor: float = 1.0,
         widen_factor: float = 1.0,
-        out_indices: tuple[int, int, int] = (2, 3, 4),
+        out_indices: tuple[int, ...] = (2, 3, 4),
         frozen_stages: int = -1,
         use_depthwise: bool = False,
         expand_ratio: float = 0.5,
