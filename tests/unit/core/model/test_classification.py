@@ -249,6 +249,11 @@ class TestMMPretrainMulticlassClsModel:
         output = otx_model.forward_for_tracing(torch.randn(1, 3, 32, 32))
         assert len(output) == 1
 
+    def test_dummy_input(self, otx_model: MMPretrainMulticlassClsModel):
+        batch_size = 2
+        batch = otx_model.get_dummy_input(batch_size)
+        assert batch.batch_size == batch_size
+
 
 class TestOTXMultilabelClsModel:
     @pytest.fixture()

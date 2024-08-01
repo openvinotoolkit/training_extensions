@@ -18,7 +18,7 @@ from torchvision import tv_tensors
 
 from otx.algo.utils.mmengine_utils import InstanceData, load_checkpoint
 from otx.core.config.data import TileConfig
-from otx.core.data.entity.base import OTXBatchLossEntity
+from otx.core.data.entity.base import ImageInfo, OTXBatchLossEntity
 from otx.core.data.entity.detection import DetBatchDataEntity, DetBatchPredEntity
 from otx.core.data.entity.tile import OTXTileBatchDataEntity
 from otx.core.data.entity.utils import stack_batch
@@ -44,6 +44,8 @@ if TYPE_CHECKING:
 
 class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity]):
     """Base class for the detection models used in OTX."""
+
+    image_size: tuple[int, int, int, int] | None = None
 
     def test_step(self, batch: DetBatchDataEntity, batch_idx: int) -> None:
         """Perform a single test step on a batch of data from the test set.
@@ -364,6 +366,24 @@ class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity]):
                 self._best_confidence_threshold = 0.5
         return self._best_confidence_threshold
 
+    def get_dummy_input(self, batch_size: int = 1) -> DetBatchDataEntity:
+        """Returns a dummy input for detection model."""
+        if self.image_size is None:
+            msg = f"Image size attribute is not set for {self.__class__}"
+            raise ValueError(msg)
+
+        images = [torch.rand(*self.image_size[1:]) for _ in range(batch_size)]
+        infos = []
+        for i, img in enumerate(images):
+            infos.append(
+                ImageInfo(
+                    img_idx=i,
+                    img_shape=img.shape,
+                    ori_shape=img.shape,
+                ),
+            )
+        return DetBatchDataEntity(batch_size, images, infos, bboxes=[], labels=[])
+
 
 class ExplainableOTXDetModel(OTXDetectionModel):
     """OTX detection model which can attach a XAI (Explainable AI) branch."""
@@ -530,7 +550,6 @@ class MMDetCompatibleModel(ExplainableOTXDetModel):
         config = inplace_num_classes(cfg=config, num_classes=self._dispatch_label_info(label_info).num_classes)
         self.config = config
         self.load_from = config.pop("load_from", None)
-        self.image_size: tuple[int, int, int, int] | None = None
         super().__init__(
             label_info=label_info,
             optimizer=optimizer,

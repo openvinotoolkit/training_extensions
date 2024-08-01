@@ -368,6 +368,34 @@ class TestEngine:
         assert engine.datamodule.train_subset.batch_size == 3
         assert engine.datamodule.test_subset.subset_name == "TESTING"
 
+    @pytest.mark.parametrize(
+        "checkpoint",
+        [
+            "path/to/checkpoint.ckpt",
+            "path/to/checkpoint.xml",
+        ],
+    )
+    def test_benchmark(self, fxt_engine, checkpoint, mocker: MockerFixture) -> None:
+        _ = mocker.patch("otx.engine.engine.AutoConfigurator.update_ov_subset_pipeline")
+        mock_get_ov_model = mocker.patch("otx.engine.engine.AutoConfigurator.get_ov_model")
+        mock_load_from_checkpoint = mocker.patch.object(fxt_engine.model.__class__, "load_from_checkpoint")
+
+        ext = Path(checkpoint).suffix
+
+        if ext == ".ckpt":
+            mock_model = mocker.create_autospec(OTXModel)
+
+            mock_load_from_checkpoint.return_value = mock_model
+        else:
+            mock_model = mocker.create_autospec(OVModel)
+
+            mock_get_ov_model.return_value = mock_model
+
+        # Correct label_info from the checkpoint
+        mock_model.label_info = fxt_engine.datamodule.label_info
+        result = fxt_engine.benchmark(checkpoint=checkpoint)
+        assert "latency" in result
+
     def test_num_devices(self, fxt_engine, tmp_path) -> None:
         assert fxt_engine.num_devices == 1
         assert fxt_engine._cache.args.get("devices") == 1

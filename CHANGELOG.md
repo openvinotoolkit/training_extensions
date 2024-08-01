@@ -18,6 +18,8 @@ All notable changes to this project will be documented in this file.
   (https://github.com/openvinotoolkit/training_extensions/pull/3749)
 - Enable torch.compile to work with classification
   (https://github.com/openvinotoolkit/training_extensions/pull/3758)
+- Add `otx benchmark` subcommand
+  (https://github.com/openvinotoolkit/training_extensions/pull/3762)
 
 ### Enhancements
 

@@ -21,7 +21,7 @@ from otx.algo.explain.explain_algo import InstSegExplainAlgo, feature_vector_fn
 from otx.algo.instance_segmentation.two_stage import TwoStageDetector
 from otx.algo.utils.mmengine_utils import InstanceData, load_checkpoint
 from otx.core.config.data import TileConfig
-from otx.core.data.entity.base import OTXBatchLossEntity
+from otx.core.data.entity.base import ImageInfo, OTXBatchLossEntity
 from otx.core.data.entity.instance_segmentation import InstanceSegBatchDataEntity, InstanceSegBatchPredEntity
 from otx.core.data.entity.tile import OTXTileBatchDataEntity
 from otx.core.data.entity.utils import stack_batch
@@ -49,6 +49,8 @@ if TYPE_CHECKING:
 
 class OTXInstanceSegModel(OTXModel[InstanceSegBatchDataEntity, InstanceSegBatchPredEntity]):
     """Base class for the Instance Segmentation models used in OTX."""
+
+    image_size: tuple[int, int, int, int] | None = None
 
     def __init__(
         self,
@@ -361,6 +363,24 @@ class OTXInstanceSegModel(OTXModel[InstanceSegBatchDataEntity, InstanceSegBatchP
             )
         return {"preds": pred_info, "target": target_info}
 
+    def get_dummy_input(self, batch_size: int = 1) -> InstanceSegBatchDataEntity:
+        """Returns a dummy input for instance segmentation model."""
+        if self.image_size is None:
+            msg = f"Image size attribute is not set for {self.__class__}"
+            raise ValueError(msg)
+
+        images = [torch.rand(*self.image_size[1:]) for _ in range(batch_size)]
+        infos = []
+        for i, img in enumerate(images):
+            infos.append(
+                ImageInfo(
+                    img_idx=i,
+                    img_shape=img.shape,
+                    ori_shape=img.shape,
+                ),
+            )
+        return InstanceSegBatchDataEntity(batch_size, images, infos, bboxes=[], masks=[], labels=[], polygons=[])
+
 
 class ExplainableOTXInstanceSegModel(OTXInstanceSegModel):
     """OTX Instance Segmentation model which can attach a XAI (Explainable AI) branch."""
@@ -522,7 +542,6 @@ class MMDetInstanceSegCompatibleModel(ExplainableOTXInstanceSegModel):
             config = inplace_num_classes(cfg=config, num_classes=self._dispatch_label_info(label_info).num_classes)
             self.config = config
             self.load_from = self.config.pop("load_from", None)
-        self.image_size: tuple[int, int, int, int] | None = None
         super().__init__(
             label_info=label_info,
             optimizer=optimizer,
