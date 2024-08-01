@@ -1,6 +1,5 @@
-# Copyright (C) 2023 Intel Corporation
+# Copyright (C) 2023-2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-#
 """Class definition for instance segmentation model entity used in OTX."""
 
 from __future__ import annotations
@@ -32,16 +31,13 @@ from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallab
 from otx.core.schedulers import LRSchedulerListCallable
 from otx.core.types.export import TaskLevelExportParameters
 from otx.core.types.label import LabelInfoTypes
-from otx.core.utils.config import inplace_num_classes
 from otx.core.utils.mask_util import encode_rle, polygon_to_rle
 from otx.core.utils.tile_merge import InstanceSegTileMerge
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
-    from mmdet.models.data_preprocessors import DetDataPreprocessor
     from model_api.adapters import OpenvinoAdapter
     from model_api.models.utils import InstanceSegmentationResult
-    from omegaconf import DictConfig
     from torch import nn
 
     from otx.core.metrics import MetricCallable
@@ -503,190 +499,6 @@ class ExplainableOTXInstanceSegModel(OTXInstanceSegModel):
         func_type = types.MethodType
         self.model.forward = func_type(self.original_model_forward, self.model)
         self.original_model_forward = None
-
-
-class MMDetInstanceSegCompatibleModel(ExplainableOTXInstanceSegModel):
-    """Instance Segmentation model compatible for MMDet."""
-
-    def __init__(
-        self,
-        label_info: LabelInfoTypes,
-        config: DictConfig | None = None,
-        optimizer: OptimizerCallable = DefaultOptimizerCallable,
-        scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
-        metric: MetricCallable = MaskRLEMeanAPFMeasureCallable,
-        torch_compile: bool = False,
-        tile_config: TileConfig = TileConfig(enable_tiler=False),
-    ) -> None:
-        if config is not None:
-            config = inplace_num_classes(cfg=config, num_classes=self._dispatch_label_info(label_info).num_classes)
-            self.config = config
-            self.load_from = self.config.pop("load_from", None)
-        self.image_size: tuple[int, int, int, int] | None = None
-        super().__init__(
-            label_info=label_info,
-            optimizer=optimizer,
-            scheduler=scheduler,
-            metric=metric,
-            torch_compile=torch_compile,
-            tile_config=tile_config,
-        )
-
-    def _create_model(self) -> nn.Module:
-        from .utils.mmdet import create_model
-
-        model, self.classification_layers = create_model(self.config, self.load_from)
-        return model
-
-    def _make_fake_test_pipeline(self) -> list[dict[str, Any]]:
-        return [
-            {"type": "LoadImageFromFile", "backend_args": None},
-            {"type": "Resize", "scale": [self.image_size[3], self.image_size[2]], "keep_ratio": True},  # type: ignore[index]
-            {"type": "LoadAnnotations", "with_bbox": True, "with_mask": True},
-            {
-                "type": "PackDetInputs",
-                "meta_keys": ["img_idimg_path", "ori_shape", "img_shape", "scale_factor"],
-            },
-        ]
-
-    def _customize_inputs(self, entity: InstanceSegBatchDataEntity) -> dict[str, Any]:
-        from mmdet.structures import DetDataSample
-        from mmdet.structures.mask import BitmapMasks, PolygonMasks
-        from mmengine.structures import InstanceData
-
-        mmdet_inputs: dict[str, Any] = {}
-
-        mmdet_inputs["inputs"] = entity.images  # B x C x H x W PyTorch tensor
-        mmdet_inputs["data_samples"] = []
-
-        for img_info, bboxes, masks, polygons, labels in zip(
-            entity.imgs_info,
-            entity.bboxes,
-            entity.masks,
-            entity.polygons,
-            entity.labels,
-        ):
-            # NOTE: ground-truth masks are resized in training, but not in inference
-            height, width = img_info.img_shape if self.training else img_info.ori_shape
-            mmdet_masks: BitmapMasks | PolygonMasks
-            if len(masks):
-                mmdet_masks = BitmapMasks(masks.data.cpu().numpy(), height, width)
-            else:
-                mmdet_masks = PolygonMasks(
-                    [[np.array(polygon.points)] for polygon in polygons],
-                    height,
-                    width,
-                )
-
-            data_sample = DetDataSample(
-                metainfo={
-                    "img_id": img_info.img_idx,
-                    "img_shape": img_info.img_shape,
-                    "ori_shape": img_info.ori_shape,
-                    "scale_factor": img_info.scale_factor,
-                    "ignored_labels": img_info.ignored_labels,
-                },
-                gt_instances=InstanceData(
-                    bboxes=bboxes,
-                    masks=mmdet_masks,
-                    labels=labels,
-                ),
-            )
-            mmdet_inputs["data_samples"].append(data_sample)
-
-        preprocessor: DetDataPreprocessor = self.model.data_preprocessor
-
-        mmdet_inputs = preprocessor(data=mmdet_inputs, training=self.training)
-
-        mmdet_inputs["mode"] = "loss" if self.training else "predict"
-
-        return mmdet_inputs
-
-    def _customize_outputs(
-        self,
-        outputs: dict[str, Any],  # type: ignore[override]
-        inputs: InstanceSegBatchDataEntity,
-    ) -> InstanceSegBatchPredEntity | OTXBatchLossEntity:
-        from mmdet.structures import DetDataSample
-
-        if self.training:
-            if not isinstance(outputs, dict):
-                raise TypeError(outputs)
-
-            losses = OTXBatchLossEntity()
-            for loss_name, loss_value in outputs.items():
-                if isinstance(loss_value, Tensor):
-                    losses[loss_name] = loss_value
-                elif isinstance(loss_value, list):
-                    losses[loss_name] = sum(_loss.mean() for _loss in loss_value)
-            # pop acc from losses as it is not needed
-            losses.pop("acc", None)
-            return losses
-
-        scores: list[Tensor] = []
-        bboxes: list[tv_tensors.BoundingBoxes] = []
-        labels: list[torch.LongTensor] = []
-        masks: list[tv_tensors.Mask] = []
-
-        predictions = outputs["predictions"] if isinstance(outputs, dict) else outputs
-        for output in predictions:
-            if not isinstance(output, DetDataSample):
-                raise TypeError(output)
-
-            scores.append(output.pred_instances.scores)
-            bboxes.append(
-                tv_tensors.BoundingBoxes(
-                    output.pred_instances.bboxes,
-                    format="XYXY",
-                    canvas_size=output.ori_shape,
-                ),
-            )
-            output_masks = tv_tensors.Mask(
-                output.pred_instances.masks,
-                dtype=torch.bool,
-            )
-            masks.append(output_masks)
-            labels.append(output.pred_instances.labels)
-
-        if self.explain_mode:
-            if not isinstance(outputs, dict):
-                msg = f"Model output should be a dict, but got {type(outputs)}."
-                raise ValueError(msg)
-
-            if "feature_vector" not in outputs:
-                msg = "No feature vector in the model output."
-                raise ValueError(msg)
-
-            if "saliency_map" not in outputs:
-                msg = "No saliency maps in the model output."
-                raise ValueError(msg)
-
-            saliency_map = outputs["saliency_map"].detach().cpu().numpy()
-            feature_vector = outputs["feature_vector"].detach().cpu().numpy()
-
-            return InstanceSegBatchPredEntity(
-                batch_size=len(predictions),
-                images=inputs.images,
-                imgs_info=inputs.imgs_info,
-                scores=scores,
-                bboxes=bboxes,
-                masks=masks,
-                polygons=[],
-                labels=labels,
-                saliency_map=list(saliency_map),
-                feature_vector=list(feature_vector),
-            )
-
-        return InstanceSegBatchPredEntity(
-            batch_size=len(predictions),
-            images=inputs.images,
-            imgs_info=inputs.imgs_info,
-            scores=scores,
-            bboxes=bboxes,
-            masks=masks,
-            polygons=[],
-            labels=labels,
-        )
 
 
 class OVInstanceSegmentationModel(
