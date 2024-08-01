@@ -395,3 +395,16 @@ class TestEngine:
         mock_model.label_info = fxt_engine.datamodule.label_info
         result = fxt_engine.benchmark(checkpoint=checkpoint)
         assert "latency" in result
+
+    def test_num_devices(self, fxt_engine, tmp_path) -> None:
+        assert fxt_engine.num_devices == 1
+        assert fxt_engine._cache.args.get("devices") == 1
+
+        fxt_engine.num_devices = 2
+        assert fxt_engine.num_devices == 2
+        assert fxt_engine._cache.args.get("devices") == 2
+
+        data_root = "tests/assets/classification_dataset"
+        engine = Engine(work_dir=tmp_path, data_root=data_root, num_devices=3)
+        assert engine.num_devices == 3
+        assert engine._cache.args.get("devices") == 3
