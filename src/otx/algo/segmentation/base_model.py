@@ -25,7 +25,7 @@ class BaseSegmModel(nn.Module):
         decode_head: nn.Module,
         criterion_configuration: list[dict[str, str | Any]] | None = None,
     ) -> None:
-        """Initializes a SegNext model.
+        """Initializes a segmentation model.
 
         Args:
             backbone (nn.Module): The backbone of the segmentation model.
@@ -68,11 +68,11 @@ class BaseSegmModel(nn.Module):
         """
         enc_feats = self.backbone(inputs)
         outputs = self.decode_head(inputs=enc_feats)
+        outputs = f.interpolate(outputs, size=img_metas, mode="bilinear", align_corners=True)
 
         if mode == "tensor":
             return outputs
 
-        outputs = f.interpolate(outputs, size=inputs.size()[-2:], mode="bilinear", align_corners=True)
         if mode == "loss":
             if masks is None:
                 msg = "The masks must be provided for training."
@@ -80,31 +80,45 @@ class BaseSegmModel(nn.Module):
             if img_metas is None:
                 msg = "The image meta information must be provided for training."
                 raise ValueError(msg)
-            # class incremental training
-            valid_label_mask = self.get_valid_label_mask(img_metas)
-            output_losses = {}
-            for criterion in self.criterions:
-                valid_label_mask_cfg = {}
-                if criterion.name == "loss_ce_ignore":
-                    valid_label_mask_cfg["valid_label_mask"] = valid_label_mask
-                if criterion.name not in output_losses:
-                    output_losses[criterion.name] = criterion(
-                        outputs,
-                        masks,
-                        **valid_label_mask_cfg,
-                    )
-                else:
-                    output_losses[criterion.name] += criterion(
-                        outputs,
-                        masks,
-                        **valid_label_mask_cfg,
-                    )
-            return output_losses
+            return self.calculate_loss(outputs, img_metas, masks, interpolate=False)
 
         if mode == "predict":
             return outputs.argmax(dim=1)
 
         return outputs
+
+    def calculate_loss(self, model_features: Tensor, img_metas: list[ImageInfo], masks: Tensor, interpolate: bool) -> Tensor:
+        """Calculates the loss of the model.
+
+        Args:
+            model_features: model outputs of the model.
+            img_metas: Image meta information. Defaults to None.
+            masks: Ground truth masks for training. Defaults to None.
+
+        Returns:
+            Tensor: The loss of the model.
+        """
+        outputs = f.interpolate(model_features, size=img_metas, mode="bilinear", align_corners=True) if interpolate else model_features
+        # class incremental training
+        valid_label_mask = self.get_valid_label_mask(img_metas)
+        output_losses = {}
+        for criterion in self.criterions:
+            valid_label_mask_cfg = {}
+            if criterion.name == "loss_ce_ignore":
+                valid_label_mask_cfg["valid_label_mask"] = valid_label_mask
+            if criterion.name not in output_losses:
+                output_losses[criterion.name] = criterion(
+                    outputs,
+                    masks,
+                    **valid_label_mask_cfg,
+                )
+            else:
+                output_losses[criterion.name] += criterion(
+                    outputs,
+                    masks,
+                    **valid_label_mask_cfg,
+                )
+        return output_losses
 
     def get_valid_label_mask(self, img_metas: list[ImageInfo]) -> list[Tensor]:
         """Get valid label mask removing ignored classes to zero mask in a batch.

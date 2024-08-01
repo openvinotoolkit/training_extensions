@@ -10,6 +10,7 @@ from otx.algo.segmentation.backbones import MSCAN
 from otx.algo.segmentation.heads import LightHamHead
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.model.segmentation import TorchVisionCompatibleModel
+from otx.algo.segmentation.mean_teacher import MeanTeacher
 
 from .base_model import BaseSegmModel
 
@@ -143,3 +144,23 @@ class OTXSegNext(TorchVisionCompatibleModel):
                 ],
             },
         }
+
+class SemiSLSegNext(OTXSegNext):
+    """SegNext Model."""
+
+    def _create_model(self) -> nn.Module:
+        segnext_model_class = SEGNEXT_VARIANTS[self.name_base_model]
+        # merge configurations with defaults overriding them
+        backbone_configuration = segnext_model_class.default_backbone_configuration | self.backbone_configuration
+        decode_head_configuration = (
+            segnext_model_class.default_decode_head_configuration | self.decode_head_configuration
+        )
+        # initialize backbones
+        backbone = MSCAN(**backbone_configuration)
+        decode_head = LightHamHead(num_classes=self.num_classes, **decode_head_configuration)
+        base_model = segnext_model_class(
+            backbone=backbone,
+            decode_head=decode_head,
+            criterion_configuration=self.criterion_configuration,
+        )
+        return MeanTeacher(base_model, num_iters_per_epoch=100, unsup_weight=0.5, drop_unrel_pixels_percent=20, semisl_start_epoch=1)

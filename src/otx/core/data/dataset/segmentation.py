@@ -12,6 +12,7 @@ import cv2
 import numpy as np
 from datumaro.components.annotation import Ellipse, Image, Mask, Polygon
 from torchvision import tv_tensors
+import torch
 
 from otx.core.data.dataset.base import Transforms
 from otx.core.data.entity.base import ImageInfo
@@ -202,7 +203,7 @@ class OTXSegmentationDataset(OTXDataset[SegDataEntity]):
         img = item.media_as(Image)
         ignored_labels: list[int] = []
         img_data, img_shape = self._get_img_data_and_shape(img)
-        mask = _extract_class_mask(item=item, img_shape=img_shape, ignore_index=self.ignore_index)
+        mask = _extract_class_mask(item=item, img_shape=img_shape, ignore_index=self.ignore_index) if item.annotations else torch.empty(img_shape)
 
         entity = SegDataEntity(
             image=img_data,

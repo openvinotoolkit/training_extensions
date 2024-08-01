@@ -282,13 +282,13 @@ class SegLabelInfo(LabelInfo):
 
     ignore_index: int = 255
 
-    def __post_init__(self):
-        if len(self.label_names) <= 1:
-            msg = (
-                "The number of labels must be larger than 1. "
-                "Please, check dataset labels and add background label in case of binary segmentation."
-            )
-            raise ValueError(msg)
+    # def __post_init__(self):
+    #     if len(self.label_names) <= 1:
+    #         msg = (
+    #             "The number of labels must be larger than 1. "
+    #             "Please, check dataset labels and add background label in case of binary segmentation."
+    #         )
+    #         raise ValueError(msg)
 
     @classmethod
     def from_num_classes(cls, num_classes: int) -> LabelInfo:
