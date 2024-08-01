@@ -366,7 +366,8 @@ class OTXInstanceSegModel(OTXModel[InstanceSegBatchDataEntity, InstanceSegBatchP
     def get_dummy_input(self, batch_size: int = 1) -> InstanceSegBatchDataEntity:
         """Returns a dummy input for instance segmentation model."""
         if self.image_size is None:
-            raise ValueError(self.image_size)
+            msg = f"Image size attribute is not set for {self.__class__}"
+            raise ValueError(msg)
 
         images = [torch.rand(*self.image_size[1:]) for _ in range(batch_size)]
         infos = []

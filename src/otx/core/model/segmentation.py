@@ -110,7 +110,8 @@ class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity]):
     def get_dummy_input(self, batch_size: int = 1) -> SegBatchDataEntity:
         """Returns a dummy input for semantic segmentation model."""
         if self.image_size is None:
-            raise ValueError(self.image_size)
+            msg = f"Image size attribute is not set for {self.__class__}"
+            raise ValueError(msg)
 
         images = torch.rand(batch_size, *self.image_size[1:])
         infos = []
@@ -213,7 +214,8 @@ class TorchVisionCompatibleModel(OTXSegmentationModel):
     def _exporter(self) -> OTXModelExporter:
         """Creates OTXModelExporter object that can export the model."""
         if self.image_size is None:
-            raise ValueError(self.image_size)
+            msg = f"Image size attribute is not set for {self.__class__}"
+            raise ValueError(msg)
 
         return OTXNativeModelExporter(
             task_level_export_parameters=self._export_parameters,
