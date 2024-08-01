@@ -1,12 +1,8 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
-import numpy as np
 import pytest
-import torch
 from otx.core.config.data import SubsetConfig
-from otx.core.data.entity.action_classification import ActionClsDataEntity
-from otx.core.data.entity.base import ImageInfo, VideoInfo
 from otx.core.types.transformer_libs import TransformLibType
 
 SKIP_MMLAB_TEST = False
