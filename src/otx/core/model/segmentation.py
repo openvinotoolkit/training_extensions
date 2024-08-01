@@ -37,7 +37,7 @@ if TYPE_CHECKING:
 class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity]):
     """Base class for the semantic segmentation models used in OTX."""
 
-    image_size: tuple | None = None
+    image_size: tuple[int, ...] | None = None
 
     def __init__(
         self,
