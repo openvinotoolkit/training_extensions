@@ -5,16 +5,11 @@ import os
 
 import pytest
 from omegaconf import DictConfig
-from otx.core.utils.build import (
-    build_mm_model,
-    get_classification_layers,
-    get_default_num_async_infer_requests,
-    modify_num_classes,
-)
+from otx.core.utils.build import get_default_num_async_infer_requests
 
 SKIP_MMLAB_TEST = False
 try:
-    from mmpretrain.registry import MODELS
+    from mmpretrain.registry import MODELS  # noqa: F401
 except ImportError:
     SKIP_MMLAB_TEST = True
 
@@ -52,16 +47,6 @@ def fxt_mm_config() -> DictConfig:
     )
 
 
-@pytest.mark.skipif(SKIP_MMLAB_TEST, reason="MMLab is not installed")
-def test_build_mm_model(fxt_mm_config, mocker) -> None:
-    model = build_mm_model(config=fxt_mm_config, model_registry=MODELS)
-    assert model.__class__.__name__ == "ImageClassifier"
-
-    mock_load_checkpoint = mocker.patch("mmengine.runner.load_checkpoint")
-    model = build_mm_model(config=fxt_mm_config, model_registry=MODELS, load_from="path/to/weights.pth")
-    mock_load_checkpoint.assert_called_once_with(model, "path/to/weights.pth", map_location="cpu")
-
-
 def test_get_default_num_async_infer_requests() -> None:
     # Test the get_default_num_async_infer_requests function.
 
@@ -78,34 +63,3 @@ def test_get_default_num_async_infer_requests() -> None:
     # Check the warning message
     with pytest.warns(UserWarning, match="Set the default number of OpenVINO inference requests"):
         get_default_num_async_infer_requests()
-
-
-@pytest.mark.skipif(SKIP_MMLAB_TEST, reason="MMLab is not installed")
-def test_get_classification_layers(fxt_mm_config) -> None:
-    expected_result = {
-        "head.fc.weight": {"stride": 1, "num_extra_classes": 0},
-        "head.fc.bias": {"stride": 1, "num_extra_classes": 0},
-    }
-
-    result = get_classification_layers(fxt_mm_config, MODELS)
-    assert result == expected_result
-
-
-def test_modify_num_classes():
-    config = DictConfig({"num_classes": 10, "model": {"num_classes": 5}})
-    num_classes = 7
-    modify_num_classes(config, num_classes)
-    assert config["num_classes"] == num_classes
-    assert config["model"]["num_classes"] == num_classes
-
-    config = DictConfig({"num_classes": 10, "model": {"num_classes": 5}})
-    num_classes = 7
-    modify_num_classes(config, num_classes)
-    assert config["num_classes"] == num_classes
-    assert config["model"]["num_classes"] == num_classes
-
-    config = DictConfig({"model": {"layers": [{"units": 64}]}})
-    num_classes = 7
-    modify_num_classes(config, num_classes)
-    assert "num_classes" not in config
-    assert config["model"]["layers"][0]["units"] == 64
