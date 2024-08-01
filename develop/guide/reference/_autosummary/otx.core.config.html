@@ -413,7 +413,10 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#otx.core.config.ignore_aliases" title="otx.core.config.ignore_aliases"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ignore_aliases</span></code></a>(self, data)</p></td>
 <td><p>Determine whether to ignore aliases in YAML representation.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#otx.core.config.register_configs" title="otx.core.config.register_configs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_configs</span></code></a>()</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#otx.core.config.otx_str_type_representer" title="otx.core.config.otx_str_type_representer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx_str_type_representer</span></code></a>(dumper, data)</p></td>
+<td><p>Representer function for converting OTXTaskType or OTXTrainType to a YAML string representation.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.core.config.register_configs" title="otx.core.config.register_configs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_configs</span></code></a>()</p></td>
 <td><p>Register custom resolvers.</p></td>
 </tr>
 </tbody>
@@ -501,6 +504,26 @@ transforms:
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)">bool</a> | None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="otx.core.config.otx_str_type_representer">
+<span class="sig-prename descclassname"><span class="pre">otx.core.config.</span></span><span class="sig-name descname"><span class="pre">otx_str_type_representer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dumper</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dumper</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">SafeRepresenter</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="otx.core.types.html#otx.core.types.OTXTaskType" title="otx.core.types.task.OTXTaskType"><span class="pre">OTXTaskType</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">OTXTrainType</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ScalarNode</span></span></span><a class="reference internal" href="../../../_modules/otx/core/config.html#otx_str_type_representer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.config.otx_str_type_representer" title="Link to this definition">#</a></dt>
+<dd><p>Representer function for converting OTXTaskType or OTXTrainType to a YAML string representation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dumper</strong> (<em>yaml.Dumper</em><em> | </em><em>yaml.representer.SafeRepresenter</em>) – The YAML dumper or safe representer object.</p></li>
+<li><p><strong>data</strong> (<a class="reference internal" href="otx.core.types.html#otx.core.types.OTXTaskType" title="otx.core.types.OTXTaskType"><em>OTXTaskType</em></a><em> | </em><em>OTXTrainType</em>) – The OTXTaskType or OTXTrainType object to be represented.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The YAML ScalarNode representation of the given object.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>yaml.ScalarNode</p>
 </dd>
 </dl>
 </dd></dl>
@@ -609,6 +632,15 @@ transforms:
    <code class="docutils literal notranslate">
     <span class="pre">
      ignore_aliases()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.core.config.otx_str_type_representer">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     otx_str_type_representer()
     </span>
    </code>
   </a>

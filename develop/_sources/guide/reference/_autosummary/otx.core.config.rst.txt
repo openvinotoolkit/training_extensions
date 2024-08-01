@@ -18,6 +18,7 @@ otx.core.config
       as_torch_dtype
       dtype_representer
       ignore_aliases
+      otx_str_type_representer
       register_configs
    
    
