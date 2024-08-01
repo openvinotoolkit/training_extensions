@@ -884,7 +884,36 @@ Evaluate Model with different datamodule or dataloader</label><div class="sd-tab
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">engine</span><span class="o">.</span><span class="n">test</span><span class="p">(</span><span class="n">checkpoint</span><span class="o">=</span><span class="s2">&quot;&lt;path/to/optimized/ir/xml&gt;&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>That’s it. Now, we can use OpenVINO™ Training Extensions APIs to create, train, and deploy deep learning models using the OpenVINO™ Training Extension.</p>
+</section>
+<section id="benchmarking">
+<h2>Benchmarking<a class="headerlink" href="#benchmarking" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">Engine</span></code> allows to perform benchmarking of the trained model, and provide theoretical complexity information in case of torch model.
+The estimated by <code class="docutils literal notranslate"><span class="pre">Engine.benchmark()</span></code> performance may differ from the performance of the deployed model, since the measurements are conducted
+via OTX inference API, which can introduce additional burden.</p>
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-24" name="sd-tab-set-7" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-24">
+Benchmark Model</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">engine</span><span class="o">.</span><span class="n">benchmark</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<input id="sd-tab-item-25" name="sd-tab-set-7" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-25">
+Benchmark OpenVINO™ IR model</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">engine</span><span class="o">.</span><span class="n">benchmark</span><span class="p">(</span><span class="n">checkpoint</span><span class="o">=</span><span class="s2">&quot;&lt;path/to/exported_model.xml&gt;&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Specifying a checkpoint only makes sense for OpenVINO™ IR models.</p>
+</div>
+</div>
+</div>
+<section id="conclusion">
+<h3>Conclusion<a class="headerlink" href="#conclusion" title="Link to this heading">#</a></h3>
+<p>That’s it! Now, we can use OpenVINO™ Training Extensions APIs to create, train, and deploy deep learning models using the OpenVINO™ Training Extensions.</p>
+</section>
 </section>
 </section>
 
@@ -970,6 +999,18 @@ Evaluate Model with different datamodule or dataloader</label><div class="sd-tab
   <a class="reference internal nav-link" href="#optimization">
    Optimization
   </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#benchmarking">
+   Benchmarking
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#conclusion">
+     Conclusion
+    </a>
+   </li>
+  </ul>
  </li>
 </ul>
 

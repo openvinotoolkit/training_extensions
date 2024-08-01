@@ -347,6 +347,8 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="guide/reference/_autosummary/otx.core.config.data.html#otx.core.config.data.SubsetConfig.batch_size">batch_size (otx.core.config.data.SubsetConfig attribute)</a>
 </li>
+      <li><a href="guide/reference/_autosummary/otx.engine.html#otx.engine.Engine.benchmark">benchmark() (otx.engine.Engine method)</a>
+</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="guide/reference/_autosummary/otx.core.model.detection.html#otx.core.model.detection.OTXDetectionModel.best_confidence_threshold">best_confidence_threshold (otx.core.model.detection.OTXDetectionModel property)</a>
@@ -597,6 +599,40 @@
 </li>
       <li><a href="guide/reference/_autosummary/otx.algo.accelerators.html#otx.algo.accelerators.XPUAccelerator.get_device_stats">get_device_stats() (otx.algo.accelerators.XPUAccelerator method)</a>
 </li>
+      <li><a href="guide/reference/_autosummary/otx.core.model.action_classification.html#otx.core.model.action_classification.OTXActionClsModel.get_dummy_input">get_dummy_input() (otx.core.model.action_classification.OTXActionClsModel method)</a>
+
+      <ul>
+        <li><a href="guide/reference/_autosummary/otx.core.model.action_classification.html#otx.core.model.action_classification.OVActionClsModel.get_dummy_input">(otx.core.model.action_classification.OVActionClsModel method)</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.model.anomaly.html#otx.core.model.anomaly.OTXAnomaly.get_dummy_input">(otx.core.model.anomaly.OTXAnomaly method)</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.model.base.html#otx.core.model.base.OTXModel.get_dummy_input">(otx.core.model.base.OTXModel method)</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.model.base.html#otx.core.model.base.OVModel.get_dummy_input">(otx.core.model.base.OVModel method)</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.model.classification.html#otx.core.model.classification.OTXHlabelClsModel.get_dummy_input">(otx.core.model.classification.OTXHlabelClsModel method)</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.model.classification.html#otx.core.model.classification.OTXMulticlassClsModel.get_dummy_input">(otx.core.model.classification.OTXMulticlassClsModel method)</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.model.classification.html#otx.core.model.classification.OTXMultilabelClsModel.get_dummy_input">(otx.core.model.classification.OTXMultilabelClsModel method)</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.model.detection.html#otx.core.model.detection.OTXDetectionModel.get_dummy_input">(otx.core.model.detection.OTXDetectionModel method)</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.model.instance_segmentation.html#otx.core.model.instance_segmentation.OTXInstanceSegModel.get_dummy_input">(otx.core.model.instance_segmentation.OTXInstanceSegModel method)</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.model.segmentation.html#otx.core.model.segmentation.OTXSegmentationModel.get_dummy_input">(otx.core.model.segmentation.OTXSegmentationModel method)</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.model.visual_prompting.html#otx.core.model.visual_prompting.OTXVisualPromptingModel.get_dummy_input">(otx.core.model.visual_prompting.OTXVisualPromptingModel method)</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.model.visual_prompting.html#otx.core.model.visual_prompting.OTXZeroShotVisualPromptingModel.get_dummy_input">(otx.core.model.visual_prompting.OTXZeroShotVisualPromptingModel method)</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.model.visual_prompting.html#otx.core.model.visual_prompting.OVVisualPromptingModel.get_dummy_input">(otx.core.model.visual_prompting.OVVisualPromptingModel method)</a>
+</li>
+        <li><a href="guide/reference/_autosummary/otx.core.model.visual_prompting.html#otx.core.model.visual_prompting.OVZeroShotVisualPromptingModel.get_dummy_input">(otx.core.model.visual_prompting.OVZeroShotVisualPromptingModel method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="guide/reference/_autosummary/otx.core.model.base.html#otx.core.model.base.OTXModel.get_explain_fn">get_explain_fn() (otx.core.model.base.OTXModel method)</a>
 
       <ul>
@@ -607,8 +643,6 @@
       </ul></li>
       <li><a href="guide/reference/_autosummary/otx.cli.utils.installation.html#otx.cli.utils.installation.get_hardware_suffix">get_hardware_suffix() (in module otx.cli.utils.installation)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="guide/reference/_autosummary/otx.core.utils.utils.html#otx.core.utils.utils.get_idx_list_per_classes">get_idx_list_per_classes() (in module otx.core.utils.utils)</a>
 </li>
       <li><a href="guide/reference/_autosummary/otx.cli.utils.jsonargparse.html#otx.cli.utils.jsonargparse.get_instantiated_classes">get_instantiated_classes() (in module otx.cli.utils.jsonargparse)</a>
@@ -1786,9 +1820,11 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="guide/reference/_autosummary/otx.core.data.html#otx.core.data.OTXDataModule.val_dataloader">val_dataloader() (otx.core.data.OTXDataModule method)</a>
 </li>
-      <li><a href="guide/reference/_autosummary/otx.core.model.base.html#otx.core.model.base.OTXModel.validation_step">validation_step() (otx.core.model.base.OTXModel method)</a>
+      <li><a href="guide/reference/_autosummary/otx.core.model.anomaly.html#otx.core.model.anomaly.OTXAnomaly.validation_step">validation_step() (otx.core.model.anomaly.OTXAnomaly method)</a>
 
       <ul>
+        <li><a href="guide/reference/_autosummary/otx.core.model.base.html#otx.core.model.base.OTXModel.validation_step">(otx.core.model.base.OTXModel method)</a>
+</li>
         <li><a href="guide/reference/_autosummary/otx.core.model.visual_prompting.html#otx.core.model.visual_prompting.OTXVisualPromptingModel.validation_step">(otx.core.model.visual_prompting.OTXVisualPromptingModel method)</a>
 </li>
         <li><a href="guide/reference/_autosummary/otx.core.model.visual_prompting.html#otx.core.model.visual_prompting.OTXZeroShotVisualPromptingModel.validation_step">(otx.core.model.visual_prompting.OTXZeroShotVisualPromptingModel method)</a>

@@ -442,6 +442,12 @@ compatible for OTX pipelines.</p>
 <dd><p>Get final classification layer information for incremental learning case.</p>
 </dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.core.model.action_classification.OTXActionClsModel.get_dummy_input">
+<span class="sig-name descname"><span class="pre">get_dummy_input</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ActionClsBatchDataEntity</span></span></span><a class="reference internal" href="../../../_modules/otx/core/model/action_classification.html#OTXActionClsModel.get_dummy_input"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.action_classification.OTXActionClsModel.get_dummy_input" title="Link to this definition">#</a></dt>
+<dd><p>Returns a dummy input for action classification model.</p>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="py class">
@@ -451,6 +457,12 @@ compatible for OTX pipelines.</p>
 <p>Action Classification model compatible for OpenVINO IR inference.</p>
 <p>It can consume OpenVINO IR model path or model name from Intel OMZ repository
 and create the OTX classification model compatible for OTX testing pipeline.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.core.model.action_classification.OVActionClsModel.get_dummy_input">
+<span class="sig-name descname"><span class="pre">get_dummy_input</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ActionClsBatchDataEntity</span></span></span><a class="reference internal" href="../../../_modules/otx/core/model/action_classification.html#OVActionClsModel.get_dummy_input"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.action_classification.OVActionClsModel.get_dummy_input" title="Link to this definition">#</a></dt>
+<dd><p>Returns a dummy input for action classification OV model.</p>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.core.model.action_classification.OVActionClsModel.transform_fn">
 <span class="sig-name descname"><span class="pre">transform_fn</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_batch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ActionClsBatchDataEntity</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">array</span></span></span><a class="reference internal" href="../../../_modules/otx/core/model/action_classification.html#OVActionClsModel.transform_fn"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.action_classification.OVActionClsModel.transform_fn" title="Link to this definition">#</a></dt>
@@ -552,6 +564,15 @@ and create the OTX classification model compatible for OTX testing pipeline.</p>
      </code>
     </a>
    </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.core.model.action_classification.OTXActionClsModel.get_dummy_input">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       OTXActionClsModel.get_dummy_input()
+      </span>
+     </code>
+    </a>
+   </li>
   </ul>
  </li>
  <li class="toc-h2 nav-item toc-entry">
@@ -563,6 +584,15 @@ and create the OTX classification model compatible for OTX testing pipeline.</p>
    </code>
   </a>
   <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.core.model.action_classification.OVActionClsModel.get_dummy_input">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       OVActionClsModel.get_dummy_input()
+      </span>
+     </code>
+    </a>
+   </li>
    <li class="toc-h3 nav-item toc-entry">
     <a class="reference internal nav-link" href="#otx.core.model.action_classification.OVActionClsModel.transform_fn">
      <code class="docutils literal notranslate">

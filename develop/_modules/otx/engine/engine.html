@@ -260,9 +260,11 @@
 
 <span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
 
+<span class="kn">import</span> <span class="nn">csv</span>
 <span class="kn">import</span> <span class="nn">inspect</span>
 <span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">import</span> <span class="nn">tempfile</span>
+<span class="kn">import</span> <span class="nn">time</span>
 <span class="kn">from</span> <span class="nn">contextlib</span> <span class="kn">import</span> <span class="n">contextmanager</span>
 <span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">ClassVar</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">Literal</span>
@@ -283,7 +285,7 @@
 <span class="kn">from</span> <span class="nn">otx.core.types.precision</span> <span class="kn">import</span> <span class="n">OTXPrecisionType</span>
 <span class="kn">from</span> <span class="nn">otx.core.types.task</span> <span class="kn">import</span> <span class="n">OTXTaskType</span>
 <span class="kn">from</span> <span class="nn">otx.core.utils.cache</span> <span class="kn">import</span> <span class="n">TrainerArgumentsCache</span>
-<span class="kn">from</span> <span class="nn">otx.utils.utils</span> <span class="kn">import</span> <span class="n">is_xpu_available</span>
+<span class="kn">from</span> <span class="nn">otx.utils.utils</span> <span class="kn">import</span> <span class="n">is_xpu_available</span><span class="p">,</span> <span class="n">measure_flops</span>
 
 <span class="kn">from</span> <span class="nn">.adaptive_bs</span> <span class="kn">import</span> <span class="n">adapt_batch_size</span>
 <span class="kn">from</span> <span class="nn">.hpo</span> <span class="kn">import</span> <span class="n">execute_hpo</span><span class="p">,</span> <span class="n">update_hyper_parameter</span>
@@ -832,7 +834,7 @@
             <span class="n">export_demo_package</span> <span class="o">=</span> <span class="kc">False</span>
 
         <span class="k">if</span> <span class="n">is_ir_ckpt</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">export_demo_package</span><span class="p">:</span>
-            <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;IR model is passed as a checkpoint, export automaticaly switched to exportable code.&quot;</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;IR model is passed as a checkpoint, export automatically switched to exportable code.&quot;</span>
             <span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
             <span class="n">export_demo_package</span> <span class="o">=</span> <span class="kc">True</span>
 
@@ -1054,6 +1056,119 @@
             <span class="p">)</span>
         <span class="n">model</span><span class="o">.</span><span class="n">explain_mode</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="k">return</span> <span class="n">predict_result</span></div>
+
+
+<div class="viewcode-block" id="Engine.benchmark">
+<a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.engine.html#otx.engine.Engine.benchmark">[docs]</a>
+    <span class="k">def</span> <span class="nf">benchmark</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">checkpoint</span><span class="p">:</span> <span class="n">PathLike</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">n_iters</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
+        <span class="n">extended_stats</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Executes model micro benchmarking on random data.</span>
+
+<span class="sd">        Benchmark can provide latency, throughput, number of parameters,</span>
+<span class="sd">        and theoretical computational complexity with batch size 1.</span>
+<span class="sd">        The latter two characteristics are available for torch model recipes only.</span>
+<span class="sd">        Before the measurements, a warm-up is done.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            checkpoint (PathLike | None, optional): Path to checkpoint. Optional for torch models. Defaults to None.</span>
+<span class="sd">            batch_size (int, optional): Batch size for benchmarking. Defaults to 1.</span>
+<span class="sd">            n_iters (int, optional): Number of iterations to average on. Defaults to 10.</span>
+<span class="sd">            extended_stats (bool, optional): Flag that enables printing of per module complexity for torch model.</span>
+<span class="sd">            Defaults to False.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict[str, str]: a dict with the benchmark results.</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; engine.benchmark(</span>
+<span class="sd">            ...     datamodule=OTXDataModule(),</span>
+<span class="sd">            ...     batch_size=1,</span>
+<span class="sd">            ...     n_iters=20,</span>
+<span class="sd">            ...     extended_stats=True,</span>
+<span class="sd">            ... )</span>
+
+<span class="sd">        CLI Usage:</span>
+<span class="sd">            To run benchmark using the configuration, launch</span>
+<span class="sd">                ```shell</span>
+<span class="sd">                &gt;&gt;&gt; otx benchmark \</span>
+<span class="sd">                ...     --config &lt;CONFIG_PATH&gt; --data_root &lt;DATASET_PATH, str&gt; \</span>
+<span class="sd">                ...     --checkpoint &lt;CKPT_PATH, str&gt;</span>
+<span class="sd">                ```</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">checkpoint</span> <span class="o">=</span> <span class="n">checkpoint</span> <span class="k">if</span> <span class="n">checkpoint</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">checkpoint</span>
+
+        <span class="k">if</span> <span class="n">checkpoint</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">is_ir_ckpt</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">)</span><span class="o">.</span><span class="n">suffix</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;.xml&quot;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">is_ir_ckpt</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">OVModel</span><span class="p">):</span>
+                <span class="c1"># create OVModel</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_auto_configurator</span><span class="o">.</span><span class="n">get_ov_model</span><span class="p">(</span>
+                    <span class="n">model_name</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">),</span>
+                    <span class="n">label_info</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">datamodule</span><span class="o">.</span><span class="n">label_info</span><span class="p">,</span>
+                <span class="p">)</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">is_ir_ckpt</span><span class="p">:</span>
+                <span class="n">model_cls</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="vm">__class__</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model_cls</span><span class="o">.</span><span class="n">load_from_checkpoint</span><span class="p">(</span>
+                    <span class="n">checkpoint_path</span><span class="o">=</span><span class="n">checkpoint</span><span class="p">,</span>
+                    <span class="n">map_location</span><span class="o">=</span><span class="s2">&quot;cpu&quot;</span><span class="p">,</span>
+                    <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">hparams</span><span class="p">,</span>
+                <span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">OVModel</span><span class="p">):</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;To run benchmark on OV model, checkpoint must be specified.&quot;</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+
+        <span class="k">def</span> <span class="nf">dummy_infer</span><span class="p">(</span><span class="n">model</span><span class="p">:</span> <span class="n">OTXModel</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+            <span class="n">input_batch</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">get_dummy_input</span><span class="p">(</span><span class="n">batch_size</span><span class="p">)</span>
+            <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="n">input_batch</span><span class="p">)</span>
+            <span class="n">end</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
+            <span class="k">return</span> <span class="n">end</span> <span class="o">-</span> <span class="n">start</span>
+
+        <span class="n">warmup_iters</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">n_iters</span> <span class="o">/</span> <span class="mi">10</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">warmup_iters</span><span class="p">):</span>
+            <span class="n">dummy_infer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">)</span>
+
+        <span class="n">total_time</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_iters</span><span class="p">):</span>
+            <span class="n">total_time</span> <span class="o">+=</span> <span class="n">dummy_infer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">)</span>
+        <span class="n">latency</span> <span class="o">=</span> <span class="n">total_time</span> <span class="o">/</span> <span class="n">n_iters</span>
+        <span class="n">fps</span> <span class="o">=</span> <span class="n">batch_size</span> <span class="o">/</span> <span class="n">latency</span>
+
+        <span class="n">final_stats</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;latency&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">latency</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> s&quot;</span><span class="p">,</span> <span class="s2">&quot;throughput&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="p">(</span><span class="n">fps</span><span class="p">)</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> FPS&quot;</span><span class="p">}</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">OVModel</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="kn">from</span> <span class="nn">torch.utils.flop_counter</span> <span class="kn">import</span> <span class="n">convert_num_with_suffix</span><span class="p">,</span> <span class="n">get_suffix_str</span>
+
+                <span class="n">input_batch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">get_dummy_input</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+                <span class="n">model_fwd</span> <span class="o">=</span> <span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="n">input_batch</span><span class="p">)</span>
+                <span class="n">depth</span> <span class="o">=</span> <span class="mi">3</span> <span class="k">if</span> <span class="n">extended_stats</span> <span class="k">else</span> <span class="mi">0</span>
+                <span class="n">fwd_flops</span> <span class="o">=</span> <span class="n">measure_flops</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">model_fwd</span><span class="p">,</span> <span class="n">print_stats_depth</span><span class="o">=</span><span class="n">depth</span><span class="p">)</span>
+                <span class="n">flops_str</span> <span class="o">=</span> <span class="n">convert_num_with_suffix</span><span class="p">(</span><span class="n">fwd_flops</span><span class="p">,</span> <span class="n">get_suffix_str</span><span class="p">(</span><span class="n">fwd_flops</span> <span class="o">*</span> <span class="mi">10</span><span class="o">**</span><span class="mi">3</span><span class="p">))</span>
+                <span class="n">final_stats</span><span class="p">[</span><span class="s2">&quot;complexity&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">flops_str</span> <span class="o">+</span> <span class="s2">&quot; MACs&quot;</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to complete complexity estimation: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+            <span class="n">params_num</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">numel</span><span class="p">()</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">()</span> <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">requires_grad</span><span class="p">)</span>
+            <span class="n">params_num_str</span> <span class="o">=</span> <span class="n">convert_num_with_suffix</span><span class="p">(</span><span class="n">params_num</span><span class="p">,</span> <span class="n">get_suffix_str</span><span class="p">(</span><span class="n">params_num</span> <span class="o">*</span> <span class="mi">100</span><span class="p">))</span>
+            <span class="n">final_stats</span><span class="p">[</span><span class="s2">&quot;parameters_number&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">params_num_str</span>
+
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">final_stats</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">:</span><span class="s2">&lt;20</span><span class="si">}</span><span class="s2"> | </span><span class="si">{</span><span class="n">val</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">with</span> <span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">work_dir</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;benchmark_report.csv&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">writer</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">writer</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+            <span class="n">writer</span><span class="o">.</span><span class="n">writerow</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">final_stats</span><span class="p">))</span>
+            <span class="n">writer</span><span class="o">.</span><span class="n">writerow</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">final_stats</span><span class="o">.</span><span class="n">values</span><span class="p">()))</span>
+
+        <span class="k">return</span> <span class="n">final_stats</span></div>
 
 
 <div class="viewcode-block" id="Engine.from_config">

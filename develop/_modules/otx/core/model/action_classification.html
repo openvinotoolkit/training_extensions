@@ -269,7 +269,7 @@
 
 <span class="kn">from</span> <span class="nn">otx.algo.action_classification.utils.data_sample</span> <span class="kn">import</span> <span class="n">ActionDataSample</span>
 <span class="kn">from</span> <span class="nn">otx.core.data.entity.action_classification</span> <span class="kn">import</span> <span class="n">ActionClsBatchDataEntity</span><span class="p">,</span> <span class="n">ActionClsBatchPredEntity</span>
-<span class="kn">from</span> <span class="nn">otx.core.data.entity.base</span> <span class="kn">import</span> <span class="n">OTXBatchLossEntity</span>
+<span class="kn">from</span> <span class="nn">otx.core.data.entity.base</span> <span class="kn">import</span> <span class="n">ImageInfo</span><span class="p">,</span> <span class="n">OTXBatchLossEntity</span>
 <span class="kn">from</span> <span class="nn">otx.core.exporter.native</span> <span class="kn">import</span> <span class="n">OTXNativeModelExporter</span>
 <span class="kn">from</span> <span class="nn">otx.core.metrics</span> <span class="kn">import</span> <span class="n">MetricInput</span>
 <span class="kn">from</span> <span class="nn">otx.core.metrics.accuracy</span> <span class="kn">import</span> <span class="n">MultiClassClsMetricCallable</span>
@@ -426,6 +426,24 @@
                 <span class="n">num_extra_classes</span> <span class="o">=</span> <span class="mi">6</span> <span class="o">*</span> <span class="n">sample_model_dim</span> <span class="o">-</span> <span class="mi">5</span> <span class="o">*</span> <span class="n">incremental_model_dim</span>
                 <span class="n">classification_layers</span><span class="p">[</span><span class="n">prefix</span> <span class="o">+</span> <span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;stride&quot;</span><span class="p">:</span> <span class="n">stride</span><span class="p">,</span> <span class="s2">&quot;num_extra_classes&quot;</span><span class="p">:</span> <span class="n">num_extra_classes</span><span class="p">}</span>
         <span class="k">return</span> <span class="n">classification_layers</span></div>
+
+
+<div class="viewcode-block" id="OTXActionClsModel.get_dummy_input">
+<a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.model.action_classification.html#otx.core.model.action_classification.OTXActionClsModel.get_dummy_input">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_dummy_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ActionClsBatchDataEntity</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns a dummy input for action classification model.&quot;&quot;&quot;</span>
+        <span class="n">images</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">image_size</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+        <span class="n">labels</span> <span class="o">=</span> <span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">LongTensor</span><span class="p">([</span><span class="mi">0</span><span class="p">])]</span> <span class="o">*</span> <span class="n">batch_size</span>
+        <span class="n">infos</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">img</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">images</span><span class="p">):</span>
+            <span class="n">infos</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">ImageInfo</span><span class="p">(</span>
+                    <span class="n">img_idx</span><span class="o">=</span><span class="n">i</span><span class="p">,</span>
+                    <span class="n">img_shape</span><span class="o">=</span><span class="n">img</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span>
+                    <span class="n">ori_shape</span><span class="o">=</span><span class="n">img</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span>
+                <span class="p">),</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">ActionClsBatchDataEntity</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">images</span><span class="p">,</span> <span class="n">infos</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="n">labels</span><span class="p">)</span></div>
 </div>
 
 
@@ -629,7 +647,26 @@
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">model_adapter_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Model parameters for export.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;input_layouts&quot;</span><span class="p">:</span> <span class="s2">&quot;NSCTHW&quot;</span><span class="p">}</span></div>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;input_layouts&quot;</span><span class="p">:</span> <span class="s2">&quot;NSCTHW&quot;</span><span class="p">}</span>
+
+<div class="viewcode-block" id="OVActionClsModel.get_dummy_input">
+<a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.model.action_classification.html#otx.core.model.action_classification.OVActionClsModel.get_dummy_input">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_dummy_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ActionClsBatchDataEntity</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns a dummy input for action classification OV model.&quot;&quot;&quot;</span>
+        <span class="c1"># Resize is embedded to the OV model, which means we don&#39;t need to know the actual size</span>
+        <span class="n">images</span> <span class="o">=</span> <span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">batch_size</span><span class="p">)]</span>
+        <span class="n">labels</span> <span class="o">=</span> <span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">LongTensor</span><span class="p">([</span><span class="mi">0</span><span class="p">])]</span> <span class="o">*</span> <span class="n">batch_size</span>
+        <span class="n">infos</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">img</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">images</span><span class="p">):</span>
+            <span class="n">infos</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">ImageInfo</span><span class="p">(</span>
+                    <span class="n">img_idx</span><span class="o">=</span><span class="n">i</span><span class="p">,</span>
+                    <span class="n">img_shape</span><span class="o">=</span><span class="n">img</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span>
+                    <span class="n">ori_shape</span><span class="o">=</span><span class="n">img</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span>
+                <span class="p">),</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">ActionClsBatchDataEntity</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">images</span><span class="p">,</span> <span class="n">infos</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="n">labels</span><span class="p">)</span></div>
+</div>
 
 </pre></div>
 

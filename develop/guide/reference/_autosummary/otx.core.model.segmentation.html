@@ -471,6 +471,12 @@ Defaults to False.</p></li>
 <dd><p>Model forward function used for the model tracing during model exportation.</p>
 </dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.core.model.segmentation.OTXSegmentationModel.get_dummy_input">
+<span class="sig-name descname"><span class="pre">get_dummy_input</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">SegBatchDataEntity</span></span></span><a class="reference internal" href="../../../_modules/otx/core/model/segmentation.html#OTXSegmentationModel.get_dummy_input"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.segmentation.OTXSegmentationModel.get_dummy_input" title="Link to this definition">#</a></dt>
+<dd><p>Returns a dummy input for semantic segmentation model.</p>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="py class">
@@ -572,6 +578,15 @@ Defaults to “semantic_segmentation_model”.</p></li>
      <code class="docutils literal notranslate">
       <span class="pre">
        OTXSegmentationModel.forward_for_tracing()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.core.model.segmentation.OTXSegmentationModel.get_dummy_input">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       OTXSegmentationModel.get_dummy_input()
       </span>
      </code>
     </a>

@@ -418,6 +418,12 @@
 <dd><p>Bases: <a class="reference internal" href="otx.core.model.base.html#otx.core.model.base.OTXModel" title="otx.core.model.base.OTXModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">OTXModel</span></code></a>[<code class="xref py py-class docutils literal notranslate"><span class="pre">VisualPromptingBatchDataEntity</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">VisualPromptingBatchPredEntity</span></code>]</p>
 <p>Base class for the visual prompting models used in OTX.</p>
 <dl class="py method">
+<dt class="sig sig-object py" id="otx.core.model.visual_prompting.OTXVisualPromptingModel.get_dummy_input">
+<span class="sig-name descname"><span class="pre">get_dummy_input</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">VisualPromptingBatchDataEntity</span></span></span><a class="reference internal" href="../../../_modules/otx/core/model/visual_prompting.html#OTXVisualPromptingModel.get_dummy_input"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.visual_prompting.OTXVisualPromptingModel.get_dummy_input" title="Link to this definition">#</a></dt>
+<dd><p>Returns a dummy input for VPT model.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="otx.core.model.visual_prompting.OTXVisualPromptingModel.test_step">
 <span class="sig-name descname"><span class="pre">test_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">VisualPromptingBatchDataEntity</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_idx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../_modules/otx/core/model/visual_prompting.html#OTXVisualPromptingModel.test_step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.visual_prompting.OTXVisualPromptingModel.test_step" title="Link to this definition">#</a></dt>
 <dd><p>Perform a single test step on a batch of data from the test set.</p>
@@ -465,6 +471,12 @@
 <dt class="sig sig-object py" id="otx.core.model.visual_prompting.OTXZeroShotVisualPromptingModel.configure_optimizers">
 <span class="sig-name descname"><span class="pre">configure_optimizers</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../_modules/otx/core/model/visual_prompting.html#OTXZeroShotVisualPromptingModel.configure_optimizers"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.visual_prompting.OTXZeroShotVisualPromptingModel.configure_optimizers" title="Link to this definition">#</a></dt>
 <dd><p>Skip configure_optimizers unused in zero-shot visual prompting.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.core.model.visual_prompting.OTXZeroShotVisualPromptingModel.get_dummy_input">
+<span class="sig-name descname"><span class="pre">get_dummy_input</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ZeroShotVisualPromptingBatchDataEntity</span></span></span><a class="reference internal" href="../../../_modules/otx/core/model/visual_prompting.html#OTXZeroShotVisualPromptingModel.get_dummy_input"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.visual_prompting.OTXZeroShotVisualPromptingModel.get_dummy_input" title="Link to this definition">#</a></dt>
+<dd><p>Returns a dummy input for ZSL VPT model.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -556,6 +568,12 @@
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="otx.core.model.visual_prompting.OVVisualPromptingModel.get_dummy_input">
+<span class="sig-name descname"><span class="pre">get_dummy_input</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">VisualPromptingBatchDataEntity</span></span></span><a class="reference internal" href="../../../_modules/otx/core/model/visual_prompting.html#OVVisualPromptingModel.get_dummy_input"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.visual_prompting.OVVisualPromptingModel.get_dummy_input" title="Link to this definition">#</a></dt>
+<dd><p>Returns a dummy input for classification OV model.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="otx.core.model.visual_prompting.OVVisualPromptingModel.optimize">
 <span class="sig-name descname"><span class="pre">optimize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_module</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="otx.core.data.html#otx.core.data.OTXDataModule" title="otx.core.data.OTXDataModule"><span class="pre">OTXDataModule</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">ptq_config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Path</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/otx/core/model/visual_prompting.html#OVVisualPromptingModel.optimize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.visual_prompting.OVVisualPromptingModel.optimize" title="Link to this definition">#</a></dt>
 <dd><p>Runs NNCF quantization.</p>
@@ -619,6 +637,12 @@
 <dt class="sig sig-object py" id="otx.core.model.visual_prompting.OVZeroShotVisualPromptingModel.forward">
 <span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ZeroShotVisualPromptingBatchDataEntity</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.0)"><span class="pre">ndarray</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.12)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.0)"><span class="pre">ndarray</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ZeroShotVisualPromptingBatchPredEntity</span></span></span><a class="reference internal" href="../../../_modules/otx/core/model/visual_prompting.html#OVZeroShotVisualPromptingModel.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.visual_prompting.OVZeroShotVisualPromptingModel.forward" title="Link to this definition">#</a></dt>
 <dd><p>Model forward function.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.core.model.visual_prompting.OVZeroShotVisualPromptingModel.get_dummy_input">
+<span class="sig-name descname"><span class="pre">get_dummy_input</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ZeroShotVisualPromptingBatchDataEntity</span></span></span><a class="reference internal" href="../../../_modules/otx/core/model/visual_prompting.html#OVZeroShotVisualPromptingModel.get_dummy_input"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.visual_prompting.OVZeroShotVisualPromptingModel.get_dummy_input" title="Link to this definition">#</a></dt>
+<dd><p>Returns a dummy input for classification OV model.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -797,6 +821,15 @@ without reference features in <cite>on_test_start</cite> or <cite>on_predict_sta
   </a>
   <ul class="nav section-nav flex-column">
    <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.core.model.visual_prompting.OTXVisualPromptingModel.get_dummy_input">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       OTXVisualPromptingModel.get_dummy_input()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
     <a class="reference internal nav-link" href="#otx.core.model.visual_prompting.OTXVisualPromptingModel.test_step">
      <code class="docutils literal notranslate">
       <span class="pre">
@@ -830,6 +863,15 @@ without reference features in <cite>on_test_start</cite> or <cite>on_predict_sta
      <code class="docutils literal notranslate">
       <span class="pre">
        OTXZeroShotVisualPromptingModel.configure_optimizers()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.core.model.visual_prompting.OTXZeroShotVisualPromptingModel.get_dummy_input">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       OTXZeroShotVisualPromptingModel.get_dummy_input()
       </span>
      </code>
     </a>
@@ -945,6 +987,15 @@ without reference features in <cite>on_test_start</cite> or <cite>on_predict_sta
     </a>
    </li>
    <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.core.model.visual_prompting.OVVisualPromptingModel.get_dummy_input">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       OVVisualPromptingModel.get_dummy_input()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
     <a class="reference internal nav-link" href="#otx.core.model.visual_prompting.OVVisualPromptingModel.optimize">
      <code class="docutils literal notranslate">
       <span class="pre">
@@ -996,6 +1047,15 @@ without reference features in <cite>on_test_start</cite> or <cite>on_predict_sta
      <code class="docutils literal notranslate">
       <span class="pre">
        OVZeroShotVisualPromptingModel.forward()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.core.model.visual_prompting.OVZeroShotVisualPromptingModel.get_dummy_input">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       OVZeroShotVisualPromptingModel.get_dummy_input()
       </span>
      </code>
     </a>

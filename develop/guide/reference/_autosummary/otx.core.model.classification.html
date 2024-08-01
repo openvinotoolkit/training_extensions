@@ -474,6 +474,12 @@ compatible for OTX pipelines.</p>
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.core.model.classification.</span></span><span class="sig-name descname"><span class="pre">OTXHlabelClsModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label_info:</span> <span class="pre">HLabelInfo</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimizer:</span> <span class="pre">OptimizerCallable</span> <span class="pre">=</span> <span class="pre">&lt;function</span> <span class="pre">_default_optimizer_callable&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scheduler:</span> <span class="pre">LRSchedulerCallable</span> <span class="pre">|</span> <span class="pre">LRSchedulerListCallable</span> <span class="pre">=</span> <span class="pre">&lt;function</span> <span class="pre">_default_scheduler_callable&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metric:</span> <span class="pre">MetricCallable</span> <span class="pre">=</span> <span class="pre">&lt;function</span> <span class="pre">_mixed_hlabel_accuracy&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">torch_compile:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/core/model/classification.html#OTXHlabelClsModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.classification.OTXHlabelClsModel" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="otx.core.model.base.html#otx.core.model.base.OTXModel" title="otx.core.model.base.OTXModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">OTXModel</span></code></a>[<code class="xref py py-class docutils literal notranslate"><span class="pre">HlabelClsBatchDataEntity</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">HlabelClsBatchPredEntity</span></code>]</p>
 <p>H-label classification models used in OTX.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.core.model.classification.OTXHlabelClsModel.get_dummy_input">
+<span class="sig-name descname"><span class="pre">get_dummy_input</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">HlabelClsBatchDataEntity</span></span></span><a class="reference internal" href="../../../_modules/otx/core/model/classification.html#OTXHlabelClsModel.get_dummy_input"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.classification.OTXHlabelClsModel.get_dummy_input" title="Link to this definition">#</a></dt>
+<dd><p>Returns a dummy input for classification OV model.</p>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="py class">
@@ -481,6 +487,12 @@ compatible for OTX pipelines.</p>
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.core.model.classification.</span></span><span class="sig-name descname"><span class="pre">OTXMulticlassClsModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label_info:</span> <span class="pre">LabelInfoTypes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimizer:</span> <span class="pre">OptimizerCallable</span> <span class="pre">=</span> <span class="pre">&lt;function</span> <span class="pre">_default_optimizer_callable&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scheduler:</span> <span class="pre">LRSchedulerCallable</span> <span class="pre">|</span> <span class="pre">LRSchedulerListCallable</span> <span class="pre">=</span> <span class="pre">&lt;function</span> <span class="pre">_default_scheduler_callable&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metric:</span> <span class="pre">MetricCallable</span> <span class="pre">=</span> <span class="pre">&lt;function</span> <span class="pre">_multi_class_cls_metric_callable&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">torch_compile:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/core/model/classification.html#OTXMulticlassClsModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.classification.OTXMulticlassClsModel" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="otx.core.model.base.html#otx.core.model.base.OTXModel" title="otx.core.model.base.OTXModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">OTXModel</span></code></a>[<code class="xref py py-class docutils literal notranslate"><span class="pre">MulticlassClsBatchDataEntity</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">MulticlassClsBatchPredEntity</span></code>]</p>
 <p>Base class for the classification models used in OTX.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.core.model.classification.OTXMulticlassClsModel.get_dummy_input">
+<span class="sig-name descname"><span class="pre">get_dummy_input</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">MulticlassClsBatchDataEntity</span></span></span><a class="reference internal" href="../../../_modules/otx/core/model/classification.html#OTXMulticlassClsModel.get_dummy_input"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.classification.OTXMulticlassClsModel.get_dummy_input" title="Link to this definition">#</a></dt>
+<dd><p>Returns a dummy input for classification model.</p>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="py class">
@@ -492,6 +504,12 @@ compatible for OTX pipelines.</p>
 <dt class="sig sig-object py" id="otx.core.model.classification.OTXMultilabelClsModel.forward_for_tracing">
 <span class="sig-name descname"><span class="pre">forward_for_tracing</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tensor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/otx/core/model/classification.html#OTXMultilabelClsModel.forward_for_tracing"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.classification.OTXMultilabelClsModel.forward_for_tracing" title="Link to this definition">#</a></dt>
 <dd><p>Model forward function used for the model tracing during model exportation.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.core.model.classification.OTXMultilabelClsModel.get_dummy_input">
+<span class="sig-name descname"><span class="pre">get_dummy_input</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">MultilabelClsBatchDataEntity</span></span></span><a class="reference internal" href="../../../_modules/otx/core/model/classification.html#OTXMultilabelClsModel.get_dummy_input"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.classification.OTXMultilabelClsModel.get_dummy_input" title="Link to this definition">#</a></dt>
+<dd><p>Returns a dummy input for classification OV model.</p>
 </dd></dl>
 
 </dd></dl>
@@ -620,6 +638,17 @@ and create the OTX classification model compatible for OTX testing pipeline.</p>
     </span>
    </code>
   </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.core.model.classification.OTXHlabelClsModel.get_dummy_input">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       OTXHlabelClsModel.get_dummy_input()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
  </li>
  <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#otx.core.model.classification.OTXMulticlassClsModel">
@@ -629,6 +658,17 @@ and create the OTX classification model compatible for OTX testing pipeline.</p>
     </span>
    </code>
   </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.core.model.classification.OTXMulticlassClsModel.get_dummy_input">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       OTXMulticlassClsModel.get_dummy_input()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
  </li>
  <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#otx.core.model.classification.OTXMultilabelClsModel">
@@ -644,6 +684,15 @@ and create the OTX classification model compatible for OTX testing pipeline.</p>
      <code class="docutils literal notranslate">
       <span class="pre">
        OTXMultilabelClsModel.forward_for_tracing()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.core.model.classification.OTXMultilabelClsModel.get_dummy_input">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       OTXMultilabelClsModel.get_dummy_input()
       </span>
      </code>
     </a>

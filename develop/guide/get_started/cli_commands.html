@@ -438,6 +438,7 @@ Please refer <a class="reference external" href="https://jsonargparse.readthedoc
 │<span class="w">     </span><span class="nb">export</span><span class="w">              </span>Export<span class="w"> </span>the<span class="w"> </span>trained<span class="w"> </span>model<span class="w"> </span>to<span class="w"> </span>OpenVINO<span class="w"> </span>Intermediate<span class="w"> </span>Representation<span class="w"> </span><span class="o">(</span>IR<span class="o">)</span><span class="w"> </span>or<span class="w"> </span>ONNX<span class="w"> </span>formats.<span class="w">  </span>│
 │<span class="w">     </span>optimize<span class="w">            </span>Applies<span class="w"> </span>NNCF.PTQ<span class="w"> </span>to<span class="w"> </span>the<span class="w"> </span>underlying<span class="w"> </span>models<span class="w"> </span><span class="o">(</span>now<span class="w"> </span>works<span class="w"> </span>only<span class="w"> </span><span class="k">for</span><span class="w"> </span>OV<span class="w"> </span>models<span class="o">)</span>.<span class="w">               </span>│
 │<span class="w">     </span>explain<span class="w">             </span>Run<span class="w"> </span>XAI<span class="w"> </span>using<span class="w"> </span>the<span class="w"> </span>specified<span class="w"> </span>model<span class="w"> </span>and<span class="w"> </span>data<span class="w"> </span><span class="o">(</span><span class="nb">test</span><span class="w"> </span>subset<span class="o">)</span>.<span class="w">                               </span>│
+<span class="p">|</span><span class="w">     </span>benchmark<span class="w">           </span>Executes<span class="w"> </span>model<span class="w"> </span>micro<span class="w"> </span>benchmarking<span class="w"> </span>on<span class="w"> </span>random<span class="w"> </span>data.<span class="w">                                       </span><span class="p">|</span>
 │<span class="w">                                                                                                                 </span>│
 ╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
 </pre></div>
@@ -800,13 +801,28 @@ You can also omit <code class="docutils literal notranslate"><span class="pre">-
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>It is possible to pass both PyTorch weights <code class="docutils literal notranslate"><span class="pre">.ckpt</span></code> or OpenVINO™ IR <code class="docutils literal notranslate"><span class="pre">exported_model.xml</span></code> to <code class="docutils literal notranslate"><span class="pre">--load-weights</span></code> option.</p>
+<p>It is possible to pass both PyTorch weights <code class="docutils literal notranslate"><span class="pre">.ckpt</span></code> or OpenVINO™ IR <code class="docutils literal notranslate"><span class="pre">exported_model.xml</span></code> to <code class="docutils literal notranslate"><span class="pre">--checkpoint</span></code> option.</p>
 </div>
 <p>By default, the model is exported to the OpenVINO™ IR format without extra feature information needed for the <code class="docutils literal notranslate"><span class="pre">explain</span></code> function. To use OpenVINO™ IR model in <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">explain</span></code>, please first export it with <code class="docutils literal notranslate"><span class="pre">--explain</span></code> parameter:</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span><span class="nb">export</span><span class="w"> </span>...<span class="w"> </span>--checkpoint<span class="w"> </span>&lt;path/to/trained/weights.ckpt&gt;<span class="w"> </span><span class="se">\</span>
 <span class="w">                          </span>--explain<span class="w"> </span>True
 <span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span>explain<span class="w"> </span>...<span class="w"> </span>--checkpoint<span class="w"> </span>outputs/openvino/with_features<span class="w"> </span><span class="se">\</span>
 </pre></div>
+</div>
+</section>
+<section id="micro-benchmarking">
+<h2>Micro-benchmarking<a class="headerlink" href="#micro-benchmarking" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">benchmark</span></code> tool allows performing a fast in-place benchmarking on randomly generated data. The benchmark excludes data loading cost, but takes into account extra burden of OTX API and ModelAPI (in case of OpenVINO™ IR models).</p>
+<p>The command requires checkpoint path for OpenVINO™ IR models. In case of torch models, this parameter is optional. Also, for torch model number of trainable parameters and theoretical computational complexity are estimated when model’s structure allows that.
+It worth noticing that the latency and throughput are depend on batch size. Varying the batch size parameter, one can quickly explore the trade-off for the considered model. For OpenVINO™ IR models batching is imitated by using async inference API.</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span>benchmark<span class="w"> </span>...<span class="w"> </span>--data_root<span class="w"> </span>&lt;path/to/test/root&gt;<span class="w"> </span><span class="se">\</span>
+<span class="w">                             </span>--checkpoint<span class="w"> </span>&lt;path/to/model_weights&gt;<span class="w"> </span><span class="se">\</span>
+<span class="w">                             </span>--batch_size<span class="w"> </span><span class="m">1</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>It is possible to pass both PyTorch weights <code class="docutils literal notranslate"><span class="pre">.ckpt</span></code> or OpenVINO™ IR <code class="docutils literal notranslate"><span class="pre">exported_model.xml</span></code> to <code class="docutils literal notranslate"><span class="pre">--checkpoint</span></code> option.</p>
 </div>
 </section>
 <section id="workspace">
@@ -922,6 +938,11 @@ You can also omit <code class="docutils literal notranslate"><span class="pre">-
  <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#explanation">
    Explanation
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#micro-benchmarking">
+   Micro-benchmarking
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
