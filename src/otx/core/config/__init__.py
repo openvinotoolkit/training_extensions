@@ -136,7 +136,7 @@ def otx_str_type_representer(
         data (OTXTaskType | OTXTrainType): The OTXTaskType or OTXTrainType object to be represented.
 
     Returns:
-        str: The YAML string representation of the given object.
+        yaml.ScalarNode: The YAML ScalarNode representation of the given object.
     """
     return dumper.represent_scalar("tag:yaml.org,2002:str", str(data.value))
 
