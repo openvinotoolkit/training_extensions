@@ -6,9 +6,9 @@
 from __future__ import annotations
 
 from numbers import Number
-from typing import TYPE_CHECKING, Any, Literal
+from typing import TYPE_CHECKING, Literal
 
-from omegaconf import DictConfig, ListConfig, OmegaConf
+from omegaconf import DictConfig, OmegaConf
 
 if TYPE_CHECKING:
     from mmengine.config import Config as MMConfig
@@ -58,29 +58,3 @@ def convert_conf_to_mmconfig_dict(
         return MMConfig(cfg_dict=to_list(dict_cfg))
 
     raise ValueError(to)
-
-
-def inplace_num_classes(
-    cfg: DictConfig | ListConfig | Any,  # noqa: ANN401
-    num_classes: int,
-) -> DictConfig | ListConfig | Any:  # noqa: ANN401
-    """Inplace the number of classes values in a given config object.
-
-    Args:
-        cfg: Config object to inplace the number of classes values
-        num_classes: Number of classes to inplace
-    Returns:
-        Inplaced config object
-    """
-    if isinstance(cfg, DictConfig):
-        for key in cfg:
-            if key == "num_classes" and isinstance(cfg[key], int):
-                cfg[key] = num_classes
-            else:
-                cfg[key] = inplace_num_classes(cfg[key], num_classes)
-
-    if isinstance(cfg, ListConfig):
-        for idx in range(len(cfg)):
-            cfg[idx] = inplace_num_classes(cfg[idx], num_classes)
-
-    return cfg
