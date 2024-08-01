@@ -31,7 +31,7 @@ from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallab
 from otx.core.schedulers import LRSchedulerListCallable
 from otx.core.types.export import TaskLevelExportParameters
 from otx.core.types.label import HLabelInfo, LabelInfoTypes
-from otx.core.types.task import OTXTaskType
+from otx.core.types.task import OTXTaskType, OTXTrainType
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
@@ -119,7 +119,7 @@ class TVClassificationModel(nn.Module):
         freeze_backbone (bool, optional): Whether to freeze the backbone model. Defaults to False.
         task (Literal[OTXTaskType.MULTI_CLASS_CLS, OTXTaskType.MULTI_LABEL_CLS, OTXTaskType.H_LABEL_CLS], optional):
             The type of classification task.
-        train_type (Literal["supervised", "semi_supervised"], optional): The type of training.
+        train_type (Literal[OTXTrainType.SUPERVISED, OTXTrainType.SEMI_SUPERVISED], optional): The type of training.
         head_config (dict | None, optional): The configuration for the head module.
 
     Methods:
@@ -139,7 +139,7 @@ class TVClassificationModel(nn.Module):
             OTXTaskType.MULTI_LABEL_CLS,
             OTXTaskType.H_LABEL_CLS,
         ] = OTXTaskType.MULTI_CLASS_CLS,
-        train_type: Literal["supervised", "semi_supervised"] = "supervised",
+        train_type: Literal[OTXTrainType.SUPERVISED, OTXTrainType.SEMI_SUPERVISED] = OTXTrainType.SUPERVISED,
         head_config: dict | None = None,
     ) -> None:
         super().__init__()
@@ -189,7 +189,7 @@ class TVClassificationModel(nn.Module):
         else:
             feature_channel = last_layer.in_features
         if self.task == OTXTaskType.MULTI_CLASS_CLS:
-            if self.train_type == "semi_supervised":
+            if self.train_type == OTXTrainType.SEMI_SUPERVISED:
                 self.neck = nn.Sequential(*layers) if layers else None
                 return OTXSemiSLLinearClsHead(
                     num_classes=self.num_classes,
@@ -403,7 +403,7 @@ class OTXTVModel(OTXModel):
         freeze_backbone (bool, optional): Whether to freeze the backbone model. Defaults to False.
         task (Literal[OTXTaskType.MULTI_CLASS_CLS, OTXTaskType.MULTI_LABEL_CLS, OTXTaskType.H_LABEL_CLS], optional):
             The type of classification task.
-        train_type (Literal["supervised", "semi_supervised"], optional): The type of training.
+        train_type (Literal[OTXTrainType.SUPERVISED, OTXTrainType.SEMI_SUPERVISED], optional): The type of training.
     """
 
     model: TVClassificationModel
@@ -421,7 +421,7 @@ class OTXTVModel(OTXModel):
             OTXTaskType.MULTI_LABEL_CLS,
             OTXTaskType.H_LABEL_CLS,
         ] = OTXTaskType.MULTI_CLASS_CLS,
-        train_type: Literal["supervised", "semi_supervised"] = "supervised",
+        train_type: Literal[OTXTrainType.SUPERVISED, OTXTrainType.SEMI_SUPERVISED] = OTXTrainType.SUPERVISED,
     ) -> None:
         self.backbone = backbone
         self.freeze_backbone = freeze_backbone
@@ -575,7 +575,7 @@ class OTXTVModel(OTXModel):
         """
         loss = super().training_step(batch, batch_idx)
         # Collect metrics related to Semi-SL Training.
-        if self.train_type == "semi_supervised":
+        if self.train_type == OTXTrainType.SEMI_SUPERVISED:
             self.log(
                 "train/unlabeled_coef",
                 self.model.head.unlabeled_coef,
