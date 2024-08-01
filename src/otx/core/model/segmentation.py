@@ -168,7 +168,7 @@ class TorchVisionCompatibleModel(OTXSegmentationModel):
         self.decode_head_configuration = decode_head_configuration if decode_head_configuration is not None else {}
         export_image_configuration = export_image_configuration if export_image_configuration is not None else {}
         self.criterion_configuration = criterion_configuration
-        self.image_size = tuple([int(i) for i in export_image_configuration.get("image_size", (1, 3, 512, 512))])
+        self.image_size = tuple(export_image_configuration.get("image_size", (1, 3, 512, 512)))
         self.mean = export_image_configuration.get("mean", [123.675, 116.28, 103.53])
         self.scale = export_image_configuration.get("std", [58.395, 57.12, 57.375])
         self.name_base_model = name_base_model
