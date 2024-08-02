@@ -4,11 +4,7 @@
 import pytest
 import torch
 from otx.algo.classification.classifier import ImageClassifier
-from otx.algo.classification.efficientnet import (
-    EfficientNetForHLabelCls,
-    EfficientNetForMulticlassCls,
-    EfficientNetForMultilabelCls,
-)
+from otx.algo.classification.efficientnet import EfficientNetForClassification
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.classification import (
     HlabelClsBatchPredEntity,
@@ -19,7 +15,7 @@ from otx.core.data.entity.classification import (
 
 @pytest.fixture()
 def fxt_multi_class_cls_model():
-    return EfficientNetForMulticlassCls(
+    return EfficientNetForClassification(
         version="b0",
         label_info=10,
     )
@@ -57,9 +53,10 @@ class TestEfficientNetForMulticlassCls:
 
 @pytest.fixture()
 def fxt_multi_label_cls_model():
-    return EfficientNetForMultilabelCls(
+    return EfficientNetForClassification(
         version="b0",
         label_info=10,
+        task="MULTI_LABEL_CLS",
     )
 
 
@@ -95,9 +92,10 @@ class TestEfficientNetForMultilabelCls:
 
 @pytest.fixture()
 def fxt_h_label_cls_model(fxt_hlabel_data):
-    return EfficientNetForHLabelCls(
+    return EfficientNetForClassification(
         version="b0",
         label_info=fxt_hlabel_data,
+        task="H_LABEL_CLS",
     )
 
 

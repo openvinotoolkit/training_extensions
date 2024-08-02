@@ -4,13 +4,17 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Literal
 
 import numpy as np
 import torch
 from torch import Tensor
+from torchmetrics import Metric, MetricCollection
 
+from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.classification import (
+    CLASSIFICATION_BATCH_DATA_ENTITY,
+    CLASSIFICATION_BATCH_PRED_ENTITY,
     HlabelClsBatchDataEntity,
     HlabelClsBatchPredEntity,
     MulticlassClsBatchDataEntity,
@@ -18,8 +22,11 @@ from otx.core.data.entity.classification import (
     MultilabelClsBatchDataEntity,
     MultilabelClsBatchPredEntity,
 )
+from otx.core.exporter.base import OTXModelExporter
+from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.metrics import MetricInput
 from otx.core.metrics.accuracy import (
+    DefaultClsMetricCallable,
     HLabelClsMetricCallble,
     MultiClassClsMetricCallable,
     MultiLabelClsMetricCallable,
@@ -28,12 +35,248 @@ from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallab
 from otx.core.schedulers import LRSchedulerListCallable
 from otx.core.types.export import TaskLevelExportParameters
 from otx.core.types.label import HLabelInfo, LabelInfo, LabelInfoTypes
+from otx.core.types.task import OTXTaskType, OTXTrainType
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
     from model_api.models.utils import ClassificationResult
 
-    from otx.core.metrics import MetricCallable
+    from otx.core.metrics import MetricCallable, MetricCallablePerTask
+
+
+class OTXClassificationModel(OTXModel[CLASSIFICATION_BATCH_DATA_ENTITY, CLASSIFICATION_BATCH_PRED_ENTITY]):
+    """Base class for the classification models used in OTX."""
+
+    def __init__(
+        self,
+        label_info: LabelInfoTypes,
+        optimizer: OptimizerCallable = DefaultOptimizerCallable,
+        scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
+        metric: MetricCallablePerTask = DefaultClsMetricCallable,
+        torch_compile: bool = False,
+        task: Literal[
+            OTXTaskType.MULTI_CLASS_CLS,
+            OTXTaskType.MULTI_LABEL_CLS,
+            OTXTaskType.H_LABEL_CLS,
+        ] = OTXTaskType.MULTI_CLASS_CLS,
+        train_type: Literal[OTXTrainType.SUPERVISED, OTXTrainType.SEMI_SUPERVISED] = OTXTrainType.SUPERVISED,
+    ) -> None:
+        self.train_type = train_type
+        self.task = task
+
+        super().__init__(
+            label_info=label_info,
+            optimizer=optimizer,
+            scheduler=scheduler,
+            metric=metric,
+            torch_compile=torch_compile,
+        )
+        self.image_size = (1, 3, 224, 224)
+
+    def training_step(self, batch: CLASSIFICATION_BATCH_DATA_ENTITY, batch_idx: int) -> Tensor:
+        """Performs a single training step on a batch of data."""
+        loss = super().training_step(batch, batch_idx)
+        # Collect metrics related to Semi-SL Training.
+        if self.train_type == OTXTrainType.SEMI_SUPERVISED:
+            if hasattr(self.model.head, "unlabeled_coef"):
+                self.log(
+                    "train/unlabeled_coef",
+                    self.model.head.unlabeled_coef,
+                    on_step=True,
+                    on_epoch=False,
+                    prog_bar=True,
+                )
+            if hasattr(self.model.head, "num_pseudo_label"):
+                self.log(
+                    "train/num_pseudo_label",
+                    self.model.head.num_pseudo_label,
+                    on_step=True,
+                    on_epoch=False,
+                    prog_bar=True,
+                )
+        return loss
+
+    def configure_metric(self) -> None:
+        """Configure the metric."""
+        if not callable(self.metric_callable):
+            raise TypeError(self.metric_callable)
+
+        metric = self.metric_callable(self.label_info, self.task)  # type: ignore[call-arg]
+
+        if not isinstance(metric, (Metric, MetricCollection)):
+            msg = "Metric should be the instance of `torchmetrics.Metric` or `torchmetrics.MetricCollection`."
+            raise TypeError(msg, metric)
+
+        self._metric = metric.to(self.device)
+
+    def _customize_inputs(self, inputs: CLASSIFICATION_BATCH_DATA_ENTITY) -> dict[str, Any]:
+        if self.training:
+            mode = "loss"
+        elif self.explain_mode:
+            mode = "explain"
+        else:
+            mode = "predict"
+
+        if isinstance(inputs, dict):
+            # When used with an unlabeled dataset, it comes in as a dict.
+            images = {key: inputs[key].stacked_images for key in inputs}
+            labels = {key: torch.cat(inputs[key].labels, dim=0) for key in inputs}
+            imgs_info = {key: inputs[key].imgs_info for key in inputs}
+            return {
+                "images": images,
+                "labels": labels,
+                "imgs_info": imgs_info,
+                "mode": mode,
+            }
+
+        labels = (
+            torch.cat(inputs.labels, dim=0) if self.task == OTXTaskType.MULTI_CLASS_CLS else torch.stack(inputs.labels)
+        )
+        return {
+            "images": inputs.stacked_images,
+            "labels": labels,
+            "imgs_info": inputs.imgs_info,
+            "mode": mode,
+        }
+
+    def _customize_outputs(
+        self,
+        outputs: Any,  # noqa: ANN401
+        inputs: CLASSIFICATION_BATCH_DATA_ENTITY,
+    ) -> CLASSIFICATION_BATCH_PRED_ENTITY | OTXBatchLossEntity:
+        if self.training:
+            return OTXBatchLossEntity(loss=outputs)
+
+        # To list, batch-wise
+        if self.task == OTXTaskType.H_LABEL_CLS:
+            # To list, batch-wise
+            if isinstance(outputs, dict):
+                scores = outputs["scores"]
+                labels = outputs["labels"]
+            else:
+                scores = outputs
+                labels = outputs.argmax(-1, keepdim=True).unbind(0)
+        else:
+            logits = outputs if isinstance(outputs, torch.Tensor) else outputs["logits"]
+            scores = torch.unbind(logits, 0)
+            labels = logits.argmax(-1, keepdim=True).unbind(0)
+
+        entity_kwargs = {
+            "batch_size": inputs.batch_size,
+            "images": inputs.images,
+            "imgs_info": inputs.imgs_info,
+            "scores": scores,
+            "labels": labels,
+        }
+
+        if self.task == OTXTaskType.MULTI_CLASS_CLS:
+            return MulticlassClsBatchPredEntity(**entity_kwargs)
+        if self.task == OTXTaskType.MULTI_LABEL_CLS:
+            return MultilabelClsBatchPredEntity(**entity_kwargs)
+        if self.task == OTXTaskType.H_LABEL_CLS:
+            return HlabelClsBatchPredEntity(**entity_kwargs)
+        msg = f"Task type {self.task} is not supported."
+        raise NotImplementedError(msg)
+
+    def _convert_pred_entity_to_compute_metric(
+        self,
+        preds: CLASSIFICATION_BATCH_PRED_ENTITY,
+        inputs: CLASSIFICATION_BATCH_DATA_ENTITY,
+    ) -> MetricInput:
+        if self.task == OTXTaskType.MULTI_CLASS_CLS:
+            pred = torch.tensor(preds.labels)
+            target = torch.tensor(inputs.labels)
+        elif self.task == OTXTaskType.MULTI_LABEL_CLS:
+            pred = torch.stack(preds.scores)
+            target = torch.stack(inputs.labels)
+        elif self.task == OTXTaskType.H_LABEL_CLS:
+            hlabel_info: HLabelInfo = self.label_info  # type: ignore[assignment]
+            _labels = torch.stack(preds.labels) if isinstance(preds.labels, list) else preds.labels
+            _scores = torch.stack(preds.scores) if isinstance(preds.scores, list) else preds.scores
+            target = torch.stack(inputs.labels)
+            if hlabel_info.num_multilabel_classes > 0:
+                preds_multiclass = _labels[:, : hlabel_info.num_multiclass_heads]
+                preds_multilabel = _scores[:, hlabel_info.num_multiclass_heads :]
+                pred = torch.cat([preds_multiclass, preds_multilabel], dim=1)
+            else:
+                pred = _labels
+        return {
+            "preds": pred,
+            "target": target,
+        }
+
+    @property
+    def _export_parameters(self) -> TaskLevelExportParameters:
+        """Defines parameters required to export a particular model implementation."""
+        export_params = {
+            "model_type": "Classification",
+            "task_type": "classification",
+            "multilabel": self.task == OTXTaskType.MULTI_LABEL_CLS,
+            "hierarchical": self.task == OTXTaskType.H_LABEL_CLS,
+        }
+
+        return super()._export_parameters.wrap(**export_params)
+
+    @property
+    def _exporter(self) -> OTXModelExporter:
+        """Creates OTXModelExporter object that can export the model."""
+        return OTXNativeModelExporter(
+            task_level_export_parameters=self._export_parameters,
+            input_size=self.image_size,
+            mean=(123.675, 116.28, 103.53),
+            std=(58.395, 57.12, 57.375),
+            resize_mode="standard",
+            pad_value=0,
+            swap_rgb=False,
+            via_onnx=False,
+            onnx_export_configuration=None,
+            output_names=["logits", "feature_vector", "saliency_map"] if self.explain_mode else None,
+        )
+
+    def get_dummy_input(self, batch_size: int = 1) -> CLASSIFICATION_BATCH_DATA_ENTITY:
+        """Returns a dummy input for classification model."""
+        images = [torch.rand(*self.image_size[1:]) for _ in range(batch_size)]
+        labels = [torch.LongTensor([0])] * batch_size
+        if self.task == OTXTaskType.MULTI_CLASS_CLS:
+            return MulticlassClsBatchDataEntity(batch_size, images, [], labels=labels)
+        if self.task == OTXTaskType.MULTI_LABEL_CLS:
+            return MultilabelClsBatchDataEntity(batch_size, images, [], labels=labels)
+        if self.task == OTXTaskType.H_LABEL_CLS:
+            return HlabelClsBatchDataEntity(batch_size, images, [], labels=labels)
+        msg = f"Task type {self.task} is not supported."
+        raise NotImplementedError(msg)
+
+    def _reset_prediction_layer(self, num_classes: int) -> None:
+        return
+
+    def forward_explain(self, inputs: CLASSIFICATION_BATCH_DATA_ENTITY) -> CLASSIFICATION_BATCH_PRED_ENTITY:
+        """Model forward explain function."""
+        outputs = self.model(images=inputs.stacked_images, mode="explain")
+
+        entity_kwargs = {
+            "batch_size": len(outputs["preds"]),
+            "images": inputs.images,
+            "imgs_info": inputs.imgs_info,
+            "labels": outputs["preds"],
+            "scores": outputs["scores"],
+            "saliency_map": outputs["saliency_map"],
+            "feature_vector": outputs["feature_vector"],
+        }
+        if self.task == OTXTaskType.MULTI_CLASS_CLS:
+            return MulticlassClsBatchPredEntity(**entity_kwargs)
+        if self.task == OTXTaskType.MULTI_LABEL_CLS:
+            return MultilabelClsBatchPredEntity(**entity_kwargs)
+        if self.task == OTXTaskType.H_LABEL_CLS:
+            return HlabelClsBatchPredEntity(**entity_kwargs)
+        msg = f"Task {self.task} is not supported."
+        raise NotImplementedError(msg)
+
+    def forward_for_tracing(self, image: Tensor) -> Tensor | dict[str, Tensor]:
+        """Model forward function used for the model tracing during model exportation."""
+        if self.explain_mode:
+            return self.model(images=image, mode="explain")
+
+        return self.model(images=image, mode="tensor")
 
 
 class OTXMulticlassClsModel(OTXModel[MulticlassClsBatchDataEntity, MulticlassClsBatchPredEntity]):

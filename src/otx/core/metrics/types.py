@@ -10,8 +10,10 @@ from torch import Tensor, zeros
 from torchmetrics import Metric, MetricCollection
 
 from otx.core.types.label import LabelInfo
+from otx.core.types.task import OTXTaskType
 
 MetricCallable = Callable[[LabelInfo], Metric | MetricCollection]
+MetricCallablePerTask = Callable[[LabelInfo, OTXTaskType], Metric | MetricCollection]
 
 
 class NullMetric(Metric):

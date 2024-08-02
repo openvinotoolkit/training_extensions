@@ -16,7 +16,8 @@ from torchmetrics.classification.accuracy import (
 )
 from torchmetrics.collections import MetricCollection
 
-from otx.core.metrics.types import MetricCallable
+from otx.core.metrics.types import MetricCallable, MetricCallablePerTask
+from otx.core.types.task import OTXTaskType
 
 if TYPE_CHECKING:
     from torch import Tensor
@@ -378,3 +379,17 @@ def _mixed_hlabel_accuracy(label_info: HLabelInfo) -> MetricCollection:
 
 
 HLabelClsMetricCallble: MetricCallable = _mixed_hlabel_accuracy  # type: ignore[assignment]
+
+
+def _default_cls_accuracy(label_info: LabelInfo, task: OTXTaskType) -> MetricCollection:
+    if task == OTXTaskType.MULTI_CLASS_CLS:
+        return _multi_class_cls_metric_callable(label_info)
+    if task == OTXTaskType.MULTI_LABEL_CLS:
+        return _multi_label_cls_metric_callable(label_info)
+    if task == OTXTaskType.H_LABEL_CLS:
+        return _mixed_hlabel_accuracy(label_info)  # type: ignore[arg-type]
+    msg = f"Unsupported task type: {task}"
+    raise ValueError(msg)
+
+
+DefaultClsMetricCallable: MetricCallablePerTask = _default_cls_accuracy

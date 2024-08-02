@@ -3,12 +3,13 @@ import math
 import pytest
 from lightning import Trainer
 from otx.algo.callbacks.unlabeled_loss_warmup import UnlabeledLossWarmUpCallback
-from otx.algo.classification.efficientnet import EfficientNetForMulticlassClsSemiSL
+from otx.algo.classification.efficientnet import EfficientNetForClassification
+from otx.core.types.task import OTXTrainType
 
 
 @pytest.fixture()
 def fxt_semisl_model():
-    return EfficientNetForMulticlassClsSemiSL(10)
+    return EfficientNetForClassification(10, train_type=OTXTrainType.SEMI_SUPERVISED)
 
 
 def test_unlabeled_loss_warmup_callback(mocker, fxt_semisl_model):

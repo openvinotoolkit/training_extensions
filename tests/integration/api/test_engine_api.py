@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 from model_api.tilers import Tiler
-from otx.algo.classification.efficientnet import EfficientNetForMulticlassCls
+from otx.algo.classification.efficientnet import EfficientNetForClassification
 from otx.core.config.hpo import HpoConfig
 from otx.core.data.module import OTXDataModule
 from otx.core.model.base import OTXModel
@@ -183,7 +183,7 @@ def test_otx_hpo(
         reason = f"test_otx_hpo for {task} isn't prepared yet."
         pytest.xfail(reason=reason)
 
-    model = EfficientNetForMulticlassCls(label_info=2)
+    model = EfficientNetForClassification(label_info=2)
     hpo_config = HpoConfig(
         search_space={
             "model.scheduler.factor": {

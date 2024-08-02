@@ -65,7 +65,7 @@ if TYPE_CHECKING:
 
     from otx.core.data.module import OTXDataModule
     from otx.core.exporter.base import OTXModelExporter
-    from otx.core.metrics import MetricCallable
+    from otx.core.metrics import MetricCallable, MetricCallablePerTask
 
 logger = logging.getLogger()
 
@@ -106,7 +106,7 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
         label_info: LabelInfoTypes,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
-        metric: MetricCallable = NullMetricCallable,
+        metric: MetricCallable | MetricCallablePerTask = NullMetricCallable,
         torch_compile: bool = False,
         tile_config: TileConfig = TileConfig(enable_tiler=False),
     ) -> None:

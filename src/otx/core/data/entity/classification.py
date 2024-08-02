@@ -197,3 +197,11 @@ class HlabelClsBatchDataEntity(OTXBatchDataEntity[HlabelClsDataEntity]):
 @dataclass
 class HlabelClsBatchPredEntity(OTXBatchPredEntity, HlabelClsBatchDataEntity):
     """Data entity to represent model output predictions for H-label classification task."""
+
+
+CLASSIFICATION_BATCH_DATA_ENTITY = (
+    MulticlassClsBatchDataEntity | MultilabelClsBatchDataEntity | HlabelClsBatchDataEntity
+)
+CLASSIFICATION_BATCH_PRED_ENTITY = (
+    MulticlassClsBatchPredEntity | MultilabelClsBatchPredEntity | HlabelClsBatchPredEntity
+)

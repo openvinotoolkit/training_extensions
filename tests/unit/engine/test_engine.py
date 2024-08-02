@@ -4,7 +4,7 @@
 from pathlib import Path
 
 import pytest
-from otx.algo.classification.efficientnet import EfficientNetForMulticlassCls
+from otx.algo.classification.efficientnet import EfficientNetForClassification
 from otx.algo.classification.torchvision_model import OTXTVModel
 from otx.core.model.base import OTXModel, OVModel
 from otx.core.types.export import OTXExportFormatType
@@ -38,7 +38,7 @@ class TestEngine:
         engine = Engine(work_dir=tmp_path, data_root=data_root)
         assert engine.task == "MULTI_CLASS_CLS"
         assert engine.datamodule.task == "MULTI_CLASS_CLS"
-        assert isinstance(engine.model, EfficientNetForMulticlassCls)
+        assert isinstance(engine.model, EfficientNetForClassification)
 
         assert "default_root_dir" in engine.trainer_params
         assert engine.trainer_params["default_root_dir"] == tmp_path
@@ -54,7 +54,7 @@ class TestEngine:
     def test_model_setter(self, fxt_engine, mocker) -> None:
         assert isinstance(fxt_engine.model, OTXTVModel)
         fxt_engine.model = "efficientnet_b0"
-        assert isinstance(fxt_engine.model, EfficientNetForMulticlassCls)
+        assert isinstance(fxt_engine.model, EfficientNetForClassification)
 
     def test_training_with_override_args(self, fxt_engine, mocker) -> None:
         mocker.patch("pathlib.Path.symlink_to")

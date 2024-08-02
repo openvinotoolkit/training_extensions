@@ -3,6 +3,6 @@
 #
 """Module for OTX custom metrices."""
 
-from otx.core.metrics.types import MetricCallable, MetricInput, NullMetricCallable
+from otx.core.metrics.types import MetricCallable, MetricCallablePerTask, MetricInput, NullMetricCallable
 
-__all__ = ["MetricCallable", "MetricInput", "NullMetricCallable"]
+__all__ = ["MetricCallable", "MetricInput", "NullMetricCallable", "MetricCallablePerTask"]
