@@ -22,7 +22,7 @@ from otx.algo.instance_segmentation.utils.structures.mask import mask_target
 from otx.algo.instance_segmentation.utils.utils import empty_instances
 from otx.algo.modules.base_module import BaseModule, ModuleList
 from otx.algo.modules.conv import build_conv_layer
-from otx.algo.modules.conv_module import ConvModule
+from otx.algo.modules.conv_module import Conv2dModule
 
 BYTES_PER_FLOAT = 4
 #  determine it based on available resources.
@@ -74,7 +74,7 @@ class FCNMaskHead(BaseModule):
             in_channels = self.in_channels if i == 0 else self.conv_out_channels
             padding = (self.conv_kernel_size - 1) // 2
             self.convs.append(
-                ConvModule(
+                Conv2dModule(
                     in_channels,
                     self.conv_out_channels,
                     self.conv_kernel_size,

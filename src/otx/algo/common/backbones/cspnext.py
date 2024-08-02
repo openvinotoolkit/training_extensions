@@ -14,7 +14,7 @@ from typing import ClassVar
 from otx.algo.common.layers import SPPBottleneck
 from otx.algo.detection.layers import CSPLayer
 from otx.algo.modules.base_module import BaseModule
-from otx.algo.modules.conv_module import ConvModule
+from otx.algo.modules.conv_module import Conv2dModule
 from otx.algo.modules.depthwise_separable_conv_module import DepthwiseSeparableConvModule
 from torch import Tensor, nn
 from torch.nn.modules.batchnorm import _BatchNorm
@@ -121,9 +121,9 @@ class CSPNeXt(BaseModule):
         self.frozen_stages = frozen_stages
         self.use_depthwise = use_depthwise
         self.norm_eval = norm_eval
-        conv = DepthwiseSeparableConvModule if use_depthwise else ConvModule
+        conv = DepthwiseSeparableConvModule if use_depthwise else Conv2dModule
         self.stem = nn.Sequential(
-            ConvModule(
+            Conv2dModule(
                 3,
                 int(arch_setting[0][0] * widen_factor // 2),
                 3,
@@ -132,7 +132,7 @@ class CSPNeXt(BaseModule):
                 norm_cfg=norm_cfg,
                 act_cfg=act_cfg,
             ),
-            ConvModule(
+            Conv2dModule(
                 int(arch_setting[0][0] * widen_factor // 2),
                 int(arch_setting[0][0] * widen_factor // 2),
                 3,
@@ -141,7 +141,7 @@ class CSPNeXt(BaseModule):
                 norm_cfg=norm_cfg,
                 act_cfg=act_cfg,
             ),
-            ConvModule(
+            Conv2dModule(
                 int(arch_setting[0][0] * widen_factor // 2),
                 int(arch_setting[0][0] * widen_factor),
                 3,

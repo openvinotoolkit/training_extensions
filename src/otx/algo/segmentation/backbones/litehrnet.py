@@ -1,4 +1,4 @@
-# Copyright (C) 2023 Intel Corporation
+# Copyright (C) 2023-2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 """HRNet network modules for base backbone.
@@ -6,7 +6,6 @@
 Modified from:
 - https://github.com/HRNet/Lite-HRNet
 """
-
 
 from __future__ import annotations
 
@@ -17,7 +16,7 @@ import torch.utils.checkpoint as cp
 from torch import nn
 from torch.nn import functional
 
-from otx.algo.modules import ConvModule, build_conv_layer, build_norm_layer
+from otx.algo.modules import Conv2dModule, build_conv_layer, build_norm_layer
 from otx.algo.modules.base_module import BaseModule
 from otx.algo.segmentation.modules import (
     AsymmetricPositionAttentionModule,
@@ -58,7 +57,7 @@ class NeighbourSupport(nn.Module):
         self.kernel_size = kernel_size
 
         self.key = nn.Sequential(
-            ConvModule(
+            Conv2dModule(
                 in_channels=self.in_channels,
                 out_channels=self.key_channels,
                 kernel_size=1,
@@ -67,7 +66,7 @@ class NeighbourSupport(nn.Module):
                 norm_cfg=norm_cfg,
                 act_cfg={"type": "ReLU"},
             ),
-            ConvModule(
+            Conv2dModule(
                 self.key_channels,
                 self.key_channels,
                 kernel_size=self.kernel_size,
@@ -78,7 +77,7 @@ class NeighbourSupport(nn.Module):
                 norm_cfg=norm_cfg,
                 act_cfg=None,
             ),
-            ConvModule(
+            Conv2dModule(
                 in_channels=self.key_channels,
                 out_channels=self.kernel_size * self.kernel_size,
                 kernel_size=1,
@@ -89,7 +88,7 @@ class NeighbourSupport(nn.Module):
             ),
         )
         self.value = nn.Sequential(
-            ConvModule(
+            Conv2dModule(
                 in_channels=self.in_channels,
                 out_channels=self.value_channels,
                 kernel_size=1,
@@ -100,7 +99,7 @@ class NeighbourSupport(nn.Module):
             ),
             nn.Unfold(kernel_size=self.kernel_size, stride=1, padding=1),
         )
-        self.out_conv = ConvModule(
+        self.out_conv = Conv2dModule(
             in_channels=self.value_channels,
             out_channels=self.in_channels,
             kernel_size=1,
@@ -156,7 +155,7 @@ class CrossResolutionWeighting(nn.Module):
         self.channels = channels
         total_channel = sum(channels)
 
-        self.conv1 = ConvModule(
+        self.conv1 = Conv2dModule(
             in_channels=total_channel,
             out_channels=int(total_channel / ratio),
             kernel_size=1,
@@ -165,7 +164,7 @@ class CrossResolutionWeighting(nn.Module):
             norm_cfg=norm_cfg,
             act_cfg=act_cfg[0],
         )
-        self.conv2 = ConvModule(
+        self.conv2 = Conv2dModule(
             in_channels=int(total_channel / ratio),
             out_channels=total_channel,
             kernel_size=1,
@@ -224,7 +223,7 @@ class SpatialWeighting(nn.Module):
             raise ValueError(msg)
 
         self.global_avgpool = nn.AdaptiveAvgPool2d(1)
-        self.conv1 = ConvModule(
+        self.conv1 = Conv2dModule(
             in_channels=channels,
             out_channels=int(channels / ratio),
             kernel_size=1,
@@ -232,7 +231,7 @@ class SpatialWeighting(nn.Module):
             conv_cfg=conv_cfg,
             act_cfg=act_cfg[0],
         )
-        self.conv2 = ConvModule(
+        self.conv2 = Conv2dModule(
             in_channels=int(channels / ratio),
             out_channels=channels,
             kernel_size=1,
@@ -276,7 +275,7 @@ class SpatialWeightingV2(nn.Module):
         self.internal_channels = int(channels / ratio)
 
         # channel-only branch
-        self.v_channel = ConvModule(
+        self.v_channel = Conv2dModule(
             in_channels=self.in_channels,
             out_channels=self.internal_channels,
             kernel_size=1,
@@ -286,7 +285,7 @@ class SpatialWeightingV2(nn.Module):
             norm_cfg=norm_cfg if enable_norm else None,
             act_cfg=None,
         )
-        self.q_channel = ConvModule(
+        self.q_channel = Conv2dModule(
             in_channels=self.in_channels,
             out_channels=1,
             kernel_size=1,
@@ -296,7 +295,7 @@ class SpatialWeightingV2(nn.Module):
             norm_cfg=norm_cfg if enable_norm else None,
             act_cfg=None,
         )
-        self.out_channel = ConvModule(
+        self.out_channel = Conv2dModule(
             in_channels=self.internal_channels,
             out_channels=self.in_channels,
             kernel_size=1,
@@ -307,7 +306,7 @@ class SpatialWeightingV2(nn.Module):
         )
 
         # spatial-only branch
-        self.v_spatial = ConvModule(
+        self.v_spatial = Conv2dModule(
             in_channels=self.in_channels,
             out_channels=self.internal_channels,
             kernel_size=1,
@@ -317,7 +316,7 @@ class SpatialWeightingV2(nn.Module):
             norm_cfg=norm_cfg if enable_norm else None,
             act_cfg=None,
         )
-        self.q_spatial = ConvModule(
+        self.q_spatial = Conv2dModule(
             in_channels=self.in_channels,
             out_channels=self.internal_channels,
             kernel_size=1,
@@ -439,7 +438,7 @@ class ConditionalChannelWeighting(nn.Module):
         )
         self.depthwise_convs = nn.ModuleList(
             [
-                ConvModule(
+                Conv2dModule(
                     channel,
                     channel,
                     kernel_size=dw_ksize,
@@ -576,7 +575,7 @@ class Stem(nn.Module):
         if input_norm:
             self.input_norm = nn.InstanceNorm2d(in_channels)
 
-        self.conv1 = ConvModule(
+        self.conv1 = Conv2dModule(
             in_channels=in_channels,
             out_channels=stem_channels,
             kernel_size=3,
@@ -589,7 +588,7 @@ class Stem(nn.Module):
 
         self.conv2 = None
         if extra_stride:
-            self.conv2 = ConvModule(
+            self.conv2 = Conv2dModule(
                 in_channels=stem_channels,
                 out_channels=stem_channels,
                 kernel_size=3,
@@ -608,7 +607,7 @@ class Stem(nn.Module):
             inc_channels = self.out_channels - stem_channels
 
         self.branch1 = nn.Sequential(
-            ConvModule(
+            Conv2dModule(
                 branch_channels,
                 branch_channels,
                 kernel_size=3,
@@ -619,7 +618,7 @@ class Stem(nn.Module):
                 norm_cfg=norm_cfg,
                 act_cfg=None,
             ),
-            ConvModule(
+            Conv2dModule(
                 branch_channels,
                 inc_channels,
                 kernel_size=1,
@@ -631,7 +630,7 @@ class Stem(nn.Module):
             ),
         )
 
-        self.expand_conv = ConvModule(
+        self.expand_conv = Conv2dModule(
             branch_channels,
             mid_channels,
             kernel_size=1,
@@ -641,7 +640,7 @@ class Stem(nn.Module):
             norm_cfg=norm_cfg,
             act_cfg={"type": "ReLU"},
         )
-        self.depthwise_conv = ConvModule(
+        self.depthwise_conv = Conv2dModule(
             mid_channels,
             mid_channels,
             kernel_size=3,
@@ -652,7 +651,7 @@ class Stem(nn.Module):
             norm_cfg=norm_cfg,
             act_cfg=None,
         )
-        self.linear_conv = ConvModule(
+        self.linear_conv = Conv2dModule(
             mid_channels,
             branch_channels if stem_channels == self.out_channels else stem_channels,
             kernel_size=1,
@@ -759,7 +758,7 @@ class StemV2(nn.Module):
         if input_norm:
             self.input_norm = nn.InstanceNorm2d(in_channels)
 
-        self.conv1 = ConvModule(
+        self.conv1 = Conv2dModule(
             in_channels=in_channels,
             out_channels=stem_channels,
             kernel_size=3,
@@ -772,7 +771,7 @@ class StemV2(nn.Module):
 
         self.conv2 = None
         if extra_stride:
-            self.conv2 = ConvModule(
+            self.conv2 = Conv2dModule(
                 in_channels=stem_channels,
                 out_channels=stem_channels,
                 kernel_size=3,
@@ -791,7 +790,7 @@ class StemV2(nn.Module):
         for stage in range(1, num_stages + 1):
             self.branch1.append(
                 nn.Sequential(
-                    ConvModule(
+                    Conv2dModule(
                         internal_branch_channels,
                         internal_branch_channels,
                         kernel_size=3,
@@ -802,7 +801,7 @@ class StemV2(nn.Module):
                         norm_cfg=norm_cfg,
                         act_cfg=None,
                     ),
-                    ConvModule(
+                    Conv2dModule(
                         internal_branch_channels,
                         out_branch_channels if stage == num_stages else internal_branch_channels,
                         kernel_size=1,
@@ -817,7 +816,7 @@ class StemV2(nn.Module):
 
             self.branch2.append(
                 nn.Sequential(
-                    ConvModule(
+                    Conv2dModule(
                         internal_branch_channels,
                         mid_channels,
                         kernel_size=1,
@@ -827,7 +826,7 @@ class StemV2(nn.Module):
                         norm_cfg=norm_cfg,
                         act_cfg={"type": "ReLU"},
                     ),
-                    ConvModule(
+                    Conv2dModule(
                         mid_channels,
                         mid_channels,
                         kernel_size=3,
@@ -838,7 +837,7 @@ class StemV2(nn.Module):
                         norm_cfg=norm_cfg,
                         act_cfg=None,
                     ),
-                    ConvModule(
+                    Conv2dModule(
                         mid_channels,
                         out_branch_channels if stage == num_stages else internal_branch_channels,
                         kernel_size=1,
@@ -935,7 +934,7 @@ class ShuffleUnit(nn.Module):
 
         if self.stride > 1:
             self.branch1 = nn.Sequential(
-                ConvModule(
+                Conv2dModule(
                     in_channels,
                     in_channels,
                     kernel_size=3,
@@ -946,7 +945,7 @@ class ShuffleUnit(nn.Module):
                     norm_cfg=norm_cfg,
                     act_cfg=None,
                 ),
-                ConvModule(
+                Conv2dModule(
                     in_channels,
                     branch_features,
                     kernel_size=1,
@@ -959,7 +958,7 @@ class ShuffleUnit(nn.Module):
             )
 
         self.branch2 = nn.Sequential(
-            ConvModule(
+            Conv2dModule(
                 in_channels if (self.stride > 1) else branch_features,
                 branch_features,
                 kernel_size=1,
@@ -969,7 +968,7 @@ class ShuffleUnit(nn.Module):
                 norm_cfg=norm_cfg,
                 act_cfg=act_cfg,
             ),
-            ConvModule(
+            Conv2dModule(
                 branch_features,
                 branch_features,
                 kernel_size=3,
@@ -980,7 +979,7 @@ class ShuffleUnit(nn.Module):
                 norm_cfg=norm_cfg,
                 act_cfg=None,
             ),
-            ConvModule(
+            Conv2dModule(
                 branch_features,
                 branch_features,
                 kernel_size=1,
@@ -1351,7 +1350,7 @@ class LiteHRNet(BaseModule):
             if self.extra["out_modules"]["conv"]["enable"]:
                 out_modules_channels = self.extra["out_modules"]["conv"]["channels"]
                 out_modules.append(
-                    ConvModule(
+                    Conv2dModule(
                         in_channels=in_modules_channels,
                         out_channels=out_modules_channels,
                         kernel_size=1,
@@ -1390,7 +1389,7 @@ class LiteHRNet(BaseModule):
         self.add_stem_features = self.extra.get("add_stem_features", False)
         if self.add_stem_features:
             self.stem_transition = nn.Sequential(
-                ConvModule(
+                Conv2dModule(
                     self.stem.out_channels,
                     self.stem.out_channels,
                     kernel_size=3,
@@ -1401,7 +1400,7 @@ class LiteHRNet(BaseModule):
                     norm_cfg=norm_cfg,
                     act_cfg=None,
                 ),
-                ConvModule(
+                Conv2dModule(
                     self.stem.out_channels,
                     num_channels_last[0],
                     kernel_size=1,

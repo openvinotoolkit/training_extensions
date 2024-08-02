@@ -10,7 +10,7 @@ from typing import Any
 import torch
 from torch import Tensor, nn
 
-from otx.algo.modules import ConvModule
+from otx.algo.modules import Conv2dModule
 from otx.algo.segmentation.modules import IterativeAggregator
 
 from .base_segm_head import BaseSegmHead
@@ -105,7 +105,7 @@ class FCNHead(BaseSegmHead):
 
         conv_padding = (kernel_size // 2) * dilation
         convs = [
-            ConvModule(
+            Conv2dModule(
                 self.in_channels,
                 self.channels,
                 kernel_size=kernel_size,
@@ -117,7 +117,7 @@ class FCNHead(BaseSegmHead):
         ]
         convs.extend(
             [
-                ConvModule(
+                Conv2dModule(
                     self.channels,
                     self.channels,
                     kernel_size=kernel_size,
@@ -134,7 +134,7 @@ class FCNHead(BaseSegmHead):
         else:
             self.convs = nn.Sequential(*convs)
         if self.concat_input:
-            self.conv_cat = ConvModule(
+            self.conv_cat = Conv2dModule(
                 self.in_channels + self.channels,
                 self.channels,
                 kernel_size=kernel_size,

@@ -3,6 +3,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 
 """X3D backbone implementation."""
+
 from __future__ import annotations
 
 import math
@@ -12,7 +13,7 @@ from torch import Tensor, nn
 from torch.nn.modules.batchnorm import _BatchNorm
 
 from otx.algo.modules.activation import Swish, build_activation_layer
-from otx.algo.modules.conv_module import ConvModule
+from otx.algo.modules.conv_module import Conv3dModule
 from otx.algo.utils.mmengine_utils import load_checkpoint
 from otx.algo.utils.weight_init import constant_init, kaiming_init
 
@@ -109,7 +110,7 @@ class BlockX3D(nn.Module):
         self.act_cfg_swish = Swish()
         self.with_cp = with_cp
 
-        self.conv1 = ConvModule(
+        self.conv1 = Conv3dModule(
             in_channels=inplanes,
             out_channels=planes,
             kernel_size=1,
@@ -121,7 +122,7 @@ class BlockX3D(nn.Module):
             act_cfg=self.act_cfg,
         )
         # Here we use the channel-wise conv
-        self.conv2 = ConvModule(
+        self.conv2 = Conv3dModule(
             in_channels=planes,
             out_channels=planes,
             kernel_size=3,
@@ -136,7 +137,7 @@ class BlockX3D(nn.Module):
 
         self.swish = Swish()
 
-        self.conv3 = ConvModule(
+        self.conv3 = Conv3dModule(
             in_channels=planes,
             out_channels=outplanes,
             kernel_size=1,
@@ -315,7 +316,7 @@ class X3DBackbone(nn.Module):
             self.res_layers.append(layer_name)
 
         self.feat_dim = self.base_channels * 2 ** (len(self.stage_blocks) - 1)
-        self.conv5 = ConvModule(
+        self.conv5 = Conv3dModule(
             self.feat_dim,
             int(self.feat_dim * self.gamma_b),
             kernel_size=1,
@@ -400,7 +401,7 @@ class X3DBackbone(nn.Module):
         """
         downsample = None
         if spatial_stride != 1 or layer_inplanes != inplanes:
-            downsample = ConvModule(
+            downsample = Conv3dModule(
                 layer_inplanes,
                 inplanes,
                 kernel_size=1,
@@ -459,7 +460,7 @@ class X3DBackbone(nn.Module):
 
     def _make_stem_layer(self) -> None:
         """Construct the stem layers consists of a conv+norm+act module and a pooling layer."""
-        self.conv1_s = ConvModule(
+        self.conv1_s = Conv3dModule(
             self.in_channels,
             self.base_channels,
             kernel_size=(1, 3, 3),
@@ -470,7 +471,7 @@ class X3DBackbone(nn.Module):
             norm_cfg=None,
             act_cfg=None,
         )
-        self.conv1_t = ConvModule(
+        self.conv1_t = Conv3dModule(
             self.base_channels,
             self.base_channels,
             kernel_size=(5, 1, 1),

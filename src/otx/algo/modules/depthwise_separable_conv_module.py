@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from torch import Tensor, nn
 
-from .conv_module import ConvModule
+from .conv_module import Conv2dModule
 
 
 class DepthwiseSeparableConvModule(nn.Module):
@@ -74,7 +74,7 @@ class DepthwiseSeparableConvModule(nn.Module):
         super().__init__()
         assert "groups" not in kwargs, "groups should not be specified"  # noqa: S101
 
-        # if norm/activation config of depthwise/pointwise ConvModule is not
+        # if norm/activation config of depthwise/pointwise Conv2dModule is not
         # specified, use default config.
         dw_norm_cfg = dw_norm_cfg or norm_cfg
         dw_act_cfg = dw_act_cfg or act_cfg
@@ -82,7 +82,7 @@ class DepthwiseSeparableConvModule(nn.Module):
         pw_act_cfg = pw_act_cfg or act_cfg
 
         # depthwise convolution
-        self.depthwise_conv = ConvModule(
+        self.depthwise_conv = Conv2dModule(
             in_channels,
             in_channels,
             kernel_size,
@@ -95,7 +95,7 @@ class DepthwiseSeparableConvModule(nn.Module):
             **kwargs,
         )
 
-        self.pointwise_conv = ConvModule(
+        self.pointwise_conv = Conv2dModule(
             in_channels,
             out_channels,
             1,

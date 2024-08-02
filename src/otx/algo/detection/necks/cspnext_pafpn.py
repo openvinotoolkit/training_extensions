@@ -17,7 +17,7 @@ from torch import Tensor, nn
 
 from otx.algo.detection.layers import CSPLayer
 from otx.algo.modules.base_module import BaseModule
-from otx.algo.modules.conv_module import ConvModule
+from otx.algo.modules.conv_module import Conv2dModule
 from otx.algo.modules.depthwise_separable_conv_module import DepthwiseSeparableConvModule
 
 
@@ -66,7 +66,7 @@ class CSPNeXtPAFPN(BaseModule):
         self.in_channels = in_channels
         self.out_channels = out_channels
 
-        conv = DepthwiseSeparableConvModule if use_depthwise else ConvModule
+        conv = DepthwiseSeparableConvModule if use_depthwise else Conv2dModule
 
         # build top-down blocks
         self.upsample = nn.Upsample(**upsample_cfg)
@@ -74,7 +74,7 @@ class CSPNeXtPAFPN(BaseModule):
         self.top_down_blocks = nn.ModuleList()
         for idx in range(len(in_channels) - 1, 0, -1):
             self.reduce_layers.append(
-                ConvModule(
+                Conv2dModule(
                     in_channels[idx],
                     in_channels[idx - 1],
                     1,

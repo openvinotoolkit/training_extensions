@@ -18,7 +18,7 @@ from torch.nn.modules.batchnorm import _BatchNorm
 from otx.algo.common.layers import SPPBottleneck
 from otx.algo.detection.layers import CSPLayer
 from otx.algo.modules.base_module import BaseModule
-from otx.algo.modules.conv_module import ConvModule
+from otx.algo.modules.conv_module import Conv2dModule
 from otx.algo.modules.depthwise_separable_conv_module import DepthwiseSeparableConvModule
 
 
@@ -51,7 +51,7 @@ class Focus(nn.Module):
         super().__init__()
         norm_cfg = norm_cfg or {"type": "BN", "momentum": 0.03, "eps": 0.001}
         act_cfg = act_cfg or {"type": "Swish"}
-        self.conv = ConvModule(
+        self.conv = Conv2dModule(
             in_channels * 4,
             out_channels,
             kernel_size,
@@ -183,7 +183,7 @@ class CSPDarknet(BaseModule):
         self.frozen_stages = frozen_stages
         self.use_depthwise = use_depthwise
         self.norm_eval = norm_eval
-        conv = DepthwiseSeparableConvModule if use_depthwise else ConvModule
+        conv = DepthwiseSeparableConvModule if use_depthwise else Conv2dModule
 
         self.stem = Focus(
             3,

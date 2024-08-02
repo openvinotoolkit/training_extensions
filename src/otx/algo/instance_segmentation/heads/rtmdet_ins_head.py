@@ -31,7 +31,7 @@ from otx.algo.instance_segmentation.utils.roi_extractors import OTXRoIAlign
 from otx.algo.instance_segmentation.utils.structures.bbox.transforms import get_box_wh, scale_boxes
 from otx.algo.instance_segmentation.utils.utils import unpack_inst_seg_entity
 from otx.algo.modules.base_module import BaseModule
-from otx.algo.modules.conv_module import ConvModule
+from otx.algo.modules.conv_module import Conv2dModule
 from otx.algo.modules.norm import is_norm
 from otx.algo.utils.mmengine_utils import InstanceData
 from otx.algo.utils.weight_init import bias_init_with_prob, constant_init, normal_init
@@ -102,7 +102,7 @@ class RTMDetInsHead(RTMDetHead):
         for i in range(self.stacked_convs):
             chn = self.in_channels if i == 0 else self.feat_channels
             self.kernel_convs.append(
-                ConvModule(
+                Conv2dModule(
                     chn,
                     self.feat_channels,
                     3,
@@ -739,7 +739,7 @@ class MaskFeatModule(BaseModule):
         convs = []
         for i in range(stacked_convs):
             in_c = in_channels if i == 0 else feat_channels
-            convs.append(ConvModule(in_c, feat_channels, 3, padding=1, act_cfg=act_cfg, norm_cfg=norm_cfg))
+            convs.append(Conv2dModule(in_c, feat_channels, 3, padding=1, act_cfg=act_cfg, norm_cfg=norm_cfg))
         self.stacked_convs = nn.Sequential(*convs)
         self.projection = nn.Conv2d(feat_channels, num_prototypes, kernel_size=1)
 
@@ -843,7 +843,7 @@ class RTMDetInsSepBNHead(RTMDetInsHead):
             for i in range(self.stacked_convs):
                 chn = self.in_channels if i == 0 else self.feat_channels
                 cls_convs.append(
-                    ConvModule(
+                    Conv2dModule(
                         chn,
                         self.feat_channels,
                         3,
@@ -855,7 +855,7 @@ class RTMDetInsSepBNHead(RTMDetInsHead):
                     ),
                 )
                 reg_convs.append(
-                    ConvModule(
+                    Conv2dModule(
                         chn,
                         self.feat_channels,
                         3,
@@ -867,7 +867,7 @@ class RTMDetInsSepBNHead(RTMDetInsHead):
                     ),
                 )
                 kernel_convs.append(
-                    ConvModule(
+                    Conv2dModule(
                         chn,
                         self.feat_channels,
                         3,

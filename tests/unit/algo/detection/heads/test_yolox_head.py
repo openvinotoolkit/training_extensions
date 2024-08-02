@@ -10,7 +10,7 @@ import torch
 from omegaconf import DictConfig
 from otx.algo.detection.heads import YOLOXHead
 from otx.algo.detection.utils.assigners import SimOTAAssigner
-from otx.algo.modules.conv_module import ConvModule
+from otx.algo.modules.conv_module import Conv2dModule
 from otx.algo.modules.depthwise_separable_conv_module import DepthwiseSeparableConvModule
 from otx.algo.utils.mmengine_utils import InstanceData
 
@@ -52,7 +52,7 @@ class TestYOLOXHead:
         }
         head = YOLOXHead(num_classes=4, in_channels=1, stacked_convs=1, use_depthwise=False, train_cfg=train_cfg)
         assert not head.use_l1
-        assert isinstance(head.multi_level_cls_convs[0][0], ConvModule)
+        assert isinstance(head.multi_level_cls_convs[0][0], Conv2dModule)
 
         feat = [torch.rand(1, 1, s // feat_size, s // feat_size) for feat_size in [4, 8, 16]]
         cls_scores, bbox_preds, objectnesses = head.forward(feat)

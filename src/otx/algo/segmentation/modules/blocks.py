@@ -12,7 +12,7 @@ import torch.nn.functional as f
 from torch import nn
 from torch.nn import AdaptiveAvgPool2d, AdaptiveMaxPool2d
 
-from otx.algo.modules import ConvModule
+from otx.algo.modules import Conv2dModule
 
 
 class PSPModule(nn.Module):
@@ -68,7 +68,7 @@ class AsymmetricPositionAttentionModule(nn.Module):
         if psp_size is None:
             psp_size = (1, 3, 6, 8)
         self.norm_cfg = norm_cfg
-        self.query_key = ConvModule(
+        self.query_key = Conv2dModule(
             in_channels=self.in_channels,
             out_channels=self.key_channels,
             kernel_size=1,
@@ -80,7 +80,7 @@ class AsymmetricPositionAttentionModule(nn.Module):
         )
         self.key_psp = PSPModule(psp_size, method="max")
 
-        self.value = ConvModule(
+        self.value = Conv2dModule(
             in_channels=self.in_channels,
             out_channels=self.value_channels,
             kernel_size=1,
@@ -92,7 +92,7 @@ class AsymmetricPositionAttentionModule(nn.Module):
         )
         self.value_psp = PSPModule(psp_size, method="max")
 
-        self.out_conv = ConvModule(
+        self.out_conv = Conv2dModule(
             in_channels=self.value_channels,
             out_channels=self.in_channels,
             kernel_size=1,
@@ -169,7 +169,7 @@ class LocalAttentionModule(nn.Module):
         self.conv_cfg = conv_cfg
         self.norm_cfg = norm_cfg
 
-        self.dwconv1 = ConvModule(
+        self.dwconv1 = Conv2dModule(
             in_channels=self.num_channels,
             out_channels=self.num_channels,
             kernel_size=3,
@@ -180,7 +180,7 @@ class LocalAttentionModule(nn.Module):
             norm_cfg=self.norm_cfg,
             act_cfg={"type": "ReLU"},
         )
-        self.dwconv2 = ConvModule(
+        self.dwconv2 = Conv2dModule(
             in_channels=self.num_channels,
             out_channels=self.num_channels,
             kernel_size=3,
@@ -191,7 +191,7 @@ class LocalAttentionModule(nn.Module):
             norm_cfg=self.norm_cfg,
             act_cfg={"type": "ReLU"},
         )
-        self.dwconv3 = ConvModule(
+        self.dwconv3 = Conv2dModule(
             in_channels=self.num_channels,
             out_channels=self.num_channels,
             kernel_size=3,

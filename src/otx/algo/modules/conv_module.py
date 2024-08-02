@@ -3,13 +3,14 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 
 """This implementation copied ConvModule of mmcv.cnn.bricks.ConvModule."""
+
 # TODO(someone): Revisit mypy errors after deprecation of mmlab
 # mypy: ignore-errors
 from __future__ import annotations
 
 import warnings
 from functools import partial
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, TypeVar
 
 import torch
 from torch import nn
@@ -19,12 +20,14 @@ from torch.nn.modules.instancenorm import _InstanceNorm as InstanceNorm
 from otx.algo.utils.weight_init import constant_init, kaiming_init
 
 from .activation import build_activation_layer
-from .conv import build_conv_layer
 from .norm import build_norm_layer
 from .padding import build_padding_layer
 
 if TYPE_CHECKING:
     from torch.nn.modules.conv import _ConvNd as ConvNd
+
+
+T_ConvND = TypeVar("T_ConvND", bound=nn.Conv1d | nn.Conv2d | nn.Conv3d | nn.ConvTranspose2d | nn.ConvTranspose3d)
 
 
 def efficient_conv_bn_eval_forward(bn: BatchNorm, conv: ConvNd, x: torch.Tensor) -> torch.Tensor:
@@ -119,6 +122,7 @@ class ConvModule(nn.Module):
     """
 
     _abbr_ = "conv_block"
+    _conv_nd: T_ConvND
 
     def __init__(
         self,
@@ -168,8 +172,7 @@ class ConvModule(nn.Module):
         # reset padding to 0 for conv module
         conv_padding = 0 if self.with_explicit_padding else padding
         # build convolution layer
-        self.conv = build_conv_layer(
-            conv_cfg,
+        self.conv = self._conv_nd(
             in_channels,
             out_channels,
             kernel_size,
@@ -361,3 +364,15 @@ class ConvModule(nn.Module):
         self.turn_on_efficient_conv_bn_eval(efficient_conv_bn_eval)
 
         return self
+
+
+class Conv2dModule(ConvModule):
+    """A conv2d block that bundles conv/norm/activation layers."""
+
+    _conv_nd = nn.Conv2d
+
+
+class Conv3dModule(ConvModule):
+    """A conv3d block that bundles conv/norm/activation layers."""
+
+    _conv_nd = nn.Conv3d

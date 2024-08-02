@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import torch
 from otx.algo.modules.base_module import BaseModule
-from otx.algo.modules.conv_module import ConvModule
+from otx.algo.modules.conv_module import Conv2dModule
 from torch import Tensor, nn
 
 
@@ -47,7 +47,7 @@ class SPPBottleneck(BaseModule):
         act_cfg = act_cfg or {"type": "Swish"}
 
         mid_channels = in_channels // 2
-        self.conv1 = ConvModule(
+        self.conv1 = Conv2dModule(
             in_channels,
             mid_channels,
             1,
@@ -58,7 +58,14 @@ class SPPBottleneck(BaseModule):
         )
         self.poolings = nn.ModuleList([nn.MaxPool2d(kernel_size=ks, stride=1, padding=ks // 2) for ks in kernel_sizes])
         conv2_channels = mid_channels * (len(kernel_sizes) + 1)
-        self.conv2 = ConvModule(conv2_channels, out_channels, 1, conv_cfg=conv_cfg, norm_cfg=norm_cfg, act_cfg=act_cfg)
+        self.conv2 = Conv2dModule(
+            conv2_channels,
+            out_channels,
+            1,
+            conv_cfg=conv_cfg,
+            norm_cfg=norm_cfg,
+            act_cfg=act_cfg,
+        )
 
     def forward(self, x: Tensor) -> Tensor:
         """Forward."""

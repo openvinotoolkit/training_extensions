@@ -20,7 +20,7 @@ from otx.algo.detection.heads.class_incremental_mixin import (
 )
 from otx.algo.detection.utils.prior_generators.utils import anchor_inside_flags
 from otx.algo.detection.utils.utils import unmap
-from otx.algo.modules.conv_module import ConvModule
+from otx.algo.modules.conv_module import Conv2dModule
 from otx.algo.modules.scale import Scale
 from otx.algo.utils.mmengine_utils import InstanceData
 
@@ -111,7 +111,7 @@ class ATSSHead(ClassIncrementalMixin, AnchorHead):
         for i in range(self.stacked_convs):
             chn = self.in_channels if i == 0 else self.feat_channels
             self.cls_convs.append(
-                ConvModule(
+                Conv2dModule(
                     chn,
                     self.feat_channels,
                     3,
@@ -122,7 +122,7 @@ class ATSSHead(ClassIncrementalMixin, AnchorHead):
                 ),
             )
             self.reg_convs.append(
-                ConvModule(
+                Conv2dModule(
                     chn,
                     self.feat_channels,
                     3,

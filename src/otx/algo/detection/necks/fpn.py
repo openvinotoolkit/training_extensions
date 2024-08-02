@@ -13,7 +13,7 @@ from __future__ import annotations
 from torch import Tensor, nn
 
 from otx.algo.modules.base_module import BaseModule
-from otx.algo.modules.conv_module import ConvModule
+from otx.algo.modules.conv_module import Conv2dModule
 
 
 class FPN(BaseModule):
@@ -101,7 +101,7 @@ class FPN(BaseModule):
         self.fpn_convs = nn.ModuleList()
 
         for i in range(self.start_level, self.backbone_end_level):
-            l_conv = ConvModule(
+            l_conv = Conv2dModule(
                 in_channels[i],
                 out_channels,
                 1,
@@ -110,7 +110,7 @@ class FPN(BaseModule):
                 act_cfg=act_cfg,
                 inplace=False,
             )
-            fpn_conv = ConvModule(
+            fpn_conv = Conv2dModule(
                 out_channels,
                 out_channels,
                 3,
@@ -132,7 +132,7 @@ class FPN(BaseModule):
                     conv_in_channels = self.in_channels[self.backbone_end_level - 1]
                 else:
                     conv_in_channels = out_channels
-                extra_fpn_conv = ConvModule(
+                extra_fpn_conv = Conv2dModule(
                     conv_in_channels,
                     out_channels,
                     3,

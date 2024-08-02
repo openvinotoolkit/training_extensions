@@ -20,7 +20,7 @@ from otx.algo.detection.utils.utils import (
     sigmoid_geometric_mean,
     unmap,
 )
-from otx.algo.modules.conv_module import ConvModule
+from otx.algo.modules.conv_module import Conv2dModule
 from otx.algo.modules.depthwise_separable_conv_module import DepthwiseSeparableConvModule
 from otx.algo.modules.norm import is_norm
 from otx.algo.modules.scale import Scale
@@ -61,7 +61,7 @@ class RTMDetHead(ATSSHead):
         for i in range(self.stacked_convs):
             chn = self.in_channels if i == 0 else self.feat_channels
             self.cls_convs.append(
-                ConvModule(
+                Conv2dModule(
                     chn,
                     self.feat_channels,
                     3,
@@ -73,7 +73,7 @@ class RTMDetHead(ATSSHead):
                 ),
             )
             self.reg_convs.append(
-                ConvModule(
+                Conv2dModule(
                     chn,
                     self.feat_channels,
                     3,
@@ -680,7 +680,7 @@ class RTMDetSepBNHead(RTMDetHead):
 
     def _init_layers(self) -> None:
         """Initialize layers of the head."""
-        conv = DepthwiseSeparableConvModule if self.use_depthwise else ConvModule
+        conv = DepthwiseSeparableConvModule if self.use_depthwise else Conv2dModule
         self.cls_convs = nn.ModuleList()
         self.reg_convs = nn.ModuleList()
 

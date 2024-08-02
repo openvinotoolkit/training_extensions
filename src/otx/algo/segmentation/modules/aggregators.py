@@ -9,7 +9,7 @@ import torch
 from torch import nn
 from torch.nn import functional as f
 
-from otx.algo.modules import ConvModule, DepthwiseSeparableConvModule
+from otx.algo.modules import Conv2dModule, DepthwiseSeparableConvModule
 
 from .utils import normalize
 
@@ -57,8 +57,8 @@ class IterativeAggregator(nn.Module):
         min_channels = min_channels if min_channels is not None else 0
 
         projects: list[DepthwiseSeparableConvModule | None] = []
-        expanders: list[ConvModule | None] = []
-        fuse_layers: list[ConvModule | None] = []
+        expanders: list[Conv2dModule | None] = []
+        fuse_layers: list[Conv2dModule | None] = []
 
         for i in range(num_branches):
             if not self.use_concat or i == 0:
@@ -66,7 +66,7 @@ class IterativeAggregator(nn.Module):
             else:
                 out_channels = self.in_channels[i + 1]
                 fuse_layers.append(
-                    ConvModule(
+                    Conv2dModule(
                         in_channels=2 * out_channels,
                         out_channels=out_channels,
                         kernel_size=1,
@@ -99,7 +99,7 @@ class IterativeAggregator(nn.Module):
 
             if self.in_channels[i] < min_channels:
                 expanders.append(
-                    ConvModule(
+                    Conv2dModule(
                         in_channels=self.in_channels[i],
                         out_channels=min_channels,
                         kernel_size=1,
