@@ -5,7 +5,7 @@
 import pytest
 import torch
 from otx.algo.keypoint_detection.rtmpose import RTMPoseTiny
-from otx.algo.utils.mmengine_utils import InstanceData
+from otx.algo.keypoint_detection.utils.data_sample import PoseDataSample
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.keypoint_detection import KeypointDetBatchDataEntity
 from torchvision import tv_tensors
@@ -30,11 +30,11 @@ class TestRTMPoseTiny:
         assert isinstance(preds, OTXBatchLossEntity)
 
         outputs = [
-            InstanceData(
+            PoseDataSample(
                 keypoints=torch.randn((2, 17, 2)),
-                keypoints_x_label=torch.randn((2, 17)),
-                keypoints_y_label=torch.randn((2, 17)),
-                scores=torch.randn((2, 17)),
+                keypoint_x_labels=torch.randn((2, 17)),
+                keypoint_y_labels=torch.randn((2, 17)),
+                keypoint_weights=torch.randn((2, 17)),
             ),
         ]
         fxt_keypoint_det_model.training = False

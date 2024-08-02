@@ -6,8 +6,7 @@ import pytest
 import torch
 from otx.algo.keypoint_detection.heads.rtmcc_head import RTMCCHead
 from otx.algo.keypoint_detection.losses.kl_discret_loss import KLDiscretLoss
-from otx.algo.keypoint_detection.utils.simcc_label import SimCCLabel
-from otx.algo.utils.mmengine_utils import InstanceData
+from otx.algo.keypoint_detection.utils.data_sample import PoseDataSample
 from otx.core.data.entity.base import ImageInfo
 from otx.core.data.entity.keypoint_detection import KeypointDetBatchDataEntity
 from torchvision import tv_tensors
@@ -43,32 +42,31 @@ class TestRTMCCHead:
 
     @pytest.fixture()
     def fxt_rtmcc_head(self) -> RTMCCHead:
-        codec = SimCCLabel(
-            input_size=(192, 256),
-            sigma=(4.9, 5.66),
-            simcc_split_ratio=2.0,
-            normalize=False,
-            use_dark=False,
-        )
         return RTMCCHead(
             out_channels=17,
             in_channels=384,
-            input_size=codec.input_size,
-            in_featuremap_size=tuple([s // 32 for s in codec.input_size]),
-            simcc_split_ratio=codec.simcc_split_ratio,
+            input_size=(192, 256),
+            in_featuremap_size=(6, 8),
+            simcc_split_ratio=2.0,
             final_layer_kernel_size=7,
             loss=KLDiscretLoss(use_target_weight=True, beta=10.0, label_softmax=True),
-            decoder=codec,
+            decoder_cfg={
+                "input_size": (192, 256),
+                "simcc_split_ratio": 2.0,
+                "sigma": (4.9, 5.66),
+                "normalize": False,
+                "use_dark": False,
+            },
             gau_cfg={
-                "hidden_dims": 256,
+                "num_token": 17,
+                "in_token_dims": 256,
+                "out_token_dims": 256,
                 "s": 128,
                 "expansion_factor": 2,
                 "act_fn": "SiLU",
                 "use_rel_bias": False,
                 "pos_enc": False,
             },
-            train_cfg={},
-            test_cfg={},
         )
 
     def test_forward(self, fxt_rtmcc_head, fxt_features) -> None:
@@ -89,8 +87,8 @@ class TestRTMCCHead:
     def test_predict(self, fxt_rtmcc_head, fxt_features) -> None:
         preds = fxt_rtmcc_head.predict(fxt_features)
         for pred in preds:
-            assert isinstance(pred, InstanceData)
+            assert isinstance(pred, PoseDataSample)
             assert hasattr(pred, "keypoints")
-            assert hasattr(pred, "scores")
-            assert hasattr(pred, "keypoints_x_label")
-            assert hasattr(pred, "keypoints_y_label")
+            assert hasattr(pred, "keypoint_weights")
+            assert hasattr(pred, "keypoint_x_labels")
+            assert hasattr(pred, "keypoint_y_labels")
