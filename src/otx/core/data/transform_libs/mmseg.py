@@ -1,6 +1,5 @@
-# Copyright (C) 2023 Intel Corporation
+# Copyright (C) 2023-2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-#
 """Helper to support MMPretrain data transform functions."""
 
 from __future__ import annotations
@@ -8,12 +7,8 @@ from __future__ import annotations
 from copy import deepcopy
 from typing import TYPE_CHECKING, Callable
 
-from mmseg.datasets.transforms import (
-    LoadAnnotations as MMSegLoadAnnotations,
-)
-from mmseg.datasets.transforms import (
-    PackSegInputs as MMSegPackInputs,
-)
+from mmseg.datasets.transforms import LoadAnnotations as MMSegLoadAnnotations
+from mmseg.datasets.transforms import PackSegInputs as MMSegPackInputs
 from mmseg.registry import TRANSFORMS
 from torchvision import tv_tensors
 

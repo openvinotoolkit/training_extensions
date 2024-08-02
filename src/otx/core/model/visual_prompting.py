@@ -1,6 +1,5 @@
 # Copyright (C) 2023-2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-
 """Class definition for visual prompting models entity used in OTX."""
 
 from __future__ import annotations
@@ -25,12 +24,13 @@ from model_api.models.visual_prompting import (
 from torch import Tensor
 from torchvision import tv_tensors
 
-from otx.core.data.entity.base import Points
+from otx.core.data.entity.base import ImageInfo, Points
 from otx.core.data.entity.visual_prompting import (
     VisualPromptingBatchDataEntity,
     VisualPromptingBatchPredEntity,
     ZeroShotVisualPromptingBatchDataEntity,
     ZeroShotVisualPromptingBatchPredEntity,
+    ZeroShotVisualPromptingLabel,
 )
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.visual_prompting import OTXVisualPromptingModelExporter
@@ -260,6 +260,22 @@ class OTXVisualPromptingModel(OTXModel[VisualPromptingBatchDataEntity, VisualPro
         msg = f"Reconfiguring label_info has no effect on {self.__class__.__name__}."
         log.warning(msg)
 
+    def get_dummy_input(self, batch_size: int = 1) -> VisualPromptingBatchDataEntity:
+        """Returns a dummy input for VPT model."""
+        images = [torch.rand(3, self.model.image_size, self.model.image_size) for _ in range(batch_size)]
+        labels = [{"points": torch.LongTensor([0] * batch_size)}] * batch_size
+        prompts = [torch.zeros((1, 2))] * batch_size
+        return VisualPromptingBatchDataEntity(
+            batch_size,
+            images,
+            imgs_info=[],
+            labels=labels,
+            points=prompts,
+            masks=[None] * batch_size,
+            polygons=[[None]] * batch_size,
+            bboxes=[None] * batch_size,
+        )
+
 
 class OTXZeroShotVisualPromptingModel(
     OTXModel[ZeroShotVisualPromptingBatchDataEntity, ZeroShotVisualPromptingBatchPredEntity],
@@ -425,6 +441,30 @@ class OTXZeroShotVisualPromptingModel(
     def _set_label_info(self, _: LabelInfoTypes) -> None:
         msg = f"Reconfiguring label_info has no effect on {self.__class__.__name__}."
         log.warning(msg)
+
+    def get_dummy_input(self, batch_size: int = 1) -> ZeroShotVisualPromptingBatchDataEntity:
+        """Returns a dummy input for ZSL VPT model."""
+        images = [torch.rand(3, self.model.image_size, self.model.image_size) for _ in range(batch_size)]
+        labels = [ZeroShotVisualPromptingLabel(prompts=torch.LongTensor([0]))] * batch_size
+        prompts = [torch.zeros((1, 2))] * batch_size
+        infos = []
+        for i, img in enumerate(images):
+            infos.append(
+                ImageInfo(
+                    img_idx=i,
+                    img_shape=img.shape,
+                    ori_shape=img.shape,
+                ),
+            )
+        return ZeroShotVisualPromptingBatchDataEntity(
+            batch_size,
+            images,
+            imgs_info=infos,
+            labels=labels,
+            prompts=prompts,
+            masks=[],
+            polygons=[],
+        )
 
 
 class OVVisualPromptingModel(
@@ -748,6 +788,23 @@ class OVVisualPromptingModel(
     def _set_label_info(self, _: LabelInfoTypes) -> None:
         msg = f"Reconfiguring label_info has no effect on {self.__class__.__name__}."
         log.warning(msg)
+
+    def get_dummy_input(self, batch_size: int = 1) -> VisualPromptingBatchDataEntity:
+        """Returns a dummy input for classification OV model."""
+        # Resize is embedded to the OV model, which means we don't need to know the actual size
+        images = [torch.rand(3, 224, 224) for _ in range(batch_size)]
+        labels = [{"points": torch.LongTensor([0] * batch_size)}] * batch_size
+        prompts = [torch.zeros((1, 2))] * batch_size
+        return VisualPromptingBatchDataEntity(
+            batch_size,
+            images,
+            imgs_info=[],
+            labels=labels,
+            points=prompts,
+            masks=[None] * batch_size,
+            polygons=[[None]] * batch_size,
+            bboxes=[None] * batch_size,
+        )
 
 
 class OVZeroShotVisualPromptingModel(
@@ -1330,3 +1387,28 @@ class OVZeroShotVisualPromptingModel(
     def _set_label_info(self, _: LabelInfoTypes) -> None:
         msg = f"Reconfiguring label_info has no effect on {self.__class__.__name__}."
         log.warning(msg)
+
+    def get_dummy_input(self, batch_size: int = 1) -> ZeroShotVisualPromptingBatchDataEntity:
+        """Returns a dummy input for classification OV model."""
+        # Resize is embedded to the OV model, which means we don't need to know the actual size
+        images = [torch.rand(3, 224, 224) for _ in range(batch_size)]
+        labels = [ZeroShotVisualPromptingLabel(prompts=torch.LongTensor([0]))] * batch_size
+        prompts = [torch.zeros((1, 2))] * batch_size
+        infos = []
+        for i, img in enumerate(images):
+            infos.append(
+                ImageInfo(
+                    img_idx=i,
+                    img_shape=img.shape,
+                    ori_shape=img.shape,
+                ),
+            )
+        return ZeroShotVisualPromptingBatchDataEntity(
+            batch_size,
+            images,
+            imgs_info=infos,
+            labels=labels,
+            prompts=prompts,
+            masks=[None] * batch_size,
+            polygons=[[None]] * batch_size,
+        )

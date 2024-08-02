@@ -267,7 +267,9 @@ class SSD(ExplainableOTXDetModel):
     def _exporter(self) -> OTXModelExporter:
         """Creates OTXModelExporter object that can export the model."""
         if self.image_size is None:
-            raise ValueError(self.image_size)
+            msg = f"Image size attribute is not set for {self.__class__}"
+            raise ValueError(msg)
+
         return OTXNativeModelExporter(
             task_level_export_parameters=self._export_parameters,
             input_size=self.image_size,

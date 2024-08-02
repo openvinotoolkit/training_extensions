@@ -41,7 +41,8 @@ class YOLOX(ExplainableOTXDetModel):
     def _exporter(self) -> OTXModelExporter:
         """Creates OTXModelExporter object that can export the model."""
         if self.image_size is None:
-            raise ValueError(self.image_size)
+            msg = f"Image size attribute is not set for {self.__class__}"
+            raise ValueError(msg)
 
         swap_rgb = not isinstance(self, YOLOXTINY)  # only YOLOX-TINY uses RGB
         input_size = self.tile_image_size if self.tile_config.enable_tiler else self.image_size

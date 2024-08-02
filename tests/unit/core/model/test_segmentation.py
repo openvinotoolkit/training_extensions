@@ -73,7 +73,7 @@ class TestOTXSegmentationModel:
 
 class TestTorchVisionCompatibleModel:
     @pytest.fixture()
-    def model(self, label_info, optimizer, scheduler, metric, torch_compile):
+    def model(self, label_info, optimizer, scheduler, metric, torch_compile) -> TorchVisionCompatibleModel:
         return TorchVisionCompatibleModel(label_info, optimizer, scheduler, metric, torch_compile)
 
     @pytest.fixture()
@@ -108,3 +108,8 @@ class TestTorchVisionCompatibleModel:
         assert len(customized_outputs.scores) == 0
         assert customized_outputs.images.shape == (2, 3, 224, 224)
         assert customized_outputs.imgs_info == []
+
+    def test_dummy_input(self, model: TorchVisionCompatibleModel):
+        batch_size = 2
+        batch = model.get_dummy_input(batch_size)
+        assert batch.batch_size == batch_size

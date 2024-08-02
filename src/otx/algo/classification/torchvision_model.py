@@ -427,6 +427,7 @@ class OTXTVModel(OTXModel):
         self.freeze_backbone = freeze_backbone
         self.train_type = train_type
         self.task = task
+        self.image_size: tuple[int, ...] = (1, 3, 224, 224)
 
         # TODO(@harimkang): Need to make it configurable.
         if task == OTXTaskType.MULTI_CLASS_CLS:
@@ -552,7 +553,7 @@ class OTXTVModel(OTXModel):
         """Creates OTXModelExporter object that can export the model."""
         return OTXNativeModelExporter(
             task_level_export_parameters=self._export_parameters,
-            input_size=(1, 3, 224, 224),
+            input_size=self.image_size,
             mean=(123.675, 116.28, 103.53),
             std=(58.395, 57.12, 57.375),
             resize_mode="standard",
@@ -647,3 +648,17 @@ class OTXTVModel(OTXModel):
             "preds": pred,
             "target": target,
         }
+
+    def get_dummy_input(self, batch_size: int = 1) -> CLASSIFICATION_BATCH_DATA_ENTITY:
+        """Returns a dummy input for classification model."""
+        images = [torch.rand(*self.image_size[1:]) for _ in range(batch_size)]
+        labels = [torch.LongTensor([0])] * batch_size
+
+        if self.task == OTXTaskType.MULTI_CLASS_CLS:
+            return MulticlassClsBatchDataEntity(batch_size, images, [], labels=labels)
+        if self.task == OTXTaskType.MULTI_LABEL_CLS:
+            return MultilabelClsBatchDataEntity(batch_size, images, [], labels=labels)
+        if self.task == OTXTaskType.H_LABEL_CLS:
+            return HlabelClsBatchDataEntity(batch_size, images, [], labels=labels)
+        msg = f"Task type {self.task} is not supported."
+        raise NotImplementedError(msg)

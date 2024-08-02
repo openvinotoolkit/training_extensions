@@ -47,8 +47,12 @@ def custom_wrap(wrappee: Tensor, *, like: tv_tensors.TVTensor, **kwargs) -> tv_t
         )
     elif isinstance(like, Points):  # noqa: RET505
         return Points._wrap(wrappee, canvas_size=kwargs.get("canvas_size", like.canvas_size))  # noqa: SLF001
-    else:
-        return wrappee.as_subclass(type(like))
+
+    # TODO(Vlad): remove this after torch upgrade. This workaround prevents a failure when like is also a Tensor
+    if type(like) == type(wrappee):
+        return wrappee
+
+    return wrappee.as_subclass(type(like))
 
 
 tv_tensors.wrap = custom_wrap

@@ -1,6 +1,5 @@
 # Copyright (C) 2023-2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-#
 """Class definition for detection model entity used in OTX."""
 
 from __future__ import annotations
@@ -18,7 +17,7 @@ from torchvision import tv_tensors
 
 from otx.algo.utils.mmengine_utils import InstanceData, load_checkpoint
 from otx.core.config.data import TileConfig
-from otx.core.data.entity.base import OTXBatchLossEntity
+from otx.core.data.entity.base import ImageInfo, OTXBatchLossEntity
 from otx.core.data.entity.detection import DetBatchDataEntity, DetBatchPredEntity
 from otx.core.data.entity.tile import OTXTileBatchDataEntity
 from otx.core.data.entity.utils import stack_batch
@@ -28,15 +27,12 @@ from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallab
 from otx.core.schedulers import LRSchedulerListCallable
 from otx.core.types.export import TaskLevelExportParameters
 from otx.core.types.label import LabelInfoTypes
-from otx.core.utils.config import inplace_num_classes
 from otx.core.utils.tile_merge import DetectionTileMerge
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
-    from mmdet.models.data_preprocessors import DetDataPreprocessor
     from model_api.adapters import OpenvinoAdapter
     from model_api.models.utils import DetectionResult
-    from omegaconf import DictConfig
     from torch import nn
 
     from otx.algo.detection.base_models import SingleStageDetector
@@ -44,6 +40,8 @@ if TYPE_CHECKING:
 
 class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity]):
     """Base class for the detection models used in OTX."""
+
+    image_size: tuple[int, int, int, int] | None = None
 
     def test_step(self, batch: DetBatchDataEntity, batch_idx: int) -> None:
         """Perform a single test step on a batch of data from the test set.
@@ -364,6 +362,24 @@ class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity]):
                 self._best_confidence_threshold = 0.5
         return self._best_confidence_threshold
 
+    def get_dummy_input(self, batch_size: int = 1) -> DetBatchDataEntity:
+        """Returns a dummy input for detection model."""
+        if self.image_size is None:
+            msg = f"Image size attribute is not set for {self.__class__}"
+            raise ValueError(msg)
+
+        images = [torch.rand(*self.image_size[1:]) for _ in range(batch_size)]
+        infos = []
+        for i, img in enumerate(images):
+            infos.append(
+                ImageInfo(
+                    img_idx=i,
+                    img_shape=img.shape,
+                    ori_shape=img.shape,
+                ),
+            )
+        return DetBatchDataEntity(batch_size, images, infos, bboxes=[], labels=[])
+
 
 class ExplainableOTXDetModel(OTXDetectionModel):
     """OTX detection model which can attach a XAI (Explainable AI) branch."""
@@ -507,168 +523,6 @@ class ExplainableOTXDetModel(OTXDetectionModel):
             )
 
         return [1] * 10
-
-
-class MMDetCompatibleModel(ExplainableOTXDetModel):
-    """Detection model compatible for MMDet.
-
-    It can consume MMDet model configuration translated into OTX configuration
-    (please see otx.tools.translate_mmrecipe) and create the OTX detection model
-    compatible for OTX pipelines.
-    """
-
-    def __init__(
-        self,
-        label_info: LabelInfoTypes,
-        config: DictConfig,
-        optimizer: OptimizerCallable = DefaultOptimizerCallable,
-        scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
-        metric: MetricCallable = MeanAveragePrecisionFMeasureCallable,
-        torch_compile: bool = False,
-        tile_config: TileConfig = TileConfig(enable_tiler=False),
-    ) -> None:
-        config = inplace_num_classes(cfg=config, num_classes=self._dispatch_label_info(label_info).num_classes)
-        self.config = config
-        self.load_from = config.pop("load_from", None)
-        self.image_size: tuple[int, int, int, int] | None = None
-        super().__init__(
-            label_info=label_info,
-            optimizer=optimizer,
-            scheduler=scheduler,
-            metric=metric,
-            torch_compile=torch_compile,
-            tile_config=tile_config,
-        )
-
-    def _create_model(self) -> nn.Module:
-        # TODO (someone): change to abstractmethod
-        from .utils.mmdet import create_model
-
-        model, self.classification_layers = create_model(self.config, self.load_from)
-        return model
-
-    def _make_fake_test_pipeline(self) -> list[dict[str, Any]]:
-        return [
-            {"type": "LoadImageFromFile"},
-            {"type": "Resize", "scale": [self.image_size[3], self.image_size[2]], "keep_ratio": True},  # type: ignore[index]
-            {"type": "LoadAnnotations", "with_bbox": True},
-            {
-                "type": "PackDetInputs",
-                "meta_keys": ["ori_filename", "scale_factor", "ori_shape", "filename", "img_shape"],
-            },
-        ]
-
-    def _customize_inputs(self, entity: DetBatchDataEntity) -> dict[str, Any]:  # type: ignore[override]
-        # TODO (sungchul): update input arguments
-        from mmdet.structures import DetDataSample
-        from mmengine.structures import InstanceData
-
-        mmdet_inputs: dict[str, Any] = {}
-
-        mmdet_inputs["inputs"] = entity.images  # B x C x H x W PyTorch tensor
-        mmdet_inputs["data_samples"] = [
-            DetDataSample(
-                metainfo={
-                    "img_id": img_info.img_idx,
-                    "img_shape": img_info.img_shape,
-                    "ori_shape": img_info.ori_shape,
-                    "scale_factor": img_info.scale_factor,
-                    "ignored_labels": img_info.ignored_labels,
-                },
-                gt_instances=InstanceData(
-                    bboxes=bboxes,
-                    labels=labels,
-                ),
-            )
-            for img_info, bboxes, labels in zip(
-                entity.imgs_info,
-                entity.bboxes,
-                entity.labels,
-            )
-        ]
-        preprocessor: DetDataPreprocessor = self.model.data_preprocessor
-
-        mmdet_inputs = preprocessor(data=mmdet_inputs, training=self.training)
-
-        mmdet_inputs["mode"] = "loss" if self.training else "predict"
-
-        return mmdet_inputs
-
-    def _customize_outputs(
-        self,
-        outputs: dict[str, Any],  # type: ignore[override]
-        inputs: DetBatchDataEntity,
-    ) -> DetBatchPredEntity | OTXBatchLossEntity:
-        from mmdet.structures import DetDataSample
-
-        if self.training:
-            if not isinstance(outputs, dict):
-                raise TypeError(outputs)
-
-            losses = OTXBatchLossEntity()
-            for k, v in outputs.items():
-                if isinstance(v, list):
-                    losses[k] = sum(v)
-                elif isinstance(v, torch.Tensor):
-                    losses[k] = v
-                else:
-                    msg = "Loss output should be list or torch.tensor but got {type(v)}"
-                    raise TypeError(msg)
-            return losses
-
-        scores = []
-        bboxes = []
-        labels = []
-
-        predictions = outputs["predictions"] if isinstance(outputs, dict) else outputs
-        for output in predictions:
-            if not isinstance(output, DetDataSample):
-                raise TypeError(output)
-            scores.append(output.pred_instances.scores)
-            bboxes.append(
-                tv_tensors.BoundingBoxes(
-                    output.pred_instances.bboxes,
-                    format="XYXY",
-                    canvas_size=output.ori_shape,
-                ),
-            )
-            labels.append(output.pred_instances.labels)
-
-        if self.explain_mode:
-            if not isinstance(outputs, dict):
-                msg = f"Model output should be a dict, but got {type(outputs)}."
-                raise ValueError(msg)
-
-            if "feature_vector" not in outputs:
-                msg = "No feature vector in the model output."
-                raise ValueError(msg)
-
-            if "saliency_map" not in outputs:
-                msg = "No saliency maps in the model output."
-                raise ValueError(msg)
-
-            saliency_map = outputs["saliency_map"].detach().cpu().numpy()
-            feature_vector = outputs["feature_vector"].detach().cpu().numpy()
-
-            return DetBatchPredEntity(
-                batch_size=len(predictions),
-                images=inputs.images,
-                imgs_info=inputs.imgs_info,
-                scores=scores,
-                bboxes=bboxes,
-                labels=labels,
-                saliency_map=saliency_map,
-                feature_vector=feature_vector,
-            )
-
-        return DetBatchPredEntity(
-            batch_size=len(predictions),
-            images=inputs.images,
-            imgs_info=inputs.imgs_info,
-            scores=scores,
-            bboxes=bboxes,
-            labels=labels,
-        )
 
 
 class OVDetectionModel(OVModel[DetBatchDataEntity, DetBatchPredEntity]):
