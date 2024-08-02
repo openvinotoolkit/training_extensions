@@ -5,17 +5,16 @@
 """This implementation copied ConvModule of mmcv.cnn.bricks.ConvModule."""
 
 # TODO(someone): Revisit mypy errors after deprecation of mmlab
-# mypy: ignore-errors
+
 from __future__ import annotations
 
 import warnings
 from functools import partial
-from typing import TypeVar
+from typing import TYPE_CHECKING
 
 import torch
 from torch import Tensor, nn
 from torch.nn.modules.batchnorm import _BatchNorm as BatchNorm
-from torch.nn.modules.conv import _ConvNd as ConvNd
 from torch.nn.modules.instancenorm import _InstanceNorm as InstanceNorm
 
 from otx.algo.utils.weight_init import constant_init, kaiming_init
@@ -24,10 +23,11 @@ from .activation import build_activation_layer
 from .norm import build_norm_layer
 from .padding import build_padding_layer
 
-T_ConvND = TypeVar("T_ConvND", bound=ConvNd)
+if TYPE_CHECKING:
+    from torch.nn.modules.conv import _ConvNd as ConvNd
 
 
-def efficient_conv_bn_eval_forward(bn: BatchNorm, conv: T_ConvND, x: Tensor) -> Tensor:
+def efficient_conv_bn_eval_forward(bn: BatchNorm, conv: ConvNd, x: Tensor) -> Tensor:
     """Implementation based on https://arxiv.org/abs/2305.11624.
 
     "Tune-Mode ConvBN Blocks For Efficient Transfer Learning"
@@ -117,7 +117,7 @@ class ConvModule(nn.Module):
     """
 
     _abbr_ = "conv_block"
-    _conv_nd: T_ConvND
+    _conv_nd: ConvNd
 
     def __init__(
         self,
@@ -192,18 +192,18 @@ class ConvModule(nn.Module):
         if self.with_norm:
             # norm layer is after conv layer
             norm_channels = out_channels if order.index("norm") > order.index("conv") else in_channels
-            self.norm_name, norm = build_norm_layer(norm_cfg, norm_channels)
+            self.norm_name, norm = build_norm_layer(norm_cfg, norm_channels)  # type: ignore[arg-type]
             self.add_module(self.norm_name, norm)
             if self.with_bias and isinstance(norm, (BatchNorm, InstanceNorm)):
                 warnings.warn("Unnecessary conv bias before batch/instance norm", stacklevel=1)
         else:
-            self.norm_name = None
+            self.norm_name = None  # type: ignore[assignment]
 
         self.turn_on_efficient_conv_bn_eval(efficient_conv_bn_eval)
 
         # build activation layer
         if self.with_activation:
-            act_cfg_ = act_cfg.copy()
+            act_cfg_ = act_cfg.copy()  # type: ignore[union-attr]
             # nn.Tanh has no 'inplace' argument
             if act_cfg_["type"] not in [
                 "Tanh",
@@ -243,9 +243,9 @@ class ConvModule(nn.Module):
         # Note: For PyTorch's conv layers, they will be overwritten by our
         #    initialization implementation using default ``kaiming_init``.
         if not hasattr(self.conv, "init_weights"):
-            if self.with_activation and self.act_cfg["type"] == "LeakyReLU":
+            if self.with_activation and self.act_cfg["type"] == "LeakyReLU":  # type: ignore[index]
                 nonlinearity = "leaky_relu"
-                a = self.act_cfg.get("negative_slope", 0.01)
+                a = self.act_cfg.get("negative_slope", 0.01)  # type: ignore[union-attr]
             else:
                 nonlinearity = "relu"
                 a = 0
@@ -279,7 +279,7 @@ class ConvModule(nn.Module):
                     and self.order[layer_index + 1] == "norm"
                     and norm
                     and self.with_norm
-                    and not self.norm_layer.training
+                    and not self.norm_layer.training  # type: ignore[union-attr]
                     and self.efficient_conv_bn_eval_forward is not None
                 ):
                     self.conv.forward = partial(self.efficient_conv_bn_eval_forward, self.norm_layer, self.conv)
@@ -289,7 +289,7 @@ class ConvModule(nn.Module):
                 else:
                     x = self.conv(x)
             elif layer == "norm" and norm and self.with_norm:
-                x = self.norm_layer(x)
+                x = self.norm_layer(x)  # type: ignore[misc]
             elif layer == "act" and activate and self.with_activation:
                 x = self.activate(x)
             layer_index += 1
@@ -312,7 +312,7 @@ class ConvModule(nn.Module):
         ):
             self.efficient_conv_bn_eval_forward = efficient_conv_bn_eval_forward
         else:
-            self.efficient_conv_bn_eval_forward = None
+            self.efficient_conv_bn_eval_forward = None  # type: ignore[assignment]
 
     @staticmethod
     def create_from_conv_bn(
