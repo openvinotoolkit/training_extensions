@@ -18,7 +18,6 @@ otx.core.model.instance\_segmentation
    .. autosummary::
    
       ExplainableOTXInstanceSegModel
-      MMDetInstanceSegCompatibleModel
       OTXInstanceSegModel
       OVInstanceSegmentationModel
    

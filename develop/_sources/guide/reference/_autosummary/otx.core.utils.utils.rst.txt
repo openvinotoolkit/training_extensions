@@ -15,7 +15,6 @@ otx.core.utils.utils
    
       get_adaptive_num_workers
       get_idx_list_per_classes
-      get_mean_std_from_data_processing
       import_object_from_module
       is_ckpt_for_finetuning
       is_ckpt_from_otx_v1

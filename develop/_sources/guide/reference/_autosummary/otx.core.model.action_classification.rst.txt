@@ -17,7 +17,6 @@ otx.core.model.action\_classification
 
    .. autosummary::
    
-      MMActionCompatibleModel
       OTXActionClsModel
       OVActionClsModel
    

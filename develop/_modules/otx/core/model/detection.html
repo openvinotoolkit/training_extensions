@@ -255,7 +255,6 @@
   <h1>Source code for otx.core.model.detection</h1><div class="highlight"><pre>
 <span></span><span class="c1"># Copyright (C) 2023-2024 Intel Corporation</span>
 <span class="c1"># SPDX-License-Identifier: Apache-2.0</span>
-<span class="c1">#</span>
 <span class="sd">&quot;&quot;&quot;Class definition for detection model entity used in OTX.&quot;&quot;&quot;</span>
 
 <span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
@@ -283,15 +282,12 @@
 <span class="kn">from</span> <span class="nn">otx.core.schedulers</span> <span class="kn">import</span> <span class="n">LRSchedulerListCallable</span>
 <span class="kn">from</span> <span class="nn">otx.core.types.export</span> <span class="kn">import</span> <span class="n">TaskLevelExportParameters</span>
 <span class="kn">from</span> <span class="nn">otx.core.types.label</span> <span class="kn">import</span> <span class="n">LabelInfoTypes</span>
-<span class="kn">from</span> <span class="nn">otx.core.utils.config</span> <span class="kn">import</span> <span class="n">inplace_num_classes</span>
 <span class="kn">from</span> <span class="nn">otx.core.utils.tile_merge</span> <span class="kn">import</span> <span class="n">DetectionTileMerge</span>
 
 <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
     <span class="kn">from</span> <span class="nn">lightning.pytorch.cli</span> <span class="kn">import</span> <span class="n">LRSchedulerCallable</span><span class="p">,</span> <span class="n">OptimizerCallable</span>
-    <span class="kn">from</span> <span class="nn">mmdet.models.data_preprocessors</span> <span class="kn">import</span> <span class="n">DetDataPreprocessor</span>
     <span class="kn">from</span> <span class="nn">model_api.adapters</span> <span class="kn">import</span> <span class="n">OpenvinoAdapter</span>
     <span class="kn">from</span> <span class="nn">model_api.models.utils</span> <span class="kn">import</span> <span class="n">DetectionResult</span>
-    <span class="kn">from</span> <span class="nn">omegaconf</span> <span class="kn">import</span> <span class="n">DictConfig</span>
     <span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">nn</span>
 
     <span class="kn">from</span> <span class="nn">otx.algo.detection.base_models</span> <span class="kn">import</span> <span class="n">SingleStageDetector</span>
@@ -820,170 +816,6 @@
 
         <span class="k">return</span> <span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="mi">10</span></div>
 </div>
-
-
-
-<div class="viewcode-block" id="MMDetCompatibleModel">
-<a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.model.detection.html#otx.core.model.detection.MMDetCompatibleModel">[docs]</a>
-<span class="k">class</span> <span class="nc">MMDetCompatibleModel</span><span class="p">(</span><span class="n">ExplainableOTXDetModel</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Detection model compatible for MMDet.</span>
-
-<span class="sd">    It can consume MMDet model configuration translated into OTX configuration</span>
-<span class="sd">    (please see otx.tools.translate_mmrecipe) and create the OTX detection model</span>
-<span class="sd">    compatible for OTX pipelines.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
-        <span class="n">label_info</span><span class="p">:</span> <span class="n">LabelInfoTypes</span><span class="p">,</span>
-        <span class="n">config</span><span class="p">:</span> <span class="n">DictConfig</span><span class="p">,</span>
-        <span class="n">optimizer</span><span class="p">:</span> <span class="n">OptimizerCallable</span> <span class="o">=</span> <span class="n">DefaultOptimizerCallable</span><span class="p">,</span>
-        <span class="n">scheduler</span><span class="p">:</span> <span class="n">LRSchedulerCallable</span> <span class="o">|</span> <span class="n">LRSchedulerListCallable</span> <span class="o">=</span> <span class="n">DefaultSchedulerCallable</span><span class="p">,</span>
-        <span class="n">metric</span><span class="p">:</span> <span class="n">MetricCallable</span> <span class="o">=</span> <span class="n">MeanAveragePrecisionFMeasureCallable</span><span class="p">,</span>
-        <span class="n">torch_compile</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-        <span class="n">tile_config</span><span class="p">:</span> <span class="n">TileConfig</span> <span class="o">=</span> <span class="n">TileConfig</span><span class="p">(</span><span class="n">enable_tiler</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">config</span> <span class="o">=</span> <span class="n">inplace_num_classes</span><span class="p">(</span><span class="n">cfg</span><span class="o">=</span><span class="n">config</span><span class="p">,</span> <span class="n">num_classes</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_dispatch_label_info</span><span class="p">(</span><span class="n">label_info</span><span class="p">)</span><span class="o">.</span><span class="n">num_classes</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">config</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">load_from</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;load_from&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
-            <span class="n">label_info</span><span class="o">=</span><span class="n">label_info</span><span class="p">,</span>
-            <span class="n">optimizer</span><span class="o">=</span><span class="n">optimizer</span><span class="p">,</span>
-            <span class="n">scheduler</span><span class="o">=</span><span class="n">scheduler</span><span class="p">,</span>
-            <span class="n">metric</span><span class="o">=</span><span class="n">metric</span><span class="p">,</span>
-            <span class="n">torch_compile</span><span class="o">=</span><span class="n">torch_compile</span><span class="p">,</span>
-            <span class="n">tile_config</span><span class="o">=</span><span class="n">tile_config</span><span class="p">,</span>
-        <span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">_create_model</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">:</span>
-        <span class="c1"># TODO (someone): change to abstractmethod</span>
-        <span class="kn">from</span> <span class="nn">.utils.mmdet</span> <span class="kn">import</span> <span class="n">create_model</span>
-
-        <span class="n">model</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">classification_layers</span> <span class="o">=</span> <span class="n">create_model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_from</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">model</span>
-
-    <span class="k">def</span> <span class="nf">_make_fake_test_pipeline</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
-        <span class="k">return</span> <span class="p">[</span>
-            <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;LoadImageFromFile&quot;</span><span class="p">},</span>
-            <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;Resize&quot;</span><span class="p">,</span> <span class="s2">&quot;scale&quot;</span><span class="p">:</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">image_size</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">image_size</span><span class="p">[</span><span class="mi">2</span><span class="p">]],</span> <span class="s2">&quot;keep_ratio&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span>  <span class="c1"># type: ignore[index]</span>
-            <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;LoadAnnotations&quot;</span><span class="p">,</span> <span class="s2">&quot;with_bbox&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span>
-            <span class="p">{</span>
-                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;PackDetInputs&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;meta_keys&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;ori_filename&quot;</span><span class="p">,</span> <span class="s2">&quot;scale_factor&quot;</span><span class="p">,</span> <span class="s2">&quot;ori_shape&quot;</span><span class="p">,</span> <span class="s2">&quot;filename&quot;</span><span class="p">,</span> <span class="s2">&quot;img_shape&quot;</span><span class="p">],</span>
-            <span class="p">},</span>
-        <span class="p">]</span>
-
-    <span class="k">def</span> <span class="nf">_customize_inputs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entity</span><span class="p">:</span> <span class="n">DetBatchDataEntity</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>  <span class="c1"># type: ignore[override]</span>
-        <span class="c1"># TODO (sungchul): update input arguments</span>
-        <span class="kn">from</span> <span class="nn">mmdet.structures</span> <span class="kn">import</span> <span class="n">DetDataSample</span>
-        <span class="kn">from</span> <span class="nn">mmengine.structures</span> <span class="kn">import</span> <span class="n">InstanceData</span>
-
-        <span class="n">mmdet_inputs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
-
-        <span class="n">mmdet_inputs</span><span class="p">[</span><span class="s2">&quot;inputs&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">entity</span><span class="o">.</span><span class="n">images</span>  <span class="c1"># B x C x H x W PyTorch tensor</span>
-        <span class="n">mmdet_inputs</span><span class="p">[</span><span class="s2">&quot;data_samples&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
-            <span class="n">DetDataSample</span><span class="p">(</span>
-                <span class="n">metainfo</span><span class="o">=</span><span class="p">{</span>
-                    <span class="s2">&quot;img_id&quot;</span><span class="p">:</span> <span class="n">img_info</span><span class="o">.</span><span class="n">img_idx</span><span class="p">,</span>
-                    <span class="s2">&quot;img_shape&quot;</span><span class="p">:</span> <span class="n">img_info</span><span class="o">.</span><span class="n">img_shape</span><span class="p">,</span>
-                    <span class="s2">&quot;ori_shape&quot;</span><span class="p">:</span> <span class="n">img_info</span><span class="o">.</span><span class="n">ori_shape</span><span class="p">,</span>
-                    <span class="s2">&quot;scale_factor&quot;</span><span class="p">:</span> <span class="n">img_info</span><span class="o">.</span><span class="n">scale_factor</span><span class="p">,</span>
-                    <span class="s2">&quot;ignored_labels&quot;</span><span class="p">:</span> <span class="n">img_info</span><span class="o">.</span><span class="n">ignored_labels</span><span class="p">,</span>
-                <span class="p">},</span>
-                <span class="n">gt_instances</span><span class="o">=</span><span class="n">InstanceData</span><span class="p">(</span>
-                    <span class="n">bboxes</span><span class="o">=</span><span class="n">bboxes</span><span class="p">,</span>
-                    <span class="n">labels</span><span class="o">=</span><span class="n">labels</span><span class="p">,</span>
-                <span class="p">),</span>
-            <span class="p">)</span>
-            <span class="k">for</span> <span class="n">img_info</span><span class="p">,</span> <span class="n">bboxes</span><span class="p">,</span> <span class="n">labels</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span>
-                <span class="n">entity</span><span class="o">.</span><span class="n">imgs_info</span><span class="p">,</span>
-                <span class="n">entity</span><span class="o">.</span><span class="n">bboxes</span><span class="p">,</span>
-                <span class="n">entity</span><span class="o">.</span><span class="n">labels</span><span class="p">,</span>
-            <span class="p">)</span>
-        <span class="p">]</span>
-        <span class="n">preprocessor</span><span class="p">:</span> <span class="n">DetDataPreprocessor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">data_preprocessor</span>
-
-        <span class="n">mmdet_inputs</span> <span class="o">=</span> <span class="n">preprocessor</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">mmdet_inputs</span><span class="p">,</span> <span class="n">training</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">training</span><span class="p">)</span>
-
-        <span class="n">mmdet_inputs</span><span class="p">[</span><span class="s2">&quot;mode&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;loss&quot;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">training</span> <span class="k">else</span> <span class="s2">&quot;predict&quot;</span>
-
-        <span class="k">return</span> <span class="n">mmdet_inputs</span>
-
-    <span class="k">def</span> <span class="nf">_customize_outputs</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
-        <span class="n">outputs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>  <span class="c1"># type: ignore[override]</span>
-        <span class="n">inputs</span><span class="p">:</span> <span class="n">DetBatchDataEntity</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DetBatchPredEntity</span> <span class="o">|</span> <span class="n">OTXBatchLossEntity</span><span class="p">:</span>
-        <span class="kn">from</span> <span class="nn">mmdet.structures</span> <span class="kn">import</span> <span class="n">DetDataSample</span>
-
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">training</span><span class="p">:</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">outputs</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
-                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">outputs</span><span class="p">)</span>
-
-            <span class="n">losses</span> <span class="o">=</span> <span class="n">OTXBatchLossEntity</span><span class="p">()</span>
-            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">outputs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
-                    <span class="n">losses</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
-                <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
-                    <span class="n">losses</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Loss output should be list or torch.tensor but got {type(v)}&quot;</span>
-                    <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
-            <span class="k">return</span> <span class="n">losses</span>
-
-        <span class="n">scores</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="n">bboxes</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="n">labels</span> <span class="o">=</span> <span class="p">[]</span>
-
-        <span class="n">predictions</span> <span class="o">=</span> <span class="n">outputs</span><span class="p">[</span><span class="s2">&quot;predictions&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">outputs</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="k">else</span> <span class="n">outputs</span>
-        <span class="k">for</span> <span class="n">output</span> <span class="ow">in</span> <span class="n">predictions</span><span class="p">:</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">DetDataSample</span><span class="p">):</span>
-                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">output</span><span class="p">)</span>
-            <span class="n">scores</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">output</span><span class="o">.</span><span class="n">pred_instances</span><span class="o">.</span><span class="n">scores</span><span class="p">)</span>
-            <span class="n">bboxes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                <span class="n">tv_tensors</span><span class="o">.</span><span class="n">BoundingBoxes</span><span class="p">(</span>
-                    <span class="n">output</span><span class="o">.</span><span class="n">pred_instances</span><span class="o">.</span><span class="n">bboxes</span><span class="p">,</span>
-                    <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;XYXY&quot;</span><span class="p">,</span>
-                    <span class="n">canvas_size</span><span class="o">=</span><span class="n">output</span><span class="o">.</span><span class="n">ori_shape</span><span class="p">,</span>
-                <span class="p">),</span>
-            <span class="p">)</span>
-            <span class="n">labels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">output</span><span class="o">.</span><span class="n">pred_instances</span><span class="o">.</span><span class="n">labels</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">explain_mode</span><span class="p">:</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">outputs</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
-                <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Model output should be a dict, but got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">outputs</span><span class="p">)</span><span class="si">}</span><span class="s2">.&quot;</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
-
-            <span class="k">if</span> <span class="s2">&quot;feature_vector&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">outputs</span><span class="p">:</span>
-                <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;No feature vector in the model output.&quot;</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
-
-            <span class="k">if</span> <span class="s2">&quot;saliency_map&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">outputs</span><span class="p">:</span>
-                <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;No saliency maps in the model output.&quot;</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
-
-            <span class="n">saliency_map</span> <span class="o">=</span> <span class="n">outputs</span><span class="p">[</span><span class="s2">&quot;saliency_map&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
-            <span class="n">feature_vector</span> <span class="o">=</span> <span class="n">outputs</span><span class="p">[</span><span class="s2">&quot;feature_vector&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
-
-            <span class="k">return</span> <span class="n">DetBatchPredEntity</span><span class="p">(</span>
-                <span class="n">batch_size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">predictions</span><span class="p">),</span>
-                <span class="n">images</span><span class="o">=</span><span class="n">inputs</span><span class="o">.</span><span class="n">images</span><span class="p">,</span>
-                <span class="n">imgs_info</span><span class="o">=</span><span class="n">inputs</span><span class="o">.</span><span class="n">imgs_info</span><span class="p">,</span>
-                <span class="n">scores</span><span class="o">=</span><span class="n">scores</span><span class="p">,</span>
-                <span class="n">bboxes</span><span class="o">=</span><span class="n">bboxes</span><span class="p">,</span>
-                <span class="n">labels</span><span class="o">=</span><span class="n">labels</span><span class="p">,</span>
-                <span class="n">saliency_map</span><span class="o">=</span><span class="n">saliency_map</span><span class="p">,</span>
-                <span class="n">feature_vector</span><span class="o">=</span><span class="n">feature_vector</span><span class="p">,</span>
-            <span class="p">)</span>
-
-        <span class="k">return</span> <span class="n">DetBatchPredEntity</span><span class="p">(</span>
-            <span class="n">batch_size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">predictions</span><span class="p">),</span>
-            <span class="n">images</span><span class="o">=</span><span class="n">inputs</span><span class="o">.</span><span class="n">images</span><span class="p">,</span>
-            <span class="n">imgs_info</span><span class="o">=</span><span class="n">inputs</span><span class="o">.</span><span class="n">imgs_info</span><span class="p">,</span>
-            <span class="n">scores</span><span class="o">=</span><span class="n">scores</span><span class="p">,</span>
-            <span class="n">bboxes</span><span class="o">=</span><span class="n">bboxes</span><span class="p">,</span>
-            <span class="n">labels</span><span class="o">=</span><span class="n">labels</span><span class="p">,</span>
-        <span class="p">)</span></div>
 
 
 

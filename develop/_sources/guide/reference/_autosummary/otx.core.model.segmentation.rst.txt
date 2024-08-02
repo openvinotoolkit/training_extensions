@@ -17,7 +17,6 @@ otx.core.model.segmentation
 
    .. autosummary::
    
-      MMSegCompatibleModel
       OTXSegmentationModel
       OVSegmentationModel
       TorchVisionCompatibleModel

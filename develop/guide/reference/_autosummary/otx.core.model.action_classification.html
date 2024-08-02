@@ -398,33 +398,14 @@
 <p class="rubric">Classes</p>
 <table class="autosummary longtable table autosummary">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#otx.core.model.action_classification.MMActionCompatibleModel" title="otx.core.model.action_classification.MMActionCompatibleModel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MMActionCompatibleModel</span></code></a>(label_info, config, ...)</p></td>
-<td><p>Action classification model compitible for MMAction.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#otx.core.model.action_classification.OTXActionClsModel" title="otx.core.model.action_classification.OTXActionClsModel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OTXActionClsModel</span></code></a>(label_info, optimizer, ...)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.core.model.action_classification.OTXActionClsModel" title="otx.core.model.action_classification.OTXActionClsModel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OTXActionClsModel</span></code></a>(label_info, optimizer, ...)</p></td>
 <td><p>Base class for the action classification models used in OTX.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#otx.core.model.action_classification.OVActionClsModel" title="otx.core.model.action_classification.OVActionClsModel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OVActionClsModel</span></code></a>(model_name, model_type, ...)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#otx.core.model.action_classification.OVActionClsModel" title="otx.core.model.action_classification.OVActionClsModel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OVActionClsModel</span></code></a>(model_name, model_type, ...)</p></td>
 <td><p>Action Classification model compatible for OpenVINO IR inference.</p></td>
 </tr>
 </tbody>
 </table>
-<dl class="py class">
-<dt class="sig sig-object py" id="otx.core.model.action_classification.MMActionCompatibleModel">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.core.model.action_classification.</span></span><span class="sig-name descname"><span class="pre">MMActionCompatibleModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label_info:</span> <span class="pre">LabelInfoTypes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config:</span> <span class="pre">DictConfig</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimizer:</span> <span class="pre">OptimizerCallable</span> <span class="pre">=</span> <span class="pre">&lt;function</span> <span class="pre">_default_optimizer_callable&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scheduler:</span> <span class="pre">LRSchedulerCallable</span> <span class="pre">|</span> <span class="pre">LRSchedulerListCallable</span> <span class="pre">=</span> <span class="pre">&lt;function</span> <span class="pre">_default_scheduler_callable&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metric:</span> <span class="pre">MetricCallable</span> <span class="pre">=</span> <span class="pre">&lt;function</span> <span class="pre">_multi_class_cls_metric_callable&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">torch_compile:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/core/model/action_classification.html#MMActionCompatibleModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.action_classification.MMActionCompatibleModel" title="Link to this definition">#</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#otx.core.model.action_classification.OTXActionClsModel" title="otx.core.model.action_classification.OTXActionClsModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">OTXActionClsModel</span></code></a></p>
-<p>Action classification model compitible for MMAction.</p>
-<p>It can consume MMAction model configuration translated into OTX configuration
-(please see otx.tools.translate_mmrecipe) and create the OTX Action classification model
-compatible for OTX pipelines.</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="otx.core.model.action_classification.MMActionCompatibleModel.forward_for_tracing">
-<span class="sig-name descname"><span class="pre">forward_for_tracing</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tensor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/otx/core/model/action_classification.html#MMActionCompatibleModel.forward_for_tracing"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.action_classification.MMActionCompatibleModel.forward_for_tracing" title="Link to this definition">#</a></dt>
-<dd><p>Model forward function used for the model tracing during model exportation.</p>
-</dd></dl>
-
-</dd></dl>
-
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.core.model.action_classification.OTXActionClsModel">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.core.model.action_classification.</span></span><span class="sig-name descname"><span class="pre">OTXActionClsModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label_info:</span> <span class="pre">LabelInfoTypes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimizer:</span> <span class="pre">OptimizerCallable</span> <span class="pre">=</span> <span class="pre">&lt;function</span> <span class="pre">_default_optimizer_callable&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scheduler:</span> <span class="pre">LRSchedulerCallable</span> <span class="pre">|</span> <span class="pre">LRSchedulerListCallable</span> <span class="pre">=</span> <span class="pre">&lt;function</span> <span class="pre">_default_scheduler_callable&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metric:</span> <span class="pre">MetricCallable</span> <span class="pre">=</span> <span class="pre">&lt;function</span> <span class="pre">_multi_class_cls_metric_callable&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">torch_compile:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/core/model/action_classification.html#OTXActionClsModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.action_classification.OTXActionClsModel" title="Link to this definition">#</a></dt>
@@ -517,26 +498,6 @@ and create the OTX classification model compatible for OTX testing pipeline.</p>
 </div>
 <nav id="bd-toc-nav" class="page-toc">
     <ul class="visible nav section-nav flex-column">
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#otx.core.model.action_classification.MMActionCompatibleModel">
-   <code class="docutils literal notranslate">
-    <span class="pre">
-     MMActionCompatibleModel
-    </span>
-   </code>
-  </a>
-  <ul class="nav section-nav flex-column">
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.core.model.action_classification.MMActionCompatibleModel.forward_for_tracing">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       MMActionCompatibleModel.forward_for_tracing()
-      </span>
-     </code>
-    </a>
-   </li>
-  </ul>
- </li>
  <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#otx.core.model.action_classification.OTXActionClsModel">
    <code class="docutils literal notranslate">

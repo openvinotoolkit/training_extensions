@@ -13,10 +13,7 @@ otx.core.utils.build
 
    .. autosummary::
    
-      build_mm_model
-      get_classification_layers
       get_default_num_async_infer_requests
-      modify_num_classes
    
    
 

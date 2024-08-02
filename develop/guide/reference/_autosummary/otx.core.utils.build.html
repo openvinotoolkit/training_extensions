@@ -394,64 +394,19 @@
               
   <section id="module-otx.core.utils.build">
 <span id="otx-core-utils-build"></span><h1>otx.core.utils.build<a class="headerlink" href="#module-otx.core.utils.build" title="Link to this heading">#</a></h1>
-<p>Utility functions for mmX build function.</p>
+<p>Utility functions for build function.</p>
 <p class="rubric">Functions</p>
 <table class="autosummary longtable table autosummary">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#otx.core.utils.build.build_mm_model" title="otx.core.utils.build.build_mm_model"><code class="xref py py-obj docutils literal notranslate"><span class="pre">build_mm_model</span></code></a>(config, model_registry[, ...])</p></td>
-<td><p>Build a model by using the registry.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#otx.core.utils.build.get_classification_layers" title="otx.core.utils.build.get_classification_layers"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_classification_layers</span></code></a>(config, model_registry)</p></td>
-<td><p>Return classification layer names by comparing two different number of classes models.</p></td>
-</tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#otx.core.utils.build.get_default_num_async_infer_requests" title="otx.core.utils.build.get_default_num_async_infer_requests"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_default_num_async_infer_requests</span></code></a>()</p></td>
 <td><p>Returns a default number of infer request for OV models.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#otx.core.utils.build.modify_num_classes" title="otx.core.utils.build.modify_num_classes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">modify_num_classes</span></code></a>(config, num_classes)</p></td>
-<td><p>Modify num_classes of config.</p></td>
 </tr>
 </tbody>
 </table>
 <dl class="py function">
-<dt class="sig sig-object py" id="otx.core.utils.build.build_mm_model">
-<span class="sig-prename descclassname"><span class="pre">otx.core.utils.build.</span></span><span class="sig-name descname"><span class="pre">build_mm_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DictConfig</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_registry</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Registry</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">load_from</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">nn.Module</span></span></span><a class="reference internal" href="../../../_modules/otx/core/utils/build.html#build_mm_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.utils.build.build_mm_model" title="Link to this definition">#</a></dt>
-<dd><p>Build a model by using the registry.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="otx.core.utils.build.get_classification_layers">
-<span class="sig-prename descclassname"><span class="pre">otx.core.utils.build.</span></span><span class="sig-name descname"><span class="pre">get_classification_layers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DictConfig</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_registry</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Registry</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prefix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/otx/core/utils/build.html#get_classification_layers"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.utils.build.get_classification_layers" title="Link to this definition">#</a></dt>
-<dd><p>Return classification layer names by comparing two different number of classes models.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>config</strong> (<em>DictConfig</em>) – Config for building model.</p></li>
-<li><p><strong>model_registry</strong> (<em>Registry</em>) – Registry for building model.</p></li>
-<li><p><strong>prefix</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – Prefix of model param name.
-Normally it is “model.” since OTXModel set it’s nn.Module model as self.model</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>dict[str, dict[str, int]]
-A dictionary contain classification layer’s name and information.
-Stride means dimension of each classes, normally stride is 1, but sometimes it can be 4
-if the layer is related bbox regression for object detection.
-Extra classes is default class except class from data.
-Normally it is related with background classes.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
 <dt class="sig sig-object py" id="otx.core.utils.build.get_default_num_async_infer_requests">
 <span class="sig-prename descclassname"><span class="pre">otx.core.utils.build.</span></span><span class="sig-name descname"><span class="pre">get_default_num_async_infer_requests</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></span><a class="reference internal" href="../../../_modules/otx/core/utils/build.html#get_default_num_async_infer_requests"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.utils.build.get_default_num_async_infer_requests" title="Link to this definition">#</a></dt>
 <dd><p>Returns a default number of infer request for OV models.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="otx.core.utils.build.modify_num_classes">
-<span class="sig-prename descclassname"><span class="pre">otx.core.utils.build.</span></span><span class="sig-name descname"><span class="pre">modify_num_classes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DictConfig</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_classes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../_modules/otx/core/utils/build.html#modify_num_classes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.utils.build.modify_num_classes" title="Link to this definition">#</a></dt>
-<dd><p>Modify num_classes of config.</p>
 </dd></dl>
 
 </section>
@@ -495,37 +450,10 @@ Normally it is related with background classes.</p>
 <nav id="bd-toc-nav" class="page-toc">
     <ul class="visible nav section-nav flex-column">
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#otx.core.utils.build.build_mm_model">
-   <code class="docutils literal notranslate">
-    <span class="pre">
-     build_mm_model()
-    </span>
-   </code>
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#otx.core.utils.build.get_classification_layers">
-   <code class="docutils literal notranslate">
-    <span class="pre">
-     get_classification_layers()
-    </span>
-   </code>
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#otx.core.utils.build.get_default_num_async_infer_requests">
    <code class="docutils literal notranslate">
     <span class="pre">
      get_default_num_async_infer_requests()
-    </span>
-   </code>
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#otx.core.utils.build.modify_num_classes">
-   <code class="docutils literal notranslate">
-    <span class="pre">
-     modify_num_classes()
     </span>
    </code>
   </a>

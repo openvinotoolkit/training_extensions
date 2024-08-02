@@ -18,7 +18,6 @@ otx.core.model.detection
    .. autosummary::
    
       ExplainableOTXDetModel
-      MMDetCompatibleModel
       OTXDetectionModel
       OVDetectionModel
    

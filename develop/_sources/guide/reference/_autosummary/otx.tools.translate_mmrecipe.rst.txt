@@ -9,6 +9,12 @@ otx.tools.translate\_mmrecipe
 
    
    
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      mmconfig_dict_to_dict
+   
    
 
    
