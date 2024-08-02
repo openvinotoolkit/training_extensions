@@ -17,7 +17,6 @@ from timm.models.layers import to_2tuple
 from torch import nn
 
 from otx.algo.modules.base_module import BaseModule
-from otx.algo.modules.conv import build_conv_layer
 from otx.algo.modules.norm import build_norm_layer
 
 
@@ -91,11 +90,11 @@ class PatchEmbed(BaseModule):
 
     We use a conv layer to implement PatchEmbed.
 
+    TODO (sungchul): it is duplicated with otx.algo.modules.transformer.PatchEmbed
+
     Args:
         in_channels (int): The num of input channels. Default: 3
         embed_dims (int): The dimensions of embedding. Default: 768
-        conv_type (str): The config dict for embedding
-            conv layer type selection. Default: "Conv2d.
         kernel_size (int): The kernel_size of embedding conv. Default: 16.
         stride (int): The slide stride of embedding conv.
             Default: None (Would be set as `kernel_size`).
@@ -115,7 +114,6 @@ class PatchEmbed(BaseModule):
         self,
         in_channels: int = 3,
         embed_dims: int = 768,
-        conv_type: str = "Conv2d",
         kernel_size: int = 16,
         stride: int = 16,
         padding: int | tuple | str = "corner",
@@ -148,8 +146,7 @@ class PatchEmbed(BaseModule):
             self.adap_padding = None
         padding = to_2tuple(padding)
 
-        self.projection = build_conv_layer(
-            {"type": conv_type},
+        self.projection = nn.Conv2d(
             in_channels=in_channels,
             out_channels=embed_dims,
             kernel_size=kernel_size,

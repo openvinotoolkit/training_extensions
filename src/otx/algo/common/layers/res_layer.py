@@ -9,7 +9,6 @@
 from __future__ import annotations
 
 from otx.algo.modules.base_module import BaseModule, Sequential
-from otx.algo.modules.conv import build_conv_layer
 from otx.algo.modules.norm import build_norm_layer
 from torch import nn
 
