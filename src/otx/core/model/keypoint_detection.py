@@ -15,7 +15,7 @@ from otx.algo.utils.mmengine_utils import load_checkpoint
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.keypoint_detection import KeypointDetBatchDataEntity, KeypointDetBatchPredEntity
 from otx.core.metrics import MetricCallable, MetricInput
-from otx.core.metrics.keypoint_ap import PCKMeasureCallable
+from otx.core.metrics.pck import PCKMeasureCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable, OTXModel
 from otx.core.schedulers import LRSchedulerListCallable
 from otx.core.types.export import TaskLevelExportParameters
@@ -37,7 +37,7 @@ class OTXKeypointDetectionModel(OTXModel[KeypointDetBatchDataEntity, KeypointDet
         metric: MetricCallable = PCKMeasureCallable,
         torch_compile: bool = False,
     ) -> None:
-        self.image_size = (3, 192, 256)
+        self.image_size = (1, 3, 192, 256)
         self.mean = (0.0, 0.0, 0.0)
         self.std = (255.0, 255.0, 255.0)
         super().__init__(
@@ -64,6 +64,7 @@ class OTXKeypointDetectionModel(OTXModel[KeypointDetBatchDataEntity, KeypointDet
         """Convert KeypointDetBatchDataEntity into mmaction model's input."""
         inputs: dict[str, Any] = {}
 
+        inputs["inputs"] = entity.images
         inputs["entity"] = entity
         inputs["mode"] = "loss" if self.training else "predict"
         return inputs
@@ -158,6 +159,10 @@ class OTXKeypointDetectionModel(OTXModel[KeypointDetBatchDataEntity, KeypointDet
                 num_extra_classes = 6 * sample_model_dim - 5 * incremental_model_dim
                 classification_layers[prefix + key] = {"stride": stride, "num_extra_classes": num_extra_classes}
         return classification_layers
+
+    def forward_for_tracing(self, image: torch.Tensor) -> torch.Tensor | tuple[torch.Tensor]:
+        """Model forward function used for the model tracing during model exportation."""
+        return self.model.forward(inputs=image, mode="tensor")
 
     @property
     def _export_parameters(self) -> TaskLevelExportParameters:

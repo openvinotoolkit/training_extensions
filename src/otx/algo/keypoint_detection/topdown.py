@@ -56,7 +56,8 @@ class TopdownPoseEstimator(BaseModule):
 
     def forward(
         self,
-        entity: KeypointDetBatchDataEntity,
+        inputs: torch.Tensor,
+        entity: KeypointDetBatchDataEntity | None = None,
         mode: str = "tensor",
     ) -> dict[str, torch.Tensor] | list[InstanceData] | tuple[torch.Tensor] | torch.Tensor:
         """The unified entry for a forward process in both training and test.
@@ -91,15 +92,14 @@ class TopdownPoseEstimator(BaseModule):
                 function value
         """
         if mode == "loss":
-            return self.loss(entity)
+            if entity is None:
+                msg = "KeypointDetBatchDataEntity should be fed into a model for training."
+                raise RuntimeError(msg)
+            return self.loss(inputs, entity)
         if mode == "predict":
-            # use customed metainfo to override the default metainfo
-            # if self.metainfo is not None:
-            #     for data_sample in data_samples:
-            #         data_sample.set_metainfo(self.metainfo)
-            return self.predict(entity)
+            return self.predict(inputs)
         if mode == "tensor":
-            return self._forward(entity)
+            return self._forward(inputs)
 
         msg = f'Invalid mode "{mode}". Only supports loss, predict and tensor mode.'
         raise RuntimeError(msg)
@@ -107,7 +107,6 @@ class TopdownPoseEstimator(BaseModule):
     def _forward(
         self,
         inputs: Tensor,
-        data_samples: list[InstanceData] | None = None,
     ) -> Tensor | tuple[Tensor]:
         """Network forward process. Usually includes backbone, neck and head forward without any post-processing.
 
@@ -135,7 +134,7 @@ class TopdownPoseEstimator(BaseModule):
             x = self.neck(x)
         return x
 
-    def loss(self, entity: KeypointDetBatchDataEntity) -> dict | list:
+    def loss(self, inputs: torch.Tensor, entity: KeypointDetBatchDataEntity) -> dict | list:
         """Calculate losses from a batch of inputs and data samples.
 
         Args:
@@ -146,16 +145,14 @@ class TopdownPoseEstimator(BaseModule):
         Returns:
             dict: A dictionary of losses.
         """
-        feats = self.extract_feat(entity.images)
+        feats = self.extract_feat(inputs)
         return self.head.loss(feats, entity)
 
-    def predict(self, entity: KeypointDetBatchDataEntity) -> list[InstanceData]:
+    def predict(self, inputs: torch.Tensor) -> list[InstanceData]:
         """Predict results from inputs and data samples with post-processing.
 
         Args:
             inputs (Tensor): Inputs with shape (N, C, H, W)
-            data_samples (List[:obj:`PoseDataSample`]): The batch
-                data samples
 
         Returns:
             list[:obj:`PoseDataSample`]: The pose estimation results of the
@@ -169,5 +166,5 @@ class TopdownPoseEstimator(BaseModule):
                 - keypoint_scores (Tensor): predicted keypoint scores in shape
                     (num_instances, K)
         """
-        feats = self.extract_feat(entity.images)
+        feats = self.extract_feat(inputs)
         return self.head.predict(feats)

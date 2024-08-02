@@ -1,8 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 """Implementation of ScaleNorm."""
 import torch
-from mmengine.utils import digit_version
-from mmengine.utils.dl_utils import TORCH_VERSION
 from torch import nn
 
 
@@ -33,10 +31,6 @@ class ScaleNorm(nn.Module):
         Returns:
             torch.Tensor: The tensor after applying scale norm.
         """
-        if torch.onnx.is_in_onnx_export() and digit_version(TORCH_VERSION) >= digit_version("1.12"):
-            norm = torch.linalg.norm(x, dim=-1, keepdim=True)
-
-        else:
-            norm = torch.norm(x, dim=-1, keepdim=True)
+        norm = torch.linalg.norm(x, dim=-1, keepdim=True)
         norm = norm * self.scale
         return x / norm.clamp(min=self.eps) * self.g
