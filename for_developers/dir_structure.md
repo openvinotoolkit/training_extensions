@@ -14,7 +14,7 @@ root/
                 base.py
                 detection.py
                 ...
-            transform_libs/     # To support transform libraries (e.g., MMCV)
+            transform_libs/     # To support transform libraries (e.g., torchvision)
             factory.py          # Factory to instantiate data related objects
             module.py           # OTXDataModule
         model/                  # Model related things

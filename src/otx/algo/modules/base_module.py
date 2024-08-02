@@ -180,6 +180,8 @@ class BaseModule(nn.Module, metaclass=ABCMeta):
 class Sequential(BaseModule, nn.Sequential):
     """Sequential module in openmmlab.
 
+    # TODO (sungchul): remove it
+
     Ensures that all modules in ``Sequential`` have a different initialization
     strategy than the outer model
 
@@ -194,6 +196,8 @@ class Sequential(BaseModule, nn.Sequential):
 
 class ModuleList(BaseModule, nn.ModuleList):
     """ModuleList in openmmlab.
+
+    # TODO (sungchul): remove it
 
     Ensures that all modules in ``ModuleList`` have a different initialization
     strategy than the outer model
@@ -210,6 +214,8 @@ class ModuleList(BaseModule, nn.ModuleList):
 
 class ModuleDict(BaseModule, nn.ModuleDict):
     """ModuleDict in openmmlab.
+
+    # TODO (sungchul): remove it
 
     Ensures that all modules in ``ModuleDict`` have a different initialization
     strategy than the outer model
