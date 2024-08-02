@@ -12,7 +12,7 @@ from typing import TYPE_CHECKING, Any
 import torch
 from torchvision import tv_tensors
 
-from otx.core.data.entity.base import OTXBatchLossEntity
+from otx.core.data.entity.base import ImageInfo, OTXBatchLossEntity
 from otx.core.data.entity.segmentation import SegBatchDataEntity, SegBatchPredEntity
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter
@@ -33,6 +33,8 @@ if TYPE_CHECKING:
 
 class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity]):
     """Base class for the semantic segmentation models used in OTX."""
+
+    image_size: tuple[int, ...] | None = None
 
     def __init__(
         self,
@@ -101,6 +103,24 @@ class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity]):
     def forward_for_tracing(self, image: Tensor) -> Tensor | dict[str, Tensor]:
         """Model forward function used for the model tracing during model exportation."""
         return self.model(inputs=image, mode="tensor")
+
+    def get_dummy_input(self, batch_size: int = 1) -> SegBatchDataEntity:
+        """Returns a dummy input for semantic segmentation model."""
+        if self.image_size is None:
+            msg = f"Image size attribute is not set for {self.__class__}"
+            raise ValueError(msg)
+
+        images = torch.rand(batch_size, *self.image_size[1:])
+        infos = []
+        for i, img in enumerate(images):
+            infos.append(
+                ImageInfo(
+                    img_idx=i,
+                    img_shape=img.shape,
+                    ori_shape=img.shape,
+                ),
+            )
+        return SegBatchDataEntity(batch_size, images, infos, masks=[])
 
 
 class TorchVisionCompatibleModel(OTXSegmentationModel):
@@ -190,6 +210,10 @@ class TorchVisionCompatibleModel(OTXSegmentationModel):
     @property
     def _exporter(self) -> OTXModelExporter:
         """Creates OTXModelExporter object that can export the model."""
+        if self.image_size is None:
+            msg = f"Image size attribute is not set for {self.__class__}"
+            raise ValueError(msg)
+
         return OTXNativeModelExporter(
             task_level_export_parameters=self._export_parameters,
             input_size=self.image_size,

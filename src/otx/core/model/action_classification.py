@@ -13,7 +13,7 @@ import torch
 
 from otx.algo.action_classification.utils.data_sample import ActionDataSample
 from otx.core.data.entity.action_classification import ActionClsBatchDataEntity, ActionClsBatchPredEntity
-from otx.core.data.entity.base import OTXBatchLossEntity
+from otx.core.data.entity.base import ImageInfo, OTXBatchLossEntity
 from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.metrics import MetricInput
 from otx.core.metrics.accuracy import MultiClassClsMetricCallable
@@ -161,6 +161,21 @@ class OTXActionClsModel(OTXModel[ActionClsBatchDataEntity, ActionClsBatchPredEnt
                 classification_layers[prefix + key] = {"stride": stride, "num_extra_classes": num_extra_classes}
         return classification_layers
 
+    def get_dummy_input(self, batch_size: int = 1) -> ActionClsBatchDataEntity:
+        """Returns a dummy input for action classification model."""
+        images = torch.rand(batch_size, *self.image_size[1:])
+        labels = [torch.LongTensor([0])] * batch_size
+        infos = []
+        for i, img in enumerate(images):
+            infos.append(
+                ImageInfo(
+                    img_idx=i,
+                    img_shape=img.shape,
+                    ori_shape=img.shape,
+                ),
+            )
+        return ActionClsBatchDataEntity(batch_size, images, infos, labels=labels)
+
 
 class OVActionClsModel(
     OVModel[ActionClsBatchDataEntity, ActionClsBatchPredEntity],
@@ -235,3 +250,19 @@ class OVActionClsModel(
     def model_adapter_parameters(self) -> dict:
         """Model parameters for export."""
         return {"input_layouts": "NSCTHW"}
+
+    def get_dummy_input(self, batch_size: int = 1) -> ActionClsBatchDataEntity:
+        """Returns a dummy input for action classification OV model."""
+        # Resize is embedded to the OV model, which means we don't need to know the actual size
+        images = [torch.rand(8, 3, 224, 224) for _ in range(batch_size)]
+        labels = [torch.LongTensor([0])] * batch_size
+        infos = []
+        for i, img in enumerate(images):
+            infos.append(
+                ImageInfo(
+                    img_idx=i,
+                    img_shape=img.shape,
+                    ori_shape=img.shape,
+                ),
+            )
+        return ActionClsBatchDataEntity(batch_size, images, infos, labels=labels)

@@ -124,3 +124,8 @@ class TestOVModel:
         assert isinstance(outputs, list)
         assert len(outputs) == 3
         assert isinstance(outputs[2], ClassificationResult)
+
+    def test_dummy_input(self, model: OVModel):
+        batch_size = 2
+        batch = model.get_dummy_input(batch_size)
+        assert batch.batch_size == batch_size
