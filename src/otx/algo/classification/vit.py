@@ -139,7 +139,7 @@ class ForwardExplainMixInForViT(Generic[T_OTXBatchPredEntity, T_OTXBatchDataEnti
             scores = pred_results.unbind(0)
             labels = logits.argmax(-1, keepdim=True).unbind(0)
 
-        outputs =  {
+        outputs = {
             "logits": logits,
             "feature_vector": feature_vector,
             "saliency_map": saliency_map,
