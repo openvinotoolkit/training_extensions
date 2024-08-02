@@ -46,7 +46,6 @@ class FCNMaskHead(BaseModule):
         conv_out_channels: int = 256,
         num_classes: int = 80,
         class_agnostic: int = False,
-        conv_cfg: dict | None = None,
         norm_cfg: dict | None = None,
         init_cfg: dict | list[dict] | None = None,
     ) -> None:
@@ -63,7 +62,6 @@ class FCNMaskHead(BaseModule):
         self.conv_out_channels = conv_out_channels
         self.num_classes = num_classes
         self.class_agnostic = class_agnostic
-        self.conv_cfg = conv_cfg
         self.norm_cfg = norm_cfg
         self.predictor_cfg = {"type": "Conv"}
 
@@ -79,7 +77,6 @@ class FCNMaskHead(BaseModule):
                     self.conv_out_channels,
                     self.conv_kernel_size,
                     padding=padding,
-                    conv_cfg=conv_cfg,
                     norm_cfg=norm_cfg,
                 ),
             )

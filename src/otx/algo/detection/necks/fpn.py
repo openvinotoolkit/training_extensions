@@ -43,8 +43,6 @@ class FPN(BaseModule):
             conv. Defaults to False.
         no_norm_on_lateral (bool): Whether to apply norm on lateral.
             Defaults to False.
-        conv_cfg (dict, optional): Config dict for
-            convolution layer. Defaults to None.
         norm_cfg (dict, optional): Config dict for
             normalization layer. Defaults to None.
         act_cfg (dict, optional): Config dict for
@@ -64,7 +62,6 @@ class FPN(BaseModule):
         add_extra_convs: bool | str = False,
         relu_before_extra_convs: bool = False,
         no_norm_on_lateral: bool = False,
-        conv_cfg: dict | None = None,
         norm_cfg: dict | None = None,
         act_cfg: dict | None = None,
         upsample_cfg: dict | None = None,
@@ -105,7 +102,6 @@ class FPN(BaseModule):
                 in_channels[i],
                 out_channels,
                 1,
-                conv_cfg=conv_cfg,
                 norm_cfg=norm_cfg if not self.no_norm_on_lateral else None,
                 act_cfg=act_cfg,
                 inplace=False,
@@ -115,7 +111,6 @@ class FPN(BaseModule):
                 out_channels,
                 3,
                 padding=1,
-                conv_cfg=conv_cfg,
                 norm_cfg=norm_cfg,
                 act_cfg=act_cfg,
                 inplace=False,
@@ -138,7 +133,6 @@ class FPN(BaseModule):
                     3,
                     stride=2,
                     padding=1,
-                    conv_cfg=conv_cfg,
                     norm_cfg=norm_cfg,
                     act_cfg=act_cfg,
                     inplace=False,

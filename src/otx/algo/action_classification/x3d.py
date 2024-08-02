@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 """X3D model implementation."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -63,7 +64,6 @@ class X3D(OTXActionClsModel):
                 gamma_b=2.25,
                 gamma_d=2.2,
                 gamma_w=1,
-                conv_cfg={"type": "Conv3d"},
                 norm_cfg={"type": "BN3d", "requires_grad": True},
                 act_cfg={"type": "ReLU", "inplace": True},
             ),

@@ -24,7 +24,6 @@ class BaseSegmHead(nn.Module, metaclass=ABCMeta):
         channels: int,
         num_classes: int,
         dropout_ratio: float = 0.1,
-        conv_cfg: dict[str, str] | None = None,
         norm_cfg: dict[str, str] | None = None,
         act_cfg: dict[str, str] | None = None,
         in_index: int | list[int] = -1,
@@ -40,8 +39,6 @@ class BaseSegmHead(nn.Module, metaclass=ABCMeta):
             channels (int): Number of channels in the feature map.
             num_classes (int): Number of classes for segmentation.
             dropout_ratio (float, optional): The dropout ratio. Defaults to 0.1.
-            conv_cfg (Optional[ConfigType], optional): Config for convolution layer.
-                Defaults to None.
             norm_cfg (Optional[ConfigType], optional): Config for normalization layer.
                 Defaults to None.
             act_cfg (Dict[str, Union[str, Dict]], optional): Activation config.
@@ -59,7 +56,6 @@ class BaseSegmHead(nn.Module, metaclass=ABCMeta):
         self.num_classes = num_classes
         self.input_transform = input_transform
         self.dropout_ratio = dropout_ratio
-        self.conv_cfg = conv_cfg
         self.norm_cfg = norm_cfg
         self.act_cfg = act_cfg
         if self.input_transform is not None and not isinstance(in_index, list):

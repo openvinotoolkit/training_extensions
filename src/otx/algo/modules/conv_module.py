@@ -98,8 +98,6 @@ class ConvModule(nn.Module):
         bias (bool | str): If specified as `auto`, it will be decided by the
             norm_cfg. Bias will be set as True if `norm_cfg` is None, otherwise
             False. Default: "auto".
-        conv_cfg (dict): Config dict for convolution layer. Default: None,
-            which means using conv2d.
         norm_cfg (dict): Config dict for normalization layer. Default: None.
         act_cfg (dict): Config dict for activation layer.
             Default: dict(type='ReLU').
@@ -134,7 +132,6 @@ class ConvModule(nn.Module):
         dilation: int | tuple[int, int] = 1,
         groups: int = 1,
         bias: bool | str = "auto",
-        conv_cfg: dict | None = None,
         norm_cfg: dict | None = None,
         act_cfg: dict | None = {"type": "ReLU"},  # noqa: B006
         inplace: bool = True,
@@ -144,10 +141,8 @@ class ConvModule(nn.Module):
         efficient_conv_bn_eval: bool = False,
     ):
         super().__init__()
-        assert conv_cfg is None or isinstance(conv_cfg, dict)  # noqa: S101
         assert norm_cfg is None or isinstance(norm_cfg, dict)  # noqa: S101
         official_padding_mode = ["zeros", "circular"]
-        self.conv_cfg = conv_cfg
         self.norm_cfg = norm_cfg
         self.act_cfg = act_cfg
         self.inplace = inplace
@@ -332,7 +327,6 @@ class ConvModule(nn.Module):
         self = ConvModule.__new__(ConvModule)
         super(ConvModule, self).__init__()
 
-        self.conv_cfg = None
         self.norm_cfg = None
         self.act_cfg = None
         self.inplace = False

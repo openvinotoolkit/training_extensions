@@ -11,11 +11,6 @@ from torch import nn
 
 
 def test_conv_module():
-    conv_cfg = "conv"
-    with pytest.raises(AssertionError):
-        # conv_cfg must be a dict or None
-        Conv2dModule(3, 8, 2, conv_cfg=conv_cfg)
-
     norm_cfg = "norm"
     with pytest.raises(AssertionError):
         # norm_cfg must be a dict or None

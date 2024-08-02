@@ -31,8 +31,6 @@ class YOLOXPAFPN(BaseModule):
             blocks. Default: False
         upsample_cfg (dict): Config dict for interpolate layer.
             Default: `dict(scale_factor=2, mode='nearest')`
-        conv_cfg (dict, optional): Config dict for convolution layer.
-            Default: None, which means using conv2d.
         norm_cfg (dict): Config dict for normalization layer.
             Default: dict(type='BN')
         act_cfg (dict): Config dict for activation layer.
@@ -48,7 +46,6 @@ class YOLOXPAFPN(BaseModule):
         num_csp_blocks: int = 3,
         use_depthwise: bool = False,
         upsample_cfg: dict | None = None,
-        conv_cfg: dict | None = None,
         norm_cfg: dict | None = None,
         act_cfg: dict | None = None,
         init_cfg: dict | list[dict] | None = None,
@@ -82,7 +79,6 @@ class YOLOXPAFPN(BaseModule):
                     in_channels[idx],
                     in_channels[idx - 1],
                     1,
-                    conv_cfg=conv_cfg,
                     norm_cfg=norm_cfg,
                     act_cfg=act_cfg,
                 ),
@@ -94,7 +90,6 @@ class YOLOXPAFPN(BaseModule):
                     num_blocks=num_csp_blocks,
                     add_identity=False,
                     use_depthwise=use_depthwise,
-                    conv_cfg=conv_cfg,
                     norm_cfg=norm_cfg,
                     act_cfg=act_cfg,
                 ),
@@ -111,7 +106,6 @@ class YOLOXPAFPN(BaseModule):
                     3,
                     stride=2,
                     padding=1,
-                    conv_cfg=conv_cfg,
                     norm_cfg=norm_cfg,
                     act_cfg=act_cfg,
                 ),
@@ -123,7 +117,6 @@ class YOLOXPAFPN(BaseModule):
                     num_blocks=num_csp_blocks,
                     add_identity=False,
                     use_depthwise=use_depthwise,
-                    conv_cfg=conv_cfg,
                     norm_cfg=norm_cfg,
                     act_cfg=act_cfg,
                 ),
@@ -132,7 +125,7 @@ class YOLOXPAFPN(BaseModule):
         self.out_convs = nn.ModuleList()
         for i in range(len(in_channels)):
             self.out_convs.append(
-                Conv2dModule(in_channels[i], out_channels, 1, conv_cfg=conv_cfg, norm_cfg=norm_cfg, act_cfg=act_cfg),
+                Conv2dModule(in_channels[i], out_channels, 1, norm_cfg=norm_cfg, act_cfg=act_cfg),
             )
 
     def forward(self, inputs: tuple[Tensor]) -> tuple[Any, ...]:

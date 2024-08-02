@@ -6,18 +6,12 @@
 Reference: https://github.com/open-mmlab/mmcv/blob/main/tests/test_cnn/test_depthwise_seperable_conv_module.py
 """
 
-import pytest
 import torch
 from otx.algo.modules.depthwise_separable_conv_module import DepthwiseSeparableConvModule
 from torch import nn
 
 
 class TestDepthwiseSeparableConvModule:
-    def test_init_with_non_dict_conv_cfg(self) -> None:
-        # conv_cfg must be a dict or None
-        with pytest.raises(AssertionError):
-            DepthwiseSeparableConvModule(4, 8, 2, groups=2)
-
     def test_forward_with_default_config(self) -> None:
         # test default config
         conv = DepthwiseSeparableConvModule(3, 8, 2)

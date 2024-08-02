@@ -54,7 +54,6 @@ class AsymmetricPositionAttentionModule(nn.Module):
         key_channels: int,
         value_channels: int | None = None,
         psp_size: tuple | None = None,
-        conv_cfg: dict | None = None,
         norm_cfg: dict | None = None,
     ):
         super().__init__()
@@ -62,7 +61,6 @@ class AsymmetricPositionAttentionModule(nn.Module):
         self.in_channels = in_channels
         self.key_channels = key_channels
         self.value_channels = value_channels if value_channels is not None else in_channels
-        self.conv_cfg = conv_cfg
         if norm_cfg is None:
             norm_cfg = {"type": "BN"}
         if psp_size is None:
@@ -74,7 +72,6 @@ class AsymmetricPositionAttentionModule(nn.Module):
             kernel_size=1,
             stride=1,
             padding=0,
-            conv_cfg=self.conv_cfg,
             norm_cfg=self.norm_cfg,
             act_cfg={"type": "ReLU"},
         )
@@ -86,7 +83,6 @@ class AsymmetricPositionAttentionModule(nn.Module):
             kernel_size=1,
             stride=1,
             padding=0,
-            conv_cfg=self.conv_cfg,
             norm_cfg=self.norm_cfg,
             act_cfg={"type": "ReLU"},
         )
@@ -98,7 +94,6 @@ class AsymmetricPositionAttentionModule(nn.Module):
             kernel_size=1,
             stride=1,
             padding=0,
-            conv_cfg=self.conv_cfg,
             norm_cfg=self.norm_cfg,
             act_cfg=None,
         )
@@ -160,13 +155,12 @@ class LocalAttentionModule(nn.Module):
     Reference: https://github.com/lxtGH/GALD-DGCNet.
     """
 
-    def __init__(self, num_channels: int, conv_cfg: dict | None = None, norm_cfg: dict | None = None):
+    def __init__(self, num_channels: int, norm_cfg: dict | None = None):
         if norm_cfg is None:
             norm_cfg = {"type": "BN"}
         super().__init__()
 
         self.num_channels = num_channels
-        self.conv_cfg = conv_cfg
         self.norm_cfg = norm_cfg
 
         self.dwconv1 = Conv2dModule(
@@ -176,7 +170,6 @@ class LocalAttentionModule(nn.Module):
             stride=2,
             padding=1,
             groups=self.num_channels,
-            conv_cfg=self.conv_cfg,
             norm_cfg=self.norm_cfg,
             act_cfg={"type": "ReLU"},
         )
@@ -187,7 +180,6 @@ class LocalAttentionModule(nn.Module):
             stride=2,
             padding=1,
             groups=self.num_channels,
-            conv_cfg=self.conv_cfg,
             norm_cfg=self.norm_cfg,
             act_cfg={"type": "ReLU"},
         )
@@ -198,7 +190,6 @@ class LocalAttentionModule(nn.Module):
             stride=2,
             padding=1,
             groups=self.num_channels,
-            conv_cfg=self.conv_cfg,
             norm_cfg=self.norm_cfg,
             act_cfg={"type": "ReLU"},
         )

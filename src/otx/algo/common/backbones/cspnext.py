@@ -44,8 +44,6 @@ class CSPNeXt(BaseModule):
             layers. Defaults to (5, 9, 13).
         channel_attention (bool): Whether to add channel attention in each
             stage. Defaults to True.
-        conv_cfg (dict, optional): Config dict for
-            convolution layer. Defaults to None.
         norm_cfg (dict): Dictionary to construct and
             config norm layer. Defaults to dict(type='BN', requires_grad=True).
         act_cfg (dict): Config dict for activation layer.
@@ -86,7 +84,6 @@ class CSPNeXt(BaseModule):
         arch_ovewrite: dict | None = None,
         spp_kernel_sizes: tuple[int, int, int] = (5, 9, 13),
         channel_attention: bool = True,
-        conv_cfg: dict | None = None,
         norm_cfg: dict | None = None,
         act_cfg: dict | None = None,
         norm_eval: bool = False,
@@ -164,7 +161,6 @@ class CSPNeXt(BaseModule):
                 3,
                 stride=2,
                 padding=1,
-                conv_cfg=conv_cfg,
                 norm_cfg=norm_cfg,
                 act_cfg=act_cfg,
             )
@@ -174,7 +170,6 @@ class CSPNeXt(BaseModule):
                     out_channels,
                     out_channels,
                     kernel_sizes=spp_kernel_sizes,
-                    conv_cfg=conv_cfg,
                     norm_cfg=norm_cfg,
                     act_cfg=act_cfg,
                 )
@@ -188,7 +183,6 @@ class CSPNeXt(BaseModule):
                 use_cspnext_block=True,
                 expand_ratio=expand_ratio,
                 channel_attention=channel_attention,
-                conv_cfg=conv_cfg,
                 norm_cfg=norm_cfg,
                 act_cfg=act_cfg,
             )

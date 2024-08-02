@@ -24,7 +24,6 @@ class IterativeAggregator(nn.Module):
         self,
         in_channels: list[int],
         min_channels: int | None = None,
-        conv_cfg: dict | None = None,
         norm_cfg: dict | None = None,
         merge_norm: str | None = None,
         use_concat: bool = False,
@@ -34,7 +33,6 @@ class IterativeAggregator(nn.Module):
         Args:
             in_channels (list[int]): List of input channels for each branch.
             min_channels (int | None): Minimum number of channels. Defaults to None.
-            conv_cfg (dict | None): Config for convolution layers. Defaults to None.
             norm_cfg (dict | None): Config for normalization layers. Defaults to None.
             merge_norm (str | None): Whether to merge normalization layers. Defaults to None.
             use_concat (bool): Whether to use concatenation. Defaults to False.
@@ -44,8 +42,6 @@ class IterativeAggregator(nn.Module):
         """
         if norm_cfg is None:
             norm_cfg = {"type": "BN"}
-        if conv_cfg is None:
-            conv_cfg = {"type": "Conv2d"}
 
         super().__init__()
 
@@ -71,7 +67,6 @@ class IterativeAggregator(nn.Module):
                         out_channels=out_channels,
                         kernel_size=1,
                         stride=1,
-                        conv_cfg=conv_cfg,
                         norm_cfg=norm_cfg,
                         act_cfg={"type": "ReLU"},
                     ),
@@ -89,7 +84,6 @@ class IterativeAggregator(nn.Module):
                     kernel_size=3,
                     stride=1,
                     padding=1,
-                    conv_cfg=conv_cfg,
                     norm_cfg=norm_cfg,
                     act_cfg={"type": "ReLU"},
                     dw_act_cfg=None,
@@ -104,7 +98,6 @@ class IterativeAggregator(nn.Module):
                         out_channels=min_channels,
                         kernel_size=1,
                         stride=1,
-                        conv_cfg=conv_cfg,
                         norm_cfg=norm_cfg,
                         act_cfg={"type": "ReLU"},
                     ),

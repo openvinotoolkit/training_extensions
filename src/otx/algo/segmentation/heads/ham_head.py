@@ -101,7 +101,6 @@ class LightHamHead(BaseSegmHead):
             sum(self.in_channels),
             self.ham_channels,
             1,
-            conv_cfg=self.conv_cfg,
             norm_cfg=self.norm_cfg,
             act_cfg=self.act_cfg,
         )
@@ -112,7 +111,6 @@ class LightHamHead(BaseSegmHead):
             self.ham_channels,
             self.channels,
             1,
-            conv_cfg=self.conv_cfg,
             norm_cfg=self.norm_cfg,
             act_cfg=self.act_cfg,
         )

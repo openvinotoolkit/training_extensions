@@ -71,8 +71,6 @@ class BlockX3D(nn.Module):
             unit. If set as None, it means not using SE unit. Default: None.
         use_swish (bool): Whether to use swish as the activation function
             before and after the 3x3x3 conv. Default: True.
-        conv_cfg (dict): Config dict for convolution layer.
-            Default: ``dict(type='Conv3d')``.
         norm_cfg (dict): Config for norm layers. required keys are ``type``,
             Default: ``dict(type='BN3d')``.
         act_cfg (dict): Config dict for activation layer.
@@ -90,7 +88,6 @@ class BlockX3D(nn.Module):
         downsample: nn.Module | None = None,
         se_ratio: float | None = None,
         use_swish: bool = True,
-        conv_cfg: dict | None = None,
         norm_cfg: dict | None = None,
         act_cfg: dict | None = None,
         with_cp: bool = False,
@@ -104,7 +101,6 @@ class BlockX3D(nn.Module):
         self.downsample = downsample
         self.se_ratio = se_ratio
         self.use_swish = use_swish
-        self.conv_cfg = conv_cfg
         self.norm_cfg = norm_cfg
         self.act_cfg = act_cfg
         self.act_cfg_swish = Swish()
@@ -117,7 +113,6 @@ class BlockX3D(nn.Module):
             stride=1,
             padding=0,
             bias=False,
-            conv_cfg=self.conv_cfg,
             norm_cfg=self.norm_cfg,
             act_cfg=self.act_cfg,
         )
@@ -130,7 +125,6 @@ class BlockX3D(nn.Module):
             padding=1,
             groups=planes,
             bias=False,
-            conv_cfg=self.conv_cfg,
             norm_cfg=self.norm_cfg,
             act_cfg=None,
         )
@@ -144,7 +138,6 @@ class BlockX3D(nn.Module):
             stride=1,
             padding=0,
             bias=False,
-            conv_cfg=self.conv_cfg,
             norm_cfg=self.norm_cfg,
             act_cfg=None,
         )
@@ -202,8 +195,6 @@ class X3DBackbone(nn.Module):
             unit. If set as None, it means not using SE unit. Default: 1 / 16.
         use_swish (bool): Whether to use swish as the activation function
             before and after the 3x3x3 conv. Default: True.
-        conv_cfg (dict): Config for conv layers. required keys are ``type``
-            Default: ``dict(type='Conv3d')``.
         norm_cfg (dict): Config for norm layers. required keys are ``type`` and
             ``requires_grad``.
             Default: ``dict(type='BN3d', requires_grad=True)``.
@@ -232,7 +223,6 @@ class X3DBackbone(nn.Module):
         se_style: str = "half",
         se_ratio: float = 1 / 16,
         use_swish: bool = True,
-        conv_cfg: dict | None = None,
         norm_cfg: dict | None = None,
         act_cfg: dict | None = None,
         norm_eval: bool = False,
@@ -276,7 +266,6 @@ class X3DBackbone(nn.Module):
             raise ValueError(msg)
         self.use_swish = use_swish
 
-        self.conv_cfg = conv_cfg
         self.norm_cfg = norm_cfg
         self.act_cfg = act_cfg
         self.norm_eval = norm_eval
@@ -305,7 +294,6 @@ class X3DBackbone(nn.Module):
                 se_ratio=self.se_ratio,
                 use_swish=self.use_swish,
                 norm_cfg=self.norm_cfg,
-                conv_cfg=self.conv_cfg,
                 act_cfg=self.act_cfg,
                 with_cp=with_cp,
                 **kwargs,
@@ -323,7 +311,6 @@ class X3DBackbone(nn.Module):
             stride=1,
             padding=0,
             bias=False,
-            conv_cfg=self.conv_cfg,
             norm_cfg=self.norm_cfg,
             act_cfg=self.act_cfg,
         )
@@ -364,7 +351,6 @@ class X3DBackbone(nn.Module):
         use_swish: bool = True,
         norm_cfg: dict | None = None,
         act_cfg: dict | None = None,
-        conv_cfg: dict | None = None,
         with_cp: bool = False,
         **kwargs,
     ) -> nn.Module:
@@ -389,7 +375,6 @@ class X3DBackbone(nn.Module):
                 Default: None.
             use_swish (bool): Whether to use swish as the activation function
                 before and after the 3x3x3 conv. Default: True.
-            conv_cfg (dict | None): Config for norm layers. Default: None.
             norm_cfg (dict | None): Config for norm layers. Default: None.
             act_cfg (dict | None): Config for activate layers. Default: None.
             with_cp (bool | None): Use checkpoint or not. Using checkpoint
@@ -408,7 +393,6 @@ class X3DBackbone(nn.Module):
                 stride=(1, spatial_stride, spatial_stride),
                 padding=0,
                 bias=False,
-                conv_cfg=conv_cfg,
                 norm_cfg=norm_cfg,
                 act_cfg=None,
             )
@@ -432,7 +416,6 @@ class X3DBackbone(nn.Module):
                 se_ratio=se_ratio if use_se[0] else None,
                 use_swish=use_swish,
                 norm_cfg=norm_cfg,
-                conv_cfg=conv_cfg,
                 act_cfg=act_cfg,
                 with_cp=with_cp,
                 **kwargs,
@@ -449,7 +432,6 @@ class X3DBackbone(nn.Module):
                     se_ratio=se_ratio if use_se[i] else None,
                     use_swish=use_swish,
                     norm_cfg=norm_cfg,
-                    conv_cfg=conv_cfg,
                     act_cfg=act_cfg,
                     with_cp=with_cp,
                     **kwargs,
@@ -467,7 +449,6 @@ class X3DBackbone(nn.Module):
             stride=(1, 2, 2),
             padding=(0, 1, 1),
             bias=False,
-            conv_cfg=self.conv_cfg,
             norm_cfg=None,
             act_cfg=None,
         )
@@ -479,7 +460,6 @@ class X3DBackbone(nn.Module):
             padding=(2, 0, 0),
             groups=self.base_channels,
             bias=False,
-            conv_cfg=self.conv_cfg,
             norm_cfg=self.norm_cfg,
             act_cfg=self.act_cfg,
         )
