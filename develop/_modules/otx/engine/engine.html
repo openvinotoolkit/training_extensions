@@ -1066,8 +1066,9 @@
         <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
         <span class="n">n_iters</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
         <span class="n">extended_stats</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">print_table</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Executes model micro benchmarking on random data.</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Executes model micro benchmarking on random data.</span>
 
 <span class="sd">        Benchmark can provide latency, throughput, number of parameters,</span>
 <span class="sd">        and theoretical computational complexity with batch size 1.</span>
@@ -1079,24 +1080,37 @@
 <span class="sd">            batch_size (int, optional): Batch size for benchmarking. Defaults to 1.</span>
 <span class="sd">            n_iters (int, optional): Number of iterations to average on. Defaults to 10.</span>
 <span class="sd">            extended_stats (bool, optional): Flag that enables printing of per module complexity for torch model.</span>
-<span class="sd">            Defaults to False.</span>
+<span class="sd">                Defaults to False.</span>
+<span class="sd">            print_table (bool, optional): Flag that enables printing the benchmark results in a rich table.</span>
+<span class="sd">                Defaults to True.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            dict[str, str]: a dict with the benchmark results.</span>
 
 <span class="sd">        Example:</span>
 <span class="sd">            &gt;&gt;&gt; engine.benchmark(</span>
-<span class="sd">            ...     datamodule=OTXDataModule(),</span>
+<span class="sd">            ...     checkpoint=&lt;checkpoint-path&gt;,</span>
 <span class="sd">            ...     batch_size=1,</span>
 <span class="sd">            ...     n_iters=20,</span>
 <span class="sd">            ...     extended_stats=True,</span>
 <span class="sd">            ... )</span>
 
 <span class="sd">        CLI Usage:</span>
-<span class="sd">            To run benchmark using the configuration, launch</span>
+<span class="sd">            1. To run benchmark by specifying the work_dir where did the training, run</span>
+<span class="sd">                ```shell</span>
+<span class="sd">                &gt;&gt;&gt; otx benchmark --work_dir &lt;WORK_DIR_PATH, str&gt;</span>
+<span class="sd">                ```</span>
+<span class="sd">            2. To run benchmark by specifying the checkpoint, run</span>
 <span class="sd">                ```shell</span>
 <span class="sd">                &gt;&gt;&gt; otx benchmark \</span>
-<span class="sd">                ...     --config &lt;CONFIG_PATH&gt; --data_root &lt;DATASET_PATH, str&gt; \</span>
+<span class="sd">                ...     --work_dir &lt;WORK_DIR_PATH, str&gt; \</span>
+<span class="sd">                ...     --checkpoint &lt;CKPT_PATH, str&gt;</span>
+<span class="sd">                ```</span>
+<span class="sd">            3. To run benchmark using the configuration, launch</span>
+<span class="sd">                ```shell</span>
+<span class="sd">                &gt;&gt;&gt; otx benchmark \</span>
+<span class="sd">                ...     --config &lt;CONFIG_PATH&gt; \</span>
+<span class="sd">                ...     --data_root &lt;DATASET_PATH, str&gt; \</span>
 <span class="sd">                ...     --checkpoint &lt;CKPT_PATH, str&gt;</span>
 <span class="sd">                ```</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1160,8 +1174,18 @@
             <span class="n">params_num_str</span> <span class="o">=</span> <span class="n">convert_num_with_suffix</span><span class="p">(</span><span class="n">params_num</span><span class="p">,</span> <span class="n">get_suffix_str</span><span class="p">(</span><span class="n">params_num</span> <span class="o">*</span> <span class="mi">100</span><span class="p">))</span>
             <span class="n">final_stats</span><span class="p">[</span><span class="s2">&quot;parameters_number&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">params_num_str</span>
 
-        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">final_stats</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">:</span><span class="s2">&lt;20</span><span class="si">}</span><span class="s2"> | </span><span class="si">{</span><span class="n">val</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">print_table</span><span class="p">:</span>
+            <span class="kn">from</span> <span class="nn">rich.console</span> <span class="kn">import</span> <span class="n">Console</span>
+            <span class="kn">from</span> <span class="nn">rich.table</span> <span class="kn">import</span> <span class="n">Column</span><span class="p">,</span> <span class="n">Table</span>
+
+            <span class="n">console</span> <span class="o">=</span> <span class="n">Console</span><span class="p">()</span>
+            <span class="n">table_headers</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Benchmark&quot;</span><span class="p">,</span> <span class="s2">&quot;Value&quot;</span><span class="p">]</span>
+            <span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="n">Column</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">justify</span><span class="o">=</span><span class="s2">&quot;center&quot;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="s2">&quot;magenta&quot;</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="n">console</span><span class="o">.</span><span class="n">width</span><span class="p">)</span> <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="n">table_headers</span><span class="p">]</span>
+            <span class="n">columns</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">style</span> <span class="o">=</span> <span class="s2">&quot;cyan&quot;</span>
+            <span class="n">table</span> <span class="o">=</span> <span class="n">Table</span><span class="p">(</span><span class="o">*</span><span class="n">columns</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">final_stats</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">table</span><span class="o">.</span><span class="n">add_row</span><span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">:</span><span class="s2">&lt;20</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">val</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">])</span>
+            <span class="n">console</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="n">table</span><span class="p">)</span>
 
         <span class="k">with</span> <span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">work_dir</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;benchmark_report.csv&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
             <span class="n">writer</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">writer</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
