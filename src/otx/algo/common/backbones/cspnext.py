@@ -14,8 +14,7 @@ from typing import ClassVar
 from otx.algo.common.layers import SPPBottleneck
 from otx.algo.detection.layers import CSPLayer
 from otx.algo.modules.base_module import BaseModule
-from otx.algo.modules.conv_module import Conv2dModule
-from otx.algo.modules.depthwise_separable_conv_module import DepthwiseSeparableConvModule
+from otx.algo.modules.conv_module import Conv2dModule, DepthwiseSeparableConvModule
 from torch import Tensor, nn
 from torch.nn.modules.batchnorm import _BatchNorm
 

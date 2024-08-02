@@ -20,8 +20,7 @@ from otx.algo.detection.utils.utils import (
     sigmoid_geometric_mean,
     unmap,
 )
-from otx.algo.modules.conv_module import Conv2dModule
-from otx.algo.modules.depthwise_separable_conv_module import DepthwiseSeparableConvModule
+from otx.algo.modules.conv_module import Conv2dModule, DepthwiseSeparableConvModule
 from otx.algo.modules.norm import is_norm
 from otx.algo.modules.scale import Scale
 from otx.algo.utils.mmengine_utils import InstanceData

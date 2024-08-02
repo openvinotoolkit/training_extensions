@@ -11,8 +11,7 @@ from torch import Tensor, nn
 from otx.algo.detection.layers import ChannelAttention
 from otx.algo.modules import build_activation_layer
 from otx.algo.modules.base_module import BaseModule
-from otx.algo.modules.conv_module import Conv2dModule
-from otx.algo.modules.depthwise_separable_conv_module import DepthwiseSeparableConvModule
+from otx.algo.modules.conv_module import Conv2dModule, DepthwiseSeparableConvModule
 
 
 class DarknetBottleneck(BaseModule):

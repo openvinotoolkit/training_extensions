@@ -6,8 +6,7 @@ import torch
 from otx.algo.detection.layers import ChannelAttention
 from otx.algo.detection.layers.csp_layer import CSPLayer, CSPNeXtBlock, DarknetBottleneck
 from otx.algo.modules.activation import Swish
-from otx.algo.modules.conv_module import Conv2dModule
-from otx.algo.modules.depthwise_separable_conv_module import DepthwiseSeparableConvModule
+from otx.algo.modules.conv_module import Conv2dModule, DepthwiseSeparableConvModule
 from torch.nn import BatchNorm2d, Conv2d
 
 

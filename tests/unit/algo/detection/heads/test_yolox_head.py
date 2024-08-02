@@ -10,8 +10,7 @@ import torch
 from omegaconf import DictConfig
 from otx.algo.detection.heads import YOLOXHead
 from otx.algo.detection.utils.assigners import SimOTAAssigner
-from otx.algo.modules.conv_module import Conv2dModule
-from otx.algo.modules.depthwise_separable_conv_module import DepthwiseSeparableConvModule
+from otx.algo.modules.conv_module import Conv2dModule, DepthwiseSeparableConvModule
 from otx.algo.utils.mmengine_utils import InstanceData
 
 
