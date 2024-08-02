@@ -61,7 +61,7 @@ class RTMPoseTiny(RTMPose):
     """RTMPose Tiny Model."""
 
     load_from = "https://download.openmmlab.com/mmpose/v1/projects/rtmposev1/cspnext-tiny_udp-aic-coco_210e-256x192-cbed682d_20230130.pth"
-    image_size = (3, 192, 256)
+    image_size = (1, 3, 192, 256)
     mean = (123.675, 116.28, 103.53)
     std = (58.395, 57.12, 57.375)
 
