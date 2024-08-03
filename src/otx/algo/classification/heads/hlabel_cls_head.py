@@ -441,38 +441,17 @@ class HierarchicalCBAMClsHead(HierarchicalClsHead):
             init_cfg=init_cfg,
             **kwargs,
         )
-        self.hid_channels = hid_channels
-        self.dropout = dropout
-
-        self.activation_callable = activation_callable
-
         self.fc_superclass = nn.Linear(in_channels, num_multiclass_heads)
         self.attention_fc = nn.Linear(num_multiclass_heads, in_channels)
         self.cbam = CBAM(in_channels)
-
-        classifier_modules = [
-            nn.Linear(in_channels, hid_channels),
-            nn.BatchNorm1d(hid_channels),
-            self.activation_callable if isinstance(self.activation_callable, nn.Module) else self.activation_callable(),
-        ]
-
-        if self.dropout:
-            classifier_modules.append(nn.Dropout(p=0.2))
-
-        classifier_modules.append(nn.Linear(hid_channels, num_classes))
-
-        self.fc_subclass = nn.Sequential(*classifier_modules)
+        self.fc_subclass = nn.Linear(in_channels, num_single_label_classes)
 
         self._init_layers()
 
     def _init_layers(self) -> None:
         """Iniitialize weights of classification head."""
         normal_init(self.fc_superclass, mean=0, std=0.01, bias=0)
-        for module in self.fc_subclass:
-            if isinstance(module, nn.Linear):
-                normal_init(module, mean=0, std=0.01, bias=0)
-            elif isinstance(module, nn.BatchNorm1d):
-                constant_init(module, 1)
+        normal_init(self.fc_subclass, mean=0, std=0.01, bias=0)
 
     def forward(self, feats: tuple[torch.Tensor] | torch.Tensor) -> torch.Tensor:
         """The forward process."""
