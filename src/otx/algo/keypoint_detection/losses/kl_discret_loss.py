@@ -1,3 +1,5 @@
+# Copyright (C) 2024 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
 # Copyright (c) OpenMMLab. All rights reserved.
 """Implementation of KLDiscretLoss."""
 from __future__ import annotations
@@ -19,10 +21,10 @@ class KLDiscretLoss(nn.Module):
         label_softmax (bool): Whether to use Softmax on labels.
             Default: False.
         label_beta (float): Temperature factor of Softmax on labels.
-            Default: 1.0.
+            Default: 10.0.
         use_target_weight (bool): Option to use weighted loss.
             Different joint types may have different target weights.
-        mask (list[int]): Index of masked keypoints.
+        mask (Tensor): Index of masked keypoints.
         mask_weight (float): Weight of masked keypoints. Default: 1.0.
     """
 
@@ -67,6 +69,9 @@ class KLDiscretLoss(nn.Module):
             gt_simcc (Tuple[Tensor, Tensor]): Target representations.
             target_weight (torch.Tensor[N, K] or torch.Tensor[N]):
                 Weights across different labels.
+
+        Returns:
+            loss (Tensor): KL discrete loss between pred_simcc and gt_simcc.
         """
         batch_size, num_keypoints, _ = pred_simcc[0].shape
         loss = 0

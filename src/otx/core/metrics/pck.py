@@ -61,9 +61,6 @@ class PCKMeasure(Metric):
     def update(self, preds: list[dict[str, Tensor]], target: list[dict[str, Tensor]]) -> None:
         """Update total predictions and targets from given batch predicitons and targets."""
         for pred, tget in zip(preds, target):
-            # self.preds.append(pred["keypoints"].cpu().numpy())
-            # self.targets.append(tget["keypoints"].cpu().numpy())
-            # self.masks.append(tget["visible"].cpu().numpy())
             self.preds.extend(
                 [
                     (pred["keypoints"], pred["keypoint_x_labels"], pred["keypoint_y_labels"]),

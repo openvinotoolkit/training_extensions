@@ -18,28 +18,10 @@ class PoseDataSample(InstanceData):
 
     The attributes of ``PoseDataSample`` includes:
 
-        - ``gt_instances``(InstanceData): Ground truth of instances with
-            keypoint annotations
-        - ``pred_instances``(InstanceData): Instances with keypoint
-            predictions
-
-    Examples:
-        >>> import torch
-        >>> from mmpose.structures import PoseDataSample
-
-        >>> pose_meta = dict(img_shape=(800, 1216),
-        ...                  crop_size=(256, 192),
-        ...                  heatmap_size=(64, 48))
-        >>> gt_instances = InstanceData()
-        >>> gt_instances.bboxes = torch.rand((1, 4))
-        >>> gt_instances.keypoints = torch.rand((1, 17, 2))
-        >>> gt_instances.keypoints_visible = torch.rand((1, 17, 1))
-
-        >>> data_sample = PoseDataSample(gt_instances=gt_instances,
-        ...                              metainfo=pose_meta)
-        >>> assert 'img_shape' in data_sample
-        >>> len(data_sample.gt_instances)
-        1
+        - ``keypoints``(np.ndarray): Keypoint annotations
+        - ``keypoint_x_labels``(np.ndarray): Keypoint x-axis annotations according to simcc
+        - ``keypoint_y_labels``(np.ndarray): Keypoint y-axis annotations according to simcc
+        - ``keypoint_weights``(np.ndarray): Keypoint weight annotations from visibility
     """
 
     def __init__(self, *, metainfo: dict | None = None, **kwargs) -> None:

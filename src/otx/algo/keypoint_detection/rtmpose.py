@@ -1,7 +1,7 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
-"""RTMDet model implementations."""
+"""RTMPose model implementations."""
 
 from __future__ import annotations
 
@@ -20,13 +20,14 @@ if TYPE_CHECKING:
 
 
 class RTMPose(OTXKeypointDetectionModel):
-    """OTX Detection model class for RTMDet."""
+    """OTX Detection model class for RTMPose."""
 
     @property
     def _exporter(self) -> OTXModelExporter:
         """Creates OTXModelExporter object that can export the model."""
         if self.image_size is None:
-            raise ValueError(self.image_size)
+            msg = f"Exporter should have a image_size but it is given by {self.image_size}"
+            raise ValueError(msg)
 
         return OTXNativeModelExporter(
             task_level_export_parameters=self._export_parameters,

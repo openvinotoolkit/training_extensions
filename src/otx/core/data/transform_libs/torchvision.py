@@ -3488,7 +3488,8 @@ class TopdownAffine(tvt_v2.Transform, NumpytoTVTensorMixin):
             str: Formatted string.
         """
         repr_str = self.__class__.__name__
-        repr_str += f"input_size={self.input_size}."
+        repr_str += f"(input_size={self.input_size}"
+        repr_str += f"is_numpy_to_tvtensor={self.is_numpy_to_tvtensor})."
         return repr_str
 
 

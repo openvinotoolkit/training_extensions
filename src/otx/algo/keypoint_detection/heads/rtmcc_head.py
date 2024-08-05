@@ -1,3 +1,5 @@
+# Copyright (C) 2024 Intel Corporation
+# # SPDX-License-Identifier: Apache-2.0
 # Copyright (c) OpenMMLab. All rights reserved.
 """Implementation of RTMCCHead."""
 from __future__ import annotations
@@ -31,24 +33,13 @@ class RTMCCHead(BaseModule):
         out_channels (int): Number of channels in the output heatmap.
         input_size (tuple): Size of input image in shape [w, h].
         in_featuremap_size (int | sequence[int]): Size of input feature map.
+        loss (nn.module): keypoint loss.
+        decoder_cfg (dict): Config dict for the keypoint decoder.
+        gau_cfg (dict): Config dict for the Gated Attention Unit.
         simcc_split_ratio (float): Split ratio of pixels.
             Default: 2.0.
         final_layer_kernel_size (int): Kernel size of the convolutional layer.
             Default: 1.
-        gau_cfg (Config): Config dict for the Gated Attention Unit.
-            Default: dict(
-                hidden_dims=256,
-                s=128,
-                expansion_factor=2,
-                dropout_rate=0.,
-                drop_path=0.,
-                act_fn='ReLU',
-                use_rel_bias=False,
-                pos_enc=False).
-        loss (Config): Config of the keypoint loss. Defaults to use
-            :class:`KLDiscretLoss`
-        decoder (Config, optional): The decoder config that controls decoding
-            keypoint coordinates from the network output. Defaults to ``None``
         init_cfg (Config, optional): Config to control the initialization. See
             :attr:`default_init_cfg` for default settings
     """
@@ -135,20 +126,15 @@ class RTMCCHead(BaseModule):
         """Predict results from features.
 
         Args:
-            feats (Tuple[Tensor] | List[Tuple[Tensor]]): The multi-stage
-                features (or multiple multi-stage features in TTA)
-            batch_data_samples (List[:obj:`PoseDataSample`]): The batch
-                data samples
-            test_cfg (dict): The runtime config for testing process. Defaults
-                to {}
+            feats (Tuple[Tensor] | List[Tuple[Tensor]]): The multi-stage features
 
         Returns:
-            List[InstanceData]: The pose predictions, each contains
+            List[PoseDataSample]: The pose predictions, each contains
             the following fields:
                 - keypoints (np.ndarray): predicted keypoint coordinates in
                     shape (num_instances, K, D) where K is the keypoint number
                     and D is the keypoint dimension
-                - keypoint_scores (np.ndarray): predicted keypoint scores in
+                - keypoint_weights (np.ndarray): predicted keypoint scores in
                     shape (num_instances, K)
                 - keypoint_x_labels (np.ndarray, optional): The predicted 1-D
                     intensity distribution in the x direction

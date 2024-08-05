@@ -1,3 +1,5 @@
+# Copyright (C) 2024 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
 # Copyright (c) OpenMMLab. All rights reserved.
 """Implementation of RTMCCBlock."""
 from __future__ import annotations
@@ -150,12 +152,13 @@ class RTMCCBlock(nn.Module):
 
         nn.init.xavier_uniform_(self.uv.weight)
 
-        if act_fn in {"SiLU", nn.SiLU}:
-            self.act_fn = nn.SiLU(True)
-        elif act_fn in {"ReLU", nn.ReLU}:
-            self.act_fn = nn.ReLU(True)
-        else:
-            raise NotImplementedError
+        if not isinstance(act_fn, nn.Module):
+            if act_fn == "SiLU":
+                self.act_fn = nn.SiLU(True)
+            elif act_fn == "ReLU":
+                self.act_fn = nn.ReLU(True)
+            else:
+                raise NotImplementedError
 
         if in_token_dims == out_token_dims:
             self.shortcut = True
