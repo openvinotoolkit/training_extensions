@@ -4,30 +4,27 @@
 
 
 import pytest
-from otx.algo.classification.vit import (
-    VisionTransformerForHLabelCls,
-    VisionTransformerForMulticlassCls,
-    VisionTransformerForMultilabelCls,
-)
+from otx.algo.classification.vit import VisionTransformerForClassification
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.data.entity.base import OTXBatchLossEntity
+from otx.core.types.task import OTXTaskType
 
 
 class TestDeitTiny:
     @pytest.fixture(
         params=[
-            (VisionTransformerForMulticlassCls, "fxt_multiclass_cls_batch_data_entity", "fxt_multiclass_labelinfo"),
-            (VisionTransformerForMultilabelCls, "fxt_multilabel_cls_batch_data_entity", "fxt_multilabel_labelinfo"),
-            (VisionTransformerForHLabelCls, "fxt_hlabel_cls_batch_data_entity", "fxt_hlabel_data"),
+            (OTXTaskType.MULTI_CLASS_CLS, "fxt_multiclass_cls_batch_data_entity", "fxt_multiclass_labelinfo"),
+            (OTXTaskType.MULTI_LABEL_CLS, "fxt_multilabel_cls_batch_data_entity", "fxt_multilabel_labelinfo"),
+            (OTXTaskType.H_LABEL_CLS, "fxt_hlabel_cls_batch_data_entity", "fxt_hlabel_data"),
         ],
         ids=["multiclass", "multilabel", "hlabel"],
     )
     def fxt_model_and_input(self, request):
-        model_cls, input_fxt_name, label_info_fxt_name = request.param
+        task_type, input_fxt_name, label_info_fxt_name = request.param
         fxt_input = request.getfixturevalue(input_fxt_name)
         fxt_label_info = request.getfixturevalue(label_info_fxt_name)
 
-        model = model_cls(label_info=fxt_label_info)
+        model = VisionTransformerForClassification(label_info=fxt_label_info, task=task_type)
 
         return model, fxt_input
 

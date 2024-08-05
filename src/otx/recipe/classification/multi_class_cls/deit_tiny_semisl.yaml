@@ -1,8 +1,9 @@
 model:
-  class_path: otx.algo.classification.vit.VisionTransformerForMulticlassClsSemiSL
+  class_path: otx.algo.classification.vit.VisionTransformerForClassification
   init_args:
     label_info: 1000
     arch: "vit-tiny"
+    train_type: SEMI_SUPERVISED
 
     optimizer:
       class_path: torch.optim.AdamW

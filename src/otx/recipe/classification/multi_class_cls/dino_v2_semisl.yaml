@@ -1,9 +1,9 @@
 model:
-  class_path: otx.algo.classification.dino_v2.DINOv2ForMulticlassClsSemiSL
+  class_path: otx.algo.classification.vit.VisionTransformerForClassification
   init_args:
     label_info: 1000
-    freeze_backbone: false
-    backbone: dinov2_vits14_reg
+    arch: "dinov2-small"
+    train_type: SEMI_SUPERVISED
 
     optimizer:
       class_path: torch.optim.AdamW

@@ -7,12 +7,12 @@ from __future__ import annotations
 import types
 from copy import deepcopy
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, Generic
+from typing import TYPE_CHECKING, Any, Callable, Generic, Literal
 from urllib.parse import urlparse
 
 import numpy as np
 import torch
-from torch import Tensor, nn
+from torch import nn
 from torch.hub import download_url_to_file
 
 from otx.algo.classification.backbones.vision_transformer import VIT_ARCH_TYPE, VisionTransformer
@@ -29,30 +29,26 @@ from otx.algo.explain.explain_algo import ViTReciproCAM, feature_vector_fn
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.data.entity.base import OTXBatchLossEntity, T_OTXBatchDataEntity, T_OTXBatchPredEntity
 from otx.core.data.entity.classification import (
-    HlabelClsBatchDataEntity,
+    CLASSIFICATION_BATCH_DATA_ENTITY,
+    CLASSIFICATION_BATCH_PRED_ENTITY,
     HlabelClsBatchPredEntity,
-    MulticlassClsBatchDataEntity,
     MulticlassClsBatchPredEntity,
-    MultilabelClsBatchDataEntity,
     MultilabelClsBatchPredEntity,
 )
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter
-from otx.core.metrics import MetricInput
-from otx.core.metrics.accuracy import HLabelClsMetricCallble, MultiClassClsMetricCallable, MultiLabelClsMetricCallable
+from otx.core.metrics.accuracy import DefaultClsMetricCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
-from otx.core.model.classification import (
-    OTXHlabelClsModel,
-    OTXMulticlassClsModel,
-    OTXMultilabelClsModel,
-)
+from otx.core.model.classification import OTXClassificationModel
 from otx.core.schedulers import LRSchedulerListCallable
 from otx.core.types.label import HLabelInfo, LabelInfoTypes
+from otx.core.types.task import OTXTaskType, OTXTrainType
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
 
-    from otx.core.metrics import MetricCallable
+    from otx.core.metrics import MetricCallablePerTask
+
 
 augreg_url = "https://storage.googleapis.com/vit_models/augreg/"
 dinov2_url = "https://dl.fbaipublicfiles.com/dinov2/"
@@ -211,8 +207,24 @@ class ForwardExplainMixInForViT(Generic[T_OTXBatchPredEntity, T_OTXBatchDataEnti
         return self.model(images=image, mode="tensor")
 
 
-class VisionTransformerForMulticlassCls(ForwardExplainMixInForViT, OTXMulticlassClsModel):
-    """DeitTiny Model for multi-class classification task."""
+class VisionTransformerForClassification(ForwardExplainMixInForViT, OTXClassificationModel):
+    """Vision Transformer model for classification tasks.
+
+    Args:
+        label_info (LabelInfoTypes): Information about the labels.
+        arch (VIT_ARCH_TYPE, optional): Architecture type of the Vision Transformer. Defaults to "vit-tiny".
+        lora (bool, optional): Whether to use LoRA attention. Defaults to False.
+        pretrained (bool, optional): Whether to use pretrained weights. Defaults to True.
+        optimizer (OptimizerCallable, optional): Optimizer for training. Defaults to DefaultOptimizerCallable.
+        scheduler (LRSchedulerCallable | LRSchedulerListCallable, optional): Learning rate scheduler.
+            Defaults to DefaultSchedulerCallable.
+        metric (MetricCallablePerTask, optional): Metric for evaluation. Defaults to DefaultClsMetricCallable.
+        torch_compile (bool, optional): Whether to compile the model using TorchScript. Defaults to False.
+        task (Literal[OTXTaskType.MULTI_CLASS_CLS, OTXTaskType.MULTI_LABEL_CLS, OTXTaskType.H_LABEL_CLS], optional):
+            Type of classification task. Defaults to OTXTaskType.MULTI_CLASS_CLS.
+        train_type (Literal[OTXTrainType.SUPERVISED, OTXTrainType.SEMI_SUPERVISED], optional): Type of training.
+            Defaults to OTXTrainType.SUPERVISED.
+    """
 
     model: ImageClassifier
 
@@ -224,8 +236,14 @@ class VisionTransformerForMulticlassCls(ForwardExplainMixInForViT, OTXMulticlass
         pretrained: bool = True,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
-        metric: MetricCallable = MultiClassClsMetricCallable,
+        metric: MetricCallablePerTask = DefaultClsMetricCallable,
         torch_compile: bool = False,
+        task: Literal[
+            OTXTaskType.MULTI_CLASS_CLS,
+            OTXTaskType.MULTI_LABEL_CLS,
+            OTXTaskType.H_LABEL_CLS,
+        ] = OTXTaskType.MULTI_CLASS_CLS,
+        train_type: Literal[OTXTrainType.SUPERVISED, OTXTrainType.SEMI_SUPERVISED] = OTXTrainType.SUPERVISED,
     ) -> None:
         self.arch = arch
         self.lora = lora
@@ -236,20 +254,9 @@ class VisionTransformerForMulticlassCls(ForwardExplainMixInForViT, OTXMulticlass
             scheduler=scheduler,
             metric=metric,
             torch_compile=torch_compile,
+            task=task,
+            train_type=train_type,
         )
-
-    def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.") -> dict:
-        """Load the previous OTX ckpt according to OTX2.0."""
-        for key in list(state_dict.keys()):
-            new_key = key.replace("patch_embed.projection", "patch_embed.proj")
-            new_key = new_key.replace("backbone.ln1", "backbone.norm")
-            new_key = new_key.replace("ffn.layers.0.0", "mlp.fc1")
-            new_key = new_key.replace("ffn.layers.1", "mlp.fc2")
-            new_key = new_key.replace("layers", "blocks")
-            new_key = new_key.replace("ln", "norm")
-            if new_key != key:
-                state_dict[new_key] = state_dict.pop(key)
-        return OTXv1Helper.load_cls_effnet_b0_ckpt(state_dict, "multiclass", add_prefix)
 
     def _create_model(self) -> nn.Module:
         # Get classification_layers for class-incr learning
@@ -271,7 +278,7 @@ class VisionTransformerForMulticlassCls(ForwardExplainMixInForViT, OTXMulticlass
             cache_dir = Path.home() / ".cache" / "torch" / "hub" / "checkpoints"
             cache_file = cache_dir / filename
             if not Path.exists(cache_file):
-                download_url_to_file(pretrained_urls[self.arch], cache_file, "", progress=True)
+                download_url_to_file(pretrained_urls[self.arch], str(cache_file), "", progress=True)
             model.backbone.load_pretrained(checkpoint_path=cache_file)
 
         return model
@@ -282,64 +289,114 @@ class VisionTransformerForMulticlassCls(ForwardExplainMixInForViT, OTXMulticlass
             {"bias": 0.0, "val": 1.0, "layer": "LayerNorm", "type": "Constant"},
         ]
         vit_backbone = VisionTransformer(arch=self.arch, img_size=224, lora=self.lora)
-        return ImageClassifier(
+        classifier = ImageClassifier if self.train_type == OTXTrainType.SUPERVISED else SemiSLClassifier
+        head = self._build_head(num_classes, vit_backbone.embed_dim)
+        return classifier(
             backbone=vit_backbone,
             neck=None,
-            head=VisionTransformerClsHead(
-                num_classes=num_classes,
-                in_channels=vit_backbone.embed_dim,
-                topk=(1, 5) if num_classes >= 5 else (1,),
-                loss=nn.CrossEntropyLoss(reduction="none"),
-            ),
+            head=head,
             init_cfg=init_cfg,
         )
 
-    def _customize_inputs(self, inputs: MulticlassClsBatchDataEntity) -> dict[str, Any]:
-        if self.training:
-            mode = "loss"
-        elif self.explain_mode:
-            mode = "explain"
-        else:
-            mode = "predict"
+    def _build_head(self, num_classes: int, embed_dim: int) -> nn.Module:
+        if self.task == OTXTaskType.MULTI_CLASS_CLS:
+            loss = nn.CrossEntropyLoss(reduction="none")
+            if self.train_type == OTXTrainType.SEMI_SUPERVISED:
+                return OTXSemiSLVisionTransformerClsHead(
+                    num_classes=num_classes,
+                    in_channels=embed_dim,
+                    loss=loss,
+                )
+            return VisionTransformerClsHead(
+                num_classes=num_classes,
+                in_channels=embed_dim,
+                topk=(1, 5) if num_classes >= 5 else (1,),
+                loss=loss,
+            )
+        if self.task == OTXTaskType.MULTI_LABEL_CLS:
+            if self.train_type == OTXTrainType.SEMI_SUPERVISED:
+                msg = "Semi-supervised learning is not supported for multi-label classification."
+                raise NotImplementedError(msg)
+            return MultiLabelLinearClsHead(
+                num_classes=num_classes,
+                in_channels=embed_dim,
+                loss=AsymmetricAngularLossWithIgnore(gamma_pos=0.0, gamma_neg=1.0, reduction="sum"),
+            )
+        if self.task == OTXTaskType.H_LABEL_CLS:
+            if self.train_type == OTXTrainType.SEMI_SUPERVISED:
+                msg = "Semi-supervised learning is not supported for h-label classification."
+                raise NotImplementedError(msg)
+            if not isinstance(self.label_info, HLabelInfo):
+                msg = "LabelInfo should be HLabelInfo for H-label classification."
+                raise ValueError(msg)
+            head_config = deepcopy(self.label_info.as_head_config_dict())
+            head_config["num_classes"] = num_classes
+            return HierarchicalLinearClsHead(
+                in_channels=embed_dim,
+                multiclass_loss=nn.CrossEntropyLoss(),
+                multilabel_loss=AsymmetricAngularLossWithIgnore(gamma_pos=0.0, gamma_neg=1.0, reduction="sum"),
+                **head_config,
+            )
+        msg = f"Unsupported task: {self.task}"
+        raise NotImplementedError(msg)
 
-        return {
-            "images": inputs.stacked_images,
-            "labels": torch.cat(inputs.labels, dim=0),
-            "imgs_info": inputs.imgs_info,
-            "mode": mode,
-        }
+    def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.") -> dict:
+        """Load the previous OTX ckpt according to OTX2.0."""
+        for key in list(state_dict.keys()):
+            new_key = key.replace("patch_embed.projection", "patch_embed.proj")
+            new_key = new_key.replace("backbone.ln1", "backbone.norm")
+            new_key = new_key.replace("ffn.layers.0.0", "mlp.fc1")
+            new_key = new_key.replace("ffn.layers.1", "mlp.fc2")
+            new_key = new_key.replace("layers", "blocks")
+            new_key = new_key.replace("ln", "norm")
+            if new_key != key:
+                state_dict[new_key] = state_dict.pop(key)
+        label_type = {
+            OTXTaskType.MULTI_CLASS_CLS: "multiclass",
+            OTXTaskType.MULTI_LABEL_CLS: "multilabel",
+            OTXTaskType.H_LABEL_CLS: "hlabel",
+        }[self.task]
+        return OTXv1Helper.load_cls_effnet_b0_ckpt(state_dict, label_type, add_prefix)
 
     def _customize_outputs(
         self,
         outputs: Any,  # noqa: ANN401
-        inputs: MulticlassClsBatchDataEntity,
-    ) -> MulticlassClsBatchPredEntity | OTXBatchLossEntity:
+        inputs: CLASSIFICATION_BATCH_DATA_ENTITY,
+    ) -> CLASSIFICATION_BATCH_PRED_ENTITY | OTXBatchLossEntity:
         if self.training:
             return OTXBatchLossEntity(loss=outputs)
 
+        entity_kwargs = {
+            "batch_size": inputs.batch_size,
+            "images": inputs.images,
+            "imgs_info": inputs.imgs_info,
+        }
+
         if self.explain_mode:
-            return MulticlassClsBatchPredEntity(
-                batch_size=inputs.batch_size,
-                images=inputs.images,
-                imgs_info=inputs.imgs_info,
-                scores=outputs["scores"],
-                labels=outputs["labels"],
-                saliency_map=outputs["saliency_map"],
-                feature_vector=outputs["feature_vector"],
-            )
+            # TODO(harimkang): Let's see if we can move it to common
+            entity_kwargs["scores"] = outputs["scores"]
+            entity_kwargs["labels"] = outputs["labels"]
+            entity_kwargs["saliency_map"] = outputs["saliency_map"]
+            entity_kwargs["feature_vector"] = outputs["feature_vector"]
+        elif self.task == OTXTaskType.H_LABEL_CLS and isinstance(outputs, dict):
+            entity_kwargs["scores"] = outputs["scores"]
+            entity_kwargs["labels"] = outputs["labels"]
+        else:
+            # To list, batch-wise
+            logits = outputs if isinstance(outputs, torch.Tensor) else outputs["logits"]
+            scores = torch.unbind(logits, 0)
+            labels = logits.argmax(-1, keepdim=True).unbind(0)
+            entity_kwargs["scores"] = scores
+            entity_kwargs["labels"] = labels
 
-        # To list, batch-wise
-        logits = outputs if isinstance(outputs, torch.Tensor) else outputs["logits"]
-        scores = torch.unbind(logits, 0)
-        preds = logits.argmax(-1, keepdim=True).unbind(0)
-
-        return MulticlassClsBatchPredEntity(
-            batch_size=inputs.batch_size,
-            images=inputs.images,
-            imgs_info=inputs.imgs_info,
-            scores=scores,
-            labels=preds,
-        )
+        if self.task == OTXTaskType.MULTI_CLASS_CLS:
+            return MulticlassClsBatchPredEntity(**entity_kwargs)  # type: ignore[arg-type]
+        if self.task == OTXTaskType.MULTI_LABEL_CLS:
+            return MultilabelClsBatchPredEntity(**entity_kwargs)  # type: ignore[arg-type]
+        if self.task == OTXTaskType.H_LABEL_CLS:
+            return HlabelClsBatchPredEntity(**entity_kwargs)  # type: ignore[arg-type]
+        msg = f"Task type {self.task} is not supported."
+        raise NotImplementedError(msg)
 
     @property
     def _exporter(self) -> OTXModelExporter:
@@ -347,417 +404,6 @@ class VisionTransformerForMulticlassCls(ForwardExplainMixInForViT, OTXMulticlass
         return OTXNativeModelExporter(
             task_level_export_parameters=self._export_parameters,
             input_size=self.image_size,
-            mean=(123.675, 116.28, 103.53),
-            std=(58.395, 57.12, 57.375),
-            resize_mode="standard",
-            pad_value=0,
-            swap_rgb=False,
-            via_onnx=True,  # NOTE: This should be done via onnx
-            onnx_export_configuration=None,
-            output_names=["logits", "feature_vector", "saliency_map"] if self.explain_mode else None,
-        )
-
-
-class VisionTransformerForMulticlassClsSemiSL(VisionTransformerForMulticlassCls):
-    """VisionTransformer model for multiclass classification with semi-supervised learning.
-
-    This class extends the `VisionTransformerForMulticlassCls` class and adds support for semi-supervised learning.
-    It overrides the `_build_model` and `_customize_inputs` methods to incorporate the semi-supervised learning.
-
-    Args:
-        VisionTransformerForMulticlassCls (class): The base class for VisionTransformer multiclass classification.
-    """
-
-    def _build_model(self, num_classes: int) -> nn.Module:
-        init_cfg = [
-            {"std": 0.2, "layer": "Linear", "type": "TruncNormal"},
-            {"bias": 0.0, "val": 1.0, "layer": "LayerNorm", "type": "Constant"},
-        ]
-        vit_backbone = VisionTransformer(arch=self.arch, img_size=224)
-        return SemiSLClassifier(
-            backbone=vit_backbone,
-            neck=None,
-            head=OTXSemiSLVisionTransformerClsHead(
-                num_classes=num_classes,
-                in_channels=vit_backbone.embed_dim,
-                loss=nn.CrossEntropyLoss(reduction="none"),
-            ),
-            init_cfg=init_cfg,
-        )
-
-    def _customize_inputs(self, inputs: MulticlassClsBatchDataEntity) -> dict[str, Any]:
-        """Customizes the input data for the model based on the current mode.
-
-        Args:
-            inputs (MulticlassClsBatchDataEntity): The input batch of data.
-
-        Returns:
-            dict[str, Any]: The customized input data.
-        """
-        if self.training:
-            mode = "loss"
-        elif self.explain_mode:
-            mode = "explain"
-        else:
-            mode = "predict"
-
-        if isinstance(inputs, dict):
-            # When used with an unlabeled dataset, it comes in as a dict.
-            images = {key: inputs[key].images for key in inputs}
-            labels = {key: torch.cat(inputs[key].labels, dim=0) for key in inputs}
-            imgs_info = {key: inputs[key].imgs_info for key in inputs}
-            return {
-                "images": images,
-                "labels": labels,
-                "imgs_info": imgs_info,
-                "mode": mode,
-            }
-        return {
-            "images": inputs.stacked_images,
-            "labels": torch.cat(inputs.labels, dim=0),
-            "imgs_info": inputs.imgs_info,
-            "mode": mode,
-        }
-
-    def training_step(self, batch: MulticlassClsBatchDataEntity, batch_idx: int) -> Tensor:
-        """Performs a single training step on a batch of data.
-
-        Args:
-            batch (MulticlassClsBatchDataEntity): The input batch of data.
-            batch_idx (int): The index of the current batch.
-
-        Returns:
-            Tensor: The computed loss for the training step.
-        """
-        loss = super().training_step(batch, batch_idx)
-        # Collect metrics related to Semi-SL Training.
-        self.log(
-            "train/unlabeled_coef",
-            self.model.head.unlabeled_coef,
-            on_step=True,
-            on_epoch=False,
-            prog_bar=True,
-        )
-        self.log(
-            "train/num_pseudo_label",
-            self.model.head.num_pseudo_label,
-            on_step=True,
-            on_epoch=False,
-            prog_bar=True,
-        )
-        return loss
-
-
-class VisionTransformerForMultilabelCls(ForwardExplainMixInForViT, OTXMultilabelClsModel):
-    """DeitTiny Model for multi-class classification task."""
-
-    model: ImageClassifier
-
-    def __init__(
-        self,
-        label_info: LabelInfoTypes,
-        arch: VIT_ARCH_TYPE = "vit-tiny",
-        lora: bool = False,
-        pretrained: bool = True,
-        optimizer: OptimizerCallable = DefaultOptimizerCallable,
-        scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
-        metric: MetricCallable = MultiLabelClsMetricCallable,
-        torch_compile: bool = False,
-    ) -> None:
-        self.arch = arch
-        self.lora = lora
-        self.pretrained = pretrained
-
-        super().__init__(
-            label_info=label_info,
-            optimizer=optimizer,
-            scheduler=scheduler,
-            metric=metric,
-            torch_compile=torch_compile,
-        )
-
-    def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.") -> dict:
-        """Load the previous OTX ckpt according to OTX2.0."""
-        for key in list(state_dict.keys()):
-            new_key = key.replace("patch_embed.projection", "patch_embed.proj")
-            new_key = new_key.replace("backbone.ln1", "backbone.norm")
-            new_key = new_key.replace("ffn.layers.0.0", "mlp.fc1")
-            new_key = new_key.replace("ffn.layers.1", "mlp.fc2")
-            new_key = new_key.replace("layers", "blocks")
-            new_key = new_key.replace("ln", "norm")
-            if new_key != key:
-                state_dict[new_key] = state_dict.pop(key)
-        return OTXv1Helper.load_cls_effnet_b0_ckpt(state_dict, "multiclass", add_prefix)
-
-    def _create_model(self) -> nn.Module:
-        # Get classification_layers for class-incr learning
-        sample_model_dict = self._build_model(num_classes=5).state_dict()
-        incremental_model_dict = self._build_model(num_classes=6).state_dict()
-        self.classification_layers = get_classification_layers(
-            sample_model_dict,
-            incremental_model_dict,
-            prefix="model.",
-        )
-
-        model = self._build_model(num_classes=self.num_classes)
-        model.init_weights()
-        if self.pretrained and self.arch in pretrained_urls:
-            print(f"init weight - {pretrained_urls[self.arch]}")
-            parts = urlparse(pretrained_urls[self.arch])
-            filename = Path(parts.path).name
-
-            cache_dir = Path.home() / ".cache" / "torch" / "hub" / "checkpoints"
-            cache_file = cache_dir / filename
-            if not Path.exists(cache_file):
-                download_url_to_file(pretrained_urls[self.arch], cache_file, "", progress=True)
-            model.backbone.load_pretrained(checkpoint_path=cache_file)
-        return model
-
-    def _build_model(self, num_classes: int) -> nn.Module:
-        init_cfg = [
-            {"std": 0.2, "layer": "Linear", "type": "TruncNormal"},
-            {"bias": 0.0, "val": 1.0, "layer": "LayerNorm", "type": "Constant"},
-        ]
-        vit_backbone = VisionTransformer(arch=self.arch, img_size=224, lora=self.lora)
-        return ImageClassifier(
-            backbone=vit_backbone,
-            neck=None,
-            head=MultiLabelLinearClsHead(
-                num_classes=num_classes,
-                in_channels=vit_backbone.embed_dim,
-                loss=AsymmetricAngularLossWithIgnore(gamma_pos=0.0, gamma_neg=1.0, reduction="sum"),
-            ),
-            init_cfg=init_cfg,
-        )
-
-    def _customize_inputs(self, inputs: MultilabelClsBatchDataEntity) -> dict[str, Any]:
-        if self.training:
-            mode = "loss"
-        elif self.explain_mode:
-            mode = "explain"
-        else:
-            mode = "predict"
-
-        return {
-            "images": inputs.stacked_images,
-            "labels": torch.stack(inputs.labels),
-            "imgs_info": inputs.imgs_info,
-            "mode": mode,
-        }
-
-    def _customize_outputs(
-        self,
-        outputs: Any,  # noqa: ANN401
-        inputs: MultilabelClsBatchDataEntity,
-    ) -> MultilabelClsBatchPredEntity | OTXBatchLossEntity:
-        if self.training:
-            return OTXBatchLossEntity(loss=outputs)
-
-        if self.explain_mode:
-            return MultilabelClsBatchPredEntity(
-                batch_size=inputs.batch_size,
-                images=inputs.images,
-                imgs_info=inputs.imgs_info,
-                scores=outputs["scores"],
-                labels=outputs["labels"],
-                saliency_map=outputs["saliency_map"],
-                feature_vector=outputs["feature_vector"],
-            )
-
-        # To list, batch-wise
-        logits = outputs if isinstance(outputs, torch.Tensor) else outputs["logits"]
-        scores = torch.unbind(logits, 0)
-        preds = logits.argmax(-1, keepdim=True).unbind(0)
-
-        return MultilabelClsBatchPredEntity(
-            batch_size=inputs.batch_size,
-            images=inputs.images,
-            imgs_info=inputs.imgs_info,
-            scores=scores,
-            labels=preds,
-        )
-
-    @property
-    def _exporter(self) -> OTXModelExporter:
-        """Creates OTXModelExporter object that can export the model."""
-        return OTXNativeModelExporter(
-            task_level_export_parameters=self._export_parameters,
-            input_size=(1, 3, 224, 224),
-            mean=(123.675, 116.28, 103.53),
-            std=(58.395, 57.12, 57.375),
-            resize_mode="standard",
-            pad_value=0,
-            swap_rgb=False,
-            via_onnx=True,  # NOTE: This should be done via onnx
-            onnx_export_configuration=None,
-            output_names=["logits", "feature_vector", "saliency_map"] if self.explain_mode else None,
-        )
-
-
-class VisionTransformerForHLabelCls(ForwardExplainMixInForViT, OTXHlabelClsModel):
-    """DeitTiny Model for hierarchical label classification task."""
-
-    model: ImageClassifier
-    label_info: HLabelInfo
-
-    def __init__(
-        self,
-        label_info: HLabelInfo,
-        arch: VIT_ARCH_TYPE = "vit-tiny",
-        lora: bool = False,
-        pretrained: bool = True,
-        optimizer: OptimizerCallable = DefaultOptimizerCallable,
-        scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
-        metric: MetricCallable = HLabelClsMetricCallble,
-        torch_compile: bool = False,
-    ) -> None:
-        self.arch = arch
-        self.lora = lora
-        self.pretrained = pretrained
-
-        super().__init__(
-            label_info=label_info,
-            optimizer=optimizer,
-            scheduler=scheduler,
-            metric=metric,
-            torch_compile=torch_compile,
-        )
-
-    def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.") -> dict:
-        """Load the previous OTX ckpt according to OTX2.0."""
-        for key in list(state_dict.keys()):
-            new_key = key.replace("patch_embed.projection", "patch_embed.proj")
-            new_key = new_key.replace("backbone.ln1", "backbone.norm")
-            new_key = new_key.replace("ffn.layers.0.0", "mlp.fc1")
-            new_key = new_key.replace("ffn.layers.1", "mlp.fc2")
-            new_key = new_key.replace("layers", "blocks")
-            new_key = new_key.replace("ln", "norm")
-            if new_key != key:
-                state_dict[new_key] = state_dict.pop(key)
-        return OTXv1Helper.load_cls_effnet_b0_ckpt(state_dict, "multiclass", add_prefix)
-
-    def _create_model(self) -> nn.Module:
-        # Get classification_layers for class-incr learning
-        sample_config = deepcopy(self.label_info.as_head_config_dict())
-        sample_config["num_classes"] = 5
-        sample_model_dict = self._build_model(head_config=sample_config).state_dict()
-        sample_config["num_classes"] = 6
-        incremental_model_dict = self._build_model(head_config=sample_config).state_dict()
-        self.classification_layers = get_classification_layers(
-            sample_model_dict,
-            incremental_model_dict,
-            prefix="model.",
-        )
-
-        model = self._build_model(head_config=self.label_info.as_head_config_dict())
-        model.init_weights()
-        if self.pretrained and self.arch in pretrained_urls:
-            print(f"init weight - {pretrained_urls[self.arch]}")
-            parts = urlparse(pretrained_urls[self.arch])
-            filename = Path(parts.path).name
-
-            cache_dir = Path.home() / ".cache" / "torch" / "hub" / "checkpoints"
-            cache_file = cache_dir / filename
-            if not Path.exists(cache_file):
-                download_url_to_file(pretrained_urls[self.arch], cache_file, "", progress=True)
-            model.backbone.load_pretrained(checkpoint_path=cache_file)
-        return model
-
-    def _build_model(self, head_config: dict) -> nn.Module:
-        if not isinstance(self.label_info, HLabelInfo):
-            raise TypeError(self.label_info)
-        init_cfg = [
-            {"std": 0.2, "layer": "Linear", "type": "TruncNormal"},
-            {"bias": 0.0, "val": 1.0, "layer": "LayerNorm", "type": "Constant"},
-        ]
-        vit_backbone = VisionTransformer(arch=self.arch, img_size=224, lora=self.lora)
-        return ImageClassifier(
-            backbone=vit_backbone,
-            neck=None,
-            head=HierarchicalLinearClsHead(
-                in_channels=vit_backbone.embed_dim,
-                multiclass_loss=nn.CrossEntropyLoss(),
-                multilabel_loss=AsymmetricAngularLossWithIgnore(gamma_pos=0.0, gamma_neg=1.0, reduction="sum"),
-                **head_config,
-            ),
-            init_cfg=init_cfg,
-        )
-
-    def _customize_inputs(self, inputs: HlabelClsBatchDataEntity) -> dict[str, Any]:
-        if self.training:
-            mode = "loss"
-        elif self.explain_mode:
-            mode = "explain"
-        else:
-            mode = "predict"
-
-        return {
-            "images": inputs.stacked_images,
-            "labels": torch.stack(inputs.labels),
-            "imgs_info": inputs.imgs_info,
-            "mode": mode,
-        }
-
-    def _customize_outputs(
-        self,
-        outputs: Any,  # noqa: ANN401
-        inputs: HlabelClsBatchDataEntity,
-    ) -> HlabelClsBatchPredEntity | OTXBatchLossEntity:
-        if self.training:
-            return OTXBatchLossEntity(loss=outputs)
-
-        if isinstance(outputs, dict):
-            scores = outputs["scores"]
-            labels = outputs["labels"]
-        else:
-            scores = outputs
-            labels = outputs.argmax(-1, keepdim=True)
-
-        if self.explain_mode:
-            return HlabelClsBatchPredEntity(
-                batch_size=inputs.batch_size,
-                images=inputs.images,
-                imgs_info=inputs.imgs_info,
-                scores=scores,
-                labels=labels,
-                saliency_map=outputs["saliency_map"],
-                feature_vector=outputs["feature_vector"],
-            )
-
-        return HlabelClsBatchPredEntity(
-            batch_size=inputs.batch_size,
-            images=inputs.images,
-            imgs_info=inputs.imgs_info,
-            scores=scores,
-            labels=labels,
-        )
-
-    def _convert_pred_entity_to_compute_metric(
-        self,
-        preds: HlabelClsBatchPredEntity,
-        inputs: HlabelClsBatchDataEntity,
-    ) -> MetricInput:
-        hlabel_info: HLabelInfo = self.label_info  # type: ignore[assignment]
-
-        _labels = torch.stack(preds.labels) if isinstance(preds.labels, list) else preds.labels
-        _scores = torch.stack(preds.scores) if isinstance(preds.scores, list) else preds.scores
-        if hlabel_info.num_multilabel_classes > 0:
-            preds_multiclass = _labels[:, : hlabel_info.num_multiclass_heads]
-            preds_multilabel = _scores[:, hlabel_info.num_multiclass_heads :]
-            pred_result = torch.cat([preds_multiclass, preds_multilabel], dim=1)
-        else:
-            pred_result = _labels
-        return {
-            "preds": pred_result,
-            "target": torch.stack(inputs.labels),
-        }
-
-    @property
-    def _exporter(self) -> OTXModelExporter:
-        """Creates OTXModelExporter object that can export the model."""
-        return OTXNativeModelExporter(
-            task_level_export_parameters=self._export_parameters,
-            input_size=(1, 3, 224, 224),
             mean=(123.675, 116.28, 103.53),
             std=(58.395, 57.12, 57.375),
             resize_mode="standard",

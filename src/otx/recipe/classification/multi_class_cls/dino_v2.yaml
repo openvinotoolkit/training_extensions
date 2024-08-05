@@ -1,5 +1,5 @@
 model:
-  class_path: otx.algo.classification.vit.VisionTransformerForMulticlassCls
+  class_path: otx.algo.classification.vit.VisionTransformerForClassification
   init_args:
     label_info: 1000
     arch: "dinov2-small"

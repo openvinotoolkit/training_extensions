@@ -24,9 +24,7 @@ from otx.algo.classification.losses.asymmetric_angular_loss_with_ignore import A
 from otx.algo.classification.necks.gap import GlobalAveragePooling
 from otx.algo.classification.utils import get_classification_layers
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
-from otx.core.metrics.accuracy import (
-    DefaultClsMetricCallable,
-)
+from otx.core.metrics.accuracy import DefaultClsMetricCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
 from otx.core.model.classification import OTXClassificationModel
 from otx.core.schedulers import LRSchedulerListCallable

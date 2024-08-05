@@ -13,25 +13,24 @@ from transformers import AutoModelForImageClassification
 
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.classification import (
-    MulticlassClsBatchDataEntity,
+    CLASSIFICATION_BATCH_DATA_ENTITY,
     MulticlassClsBatchPredEntity,
 )
-from otx.core.exporter.base import OTXModelExporter
-from otx.core.exporter.native import OTXNativeModelExporter
-from otx.core.metrics.accuracy import MultiClassClsMetricCallable
+from otx.core.metrics.accuracy import DefaultClsMetricCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
-from otx.core.model.classification import OTXMulticlassClsModel
+from otx.core.model.classification import OTXClassificationModel
 from otx.core.schedulers import LRSchedulerListCallable
 from otx.core.types.label import LabelInfoTypes
+from otx.core.types.task import OTXTaskType, OTXTrainType
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
     from transformers.modeling_outputs import ImageClassifierOutput
 
-    from otx.core.metrics import MetricCallable
+    from otx.core.metrics import MetricCallablePerTask
 
 
-class HuggingFaceModelForMulticlassCls(OTXMulticlassClsModel):
+class HuggingFaceModelForMulticlassCls(OTXClassificationModel):
     """HuggingFaceModelForMulticlassCls is a class that represents a Hugging Face model for multiclass classification.
 
     Args:
@@ -59,7 +58,7 @@ class HuggingFaceModelForMulticlassCls(OTXMulticlassClsModel):
         label_info: LabelInfoTypes,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
-        metric: MetricCallable = MultiClassClsMetricCallable,
+        metric: MetricCallablePerTask = DefaultClsMetricCallable,
         torch_compile: bool = False,
     ) -> None:
         self.model_name = model_name_or_path
@@ -70,6 +69,8 @@ class HuggingFaceModelForMulticlassCls(OTXMulticlassClsModel):
             scheduler=scheduler,
             metric=metric,
             torch_compile=torch_compile,
+            task=OTXTaskType.MULTI_CLASS_CLS,
+            train_type=OTXTrainType.SUPERVISED,
         )
 
     def _create_model(self) -> nn.Module:
@@ -79,7 +80,7 @@ class HuggingFaceModelForMulticlassCls(OTXMulticlassClsModel):
             ignore_mismatched_sizes=True,
         )
 
-    def _customize_inputs(self, inputs: MulticlassClsBatchDataEntity) -> dict[str, Any]:
+    def _customize_inputs(self, inputs: CLASSIFICATION_BATCH_DATA_ENTITY) -> dict[str, Any]:
         return {
             "pixel_values": inputs.images,
             "labels": torch.cat(inputs.labels, dim=0),
@@ -88,7 +89,7 @@ class HuggingFaceModelForMulticlassCls(OTXMulticlassClsModel):
     def _customize_outputs(
         self,
         outputs: ImageClassifierOutput,
-        inputs: MulticlassClsBatchDataEntity,
+        inputs: CLASSIFICATION_BATCH_DATA_ENTITY,
     ) -> MulticlassClsBatchPredEntity | OTXBatchLossEntity:
         if self.training:
             return OTXBatchLossEntity(loss=outputs.loss)
@@ -103,22 +104,6 @@ class HuggingFaceModelForMulticlassCls(OTXMulticlassClsModel):
             imgs_info=inputs.imgs_info,
             scores=scores,
             labels=preds,
-        )
-
-    @property
-    def _exporter(self) -> OTXModelExporter:
-        """Creates OTXModelExporter object that can export the model."""
-        return OTXNativeModelExporter(
-            task_level_export_parameters=self._export_parameters,
-            input_size=self.image_size,
-            mean=(123.675, 116.28, 103.53),
-            std=(58.395, 57.12, 57.375),
-            resize_mode="standard",
-            pad_value=0,
-            swap_rgb=False,
-            via_onnx=False,
-            onnx_export_configuration=None,
-            output_names=["logits", "feature_vector", "saliency_map"] if self.explain_mode else None,
         )
 
     def forward_for_tracing(self, image: Tensor) -> Tensor | dict[str, Tensor]:
