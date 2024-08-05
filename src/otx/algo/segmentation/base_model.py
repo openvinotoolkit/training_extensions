@@ -68,7 +68,7 @@ class BaseSegmModel(nn.Module):
         """
         enc_feats = self.backbone(inputs)
         outputs = self.decode_head(inputs=enc_feats)
-        outputs = f.interpolate(outputs, size=img_metas, mode="bilinear", align_corners=True)
+        outputs = f.interpolate(outputs, size=img_metas[0].img_shape, mode="bilinear", align_corners=True)
 
         if mode == "tensor":
             return outputs
@@ -98,7 +98,7 @@ class BaseSegmModel(nn.Module):
         Returns:
             Tensor: The loss of the model.
         """
-        outputs = f.interpolate(model_features, size=img_metas, mode="bilinear", align_corners=True) if interpolate else model_features
+        outputs = f.interpolate(model_features, size=img_metas[0].img_shape, mode="bilinear", align_corners=True) if interpolate else model_features
         # class incremental training
         valid_label_mask = self.get_valid_label_mask(img_metas)
         output_losses = {}

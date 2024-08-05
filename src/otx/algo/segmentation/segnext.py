@@ -4,6 +4,9 @@
 """SegNext model implementations."""
 from __future__ import annotations
 
+import torch
+import torchvision
+import copy
 from typing import TYPE_CHECKING, Any, ClassVar
 
 from otx.algo.segmentation.backbones import MSCAN
@@ -11,6 +14,7 @@ from otx.algo.segmentation.heads import LightHamHead
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.model.segmentation import TorchVisionCompatibleModel
 from otx.algo.segmentation.mean_teacher import MeanTeacher
+from otx.core.data.entity.segmentation import SegBatchDataEntity
 
 from .base_model import BaseSegmModel
 
@@ -148,6 +152,30 @@ class OTXSegNext(TorchVisionCompatibleModel):
 class SemiSLSegNext(OTXSegNext):
     """SegNext Model."""
 
+    def _customize_inputs(self, entity: SegBatchDataEntity) -> dict[str, Any]:
+
+        if not isinstance(entity, dict):
+            if self.training:
+                msg = "unlabeled inputs should be provided for semi-sl training"
+                raise RuntimeError(msg)
+            return super()._customize_inputs(entity)
+
+        entity["labeled"].masks = torch.stack(entity["labeled"].masks).long()
+        w_u_images = entity["weak_transforms"].images
+        s_u_images = entity["strong_transforms"].images
+        unlabeled_img_metas = entity["weak_transforms"].imgs_info
+        labeled_inputs = entity["labeled"]
+
+        return {"inputs": labeled_inputs.images,
+                "unlabeled_weak_images": w_u_images,
+                "unlabeled_strong_images": s_u_images,
+                "global_step": self.trainer.global_step,
+                "steps_per_epoch": self.trainer.num_training_batches,
+                "img_metas": labeled_inputs.imgs_info,
+                "unlabeled_img_metas": unlabeled_img_metas,
+                "masks": labeled_inputs.masks,
+                "mode": "loss"}
+
     def _create_model(self) -> nn.Module:
         segnext_model_class = SEGNEXT_VARIANTS[self.name_base_model]
         # merge configurations with defaults overriding them
@@ -163,4 +191,5 @@ class SemiSLSegNext(OTXSegNext):
             decode_head=decode_head,
             criterion_configuration=self.criterion_configuration,
         )
-        return MeanTeacher(base_model, num_iters_per_epoch=100, unsup_weight=0.5, drop_unrel_pixels_percent=20, semisl_start_epoch=1)
+
+        return MeanTeacher(base_model, unsup_weight=0.5, drop_unrel_pixels_percent=20, semisl_start_epoch=1)
