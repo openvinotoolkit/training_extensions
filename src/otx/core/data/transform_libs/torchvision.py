@@ -3455,10 +3455,9 @@ class TopdownAffine(tvt_v2.Transform, NumpytoTVTensorMixin):
         warp_size = (int(w), int(h))
 
         # reshape bbox to fixed aspect ratio
-        inputs.bbox_scale = self._fix_aspect_ratio(inputs.bbox_scale, aspect_ratio=w / h)
 
         center = inputs.bbox_center[0]
-        scale = inputs.bbox_scale[0]
+        scale = self._fix_aspect_ratio(inputs.bbox_scale, aspect_ratio=w / h)[0]
         rot = inputs.bbox_rotation[0] if hasattr(inputs, "bbox_rotation") else 0.0
 
         warp_mat = self._get_warp_matrix(center, scale, rot, output_size=(w, h))
@@ -3479,10 +3478,6 @@ class TopdownAffine(tvt_v2.Transform, NumpytoTVTensorMixin):
         else:
             inputs.transformed_keypoints = np.zeros([])
             inputs.keypoints_visible = np.ones((1, 1, 1))
-
-        inputs.input_size = (w, h)
-        inputs.input_center = center
-        inputs.input_scale = scale
 
         return self.convert(inputs)
 
@@ -3519,23 +3514,12 @@ class GenerateTarget(tvt_v2.Transform, NumpytoTVTensorMixin):
         encoder (dict | list[dict]): The codec config for keypoint encoding.
             Both single encoder and multiple encoders (given as a list) are
             supported
-        multilevel (bool): Determine the method to handle multiple encoders.
-            If ``multilevel==True``, generate multilevel targets from a group
-            of encoders of the same type (e.g. multiple :class:`MSRAHeatmap`
-            encoders with different sigma values); If ``multilevel==False``,
-            generate combined targets from a group of different encoders. This
-            argument will have no effect in case of single encoder. Defaults
-            to ``False``
-        use_dataset_keypoint_weights (bool): Whether use the keypoint weights
-            from the dataset meta information. Defaults to ``False``
         target_type (str, deprecated): This argument is deprecated and has no
             effect. Defaults to ``None``
     """
 
     def __init__(
         self,
-        multilevel: bool = False,
-        use_dataset_keypoint_weights: bool = False,
         is_numpy_to_tvtensor: bool = False,
     ) -> None:
         super().__init__()
@@ -3547,8 +3531,6 @@ class GenerateTarget(tvt_v2.Transform, NumpytoTVTensorMixin):
             normalize=False,
             use_dark=False,
         )
-        self.multilevel = multilevel
-        self.use_dataset_keypoint_weights = use_dataset_keypoint_weights
         self.is_numpy_to_tvtensor = is_numpy_to_tvtensor
 
     def __call__(self, *_inputs: T_OTXDataEntity) -> T_OTXDataEntity | None:
@@ -3559,15 +3541,21 @@ class GenerateTarget(tvt_v2.Transform, NumpytoTVTensorMixin):
         assert len(_inputs) == 1, "[tmp] Multiple entity is not supported yet."  # noqa: S101
         inputs = _inputs[0]
 
-        if inputs.transformed_keypoints is not None:
+        if hasattr(inputs, "transformed_keypoints"):
             # use keypoints transformed by TopdownAffine
             keypoints = inputs.transformed_keypoints
-        elif inputs.keypoints is not None:
+        elif hasattr(inputs, "keypoints"):
             # use original keypoints
             keypoints = inputs.keypoints
         else:
             msg = "GenerateTarget requires 'transformed_keypoints' or 'keypoints' in the results."
             raise ValueError(msg)
+
+        if len(keypoints.shape) == 2:
+            keypoints = keypoints.unsqueeze(0)
+
+        if isinstance(keypoints, torch.Tensor):
+            keypoints = keypoints.numpy()
 
         keypoints_visible = inputs.keypoints_visible.unsqueeze(0).numpy()
         if keypoints_visible.ndim == 3 and keypoints_visible.shape[2] == 2:
@@ -3597,7 +3585,6 @@ class GenerateTarget(tvt_v2.Transform, NumpytoTVTensorMixin):
         """
         repr_str = self.__class__.__name__
         repr_str += f"(encoder={self.encoder}, "
-        repr_str += f"use_dataset_keypoint_weights={self.use_dataset_keypoint_weights}, "
         repr_str += f"is_numpy_to_tvtensor={self.is_numpy_to_tvtensor})"
         return repr_str
 

@@ -40,15 +40,6 @@ data:
     batch_size: 32
     transforms:
       - class_path: otx.core.data.transform_libs.torchvision.GetBBoxCenterScale
-      # - class_path: otx.core.data.transform_libs.torchvision.RandomFlip
-      #   init_args:
-      #     prob: 0.5
-      # - class_path: otx.core.data.transform_libs.torchvision.RandomBBoxTransform
-      #   init_args:
-      #     scale_factor:
-      #       - 0.6
-      #       - 1.4
-      #     rotate_factor: 80
       - class_path: otx.core.data.transform_libs.torchvision.TopdownAffine
         init_args:
           input_size:

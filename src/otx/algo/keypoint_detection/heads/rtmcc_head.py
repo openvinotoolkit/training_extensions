@@ -11,8 +11,6 @@ from otx.algo.keypoint_detection.utils.keypoint_eval import simcc_pck_accuracy
 from otx.algo.keypoint_detection.utils.rtmcc_block import RTMCCBlock
 from otx.algo.keypoint_detection.utils.scale_norm import ScaleNorm
 from otx.algo.keypoint_detection.utils.simcc_label import SimCCLabel
-
-# from otx.algo.utils.mmengine_utils import InstanceData
 from otx.algo.modules.base_module import BaseModule
 from torch import Tensor, nn
 

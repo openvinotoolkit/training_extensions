@@ -8,8 +8,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from otx.algo.common.backbones import CSPNeXt
-from otx.algo.common.utils.assigners import DynamicSoftLabelAssigner
-from otx.algo.common.utils.samplers import PseudoSampler
 from otx.algo.keypoint_detection.heads.rtmcc_head import RTMCCHead
 from otx.algo.keypoint_detection.losses.kl_discret_loss import KLDiscretLoss
 from otx.algo.keypoint_detection.topdown import TopdownPoseEstimator
@@ -66,23 +64,6 @@ class RTMPoseTiny(RTMPose):
     std = (58.395, 57.12, 57.375)
 
     def _build_model(self, num_classes: int) -> RTMPose:
-        train_cfg = {
-            "assigner": DynamicSoftLabelAssigner(topk=13),
-            "sampler": PseudoSampler(),
-            "allowed_border": -1,
-            "pos_weight": -1,
-            "debug": False,
-        }
-
-        test_cfg = {
-            "nms": {"type": "nms", "iou_threshold": 0.65},
-            "score_thr": 0.001,
-            "mask_thr_binary": 0.5,
-            "max_per_img": 300,
-            "min_bbox_size": 0,
-            "nms_pre": 30000,
-        }
-
         input_size = (192, 256)
         simcc_split_ratio = 2.0
         sigma = (4.9, 5.66)
@@ -129,6 +110,4 @@ class RTMPoseTiny(RTMPose):
         return TopdownPoseEstimator(
             backbone=backbone,
             head=head,
-            train_cfg=train_cfg,
-            test_cfg=test_cfg,
         )

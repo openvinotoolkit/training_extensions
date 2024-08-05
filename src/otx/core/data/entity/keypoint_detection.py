@@ -26,11 +26,17 @@ if TYPE_CHECKING:
 @register_pytree_node
 @dataclass
 class KeypointDetDataEntity(OTXDataEntity):
-    """Data entity for detection task.
+    """Data entity for keypoint detection task.
 
     :param bboxes: Bbox annotations as top-left-bottom-right
         (x1, y1, x2, y2) format with absolute coordinate values
     :param labels: Bbox labels as integer indices
+    :param keypoints: keypoint annotations
+        ([[x1, y1], [x2, y2], ...]) format with absolute coordinate values
+    :param keypoints_visible: keypoint visibilities with binary values
+    :param keypoint_x_labels: x-axis keypoint coordinates according to simcc
+    :param keypoint_y_labels: y-axis keypoint coordinates according to simcc
+    :param keypoint_weights: weight values for each keypoint
     """
 
     @property
@@ -49,16 +55,22 @@ class KeypointDetDataEntity(OTXDataEntity):
 
 @dataclass
 class KeypointDetPredEntity(OTXPredEntity, KeypointDetDataEntity):
-    """Data entity to represent the detection model output prediction."""
+    """Data entity to represent the keypoint detection model output prediction."""
 
 
 @dataclass
 class KeypointDetBatchDataEntity(OTXBatchDataEntity[KeypointDetDataEntity]):
-    """Data entity for detection task.
+    """Data entity for keypoint detection task.
 
     :param bboxes: A list of bbox annotations as top-left-bottom-right
         (x1, y1, x2, y2) format with absolute coordinate values
     :param labels: A list of bbox labels as integer indices
+    :param keypoints: keypoint annotations
+        ([[x1, y1], [x2, y2], ...]) format with absolute coordinate values
+    :param keypoints_visible: keypoint visibilities with binary values
+    :param keypoint_x_labels: x-axis keypoint coordinates according to simcc
+    :param keypoint_y_labels: y-axis keypoint coordinates according to simcc
+    :param keypoint_weights: weight values for each keypoint
     """
 
     bboxes: list[tv_tensors.BoundingBoxes]
@@ -80,7 +92,7 @@ class KeypointDetBatchDataEntity(OTXBatchDataEntity[KeypointDetDataEntity]):
         entities: list[KeypointDetDataEntity],
         stack_images: bool = True,
     ) -> KeypointDetBatchDataEntity:
-        """Collection function to collect `DetDataEntity` into `DetBatchDataEntity` in data loader.
+        """Collection function to collect `KeypointDetDataEntity` into `KeypointDetBatchDataEntity` in data loader.
 
         Args:
             entities: List of `DetDataEntity`.
@@ -91,20 +103,34 @@ class KeypointDetBatchDataEntity(OTXBatchDataEntity[KeypointDetDataEntity]):
             Collated `DetBatchDataEntity`
         """
         batch_data = super().collate_fn(entities, stack_images=stack_images)
-        # batch_input_shape = tuple(batch_data.images[0].size()[-2:])
-        # for info in batch_data.imgs_info:
-        #     info.batch_input_shape = batch_input_shape
+        bboxes, labels, keypoints, keypoints_visible, keypoint_x_labels, keypoint_y_labels, keypoint_weights = (
+            [],
+            [],
+            [],
+            [],
+            [],
+            [],
+            [],
+        )
+        for entity in entities:
+            bboxes.append(entity.bboxes)
+            labels.append(entity.labels)
+            keypoints.append(entity.keypoints)
+            keypoints_visible.append(entity.keypoints_visible)
+            keypoint_x_labels.append(entity.keypoint_x_labels)
+            keypoint_y_labels.append(entity.keypoint_y_labels)
+            keypoint_weights.append(entity.keypoint_weights)
         return KeypointDetBatchDataEntity(
             batch_size=batch_data.batch_size,
             images=batch_data.images,
             imgs_info=batch_data.imgs_info,
-            bboxes=[entity.bboxes for entity in entities],
-            keypoints=[entity.keypoints for entity in entities],
-            keypoints_visible=[entity.keypoints_visible for entity in entities],
-            keypoint_x_labels=[entity.keypoint_x_labels for entity in entities],
-            keypoint_y_labels=[entity.keypoint_y_labels for entity in entities],
-            keypoint_weights=[entity.keypoint_weights for entity in entities],
-            labels=[entity.labels for entity in entities],
+            bboxes=bboxes,
+            keypoints=keypoints,
+            keypoints_visible=keypoints_visible,
+            keypoint_x_labels=keypoint_x_labels,
+            keypoint_y_labels=keypoint_y_labels,
+            keypoint_weights=keypoint_weights,
+            labels=labels,
         )
 
     def pin_memory(self) -> KeypointDetBatchDataEntity:
@@ -137,4 +163,4 @@ class KeypointDetBatchDataEntity(OTXBatchDataEntity[KeypointDetDataEntity]):
 
 @dataclass
 class KeypointDetBatchPredEntity(OTXBatchPredEntity, KeypointDetBatchDataEntity):
-    """Data entity to represent model output predictions for detection task."""
+    """Data entity to represent model output predictions for keypoint detection task."""

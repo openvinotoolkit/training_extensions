@@ -88,20 +88,12 @@ class PCKMeasure(Metric):
         keypoint_weights = np.stack([p[3].cpu().numpy() for p in self.targets]).squeeze(1)
 
         # calculate accuracy
-        acc, avg_acc, _ = simcc_pck_accuracy(
+        _, avg_acc, _ = simcc_pck_accuracy(
             output=pred_simcc,
             target=gt_simcc,
             simcc_split_ratio=2.0,
             mask=keypoint_weights > 0,
         )
-
-        # N = len(self.preds)
-        # pred = np.stack([p[0].cpu().numpy() for p in self.preds])
-        # gt = np.stack([p[0].cpu().numpy() for p in self.targets])
-        # mask = np.stack([p[3].cpu().numpy() for p in self.targets]).squeeze(1) > 0
-        # normalize = np.tile(np.array([[256, 192]]), (N, 1))
-
-        # acc, avg_acc, cnt = keypoint_pck_accuracy(pred, gt, mask, 0.05, normalize)
 
         return {"accuracy": Tensor([avg_acc])}
 
