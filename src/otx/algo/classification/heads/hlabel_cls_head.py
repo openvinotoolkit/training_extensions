@@ -103,7 +103,9 @@ class HierarchicalClsHead(BaseModule):
                 head_gt = head_gt[valid_mask]
                 if len(head_gt) > 0:
                     head_logits = head_logits[valid_mask, :]
-                    loss_score += self.multiclass_loss(head_logits, head_gt, logit_range[1]-logit_range[0])
+                    num_classes = logit_range[1] - logit_range[0]
+                    loss_score += self.multiclass_loss(head_logits, head_gt, num_classes)
+                    # loss_score += self.multiclass_loss(head_logits, head_gt)
                     num_effective_heads_in_batch += 1
 
         if num_effective_heads_in_batch > 0:
@@ -186,6 +188,15 @@ class HierarchicalClsHead(BaseModule):
 
         multiclass_pred_scores = torch.cat(multiclass_pred_scores, dim=1)
         multiclass_pred_labels = torch.cat(multiclass_pred_labels, dim=1)
+
+        # multiclass_pred = torch.softmax(cls_scores, dim=1)
+        # multiclass_pred_score, multiclass_pred_label = torch.max(multiclass_pred, dim=1)
+
+        # multiclass_pred_scores.extend(multiclass_pred_score.view(-1, 1))
+        # multiclass_pred_labels.extend(multiclass_pred_label.view(-1, 1))
+
+        # multiclass_pred_scores = torch.cat(multiclass_pred_scores)
+        # multiclass_pred_labels = torch.cat(multiclass_pred_labels)
 
         if self.num_multilabel_classes > 0:
             multilabel_logits = cls_scores[:, self.num_single_label_classes :]
@@ -441,12 +452,21 @@ class HierarchicalCBAMClsHead(HierarchicalClsHead):
             init_cfg=init_cfg,
             **kwargs,
         )
-        self.fc_superclass = nn.Linear(in_channels, num_multiclass_heads)
-        self.attention_fc = nn.Linear(num_multiclass_heads, in_channels)
+        step_size = 7
+        self.step_size = step_size
+        self.fc_superclass = nn.Linear(in_channels * step_size * step_size, num_multiclass_heads)
+        self.attention_fc = nn.Linear(num_multiclass_heads, in_channels * step_size * step_size)
         self.cbam = CBAM(in_channels)
-        self.fc_subclass = nn.Linear(in_channels, num_single_label_classes)
+        self.fc_subclass = nn.Linear(in_channels * step_size * step_size, num_single_label_classes)
 
         self._init_layers()
+
+    def pre_logits(self, feats: tuple[torch.Tensor] | torch.Tensor) -> torch.Tensor:
+        """The process before the final classification head."""
+        if isinstance(feats, Sequence):
+            feats = feats[-1]
+            return feats.view(feats.size(0), self.in_channels*self.step_size*self.step_size)
+        # return feats[-1]
 
     def _init_layers(self) -> None:
         """Iniitialize weights of classification head."""
@@ -461,9 +481,9 @@ class HierarchicalCBAMClsHead(HierarchicalClsHead):
         attention_weights = torch.sigmoid(self.attention_fc(out_superclass))
         attended_features = pre_logits * attention_weights
 
-        attended_features = attended_features.view(pre_logits.size(0), self.in_channels, 1, 1)
+        attended_features = attended_features.view(pre_logits.size(0), self.in_channels, self.step_size, self.step_size)
         attended_features = self.cbam(attended_features)
-        attended_features = attended_features.view(pre_logits.size(0), self.in_channels)
+        attended_features = attended_features.view(pre_logits.size(0), self.in_channels*self.step_size*self.step_size)
         out_subclass = self.fc_subclass(attended_features)
 
         return out_subclass
