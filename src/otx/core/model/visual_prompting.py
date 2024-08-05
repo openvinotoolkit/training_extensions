@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import logging as log
 import pickle  # nosec: B403   used pickle dump and load only to share inference results
+from abc import abstractmethod
 from collections import defaultdict
 from functools import partial
 from pathlib import Path
@@ -21,10 +22,10 @@ from model_api.models.visual_prompting import (
     SAMVisualPrompter,
     VisualPromptingFeatures,
 )
-from torch import Tensor
+from torch import Tensor, nn
 from torchvision import tv_tensors
 
-from otx.core.data.entity.base import ImageInfo, Points
+from otx.core.data.entity.base import ImageInfo, OTXBatchLossEntity, Points
 from otx.core.data.entity.visual_prompting import (
     VisualPromptingBatchDataEntity,
     VisualPromptingBatchPredEntity,
@@ -176,6 +177,66 @@ class OTXVisualPromptingModel(OTXModel[VisualPromptingBatchDataEntity, VisualPro
             metric=metric,
             torch_compile=torch_compile,
         )
+
+    @abstractmethod
+    def _build_model(self) -> nn.Module:
+        raise NotImplementedError
+
+    def _create_model(self) -> nn.Module:
+        return self._build_model()
+
+    def _customize_inputs(self, inputs: VisualPromptingBatchDataEntity) -> dict[str, Any]:  # type: ignore[override]
+        """Customize the inputs for the model."""
+        images = tv_tensors.wrap(torch.stack(inputs.images, dim=0).to(dtype=torch.float32), like=inputs.images[0])
+        return {
+            "mode": "finetuning",
+            "images": images,
+            "ori_shapes": [torch.tensor(info.ori_shape) for info in inputs.imgs_info],
+            "gt_masks": inputs.masks,
+            "bboxes": self._inspect_prompts(inputs.bboxes),
+            "points": [
+                (
+                    (tv_tensors.wrap(point.unsqueeze(1), like=point), torch.ones(len(point), 1, device=point.device))
+                    if point is not None
+                    else None
+                )
+                for point in self._inspect_prompts(inputs.points)
+            ],
+        }
+
+    def _customize_outputs(
+        self,
+        outputs: Any,  # noqa: ANN401
+        inputs: VisualPromptingBatchDataEntity,  # type: ignore[override]
+    ) -> VisualPromptingBatchPredEntity | OTXBatchLossEntity:
+        """Customize OTX output batch data entity if needed for model."""
+        if self.training:
+            return outputs
+
+        masks: list[tv_tensors.Mask] = []
+        scores: list[torch.Tensor] = []
+        for mask, score in zip(*outputs):
+            masks.append(tv_tensors.Mask(mask, dtype=torch.float32))
+            scores.append(score)
+
+        return VisualPromptingBatchPredEntity(
+            batch_size=len(outputs),
+            images=inputs.images,
+            imgs_info=inputs.imgs_info,
+            scores=scores,
+            masks=masks,
+            polygons=[],
+            points=[],
+            bboxes=[],
+            labels=[torch.cat(list(labels.values())) for labels in inputs.labels],
+        )
+
+    def _inspect_prompts(self, prompts: list[tv_tensors.TVTensor]) -> list[tv_tensors.TVTensor | None]:
+        """Inspect if given prompts are empty.
+
+        If there are empty prompts (shape=0), they will be converted to None.
+        """
+        return [None if p is None else None if p.shape[0] == 0 else p for p in prompts]
 
     @property
     def _exporter(self) -> OTXModelExporter:

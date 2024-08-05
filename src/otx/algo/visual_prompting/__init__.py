@@ -3,16 +3,12 @@
 #
 """Module for OTX visual prompting models."""
 
-from . import backbones, decoders, encoders
-from .segment_anything import OTXSegmentAnything, SegmentAnything
+from .segment_anything import SAMTinyViT, SAMViTBase
 from .zero_shot_segment_anything import OTXZeroShotSegmentAnything, ZeroShotSegmentAnything
 
 __all__ = [
-    "backbones",
-    "encoders",
-    "decoders",
-    "OTXSegmentAnything",
-    "SegmentAnything",
+    "SAMTinyViT",
+    "SAMViTBase",
     "OTXZeroShotSegmentAnything",
     "ZeroShotSegmentAnything",
 ]

@@ -6,17 +6,18 @@
 from __future__ import annotations
 
 import logging as log
-from typing import TYPE_CHECKING, Any, Literal
+from functools import partial
+from typing import TYPE_CHECKING, Any, Sequence
 
 import torch
 from torch import Tensor, nn
 from torch.nn import functional as F  # noqa: N812
 from torchvision import tv_tensors
 
+from otx.algo.visual_prompting.backbones import TinyViT, ViT
 from otx.algo.visual_prompting.decoders import SAMMaskDecoder
-from otx.algo.visual_prompting.encoders import SAMImageEncoder, SAMPromptEncoder
-from otx.core.data.entity.base import OTXBatchLossEntity, Points
-from otx.core.data.entity.visual_prompting import VisualPromptingBatchDataEntity, VisualPromptingBatchPredEntity
+from otx.algo.visual_prompting.encoders import SAMPromptEncoder
+from otx.core.data.entity.base import Points
 from otx.core.metrics.visual_prompting import VisualPromptingMetricCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
 from otx.core.model.visual_prompting import OTXVisualPromptingModel
@@ -49,18 +50,12 @@ class SegmentAnything(nn.Module):
 
     def __init__(
         self,
-        backbone: str,
+        image_encoder: nn.Module,
+        prompt_encoder: nn.Module,
+        mask_decoder: nn.Module,
         load_from: str | None = None,
-        mask_threshold: float = 0.0,
         image_size: int = 1024,
-        image_embedding_size: int = 64,
-        embed_dim: int = 256,
-        mask_in_chans: int = 16,
-        num_multimask_outputs: int = 3,
-        transformer_cfg: dict[str, int] | None = None,
-        transformer_dim: int = 256,
-        iou_head_depth: int = 3,
-        iou_head_hidden_dim: int = 256,
+        mask_threshold: float = 0.0,
         freeze_image_encoder: bool = True,
         freeze_prompt_encoder: bool = True,
         freeze_mask_decoder: bool = False,
@@ -70,32 +65,17 @@ class SegmentAnything(nn.Module):
         stability_score_offset: float = 1.0,
     ) -> None:
         super().__init__()
-        if transformer_cfg is None:
-            transformer_cfg = {"depth": 2, "embedding_dim": 256, "mlp_dim": 2048, "num_heads": 8}
 
-        self.mask_threshold = mask_threshold
         self.image_size = image_size
-        self.embed_dim = embed_dim
-        self.image_embedding_size = image_embedding_size
+        self.mask_threshold = mask_threshold
         self.use_stability_score = use_stability_score
         self.return_single_mask = return_single_mask
         self.return_extra_metrics = return_extra_metrics
         self.stability_score_offset = stability_score_offset
 
-        self.image_encoder = SAMImageEncoder(backbone=backbone)
-        self.prompt_encoder = SAMPromptEncoder(
-            embed_dim=embed_dim,
-            image_embedding_size=(image_embedding_size, image_embedding_size),
-            input_image_size=(image_size, image_size),
-            mask_in_chans=mask_in_chans,
-        )
-        self.mask_decoder = SAMMaskDecoder(
-            num_multimask_outputs=num_multimask_outputs,
-            transformer_cfg=transformer_cfg,
-            transformer_dim=transformer_dim,
-            iou_head_depth=iou_head_depth,
-            iou_head_hidden_dim=iou_head_hidden_dim,
-        )
+        self.image_encoder = image_encoder
+        self.prompt_encoder = prompt_encoder
+        self.mask_decoder = mask_decoder
 
         self.load_checkpoint(load_from=load_from)
         self.freeze_networks(freeze_image_encoder, freeze_prompt_encoder, freeze_mask_decoder)
@@ -487,13 +467,16 @@ class SegmentAnything(nn.Module):
         return masks, iou_preds
 
 
-class OTXSegmentAnything(OTXVisualPromptingModel):
-    """Visual Prompting model."""
+class SAM(OTXVisualPromptingModel):
+    """OTX visual prompting model class for Segment Anything Model (SAM)."""
+
+    backbone: str
+    load_from: str
 
     def __init__(
         self,
-        backbone: Literal["tiny_vit", "vit_b"],
         label_info: LabelInfoTypes = NullLabelInfo(),
+        input_size: Sequence[int] = (1, 3, 1024, 1024),
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = VisualPromptingMetricCallable,
@@ -506,17 +489,17 @@ class OTXSegmentAnything(OTXVisualPromptingModel):
         return_extra_metrics: bool = False,
         stability_score_offset: float = 1.0,
     ) -> None:
-        self.config = {
-            "backbone": backbone,
-            "freeze_image_encoder": freeze_image_encoder,
-            "freeze_prompt_encoder": freeze_prompt_encoder,
-            "freeze_mask_decoder": freeze_mask_decoder,
-            "use_stability_score": use_stability_score,
-            "return_single_mask": return_single_mask,
-            "return_extra_metrics": return_extra_metrics,
-            "stability_score_offset": stability_score_offset,
-            **DEFAULT_CONFIG_SEGMENT_ANYTHING[backbone],
-        }
+        self.image_size = input_size[-1]
+        self.image_embedding_size = input_size[-1] // 16
+
+        self.freeze_image_encoder = freeze_image_encoder
+        self.freeze_prompt_encoder = freeze_prompt_encoder
+        self.freeze_mask_decoder = freeze_mask_decoder
+        self.use_stability_score = use_stability_score
+        self.return_single_mask = return_single_mask
+        self.return_extra_metrics = return_extra_metrics
+        self.stability_score_offset = stability_score_offset
+
         super().__init__(
             label_info=label_info,
             optimizer=optimizer,
@@ -525,59 +508,110 @@ class OTXSegmentAnything(OTXVisualPromptingModel):
             torch_compile=torch_compile,
         )
 
-    def _create_model(self) -> nn.Module:
-        """Create a PyTorch model for this class."""
-        return SegmentAnything(**self.config)
 
-    def _customize_inputs(self, inputs: VisualPromptingBatchDataEntity) -> dict[str, Any]:  # type: ignore[override]
-        """Customize the inputs for the model."""
-        images = tv_tensors.wrap(torch.stack(inputs.images, dim=0).to(dtype=torch.float32), like=inputs.images[0])
-        return {
-            "mode": "finetuning",
-            "images": images,
-            "ori_shapes": [torch.tensor(info.ori_shape) for info in inputs.imgs_info],
-            "gt_masks": inputs.masks,
-            "bboxes": self._inspect_prompts(inputs.bboxes),
-            "points": [
-                (
-                    (tv_tensors.wrap(point.unsqueeze(1), like=point), torch.ones(len(point), 1, device=point.device))
-                    if point is not None
-                    else None
-                )
-                for point in self._inspect_prompts(inputs.points)
-            ],
-        }
+class SAMTinyViT(SAM):
+    """Segment Anything Model (SAM) with Tiny-ViT."""
 
-    def _customize_outputs(
-        self,
-        outputs: Any,  # noqa: ANN401
-        inputs: VisualPromptingBatchDataEntity,  # type: ignore[override]
-    ) -> VisualPromptingBatchPredEntity | OTXBatchLossEntity:
-        """Customize OTX output batch data entity if needed for model."""
-        if self.training:
-            return outputs
+    backbone = "tiny_vit"
+    load_from = "https://github.com/ChaoningZhang/MobileSAM/raw/master/weights/mobile_sam.pt"
 
-        masks: list[tv_tensors.Mask] = []
-        scores: list[torch.Tensor] = []
-        for mask, score in zip(*outputs):
-            masks.append(tv_tensors.Mask(mask, dtype=torch.float32))
-            scores.append(score)
-
-        return VisualPromptingBatchPredEntity(
-            batch_size=len(outputs),
-            images=inputs.images,
-            imgs_info=inputs.imgs_info,
-            scores=scores,
-            masks=masks,
-            polygons=[],
-            points=[],
-            bboxes=[],
-            labels=[torch.cat(list(labels.values())) for labels in inputs.labels],
+    def _build_model(self) -> nn.Module:
+        image_encoder = TinyViT(
+            img_size=self.image_size,
+            embed_dims=[64, 128, 160, 320],
+            depths=[2, 2, 6, 2],
+            num_heads=[2, 4, 5, 10],
+            window_sizes=[7, 7, 14, 7],
+            drop_path_rate=0.0,
+        )
+        prompt_encoder = SAMPromptEncoder(
+            embed_dim=256,
+            image_embedding_size=(
+                self.image_embedding_size,
+                self.image_embedding_size,
+            ),
+            input_image_size=(
+                self.image_size,
+                self.image_size,
+            ),
+            mask_in_chans=16,
+        )
+        mask_decoder = SAMMaskDecoder(
+            num_multimask_outputs=3,
+            transformer_cfg={"depth": 2, "embedding_dim": 256, "mlp_dim": 2048, "num_heads": 8},
+            transformer_dim=256,
+            iou_head_depth=3,
+            iou_head_hidden_dim=256,
+        )
+        return SegmentAnything(
+            image_encoder=image_encoder,
+            prompt_encoder=prompt_encoder,
+            mask_decoder=mask_decoder,
+            load_from=self.load_from,
+            image_size=self.image_size,
+            # TODO (sungchul): specify loss functions
+            freeze_image_encoder=self.freeze_image_encoder,
+            freeze_prompt_encoder=self.freeze_prompt_encoder,
+            freeze_mask_decoder=self.freeze_mask_decoder,
+            use_stability_score=self.use_stability_score,
+            return_single_mask=self.return_single_mask,
+            return_extra_metrics=self.return_extra_metrics,
+            stability_score_offset=self.stability_score_offset,
         )
 
-    def _inspect_prompts(self, prompts: list[tv_tensors.TVTensor]) -> list[tv_tensors.TVTensor | None]:
-        """Inspect if given prompts are empty.
 
-        If there are empty prompts (shape=0), they will be converted to None.
-        """
-        return [None if p is None else None if p.shape[0] == 0 else p for p in prompts]
+class SAMViTBase(SAM):
+    """Segment Anything Model (SAM) with ViT-base."""
+
+    backbone = "vit_b"
+    load_from = "https://dl.fbaipublicfiles.com/segment_anything/sam_vit_b_01ec64.pth"
+
+    def _build_model(self) -> nn.Module:
+        image_encoder = ViT(
+            img_size=self.image_size,
+            norm_layer=partial(nn.LayerNorm, eps=1e-6),
+            out_chans=256,
+            patch_size=16,
+            mlp_ratio=4,
+            qkv_bias=True,
+            use_rel_pos=True,
+            window_size=14,
+            embed_dim=768,
+            depth=12,
+            num_heads=12,
+            global_attn_indexes=(2, 5, 8, 11),
+        )
+        prompt_encoder = SAMPromptEncoder(
+            embed_dim=256,
+            image_embedding_size=(
+                self.image_embedding_size,
+                self.image_embedding_size,
+            ),
+            input_image_size=(
+                self.image_size,
+                self.image_size,
+            ),
+            mask_in_chans=16,
+        )
+        mask_decoder = SAMMaskDecoder(
+            num_multimask_outputs=3,
+            transformer_cfg={"depth": 2, "embedding_dim": 256, "mlp_dim": 2048, "num_heads": 8},
+            transformer_dim=256,
+            iou_head_depth=3,
+            iou_head_hidden_dim=256,
+        )
+        return SegmentAnything(
+            image_encoder=image_encoder,
+            prompt_encoder=prompt_encoder,
+            mask_decoder=mask_decoder,
+            load_from=self.load_from,
+            image_size=self.image_size,
+            # TODO (sungchul): specify loss functions
+            freeze_image_encoder=self.freeze_image_encoder,
+            freeze_prompt_encoder=self.freeze_prompt_encoder,
+            freeze_mask_decoder=self.freeze_mask_decoder,
+            use_stability_score=self.use_stability_score,
+            return_single_mask=self.return_single_mask,
+            return_extra_metrics=self.return_extra_metrics,
+            stability_score_offset=self.stability_score_offset,
+        )

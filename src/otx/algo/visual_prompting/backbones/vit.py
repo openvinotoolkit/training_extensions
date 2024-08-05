@@ -32,7 +32,7 @@ class ViT(nn.Module):
         use_rel_pos (bool): If True, add relative positional embeddings to the attention map.
         rel_pos_zero_init (bool): If True, zero initialize relative positional parameters.
         window_size (int): Window size for window attention blocks.
-        global_attn_indexes (list): Indexes for blocks using global attention.
+        global_attn_indexes (tuple[int, ...]): Indexes for blocks using global attention.
     """
 
     def __init__(
