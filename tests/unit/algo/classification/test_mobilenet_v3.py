@@ -5,9 +5,7 @@ import pytest
 import torch
 from otx.algo.classification.classifier import ImageClassifier
 from otx.algo.classification.mobilenet_v3 import (
-    MobileNetV3ForHLabelCls,
-    MobileNetV3ForMulticlassCls,
-    MobileNetV3ForMultilabelCls,
+    MobileNetV3ForClassification,
 )
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.classification import (
@@ -19,7 +17,7 @@ from otx.core.data.entity.classification import (
 
 @pytest.fixture()
 def fxt_multi_class_cls_model():
-    return MobileNetV3ForMulticlassCls(
+    return MobileNetV3ForClassification(
         mode="large",
         label_info=10,
     )
@@ -57,9 +55,10 @@ class TestMobileNetV3ForMulticlassCls:
 
 @pytest.fixture()
 def fxt_multi_label_cls_model():
-    return MobileNetV3ForMultilabelCls(
+    return MobileNetV3ForClassification(
         mode="large",
         label_info=10,
+        task="MULTI_LABEL_CLS",
     )
 
 
@@ -95,9 +94,10 @@ class TestMobileNetV3ForMultilabelCls:
 
 @pytest.fixture()
 def fxt_h_label_cls_model(fxt_hlabel_data):
-    return MobileNetV3ForHLabelCls(
+    return MobileNetV3ForClassification(
         mode="large",
         label_info=fxt_hlabel_data,
+        task="H_LABEL_CLS",
     )
 
 

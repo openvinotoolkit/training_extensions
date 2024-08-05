@@ -10,7 +10,7 @@ Example of ``recipe/classification/multi_class_cls``
 .. code-block:: yaml
 
     model:
-        class_path: otx.algo.classification.mobilenet_v3.MobileNetV3ForMulticlassCls
+        class_path: otx.algo.classification.mobilenet_v3.MobileNetV3ForClassification
         init_args:
             label_info: 1000
             light: True

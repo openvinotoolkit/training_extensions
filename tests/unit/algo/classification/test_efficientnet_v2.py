@@ -4,11 +4,7 @@
 import pytest
 import torch
 from otx.algo.classification.classifier import ImageClassifier
-from otx.algo.classification.efficientnet_v2 import (
-    EfficientNetV2ForHLabelCls,
-    EfficientNetV2ForMulticlassCls,
-    EfficientNetV2ForMultilabelCls,
-)
+from otx.algo.classification.efficientnet_v2 import EfficientNetV2ForClassification
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.classification import (
     HlabelClsBatchPredEntity,
@@ -19,7 +15,7 @@ from otx.core.data.entity.classification import (
 
 @pytest.fixture()
 def fxt_multi_class_cls_model():
-    return EfficientNetV2ForMulticlassCls(
+    return EfficientNetV2ForClassification(
         label_info=10,
     )
 
@@ -56,8 +52,9 @@ class TestEfficientNetV2ForMulticlassCls:
 
 @pytest.fixture()
 def fxt_multi_label_cls_model():
-    return EfficientNetV2ForMultilabelCls(
+    return EfficientNetV2ForClassification(
         label_info=10,
+        task="MULTI_LABEL_CLS",
     )
 
 
@@ -93,8 +90,9 @@ class TestEfficientNetV2ForMultilabelCls:
 
 @pytest.fixture()
 def fxt_h_label_cls_model(fxt_hlabel_data):
-    return EfficientNetV2ForHLabelCls(
+    return EfficientNetV2ForClassification(
         label_info=fxt_hlabel_data,
+        task="H_LABEL_CLS",
     )
 
 

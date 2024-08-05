@@ -26,14 +26,14 @@ class OptimizerCallableSupportHPO:
         optimizer_kwargs: Keyword arguments used for the initialization of the given `optimizer_cls`.
 
     Examples:
-        This is an example to create `MobileNetV3ForMulticlassCls` with a `SGD` optimizer and
+        This is an example to create `MobileNetV3ForClassification` with a `SGD` optimizer and
         custom configurations.
 
         ```python
         from torch.optim import SGD
-        from otx.algo.classification.mobilenet_v3_large import MobileNetV3ForMulticlassCls
+        from otx.algo.classification.mobilenet_v3 import MobileNetV3ForClassification
 
-        model = MobileNetV3ForMulticlassCls(
+        model = MobileNetV3ForClassification(
             num_classes=3,
             optimizer=OptimizerCallableSupportHPO(
                 optimizer_cls=SGD,
@@ -49,9 +49,9 @@ class OptimizerCallableSupportHPO:
         It can be created from the string class import path such as
 
         ```python
-        from otx.algo.classification.mobilenet_v3_large import MobileNetV3ForMulticlassCls
+        from otx.algo.classification.mobilenet_v3 import MobileNetV3ForClassification
 
-        model = MobileNetV3ForMulticlassCls(
+        model = MobileNetV3ForClassification(
             num_classes=3,
             optimizer=OptimizerCallableSupportHPO(
                 optimizer_cls="torch.optim.SGD",

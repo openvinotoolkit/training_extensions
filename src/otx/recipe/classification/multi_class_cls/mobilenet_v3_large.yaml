@@ -1,5 +1,5 @@
 model:
-  class_path: otx.algo.classification.mobilenet_v3.MobileNetV3ForMulticlassCls
+  class_path: otx.algo.classification.mobilenet_v3.MobileNetV3ForClassification
   init_args:
     mode: large
     label_info: 1000

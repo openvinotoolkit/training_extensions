@@ -1,8 +1,9 @@
 model:
-  class_path: otx.algo.classification.mobilenet_v3.MobileNetV3ForMultilabelCls
+  class_path: otx.algo.classification.mobilenet_v3.MobileNetV3ForClassification
   init_args:
     mode: large
     label_info: 1000
+    task: MULTI_LABEL_CLS
 
     optimizer:
       class_path: torch.optim.SGD

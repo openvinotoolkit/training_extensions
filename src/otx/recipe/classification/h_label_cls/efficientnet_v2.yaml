@@ -1,6 +1,8 @@
 model:
-  class_path: otx.algo.classification.efficientnet_v2.EfficientNetV2ForHLabelCls
+  class_path: otx.algo.classification.efficientnet_v2.EfficientNetV2ForClassification
   init_args:
+    task: H_LABEL_CLS
+
     optimizer:
       class_path: torch.optim.SGD
       init_args:

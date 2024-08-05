@@ -29,14 +29,14 @@ class SchedulerCallableSupportHPO:
         scheduler_kwargs: Keyword arguments used for the initialization of the given `scheduler_cls`.
 
     Examples:
-        This is an example to create `MobileNetV3ForMulticlassCls` with a `StepLR` lr scheduler and
+        This is an example to create `MobileNetV3ForClassification` with a `StepLR` lr scheduler and
         custom configurations.
 
         ```python
         from torch.optim.lr_scheduler import StepLR
-        from otx.algo.classification.mobilenet_v3_large import MobileNetV3ForMulticlassCls
+        from otx.algo.classification.mobilenet_v3 import MobileNetV3ForClassification
 
-        model = MobileNetV3ForMulticlassCls(
+        model = MobileNetV3ForClassification(
             num_classes=3,
             scheduler=SchedulerCallableSupportHPO(
                 scheduler_cls=StepLR,
@@ -51,9 +51,9 @@ class SchedulerCallableSupportHPO:
         It can be created from the string class import path such as
 
         ```python
-        from otx.algo.classification.mobilenet_v3_large import MobileNetV3ForMulticlassCls
+        from otx.algo.classification.mobilenet_v3 import MobileNetV3ForClassification
 
-        model = MobileNetV3ForMulticlassCls(
+        model = MobileNetV3ForClassification(
             num_classes=3,
             optimizer=SchedulerCallableSupportHPO(
                 scheduler_cls="torch.optim.lr_scheduler.StepLR",
