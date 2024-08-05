@@ -1,3 +1,6 @@
+# Copyright (C) 2024 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+
 from collections import defaultdict
 
 import pytest
@@ -8,7 +11,6 @@ from otx.core.utils import utils as target_file
 from otx.core.utils.utils import (
     get_adaptive_num_workers,
     get_idx_list_per_classes,
-    get_mean_std_from_data_processing,
     import_object_from_module,
     is_ckpt_for_finetuning,
     is_ckpt_from_otx_v1,
@@ -56,18 +58,6 @@ def test_is_ckpt_for_finetuning():
 
     ckpt = {}
     assert not is_ckpt_for_finetuning(ckpt)
-
-
-def test_get_mean_std_from_data_processing():
-    config = {
-        "data_preprocessor": {
-            "mean": 0.5,
-            "std": 0.1,
-        },
-    }
-    mean, std = get_mean_std_from_data_processing(config)
-    assert mean == 0.5
-    assert std == 0.1
 
 
 @pytest.fixture()
@@ -118,9 +108,9 @@ def test_get_idx_list_per_classes(fxt_dm_dataset):
 
 
 def test_import_object_from_module():
-    obj_path = "otx.core.utils.utils.get_mean_std_from_data_processing"
+    obj_path = "otx.core.utils.utils.get_idx_list_per_classes"
     obj = import_object_from_module(obj_path)
-    assert obj == get_mean_std_from_data_processing
+    assert obj == get_idx_list_per_classes
 
 
 def test_remove_state_dict_prefix():

@@ -107,10 +107,10 @@ If you want to use other models offered by OpenVINO™ Training Extension beside
             model_lists = list_models(task="DETECTION", print_table=True)
 
             '''
-            ┏━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓            
-            ┃ Task      ┃ Model Name            ┃ Recipe Path                                                    ┃            
-            ┡━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩            
-            │ DETECTION │ yolox_tiny            │ src/otx/recipe/detection/yolox_tiny.yaml                       │            
+            ┏━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+            ┃ Task      ┃ Model Name            ┃ Recipe Path                                                    ┃
+            ┡━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+            │ DETECTION │ yolox_tiny            │ src/otx/recipe/detection/yolox_tiny.yaml                       │
             │ ...       │                       │                                                                │
             └───────────┴───────────────────────┴────────────────────────────────────────────────────────────────┘
             '''
@@ -328,7 +328,7 @@ The datamodule used by the Engine is of type ``otx.core.data.module.OTXDataModul
             engine.train(precision="16")
 
         .. note::
-            
+
             This uses lightning's precision value. You can use the values below:
             - "64", "32", "16", "bf16",
             - 64, 32, 16
@@ -518,4 +518,32 @@ You can validate the optimized model as the usual model. For example for the NNC
 
     engine.test(checkpoint="<path/to/optimized/ir/xml>")
 
-That's it. Now, we can use OpenVINO™ Training Extensions APIs to create, train, and deploy deep learning models using the OpenVINO™ Training Extension.
+************
+Benchmarking
+************
+
+``Engine`` allows to perform benchmarking of the trained model, and provide theoretical complexity information in case of torch model.
+The estimated by ``Engine.benchmark()`` performance may differ from the performance of the deployed model, since the measurements are conducted
+via OTX inference API, which can introduce additional burden.
+
+.. tab-set::
+
+    .. tab-item:: Benchmark Model
+
+        .. code-block:: python
+
+            engine.benchmark()
+
+    .. tab-item:: Benchmark OpenVINO™ IR model
+
+        .. code-block:: python
+
+            engine.benchmark(checkpoint="<path/to/exported_model.xml>")
+
+        .. note::
+
+            Specifying a checkpoint only makes sense for OpenVINO™ IR models.
+
+Conclusion
+"""""""""""
+That's it! Now, we can use OpenVINO™ Training Extensions APIs to create, train, and deploy deep learning models using the OpenVINO™ Training Extensions.

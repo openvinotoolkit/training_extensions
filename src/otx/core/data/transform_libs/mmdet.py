@@ -1,6 +1,5 @@
-# Copyright (C) 2023 Intel Corporation
+# Copyright (C) 2023-2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-#
 """Helper to support MMDET data transform functions."""
 
 from __future__ import annotations
@@ -12,7 +11,6 @@ from typing import TYPE_CHECKING, Callable
 import numpy as np
 import torch
 from datumaro import Polygon
-from mmcv.transforms import BaseTransform
 from mmdet.datasets.transforms import LoadAnnotations as MMDetLoadAnnotations
 from mmdet.datasets.transforms import PackDetInputs as MMDetPackDetInputs
 from mmdet.registry import TRANSFORMS as MMDET_TRANSFORMS
@@ -216,62 +214,6 @@ class PackDetInputs(MMDetPackDetInputs):
         polygons = [Polygon(polygon[0]) for polygon in masks.masks] if isinstance(masks, PolygonMasks) else []
 
         return masks_tensor, polygons
-
-
-@TRANSFORMS.register_module()
-class PerturbBoundingBoxes(BaseTransform):
-    """Perturb bounding boxes with random offset values.
-
-    Args:
-        offset (int): Offset value to be used for bounding boxes perturbation.
-    """
-
-    def __init__(self, offset: int):
-        self.offset = offset
-
-    def transform(self, results: dict) -> dict:
-        """Insert random perturbation into bounding boxes."""
-        height, width = results["img_shape"]
-        perturbed_bboxes: list[np.ndarray] = []
-        for bbox in results["gt_bboxes"]:
-            perturbed_bbox = self.get_perturbed_bbox(bbox, width, height, self.offset)
-            perturbed_bboxes.append(perturbed_bbox)
-        results["gt_bboxes"] = np.stack(perturbed_bboxes, axis=0)
-        return results
-
-    def get_perturbed_bbox(
-        self,
-        bbox: np.ndarray,
-        width: int,
-        height: int,
-        offset_bbox: int = 0,
-    ) -> list[int]:
-        """Generate bounding box.
-
-        Args:
-            bbox (np.ndarray): Bounding box coordinates.
-            width (int): Width of image.
-            height (int): Height of image.
-            offset_bbox (int): Offset to apply to the bounding box, defaults to 0.
-
-        Returns:
-            List[int]: Generated bounding box.
-        """
-
-        def get_randomness(length: int) -> int:
-            if offset_bbox == 0:
-                return 0
-            return np.random.normal(0, min(length * 0.1, offset_bbox))
-
-        x1, y1, x2, y2 = bbox
-        return np.array(
-            [
-                max(0, x1 + get_randomness(width)),
-                max(0, y1 + get_randomness(height)),
-                min(width, x2 + get_randomness(width)),
-                min(height, y2 + get_randomness(height)),
-            ],
-        )
 
 
 class MMDetTransformLib(MMCVTransformLib):

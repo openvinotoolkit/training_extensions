@@ -45,7 +45,7 @@ class TestOTXTVModel:
     def test_create_model(self, fxt_tv_model):
         assert isinstance(fxt_tv_model.model, TVClassificationModel)
 
-        semi_sl_model = OTXTVModel(backbone="mobilenet_v3_small", label_info=10, train_type="semi_supervised")
+        semi_sl_model = OTXTVModel(backbone="mobilenet_v3_small", label_info=10, train_type="SEMI_SUPERVISED")
         assert isinstance(semi_sl_model.model.head, OTXSemiSLLinearClsHead)
 
     @pytest.mark.parametrize(
