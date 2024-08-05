@@ -68,8 +68,7 @@ class ConvModule(nn.Module):
 
     This block simplifies the usage of convolution layers, which are commonly
     used with a norm layer (e.g., BatchNorm) and activation layer (e.g., ReLU).
-    It is based upon three build methods: `build_conv_layer()`,
-    `build_norm_layer()` and `build_activation_layer()`.
+    It is based upon two build methods: `build_norm_layer()` and `build_activation_layer()`.
 
     Besides, we add some additional features in this module.
     1. Automatically set `bias` of the conv layer.
