@@ -46,4 +46,9 @@ class TestDeitTiny:
 
         mock_load_ckpt = mocker.patch.object(OTXv1Helper, "load_cls_effnet_b0_ckpt")
         fxt_model.load_from_otx_v1_ckpt({})
-        mock_load_ckpt.assert_called_once_with({}, "multiclass", "model.")
+        label_type = {
+            OTXTaskType.MULTI_CLASS_CLS: "multiclass",
+            OTXTaskType.MULTI_LABEL_CLS: "multilabel",
+            OTXTaskType.H_LABEL_CLS: "hlabel",
+        }[fxt_model.task]
+        mock_load_ckpt.assert_called_once_with({}, label_type, "model.")
