@@ -3,23 +3,29 @@ updates:
   - package-ecosystem: docker
     directory: /
     schedule:
-      interval: weekly
+      interval: daily
     groups:
       dockerfile-dependency:
         applies-to: version-updates
+        patterns:
+          - "*"
 
   - package-ecosystem: github-actions
     directory: /
     schedule:
-      interval: weekly
+      interval: daily
     groups:
       github-actions-dependency:
         applies-to: version-updates
+        patterns:
+          - "*"
 
   - package-ecosystem: pip
     directory: /
     schedule:
-      interval: weekly
+      interval: daily
     groups:
       pip-dependency:
         applies-to: version-updates
+        patterns:
+          - "*"
