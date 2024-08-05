@@ -8,7 +8,7 @@ from .activation import build_activation_layer
 from .conv import build_conv_layer
 from .conv_module import ConvModule
 from .depthwise_separable_conv_module import DepthwiseSeparableConvModule
-from .norm import build_norm_layer
+from .norm import FrozenBatchNorm2d, build_norm_layer
 from .padding import build_padding_layer
 
 __all__ = [
@@ -18,4 +18,5 @@ __all__ = [
     "build_norm_layer",
     "ConvModule",
     "DepthwiseSeparableConvModule",
+    "FrozenBatchNorm2d",
 ]

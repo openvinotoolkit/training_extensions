@@ -3,7 +3,8 @@ model:
   init_args:
     backbone: mobilenet_v3_small
     label_info: 1000
-    train_type: semi_supervised
+    task: MULTI_CLASS_CLS
+    train_type: SEMI_SUPERVISED
 
     optimizer:
       class_path: torch.optim.SGD

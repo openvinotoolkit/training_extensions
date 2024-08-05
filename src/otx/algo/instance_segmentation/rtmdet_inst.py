@@ -13,8 +13,8 @@ from otx.algo.common.utils.assigners import DynamicSoftLabelAssigner
 from otx.algo.common.utils.coders import DistancePointBBoxCoder
 from otx.algo.common.utils.prior_generators import MlvlPointGenerator
 from otx.algo.common.utils.samplers import PseudoSampler
+from otx.algo.detection.base_models import SingleStageDetector
 from otx.algo.detection.necks import CSPNeXtPAFPN
-from otx.algo.detection.ssd import SingleStageDetector
 from otx.algo.instance_segmentation.heads import RTMDetInsSepBNHead
 from otx.algo.instance_segmentation.losses import DiceLoss
 from otx.core.exporter.base import OTXModelExporter
@@ -32,7 +32,8 @@ class RTMDetInst(ExplainableOTXInstanceSegModel):
     def _exporter(self) -> OTXModelExporter:
         """Creates OTXModelExporter object that can export the model."""
         if self.image_size is None:
-            raise ValueError(self.image_size)
+            msg = f"Image size attribute is not set for {self.__class__}"
+            raise ValueError(msg)
 
         return OTXNativeModelExporter(
             task_level_export_parameters=self._export_parameters,

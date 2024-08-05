@@ -6,7 +6,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 import torch
-from otx.core.data.transform_libs.utils import get_image_shape, to_np_image
+from otx.core.data.transform_libs.utils import get_image_shape, rescale_size, to_np_image
 from torch import Tensor
 
 
@@ -30,3 +30,18 @@ def test_to_np_image(img: np.ndarray | Tensor | list, is_list: bool) -> None:
         assert all(isinstance(r, np.ndarray) for r in results)
     else:
         assert isinstance(results, np.ndarray)
+
+
+@pytest.mark.parametrize(
+    ("size", "scale", "expected_size"),
+    [
+        ((100, 200), 0.5, (50, 100)),
+        ((200, 100), 2, (400, 200)),
+        ((200, 100), (300, 300), (300, 150)),
+        ((200, 100), (50, 50), (50, 25)),
+    ],
+)
+def test_rescale_size(size: tuple[int, int], scale: float, expected_size: tuple[int, int]) -> None:
+    results = rescale_size(size, scale)
+
+    assert results == expected_size

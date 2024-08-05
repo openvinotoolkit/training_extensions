@@ -1,0 +1,78 @@
+task: MULTI_CLASS_CLS
+input_size: 224
+mem_cache_size: 1GB
+mem_cache_img_max_size:
+  - 500
+  - 500
+image_color_channel: RGB
+stack_images: true
+data_format: imagenet_with_subset_dirs
+unannotated_items_ratio: 0.0
+train_subset:
+  subset_name: train
+  transform_lib_type: TORCHVISION
+  batch_size: 64
+  num_workers: 2
+  to_tv_image: false
+  transforms:
+    - class_path: otx.core.data.transform_libs.torchvision.RandomResizedCrop
+      init_args:
+        scale: $(input_size)
+    - class_path: otx.core.data.transform_libs.torchvision.RandomFlip
+      init_args:
+        prob: 0.5
+        is_numpy_to_tvtensor: true
+    - class_path: torchvision.transforms.v2.ToDtype
+      init_args:
+        dtype: ${as_torch_dtype:torch.float32}
+        scale: false
+    - class_path: torchvision.transforms.v2.Normalize
+      init_args:
+        mean: [123.675, 116.28, 103.53]
+        std: [58.395, 57.12, 57.375]
+  sampler:
+    class_path: otx.algo.samplers.balanced_sampler.BalancedSampler
+
+val_subset:
+  subset_name: val
+  transform_lib_type: TORCHVISION
+  batch_size: 64
+  num_workers: 2
+  to_tv_image: false
+  transforms:
+    - class_path: otx.core.data.transform_libs.torchvision.Resize
+      init_args:
+        scale: $(input_size)
+        is_numpy_to_tvtensor: true
+    - class_path: torchvision.transforms.v2.ToDtype
+      init_args:
+        dtype: ${as_torch_dtype:torch.float32}
+        scale: false
+    - class_path: torchvision.transforms.v2.Normalize
+      init_args:
+        mean: [123.675, 116.28, 103.53]
+        std: [58.395, 57.12, 57.375]
+  sampler:
+    class_path: torch.utils.data.RandomSampler
+
+test_subset:
+  subset_name: test
+  transform_lib_type: TORCHVISION
+  batch_size: 64
+  num_workers: 2
+  to_tv_image: false
+  transforms:
+    - class_path: otx.core.data.transform_libs.torchvision.Resize
+      init_args:
+        scale: $(input_size)
+        is_numpy_to_tvtensor: true
+    - class_path: torchvision.transforms.v2.ToDtype
+      init_args:
+        dtype: ${as_torch_dtype:torch.float32}
+        scale: false
+    - class_path: torchvision.transforms.v2.Normalize
+      init_args:
+        mean: [123.675, 116.28, 103.53]
+        std: [58.395, 57.12, 57.375]
+  sampler:
+    class_path: torch.utils.data.RandomSampler

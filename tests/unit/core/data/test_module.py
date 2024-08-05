@@ -7,11 +7,11 @@ from typing import TYPE_CHECKING
 from unittest.mock import MagicMock, patch
 
 import pytest
+from datumaro import Environment
 from importlib_resources import files
 from lightning.pytorch.loggers import CSVLogger
 from omegaconf import DictConfig, OmegaConf
 from otx.core.config.data import (
-    DataModuleConfig,
     SubsetConfig,
     TileConfig,
     UnlabeledDataConfig,
@@ -25,52 +25,73 @@ if TYPE_CHECKING:
     from datumaro.components.dataset import Dataset as DmDataset
 
 
-def mock_data_filtering(
-    dataset: DmDataset,
-    data_format: str,
-    unannotated_items_ratio: float,
-    ignore_index: int | None,
-) -> DmDataset:
-    del data_format
-    del unannotated_items_ratio
-    del ignore_index
-    return dataset
-
-
 class TestModule:
     @pytest.fixture()
-    def fxt_config(self) -> DataModuleConfig:
-        mock = MagicMock(spec=DataModuleConfig)
-        mock.data_format = "coco_instances"
-        mock.data_root = "."
-        mock.mem_cache_size = "1GB"
-        mock.train_subset = MagicMock(spec=SubsetConfig)
-        mock.train_subset.sampler = DictConfig(
+    def fxt_config(self) -> DictConfig:
+        train_subset = MagicMock(spec=SubsetConfig)
+        train_subset.sampler = DictConfig(
             {"class_path": "torch.utils.data.RandomSampler", "init_args": {"num_samples": 4}},
         )
-        mock.train_subset.num_workers = 0
-        mock.train_subset.batch_size = 4
-        mock.val_subset = MagicMock(spec=SubsetConfig)
-        mock.val_subset.sampler = DictConfig(
+        train_subset.num_workers = 0
+        train_subset.batch_size = 4
+        train_subset.input_size = None
+        train_subset.subset_name = "train_1"
+        val_subset = MagicMock(spec=SubsetConfig)
+        val_subset.sampler = DictConfig(
             {"class_path": "torch.utils.data.RandomSampler", "init_args": {"num_samples": 3}},
         )
-        mock.val_subset.num_workers = 0
-        mock.val_subset.batch_size = 3
-        mock.test_subset = MagicMock(spec=SubsetConfig)
-        mock.test_subset.sampler = DictConfig(
+        val_subset.num_workers = 0
+        val_subset.batch_size = 3
+        val_subset.input_size = None
+        val_subset.subset_name = "val_1"
+        test_subset = MagicMock(spec=SubsetConfig)
+        test_subset.sampler = DictConfig(
             {"class_path": "torch.utils.data.RandomSampler", "init_args": {"num_samples": 3}},
         )
-        mock.test_subset.num_workers = 0
-        mock.test_subset.batch_size = 1
-        mock.unlabeled_subset = MagicMock(spec=UnlabeledDataConfig)
-        mock.unlabeled_subset.data_root = None
-        mock.tile_config = MagicMock(spec=TileConfig)
-        mock.tile_config.enable_tiler = False
+        test_subset.num_workers = 0
+        test_subset.batch_size = 1
+        test_subset.input_size = None
+        test_subset.subset_name = "test_1"
+        unlabeled_subset = MagicMock(spec=UnlabeledDataConfig)
+        unlabeled_subset.data_root = None
+        tile_config = MagicMock(spec=TileConfig)
+        tile_config.enable_tiler = False
+
+        mock = MagicMock(spec=DictConfig)
+        mock.task = "MULTI_LABEL_CLS"
+        mock.data_format = "coco_instances"
+        mock.data_root = "."
+        mock.train_subset = train_subset
+        mock.val_subset = val_subset
+        mock.test_subset = test_subset
+        mock.unlabeled_subset = unlabeled_subset
+        mock.tile_config = tile_config
 
         return mock
 
-    @patch("otx.core.data.module.OTXDatasetFactory")
-    @patch("otx.core.data.module.DmDataset.import_from")
+    @pytest.fixture()
+    def mock_dm_dataset(self, mocker) -> MagicMock:
+        return mocker.patch("otx.core.data.module.DmDataset.import_from")
+
+    @pytest.fixture()
+    def mock_otx_dataset_factory(self, mocker) -> MagicMock:
+        return mocker.patch("otx.core.data.module.OTXDatasetFactory")
+
+    @pytest.fixture()
+    def mock_data_filtering(self, mocker) -> MagicMock:
+        def func(
+            dataset: DmDataset,
+            data_format: str,
+            unannotated_items_ratio: float,
+            ignore_index: int | None,
+        ) -> DmDataset:
+            del data_format
+            del unannotated_items_ratio
+            del ignore_index
+            return dataset
+
+        return mocker.patch("otx.core.data.module.pre_filtering", side_effect=func)
+
     @pytest.mark.parametrize(
         "task",
         [
@@ -87,34 +108,101 @@ class TestModule:
         self,
         mock_dm_dataset,
         mock_otx_dataset_factory,
+        mock_data_filtering,
         task,
         fxt_config,
-        mocker,
     ) -> None:
-        # Our query for subset name for train, val, test
-        fxt_config.train_subset.subset_name = "train_1"
-        fxt_config.val_subset.subset_name = "val_1"
-        fxt_config.test_subset.subset_name = "test_1"
-
         # Dataset will have "train_0", "train_1", "val_0", ..., "test_1" subsets
         mock_dm_subsets = {f"{name}_{idx}": MagicMock() for name in ["train", "val", "test"] for idx in range(2)}
         mock_dm_dataset.return_value.subsets.return_value = mock_dm_subsets
 
-        mocker.patch("otx.core.data.module.pre_filtering", side_effect=mock_data_filtering)
-
-        module = OTXDataModule(task=task, config=fxt_config)
+        module = OTXDataModule(
+            task=task,
+            data_format=fxt_config.data_format,
+            data_root=fxt_config.data_root,
+            train_subset=fxt_config.train_subset,
+            val_subset=fxt_config.val_subset,
+            test_subset=fxt_config.test_subset,
+        )
 
         assert module.train_dataloader().batch_size == 4
         assert module.val_dataloader().batch_size == 3
         assert module.test_dataloader().batch_size == 1
         assert module.predict_dataloader().batch_size == 1
         assert mock_otx_dataset_factory.create.call_count == 3
+        assert fxt_config.train_subset.input_size is None
+        assert fxt_config.val_subset.input_size is None
+        assert fxt_config.test_subset.input_size is None
+
+    def test_init_input_size(
+        self,
+        mock_dm_dataset,
+        mock_otx_dataset_factory,
+        mock_data_filtering,
+        fxt_config,
+    ) -> None:
+        # Dataset will have "train_0", "train_1", "val_0", ..., "test_1" subsets
+        mock_dm_subsets = {f"{name}_{idx}": MagicMock() for name in ["train", "val", "test"] for idx in range(2)}
+        mock_dm_dataset.return_value.subsets.return_value = mock_dm_subsets
+        fxt_config.train_subset.input_size = (1000, 1000)
+        fxt_config.val_subset.input_size = None
+        fxt_config.test_subset.input_size = (800, 800)
+
+        OTXDataModule(
+            task=OTXTaskType.MULTI_CLASS_CLS,
+            data_format=fxt_config.data_format,
+            data_root=fxt_config.data_root,
+            train_subset=fxt_config.train_subset,
+            val_subset=fxt_config.val_subset,
+            test_subset=fxt_config.test_subset,
+            input_size=(1200, 1200),
+        )
+
+        assert fxt_config.train_subset.input_size == (1000, 1000)
+        assert fxt_config.val_subset.input_size == (1200, 1200)
+        assert fxt_config.test_subset.input_size == (800, 800)
+
+    def test_data_format_check(
+        self,
+        mock_dm_dataset,
+        mock_otx_dataset_factory,
+        mock_data_filtering,
+        fxt_config,
+        caplog,
+    ) -> None:
+        # Dataset will have "train_0", "train_1", "val_0", ..., "test_1" subsets
+        mock_dm_subsets = {f"{name}_{idx}": MagicMock() for name in ["train", "val", "test"] for idx in range(2)}
+        mock_dm_dataset.return_value.subsets.return_value = mock_dm_subsets
+        with patch.object(Environment, "detect_dataset", return_value=["voc", "voc_classification"]):
+            _ = OTXDataModule(
+                task=fxt_config.task,
+                data_format=fxt_config.data_format,
+                data_root=fxt_config.data_root,
+                train_subset=fxt_config.train_subset,
+                val_subset=fxt_config.val_subset,
+                test_subset=fxt_config.test_subset,
+            )
+
+        assert "Invalid data format:" in caplog.text
+        assert "Replace data_format:" in caplog.text
+
+        with patch.object(Environment, "detect_dataset", return_value=[]), pytest.raises(
+            ValueError,
+            match="Invalid data root:",
+        ):
+            _ = OTXDataModule(
+                task=fxt_config.task,
+                data_format=fxt_config.data_format,
+                data_root=fxt_config.data_root,
+                train_subset=fxt_config.train_subset,
+                val_subset=fxt_config.val_subset,
+                test_subset=fxt_config.test_subset,
+            )
 
     @pytest.fixture()
     def fxt_real_tv_cls_config(self) -> DictConfig:
         cfg_path = files("otx") / "recipe" / "_base_" / "data" / "torchvision_base.yaml"
         cfg = OmegaConf.load(cfg_path)
-        cfg = cfg.config
         cfg.data_root = "."
         cfg.train_subset.subset_name = "train"
         cfg.train_subset.num_workers = 0
@@ -131,23 +219,18 @@ class TestModule:
         cfg.device = "auto"
         return cfg
 
-    @patch("otx.core.data.module.OTXDatasetFactory")
-    @patch("otx.core.data.module.DmDataset.import_from")
     def test_hparams_initial_is_loggable(
         self,
         mock_dm_dataset,
         mock_otx_dataset_factory,
+        mock_data_filtering,
         fxt_real_tv_cls_config,
         tmpdir,
-        mocker,
     ) -> None:
         # Dataset will have "train", "val", and "test" subsets
         mock_dm_subsets = {name: MagicMock() for name in ["train", "val", "test"]}
         mock_dm_dataset.return_value.subsets.return_value = mock_dm_subsets
-
-        mocker.patch("otx.core.data.module.pre_filtering", side_effect=mock_data_filtering)
-
-        module = OTXDataModule(task=OTXTaskType.MULTI_CLASS_CLS, config=fxt_real_tv_cls_config)
+        module = OTXDataModule(**fxt_real_tv_cls_config)
         logger = CSVLogger(tmpdir)
         logger.log_hyperparams(module.hparams_initial)
         logger.save()

@@ -1,6 +1,5 @@
 # Copyright (C) 2023-2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-#
 """Class definition for base model entity used in OTX."""
 
 # mypy: disable-error-code="arg-type"
@@ -32,6 +31,8 @@ from torchmetrics import Metric, MetricCollection
 from otx import __version__
 from otx.core.config.data import TileConfig
 from otx.core.data.entity.base import (
+    ImageInfo,
+    OTXBatchDataEntity,
     OTXBatchLossEntity,
     T_OTXBatchDataEntity,
     T_OTXBatchPredEntity,
@@ -51,7 +52,7 @@ from otx.core.types.label import LabelInfo, LabelInfoTypes, NullLabelInfo
 from otx.core.types.precision import OTXPrecisionType
 from otx.core.utils.build import get_default_num_async_infer_requests
 from otx.core.utils.miscellaneous import ensure_callable
-from otx.core.utils.utils import is_ckpt_for_finetuning, is_ckpt_from_otx_v1
+from otx.core.utils.utils import is_ckpt_for_finetuning, is_ckpt_from_otx_v1, remove_state_dict_prefix
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -115,7 +116,6 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
         self.classification_layers: dict[str, dict[str, Any]] = {}
         self.model = self._create_model()
         self._explain_mode = False
-
         self.optimizer_callable = ensure_callable(optimizer)
         self.scheduler_callable = ensure_callable(scheduler)
         self.metric_callable = ensure_callable(metric)
@@ -353,6 +353,10 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
 
     def on_save_checkpoint(self, checkpoint: dict[str, Any]) -> None:
         """Callback on saving checkpoint."""
+        if self.torch_compile:
+            # If torch_compile is True, a prefix key named _orig_mod. is added to the state_dict. Remove this.
+            compiled_state_dict = checkpoint["state_dict"]
+            checkpoint["state_dict"] = remove_state_dict_prefix(compiled_state_dict, "_orig_mod.")
         super().on_save_checkpoint(checkpoint)
 
         checkpoint["label_info"] = self.label_info
@@ -781,6 +785,17 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
 
         self._tile_config = tile_config
 
+    def get_dummy_input(self, batch_size: int = 1) -> OTXBatchDataEntity[Any]:
+        """Generates a dummy input, suitable for launching forward() on it.
+
+        Args:
+            batch_size (int, optional): number of elements in a dummy input sequence. Defaults to 1.
+
+        Returns:
+            OTXBatchDataEntity[Any]: An entity containing randomly generated inference data.
+        """
+        raise NotImplementedError
+
     @staticmethod
     def _dispatch_label_info(label_info: LabelInfoTypes) -> LabelInfo:
         if isinstance(label_info, int):
@@ -1092,3 +1107,18 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
 
         msg = "Cannot construct LabelInfo from OpenVINO IR. Please check this model is trained by OTX."
         raise ValueError(msg)
+
+    def get_dummy_input(self, batch_size: int = 1) -> OTXBatchDataEntity:
+        """Returns a dummy input for base OV model."""
+        # Resize is embedded to the OV model, which means we don't need to know the actual size
+        images = [torch.rand(3, 224, 224) for _ in range(batch_size)]
+        infos = []
+        for i, img in enumerate(images):
+            infos.append(
+                ImageInfo(
+                    img_idx=i,
+                    img_shape=img.shape,
+                    ori_shape=img.shape,
+                ),
+            )
+        return OTXBatchDataEntity(batch_size=batch_size, images=images, imgs_info=infos)

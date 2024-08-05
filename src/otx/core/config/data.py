@@ -9,10 +9,8 @@ from __future__ import annotations
 
 from copy import deepcopy
 from dataclasses import dataclass, field
-from typing import Any, Optional
+from typing import Any
 
-from otx.core.types.device import DeviceType
-from otx.core.types.image import ImageColorChannel
 from otx.core.types.transformer_libs import TransformLibType
 
 
@@ -31,6 +29,8 @@ class SubsetConfig:
             (`TransformLibType.MMCV`, `TransformLibType.MMPRETRAIN`, ...).
         transform_lib_type (TransformLibType): Transform library type used by this subset.
         num_workers (int): Number of workers for the dataloader of this subset.
+        input_size (int | tuple[int, int] | None) :
+            input size model expects. If $(input_size) exists in transforms, it will be replaced with this value.
 
     Example:
         ```python
@@ -62,6 +62,9 @@ class SubsetConfig:
     num_workers: int = 2
     sampler: SamplerConfig = field(default_factory=lambda: SamplerConfig())
     to_tv_image: bool = True
+    input_size: (
+        Any
+    ) = None  # type is `int | tuple[int, int] | None` TODO (eunwoosh): Revisit after error above is solved
 
 
 @dataclass
@@ -107,34 +110,6 @@ class UnlabeledDataConfig(SubsetConfig):
     transform_lib_type: TransformLibType = TransformLibType.TORCHVISION
     num_workers: int = 2
     to_tv_image: bool = True
-
-
-@dataclass
-class DataModuleConfig:
-    """DTO for data module configuration."""
-
-    data_format: str
-    data_root: str
-
-    train_subset: SubsetConfig
-    val_subset: SubsetConfig
-    test_subset: SubsetConfig
-    unlabeled_subset: UnlabeledDataConfig = field(default_factory=lambda: UnlabeledDataConfig())
-
-    tile_config: TileConfig = field(default_factory=lambda: TileConfig())
-    vpm_config: VisualPromptingConfig = field(default_factory=lambda: VisualPromptingConfig())
-
-    mem_cache_size: str = "1GB"
-    mem_cache_img_max_size: Optional[tuple[int, int]] = None
-    image_color_channel: ImageColorChannel = ImageColorChannel.RGB
-    stack_images: bool = True
-
-    include_polygons: bool = False
-    ignore_index: int = 255
-    unannotated_items_ratio: float = 0.0
-
-    auto_num_workers: bool = False
-    device: DeviceType = DeviceType.auto
 
 
 @dataclass

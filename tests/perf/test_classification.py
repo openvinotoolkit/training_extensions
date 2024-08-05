@@ -99,7 +99,6 @@ class TestPerfSingleLabelClassification(PerfTestBase):
         fxt_dataset: Benchmark.Dataset,
         fxt_benchmark: Benchmark,
         fxt_accelerator: str,
-        fxt_resume_from: Path | None,
     ):
         if fxt_model.name == "dino_v2" and fxt_accelerator == "xpu":
             pytest.skip(f"{fxt_model.name} doesn't support {fxt_accelerator}.")
@@ -109,7 +108,6 @@ class TestPerfSingleLabelClassification(PerfTestBase):
             dataset=fxt_dataset,
             benchmark=fxt_benchmark,
             criteria=self.BENCHMARK_CRITERIA,
-            resume_from=fxt_resume_from,
         )
 
 
@@ -183,7 +181,6 @@ class TestPerfMultiLabelClassification(PerfTestBase):
         fxt_dataset: Benchmark.Dataset,
         fxt_benchmark: Benchmark,
         fxt_accelerator: str,
-        fxt_resume_from: Path | None,
     ):
         if fxt_model.name == "dino_v2" and fxt_accelerator == "xpu":
             pytest.skip(f"{fxt_model.name} doesn't support {fxt_accelerator}.")
@@ -193,7 +190,6 @@ class TestPerfMultiLabelClassification(PerfTestBase):
             dataset=fxt_dataset,
             benchmark=fxt_benchmark,
             criteria=self.BENCHMARK_CRITERIA,
-            resume_from=fxt_resume_from,
         )
 
 
@@ -261,7 +257,6 @@ class TestPerfHierarchicalLabelClassification(PerfTestBase):
         fxt_dataset: Benchmark.Dataset,
         fxt_benchmark: Benchmark,
         fxt_accelerator: str,
-        fxt_resume_from: Path | None,
     ):
         if fxt_model.name == "dino_v2" and fxt_accelerator == "xpu":
             pytest.skip(f"{fxt_model.name} doesn't support {fxt_accelerator}.")
@@ -271,7 +266,6 @@ class TestPerfHierarchicalLabelClassification(PerfTestBase):
             dataset=fxt_dataset,
             benchmark=fxt_benchmark,
             criteria=self.BENCHMARK_CRITERIA,
-            resume_from=fxt_resume_from,
         )
 
 
@@ -299,9 +293,9 @@ class TestPerfSemiSLMultiClass(PerfTestBase):
                 unlabeled_data_path=Path(f"multiclass_classification/semi-sl/cifar10@{num_label}_{idx}/unlabel_data"),
                 extra_overrides={
                     "train": {
-                        "data.config.train_subset.subset_name": "train_data",
-                        "data.config.val_subset.subset_name": "val_data",
-                        "data.config.test_subset.subset_name": "val_data",
+                        "data.train_subset.subset_name": "train_data",
+                        "data.val_subset.subset_name": "val_data",
+                        "data.test_subset.subset_name": "val_data",
                     },
                 },
             )
@@ -317,9 +311,9 @@ class TestPerfSemiSLMultiClass(PerfTestBase):
                 unlabeled_data_path=Path(f"multiclass_classification/semi-sl/svhn@{num_label}_{idx}/unlabel_data"),
                 extra_overrides={
                     "train": {
-                        "data.config.train_subset.subset_name": "train_data",
-                        "data.config.val_subset.subset_name": "val_data",
-                        "data.config.test_subset.subset_name": "val_data",
+                        "data.train_subset.subset_name": "train_data",
+                        "data.val_subset.subset_name": "val_data",
+                        "data.test_subset.subset_name": "val_data",
                     },
                 },
             )
@@ -335,9 +329,9 @@ class TestPerfSemiSLMultiClass(PerfTestBase):
                 unlabeled_data_path=Path(f"multiclass_classification/semi-sl/fmnist@{num_label}_{idx}/unlabel_data"),
                 extra_overrides={
                     "train": {
-                        "data.config.train_subset.subset_name": "train_data",
-                        "data.config.val_subset.subset_name": "val_data",
-                        "data.config.test_subset.subset_name": "val_data",
+                        "data.train_subset.subset_name": "train_data",
+                        "data.val_subset.subset_name": "val_data",
+                        "data.test_subset.subset_name": "val_data",
                     },
                 },
             )
@@ -379,12 +373,10 @@ class TestPerfSemiSLMultiClass(PerfTestBase):
         fxt_model: Benchmark.Model,
         fxt_dataset: Benchmark.Dataset,
         fxt_benchmark: Benchmark,
-        fxt_resume_from: Path | None,
     ):
         self._test_perf(
             model=fxt_model,
             dataset=fxt_dataset,
             benchmark=fxt_benchmark,
             criteria=self.BENCHMARK_CRITERIA,
-            resume_from=fxt_resume_from,
         )

@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import logging as log
 import tempfile
+from functools import partial
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Literal
 
@@ -61,22 +62,23 @@ class OTXVisualPromptingModelExporter(OTXNativeModelExporter):
                 log.warning(msg)
             fn = self.to_openvino
         elif export_format == OTXExportFormatType.ONNX:
-            fn = self.to_onnx
+            fn = partial(self.to_onnx, embed_metadata=True)
         else:
             msg = f"Unsupported export format: {export_format}"
             raise ValueError(msg)
 
         return {  # type: ignore[return-value]
-            module: fn(models[module], output_dir, f"{base_model_name}_{module}", precision)
+            module: fn(models[module], output_dir, f"{base_model_name}_{module}", precision, model_type=f"sam_{module}")
             for module in ["image_encoder", "decoder"]
         }
 
     def to_openvino(
         self,
-        model: OTXModel,
+        model: OTXModel | torch.nn.Module,
         output_dir: Path,
         base_model_name: str = "exported_model",
         precision: OTXPrecisionType = OTXPrecisionType.FP32,
+        model_type: str = "sam",
     ) -> Path:
         """Export to OpenVINO Intermediate Representation format.
 
@@ -93,11 +95,16 @@ class OTXVisualPromptingModelExporter(OTXNativeModelExporter):
                 tmp_dir,
                 base_model_name,
                 OTXPrecisionType.FP32,
-                False,
+                embed_metadata=False,
             )
             exported_model = openvino.convert_model(tmp_dir / (base_model_name + ".onnx"))
 
         exported_model = self._postprocess_openvino_model(exported_model)
+
+        if self.metadata is not None:
+            export_metadata = self._extend_model_metadata(self.metadata)
+            export_metadata[("model_info", "model_type")] = model_type
+            exported_model = self._embed_openvino_ir_metadata(exported_model, export_metadata)
 
         save_path = output_dir / (base_model_name + ".xml")
         openvino.save_model(exported_model, save_path, compress_to_fp16=(precision == OTXPrecisionType.FP16))
@@ -107,11 +114,12 @@ class OTXVisualPromptingModelExporter(OTXNativeModelExporter):
 
     def to_onnx(
         self,
-        model: OTXModel,
+        model: OTXModel | torch.nn.Module,
         output_dir: Path,
         base_model_name: str = "exported_model",
         precision: OTXPrecisionType = OTXPrecisionType.FP32,
         embed_metadata: bool = True,
+        model_type: str = "sam",
     ) -> Path:
         """Export the given PyTorch model to ONNX format and save it to the specified output directory.
 
@@ -136,7 +144,12 @@ class OTXVisualPromptingModelExporter(OTXNativeModelExporter):
         )
 
         onnx_model = onnx.load(save_path)
-        onnx_model = self._postprocess_onnx_model(onnx_model, embed_metadata, precision)
+        onnx_model = self._postprocess_onnx_model(onnx_model, False, precision)
+
+        if self.metadata is not None and embed_metadata:
+            export_metadata = self._extend_model_metadata(self.metadata)
+            export_metadata[("model_info", "model_type")] = model_type
+            onnx_model = self._embed_onnx_metadata(onnx_model, export_metadata)
 
         onnx.save(onnx_model, save_path)
         log.info("Converting to ONNX is done.")

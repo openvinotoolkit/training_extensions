@@ -5,16 +5,16 @@
 
 from __future__ import annotations
 
+import importlib
 from collections import defaultdict
 from multiprocessing import cpu_count
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import torch
 from datumaro.components.annotation import AnnotationType, LabelCategories
 
 if TYPE_CHECKING:
     from datumaro import Dataset as DmDataset
-    from omegaconf import DictConfig
 
 
 def is_ckpt_from_otx_v1(ckpt: dict) -> bool:
@@ -41,27 +41,6 @@ def is_ckpt_for_finetuning(ckpt: dict) -> bool:
     return "state_dict" in ckpt
 
 
-def get_mean_std_from_data_processing(
-    config: DictConfig,
-) -> tuple[tuple[float, float, float], tuple[float, float, float]]:
-    """Get mean and std value from data_processing.
-
-    Args:
-        config (DictConfig): MM framework model config.
-
-    Returns:
-        tuple[tuple[float, float, float], tuple[float, float, float]]:
-            Tuple of mean and std values.
-
-    Examples:
-        >>> mean, std = get_mean_std_from_data_processing(config)
-    """
-    return (
-        config["data_preprocessor"]["mean"],
-        config["data_preprocessor"]["std"],
-    )
-
-
 def get_adaptive_num_workers(num_dataloader: int = 1) -> int | None:
     """Measure appropriate num_workers value and return it."""
     num_gpus = torch.cuda.device_count()
@@ -84,3 +63,19 @@ def get_idx_list_per_classes(dm_dataset: DmDataset, use_string_label: bool = Fal
     for k in stats:
         stats[k] = list(dict.fromkeys(stats[k]))
     return stats
+
+
+def import_object_from_module(obj_path: str) -> Any:  # noqa: ANN401
+    """Get object from import format string."""
+    module_name, obj_name = obj_path.rsplit(".", 1)
+    module = importlib.import_module(module_name)
+    return getattr(module, obj_name)
+
+
+def remove_state_dict_prefix(state_dict: dict[str, Any], prefix: str) -> dict[str, Any]:
+    """Remove prefix from state_dict keys."""
+    new_state_dict = {}
+    for key, value in state_dict.items():
+        new_key = key.replace(prefix, "")
+        new_state_dict[new_key] = value
+    return new_state_dict
