@@ -8,7 +8,7 @@ from __future__ import annotations
 import logging
 import os
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Literal
+from typing import TYPE_CHECKING, Any, Literal, Sequence
 
 import torch
 from torch import Tensor, nn
@@ -119,6 +119,7 @@ class DINOv2RegisterClassifier(OTXMulticlassClsModel):
         metric: MetricCallable = MultiClassClsMetricCallable,
         torch_compile: bool = False,
         freeze_backbone: bool = False,
+        input_size: Sequence[int] = (1, 3, 224, 224),
     ) -> None:
         self.backbone = backbone
         self.freeze_backbone = freeze_backbone
@@ -129,6 +130,7 @@ class DINOv2RegisterClassifier(OTXMulticlassClsModel):
             scheduler=scheduler,
             metric=metric,
             torch_compile=torch_compile,
+            input_size=input_size,
         )
 
     def _create_model(self) -> nn.Module:
@@ -195,7 +197,7 @@ class DINOv2RegisterClassifier(OTXMulticlassClsModel):
         """Creates OTXModelExporter object that can export the model."""
         return OTXNativeModelExporter(
             task_level_export_parameters=self._export_parameters,
-            input_size=(1, 3, 224, 224),
+            input_size=self.input_size,
             mean=(123.675, 116.28, 103.53),
             std=(58.395, 57.12, 57.375),
             resize_mode="standard",

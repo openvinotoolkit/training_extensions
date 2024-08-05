@@ -5,7 +5,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Sequence
 
 from torch import nn
 
@@ -32,6 +32,7 @@ class MoViNet(OTXActionClsModel):
     def __init__(
         self,
         label_info: LabelInfoTypes,
+        input_size: Sequence[int] = (1, 1, 3, 8, 224, 224),
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MultiClassClsMetricCallable,
@@ -40,6 +41,7 @@ class MoViNet(OTXActionClsModel):
         self.load_from = "https://github.com/Atze00/MoViNet-pytorch/blob/main/weights/modelA0_statedict_v3?raw=true"
         super().__init__(
             label_info=label_info,
+            input_size=input_size,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,

@@ -96,7 +96,7 @@ class OTXDataModule(LightningDataModule):
         self.device = device
 
         self.subsets: dict[str, OTXDataset] = {}
-        self.save_hyperparameters()
+        self.save_hyperparameters(ignore=["input_size"])
 
         # TODO (Jaeguk): This is workaround for a bug in Datumaro.
         # These lines should be removed after next datumaro release.
@@ -454,5 +454,6 @@ class OTXDataModule(LightningDataModule):
                 self.unannotated_items_ratio,
                 self.auto_num_workers,
                 self.device,
+                self.input_size,
             ),
         )

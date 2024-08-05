@@ -7,7 +7,7 @@ from __future__ import annotations
 import logging as log
 import types
 from contextlib import contextmanager
-from typing import TYPE_CHECKING, Any, Callable, Iterator, Literal
+from typing import TYPE_CHECKING, Any, Callable, Iterator, Literal, Sequence
 
 import numpy as np
 import torch
@@ -46,11 +46,10 @@ if TYPE_CHECKING:
 class OTXInstanceSegModel(OTXModel[InstanceSegBatchDataEntity, InstanceSegBatchPredEntity]):
     """Base class for the Instance Segmentation models used in OTX."""
 
-    image_size: tuple[int, int, int, int] | None = None
-
     def __init__(
         self,
         label_info: LabelInfoTypes,
+        input_size: Sequence[int],
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MaskRLEMeanAPFMeasureCallable,
@@ -59,6 +58,7 @@ class OTXInstanceSegModel(OTXModel[InstanceSegBatchDataEntity, InstanceSegBatchP
     ) -> None:
         super().__init__(
             label_info=label_info,
+            input_size=input_size,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
@@ -361,11 +361,11 @@ class OTXInstanceSegModel(OTXModel[InstanceSegBatchDataEntity, InstanceSegBatchP
 
     def get_dummy_input(self, batch_size: int = 1) -> InstanceSegBatchDataEntity:
         """Returns a dummy input for instance segmentation model."""
-        if self.image_size is None:
-            msg = f"Image size attribute is not set for {self.__class__}"
+        if self.input_size is None:
+            msg = f"Input size attribute is not set for {self.__class__}"
             raise ValueError(msg)
 
-        images = [torch.rand(*self.image_size[1:]) for _ in range(batch_size)]
+        images = [torch.rand(*self.input_size[1:]) for _ in range(batch_size)]
         infos = []
         for i, img in enumerate(images):
             infos.append(
@@ -384,6 +384,7 @@ class ExplainableOTXInstanceSegModel(OTXInstanceSegModel):
     def __init__(
         self,
         label_info: LabelInfoTypes,
+        input_size: Sequence[int],
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MaskRLEMeanAPFMeasureCallable,
@@ -392,6 +393,7 @@ class ExplainableOTXInstanceSegModel(OTXInstanceSegModel):
     ) -> None:
         super().__init__(
             label_info=label_info,
+            input_size=input_size,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,

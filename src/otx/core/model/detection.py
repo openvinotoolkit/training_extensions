@@ -8,7 +8,7 @@ import logging as log
 import types
 from abc import abstractmethod
 from contextlib import contextmanager
-from typing import TYPE_CHECKING, Any, Callable, Iterator, Literal
+from typing import TYPE_CHECKING, Any, Callable, Iterator, Literal, Sequence
 
 import torch
 from model_api.tilers import DetectionTiler
@@ -40,8 +40,6 @@ if TYPE_CHECKING:
 
 class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity]):
     """Base class for the detection models used in OTX."""
-
-    image_size: tuple[int, int, int, int] | None = None
 
     def test_step(self, batch: DetBatchDataEntity, batch_idx: int) -> None:
         """Perform a single test step on a batch of data from the test set.
@@ -364,11 +362,11 @@ class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity]):
 
     def get_dummy_input(self, batch_size: int = 1) -> DetBatchDataEntity:
         """Returns a dummy input for detection model."""
-        if self.image_size is None:
-            msg = f"Image size attribute is not set for {self.__class__}"
+        if self.input_size is None:
+            msg = f"Input size attribute is not set for {self.__class__}"
             raise ValueError(msg)
 
-        images = [torch.rand(*self.image_size[1:]) for _ in range(batch_size)]
+        images = [torch.rand(*self.input_size[1:]) for _ in range(batch_size)]
         infos = []
         for i, img in enumerate(images):
             infos.append(
@@ -387,6 +385,7 @@ class ExplainableOTXDetModel(OTXDetectionModel):
     def __init__(
         self,
         label_info: LabelInfoTypes,
+        input_size: Sequence[int],
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MeanAveragePrecisionFMeasureCallable,
@@ -397,6 +396,7 @@ class ExplainableOTXDetModel(OTXDetectionModel):
 
         super().__init__(
             label_info=label_info,
+            input_size=input_size,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,

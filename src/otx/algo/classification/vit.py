@@ -7,7 +7,7 @@ from __future__ import annotations
 import types
 from copy import deepcopy
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, Generic
+from typing import TYPE_CHECKING, Any, Callable, Generic, Sequence
 from urllib.parse import urlparse
 
 import numpy as np
@@ -229,6 +229,7 @@ class VisionTransformerForMulticlassCls(ForwardExplainMixInForViT, OTXMulticlass
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MultiClassClsMetricCallable,
         torch_compile: bool = False,
+        input_size: Sequence[int] = (1, 3, 224, 224),
     ) -> None:
         self.arch = arch
         self.lora = lora
@@ -239,6 +240,7 @@ class VisionTransformerForMulticlassCls(ForwardExplainMixInForViT, OTXMulticlass
             scheduler=scheduler,
             metric=metric,
             torch_compile=torch_compile,
+            input_size=input_size,
         )
 
     def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.") -> dict:
@@ -284,7 +286,7 @@ class VisionTransformerForMulticlassCls(ForwardExplainMixInForViT, OTXMulticlass
             {"std": 0.2, "layer": "Linear", "type": "TruncNormal"},
             {"bias": 0.0, "val": 1.0, "layer": "LayerNorm", "type": "Constant"},
         ]
-        vit_backbone = VisionTransformer(arch=self.arch, img_size=224, lora=self.lora)
+        vit_backbone = VisionTransformer(arch=self.arch, img_size=self.input_size[-2:], lora=self.lora)
         return ImageClassifier(
             backbone=vit_backbone,
             neck=None,
@@ -349,7 +351,7 @@ class VisionTransformerForMulticlassCls(ForwardExplainMixInForViT, OTXMulticlass
         """Creates OTXModelExporter object that can export the model."""
         return OTXNativeModelExporter(
             task_level_export_parameters=self._export_parameters,
-            input_size=self.image_size,
+            input_size=self.input_size,
             mean=(123.675, 116.28, 103.53),
             std=(58.395, 57.12, 57.375),
             resize_mode="standard",
@@ -376,7 +378,7 @@ class VisionTransformerForMulticlassClsSemiSL(VisionTransformerForMulticlassCls)
             {"std": 0.2, "layer": "Linear", "type": "TruncNormal"},
             {"bias": 0.0, "val": 1.0, "layer": "LayerNorm", "type": "Constant"},
         ]
-        vit_backbone = VisionTransformer(arch=self.arch, img_size=224)
+        vit_backbone = VisionTransformer(arch=self.arch, img_size=self.input_size[-2:])
         return SemiSLClassifier(
             backbone=vit_backbone,
             neck=None,
@@ -466,6 +468,7 @@ class VisionTransformerForMultilabelCls(ForwardExplainMixInForViT, OTXMultilabel
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MultiLabelClsMetricCallable,
         torch_compile: bool = False,
+        input_size: Sequence[int] = (1, 3, 224, 224),
     ) -> None:
         self.arch = arch
         self.lora = lora
@@ -477,6 +480,7 @@ class VisionTransformerForMultilabelCls(ForwardExplainMixInForViT, OTXMultilabel
             scheduler=scheduler,
             metric=metric,
             torch_compile=torch_compile,
+            input_size=input_size,
         )
 
     def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.") -> dict:
@@ -521,7 +525,7 @@ class VisionTransformerForMultilabelCls(ForwardExplainMixInForViT, OTXMultilabel
             {"std": 0.2, "layer": "Linear", "type": "TruncNormal"},
             {"bias": 0.0, "val": 1.0, "layer": "LayerNorm", "type": "Constant"},
         ]
-        vit_backbone = VisionTransformer(arch=self.arch, img_size=224, lora=self.lora)
+        vit_backbone = VisionTransformer(arch=self.arch, img_size=self.input_size[-2:], lora=self.lora)
         return ImageClassifier(
             backbone=vit_backbone,
             neck=None,
@@ -585,7 +589,7 @@ class VisionTransformerForMultilabelCls(ForwardExplainMixInForViT, OTXMultilabel
         """Creates OTXModelExporter object that can export the model."""
         return OTXNativeModelExporter(
             task_level_export_parameters=self._export_parameters,
-            input_size=(1, 3, 224, 224),
+            input_size=self.input_size,
             mean=(123.675, 116.28, 103.53),
             std=(58.395, 57.12, 57.375),
             resize_mode="standard",
@@ -613,6 +617,7 @@ class VisionTransformerForHLabelCls(ForwardExplainMixInForViT, OTXHlabelClsModel
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = HLabelClsMetricCallble,
         torch_compile: bool = False,
+        input_size: Sequence[int] = (1, 3, 224, 224),
     ) -> None:
         self.arch = arch
         self.lora = lora
@@ -624,6 +629,7 @@ class VisionTransformerForHLabelCls(ForwardExplainMixInForViT, OTXHlabelClsModel
             scheduler=scheduler,
             metric=metric,
             torch_compile=torch_compile,
+            input_size=input_size,
         )
 
     def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.") -> dict:
@@ -673,7 +679,7 @@ class VisionTransformerForHLabelCls(ForwardExplainMixInForViT, OTXHlabelClsModel
             {"std": 0.2, "layer": "Linear", "type": "TruncNormal"},
             {"bias": 0.0, "val": 1.0, "layer": "LayerNorm", "type": "Constant"},
         ]
-        vit_backbone = VisionTransformer(arch=self.arch, img_size=224, lora=self.lora)
+        vit_backbone = VisionTransformer(arch=self.arch, img_size=self.input_size[-2:], lora=self.lora)
         return ImageClassifier(
             backbone=vit_backbone,
             neck=None,
@@ -760,7 +766,7 @@ class VisionTransformerForHLabelCls(ForwardExplainMixInForViT, OTXHlabelClsModel
         """Creates OTXModelExporter object that can export the model."""
         return OTXNativeModelExporter(
             task_level_export_parameters=self._export_parameters,
-            input_size=(1, 3, 224, 224),
+            input_size=self.input_size,
             mean=(123.675, 116.28, 103.53),
             std=(58.395, 57.12, 57.375),
             resize_mode="standard",

@@ -10,7 +10,7 @@ Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/d
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Sequence
 
 import numpy as np
 from datumaro.components.annotation import Bbox
@@ -25,11 +25,18 @@ from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.model.detection import ExplainableOTXDetModel
+from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
+from otx.core.metrics.fmeasure import MeanAveragePrecisionFMeasureCallable
+from otx.core.config.data import TileConfig
 
 if TYPE_CHECKING:
     import torch
+    from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
 
     from otx.core.data.dataset.base import OTXDataset
+    from otx.core.types.label import LabelInfoTypes
+    from otx.core.schedulers import LRSchedulerListCallable
+    from otx.core.metrics import MetricCallable
 
 
 logger = logging.getLogger()
@@ -42,10 +49,30 @@ class SSD(ExplainableOTXDetModel):
         "https://storage.openvinotoolkit.org/repositories/openvino_training_extensions"
         "/models/object_detection/v2/mobilenet_v2-2s_ssd-992x736.pth"
     )
-    image_size = (1, 3, 864, 864)
-    tile_image_size = (1, 3, 864, 864)
     mean = (0.0, 0.0, 0.0)
     std = (255.0, 255.0, 255.0)
+
+    def __init__(
+        self,
+        label_info: LabelInfoTypes,
+        input_size: Sequence[int] = (1, 3, 864, 864),
+        optimizer: OptimizerCallable = DefaultOptimizerCallable,
+        scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
+        metric: MetricCallable = MeanAveragePrecisionFMeasureCallable,
+        torch_compile: bool = False,
+        tile_config: TileConfig = TileConfig(enable_tiler=False),
+        tile_image_size: Sequence[int] = (1, 3, 864, 864),
+    ) -> None:
+        super().__init__(
+            label_info=label_info,
+            input_size=input_size,
+            optimizer=optimizer,
+            scheduler=scheduler,
+            metric=metric,
+            torch_compile=torch_compile,
+            tile_config=tile_config,
+        )
+        self.tile_image_size = tile_image_size
 
     def _build_model(self, num_classes: int) -> SingleStageDetector:
         train_cfg = {
@@ -143,7 +170,7 @@ class SSD(ExplainableOTXDetModel):
                 if isinstance(transform, Resize):
                     target_wh = transform.scale
         if target_wh is None:
-            target_wh = (864, 864)
+            target_wh = self.input_size[-2:]
             msg = f"Cannot get target_wh from the dataset. Assign it with the default value: {target_wh}"
             logger.warning(msg)
         group_as = [len(width) for width in anchor_generator.widths]
@@ -266,13 +293,13 @@ class SSD(ExplainableOTXDetModel):
     @property
     def _exporter(self) -> OTXModelExporter:
         """Creates OTXModelExporter object that can export the model."""
-        if self.image_size is None:
-            msg = f"Image size attribute is not set for {self.__class__}"
+        if self.input_size is None:
+            msg = f"Input size attribute is not set for {self.__class__}"
             raise ValueError(msg)
 
         return OTXNativeModelExporter(
             task_level_export_parameters=self._export_parameters,
-            input_size=self.image_size,
+            input_size=self.input_size,
             mean=self.mean,
             std=self.std,
             resize_mode="standard",

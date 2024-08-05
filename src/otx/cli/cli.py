@@ -331,6 +331,13 @@ class OTXCLI:
             # For num_classes update, Model and Metric are instantiated separately.
             model_config = self.config[self.subcommand].pop("model")
 
+            input_size = self.config["train"]["engine"].get("input_size")
+            if input_size is not None:
+                if isinstance(input_size, int):
+                    input_size = (input_size, input_size)
+                self.config["train"]["data"]["input_size"] = input_size
+                model_config["init_args"]["input_size"] = tuple(model_config["init_args"]["input_size"][:-2]) + input_size
+
             # Instantiate the things that don't need to special handling
             self.config_init = self.parser.instantiate_classes(self.config)
             self.workspace = self.get_config_value(self.config_init, "workspace")
@@ -412,7 +419,7 @@ class OTXCLI:
         if model.tile_config.enable_tiler:
             # TODO(Eugene): Ticket no. 139000: Need to find a better way to configure image size for OV Models
             # https://github.com/openvinotoolkit/training_extensions/pull/2925
-            model.image_size = model.tile_image_size
+            model.input_size = model.tile_image_size
 
         # Update self.config with model
         self.config[self.subcommand].update(Namespace(model=model_config))

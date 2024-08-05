@@ -645,8 +645,18 @@ class OTXZeroShotSegmentAnything(OTXZeroShotVisualPromptingModel):
         return_extra_metrics: bool = False,
         stability_score_offset: float = 1.0,
     ) -> None:
+        super().__init__(
+            label_info=label_info,
+            input_size=(1, 3, 1024, 1024),  # zero-shot visual prompting model uses fixed 1024x1024 input size
+            optimizer=optimizer,
+            scheduler=scheduler,
+            metric=metric,
+            torch_compile=torch_compile,
+        )
+
         self.config = {
             "backbone": backbone,
+            "image_size": self.input_size[-1],
             "freeze_image_encoder": freeze_image_encoder,
             "freeze_prompt_encoder": freeze_prompt_encoder,
             "freeze_mask_decoder": freeze_mask_decoder,
@@ -658,13 +668,6 @@ class OTXZeroShotSegmentAnything(OTXZeroShotVisualPromptingModel):
             "stability_score_offset": stability_score_offset,
             **DEFAULT_CONFIG_SEGMENT_ANYTHING[backbone],
         }
-        super().__init__(
-            label_info=label_info,
-            optimizer=optimizer,
-            scheduler=scheduler,
-            metric=metric,
-            torch_compile=torch_compile,
-        )
 
         self.save_outputs = save_outputs
         self.reference_info_dir: Path = Path(reference_info_dir)

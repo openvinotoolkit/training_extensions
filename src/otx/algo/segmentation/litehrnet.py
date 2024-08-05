@@ -5,7 +5,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar, Sequence
 
 from torch.onnx import OperatorExportTypes
 
@@ -15,11 +15,18 @@ from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.model.segmentation import TorchVisionCompatibleModel
+from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
+from otx.core.metrics.dice import SegmCallable
 
 from .base_model import BaseSegmModel
 
 if TYPE_CHECKING:
     from torch import nn
+    from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
+
+    from otx.core.schedulers import LRSchedulerListCallable
+    from otx.core.types.label import LabelInfoTypes
+    from otx.core.metrics import MetricCallable
 
 
 class LiteHRNetS(BaseSegmModel):
@@ -517,6 +524,33 @@ LITEHRNET_VARIANTS = {
 
 class OTXLiteHRNet(TorchVisionCompatibleModel):
     """LiteHRNet Model."""
+    def __init__(
+        self,
+        label_info: LabelInfoTypes,
+        input_size: Sequence[int] = (1, 3, 512, 512),
+        optimizer: OptimizerCallable = DefaultOptimizerCallable,
+        scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
+        metric: MetricCallable = SegmCallable,  # type: ignore[assignment]
+        torch_compile: bool = False,
+        backbone_configuration: dict[str, Any] | None = None,
+        decode_head_configuration: dict[str, Any] | None = None,
+        criterion_configuration: list[dict[str, Any]] | None = None,
+        export_image_configuration: dict[str, Any] | None = None,
+        name_base_model: str = "semantic_segmentation_model",
+    ):
+        super().__init__(
+            label_info=label_info,
+            input_size=input_size,
+            optimizer=optimizer,
+            scheduler=scheduler,
+            metric=metric,
+            torch_compile=torch_compile,
+            backbone_configuration=backbone_configuration,
+            decode_head_configuration=decode_head_configuration,
+            criterion_configuration=criterion_configuration,
+            export_image_configuration=export_image_configuration,
+            name_base_model=name_base_model,
+        )
 
     def _create_model(self) -> nn.Module:
         litehrnet_model_class = LITEHRNET_VARIANTS[self.name_base_model]
@@ -558,13 +592,13 @@ class OTXLiteHRNet(TorchVisionCompatibleModel):
     @property
     def _exporter(self) -> OTXModelExporter:
         """Creates OTXModelExporter object that can export the model."""
-        if self.image_size is None:
-            msg = f"Image size attribute is not set for {self.__class__}"
+        if self.input_size is None:
+            msg = f"Input size attribute is not set for {self.__class__}"
             raise ValueError(msg)
 
         return OTXNativeModelExporter(
             task_level_export_parameters=self._export_parameters,
-            input_size=self.image_size,
+            input_size=self.input_size,
             mean=self.mean,
             std=self.scale,
             resize_mode="standard",

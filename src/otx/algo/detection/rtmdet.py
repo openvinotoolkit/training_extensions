@@ -5,6 +5,8 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING, Sequence
+
 from otx.algo.common.backbones import CSPNeXt
 from otx.algo.common.losses import GIoULoss, QualityFocalLoss
 from otx.algo.common.losses.cross_entropy_loss import CrossEntropyLoss
@@ -19,21 +21,57 @@ from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.model.detection import ExplainableOTXDetModel
 from otx.core.types.export import TaskLevelExportParameters
+from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
+from otx.core.metrics.fmeasure import MeanAveragePrecisionFMeasureCallable
+from otx.core.config.data import TileConfig
+
+if TYPE_CHECKING:
+    from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
+
+    from otx.core.types.label import LabelInfoTypes
+    from otx.core.schedulers import LRSchedulerListCallable
+    from otx.core.metrics import MetricCallable
 
 
 class RTMDet(ExplainableOTXDetModel):
     """OTX Detection model class for RTMDet."""
 
+    def __init__(
+        self,
+        label_info: LabelInfoTypes,
+        input_size: Sequence[int] = (1, 3, 640, 640),
+        optimizer: OptimizerCallable = DefaultOptimizerCallable,
+        scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
+        metric: MetricCallable = MeanAveragePrecisionFMeasureCallable,
+        torch_compile: bool = False,
+        tile_config: TileConfig = TileConfig(enable_tiler=False),
+        tile_image_size: Sequence[int] = (1, 3, 640, 640),
+    ) -> None:
+        if input_size[-1] % 32 != 0 or input_size[-2] % 32 != 0:
+            msg = f"Input size should be a multiple of 32, but got {input_size[-2:]} instead."
+            raise ValueError(msg)
+
+        super().__init__(
+            label_info=label_info,
+            input_size=input_size,
+            optimizer=optimizer,
+            scheduler=scheduler,
+            metric=metric,
+            torch_compile=torch_compile,
+            tile_config=tile_config,
+        )
+        self.tile_image_size = tile_image_size
+
     @property
     def _exporter(self) -> OTXModelExporter:
         """Creates OTXModelExporter object that can export the model."""
-        if self.image_size is None:
-            msg = f"Image size attribute is not set for {self.__class__}"
+        if self.input_size is None:
+            msg = f"Input size attribute is not set for {self.__class__}"
             raise ValueError(msg)
 
         return OTXNativeModelExporter(
             task_level_export_parameters=self._export_parameters,
-            input_size=self.image_size,
+            input_size=self.input_size,
             mean=self.mean,
             std=self.std,
             resize_mode="fit_to_window_letterbox",
@@ -63,8 +101,6 @@ class RTMDetTiny(RTMDet):
     """RTMDet Tiny Model."""
 
     load_from = "https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/object_detection/v2/rtmdet_tiny.pth"
-    image_size = (1, 3, 640, 640)
-    tile_image_size = (1, 3, 640, 640)
     mean = (103.53, 116.28, 123.675)
     std = (57.375, 57.12, 58.395)
 

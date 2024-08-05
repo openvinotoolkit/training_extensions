@@ -4,7 +4,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Sequence
 
 import numpy as np
 import torch
@@ -42,6 +42,7 @@ class OTXMulticlassClsModel(OTXModel[MulticlassClsBatchDataEntity, MulticlassCls
     def __init__(
         self,
         label_info: LabelInfoTypes,
+        input_size: Sequence[int],
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MultiClassClsMetricCallable,
@@ -49,12 +50,12 @@ class OTXMulticlassClsModel(OTXModel[MulticlassClsBatchDataEntity, MulticlassCls
     ) -> None:
         super().__init__(
             label_info=label_info,
+            input_size=input_size,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
             torch_compile=torch_compile,
         )
-        self.image_size = (1, 3, 224, 224)
 
     @property
     def _export_parameters(self) -> TaskLevelExportParameters:
@@ -80,7 +81,7 @@ class OTXMulticlassClsModel(OTXModel[MulticlassClsBatchDataEntity, MulticlassCls
 
     def get_dummy_input(self, batch_size: int = 1) -> MulticlassClsBatchDataEntity:
         """Returns a dummy input for classification model."""
-        images = [torch.rand(*self.image_size[1:]) for _ in range(batch_size)]
+        images = [torch.rand(*self.input_size[1:]) for _ in range(batch_size)]
         labels = [torch.LongTensor([0])] * batch_size
         return MulticlassClsBatchDataEntity(batch_size, images, [], labels=labels)
 
@@ -95,6 +96,7 @@ class OTXMultilabelClsModel(OTXModel[MultilabelClsBatchDataEntity, MultilabelCls
     def __init__(
         self,
         label_info: LabelInfoTypes,
+        input_size: Sequence[int],
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MultiLabelClsMetricCallable,
@@ -102,12 +104,12 @@ class OTXMultilabelClsModel(OTXModel[MultilabelClsBatchDataEntity, MultilabelCls
     ) -> None:
         super().__init__(
             label_info=label_info,
+            input_size=input_size,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
             torch_compile=torch_compile,
         )
-        self.image_size = (1, 3, 224, 224)
 
     @property
     def _export_parameters(self) -> TaskLevelExportParameters:
@@ -136,7 +138,7 @@ class OTXMultilabelClsModel(OTXModel[MultilabelClsBatchDataEntity, MultilabelCls
 
     def get_dummy_input(self, batch_size: int = 1) -> MultilabelClsBatchDataEntity:
         """Returns a dummy input for classification OV model."""
-        images = [torch.rand(*self.image_size[1:]) for _ in range(batch_size)]
+        images = [torch.rand(*self.input_size[1:]) for _ in range(batch_size)]
         labels = [torch.LongTensor([0])] * batch_size
         return MultilabelClsBatchDataEntity(batch_size, images, [], labels=labels)
 
@@ -147,6 +149,7 @@ class OTXHlabelClsModel(OTXModel[HlabelClsBatchDataEntity, HlabelClsBatchPredEnt
     def __init__(
         self,
         label_info: HLabelInfo,
+        input_size: Sequence[int],
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = HLabelClsMetricCallble,
@@ -154,12 +157,12 @@ class OTXHlabelClsModel(OTXModel[HlabelClsBatchDataEntity, HlabelClsBatchPredEnt
     ) -> None:
         super().__init__(
             label_info=label_info,
+            input_size=input_size,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
             torch_compile=torch_compile,
         )
-        self.image_size = (1, 3, 224, 224)
 
     @property
     def _export_parameters(self) -> TaskLevelExportParameters:
@@ -199,7 +202,7 @@ class OTXHlabelClsModel(OTXModel[HlabelClsBatchDataEntity, HlabelClsBatchPredEnt
 
     def get_dummy_input(self, batch_size: int = 1) -> HlabelClsBatchDataEntity:
         """Returns a dummy input for classification OV model."""
-        images = [torch.rand(*self.image_size[1:]) for _ in range(batch_size)]
+        images = [torch.rand(*self.input_size[1:]) for _ in range(batch_size)]
         labels = [torch.LongTensor([0])] * batch_size
         return HlabelClsBatchDataEntity(batch_size, images, [], labels=labels)
 

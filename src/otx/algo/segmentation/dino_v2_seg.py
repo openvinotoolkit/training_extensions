@@ -5,17 +5,24 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar, Sequence
 
 from otx.algo.segmentation.backbones import DinoVisionTransformer
 from otx.algo.segmentation.heads import FCNHead
 from otx.core.model.segmentation import TorchVisionCompatibleModel
+from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
+from otx.core.metrics.dice import SegmCallable
 
 from .base_model import BaseSegmModel
 
 if TYPE_CHECKING:
     from torch import nn
     from typing_extensions import Self
+    from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
+
+    from otx.core.schedulers import LRSchedulerListCallable
+    from otx.core.types.label import LabelInfoTypes
+    from otx.core.metrics import MetricCallable
 
 
 class DinoV2Seg(BaseSegmModel):
@@ -43,6 +50,37 @@ class DinoV2Seg(BaseSegmModel):
 
 class OTXDinoV2Seg(TorchVisionCompatibleModel):
     """DinoV2Seg Model."""
+    def __init__(
+        self,
+        label_info: LabelInfoTypes,
+        input_size: Sequence[int] = (1, 3, 560, 560),
+        optimizer: OptimizerCallable = DefaultOptimizerCallable,
+        scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
+        metric: MetricCallable = SegmCallable,  # type: ignore[assignment]
+        torch_compile: bool = False,
+        backbone_configuration: dict[str, Any] | None = None,
+        decode_head_configuration: dict[str, Any] | None = None,
+        criterion_configuration: list[dict[str, Any]] | None = None,
+        export_image_configuration: dict[str, Any] | None = None,
+        name_base_model: str = "semantic_segmentation_model",
+    ):
+        if input_size[-1] % 14 != 0 or input_size[-2] % 14 != 0:
+            msg = f"Input size should be a multiple of 14, but got {input_size[-2:]} instead."
+            raise ValueError(msg)
+
+        super().__init__(
+            label_info=label_info,
+            input_size=input_size,
+            optimizer=optimizer,
+            scheduler=scheduler,
+            metric=metric,
+            torch_compile=torch_compile,
+            backbone_configuration=backbone_configuration,
+            decode_head_configuration=decode_head_configuration,
+            criterion_configuration=criterion_configuration,
+            export_image_configuration=export_image_configuration,
+            name_base_model=name_base_model,
+        )
 
     def _create_model(self) -> nn.Module:
         # merge configurations with defaults overriding them

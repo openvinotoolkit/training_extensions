@@ -47,6 +47,9 @@ overrides:
         warmup_epochs: 7
 
   data:
+    input_size:
+      - 640
+      - 640
     task: DETECTION
     stack_images: true
     data_format: coco_instances
@@ -65,9 +68,7 @@ overrides:
             prob: 0.5
         - class_path: otx.core.data.transform_libs.torchvision.Resize
           init_args:
-            scale:
-              - 640
-              - 640
+            scale: $(input_size)
             keep_ratio: false
             transform_bbox: true
             is_numpy_to_tvtensor: true
@@ -85,9 +86,7 @@ overrides:
       transforms:
         - class_path: otx.core.data.transform_libs.torchvision.Resize
           init_args:
-            scale:
-              - 640
-              - 640
+            scale: $(input_size)
             keep_ratio: false
             transform_bbox: true
             is_numpy_to_tvtensor: true
@@ -102,9 +101,7 @@ overrides:
       transforms:
         - class_path: otx.core.data.transform_libs.torchvision.Resize
           init_args:
-            scale:
-              - 640
-              - 640
+            scale: $(input_size)
             keep_ratio: false
             transform_bbox: true
             is_numpy_to_tvtensor: true

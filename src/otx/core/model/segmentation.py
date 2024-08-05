@@ -34,11 +34,10 @@ if TYPE_CHECKING:
 class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity]):
     """Base class for the semantic segmentation models used in OTX."""
 
-    image_size: tuple[int, ...] | None = None
-
     def __init__(
         self,
         label_info: LabelInfoTypes,
+        input_size: Sequence[int],
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = SegmCallable,  # type: ignore[assignment]
@@ -48,6 +47,7 @@ class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity]):
 
         Args:
             label_info (LabelInfoTypes): The label information for the segmentation model.
+            input_size (Sequence[int]): The input shape of the model.
             optimizer (OptimizerCallable, optional): The optimizer to use for training.
                 Defaults to DefaultOptimizerCallable.
             scheduler (LRSchedulerCallable | LRSchedulerListCallable, optional):
@@ -59,6 +59,7 @@ class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity]):
         """
         super().__init__(
             label_info=label_info,
+            input_size=input_size,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
@@ -106,11 +107,11 @@ class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity]):
 
     def get_dummy_input(self, batch_size: int = 1) -> SegBatchDataEntity:
         """Returns a dummy input for semantic segmentation model."""
-        if self.image_size is None:
-            msg = f"Image size attribute is not set for {self.__class__}"
+        if self.input_size is None:
+            msg = f"Input size attribute is not set for {self.__class__}"
             raise ValueError(msg)
 
-        images = torch.rand(batch_size, *self.image_size[1:])
+        images = torch.rand(batch_size, *self.input_size[1:])
         infos = []
         for i, img in enumerate(images):
             infos.append(
@@ -129,6 +130,7 @@ class TorchVisionCompatibleModel(OTXSegmentationModel):
     def __init__(
         self,
         label_info: LabelInfoTypes,
+        input_size: Sequence[int],
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = SegmCallable,  # type: ignore[assignment]
@@ -143,6 +145,7 @@ class TorchVisionCompatibleModel(OTXSegmentationModel):
 
         Args:
             label_info (LabelInfoTypes): The label information for the segmentation model.
+            input_size (Sequence[int]): The input shape of the model.
             optimizer (OptimizerCallable, optional): The optimizer callable for the model.
                 Defaults to DefaultOptimizerCallable.
             scheduler (LRSchedulerCallable | LRSchedulerListCallable, optional):
@@ -157,7 +160,7 @@ class TorchVisionCompatibleModel(OTXSegmentationModel):
             criterion_configuration (list[dict[str, Any]] | None, optional):
                 The configuration for the criterion of the model. Defaults to None.
             export_image_configuration (dict[str, Any] | None, optional):
-                The configuration for the export of the model like mean, scale and image_size. Defaults to None.
+                The configuration for the export of the model like mean and scale. Defaults to None.
             name_base_model (str, optional): The name of the base model used for trainig.
                 Defaults to "semantic_segmentation_model".
         """
@@ -165,13 +168,13 @@ class TorchVisionCompatibleModel(OTXSegmentationModel):
         self.decode_head_configuration = decode_head_configuration if decode_head_configuration is not None else {}
         export_image_configuration = export_image_configuration if export_image_configuration is not None else {}
         self.criterion_configuration = criterion_configuration
-        self.image_size = tuple(export_image_configuration.get("image_size", (1, 3, 512, 512)))
         self.mean = export_image_configuration.get("mean", [123.675, 116.28, 103.53])
         self.scale = export_image_configuration.get("std", [58.395, 57.12, 57.375])
         self.name_base_model = name_base_model
 
         super().__init__(
             label_info=label_info,
+            input_size=input_size,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
@@ -210,13 +213,13 @@ class TorchVisionCompatibleModel(OTXSegmentationModel):
     @property
     def _exporter(self) -> OTXModelExporter:
         """Creates OTXModelExporter object that can export the model."""
-        if self.image_size is None:
-            msg = f"Image size attribute is not set for {self.__class__}"
+        if self.input_size is None:
+            msg = f"Input size attribute is not set for {self.__class__}"
             raise ValueError(msg)
 
         return OTXNativeModelExporter(
             task_level_export_parameters=self._export_parameters,
-            input_size=self.image_size,
+            input_size=self.input_size,
             mean=self.mean,
             std=self.scale,
             resize_mode="standard",
