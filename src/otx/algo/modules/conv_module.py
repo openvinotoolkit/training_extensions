@@ -145,9 +145,17 @@ class ConvModule(nn.Module):
         self.with_spectral_norm = with_spectral_norm
         self.with_explicit_padding = padding_mode not in official_padding_mode
         self.order = order
-        assert isinstance(self.order, tuple)  # noqa: S101
-        assert len(self.order) == 3  # noqa: S101
-        assert set(order) == {"conv", "norm", "act"}  # noqa: S101
+        if not isinstance(self.order, tuple):
+            msg = f"order should be a tuple, but got {type(self.order)}."
+            raise TypeError(msg)
+
+        if len(self.order) != 3:
+            msg = f"order should be a tuple of three elements, but got {len(self.order)}."
+            raise ValueError(msg)
+
+        if set(order) != {"conv", "norm", "act"}:
+            msg = f"order should be a tuple of three elements, including 'conv', 'norm', 'act', but got {order}."
+            raise ValueError(msg)
 
         self.with_norm = norm_cfg is not None
         self.with_activation = act_cfg is not None
@@ -417,7 +425,9 @@ class DepthwiseSeparableConvModule(nn.Module):
             act_cfg = {"type": "ReLU"}
 
         super().__init__()
-        assert "groups" not in kwargs, "groups should not be specified"  # noqa: S101
+        if "groups" in kwargs:
+            msg = "groups should not be specified in DepthwiseSeparableConvModule."
+            raise ValueError(msg)
 
         # if norm/activation config of depthwise/pointwise Conv2dModule is not
         # specified, use default config.
