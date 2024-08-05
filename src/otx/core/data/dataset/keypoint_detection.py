@@ -1,4 +1,4 @@
-# Copyright (C) 2023 Intel Corporation
+# Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 """Module for OTXDetectionDataset."""
@@ -62,7 +62,7 @@ class OTXKeypointDetectionDataset(OTXDataset[KeypointDetDataEntity]):
             self.label_info = NullLabelInfo()
 
     def _get_single_bbox_dataset(self, dm_subset: DatasetSubset) -> Dataset:
-        """Method for splitting dataset itmes into multiple items for each bbox/keypoint."""
+        """Method for splitting dataset items into multiple items for each bbox/keypoint."""
         dm_items = []
         for item in dm_subset:
             new_items = defaultdict(list)

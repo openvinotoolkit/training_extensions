@@ -152,7 +152,7 @@ def _calc_distances(preds: np.ndarray, gts: np.ndarray, mask: np.ndarray, norm_f
     return distances.T
 
 
-def _distance_acc(distances: np.ndarray, thr: float = 0.5) -> float:
+def _distance_acc(distances: np.ndarray, thr: float = 0.5) -> float | int:
     """Return the percentage below the distance threshold.
 
     Ignore distances values with -1.
@@ -181,7 +181,7 @@ def keypoint_pck_accuracy(
     mask: np.ndarray,
     thr: np.ndarray,
     norm_factor: np.ndarray,
-) -> tuple:
+) -> tuple[np.ndarray, float, int]:
     """Calculate the pose accuracy of PCK for each individual keypoint.
 
     And the averaged accuracy across all keypoints for coordinates.
@@ -213,10 +213,10 @@ def keypoint_pck_accuracy(
         - cnt (int): Number of valid keypoints.
     """
     distances = _calc_distances(pred, gt, mask, norm_factor)
-    acc = np.array([_distance_acc(d, thr) for d in distances])
-    valid_acc = acc[acc >= 0]
-    cnt = len(valid_acc)
-    avg_acc = valid_acc.mean() if cnt > 0 else 0.0
+    acc: np.ndarray = np.array([_distance_acc(d, thr) for d in distances])
+    valid_acc: np.ndarray = acc[acc >= 0]
+    cnt: int = len(valid_acc)
+    avg_acc: float = valid_acc.mean() if cnt > 0 else 0.0
     return acc, avg_acc, cnt
 
 
