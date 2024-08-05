@@ -1,6 +1,5 @@
-# Copyright (C) 2023 Intel Corporation
+# Copyright (C) 2023-2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-#
 """Helper to support TorchVision data transform functions."""
 
 from __future__ import annotations

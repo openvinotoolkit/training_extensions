@@ -1,6 +1,5 @@
 # Copyright (C) 2023-2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-#
 """Class definition for base model entity used in OTX."""
 
 # mypy: disable-error-code="arg-type"

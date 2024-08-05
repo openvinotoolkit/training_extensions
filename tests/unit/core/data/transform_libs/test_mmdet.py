@@ -1,4 +1,4 @@
-# Copyright (C) 2023 Intel Corporation
+# Copyright (C) 2023-2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 """Unit tests of mmdet transforms."""
 
@@ -25,7 +25,6 @@ try:
         LoadAnnotations,
         MMDetTransformLib,
         PackDetInputs,
-        PerturbBoundingBoxes,
     )
 except ImportError:
     SKIP_MMLAB_TEST = True
@@ -139,31 +138,6 @@ class TestPackDetInputs:
         results = transform.transform(data_entity)
 
         assert results.image.shape == expected
-
-
-@pytest.mark.skipif(SKIP_MMLAB_TEST, reason="MMLab is not installed")
-class TestPerturbBoundingBoxes:
-    def test_transform(self) -> None:
-        transform = PerturbBoundingBoxes(offset=20)
-        inputs = {
-            "img_shape": (300, 300),
-            "gt_bboxes": np.array(
-                [
-                    [100, 100, 200, 200],  # normal bbox
-                    [0, 0, 299, 299],  # can be out of size
-                    [0, 0, 100, 100],  # can be out of size
-                    [100, 100, 299, 299],  # can be out of size
-                ],
-            ),
-        }
-
-        results = transform.transform(inputs)
-
-        assert isinstance(results, dict)
-        assert results["gt_bboxes"].shape == inputs["gt_bboxes"].shape
-        assert np.all(results["gt_bboxes"][1] == inputs["gt_bboxes"][1])  # check if clipped
-        assert np.all(results["gt_bboxes"][2][:2] == inputs["gt_bboxes"][2][:2])
-        assert np.all(results["gt_bboxes"][3][2:] == inputs["gt_bboxes"][3][2:])
 
 
 @pytest.mark.skipif(SKIP_MMLAB_TEST, reason="MMLab is not installed")

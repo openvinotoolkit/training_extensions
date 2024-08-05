@@ -789,8 +789,9 @@ class Engine:
         batch_size: int = 1,
         n_iters: int = 10,
         extended_stats: bool = False,
+        print_table: bool = True,
     ) -> dict[str, str]:
-        """Executes model micro benchmarking on random data.
+        r"""Executes model micro benchmarking on random data.
 
         Benchmark can provide latency, throughput, number of parameters,
         and theoretical computational complexity with batch size 1.
@@ -802,24 +803,37 @@ class Engine:
             batch_size (int, optional): Batch size for benchmarking. Defaults to 1.
             n_iters (int, optional): Number of iterations to average on. Defaults to 10.
             extended_stats (bool, optional): Flag that enables printing of per module complexity for torch model.
-            Defaults to False.
+                Defaults to False.
+            print_table (bool, optional): Flag that enables printing the benchmark results in a rich table.
+                Defaults to True.
 
         Returns:
             dict[str, str]: a dict with the benchmark results.
 
         Example:
             >>> engine.benchmark(
-            ...     datamodule=OTXDataModule(),
+            ...     checkpoint=<checkpoint-path>,
             ...     batch_size=1,
             ...     n_iters=20,
             ...     extended_stats=True,
             ... )
 
         CLI Usage:
-            To run benchmark using the configuration, launch
+            1. To run benchmark by specifying the work_dir where did the training, run
+                ```shell
+                >>> otx benchmark --work_dir <WORK_DIR_PATH, str>
+                ```
+            2. To run benchmark by specifying the checkpoint, run
                 ```shell
                 >>> otx benchmark \
-                ...     --config <CONFIG_PATH> --data_root <DATASET_PATH, str> \
+                ...     --work_dir <WORK_DIR_PATH, str> \
+                ...     --checkpoint <CKPT_PATH, str>
+                ```
+            3. To run benchmark using the configuration, launch
+                ```shell
+                >>> otx benchmark \
+                ...     --config <CONFIG_PATH> \
+                ...     --data_root <DATASET_PATH, str> \
                 ...     --checkpoint <CKPT_PATH, str>
                 ```
         """
@@ -883,8 +897,18 @@ class Engine:
             params_num_str = convert_num_with_suffix(params_num, get_suffix_str(params_num * 100))
             final_stats["parameters_number"] = params_num_str
 
-        for name, val in final_stats.items():
-            print(f"{name:<20} | {val}")
+        if print_table:
+            from rich.console import Console
+            from rich.table import Column, Table
+
+            console = Console()
+            table_headers = ["Benchmark", "Value"]
+            columns = [Column(h, justify="center", style="magenta", width=console.width) for h in table_headers]
+            columns[0].style = "cyan"
+            table = Table(*columns)
+            for name, val in final_stats.items():
+                table.add_row(*[f"{name:<20}", f"{val}"])
+            console.print(table)
 
         with (Path(self.work_dir) / "benchmark_report.csv").open("w") as f:
             writer = csv.writer(f)

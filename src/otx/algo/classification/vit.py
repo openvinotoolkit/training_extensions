@@ -94,7 +94,6 @@ class ForwardExplainMixInForViT(Generic[T_OTXBatchPredEntity, T_OTXBatchDataEnti
         x = self.model.backbone.norm(x)
         if self.model.neck is not None:
             x = self.model.neck(x)
-
         # Head
         cls_token = x[:, 0]
         layer_output = [None, cls_token]
@@ -140,13 +139,17 @@ class ForwardExplainMixInForViT(Generic[T_OTXBatchPredEntity, T_OTXBatchDataEnti
             scores = pred_results.unbind(0)
             labels = logits.argmax(-1, keepdim=True).unbind(0)
 
-        return {
+        outputs = {
             "logits": logits,
             "feature_vector": feature_vector,
             "saliency_map": saliency_map,
-            "scores": scores,
-            "labels": labels,
         }
+
+        if not torch.jit.is_tracing():
+            outputs["scores"] = scores
+            outputs["labels"] = labels
+
+        return outputs
 
     def get_explain_fn(self) -> Callable:
         """Returns explain function."""
@@ -352,7 +355,7 @@ class VisionTransformerForMulticlassCls(ForwardExplainMixInForViT, OTXMulticlass
             resize_mode="standard",
             pad_value=0,
             swap_rgb=False,
-            via_onnx=True,  # NOTE: This should be done via onnx
+            via_onnx=False,
             onnx_export_configuration=None,
             output_names=["logits", "feature_vector", "saliency_map"] if self.explain_mode else None,
         )
@@ -588,7 +591,7 @@ class VisionTransformerForMultilabelCls(ForwardExplainMixInForViT, OTXMultilabel
             resize_mode="standard",
             pad_value=0,
             swap_rgb=False,
-            via_onnx=True,  # NOTE: This should be done via onnx
+            via_onnx=False,
             onnx_export_configuration=None,
             output_names=["logits", "feature_vector", "saliency_map"] if self.explain_mode else None,
         )
@@ -763,7 +766,7 @@ class VisionTransformerForHLabelCls(ForwardExplainMixInForViT, OTXHlabelClsModel
             resize_mode="standard",
             pad_value=0,
             swap_rgb=False,
-            via_onnx=True,  # NOTE: This should be done via onnx
+            via_onnx=False,
             onnx_export_configuration=None,
             output_names=["logits", "feature_vector", "saliency_map"] if self.explain_mode else None,
         )

@@ -1,6 +1,5 @@
 # Copyright (C) 2023-2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-
 """Class definition for visual prompting models entity used in OTX."""
 
 from __future__ import annotations
