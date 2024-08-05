@@ -142,22 +142,28 @@ def relu_forward(self, x):
 @patch("torch.nn.Conv2d.forward", conv_forward)
 def test_order():
     order = ["conv", "norm", "act"]
-    with pytest.raises(AssertionError):
+    with pytest.raises(TypeError):
         # order must be a tuple
         Conv2dModule(3, 8, 2, order=order)
 
     order = ("conv", "norm")
-    with pytest.raises(AssertionError):
+    with pytest.raises(ValueError, match="order should be a tuple of three elements, but got"):
         # length of order must be 3
         Conv2dModule(3, 8, 2, order=order)
 
     order = ("conv", "norm", "norm")
-    with pytest.raises(AssertionError):
+    with pytest.raises(
+        ValueError,
+        match="order should be a tuple of three elements, including 'conv', 'norm', 'act', but got",
+    ):
         # order must be an order of 'conv', 'norm', 'act'
         Conv2dModule(3, 8, 2, order=order)
 
     order = ("conv", "norm", "something")
-    with pytest.raises(AssertionError):
+    with pytest.raises(
+        ValueError,
+        match="order should be a tuple of three elements, including 'conv', 'norm', 'act', but got",
+    ):
         # order must be an order of 'conv', 'norm', 'act'
         Conv2dModule(3, 8, 2, order=order)
 
