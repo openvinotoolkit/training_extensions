@@ -35,8 +35,6 @@ from otx.core.data.entity.classification import (
     MulticlassClsBatchPredEntity,
     MultilabelClsBatchPredEntity,
 )
-from otx.core.exporter.base import OTXModelExporter
-from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.metrics.accuracy import DefaultClsMetricCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
 from otx.core.model.classification import OTXClassificationModel
@@ -90,7 +88,6 @@ class ForwardExplainMixInForViT(Generic[T_OTXBatchPredEntity, T_OTXBatchDataEnti
         x = self.model.backbone.norm(x)
         if self.model.neck is not None:
             x = self.model.neck(x)
-
         # Head
         cls_token = x[:, 0]
         layer_output = [None, cls_token]
@@ -136,13 +133,17 @@ class ForwardExplainMixInForViT(Generic[T_OTXBatchPredEntity, T_OTXBatchDataEnti
             scores = pred_results.unbind(0)
             labels = logits.argmax(-1, keepdim=True).unbind(0)
 
-        return {
+        outputs = {
             "logits": logits,
             "feature_vector": feature_vector,
             "saliency_map": saliency_map,
-            "scores": scores,
-            "labels": labels,
         }
+
+        if not torch.jit.is_tracing():
+            outputs["scores"] = scores
+            outputs["labels"] = labels
+
+        return outputs
 
     def get_explain_fn(self) -> Callable:
         """Returns explain function."""
@@ -397,19 +398,3 @@ class VisionTransformerForClassification(ForwardExplainMixInForViT, OTXClassific
             return HlabelClsBatchPredEntity(**entity_kwargs)  # type: ignore[arg-type]
         msg = f"Task type {self.task} is not supported."
         raise NotImplementedError(msg)
-
-    @property
-    def _exporter(self) -> OTXModelExporter:
-        """Creates OTXModelExporter object that can export the model."""
-        return OTXNativeModelExporter(
-            task_level_export_parameters=self._export_parameters,
-            input_size=self.image_size,
-            mean=(123.675, 116.28, 103.53),
-            std=(58.395, 57.12, 57.375),
-            resize_mode="standard",
-            pad_value=0,
-            swap_rgb=False,
-            via_onnx=True,  # NOTE: This should be done via onnx
-            onnx_export_configuration=None,
-            output_names=["logits", "feature_vector", "saliency_map"] if self.explain_mode else None,
-        )
