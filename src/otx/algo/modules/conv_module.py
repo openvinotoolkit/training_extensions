@@ -9,10 +9,8 @@
 from __future__ import annotations
 
 import warnings
-from functools import partial
 from typing import TYPE_CHECKING
 
-import torch
 from torch import Tensor, nn
 from torch.nn.modules.batchnorm import _BatchNorm as BatchNorm
 from torch.nn.modules.instancenorm import _InstanceNorm as InstanceNorm
@@ -25,42 +23,6 @@ from .padding import build_padding_layer
 
 if TYPE_CHECKING:
     from torch.nn.modules.conv import _ConvNd as ConvNd
-
-
-def efficient_conv_bn_eval_forward(bn: BatchNorm, conv: ConvNd, x: Tensor) -> Tensor:
-    """Implementation based on https://arxiv.org/abs/2305.11624.
-
-    "Tune-Mode ConvBN Blocks For Efficient Transfer Learning"
-    It leverages the associative law between convolution and affine transform,
-    i.e., normalize (weight conv feature) = (normalize weight) conv feature.
-    It works for Eval mode of ConvBN blocks during validation, and can be used
-    for training as well. It reduces memory and computation cost.
-
-    Args:
-        bn (_BatchNorm): a BatchNorm module.
-        conv (T_ConvND): a conv module
-        x (Tensor): Input feature map.
-    """
-    # These lines of code are designed to deal with various cases
-    # like bn without affine transform, and conv without bias
-    weight_on_the_fly = conv.weight
-    bias_on_the_fly = conv.bias if conv.bias is not None else torch.zeros_like(bn.running_var)
-
-    bn_weight = bn.weight if bn.weight is not None else torch.ones_like(bn.running_var)
-
-    bn_bias = bn.bias if bn.bias is not None else torch.zeros_like(bn.running_var)
-
-    # shape of [C_out, 1, 1, 1] in Conv2d
-    weight_coeff = torch.rsqrt(bn.running_var + bn.eps).reshape([-1] + [1] * (len(conv.weight.shape) - 1))
-    # shape of [C_out, 1, 1, 1] in Conv2d
-    coefff_on_the_fly = bn_weight.view_as(weight_coeff) * weight_coeff
-
-    # shape of [C_out, C_in, k, k] in Conv2d
-    weight_on_the_fly = weight_on_the_fly * coefff_on_the_fly
-    # shape of [C_out] in Conv2d
-    bias_on_the_fly = bn_bias + coefff_on_the_fly.flatten() * (bias_on_the_fly - bn.running_mean)
-
-    return conv._conv_forward(x, weight_on_the_fly, bias_on_the_fly)  # noqa: SLF001
 
 
 class ConvModule(nn.Module):
@@ -110,9 +72,6 @@ class ConvModule(nn.Module):
             sequence of "conv", "norm" and "act". Common examples are
             ("conv", "norm", "act") and ("act", "conv", "norm").
             Default: ('conv', 'norm', 'act').
-        efficient_conv_bn_eval (bool): Whether use efficient conv when the
-            consecutive bn is in eval mode (either training or testing), as
-            proposed in https://arxiv.org/abs/2305.11624 . Default: `False`.
     """
 
     _abbr_ = "conv_block"
@@ -134,7 +93,6 @@ class ConvModule(nn.Module):
         with_spectral_norm: bool = False,
         padding_mode: str = "zeros",
         order: tuple = ("conv", "norm", "act"),
-        efficient_conv_bn_eval: bool = False,
     ):
         super().__init__()
         assert norm_cfg is None or isinstance(norm_cfg, dict)  # noqa: S101
@@ -206,8 +164,6 @@ class ConvModule(nn.Module):
         else:
             self.norm_name = None  # type: ignore[assignment]
 
-        self.turn_on_efficient_conv_bn_eval(efficient_conv_bn_eval)
-
         # build activation layer
         if self.with_activation:
             act_cfg_ = act_cfg.copy()  # type: ignore[union-attr]
@@ -277,91 +233,13 @@ class ConvModule(nn.Module):
             if layer == "conv":
                 if self.with_explicit_padding:
                     x = self.padding_layer(x)
-                # if the next operation is norm and we have a norm layer in
-                # eval mode and we have enabled `efficient_conv_bn_eval` for
-                # the conv operator, then activate the optimized forward and
-                # skip the next norm operator since it has been fused
-                if (
-                    layer_index + 1 < len(self.order)
-                    and self.order[layer_index + 1] == "norm"
-                    and norm
-                    and self.with_norm
-                    and not self.norm_layer.training  # type: ignore[union-attr]
-                    and self.efficient_conv_bn_eval_forward is not None
-                ):
-                    self.conv.forward = partial(self.efficient_conv_bn_eval_forward, self.norm_layer, self.conv)
-                    layer_index += 1
-                    x = self.conv(x)
-                    del self.conv.forward
-                else:
-                    x = self.conv(x)
+                x = self.conv(x)
             elif layer == "norm" and norm and self.with_norm:
                 x = self.norm_layer(x)  # type: ignore[misc]
             elif layer == "act" and activate and self.with_activation:
                 x = self.activate(x)
             layer_index += 1
         return x
-
-    def turn_on_efficient_conv_bn_eval(self, efficient_conv_bn_eval: bool = True) -> None:
-        """Turn on the efficient convolution batch normalization evaluation.
-
-        Args:
-            efficient_conv_bn_eval (bool, optional): Whether to enable efficient convolution
-                batch normalization evaluation. Defaults to True.
-        """
-        # efficient_conv_bn_eval works for conv + bn
-        # with `track_running_stats` option
-        if (
-            efficient_conv_bn_eval
-            and self.norm_layer
-            and isinstance(self.norm_layer, BatchNorm)
-            and self.norm_layer.track_running_stats
-        ):
-            self.efficient_conv_bn_eval_forward = efficient_conv_bn_eval_forward
-        else:
-            self.efficient_conv_bn_eval_forward = None  # type: ignore[assignment]
-
-    @staticmethod
-    def create_from_conv_bn(
-        conv: ConvNd,
-        bn: BatchNorm,
-        efficient_conv_bn_eval: bool = True,
-    ) -> ConvModule:
-        """Create a ConvModule from a conv and a bn module."""
-        self = ConvModule.__new__(ConvModule)
-        super(ConvModule, self).__init__()
-
-        self.norm_cfg = None
-        self.act_cfg = None
-        self.inplace = False
-        self.with_spectral_norm = False
-        self.with_explicit_padding = False
-        self.order = ("conv", "norm", "act")
-
-        self.with_norm = True
-        self.with_activation = False
-        self.with_bias = conv.bias is not None
-
-        # build convolution layer
-        self.conv = conv
-        # export the attributes of self.conv to a higher level for convenience
-        self.in_channels = self.conv.in_channels
-        self.out_channels = self.conv.out_channels
-        self.kernel_size = self.conv.kernel_size
-        self.stride = self.conv.stride
-        self.padding = self.conv.padding
-        self.dilation = self.conv.dilation
-        self.transposed = self.conv.transposed
-        self.output_padding = self.conv.output_padding
-        self.groups = self.conv.groups
-
-        # build normalization layers
-        self.norm_name, norm = "bn", bn
-        self.add_module(self.norm_name, norm)
-
-        self.turn_on_efficient_conv_bn_eval(efficient_conv_bn_eval)
-
-        return self
 
 
 class DepthwiseSeparableConvModule(nn.Module):
