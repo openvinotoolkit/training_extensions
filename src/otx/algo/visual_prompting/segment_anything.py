@@ -73,79 +73,7 @@ class SegmentAnything(nn.Module):
         self.prompt_encoder = prompt_encoder
         self.mask_decoder = mask_decoder
 
-    def forward(self, *args, mode: str = "infer", **kwargs) -> Any:  # noqa: ANN401
-        """Forward method for visual prompting task."""
-        assert mode in ["finetuning", "learn", "infer"]  # noqa: S101
-        if mode == "finetuning":
-            return self.forward_train(*args, **kwargs)
-        return self.forward_inference(*args, **kwargs)
-
-    @torch.no_grad()
-    def forward_inference(
-        self,
-        image_embeddings: Tensor,
-        point_coords: Tensor,
-        point_labels: Tensor,
-        mask_input: Tensor,
-        has_mask_input: Tensor,
-        ori_shape: Tensor,
-    ) -> tuple[Tensor, ...]:
-        """Forward method for SAM inference (export/deploy).
-
-        Args:
-            image_embeddings (Tensor): The image embedding with a batch index of length 1.
-                If it is a zero tensor, the image embedding will be computed from the image.
-            point_coords (Tensor): Coordinates of sparse input prompts,
-                corresponding to both point inputs and box inputs.
-                Boxes are encoded using two points, one for the top-left corner and one for the bottom-right corner.
-                Coordinates must already be transformed to long-side 1024. Has a batch index of length 1.
-            point_labels (Tensor): Labels for the sparse input prompts.
-                0 is a negative input point, 1 is a positive input point,
-                2 is a top-left box corner, 3 is a bottom-right box corner, and -1 is a padding point.
-                If there is no box input, a single padding point with label -1 and
-                coordinates (0.0, 0.0) should be concatenated.
-            mask_input (Tensor): A mask input to the model with shape 1x1x256x256.
-                This must be supplied even if there is no mask input. In this case, it can just be zeros.
-            has_mask_input (Tensor): An indicator for the mask input.
-                1 indicates a mask input, 0 indicates no mask input.
-                This input has 1x1 shape due to supporting openvino input layout.
-            ori_shape (Tensor): The size of the input image in (H,W) format, before any transformation.
-                This input has 1x2 shape due to supporting openvino input layout.
-        """
-        sparse_embedding = self._embed_points(point_coords, point_labels)
-        dense_embedding = self._embed_masks(mask_input, has_mask_input)
-
-        masks, scores = self.mask_decoder.predict_masks(
-            image_embeddings=image_embeddings,
-            image_pe=self.prompt_encoder.get_dense_pe(),
-            sparse_prompt_embeddings=sparse_embedding,
-            dense_prompt_embeddings=dense_embedding,
-        )
-
-        if self.use_stability_score:
-            scores = self.calculate_stability_score(
-                masks,
-                self.mask_threshold,
-                self.stability_score_offset,
-            )
-
-        if self.return_single_mask:
-            masks, scores = self.select_masks(masks, scores, point_coords.shape[1])
-
-        upscaled_masks = self.postprocess_masks(masks, self.image_size, ori_shape)
-
-        if self.return_extra_metrics:
-            stability_scores = self.calculate_stability_score(
-                upscaled_masks,
-                self.mask_threshold,
-                self.stability_score_offset,
-            )
-            areas = (upscaled_masks > self.mask_threshold).sum(-1).sum(-1)
-            return upscaled_masks, scores, stability_scores, areas, masks
-
-        return upscaled_masks, scores, masks
-
-    def forward_train(
+    def forward(
         self,
         images: tv_tensors.Image,
         ori_shapes: list[Tensor],
@@ -226,56 +154,6 @@ class SegmentAnything(nn.Module):
             post_processed_pred_masks.append(post_processed_pred_mask.squeeze(1).sigmoid())
         return post_processed_pred_masks, ious
 
-    def _embed_points(self, point_coords: Tensor, point_labels: Tensor) -> Tensor:
-        """Embed sparse input prompts.
-
-        Args:
-            point_coords (Tensor): Coordinates of sparse input prompts,
-                corresponding to both point inputs and box inputs. Boxes are encoded using two points,
-                one for the top-left corner and one for the bottom-right corner.
-                Coordinates must already be transformed to long-side 1024. Has a batch index of length 1.
-            point_labels (Tensor): Labels for the sparse input prompts.
-                0 is a negative input point, 1 is a positive input point,
-                2 is a top-left box corner, 3 is a bottom-right box corner, and -1 is a padding point.
-                If there is no box input, a single padding point with label -1 and
-                coordinates (0.0, 0.0) should be concatenated.
-
-        Returns:
-            point_embedding (Tensor): The embedded sparse input prompts.
-        """
-        point_coords = point_coords + 0.5
-        point_coords = point_coords / self.image_size
-        point_embedding = self.prompt_encoder.pe_layer._pe_encoding(point_coords)  # noqa: SLF001
-        point_labels = point_labels.unsqueeze(-1).expand_as(point_embedding)
-
-        point_embedding = point_embedding * (point_labels != -1)
-        point_embedding = point_embedding + self.prompt_encoder.not_a_point_embed.weight * (point_labels == -1)
-
-        for i in range(self.prompt_encoder.num_point_embeddings):
-            point_embedding = point_embedding + self.prompt_encoder.point_embeddings[i].weight * (point_labels == i)
-
-        return point_embedding
-
-    def _embed_masks(self, input_mask: Tensor, has_mask_input: Tensor) -> Tensor:
-        """Embed the mask input.
-
-        Args:
-            input_mask (Tensor): A mask input to the model with shape 1x1x256x256.
-                This must be supplied even if there is no mask input. In this case, it can just be zeros.
-            has_mask_input (Tensor): An indicator for the mask input.
-                1 indicates a mask input, 0 indicates no mask input.
-
-        Returns:
-            mask_embedding (Tensor): The embedded mask input.
-        """
-        mask_embedding = has_mask_input * self.prompt_encoder.mask_downscaling(input_mask)
-        return mask_embedding + (1 - has_mask_input) * self.prompt_encoder.no_mask_embed.weight.reshape(
-            1,
-            -1,
-            1,
-            1,
-        )
-
     def calculate_dice_loss(self, inputs: Tensor, targets: Tensor, num_masks: int) -> Tensor:
         """Compute the DICE loss, similar to generalized IOU for masks.
 
@@ -340,79 +218,6 @@ class SegmentAnything(nn.Module):
         intersection = torch.sum(torch.mul(pred_mask, targets), dim=1)
         union = torch.sum(pred_mask, dim=1) + torch.sum(targets, dim=1) - intersection
         return intersection / (union + epsilon)
-
-    @classmethod
-    def postprocess_masks(cls, masks: Tensor, input_size: int, orig_size: Tensor) -> Tensor:
-        """Postprocess the predicted masks.
-
-        Args:
-            masks (Tensor): A batch of predicted masks with shape Bx1xHxW.
-            input_size (int): The size of the image input to the model, in (H, W) format.
-                Used to remove padding.
-            orig_size (Tensor): The original image size with shape Bx2.
-
-        Returns:
-            masks (Tensor): The postprocessed masks with shape Bx1xHxW.
-        """
-        orig_size = orig_size.squeeze()
-        masks = F.interpolate(masks, size=(input_size, input_size), mode="bilinear", align_corners=False)
-
-        prepadded_size = cls.get_prepadded_size(cls, orig_size, input_size)  # type: ignore[arg-type]
-        masks = masks[..., : prepadded_size[0], : prepadded_size[1]]
-
-        orig_size = orig_size.to(torch.int64)
-        h, w = orig_size[0], orig_size[1]
-        return F.interpolate(masks, size=(h, w), mode="bilinear", align_corners=False)
-
-    def get_prepadded_size(self, input_image_size: Tensor, longest_side: int) -> Tensor:
-        """Get pre-padded size."""
-        scale = longest_side / torch.max(input_image_size)
-        transformed_size = scale * input_image_size
-        return torch.floor(transformed_size + 0.5).to(torch.int64)
-
-    def calculate_stability_score(self, masks: Tensor, mask_threshold: float, threshold_offset: float = 1.0) -> Tensor:
-        """Computes the stability score for a batch of masks.
-
-        The stability score is the IoU between the binary masks obtained
-        by thresholding the predicted mask logits at high and low values.
-
-        Args:
-            masks (Tensor): A batch of predicted masks with shape BxHxW.
-            mask_threshold (float): The threshold used to binarize the masks.
-            threshold_offset (float, optional): The offset used to compute the stability score.
-
-        Returns:
-            stability_scores (Tensor): The stability scores for the batch of masks.
-        """
-        # One mask is always contained inside the other.
-        # Save memory by preventing unnecessary cast to torch.int64
-        intersections = (
-            (masks > (mask_threshold + threshold_offset)).sum(-1, dtype=torch.int16).sum(-1, dtype=torch.int32)
-        )
-        unions = (masks > (mask_threshold - threshold_offset)).sum(-1, dtype=torch.int16).sum(-1, dtype=torch.int32)
-        return intersections / unions
-
-    def select_masks(self, masks: Tensor, iou_preds: Tensor, num_points: int) -> tuple[Tensor, Tensor]:
-        """Selects the best mask from a batch of masks.
-
-        Args:
-            masks (Tensor): A batch of predicted masks with shape BxMxHxW.
-            iou_preds (Tensor): A batch of predicted IoU scores with shape BxM.
-            num_points (int): The number of points in the input.
-
-        Returns:
-            masks (Tensor): The selected masks with shape Bx1xHxW.
-            iou_preds (Tensor): The selected IoU scores with shape Bx1.
-        """
-        # Determine if we should return the multiclick mask or not from the number of points.
-        # The reweighting is used to avoid control flow.
-        score_reweight = torch.tensor([[1000] + [0] * (self.mask_decoder.num_mask_tokens - 1)]).to(iou_preds.device)
-        score = iou_preds + (num_points - 2.5) * score_reweight
-        best_idx = torch.argmax(score, dim=1)
-        masks = masks[torch.arange(masks.shape[0]), best_idx, :, :].unsqueeze(1)
-        iou_preds = iou_preds[torch.arange(masks.shape[0]), best_idx].unsqueeze(1)
-
-        return masks, iou_preds
 
 
 class SAM(OTXVisualPromptingModel):
@@ -506,6 +311,198 @@ class SAM(OTXVisualPromptingModel):
         if freeze_mask_decoder:
             for param in self.model.mask_decoder.parameters():
                 param.requires_grad = False
+
+    @torch.no_grad()
+    def forward_for_tracing(
+        self,
+        image_embeddings: Tensor,
+        point_coords: Tensor,
+        point_labels: Tensor,
+        mask_input: Tensor,
+        has_mask_input: Tensor,
+        ori_shape: Tensor,
+    ) -> tuple[Tensor, ...]:
+        """Forward method for SAM inference (export/deploy).
+
+        Args:
+            image_embeddings (Tensor): The image embedding with a batch index of length 1.
+                If it is a zero tensor, the image embedding will be computed from the image.
+            point_coords (Tensor): Coordinates of sparse input prompts,
+                corresponding to both point inputs and box inputs.
+                Boxes are encoded using two points, one for the top-left corner and one for the bottom-right corner.
+                Coordinates must already be transformed to long-side 1024. Has a batch index of length 1.
+            point_labels (Tensor): Labels for the sparse input prompts.
+                0 is a negative input point, 1 is a positive input point,
+                2 is a top-left box corner, 3 is a bottom-right box corner, and -1 is a padding point.
+                If there is no box input, a single padding point with label -1 and
+                coordinates (0.0, 0.0) should be concatenated.
+            mask_input (Tensor): A mask input to the model with shape 1x1x256x256.
+                This must be supplied even if there is no mask input. In this case, it can just be zeros.
+            has_mask_input (Tensor): An indicator for the mask input.
+                1 indicates a mask input, 0 indicates no mask input.
+                This input has 1x1 shape due to supporting openvino input layout.
+            ori_shape (Tensor): The size of the input image in (H,W) format, before any transformation.
+                This input has 1x2 shape due to supporting openvino input layout.
+        """
+        sparse_embedding = self._embed_points(point_coords, point_labels)
+        dense_embedding = self._embed_masks(mask_input, has_mask_input)
+
+        masks, scores = self.model.mask_decoder.predict_masks(
+            image_embeddings=image_embeddings,
+            image_pe=self.model.prompt_encoder.get_dense_pe(),
+            sparse_prompt_embeddings=sparse_embedding,
+            dense_prompt_embeddings=dense_embedding,
+        )
+
+        if self.use_stability_score:
+            scores = self.calculate_stability_score(
+                masks,
+                self.model.mask_threshold,
+                self.model.stability_score_offset,
+            )
+
+        if self.return_single_mask:
+            masks, scores = self.select_masks(masks, scores, point_coords.shape[1])
+
+        upscaled_masks = self.postprocess_masks(masks, self.image_size, ori_shape)
+
+        if self.return_extra_metrics:
+            stability_scores = self.calculate_stability_score(
+                upscaled_masks,
+                self.model.mask_threshold,
+                self.model.stability_score_offset,
+            )
+            areas = (upscaled_masks > self.model.mask_threshold).sum(-1).sum(-1)
+            return upscaled_masks, scores, stability_scores, areas, masks
+
+        return upscaled_masks, scores, masks
+
+    def _embed_points(self, point_coords: Tensor, point_labels: Tensor) -> Tensor:
+        """Embed sparse input prompts.
+
+        Args:
+            point_coords (Tensor): Coordinates of sparse input prompts,
+                corresponding to both point inputs and box inputs. Boxes are encoded using two points,
+                one for the top-left corner and one for the bottom-right corner.
+                Coordinates must already be transformed to long-side 1024. Has a batch index of length 1.
+            point_labels (Tensor): Labels for the sparse input prompts.
+                0 is a negative input point, 1 is a positive input point,
+                2 is a top-left box corner, 3 is a bottom-right box corner, and -1 is a padding point.
+                If there is no box input, a single padding point with label -1 and
+                coordinates (0.0, 0.0) should be concatenated.
+
+        Returns:
+            point_embedding (Tensor): The embedded sparse input prompts.
+        """
+        point_coords = point_coords + 0.5
+        point_coords = point_coords / self.image_size
+        point_embedding = self.model.prompt_encoder.pe_layer._pe_encoding(point_coords)  # noqa: SLF001
+        point_labels = point_labels.unsqueeze(-1).expand_as(point_embedding)
+
+        point_embedding = point_embedding * (point_labels != -1)
+        point_embedding = point_embedding + self.model.prompt_encoder.not_a_point_embed.weight * (point_labels == -1)
+
+        for i in range(self.model.prompt_encoder.num_point_embeddings):
+            point_embedding = point_embedding + self.model.prompt_encoder.point_embeddings[i].weight * (
+                point_labels == i
+            )
+
+        return point_embedding
+
+    def _embed_masks(self, input_mask: Tensor, has_mask_input: Tensor) -> Tensor:
+        """Embed the mask input.
+
+        Args:
+            input_mask (Tensor): A mask input to the model with shape 1x1x256x256.
+                This must be supplied even if there is no mask input. In this case, it can just be zeros.
+            has_mask_input (Tensor): An indicator for the mask input.
+                1 indicates a mask input, 0 indicates no mask input.
+
+        Returns:
+            mask_embedding (Tensor): The embedded mask input.
+        """
+        mask_embedding = has_mask_input * self.model.prompt_encoder.mask_downscaling(input_mask)
+        return mask_embedding + (1 - has_mask_input) * self.model.prompt_encoder.no_mask_embed.weight.reshape(
+            1,
+            -1,
+            1,
+            1,
+        )
+
+    def calculate_stability_score(self, masks: Tensor, mask_threshold: float, threshold_offset: float = 1.0) -> Tensor:
+        """Computes the stability score for a batch of masks.
+
+        The stability score is the IoU between the binary masks obtained
+        by thresholding the predicted mask logits at high and low values.
+
+        Args:
+            masks (Tensor): A batch of predicted masks with shape BxHxW.
+            mask_threshold (float): The threshold used to binarize the masks.
+            threshold_offset (float, optional): The offset used to compute the stability score.
+
+        Returns:
+            stability_scores (Tensor): The stability scores for the batch of masks.
+        """
+        # One mask is always contained inside the other.
+        # Save memory by preventing unnecessary cast to torch.int64
+        intersections = (
+            (masks > (mask_threshold + threshold_offset)).sum(-1, dtype=torch.int16).sum(-1, dtype=torch.int32)
+        )
+        unions = (masks > (mask_threshold - threshold_offset)).sum(-1, dtype=torch.int16).sum(-1, dtype=torch.int32)
+        return intersections / unions
+
+    def select_masks(self, masks: Tensor, iou_preds: Tensor, num_points: int) -> tuple[Tensor, Tensor]:
+        """Selects the best mask from a batch of masks.
+
+        Args:
+            masks (Tensor): A batch of predicted masks with shape BxMxHxW.
+            iou_preds (Tensor): A batch of predicted IoU scores with shape BxM.
+            num_points (int): The number of points in the input.
+
+        Returns:
+            masks (Tensor): The selected masks with shape Bx1xHxW.
+            iou_preds (Tensor): The selected IoU scores with shape Bx1.
+        """
+        # Determine if we should return the multiclick mask or not from the number of points.
+        # The reweighting is used to avoid control flow.
+        score_reweight = torch.tensor([[1000] + [0] * (self.model.mask_decoder.num_mask_tokens - 1)]).to(
+            iou_preds.device,
+        )
+        score = iou_preds + (num_points - 2.5) * score_reweight
+        best_idx = torch.argmax(score, dim=1)
+        masks = masks[torch.arange(masks.shape[0]), best_idx, :, :].unsqueeze(1)
+        iou_preds = iou_preds[torch.arange(masks.shape[0]), best_idx].unsqueeze(1)
+
+        return masks, iou_preds
+
+    @classmethod
+    def postprocess_masks(cls, masks: Tensor, input_size: int, orig_size: Tensor) -> Tensor:
+        """Postprocess the predicted masks.
+
+        Args:
+            masks (Tensor): A batch of predicted masks with shape Bx1xHxW.
+            input_size (int): The size of the image input to the model, in (H, W) format.
+                Used to remove padding.
+            orig_size (Tensor): The original image size with shape Bx2.
+
+        Returns:
+            masks (Tensor): The postprocessed masks with shape Bx1xHxW.
+        """
+        orig_size = orig_size.squeeze()
+        masks = F.interpolate(masks, size=(input_size, input_size), mode="bilinear", align_corners=False)
+
+        prepadded_size = cls.get_prepadded_size(cls, orig_size, input_size)  # type: ignore[arg-type]
+        masks = masks[..., : prepadded_size[0], : prepadded_size[1]]
+
+        orig_size = orig_size.to(torch.int64)
+        h, w = orig_size[0], orig_size[1]
+        return F.interpolate(masks, size=(h, w), mode="bilinear", align_corners=False)
+
+    def get_prepadded_size(self, input_image_size: Tensor, longest_side: int) -> Tensor:
+        """Get pre-padded size."""
+        scale = longest_side / torch.max(input_image_size)
+        transformed_size = scale * input_image_size
+        return torch.floor(transformed_size + 0.5).to(torch.int64)
 
 
 class SAMTinyViT(SAM):

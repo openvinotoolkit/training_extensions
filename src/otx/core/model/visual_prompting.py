@@ -279,9 +279,6 @@ class OTXVisualPromptingModel(OTXModel[VisualPromptingBatchDataEntity, VisualPro
             },
         }
 
-    def _reset_prediction_layer(self, num_classes: int) -> None:
-        return
-
     def validation_step(self, inputs: VisualPromptingBatchDataEntity, batch_idx: int) -> None:
         """Perform a single validation step on a batch of data from the validation set.
 
