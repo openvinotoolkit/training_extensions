@@ -548,7 +548,6 @@ class CustomRoIHead(StandardRoIHead):
 
 class CustomConvFCBBoxHead(Shared2FCBBoxHead, ClassIncrementalMixin):
     """CustomConvFCBBoxHead class for OTX."""
-    # checked
 
     def loss_and_target(
         self,

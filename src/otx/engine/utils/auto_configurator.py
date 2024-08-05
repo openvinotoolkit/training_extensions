@@ -65,7 +65,7 @@ TASK_PER_DATA_FORMAT = {
     ],
     "common_semantic_segmentation_with_subset_dirs": [OTXTaskType.SEMANTIC_SEGMENTATION],
     "kinetics": [OTXTaskType.ACTION_CLASSIFICATION],
-    "mvtec_classification": [OTXTaskType.ANOMALY_CLASSIFICATION, OTXTaskType.ANOMALY_DETECTION, OTXTaskType.ANOMALY_SEGMENTATION],
+    "mvtec": [OTXTaskType.ANOMALY_CLASSIFICATION, OTXTaskType.ANOMALY_DETECTION, OTXTaskType.ANOMALY_SEGMENTATION],
 }
 
 OVMODEL_PER_TASK = {
@@ -245,7 +245,7 @@ class AutoConfigurator:
             **data_config,
         )
 
-    def get_model(self, model_name: str | None = None, label_info: LabelInfoTypes | None = None) -> OTXModel:
+    def get_model(self, model_name: str | None = None, label_info: LabelInfoTypes | None = None, input_size: Sequence[int] | None = None) -> OTXModel:
         """Retrieves the OTXModel instance based on the provided model name and meta information.
 
         Args:
@@ -277,6 +277,11 @@ class AutoConfigurator:
         skip = set()
 
         model_config = deepcopy(self.config["model"])
+
+        if input_size is not None:
+            if isinstance(input_size, int):
+                input_size = (input_size, input_size)
+            model_config["init_args"]["input_size"] = tuple(model_config["init_args"]["input_size"][:-2]) + input_size
 
         model_cls = get_model_cls_from_config(Namespace(model_config))
 
