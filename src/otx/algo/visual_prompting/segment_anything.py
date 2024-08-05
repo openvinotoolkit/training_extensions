@@ -53,12 +53,8 @@ class SegmentAnything(nn.Module):
         image_encoder: nn.Module,
         prompt_encoder: nn.Module,
         mask_decoder: nn.Module,
-        load_from: str | None = None,
         image_size: int = 1024,
         mask_threshold: float = 0.0,
-        freeze_image_encoder: bool = True,
-        freeze_prompt_encoder: bool = True,
-        freeze_mask_decoder: bool = False,
         use_stability_score: bool = False,
         return_single_mask: bool = False,
         return_extra_metrics: bool = False,
@@ -76,54 +72,6 @@ class SegmentAnything(nn.Module):
         self.image_encoder = image_encoder
         self.prompt_encoder = prompt_encoder
         self.mask_decoder = mask_decoder
-
-        self.load_checkpoint(load_from=load_from)
-        self.freeze_networks(freeze_image_encoder, freeze_prompt_encoder, freeze_mask_decoder)
-
-    def freeze_networks(
-        self,
-        freeze_image_encoder: bool,
-        freeze_prompt_encoder: bool,
-        freeze_mask_decoder: bool,
-    ) -> None:
-        """Freeze networks depending on config."""
-        if freeze_image_encoder:
-            for param in self.image_encoder.parameters():
-                param.requires_grad = False
-
-        if freeze_prompt_encoder:
-            for param in self.prompt_encoder.parameters():
-                param.requires_grad = False
-
-        if freeze_mask_decoder:
-            for param in self.mask_decoder.parameters():
-                param.requires_grad = False
-
-    def load_checkpoint(
-        self,
-        load_from: str | None,
-    ) -> None:
-        """Load checkpoint for SAM.
-
-        Args:
-            load_from (Optional[str], optional): Checkpoint path for SAM. Defaults to None.
-        """
-        try:
-            state_dict = torch.hub.load_state_dict_from_url(str(load_from))
-            for key in [
-                "image_encoder.norm_head.weight",
-                "image_encoder.norm_head.bias",
-                "image_encoder.head.weight",
-                "image_encoder.head.bias",
-            ]:
-                if key in state_dict:
-                    state_dict.pop(key)
-            self.load_state_dict(state_dict)
-        except ValueError as e:
-            log.info(
-                f"{e}: {load_from} is not desirable format for torch.hub.load_state_dict_from_url. "
-                f"To manually load {load_from}, try to set it to trainer.checkpoint.",
-            )
 
     def forward(self, *args, mode: str = "infer", **kwargs) -> Any:  # noqa: ANN401
         """Forward method for visual prompting task."""
@@ -508,6 +456,57 @@ class SAM(OTXVisualPromptingModel):
             torch_compile=torch_compile,
         )
 
+        self.load_checkpoint(load_from=self.load_from)
+        self.freeze_networks(freeze_image_encoder, freeze_prompt_encoder, freeze_mask_decoder)
+
+    def load_checkpoint(self, load_from: str | None) -> None:
+        """Load checkpoint for SAM.
+
+        Args:
+            load_from (Optional[str], optional): Checkpoint path for SAM. Defaults to None.
+        """
+        try:
+            state_dict = torch.hub.load_state_dict_from_url(str(load_from))
+            for key in [
+                "image_encoder.norm_head.weight",
+                "image_encoder.norm_head.bias",
+                "image_encoder.head.weight",
+                "image_encoder.head.bias",
+            ]:
+                if key in state_dict:
+                    state_dict.pop(key)
+
+            # add prefix 'model.' to all keys
+            for key in list(state_dict.keys()):
+                state_dict["model." + key] = state_dict.pop(key)
+
+            self.load_state_dict(state_dict)
+
+        except ValueError as e:
+            log.info(
+                f"{e}: {load_from} is not desirable format for torch.hub.load_state_dict_from_url. "
+                f"To manually load {load_from}, try to set it to trainer.checkpoint.",
+            )
+
+    def freeze_networks(
+        self,
+        freeze_image_encoder: bool,
+        freeze_prompt_encoder: bool,
+        freeze_mask_decoder: bool,
+    ) -> None:
+        """Freeze networks depending on config."""
+        if freeze_image_encoder:
+            for param in self.model.image_encoder.parameters():
+                param.requires_grad = False
+
+        if freeze_prompt_encoder:
+            for param in self.model.prompt_encoder.parameters():
+                param.requires_grad = False
+
+        if freeze_mask_decoder:
+            for param in self.model.mask_decoder.parameters():
+                param.requires_grad = False
+
 
 class SAMTinyViT(SAM):
     """Segment Anything Model (SAM) with Tiny-ViT."""
@@ -547,12 +546,8 @@ class SAMTinyViT(SAM):
             image_encoder=image_encoder,
             prompt_encoder=prompt_encoder,
             mask_decoder=mask_decoder,
-            load_from=self.load_from,
             image_size=self.image_size,
             # TODO (sungchul): specify loss functions
-            freeze_image_encoder=self.freeze_image_encoder,
-            freeze_prompt_encoder=self.freeze_prompt_encoder,
-            freeze_mask_decoder=self.freeze_mask_decoder,
             use_stability_score=self.use_stability_score,
             return_single_mask=self.return_single_mask,
             return_extra_metrics=self.return_extra_metrics,
@@ -604,12 +599,8 @@ class SAMViTBase(SAM):
             image_encoder=image_encoder,
             prompt_encoder=prompt_encoder,
             mask_decoder=mask_decoder,
-            load_from=self.load_from,
             image_size=self.image_size,
             # TODO (sungchul): specify loss functions
-            freeze_image_encoder=self.freeze_image_encoder,
-            freeze_prompt_encoder=self.freeze_prompt_encoder,
-            freeze_mask_decoder=self.freeze_mask_decoder,
             use_stability_score=self.use_stability_score,
             return_single_mask=self.return_single_mask,
             return_extra_metrics=self.return_extra_metrics,
