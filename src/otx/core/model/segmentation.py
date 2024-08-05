@@ -145,7 +145,7 @@ class TorchVisionCompatibleModel(OTXSegmentationModel):
             criterion_configuration (list[dict[str, Any]] | None, optional):
                 The configuration for the criterion of the model. Defaults to None.
             export_image_configuration (dict[str, Any] | None, optional):
-                The configuration for the export of the model like mean, scale and image_size. Defaults to None.
+                The configuration for the export of the model like mean and scale. Defaults to None.
             name_base_model (str, optional): The name of the base model used for trainig.
                 Defaults to "semantic_segmentation_model".
         """

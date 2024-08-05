@@ -5,11 +5,13 @@
 
 from __future__ import annotations
 
+import logging
 from typing import TYPE_CHECKING, Any, Sequence
 
 import torch
 from torch import Tensor, nn
 from transformers import AutoModelForImageClassification
+from transformers.configuration_utils import PretrainedConfig
 
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.classification import (
@@ -30,6 +32,9 @@ if TYPE_CHECKING:
 
     from otx.core.metrics import MetricCallable
 
+
+DEFAULT_INPUT_SIZE = (1, 2, 224, 224)
+logger = logging.getLogger(__name__)
 
 class HuggingFaceModelForMulticlassCls(OTXMulticlassClsModel):
     """HuggingFaceModelForMulticlassCls is a class that represents a Hugging Face model for multiclass classification.
@@ -61,7 +66,7 @@ class HuggingFaceModelForMulticlassCls(OTXMulticlassClsModel):
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MultiClassClsMetricCallable,
         torch_compile: bool = False,
-        input_size: Sequence[int] = (1, 3, 224, 224),
+        input_size: Sequence[int] = DEFAULT_INPUT_SIZE,
     ) -> None:
         self.model_name = model_name_or_path
 
@@ -75,10 +80,19 @@ class HuggingFaceModelForMulticlassCls(OTXMulticlassClsModel):
         )
 
     def _create_model(self) -> nn.Module:
+        model_config, _ = PretrainedConfig.get_config_dict(self.model_name)
+        kwargs = {}
+        if "image_size" in model_config:
+            kwargs["image_size"] = self.input_size[-1]
+        elif self.input_size != DEFAULT_INPUT_SIZE:
+            msg = "There is no 'image_size' argument in the model configuration. There may be unexpected results."
+            logger.warning(msg)
+
         return AutoModelForImageClassification.from_pretrained(
             pretrained_model_name_or_path=self.model_name,
             num_labels=self.label_info.num_classes,
             ignore_mismatched_sizes=True,
+            **kwargs,
         )
 
     def _customize_inputs(self, inputs: MulticlassClsBatchDataEntity) -> dict[str, Any]:

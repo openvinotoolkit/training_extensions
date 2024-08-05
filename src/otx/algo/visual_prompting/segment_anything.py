@@ -139,7 +139,7 @@ class SegmentAnything(nn.Module):
                 if key in state_dict:
                     state_dict.pop(key)
             self.load_state_dict(state_dict)
-        except ValueError as e:
+        except (ValueError, RuntimeError) as e:
             log.info(
                 f"{e}: {load_from} is not desirable format for torch.hub.load_state_dict_from_url. "
                 f"To manually load {load_from}, try to set it to trainer.checkpoint.",
@@ -507,17 +507,17 @@ class OTXSegmentAnything(OTXVisualPromptingModel):
         return_extra_metrics: bool = False,
         stability_score_offset: float = 1.0,
     ) -> None:
-        super().__init__(
-            label_info=label_info,
-            input_size=input_size,
-            optimizer=optimizer,
-            scheduler=scheduler,
-            metric=metric,
-            torch_compile=torch_compile,
-        )
+        if input_size[-1] != input_size[-2]:
+            msg = f"SAM should use square image, but got {input_size}"
+            raise ValueError(msg)
+        if input_size[-1] % 16 != 0 and input_size[-2] % 16 != 0:
+            msg = f"Input size should be a multiple of 16, but got {input_size[-2:]} instead."
+            raise ValueError(msg)
+
         self.config = {
             "backbone": backbone,
-            "image_size": self.input_size[-1],
+            "image_size": input_size[-1],
+            "image_embedding_size" : input_size[-1] // 16,
             "freeze_image_encoder": freeze_image_encoder,
             "freeze_prompt_encoder": freeze_prompt_encoder,
             "freeze_mask_decoder": freeze_mask_decoder,
@@ -527,6 +527,14 @@ class OTXSegmentAnything(OTXVisualPromptingModel):
             "stability_score_offset": stability_score_offset,
             **DEFAULT_CONFIG_SEGMENT_ANYTHING[backbone],
         }
+        super().__init__(
+            label_info=label_info,
+            input_size=input_size,
+            optimizer=optimizer,
+            scheduler=scheduler,
+            metric=metric,
+            torch_compile=torch_compile,
+        )
 
     def _create_model(self) -> nn.Module:
         """Create a PyTorch model for this class."""

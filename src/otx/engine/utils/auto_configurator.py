@@ -8,7 +8,7 @@ from __future__ import annotations
 import logging
 from copy import deepcopy
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Sequence
 from warnings import warn
 
 import datumaro
@@ -65,7 +65,7 @@ TASK_PER_DATA_FORMAT = {
     ],
     "common_semantic_segmentation_with_subset_dirs": [OTXTaskType.SEMANTIC_SEGMENTATION],
     "kinetics": [OTXTaskType.ACTION_CLASSIFICATION],
-    "mvtec": [OTXTaskType.ANOMALY_CLASSIFICATION, OTXTaskType.ANOMALY_DETECTION, OTXTaskType.ANOMALY_SEGMENTATION],
+    "mvtec_classification": [OTXTaskType.ANOMALY_CLASSIFICATION, OTXTaskType.ANOMALY_DETECTION, OTXTaskType.ANOMALY_SEGMENTATION],
 }
 
 OVMODEL_PER_TASK = {
@@ -144,11 +144,13 @@ class AutoConfigurator:
         data_root: PathLike | None = None,
         task: OTXTaskType | None = None,
         model_name: str | None = None,
+        input_size: Sequence[int] | None = None
     ) -> None:
         self.data_root = data_root
         self._task = task
         self._config: dict | None = None
         self.model_name: str | None = model_name
+        self.input_size = input_size
 
     @property
     def task(self) -> OTXTaskType:
@@ -226,6 +228,9 @@ class AutoConfigurator:
 
         _ = data_config.pop("__path__", {})  # Remove __path__ key that for CLI
         _ = data_config.pop("config", {})  # Remove config key that for CLI
+
+        if getattr(data_config, "input_size", None) is not None and self.input_size is not None:
+            data_config["input_size"] = self.input_size
 
         return OTXDataModule(
             train_subset=SubsetConfig(sampler=SamplerConfig(**train_config.pop("sampler", {})), **train_config),

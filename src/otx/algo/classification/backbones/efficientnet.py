@@ -569,7 +569,7 @@ class OTXEfficientNet(EfficientNet):
         in_size : tuple of two ints. Spatial size of the expected input image.
     """
 
-    def __init__(self, version: EFFICIENTNET_VERSION, **kwargs):
+    def __init__(self, version: EFFICIENTNET_VERSION, input_size: tuple[int, int] | None = None, **kwargs):
         self.model_name = "efficientnet_" + version
 
         if version == "b0":
@@ -611,6 +611,9 @@ class OTXEfficientNet(EfficientNet):
         else:
             msg = f"Unsupported EfficientNet version {version}"
             raise ValueError(msg)
+
+        if input_size is not None:
+            in_size = input_size
 
         init_block_channels = 32
         layers = [1, 2, 2, 3, 3, 4, 1]

@@ -32,7 +32,6 @@ class Stfpm(OTXAnomaly, OTXModel, AnomalibStfpm):
         task (Literal[
                 OTXTaskType.ANOMALY_CLASSIFICATION, OTXTaskType.ANOMALY_DETECTION, OTXTaskType.ANOMALY_SEGMENTATION
             ], optional): Task type of Anomaly Task. Defaults to OTXTaskType.ANOMALY_CLASSIFICATION.
-        input_size (Sequence[int]): The input shape of the model.
     """
 
     def __init__(
@@ -44,11 +43,10 @@ class Stfpm(OTXAnomaly, OTXModel, AnomalibStfpm):
             OTXTaskType.ANOMALY_DETECTION,
             OTXTaskType.ANOMALY_SEGMENTATION,
         ] = OTXTaskType.ANOMALY_CLASSIFICATION,
-        input_size: Sequence[int] = (256, 256),
         **kwargs,
     ) -> None:
-        OTXAnomaly.__init__(self, input_size)
-        OTXModel.__init__(self, label_info=AnomalyLabelInfo(), input_size=input_size)
+        OTXAnomaly.__init__(self)
+        OTXModel.__init__(self, label_info=AnomalyLabelInfo())
         AnomalibStfpm.__init__(
             self,
             backbone=backbone,

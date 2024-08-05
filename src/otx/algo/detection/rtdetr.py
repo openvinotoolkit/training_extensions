@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import copy
 import re
-from typing import Any, Sequence
+from typing import TYPE_CHECKING, Any, Sequence
 
 import torch
 from torch import Tensor, nn
@@ -23,6 +23,16 @@ from otx.core.data.entity.detection import DetBatchDataEntity, DetBatchPredEntit
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.model.detection import ExplainableOTXDetModel
+from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
+from otx.core.metrics.fmeasure import MeanAveragePrecisionFMeasureCallable
+from otx.core.config.data import TileConfig
+
+if TYPE_CHECKING:
+    from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
+
+    from otx.core.types.label import LabelInfoTypes
+    from otx.core.schedulers import LRSchedulerListCallable
+    from otx.core.metrics import MetricCallable
 
 
 class RTDETR(ExplainableOTXDetModel):
@@ -34,13 +44,29 @@ class RTDETR(ExplainableOTXDetModel):
 
     def __init__(
         self,
+        label_info: LabelInfoTypes,
         input_size: Sequence[int] = (1, 3, 640, 640),
-        **kwargs
+        optimizer: OptimizerCallable = DefaultOptimizerCallable,
+        scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
+        metric: MetricCallable = MeanAveragePrecisionFMeasureCallable,
+        torch_compile: bool = False,
+        tile_config: TileConfig = TileConfig(enable_tiler=False),
+        tile_image_size: Sequence[int] = (1, 3, 640, 640),
     ) -> None:
+        if input_size[-1] % 32 != 0 or input_size[-2] % 32 != 0:
+            msg = f"Input size should be a multiple of 32, but got {input_size[-2:]} instead."
+            raise ValueError(msg)
+
         super().__init__(
+            label_info=label_info,
             input_size=input_size,
-            **kwargs
+            optimizer=optimizer,
+            scheduler=scheduler,
+            metric=metric,
+            torch_compile=torch_compile,
+            tile_config=tile_config,
         )
+        self.tile_image_size = tile_image_size
 
     def _customize_inputs(
         self,
@@ -244,6 +270,7 @@ class RTDETR18(RTDETR):
             decoder=decoder,
             num_classes=num_classes,
             optimizer_configuration=optimizer_configuration,
+            input_size=self.input_size[-1],
         )
 
 
@@ -287,6 +314,7 @@ class RTDETR50(RTDETR):
             decoder=decoder,
             num_classes=num_classes,
             optimizer_configuration=optimizer_configuration,
+            input_size=self.input_size[-1],
         )
 
 
@@ -336,4 +364,5 @@ class RTDETR101(RTDETR):
             decoder=decoder,
             num_classes=num_classes,
             optimizer_configuration=optimizer_configuration,
+            input_size=self.input_size[-1],
         )

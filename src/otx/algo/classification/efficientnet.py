@@ -60,12 +60,13 @@ class EfficientNetForMulticlassCls(OTXMulticlassClsModel):
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MultiClassClsMetricCallable,
         torch_compile: bool = False,
+        input_size: Sequence[int] = (1, 3, 224, 224),
     ) -> None:
         self.version = version
 
         super().__init__(
             label_info=label_info,
-            input_size=(1, 3, 224, 224),
+            input_size=input_size,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
@@ -89,7 +90,7 @@ class EfficientNetForMulticlassCls(OTXMulticlassClsModel):
 
     def _build_model(self, num_classes: int) -> nn.Module:
         return ImageClassifier(
-            backbone=OTXEfficientNet(version=self.version, pretrained=True),
+            backbone=OTXEfficientNet(version=self.version, input_size=self.input_size[-2:], pretrained=True),
             neck=GlobalAveragePooling(dim=2),
             head=LinearClsHead(
                 num_classes=num_classes,
@@ -195,7 +196,7 @@ class EfficientNetForMulticlassClsSemiSL(EfficientNetForMulticlassCls):
 
     def _build_model(self, num_classes: int) -> nn.Module:
         return SemiSLClassifier(
-            backbone=OTXEfficientNet(version=self.version, pretrained=True, in_size=self.image_size[-2:]),
+            backbone=OTXEfficientNet(version=self.version, input_size=self.input_size[-2:], pretrained=True),
             neck=GlobalAveragePooling(dim=2),
             head=OTXSemiSLLinearClsHead(
                 num_classes=num_classes,
@@ -307,7 +308,7 @@ class EfficientNetForMultilabelCls(OTXMultilabelClsModel):
 
     def _build_model(self, num_classes: int) -> nn.Module:
         return ImageClassifier(
-            backbone=OTXEfficientNet(version=self.version, pretrained=True, in_size=self.input_size[-2:]),
+            backbone=OTXEfficientNet(version=self.version, input_size=self.input_size[-2:], pretrained=True),
             neck=GlobalAveragePooling(dim=2),
             head=MultiLabelLinearClsHead(
                 num_classes=num_classes,
@@ -443,7 +444,7 @@ class EfficientNetForHLabelCls(OTXHlabelClsModel):
             raise TypeError(self.label_info)
 
         return ImageClassifier(
-            backbone=OTXEfficientNet(version=self.version, pretrained=True, in_size=self.input_size[-2:]),
+            backbone=OTXEfficientNet(version=self.version, input_size=self.input_size[-2:], pretrained=True),
             neck=GlobalAveragePooling(dim=2),
             head=HierarchicalLinearClsHead(
                 in_channels=1280,

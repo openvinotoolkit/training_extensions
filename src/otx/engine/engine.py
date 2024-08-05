@@ -10,7 +10,7 @@ import logging
 import tempfile
 from contextlib import contextmanager
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, ClassVar, Iterable, Iterator, Literal
+from typing import TYPE_CHECKING, Any, ClassVar, Iterable, Iterator, Literal, Sequence
 from warnings import warn
 
 import torch
@@ -119,6 +119,7 @@ class Engine:
         model: OTXModel | str | None = None,
         checkpoint: PathLike | None = None,
         device: DeviceType = DeviceType.auto,
+        input_size: Sequence[int] | int | None = None,
         **kwargs,
     ):
         """Initializes the OTX Engine.
@@ -141,7 +142,16 @@ class Engine:
             data_root=data_root,
             task=datamodule.task if datamodule is not None else task,
             model_name=None if isinstance(model, OTXModel) else model,
+            input_size=input_size,
         )
+
+        if input_size is not None:
+            if isinstance(datamodule, OTXDataModule) and datamodule.input_size != input_size:
+                msg = "Data module is already initialized. Input size will be ignored to data module."
+                logging.warning(msg)
+            if isinstance(model, OTXModel) and model.input_size != input_size:
+                msg = "Model is already initialized. Input size will be ignored to model."
+                logging.warning(msg)
 
         self._datamodule: OTXDataModule | None = (
             datamodule if datamodule is not None else self._auto_configurator.get_datamodule()

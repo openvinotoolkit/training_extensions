@@ -5,12 +5,14 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Sequence
 
 import torch
 from torch import nn
 from torchvision import tv_tensors
 from transformers import AutoImageProcessor, AutoModelForObjectDetection
+from transformers.configuration_utils import PretrainedConfig
+# from transformers.image_processing_base import ImageProcessingMixin
 
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.detection import DetBatchDataEntity, DetBatchPredEntity
@@ -60,6 +62,7 @@ class HuggingFaceModelForDetection(OTXDetectionModel):
         self,
         model_name_or_path: str,  # https://huggingface.co/models?pipeline_tag=object-detection
         label_info: LabelInfoTypes,
+        input_size: Sequence[int] = (1, 3, 800, 992),  # detection default input size
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MeanAveragePrecisionFMeasureCallable,
@@ -67,18 +70,16 @@ class HuggingFaceModelForDetection(OTXDetectionModel):
     ) -> None:
         self.model_name = model_name_or_path
         self.load_from = None
-        self.image_processor = AutoImageProcessor.from_pretrained(self.model_name)
-        if len(input_size := self.image_processor.size.values()) == 1:
-            input_size = (*input_size, *input_size)
 
         super().__init__(
             label_info=label_info,
-            input_size=(1, 3, *input_size),
+            input_size=input_size,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
             torch_compile=torch_compile,
         )
+        self.image_processor = AutoImageProcessor.from_pretrained(self.model_name)
 
     def _build_model(self, num_classes: int) -> nn.Module:
         return AutoModelForObjectDetection.from_pretrained(

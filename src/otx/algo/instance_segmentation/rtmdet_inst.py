@@ -20,9 +20,17 @@ from otx.algo.instance_segmentation.losses import DiceLoss
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.model.instance_segmentation import ExplainableOTXInstanceSegModel
+from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
+from otx.core.config.data import TileConfig
+from otx.core.metrics.mean_ap import MaskRLEMeanAPFMeasureCallable
 
 if TYPE_CHECKING:
     from torch import Tensor
+    from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
+
+    from otx.core.types.label import LabelInfoTypes
+    from otx.core.schedulers import LRSchedulerListCallable
+    from otx.core.metrics import MetricCallable
 
 
 class RTMDetInst(ExplainableOTXInstanceSegModel):
@@ -86,13 +94,23 @@ class RTMDetInstTiny(RTMDetInst):
 
     def __init__(
         self,
+        label_info: LabelInfoTypes,
         input_size: Sequence[int] = (1, 3, 640, 640),
+        optimizer: OptimizerCallable = DefaultOptimizerCallable,
+        scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
+        metric: MetricCallable = MaskRLEMeanAPFMeasureCallable,
+        torch_compile: bool = False,
+        tile_config: TileConfig = TileConfig(enable_tiler=False),
         tile_image_size: Sequence[int] = (1, 3, 512, 512),
-        **kwargs
     ) -> None:
         super().__init__(
+            label_info=label_info,
             input_size=input_size,
-            **kwargs
+            optimizer=optimizer,
+            scheduler=scheduler,
+            metric=metric,
+            torch_compile=torch_compile,
+            tile_config=tile_config,
         )
         self.tile_image_size = tile_image_size
 

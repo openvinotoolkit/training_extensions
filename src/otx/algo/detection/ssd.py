@@ -25,11 +25,18 @@ from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.model.detection import ExplainableOTXDetModel
+from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
+from otx.core.metrics.fmeasure import MeanAveragePrecisionFMeasureCallable
+from otx.core.config.data import TileConfig
 
 if TYPE_CHECKING:
     import torch
+    from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
 
     from otx.core.data.dataset.base import OTXDataset
+    from otx.core.types.label import LabelInfoTypes
+    from otx.core.schedulers import LRSchedulerListCallable
+    from otx.core.metrics import MetricCallable
 
 
 logger = logging.getLogger()
@@ -47,13 +54,23 @@ class SSD(ExplainableOTXDetModel):
 
     def __init__(
         self,
+        label_info: LabelInfoTypes,
         input_size: Sequence[int] = (1, 3, 864, 864),
+        optimizer: OptimizerCallable = DefaultOptimizerCallable,
+        scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
+        metric: MetricCallable = MeanAveragePrecisionFMeasureCallable,
+        torch_compile: bool = False,
+        tile_config: TileConfig = TileConfig(enable_tiler=False),
         tile_image_size: Sequence[int] = (1, 3, 864, 864),
-        **kwargs
     ) -> None:
         super().__init__(
+            label_info=label_info,
             input_size=input_size,
-            **kwargs
+            optimizer=optimizer,
+            scheduler=scheduler,
+            metric=metric,
+            torch_compile=torch_compile,
+            tile_config=tile_config,
         )
         self.tile_image_size = tile_image_size
 
@@ -153,7 +170,7 @@ class SSD(ExplainableOTXDetModel):
                 if isinstance(transform, Resize):
                     target_wh = transform.scale
         if target_wh is None:
-            target_wh = (864, 864)
+            target_wh = self.input_size[-2:]
             msg = f"Cannot get target_wh from the dataset. Assign it with the default value: {target_wh}"
             logger.warning(msg)
         group_as = [len(width) for width in anchor_generator.widths]
@@ -276,11 +293,11 @@ class SSD(ExplainableOTXDetModel):
     @property
     def _exporter(self) -> OTXModelExporter:
         """Creates OTXModelExporter object that can export the model."""
-        if self.image_size is None:
-            raise ValueError(self.image_size)
+        if self.input_size is None:
+            raise ValueError(self.input_size)
         return OTXNativeModelExporter(
             task_level_export_parameters=self._export_parameters,
-            input_size=self.image_size,
+            input_size=self.input_size,
             mean=self.mean,
             std=self.std,
             resize_mode="standard",

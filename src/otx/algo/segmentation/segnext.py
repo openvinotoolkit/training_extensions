@@ -10,11 +10,18 @@ from otx.algo.segmentation.backbones import MSCAN
 from otx.algo.segmentation.heads import LightHamHead
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.model.segmentation import TorchVisionCompatibleModel
+from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
+from otx.core.metrics.dice import SegmCallable
 
 from .base_model import BaseSegmModel
 
 if TYPE_CHECKING:
     from torch import nn
+    from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
+
+    from otx.core.schedulers import LRSchedulerListCallable
+    from otx.core.types.label import LabelInfoTypes
+    from otx.core.metrics import MetricCallable
 
 
 class SegNextB(BaseSegmModel):
@@ -109,12 +116,30 @@ class OTXSegNext(TorchVisionCompatibleModel):
     """SegNext Model."""
     def __init__(
         self,
+        label_info: LabelInfoTypes,
         input_size: Sequence[int] = (1, 3, 512, 512),
-        **kwargs
-    ) -> None:
+        optimizer: OptimizerCallable = DefaultOptimizerCallable,
+        scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
+        metric: MetricCallable = SegmCallable,  # type: ignore[assignment]
+        torch_compile: bool = False,
+        backbone_configuration: dict[str, Any] | None = None,
+        decode_head_configuration: dict[str, Any] | None = None,
+        criterion_configuration: list[dict[str, Any]] | None = None,
+        export_image_configuration: dict[str, Any] | None = None,
+        name_base_model: str = "semantic_segmentation_model",
+    ):
         super().__init__(
+            label_info=label_info,
             input_size=input_size,
-            **kwargs
+            optimizer=optimizer,
+            scheduler=scheduler,
+            metric=metric,
+            torch_compile=torch_compile,
+            backbone_configuration=backbone_configuration,
+            decode_head_configuration=decode_head_configuration,
+            criterion_configuration=criterion_configuration,
+            export_image_configuration=export_image_configuration,
+            name_base_model=name_base_model,
         )
 
     def _create_model(self) -> nn.Module:
