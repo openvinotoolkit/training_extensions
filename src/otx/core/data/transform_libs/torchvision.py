@@ -3431,9 +3431,7 @@ class TopdownAffine(tvt_v2.Transform, NumpytoTVTensorMixin):
         warp_mat: np.ndarray,
         warp_size: tuple[int, int],
     ) -> torch.Tensor:
-        if isinstance(image, np.ndarray):
-            return cv2.warpAffine(image, warp_mat, warp_size, flags=cv2.INTER_LINEAR)
-        numpy_image = image.permute(1, 2, 0).cpu().numpy()
+        numpy_image: np.ndarray = to_np_image(image)
         warped_image = cv2.warpAffine(numpy_image, warp_mat, warp_size, flags=cv2.INTER_LINEAR)
         return torch.from_numpy(warped_image).permute(2, 0, 1)
 

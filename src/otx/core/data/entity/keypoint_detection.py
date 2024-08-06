@@ -1,4 +1,4 @@
-# Copyright (C) 2023 Intel Corporation
+# Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 """Module for OTX detection data entities."""
@@ -95,12 +95,12 @@ class KeypointDetBatchDataEntity(OTXBatchDataEntity[KeypointDetDataEntity]):
         """Collection function to collect `KeypointDetDataEntity` into `KeypointDetBatchDataEntity` in data loader.
 
         Args:
-            entities: List of `DetDataEntity`.
+            entities: List of `KeypointDetDataEntity`.
             stack_images: If True, return 4D B x C x H x W image tensor.
                 Otherwise return a list of 3D C x H x W image tensor.
 
         Returns:
-            Collated `DetBatchDataEntity`
+            Collated `KeypointDetBatchDataEntity`
         """
         batch_data = super().collate_fn(entities, stack_images=stack_images)
         bboxes, labels, keypoints, keypoints_visible, keypoint_x_labels, keypoint_y_labels, keypoint_weights = (

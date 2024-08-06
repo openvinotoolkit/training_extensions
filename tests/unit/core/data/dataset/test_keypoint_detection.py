@@ -1,6 +1,6 @@
-# Copyright (C) 2023 Intel Corporation
+# Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-"""Unit tests of visual prompting datasets."""
+"""Unit tests of keypoint detection datasets."""
 
 from __future__ import annotations
 

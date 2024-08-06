@@ -1,6 +1,6 @@
-# Copyright (C) 2023 Intel Corporation
+# Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-
+"""Test of RTMCCBlock."""
 
 import torch
 from otx.algo.keypoint_detection.utils.rtmcc_block import RTMCCBlock
