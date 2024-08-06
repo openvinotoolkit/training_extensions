@@ -220,6 +220,7 @@ class OTXCLI:
             "export": device_kwargs,
             "optimize": {"datamodule"}.union(device_kwargs),
             "explain": {"datamodule"}.union(device_kwargs),
+            "benchmark": device_kwargs,
         }
 
     def add_subcommands(self) -> None:
@@ -528,7 +529,8 @@ class OTXCLI:
             fn_kwargs = self.prepare_subcommand_kwargs(self.subcommand)
             fn = getattr(self.engine, self.subcommand)
             try:
-                fn(**fn_kwargs)
+                outputs = fn(**fn_kwargs)
+                self._print_results(outputs=outputs)
             except Exception:
                 self.console.print_exception(width=self.console.width)
                 raise
@@ -536,3 +538,25 @@ class OTXCLI:
         else:
             msg = f"Unrecognized subcommand: {self.subcommand}"
             raise ValueError(msg)
+
+    def _print_results(self, outputs: Any) -> None:  # noqa: ANN401
+        if outputs is None:
+            return
+        if self.subcommand == "train" and isinstance(outputs, dict):
+            # Print Metric like 'otx test'
+            from rich.table import Column, Table
+            from torch import Tensor
+
+            table_headers = ["Train metric", "Value"]
+            columns = [Column(h, justify="center", style="magenta", width=self.console.width) for h in table_headers]
+            columns[0].style = "cyan"
+            table = Table(*columns)
+            for metric, row in outputs.items():
+                if isinstance(row, Tensor):
+                    row = row.item() if row.numel() == 1 else row.tolist()  # noqa: PLW2901
+                table.add_row(*[metric, f"{row}"])
+            self.console.print(table)
+        elif self.subcommand in ("export", "optimize"):
+            # Print output model path
+            self.console.print(f"{self.subcommand} output: {outputs}")
+        self.console.print(f"Work Directory: {self.engine.work_dir}")

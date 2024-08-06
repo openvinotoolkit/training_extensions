@@ -316,7 +316,7 @@ def fxt_seg_data_entity() -> tuple[tuple, SegDataEntity, SegBatchDataEntity]:
     single_data_entity = SegDataEntity(
         image=fake_image,
         img_info=fake_image_info,
-        gt_seg_map=fake_masks,
+        masks=fake_masks,
     )
     batch_data_entity = SegBatchDataEntity(
         batch_size=1,

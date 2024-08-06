@@ -141,4 +141,4 @@ class VisionTransformerClsHead(BaseModule):
 
     def _get_predictions(self, cls_score: torch.Tensor) -> torch.Tensor:
         """Get the score from the classification score."""
-        return functional.softmax(cls_score, dim=1)
+        return functional.softmax(cls_score, dim=-1)

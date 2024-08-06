@@ -1,4 +1,4 @@
-# Copyright (C) 2023 Intel Corporation
+# Copyright (C) 2023-2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 """Class definition for detection model entity used in OTX."""
@@ -12,7 +12,7 @@ from typing import TYPE_CHECKING, Any
 import torch
 from torchvision import tv_tensors
 
-from otx.core.data.entity.base import OTXBatchLossEntity
+from otx.core.data.entity.base import ImageInfo, OTXBatchLossEntity
 from otx.core.data.entity.segmentation import SegBatchDataEntity, SegBatchPredEntity
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter
@@ -22,20 +22,19 @@ from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallab
 from otx.core.schedulers import LRSchedulerListCallable
 from otx.core.types.export import TaskLevelExportParameters
 from otx.core.types.label import LabelInfo, LabelInfoTypes, SegLabelInfo
-from otx.core.utils.config import inplace_num_classes
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
-    from mmseg.models.data_preprocessor import SegDataPreProcessor
     from model_api.models.utils import ImageResultWithSoftPrediction
-    from omegaconf import DictConfig
-    from torch import Tensor, nn
+    from torch import Tensor
 
     from otx.core.metrics import MetricCallable
 
 
 class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity]):
     """Base class for the semantic segmentation models used in OTX."""
+
+    image_size: tuple[int, ...] | None = None
 
     def __init__(
         self,
@@ -104,6 +103,24 @@ class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity]):
     def forward_for_tracing(self, image: Tensor) -> Tensor | dict[str, Tensor]:
         """Model forward function used for the model tracing during model exportation."""
         return self.model(inputs=image, mode="tensor")
+
+    def get_dummy_input(self, batch_size: int = 1) -> SegBatchDataEntity:
+        """Returns a dummy input for semantic segmentation model."""
+        if self.image_size is None:
+            msg = f"Image size attribute is not set for {self.__class__}"
+            raise ValueError(msg)
+
+        images = torch.rand(batch_size, *self.image_size[1:])
+        infos = []
+        for i, img in enumerate(images):
+            infos.append(
+                ImageInfo(
+                    img_idx=i,
+                    img_shape=img.shape,
+                    ori_shape=img.shape,
+                ),
+            )
+        return SegBatchDataEntity(batch_size, images, infos, masks=[])
 
 
 class TorchVisionCompatibleModel(OTXSegmentationModel):
@@ -193,6 +210,10 @@ class TorchVisionCompatibleModel(OTXSegmentationModel):
     @property
     def _exporter(self) -> OTXModelExporter:
         """Creates OTXModelExporter object that can export the model."""
+        if self.image_size is None:
+            msg = f"Image size attribute is not set for {self.__class__}"
+            raise ValueError(msg)
+
         return OTXNativeModelExporter(
             task_level_export_parameters=self._export_parameters,
             input_size=self.image_size,
@@ -204,122 +225,6 @@ class TorchVisionCompatibleModel(OTXSegmentationModel):
             via_onnx=False,
             onnx_export_configuration=None,
             output_names=None,
-        )
-
-
-class MMSegCompatibleModel(OTXSegmentationModel):
-    """Segmentation model compatible for MMSeg.
-
-    It can consume MMSeg model configuration translated into OTX configuration
-    (please see otx.tools.translate_mmrecipe) and create the OTX detection model
-    compatible for OTX pipelines.
-    """
-
-    def __init__(
-        self,
-        label_info: LabelInfoTypes,
-        config: DictConfig,
-        optimizer: OptimizerCallable = DefaultOptimizerCallable,
-        scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
-        metric: MetricCallable = SegmCallable,  # type: ignore[assignment]
-        torch_compile: bool = False,
-    ) -> None:
-        """MMSeg compatible model.
-
-        Args:
-            label_info (LabelInfoTypes): The label information for the segmentation model.
-            config (DictConfig): The configuration for the segmentation model.
-            optimizer (OptimizerCallable, optional): The optimizer to use for training.
-                Defaults to DefaultOptimizerCallable.
-            scheduler (LRSchedulerCallable | LRSchedulerListCallable, optional):
-                The scheduler to use for learning rate adjustment.
-                    Defaults to DefaultSchedulerCallable.
-            metric (MetricCallable, optional): The metric to use for evaluation.
-                Defaults to SegmCallable.
-            torch_compile (bool, optional): Whether to compile the model using TorchScript.
-                Defaults to False.
-
-        Returns:
-            None
-        """
-        config = inplace_num_classes(cfg=config, num_classes=self._dispatch_label_info(label_info).num_classes)
-        self.config = config
-        self.load_from = self.config.pop("load_from", None)
-        self.image_size = (1, 3, 544, 544)
-        super().__init__(
-            label_info=label_info,
-            optimizer=optimizer,
-            scheduler=scheduler,
-            metric=metric,
-            torch_compile=torch_compile,
-        )
-
-    def _create_model(self) -> nn.Module:
-        from .utils.mmseg import create_model
-
-        model, self.classification_layers = create_model(self.config, self.load_from)
-        return model
-
-    def _customize_inputs(self, entity: SegBatchDataEntity) -> dict[str, Any]:
-        from mmengine.structures import PixelData
-        from mmseg.structures import SegDataSample
-
-        mmseg_inputs: dict[str, Any] = {}
-        mmseg_inputs["inputs"] = entity.images  # B x C x H x W PyTorch tensor
-        mmseg_inputs["data_samples"] = [
-            SegDataSample(
-                metainfo={
-                    "img_id": img_info.img_idx,
-                    "img_shape": img_info.img_shape,
-                    "ori_shape": img_info.ori_shape,
-                    "scale_factor": img_info.scale_factor,
-                    "ignored_labels": img_info.ignored_labels,
-                },
-                gt_sem_seg=PixelData(
-                    data=masks,
-                ),
-            )
-            for img_info, masks in zip(
-                entity.imgs_info,
-                entity.masks,
-            )
-        ]
-        preprocessor: SegDataPreProcessor = self.model.data_preprocessor
-        mmseg_inputs = preprocessor(data=mmseg_inputs, training=self.training)
-        mmseg_inputs["mode"] = "loss" if self.training else "predict"
-
-        return mmseg_inputs
-
-    def _customize_outputs(
-        self,
-        outputs: Any,  # noqa: ANN401
-        inputs: SegBatchDataEntity,
-    ) -> SegBatchPredEntity | OTXBatchLossEntity:
-        from mmseg.structures import SegDataSample
-
-        if self.training:
-            if not isinstance(outputs, dict):
-                raise TypeError(outputs)
-
-            losses = OTXBatchLossEntity()
-            for k, v in outputs.items():
-                if "loss" in k:
-                    losses[k] = v
-            return losses
-
-        masks = []
-
-        for output in outputs:
-            if not isinstance(output, SegDataSample):
-                raise TypeError(output)
-            masks.append(output.pred_sem_seg.data)
-
-        return SegBatchPredEntity(
-            batch_size=len(outputs),
-            images=inputs.images,
-            imgs_info=inputs.imgs_info,
-            scores=[],
-            masks=masks,
         )
 
 

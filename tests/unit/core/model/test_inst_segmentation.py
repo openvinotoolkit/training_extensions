@@ -7,13 +7,13 @@ import pytest
 import torch
 from otx.algo.explain.explain_algo import feature_vector_fn
 from otx.algo.instance_segmentation.maskrcnn import MaskRCNNEfficientNet
-from otx.core.model.instance_segmentation import MMDetInstanceSegCompatibleModel
+from otx.core.model.instance_segmentation import ExplainableOTXInstanceSegModel
 from otx.core.types.export import TaskLevelExportParameters
 
 
 class TestOTXInstanceSegModel:
     @pytest.fixture()
-    def otx_model(self) -> MMDetInstanceSegCompatibleModel:
+    def otx_model(self) -> ExplainableOTXInstanceSegModel:
         return MaskRCNNEfficientNet(label_info=1)
 
     def test_create_model(self, otx_model) -> None:
@@ -69,3 +69,8 @@ class TestOTXInstanceSegModel:
         parameters = otx_model._export_parameters
         assert isinstance(parameters, TaskLevelExportParameters)
         assert parameters.task_type == "instance_segmentation"
+
+    def test_dummy_input(self, otx_model):
+        batch_size = 2
+        batch = otx_model.get_dummy_input(batch_size)
+        assert batch.batch_size == batch_size

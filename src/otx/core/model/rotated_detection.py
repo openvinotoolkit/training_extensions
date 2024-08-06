@@ -1,6 +1,5 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-#
 """Class definition for rotated detection model entity used in OTX."""
 
 from __future__ import annotations
@@ -11,11 +10,7 @@ from datumaro import Polygon
 from torchvision import tv_tensors
 
 from otx.core.data.entity.instance_segmentation import InstanceSegBatchPredEntity
-from otx.core.model.instance_segmentation import (
-    MMDetInstanceSegCompatibleModel,
-    OTXInstanceSegModel,
-    OVInstanceSegmentationModel,
-)
+from otx.core.model.instance_segmentation import OTXInstanceSegModel, OVInstanceSegmentationModel
 
 
 class OTXRotatedDetModel(OTXInstanceSegModel):
@@ -96,10 +91,6 @@ class OTXRotatedDetModel(OTXInstanceSegModel):
             polygons=batch_polygons,
             labels=batch_labels,
         )
-
-
-class MMDetRotatedDetModel(OTXRotatedDetModel, MMDetInstanceSegCompatibleModel):
-    """Rotated Detection model compaible for MMDet."""
 
 
 class OVRotatedDetectionModel(OVInstanceSegmentationModel):

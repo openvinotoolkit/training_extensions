@@ -1,6 +1,5 @@
-# Copyright (C) 2023 Intel Corporation
+# Copyright (C) 2023-2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-#
 """Class definition for classification model entity used in OTX."""
 
 from __future__ import annotations
@@ -9,9 +8,8 @@ from typing import TYPE_CHECKING, Any
 
 import numpy as np
 import torch
-from torchmetrics import Accuracy
+from torch import Tensor
 
-from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.classification import (
     HlabelClsBatchDataEntity,
     HlabelClsBatchPredEntity,
@@ -20,8 +18,6 @@ from otx.core.data.entity.classification import (
     MultilabelClsBatchDataEntity,
     MultilabelClsBatchPredEntity,
 )
-from otx.core.exporter.base import OTXModelExporter
-from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.metrics import MetricInput
 from otx.core.metrics.accuracy import (
     HLabelClsMetricCallble,
@@ -32,15 +28,10 @@ from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallab
 from otx.core.schedulers import LRSchedulerListCallable
 from otx.core.types.export import TaskLevelExportParameters
 from otx.core.types.label import HLabelInfo, LabelInfo, LabelInfoTypes
-from otx.core.utils.config import inplace_num_classes
-from otx.core.utils.utils import get_mean_std_from_data_processing
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
-    from mmpretrain.models.utils import ClsDataPreprocessor
     from model_api.models.utils import ClassificationResult
-    from omegaconf import DictConfig
-    from torch import Tensor, nn
 
     from otx.core.metrics import MetricCallable
 
@@ -63,6 +54,7 @@ class OTXMulticlassClsModel(OTXModel[MulticlassClsBatchDataEntity, MulticlassCls
             metric=metric,
             torch_compile=torch_compile,
         )
+        self.image_size = (1, 3, 224, 224)
 
     @property
     def _export_parameters(self) -> TaskLevelExportParameters:
@@ -86,151 +78,11 @@ class OTXMulticlassClsModel(OTXModel[MulticlassClsBatchDataEntity, MulticlassCls
             "target": target,
         }
 
-
-class MMPretrainMulticlassClsModel(OTXMulticlassClsModel):
-    """Multi-class Classification model compatible for MMPretrain.
-
-    It can consume MMPretrain model configuration translated into OTX configuration
-    (please see otx.tools.translate_mmrecipe) and create the OTX classification model
-    compatible for OTX pipelines.
-    """
-
-    def __init__(
-        self,
-        label_info: LabelInfoTypes,
-        config: DictConfig,
-        optimizer: OptimizerCallable = DefaultOptimizerCallable,
-        scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
-        metric: MetricCallable = MultiClassClsMetricCallable,
-        torch_compile: bool = False,
-    ) -> None:
-        config = inplace_num_classes(cfg=config, num_classes=self._dispatch_label_info(label_info).num_classes)
-        self.config = config
-        self.load_from = config.pop("load_from", None)
-        self.image_size = (1, 3, 224, 224)
-        super().__init__(
-            label_info=label_info,
-            optimizer=optimizer,
-            scheduler=scheduler,
-            metric=metric,
-            torch_compile=torch_compile,
-        )
-
-    def _create_model(self) -> nn.Module:
-        from .utils.mmpretrain import create_model
-
-        model, self.classification_layers = create_model(self.config, self.load_from)
-        return model
-
-    def _customize_inputs(self, entity: MulticlassClsBatchDataEntity) -> dict[str, Any]:
-        from mmpretrain.structures import DataSample
-
-        mmpretrain_inputs: dict[str, Any] = {}
-
-        mmpretrain_inputs["inputs"] = entity.images  # B x C x H x W PyTorch tensor
-        mmpretrain_inputs["data_samples"] = [
-            DataSample(
-                metainfo={
-                    "img_id": img_info.img_idx,
-                    "img_shape": img_info.img_shape,
-                    "ori_shape": img_info.ori_shape,
-                    "scale_factor": img_info.scale_factor,
-                },
-                gt_label=labels,
-            )
-            for img_info, labels in zip(
-                entity.imgs_info,
-                entity.labels,
-            )
-        ]
-        preprocessor: ClsDataPreprocessor = self.model.data_preprocessor
-
-        mmpretrain_inputs = preprocessor(data=mmpretrain_inputs, training=self.training)
-
-        mmpretrain_inputs["mode"] = "loss" if self.training else "predict"
-        return mmpretrain_inputs
-
-    def _customize_outputs(
-        self,
-        outputs: dict[str, Any],
-        inputs: MulticlassClsBatchDataEntity,
-    ) -> MulticlassClsBatchPredEntity | OTXBatchLossEntity:
-        from mmpretrain.structures import DataSample
-
-        if self.training:
-            if not isinstance(outputs, dict):
-                raise TypeError(outputs)
-
-            losses = OTXBatchLossEntity()
-            for k, v in outputs.items():
-                losses[k] = v
-            return losses
-
-        predictions = outputs["logits"] if isinstance(outputs, dict) else outputs
-        scores = []
-        labels = []
-
-        for output in predictions:
-            if not isinstance(output, DataSample):
-                raise TypeError(output)
-
-            scores.append(output.pred_score)
-            labels.append(output.pred_label)
-
-        if self.explain_mode:
-            if not isinstance(outputs, dict):
-                msg = f"Model output should be a dict, but got {type(outputs)}."
-                raise ValueError(msg)
-
-            if "feature_vector" not in outputs:
-                msg = "No feature vector in the model output."
-                raise ValueError(msg)
-
-            if "saliency_map" not in outputs:
-                msg = "No saliency maps in the model output."
-                raise ValueError(msg)
-
-            feature_vector = outputs["feature_vector"].detach()
-            saliency_map = outputs["saliency_map"].detach()
-
-            return MulticlassClsBatchPredEntity(
-                batch_size=len(predictions),
-                images=inputs.images,
-                imgs_info=inputs.imgs_info,
-                scores=scores,
-                labels=labels,
-                feature_vector=list(feature_vector),
-                saliency_map=list(saliency_map),
-            )
-
-        return MulticlassClsBatchPredEntity(
-            batch_size=len(predictions),
-            images=inputs.images,
-            imgs_info=inputs.imgs_info,
-            scores=scores,
-            labels=labels,
-        )
-
-    @property
-    def _exporter(self) -> OTXModelExporter:
-        """Creates OTXModelExporter object that can export the model."""
-        mean, std = get_mean_std_from_data_processing(self.config)
-        return OTXNativeModelExporter(
-            task_level_export_parameters=self._export_parameters,
-            input_size=self.image_size,
-            mean=mean,
-            std=std,
-            resize_mode="standard",
-            pad_value=0,
-            swap_rgb=False,
-            via_onnx=False,
-            onnx_export_configuration=None,
-            output_names=["logits", "feature_vector", "saliency_map"] if self.explain_mode else None,
-        )
-
-    def forward_for_tracing(self, image: Tensor) -> Tensor | dict[str, Tensor]:
-        """Model forward function used for the model tracing during model exportation."""
-        return self.model.forward(image, mode="tensor")
+    def get_dummy_input(self, batch_size: int = 1) -> MulticlassClsBatchDataEntity:
+        """Returns a dummy input for classification model."""
+        images = [torch.rand(*self.image_size[1:]) for _ in range(batch_size)]
+        labels = [torch.LongTensor([0])] * batch_size
+        return MulticlassClsBatchDataEntity(batch_size, images, [], labels=labels)
 
 
 ### NOTE, currently, although we've made the separate Multi-cls, Multi-label classes
@@ -255,6 +107,7 @@ class OTXMultilabelClsModel(OTXModel[MultilabelClsBatchDataEntity, MultilabelCls
             metric=metric,
             torch_compile=torch_compile,
         )
+        self.image_size = (1, 3, 224, 224)
 
     @property
     def _export_parameters(self) -> TaskLevelExportParameters:
@@ -281,149 +134,11 @@ class OTXMultilabelClsModel(OTXModel[MultilabelClsBatchDataEntity, MultilabelCls
         """Model forward function used for the model tracing during model exportation."""
         return self.model.forward(image, mode="tensor")
 
-
-class MMPretrainMultilabelClsModel(OTXMultilabelClsModel):
-    """Multi-label Classification model compatible for MMPretrain.
-
-    It can consume MMPretrain model configuration translated into OTX configuration
-    (please see otx.tools.translate_mmrecipe) and create the OTX classification model
-    compatible for OTX pipelines.
-    """
-
-    def __init__(
-        self,
-        label_info: LabelInfoTypes,
-        config: DictConfig,
-        optimizer: OptimizerCallable = DefaultOptimizerCallable,
-        scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
-        metric: MetricCallable = lambda num_labels: Accuracy(task="multilabel", num_labels=num_labels),
-        torch_compile: bool = False,
-    ) -> None:
-        config = inplace_num_classes(cfg=config, num_classes=self._dispatch_label_info(label_info).num_classes)
-        self.config = config
-        self.load_from = config.pop("load_from", None)
-        self.image_size = (1, 3, 224, 224)
-        super().__init__(
-            label_info=label_info,
-            optimizer=optimizer,
-            scheduler=scheduler,
-            metric=metric,
-            torch_compile=torch_compile,
-        )
-
-    def _create_model(self) -> nn.Module:
-        from .utils.mmpretrain import create_model
-
-        model, classification_layers = create_model(self.config, self.load_from)
-        self.classification_layers = classification_layers
-        return model
-
-    def _customize_inputs(self, entity: MultilabelClsBatchDataEntity) -> dict[str, Any]:
-        from mmpretrain.structures import DataSample
-
-        mmpretrain_inputs: dict[str, Any] = {}
-
-        mmpretrain_inputs["inputs"] = entity.images  # B x C x H x W PyTorch tensor
-        mmpretrain_inputs["data_samples"] = [
-            DataSample(
-                metainfo={
-                    "img_id": img_info.img_idx,
-                    "img_shape": img_info.img_shape,
-                    "ori_shape": img_info.ori_shape,
-                    "scale_factor": img_info.scale_factor,
-                    "ignored_labels": img_info.ignored_labels,
-                },
-                gt_score=labels,
-            )
-            for img_info, labels in zip(
-                entity.imgs_info,
-                entity.labels,
-            )
-        ]
-        preprocessor: ClsDataPreprocessor = self.model.data_preprocessor
-
-        mmpretrain_inputs = preprocessor(data=mmpretrain_inputs, training=self.training)
-
-        mmpretrain_inputs["mode"] = "loss" if self.training else "predict"
-        return mmpretrain_inputs
-
-    def _customize_outputs(
-        self,
-        outputs: Any,  # noqa: ANN401
-        inputs: MultilabelClsBatchDataEntity,
-    ) -> MultilabelClsBatchPredEntity | OTXBatchLossEntity:
-        from mmpretrain.structures import DataSample
-
-        if self.training:
-            if not isinstance(outputs, dict):
-                raise TypeError(outputs)
-
-            losses = OTXBatchLossEntity()
-            for k, v in outputs.items():
-                losses[k] = v
-            return losses
-
-        predictions = outputs["logits"] if isinstance(outputs, dict) else outputs
-        scores = []
-        labels = []
-
-        for output in predictions:
-            if not isinstance(output, DataSample):
-                raise TypeError(output)
-
-            scores.append(output.pred_score)
-            labels.append(output.pred_label)
-
-        if self.explain_mode:
-            if not isinstance(outputs, dict):
-                msg = f"Model output should be a dict, but got {type(outputs)}."
-                raise ValueError(msg)
-
-            if "feature_vector" not in outputs:
-                msg = "No feature vector in the model output."
-                raise ValueError(msg)
-
-            if "saliency_map" not in outputs:
-                msg = "No saliency maps in the model output."
-                raise ValueError(msg)
-
-            feature_vector = outputs["feature_vector"].detach()
-            saliency_map = outputs["saliency_map"].detach()
-
-            return MultilabelClsBatchPredEntity(
-                batch_size=len(predictions),
-                images=inputs.images,
-                imgs_info=inputs.imgs_info,
-                scores=scores,
-                labels=labels,
-                feature_vector=list(feature_vector),
-                saliency_map=list(saliency_map),
-            )
-
-        return MultilabelClsBatchPredEntity(
-            batch_size=len(predictions),
-            images=inputs.images,
-            imgs_info=inputs.imgs_info,
-            scores=scores,
-            labels=labels,
-        )
-
-    @property
-    def _exporter(self) -> OTXModelExporter:
-        """Creates OTXModelExporter object that can export the model."""
-        mean, std = get_mean_std_from_data_processing(self.config)
-        return OTXNativeModelExporter(
-            task_level_export_parameters=self._export_parameters,
-            input_size=self.image_size,
-            mean=mean,
-            std=std,
-            resize_mode="standard",
-            pad_value=0,
-            swap_rgb=False,
-            via_onnx=False,
-            onnx_export_configuration=None,
-            output_names=["logits", "feature_vector", "saliency_map"] if self.explain_mode else None,
-        )
+    def get_dummy_input(self, batch_size: int = 1) -> MultilabelClsBatchDataEntity:
+        """Returns a dummy input for classification OV model."""
+        images = [torch.rand(*self.image_size[1:]) for _ in range(batch_size)]
+        labels = [torch.LongTensor([0])] * batch_size
+        return MultilabelClsBatchDataEntity(batch_size, images, [], labels=labels)
 
 
 class OTXHlabelClsModel(OTXModel[HlabelClsBatchDataEntity, HlabelClsBatchPredEntity]):
@@ -444,6 +159,7 @@ class OTXHlabelClsModel(OTXModel[HlabelClsBatchDataEntity, HlabelClsBatchPredEnt
             metric=metric,
             torch_compile=torch_compile,
         )
+        self.image_size = (1, 3, 224, 224)
 
     @property
     def _export_parameters(self) -> TaskLevelExportParameters:
@@ -481,160 +197,11 @@ class OTXHlabelClsModel(OTXModel[HlabelClsBatchDataEntity, HlabelClsBatchPredEnt
 
         return label_info
 
-
-class MMPretrainHlabelClsModel(OTXHlabelClsModel):
-    """H-label Classification model compatible for MMPretrain.
-
-    It can consume MMPretrain model configuration translated into OTX configuration
-    (please see otx.tools.translate_mmrecipe) and create the OTX classification model
-    compatible for OTX pipelines.
-    """
-
-    def __init__(
-        self,
-        label_info: HLabelInfo,
-        config: DictConfig,
-        optimizer: OptimizerCallable = DefaultOptimizerCallable,
-        scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
-        metric: MetricCallable = HLabelClsMetricCallble,
-        torch_compile: bool = False,
-    ) -> None:
-        config = inplace_num_classes(cfg=config, num_classes=self._dispatch_label_info(label_info).num_classes)
-
-        if (head_config := getattr(config, "head", None)) is None:
-            msg = 'Config should have "head" section'
-            raise ValueError(msg)
-
-        head_config.update(**label_info.as_head_config_dict())
-
-        self.config = config
-        self.load_from = config.pop("load_from", None)
-        self.image_size = (1, 3, 224, 224)
-        super().__init__(
-            label_info=label_info,
-            optimizer=optimizer,
-            scheduler=scheduler,
-            metric=metric,
-            torch_compile=torch_compile,
-        )
-
-    def _create_model(self) -> nn.Module:
-        from .utils.mmpretrain import create_model
-
-        model, classification_layers = create_model(self.config, self.load_from)
-        self.classification_layers = classification_layers
-        return model
-
-    def _customize_inputs(self, entity: HlabelClsBatchDataEntity) -> dict[str, Any]:
-        from mmpretrain.structures import DataSample
-
-        mmpretrain_inputs: dict[str, Any] = {}
-
-        mmpretrain_inputs["inputs"] = entity.images  # B x C x H x W PyTorch tensor
-        mmpretrain_inputs["data_samples"] = [
-            DataSample(
-                metainfo={
-                    "img_id": img_info.img_idx,
-                    "img_shape": img_info.img_shape,
-                    "ori_shape": img_info.ori_shape,
-                    "scale_factor": img_info.scale_factor,
-                    "ignored_labels": img_info.ignored_labels,
-                },
-                gt_label=labels,
-            )
-            for img_info, labels in zip(
-                entity.imgs_info,
-                entity.labels,
-            )
-        ]
-        preprocessor: ClsDataPreprocessor = self.model.data_preprocessor
-
-        mmpretrain_inputs = preprocessor(data=mmpretrain_inputs, training=self.training)
-
-        mmpretrain_inputs["mode"] = "loss" if self.training else "predict"
-        return mmpretrain_inputs
-
-    def _customize_outputs(
-        self,
-        outputs: Any,  # noqa: ANN401
-        inputs: HlabelClsBatchDataEntity,
-    ) -> HlabelClsBatchPredEntity | OTXBatchLossEntity:
-        from mmpretrain.structures import DataSample
-
-        if self.training:
-            if not isinstance(outputs, dict):
-                raise TypeError(outputs)
-
-            losses = OTXBatchLossEntity()
-            for k, v in outputs.items():
-                losses[k] = v
-            return losses
-
-        predictions = outputs["logits"] if isinstance(outputs, dict) else outputs
-        scores = []
-        labels = []
-
-        for output in predictions:
-            if not isinstance(output, DataSample):
-                raise TypeError(output)
-
-            scores.append(output.pred_score)
-            labels.append(output.pred_label)
-
-        if self.explain_mode:
-            if not isinstance(outputs, dict):
-                msg = f"Model output should be a dict, but got {type(outputs)}."
-                raise ValueError(msg)
-
-            if "feature_vector" not in outputs:
-                msg = "No feature vector in the model output."
-                raise ValueError(msg)
-
-            if "saliency_map" not in outputs:
-                msg = "No saliency maps in the model output."
-                raise ValueError(msg)
-
-            feature_vector = outputs["feature_vector"].detach()
-            saliency_map = outputs["saliency_map"].detach()
-
-            return HlabelClsBatchPredEntity(
-                batch_size=len(outputs),
-                images=inputs.images,
-                imgs_info=inputs.imgs_info,
-                scores=scores,
-                labels=labels,
-                feature_vector=list(feature_vector),
-                saliency_map=list(saliency_map),
-            )
-
-        return HlabelClsBatchPredEntity(
-            batch_size=len(outputs),
-            images=inputs.images,
-            imgs_info=inputs.imgs_info,
-            scores=scores,
-            labels=labels,
-        )
-
-    @property
-    def _exporter(self) -> OTXModelExporter:
-        """Creates OTXModelExporter object that can export the model."""
-        mean, std = get_mean_std_from_data_processing(self.config)
-        return OTXNativeModelExporter(
-            task_level_export_parameters=self._export_parameters,
-            input_size=self.image_size,
-            mean=mean,
-            std=std,
-            resize_mode="standard",
-            pad_value=0,
-            swap_rgb=False,
-            via_onnx=False,
-            onnx_export_configuration=None,
-            output_names=["logits", "feature_vector", "saliency_map"] if self.explain_mode else None,
-        )
-
-    def forward_for_tracing(self, image: Tensor) -> Tensor | dict[str, Tensor]:
-        """Model forward function used for the model tracing during model exportation."""
-        return self.model.forward(image, mode="tensor")
+    def get_dummy_input(self, batch_size: int = 1) -> HlabelClsBatchDataEntity:
+        """Returns a dummy input for classification OV model."""
+        images = [torch.rand(*self.image_size[1:]) for _ in range(batch_size)]
+        labels = [torch.LongTensor([0])] * batch_size
+        return HlabelClsBatchDataEntity(batch_size, images, [], labels=labels)
 
 
 class OVMulticlassClassificationModel(

@@ -15,7 +15,6 @@ from datumaro.components.annotation import AnnotationType, LabelCategories
 
 if TYPE_CHECKING:
     from datumaro import Dataset as DmDataset
-    from omegaconf import DictConfig
 
 
 def is_ckpt_from_otx_v1(ckpt: dict) -> bool:
@@ -40,27 +39,6 @@ def is_ckpt_for_finetuning(ckpt: dict) -> bool:
         bool: True means the checkpoint will be used to finetune.
     """
     return "state_dict" in ckpt
-
-
-def get_mean_std_from_data_processing(
-    config: DictConfig,
-) -> tuple[tuple[float, float, float], tuple[float, float, float]]:
-    """Get mean and std value from data_processing.
-
-    Args:
-        config (DictConfig): MM framework model config.
-
-    Returns:
-        tuple[tuple[float, float, float], tuple[float, float, float]]:
-            Tuple of mean and std values.
-
-    Examples:
-        >>> mean, std = get_mean_std_from_data_processing(config)
-    """
-    return (
-        config["data_preprocessor"]["mean"],
-        config["data_preprocessor"]["std"],
-    )
 
 
 def get_adaptive_num_workers(num_dataloader: int = 1) -> int | None:

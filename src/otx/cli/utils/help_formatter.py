@@ -66,6 +66,11 @@ REQUIRED_ARGUMENTS = {
         *BASE_ARGUMENTS,
         *ENGINE_ARGUMENTS,
     },
+    "benchmark": {
+        "checkpoint",
+        *BASE_ARGUMENTS,
+        *ENGINE_ARGUMENTS,
+    },
 }
 
 

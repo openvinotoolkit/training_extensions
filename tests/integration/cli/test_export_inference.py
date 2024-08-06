@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+from copy import copy
 from pathlib import Path
 
 import pandas as pd
@@ -147,6 +148,7 @@ def test_otx_export_infer(
         work_dir: Path,
         device: str = fxt_accelerator,
         cli_override_command: list[str] | None = None,
+        with_benchmark: bool = False,
     ) -> Path:
         tmp_path_test = tmp_path / f"otx_test_{model_name}"
         command_cfg = [
@@ -168,12 +170,25 @@ def test_otx_export_infer(
         if cli_override_command is not None:
             command_cfg.extend(cli_override_command)
 
+        if with_benchmark:
+            benchmark_command_cfg = copy(command_cfg)
+            updated = False
+            for i, term in enumerate(benchmark_command_cfg):
+                if term == "test":
+                    benchmark_command_cfg[i] = "benchmark"
+                    updated = True
+                    break
+
+            assert updated
+            benchmark_command_cfg.extend(["--n_iters", "1", "--batch_size", "1"])
+            run_main(command_cfg=benchmark_command_cfg, open_subprocess=fxt_open_subprocess)
+
         run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)
 
         return tmp_path_test
 
     checkpoint_path: str = str(ckpt_files[-1])
-    tmp_path_test = run_cli_test(recipe, checkpoint_path, Path("outputs") / "torch")
+    tmp_path_test = run_cli_test(recipe, checkpoint_path, Path("outputs") / "torch", with_benchmark=True)
 
     if task == "zero_shot_visual_prompting":
         # Check when using reference infos obtained by otx train
@@ -191,6 +206,7 @@ def test_otx_export_infer(
         )
 
     assert (tmp_path_test / "outputs").exists()
+    assert (tmp_path_test / "outputs" / "torch" / ".latest" / "benchmark" / "benchmark_report.csv").exists()
 
     # 3) otx export
     format_to_ext = {"OPENVINO": "xml"}  # [TODO](@Vlad): extend to "ONNX": "onnx"
