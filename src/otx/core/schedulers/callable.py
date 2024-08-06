@@ -1,5 +1,6 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
+
 """Scheduler callable to support hyper-parameter optimization (HPO) algorithm."""
 
 from __future__ import annotations
