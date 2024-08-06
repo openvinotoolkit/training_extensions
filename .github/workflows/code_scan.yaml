@@ -28,19 +28,19 @@ jobs:
       - name: Freeze dependencies
         run: pip-compile --extra=docs,base,mmlab,anomaly -o requirements.txt pyproject.toml
       - name: Trivy Scanning (spdx.json)
-        uses: aquasecurity/trivy-action@7c2007bcb556501da015201bcba5aa14069b74e2 # 0.23.0
+        uses: aquasecurity/trivy-action@6e7b7d1fd3e4fef0c5fa8cce1229c54b2c9bd0d8 # 0.24.0
         with:
           trivy-config: ".ci/trivy-json.yaml"
           scan-type: "fs"
           scan-ref: .
       - name: Trivy Scanning
-        uses: aquasecurity/trivy-action@7c2007bcb556501da015201bcba5aa14069b74e2 # 0.23.0
+        uses: aquasecurity/trivy-action@6e7b7d1fd3e4fef0c5fa8cce1229c54b2c9bd0d8 # 0.24.0
         with:
           trivy-config: ".ci/trivy.yaml"
           scan-type: "fs"
           scan-ref: .
       - name: Upload Trivy results artifact
-        uses: actions/upload-artifact@0b2256b8c012f0828dc542b3febcab082c67f72b # v4.3.4
+        uses: actions/upload-artifact@89ef406dd8d7e03cfd12d9e0a4a378f454709029 # v4.3.5
         with:
           name: trivy-results
           path: "${{ github.workspace }}/trivy-results.*"
@@ -64,7 +64,7 @@ jobs:
       - name: Bandit Scanning
         run: tox -e bandit-scan
       - name: Upload Bandit artifact
-        uses: actions/upload-artifact@0b2256b8c012f0828dc542b3febcab082c67f72b # v4.3.4
+        uses: actions/upload-artifact@89ef406dd8d7e03cfd12d9e0a4a378f454709029 # v4.3.5
         with:
           name: bandit-report
           path: .tox/bandit-report.txt
