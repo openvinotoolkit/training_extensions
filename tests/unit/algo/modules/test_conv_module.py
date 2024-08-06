@@ -2,7 +2,6 @@
 # SPDX-License-Identifier: Apache-2.0
 # Copyright (c) OpenMMLab. All rights reserved.
 # https://github.com/open-mmlab/mmcv/blob/main/tests/test_cnn/test_conv_module.py
-from unittest.mock import patch
 
 import pytest
 import torch
@@ -125,65 +124,6 @@ def test_bias():
     assert record[0].message.args[0] == "Unnecessary conv bias before batch/instance norm"
 
 
-def conv_forward(self, x):
-    return x + "_conv"
-
-
-def bn_forward(self, x):
-    return x + "_bn"
-
-
-def relu_forward(self, x):
-    return x + "_relu"
-
-
-@patch("torch.nn.ReLU.forward", relu_forward)
-@patch("torch.nn.BatchNorm2d.forward", bn_forward)
-@patch("torch.nn.Conv2d.forward", conv_forward)
-def test_order():
-    order = ["conv", "norm", "act"]
-    with pytest.raises(TypeError):
-        # order must be a tuple
-        Conv2dModule(3, 8, 2, order=order)
-
-    order = ("conv", "norm")
-    with pytest.raises(ValueError, match="order should be a tuple of three elements, but got"):
-        # length of order must be 3
-        Conv2dModule(3, 8, 2, order=order)
-
-    order = ("conv", "norm", "norm")
-    with pytest.raises(
-        ValueError,
-        match="order should be a tuple of three elements, including 'conv', 'norm', 'act', but got",
-    ):
-        # order must be an order of 'conv', 'norm', 'act'
-        Conv2dModule(3, 8, 2, order=order)
-
-    order = ("conv", "norm", "something")
-    with pytest.raises(
-        ValueError,
-        match="order should be a tuple of three elements, including 'conv', 'norm', 'act', but got",
-    ):
-        # order must be an order of 'conv', 'norm', 'act'
-        Conv2dModule(3, 8, 2, order=order)
-
-    conv = Conv2dModule(3, 8, 2, norm_cfg={"type": "BN"})
-    out = conv("input")
-    assert out == "input_conv_bn_relu"
-
-    conv = Conv2dModule(3, 8, 2, norm_cfg={"type": "BN"}, order=("norm", "conv", "act"))
-    out = conv("input")
-    assert out == "input_bn_conv_relu"
-
-    conv = Conv2dModule(3, 8, 2, norm_cfg={"type": "BN"})
-    out = conv("input", activate=False)
-    assert out == "input_conv_bn"
-
-    conv = Conv2dModule(3, 8, 2, norm_cfg={"type": "BN"})
-    out = conv("input", norm=False)
-    assert out == "input_conv_relu"
-
-
 class TestDepthwiseSeparableConvModule:
     def test_forward_with_default_config(self) -> None:
         # test default config
@@ -225,12 +165,8 @@ class TestDepthwiseSeparableConvModule:
         output = conv(x)
         assert output.shape == (1, 8, 255, 255)
 
-    def test_forward_for_order_with_norm_conv_act(self) -> None:
-        # add test for ['norm', 'conv', 'act']
-        conv = DepthwiseSeparableConvModule(3, 8, 2, order=("norm", "conv", "act"))
+    def test_forward_with_spectral_norm_padding_mode(self) -> None:
         x = torch.rand(1, 3, 256, 256)
-        output = conv(x)
-        assert output.shape == (1, 8, 255, 255)
 
         conv = DepthwiseSeparableConvModule(3, 8, 3, padding=1, with_spectral_norm=True)
         assert hasattr(conv.depthwise_conv.conv, "weight_orig")

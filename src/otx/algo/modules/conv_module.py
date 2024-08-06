@@ -68,10 +68,6 @@ class ConvModule(nn.Module):
             instead. Currently, we support ['zeros', 'circular'] with official
             implementation and ['reflect'] with our own implementation.
             Default: 'zeros'.
-        order (tuple[str]): The order of conv/norm/activation layers. It is a
-            sequence of "conv", "norm" and "act". Common examples are
-            ("conv", "norm", "act") and ("act", "conv", "norm").
-            Default: ('conv', 'norm', 'act').
     """
 
     _abbr_ = "conv_block"
@@ -92,7 +88,6 @@ class ConvModule(nn.Module):
         inplace: bool = True,
         with_spectral_norm: bool = False,
         padding_mode: str = "zeros",
-        order: tuple = ("conv", "norm", "act"),
     ):
         super().__init__()
         assert norm_cfg is None or isinstance(norm_cfg, dict)  # noqa: S101
@@ -102,18 +97,6 @@ class ConvModule(nn.Module):
         self.inplace = inplace
         self.with_spectral_norm = with_spectral_norm
         self.with_explicit_padding = padding_mode not in official_padding_mode
-        self.order = order
-        if not isinstance(self.order, tuple):
-            msg = f"order should be a tuple, but got {type(self.order)}."
-            raise TypeError(msg)
-
-        if len(self.order) != 3:
-            msg = f"order should be a tuple of three elements, but got {len(self.order)}."
-            raise ValueError(msg)
-
-        if set(order) != {"conv", "norm", "act"}:
-            msg = f"order should be a tuple of three elements, including 'conv', 'norm', 'act', but got {order}."
-            raise ValueError(msg)
 
         self.with_norm = norm_cfg is not None
         self.with_activation = act_cfg is not None
@@ -156,7 +139,7 @@ class ConvModule(nn.Module):
         # build normalization layers
         if self.with_norm:
             # norm layer is after conv layer
-            norm_channels = out_channels if order.index("norm") > order.index("conv") else in_channels
+            norm_channels = out_channels
             self.norm_name, norm = build_norm_layer(norm_cfg, norm_channels)  # type: ignore[arg-type]
             self.add_module(self.norm_name, norm)
             if self.with_bias and isinstance(norm, (BatchNorm, InstanceNorm)):
@@ -227,18 +210,13 @@ class ConvModule(nn.Module):
         Returns:
             Tensor: Output tensor.
         """
-        layer_index = 0
-        while layer_index < len(self.order):
-            layer = self.order[layer_index]
-            if layer == "conv":
-                if self.with_explicit_padding:
-                    x = self.padding_layer(x)
-                x = self.conv(x)
-            elif layer == "norm" and norm and self.with_norm:
-                x = self.norm_layer(x)  # type: ignore[misc]
-            elif layer == "act" and activate and self.with_activation:
-                x = self.activate(x)
-            layer_index += 1
+        if self.with_explicit_padding:
+            x = self.padding_layer(x)
+        x = self.conv(x)
+        if norm and self.with_norm:
+            x = self.norm_layer(x)  # type: ignore[misc]
+        if activate and self.with_activation:
+            x = self.activate(x)
         return x
 
 
