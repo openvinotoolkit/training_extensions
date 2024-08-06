@@ -3219,8 +3219,7 @@ class RandomBBoxTransform(tvt_v2.Transform):
     @staticmethod
     def _truncnorm(low: float = -1.0, high: float = 1.0, size: tuple = ()) -> torch.Tensor:
         """Sample from a truncated normal distribution."""
-        # return torch.Tensor(truncnorm.rvs(low, high, size=size).astype(np.float32))
-        return truncnorm.rvs(low, high, size=size).astype(np.float32)
+        return torch.Tensor(truncnorm.rvs(low, high, size=size).astype(np.float32))
 
     @cache_randomness
     def _get_transform_params(self, num_bboxes: int) -> tuple:
@@ -3242,20 +3241,20 @@ class RandomBBoxTransform(tvt_v2.Transform):
 
         # Get shift parameters
         offset = offset_v * self.shift_factor
-        offset = np.where(np.random.rand(num_bboxes, 1) < self.shift_prob, offset, 1.0)
+        offset = torch.where(torch.rand(num_bboxes, 1) < self.shift_prob, offset, 1.0)
 
         # Get scaling parameters
         scale_min, scale_max = self.scale_factor
         mu = (scale_max + scale_min) * 0.5
         sigma = (scale_max - scale_min) * 0.5
         scale = scale_v * sigma + mu
-        scale = np.where(np.random.rand(num_bboxes, 1) < self.scale_prob, scale, 1.0)
+        scale = torch.where(torch.rand(num_bboxes, 1) < self.scale_prob, scale, 1.0)
 
         # Get rotation parameters
         rotate = rotate_v * self.rotate_factor
-        rotate = np.where(np.random.rand(num_bboxes) < self.rotate_prob, rotate, 0.0)
+        rotate = torch.where(torch.rand(num_bboxes, 1) < self.rotate_prob, rotate, 0.0)
 
-        return torch.Tensor(offset), torch.Tensor(scale), torch.Tensor(rotate)
+        return offset, scale, rotate
 
     def __call__(self, *_inputs: T_OTXDataEntity) -> T_OTXDataEntity | None:
         """The transform function of :class:`RandomBboxTransform`.
