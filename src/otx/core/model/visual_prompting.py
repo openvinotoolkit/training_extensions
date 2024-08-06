@@ -189,7 +189,6 @@ class OTXVisualPromptingModel(OTXModel[VisualPromptingBatchDataEntity, VisualPro
         """Customize the inputs for the model."""
         images = tv_tensors.wrap(torch.stack(inputs.images, dim=0).to(dtype=torch.float32), like=inputs.images[0])
         return {
-            "mode": "finetuning",
             "images": images,
             "ori_shapes": [torch.tensor(info.ori_shape) for info in inputs.imgs_info],
             "gt_masks": inputs.masks,

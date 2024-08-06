@@ -11,12 +11,13 @@ from typing import TYPE_CHECKING, Any, Sequence
 
 import torch
 from torch import Tensor, nn
-from torch.nn import functional as F  # noqa: N812
 from torchvision import tv_tensors
 
 from otx.algo.visual_prompting.backbones import TinyViT, ViT
 from otx.algo.visual_prompting.decoders import SAMMaskDecoder
 from otx.algo.visual_prompting.encoders import SAMPromptEncoder
+from otx.algo.visual_prompting.losses.sam_loss import SAMCriterion
+from otx.algo.visual_prompting.utils.postprocess import postprocess_masks
 from otx.core.data.entity.base import Points
 from otx.core.metrics.visual_prompting import VisualPromptingMetricCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
@@ -53,6 +54,7 @@ class SegmentAnything(nn.Module):
         image_encoder: nn.Module,
         prompt_encoder: nn.Module,
         mask_decoder: nn.Module,
+        criterion: nn.Module,
         image_size: int = 1024,
         mask_threshold: float = 0.0,
         use_stability_score: bool = False,
@@ -72,6 +74,7 @@ class SegmentAnything(nn.Module):
         self.image_encoder = image_encoder
         self.prompt_encoder = prompt_encoder
         self.mask_decoder = mask_decoder
+        self.criterion = criterion
 
     def forward(
         self,
@@ -127,97 +130,13 @@ class SegmentAnything(nn.Module):
             ious.append(torch.cat(iou_predictions, dim=0))
 
         if self.training:
-            loss_dice = 0.0
-            loss_focal = 0.0
-            loss_iou = 0.0
-
-            num_masks = sum(len(pred_mask) for pred_mask in pred_masks)
-            for pred_mask, gt_mask, iou, ori_shape in zip(pred_masks, gt_masks, ious, ori_shapes):  # type: ignore[arg-type]
-                post_processed_pred_mask = self.postprocess_masks(pred_mask, self.image_size, ori_shape)
-                post_processed_pred_mask = post_processed_pred_mask.sigmoid()
-                post_processed_pred_mask = post_processed_pred_mask.flatten(1)
-                flatten_gt_mask = gt_mask.flatten(1).float()
-
-                # calculate losses
-                loss_dice += self.calculate_dice_loss(post_processed_pred_mask, flatten_gt_mask, num_masks)
-                loss_focal += self.calculate_sigmoid_ce_focal_loss(post_processed_pred_mask, flatten_gt_mask, num_masks)
-                batch_iou = self.calculate_iou(post_processed_pred_mask, flatten_gt_mask)
-                loss_iou += F.mse_loss(iou, batch_iou.unsqueeze(1), reduction="sum") / num_masks
-
-            loss = 20.0 * loss_focal + loss_dice + loss_iou
-
-            return {"loss": loss, "loss_focal": loss_focal, "loss_dice": loss_dice, "loss_iou": loss_iou}
+            return self.criterion(pred_masks, gt_masks, ious, ori_shapes)
 
         post_processed_pred_masks: list[Tensor] = []
         for pred_mask, ori_shape in zip(pred_masks, ori_shapes):
-            post_processed_pred_mask = self.postprocess_masks(pred_mask, self.image_size, ori_shape)
+            post_processed_pred_mask = postprocess_masks(pred_mask, self.image_size, ori_shape)
             post_processed_pred_masks.append(post_processed_pred_mask.squeeze(1).sigmoid())
         return post_processed_pred_masks, ious
-
-    def calculate_dice_loss(self, inputs: Tensor, targets: Tensor, num_masks: int) -> Tensor:
-        """Compute the DICE loss, similar to generalized IOU for masks.
-
-        Args:
-            inputs (Tensor): A tensor representing a mask.
-            targets (Tensor): A tensor with the same shape as inputs. Stores the binary classification labels
-                for each element in inputs (0 for the negative class and 1 for the positive class).
-            num_masks (int): The number of masks present in the current batch, used for normalization.
-
-        Returns:
-            Tensor: The DICE loss.
-        """
-        numerator = 2 * (inputs * targets).sum(-1)
-        denominator = inputs.sum(-1) + targets.sum(-1)
-        loss = 1 - (numerator + 1) / (denominator + 1)
-        return loss.sum() / num_masks
-
-    def calculate_sigmoid_ce_focal_loss(
-        self,
-        inputs: Tensor,
-        targets: Tensor,
-        num_masks: int,
-        alpha: float = 0.25,
-        gamma: float = 2,
-    ) -> Tensor:
-        r"""Loss used in RetinaNet for dense detection: https://arxiv.org/abs/1708.02002. # noqa: D301.
-
-        Args:
-            inputs (Tensor): A float tensor of arbitrary shape.
-            targets (Tensor): A tensor with the same shape as inputs. Stores the binary classification labels
-                for each element in inputs (0 for the negative class and 1 for the positive class).
-            num_masks (int): The number of masks present in the current batch, used for normalization.
-            alpha (float, *optional*, defaults to 0.25): Weighting factor in range (0,1)
-                to balance positive vs negative examples.
-            gamma (float, *optional*, defaults to 2.0): Exponent of the modulating factor \\(1 - p_t\\)
-                to balance easy vs hard examples.
-
-        Returns:
-            Tensor: The focal loss.
-        """
-        loss = F.binary_cross_entropy_with_logits(inputs, targets, reduction="none")
-        p_t = inputs * targets + (1 - inputs) * (1 - targets)
-        loss = loss * ((1 - p_t) ** gamma)
-        if alpha >= 0:
-            alpha_t = alpha * targets + (1 - alpha) * (1 - targets)
-            loss = alpha_t * loss
-        return loss.mean(1).sum() / num_masks
-
-    def calculate_iou(self, inputs: Tensor, targets: Tensor, epsilon: float = 1e-7) -> Tensor:
-        """Calculate the intersection over union (IOU) between the predicted mask and the ground truth mask.
-
-        Args:
-            inputs (Tensor): A tensor representing a mask.
-            targets (Tensor): A tensor with the same shape as inputs. Stores the binary classification labels
-                for each element in inputs (0 for the negative class and 1 for the positive class).
-            epsilon (float, *optional*, defaults to 1e-7): A small value to prevent division by zero.
-
-        Returns:
-            Tensor: The IOU between the predicted mask and the ground truth mask.
-        """
-        pred_mask = (inputs >= 0.5).float()
-        intersection = torch.sum(torch.mul(pred_mask, targets), dim=1)
-        union = torch.sum(pred_mask, dim=1) + torch.sum(targets, dim=1) - intersection
-        return intersection / (union + epsilon)
 
 
 class SAM(OTXVisualPromptingModel):
@@ -364,7 +283,7 @@ class SAM(OTXVisualPromptingModel):
         if self.return_single_mask:
             masks, scores = self.select_masks(masks, scores, point_coords.shape[1])
 
-        upscaled_masks = self.postprocess_masks(masks, self.image_size, ori_shape)
+        upscaled_masks = postprocess_masks(masks, self.image_size, ori_shape)
 
         if self.return_extra_metrics:
             stability_scores = self.calculate_stability_score(
@@ -475,35 +394,6 @@ class SAM(OTXVisualPromptingModel):
 
         return masks, iou_preds
 
-    @classmethod
-    def postprocess_masks(cls, masks: Tensor, input_size: int, orig_size: Tensor) -> Tensor:
-        """Postprocess the predicted masks.
-
-        Args:
-            masks (Tensor): A batch of predicted masks with shape Bx1xHxW.
-            input_size (int): The size of the image input to the model, in (H, W) format.
-                Used to remove padding.
-            orig_size (Tensor): The original image size with shape Bx2.
-
-        Returns:
-            masks (Tensor): The postprocessed masks with shape Bx1xHxW.
-        """
-        orig_size = orig_size.squeeze()
-        masks = F.interpolate(masks, size=(input_size, input_size), mode="bilinear", align_corners=False)
-
-        prepadded_size = cls.get_prepadded_size(cls, orig_size, input_size)  # type: ignore[arg-type]
-        masks = masks[..., : prepadded_size[0], : prepadded_size[1]]
-
-        orig_size = orig_size.to(torch.int64)
-        h, w = orig_size[0], orig_size[1]
-        return F.interpolate(masks, size=(h, w), mode="bilinear", align_corners=False)
-
-    def get_prepadded_size(self, input_image_size: Tensor, longest_side: int) -> Tensor:
-        """Get pre-padded size."""
-        scale = longest_side / torch.max(input_image_size)
-        transformed_size = scale * input_image_size
-        return torch.floor(transformed_size + 0.5).to(torch.int64)
-
 
 class SAMTinyViT(SAM):
     """Segment Anything Model (SAM) with Tiny-ViT."""
@@ -539,12 +429,13 @@ class SAMTinyViT(SAM):
             iou_head_depth=3,
             iou_head_hidden_dim=256,
         )
+        criterion = SAMCriterion(image_size=self.image_size)
         return SegmentAnything(
             image_encoder=image_encoder,
             prompt_encoder=prompt_encoder,
             mask_decoder=mask_decoder,
+            criterion=criterion,
             image_size=self.image_size,
-            # TODO (sungchul): specify loss functions
             use_stability_score=self.use_stability_score,
             return_single_mask=self.return_single_mask,
             return_extra_metrics=self.return_extra_metrics,
@@ -592,12 +483,13 @@ class SAMViTBase(SAM):
             iou_head_depth=3,
             iou_head_hidden_dim=256,
         )
+        criterion = SAMCriterion(image_size=self.image_size)
         return SegmentAnything(
             image_encoder=image_encoder,
             prompt_encoder=prompt_encoder,
             mask_decoder=mask_decoder,
+            criterion=criterion,
             image_size=self.image_size,
-            # TODO (sungchul): specify loss functions
             use_stability_score=self.use_stability_score,
             return_single_mask=self.return_single_mask,
             return_extra_metrics=self.return_extra_metrics,
