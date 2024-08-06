@@ -1,3 +1,3 @@
-# Copyright (C) 2023 Intel Corporation
+# Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-"""Test of custom algo modules of OTX Action Classification task."""
+"""Test of custom algo modules of OTX keypoint detection task."""

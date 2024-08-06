@@ -165,7 +165,7 @@ class RTMCCHead(BaseModule):
         Args:
             x (tuple[Tensor]): Features from the upstream network, each is
                 a 4D-tensor.
-            entity (DetBatchDataEntity): Entity from OTX dataset.
+            entity (KeypointDetBatchDataEntity): Entity from OTX dataset.
 
         Returns:
             dict: A dictionary of loss components.

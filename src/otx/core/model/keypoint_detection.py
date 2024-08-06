@@ -1,7 +1,7 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
-"""Class definition for detection model entity used in OTX."""
+"""Class definition for keypoint detection model entity used in OTX."""
 
 from __future__ import annotations
 
@@ -61,7 +61,7 @@ class OTXKeypointDetectionModel(OTXModel[KeypointDetBatchDataEntity, KeypointDet
         return detector
 
     def _customize_inputs(self, entity: KeypointDetBatchDataEntity) -> dict[str, Any]:
-        """Convert KeypointDetBatchDataEntity into mmaction model's input."""
+        """Convert KeypointDetBatchDataEntity into Topdown model's input."""
         inputs: dict[str, Any] = {}
 
         inputs["inputs"] = entity.images

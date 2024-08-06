@@ -3362,7 +3362,7 @@ class TopdownAffine(tvt_v2.Transform, NumpytoTVTensorMixin):
             rot (float): Rotation angle (degree).
             output_size (np.ndarray[2, ] | list(2,)): Size of the
                 destination heatmaps.
-            shift (0-100%): Shift translation ratio wrt the width/height.
+            shift (float): Shift translation ratio wrt the width/height.
                 Default (0., 0.).
             inv (bool): Option to inverse the affine transform direction.
                 (inv=False: src->dst or inv=True: dst->src)
@@ -3485,7 +3485,7 @@ class TopdownAffine(tvt_v2.Transform, NumpytoTVTensorMixin):
             str: Formatted string.
         """
         repr_str = self.__class__.__name__
-        repr_str += f"(input_size={self.input_size}"
+        repr_str += f"(input_size={self.input_size},"
         repr_str += f"is_numpy_to_tvtensor={self.is_numpy_to_tvtensor})."
         return repr_str
 

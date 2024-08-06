@@ -20,7 +20,7 @@ if TYPE_CHECKING:
 
 
 class RTMPose(OTXKeypointDetectionModel):
-    """OTX Detection model class for RTMPose."""
+    """OTX keypoint detection model class for RTMPose."""
 
     @property
     def _exporter(self) -> OTXModelExporter:

@@ -1,7 +1,7 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
-"""Module for OTXDetectionDataset."""
+"""Module for OTXKeypointDetectionDataset."""
 
 from __future__ import annotations
 
@@ -27,7 +27,7 @@ Transforms = Union[Compose, Callable, List[Callable], dict[str, Compose | Callab
 
 
 class OTXKeypointDetectionDataset(OTXDataset[KeypointDetDataEntity]):
-    """OTXDataset class for detection task."""
+    """OTXDataset class for keypoint detection task."""
 
     def __init__(
         self,
@@ -130,5 +130,5 @@ class OTXKeypointDetectionDataset(OTXDataset[KeypointDetDataEntity]):
 
     @property
     def collate_fn(self) -> Callable:
-        """Collection function to collect DetDataEntity into KeypointDetBatchDataEntity in data loader."""
+        """Collection function to collect KeypointDetDataEntity into KeypointDetBatchDataEntity in data loader."""
         return partial(KeypointDetBatchDataEntity.collate_fn, stack_images=self.stack_images)
