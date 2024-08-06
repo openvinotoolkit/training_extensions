@@ -11,7 +11,6 @@ from typing import TYPE_CHECKING, Iterable
 
 import torch
 from datumaro import Dataset as DmDataset
-from datumaro import Environment
 from lightning import LightningDataModule
 from omegaconf import DictConfig, OmegaConf
 from torch.utils.data import DataLoader, RandomSampler
@@ -104,18 +103,6 @@ class OTXDataModule(LightningDataModule):
         from datumaro.plugins.data_formats.video import VIDEO_EXTENSIONS
 
         VIDEO_EXTENSIONS.append(".mp4")
-
-        # Data Format Check
-        available_data_formats = Environment().detect_dataset(str(self.data_root))
-        if not available_data_formats:
-            msg = f"Invalid data root: {self.data_root}. Please check if the data root is valid."
-            raise ValueError(msg)
-        if self.data_format not in available_data_formats:
-            log.warning(
-                f"Invalid data format: {self.data_format}. Available formats: {available_data_formats} "
-                f"Replace data_format: {self.data_format} -> {available_data_formats[0]}.",
-            )
-            self.data_format = available_data_formats[0]
 
         dataset = DmDataset.import_from(self.data_root, format=self.data_format)
         if self.task != "H_LABEL_CLS":
