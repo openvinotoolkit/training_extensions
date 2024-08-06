@@ -1,23 +1,22 @@
 model:
-  class_path: otx.algo.classification.torchvision_model.OTXTVModel
+  class_path: otx.algo.classification.vit.VisionTransformerForMulticlassClsSemiSL
   init_args:
-    backbone: efficientnet_v2_l
     label_info: 1000
-    task: MULTI_CLASS_CLS
-    train_type: SEMI_SUPERVISED
+    arch: "vit-tiny"
 
     optimizer:
-      class_path: torch.optim.SGD
+      class_path: torch.optim.AdamW
       init_args:
-        lr: 0.01
-        momentum: 0.9
-        weight_decay: 0.0001
+        lr: 0.0001
+        weight_decay: 0.05
 
     scheduler:
-      class_path: torch.optim.lr_scheduler.CosineAnnealingLR
+      class_path: lightning.pytorch.cli.ReduceLROnPlateau
       init_args:
-        T_max: 100000
-        eta_min: 0
+        mode: max
+        factor: 0.5
+        patience: 1
+        monitor: val/accuracy
 
 engine:
   task: MULTI_CLASS_CLS
@@ -25,8 +24,7 @@ engine:
 
 callback_monitor: val/accuracy
 
-data: ../../_base_/data/torchvision_semisl.yaml
-
+data: ../../../_base_/data/semisl/torchvision_semisl.yaml
 overrides:
   max_epochs: 200
   callbacks:

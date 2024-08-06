@@ -10,9 +10,9 @@ from typing import TYPE_CHECKING, Callable
 
 import cv2
 import numpy as np
+import torch
 from datumaro.components.annotation import Ellipse, Image, Mask, Polygon
 from torchvision import tv_tensors
-import torch
 
 from otx.core.data.dataset.base import Transforms
 from otx.core.data.entity.base import ImageInfo
