@@ -103,9 +103,7 @@ class HierarchicalClsHead(BaseModule):
                 head_gt = head_gt[valid_mask]
                 if len(head_gt) > 0:
                     head_logits = head_logits[valid_mask, :]
-                    num_classes = logit_range[1] - logit_range[0]
-                    loss_score += self.multiclass_loss(head_logits, head_gt, num_classes)
-                    # loss_score += self.multiclass_loss(head_logits, head_gt)
+                    loss_score += self.multiclass_loss(head_logits, head_gt)
                     num_effective_heads_in_batch += 1
 
         if num_effective_heads_in_batch > 0:
@@ -365,38 +363,53 @@ class HierarchicalNonLinearClsHead(HierarchicalClsHead):
         pre_logits = self.pre_logits(feats)
         return self.classifier(pre_logits)
 
+
 class ChannelAttention(nn.Module):
-    def __init__(self, in_channels, reduction=16):
-        super(ChannelAttention, self).__init__()
+    """Channel attention module that uses average and max pooling to enhance important channels."""
+
+    def __init__(self, in_channels: int, reduction: int = 16):
+        """Initializes the ChannelAttention module."""
+        super().__init__(ChannelAttention, self)
         self.fc1 = nn.Conv2d(in_channels, in_channels // reduction, kernel_size=1, bias=False)
         self.fc2 = nn.Conv2d(in_channels // reduction, in_channels, kernel_size=1, bias=False)
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """Applies channel attention to the input tensor."""
         avg_out = self.fc2(torch.relu(self.fc1(torch.mean(x, dim=2, keepdim=True).mean(dim=3, keepdim=True))))
         max_out = self.fc2(torch.relu(self.fc1(torch.max(x, dim=2, keepdim=True)[0].max(dim=3, keepdim=True)[0])))
         return torch.sigmoid(avg_out + max_out)
 
-class SpatialAttention(nn.Module):
-    def __init__(self, kernel_size=7):
-        super(SpatialAttention, self).__init__()
-        self.conv = nn.Conv2d(2, 1, kernel_size, padding=kernel_size//2, bias=False)
 
-    def forward(self, x):
+class SpatialAttention(nn.Module):
+    """Spatial attention module that uses average and max pooling to enhance important spatial locations."""
+
+    def __init__(self, kernel_size: int = 7):
+        """Initializes the SpatialAttention module."""
+        super().__init__(SpatialAttention, self)
+        self.conv = nn.Conv2d(2, 1, kernel_size, padding=kernel_size // 2, bias=False)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """Applies spatial attention to the input tensor."""
         avg_out = torch.mean(x, dim=1, keepdim=True)
         max_out = torch.max(x, dim=1, keepdim=True)[0]
         x = torch.cat([avg_out, max_out], dim=1)
         return torch.sigmoid(self.conv(x))
 
+
 class CBAM(nn.Module):
-    def __init__(self, in_channels, reduction=16, kernel_size=7):
-        super(CBAM, self).__init__()
+    """CBAM module that applies channel and spatial attention sequentially."""
+
+    def __init__(self, in_channels: int, reduction: int = 16, kernel_size: int = 7):
+        """Initializes the CBAM module with channel and spatial attention."""
+        super().__init__(CBAM, self)
         self.channel_attention = ChannelAttention(in_channels, reduction)
         self.spatial_attention = SpatialAttention(kernel_size)
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """Applies channel and spatial attention to the input tensor."""
         x = x * self.channel_attention(x)
-        x = x * self.spatial_attention(x)
-        return x
+        return x * self.spatial_attention(x)
+
 
 class HierarchicalCBAMClsHead(HierarchicalClsHead):
     """Custom classification CBAM head for hierarchical classification task.
@@ -414,10 +427,6 @@ class HierarchicalCBAMClsHead(HierarchicalClsHead):
         multilabel_loss (dict | None): Config of multi-label loss.
         thr (float | None): Predictions with scores under the thresholds are considered
                             as negative. Defaults to 0.5.
-        hid_cahnnels (int): Number of channels in the hidden feature map at the classifier.
-        acivation_Cfg (dict | None): Config of activation layer at the classifier.
-        dropout (bool): Flag for the enabling the dropout at the classifier.
-
     """
 
     def __init__(
@@ -432,9 +441,6 @@ class HierarchicalCBAMClsHead(HierarchicalClsHead):
         multiclass_loss: nn.Module,
         multilabel_loss: nn.Module | None = None,
         thr: float = 0.5,
-        hid_channels: int = 1280,
-        activation_callable: Callable[[], nn.Module] = nn.ReLU,
-        dropout: bool = False,
         init_cfg: dict | None = None,
         **kwargs,
     ):
@@ -465,8 +471,8 @@ class HierarchicalCBAMClsHead(HierarchicalClsHead):
         """The process before the final classification head."""
         if isinstance(feats, Sequence):
             feats = feats[-1]
-            return feats.view(feats.size(0), self.in_channels*self.step_size*self.step_size)
-        # return feats[-1]
+            return feats.view(feats.size(0), self.in_channels * self.step_size * self.step_size)
+        return feats
 
     def _init_layers(self) -> None:
         """Iniitialize weights of classification head."""
@@ -483,7 +489,8 @@ class HierarchicalCBAMClsHead(HierarchicalClsHead):
 
         attended_features = attended_features.view(pre_logits.size(0), self.in_channels, self.step_size, self.step_size)
         attended_features = self.cbam(attended_features)
-        attended_features = attended_features.view(pre_logits.size(0), self.in_channels*self.step_size*self.step_size)
-        out_subclass = self.fc_subclass(attended_features)
-
-        return out_subclass
+        attended_features = attended_features.view(
+            pre_logits.size(0),
+            self.in_channels * self.step_size * self.step_size,
+        )
+        return self.fc_subclass(attended_features)

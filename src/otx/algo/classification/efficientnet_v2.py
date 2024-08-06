@@ -13,11 +13,10 @@ from torch import Tensor, nn
 from otx.algo.classification.backbones.timm import TimmBackbone
 from otx.algo.classification.classifier import ImageClassifier, SemiSLClassifier
 from otx.algo.classification.heads import (
-    HierarchicalLinearClsHead,
+    HierarchicalCBAMClsHead,
     LinearClsHead,
     MultiLabelLinearClsHead,
     OTXSemiSLLinearClsHead,
-    HierarchicalCBAMClsHead,
 )
 from otx.algo.classification.losses.asymmetric_angular_loss_with_ignore import AsymmetricAngularLossWithIgnore
 from otx.algo.classification.necks.gap import GlobalAveragePooling
@@ -419,20 +418,13 @@ class EfficientNetV2ForHLabelCls(OTXHlabelClsModel):
         model.init_weights()
         return model
 
-    def label_smoothing_loss(self, output, target, num_classes, smoothing=0.1):
-        confidence = 1.0 - smoothing
-        smoothed_labels = torch.full(size=(target.size(0), num_classes), fill_value=smoothing / (num_classes - 1)).to(target.device)
-        smoothed_labels.scatter_(1, target.unsqueeze(1), confidence)
-        loss = -torch.sum(smoothed_labels * nn.LogSoftmax(dim=1)(output), dim=1)
-        return loss.mean()
-
     def _build_model(self, head_config: dict) -> nn.Module:
         return ImageClassifier(
             backbone=TimmBackbone(backbone="efficientnetv2_s_21k", pretrained=True),
-            neck=GlobalAveragePooling(dim=2),
+            neck=nn.Identity(),
             head=HierarchicalCBAMClsHead(
                 in_channels=1280,
-                multiclass_loss=self.label_smoothing_loss,
+                multiclass_loss=nn.CrossEntropyLoss(),
                 multilabel_loss=AsymmetricAngularLossWithIgnore(gamma_pos=0.0, gamma_neg=1.0, reduction="sum"),
                 **head_config,
             ),
