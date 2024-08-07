@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 # Copyright (c) OpenMMLab. All rights reserved.
 
-"""This implementation copied ConvModule of mmcv.cnn.bricks.ConvModule."""
+"""This implementation modified ConvModule of mmcv.cnn.bricks.ConvModule."""
 
 # TODO(someone): Revisit mypy errors after deprecation of mmlab
 
@@ -171,6 +171,8 @@ class ConvModule(nn.Module):
             self.norm_name = None  # type: ignore[assignment]
 
         # build activation layer
+        self.activation: nn.Module | None = None
+        self._with_activation: bool | None = None
         if activation_callable is not None and (
             (
                 isinstance(activation_callable, partial)
@@ -179,14 +181,10 @@ class ConvModule(nn.Module):
             or (activation_callable.__name__ in AVAILABLE_ACTIVATION_LIST)
         ):
             self.activation = activation_callable() if activation_callable is not None else None
-        else:
-            msg = f"Unsupported activation type {activation_callable}"
-            raise TypeError(msg)
-        self._with_activation: bool | None = None
 
-        # update inplace
-        if self.activation.__class__.__name__ not in ACTIVATION_LIST_NOT_SUPPORTING_INPLACE:
-            self.activation.inplace = inplace
+            # update inplace
+            if self.activation.__class__.__name__ not in ACTIVATION_LIST_NOT_SUPPORTING_INPLACE:
+                self.activation.inplace = inplace
 
         # Use msra init by default
         self.init_weights()
