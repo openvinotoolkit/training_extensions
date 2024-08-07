@@ -15,7 +15,6 @@ import torch
 import torch.utils.checkpoint as cp
 from otx.algo.common.layers import ResLayer
 from otx.algo.modules.base_module import BaseModule
-from otx.algo.modules.conv import build_conv_layer
 from otx.algo.modules.norm import build_norm_layer
 from torch import nn
 from torch.nn.modules.batchnorm import _BatchNorm
@@ -35,7 +34,6 @@ class Bottleneck(BaseModule):
         dilation: int = 1,
         downsample: nn.Module | None = None,
         with_cp: bool = False,
-        conv_cfg: dict | None = None,
         init_cfg: dict | None = None,
     ):
         """Bottleneck block for ResNet.
@@ -50,7 +48,6 @@ class Bottleneck(BaseModule):
         self.stride = stride
         self.dilation = dilation
         self.with_cp = with_cp
-        self.conv_cfg = conv_cfg
         self.norm_cfg = norm_cfg
 
         self.conv1_stride = 1
@@ -60,11 +57,10 @@ class Bottleneck(BaseModule):
         self.norm2_name, norm2 = build_norm_layer(norm_cfg, planes, postfix=2)
         self.norm3_name, norm3 = build_norm_layer(norm_cfg, planes * self.expansion, postfix=3)
 
-        self.conv1 = build_conv_layer(conv_cfg, inplanes, planes, kernel_size=1, stride=self.conv1_stride, bias=False)
+        self.conv1 = nn.Conv2d(inplanes, planes, kernel_size=1, stride=self.conv1_stride, bias=False)
         self.add_module(self.norm1_name, norm1)
 
-        self.conv2 = build_conv_layer(
-            conv_cfg,
+        self.conv2 = nn.Conv2d(
             planes,
             planes,
             kernel_size=3,
@@ -75,7 +71,7 @@ class Bottleneck(BaseModule):
         )
 
         self.add_module(self.norm2_name, norm2)
-        self.conv3 = build_conv_layer(conv_cfg, planes, planes * self.expansion, kernel_size=1, bias=False)
+        self.conv3 = nn.Conv2d(planes, planes * self.expansion, kernel_size=1, bias=False)
         self.add_module(self.norm3_name, norm3)
 
         self.relu = nn.ReLU(inplace=True)
@@ -183,7 +179,6 @@ class ResNet(BaseModule):
         out_indices: tuple[int, int, int, int] = (0, 1, 2, 3),
         avg_down: bool = False,
         frozen_stages: int = -1,
-        conv_cfg: dict | None = None,
         norm_cfg: dict | None = None,
         norm_eval: bool = True,
         with_cp: bool = False,
@@ -240,7 +235,6 @@ class ResNet(BaseModule):
             raise ValueError(msg)
         self.avg_down = avg_down
         self.frozen_stages = frozen_stages
-        self.conv_cfg = conv_cfg
         self.norm_cfg = norm_cfg
         self.with_cp = with_cp
         self.norm_eval = norm_eval
@@ -264,7 +258,6 @@ class ResNet(BaseModule):
                 dilation=dilation,
                 avg_down=self.avg_down,
                 with_cp=with_cp,
-                conv_cfg=conv_cfg,
                 norm_cfg=norm_cfg,
                 init_cfg=block_init_cfg,
             )
@@ -287,8 +280,7 @@ class ResNet(BaseModule):
         return getattr(self, self.norm1_name)
 
     def _make_stem_layer(self, in_channels: int, stem_channels: int) -> None:
-        self.conv1 = build_conv_layer(
-            self.conv_cfg,
+        self.conv1 = nn.Conv2d(
             in_channels,
             stem_channels,
             kernel_size=7,

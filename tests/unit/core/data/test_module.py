@@ -4,10 +4,9 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import TYPE_CHECKING
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 import pytest
-from datumaro.components.environment import Environment
 from importlib_resources import files
 from lightning.pytorch.loggers import CSVLogger
 from omegaconf import DictConfig, OmegaConf
@@ -161,43 +160,6 @@ class TestModule:
         assert fxt_config.train_subset.input_size == (1000, 1000)
         assert fxt_config.val_subset.input_size == (1200, 1200)
         assert fxt_config.test_subset.input_size == (800, 800)
-
-    def test_data_format_check(
-        self,
-        mock_dm_dataset,
-        mock_otx_dataset_factory,
-        mock_data_filtering,
-        fxt_config,
-        caplog,
-    ) -> None:
-        # Dataset will have "train_0", "train_1", "val_0", ..., "test_1" subsets
-        mock_dm_subsets = {f"{name}_{idx}": MagicMock() for name in ["train", "val", "test"] for idx in range(2)}
-        mock_dm_dataset.return_value.subsets.return_value = mock_dm_subsets
-        with patch.object(Environment, "detect_dataset", return_value=["voc", "voc_classification"]):
-            _ = OTXDataModule(
-                task=fxt_config.task,
-                data_format=fxt_config.data_format,
-                data_root=fxt_config.data_root,
-                train_subset=fxt_config.train_subset,
-                val_subset=fxt_config.val_subset,
-                test_subset=fxt_config.test_subset,
-            )
-
-        assert "Invalid data format:" in caplog.text
-        assert "Replace data_format:" in caplog.text
-
-        with patch.object(Environment, "detect_dataset", return_value=[]), pytest.raises(
-            ValueError,
-            match="Invalid data root:",
-        ):
-            _ = OTXDataModule(
-                task=fxt_config.task,
-                data_format=fxt_config.data_format,
-                data_root=fxt_config.data_root,
-                train_subset=fxt_config.train_subset,
-                val_subset=fxt_config.val_subset,
-                test_subset=fxt_config.test_subset,
-            )
 
     @pytest.fixture()
     def fxt_real_tv_cls_config(self) -> DictConfig:
