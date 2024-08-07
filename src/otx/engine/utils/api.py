@@ -47,7 +47,7 @@ def list_models(task: OTXTaskType | None = None, pattern: str | None = None, pri
         >>> models = list_models(task="MULTI_CLASS_CLS", pattern="*efficient", print_table=True)
     """
     task_type = OTXTaskType(task).name.lower() if task is not None else "**"
-    recipe_list = [str(recipe) for recipe in RECIPE_PATH.glob(f"**/{task_type}/*.yaml") if "_base_" not in recipe.parts]
+    recipe_list = [str(recipe) for recipe in RECIPE_PATH.glob(f"**/{task_type}/**/*.yaml") if "_base_" not in recipe.parts]
 
     if pattern is not None:
         # Always match keys with any postfix.

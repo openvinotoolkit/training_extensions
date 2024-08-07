@@ -301,10 +301,10 @@ def cut_mixer(images: Tensor, masks: Tensor) -> tuple[Tensor, Tensor]:
         bby2 = np.clip(cy + cut_h // 2, 0, h)
 
         return bbx1, bby1, bbx2, bby2
-
+    target_device = images.device
     mix_data = images.clone()
     mix_masks = masks.clone()
-    u_rand_index = torch.randperm(images.size()[0])[: images.size()[0]].cuda()
+    u_rand_index = torch.randperm(images.size()[0])[: images.size()[0]].to(target_device)
     u_bbx1, u_bby1, u_bbx2, u_bby2 = rand_bbox(images.size(), lam=np.random.beta(4, 4))
 
     for i in range(mix_data.shape[0]):
@@ -323,6 +323,5 @@ def cut_mixer(images: Tensor, masks: Tensor) -> tuple[Tensor, Tensor]:
         ]
 
     del images, masks
-    torch.cuda.empty_cache()
 
     return mix_data, mix_masks.squeeze(dim=1)
