@@ -40,7 +40,7 @@ dependencies = [
     "decord==0.6.0",
     "typeguard==4.3.*",
     # TODO(ashwinvaidya17): https://github.com/openvinotoolkit/anomalib/issues/2126
-    "setuptools<70",
+    "setuptools<73",
 ]
 
 [project.optional-dependencies]
