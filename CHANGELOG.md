@@ -6,13 +6,13 @@ All notable changes to this project will be documented in this file.
 
 ### New features
 
-- Add RT-DETR model for object detection task
+- Add RT-DETR model for Object Detection
   (https://github.com/openvinotoolkit/training_extensions/pull/3741)
 - Add Multi-Label & H-label Classification with torchvision models
   (https://github.com/openvinotoolkit/training_extensions/pull/3697)
 - Add Hugging-Face Model Wrapper for Classification
   (https://github.com/openvinotoolkit/training_extensions/pull/3710)
-- Add Hugging-Face Model Wrapper for Detection
+- Add Hugging-Face Model Wrapper for Object Detection
   (https://github.com/openvinotoolkit/training_extensions/pull/3747)
 - Add Hugging-Face Model Wrapper for Semantic Segmentation
   (https://github.com/openvinotoolkit/training_extensions/pull/3749)
@@ -20,6 +20,8 @@ All notable changes to this project will be documented in this file.
   (https://github.com/openvinotoolkit/training_extensions/pull/3758)
 - Add `otx benchmark` subcommand
   (https://github.com/openvinotoolkit/training_extensions/pull/3762)
+- Add Semi-SL MeanTeacher algorithm for Semantic Segmentation
+  (https://github.com/openvinotoolkit/training_extensions/pull/3801)
 
 ### Enhancements
 
