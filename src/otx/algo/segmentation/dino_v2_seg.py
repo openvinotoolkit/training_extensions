@@ -50,6 +50,9 @@ class DinoV2Seg(BaseSegmModel):
 
 class OTXDinoV2Seg(TorchVisionCompatibleModel):
     """DinoV2Seg Model."""
+
+    input_size_multiplier = 14
+
     def __init__(
         self,
         label_info: LabelInfoTypes,
@@ -64,10 +67,6 @@ class OTXDinoV2Seg(TorchVisionCompatibleModel):
         export_image_configuration: dict[str, Any] | None = None,
         name_base_model: str = "semantic_segmentation_model",
     ):
-        if input_size[-1] % 14 != 0 or input_size[-2] % 14 != 0:
-            msg = f"Input size should be a multiple of 14, but got {input_size[-2:]} instead."
-            raise ValueError(msg)
-
         super().__init__(
             label_info=label_info,
             input_size=input_size,

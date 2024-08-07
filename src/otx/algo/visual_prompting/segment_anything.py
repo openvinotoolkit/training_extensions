@@ -490,6 +490,8 @@ class SegmentAnything(nn.Module):
 class OTXSegmentAnything(OTXVisualPromptingModel):
     """Visual Prompting model."""
 
+    input_size_multiplier = 16
+
     def __init__(
         self,
         backbone: Literal["tiny_vit", "vit_b"],
@@ -509,9 +511,6 @@ class OTXSegmentAnything(OTXVisualPromptingModel):
     ) -> None:
         if input_size[-1] != input_size[-2]:
             msg = f"SAM should use square image, but got {input_size}"
-            raise ValueError(msg)
-        if input_size[-1] % 16 != 0 and input_size[-2] % 16 != 0:
-            msg = f"Input size should be a multiple of 16, but got {input_size[-2:]} instead."
             raise ValueError(msg)
 
         self.config = {

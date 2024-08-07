@@ -37,6 +37,8 @@ if TYPE_CHECKING:
 class YOLOX(ExplainableOTXDetModel):
     """OTX Detection model class for YOLOX."""
 
+    input_size_multiplier = 32
+
     def __init__(
         self,
         label_info: LabelInfoTypes,
@@ -47,10 +49,6 @@ class YOLOX(ExplainableOTXDetModel):
         torch_compile: bool = False,
         tile_config: TileConfig = TileConfig(enable_tiler=False),
     ) -> None:
-        if input_size[-1] % 32 != 0 or input_size[-2] % 32 != 0:
-            msg = f"Input size should be a multiple of 32, but got {input_size[-2:]} instead."
-            raise ValueError(msg)
-
         super().__init__(
             label_info=label_info,
             input_size=input_size,
@@ -158,10 +156,6 @@ class YOLOXTINY(YOLOX):
         torch_compile: bool = False,
         tile_config: TileConfig = TileConfig(enable_tiler=False),
     ) -> None:
-        if input_size[-1] % 32 != 0 or input_size[-2] % 32 != 0:
-            msg = f"Input size should be a multiple of 32, but got {input_size[-2:]} instead."
-            raise ValueError(msg)
-
         super().__init__(
             label_info=label_info,
             input_size=input_size,

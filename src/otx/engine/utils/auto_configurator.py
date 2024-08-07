@@ -22,6 +22,7 @@ from otx.core.types.label import LabelInfo, LabelInfoTypes
 from otx.core.types.task import OTXTaskType
 from otx.core.utils.imports import get_otx_root_path
 from otx.core.utils.instantiators import partial_instantiate_class
+from otx.core.utils.utils import import_object_from_module
 from otx.utils.utils import can_pass_tile_config, get_model_cls_from_config, should_pass_label_info
 
 if TYPE_CHECKING:
@@ -276,6 +277,8 @@ class AutoConfigurator:
         if input_size is not None:
             if isinstance(input_size, int):
                 input_size = (input_size, input_size)
+            else:
+                input_size = tuple(input_size)
             model_config["init_args"]["input_size"] = tuple(model_config["init_args"]["input_size"][:-2]) + input_size
 
         model_cls = get_model_cls_from_config(Namespace(model_config))

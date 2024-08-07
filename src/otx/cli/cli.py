@@ -23,6 +23,7 @@ from otx.cli.utils.jsonargparse import get_short_docstring, patch_update_configs
 from otx.cli.utils.workspace import Workspace
 from otx.core.types.task import OTXTaskType
 from otx.core.utils.imports import get_otx_root_path
+from otx.utils.utils import get_model_cls_from_config
 
 if TYPE_CHECKING:
     from jsonargparse._actions import _ActionSubCommands
@@ -331,6 +332,11 @@ class OTXCLI:
             # For num_classes update, Model and Metric are instantiated separately.
             model_config = self.config[self.subcommand].pop("model")
 
+            if self.config[self.subcommand].data.adaptive_input_size != "none":
+                model_cls = get_model_cls_from_config(model_config)
+                if hasattr(model_cls, "input_size_multiplier"):
+                    self.config[self.subcommand].data.input_size_multiplier = model_cls.input_size_multiplier
+
             # Instantiate the things that don't need to special handling
             self.config_init = self.parser.instantiate_classes(self.config)
             self.workspace = self.get_config_value(self.config_init, "workspace")
@@ -339,6 +345,8 @@ class OTXCLI:
             if (input_size := self.datamodule.input_size) is not None:
                 if isinstance(input_size, int):
                     input_size = (input_size, input_size)
+                else:
+                    input_size = tuple(input_size)
                 model_config["init_args"]["input_size"] = tuple(model_config["init_args"]["input_size"][:-2]) + input_size
 
             # Instantiate the model and needed components
@@ -374,7 +382,7 @@ class OTXCLI:
             tuple: The model and optimizer and scheduler.
         """
         from otx.core.model.base import OTXModel
-        from otx.utils.utils import can_pass_tile_config, get_model_cls_from_config, should_pass_label_info
+        from otx.utils.utils import can_pass_tile_config, should_pass_label_info
 
         skip = set()
 

@@ -114,6 +114,7 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
         super().__init__()
 
         self._label_info = self._dispatch_label_info(label_info)
+        self._check_input_size(input_size)
         self.input_size = input_size
         self.classification_layers: dict[str, dict[str, Any]] = {}
         self.model = self._create_model()
@@ -809,6 +810,14 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
 
         raise TypeError(label_info)
 
+    def _check_input_size(self, input_size: Sequence[int] | None = None) -> None:
+        if (
+            input_size is not None
+            and hasattr(self, "input_size_multiplier")
+            and (input_size[-1] % self.input_size_multiplier != 0 or input_size[-2] % self.input_size_multiplier != 0)
+        ):
+            msg = f"Input size should be a multiple of {self.input_size_multiplier}, but got {input_size[-2:]} instead."
+            raise ValueError(msg)
 
 class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
     """Base class for the OpenVINO model.

@@ -64,6 +64,7 @@ class OTXDataModule(LightningDataModule):
         device: DeviceType = DeviceType.auto,
         input_size: int | tuple[int, int] | None = None,
         adaptive_input_size: Literal["auto", "downscale", "none"] = "none",
+        input_size_multiplier: int = 1,
     ) -> None:
         """Constructor."""
         super().__init__()
@@ -135,7 +136,12 @@ class OTXDataModule(LightningDataModule):
             )
 
         if adaptive_input_size != "none":
-            input_size = adapt_input_size_to_dataset(dataset, input_size, adaptive_input_size=="downscale")
+            input_size = adapt_input_size_to_dataset(
+                dataset,
+                input_size,
+                adaptive_input_size=="downscale",
+                input_size_multiplier,
+            )
         if input_size is not None:
             for subset_cfg in [train_subset, val_subset, test_subset, unlabeled_subset]:
                 subset_cfg.input_size = input_size

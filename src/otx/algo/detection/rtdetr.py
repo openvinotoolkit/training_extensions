@@ -38,6 +38,7 @@ if TYPE_CHECKING:
 class RTDETR(ExplainableOTXDetModel):
     """RTDETR model."""
 
+    input_size_multiplier = 32
     mean: tuple[float, float, float] = (0.0, 0.0, 0.0)
     std: tuple[float, float, float] = (255.0, 255.0, 255.0)
     load_from: str | None = None
@@ -52,10 +53,6 @@ class RTDETR(ExplainableOTXDetModel):
         torch_compile: bool = False,
         tile_config: TileConfig = TileConfig(enable_tiler=False),
     ) -> None:
-        if input_size[-1] % 32 != 0 or input_size[-2] % 32 != 0:
-            msg = f"Input size should be a multiple of 32, but got {input_size[-2:]} instead."
-            raise ValueError(msg)
-
         super().__init__(
             label_info=label_info,
             input_size=input_size,
