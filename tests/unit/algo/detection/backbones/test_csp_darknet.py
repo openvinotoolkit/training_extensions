@@ -9,6 +9,7 @@ Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/tests/test_mod
 import pytest
 import torch
 from otx.algo.detection.backbones.csp_darknet import CSPDarknet, Focus
+from torch import nn
 from torch.nn.modules import GroupNorm
 from torch.nn.modules.batchnorm import _BatchNorm
 
@@ -108,7 +109,7 @@ class TestCSPDarknet:
         assert feat[5].shape == torch.Size((1, 256, 2, 2))
 
         # Test CSPDarknet forward with dict(type='ReLU')
-        model = CSPDarknet(widen_factor=0.125, act_cfg={"type": "ReLU"}, out_indices=range(5))
+        model = CSPDarknet(widen_factor=0.125, activation_callable=nn.ReLU, out_indices=range(5))
         model.train()
 
         imgs = torch.randn(1, 3, 64, 64)

@@ -10,6 +10,8 @@ from __future__ import annotations
 
 import copy
 import math
+from functools import partial
+from typing import Callable
 
 import numpy as np
 import torch
@@ -109,7 +111,7 @@ class RTMDetInsHead(RTMDetHead):
                     stride=1,
                     padding=1,
                     norm_cfg=self.norm_cfg,
-                    act_cfg=self.act_cfg,
+                    activation_callable=self.activation_callable,
                 ),
             )
         pred_pad_size = self.pred_kernel_size // 2
@@ -125,7 +127,7 @@ class RTMDetInsHead(RTMDetHead):
             stacked_convs=4,
             num_levels=len(self.prior_generator.strides),
             num_prototypes=self.num_prototypes,
-            act_cfg=self.act_cfg,
+            activation_callable=self.activation_callable,
             norm_cfg=self.norm_cfg,
         )
 
@@ -702,16 +704,16 @@ class MaskFeatModule(BaseModule):
     Args:
         in_channels (int): Number of channels in the input feature map.
         feat_channels (int): Number of hidden channels of the mask feature
-             map branch.
+            map branch.
         num_levels (int): The starting feature map level from RPN that
-             will be used to predict the mask feature map.
+            will be used to predict the mask feature map.
         num_prototypes (int): Number of output channel of the mask feature
-             map branch. This is the channel count of the mask
-             feature map that to be dynamically convolved with the predicted
-             kernel.
+            map branch. This is the channel count of the mask
+            feature map that to be dynamically convolved with the predicted
+            kernel.
         stacked_convs (int): Number of convs in mask feature branch.
-        act_cfg (dict): Config dict for activation layer.
-            Default: dict(type='ReLU', inplace=True)
+        activation_callable (Callable[..., nn.Module]): Activation layer module.
+            Defaults to `partial(nn.ReLU, inplace=True)`.
         norm_cfg (dict): Config dict for normalization layer. Default: dict(type='BN').
     """
 
@@ -722,13 +724,10 @@ class MaskFeatModule(BaseModule):
         stacked_convs: int = 4,
         num_levels: int = 3,
         num_prototypes: int = 8,
-        act_cfg: dict | None = None,
+        activation_callable: Callable[..., nn.Module] = partial(nn.ReLU, inplace=True),
         norm_cfg: dict | None = None,
     ) -> None:
         super().__init__(init_cfg=None)
-
-        if act_cfg is None:
-            act_cfg = {"type": "ReLU", "inplace": True}
 
         if norm_cfg is None:
             norm_cfg = {"type": "BN"}
@@ -738,7 +737,16 @@ class MaskFeatModule(BaseModule):
         convs = []
         for i in range(stacked_convs):
             in_c = in_channels if i == 0 else feat_channels
-            convs.append(Conv2dModule(in_c, feat_channels, 3, padding=1, act_cfg=act_cfg, norm_cfg=norm_cfg))
+            convs.append(
+                Conv2dModule(
+                    in_c,
+                    feat_channels,
+                    3,
+                    padding=1,
+                    activation_callable=activation_callable,
+                    norm_cfg=norm_cfg,
+                ),
+            )
         self.stacked_convs = nn.Sequential(*convs)
         self.projection = nn.Conv2d(feat_channels, num_prototypes, kernel_size=1)
 
@@ -768,8 +776,8 @@ class RTMDetInsSepBNHead(RTMDetInsHead):
             Defaults to True.
         norm_cfg (dict): Config dict for normalization
             layer. Defaults to dict(type='BN').
-        act_cfg (dict): Config dict for activation layer.
-            Defaults to dict(type='SiLU', inplace=True).
+        activation_callable (Callable[..., nn.Module]): Activation layer module.
+            Defaults to `partial(nn.SiLU, inplace=True)`.
         pred_kernel_size (int): Kernel size of prediction layer. Defaults to 1.
     """
 
@@ -780,21 +788,19 @@ class RTMDetInsSepBNHead(RTMDetInsHead):
         share_conv: bool = True,
         with_objectness: bool = False,
         norm_cfg: dict | None = None,
-        act_cfg: dict | None = None,
+        activation_callable: Callable[..., nn.Module] = partial(nn.SiLU, inplace=True),
         pred_kernel_size: int = 1,
         **kwargs,
     ) -> None:
         if norm_cfg is None:
             norm_cfg = {"type": "BN", "requires_grad": True}
-        if act_cfg is None:
-            act_cfg = {"type": "SiLU", "inplace": True}
 
         self.share_conv = share_conv
         super().__init__(
             num_classes,
             in_channels,
             norm_cfg=norm_cfg,
-            act_cfg=act_cfg,
+            activation_callable=activation_callable,
             pred_kernel_size=pred_kernel_size,
             with_objectness=with_objectness,
             **kwargs,
@@ -849,7 +855,7 @@ class RTMDetInsSepBNHead(RTMDetInsHead):
                         stride=1,
                         padding=1,
                         norm_cfg=self.norm_cfg,
-                        act_cfg=self.act_cfg,
+                        activation_callable=self.activation_callable,
                     ),
                 )
                 reg_convs.append(
@@ -860,7 +866,7 @@ class RTMDetInsSepBNHead(RTMDetInsHead):
                         stride=1,
                         padding=1,
                         norm_cfg=self.norm_cfg,
-                        act_cfg=self.act_cfg,
+                        activation_callable=self.activation_callable,
                     ),
                 )
                 kernel_convs.append(
@@ -871,7 +877,7 @@ class RTMDetInsSepBNHead(RTMDetInsHead):
                         stride=1,
                         padding=1,
                         norm_cfg=self.norm_cfg,
-                        act_cfg=self.act_cfg,
+                        activation_callable=self.activation_callable,
                     ),
                 )
             self.cls_convs.append(cls_convs)
@@ -907,7 +913,7 @@ class RTMDetInsSepBNHead(RTMDetInsHead):
             stacked_convs=4,
             num_levels=len(self.prior_generator.strides),
             num_prototypes=self.num_prototypes,
-            act_cfg=self.act_cfg,
+            activation_callable=self.activation_callable,
             norm_cfg=self.norm_cfg,
         )
 

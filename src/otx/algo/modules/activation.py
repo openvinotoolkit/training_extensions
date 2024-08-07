@@ -2,13 +2,12 @@
 # SPDX-License-Identifier: Apache-2.0
 # Copyright (c) OpenMMLab. All rights reserved.
 
-"""This implementation replaces the functionality of mmcv.cnn.bricks.activation.build_activation_layer."""
+"""This implementation replaces the functionality of mmcv.cbricks.activation.build_activation_layer."""
+
 from __future__ import annotations
 
-import copy
-
 import torch
-from torch import nn
+from torch import Tensor, nn
 
 
 class Swish(nn.Module):
@@ -23,52 +22,28 @@ class Swish(nn.Module):
         Tensor: The output tensor.
     """
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: Tensor) -> Tensor:
         """Forward function.
 
         Args:
-            x (torch.Tensor): The input tensor.
+            x (Tensor): The input tensor.
 
         Returns:
-            torch.Tensor: The output tensor.
+            Tensor: The output tensor.
         """
         return x * torch.sigmoid(x)
 
 
-ACTIVATION_DICT = {
-    "ReLU": nn.ReLU,
-    "LeakyReLU": nn.LeakyReLU,
-    "PReLU": nn.PReLU,
-    "RReLU": nn.RReLU,
-    "ReLU6": nn.ReLU6,
-    "ELU": nn.ELU,
-    "Sigmoid": nn.Sigmoid,
-    "Tanh": nn.Tanh,
-    "SiLU": nn.SiLU,
-    "GELU": nn.GELU,
-    "Swish": Swish,
-}
-
-
-def build_activation_layer(cfg: dict) -> nn.Module:
-    """Build activation layer.
-
-    Args:
-        cfg (dict): The activation layer config, which should contain:
-
-            - type (str): Layer type.
-            - layer args: Args needed to instantiate an activation layer.
-
-    Returns:
-        nn.Module: Created activation layer.
-    """
-    _cfg = copy.deepcopy(cfg)
-    activation_type = _cfg.pop("type", None)
-    if activation_type is None:
-        msg = "The cfg dict must contain the key 'type'"
-        raise KeyError(msg)
-    if activation_type not in ACTIVATION_DICT:
-        msg = f"Cannot find {activation_type} in {ACTIVATION_DICT.keys()}"
-        raise KeyError(msg)
-
-    return ACTIVATION_DICT[activation_type](**_cfg)
+AVAILABLE_ACTIVATION_LIST: list[str] = [
+    "ReLU",
+    "LeakyReLU",
+    "PReLU",
+    "RReLU",
+    "ReLU6",
+    "ELU",
+    "Sigmoid",
+    "Tanh",
+    "SiLU",
+    "GELU",
+    "Swish",
+]

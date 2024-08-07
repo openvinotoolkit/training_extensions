@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import math
 from pathlib import Path
-from typing import Literal
+from typing import Callable, Literal
 
 import torch
 from pytorchcv.models.model_store import download_model
@@ -33,7 +33,7 @@ def conv1x1_block(
     bias: bool = False,
     use_bn: bool = True,
     bn_eps: float = 1e-5,
-    activation: str | None = "ReLU",
+    activation_callable: Callable[..., nn.Module] | None = nn.ReLU,
 ) -> Conv2dModule:
     """Conv block."""
     return Conv2dModule(
@@ -45,7 +45,7 @@ def conv1x1_block(
         groups=groups,
         bias=bias,
         norm_cfg=({"type": "BN", "eps": bn_eps} if use_bn else None),
-        act_cfg=({"type": activation} if activation else None),
+        activation_callable=activation_callable,
     )
 
 
@@ -59,7 +59,7 @@ def conv3x3_block(
     bias: bool = False,
     use_bn: bool = True,
     bn_eps: float = 1e-5,
-    activation: str | None = "ReLU",
+    activation_callable: Callable[..., nn.Module] | None = nn.ReLU,
 ) -> Conv2dModule:
     """Conv block."""
     return Conv2dModule(
@@ -72,7 +72,7 @@ def conv3x3_block(
         groups=groups,
         bias=bias,
         norm_cfg=({"type": "BN", "eps": bn_eps} if use_bn else None),
-        act_cfg=({"type": activation} if activation else None),
+        activation_callable=activation_callable,
     )
 
 
@@ -85,7 +85,7 @@ def dwconv3x3_block(
     bias: bool = False,
     use_bn: bool = True,
     bn_eps: float = 1e-5,
-    activation: str | None = "ReLU",
+    activation_callable: Callable[..., nn.Module] | None = nn.ReLU,
 ) -> Conv2dModule:
     """Conv block."""
     return Conv2dModule(
@@ -98,7 +98,7 @@ def dwconv3x3_block(
         groups=out_channels,
         bias=bias,
         norm_cfg=({"type": "BN", "eps": bn_eps} if use_bn else None),
-        act_cfg=({"type": activation} if activation else None),
+        activation_callable=activation_callable,
     )
 
 
@@ -111,7 +111,7 @@ def dwconv5x5_block(
     bias: bool = False,
     use_bn: bool = True,
     bn_eps: float = 1e-5,
-    activation: str | None = "ReLU",
+    activation_callable: Callable[..., nn.Module] | None = nn.ReLU,
 ) -> Conv2dModule:
     """Conv block."""
     return Conv2dModule(
@@ -124,7 +124,7 @@ def dwconv5x5_block(
         groups=out_channels,
         bias=bias,
         norm_cfg=({"type": "BN", "eps": bn_eps} if use_bn else None),
-        act_cfg=({"type": activation} if activation else None),
+        activation_callable=activation_callable,
     )
 
 
