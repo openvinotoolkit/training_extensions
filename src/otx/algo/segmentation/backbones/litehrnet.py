@@ -205,6 +205,7 @@ class SpatialWeighting(nn.Module):
             nn.ReLU,
             nn.Sigmoid,
         ),
+        **kwargs,
     ) -> None:
         super().__init__()
 

@@ -173,14 +173,22 @@ class ConvModule(nn.Module):
         # build activation layer
         self.activation: nn.Module | None = None
         self._with_activation: bool | None = None
-        if activation_callable is not None and (
-            (
+        if activation_callable is not None:
+            if (
                 isinstance(activation_callable, partial)
-                and activation_callable.func.__name__ in AVAILABLE_ACTIVATION_LIST
-            )
-            or (activation_callable.__name__ in AVAILABLE_ACTIVATION_LIST)
-        ):
-            self.activation = activation_callable() if activation_callable is not None else None
+                and activation_callable.func.__name__ not in AVAILABLE_ACTIVATION_LIST
+            ):
+                msg = f"Unsupported activation: {activation_callable.func.__name__}."
+                raise ValueError(msg)
+
+            if (
+                not isinstance(activation_callable, partial)
+                and activation_callable.__name__ not in AVAILABLE_ACTIVATION_LIST
+            ):
+                msg = f"Unsupported activation: {activation_callable.__name__}."
+                raise ValueError(msg)
+
+            self.activation = activation_callable()
 
             # update inplace
             if self.activation.__class__.__name__ not in ACTIVATION_LIST_NOT_SUPPORTING_INPLACE:
@@ -192,7 +200,7 @@ class ConvModule(nn.Module):
     @property
     def with_activation(self) -> bool:
         """Whether the conv module has activation."""
-        if self._with_activation:
+        if self._with_activation is not None:
             # src/otx/algo/segmentation/heads/fcn_head.py L144
             return self._with_activation
         return self.activation is not None

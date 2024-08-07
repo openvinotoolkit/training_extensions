@@ -3,6 +3,8 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 # https://github.com/open-mmlab/mmcv/blob/main/tests/test_cnn/test_conv_module.py
 
+from functools import partial
+
 import pytest
 import torch
 from otx.algo.modules.conv_module import Conv2dModule, DepthwiseSeparableConvModule
@@ -15,15 +17,20 @@ def test_conv_module():
         # norm_cfg must be a dict or None
         Conv2dModule(3, 8, 2, norm_cfg=norm_cfg)
 
-    activation_callable = nn.functional.softmax
-    with pytest.raises(TypeError):
+    activation_callable = nn.Softmax
+    with pytest.raises(ValueError, match="Unsupported activation"):
+        # softmax is not supported
+        Conv2dModule(3, 8, 2, activation_callable=activation_callable)
+
+    activation_callable = partial(nn.Softmax)
+    with pytest.raises(ValueError, match="Unsupported activation"):
         # softmax is not supported
         Conv2dModule(3, 8, 2, activation_callable=activation_callable)
 
     # conv + norm + act
     conv = Conv2dModule(3, 8, 2, norm_cfg={"type": "BN"})
     assert conv.with_activation
-    assert hasattr(conv, "activate")
+    assert isinstance(conv.activation, nn.Module)
     assert conv.with_norm
     assert hasattr(conv, "norm_layer")
     x = torch.rand(1, 3, 256, 256)
@@ -33,7 +40,7 @@ def test_conv_module():
     # conv + act
     conv = Conv2dModule(3, 8, 2)
     assert conv.with_activation
-    assert hasattr(conv, "activate")
+    assert isinstance(conv.activation, nn.Module)
     assert not conv.with_norm
     assert conv.norm_layer is None
     x = torch.rand(1, 3, 256, 256)
@@ -45,7 +52,7 @@ def test_conv_module():
     assert not conv.with_norm
     assert conv.norm_layer is None
     assert not conv.with_activation
-    assert not hasattr(conv, "activate")
+    assert conv.activation is None
     x = torch.rand(1, 3, 256, 256)
     output = conv(x)
     assert output.shape == (1, 8, 255, 255)
