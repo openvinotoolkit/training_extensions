@@ -187,15 +187,6 @@ class HierarchicalClsHead(BaseModule):
         multiclass_pred_scores = torch.cat(multiclass_pred_scores, dim=1)
         multiclass_pred_labels = torch.cat(multiclass_pred_labels, dim=1)
 
-        # multiclass_pred = torch.softmax(cls_scores, dim=1)
-        # multiclass_pred_score, multiclass_pred_label = torch.max(multiclass_pred, dim=1)
-
-        # multiclass_pred_scores.extend(multiclass_pred_score.view(-1, 1))
-        # multiclass_pred_labels.extend(multiclass_pred_label.view(-1, 1))
-
-        # multiclass_pred_scores = torch.cat(multiclass_pred_scores)
-        # multiclass_pred_labels = torch.cat(multiclass_pred_labels)
-
         if self.num_multilabel_classes > 0:
             multilabel_logits = cls_scores[:, self.num_single_label_classes :]
 
@@ -369,7 +360,7 @@ class ChannelAttention(nn.Module):
 
     def __init__(self, in_channels: int, reduction: int = 16):
         """Initializes the ChannelAttention module."""
-        super().__init__(ChannelAttention, self)
+        super().__init__()
         self.fc1 = nn.Conv2d(in_channels, in_channels // reduction, kernel_size=1, bias=False)
         self.fc2 = nn.Conv2d(in_channels // reduction, in_channels, kernel_size=1, bias=False)
 
@@ -385,7 +376,7 @@ class SpatialAttention(nn.Module):
 
     def __init__(self, kernel_size: int = 7):
         """Initializes the SpatialAttention module."""
-        super().__init__(SpatialAttention, self)
+        super().__init__()
         self.conv = nn.Conv2d(2, 1, kernel_size, padding=kernel_size // 2, bias=False)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -401,7 +392,7 @@ class CBAM(nn.Module):
 
     def __init__(self, in_channels: int, reduction: int = 16, kernel_size: int = 7):
         """Initializes the CBAM module with channel and spatial attention."""
-        super().__init__(CBAM, self)
+        super().__init__()
         self.channel_attention = ChannelAttention(in_channels, reduction)
         self.spatial_attention = SpatialAttention(kernel_size)
 
@@ -442,6 +433,7 @@ class HierarchicalCBAMClsHead(HierarchicalClsHead):
         multilabel_loss: nn.Module | None = None,
         thr: float = 0.5,
         init_cfg: dict | None = None,
+        step_size: int = 7,
         **kwargs,
     ):
         super().__init__(
@@ -458,7 +450,6 @@ class HierarchicalCBAMClsHead(HierarchicalClsHead):
             init_cfg=init_cfg,
             **kwargs,
         )
-        step_size = 7
         self.step_size = step_size
         self.fc_superclass = nn.Linear(in_channels * step_size * step_size, num_multiclass_heads)
         self.attention_fc = nn.Linear(num_multiclass_heads, in_channels * step_size * step_size)
