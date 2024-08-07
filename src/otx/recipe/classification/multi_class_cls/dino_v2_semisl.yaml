@@ -1,5 +1,5 @@
 model:
-  class_path: otx.algo.classification.dino_v2.DINOv2ForMulticlassCls
+  class_path: otx.algo.classification.dino_v2.VisionTransformerForMulticlassCls
   init_args:
     label_info: 1000
     freeze_backbone: false
