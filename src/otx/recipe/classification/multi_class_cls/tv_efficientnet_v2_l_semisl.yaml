@@ -4,7 +4,7 @@ model:
     backbone: efficientnet_v2_l
     label_info: 1000
     task: MULTI_CLASS_CLS
-    train_type: semi_supervised
+    train_type: SEMI_SUPERVISED
 
     optimizer:
       class_path: torch.optim.SGD

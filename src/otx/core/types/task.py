@@ -36,3 +36,10 @@ class OTXTaskType(str, Enum):
     # Visual Promting Tasks.
     VISUAL_PROMPTING = "VISUAL_PROMPTING"
     ZERO_SHOT_VISUAL_PROMPTING = "ZERO_SHOT_VISUAL_PROMPTING"
+
+
+class OTXTrainType(str, Enum):
+    """OTX train type definition."""
+
+    SUPERVISED = "SUPERVISED"
+    SEMI_SUPERVISED = "SEMI_SUPERVISED"

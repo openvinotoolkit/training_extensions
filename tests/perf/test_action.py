@@ -20,7 +20,7 @@ log = logging.getLogger(__name__)
 def fxt_deterministic(request: pytest.FixtureRequest) -> bool:
     """Override the deterministic setting for action classification task."""
     deterministic = request.config.getoption("--deterministic")
-    deterministic = True if deterministic is None else deterministic == "true"
+    deterministic = False if deterministic is None else deterministic == "true"
     log.info(f"{deterministic=}")
     return deterministic
 
@@ -102,12 +102,10 @@ class TestPerfActionClassification(PerfTestBase):
         fxt_model: Benchmark.Model,
         fxt_dataset: Benchmark.Dataset,
         fxt_benchmark: Benchmark,
-        fxt_resume_from: Path | None,
     ):
         self._test_perf(
             model=fxt_model,
             dataset=fxt_dataset,
             benchmark=fxt_benchmark,
             criteria=self.BENCHMARK_CRITERIA,
-            resume_from=fxt_resume_from,
         )

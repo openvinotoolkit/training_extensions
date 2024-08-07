@@ -8,6 +8,8 @@ from typing import TYPE_CHECKING, Any, _SpecialForm
 
 import yaml
 
+from otx.core.types.task import OTXTaskType, OTXTrainType
+
 if TYPE_CHECKING:
     from torch import dtype
 
@@ -123,6 +125,22 @@ def ignore_aliases(self: yaml.representer.SafeRepresenter, data: Any) -> bool:  
     return None
 
 
+def otx_str_type_representer(
+    dumper: yaml.Dumper | yaml.representer.SafeRepresenter,
+    data: OTXTaskType | OTXTrainType,
+) -> yaml.ScalarNode:
+    """Representer function for converting OTXTaskType or OTXTrainType to a YAML string representation.
+
+    Args:
+        dumper (yaml.Dumper | yaml.representer.SafeRepresenter): The YAML dumper or safe representer object.
+        data (OTXTaskType | OTXTrainType): The OTXTaskType or OTXTrainType object to be represented.
+
+    Returns:
+        yaml.ScalarNode: The YAML ScalarNode representation of the given object.
+    """
+    return dumper.represent_scalar("tag:yaml.org,2002:str", str(data.value))
+
+
 def register_configs() -> None:
     """Register custom resolvers."""
     from omegaconf import OmegaConf
@@ -137,6 +155,8 @@ def register_configs() -> None:
     yaml.SafeDumper.add_representer(dtype, dtype_representer)
     yaml.SafeDumper.add_representer(_SpecialForm, any_representer)  # typing.Any for DictConfig
     yaml.SafeDumper.ignore_aliases = ignore_aliases  # type: ignore  # noqa: PGH003
+    yaml.SafeDumper.add_representer(OTXTaskType, otx_str_type_representer)
+    yaml.SafeDumper.add_representer(OTXTrainType, otx_str_type_representer)
 
 
 register_configs()

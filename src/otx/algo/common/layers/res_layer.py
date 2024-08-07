@@ -8,15 +8,9 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 from otx.algo.modules.base_module import BaseModule, Sequential
-from otx.algo.modules.conv import build_conv_layer
 from otx.algo.modules.norm import build_norm_layer
 from torch import nn
-
-if TYPE_CHECKING:
-    from omegaconf import DictConfig
 
 
 class ResLayer(Sequential):
@@ -30,8 +24,6 @@ class ResLayer(Sequential):
         stride (int): stride of the first block. Defaults to 1
         avg_down (bool): Use AvgPool instead of stride conv when
             downsampling in the bottleneck. Defaults to False
-        conv_cfg (dict): dictionary to construct and config conv layer.
-            Defaults to None
         norm_cfg (dict): dictionary to construct and config norm layer.
             Defaults to dict(type='BN')
         downsample_first (bool): Downsample at the first block or last block.
@@ -47,7 +39,6 @@ class ResLayer(Sequential):
         norm_cfg: dict,
         stride: int = 1,
         avg_down: bool = False,
-        conv_cfg: DictConfig | dict | None = None,
         downsample_first: bool = True,
         **kwargs,
     ) -> None:
@@ -69,8 +60,7 @@ class ResLayer(Sequential):
                 )
             downsample.extend(
                 [
-                    build_conv_layer(
-                        conv_cfg,
+                    nn.Conv2d(
                         inplanes,
                         planes * block.expansion,
                         kernel_size=1,
@@ -90,7 +80,6 @@ class ResLayer(Sequential):
                     planes=planes,
                     stride=stride,
                     downsample=downsample,
-                    conv_cfg=conv_cfg,
                     norm_cfg=norm_cfg,
                     **kwargs,
                 ),
@@ -98,7 +87,7 @@ class ResLayer(Sequential):
             inplanes = planes * block.expansion
             layers.extend(
                 [
-                    block(inplanes=inplanes, planes=planes, stride=1, conv_cfg=conv_cfg, norm_cfg=norm_cfg, **kwargs)
+                    block(inplanes=inplanes, planes=planes, stride=1, norm_cfg=norm_cfg, **kwargs)
                     for _ in range(1, num_blocks)
                 ],
             )

@@ -14,15 +14,6 @@ from otx.engine.utils.auto_configurator import DEFAULT_CONFIG_PER_TASK
 from tests.utils import ExportCase2Test, run_main
 
 
-@pytest.fixture()
-def fxt_export_list() -> list[ExportCase2Test]:
-    return [
-        ExportCase2Test("ONNX", False, "exported_model.onnx"),
-        ExportCase2Test("OPENVINO", False, "exported_model.xml"),
-        ExportCase2Test("OPENVINO", True, "exportable_code.zip"),
-    ]
-
-
 @pytest.fixture(
     params=pytest.RECIPE_LIST,
     ids=lambda x: "/".join(Path(x).parts[-2:]),
@@ -95,7 +86,6 @@ def test_otx_e2e(
         None
     """
     recipe, task, model_name, tmp_path_train = fxt_trained_model
-
     outputs_dir = tmp_path_train / "outputs"
     latest_dir = max(
         (p for p in outputs_dir.iterdir() if p.is_dir() and p.name != ".latest"),
@@ -262,6 +252,9 @@ def test_otx_e2e(
     if "dino" in model_name:
         return  # DINO is not supported.
 
+    if "rtdetr" in model_name:
+        return  # RT-DETR currently is not supported.
+
     tmp_path_test = tmp_path / f"otx_export_xai_{model_name}"
     for export_case in fxt_export_list:
         command_cfg = [
@@ -329,6 +322,9 @@ def test_otx_explain_e2e(
 
     if "maskrcnn_r50_tv" in model_name:
         pytest.skip("MaskRCNN R50 Torchvision model doesn't support explain.")
+
+    if "rtdetr" in recipe:
+        pytest.skip("rtdetr model is not supported yet with explain.")
 
     # otx explain
     tmp_path_explain = tmp_path / f"otx_explain_{model_name}"

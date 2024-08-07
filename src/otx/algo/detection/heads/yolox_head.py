@@ -8,12 +8,14 @@ Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/d
 
 from __future__ import annotations
 
+import logging
 import math
 from typing import Sequence
 
 import torch
 import torch.nn.functional as F  # noqa: N812
 from torch import Tensor, nn
+from torchvision.ops import box_convert
 
 from otx.algo.common.losses import CrossEntropyLoss, L1Loss
 from otx.algo.common.utils.nms import batched_nms, multiclass_nms
@@ -22,27 +24,10 @@ from otx.algo.common.utils.samplers import PseudoSampler
 from otx.algo.common.utils.utils import multi_apply, reduce_mean
 from otx.algo.detection.heads.base_head import BaseDenseHead
 from otx.algo.detection.losses import IoULoss
-from otx.algo.modules.conv_module import ConvModule
-from otx.algo.modules.depthwise_separable_conv_module import DepthwiseSeparableConvModule
+from otx.algo.modules.conv_module import Conv2dModule, DepthwiseSeparableConvModule
 from otx.algo.utils.mmengine_utils import InstanceData
 
-
-def bbox_xyxy_to_cxcywh(bbox: Tensor) -> Tensor:
-    """Convert bbox coordinates from (x1, y1, x2, y2) to (cx, cy, w, h).
-
-    Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/structures/bbox/transforms.py#L279-L290
-
-    TODO (sungchul): is there the same function in otx?
-
-    Args:
-        bbox (Tensor): Shape (n, 4) for bboxes.
-
-    Returns:
-        Tensor: Converted bboxes.
-    """
-    x1, y1, x2, y2 = bbox.split((1, 1, 1, 1), dim=-1)
-    bbox_new = [(x1 + x2) / 2, (y1 + y2) / 2, (x2 - x1), (y2 - y1)]
-    return torch.cat(bbox_new, dim=-1)
+logger = logging.getLogger()
 
 
 class YOLOXHead(BaseDenseHead):
@@ -64,8 +49,6 @@ class YOLOXHead(BaseDenseHead):
         conv_bias (bool or str): If specified as `auto`, it will be decided by
             the norm_cfg. Bias of conv will be set as True if `norm_cfg` is
             None, otherwise False. Defaults to "auto".
-        conv_cfg (dict, optional): Config dict for convolution layer.
-            Defaults to None.
         norm_cfg (dict): Config dict for normalization layer.
             Defaults to dict(type='BN', momentum=0.03, eps=0.001).
         act_cfg (dict): Config dict for activation layer.
@@ -92,7 +75,6 @@ class YOLOXHead(BaseDenseHead):
         use_depthwise: bool = False,
         dcn_on_last_conv: bool = False,
         conv_bias: bool | str = "auto",
-        conv_cfg: dict | None = None,
         norm_cfg: dict | None = None,
         act_cfg: dict | None = None,
         loss_cls: nn.Module | None = None,
@@ -135,7 +117,6 @@ class YOLOXHead(BaseDenseHead):
         self.conv_bias = conv_bias
         self.use_sigmoid_cls = True
 
-        self.conv_cfg = conv_cfg
         self.norm_cfg = norm_cfg
         self.act_cfg = act_cfg
 
@@ -175,11 +156,18 @@ class YOLOXHead(BaseDenseHead):
 
     def _build_stacked_convs(self) -> nn.Sequential:
         """Initialize conv layers of a single level head."""
-        conv = DepthwiseSeparableConvModule if self.use_depthwise else ConvModule
+        conv = DepthwiseSeparableConvModule if self.use_depthwise else Conv2dModule
         stacked_convs = []
         for i in range(self.stacked_convs):
             chn = self.in_channels if i == 0 else self.feat_channels
-            conv_cfg = {"type": "DCNv2"} if self.dcn_on_last_conv and i == self.stacked_convs - 1 else self.conv_cfg
+            # TODO (sungchul): enable deformable convolution implemented in mmcv
+            # conv_cfg = {"type": "DCNv2"} if self.dcn_on_last_conv and i == self.stacked_convs - 1 else self.conv_cfg
+            if self.dcn_on_last_conv and i == self.stacked_convs - 1:
+                logger.warning(
+                    f"stacked convs[{i}] : Deformable convolution is not supported in YOLOXHead, "
+                    "use normal convolution instead.",
+                )
+
             stacked_convs.append(
                 conv(
                     chn,
@@ -187,7 +175,6 @@ class YOLOXHead(BaseDenseHead):
                     3,
                     stride=1,
                     padding=1,
-                    conv_cfg=conv_cfg,
                     norm_cfg=self.norm_cfg,
                     act_cfg=self.act_cfg,
                     bias=self.conv_bias,
@@ -671,7 +658,7 @@ class YOLOXHead(BaseDenseHead):
 
     def _get_l1_target(self, l1_target: Tensor, gt_bboxes: Tensor, priors: Tensor, eps: float = 1e-8) -> Tensor:
         """Convert gt bboxes to center offset and log width height."""
-        gt_cxcywh = bbox_xyxy_to_cxcywh(gt_bboxes)
+        gt_cxcywh = box_convert(gt_bboxes, in_fmt="xyxy", out_fmt="cxcywh")
         l1_target[:, :2] = (gt_cxcywh[:, :2] - priors[:, :2]) / priors[:, 2:]
         l1_target[:, 2:] = torch.log(gt_cxcywh[:, 2:] / priors[:, 2:] + eps)
         return l1_target

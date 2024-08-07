@@ -340,17 +340,17 @@ class TestRandomAffine:
     def random_affine(self) -> RandomAffine:
         return RandomAffine()
 
-    @pytest.mark.xfail(raises=AssertionError)
     def test_init_invalid_translate_ratio(self) -> None:
-        RandomAffine(max_translate_ratio=1.5)
+        with pytest.raises(AssertionError):
+            RandomAffine(max_translate_ratio=1.5)
 
-    @pytest.mark.xfail(raises=AssertionError)
     def test_init_invalid_scaling_ratio_range_inverse_order(self) -> None:
-        RandomAffine(scaling_ratio_range=(1.5, 0.5))
+        with pytest.raises(AssertionError):
+            RandomAffine(scaling_ratio_range=(1.5, 0.5))
 
-    @pytest.mark.xfail(raises=AssertionError)
     def test_init_invalid_scaling_ratio_range_zero_value(self) -> None:
-        RandomAffine(scaling_ratio_range=(0, 0.5))
+        with pytest.raises(AssertionError):
+            RandomAffine(scaling_ratio_range=(0, 0.5))
 
     def test_forward(self, random_affine: RandomAffine, det_data_entity: DetDataEntity) -> None:
         """Test forward."""
@@ -368,13 +368,13 @@ class TestCachedMosaic:
     def cached_mosaic(self) -> CachedMosaic:
         return CachedMosaic(img_scale=(128, 128), random_pop=False, max_cached_images=20)
 
-    @pytest.mark.xfail(raises=AssertionError)
     def test_init_invalid_img_scale(self) -> None:
-        CachedMosaic(img_scale=640)
+        with pytest.raises(AssertionError):
+            CachedMosaic(img_scale=640)
 
-    @pytest.mark.xfail(raises=AssertionError)
     def test_init_invalid_probability(self) -> None:
-        CachedMosaic(prob=1.5)
+        with pytest.raises(AssertionError):
+            CachedMosaic(prob=1.5)
 
     def test_forward_pop_small_cache(
         self,
@@ -421,13 +421,13 @@ class TestCachedMixUp:
     def cached_mixup(self) -> CachedMixUp:
         return CachedMixUp(ratio_range=(1.0, 1.0), prob=1.0, random_pop=False, max_cached_images=10)
 
-    @pytest.mark.xfail(raises=AssertionError)
     def test_init_invalid_img_scale(self) -> None:
-        CachedMixUp(img_scale=640)
+        with pytest.raises(AssertionError):
+            CachedMixUp(img_scale=640)
 
-    @pytest.mark.xfail(raises=AssertionError)
     def test_init_invalid_probability(self) -> None:
-        CachedMosaic(prob=1.5)
+        with pytest.raises(AssertionError):
+            CachedMosaic(prob=1.5)
 
     def test_forward_pop_small_cache(
         self,

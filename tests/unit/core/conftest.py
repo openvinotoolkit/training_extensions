@@ -5,7 +5,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 import torch
-from datumaro import Label
+from datumaro import Label, Polygon
 from datumaro.components.annotation import AnnotationType, LabelCategories
 from datumaro.components.dataset import Dataset, DatasetItem
 from datumaro.components.media import Image
@@ -18,6 +18,7 @@ from otx.core.data.entity.visual_prompting import (
     ZeroShotVisualPromptingBatchDataEntity,
     ZeroShotVisualPromptingBatchPredEntity,
     ZeroShotVisualPromptingDataEntity,
+    ZeroShotVisualPromptingLabel,
 )
 from torchvision import tv_tensors
 
@@ -151,8 +152,12 @@ def fxt_zero_shot_vpm_data_entity() -> (
     )
     fake_points = Points([[2, 2]], canvas_size=img_size, dtype=torch.float32)
     fake_masks = tv_tensors.Mask(torch.ones(1, *img_size))
-    fake_labels = torch.as_tensor([1, 2], dtype=torch.int64)
-    fake_polygons = [None]
+    fake_labels = ZeroShotVisualPromptingLabel(
+        prompts=torch.as_tensor([1, 2], dtype=torch.int64),
+        masks=torch.as_tensor([1], dtype=torch.int64),
+        polygons=torch.as_tensor([2], dtype=torch.int64),
+    )
+    fake_polygons = [Polygon(points=[1, 1, 1, 2, 2, 2, 2, 1])]
     fake_scores = torch.tensor([[1.0]])
     # define data entity
     single_data_entity = ZeroShotVisualPromptingDataEntity(
@@ -177,7 +182,7 @@ def fxt_zero_shot_vpm_data_entity() -> (
         images=[fake_image],
         imgs_info=[fake_image_info],
         masks=[fake_masks],
-        labels=[fake_labels],
+        labels=[fake_labels.prompts],
         polygons=[fake_polygons],
         prompts=[[fake_bboxes, fake_points]],
         scores=[fake_scores],

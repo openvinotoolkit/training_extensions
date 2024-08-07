@@ -102,8 +102,8 @@ class TestOTXSegmentationDataset:
         # The mask is np.eye(10) with label_id = 0,
         # so that the diagonal is filled with zero
         # and others are filled with ignore_index.
-        gt_seg_map = next(iter(dataset)).gt_seg_map
-        assert gt_seg_map.sum() == (10 * 10 - 10) * 100
+        masks = next(iter(dataset)).masks
+        assert masks.sum() == (10 * 10 - 10) * 100
 
     def test_overflown_ignore_index(self, fxt_mock_dm_subset):
         dataset = OTXSegmentationDataset(

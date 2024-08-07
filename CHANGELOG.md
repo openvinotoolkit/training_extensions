@@ -6,11 +6,44 @@ All notable changes to this project will be documented in this file.
 
 ### New features
 
+- Add RT-DETR model for object detection task
+  (https://github.com/openvinotoolkit/training_extensions/pull/3741)
+- Add Multi-Label & H-label Classification with torchvision models
+  (https://github.com/openvinotoolkit/training_extensions/pull/3697)
+- Add Hugging-Face Model Wrapper for Classification
+  (https://github.com/openvinotoolkit/training_extensions/pull/3710)
+- Add Hugging-Face Model Wrapper for Detection
+  (https://github.com/openvinotoolkit/training_extensions/pull/3747)
+- Add Hugging-Face Model Wrapper for Semantic Segmentation
+  (https://github.com/openvinotoolkit/training_extensions/pull/3749)
+- Enable torch.compile to work with classification
+  (https://github.com/openvinotoolkit/training_extensions/pull/3758)
+- Add `otx benchmark` subcommand
+  (https://github.com/openvinotoolkit/training_extensions/pull/3762)
+
 ### Enhancements
+
+- Enable to override data configurations
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3748>)
+- Enable to use input_size at transforms in recipe
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3759>)
+- Enable to use polygon and bitmap mask as prompt inputs for zero-shot learning
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3769>)
 
 ### Bug fixes
 
+- Fix Combined Dataloader & unlabeled warmup loss in Semi-SL
+  (https://github.com/openvinotoolkit/training_extensions/pull/3723)
+- Revert #3579 to fix issues with replacing coco_instance with a different format in some dataset
+  (https://github.com/openvinotoolkit/training_extensions/pull/3753)
+- Add num_devices in Engine for multi-gpu training
+  (https://github.com/openvinotoolkit/training_extensions/pull/3778)
+
 ## \[v2.1.0\]
+
+> _**NOTES**_
+>
+> OpenVINO™ Training Extensions, version 2.1.0 does not include the latest functional and security updates. OpenVINO™ Training Extensions, version 2.2.0 is targeted to be released in September 2024 and will include additional functional and security updates. Customers should update to the latest version as it becomes available.
 
 ### New features
 
@@ -142,6 +175,10 @@ All notable changes to this project will be documented in this file.
   (<https://github.com/openvinotoolkit/training_extensions/pull/3684>)
 - Fix MaskRCNN SwinT NNCF Accuracy Drop
   (<https://github.com/openvinotoolkit/training_extensions/pull/3685>)
+
+### Known issues
+
+- Post-Training Quantization (PTQ) optimization applied to maskrcnn_swint in the instance segmentation task may result in significantly reduced accuracy. This issue is expected to be addressed with an upgrade to OpenVINO and NNCF in a future release.
 
 ## \[v2.0.0\]
 

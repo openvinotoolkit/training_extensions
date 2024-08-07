@@ -11,7 +11,6 @@ from typing import TYPE_CHECKING, Iterable
 
 import torch
 from datumaro import Dataset as DmDataset
-from datumaro import Environment
 from lightning import LightningDataModule
 from omegaconf import DictConfig, OmegaConf
 from torch.utils.data import DataLoader, RandomSampler
@@ -62,12 +61,18 @@ class OTXDataModule(LightningDataModule):
         unannotated_items_ratio: float = 0.0,
         auto_num_workers: bool = False,
         device: DeviceType = DeviceType.auto,
+        input_size: int | tuple[int, int] | None = None,
     ) -> None:
         """Constructor."""
         super().__init__()
         self.task = task
         self.data_format = data_format
         self.data_root = data_root
+
+        if input_size is not None:
+            for subset_cfg in [train_subset, val_subset, test_subset, unlabeled_subset]:
+                if subset_cfg.input_size is None:
+                    subset_cfg.input_size = input_size
 
         self.train_subset = train_subset
         self.val_subset = val_subset
@@ -98,18 +103,6 @@ class OTXDataModule(LightningDataModule):
         from datumaro.plugins.data_formats.video import VIDEO_EXTENSIONS
 
         VIDEO_EXTENSIONS.append(".mp4")
-
-        # Data Format Check
-        available_data_formats = Environment().detect_dataset(str(self.data_root))
-        if not available_data_formats:
-            msg = f"Invalid data root: {self.data_root}. Please check if the data root is valid."
-            raise ValueError(msg)
-        if self.data_format not in available_data_formats:
-            log.warning(
-                f"Invalid data format: {self.data_format}. Available formats: {available_data_formats} "
-                f"Replace data_format: {self.data_format} -> {available_data_formats[0]}.",
-            )
-            self.data_format = available_data_formats[0]
 
         dataset = DmDataset.import_from(self.data_root, format=self.data_format)
         if self.task != "H_LABEL_CLS":
@@ -246,9 +239,7 @@ class OTXDataModule(LightningDataModule):
 
     def _is_meta_info_valid(self, label_infos: list[LabelInfo]) -> bool:
         """Check whether there are mismatches in the metainfo for the all subsets."""
-        if all(label_info == label_infos[0] for label_info in label_infos):
-            return True
-        return False
+        return bool(all(label_info == label_infos[0] for label_info in label_infos))
 
     def _get_dataset(self, subset: str) -> OTXDataset:
         if (dataset := self.subsets.get(subset)) is None:
@@ -293,7 +284,12 @@ class OTXDataModule(LightningDataModule):
                 "labeled": dataloader,
                 **unlabeled_dataloader,
             }
-            return CombinedLoader(iterables, mode="min_size")
+            # CombinedLoader should always behave relative to the labeled dataloader.
+            # if len(labeled_dataloader) < len(unlabeled_dataloader), the mode should be "min_size"
+            # if len(labeled_dataloader) > len(unlabeled_dataloader), the mode should be "max_size_cycle"
+            min_unlabeled_length = min(len(loader) for loader in unlabeled_dataloader.values())
+            mode = "min_size" if len(dataloader) < min_unlabeled_length else "max_size_cycle"
+            return CombinedLoader(iterables, mode=mode)
         return dataloader
 
     def val_dataloader(self) -> DataLoader:

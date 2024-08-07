@@ -11,11 +11,10 @@ from __future__ import annotations
 import math
 from typing import ClassVar
 
-from otx.algo.detection.backbones.csp_darknet import SPPBottleneck  # TODO (sungchul): move csp_darknet to common?
+from otx.algo.common.layers import SPPBottleneck
 from otx.algo.detection.layers import CSPLayer
 from otx.algo.modules.base_module import BaseModule
-from otx.algo.modules.conv_module import ConvModule
-from otx.algo.modules.depthwise_separable_conv_module import DepthwiseSeparableConvModule
+from otx.algo.modules.conv_module import Conv2dModule, DepthwiseSeparableConvModule
 from torch import Tensor, nn
 from torch.nn.modules.batchnorm import _BatchNorm
 
@@ -44,8 +43,6 @@ class CSPNeXt(BaseModule):
             layers. Defaults to (5, 9, 13).
         channel_attention (bool): Whether to add channel attention in each
             stage. Defaults to True.
-        conv_cfg (dict, optional): Config dict for
-            convolution layer. Defaults to None.
         norm_cfg (dict): Dictionary to construct and
             config norm layer. Defaults to dict(type='BN', requires_grad=True).
         act_cfg (dict): Config dict for activation layer.
@@ -86,7 +83,6 @@ class CSPNeXt(BaseModule):
         arch_ovewrite: dict | None = None,
         spp_kernel_sizes: tuple[int, int, int] = (5, 9, 13),
         channel_attention: bool = True,
-        conv_cfg: dict | None = None,
         norm_cfg: dict | None = None,
         act_cfg: dict | None = None,
         norm_eval: bool = False,
@@ -121,9 +117,9 @@ class CSPNeXt(BaseModule):
         self.frozen_stages = frozen_stages
         self.use_depthwise = use_depthwise
         self.norm_eval = norm_eval
-        conv = DepthwiseSeparableConvModule if use_depthwise else ConvModule
+        conv = DepthwiseSeparableConvModule if use_depthwise else Conv2dModule
         self.stem = nn.Sequential(
-            ConvModule(
+            Conv2dModule(
                 3,
                 int(arch_setting[0][0] * widen_factor // 2),
                 3,
@@ -132,7 +128,7 @@ class CSPNeXt(BaseModule):
                 norm_cfg=norm_cfg,
                 act_cfg=act_cfg,
             ),
-            ConvModule(
+            Conv2dModule(
                 int(arch_setting[0][0] * widen_factor // 2),
                 int(arch_setting[0][0] * widen_factor // 2),
                 3,
@@ -141,7 +137,7 @@ class CSPNeXt(BaseModule):
                 norm_cfg=norm_cfg,
                 act_cfg=act_cfg,
             ),
-            ConvModule(
+            Conv2dModule(
                 int(arch_setting[0][0] * widen_factor // 2),
                 int(arch_setting[0][0] * widen_factor),
                 3,
@@ -164,7 +160,6 @@ class CSPNeXt(BaseModule):
                 3,
                 stride=2,
                 padding=1,
-                conv_cfg=conv_cfg,
                 norm_cfg=norm_cfg,
                 act_cfg=act_cfg,
             )
@@ -174,7 +169,6 @@ class CSPNeXt(BaseModule):
                     out_channels,
                     out_channels,
                     kernel_sizes=spp_kernel_sizes,
-                    conv_cfg=conv_cfg,
                     norm_cfg=norm_cfg,
                     act_cfg=act_cfg,
                 )
@@ -188,7 +182,6 @@ class CSPNeXt(BaseModule):
                 use_cspnext_block=True,
                 expand_ratio=expand_ratio,
                 channel_attention=channel_attention,
-                conv_cfg=conv_cfg,
                 norm_cfg=norm_cfg,
                 act_cfg=act_cfg,
             )

@@ -47,8 +47,12 @@ def custom_wrap(wrappee: Tensor, *, like: tv_tensors.TVTensor, **kwargs) -> tv_t
         )
     elif isinstance(like, Points):  # noqa: RET505
         return Points._wrap(wrappee, canvas_size=kwargs.get("canvas_size", like.canvas_size))  # noqa: SLF001
-    else:
-        return wrappee.as_subclass(type(like))
+
+    # TODO(Vlad): remove this after torch upgrade. This workaround prevents a failure when like is also a Tensor
+    if type(like) == type(wrappee):
+        return wrappee
+
+    return wrappee.as_subclass(type(like))
 
 
 tv_tensors.wrap = custom_wrap
@@ -485,7 +489,7 @@ class Points(tv_tensors.TVTensor):
 def resize_points(
     points: torch.Tensor,
     canvas_size: tuple[int, int],
-    size: list[int],
+    size: tuple[int, int] | list[int],
     max_size: int | None = None,
 ) -> tuple[torch.Tensor, tuple[int, int]]:
     """Resize points."""
@@ -511,7 +515,7 @@ def resize_points(
 @F.register_kernel(functional=F.resize, tv_tensor_cls=Points)
 def _resize_points_dispatch(
     inpt: Points,
-    size: list[int],
+    size: tuple[int, int] | list[int],
     max_size: int | None = None,
     **kwargs,  # noqa: ARG001
 ) -> Points:
@@ -527,7 +531,7 @@ def _resize_points_dispatch(
 def pad_points(
     points: torch.Tensor,
     canvas_size: tuple[int, int],
-    padding: list[int],
+    padding: tuple[int, ...] | list[int],
     padding_mode: str = "constant",
 ) -> tuple[torch.Tensor, tuple[int, int]]:
     """Pad points."""
@@ -549,9 +553,9 @@ def pad_points(
 
 
 @F.register_kernel(functional=F.pad, tv_tensor_cls=Points)
-def _pad_bounding_boxes_dispatch(
+def _pad_points_dispatch(
     inpt: Points,
-    padding: list[int],
+    padding: tuple[int, ...] | list[int],
     padding_mode: str = "constant",
     **kwargs,  # noqa: ARG001
 ) -> Points:

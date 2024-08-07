@@ -1,6 +1,5 @@
-# Copyright (C) 2023 Intel Corporation
+# Copyright (C) 2023-2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-#
 """Class definition for action_classification model entity used in OTX."""
 
 # mypy: disable-error-code="attr-defined"
@@ -14,7 +13,7 @@ import torch
 
 from otx.algo.action_classification.utils.data_sample import ActionDataSample
 from otx.core.data.entity.action_classification import ActionClsBatchDataEntity, ActionClsBatchPredEntity
-from otx.core.data.entity.base import OTXBatchLossEntity
+from otx.core.data.entity.base import ImageInfo, OTXBatchLossEntity
 from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.metrics import MetricInput
 from otx.core.metrics.accuracy import MultiClassClsMetricCallable
@@ -22,14 +21,11 @@ from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallab
 from otx.core.schedulers import LRSchedulerListCallable
 from otx.core.types.export import TaskLevelExportParameters
 from otx.core.types.label import LabelInfoTypes
-from otx.core.utils.config import inplace_num_classes
-from otx.core.utils.utils import get_mean_std_from_data_processing
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
     from model_api.models.utils import ClassificationResult
-    from omegaconf import DictConfig
-    from torch import Tensor, nn
+    from torch import Tensor
 
     from otx.core.exporter.base import OTXModelExporter
     from otx.core.metrics import MetricCallable
@@ -165,121 +161,20 @@ class OTXActionClsModel(OTXModel[ActionClsBatchDataEntity, ActionClsBatchPredEnt
                 classification_layers[prefix + key] = {"stride": stride, "num_extra_classes": num_extra_classes}
         return classification_layers
 
-
-class MMActionCompatibleModel(OTXActionClsModel):
-    """Action classification model compitible for MMAction.
-
-    It can consume MMAction model configuration translated into OTX configuration
-    (please see otx.tools.translate_mmrecipe) and create the OTX Action classification model
-    compatible for OTX pipelines.
-    """
-
-    def __init__(
-        self,
-        label_info: LabelInfoTypes,
-        config: DictConfig,
-        optimizer: OptimizerCallable = DefaultOptimizerCallable,
-        scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
-        metric: MetricCallable = MultiClassClsMetricCallable,
-        torch_compile: bool = False,
-    ) -> None:
-        config = inplace_num_classes(cfg=config, num_classes=self._dispatch_label_info(label_info).num_classes)
-        self.config = config
-        self.load_from = config.pop("load_from", None)
-        self.image_size = (1, 1, 3, 8, 224, 224)
-        super().__init__(
-            label_info=label_info,
-            optimizer=optimizer,
-            scheduler=scheduler,
-            metric=metric,
-            torch_compile=torch_compile,
-        )
-
-    def _create_model(self) -> nn.Module:
-        from .utils.mmaction import create_model
-
-        model, self.classification_layers = create_model(self.config, self.load_from)
-        return model
-
-    def _customize_inputs(self, entity: ActionClsBatchDataEntity) -> dict[str, Any]:
-        """Convert ActionClsBatchDataEntity into mmaction model's input."""
-        from mmaction.structures import ActionDataSample
-
-        mmaction_inputs: dict[str, Any] = {}
-
-        mmaction_inputs["inputs"] = entity.images
-        mmaction_inputs["data_samples"] = [
-            ActionDataSample(
-                metainfo={
-                    "img_id": img_info.img_idx,
-                    "img_shape": img_info.img_shape,
-                    "ori_shape": img_info.ori_shape,
-                    "scale_factor": img_info.scale_factor,
-                },
-                gt_label=labels,
+    def get_dummy_input(self, batch_size: int = 1) -> ActionClsBatchDataEntity:
+        """Returns a dummy input for action classification model."""
+        images = torch.rand(batch_size, *self.image_size[1:])
+        labels = [torch.LongTensor([0])] * batch_size
+        infos = []
+        for i, img in enumerate(images):
+            infos.append(
+                ImageInfo(
+                    img_idx=i,
+                    img_shape=img.shape,
+                    ori_shape=img.shape,
+                ),
             )
-            for img_info, labels in zip(entity.imgs_info, entity.labels)
-        ]
-
-        mmaction_inputs = self.model.data_preprocessor(data=mmaction_inputs, training=self.training)
-        mmaction_inputs["mode"] = "loss" if self.training else "predict"
-        return mmaction_inputs
-
-    def _customize_outputs(
-        self,
-        outputs: Any,  # noqa: ANN401
-        inputs: ActionClsBatchDataEntity,
-    ) -> ActionClsBatchPredEntity | OTXBatchLossEntity:
-        from mmaction.structures import ActionDataSample
-
-        if self.training:
-            if not isinstance(outputs, dict):
-                raise TypeError(outputs)
-
-            losses = OTXBatchLossEntity()
-            for k, v in outputs.items():
-                losses[k] = v
-            return losses
-
-        scores = []
-        labels = []
-
-        for output in outputs:
-            if not isinstance(output, ActionDataSample):
-                raise TypeError(output)
-
-            scores.append(output.pred_score)
-            labels.append(output.pred_label)
-
-        return ActionClsBatchPredEntity(
-            batch_size=len(outputs),
-            images=inputs.images,
-            imgs_info=inputs.imgs_info,
-            scores=scores,
-            labels=labels,
-        )
-
-    @property
-    def _exporter(self) -> OTXModelExporter:
-        """Creates OTXModelExporter object that can export the model."""
-        mean, std = get_mean_std_from_data_processing(self.config)
-
-        return OTXNativeModelExporter(
-            task_level_export_parameters=self._export_parameters,
-            input_size=self.image_size,
-            mean=mean,
-            std=std,
-            resize_mode="standard",
-            pad_value=0,
-            swap_rgb=False,
-            via_onnx=False,
-            onnx_export_configuration=None,
-            output_names=None,
-        )
-
-    def forward_for_tracing(self, image: Tensor) -> Tensor | dict[str, Tensor]:
-        """Model forward function used for the model tracing during model exportation."""
-        return self.model(inputs=image, mode="tensor")
+        return ActionClsBatchDataEntity(batch_size, images, infos, labels=labels)
 
 
 class OVActionClsModel(
@@ -355,3 +250,19 @@ class OVActionClsModel(
     def model_adapter_parameters(self) -> dict:
         """Model parameters for export."""
         return {"input_layouts": "NSCTHW"}
+
+    def get_dummy_input(self, batch_size: int = 1) -> ActionClsBatchDataEntity:
+        """Returns a dummy input for action classification OV model."""
+        # Resize is embedded to the OV model, which means we don't need to know the actual size
+        images = [torch.rand(8, 3, 224, 224) for _ in range(batch_size)]
+        labels = [torch.LongTensor([0])] * batch_size
+        infos = []
+        for i, img in enumerate(images):
+            infos.append(
+                ImageInfo(
+                    img_idx=i,
+                    img_shape=img.shape,
+                    ori_shape=img.shape,
+                ),
+            )
+        return ActionClsBatchDataEntity(batch_size, images, infos, labels=labels)

@@ -5,8 +5,10 @@ from __future__ import annotations
 import sys
 
 import pytest
+import torch
 import yaml
 from otx.cli import OTXCLI, main
+from rich.console import Console
 
 
 class TestOTXCLI:
@@ -162,7 +164,7 @@ class TestOTXCLI:
                 cooldown: 0
                 min_lr: 0.0
                 eps: 1.0e-08
-                verbose: false
+                verbose: deprecated
         """
         expected_config = yaml.safe_load(expected_str)
         assert expected_config["scheduler"] == result_config["model"]["init_args"]["scheduler"]
@@ -189,3 +191,20 @@ class TestOTXCLI:
         out, _ = capfd.readouterr()
         result_config = yaml.safe_load(out)
         assert result_config["metric"] == "otx.core.metrics.fmeasure._f_measure_callable"
+
+    def test_print_results(self, mocker, capfd):
+        mocker.patch("otx.cli.cli.OTXCLI.__init__", return_value=None)
+        cli = OTXCLI()
+        cli.console = Console()
+        cli.engine = mocker.MagicMock()
+        cli.engine.work_dir.return_value = "work_dir"
+
+        cli.subcommand = "train"
+        output = {"loss": torch.tensor(0.1), "metric": torch.tensor(0.9)}
+        cli._print_results(output)
+        out, _ = capfd.readouterr()
+        assert "Train metric" in out
+        assert "Value" in out
+        assert "loss" in out
+        assert "metric" in out
+        assert "Work Directory:" in out

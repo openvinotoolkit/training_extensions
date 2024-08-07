@@ -1,6 +1,5 @@
-# Copyright (C) 2023 Intel Corporation
+# Copyright (C) 2023-2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-#
 """Class definition for visual prompting models entity used in OTX."""
 
 from __future__ import annotations
@@ -14,6 +13,7 @@ from typing import TYPE_CHECKING, Any, Literal
 
 import numpy as np
 import torch
+from datumaro import Polygon as dmPolygon
 from model_api.models import Model
 from model_api.models.visual_prompting import (
     Prompt,
@@ -24,12 +24,13 @@ from model_api.models.visual_prompting import (
 from torch import Tensor
 from torchvision import tv_tensors
 
-from otx.core.data.entity.base import Points
+from otx.core.data.entity.base import ImageInfo, Points
 from otx.core.data.entity.visual_prompting import (
     VisualPromptingBatchDataEntity,
     VisualPromptingBatchPredEntity,
     ZeroShotVisualPromptingBatchDataEntity,
     ZeroShotVisualPromptingBatchPredEntity,
+    ZeroShotVisualPromptingLabel,
 )
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.visual_prompting import OTXVisualPromptingModelExporter
@@ -129,6 +130,11 @@ def _inference_step_for_zero_shot(
 
     if not isinstance(preds, ZeroShotVisualPromptingBatchPredEntity):
         raise TypeError(preds)
+
+    # filter labels using corresponding ground truth
+    inputs.labels = [
+        label.masks if inputs.masks and label.masks is not None else label.polygons for label in inputs.labels
+    ]
 
     converted_entities: dict[str, list[dict[str, Tensor]]] = _convert_pred_entity_to_compute_metric(preds, inputs)  # type: ignore[assignment]
 
@@ -253,6 +259,22 @@ class OTXVisualPromptingModel(OTXModel[VisualPromptingBatchDataEntity, VisualPro
     def _set_label_info(self, _: LabelInfoTypes) -> None:
         msg = f"Reconfiguring label_info has no effect on {self.__class__.__name__}."
         log.warning(msg)
+
+    def get_dummy_input(self, batch_size: int = 1) -> VisualPromptingBatchDataEntity:
+        """Returns a dummy input for VPT model."""
+        images = [torch.rand(3, self.model.image_size, self.model.image_size) for _ in range(batch_size)]
+        labels = [{"points": torch.LongTensor([0] * batch_size)}] * batch_size
+        prompts = [torch.zeros((1, 2))] * batch_size
+        return VisualPromptingBatchDataEntity(
+            batch_size,
+            images,
+            imgs_info=[],
+            labels=labels,
+            points=prompts,
+            masks=[None] * batch_size,
+            polygons=[[None]] * batch_size,
+            bboxes=[None] * batch_size,
+        )
 
 
 class OTXZeroShotVisualPromptingModel(
@@ -419,6 +441,30 @@ class OTXZeroShotVisualPromptingModel(
     def _set_label_info(self, _: LabelInfoTypes) -> None:
         msg = f"Reconfiguring label_info has no effect on {self.__class__.__name__}."
         log.warning(msg)
+
+    def get_dummy_input(self, batch_size: int = 1) -> ZeroShotVisualPromptingBatchDataEntity:
+        """Returns a dummy input for ZSL VPT model."""
+        images = [torch.rand(3, self.model.image_size, self.model.image_size) for _ in range(batch_size)]
+        labels = [ZeroShotVisualPromptingLabel(prompts=torch.LongTensor([0]))] * batch_size
+        prompts = [torch.zeros((1, 2))] * batch_size
+        infos = []
+        for i, img in enumerate(images):
+            infos.append(
+                ImageInfo(
+                    img_idx=i,
+                    img_shape=img.shape,
+                    ori_shape=img.shape,
+                ),
+            )
+        return ZeroShotVisualPromptingBatchDataEntity(
+            batch_size,
+            images,
+            imgs_info=infos,
+            labels=labels,
+            prompts=prompts,
+            masks=[],
+            polygons=[],
+        )
 
 
 class OVVisualPromptingModel(
@@ -743,6 +789,23 @@ class OVVisualPromptingModel(
         msg = f"Reconfiguring label_info has no effect on {self.__class__.__name__}."
         log.warning(msg)
 
+    def get_dummy_input(self, batch_size: int = 1) -> VisualPromptingBatchDataEntity:
+        """Returns a dummy input for classification OV model."""
+        # Resize is embedded to the OV model, which means we don't need to know the actual size
+        images = [torch.rand(3, 224, 224) for _ in range(batch_size)]
+        labels = [{"points": torch.LongTensor([0] * batch_size)}] * batch_size
+        prompts = [torch.zeros((1, 2))] * batch_size
+        return VisualPromptingBatchDataEntity(
+            batch_size,
+            images,
+            imgs_info=[],
+            labels=labels,
+            points=prompts,
+            masks=[None] * batch_size,
+            polygons=[[None]] * batch_size,
+            bboxes=[None] * batch_size,
+        )
+
 
 class OVZeroShotVisualPromptingModel(
     OVModel[
@@ -911,9 +974,10 @@ class OVZeroShotVisualPromptingModel(
         images: list[np.ndarray] = []
         processed_prompts: list[dict[str, Any]] = []
 
-        for image, prompts, labels in zip(
+        for image, prompts, polygons, labels in zip(
             entity.images,
             entity.prompts,
+            entity.polygons,
             entity.labels,
         ):
             # preprocess image encoder inputs
@@ -921,20 +985,27 @@ class OVZeroShotVisualPromptingModel(
             images.append(numpy_image)
 
             if self.training:
-                points: list[Prompt] = []
-                bboxes: list[Prompt] = []
-                for prompt, label in zip(prompts, labels):  # type: ignore[arg-type]
+                _bboxes: list[Prompt] = []
+                _points: list[Prompt] = []
+                _polygons: list[Prompt] = []
+                for prompt, label in zip(prompts, labels.prompts):  # type: ignore[arg-type]
                     if isinstance(prompt, tv_tensors.BoundingBoxes):
-                        bboxes.append(Prompt(prompt.cpu().numpy(), label.cpu().numpy()))
+                        _bboxes.append(Prompt(prompt.cpu().numpy(), label.cpu().numpy()))
                     elif isinstance(prompt, Points):
-                        points.append(Prompt(prompt.cpu().numpy(), label.cpu().numpy()))
-                    # TODO (sungchul): support polygons
+                        _points.append(Prompt(prompt.cpu().numpy(), label.cpu().numpy()))
+
+                if polygons and labels.polygons is not None:
+                    for polygon, label in zip(polygons, labels.polygons):
+                        _polygons.append(Prompt(np.array(polygon.points, dtype=np.int32), label.cpu().numpy()))
+
+                # TODO (sungchul, sovrasov): support mask?
 
                 # preprocess decoder inputs
                 processed_prompts.append(
                     {
-                        "boxes": bboxes,
-                        "points": points,
+                        "boxes": _bboxes,
+                        "points": _points,
+                        "polygons": _polygons,
                     },
                 )
 
@@ -1047,7 +1118,7 @@ class OVZeroShotVisualPromptingModel(
             _labels: dict[str, list[int]] = defaultdict(list)
 
             # use only the first prompt
-            for prompt, label in zip(data_batch.prompts[0], data_batch.labels[0]):  # type: ignore[arg-type]
+            for prompt, label in zip(data_batch.prompts[0], data_batch.labels[0].prompts):  # type: ignore[arg-type]
                 if isinstance(prompt, tv_tensors.BoundingBoxes):
                     bboxes.append(prompt.cpu().numpy())
                     _labels["bboxes"].append(label.cpu().numpy())
@@ -1078,7 +1149,7 @@ class OVZeroShotVisualPromptingModel(
         # ticket no. : CVS-135462
         # There is segmentation fault issue when using num_workers > 0 during releasing memory.
         # To avoid this issue, force num_workers to 0.
-        data_module.train_subset.num_workers = 0
+        data_module.val_subset.num_workers = 0
 
         output_model_paths: dict[str, Path] = {}
         for module in ["image_encoder", "decoder"]:
@@ -1089,7 +1160,7 @@ class OVZeroShotVisualPromptingModel(
                 msg = "Model is already optimized by PTQ"
                 raise RuntimeError(msg)
 
-            train_dataset = data_module.train_dataloader()
+            val_dataset = data_module.val_dataloader()
 
             ptq_config_from_ir = self._read_ptq_config_from_ir(ov_model)
             if ptq_config is not None:
@@ -1098,7 +1169,7 @@ class OVZeroShotVisualPromptingModel(
             else:
                 ptq_config = ptq_config_from_ir
 
-            quantization_dataset = nncf.Dataset(train_dataset, partial(transform_fn, module=module))  # type: ignore[attr-defined]
+            quantization_dataset = nncf.Dataset(val_dataset, partial(transform_fn, module=module))  # type: ignore[attr-defined]
 
             compressed_model = nncf.quantize(  # type: ignore[attr-defined]
                 ov_model,
@@ -1316,3 +1387,28 @@ class OVZeroShotVisualPromptingModel(
     def _set_label_info(self, _: LabelInfoTypes) -> None:
         msg = f"Reconfiguring label_info has no effect on {self.__class__.__name__}."
         log.warning(msg)
+
+    def get_dummy_input(self, batch_size: int = 1) -> ZeroShotVisualPromptingBatchDataEntity:
+        """Returns a dummy input for classification OV model."""
+        # Resize is embedded to the OV model, which means we don't need to know the actual size
+        images = [torch.rand(3, 224, 224) for _ in range(batch_size)]
+        labels = [ZeroShotVisualPromptingLabel(prompts=torch.LongTensor([0]))] * batch_size
+        prompts = [torch.zeros((1, 2))] * batch_size
+        infos = []
+        for i, img in enumerate(images):
+            infos.append(
+                ImageInfo(
+                    img_idx=i,
+                    img_shape=img.shape,
+                    ori_shape=img.shape,
+                ),
+            )
+        return ZeroShotVisualPromptingBatchDataEntity(
+            batch_size,
+            images,
+            imgs_info=infos,
+            labels=labels,
+            prompts=prompts,
+            masks=[None] * batch_size,
+            polygons=[[None]] * batch_size,
+        )

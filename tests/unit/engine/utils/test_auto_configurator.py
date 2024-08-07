@@ -171,13 +171,11 @@ class TestAutoConfigurator:
             {
                 "class_path": "otx.core.data.transform_libs.torchvision.Resize",
                 "init_args": {
-                    "scale": [800, 992],
-                    "keep_ratio": False,
-                    "transform_bbox": False,
+                    "scale": (800, 992),
                     "is_numpy_to_tvtensor": True,
                 },
             },
-            {"class_path": "torchvision.transforms.v2.ToDtype", "init_args": {"dtype": torch.float32, "scale": False}},
+            {"class_path": "torchvision.transforms.v2.ToDtype", "init_args": {"dtype": torch.float32}},
             {
                 "class_path": "torchvision.transforms.v2.Normalize",
                 "init_args": {"mean": [0.0, 0.0, 0.0], "std": [255.0, 255.0, 255.0]},

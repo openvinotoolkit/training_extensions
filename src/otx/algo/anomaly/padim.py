@@ -9,6 +9,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Literal
 
+from anomalib.callbacks.normalization.min_max_normalization import _MinMaxNormalizationCallback
+from anomalib.callbacks.post_processor import _PostProcessorCallback
 from anomalib.models.image import Padim as AnomalibPadim
 
 from otx.core.model.anomaly import OTXAnomaly
@@ -18,7 +20,7 @@ if TYPE_CHECKING:
     from lightning.pytorch.utilities.types import STEP_OUTPUT
     from torch.optim.optimizer import Optimizer
 
-    from otx.core.model.anomaly import AnomalyModelInputs
+    from otx.core.model.anomaly import AnomalyModelInputs, AnomalyModelOutputs
 
 
 class Padim(OTXAnomaly, AnomalibPadim):
@@ -129,3 +131,16 @@ class Padim(OTXAnomaly, AnomalibPadim):
         if not isinstance(inputs, dict):
             inputs = self._customize_inputs(inputs)
         return AnomalibPadim.predict_step(self, inputs, batch_idx, **kwargs)  # type: ignore[misc]
+
+    def forward(
+        self,
+        inputs: AnomalyModelInputs,
+    ) -> AnomalyModelOutputs:
+        """Wrap forward method of the Anomalib model."""
+        outputs = self.validation_step(inputs)
+        # TODO(Ashwin): update forward implementation to comply with other OTX models
+        _PostProcessorCallback._post_process(outputs)  # noqa: SLF001
+        _PostProcessorCallback._compute_scores_and_labels(self, outputs)  # noqa: SLF001
+        _MinMaxNormalizationCallback._normalize_batch(outputs, self)  # noqa: SLF001
+
+        return self._customize_outputs(outputs=outputs, inputs=inputs)

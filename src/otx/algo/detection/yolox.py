@@ -7,14 +7,12 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-from omegaconf import DictConfig
-
 from otx.algo.common.losses import CrossEntropyLoss, L1Loss
 from otx.algo.detection.backbones import CSPDarknet
+from otx.algo.detection.base_models import SingleStageDetector
 from otx.algo.detection.heads import YOLOXHead
 from otx.algo.detection.losses import IoULoss
 from otx.algo.detection.necks import YOLOXPAFPN
-from otx.algo.detection.ssd import SingleStageDetector
 from otx.algo.detection.utils.assigners import SimOTAAssigner
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.data.entity.detection import DetBatchDataEntity
@@ -43,13 +41,15 @@ class YOLOX(ExplainableOTXDetModel):
     def _exporter(self) -> OTXModelExporter:
         """Creates OTXModelExporter object that can export the model."""
         if self.image_size is None:
-            raise ValueError(self.image_size)
+            msg = f"Image size attribute is not set for {self.__class__}"
+            raise ValueError(msg)
 
         swap_rgb = not isinstance(self, YOLOXTINY)  # only YOLOX-TINY uses RGB
+        input_size = self.tile_image_size if self.tile_config.enable_tiler else self.image_size
 
         return OTXNativeModelExporter(
             task_level_export_parameters=self._export_parameters,
-            input_size=self.image_size,
+            input_size=input_size,
             mean=self.mean,
             std=self.std,
             resize_mode="fit_to_window_letterbox",
@@ -115,19 +115,17 @@ class YOLOXTINY(YOLOX):
         "openvino_training_extensions/models/object_detection/v2/yolox_tiny_8x8.pth"
     )
     image_size = (1, 3, 416, 416)
-    tile_image_size = (1, 3, 416, 416)
+    tile_image_size = (1, 3, 640, 640)
     mean = (123.675, 116.28, 103.53)
     std = (58.395, 57.12, 57.375)
 
     def _build_model(self, num_classes: int) -> SingleStageDetector:
         train_cfg: dict[str, Any] = {"assigner": SimOTAAssigner(center_radius=2.5)}
-        test_cfg = DictConfig(
-            {
-                "nms": {"type": "nms", "iou_threshold": 0.65},
-                "score_thr": 0.01,
-                "max_per_img": 100,
-            },
-        )
+        test_cfg = {
+            "nms": {"type": "nms", "iou_threshold": 0.65},
+            "score_thr": 0.01,
+            "max_per_img": 100,
+        }
         backbone = CSPDarknet(deepen_factor=0.33, widen_factor=0.375)
         neck = YOLOXPAFPN(
             in_channels=[96, 192, 384],
@@ -162,13 +160,11 @@ class YOLOXS(YOLOX):
 
     def _build_model(self, num_classes: int) -> SingleStageDetector:
         train_cfg: dict[str, Any] = {"assigner": SimOTAAssigner(center_radius=2.5)}
-        test_cfg = DictConfig(
-            {
-                "nms": {"type": "nms", "iou_threshold": 0.65},
-                "score_thr": 0.01,
-                "max_per_img": 100,
-            },
-        )
+        test_cfg = {
+            "nms": {"type": "nms", "iou_threshold": 0.65},
+            "score_thr": 0.01,
+            "max_per_img": 100,
+        }
         backbone = CSPDarknet(deepen_factor=0.33, widen_factor=0.5)
         neck = YOLOXPAFPN(
             in_channels=[128, 256, 512],
@@ -203,13 +199,11 @@ class YOLOXL(YOLOX):
 
     def _build_model(self, num_classes: int) -> SingleStageDetector:
         train_cfg: dict[str, Any] = {"assigner": SimOTAAssigner(center_radius=2.5)}
-        test_cfg = DictConfig(
-            {
-                "nms": {"type": "nms", "iou_threshold": 0.65},
-                "score_thr": 0.01,
-                "max_per_img": 100,
-            },
-        )
+        test_cfg = {
+            "nms": {"type": "nms", "iou_threshold": 0.65},
+            "score_thr": 0.01,
+            "max_per_img": 100,
+        }
         backbone = CSPDarknet()
         neck = YOLOXPAFPN(in_channels=[256, 512, 1024], out_channels=256)
         bbox_head = YOLOXHead(
@@ -239,13 +233,11 @@ class YOLOXX(YOLOX):
 
     def _build_model(self, num_classes: int) -> SingleStageDetector:
         train_cfg: dict[str, Any] = {"assigner": SimOTAAssigner(center_radius=2.5)}
-        test_cfg = DictConfig(
-            {
-                "nms": {"type": "nms", "iou_threshold": 0.65},
-                "score_thr": 0.01,
-                "max_per_img": 100,
-            },
-        )
+        test_cfg = {
+            "nms": {"type": "nms", "iou_threshold": 0.65},
+            "score_thr": 0.01,
+            "max_per_img": 100,
+        }
         backbone = CSPDarknet(deepen_factor=1.33, widen_factor=1.25)
         neck = YOLOXPAFPN(
             in_channels=[320, 640, 1280],

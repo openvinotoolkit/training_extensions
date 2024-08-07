@@ -1,7 +1,6 @@
-"""Anomaly Lightning OTX model."""
-
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
+"""Anomaly Lightning OTX model."""
 
 from __future__ import annotations
 
@@ -24,6 +23,7 @@ from otx.core.data.entity.anomaly import (
     AnomalySegmentationBatchPrediction,
     AnomalySegmentationDataBatch,
 )
+from otx.core.data.entity.base import ImageInfo
 from otx.core.exporter.anomaly import OTXAnomalyModelExporter
 from otx.core.model.base import OTXModel
 from otx.core.types.export import OTXExportFormatType
@@ -173,15 +173,6 @@ class OTXAnomaly(OTXModel):
         outputs.clear()
         outputs.update({"prediction": _outputs})
 
-    def forward(
-        self,
-        inputs: AnomalyModelInputs,
-    ) -> AnomalyModelOutputs:
-        """Wrap forward method of the Anomalib model."""
-        _inputs: dict = self._customize_inputs(inputs)
-        outputs = self.model.model.forward(_inputs)
-        return self._customize_outputs(outputs=outputs, inputs=inputs)
-
     def _customize_inputs(
         self,
         inputs: AnomalyModelInputs,
@@ -305,3 +296,44 @@ class OTXAnomaly(OTXModel):
             precision=precision,
             to_exportable_code=to_exportable_code,
         )
+
+    def get_dummy_input(self, batch_size: int = 1) -> AnomalyModelInputs:
+        """Returns a dummy input for anomaly model."""
+        image_size, _, _ = self._get_values_from_transforms()
+        images = torch.rand(batch_size, 3, *image_size)
+        infos = []
+        for i, img in enumerate(images):
+            infos.append(
+                ImageInfo(
+                    img_idx=i,
+                    img_shape=img.shape,
+                    ori_shape=img.shape,
+                ),
+            )
+        if self.task == AnomalibTaskType.CLASSIFICATION:
+            return AnomalyClassificationDataBatch(
+                batch_size=batch_size,
+                images=images,
+                imgs_info=infos,
+                labels=[torch.LongTensor(0)],
+            )
+        if self.task == AnomalibTaskType.SEGMENTATION:
+            return AnomalySegmentationDataBatch(
+                batch_size=batch_size,
+                images=images,
+                imgs_info=infos,
+                labels=[torch.LongTensor(0)],
+                masks=torch.tensor(0),
+            )
+        if self.task == AnomalibTaskType.DETECTION:
+            return AnomalyDetectionDataBatch(
+                batch_size=batch_size,
+                images=images,
+                imgs_info=infos,
+                labels=[torch.LongTensor(0)],
+                boxes=torch.tensor(0),
+                masks=torch.tensor(0),
+            )
+
+        msg = "Wrong anomaly task type"
+        raise RuntimeError(msg)

@@ -280,7 +280,7 @@ class DINOv2ForMulticlassClsSemiSL(DINOv2RegisterClassifier):
                 "mode": mode,
             }
         return {
-            "images": inputs.images,
+            "images": inputs.stacked_images,
             "labels": torch.cat(inputs.labels, dim=0),
             "imgs_info": inputs.imgs_info,
             "mode": mode,

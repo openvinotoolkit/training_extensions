@@ -1,0 +1,623 @@
+{
+  "job_type": "train",
+  "model_template_id": "Custom_Image_Classification_EfficinetNet-B0",
+  "hyperparameters": {
+    "header": "Configuration for an image classification task",
+    "description": "Configuration for an image classification task",
+    "visible_in_ui": true,
+    "id": "66036d84a272da6e2d326188",
+    "type": "CONFIGURABLE_PARAMETERS",
+    "algo_backend": {
+      "header": "Algo backend parameters",
+      "description": "parameters for algo backend",
+      "visible_in_ui": false,
+      "type": "PARAMETER_GROUP",
+      "train_type": {
+        "value": "Incremental",
+        "default_value": "Incremental",
+        "description": "Training scheme option that determines how to train the model",
+        "header": "Train type",
+        "warning": null,
+        "editable": true,
+        "visible_in_ui": false,
+        "affects_outcome_of": "TRAINING",
+        "ui_rules": {
+          "operator": "AND",
+          "action": "DISABLE_EDITING",
+          "type": "UI_RULES",
+          "rules": []
+        },
+        "type": "SELECTABLE",
+        "auto_hpo_state": "not_possible",
+        "auto_hpo_value": null,
+        "enum_name": "TrainType",
+        "options": {
+          "Incremental": "Incremental",
+          "Semisupervised": "Semisupervised",
+          "Selfsupervised": "Selfsupervised"
+        }
+      },
+      "mem_cache_size": {
+        "value": 100000000,
+        "default_value": 100000000,
+        "description": "Size of memory pool for caching decoded data to load data faster (bytes).",
+        "header": "Size of memory pool",
+        "warning": null,
+        "editable": true,
+        "visible_in_ui": false,
+        "affects_outcome_of": "TRAINING",
+        "ui_rules": {
+          "operator": "AND",
+          "action": "DISABLE_EDITING",
+          "type": "UI_RULES",
+          "rules": []
+        },
+        "type": "INTEGER",
+        "auto_hpo_state": "not_possible",
+        "auto_hpo_value": null,
+        "min_value": 0,
+        "max_value": 10000000000
+      },
+      "storage_cache_scheme": {
+        "value": "NONE",
+        "default_value": "NONE",
+        "description": "Scheme for storage cache",
+        "header": "Scheme for storage cache",
+        "warning": null,
+        "editable": true,
+        "visible_in_ui": false,
+        "affects_outcome_of": "TRAINING",
+        "ui_rules": {
+          "operator": "AND",
+          "action": "DISABLE_EDITING",
+          "type": "UI_RULES",
+          "rules": []
+        },
+        "type": "SELECTABLE",
+        "auto_hpo_state": "not_possible",
+        "auto_hpo_value": null,
+        "enum_name": "StorageCacheScheme",
+        "options": {
+          "NONE": "NONE",
+          "AS_IS": "AS-IS",
+          "JPEG_75": "JPEG/75",
+          "JPEG_95": "JPEG/95",
+          "PNG": "PNG",
+          "TIFF": "TIFF"
+        }
+      },
+      "enable_noisy_label_detection": {
+        "value": false,
+        "default_value": false,
+        "description": "Set to True to enable loss dynamics tracking for each sample to detect noisy labeled samples.",
+        "header": "Enable loss dynamics tracking for noisy label detection",
+        "warning": null,
+        "editable": true,
+        "visible_in_ui": false,
+        "affects_outcome_of": "TRAINING",
+        "ui_rules": {
+          "operator": "AND",
+          "action": "DISABLE_EDITING",
+          "type": "UI_RULES",
+          "rules": []
+        },
+        "type": "BOOLEAN",
+        "auto_hpo_state": "not_possible",
+        "auto_hpo_value": null
+      }
+    },
+    "learning_parameters": {
+      "header": "Learning Parameters",
+      "description": "Learning Parameters",
+      "visible_in_ui": true,
+      "type": "PARAMETER_GROUP",
+      "batch_size": {
+        "value": 64,
+        "default_value": 64,
+        "description": "The number of training samples seen in each iteration of training. Increasing this value improves training time and may make the training more stable. A larger batch size has higher memory requirements.",
+        "header": "Batch size",
+        "warning": "Increasing this value may cause the system to use more memory than available, potentially causing out of memory errors, please update with caution.",
+        "editable": true,
+        "visible_in_ui": true,
+        "affects_outcome_of": "TRAINING",
+        "ui_rules": {
+          "operator": "AND",
+          "action": "DISABLE_EDITING",
+          "type": "UI_RULES",
+          "rules": []
+        },
+        "type": "INTEGER",
+        "auto_hpo_state": "possible",
+        "auto_hpo_value": null,
+        "min_value": 1,
+        "max_value": 2048
+      },
+      "unlabeled_batch_size": {
+        "value": 32,
+        "default_value": 32,
+        "description": "The number of unlabeled training samples seen in each iteration of semi-supervised learning. Increasing this value improves training time and may make the training more stable. A larger batch size has higher memory requirements.",
+        "header": "Unlabeled batch size",
+        "warning": "Increasing this value may cause the system to use more memory than available, potentially causing out of memory errors, please update with caution.",
+        "editable": true,
+        "visible_in_ui": true,
+        "affects_outcome_of": "TRAINING",
+        "ui_rules": {
+          "operator": "AND",
+          "action": "DISABLE_EDITING",
+          "type": "UI_RULES",
+          "rules": []
+        },
+        "type": "INTEGER",
+        "auto_hpo_state": "not_possible",
+        "auto_hpo_value": null,
+        "min_value": 1,
+        "max_value": 512
+      },
+      "learning_rate": {
+        "value": 0.0049,
+        "default_value": 0.0049,
+        "description": "Increasing this value will speed up training convergence but might make it unstable.",
+        "header": "Learning rate",
+        "warning": null,
+        "editable": true,
+        "visible_in_ui": true,
+        "affects_outcome_of": "TRAINING",
+        "ui_rules": {
+          "operator": "AND",
+          "action": "DISABLE_EDITING",
+          "type": "UI_RULES",
+          "rules": []
+        },
+        "type": "FLOAT",
+        "auto_hpo_state": "possible",
+        "auto_hpo_value": null,
+        "min_value": 1e-7,
+        "max_value": 1.0,
+        "step_size": null
+      },
+      "max_num_epochs": {
+        "value": 200,
+        "default_value": 200,
+        "description": "Increasing this value causes the results to be more robust but training time will be longer.",
+        "header": "Maximum number of training epochs",
+        "warning": null,
+        "editable": true,
+        "visible_in_ui": false,
+        "affects_outcome_of": "TRAINING",
+        "ui_rules": {
+          "operator": "AND",
+          "action": "DISABLE_EDITING",
+          "type": "UI_RULES",
+          "rules": []
+        },
+        "type": "INTEGER",
+        "auto_hpo_state": "not_possible",
+        "auto_hpo_value": null,
+        "min_value": 1,
+        "max_value": 1000
+      },
+      "num_iters": {
+        "value": 90,
+        "default_value": 90,
+        "description": "Increasing this value causes the results to be more robust but training time will be longer.",
+        "header": "Number of training iterations",
+        "warning": null,
+        "editable": true,
+        "visible_in_ui": true,
+        "affects_outcome_of": "TRAINING",
+        "ui_rules": {
+          "operator": "AND",
+          "action": "DISABLE_EDITING",
+          "type": "UI_RULES",
+          "rules": []
+        },
+        "type": "INTEGER",
+        "auto_hpo_state": "not_possible",
+        "auto_hpo_value": null,
+        "min_value": 1,
+        "max_value": 100000
+      },
+      "num_workers": {
+        "value": 2,
+        "default_value": 2,
+        "description": "Increasing this value might improve training speed however it might cause out of memory errors. If the number of workers is set to zero, data loading will happen in the main training thread.",
+        "header": "Number of cpu threads to use during batch generation",
+        "warning": null,
+        "editable": true,
+        "visible_in_ui": true,
+        "affects_outcome_of": "NONE",
+        "ui_rules": {
+          "operator": "AND",
+          "action": "DISABLE_EDITING",
+          "type": "UI_RULES",
+          "rules": []
+        },
+        "type": "INTEGER",
+        "auto_hpo_state": "not_possible",
+        "auto_hpo_value": null,
+        "min_value": 0,
+        "max_value": 8
+      },
+      "learning_rate_warmup_iters": {
+        "value": 0,
+        "default_value": 0,
+        "description": "In this periods of initial training iterations, the model will be trained in low learning rate, which will be increased incrementally up to the expected learning rate setting. This warm-up phase is known to be helpful to stabilize training, thus result in better performance.",
+        "header": "Number of iterations for learning rate warmup",
+        "warning": null,
+        "editable": true,
+        "visible_in_ui": true,
+        "affects_outcome_of": "TRAINING",
+        "ui_rules": {
+          "operator": "AND",
+          "action": "DISABLE_EDITING",
+          "type": "UI_RULES",
+          "rules": []
+        },
+        "type": "INTEGER",
+        "auto_hpo_state": "not_possible",
+        "auto_hpo_value": null,
+        "min_value": 0,
+        "max_value": 10000
+      },
+      "enable_early_stopping": {
+        "value": true,
+        "default_value": true,
+        "description": "Early exit from training when validation accuracy is not changed or decreased for several epochs.",
+        "header": "Enable early stopping of the training",
+        "warning": null,
+        "editable": true,
+        "visible_in_ui": true,
+        "affects_outcome_of": "TRAINING",
+        "ui_rules": {
+          "operator": "AND",
+          "action": "DISABLE_EDITING",
+          "type": "UI_RULES",
+          "rules": []
+        },
+        "type": "BOOLEAN",
+        "auto_hpo_state": "not_possible",
+        "auto_hpo_value": null
+      },
+      "early_stop_start": {
+        "value": 3,
+        "default_value": 3,
+        "description": "Default integer description",
+        "header": "Start epoch for early stopping",
+        "warning": null,
+        "editable": true,
+        "visible_in_ui": false,
+        "affects_outcome_of": "TRAINING",
+        "ui_rules": {
+          "operator": "AND",
+          "action": "DISABLE_EDITING",
+          "type": "UI_RULES",
+          "rules": []
+        },
+        "type": "INTEGER",
+        "auto_hpo_state": "not_possible",
+        "auto_hpo_value": null,
+        "min_value": 0,
+        "max_value": 1000
+      },
+      "early_stop_patience": {
+        "value": 3,
+        "default_value": 3,
+        "description": "Training will stop if the model does not improve within the number of epochs of patience.",
+        "header": "Patience for early stopping",
+        "warning": "This is applied exclusively when early stopping is enabled.",
+        "editable": true,
+        "visible_in_ui": true,
+        "affects_outcome_of": "TRAINING",
+        "ui_rules": {
+          "operator": "AND",
+          "action": "DISABLE_EDITING",
+          "type": "UI_RULES",
+          "rules": []
+        },
+        "type": "INTEGER",
+        "auto_hpo_state": "not_possible",
+        "auto_hpo_value": null,
+        "min_value": 0,
+        "max_value": 50
+      },
+      "early_stop_iteration_patience": {
+        "value": 0,
+        "default_value": 0,
+        "description": "Training will stop if the model does not improve within the number of iterations of patience. This ensures the model is trained enough with the number of iterations of patience before early stopping.",
+        "header": "Iteration patience for early stopping",
+        "warning": "This is applied exclusively when early stopping is enabled.",
+        "editable": true,
+        "visible_in_ui": true,
+        "affects_outcome_of": "TRAINING",
+        "ui_rules": {
+          "operator": "AND",
+          "action": "DISABLE_EDITING",
+          "type": "UI_RULES",
+          "rules": []
+        },
+        "type": "INTEGER",
+        "auto_hpo_state": "not_possible",
+        "auto_hpo_value": null,
+        "min_value": 0,
+        "max_value": 1000
+      },
+      "use_adaptive_interval": {
+        "value": true,
+        "default_value": true,
+        "description": "Depending on the size of iteration per epoch, adaptively update the validation interval and related values.",
+        "header": "Use adaptive validation interval",
+        "warning": "This will automatically control the patience and interval when early stopping is enabled.",
+        "editable": true,
+        "visible_in_ui": true,
+        "affects_outcome_of": "TRAINING",
+        "ui_rules": {
+          "operator": "AND",
+          "action": "DISABLE_EDITING",
+          "type": "UI_RULES",
+          "rules": []
+        },
+        "type": "BOOLEAN",
+        "auto_hpo_state": "not_possible",
+        "auto_hpo_value": null
+      },
+      "enable_supcon": {
+        "value": false,
+        "default_value": false,
+        "description": "Enable an auxiliar supervised contrastive loss, which might increase robustness and accuracy for small datasets.",
+        "header": "Enable Supervised Contrastive helper loss",
+        "warning": null,
+        "editable": true,
+        "visible_in_ui": true,
+        "affects_outcome_of": "TRAINING",
+        "ui_rules": {
+          "operator": "AND",
+          "action": "DISABLE_EDITING",
+          "type": "UI_RULES",
+          "rules": []
+        },
+        "type": "BOOLEAN",
+        "auto_hpo_state": "not_possible",
+        "auto_hpo_value": null
+      },
+      "auto_adapt_batch_size": {
+        "value": "None",
+        "default_value": "None",
+        "description": "Safe => Prevent GPU out of memory. Full => Find a batch size using most of GPU memory.",
+        "header": "Decrease batch size if current batch size isn't fit to CUDA memory.",
+        "warning": "Enabling this could change the actual batch size depending on the current GPU status. The learning rate also could be adjusted according to the adapted batch size. This process might change a model performance and take some extra computation time to try a few batch size candidates.",
+        "editable": true,
+        "visible_in_ui": true,
+        "affects_outcome_of": "TRAINING",
+        "ui_rules": {
+          "operator": "AND",
+          "action": "DISABLE_EDITING",
+          "type": "UI_RULES",
+          "rules": []
+        },
+        "type": "SELECTABLE",
+        "auto_hpo_state": "not_possible",
+        "auto_hpo_value": null,
+        "enum_name": "BatchSizeAdaptType",
+        "options": {
+          "NONE": "None",
+          "SAFE": "Safe",
+          "FULL": "Full"
+        }
+      },
+      "auto_num_workers": {
+        "value": false,
+        "default_value": false,
+        "description": "Adapt num_workers according to current hardware status automatically.",
+        "header": "Enable auto adaptive num_workers",
+        "warning": null,
+        "editable": true,
+        "visible_in_ui": true,
+        "affects_outcome_of": "TRAINING",
+        "ui_rules": {
+          "operator": "AND",
+          "action": "DISABLE_EDITING",
+          "type": "UI_RULES",
+          "rules": []
+        },
+        "type": "BOOLEAN",
+        "auto_hpo_state": "not_possible",
+        "auto_hpo_value": null
+      },
+      "input_size": {
+        "value": "Default",
+        "default_value": "Default",
+        "description": "The input size of the given model could be configured to one of the predefined resolutions. Reduced training and inference time could be expected by using smaller input size. In Auto mode, the input size is automatically determined based on dataset statistics. Defaults to per-model default resolution.",
+        "header": "Configure model input size.",
+        "warning": "Modifying input size may decrease model performance.",
+        "editable": true,
+        "visible_in_ui": false,
+        "affects_outcome_of": "INFERENCE",
+        "ui_rules": {
+          "operator": "AND",
+          "action": "DISABLE_EDITING",
+          "type": "UI_RULES",
+          "rules": []
+        },
+        "type": "SELECTABLE",
+        "auto_hpo_state": "not_possible",
+        "auto_hpo_value": null,
+        "enum_name": "InputSizePreset",
+        "options": {
+          "DEFAULT": "Default",
+          "AUTO": "Auto",
+          "_64x64": "64x64",
+          "_128x128": "128x128",
+          "_224x224": "224x224",
+          "_256x256": "256x256",
+          "_384x384": "384x384",
+          "_512x512": "512x512",
+          "_768x768": "768x768",
+          "_1024x1024": "1024x1024"
+        }
+      }
+    },
+    "nncf_optimization": {
+      "header": "Optimization by NNCF",
+      "description": "Optimization by NNCF",
+      "visible_in_ui": true,
+      "type": "PARAMETER_GROUP",
+      "enable_quantization": {
+        "value": true,
+        "default_value": true,
+        "description": "Enable quantization algorithm",
+        "header": "Enable quantization algorithm",
+        "warning": null,
+        "editable": true,
+        "visible_in_ui": true,
+        "affects_outcome_of": "TRAINING",
+        "ui_rules": {
+          "operator": "AND",
+          "action": "DISABLE_EDITING",
+          "type": "UI_RULES",
+          "rules": []
+        },
+        "type": "BOOLEAN",
+        "auto_hpo_state": "not_possible",
+        "auto_hpo_value": null
+      },
+      "enable_pruning": {
+        "value": false,
+        "default_value": false,
+        "description": "Enable filter pruning algorithm",
+        "header": "Enable filter pruning algorithm",
+        "warning": null,
+        "editable": true,
+        "visible_in_ui": true,
+        "affects_outcome_of": "TRAINING",
+        "ui_rules": {
+          "operator": "AND",
+          "action": "DISABLE_EDITING",
+          "type": "UI_RULES",
+          "rules": []
+        },
+        "type": "BOOLEAN",
+        "auto_hpo_state": "not_possible",
+        "auto_hpo_value": null
+      },
+      "pruning_supported": {
+        "value": true,
+        "default_value": true,
+        "description": "Whether filter pruning is supported",
+        "header": "Whether filter pruning is supported",
+        "warning": null,
+        "editable": false,
+        "visible_in_ui": false,
+        "affects_outcome_of": "TRAINING",
+        "ui_rules": {
+          "operator": "AND",
+          "action": "DISABLE_EDITING",
+          "type": "UI_RULES",
+          "rules": []
+        },
+        "type": "BOOLEAN",
+        "auto_hpo_state": "not_possible",
+        "auto_hpo_value": null
+      },
+      "maximal_accuracy_degradation": {
+        "value": 1.0,
+        "default_value": 1.0,
+        "description": "The maximal allowed accuracy metric drop",
+        "header": "Maximum accuracy degradation",
+        "warning": null,
+        "editable": true,
+        "visible_in_ui": true,
+        "affects_outcome_of": "TRAINING",
+        "ui_rules": {
+          "operator": "AND",
+          "action": "DISABLE_EDITING",
+          "type": "UI_RULES",
+          "rules": []
+        },
+        "type": "FLOAT",
+        "auto_hpo_state": "not_possible",
+        "auto_hpo_value": null,
+        "min_value": 0.0,
+        "max_value": 100.0,
+        "step_size": null
+      }
+    },
+    "pot_parameters": {
+      "header": "POT Parameters",
+      "description": "POT Parameters",
+      "visible_in_ui": true,
+      "type": "PARAMETER_GROUP",
+      "preset": {
+        "value": "Performance",
+        "default_value": "Performance",
+        "description": "Quantization preset that defines quantization scheme",
+        "header": "Preset",
+        "warning": null,
+        "editable": false,
+        "visible_in_ui": false,
+        "affects_outcome_of": "NONE",
+        "ui_rules": {
+          "operator": "AND",
+          "action": "DISABLE_EDITING",
+          "type": "UI_RULES",
+          "rules": []
+        },
+        "type": "SELECTABLE",
+        "auto_hpo_state": "not_possible",
+        "auto_hpo_value": null,
+        "enum_name": "POTQuantizationPreset",
+        "options": {
+          "MIXED": "Mixed",
+          "PERFORMANCE": "Performance"
+        }
+      },
+      "stat_subset_size": {
+        "value": 300,
+        "default_value": 300,
+        "description": "Number of data samples used for post-training optimization",
+        "header": "Number of data samples",
+        "warning": null,
+        "editable": true,
+        "visible_in_ui": true,
+        "affects_outcome_of": "NONE",
+        "ui_rules": {
+          "operator": "AND",
+          "action": "DISABLE_EDITING",
+          "type": "UI_RULES",
+          "rules": []
+        },
+        "type": "INTEGER",
+        "auto_hpo_state": "not_possible",
+        "auto_hpo_value": null,
+        "min_value": 1,
+        "max_value": 100000
+      }
+    }
+  },
+  "export_parameters": [
+    {
+      "type": "openvino",
+      "output_model_id": "66036df8479f35dae8a5feab",
+      "precision": "FP32",
+      "with_xai": true
+    },
+    {
+      "type": "openvino",
+      "output_model_id": "66036df8479f35dae8a5feac",
+      "precision": "FP32",
+      "with_xai": false
+    },
+    {
+      "type": "openvino",
+      "output_model_id": "66036df8479f35dae8a5fead",
+      "precision": "FP16",
+      "with_xai": false
+    },
+    {
+      "type": "onnx",
+      "output_model_id": "66036df8479f35dae8a5feae",
+      "precision": "FP32",
+      "with_xai": false
+    }
+  ],
+  "optimization_type": "NONE"
+}

@@ -9,7 +9,7 @@ import platform
 import subprocess
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal
 from urllib.parse import urlparse
 
 import pytest
@@ -175,8 +175,15 @@ def fxt_dry_run(request: pytest.FixtureRequest) -> str:
 @pytest.fixture(scope="session")
 def fxt_deterministic(request: pytest.FixtureRequest) -> bool:
     """Option to turn on deterministic training."""
+    deterministic_options = {
+        "true": True,
+        "false": False,
+        "warn": "warn",
+    }
     deterministic = request.config.getoption("--deterministic")
-    deterministic = False if deterministic is None else deterministic == "true"
+    if deterministic is None:
+        return False
+    deterministic = deterministic_options[deterministic]
     log.info(f"{deterministic=}")
     return deterministic
 
@@ -240,6 +247,8 @@ def fxt_tags(fxt_user_name: str, fxt_version_tags: dict[str, str], fxt_accelerat
     elif fxt_accelerator == "xpu":
         raw = subprocess.check_output(args=["xpu-smi", "discovery", "--dump", "1,2"]).decode().strip()
         tags["accelerator_info"] = "\n".join([ret.replace('"', "").replace(",", " : ") for ret in raw.split("\n")[1:]])
+    elif fxt_accelerator == "cpu":
+        tags["accelerator_info"] = "cpu"
     msg = f"{tags = }"
     log.info(msg)
     return tags
@@ -255,6 +264,14 @@ def fxt_resume_from(request: pytest.FixtureRequest) -> Path | None:
     return resume_from
 
 
+@pytest.fixture(scope="session")
+def fxt_test_only(request: pytest.FixtureRequest) -> Literal["all", "train", "export", "optimize"] | None:
+    test_only = request.config.getoption("--test-only")
+    msg = f"{test_only = }"
+    log.info(msg)
+    return test_only
+
+
 @pytest.fixture()
 def fxt_benchmark(
     fxt_data_root: Path,
@@ -267,6 +284,8 @@ def fxt_benchmark(
     fxt_deterministic: bool,
     fxt_accelerator: str,
     fxt_benchmark_reference: pd.DataFrame | None,
+    fxt_resume_from: Path | None,
+    fxt_test_only: Literal["all", "train", "export", "optimize"] | None,
 ) -> Benchmark:
     """Configure benchmark."""
     return Benchmark(
@@ -280,6 +299,8 @@ def fxt_benchmark(
         deterministic=fxt_deterministic,
         accelerator=fxt_accelerator,
         reference_results=fxt_benchmark_reference,
+        resume_from=fxt_resume_from,
+        test_only=fxt_test_only,
     )
 
 
@@ -366,13 +387,11 @@ class PerfTestBase:
         dataset: Benchmark.Dataset,
         benchmark: Benchmark,
         criteria: list[Benchmark.Criterion],
-        resume_from: Path | None,
     ) -> None:
         result = benchmark.run(
             model=model,
             dataset=dataset,
             criteria=criteria,
-            resume_from=resume_from,
         )
         benchmark.check(
             result=result,

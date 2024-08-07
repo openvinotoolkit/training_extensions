@@ -5,18 +5,13 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 import torch
 from torch import Tensor, nn
 
 from otx.algo.detection.layers import ChannelAttention
+from otx.algo.modules import build_activation_layer
 from otx.algo.modules.base_module import BaseModule
-from otx.algo.modules.conv_module import ConvModule
-from otx.algo.modules.depthwise_separable_conv_module import DepthwiseSeparableConvModule
-
-if TYPE_CHECKING:
-    from omegaconf import DictConfig
+from otx.algo.modules.conv_module import Conv2dModule, DepthwiseSeparableConvModule
 
 
 class DarknetBottleneck(BaseModule):
@@ -36,8 +31,6 @@ class DarknetBottleneck(BaseModule):
             Defaults to True.
         use_depthwise (bool): Whether to use depthwise separable convolution.
             Defaults to False.
-        conv_cfg (dict): Config dict for convolution layer. Defaults to None,
-            which means using conv2d.
         norm_cfg (dict): Config dict for normalization layer.
             Defaults to dict(type='BN').
         act_cfg (dict): Config dict for activation layer.
@@ -51,10 +44,9 @@ class DarknetBottleneck(BaseModule):
         expansion: float = 0.5,
         add_identity: bool = True,
         use_depthwise: bool = False,
-        conv_cfg: DictConfig | dict | None = None,
-        norm_cfg: DictConfig | dict | None = None,
-        act_cfg: DictConfig | dict | None = None,
-        init_cfg: DictConfig | dict | list[DictConfig] | list[dict] | None = None,
+        norm_cfg: dict | None = None,
+        act_cfg: dict | None = None,
+        init_cfg: dict | list[dict] | None = None,
     ) -> None:
         if norm_cfg is None:
             norm_cfg = {"type": "BN", "momentum": 0.03, "eps": 0.001}
@@ -65,15 +57,20 @@ class DarknetBottleneck(BaseModule):
         super().__init__(init_cfg=init_cfg)
 
         hidden_channels = int(out_channels * expansion)
-        conv = DepthwiseSeparableConvModule if use_depthwise else ConvModule
-        self.conv1 = ConvModule(in_channels, hidden_channels, 1, conv_cfg=conv_cfg, norm_cfg=norm_cfg, act_cfg=act_cfg)
+        conv = DepthwiseSeparableConvModule if use_depthwise else Conv2dModule
+        self.conv1 = Conv2dModule(
+            in_channels,
+            hidden_channels,
+            1,
+            norm_cfg=norm_cfg,
+            act_cfg=act_cfg,
+        )
         self.conv2 = conv(
             hidden_channels,
             out_channels,
             3,
             stride=1,
             padding=1,
-            conv_cfg=conv_cfg,
             norm_cfg=norm_cfg,
             act_cfg=act_cfg,
         )
@@ -103,14 +100,11 @@ class CSPNeXtBlock(BaseModule):
             Defaults to False.
         kernel_size (int): The kernel size of the second convolution layer.
             Defaults to 5.
-        conv_cfg (dict): Config dict for convolution layer. Defaults to None,
-            which means using conv2d.
         norm_cfg (dict): Config dict for normalization layer.
             Defaults to dict(type='BN', momentum=0.03, eps=0.001).
         act_cfg (dict): Config dict for activation layer.
             Defaults to dict(type='SiLU').
-        init_cfg (:obj:`DictConfig` or dict or list[dict] or
-            list[:obj:`DictConfig`], optional): Initialization config dict.
+        init_cfg (dict or list[dict], optional): Initialization config dict.
             Defaults to None.
     """
 
@@ -122,10 +116,9 @@ class CSPNeXtBlock(BaseModule):
         add_identity: bool = True,
         use_depthwise: bool = False,
         kernel_size: int = 5,
-        conv_cfg: DictConfig | dict | None = None,
-        norm_cfg: DictConfig | dict | None = None,
-        act_cfg: DictConfig | dict | None = None,
-        init_cfg: DictConfig | dict | list[DictConfig] | list[dict] | None = None,
+        norm_cfg: dict | None = None,
+        act_cfg: dict | None = None,
+        init_cfg: dict | list[dict] | None = None,
     ) -> None:
         if norm_cfg is None:
             norm_cfg = {"type": "BN", "momentum": 0.03, "eps": 0.001}
@@ -136,7 +129,7 @@ class CSPNeXtBlock(BaseModule):
         super().__init__(init_cfg=init_cfg)
 
         hidden_channels = int(out_channels * expansion)
-        conv = DepthwiseSeparableConvModule if use_depthwise else ConvModule
+        conv = DepthwiseSeparableConvModule if use_depthwise else Conv2dModule
         self.conv1 = conv(in_channels, hidden_channels, 3, stride=1, padding=1, norm_cfg=norm_cfg, act_cfg=act_cfg)
         self.conv2 = DepthwiseSeparableConvModule(
             hidden_channels,
@@ -144,7 +137,6 @@ class CSPNeXtBlock(BaseModule):
             kernel_size,
             stride=1,
             padding=kernel_size // 2,
-            conv_cfg=conv_cfg,
             norm_cfg=norm_cfg,
             act_cfg=act_cfg,
         )
@@ -159,6 +151,64 @@ class CSPNeXtBlock(BaseModule):
         if self.add_identity:
             return out + identity
         return out
+
+
+class RepVggBlock(nn.Module):
+    """RepVggBlock.
+
+    Args:
+        ch_in (int): The input channels of this Module.
+        ch_out (int): The output channels of this Module.
+        act_cfg (dict[str, str] | None): Config dict for activation layer.
+        norm_cfg (dict[str, str] | None): Config dict for normalization layer.
+    """
+
+    def __init__(
+        self,
+        ch_in: int,
+        ch_out: int,
+        act_cfg: dict[str, str] | None = None,
+        norm_cfg: dict[str, str] | None = None,
+    ) -> None:
+        """Initialize RepVggBlock."""
+        super().__init__()
+        self.ch_in = ch_in
+        self.ch_out = ch_out
+        self.conv1 = Conv2dModule(ch_in, ch_out, 3, 1, padding=1, act_cfg=None, norm_cfg=norm_cfg)
+        self.conv2 = Conv2dModule(ch_in, ch_out, 1, 1, act_cfg=None, norm_cfg=norm_cfg)
+        self.act = nn.Identity() if act_cfg is None else build_activation_layer(act_cfg)
+
+    def forward(self, x: Tensor) -> Tensor:
+        """Forward function."""
+        y = self.conv(x) if hasattr(self, "conv") else self.conv1(x) + self.conv2(x)
+        return self.act(y)
+
+    def get_equivalent_kernel_bias(self) -> tuple[Tensor, Tensor]:
+        """Get the equivalent kernel and bias of the block."""
+        kernel3x3, bias3x3 = self._fuse_bn_tensor(self.conv1)
+        kernel1x1, bias1x1 = self._fuse_bn_tensor(self.conv2)
+
+        return kernel3x3 + self._pad_1x1_to_3x3_tensor(kernel1x1), bias3x3 + bias1x1
+
+    def _pad_1x1_to_3x3_tensor(self, kernel1x1: Tensor | None) -> Tensor:
+        """Pad the 1x1 kernel to 3x3 kernel."""
+        if kernel1x1 is None:
+            return 0
+        return nn.functional.pad(kernel1x1, [1, 1, 1, 1])
+
+    def _fuse_bn_tensor(self, branch: Conv2dModule) -> tuple[float, float]:
+        """Fuse the BN layer to the convolution layer."""
+        if branch is None or branch.norm_layer is None:
+            return 0, 0
+        kernel = branch.conv.weight
+        running_mean = branch.norm_layer.running_mean
+        running_var = branch.norm_layer.running_var
+        gamma = branch.norm_layer.weight
+        beta = branch.norm_layer.bias
+        eps = branch.norm_layer.eps
+        std = (running_var + eps).sqrt()
+        t = (gamma / std).reshape(-1, 1, 1, 1)
+        return kernel * t, beta - running_mean * gamma / std
 
 
 class CSPLayer(BaseModule):
@@ -178,14 +228,11 @@ class CSPLayer(BaseModule):
             blocks. Defaults to False.
         channel_attention (bool): Whether to add channel attention in each
             stage. Defaults to True.
-        conv_cfg (dict, optional): Config dict for convolution layer.
-            Defaults to None, which means using conv2d.
         norm_cfg (dict): Config dict for normalization layer.
             Defaults to dict(type='BN')
         act_cfg (dict): Config dict for activation layer.
             Defaults to dict(type='Swish')
-        init_cfg (:obj:`DictConfig` or dict or list[dict] or
-            list[:obj:`DictConfig`], optional): Initialization config dict.
+        init_cfg (dict or list[dict], optional): Initialization config dict.
             Defaults to None.
     """
 
@@ -199,10 +246,9 @@ class CSPLayer(BaseModule):
         use_depthwise: bool = False,
         use_cspnext_block: bool = False,
         channel_attention: bool = False,
-        conv_cfg: DictConfig | dict | None = None,
-        norm_cfg: DictConfig | dict | None = None,
-        act_cfg: DictConfig | dict | None = None,
-        init_cfg: DictConfig | dict | list[DictConfig] | list[dict] | None = None,
+        norm_cfg: dict | None = None,
+        act_cfg: dict | None = None,
+        init_cfg: dict | list[dict] | None = None,
     ) -> None:
         if norm_cfg is None:
             norm_cfg = {"type": "BN", "momentum": 0.03, "eps": 0.001}
@@ -215,20 +261,24 @@ class CSPLayer(BaseModule):
         block = CSPNeXtBlock if use_cspnext_block else DarknetBottleneck
         mid_channels = int(out_channels * expand_ratio)
         self.channel_attention = channel_attention
-        self.main_conv = ConvModule(in_channels, mid_channels, 1, conv_cfg=conv_cfg, norm_cfg=norm_cfg, act_cfg=act_cfg)
-        self.short_conv = ConvModule(
+        self.main_conv = Conv2dModule(
             in_channels,
             mid_channels,
             1,
-            conv_cfg=conv_cfg,
             norm_cfg=norm_cfg,
             act_cfg=act_cfg,
         )
-        self.final_conv = ConvModule(
+        self.short_conv = Conv2dModule(
+            in_channels,
+            mid_channels,
+            1,
+            norm_cfg=norm_cfg,
+            act_cfg=act_cfg,
+        )
+        self.final_conv = Conv2dModule(
             2 * mid_channels,
             out_channels,
             1,
-            conv_cfg=conv_cfg,
             norm_cfg=norm_cfg,
             act_cfg=act_cfg,
         )
@@ -241,7 +291,6 @@ class CSPLayer(BaseModule):
                     1.0,
                     add_identity,
                     use_depthwise,
-                    conv_cfg=conv_cfg,
                     norm_cfg=norm_cfg,
                     act_cfg=act_cfg,
                 )
@@ -263,3 +312,62 @@ class CSPLayer(BaseModule):
         if self.channel_attention:
             x_final = self.attention(x_final)
         return self.final_conv(x_final)
+
+
+class CSPRepLayer(nn.Module):
+    """Cross Stage Partial Layer with RepVGGBlock.
+
+    Args:
+        in_channels (int): The input channels of the CSP layer.
+        out_channels (int): The output channels of the CSP layer.
+        num_blocks (int): Number of blocks. Defaults to 3.
+        expansion (float): Ratio to adjust the number of channels of the
+            hidden layer. Defaults to 1.0.
+        bias (bool): Whether to use bias in the convolution layer.
+            Defaults to False.
+        act_cfg (dict[str, str] | None): Config dict for activation layer.
+            Defaults to None.
+        norm_cfg (dict[str, str] | None): Config dict for normalization
+            layer. Defaults to None.
+    """
+
+    def __init__(
+        self,
+        in_channels: int,
+        out_channels: int,
+        num_blocks: int = 3,
+        expansion: float = 1.0,
+        bias: bool = False,
+        act_cfg: dict[str, str] | None = None,
+        norm_cfg: dict[str, str] | None = None,
+    ) -> None:
+        """Initialize CSPRepLayer."""
+        super().__init__()
+        hidden_channels = int(out_channels * expansion)
+        self.conv1 = Conv2dModule(in_channels, hidden_channels, 1, 1, bias=bias, act_cfg=act_cfg, norm_cfg=norm_cfg)
+        self.conv2 = Conv2dModule(in_channels, hidden_channels, 1, 1, bias=bias, act_cfg=act_cfg, norm_cfg=norm_cfg)
+        self.bottlenecks = nn.Sequential(
+            *[
+                RepVggBlock(hidden_channels, hidden_channels, act_cfg=act_cfg, norm_cfg=norm_cfg)
+                for _ in range(num_blocks)
+            ],
+        )
+        if hidden_channels != out_channels:
+            self.conv3 = Conv2dModule(
+                hidden_channels,
+                out_channels,
+                1,
+                1,
+                bias=bias,
+                act_cfg=act_cfg,
+                norm_cfg=norm_cfg,
+            )
+        else:
+            self.conv3 = nn.Identity()
+
+    def forward(self, x: Tensor) -> Tensor:
+        """Forward function."""
+        x_1 = self.conv1(x)
+        x_1 = self.bottlenecks(x_1)
+        x_2 = self.conv2(x)
+        return self.conv3(x_1 + x_2)

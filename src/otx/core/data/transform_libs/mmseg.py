@@ -1,6 +1,5 @@
-# Copyright (C) 2023 Intel Corporation
+# Copyright (C) 2023-2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-#
 """Helper to support MMPretrain data transform functions."""
 
 from __future__ import annotations
@@ -8,12 +7,8 @@ from __future__ import annotations
 from copy import deepcopy
 from typing import TYPE_CHECKING, Callable
 
-from mmseg.datasets.transforms import (
-    LoadAnnotations as MMSegLoadAnnotations,
-)
-from mmseg.datasets.transforms import (
-    PackSegInputs as MMSegPackInputs,
-)
+from mmseg.datasets.transforms import LoadAnnotations as MMSegLoadAnnotations
+from mmseg.datasets.transforms import PackSegInputs as MMSegPackInputs
 from mmseg.registry import TRANSFORMS
 from torchvision import tv_tensors
 
@@ -37,7 +32,7 @@ class LoadAnnotations(MMSegLoadAnnotations):
             msg = "__otx__ key should be passed from the previous pipeline (LoadImageFromFile)"
             raise RuntimeError(msg)
         if isinstance(otx_data_entity, SegDataEntity):
-            gt_masks = otx_data_entity.gt_seg_map.numpy()
+            gt_masks = otx_data_entity.masks.numpy()
             results["gt_seg_map"] = gt_masks
             # we need this to properly handle seg maps during transforms
             results["seg_fields"] = ["gt_seg_map"]
@@ -69,7 +64,7 @@ class PackSegInputs(MMSegPackInputs):
         return SegDataEntity(
             image=image,
             img_info=image_info,
-            gt_seg_map=masks,
+            masks=masks,
         )
 
 

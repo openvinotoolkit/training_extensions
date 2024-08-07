@@ -3,14 +3,69 @@ updates:
   - package-ecosystem: docker
     directory: /
     schedule:
-      interval: weekly
+      interval: daily
+    groups:
+      dockerfile-dependency:
+        applies-to: version-updates
+        patterns:
+          - "*"
 
   - package-ecosystem: github-actions
     directory: /
     schedule:
-      interval: weekly
+      interval: daily
+    groups:
+      github-actions-dependency:
+        applies-to: version-updates
+        patterns:
+          - "*"
 
   - package-ecosystem: pip
     directory: /
     schedule:
-      interval: weekly
+      interval: daily
+    groups:
+      pip-base-dependencies:
+        applies-to: version-updates
+        patterns:
+          - "torch"
+          - "lightning"
+          - "pytorchcv"
+          - "timm"
+          - "openvino"
+          - "openvino-dev"
+          - "openvino-model-api"
+          - "onnx"
+          - "onnxconverter-common"
+          - "nncf"
+          - "anomalib"
+        update-types:
+          - "patch"
+      pip-mmlab-dependencies:
+        applies-to: version-updates
+        patterns:
+          - "mmdet"
+          - "mmpretrain"
+          - "mmsegmentation"
+          - "mmaction2"
+          - "mmdeploy"
+          - "oss2"
+        update-types:
+          - "patch"
+      pip-other-dependencies:
+        applies-to: version-updates
+        exclude-patterns:
+          - "torch"
+          - "lightning"
+          - "pytorchcv"
+          - "timm"
+          - "openvino"
+          - "openvino-dev"
+          - "openvino-model-api"
+          - "onnx"
+          - "onnxconverter-common"
+          - "nncf"
+          - "anomalib"
+        update-types:
+          - "minor"
+          - "patch"

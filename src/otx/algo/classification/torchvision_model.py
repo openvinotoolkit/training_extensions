@@ -31,7 +31,7 @@ from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallab
 from otx.core.schedulers import LRSchedulerListCallable
 from otx.core.types.export import TaskLevelExportParameters
 from otx.core.types.label import HLabelInfo, LabelInfoTypes
-from otx.core.types.task import OTXTaskType
+from otx.core.types.task import OTXTaskType, OTXTrainType
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
@@ -119,7 +119,7 @@ class TVClassificationModel(nn.Module):
         freeze_backbone (bool, optional): Whether to freeze the backbone model. Defaults to False.
         task (Literal[OTXTaskType.MULTI_CLASS_CLS, OTXTaskType.MULTI_LABEL_CLS, OTXTaskType.H_LABEL_CLS], optional):
             The type of classification task.
-        train_type (Literal["supervised", "semi_supervised"], optional): The type of training.
+        train_type (Literal[OTXTrainType.SUPERVISED, OTXTrainType.SEMI_SUPERVISED], optional): The type of training.
         head_config (dict | None, optional): The configuration for the head module.
 
     Methods:
@@ -139,7 +139,7 @@ class TVClassificationModel(nn.Module):
             OTXTaskType.MULTI_LABEL_CLS,
             OTXTaskType.H_LABEL_CLS,
         ] = OTXTaskType.MULTI_CLASS_CLS,
-        train_type: Literal["supervised", "semi_supervised"] = "supervised",
+        train_type: Literal[OTXTrainType.SUPERVISED, OTXTrainType.SEMI_SUPERVISED] = OTXTrainType.SUPERVISED,
         head_config: dict | None = None,
     ) -> None:
         super().__init__()
@@ -189,7 +189,7 @@ class TVClassificationModel(nn.Module):
         else:
             feature_channel = last_layer.in_features
         if self.task == OTXTaskType.MULTI_CLASS_CLS:
-            if self.train_type == "semi_supervised":
+            if self.train_type == OTXTrainType.SEMI_SUPERVISED:
                 self.neck = nn.Sequential(*layers) if layers else None
                 return OTXSemiSLLinearClsHead(
                     num_classes=self.num_classes,
@@ -403,7 +403,7 @@ class OTXTVModel(OTXModel):
         freeze_backbone (bool, optional): Whether to freeze the backbone model. Defaults to False.
         task (Literal[OTXTaskType.MULTI_CLASS_CLS, OTXTaskType.MULTI_LABEL_CLS, OTXTaskType.H_LABEL_CLS], optional):
             The type of classification task.
-        train_type (Literal["supervised", "semi_supervised"], optional): The type of training.
+        train_type (Literal[OTXTrainType.SUPERVISED, OTXTrainType.SEMI_SUPERVISED], optional): The type of training.
     """
 
     model: TVClassificationModel
@@ -421,12 +421,13 @@ class OTXTVModel(OTXModel):
             OTXTaskType.MULTI_LABEL_CLS,
             OTXTaskType.H_LABEL_CLS,
         ] = OTXTaskType.MULTI_CLASS_CLS,
-        train_type: Literal["supervised", "semi_supervised"] = "supervised",
+        train_type: Literal[OTXTrainType.SUPERVISED, OTXTrainType.SEMI_SUPERVISED] = OTXTrainType.SUPERVISED,
     ) -> None:
         self.backbone = backbone
         self.freeze_backbone = freeze_backbone
         self.train_type = train_type
         self.task = task
+        self.image_size: tuple[int, ...] = (1, 3, 224, 224)
 
         # TODO(@harimkang): Need to make it configurable.
         if task == OTXTaskType.MULTI_CLASS_CLS:
@@ -552,7 +553,7 @@ class OTXTVModel(OTXModel):
         """Creates OTXModelExporter object that can export the model."""
         return OTXNativeModelExporter(
             task_level_export_parameters=self._export_parameters,
-            input_size=(1, 3, 224, 224),
+            input_size=self.image_size,
             mean=(123.675, 116.28, 103.53),
             std=(58.395, 57.12, 57.375),
             resize_mode="standard",
@@ -575,7 +576,7 @@ class OTXTVModel(OTXModel):
         """
         loss = super().training_step(batch, batch_idx)
         # Collect metrics related to Semi-SL Training.
-        if self.train_type == "semi_supervised":
+        if self.train_type == OTXTrainType.SEMI_SUPERVISED:
             self.log(
                 "train/unlabeled_coef",
                 self.model.head.unlabeled_coef,
@@ -647,3 +648,17 @@ class OTXTVModel(OTXModel):
             "preds": pred,
             "target": target,
         }
+
+    def get_dummy_input(self, batch_size: int = 1) -> CLASSIFICATION_BATCH_DATA_ENTITY:
+        """Returns a dummy input for classification model."""
+        images = [torch.rand(*self.image_size[1:]) for _ in range(batch_size)]
+        labels = [torch.LongTensor([0])] * batch_size
+
+        if self.task == OTXTaskType.MULTI_CLASS_CLS:
+            return MulticlassClsBatchDataEntity(batch_size, images, [], labels=labels)
+        if self.task == OTXTaskType.MULTI_LABEL_CLS:
+            return MultilabelClsBatchDataEntity(batch_size, images, [], labels=labels)
+        if self.task == OTXTaskType.H_LABEL_CLS:
+            return HlabelClsBatchDataEntity(batch_size, images, [], labels=labels)
+        msg = f"Task type {self.task} is not supported."
+        raise NotImplementedError(msg)
