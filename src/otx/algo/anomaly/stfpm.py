@@ -12,8 +12,6 @@ from typing import TYPE_CHECKING, Literal, Sequence
 from anomalib.models.image.stfpm import Stfpm as AnomalibStfpm
 
 from otx.core.model.anomaly import OTXAnomaly
-from otx.core.model.base import OTXModel
-from otx.core.types.label import AnomalyLabelInfo
 from otx.core.types.task import OTXTaskType
 
 if TYPE_CHECKING:
@@ -23,7 +21,7 @@ if TYPE_CHECKING:
     from otx.core.model.anomaly import AnomalyModelInputs
 
 
-class Stfpm(OTXAnomaly, OTXModel, AnomalibStfpm):
+class Stfpm(OTXAnomaly, AnomalibStfpm):
     """OTX STFPM model.
 
     Args:
@@ -46,7 +44,6 @@ class Stfpm(OTXAnomaly, OTXModel, AnomalibStfpm):
         **kwargs,
     ) -> None:
         OTXAnomaly.__init__(self)
-        OTXModel.__init__(self, label_info=AnomalyLabelInfo())
         AnomalibStfpm.__init__(
             self,
             backbone=backbone,

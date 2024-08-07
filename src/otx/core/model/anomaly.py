@@ -25,6 +25,7 @@ from otx.core.data.entity.anomaly import (
     AnomalySegmentationDataBatch,
 )
 from otx.core.exporter.anomaly import OTXAnomalyModelExporter
+from otx.core.model.base import OTXModel
 from otx.core.types.export import OTXExportFormatType
 from otx.core.types.precision import OTXPrecisionType
 from otx.core.types.task import OTXTaskType
@@ -38,7 +39,7 @@ if TYPE_CHECKING:
     from lightning.pytorch.callbacks.callback import Callback
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
     from torchmetrics import Metric
-
+from otx.core.types.label import AnomalyLabelInfo
 
 AnomalyModelInputs: TypeAlias = (
     AnomalyClassificationDataBatch | AnomalySegmentationDataBatch | AnomalyDetectionDataBatch
@@ -48,10 +49,11 @@ AnomalyModelOutputs: TypeAlias = (
 )
 
 
-class OTXAnomaly:
+class OTXAnomaly(OTXModel):
     """Methods used to make OTX model compatible with the Anomalib model."""
 
     def __init__(self) -> None:
+        super().__init__(label_info=AnomalyLabelInfo())
         self.optimizer: list[OptimizerCallable] | OptimizerCallable = None
         self.scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = None
         self._input_size: tuple[int, int] = (256, 256)
@@ -153,37 +155,6 @@ class OTXAnomaly:
             ),
         ]
 
-    def on_test_batch_end(
-        self,
-        outputs: dict,
-        batch: AnomalyModelInputs | dict,
-        batch_idx: int,
-        dataloader_idx: int = 0,
-    ) -> None:
-        """Called in the predict loop after the batch.
-
-        Args:
-            outputs: The outputs of predict_step(x)
-            batch: The batched data as it is returned by the prediction DataLoader.
-            batch_idx: the index of the batch
-            dataloader_idx: the index of the dataloader
-
-        """
-        if not isinstance(batch, dict):
-            batch = self._customize_inputs(batch)
-        super().on_test_batch_end(outputs, batch, batch_idx, dataloader_idx)  # type: ignore[misc]
-
-    def predict_step(
-        self,
-        inputs: AnomalyModelInputs | dict,
-        batch_idx: int = 0,
-        **kwargs,
-    ) -> dict:
-        """Return predictions from the anomalib model."""
-        if not isinstance(inputs, dict):
-            inputs = self._customize_inputs(inputs)
-        return super().predict_step(inputs, batch_idx, **kwargs)  # type: ignore[misc]
-
     def on_predict_batch_end(
         self,
         outputs: dict,
@@ -201,25 +172,6 @@ class OTXAnomaly:
         _outputs = self._customize_outputs(outputs, batch)
         outputs.clear()
         outputs.update({"prediction": _outputs})
-
-    def configure_optimizers(self) -> tuple[list[torch.optim.Optimizer], list[torch.optim.Optimizer]] | None:  # type: ignore[override]
-        """Configure optimizers for Anomalib models.
-
-        If the anomalib lightning model supports optimizers, return the optimizer.
-        If ``self.trainable_model`` is None then the model does not support training.
-        Else don't return optimizer even if it is configured in the OTX model.
-        """
-        # [TODO](ashwinvaidya17): Revisit this method
-        if self.optimizer and self.trainable_model:
-            optimizer = self.optimizer
-            if isinstance(optimizer, list):
-                if len(optimizer) > 1:
-                    msg = "Only one optimizer should be passed"
-                    raise ValueError(msg)
-                optimizer = optimizer[0]
-            params = getattr(self.model, self.trainable_model).parameters()
-            return optimizer(params=params)
-        return super().configure_optimizers()  # type: ignore[misc]
 
     def forward(
         self,

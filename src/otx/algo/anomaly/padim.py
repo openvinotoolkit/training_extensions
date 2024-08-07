@@ -12,8 +12,6 @@ from typing import TYPE_CHECKING, Literal
 from anomalib.models.image import Padim as AnomalibPadim
 
 from otx.core.model.anomaly import OTXAnomaly
-from otx.core.model.base import OTXModel
-from otx.core.types.label import AnomalyLabelInfo
 from otx.core.types.task import OTXTaskType
 
 if TYPE_CHECKING:
@@ -23,7 +21,7 @@ if TYPE_CHECKING:
     from otx.core.model.anomaly import AnomalyModelInputs
 
 
-class Padim(OTXAnomaly, OTXModel, AnomalibPadim):
+class Padim(OTXAnomaly, AnomalibPadim):
     """OTX Padim model.
 
     Args:
@@ -49,7 +47,6 @@ class Padim(OTXAnomaly, OTXModel, AnomalibPadim):
         ] = OTXTaskType.ANOMALY_CLASSIFICATION,
     ) -> None:
         OTXAnomaly.__init__(self)
-        OTXModel.__init__(self, label_info=AnomalyLabelInfo())
         AnomalibPadim.__init__(
             self,
             backbone=backbone,
