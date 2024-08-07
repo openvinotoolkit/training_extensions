@@ -111,21 +111,21 @@ class TestPerfSemanticSegmentationSemiSL(TestPerfSemanticSegmentation):
         Benchmark.Model(task="semantic_segmentation", name="dino_v2_semisl", category="other"),
     ]
 
-    DATASET_TEST_CASES = [
+    DATASET_TEST_CASES = [  # noqa: RUF012
         Benchmark.Dataset(
-            name=f"kvasir",
+            name="kvasir",
             path=Path("semantic_seg/semisl/kvasir_24"),
             group="small",
             num_repeat=5,
-            unlabeled_data_path=Path(f"semantic_seg/semisl/unlabeled_images/kvasir"),
+            unlabeled_data_path=Path("semantic_seg/semisl/unlabeled_images/kvasir"),
             extra_overrides={},
         ),
         Benchmark.Dataset(
-            name=f"kitti",
+            name="kitti",
             path=Path("semantic_seg/semisl/kitti_18"),
             group="small",
             num_repeat=5,
-            unlabeled_data_path=Path(f"semantic_seg/semisl/unlabeled_images/kitti"),
+            unlabeled_data_path=Path("semantic_seg/semisl/unlabeled_images/kitti"),
             extra_overrides={},
         ),
         Benchmark.Dataset(
@@ -133,7 +133,7 @@ class TestPerfSemanticSegmentationSemiSL(TestPerfSemanticSegmentation):
             path=Path("semantic_seg/semisl/cityscapes"),
             group="medium",
             num_repeat=5,
-            unlabeled_data_path=Path(f"semantic_seg/semisl/unlabeled_images/cityscapes"),
+            unlabeled_data_path=Path("semantic_seg/semisl/unlabeled_images/cityscapes"),
             extra_overrides={},
         ),
         Benchmark.Dataset(
@@ -141,7 +141,7 @@ class TestPerfSemanticSegmentationSemiSL(TestPerfSemanticSegmentation):
             path=Path("semantic_seg/semisl/pascal_voc"),
             group="large",
             num_repeat=5,
-            unlabeled_data_path=Path(f"semantic_seg/semisl/unlabeled_images/pascal_voc"),
+            unlabeled_data_path=Path("semantic_seg/semisl/unlabeled_images/pascal_voc"),
             extra_overrides={},
         ),
     ]
