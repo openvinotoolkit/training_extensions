@@ -12,7 +12,7 @@ import tempfile
 import time
 from contextlib import contextmanager
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, ClassVar, Iterable, Iterator, Literal, Sequence
+from typing import TYPE_CHECKING, Any, ClassVar, Iterable, Iterator, Literal
 from warnings import warn
 
 import torch

@@ -46,7 +46,6 @@ class YOLOX(ExplainableOTXDetModel):
         metric: MetricCallable = MeanAveragePrecisionFMeasureCallable,
         torch_compile: bool = False,
         tile_config: TileConfig = TileConfig(enable_tiler=False),
-        tile_image_size: Sequence[int] = (1, 3, 640, 640),
     ) -> None:
         if input_size[-1] % 32 != 0 or input_size[-2] % 32 != 0:
             msg = f"Input size should be a multiple of 32, but got {input_size[-2:]} instead."
@@ -61,7 +60,6 @@ class YOLOX(ExplainableOTXDetModel):
             torch_compile=torch_compile,
             tile_config=tile_config,
         )
-        self.tile_image_size = tile_image_size
 
     def _customize_inputs(
         self,
@@ -79,11 +77,10 @@ class YOLOX(ExplainableOTXDetModel):
             raise ValueError(msg)
 
         swap_rgb = not isinstance(self, YOLOXTINY)  # only YOLOX-TINY uses RGB
-        input_size = self.tile_image_size if self.tile_config.enable_tiler else self.input_size
 
         return OTXNativeModelExporter(
             task_level_export_parameters=self._export_parameters,
-            input_size=input_size,
+            input_size=self.input_size,
             mean=self.mean,
             std=self.std,
             resize_mode="fit_to_window_letterbox",
@@ -160,7 +157,6 @@ class YOLOXTINY(YOLOX):
         metric: MetricCallable = MeanAveragePrecisionFMeasureCallable,
         torch_compile: bool = False,
         tile_config: TileConfig = TileConfig(enable_tiler=False),
-        tile_image_size: Sequence[int] = (1, 3, 640, 640),
     ) -> None:
         if input_size[-1] % 32 != 0 or input_size[-2] % 32 != 0:
             msg = f"Input size should be a multiple of 32, but got {input_size[-2:]} instead."
@@ -175,7 +171,6 @@ class YOLOXTINY(YOLOX):
             torch_compile=torch_compile,
             tile_config=tile_config,
         )
-        self.tile_image_size = tile_image_size
 
     def _build_model(self, num_classes: int) -> SingleStageDetector:
         train_cfg: dict[str, Any] = {"assigner": SimOTAAssigner(center_radius=2.5)}

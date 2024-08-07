@@ -413,12 +413,6 @@ class OTXCLI:
         model: OTXModel = model_parser.instantiate_classes(Namespace(model=model_config)).get("model")
         self.config_init[self.subcommand]["model"] = model
 
-        # Update tile config due to adaptive tiling
-        if model.tile_config.enable_tiler:
-            # TODO(Eugene): Ticket no. 139000: Need to find a better way to configure image size for OV Models
-            # https://github.com/openvinotoolkit/training_extensions/pull/2925
-            model.input_size = model.tile_image_size
-
         # Update self.config with model
         self.config[self.subcommand].update(Namespace(model=model_config))
 

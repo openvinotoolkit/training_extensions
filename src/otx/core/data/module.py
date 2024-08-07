@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import logging as log
 from copy import deepcopy
-from typing import TYPE_CHECKING, Iterable
+from typing import TYPE_CHECKING, Iterable, Literal
 
 import torch
 from datumaro import Dataset as DmDataset
@@ -24,13 +24,13 @@ from otx.core.data.mem_cache import (
     parse_mem_cache_size_to_int,
 )
 from otx.core.data.pre_filtering import pre_filtering
-from otx.core.data.tile_adaptor import adapt_tile_config
 from otx.core.types.device import DeviceType
 from otx.core.types.image import ImageColorChannel
 from otx.core.types.label import LabelInfo
 from otx.core.types.task import OTXTaskType
 from otx.core.utils.instantiators import instantiate_sampler
 from otx.core.utils.utils import get_adaptive_num_workers
+from otx.core.data.utils import adapt_input_size_to_dataset, adapt_tile_config
 
 if TYPE_CHECKING:
     from lightning.pytorch.utilities.parsing import AttributeDict
@@ -63,22 +63,13 @@ class OTXDataModule(LightningDataModule):
         auto_num_workers: bool = False,
         device: DeviceType = DeviceType.auto,
         input_size: int | tuple[int, int] | None = None,
-        adaptive_input_size: bool = False,
+        adaptive_input_size: Literal["auto", "downscale", "none"] = "none",
     ) -> None:
         """Constructor."""
         super().__init__()
         self.task = task
         self.data_format = data_format
         self.data_root = data_root
-
-        if adaptive_input_size:
-            print("adaptive_input_size works")
-
-        if input_size is not None:
-            for subset_cfg in [train_subset, val_subset, test_subset, unlabeled_subset]:
-                if subset_cfg.input_size is None:
-                    subset_cfg.input_size = input_size
-        self.input_size = input_size
 
         self.train_subset = train_subset
         self.val_subset = val_subset
@@ -142,6 +133,13 @@ class OTXDataModule(LightningDataModule):
                 format=self.unlabeled_subset.data_format,
                 subset=self.unlabeled_subset.subset_name,
             )
+
+        if adaptive_input_size != "none":
+            input_size = adapt_input_size_to_dataset(dataset, input_size, adaptive_input_size=="downscale")
+        if input_size is not None:
+            for subset_cfg in [train_subset, val_subset, test_subset, unlabeled_subset]:
+                subset_cfg.input_size = input_size
+        self.input_size = input_size
 
         if self.tile_config.enable_tiler and self.tile_config.enable_adaptive_tiling:
             adapt_tile_config(self.tile_config, dataset=dataset)

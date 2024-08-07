@@ -61,7 +61,6 @@ class SSD(ExplainableOTXDetModel):
         metric: MetricCallable = MeanAveragePrecisionFMeasureCallable,
         torch_compile: bool = False,
         tile_config: TileConfig = TileConfig(enable_tiler=False),
-        tile_image_size: Sequence[int] = (1, 3, 864, 864),
     ) -> None:
         super().__init__(
             label_info=label_info,
@@ -72,7 +71,6 @@ class SSD(ExplainableOTXDetModel):
             torch_compile=torch_compile,
             tile_config=tile_config,
         )
-        self.tile_image_size = tile_image_size
 
     def _build_model(self, num_classes: int) -> SingleStageDetector:
         train_cfg = {

@@ -19,7 +19,6 @@ class TestRTMDet:
         assert isinstance(otx_rtmdet_tiny.model.neck, CSPNeXtPAFPN)
         assert isinstance(otx_rtmdet_tiny.model.bbox_head, RTMDetSepBNHead)
         assert otx_rtmdet_tiny.input_size == (1, 3, 640, 640)
-        assert otx_rtmdet_tiny.tile_image_size == (1, 3, 640, 640)
 
     def test_exporter(self) -> None:
         otx_rtmdet_tiny = RTMDetTiny(label_info=3)

@@ -232,11 +232,9 @@ class TVMaskRCNN(ExplainableOTXInstanceSegModel):
             msg = f"Input size attribute is not set for {self.__class__}"
             raise ValueError(msg)
 
-        input_size = self.tile_image_size if self.tile_config.enable_tiler else self.input_size
-
         return OTXNativeModelExporter(
             task_level_export_parameters=self._export_parameters,
-            input_size=input_size,
+            input_size=self.input_size,
             mean=self.mean,
             std=self.std,
             resize_mode="fit_to_window",
@@ -283,7 +281,6 @@ class TVMaskRCNNR50(TVMaskRCNN):
         metric: MetricCallable = MaskRLEMeanAPFMeasureCallable,
         torch_compile: bool = False,
         tile_config: TileConfig = TileConfig(enable_tiler=False),
-        tile_image_size: Sequence[int] = (1, 3, 512, 512),
     ) -> None:
         super().__init__(
             label_info=label_info,
@@ -294,7 +291,6 @@ class TVMaskRCNNR50(TVMaskRCNN):
             torch_compile=torch_compile,
             tile_config=tile_config,
         )
-        self.tile_image_size = tile_image_size
 
     def _create_model(self) -> nn.Module:
         """From torchvision tutorial."""

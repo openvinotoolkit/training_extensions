@@ -55,7 +55,7 @@ class DETR(BaseModule):
         if multi_scale is not None:
             self.multi_scale = multi_scale
         else:
-            self.multi_scale = [input_size -i * 64 for i in range(-5, 6)] + [input_size] * 2
+            self.multi_scale = [input_size -i * 32 for i in range(-5, 6)] + [input_size] * 2
 
         self.num_classes = num_classes
         self.num_top_queries = num_top_queries

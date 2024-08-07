@@ -45,7 +45,6 @@ class RTMDet(ExplainableOTXDetModel):
         metric: MetricCallable = MeanAveragePrecisionFMeasureCallable,
         torch_compile: bool = False,
         tile_config: TileConfig = TileConfig(enable_tiler=False),
-        tile_image_size: Sequence[int] = (1, 3, 640, 640),
     ) -> None:
         if input_size[-1] % 32 != 0 or input_size[-2] % 32 != 0:
             msg = f"Input size should be a multiple of 32, but got {input_size[-2:]} instead."
@@ -60,7 +59,6 @@ class RTMDet(ExplainableOTXDetModel):
             torch_compile=torch_compile,
             tile_config=tile_config,
         )
-        self.tile_image_size = tile_image_size
 
     @property
     def _exporter(self) -> OTXModelExporter:
