@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 # Copyright (c) OpenMMLab. All rights reserved.
 
-"""This implementation replaces the functionality of mmcv.cbricks.activation.build_activation_layer."""
+"""Custom activation implementation copied from mmcv.cnn.bricks.swish.py."""
 
 from __future__ import annotations
 
@@ -32,18 +32,3 @@ class Swish(nn.Module):
             Tensor: The output tensor.
         """
         return x * torch.sigmoid(x)
-
-
-AVAILABLE_ACTIVATION_LIST: list[str] = [
-    "ReLU",
-    "LeakyReLU",
-    "PReLU",
-    "RReLU",
-    "ReLU6",
-    "ELU",
-    "Sigmoid",
-    "Tanh",
-    "SiLU",
-    "GELU",
-    "Swish",
-]

@@ -18,12 +18,26 @@ from torch.nn.modules.instancenorm import _InstanceNorm as InstanceNorm
 
 from otx.algo.utils.weight_init import constant_init, kaiming_init
 
-from .activation import AVAILABLE_ACTIVATION_LIST
 from .norm import build_norm_layer
 from .padding import build_padding_layer
 
 if TYPE_CHECKING:
     from torch.nn.modules.conv import _ConvNd as ConvNd
+
+
+AVAILABLE_ACTIVATION_LIST: list[str] = [
+    "ReLU",
+    "LeakyReLU",
+    "PReLU",
+    "RReLU",
+    "ReLU6",
+    "ELU",
+    "Sigmoid",
+    "Tanh",
+    "SiLU",
+    "GELU",
+    "Swish",
+]
 
 
 class ConvModule(nn.Module):
