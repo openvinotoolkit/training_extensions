@@ -20,7 +20,7 @@ from otx.algo.detection.heads.class_incremental_mixin import (
 )
 from otx.algo.detection.utils.prior_generators.utils import anchor_inside_flags
 from otx.algo.detection.utils.utils import unmap
-from otx.algo.modules.conv_module import ConvModule
+from otx.algo.modules.conv_module import Conv2dModule
 from otx.algo.modules.scale import Scale
 from otx.algo.utils.mmengine_utils import InstanceData
 
@@ -39,8 +39,6 @@ class ATSSHead(ClassIncrementalMixin, AnchorHead):
         in_channels (int): Number of channels in the input feature map.
         pred_kernel_size (int): Kernel size of ``nn.Conv2d``. Defaults to 3.
         stacked_convs (int): Number of stacking convs of the head. Defaults to 4.
-        conv_cfg (dict, optional): Config dict for convolution layer.
-            Defaults to None.
         norm_cfg (dict): Config dict for normalization layer.
             Defaults to ``dict(type='GN', num_groups=32, requires_grad=True)``.
         reg_decoded_bbox (bool): If true, the regression loss would be
@@ -58,7 +56,6 @@ class ATSSHead(ClassIncrementalMixin, AnchorHead):
         in_channels: int,
         pred_kernel_size: int = 3,
         stacked_convs: int = 4,
-        conv_cfg: dict | None = None,
         norm_cfg: dict | None = None,
         reg_decoded_bbox: bool = True,
         loss_centerness: nn.Module | None = None,
@@ -70,7 +67,6 @@ class ATSSHead(ClassIncrementalMixin, AnchorHead):
     ) -> None:
         self.pred_kernel_size = pred_kernel_size
         self.stacked_convs = stacked_convs
-        self.conv_cfg = conv_cfg
         self.norm_cfg = norm_cfg or {"type": "GN", "num_groups": 32, "requires_grad": True}
         init_cfg = init_cfg or {
             "type": "Normal",
@@ -111,24 +107,22 @@ class ATSSHead(ClassIncrementalMixin, AnchorHead):
         for i in range(self.stacked_convs):
             chn = self.in_channels if i == 0 else self.feat_channels
             self.cls_convs.append(
-                ConvModule(
+                Conv2dModule(
                     chn,
                     self.feat_channels,
                     3,
                     stride=1,
                     padding=1,
-                    conv_cfg=self.conv_cfg,
                     norm_cfg=self.norm_cfg,
                 ),
             )
             self.reg_convs.append(
-                ConvModule(
+                Conv2dModule(
                     chn,
                     self.feat_channels,
                     3,
                     stride=1,
                     padding=1,
-                    conv_cfg=self.conv_cfg,
                     norm_cfg=self.norm_cfg,
                 ),
             )

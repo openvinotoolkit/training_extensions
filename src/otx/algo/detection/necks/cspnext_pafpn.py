@@ -17,8 +17,7 @@ from torch import Tensor, nn
 
 from otx.algo.detection.layers import CSPLayer
 from otx.algo.modules.base_module import BaseModule
-from otx.algo.modules.conv_module import ConvModule
-from otx.algo.modules.depthwise_separable_conv_module import DepthwiseSeparableConvModule
+from otx.algo.modules.conv_module import Conv2dModule, DepthwiseSeparableConvModule
 
 
 class CSPNeXtPAFPN(BaseModule):
@@ -31,7 +30,6 @@ class CSPNeXtPAFPN(BaseModule):
         use_depthwise (bool): Whether to use depthwise separable convolution in blocks. Defaults to False.
         expand_ratio (float): Ratio to adjust the number of channels of the hidden layer. Default: 0.5
         upsample_cfg (dict): Config dict for interpolate layer. Default: `dict(scale_factor=2, mode='nearest')`
-        conv_cfg (dict, optional): Config dict for convolution layer. Default: None, which means using conv2d.
         norm_cfg (dict): Config dict for normalization layer. Default: dict(type='BN')
         act_cfg (dict): Config dict for activation layer. Default: dict(type='Swish')
         init_cfg (dict or list[dict], optional): Initialization config dict. Default: None.
@@ -45,7 +43,6 @@ class CSPNeXtPAFPN(BaseModule):
         use_depthwise: bool = False,
         expand_ratio: float = 0.5,
         upsample_cfg: dict | None = None,
-        conv_cfg: dict | None = None,
         norm_cfg: dict | None = None,
         act_cfg: dict | None = None,
         init_cfg: dict | None = None,
@@ -66,7 +63,7 @@ class CSPNeXtPAFPN(BaseModule):
         self.in_channels = in_channels
         self.out_channels = out_channels
 
-        conv = DepthwiseSeparableConvModule if use_depthwise else ConvModule
+        conv = DepthwiseSeparableConvModule if use_depthwise else Conv2dModule
 
         # build top-down blocks
         self.upsample = nn.Upsample(**upsample_cfg)
@@ -74,11 +71,10 @@ class CSPNeXtPAFPN(BaseModule):
         self.top_down_blocks = nn.ModuleList()
         for idx in range(len(in_channels) - 1, 0, -1):
             self.reduce_layers.append(
-                ConvModule(
+                Conv2dModule(
                     in_channels[idx],
                     in_channels[idx - 1],
                     1,
-                    conv_cfg=conv_cfg,
                     norm_cfg=norm_cfg,
                     act_cfg=act_cfg,
                 ),
@@ -92,7 +88,6 @@ class CSPNeXtPAFPN(BaseModule):
                     use_depthwise=use_depthwise,
                     use_cspnext_block=True,
                     expand_ratio=expand_ratio,
-                    conv_cfg=conv_cfg,
                     norm_cfg=norm_cfg,
                     act_cfg=act_cfg,
                 ),
@@ -109,7 +104,6 @@ class CSPNeXtPAFPN(BaseModule):
                     3,
                     stride=2,
                     padding=1,
-                    conv_cfg=conv_cfg,
                     norm_cfg=norm_cfg,
                     act_cfg=act_cfg,
                 ),
@@ -123,7 +117,6 @@ class CSPNeXtPAFPN(BaseModule):
                     use_depthwise=use_depthwise,
                     use_cspnext_block=True,
                     expand_ratio=expand_ratio,
-                    conv_cfg=conv_cfg,
                     norm_cfg=norm_cfg,
                     act_cfg=act_cfg,
                 ),
@@ -132,7 +125,7 @@ class CSPNeXtPAFPN(BaseModule):
         self.out_convs = nn.ModuleList()
         for i in range(len(in_channels)):
             self.out_convs.append(
-                conv(in_channels[i], out_channels, 3, padding=1, conv_cfg=conv_cfg, norm_cfg=norm_cfg, act_cfg=act_cfg),
+                conv(in_channels[i], out_channels, 3, padding=1, norm_cfg=norm_cfg, act_cfg=act_cfg),
             )
 
     def forward(self, inputs: tuple[Tensor, ...]) -> tuple[Tensor, ...]:
