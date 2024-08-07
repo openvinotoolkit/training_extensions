@@ -894,7 +894,7 @@ class TestTopdownAffine:
     @pytest.fixture()
     def keypoint_det_entity(self) -> KeypointDetDataEntity:
         return KeypointDetDataEntity(
-            image=np.random.randint(0, 255, size=(10, 10), dtype=np.uint8),
+            image=np.random.randint(0, 255, size=(10, 10, 3), dtype=np.uint8),
             img_info=ImageInfo(img_idx=0, img_shape=(10, 10), ori_shape=(10, 10)),
             bboxes=tv_tensors.BoundingBoxes(
                 np.array([[0, 0, 7, 7]], dtype=np.float32),
