@@ -11,8 +11,9 @@ from typing import Any, ClassVar
 import torch
 from torch import nn
 
-from otx.algo.modules import ConvModule, build_activation_layer
+from otx.algo.modules import build_activation_layer
 from otx.algo.modules.base_module import BaseModule
+from otx.algo.modules.conv_module import Conv2dModule
 
 __all__ = ["PResNet"]
 
@@ -42,15 +43,15 @@ class BasicBlock(nn.Module):
                     OrderedDict(
                         [
                             ("pool", nn.AvgPool2d(2, 2, 0, ceil_mode=True)),
-                            ("conv", ConvModule(ch_in, ch_out, 1, 1, act_cfg=None, norm_cfg=norm_cfg)),
+                            ("conv", Conv2dModule(ch_in, ch_out, 1, 1, act_cfg=None, norm_cfg=norm_cfg)),
                         ],
                     ),
                 )
             else:
-                self.short = ConvModule(ch_in, ch_out, 1, stride, act_cfg=None, norm_cfg=norm_cfg)
+                self.short = Conv2dModule(ch_in, ch_out, 1, stride, act_cfg=None, norm_cfg=norm_cfg)
 
-        self.branch2a = ConvModule(ch_in, ch_out, 3, stride, padding=1, act_cfg=act_cfg, norm_cfg=norm_cfg)
-        self.branch2b = ConvModule(ch_out, ch_out, 3, 1, padding=1, act_cfg=None, norm_cfg=norm_cfg)
+        self.branch2a = Conv2dModule(ch_in, ch_out, 3, stride, padding=1, act_cfg=act_cfg, norm_cfg=norm_cfg)
+        self.branch2b = Conv2dModule(ch_out, ch_out, 3, 1, padding=1, act_cfg=None, norm_cfg=norm_cfg)
         self.act = nn.Identity() if act_cfg is None else build_activation_layer(act_cfg)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -88,9 +89,9 @@ class BottleNeck(nn.Module):
 
         width = ch_out
 
-        self.branch2a = ConvModule(ch_in, width, 1, stride1, act_cfg=act_cfg, norm_cfg=norm_cfg)
-        self.branch2b = ConvModule(width, width, 3, stride2, padding=1, act_cfg=act_cfg, norm_cfg=norm_cfg)
-        self.branch2c = ConvModule(width, ch_out * self.expansion, 1, 1, act_cfg=None, norm_cfg=norm_cfg)
+        self.branch2a = Conv2dModule(ch_in, width, 1, stride1, act_cfg=act_cfg, norm_cfg=norm_cfg)
+        self.branch2b = Conv2dModule(width, width, 3, stride2, padding=1, act_cfg=act_cfg, norm_cfg=norm_cfg)
+        self.branch2c = Conv2dModule(width, ch_out * self.expansion, 1, 1, act_cfg=None, norm_cfg=norm_cfg)
 
         self.shortcut = shortcut
         if not shortcut:
@@ -99,12 +100,15 @@ class BottleNeck(nn.Module):
                     OrderedDict(
                         [
                             ("pool", nn.AvgPool2d(2, 2, 0, ceil_mode=True)),
-                            ("conv", ConvModule(ch_in, ch_out * self.expansion, 1, 1, act_cfg=None, norm_cfg=norm_cfg)),
+                            (
+                                "conv",
+                                Conv2dModule(ch_in, ch_out * self.expansion, 1, 1, act_cfg=None, norm_cfg=norm_cfg),
+                            ),
                         ],
                     ),
                 )
             else:
-                self.short = ConvModule(ch_in, ch_out * self.expansion, 1, stride, act_cfg=None, norm_cfg=norm_cfg)
+                self.short = Conv2dModule(ch_in, ch_out * self.expansion, 1, stride, act_cfg=None, norm_cfg=norm_cfg)
 
         self.act = nn.Identity() if act_cfg is None else build_activation_layer(act_cfg)
 
@@ -216,7 +220,7 @@ class PResNet(BaseModule):
         self.conv1 = nn.Sequential(
             OrderedDict(
                 [
-                    (_name, ConvModule(c_in, c_out, k, s, padding=(k - 1) // 2, act_cfg=act_cfg, norm_cfg=norm_cfg))
+                    (_name, Conv2dModule(c_in, c_out, k, s, padding=(k - 1) // 2, act_cfg=act_cfg, norm_cfg=norm_cfg))
                     for c_in, c_out, k, s, _name in conv_def
                 ],
             ),

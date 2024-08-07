@@ -15,7 +15,6 @@ class TestAsymmetricPositionAttentionModule:
             "key_channels": 128,
             "value_channels": 320,
             "psp_size": [1, 3, 6, 8],
-            "conv_cfg": {"type": "Conv2d"},
             "norm_cfg": {"type": "BN"},
         }
 
@@ -25,7 +24,6 @@ class TestAsymmetricPositionAttentionModule:
         assert module.in_channels == init_cfg["in_channels"]
         assert module.key_channels == init_cfg["key_channels"]
         assert module.value_channels == init_cfg["value_channels"]
-        assert module.conv_cfg == init_cfg["conv_cfg"]
         assert module.norm_cfg == init_cfg["norm_cfg"]
 
     @pytest.fixture()
@@ -44,7 +42,6 @@ class TestLocalAttentionModule:
     def init_cfg(self) -> dict[str, Any]:
         return {
             "num_channels": 320,
-            "conv_cfg": {"type": "Conv2d"},
             "norm_cfg": {"type": "BN"},
         }
 
@@ -52,7 +49,6 @@ class TestLocalAttentionModule:
         module = LocalAttentionModule(**init_cfg)
 
         assert module.num_channels == init_cfg["num_channels"]
-        assert module.conv_cfg == init_cfg["conv_cfg"]
         assert module.norm_cfg == init_cfg["norm_cfg"]
 
     @pytest.fixture()

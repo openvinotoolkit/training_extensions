@@ -11,7 +11,7 @@ import torch
 from torch import nn
 
 from otx.algo.detection.layers import CSPRepLayer
-from otx.algo.modules import ConvModule, build_activation_layer
+from otx.algo.modules import Conv2dModule, build_activation_layer
 from otx.algo.modules.base_module import BaseModule
 
 __all__ = ["HybridEncoder"]
@@ -191,7 +191,7 @@ class HybridEncoder(BaseModule):
         self.lateral_convs = nn.ModuleList()
         self.fpn_blocks = nn.ModuleList()
         for _ in range(len(in_channels) - 1, 0, -1):
-            self.lateral_convs.append(ConvModule(hidden_dim, hidden_dim, 1, 1, act_cfg=act_cfg, norm_cfg=norm_cfg))
+            self.lateral_convs.append(Conv2dModule(hidden_dim, hidden_dim, 1, 1, act_cfg=act_cfg, norm_cfg=norm_cfg))
             self.fpn_blocks.append(
                 CSPRepLayer(
                     hidden_dim * 2,
@@ -208,7 +208,7 @@ class HybridEncoder(BaseModule):
         self.pan_blocks = nn.ModuleList()
         for _ in range(len(in_channels) - 1):
             self.downsample_convs.append(
-                ConvModule(hidden_dim, hidden_dim, 3, 2, padding=1, act_cfg=act_cfg, norm_cfg=norm_cfg),
+                Conv2dModule(hidden_dim, hidden_dim, 3, 2, padding=1, act_cfg=act_cfg, norm_cfg=norm_cfg),
             )
             self.pan_blocks.append(
                 CSPRepLayer(
