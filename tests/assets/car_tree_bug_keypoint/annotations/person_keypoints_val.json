@@ -1,0 +1,105 @@
+{
+  "licenses": [{ "name": "", "id": 0, "url": "" }],
+  "info": {
+    "contributor": "",
+    "date_created": "",
+    "description": "",
+    "url": "",
+    "version": "",
+    "year": ""
+  },
+  "categories": [
+    {
+      "id": 1,
+      "name": "car",
+      "supercategory": "",
+      "keypoints": [
+        "left_front_wheel",
+        "left_rear_wheel",
+        "right_front_wheel",
+        "right_rear_wheel"
+      ],
+      "skeleton": [
+        [1, 2],
+        [2, 4],
+        [4, 3],
+        [3, 1]
+      ]
+    }
+  ],
+  "images": [
+    {
+      "id": 7,
+      "width": 1280,
+      "height": 720,
+      "file_name": "Slide3.PNG",
+      "license": 0,
+      "flickr_url": "",
+      "coco_url": "",
+      "date_captured": 0
+    },
+    {
+      "id": 8,
+      "width": 1280,
+      "height": 720,
+      "file_name": "Slide20.PNG",
+      "license": 0,
+      "flickr_url": "",
+      "coco_url": "",
+      "date_captured": 0
+    }
+  ],
+  "annotations": [
+    {
+      "id": 19,
+      "image_id": 7,
+      "category_id": 1,
+      "keypoints": [
+        184.09, 131.61, 1, 338.06, 129.89, 1, 339.78, 457.63, 1, 183.23, 461.08,
+        1
+      ],
+      "area": 51030.0,
+      "bbox": [183.23, 129.89, 156.55, 331.19],
+      "iscrowd": 0,
+      "attributes": { "occluded": false }
+    },
+    {
+      "id": 20,
+      "image_id": 7,
+      "category_id": 1,
+      "keypoints": [
+        832.69, 104.09, 1, 1018.49, 102.37, 1, 1017.63, 226.24, 1, 825.81,
+        233.98, 1
+      ],
+      "area": 23933.0,
+      "bbox": [825.81, 102.37, 192.68, 131.61],
+      "iscrowd": 0,
+      "attributes": { "occluded": false }
+    },
+    {
+      "id": 21,
+      "image_id": 7,
+      "category_id": 1,
+      "keypoints": [
+        898.92, 490.32, 1, 1195.7, 487.74, 1, 1209.46, 673.55, 1, 913.55,
+        670.11, 1
+      ],
+      "area": 54157.0,
+      "bbox": [898.92, 487.74, 310.54, 185.81],
+      "iscrowd": 0,
+      "attributes": { "occluded": false }
+    },
+    {
+      "id": 22,
+      "image_id": 8,
+      "category_id": 1,
+      "keypoints": [
+        341.51, 373.33, 1, 502.4, 456.8, 1, 341.5, 709.7, 1, 188.39, 612.47, 1
+      ],
+      "area": 52814.0,
+      "bbox": [188.39, 373.33, 314.01, 336.37],
+      "iscrowd": 0,
+      "attributes": { "occluded": false }
+    }
+  ]
+}
