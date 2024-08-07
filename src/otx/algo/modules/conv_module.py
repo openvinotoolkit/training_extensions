@@ -255,7 +255,7 @@ class ConvModule(nn.Module):
         if norm and self.with_norm:
             x = self.norm_layer(x)  # type: ignore[misc]
         if activate and self.with_activation:
-            x = self.activation(x)
+            x = self.activation(x)  # type: ignore[misc]
         return x
 
 
