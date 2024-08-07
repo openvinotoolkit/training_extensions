@@ -61,12 +61,20 @@ class TestMeanTeacher:
             mode="loss",
         )
         assert isinstance(output, dict)
+        assert "loss_ce_ignore" in output
+        assert "loss_ce_ignore_unlabeled" in output
+        assert isinstance(output["loss_ce_ignore"], torch.Tensor)
+        assert isinstance(output["loss_ce_ignore_unlabeled"], torch.Tensor)
+        assert output["loss_ce_ignore"] > 0
+        assert output["loss_ce_ignore_unlabeled"] > 0
 
     def test_generate_pseudo_labels(self, model, unlabeled_weak_images):
         pl_from_teacher, reweight_unsup = model._generate_pseudo_labels(
             unlabeled_weak_images,
             percent_unreliable=20,
         )
+
+        assert isinstance(pl_from_teacher, torch.Tensor)
         assert pl_from_teacher.shape == (4, 1, 10, 10)
         assert isinstance(reweight_unsup, torch.Tensor)
         assert isinstance(reweight_unsup.item(), float)
