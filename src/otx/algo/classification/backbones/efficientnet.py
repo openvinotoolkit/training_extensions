@@ -169,9 +169,9 @@ class SEBlock(nn.Module):
         mid_channels (int | None): Number of middle channels. Defaults to None.
         round_mid (bool): Whether to round middle channel number (make divisible by 8). Defaults to False.
         use_conv (bool): Whether to convolutional layers instead of fully-connected ones. Defaults to True.
-        mid_activation_callable (Callable[..., nn.Module] | None): Activation layer module after the first convolution.
+        mid_activation_callable (Callable[..., nn.Module]): Activation layer module after the first convolution.
             Defaults to `nn.ReLU`.
-        out_activation_callable (Callable[..., nn.Module] | None): Activation layer module after the last convolution.
+        out_activation_callable (Callable[..., nn.Module]): Activation layer module after the last convolution.
             Defaults to `nn.Sigmoid`.
     """
 
@@ -182,8 +182,8 @@ class SEBlock(nn.Module):
         mid_channels: int | None = None,
         round_mid: bool = False,
         use_conv: bool = True,
-        mid_activation_callable: Callable[..., nn.Module] | None = nn.ReLU,
-        out_activation_callable: Callable[..., nn.Module] | None = nn.Sigmoid,
+        mid_activation_callable: Callable[..., nn.Module] = nn.ReLU,
+        out_activation_callable: Callable[..., nn.Module] = nn.Sigmoid,
     ):
         super().__init__()
         self.use_conv = use_conv
@@ -295,7 +295,7 @@ class EffiInvResUnit(nn.Module):
         exp_factor (int): Factor for expansion of channels.
         se_factor (int): SE reduction factor for each unit.
         bn_eps (float): Small float added to variance in Batch norm.
-        activation_callable (Callable[..., nn.Module] | None): Name of activation function.
+        activation_callable (Callable[..., nn.Module]): Name of activation function.
         tf_mode (bool): Whether to use TF-like mode.
     """
 
@@ -308,7 +308,7 @@ class EffiInvResUnit(nn.Module):
         exp_factor: int,
         se_factor: int,
         bn_eps: float,
-        activation_callable: Callable[..., nn.Module] | None,
+        activation_callable: Callable[..., nn.Module],
         tf_mode: bool,
     ):
         super().__init__()

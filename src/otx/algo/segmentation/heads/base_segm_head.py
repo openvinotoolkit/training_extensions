@@ -26,7 +26,7 @@ class BaseSegmHead(nn.Module, metaclass=ABCMeta):
         dropout_ratio (float, optional): The dropout ratio. Defaults to 0.1.
         norm_cfg (Optional[ConfigType], optional): Config for normalization layer.
             Defaults to None.
-        activation_callable (Callable[..., nn.Module]): Activation layer module.
+        activation_callable (Callable[..., nn.Module] | None): Activation layer module.
             Defaults to `nn.ReLU`.
         in_index (int, list[int], optional): Input index. Defaults to -1.
         input_transform (Optional[str], optional): Input transform type.
@@ -42,7 +42,7 @@ class BaseSegmHead(nn.Module, metaclass=ABCMeta):
         num_classes: int,
         dropout_ratio: float = 0.1,
         norm_cfg: dict[str, str] | None = None,
-        activation_callable: Callable[..., nn.Module] = nn.ReLU,
+        activation_callable: Callable[..., nn.Module] | None = nn.ReLU,
         in_index: int | list[int] = -1,
         input_transform: str | None = None,
         ignore_index: int = 255,

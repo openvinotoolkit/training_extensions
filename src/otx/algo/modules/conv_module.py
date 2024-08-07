@@ -171,9 +171,13 @@ class ConvModule(nn.Module):
             self.norm_name = None  # type: ignore[assignment]
 
         # build activation layer
-        if (
-            isinstance(activation_callable, partial) and activation_callable.func.__name__ in AVAILABLE_ACTIVATION_LIST
-        ) or (activation_callable.__name__ in AVAILABLE_ACTIVATION_LIST):
+        if activation_callable is not None and (
+            (
+                isinstance(activation_callable, partial)
+                and activation_callable.func.__name__ in AVAILABLE_ACTIVATION_LIST
+            )
+            or (activation_callable.__name__ in AVAILABLE_ACTIVATION_LIST)
+        ):
             self.activation = activation_callable() if activation_callable is not None else None
         else:
             msg = f"Unsupported activation type {activation_callable}"

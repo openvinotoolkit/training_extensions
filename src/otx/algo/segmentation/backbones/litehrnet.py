@@ -119,7 +119,7 @@ class NeighbourSupport(nn.Module):
 
 class CrossResolutionWeighting(nn.Module):
     """Cross resolution weighting.
-    
+
     Args:
         channels (list[int]): Number of channels for each stage.
         ratio (int): Reduction ratio of the bottleneck block.
@@ -141,8 +141,9 @@ class CrossResolutionWeighting(nn.Module):
     ) -> None:
         super().__init__()
 
-        if isinstance(activation_callable, callable):
+        if callable(activation_callable):
             activation_callable = (activation_callable, activation_callable)
+
         if len(activation_callable) != 2:
             msg = "activation_callable must be a callable or a tuple of callables of length 2."
             raise ValueError(msg)
@@ -182,7 +183,7 @@ class CrossResolutionWeighting(nn.Module):
 
 class SpatialWeighting(nn.Module):
     """Spatial weighting.
-    
+
     Args:
         channels (int): Number of input channels.
         ratio (int): Reduction ratio for the bottleneck block. Default: 16.
@@ -207,8 +208,9 @@ class SpatialWeighting(nn.Module):
     ) -> None:
         super().__init__()
 
-        if isinstance(activation_callable, callable):
+        if callable(activation_callable):
             activation_callable = (activation_callable, activation_callable)
+
         if len(activation_callable) != 2:
             msg = "activation_callable must be a callable or a tuple of callables of length 2."
             raise ValueError(msg)

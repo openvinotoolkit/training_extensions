@@ -235,7 +235,7 @@ class CSPLayer(BaseModule):
             stage. Defaults to True.
         norm_cfg (dict): Config dict for normalization layer.
             Defaults to dict(type='BN')
-        activation_callable (Callable[..., nn.Module]): Activation layer module.
+        activation_callable (Callable[..., nn.Module] | None): Activation layer module.
             Defaults to `Swish`.
         init_cfg (dict or list[dict], optional): Initialization config dict.
             Defaults to None.
@@ -252,7 +252,7 @@ class CSPLayer(BaseModule):
         use_cspnext_block: bool = False,
         channel_attention: bool = False,
         norm_cfg: dict | None = None,
-        activation_callable: Callable[..., nn.Module] = Swish,
+        activation_callable: Callable[..., nn.Module] | None = Swish,
         init_cfg: dict | list[dict] | None = None,
     ) -> None:
         if norm_cfg is None:
