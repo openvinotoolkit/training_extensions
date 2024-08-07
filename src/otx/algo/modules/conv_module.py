@@ -39,6 +39,16 @@ AVAILABLE_ACTIVATION_LIST: list[str] = [
     "Swish",
 ]
 
+ACTIVATION_LIST_NOT_SUPPORTING_INPLACE: list[str] = [
+    "Tanh",
+    "PReLU",
+    "Sigmoid",
+    "HSigmoid",
+    "Swish",
+    "GELU",
+    "SiLU",
+]
+
 
 class ConvModule(nn.Module):
     """A conv block that bundles conv/norm/activation layers.
@@ -74,6 +84,8 @@ class ConvModule(nn.Module):
         norm_cfg (dict): Config dict for normalization layer. Default: None.
         activation_callable (Callable[..., nn.Module]): Activation layer module.
             Defaults to `nn.ReLU`.
+        inplace (bool): Whether to use inplace mode for activation.
+            Default: True.
         with_spectral_norm (bool): Whether use spectral norm in conv module.
             Default: False.
         padding_mode (str): If the `padding_mode` has not been supported by
@@ -98,6 +110,7 @@ class ConvModule(nn.Module):
         bias: bool | str = "auto",
         norm_cfg: dict | None = None,
         activation_callable: Callable[..., nn.Module] | None = nn.ReLU,
+        inplace: bool = True,
         with_spectral_norm: bool = False,
         padding_mode: str = "zeros",
     ):
@@ -105,6 +118,7 @@ class ConvModule(nn.Module):
         assert norm_cfg is None or isinstance(norm_cfg, dict)  # noqa: S101
         official_padding_mode = ["zeros", "circular"]
         self.norm_cfg = norm_cfg
+        self.inplace = inplace
         self.with_spectral_norm = with_spectral_norm
         self.with_explicit_padding = padding_mode not in official_padding_mode
 
@@ -165,6 +179,10 @@ class ConvModule(nn.Module):
             msg = f"Unsupported activation type {activation_callable}"
             raise TypeError(msg)
         self._with_activation: bool | None = None
+
+        # update inplace
+        if self.activation.__class__.__name__ not in ACTIVATION_LIST_NOT_SUPPORTING_INPLACE:
+            self.activation.inplace = inplace
 
         # Use msra init by default
         self.init_weights()
