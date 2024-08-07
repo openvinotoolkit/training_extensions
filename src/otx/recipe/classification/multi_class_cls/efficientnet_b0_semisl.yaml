@@ -1,8 +1,9 @@
 model:
-  class_path: otx.algo.classification.efficientnet.EfficientNetForMulticlassClsSemiSL
+  class_path: otx.algo.classification.efficientnet.EfficientNetForMulticlassCls
   init_args:
     label_info: 1000
     version: b0
+    train_type: SEMI_SUPERVISED
 
     optimizer:
       class_path: torch.optim.SGD

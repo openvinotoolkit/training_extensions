@@ -1,9 +1,10 @@
 model:
-  class_path: otx.algo.classification.dino_v2.DINOv2ForMulticlassClsSemiSL
+  class_path: otx.algo.classification.dino_v2.DINOv2ForMulticlassCls
   init_args:
     label_info: 1000
     freeze_backbone: false
     backbone: dinov2_vits14_reg
+    train_type: SEMI_SUPERVISED
 
     optimizer:
       class_path: torch.optim.AdamW
