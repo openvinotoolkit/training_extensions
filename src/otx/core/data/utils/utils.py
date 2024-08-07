@@ -2,7 +2,7 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
-"""Functions for adaptive input size."""
+"""Utility functions for the data module."""
 from __future__ import annotations
 
 import logging
@@ -118,9 +118,9 @@ def compute_robust_dataset_statistics(dataset: DatasetSubset, max_samples: int =
         for ann in data.annotations:
             annotations[ann.__class__.__name__].append(ann)
 
-        num_per_images.append(max(len(val) for val in annotations.values()))
+        num_per_images.append(max(len(val) for val in annotations.values()) if annotations else 0)
 
-        if max(len(val) for val in size_of_shapes.values()) >= max_samples:
+        if size_of_shapes and max(len(val) for val in size_of_shapes.values()) >= max_samples:
             continue
 
         for ann_type, anns in annotations.items():
@@ -143,7 +143,11 @@ def compute_robust_dataset_statistics(dataset: DatasetSubset, max_samples: int =
     return stat
 
 
-def adapt_input_size_to_dataset(dataset: Dataset, base_input_size = None, downscale_only: bool = True) -> tuple[int, int]:
+def adapt_input_size_to_dataset(
+    dataset: Dataset,
+    base_input_size: int | None = None,
+    downscale_only: bool = True
+) -> tuple[int, int]:
     """Compute appropriate model input size w.r.t. dataset statistics.
 
     Args:
