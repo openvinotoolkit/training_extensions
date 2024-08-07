@@ -6,7 +6,7 @@ from otx.algo.modules.norm import build_norm_layer
 from torch import nn
 
 
-def test_build_conv_layer():
+def test_build_norm_layer():
     cfg = {"type": "BN"}
     name, norm = build_norm_layer(cfg, num_features=1)
     assert isinstance(norm, nn.BatchNorm2d)

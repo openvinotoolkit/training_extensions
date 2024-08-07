@@ -33,7 +33,6 @@ class ConvFCBBoxHead(BBoxHead):
         num_reg_fcs: int = 0,
         conv_out_channels: int = 256,
         fc_out_channels: int = 1024,
-        conv_cfg: dict | None = None,
         norm_cfg: dict | None = None,
         init_cfg: dict | None = None,
         *args,
@@ -63,7 +62,6 @@ class ConvFCBBoxHead(BBoxHead):
         self.num_reg_fcs = num_reg_fcs
         self.conv_out_channels = conv_out_channels
         self.fc_out_channels = fc_out_channels
-        self.conv_cfg = conv_cfg
         self.norm_cfg = norm_cfg
 
         # add shared convs and fcs

@@ -6,8 +6,7 @@ import torch
 from otx.algo.detection.layers import ChannelAttention
 from otx.algo.detection.layers.csp_layer import CSPLayer, CSPNeXtBlock, DarknetBottleneck
 from otx.algo.modules.activation import Swish
-from otx.algo.modules.conv_module import ConvModule
-from otx.algo.modules.depthwise_separable_conv_module import DepthwiseSeparableConvModule
+from otx.algo.modules.conv_module import Conv2dModule, DepthwiseSeparableConvModule
 from torch.nn import BatchNorm2d, Conv2d
 
 
@@ -17,7 +16,7 @@ class TestCSPLayer:
         csp_layer = CSPLayer(3, 5)
 
         assert isinstance(csp_layer.blocks[0], DarknetBottleneck)
-        assert isinstance(csp_layer.blocks[0].conv2, ConvModule)
+        assert isinstance(csp_layer.blocks[0].conv2, Conv2dModule)
         assert isinstance(csp_layer.blocks[0].conv1.conv, Conv2d)
         assert isinstance(csp_layer.blocks[0].conv1.bn, BatchNorm2d)
         assert isinstance(csp_layer.blocks[0].conv1.activate, Swish)
