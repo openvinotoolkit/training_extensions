@@ -301,6 +301,7 @@ def cut_mixer(images: Tensor, masks: Tensor) -> tuple[Tensor, Tensor]:
         bby2 = np.clip(cy + cut_h // 2, 0, h)
 
         return bbx1, bby1, bbx2, bby2
+
     target_device = images.device
     mix_data = images.clone()
     mix_masks = masks.clone()

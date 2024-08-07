@@ -436,9 +436,8 @@ def test_otx_ov_test(
     assert len(metric_result) > 0
 
 
-@pytest.mark.parametrize("recipe", pytest.RECIPE_LIST, ids=lambda x: "/".join(Path(x).parts[-2:]))
 def test_otx_hpo_e2e(
-    recipe: str,
+    fxt_trained_model,
     tmp_path: Path,
     fxt_accelerator: str,
     fxt_target_dataset_per_task: dict,
@@ -455,8 +454,7 @@ def test_otx_hpo_e2e(
     Returns:
         None
     """
-    task = recipe.split("/")[-2]
-    model_name = recipe.split("/")[-1].split(".")[0]
+    recipe, task, model_name, _ = fxt_trained_model
 
     if task.upper() == OTXTaskType.ZERO_SHOT_VISUAL_PROMPTING:
         pytest.skip("ZERO_SHOT_VISUAL_PROMPTING doesn't support HPO.")
