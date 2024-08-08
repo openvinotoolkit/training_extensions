@@ -14,7 +14,7 @@ train_subset:
   batch_size: 8
   num_workers: 4
   transform_lib_type: TORCHVISION
-  to_tv_image: true
+  to_tv_image: false
   transforms:
     - class_path: otx.core.data.transform_libs.torchvision.RandomResizedCrop
       init_args:
@@ -46,7 +46,7 @@ val_subset:
   batch_size: 8
   num_workers: 4
   transform_lib_type: TORCHVISION
-  to_tv_image: true
+  to_tv_image: false
   transforms:
     - class_path: otx.core.data.transform_libs.torchvision.Resize
       init_args:
@@ -68,7 +68,7 @@ test_subset:
   num_workers: 4
   batch_size: 8
   transform_lib_type: TORCHVISION
-  to_tv_image: true
+  to_tv_image: false
   transforms:
     - class_path: otx.core.data.transform_libs.torchvision.Resize
       init_args:
@@ -89,7 +89,7 @@ unlabeled_subset:
   data_format: image_dir
   batch_size: 8
   subset_name: unlabeled
-  to_tv_image: False
+  to_tv_image: false
   transforms:
     weak_transforms:
       - class_path: otx.core.data.transform_libs.torchvision.Resize
