@@ -252,7 +252,7 @@ class AutoConfigurator:
             model_name (str | None): The name of the model to retrieve. If None, the default model will be used.
             label_info (LabelInfoTypes | None): The meta information about the labels.
                 If provided, the number of classes will be updated in the model's configuration.
-            input_size (tuple[int, ...] | int | None): Input size the model will use.
+            input_size (tuple[int, ...] | int | None, optional): Input size of the model. Defaults to None.
 
         Returns:
             OTXModel: The instantiated OTXModel instance.

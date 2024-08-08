@@ -404,6 +404,7 @@ class OTXTVModel(OTXModel):
         task (Literal[OTXTaskType.MULTI_CLASS_CLS, OTXTaskType.MULTI_LABEL_CLS, OTXTaskType.H_LABEL_CLS], optional):
             The type of classification task.
         train_type (Literal[OTXTrainType.SUPERVISED, OTXTrainType.SEMI_SUPERVISED], optional): The type of training.
+        input_size (tuple[int, ...], optional): The input size of the model. Defaults to (1, 3, 224, 224)
     """
 
     model: TVClassificationModel

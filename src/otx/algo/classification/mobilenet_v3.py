@@ -61,6 +61,7 @@ class MobileNetV3ForMulticlassCls(OTXMulticlassClsModel):
         metric (MetricCallable, optional): The metric callable. Defaults to MultiClassClsMetricCallable.
         torch_compile (bool, optional): Whether to compile the model using TorchScript. Defaults to False.
         freeze_backbone (bool, optional): Whether to freeze the backbone layers during training. Defaults to False.
+        input_size (tuple[int, ...], optional): The input size of the model. Defaults to (1, 3, 224, 224)
     """
 
     def __init__(

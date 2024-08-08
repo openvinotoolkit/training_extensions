@@ -242,13 +242,13 @@ class RTDETR18(RTDETR):
         encoder = HybridEncoder(
             in_channels=[128, 256, 512],
             expansion=0.5,
-            eval_spatial_size=self.input_size[2:],
+            eval_spatial_size=self.input_size[-2:],
         )
         decoder = RTDETRTransformer(
             num_classes=num_classes,
             num_decoder_layers=3,
             feat_channels=[256, 256, 256],
-            eval_spatial_size=self.input_size[2:],
+            eval_spatial_size=self.input_size[-2:],
         )
 
         optimizer_configuration = [
@@ -286,12 +286,12 @@ class RTDETR50(RTDETR):
             norm_cfg={"type": "FBN", "name": "norm"},
         )
         encoder = HybridEncoder(
-            eval_spatial_size=self.input_size[2:],
+            eval_spatial_size=self.input_size[-2:],
         )
         decoder = RTDETRTransformer(
             num_classes=num_classes,
             feat_channels=[256, 256, 256],
-            eval_spatial_size=self.input_size[2:],
+            eval_spatial_size=self.input_size[-2:],
             num_decoder_layers=6,
         )
 

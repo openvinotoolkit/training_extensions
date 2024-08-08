@@ -154,13 +154,15 @@ def adapt_input_size_to_dataset(
     """Compute appropriate model input size w.r.t. dataset statistics.
 
     Args:
-        max_image_size (int): Typical large image size of dataset in pixels.
-        min_object_size (int, optional): Typical small object size of dataset in pixels.
-            None to consider only image size. Defaults to None.
-        downscale_only (bool) : Whether to allow only smaller size than default setting. Defaults to True.
+        dataset (Dataset): Datumaro dataset including all subsets.
+        base_input_size (int | tuple[int, int] | None, optional): Base input size of the model. Defaults to None.
+        downscale_only (bool, optional) : Whether to allow only smaller size than default setting. Defaults to True.
+        input_size_multiplier (int | None, optional):
+            Multiplier for input size. If it's set, return the input size which can be divisible by the value.
+            Defaults to None.
 
     Returns:
-        Tuple[int, int]: (width, height)
+        tuple[int, int] | None: Recommended input size based on dataset statistics.
     """
     min_recognizable_object_size = 32  # Minimum object size recognizable by NNs: typically 16 ~ 32
     # meaning NxN input pixels being downscaled to 1x1 on feature map

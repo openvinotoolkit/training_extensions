@@ -12,7 +12,6 @@ from torch import nn
 from torchvision import tv_tensors
 from transformers import AutoImageProcessor, AutoModelForObjectDetection
 
-# from transformers.image_processing_base import ImageProcessingMixin
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.detection import DetBatchDataEntity, DetBatchPredEntity
 from otx.core.data.entity.utils import stack_batch
@@ -37,6 +36,7 @@ class HuggingFaceModelForDetection(OTXDetectionModel):
     Args:
         model_name_or_path (str): The name or path of the pre-trained model.
         label_info (LabelInfoTypes): The label information for the model.
+        input_size (tuple[int, ...], optional): The input size of the model. Defaults to (1, 3, 800, 992).
         optimizer (OptimizerCallable, optional): The optimizer for training the model.
             Defaults to DefaultOptimizerCallable.
         scheduler (LRSchedulerCallable | LRSchedulerListCallable, optional):
@@ -61,7 +61,7 @@ class HuggingFaceModelForDetection(OTXDetectionModel):
         self,
         model_name_or_path: str,  # https://huggingface.co/models?pipeline_tag=object-detection
         label_info: LabelInfoTypes,
-        input_size: tuple[int, ...] = (1, 3, 800, 992),  # detection default input size
+        input_size: tuple[int, ...] = (1, 3, 800, 992),  # input size of default detection data recipe
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MeanAveragePrecisionFMeasureCallable,

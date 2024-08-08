@@ -33,7 +33,7 @@ if TYPE_CHECKING:
     from otx.core.metrics import MetricCallable
 
 
-DEFAULT_INPUT_SIZE = (1, 2, 224, 224)
+DEFAULT_INPUT_SIZE = (1, 3, 224, 224)
 logger = logging.getLogger(__name__)
 
 
@@ -46,6 +46,7 @@ class HuggingFaceModelForMulticlassCls(OTXMulticlassClsModel):
         optimizer (OptimizerCallable, optional): The optimizer callable for training the model.
         scheduler (LRSchedulerCallable | LRSchedulerListCallable, optional): The learning rate scheduler callable.
         torch_compile (bool, optional): Whether to compile the model using TorchScript. Defaults to False.
+        input_size (tuple[int, ...], optional): The input size of the model. Defaults to (1, 3, 224, 224)
 
     Example:
         1. API

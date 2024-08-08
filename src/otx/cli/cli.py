@@ -332,6 +332,7 @@ class OTXCLI:
             # For num_classes update, Model and Metric are instantiated separately.
             model_config = self.config[self.subcommand].pop("model")
 
+            # if adaptive_input_size will be executed and the model has input_size_multiplier, pass it to data module
             if self.config[self.subcommand].data.adaptive_input_size != "none":
                 model_cls = get_model_cls_from_config(model_config)
                 if hasattr(model_cls, "input_size_multiplier"):
@@ -342,12 +343,9 @@ class OTXCLI:
             self.workspace = self.get_config_value(self.config_init, "workspace")
             self.datamodule = self.get_config_value(self.config_init, "data")
 
+            # pass the data module input size to the model
             if (input_size := self.datamodule.input_size) is not None:
                 input_size = (input_size, input_size) if isinstance(input_size, int) else tuple(input_size)  # type: ignore[assignment]
-                # if isinstance(input_size, int):
-                #     input_size = (input_size, input_size)
-                # else:
-                #     input_size = tuple(input_size)  # type: ignore[assignment]
                 model_config["init_args"]["input_size"] = (
                     tuple(model_config["init_args"]["input_size"][:-2]) + input_size  # type: ignore[operator]
                 )

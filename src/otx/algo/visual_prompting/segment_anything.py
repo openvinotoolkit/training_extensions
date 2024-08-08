@@ -510,7 +510,7 @@ class OTXSegmentAnything(OTXVisualPromptingModel):
         stability_score_offset: float = 1.0,
     ) -> None:
         if input_size[-1] != input_size[-2]:
-            msg = f"SAM should use square image, but got {input_size}"
+            msg = f"SAM should use square image size, but got {input_size}"
             raise ValueError(msg)
 
         self.config = {

@@ -9,7 +9,7 @@ import pickle  # nosec: B403   used pickle dump and load only to share inference
 from collections import defaultdict
 from functools import partial
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Literal, Sequence
+from typing import TYPE_CHECKING, Any, Literal
 
 import numpy as np
 import torch

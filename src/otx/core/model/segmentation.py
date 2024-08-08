@@ -47,7 +47,7 @@ class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity]):
 
         Args:
             label_info (LabelInfoTypes): The label information for the segmentation model.
-            input_size (tuple[int, ...]): The input shape of the model.
+            input_size (tuple[int, ...]): The input size of the model.
             optimizer (OptimizerCallable, optional): The optimizer to use for training.
                 Defaults to DefaultOptimizerCallable.
             scheduler (LRSchedulerCallable | LRSchedulerListCallable, optional):
@@ -146,7 +146,7 @@ class TorchVisionCompatibleModel(OTXSegmentationModel):
 
         Args:
             label_info (LabelInfoTypes): The label information for the segmentation model.
-            input_size (tuple[int, ...]): The input shape of the model.
+            input_size (tuple[int, ...]): The input size of the model.
             optimizer (OptimizerCallable, optional): The optimizer callable for the model.
                 Defaults to DefaultOptimizerCallable.
             scheduler (LRSchedulerCallable | LRSchedulerListCallable, optional):

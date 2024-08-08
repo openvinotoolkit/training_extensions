@@ -33,6 +33,7 @@ class DETR(BaseModule):
             Defaults to None.
         num_top_queries (int, optional): Number of top queries to return.
             Defaults to 300.
+        input_size (int, optional): The input size of the model. Default to 640.
     """
 
     def __init__(

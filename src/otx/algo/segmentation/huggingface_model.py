@@ -65,7 +65,7 @@ class HuggingFaceModelForSegmentation(OTXSegmentationModel):
         self,
         model_name_or_path: str,  # https://huggingface.co/models?pipeline_tag=image-segmentation
         label_info: LabelInfoTypes,
-        input_size: tuple[int, ...] = (1, 3, 512, 512),  # sementic segmentation default input size
+        input_size: tuple[int, ...] = (1, 3, 512, 512),  # input size of default semantic segmentation data recipe
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = SegmCallable,  # type: ignore[assignment]
