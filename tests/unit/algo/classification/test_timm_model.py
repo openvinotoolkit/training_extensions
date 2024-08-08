@@ -21,6 +21,7 @@ from otx.core.data.entity.classification import (
 def fxt_multi_class_cls_model():
     return TimmModelForMulticlassCls(
         label_info=10,
+        backbone="efficientnetv2_s_21k",
     )
 
 
@@ -58,6 +59,7 @@ class TestTimmModelForMulticlassCls:
 def fxt_multi_label_cls_model():
     return TimmModelForMultilabelCls(
         label_info=10,
+        backbone="efficientnetv2_s_21k",
     )
 
 
@@ -95,6 +97,7 @@ class TestTimmModelForMultilabelCls:
 def fxt_h_label_cls_model(fxt_hlabel_data):
     return TimmModelForHLabelCls(
         label_info=fxt_hlabel_data,
+        backbone="efficientnetv2_s_21k",
     )
 
 
