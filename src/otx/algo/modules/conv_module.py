@@ -81,8 +81,9 @@ class ConvModule(nn.Module):
         bias (bool | str): If specified as `auto`, it will be decided by the
             norm_cfg. Bias will be set as True if `norm_cfg` is None, otherwise
             False. Default: "auto".
-        norm_cfg (dict): Config dict for normalization layer. Default: None.
-        activation_callable (Callable[..., nn.Module]): Activation layer module.
+        norm_callable (Callable[..., nn.Module] | None): Normalization layer module.
+            Defaults to None.
+        activation_callable (Callable[..., nn.Module] | None): Activation layer module.
             Defaults to `nn.ReLU`.
         inplace (bool): Whether to use inplace mode for activation.
             Default: True.
@@ -108,21 +109,19 @@ class ConvModule(nn.Module):
         dilation: int | tuple[int, int] = 1,
         groups: int = 1,
         bias: bool | str = "auto",
-        norm_cfg: dict | None = None,
+        norm_callable: Callable[..., nn.Module] | None = None,
         activation_callable: Callable[..., nn.Module] | None = nn.ReLU,
         inplace: bool = True,
         with_spectral_norm: bool = False,
         padding_mode: str = "zeros",
     ):
         super().__init__()
-        assert norm_cfg is None or isinstance(norm_cfg, dict)  # noqa: S101
         official_padding_mode = ["zeros", "circular"]
-        self.norm_cfg = norm_cfg
         self.inplace = inplace
         self.with_spectral_norm = with_spectral_norm
         self.with_explicit_padding = padding_mode not in official_padding_mode
 
-        self.with_norm = norm_cfg is not None
+        self.with_norm = norm_callable is not None
         # if the conv layer is before a norm layer, bias is unnecessary.
         if bias == "auto":
             bias = not self.with_norm
@@ -159,16 +158,16 @@ class ConvModule(nn.Module):
         if self.with_spectral_norm:
             self.conv = nn.utils.spectral_norm(self.conv)
 
-        # build normalization layers
+        self.norm_name: str | None
         if self.with_norm:
             # norm layer is after conv layer
             norm_channels = out_channels
-            self.norm_name, norm = build_norm_layer(norm_cfg, norm_channels)  # type: ignore[arg-type]
+            self.norm_name, norm = build_norm_layer(norm_callable, norm_channels)
             self.add_module(self.norm_name, norm)
             if self.with_bias and isinstance(norm, (BatchNorm, InstanceNorm)):
                 warnings.warn("Unnecessary conv bias before batch/instance norm", stacklevel=1)
         else:
-            self.norm_name = None  # type: ignore[assignment]
+            self.norm_name = None
 
         # build activation layer
         self.activation: nn.Module | None = None
