@@ -9,7 +9,6 @@ Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/b
 from __future__ import annotations
 
 import math
-from functools import partial
 from typing import Any, Callable, ClassVar, Sequence
 
 import torch
@@ -112,7 +111,7 @@ class CSPDarknet(BaseModule):
         norm_cfg (dict): Dictionary to construct and config norm layer.
             Default: dict(type='BN', requires_grad=True).
         activation_callable (Callable[..., nn.Module] | None): Activation layer module.
-            Defaults to `partial(nn.LeakyReLU, negative_slope=0.1)`.
+            Defaults to ``Swish``.
         norm_eval (bool): Whether to set norm layers to eval mode, namely,
             freeze running stats (mean and var). Note: Effect on Batch Norm
             and its variants only.
@@ -149,7 +148,7 @@ class CSPDarknet(BaseModule):
         arch_ovewrite: list | None = None,
         spp_kernal_sizes: tuple[int, ...] = (5, 9, 13),
         norm_cfg: dict | None = None,
-        activation_callable: Callable[..., nn.Module] | None = partial(nn.LeakyReLU, negative_slope=0.1),
+        activation_callable: Callable[..., nn.Module] = Swish,
         norm_eval: bool = False,
         init_cfg: dict | list[dict] | None = None,
     ):
