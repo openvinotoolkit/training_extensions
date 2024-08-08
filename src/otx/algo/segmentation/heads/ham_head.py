@@ -5,7 +5,7 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Callable
 
 import torch
 import torch.nn.functional as f
@@ -26,30 +26,31 @@ class Hamburger(nn.Module):
     Args:
         ham_channels (int): Input and output channels of feature.
         ham_kwargs (dict): Config of matrix decomposition module.
-        norm_cfg (dict | None): Config of norm layers.
+        norm_callable (Callable[..., nn.Module] | None): Normalization layer module.
+            Defaults to None.
     """
 
     def __init__(
         self,
         ham_channels: int,
         ham_kwargs: dict[str, Any],
-        norm_cfg: dict[str, Any] | None = None,
+        norm_callable: Callable[..., nn.Module] | None = None,
         **kwargs: Any,  # noqa: ANN401
     ) -> None:
-        """Initialize Hamburger Module.
-
-        Args:
-            ham_channels (int): Input and output channels of feature.
-            ham_kwargs (Dict[str, Any]): Config of matrix decomposition module.
-            norm_cfg (Optional[Dict[str, Any]]): Config of norm layers.
-        """
+        """Initialize Hamburger Module."""
         super().__init__()
 
-        self.ham_in = Conv2dModule(ham_channels, ham_channels, 1, norm_cfg=None, activation_callable=None)
+        self.ham_in = Conv2dModule(ham_channels, ham_channels, 1, norm_callable=None, activation_callable=None)
 
         self.ham = NMF2D(ham_channels=ham_channels, **ham_kwargs)
 
-        self.ham_out = Conv2dModule(ham_channels, ham_channels, 1, norm_cfg=norm_cfg, activation_callable=None)
+        self.ham_out = Conv2dModule(
+            ham_channels,
+            ham_channels,
+            1,
+            norm_callable=norm_callable,
+            activation_callable=None,
+        )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Forward."""
@@ -101,7 +102,7 @@ class LightHamHead(BaseSegmHead):
             sum(self.in_channels),
             self.ham_channels,
             1,
-            norm_cfg=self.norm_cfg,
+            norm_callable=self.norm_callable,
             activation_callable=self.activation_callable,
         )
 
@@ -111,7 +112,7 @@ class LightHamHead(BaseSegmHead):
             self.ham_channels,
             self.channels,
             1,
-            norm_cfg=self.norm_cfg,
+            norm_callable=self.norm_callable,
             activation_callable=self.activation_callable,
         )
 

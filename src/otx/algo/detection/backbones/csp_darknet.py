@@ -9,6 +9,7 @@ Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/b
 from __future__ import annotations
 
 import math
+from functools import partial
 from typing import Any, Callable, ClassVar, Sequence
 
 import torch
@@ -30,10 +31,10 @@ class Focus(nn.Module):
         out_channels (int): The output channels of this Module.
         kernel_size (int): The kernel size of the convolution. Default: 1
         stride (int): The stride of the convolution. Default: 1
-        norm_cfg (dict): Config dict for normalization layer.
-            Default: dict(type='BN', momentum=0.03, eps=0.001).
+        norm_callable (Callable[..., nn.Module] | None): Normalization layer module.
+            Defaults to ``partial(nn.BatchNorm2d, momentum=0.03, eps=0.001)``.
         activation_callable (Callable[..., nn.Module] | None): Activation layer module.
-            Defaults to `Swish`.
+            Defaults to ``Swish``.
     """
 
     def __init__(
@@ -42,18 +43,17 @@ class Focus(nn.Module):
         out_channels: int,
         kernel_size: int = 1,
         stride: int = 1,
-        norm_cfg: dict | None = None,
+        norm_callable: Callable[..., nn.Module] = partial(nn.BatchNorm2d, momentum=0.03, eps=0.001),
         activation_callable: Callable[..., nn.Module] | None = Swish,
     ):
         super().__init__()
-        norm_cfg = norm_cfg or {"type": "BN", "momentum": 0.03, "eps": 0.001}
         self.conv = Conv2dModule(
             in_channels * 4,
             out_channels,
             kernel_size,
             stride,
             padding=(kernel_size - 1) // 2,
-            norm_cfg=norm_cfg,
+            norm_callable=norm_callable,
             activation_callable=activation_callable,
         )
 
@@ -108,8 +108,8 @@ class CSPDarknet(BaseModule):
         arch_ovewrite(list): Overwrite default arch settings. Default: None.
         spp_kernal_sizes: (tuple[int]): Sequential of kernel sizes of SPP
             layers. Default: (5, 9, 13).
-        norm_cfg (dict): Dictionary to construct and config norm layer.
-            Default: dict(type='BN', requires_grad=True).
+        norm_callable (Callable[..., nn.Module] | None): Normalization layer module.
+            Defaults to ``partial(nn.BatchNorm2d, momentum=0.03, eps=0.001)``.
         activation_callable (Callable[..., nn.Module] | None): Activation layer module.
             Defaults to ``Swish``.
         norm_eval (bool): Whether to set norm layers to eval mode, namely,
@@ -147,7 +147,7 @@ class CSPDarknet(BaseModule):
         use_depthwise: bool = False,
         arch_ovewrite: list | None = None,
         spp_kernal_sizes: tuple[int, ...] = (5, 9, 13),
-        norm_cfg: dict | None = None,
+        norm_callable: Callable[..., nn.Module] = partial(nn.BatchNorm2d, momentum=0.03, eps=0.001),
         activation_callable: Callable[..., nn.Module] = Swish,
         norm_eval: bool = False,
         init_cfg: dict | list[dict] | None = None,
@@ -161,7 +161,6 @@ class CSPDarknet(BaseModule):
             "nonlinearity": "leaky_relu",
         }
         super().__init__(init_cfg=init_cfg)
-        norm_cfg = norm_cfg or {"type": "BN", "momentum": 0.03, "eps": 0.001}
 
         arch_setting = self.arch_settings[arch]
         if arch_ovewrite:
@@ -181,7 +180,7 @@ class CSPDarknet(BaseModule):
             3,
             int(arch_setting[0][0] * widen_factor),
             kernel_size=3,
-            norm_cfg=norm_cfg,
+            norm_callable=norm_callable,
             activation_callable=activation_callable,
         )
         self.layers = ["stem"]
@@ -197,7 +196,7 @@ class CSPDarknet(BaseModule):
                 3,
                 stride=2,
                 padding=1,
-                norm_cfg=norm_cfg,
+                norm_callable=norm_callable,
                 activation_callable=activation_callable,
             )
             stage.append(conv_layer)
@@ -206,7 +205,7 @@ class CSPDarknet(BaseModule):
                     out_channels,
                     out_channels,
                     kernel_sizes=spp_kernal_sizes,
-                    norm_cfg=norm_cfg,
+                    norm_callable=norm_callable,
                     activation_callable=activation_callable,
                 )
                 stage.append(spp)
@@ -216,7 +215,7 @@ class CSPDarknet(BaseModule):
                 num_blocks=num_blocks,
                 add_identity=add_identity,
                 use_depthwise=use_depthwise,
-                norm_cfg=norm_cfg,
+                norm_callable=norm_callable,
                 activation_callable=activation_callable,
             )
             stage.append(csp_layer)

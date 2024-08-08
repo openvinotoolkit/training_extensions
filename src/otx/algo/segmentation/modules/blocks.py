@@ -54,25 +54,23 @@ class AsymmetricPositionAttentionModule(nn.Module):
         key_channels: int,
         value_channels: int | None = None,
         psp_size: tuple | None = None,
-        norm_cfg: dict | None = None,
+        norm_callable: Callable[..., nn.Module] = nn.BatchNorm2d,
     ):
         super().__init__()
 
         self.in_channels = in_channels
         self.key_channels = key_channels
         self.value_channels = value_channels if value_channels is not None else in_channels
-        if norm_cfg is None:
-            norm_cfg = {"type": "BN"}
         if psp_size is None:
             psp_size = (1, 3, 6, 8)
-        self.norm_cfg = norm_cfg
+        self.norm_callable = norm_callable
         self.query_key = Conv2dModule(
             in_channels=self.in_channels,
             out_channels=self.key_channels,
             kernel_size=1,
             stride=1,
             padding=0,
-            norm_cfg=self.norm_cfg,
+            norm_callable=self.norm_callable,
             activation_callable=nn.ReLU,
         )
         self.key_psp = PSPModule(psp_size, method="max")
@@ -83,7 +81,7 @@ class AsymmetricPositionAttentionModule(nn.Module):
             kernel_size=1,
             stride=1,
             padding=0,
-            norm_cfg=self.norm_cfg,
+            norm_callable=self.norm_callable,
             activation_callable=nn.ReLU,
         )
         self.value_psp = PSPModule(psp_size, method="max")
@@ -94,7 +92,7 @@ class AsymmetricPositionAttentionModule(nn.Module):
             kernel_size=1,
             stride=1,
             padding=0,
-            norm_cfg=self.norm_cfg,
+            norm_callable=self.norm_callable,
             activation_callable=None,
         )
 
@@ -155,13 +153,15 @@ class LocalAttentionModule(nn.Module):
     Reference: https://github.com/lxtGH/GALD-DGCNet.
     """
 
-    def __init__(self, num_channels: int, norm_cfg: dict | None = None):
-        if norm_cfg is None:
-            norm_cfg = {"type": "BN"}
+    def __init__(
+        self,
+        num_channels: int,
+        norm_callable: Callable[..., nn.Module] = nn.BatchNorm2d,
+    ):
         super().__init__()
 
         self.num_channels = num_channels
-        self.norm_cfg = norm_cfg
+        self.norm_callable = norm_callable
 
         self.dwconv1 = Conv2dModule(
             in_channels=self.num_channels,
@@ -170,7 +170,7 @@ class LocalAttentionModule(nn.Module):
             stride=2,
             padding=1,
             groups=self.num_channels,
-            norm_cfg=self.norm_cfg,
+            norm_callable=self.norm_callable,
             activation_callable=nn.ReLU,
         )
         self.dwconv2 = Conv2dModule(
@@ -180,7 +180,7 @@ class LocalAttentionModule(nn.Module):
             stride=2,
             padding=1,
             groups=self.num_channels,
-            norm_cfg=self.norm_cfg,
+            norm_callable=self.norm_callable,
             activation_callable=nn.ReLU,
         )
         self.dwconv3 = Conv2dModule(
@@ -190,7 +190,7 @@ class LocalAttentionModule(nn.Module):
             stride=2,
             padding=1,
             groups=self.num_channels,
-            norm_cfg=self.norm_cfg,
+            norm_callable=self.norm_callable,
             activation_callable=nn.ReLU,
         )
         self.sigmoid_spatial = nn.Sigmoid()

@@ -6,8 +6,8 @@
 
 from __future__ import annotations
 
-from functools import partial
 import math
+from functools import partial
 from typing import Callable
 
 import torch.utils.checkpoint as cp
@@ -199,7 +199,7 @@ class X3DBackbone(nn.Module):
         norm_callable (Callable[..., nn.Module] | None): Normalization layer module.
             Defaults to ``partial(nn.BatchNorm3d, requires_grad=True)``.
         activation_callable (Callable[..., nn.Module] | None): Activation layer module.
-            Defaults to `nn.ReLU`.
+            Defaults to ``nn.ReLU``.
         norm_eval (bool): Whether to set BN layers to eval mode, namely, freeze
             running stats (mean and var). Default: False.
         with_cp (bool): Use checkpoint or not. Using checkpoint will save some
@@ -378,7 +378,7 @@ class X3DBackbone(nn.Module):
             norm_callable (Callable[..., nn.Module] | None): Normalization layer module.
                 Defaults to None.
             activation_callable (Callable[..., nn.Module] | None): Activation layer module.
-                Defaults to `nn.ReLU`.
+                Defaults to ``nn.ReLU``.
             with_cp (bool | None): Use checkpoint or not. Using checkpoint
                 will save some memory while slowing down the training speed.
                 Default: False.

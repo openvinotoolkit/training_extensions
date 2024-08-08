@@ -137,8 +137,8 @@ class PatchEmbed(BaseModule):
             Default: "corner".
         dilation (int): The dilation rate of embedding conv. Default: 1.
         bias (bool): Bias of embed conv. Default: True.
-        norm_cfg (dict, optional): Config dict for normalization layer.
-            Default: None.
+        norm_callable (Callable[..., nn.Module] | None): Normalization layer module.
+            Defaults to None.
         input_size (int | tuple | None): The size of input, which will be
             used to calculate the out size. Only works when `dynamic_size`
             is False. Default: None.
@@ -155,7 +155,7 @@ class PatchEmbed(BaseModule):
         padding: str | int | tuple[int, int] = "corner",
         dilation: int | tuple[int, int] = 1,
         bias: bool = True,
-        norm_cfg: dict | None = None,
+        norm_callable: Callable[..., nn.Module] | None = None,
         input_size: int | tuple[int, int] | None = None,
         init_cfg: dict | None = None,
     ):
@@ -194,8 +194,8 @@ class PatchEmbed(BaseModule):
         )
 
         self.norm: nn.Module | None
-        if norm_cfg is not None:
-            self.norm = build_norm_layer(norm_cfg, embed_dims)[1]
+        if norm_callable is not None:
+            self.norm = build_norm_layer(norm_callable, embed_dims)[1]
         else:
             self.norm = None
 

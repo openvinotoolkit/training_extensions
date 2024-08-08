@@ -113,8 +113,10 @@ class HybridEncoder(BaseModule):
         dropout (float, optional): Dropout rate. Defaults to 0.0.
         enc_activation_callable (Callable[..., nn.Module]): Activation layer module.
             Defaults to `nn.GELU`.
-        norm_cfg (dict[str, str] | None, optional): Normalization configuration.
-            Defaults to None.
+        norm_callable (Callable[..., nn.Module]): Normalization layer module.
+            Defaults to ``nn.BatchNorm2d``.
+        norm_name (str): The name of the normalization layer fpr ``build_norm_layer``.
+            Defaults to 'norm'.
         use_encoder_idx (list[int], optional): List of indices of the encoder to use.
             Defaults to [2].
         num_encoder_layers (int, optional): Number of layers in the transformer encoder.
@@ -140,7 +142,8 @@ class HybridEncoder(BaseModule):
         dim_feedforward: int = 1024,
         dropout: float = 0.0,
         enc_activation_callable: Callable[..., nn.Module] = nn.GELU,
-        norm_cfg: dict[str, str] | None = None,
+        norm_callable: Callable[..., nn.Module] = nn.BatchNorm2d,
+        norm_name: str = "norm",
         use_encoder_idx: list[int] = [2],  # noqa: B006
         num_encoder_layers: int = 1,
         pe_temperature: float = 10000,
@@ -161,7 +164,6 @@ class HybridEncoder(BaseModule):
 
         self.out_channels = [hidden_dim for _ in range(len(in_channels))]
         self.out_strides = feat_strides
-        norm_cfg = norm_cfg if norm_cfg is not None else {"type": "BN", "name": "norm"}
         # channel projection
         self.input_proj = nn.ModuleList()
         for in_channel in in_channels:
@@ -190,7 +192,15 @@ class HybridEncoder(BaseModule):
         self.fpn_blocks = nn.ModuleList()
         for _ in range(len(in_channels) - 1, 0, -1):
             self.lateral_convs.append(
-                Conv2dModule(hidden_dim, hidden_dim, 1, 1, activation_callable=activation_callable, norm_cfg=norm_cfg),
+                Conv2dModule(
+                    hidden_dim,
+                    hidden_dim,
+                    1,
+                    1,
+                    activation_callable=activation_callable,
+                    norm_callable=norm_callable,
+                    norm_name=norm_name,
+                ),
             )
             self.fpn_blocks.append(
                 CSPRepLayer(
@@ -199,7 +209,8 @@ class HybridEncoder(BaseModule):
                     round(3 * depth_mult),
                     activation_callable=activation_callable,
                     expansion=expansion,
-                    norm_cfg=norm_cfg,
+                    norm_callable=norm_callable,
+                    norm_name=norm_name,
                 ),
             )
 
@@ -215,7 +226,8 @@ class HybridEncoder(BaseModule):
                     2,
                     padding=1,
                     activation_callable=activation_callable,
-                    norm_cfg=norm_cfg,
+                    norm_callable=norm_callable,
+                    norm_name=norm_name,
                 ),
             )
             self.pan_blocks.append(
@@ -225,7 +237,8 @@ class HybridEncoder(BaseModule):
                     round(3 * depth_mult),
                     activation_callable=activation_callable,
                     expansion=expansion,
-                    norm_cfg=norm_cfg,
+                    norm_callable=norm_callable,
+                    norm_name=norm_name,
                 ),
             )
 

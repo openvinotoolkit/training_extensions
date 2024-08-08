@@ -9,6 +9,7 @@ Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/n
 from __future__ import annotations
 
 import math
+from functools import partial
 from typing import Any, Callable
 
 import torch
@@ -31,10 +32,10 @@ class YOLOXPAFPN(BaseModule):
             blocks. Default: False
         upsample_cfg (dict): Config dict for interpolate layer.
             Default: `dict(scale_factor=2, mode='nearest')`
-        norm_cfg (dict): Config dict for normalization layer.
-            Default: dict(type='BN')
+        norm_callable (Callable[..., nn.Module] | None): Normalization layer module.
+            Defaults to ``partial(nn.BatchNorm2d, momentum=0.03, eps=0.001)``.
         activation_callable (Callable[..., nn.Module]): Activation layer module.
-            Defaults to `nn.Swish`.
+            Defaults to ``nn.Swish``.
         init_cfg (dict or list[dict], optional): Initialization config dict.
             Default: None.
     """
@@ -46,12 +47,11 @@ class YOLOXPAFPN(BaseModule):
         num_csp_blocks: int = 3,
         use_depthwise: bool = False,
         upsample_cfg: dict | None = None,
-        norm_cfg: dict | None = None,
+        norm_callable: Callable[..., nn.Module] = partial(nn.BatchNorm2d, momentum=0.03, eps=0.001),
         activation_callable: Callable[..., nn.Module] = Swish,
         init_cfg: dict | list[dict] | None = None,
     ):
         upsample_cfg = upsample_cfg or {"scale_factor": 2, "mode": "nearest"}
-        norm_cfg = norm_cfg or {"type": "BN", "momentum": 0.03, "eps": 0.001}
         init_cfg = init_cfg or {
             "type": "Kaiming",
             "layer": "Conv2d",
@@ -78,7 +78,7 @@ class YOLOXPAFPN(BaseModule):
                     in_channels[idx],
                     in_channels[idx - 1],
                     1,
-                    norm_cfg=norm_cfg,
+                    norm_callable=norm_callable,
                     activation_callable=activation_callable,
                 ),
             )
@@ -89,7 +89,7 @@ class YOLOXPAFPN(BaseModule):
                     num_blocks=num_csp_blocks,
                     add_identity=False,
                     use_depthwise=use_depthwise,
-                    norm_cfg=norm_cfg,
+                    norm_callable=norm_callable,
                     activation_callable=activation_callable,
                 ),
             )
@@ -105,7 +105,7 @@ class YOLOXPAFPN(BaseModule):
                     3,
                     stride=2,
                     padding=1,
-                    norm_cfg=norm_cfg,
+                    norm_callable=norm_callable,
                     activation_callable=activation_callable,
                 ),
             )
@@ -116,7 +116,7 @@ class YOLOXPAFPN(BaseModule):
                     num_blocks=num_csp_blocks,
                     add_identity=False,
                     use_depthwise=use_depthwise,
-                    norm_cfg=norm_cfg,
+                    norm_callable=norm_callable,
                     activation_callable=activation_callable,
                 ),
             )
@@ -128,7 +128,7 @@ class YOLOXPAFPN(BaseModule):
                     in_channels[i],
                     out_channels,
                     1,
-                    norm_cfg=norm_cfg,
+                    norm_callable=norm_callable,
                     activation_callable=activation_callable,
                 ),
             )

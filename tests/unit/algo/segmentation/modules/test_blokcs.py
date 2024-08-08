@@ -5,6 +5,7 @@ from typing import Any
 import pytest
 import torch
 from otx.algo.segmentation.modules.blocks import AsymmetricPositionAttentionModule, LocalAttentionModule
+from torch import nn
 
 
 class TestAsymmetricPositionAttentionModule:
@@ -15,7 +16,7 @@ class TestAsymmetricPositionAttentionModule:
             "key_channels": 128,
             "value_channels": 320,
             "psp_size": [1, 3, 6, 8],
-            "norm_cfg": {"type": "BN"},
+            "norm_callable": nn.BatchNorm2d,
         }
 
     def test_init(self, init_cfg):
@@ -24,7 +25,7 @@ class TestAsymmetricPositionAttentionModule:
         assert module.in_channels == init_cfg["in_channels"]
         assert module.key_channels == init_cfg["key_channels"]
         assert module.value_channels == init_cfg["value_channels"]
-        assert module.norm_cfg == init_cfg["norm_cfg"]
+        assert module.norm_callable == init_cfg["norm_callable"]
 
     @pytest.fixture()
     def fake_input(self) -> torch.Tensor:
@@ -42,14 +43,14 @@ class TestLocalAttentionModule:
     def init_cfg(self) -> dict[str, Any]:
         return {
             "num_channels": 320,
-            "norm_cfg": {"type": "BN"},
+            "norm_callable": nn.BatchNorm2d,
         }
 
     def test_init(self, init_cfg):
         module = LocalAttentionModule(**init_cfg)
 
         assert module.num_channels == init_cfg["num_channels"]
-        assert module.norm_cfg == init_cfg["norm_cfg"]
+        assert module.norm_callable == init_cfg["norm_callable"]
 
     @pytest.fixture()
     def fake_input(self) -> torch.Tensor:

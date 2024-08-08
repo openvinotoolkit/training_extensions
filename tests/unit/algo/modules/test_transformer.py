@@ -7,6 +7,7 @@ import pytest
 import torch
 from otx.algo.modules.drop import DropPath
 from otx.algo.modules.transformer import FFN, AdaptivePadding, PatchEmbed
+from torch import nn
 
 
 def test_adaptive_padding():
@@ -87,7 +88,7 @@ def test_patch_embed():
         stride=stride,
         padding=0,
         dilation=1,
-        norm_cfg=None,
+        norm_callable=None,
     )
 
     x1, shape = patch_merge_1(dummy_input)
@@ -114,7 +115,7 @@ def test_patch_embed():
         stride=stride,
         padding=0,
         dilation=2,
-        norm_cfg=None,
+        norm_callable=None,
     )
 
     x2, shape = patch_merge_2(dummy_input)
@@ -137,7 +138,7 @@ def test_patch_embed():
         stride=stride,
         padding=0,
         dilation=2,
-        norm_cfg={"type": "LN"},
+        norm_callable=nn.LayerNorm,
         input_size=input_size,
     )
 
@@ -164,7 +165,7 @@ def test_patch_embed():
         stride=stride,
         padding=0,
         dilation=2,
-        norm_cfg={"type": "LN"},
+        norm_callable=nn.LayerNorm,
         input_size=input_size,
     )
 
@@ -183,7 +184,7 @@ def test_patch_embed():
         stride=stride,
         padding=0,
         dilation=2,
-        norm_cfg={"type": "LN"},
+        norm_callable=nn.LayerNorm,
         input_size=input_size,
     )
 

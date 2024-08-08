@@ -9,7 +9,7 @@ Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/l
 from __future__ import annotations
 
 import math
-from typing import Sequence
+from typing import Callable, Sequence
 
 import torch
 import torch.nn.functional
@@ -104,8 +104,8 @@ class PatchEmbed(BaseModule):
             Default: "corner".
         dilation (int): The dilation rate of embedding conv. Default: 1.
         bias (bool): Bias of embed conv. Default: True.
-        norm_cfg (dict, optional): Config dict for normalization layer.
-            Default: None.
+        norm_callable (Callable[..., nn.Module] | None): Normalization layer module.
+            Defaults to None.
         init_cfg (dict, optional): The Config for
             initialization. Default: None.
     """
@@ -119,7 +119,7 @@ class PatchEmbed(BaseModule):
         padding: int | tuple | str = "corner",
         dilation: int = 1,
         bias: bool = True,
-        norm_cfg: dict | None = None,
+        norm_callable: Callable[..., nn.Module] | None = None,
         init_cfg: dict | None = None,
     ) -> None:
         super().__init__(init_cfg=init_cfg)
@@ -156,8 +156,8 @@ class PatchEmbed(BaseModule):
             bias=bias,
         )
 
-        if norm_cfg is not None:
-            self.norm = build_norm_layer(norm_cfg, embed_dims)[1]
+        if norm_callable is not None:
+            self.norm = build_norm_layer(norm_callable, embed_dims)[1]
         else:
             self.norm = None
 
@@ -210,8 +210,8 @@ class PatchMerging(BaseModule):
             layer. Default: 1.
         bias (bool, optional): Whether to add bias in linear layer or not.
             Defaults: False.
-        norm_cfg (dict, optional): Config dict for normalization layer.
-            Default: dict(type='LN').
+        norm_callable (Callable[..., nn.Module] | None): Normalization layer module.
+            Defaults to ``nn.LayerNorm``.
         init_cfg (dict, optional): The extra config for initialization.
             Default: None.
     """
@@ -225,11 +225,10 @@ class PatchMerging(BaseModule):
         padding: int | tuple | str = "corner",
         dilation: int | tuple = 1,
         bias: bool = False,
-        norm_cfg: dict | None = None,
+        norm_callable: Callable[..., nn.Module] | None = nn.LayerNorm,
         init_cfg: dict | None = None,
     ) -> None:
         super().__init__(init_cfg=init_cfg)
-        norm_cfg = norm_cfg if norm_cfg is not None else {"type": "LN"}
         self.in_channels = in_channels
         self.out_channels = out_channels
         stride = stride if stride else kernel_size
@@ -256,8 +255,8 @@ class PatchMerging(BaseModule):
 
         sample_dim = _kernel_size[0] * _kernel_size[1] * in_channels
 
-        if norm_cfg is not None:
-            self.norm = build_norm_layer(norm_cfg, sample_dim)[1]
+        if norm_callable is not None:
+            self.norm = build_norm_layer(norm_callable, sample_dim)[1]
         else:
             self.norm = None
 

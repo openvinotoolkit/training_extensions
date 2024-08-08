@@ -8,8 +8,8 @@ Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/b
 
 from __future__ import annotations
 
-from functools import partial
 import math
+from functools import partial
 from typing import Callable, ClassVar
 
 from otx.algo.common.layers import SPPBottleneck
@@ -47,7 +47,7 @@ class CSPNeXt(BaseModule):
         norm_callable (Callable[..., nn.Module]): Normalization layer module.
             Defaults to ``partial(nn.BatchNorm2d, momentum=0.03, eps=0.001)``.
         activation_callable (Callable[..., nn.Module] | None): Activation layer module.
-            Defaults to `nn.SiLU`.
+            Defaults to ``nn.SiLU``.
         norm_eval (bool): Whether to set norm layers to eval mode, namely,
             freeze running stats (mean and var). Note: Effect on Batch Norm
             and its variants only.
@@ -85,7 +85,7 @@ class CSPNeXt(BaseModule):
         spp_kernel_sizes: tuple[int, int, int] = (5, 9, 13),
         channel_attention: bool = True,
         norm_callable: Callable[..., nn.Module] = partial(nn.BatchNorm2d, momentum=0.03, eps=0.001),
-        activation_callable: Callable[..., nn.Module] | None = nn.SiLU,
+        activation_callable: Callable[..., nn.Module] = nn.SiLU,
         norm_eval: bool = False,
         init_cfg: dict | None = None,
     ) -> None:

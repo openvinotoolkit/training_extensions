@@ -1,12 +1,14 @@
-# Copyright (C) 2023 Intel Corporation
+# Copyright (C) 2023-2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 """LiteHRNet model implementations."""
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, ClassVar
+from functools import partial
+from typing import Any, ClassVar
 
+from torch import nn
 from torch.onnx import OperatorExportTypes
 
 from otx.algo.segmentation.backbones import LiteHRNet
@@ -18,15 +20,12 @@ from otx.core.model.segmentation import TorchVisionCompatibleModel
 
 from .base_model import BaseSegmModel
 
-if TYPE_CHECKING:
-    from torch import nn
-
 
 class LiteHRNetS(BaseSegmModel):
     """LiteHRNetS Model."""
 
     default_backbone_configuration: ClassVar[dict[str, Any]] = {
-        "norm_cfg": {"type": "BN", "requires_grad": True},
+        "norm_callable": partial(nn.BatchNorm2d, requires_grad=True),
         "norm_eval": False,
         "extra": {
             "stem": {
@@ -58,7 +57,7 @@ class LiteHRNetS(BaseSegmModel):
         "pretrained_weights": "https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/custom_semantic_segmentation/litehrnetsv2_imagenet1k_rsc.pth",
     }
     default_decode_head_configuration: ClassVar[dict[str, Any]] = {
-        "norm_cfg": {"type": "BN", "requires_grad": True},
+        "norm_callable": partial(nn.BatchNorm2d, requires_grad=True),
         "in_channels": [60, 120, 240],
         "in_index": [0, 1, 2],
         "input_transform": "multiple_select",
@@ -180,7 +179,7 @@ class LiteHRNet18(BaseSegmModel):
         "pretrained_weights": "https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/custom_semantic_segmentation/litehrnet18_imagenet1k_rsc.pth",
     }
     default_decode_head_configuration: ClassVar[dict[str, Any]] = {
-        "norm_cfg": {"type": "BN", "requires_grad": True},
+        "norm_callable": partial(nn.BatchNorm2d, requires_grad=True),
         "in_channels": [40, 80, 160, 320],
         "in_index": [0, 1, 2, 3],
         "input_transform": "multiple_select",
@@ -290,7 +289,7 @@ class LiteHRNetX(BaseSegmModel):
     """LiteHRNetX Model."""
 
     default_backbone_configuration: ClassVar[dict[str, Any]] = {
-        "norm_cfg": {"type": "BN", "requires_grad": True},
+        "norm_callable": partial(nn.BatchNorm2d, requires_grad=True),
         "norm_eval": False,
         "extra": {
             "stem": {
@@ -323,7 +322,7 @@ class LiteHRNetX(BaseSegmModel):
         "pretrained_weights": "https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/custom_semantic_segmentation/litehrnetxv3_imagenet1k_rsc.pth",
     }
     default_decode_head_configuration: ClassVar[dict[str, Any]] = {
-        "norm_cfg": {"type": "BN", "requires_grad": True},
+        "norm_callable": partial(nn.BatchNorm2d, requires_grad=True),
         "in_channels": [18, 60, 80, 160, 320],
         "in_index": [0, 1, 2, 3, 4],
         "input_transform": "multiple_select",

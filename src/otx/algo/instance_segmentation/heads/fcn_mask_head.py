@@ -9,7 +9,7 @@ Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/r
 from __future__ import annotations
 
 import warnings
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Callable
 
 import numpy as np
 import torch
@@ -45,7 +45,7 @@ class FCNMaskHead(BaseModule):
         conv_out_channels: int = 256,
         num_classes: int = 80,
         class_agnostic: int = False,
-        norm_cfg: dict | None = None,
+        norm_callable: Callable[..., nn.Module] | None = None,
         init_cfg: dict | list[dict] | None = None,
     ) -> None:
         if init_cfg is not None:
@@ -61,7 +61,7 @@ class FCNMaskHead(BaseModule):
         self.conv_out_channels = conv_out_channels
         self.num_classes = num_classes
         self.class_agnostic = class_agnostic
-        self.norm_cfg = norm_cfg
+        self.norm_callable = norm_callable
 
         self.loss_mask = loss_mask
 
@@ -75,7 +75,7 @@ class FCNMaskHead(BaseModule):
                     self.conv_out_channels,
                     self.conv_kernel_size,
                     padding=padding,
-                    norm_cfg=norm_cfg,
+                    norm_callable=norm_callable,
                 ),
             )
         upsample_in_channels = self.conv_out_channels if self.num_convs > 0 else in_channels

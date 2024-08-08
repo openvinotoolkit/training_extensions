@@ -5,8 +5,8 @@
 
 from __future__ import annotations
 
-from functools import partial
 import math
+from functools import partial
 from pathlib import Path
 from typing import Callable, Literal
 
@@ -171,9 +171,9 @@ class SEBlock(nn.Module):
         round_mid (bool): Whether to round middle channel number (make divisible by 8). Defaults to False.
         use_conv (bool): Whether to convolutional layers instead of fully-connected ones. Defaults to True.
         mid_activation_callable (Callable[..., nn.Module]): Activation layer module after the first convolution.
-            Defaults to `nn.ReLU`.
+            Defaults to ``nn.ReLU``.
         out_activation_callable (Callable[..., nn.Module]): Activation layer module after the last convolution.
-            Defaults to `nn.Sigmoid`.
+            Defaults to ``nn.Sigmoid``.
     """
 
     def __init__(

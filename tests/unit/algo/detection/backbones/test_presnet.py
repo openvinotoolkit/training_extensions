@@ -26,7 +26,7 @@ class TestPresnet:
                 assert not param.requires_grad
 
     def test_presnet_freeze_norm(self):
-        model = PResNet(depth=50, norm_cfg={"type": "FBN", "name": "norm"})
+        model = PResNet(depth=50, norm_callable=FrozenBatchNorm2d, norm_name="norm")
         for name, param in model.named_parameters():
             if "norm" in name:
                 assert isinstance(param, FrozenBatchNorm2d)

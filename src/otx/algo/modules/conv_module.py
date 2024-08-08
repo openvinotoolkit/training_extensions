@@ -79,9 +79,11 @@ class ConvModule(nn.Module):
         groups (int): Number of blocked connections from input channels to
             output channels. Same as that in ``nn._ConvNd``.
         bias (bool | str): If specified as `auto`, it will be decided by the
-            norm_cfg. Bias will be set as True if `norm_cfg` is None, otherwise
+            norm_callable. Bias will be set as True if `norm_callable` is None, otherwise
             False. Default: "auto".
         norm_callable (Callable[..., nn.Module] | None): Normalization layer module.
+            Defaults to None.
+        norm_name (str | None): The name of the normalization layer fpr ``build_norm_layer``.
             Defaults to None.
         activation_callable (Callable[..., nn.Module] | None): Activation layer module.
             Defaults to `nn.ReLU`.
@@ -110,6 +112,7 @@ class ConvModule(nn.Module):
         groups: int = 1,
         bias: bool | str = "auto",
         norm_callable: Callable[..., nn.Module] | None = None,
+        norm_name: str | None = None,
         activation_callable: Callable[..., nn.Module] | None = nn.ReLU,
         inplace: bool = True,
         with_spectral_norm: bool = False,
@@ -159,10 +162,10 @@ class ConvModule(nn.Module):
             self.conv = nn.utils.spectral_norm(self.conv)
 
         self.norm_name: str | None
-        if self.with_norm:
+        if norm_callable is not None:
             # norm layer is after conv layer
             norm_channels = out_channels
-            self.norm_name, norm = build_norm_layer(norm_callable, norm_channels)
+            self.norm_name, norm = build_norm_layer(norm_callable, norm_channels, layer_name=norm_name)
             self.add_module(self.norm_name, norm)
             if self.with_bias and isinstance(norm, (BatchNorm, InstanceNorm)):
                 warnings.warn("Unnecessary conv bias before batch/instance norm", stacklevel=1)
@@ -276,7 +279,7 @@ class DepthwiseSeparableConvModule(nn.Module):
     conv block contains depthwise-conv/norm/activation layers. The pointwise
     conv block contains pointwise-conv/norm/activation layers. It should be
     noted that there will be norm/activation layer in the depthwise conv block
-    if `norm_cfg` and `activation_callable` are specified.
+    if `norm_callable` and `activation_callable` are specified.
 
     Args:
         in_channels (int): Number of channels in the input feature map.
@@ -291,18 +294,21 @@ class DepthwiseSeparableConvModule(nn.Module):
             the input. Same as that in ``nn._ConvNd``. Default: 0.
         dilation (int | tuple[int]): Spacing between kernel elements.
             Same as that in ``nn._ConvNd``. Default: 1.
-        norm_cfg (dict): Default norm config for both depthwise ConvModule and
-            pointwise ConvModule. Default: None.
+        norm_callable (Callable[..., nn.Module] | None): Normalization layer module
+            for both depthwise ConvModule and pointwise ConvModule.
+            Defaults to None.
         activation_callable (Callable[..., nn.Module]): Activation layer module
             for both depthwise ConvModule and pointwise ConvModule.
             Defaults to `nn.ReLU`.
-        dw_norm_cfg (dict): Norm config of depthwise ConvModule. If it is
-            None, it will be the same as `norm_cfg`. Default: None.
+        dw_norm_callable (dict): Normalization layer module of depthwise ConvModule.
+            If it is None, it will be the same as `norm_callable`.
+            Defaults to None.
         dw_activation_callable (Callable[..., nn.Module] | None): Activation layer module of depthwise ConvModule.
             If it is None, it will be the same as `activation_callable`.
             Defaults to None.
-        pw_norm_cfg (dict): Norm config of pointwise ConvModule. If it is
-            None, it will be the same as `norm_cfg`. Default: None.
+        pw_norm_callable (dict): Normalization layer module of pointwise ConvModule.
+            If it is None, it will be the same as `norm_callable`.
+            Defaults to None.
         pw_activation_callable (Callable[..., nn.Module] | None): Activation layer module of pointwise ConvModule.
             If it is None, it will be the same as `activation_callable`.
             Defaults to None.
@@ -318,11 +324,11 @@ class DepthwiseSeparableConvModule(nn.Module):
         stride: int | tuple[int, int] = 1,
         padding: int | tuple[int, int] = 0,
         dilation: int | tuple[int, int] = 1,
-        norm_cfg: dict | None = None,
+        norm_callable: Callable[..., nn.Module] | None = None,
         activation_callable: Callable[..., nn.Module] = nn.ReLU,
-        dw_norm_cfg: dict | None = None,
+        dw_norm_callable: Callable[..., nn.Module] | None = None,
         dw_activation_callable: Callable[..., nn.Module] | None = None,
-        pw_norm_cfg: dict | None = None,
+        pw_norm_callable: Callable[..., nn.Module] | None = None,
         pw_activation_callable: Callable[..., nn.Module] | None = None,
         **kwargs,
     ):
@@ -333,9 +339,9 @@ class DepthwiseSeparableConvModule(nn.Module):
 
         # if norm/activation config of depthwise/pointwise Conv2dModule is not
         # specified, use default config.
-        dw_norm_cfg = dw_norm_cfg or norm_cfg
+        dw_norm_callable = dw_norm_callable or norm_callable
         dw_activation_callable = dw_activation_callable or activation_callable
-        pw_norm_cfg = pw_norm_cfg or norm_cfg
+        pw_norm_callable = pw_norm_callable or norm_callable
         pw_activation_callable = pw_activation_callable or activation_callable
 
         # depthwise convolution
@@ -347,7 +353,7 @@ class DepthwiseSeparableConvModule(nn.Module):
             padding=padding,
             dilation=dilation,
             groups=in_channels,
-            norm_cfg=dw_norm_cfg,
+            norm_callable=dw_norm_callable,
             activation_callable=dw_activation_callable,
             **kwargs,
         )
@@ -356,7 +362,7 @@ class DepthwiseSeparableConvModule(nn.Module):
             in_channels,
             out_channels,
             1,
-            norm_cfg=pw_norm_cfg,
+            norm_callable=pw_norm_callable,
             activation_callable=pw_activation_callable,
             **kwargs,
         )

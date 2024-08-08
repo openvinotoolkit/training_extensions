@@ -78,7 +78,7 @@ class RTMPoseTiny(RTMPose):
             widen_factor=0.375,
             out_indices=(4,),
             channel_attention=True,
-            norm_cfg={"type": "BN"},
+            norm_callable=nn.BatchNorm2d,
             activation_callable=partial(nn.SiLU, inplace=True),
         )
         head = RTMCCHead(

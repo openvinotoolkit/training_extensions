@@ -8,6 +8,9 @@ Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/d
 
 from __future__ import annotations
 
+from functools import partial
+from typing import Callable
+
 import torch
 from torch import Tensor, nn
 
@@ -39,8 +42,8 @@ class ATSSHead(ClassIncrementalMixin, AnchorHead):
         in_channels (int): Number of channels in the input feature map.
         pred_kernel_size (int): Kernel size of ``nn.Conv2d``. Defaults to 3.
         stacked_convs (int): Number of stacking convs of the head. Defaults to 4.
-        norm_cfg (dict): Config dict for normalization layer.
-            Defaults to ``dict(type='GN', num_groups=32, requires_grad=True)``.
+        norm_callable (Callable[..., nn.Module] | None): Normalization layer module.
+            Defaults to ``partial(nn.GroupNorm, num_groups=32, requires_grad=True)``.
         reg_decoded_bbox (bool): If true, the regression loss would be
             applied directly on decoded bounding boxes, converting both
             the predicted boxes and regression targets to absolute
@@ -56,7 +59,7 @@ class ATSSHead(ClassIncrementalMixin, AnchorHead):
         in_channels: int,
         pred_kernel_size: int = 3,
         stacked_convs: int = 4,
-        norm_cfg: dict | None = None,
+        norm_callable: Callable[..., nn.Module] = partial(nn.GroupNorm, num_groups=32, requires_grad=True),
         reg_decoded_bbox: bool = True,
         loss_centerness: nn.Module | None = None,
         init_cfg: dict | None = None,
@@ -67,7 +70,7 @@ class ATSSHead(ClassIncrementalMixin, AnchorHead):
     ) -> None:
         self.pred_kernel_size = pred_kernel_size
         self.stacked_convs = stacked_convs
-        self.norm_cfg = norm_cfg or {"type": "GN", "num_groups": 32, "requires_grad": True}
+        self.norm_callable = norm_callable
         init_cfg = init_cfg or {
             "type": "Normal",
             "layer": "Conv2d",
@@ -113,7 +116,7 @@ class ATSSHead(ClassIncrementalMixin, AnchorHead):
                     3,
                     stride=1,
                     padding=1,
-                    norm_cfg=self.norm_cfg,
+                    norm_callable=self.norm_callable,
                 ),
             )
             self.reg_convs.append(
@@ -123,7 +126,7 @@ class ATSSHead(ClassIncrementalMixin, AnchorHead):
                     3,
                     stride=1,
                     padding=1,
-                    norm_cfg=self.norm_cfg,
+                    norm_callable=self.norm_callable,
                 ),
             )
         pred_pad_size = self.pred_kernel_size // 2

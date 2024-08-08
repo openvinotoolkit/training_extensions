@@ -12,10 +12,15 @@ from torch import nn
 
 
 def test_conv_module():
-    norm_cfg = "norm"
-    with pytest.raises(AssertionError):
-        # norm_cfg must be a dict or None
-        Conv2dModule(3, 8, 2, norm_cfg=norm_cfg)
+    norm_callable = "BN"
+    with pytest.raises(TypeError):
+        # norm_callable must be a callable
+        Conv2dModule(3, 8, 2, norm_callable=norm_callable)
+
+    norm_callable = nn.LazyBatchNorm2d
+    with pytest.raises(ValueError, match="Unsupported normalization"):
+        # LazyBatchNorm2d is not supported
+        Conv2dModule(3, 8, 2, norm_callable=norm_callable)
 
     activation_callable = nn.Softmax
     with pytest.raises(ValueError, match="Unsupported activation"):
@@ -28,7 +33,7 @@ def test_conv_module():
         Conv2dModule(3, 8, 2, activation_callable=activation_callable)
 
     # conv + norm + act
-    conv = Conv2dModule(3, 8, 2, norm_cfg={"type": "BN"})
+    conv = Conv2dModule(3, 8, 2, norm_callable=nn.BatchNorm2d)
     assert conv.with_activation
     assert isinstance(conv.activation, nn.Module)
     assert conv.with_norm
@@ -96,7 +101,7 @@ def test_conv_module():
     assert output.shape == (1, 8, 256, 256)
 
     # Test norm layer with name
-    conv = Conv2dModule(3, 8, 2, norm_cfg={"type": "BN", "name": "some_norm_layer"})
+    conv = Conv2dModule(3, 8, 2, norm_callable=nn.BatchNorm2d, norm_name="some_norm_layer")
     assert conv.norm_layer.__class__.__name__ == "BatchNorm2d"
     assert conv.norm_name == "some_norm_layer"
     assert hasattr(conv, "norm_layer")
@@ -111,7 +116,7 @@ def test_bias():
     assert conv.conv.bias is not None
 
     # bias: auto, with norm
-    conv = Conv2dModule(3, 8, 2, norm_cfg={"type": "BN"})
+    conv = Conv2dModule(3, 8, 2, norm_callable=nn.BatchNorm2d)
     assert conv.conv.bias is None
 
     # bias: False, without norm
@@ -120,13 +125,13 @@ def test_bias():
 
     # bias: True, with batch norm
     with pytest.warns(UserWarning) as record:
-        Conv2dModule(3, 8, 2, bias=True, norm_cfg={"type": "BN"})
+        Conv2dModule(3, 8, 2, bias=True, norm_callable=nn.BatchNorm2d)
     assert len(record) == 1
     assert record[0].message.args[0] == "Unnecessary conv bias before batch/instance norm"
 
     # bias: True, with instance norm
     with pytest.warns(UserWarning) as record:
-        Conv2dModule(3, 8, 2, bias=True, norm_cfg={"type": "IN"})
+        Conv2dModule(3, 8, 2, bias=True, norm_callable=nn.InstanceNorm2d)
     assert len(record) == 1
     assert record[0].message.args[0] == "Unnecessary conv bias before batch/instance norm"
 
@@ -145,27 +150,27 @@ class TestDepthwiseSeparableConvModule:
         output = conv(x)
         assert output.shape == (1, 8, 255, 255)
 
-    def test_forward_with_dw_norm_cfg(self) -> None:
-        # test dw_norm_cfg
-        conv = DepthwiseSeparableConvModule(3, 8, 2, dw_norm_cfg={"type": "BN"})
+    def test_forward_with_dw_norm_callable(self) -> None:
+        # test dw_norm_callable
+        conv = DepthwiseSeparableConvModule(3, 8, 2, dw_norm_callable=nn.BatchNorm2d)
         assert conv.depthwise_conv.norm_name == "bn"
         assert not conv.pointwise_conv.with_norm
         x = torch.rand(1, 3, 256, 256)
         output = conv(x)
         assert output.shape == (1, 8, 255, 255)
 
-    def test_forward_with_pw_norm_cfg(self) -> None:
-        # test pw_norm_cfg
-        conv = DepthwiseSeparableConvModule(3, 8, 2, pw_norm_cfg={"type": "BN"})
+    def test_forward_with_pw_norm_callable(self) -> None:
+        # test pw_norm_callable
+        conv = DepthwiseSeparableConvModule(3, 8, 2, pw_norm_callable=nn.BatchNorm2d)
         assert not conv.depthwise_conv.with_norm
         assert conv.pointwise_conv.norm_name == "bn"
         x = torch.rand(1, 3, 256, 256)
         output = conv(x)
         assert output.shape == (1, 8, 255, 255)
 
-    def test_forward_with_norm_cfg(self) -> None:
-        # test norm_cfg
-        conv = DepthwiseSeparableConvModule(3, 8, 2, norm_cfg={"type": "BN"})
+    def test_forward_with_norm_callable(self) -> None:
+        # test norm_callable
+        conv = DepthwiseSeparableConvModule(3, 8, 2, norm_callable=nn.BatchNorm2d)
         assert conv.depthwise_conv.norm_name == "bn"
         assert conv.pointwise_conv.norm_name == "bn"
         x = torch.rand(1, 3, 256, 256)

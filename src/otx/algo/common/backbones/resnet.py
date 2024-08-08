@@ -8,8 +8,8 @@
 
 from __future__ import annotations
 
-from functools import partial
 import warnings
+from functools import partial
 from typing import Callable, ClassVar
 
 import torch
@@ -180,7 +180,7 @@ class ResNet(BaseModule):
         out_indices: tuple[int, int, int, int] = (0, 1, 2, 3),
         avg_down: bool = False,
         frozen_stages: int = -1,
-        norm_callable: Callable[..., nn.Module] | None = partial(nn.BatchNorm2d, requires_grad=True),
+        norm_callable: Callable[..., nn.Module] = partial(nn.BatchNorm2d, requires_grad=True),
         norm_eval: bool = True,
         with_cp: bool = False,
         zero_init_residual: bool = True,

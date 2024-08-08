@@ -7,6 +7,7 @@
 """MMDet ResLayer."""
 
 from __future__ import annotations
+
 from typing import Callable
 
 from otx.algo.modules.base_module import BaseModule, Sequential

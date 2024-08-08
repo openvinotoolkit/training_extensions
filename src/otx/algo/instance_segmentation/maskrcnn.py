@@ -5,6 +5,7 @@
 
 from __future__ import annotations
 
+from functools import partial
 from typing import Any
 
 from torch import nn
@@ -153,7 +154,7 @@ class MaskRCNNResNet50(MaskRCNN):
         backbone = ResNet(
             depth=50,
             frozen_stages=1,
-            norm_cfg={"type": "BN", "requires_grad": True},
+            norm_callable=partial(nn.BatchNorm2d, requires_grad=True),
             norm_eval=True,
             num_stages=4,
             out_indices=(0, 1, 2, 3),
@@ -332,7 +333,7 @@ class MaskRCNNEfficientNet(MaskRCNN):
                 "frozen_stages": -1,
                 "pretrained": True,
                 "activation_callable": nn.SiLU,
-                "norm_cfg": {"type": "BN", "requires_grad": True},
+                "norm_callable": partial(nn.BatchNorm2d, requires_grad=True),
             },
         )
 

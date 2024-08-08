@@ -5,6 +5,7 @@
 """Copy from mmpretrain/models/utils/swiglu_ffn.py."""
 
 from __future__ import annotations
+
 from typing import Callable
 
 import torch

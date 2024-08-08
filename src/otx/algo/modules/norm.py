@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import inspect
 from functools import partial
-from typing import Callable, Literal
+from typing import Callable
 
 import torch
 from torch import nn
@@ -86,18 +86,16 @@ class FrozenBatchNorm2d(nn.Module):
 
 
 AVAILABLE_NORM_LIST = [
-    "BN",
-    "BN1d",
-    "BN2d",
-    "BN3d",
-    "SyncBN",
-    "GN",
-    "LN",
-    "IN",
-    "IN1d",
-    "IN2d",
-    "IN3d",
-    "FBN",
+    nn.BatchNorm1d,
+    nn.BatchNorm2d,
+    nn.BatchNorm3d,
+    SyncBatchNorm,
+    nn.GroupNorm,
+    nn.LayerNorm,
+    nn.InstanceNorm1d,
+    nn.InstanceNorm2d,
+    nn.InstanceNorm3d,
+    FrozenBatchNorm2d,
 ]
 
 
@@ -148,23 +146,17 @@ def infer_abbr(class_type: type) -> str:
     return "norm"
 
 
-def _get_norm_type_name(
-    norm_callable: Callable[..., nn.Module],
-    target: Literal["class", "name"] = "class",
-) -> type | str:
+def _get_norm_type(norm_callable: Callable[..., nn.Module]) -> type:
     """Get class type or name of given normalization callable.
 
     Args:
         norm_callable (Callable[..., nn.Module]): Normalization layer module.
-        target (Literal["class", "name"]): The target to retrieve class type or name from. Defaults to "class".
 
     Returns:
-        (type | str): Class type or name of given normalization callable.
+        (type): Class type of given normalization callable.
 
     """
-    if target == "class":
-        return norm_callable.func if isinstance(norm_callable, partial) else norm_callable
-    return norm_callable.func.__name__ if isinstance(norm_callable, partial) else norm_callable.__name__
+    return norm_callable.func if isinstance(norm_callable, partial) else norm_callable
 
 
 def build_norm_layer(
@@ -183,9 +175,12 @@ def build_norm_layer(
         num_features (int): Number of input channels.
         postfix (int | str): The postfix to be appended into norm abbreviation
             to create named layer.
-        layer_name (str | None): The name of the layer. Defaults to None.
-        requires_grad (bool): Whether stop gradient updates. Defaults to True.
-        eps (float): A value added to the denominator for numerical stability. Defaults to 1e-5.
+        layer_name (str | None): The name of the layer.
+            Defaults to None.
+        requires_grad (bool): Whether stop gradient updates.
+            Defaults to True.
+        eps (float): A value added to the denominator for numerical stability.
+            Defaults to 1e-5.
 
     Returns:
         tuple[str, nn.Module]: The first element is the layer name consisting
@@ -196,14 +191,14 @@ def build_norm_layer(
         msg = f"norm_callable must be a callable, but got {type(norm_callable)}."
         raise TypeError(msg)
 
-    if _get_norm_type_name(norm_callable, target="name") not in AVAILABLE_NORM_LIST:
-        msg = f"Unsupported normalization: {norm_callable.func.__name__}."
+    if (layer_type := _get_norm_type(norm_callable)) not in AVAILABLE_NORM_LIST:
+        msg = f"Unsupported normalization: {layer_type.__name__}."
         raise ValueError(msg)
 
-    abbr = infer_abbr(_get_norm_type_name(norm_callable)) if layer_name is None else layer_name
+    abbr = layer_name or infer_abbr(layer_type)
     name = abbr + str(postfix)
 
-    if (layer_type := _get_norm_type_name(norm_callable)) is not nn.GroupNorm:
+    if layer_type is not nn.GroupNorm:
         layer = norm_callable(num_features, eps=eps, **kwargs)
         if layer_type == SyncBatchNorm and hasattr(layer, "_specify_ddp_gpu_num"):
             layer._specify_ddp_gpu_num(1)  # noqa: SLF001

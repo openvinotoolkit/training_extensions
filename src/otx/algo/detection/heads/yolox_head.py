@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import logging
 import math
+from functools import partial
 from typing import Callable, Sequence
 
 import torch
@@ -48,12 +49,12 @@ class YOLOXHead(BaseDenseHead):
         dcn_on_last_conv (bool): If true, use dcn in the last layer of towers.
             Defaults to False.
         conv_bias (bool or str): If specified as `auto`, it will be decided by
-            the norm_cfg. Bias of conv will be set as True if `norm_cfg` is
+            the norm_callable. Bias of conv will be set as True if `norm_callable` is
             None, otherwise False. Defaults to "auto".
-        norm_cfg (dict): Config dict for normalization layer.
-            Defaults to dict(type='BN', momentum=0.03, eps=0.001).
+        norm_callable (Callable[..., nn.Module]): Normalization layer module.
+            Defaults to ``partial(nn.BatchNorm2d, momentum=0.03, eps=0.001)``.
         activation_callable (Callable[..., nn.Module]): Activation layer module.
-            Defaults to `Swish`.
+            Defaults to ``Swish``.
         loss_cls (nn.Module, optional): Module of classification loss.
         loss_bbox (nn.Module, optional): Module of localization loss.
         loss_obj (nn.Module, optional): Module of objectness loss.
@@ -76,7 +77,7 @@ class YOLOXHead(BaseDenseHead):
         use_depthwise: bool = False,
         dcn_on_last_conv: bool = False,
         conv_bias: bool | str = "auto",
-        norm_cfg: dict | None = None,
+        norm_callable: Callable[..., nn.Module] = partial(nn.BatchNorm2d, momentum=0.03, eps=0.001),
         activation_callable: Callable[..., nn.Module] = Swish,
         loss_cls: nn.Module | None = None,
         loss_bbox: nn.Module | None = None,
@@ -86,9 +87,6 @@ class YOLOXHead(BaseDenseHead):
         test_cfg: dict | None = None,
         init_cfg: dict | list[dict] | None = None,
     ) -> None:
-        if norm_cfg is None:
-            norm_cfg = {"type": "BN", "momentum": 0.03, "eps": 0.001}
-
         if init_cfg is None:
             init_cfg = {
                 "type": "Kaiming",
@@ -115,7 +113,7 @@ class YOLOXHead(BaseDenseHead):
         self.conv_bias = conv_bias
         self.use_sigmoid_cls = True
 
-        self.norm_cfg = norm_cfg
+        self.norm_callable = norm_callable
         self.activation_callable = activation_callable
 
         self.loss_cls = loss_cls or CrossEntropyLoss(use_sigmoid=True, reduction="sum", loss_weight=1.0)
@@ -173,7 +171,7 @@ class YOLOXHead(BaseDenseHead):
                     3,
                     stride=1,
                     padding=1,
-                    norm_cfg=self.norm_cfg,
+                    norm_callable=self.norm_callable,
                     activation_callable=self.activation_callable,
                     bias=self.conv_bias,
                 ),

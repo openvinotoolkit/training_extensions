@@ -5,6 +5,8 @@
 
 from __future__ import annotations
 
+from typing import Callable
+
 import torch
 from torch import nn
 from torch.nn import functional as f
@@ -18,31 +20,25 @@ class IterativeAggregator(nn.Module):
     """IterativeAggregator.
 
     Based on: https://github.com/HRNet/Lite-HRNet.
+
+    Args:
+        in_channels (list[int]): List of input channels for each branch.
+        min_channels (int | None): Minimum number of channels. Defaults to None.
+        norm_callable (Callable[..., nn.Module] | None): Normalization layer module.
+            Defaults to ``nn.BatchNorm2d``.
+        merge_norm (str | None): Whether to merge normalization layers. Defaults to None.
+        use_concat (bool): Whether to use concatenation. Defaults to False.
     """
 
     def __init__(
         self,
         in_channels: list[int],
         min_channels: int | None = None,
-        norm_cfg: dict | None = None,
+        norm_callable: Callable[..., nn.Module] | None = nn.BatchNorm2d,
         merge_norm: str | None = None,
         use_concat: bool = False,
     ) -> None:
-        """IterativeAggregator for LiteHRNet.
-
-        Args:
-            in_channels (list[int]): List of input channels for each branch.
-            min_channels (int | None): Minimum number of channels. Defaults to None.
-            norm_cfg (dict | None): Config for normalization layers. Defaults to None.
-            merge_norm (str | None): Whether to merge normalization layers. Defaults to None.
-            use_concat (bool): Whether to use concatenation. Defaults to False.
-
-        Returns:
-            None
-        """
-        if norm_cfg is None:
-            norm_cfg = {"type": "BN"}
-
+        """IterativeAggregator for LiteHRNet."""
         super().__init__()
 
         self.use_concat = use_concat
@@ -67,7 +63,7 @@ class IterativeAggregator(nn.Module):
                         out_channels=out_channels,
                         kernel_size=1,
                         stride=1,
-                        norm_cfg=norm_cfg,
+                        norm_callable=norm_callable,
                         activation_callable=nn.ReLU,
                     ),
                 )
@@ -84,7 +80,7 @@ class IterativeAggregator(nn.Module):
                     kernel_size=3,
                     stride=1,
                     padding=1,
-                    norm_cfg=norm_cfg,
+                    norm_callable=norm_callable,
                     activation_callable=nn.ReLU,
                     dw_activation_callable=None,
                     pw_activation_callable=nn.ReLU,
@@ -98,7 +94,7 @@ class IterativeAggregator(nn.Module):
                         out_channels=min_channels,
                         kernel_size=1,
                         stride=1,
-                        norm_cfg=norm_cfg,
+                        norm_callable=norm_callable,
                         activation_callable=nn.ReLU,
                     ),
                 )

@@ -1,11 +1,14 @@
-# Copyright (C) 2023 Intel Corporation
+# Copyright (C) 2023-2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 """DinoV2Seg model implementations."""
 
 from __future__ import annotations
 
+from functools import partial
 from typing import TYPE_CHECKING, Any, ClassVar
+
+from torch.nn import SyncBatchNorm
 
 from otx.algo.segmentation.backbones import DinoVisionTransformer
 from otx.algo.segmentation.heads import FCNHead
@@ -27,7 +30,7 @@ class DinoV2Seg(BaseSegmModel):
         "out_index": [8, 9, 10, 11],
     }
     default_decode_head_configuration: ClassVar[dict[str, Any]] = {
-        "norm_cfg": {"type": "SyncBN", "requires_grad": True},
+        "norm_callable": partial(SyncBatchNorm, requires_grad=True),
         "in_channels": [384, 384, 384, 384],
         "in_index": [0, 1, 2, 3],
         "input_transform": "resize_concat",

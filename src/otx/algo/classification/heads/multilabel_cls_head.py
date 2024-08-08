@@ -242,11 +242,11 @@ class MultiLabelNonLinearClsHead(MultiLabelClsHead):
         in_channels (int): Number of channels in the input feature map.
         hid_channels (int): Number of channels in the hidden feature map.
         activation_callable (Callable[..., nn.Module]): Activation layer module.
-            Defaults to nn.ReLU.
+            Defaults to ``nn.ReLU``.
         scale (float): Positive scale parameter.
         loss (dict): Config of classification loss.
         dropout (bool): Whether use the dropout or not.
-        normalized (bool): Normalize input features and weights in the last linar layer.
+        normalized (bool): Normalize input features and weights in the last linear layer.
     """
 
     def __init__(

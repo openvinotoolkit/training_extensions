@@ -1,15 +1,17 @@
-# Copyright (C) 2023 Intel Corporation
+# Copyright (C) 2023-2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 """MSCAN backbone for SegNext model."""
 
 from __future__ import annotations
 
+from functools import partial
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable
 
 import torch
 from torch import nn
+from torch.nn import SyncBatchNorm
 
 from otx.algo.modules import build_norm_layer
 from otx.algo.modules.base_module import BaseModule
@@ -105,9 +107,9 @@ class StemConv(BaseModule):
         in_channels (int): The dimension of input channels.
         out_channels (int): The dimension of output channels.
         activation_callable (Callable[..., nn.Module]): Activation layer module.
-            Defaults to `nn.GELU`.
-        norm_cfg (dict): Config dict for normalization layer.
-            Defaults: dict(type='SyncBN', requires_grad=True).
+            Defaults to ``nn.GELU``.
+        norm_callable (Callable[..., nn.Module]): Normalization layer module.
+            Defaults to ``partial(SyncBatchNorm, requires_grad=True)``.
     """
 
     def __init__(
@@ -115,18 +117,15 @@ class StemConv(BaseModule):
         in_channels: int,
         out_channels: int,
         activation_callable: Callable[..., nn.Module] = nn.GELU,
-        norm_cfg: dict[str, str | bool] | None = None,
+        norm_callable: Callable[..., nn.Module] = partial(SyncBatchNorm, requires_grad=True),
     ) -> None:
         super().__init__()
-        if norm_cfg is None:
-            norm_cfg = {"type": "SyncBN", "requires_grad": True}
-
         self.proj = nn.Sequential(
             nn.Conv2d(in_channels, out_channels // 2, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1)),
-            build_norm_layer(norm_cfg, out_channels // 2)[1],
+            build_norm_layer(norm_callable, out_channels // 2)[1],
             activation_callable(),
             nn.Conv2d(out_channels // 2, out_channels, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1)),
-            build_norm_layer(norm_cfg, out_channels)[1],
+            build_norm_layer(norm_callable, out_channels)[1],
         )
 
     def forward(self, x: torch.Tensor) -> tuple[torch.Tensor, int, int]:
@@ -243,7 +242,8 @@ class MSCABlock(BaseModule):
         drop_path (float): The dropout rate for the path.
         activation_callable (Callable[..., nn.Module]): Activation layer module.
             Defaults to `nn.GELU`.
-        norm_cfg (Dict[str, Union[str, bool]] | None): The config of normalization layer.
+        norm_callable (Callable[..., nn.Module]): Normalization layer module.
+            Defaults to ``partial(SyncBatchNorm, requires_grad=True)``.
     """
 
     def __init__(
@@ -255,13 +255,11 @@ class MSCABlock(BaseModule):
         drop: float = 0.0,
         drop_path: float = 0.0,
         activation_callable: Callable[..., nn.Module] = nn.GELU,
-        norm_cfg: dict[str, str | bool] | None = None,
+        norm_callable: Callable[..., nn.Module] = partial(SyncBatchNorm, requires_grad=True),
     ) -> None:
         """Initialize a MSCABlock."""
         super().__init__()
-        if norm_cfg is None:
-            norm_cfg = {"type": "SyncBN", "requires_grad": True}
-        self.norm1 = build_norm_layer(norm_cfg, channels)[1]  # type: nn.Module
+        self.norm1 = build_norm_layer(norm_callable, channels)[1]  # type: nn.Module
         self.attn = MSCASpatialAttention(
             channels,
             attention_kernel_sizes,
@@ -269,7 +267,7 @@ class MSCABlock(BaseModule):
             activation_callable,
         )  # type: MSCAAttention
         self.drop_path = DropPath(drop_path) if drop_path > 0.0 else nn.Identity()  # type: nn.Module
-        self.norm2 = build_norm_layer(norm_cfg, channels)[1]  # type: nn.Module
+        self.norm2 = build_norm_layer(norm_callable, channels)[1]  # type: nn.Module
         mlp_hidden_channels = int(channels * mlp_ratio)  # type: int
         self.mlp = Mlp(
             in_features=channels,
@@ -291,7 +289,16 @@ class MSCABlock(BaseModule):
 
 
 class OverlapPatchEmbed(BaseModule):
-    """Image to Patch Embedding."""
+    """Image to Patch Embedding.
+
+    Args:
+        patch_size (int, optional): The patch size. Defaults to 7.
+        stride (int, optional): Stride of the convolutional layer. Defaults to 4.
+        in_channels (int, optional): The number of input channels. Defaults to 3.
+        embed_dim (int, optional): The dimensions of embedding. Defaults to 768.
+        norm_callable (Callable[..., nn.Module]): Normalization layer module.
+            Defaults to ``partial(SyncBatchNorm, requires_grad=True)``.
+    """
 
     def __init__(
         self,
@@ -299,24 +306,12 @@ class OverlapPatchEmbed(BaseModule):
         stride: int = 4,
         in_channels: int = 3,
         embed_dim: int = 768,
-        norm_cfg: dict[str, Any] | None = None,
+        norm_callable: Callable[..., nn.Module] = partial(SyncBatchNorm, requires_grad=True),
     ):
-        """Initializes the OverlapPatchEmbed module.
-
-        Args:
-            patch_size (int, optional): The patch size. Defaults to 7.
-            stride (int, optional): Stride of the convolutional layer. Defaults to 4.
-            in_channels (int, optional): The number of input channels. Defaults to 3.
-            embed_dim (int, optional): The dimensions of embedding. Defaults to 768.
-            norm_cfg (dict[str, Any] | None, optional): Config dict for normalization layer.
-                Defaults to None. If None, {"type": "SyncBN", "requires_grad": True} is used.
-        """
+        """Initializes the OverlapPatchEmbed module."""
         super().__init__()
-        if norm_cfg is None:
-            norm_cfg = {"type": "SyncBN", "requires_grad": True}
-
         self.proj = nn.Conv2d(in_channels, embed_dim, kernel_size=patch_size, stride=stride, padding=patch_size // 2)
-        self.norm = build_norm_layer(norm_cfg, embed_dim)[1]
+        self.norm = build_norm_layer(norm_callable, embed_dim)[1]
 
     def forward(self, x: torch.Tensor) -> tuple[torch.Tensor, int, int]:
         """Forward function."""
@@ -350,9 +345,9 @@ class MSCAN(BaseModule):
         attention_kernel_paddings (List[Union[int, List[int]]]): Size of attention paddings
             in Attention Module (Figure 2(b) of original paper). Defaults to [2, [0, 3], [0, 5], [0, 10]].
         activation_callable (Callable[..., nn.Module]): Activation layer module.
-            Defaults to `nn.GELU`.
-        norm_cfg (Dict[str, Union[str, bool]] | None): Config dict for normalization layer.
-            Defaults to dict(type='SyncBN', requires_grad=True) if None.
+            Defaults to ``nn.GELU``.
+        norm_callable (Callable[..., nn.Module]): Normalization layer module.
+            Defaults to ``partial(SyncBatchNorm, requires_grad=True)``.
         init_cfg (Optional[Union[Dict[str, str], List[Dict[str, str]]]]): Initialization config dict.
             Defaults to None.
     """
@@ -369,15 +364,12 @@ class MSCAN(BaseModule):
         attention_kernel_sizes: list[int | list[int]] = [5, [1, 7], [1, 11], [1, 21]],  # noqa: B006
         attention_kernel_paddings: list[int | list[int]] = [2, [0, 3], [0, 5], [0, 10]],  # noqa: B006
         activation_callable: Callable[..., nn.Module] = nn.GELU,
-        norm_cfg: dict[str, str | bool] | None = None,
+        norm_callable: Callable[..., nn.Module] = partial(SyncBatchNorm, requires_grad=True),
         init_cfg: dict[str, str] | list[dict[str, str]] | None = None,
         pretrained_weights: str | None = None,
     ) -> None:
         """Initialize a MSCAN backbone."""
         super().__init__(init_cfg=init_cfg)
-        if norm_cfg is None:
-            norm_cfg = {"type": "SyncBN", "requires_grad": True}
-
         self.depths = depths
         self.num_stages = num_stages
 
@@ -386,14 +378,14 @@ class MSCAN(BaseModule):
 
         for i in range(num_stages):
             if i == 0:
-                patch_embed = StemConv(in_channels, embed_dims[0], norm_cfg=norm_cfg)
+                patch_embed = StemConv(in_channels, embed_dims[0], norm_callable=norm_callable)
             else:
                 patch_embed = OverlapPatchEmbed(
                     patch_size=7 if i == 0 else 3,
                     stride=4 if i == 0 else 2,
                     in_channels=in_channels if i == 0 else embed_dims[i - 1],
                     embed_dim=embed_dims[i],
-                    norm_cfg=norm_cfg,
+                    norm_callable=norm_callable,
                 )
             block = nn.ModuleList(
                 [
@@ -405,7 +397,7 @@ class MSCAN(BaseModule):
                         drop=drop_rate,
                         drop_path=dpr[cur + j],
                         activation_callable=activation_callable,
-                        norm_cfg=norm_cfg,
+                        norm_callable=norm_callable,
                     )
                     for j in range(depths[i])
                 ],

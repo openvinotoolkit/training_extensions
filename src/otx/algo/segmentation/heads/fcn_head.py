@@ -5,7 +5,7 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Callable
 
 import torch
 from torch import Tensor, nn
@@ -22,6 +22,8 @@ class FCNHead(BaseSegmHead):
     This head is implemented of `FCNNet <https://arxiv.org/abs/1411.4038>`_.
 
     Args:
+        norm_callable (Callable[..., nn.Module] | None): Normalization layer module.
+            Defaults to None.
         num_convs (int): Number of convs in the head. Default: 2.
         kernel_size (int): The kernel size for convs in the head. Default: 3.
         concat_input (bool): Whether concat the input and output of convs
@@ -33,7 +35,7 @@ class FCNHead(BaseSegmHead):
         self,
         in_channels: list[int] | int,
         in_index: list[int] | int,
-        norm_cfg: dict[str, Any] | None = None,
+        norm_callable: Callable[..., nn.Module] | None = None,
         input_transform: str | None = None,
         num_convs: int = 2,
         kernel_size: int = 3,
@@ -45,15 +47,7 @@ class FCNHead(BaseSegmHead):
         aggregator_use_concat: bool = False,
         **kwargs: Any,  # noqa: ANN401
     ) -> None:
-        """Initialize a Fully Convolution Networks head.
-
-        Args:
-            num_convs (int): Number of convs in the head.
-            kernel_size (int): The kernel size for convs in the head.
-            concat_input (bool): Whether to concat input and output of convs.
-            dilation (int): The dilation rate for convs in the head.
-            **kwargs: Additional arguments.
-        """
+        """Initialize a Fully Convolution Networks head."""
         if not isinstance(dilation, int):
             msg = f"dilation should be int, but got {type(dilation)}"
             raise TypeError(msg)
@@ -72,7 +66,7 @@ class FCNHead(BaseSegmHead):
             aggregator = IterativeAggregator(
                 in_channels=in_channels,
                 min_channels=aggregator_min_channels,
-                norm_cfg=norm_cfg,
+                norm_callable=norm_callable,
                 merge_norm=aggregator_merge_norm,
                 use_concat=aggregator_use_concat,
             )
@@ -88,7 +82,7 @@ class FCNHead(BaseSegmHead):
 
         super().__init__(
             in_index=in_index,
-            norm_cfg=norm_cfg,
+            norm_callable=norm_callable,
             input_transform=input_transform,
             in_channels=in_channels,
             **kwargs,
@@ -108,7 +102,7 @@ class FCNHead(BaseSegmHead):
                 kernel_size=kernel_size,
                 padding=conv_padding,
                 dilation=dilation,
-                norm_cfg=self.norm_cfg,
+                norm_callable=self.norm_callable,
                 activation_callable=self.activation_callable,
             ),
         ]
@@ -120,7 +114,7 @@ class FCNHead(BaseSegmHead):
                     kernel_size=kernel_size,
                     padding=conv_padding,
                     dilation=dilation,
-                    norm_cfg=self.norm_cfg,
+                    norm_callable=self.norm_callable,
                     activation_callable=self.activation_callable,
                 )
                 for _ in range(num_convs - 1)
@@ -136,7 +130,7 @@ class FCNHead(BaseSegmHead):
                 self.channels,
                 kernel_size=kernel_size,
                 padding=kernel_size // 2,
-                norm_cfg=self.norm_cfg,
+                norm_callable=self.norm_callable,
                 activation_callable=self.activation_callable,
             )
 
