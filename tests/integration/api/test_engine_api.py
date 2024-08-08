@@ -7,6 +7,7 @@ from pathlib import Path
 
 import pytest
 from model_api.tilers import Tiler
+
 from otx.algo.classification.efficientnet import EfficientNetForMulticlassCls
 from otx.core.config.hpo import HpoConfig
 from otx.core.data.module import OTXDataModule
@@ -73,6 +74,7 @@ def test_engine_from_config(
         OTXTaskType.ACTION_CLASSIFICATION,
         OTXTaskType.H_LABEL_CLS,
         OTXTaskType.ROTATED_DETECTION,
+        OTXTaskType.ANOMALY,
         OTXTaskType.ANOMALY_CLASSIFICATION,
         OTXTaskType.ANOMALY_DETECTION,
         OTXTaskType.ANOMALY_SEGMENTATION,
