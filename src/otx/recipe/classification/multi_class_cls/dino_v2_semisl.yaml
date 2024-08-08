@@ -2,22 +2,22 @@ model:
   class_path: otx.algo.classification.vit.VisionTransformerForMulticlassCls
   init_args:
     label_info: 1000
-    freeze_backbone: false
-    backbone: dinov2_vits14_reg
+    arch: "dinov2-small"
     train_type: SEMI_SUPERVISED
 
     optimizer:
       class_path: torch.optim.AdamW
       init_args:
-        lr: 1e-5
+        lr: 0.0001
+        weight_decay: 0.05
 
     scheduler:
       class_path: lightning.pytorch.cli.ReduceLROnPlateau
       init_args:
-        mode: min
+        mode: max
         factor: 0.5
-        patience: 9
-        monitor: train/loss
+        patience: 1
+        monitor: val/accuracy
 
 engine:
   task: MULTI_CLASS_CLS
