@@ -8,9 +8,9 @@ from pathlib import Path
 import numpy as np
 import pytest
 import yaml
+
 from otx.core.types.task import OTXTaskType
 from otx.engine.utils.auto_configurator import DEFAULT_CONFIG_PER_TASK
-
 from tests.e2e.cli.utils import run_main
 from tests.utils import ExportCase2Test
 
@@ -411,6 +411,7 @@ def test_otx_hpo_e2e_cli(
     # Need to change model to stfpm because default anomaly model is 'padim' which doesn't support HPO
     model_cfg = []
     if task in {
+        OTXTaskType.ANOMALY,
         OTXTaskType.ANOMALY_CLASSIFICATION,
         OTXTaskType.ANOMALY_DETECTION,
         OTXTaskType.ANOMALY_SEGMENTATION,

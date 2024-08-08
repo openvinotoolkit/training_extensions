@@ -14,6 +14,7 @@ from datumaro.components.annotation import Bbox, Label, LabelCategories, Mask, P
 from datumaro.components.dataset import Dataset as DmDataset
 from datumaro.components.dataset_base import DatasetItem
 from datumaro.components.media import Image
+
 from otx.core.data.dataset.action_classification import (
     ActionClsDataEntity,
     OTXActionClsDataset,
@@ -49,9 +50,10 @@ from otx.core.data.mem_cache import MemCacheHandlerSingleton
 from otx.core.types.task import OTXTaskType
 
 if TYPE_CHECKING:
+    from pytest_mock import MockerFixture
+
     from otx.core.data.dataset.base import OTXDataset, T_OTXDataEntity
     from otx.core.data.mem_cache import MemCacheHandlerBase
-    from pytest_mock import MockerFixture
 
 _LABEL_NAMES = ["Non-Rigid", "Rigid", "Rectangle", "Triangle", "Circle", "Lion", "Panda"]
 
@@ -114,6 +116,7 @@ def fxt_mock_dm_subset(mocker: MockerFixture, fxt_dm_item: DatasetItem) -> Magic
         (OTXInstanceSegDataset, InstanceSegDataEntity, {"include_polygons": True}),
         (OTXSegmentationDataset, SegDataEntity, {}),
         (OTXActionClsDataset, ActionClsDataEntity, {}),
+        (AnomalyDataset, AnomalyClassificationDataItem, {"task_type": OTXTaskType.ANOMALY}),
         (AnomalyDataset, AnomalyClassificationDataItem, {"task_type": OTXTaskType.ANOMALY_CLASSIFICATION}),
         (AnomalyDataset, AnomalyDetectionDataItem, {"task_type": OTXTaskType.ANOMALY_DETECTION}),
         (AnomalyDataset, AnomalySegmentationDataItem, {"task_type": OTXTaskType.ANOMALY_SEGMENTATION}),
