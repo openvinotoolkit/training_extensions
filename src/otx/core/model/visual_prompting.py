@@ -235,7 +235,7 @@ class OTXVisualPromptingModel(OTXModel[VisualPromptingBatchDataEntity, VisualPro
 
         If there are empty prompts (shape=0), they will be converted to None.
         """
-        return [None if p is None else None if p.shape[0] == 0 else p for p in prompts]
+        return [None if p is None or p.shape[0] == 0 else p for p in prompts]
 
     @property
     def _exporter(self) -> OTXModelExporter:
