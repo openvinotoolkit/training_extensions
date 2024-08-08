@@ -31,7 +31,6 @@ from torchvision import tv_tensors
 from torchvision._utils import sequence_to_str
 from torchvision.transforms.v2 import functional as F  # noqa: N812
 
-from otx.algo.keypoint_detection.utils.simcc_label import SimCCLabel
 from otx.core.data.entity.action_classification import ActionClsDataEntity
 from otx.core.data.entity.base import (
     OTXDataEntity,
@@ -3521,6 +3520,7 @@ class GenerateTarget(tvt_v2.Transform, NumpytoTVTensorMixin):
         is_numpy_to_tvtensor: bool = False,
     ) -> None:
         super().__init__()
+        from otx.algo.keypoint_detection.utils.simcc_label import SimCCLabel
 
         self.encoder = SimCCLabel(
             input_size=(192, 256),
