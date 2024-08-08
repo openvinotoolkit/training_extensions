@@ -10,7 +10,7 @@ Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/d
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, Any, Sequence
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 from datumaro.components.annotation import Bbox
@@ -22,21 +22,21 @@ from otx.algo.detection.base_models import SingleStageDetector
 from otx.algo.detection.heads import SSDHead
 from otx.algo.detection.utils.prior_generators import SSDAnchorGeneratorClustered
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
+from otx.core.config.data import TileConfig
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter
-from otx.core.model.detection import ExplainableOTXDetModel
-from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
 from otx.core.metrics.fmeasure import MeanAveragePrecisionFMeasureCallable
-from otx.core.config.data import TileConfig
+from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
+from otx.core.model.detection import ExplainableOTXDetModel
 
 if TYPE_CHECKING:
     import torch
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
 
     from otx.core.data.dataset.base import OTXDataset
-    from otx.core.types.label import LabelInfoTypes
-    from otx.core.schedulers import LRSchedulerListCallable
     from otx.core.metrics import MetricCallable
+    from otx.core.schedulers import LRSchedulerListCallable
+    from otx.core.types.label import LabelInfoTypes
 
 
 logger = logging.getLogger()
@@ -55,7 +55,7 @@ class SSD(ExplainableOTXDetModel):
     def __init__(
         self,
         label_info: LabelInfoTypes,
-        input_size: Sequence[int] = (1, 3, 864, 864),
+        input_size: tuple[int, ...] = (1, 3, 864, 864),
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MeanAveragePrecisionFMeasureCallable,

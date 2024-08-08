@@ -4,7 +4,7 @@
 """X3D model implementation."""
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Sequence
+from typing import TYPE_CHECKING
 
 from torch import nn
 
@@ -31,7 +31,7 @@ class X3D(OTXActionClsModel):
     def __init__(
         self,
         label_info: LabelInfoTypes,
-        input_size: Sequence[int] = (1, 1, 3, 8, 224, 224),
+        input_size: tuple[int, ...] = (1, 1, 3, 8, 224, 224),
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MultiClassClsMetricCallable,

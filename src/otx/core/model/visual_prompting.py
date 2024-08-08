@@ -162,7 +162,7 @@ class OTXVisualPromptingModel(OTXModel[VisualPromptingBatchDataEntity, VisualPro
     def __init__(
         self,
         label_info: LabelInfoTypes = NullLabelInfo(),
-        input_size: Sequence[int] = (1, 3, 1024, 1024),
+        input_size: tuple[int, ...] = (1, 3, 1024, 1024),
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = VisualPromptingMetricCallable,
@@ -286,7 +286,7 @@ class OTXZeroShotVisualPromptingModel(
 
     def __init__(
         self,
-        input_size: Sequence[int],
+        input_size: tuple[int, ...],
         label_info: LabelInfoTypes = NullLabelInfo(),
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,

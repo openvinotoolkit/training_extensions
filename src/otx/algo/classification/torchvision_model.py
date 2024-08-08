@@ -5,7 +5,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Literal, Sequence
+from typing import TYPE_CHECKING, Any, Literal
 
 import torch
 from torch import Tensor, nn
@@ -422,7 +422,7 @@ class OTXTVModel(OTXModel):
             OTXTaskType.H_LABEL_CLS,
         ] = OTXTaskType.MULTI_CLASS_CLS,
         train_type: Literal[OTXTrainType.SUPERVISED, OTXTrainType.SEMI_SUPERVISED] = OTXTrainType.SUPERVISED,
-        input_size: Sequence[int] = (1, 3, 224, 224),
+        input_size: tuple[int, ...] = (1, 3, 224, 224),
     ) -> None:
         self.backbone = backbone
         self.freeze_backbone = freeze_backbone

@@ -5,7 +5,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, ClassVar, Sequence
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from torch.onnx import OperatorExportTypes
 
@@ -14,19 +14,19 @@ from otx.algo.segmentation.heads import FCNHead
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter
-from otx.core.model.segmentation import TorchVisionCompatibleModel
-from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
 from otx.core.metrics.dice import SegmCallable
+from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
+from otx.core.model.segmentation import TorchVisionCompatibleModel
 
 from .base_model import BaseSegmModel
 
 if TYPE_CHECKING:
-    from torch import nn
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
+    from torch import nn
 
+    from otx.core.metrics import MetricCallable
     from otx.core.schedulers import LRSchedulerListCallable
     from otx.core.types.label import LabelInfoTypes
-    from otx.core.metrics import MetricCallable
 
 
 class LiteHRNetS(BaseSegmModel):
@@ -524,10 +524,11 @@ LITEHRNET_VARIANTS = {
 
 class OTXLiteHRNet(TorchVisionCompatibleModel):
     """LiteHRNet Model."""
+
     def __init__(
         self,
         label_info: LabelInfoTypes,
-        input_size: Sequence[int] = (1, 3, 512, 512),
+        input_size: tuple[int, ...] = (1, 3, 512, 512),
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = SegmCallable,  # type: ignore[assignment]

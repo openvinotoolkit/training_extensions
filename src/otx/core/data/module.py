@@ -24,13 +24,13 @@ from otx.core.data.mem_cache import (
     parse_mem_cache_size_to_int,
 )
 from otx.core.data.pre_filtering import pre_filtering
+from otx.core.data.utils import adapt_input_size_to_dataset, adapt_tile_config
 from otx.core.types.device import DeviceType
 from otx.core.types.image import ImageColorChannel
 from otx.core.types.label import LabelInfo
 from otx.core.types.task import OTXTaskType
 from otx.core.utils.instantiators import instantiate_sampler
 from otx.core.utils.utils import get_adaptive_num_workers
-from otx.core.data.utils import adapt_input_size_to_dataset, adapt_tile_config
 
 if TYPE_CHECKING:
     from lightning.pytorch.utilities.parsing import AttributeDict
@@ -139,7 +139,7 @@ class OTXDataModule(LightningDataModule):
             input_size = adapt_input_size_to_dataset(
                 dataset,
                 input_size,
-                adaptive_input_size=="downscale",
+                adaptive_input_size == "downscale",
                 input_size_multiplier,
             )
         if input_size is not None:

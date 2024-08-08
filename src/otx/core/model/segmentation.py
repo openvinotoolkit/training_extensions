@@ -37,7 +37,7 @@ class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity]):
     def __init__(
         self,
         label_info: LabelInfoTypes,
-        input_size: Sequence[int],
+        input_size: tuple[int, ...],
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = SegmCallable,  # type: ignore[assignment]
@@ -47,7 +47,7 @@ class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity]):
 
         Args:
             label_info (LabelInfoTypes): The label information for the segmentation model.
-            input_size (Sequence[int]): The input shape of the model.
+            input_size (tuple[int, ...]): The input shape of the model.
             optimizer (OptimizerCallable, optional): The optimizer to use for training.
                 Defaults to DefaultOptimizerCallable.
             scheduler (LRSchedulerCallable | LRSchedulerListCallable, optional):
@@ -130,7 +130,7 @@ class TorchVisionCompatibleModel(OTXSegmentationModel):
     def __init__(
         self,
         label_info: LabelInfoTypes,
-        input_size: Sequence[int],
+        input_size: tuple[int, ...],
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = SegmCallable,  # type: ignore[assignment]
@@ -145,7 +145,7 @@ class TorchVisionCompatibleModel(OTXSegmentationModel):
 
         Args:
             label_info (LabelInfoTypes): The label information for the segmentation model.
-            input_size (Sequence[int]): The input shape of the model.
+            input_size (tuple[int, ...]): The input shape of the model.
             optimizer (OptimizerCallable, optional): The optimizer callable for the model.
                 Defaults to DefaultOptimizerCallable.
             scheduler (LRSchedulerCallable | LRSchedulerListCallable, optional):

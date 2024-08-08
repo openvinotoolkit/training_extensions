@@ -8,7 +8,7 @@ import logging as log
 import types
 from abc import abstractmethod
 from contextlib import contextmanager
-from typing import TYPE_CHECKING, Any, Callable, Iterator, Literal, Sequence
+from typing import TYPE_CHECKING, Any, Callable, Iterator, Literal
 
 import torch
 from model_api.tilers import DetectionTiler
@@ -385,7 +385,7 @@ class ExplainableOTXDetModel(OTXDetectionModel):
     def __init__(
         self,
         label_info: LabelInfoTypes,
-        input_size: Sequence[int],
+        input_size: tuple[int, ...],
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MeanAveragePrecisionFMeasureCallable,

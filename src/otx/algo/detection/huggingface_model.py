@@ -5,15 +5,14 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Sequence
+from typing import TYPE_CHECKING, Any
 
 import torch
 from torch import nn
 from torchvision import tv_tensors
 from transformers import AutoImageProcessor, AutoModelForObjectDetection
-from transformers.configuration_utils import PretrainedConfig
-# from transformers.image_processing_base import ImageProcessingMixin
 
+# from transformers.image_processing_base import ImageProcessingMixin
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.detection import DetBatchDataEntity, DetBatchPredEntity
 from otx.core.data.entity.utils import stack_batch
@@ -62,7 +61,7 @@ class HuggingFaceModelForDetection(OTXDetectionModel):
         self,
         model_name_or_path: str,  # https://huggingface.co/models?pipeline_tag=object-detection
         label_info: LabelInfoTypes,
-        input_size: Sequence[int] = (1, 3, 800, 992),  # detection default input size
+        input_size: tuple[int, ...] = (1, 3, 800, 992),  # detection default input size
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MeanAveragePrecisionFMeasureCallable,

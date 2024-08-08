@@ -6,7 +6,7 @@
 from __future__ import annotations
 
 import logging as log
-from typing import TYPE_CHECKING, Any, Literal, Sequence
+from typing import TYPE_CHECKING, Any, Literal
 
 import torch
 from torch import Tensor, nn
@@ -496,7 +496,7 @@ class OTXSegmentAnything(OTXVisualPromptingModel):
         self,
         backbone: Literal["tiny_vit", "vit_b"],
         label_info: LabelInfoTypes = NullLabelInfo(),
-        input_size: Sequence[int] = (1, 3, 1024, 1024),
+        input_size: tuple[int, ...] = (1, 3, 1024, 1024),
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = VisualPromptingMetricCallable,
@@ -516,7 +516,7 @@ class OTXSegmentAnything(OTXVisualPromptingModel):
         self.config = {
             "backbone": backbone,
             "image_size": input_size[-1],
-            "image_embedding_size" : input_size[-1] // 16,
+            "image_embedding_size": input_size[-1] // 16,
             "freeze_image_encoder": freeze_image_encoder,
             "freeze_prompt_encoder": freeze_prompt_encoder,
             "freeze_mask_decoder": freeze_mask_decoder,

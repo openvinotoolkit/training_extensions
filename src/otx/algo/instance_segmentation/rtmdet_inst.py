@@ -5,7 +5,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Sequence
+from typing import TYPE_CHECKING
 
 from otx.algo.common.backbones import CSPNeXt
 from otx.algo.common.losses import CrossEntropyLoss, GIoULoss, QualityFocalLoss
@@ -17,20 +17,20 @@ from otx.algo.detection.base_models import SingleStageDetector
 from otx.algo.detection.necks import CSPNeXtPAFPN
 from otx.algo.instance_segmentation.heads import RTMDetInsSepBNHead
 from otx.algo.instance_segmentation.losses import DiceLoss
+from otx.core.config.data import TileConfig
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter
-from otx.core.model.instance_segmentation import ExplainableOTXInstanceSegModel
-from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
-from otx.core.config.data import TileConfig
 from otx.core.metrics.mean_ap import MaskRLEMeanAPFMeasureCallable
+from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
+from otx.core.model.instance_segmentation import ExplainableOTXInstanceSegModel
 
 if TYPE_CHECKING:
-    from torch import Tensor
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
+    from torch import Tensor
 
-    from otx.core.types.label import LabelInfoTypes
-    from otx.core.schedulers import LRSchedulerListCallable
     from otx.core.metrics import MetricCallable
+    from otx.core.schedulers import LRSchedulerListCallable
+    from otx.core.types.label import LabelInfoTypes
 
 
 class RTMDetInst(ExplainableOTXInstanceSegModel):
@@ -96,7 +96,7 @@ class RTMDetInstTiny(RTMDetInst):
     def __init__(
         self,
         label_info: LabelInfoTypes,
-        input_size: Sequence[int] = (1, 3, 640, 640),
+        input_size: tuple[int, ...] = (1, 3, 640, 640),
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MaskRLEMeanAPFMeasureCallable,

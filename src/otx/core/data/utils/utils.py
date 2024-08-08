@@ -1,4 +1,3 @@
-
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -173,7 +172,7 @@ def adapt_input_size_to_dataset(
 
     train_dataset = dataset.subsets().get("train")
     if train_dataset is None:
-        return
+        return None
 
     logger.info("Adapting model input size based on dataset stat")
     stat = compute_robust_dataset_statistics(train_dataset)

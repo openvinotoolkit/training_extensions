@@ -104,7 +104,7 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
     def __init__(
         self,
         label_info: LabelInfoTypes,
-        input_size: Sequence[int] | None = None,
+        input_size: tuple[int, ...] | None = None,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = NullMetricCallable,
@@ -810,7 +810,7 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
 
         raise TypeError(label_info)
 
-    def _check_input_size(self, input_size: Sequence[int] | None = None) -> None:
+    def _check_input_size(self, input_size: tuple[int, ...] | None = None) -> None:
         if (
             input_size is not None
             and hasattr(self, "input_size_multiplier")
@@ -818,6 +818,7 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
         ):
             msg = f"Input size should be a multiple of {self.input_size_multiplier}, but got {input_size[-2:]} instead."
             raise ValueError(msg)
+
 
 class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
     """Base class for the OpenVINO model.

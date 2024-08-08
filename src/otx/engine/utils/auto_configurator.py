@@ -8,7 +8,7 @@ from __future__ import annotations
 import logging
 from copy import deepcopy
 from pathlib import Path
-from typing import TYPE_CHECKING, Sequence
+from typing import TYPE_CHECKING
 from warnings import warn
 
 import datumaro
@@ -22,7 +22,6 @@ from otx.core.types.label import LabelInfo, LabelInfoTypes
 from otx.core.types.task import OTXTaskType
 from otx.core.utils.imports import get_otx_root_path
 from otx.core.utils.instantiators import partial_instantiate_class
-from otx.core.utils.utils import import_object_from_module
 from otx.utils.utils import can_pass_tile_config, get_model_cls_from_config, should_pass_label_info
 
 if TYPE_CHECKING:
@@ -241,13 +240,19 @@ class AutoConfigurator:
             **data_config,
         )
 
-    def get_model(self, model_name: str | None = None, label_info: LabelInfoTypes | None = None, input_size: Sequence[int] | None = None) -> OTXModel:
+    def get_model(
+        self,
+        model_name: str | None = None,
+        label_info: LabelInfoTypes | None = None,
+        input_size: tuple[int, ...] | int | None = None,
+    ) -> OTXModel:
         """Retrieves the OTXModel instance based on the provided model name and meta information.
 
         Args:
             model_name (str | None): The name of the model to retrieve. If None, the default model will be used.
             label_info (LabelInfoTypes | None): The meta information about the labels.
                 If provided, the number of classes will be updated in the model's configuration.
+            input_size (tuple[int, ...] | int | None): Input size the model will use.
 
         Returns:
             OTXModel: The instantiated OTXModel instance.

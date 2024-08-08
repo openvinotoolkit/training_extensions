@@ -3,6 +3,6 @@
 #
 """Utility modules for core data modules."""
 
-from .utils import adapt_tile_config, adapt_input_size_to_dataset
+from .utils import adapt_input_size_to_dataset, adapt_tile_config
 
 __all__ = ["adapt_tile_config", "adapt_input_size_to_dataset"]

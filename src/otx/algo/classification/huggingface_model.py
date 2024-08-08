@@ -6,7 +6,7 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, Any, Sequence
+from typing import TYPE_CHECKING, Any
 
 import torch
 from torch import Tensor, nn
@@ -35,6 +35,7 @@ if TYPE_CHECKING:
 
 DEFAULT_INPUT_SIZE = (1, 2, 224, 224)
 logger = logging.getLogger(__name__)
+
 
 class HuggingFaceModelForMulticlassCls(OTXMulticlassClsModel):
     """HuggingFaceModelForMulticlassCls is a class that represents a Hugging Face model for multiclass classification.
@@ -66,7 +67,7 @@ class HuggingFaceModelForMulticlassCls(OTXMulticlassClsModel):
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MultiClassClsMetricCallable,
         torch_compile: bool = False,
-        input_size: Sequence[int] = DEFAULT_INPUT_SIZE,
+        input_size: tuple[int, ...] = DEFAULT_INPUT_SIZE,
     ) -> None:
         self.model_name = model_name_or_path
 

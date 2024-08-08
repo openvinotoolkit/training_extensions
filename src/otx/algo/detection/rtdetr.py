@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import copy
 import re
-from typing import TYPE_CHECKING, Any, Sequence
+from typing import TYPE_CHECKING, Any
 
 import torch
 from torch import Tensor, nn
@@ -18,21 +18,21 @@ from otx.algo.detection.backbones import PResNet
 from otx.algo.detection.base_models.detection_transformer import DETR
 from otx.algo.detection.heads import RTDETRTransformer
 from otx.algo.detection.necks import HybridEncoder
+from otx.core.config.data import TileConfig
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.detection import DetBatchDataEntity, DetBatchPredEntity
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter
-from otx.core.model.detection import ExplainableOTXDetModel
-from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
 from otx.core.metrics.fmeasure import MeanAveragePrecisionFMeasureCallable
-from otx.core.config.data import TileConfig
+from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
+from otx.core.model.detection import ExplainableOTXDetModel
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
 
-    from otx.core.types.label import LabelInfoTypes
-    from otx.core.schedulers import LRSchedulerListCallable
     from otx.core.metrics import MetricCallable
+    from otx.core.schedulers import LRSchedulerListCallable
+    from otx.core.types.label import LabelInfoTypes
 
 
 class RTDETR(ExplainableOTXDetModel):
@@ -46,7 +46,7 @@ class RTDETR(ExplainableOTXDetModel):
     def __init__(
         self,
         label_info: LabelInfoTypes,
-        input_size: Sequence[int] = (1, 3, 640, 640),
+        input_size: tuple[int, ...] = (1, 3, 640, 640),
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MeanAveragePrecisionFMeasureCallable,

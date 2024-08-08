@@ -6,7 +6,7 @@
 from __future__ import annotations
 
 from collections import OrderedDict
-from typing import Any, Sequence, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import torch
 from torch import Tensor, nn
@@ -24,22 +24,22 @@ from torchvision.models.detection.roi_heads import paste_masks_in_image
 from torchvision.models.resnet import resnet50
 
 from otx.algo.instance_segmentation.heads import TVRoIHeads
+from otx.core.config.data import TileConfig
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.instance_segmentation import InstanceSegBatchDataEntity, InstanceSegBatchPredEntity
 from otx.core.data.entity.utils import stack_batch
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter
-from otx.core.model.instance_segmentation import ExplainableOTXInstanceSegModel
-from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
-from otx.core.config.data import TileConfig
 from otx.core.metrics.mean_ap import MaskRLEMeanAPFMeasureCallable
+from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
+from otx.core.model.instance_segmentation import ExplainableOTXInstanceSegModel
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
 
-    from otx.core.types.label import LabelInfoTypes
-    from otx.core.schedulers import LRSchedulerListCallable
     from otx.core.metrics import MetricCallable
+    from otx.core.schedulers import LRSchedulerListCallable
+    from otx.core.types.label import LabelInfoTypes
 
 
 class _TVMaskRCNN(MaskRCNN):
@@ -275,7 +275,7 @@ class TVMaskRCNNR50(TVMaskRCNN):
     def __init__(
         self,
         label_info: LabelInfoTypes,
-        input_size: Sequence[int] = (1, 3, 1024, 1024),
+        input_size: tuple[int, ...] = (1, 3, 1024, 1024),
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MaskRLEMeanAPFMeasureCallable,

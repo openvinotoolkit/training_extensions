@@ -7,7 +7,7 @@ from __future__ import annotations
 import types
 from copy import deepcopy
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, Generic, Sequence
+from typing import TYPE_CHECKING, Any, Callable, Generic
 from urllib.parse import urlparse
 
 import numpy as np
@@ -229,7 +229,7 @@ class VisionTransformerForMulticlassCls(ForwardExplainMixInForViT, OTXMulticlass
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MultiClassClsMetricCallable,
         torch_compile: bool = False,
-        input_size: Sequence[int] = (1, 3, 224, 224),
+        input_size: tuple[int, ...] = (1, 3, 224, 224),
     ) -> None:
         self.arch = arch
         self.lora = lora
@@ -468,7 +468,7 @@ class VisionTransformerForMultilabelCls(ForwardExplainMixInForViT, OTXMultilabel
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MultiLabelClsMetricCallable,
         torch_compile: bool = False,
-        input_size: Sequence[int] = (1, 3, 224, 224),
+        input_size: tuple[int, ...] = (1, 3, 224, 224),
     ) -> None:
         self.arch = arch
         self.lora = lora
@@ -617,7 +617,7 @@ class VisionTransformerForHLabelCls(ForwardExplainMixInForViT, OTXHlabelClsModel
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = HLabelClsMetricCallble,
         torch_compile: bool = False,
-        input_size: Sequence[int] = (1, 3, 224, 224),
+        input_size: tuple[int, ...] = (1, 3, 224, 224),
     ) -> None:
         self.arch = arch
         self.lora = lora

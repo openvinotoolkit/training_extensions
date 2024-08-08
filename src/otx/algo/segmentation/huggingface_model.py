@@ -6,7 +6,7 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, Any, Sequence
+from typing import TYPE_CHECKING, Any
 
 import torch
 from torch import nn
@@ -65,7 +65,7 @@ class HuggingFaceModelForSegmentation(OTXSegmentationModel):
         self,
         model_name_or_path: str,  # https://huggingface.co/models?pipeline_tag=image-segmentation
         label_info: LabelInfoTypes,
-        input_size: Sequence[int] = (1, 3, 512, 512),  # sementic segmentation default input size
+        input_size: tuple[int, ...] = (1, 3, 512, 512),  # sementic segmentation default input size
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = SegmCallable,  # type: ignore[assignment]
@@ -89,7 +89,7 @@ class HuggingFaceModelForSegmentation(OTXSegmentationModel):
         kwargs = {}
         if "image_size" in model_config:
             kwargs["image_size"] = self.input_size[-1]
-        
+
         if (patch_size := model_config.get("patch_sizes")) != None:
             if isinstance(patch_size, (list, tuple)):
                 patch_size = patch_size

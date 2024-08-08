@@ -7,7 +7,7 @@ from __future__ import annotations
 import logging as log
 import types
 from contextlib import contextmanager
-from typing import TYPE_CHECKING, Any, Callable, Iterator, Literal, Sequence
+from typing import TYPE_CHECKING, Any, Callable, Iterator, Literal
 
 import numpy as np
 import torch
@@ -49,7 +49,7 @@ class OTXInstanceSegModel(OTXModel[InstanceSegBatchDataEntity, InstanceSegBatchP
     def __init__(
         self,
         label_info: LabelInfoTypes,
-        input_size: Sequence[int],
+        input_size: tuple[int, ...],
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MaskRLEMeanAPFMeasureCallable,
@@ -384,7 +384,7 @@ class ExplainableOTXInstanceSegModel(OTXInstanceSegModel):
     def __init__(
         self,
         label_info: LabelInfoTypes,
-        input_size: Sequence[int],
+        input_size: tuple[int, ...],
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MaskRLEMeanAPFMeasureCallable,

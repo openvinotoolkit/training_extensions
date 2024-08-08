@@ -5,7 +5,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Sequence
+from typing import TYPE_CHECKING, Any
 
 from otx.algo.common.losses import CrossEntropyLoss, L1Loss
 from otx.algo.detection.backbones import CSPDarknet
@@ -15,23 +15,24 @@ from otx.algo.detection.losses import IoULoss
 from otx.algo.detection.necks import YOLOXPAFPN
 from otx.algo.detection.utils.assigners import SimOTAAssigner
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
+from otx.core.config.data import TileConfig
 from otx.core.data.entity.detection import DetBatchDataEntity
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter
+from otx.core.metrics.fmeasure import MeanAveragePrecisionFMeasureCallable
+from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
 from otx.core.model.detection import ExplainableOTXDetModel
 from otx.core.types.export import OTXExportFormatType
 from otx.core.types.precision import OTXPrecisionType
-from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
-from otx.core.metrics.fmeasure import MeanAveragePrecisionFMeasureCallable
-from otx.core.config.data import TileConfig
 
 if TYPE_CHECKING:
     from pathlib import Path
+
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
 
-    from otx.core.types.label import LabelInfoTypes
-    from otx.core.schedulers import LRSchedulerListCallable
     from otx.core.metrics import MetricCallable
+    from otx.core.schedulers import LRSchedulerListCallable
+    from otx.core.types.label import LabelInfoTypes
 
 
 class YOLOX(ExplainableOTXDetModel):
@@ -42,7 +43,7 @@ class YOLOX(ExplainableOTXDetModel):
     def __init__(
         self,
         label_info: LabelInfoTypes,
-        input_size: Sequence[int] = (1, 3, 640, 640),
+        input_size: tuple[int, ...] = (1, 3, 640, 640),
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MeanAveragePrecisionFMeasureCallable,
@@ -149,7 +150,7 @@ class YOLOXTINY(YOLOX):
     def __init__(
         self,
         label_info: LabelInfoTypes,
-        input_size: Sequence[int] = (1, 3, 416, 416),
+        input_size: tuple[int, ...] = (1, 3, 416, 416),
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MeanAveragePrecisionFMeasureCallable,

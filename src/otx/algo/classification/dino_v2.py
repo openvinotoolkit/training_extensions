@@ -8,7 +8,7 @@ from __future__ import annotations
 import logging
 import os
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Literal, Sequence
+from typing import TYPE_CHECKING, Any, Literal
 
 import torch
 from torch import Tensor, nn
@@ -119,7 +119,7 @@ class DINOv2RegisterClassifier(OTXMulticlassClsModel):
         metric: MetricCallable = MultiClassClsMetricCallable,
         torch_compile: bool = False,
         freeze_backbone: bool = False,
-        input_size: Sequence[int] = (1, 3, 224, 224),
+        input_size: tuple[int, ...] = (1, 3, 224, 224),
     ) -> None:
         self.backbone = backbone
         self.freeze_backbone = freeze_backbone

@@ -5,7 +5,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Sequence
+from typing import TYPE_CHECKING
 
 from otx.algo.common.backbones import ResNeXt, build_model_including_pytorchcv
 from otx.algo.common.losses import CrossEntropyLoss, CrossSigmoidFocalLoss, GIoULoss
@@ -17,20 +17,20 @@ from otx.algo.detection.heads import ATSSHead
 from otx.algo.detection.necks import FPN
 from otx.algo.detection.utils.assigners import ATSSAssigner
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
+from otx.core.config.data import TileConfig
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter
-from otx.core.model.detection import ExplainableOTXDetModel
-from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
 from otx.core.metrics.fmeasure import MeanAveragePrecisionFMeasureCallable
-from otx.core.config.data import TileConfig
+from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
+from otx.core.model.detection import ExplainableOTXDetModel
 
 if TYPE_CHECKING:
-    from typing_extensions import Self
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
+    from typing_extensions import Self
 
-    from otx.core.types.label import LabelInfoTypes
-    from otx.core.schedulers import LRSchedulerListCallable
     from otx.core.metrics import MetricCallable
+    from otx.core.schedulers import LRSchedulerListCallable
+    from otx.core.types.label import LabelInfoTypes
 
 
 class ATSS(ExplainableOTXDetModel):
@@ -39,7 +39,7 @@ class ATSS(ExplainableOTXDetModel):
     def __init__(
         self,
         label_info: LabelInfoTypes,
-        input_size: Sequence[int] = (1, 3, 800, 992),
+        input_size: tuple[int, ...] = (1, 3, 800, 992),
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MeanAveragePrecisionFMeasureCallable,

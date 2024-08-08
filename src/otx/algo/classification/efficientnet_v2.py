@@ -5,7 +5,7 @@
 from __future__ import annotations
 
 from copy import deepcopy
-from typing import TYPE_CHECKING, Any, Sequence
+from typing import TYPE_CHECKING, Any
 
 import torch
 from torch import Tensor, nn
@@ -60,7 +60,7 @@ class EfficientNetV2ForMulticlassCls(OTXMulticlassClsModel):
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MultiClassClsMetricCallable,
         torch_compile: bool = False,
-        input_size: Sequence[int] = (1, 3, 224, 224),
+        input_size: tuple[int, ...] = (1, 3, 224, 224),
     ) -> None:
         super().__init__(
             label_info=label_info,
@@ -269,7 +269,7 @@ class EfficientNetV2ForMultilabelCls(OTXMultilabelClsModel):
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MultiLabelClsMetricCallable,
         torch_compile: bool = False,
-        input_size: Sequence[int] = (1, 3, 224, 224),
+        input_size: tuple[int, ...] = (1, 3, 224, 224),
     ) -> None:
         super().__init__(
             label_info=label_info,
@@ -396,7 +396,7 @@ class EfficientNetV2ForHLabelCls(OTXHlabelClsModel):
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = HLabelClsMetricCallble,
         torch_compile: bool = False,
-        input_size: Sequence[int] = (1, 3, 224, 224),
+        input_size: tuple[int, ...] = (1, 3, 224, 224),
     ) -> None:
         super().__init__(
             label_info=label_info,

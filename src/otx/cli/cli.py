@@ -346,8 +346,10 @@ class OTXCLI:
                 if isinstance(input_size, int):
                     input_size = (input_size, input_size)
                 else:
-                    input_size = tuple(input_size)
-                model_config["init_args"]["input_size"] = tuple(model_config["init_args"]["input_size"][:-2]) + input_size
+                    input_size = tuple(input_size)  # type: ignore[assignment]
+                model_config["init_args"]["input_size"] = (
+                    tuple(model_config["init_args"]["input_size"][:-2]) + input_size
+                )
 
             # Instantiate the model and needed components
             self.model = self.instantiate_model(model_config=model_config)
