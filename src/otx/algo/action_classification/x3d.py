@@ -65,7 +65,7 @@ class X3D(OTXActionClsModel):
                 gamma_b=2.25,
                 gamma_d=2.2,
                 gamma_w=1,
-                norm_cfg={"type": "BN3d", "requires_grad": True},
+                norm_callable=partial(nn.BatchNorm3d, requires_grad=True),
                 activation_callable=partial(nn.ReLU, inplace=True),
             ),
             cls_head=X3DHead(

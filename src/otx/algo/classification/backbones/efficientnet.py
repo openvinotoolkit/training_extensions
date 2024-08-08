@@ -5,6 +5,7 @@
 
 from __future__ import annotations
 
+from functools import partial
 import math
 from pathlib import Path
 from typing import Callable, Literal
@@ -44,7 +45,7 @@ def conv1x1_block(
         padding=padding,
         groups=groups,
         bias=bias,
-        norm_cfg=({"type": "BN", "eps": bn_eps} if use_bn else None),
+        norm_callable=partial(nn.BatchNorm2d, eps=bn_eps) if use_bn else None,
         activation_callable=activation_callable,
     )
 
@@ -71,7 +72,7 @@ def conv3x3_block(
         dilation=dilation,
         groups=groups,
         bias=bias,
-        norm_cfg=({"type": "BN", "eps": bn_eps} if use_bn else None),
+        norm_callable=partial(nn.BatchNorm2d, eps=bn_eps) if use_bn else None,
         activation_callable=activation_callable,
     )
 
@@ -97,7 +98,7 @@ def dwconv3x3_block(
         dilation=dilation,
         groups=out_channels,
         bias=bias,
-        norm_cfg=({"type": "BN", "eps": bn_eps} if use_bn else None),
+        norm_callable=partial(nn.BatchNorm2d, eps=bn_eps) if use_bn else None,
         activation_callable=activation_callable,
     )
 
@@ -123,7 +124,7 @@ def dwconv5x5_block(
         dilation=dilation,
         groups=out_channels,
         bias=bias,
-        norm_cfg=({"type": "BN", "eps": bn_eps} if use_bn else None),
+        norm_callable=partial(nn.BatchNorm2d, eps=bn_eps) if use_bn else None,
         activation_callable=activation_callable,
     )
 

@@ -3,7 +3,9 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 
 """Copy from mmpretrain/models/utils/swiglu_ffn.py."""
+
 from __future__ import annotations
+from typing import Callable
 
 import torch
 from torch import nn
@@ -25,7 +27,7 @@ class SwiGLUFFN(nn.Module):
         out_dims: int | None = None,
         bias: bool = True,
         dropout_layer: dict | None = None,
-        norm_cfg: dict | None = None,
+        norm_callable: Callable[..., nn.Module] | None = None,
         add_identity: bool = True,
     ) -> None:
         super().__init__()
@@ -35,8 +37,8 @@ class SwiGLUFFN(nn.Module):
 
         self.w12 = nn.Linear(self.embed_dims, 2 * hidden_dims, bias=bias)
 
-        if norm_cfg is not None:
-            _, self.norm = build_norm_layer(norm_cfg, hidden_dims)
+        if norm_callable is not None:
+            _, self.norm = build_norm_layer(norm_callable, hidden_dims)
         else:
             self.norm = nn.Identity()
 
