@@ -460,6 +460,8 @@ def test_otx_hpo_e2e(
         pytest.skip("ZERO_SHOT_VISUAL_PROMPTING doesn't support HPO.")
     if "padim" in recipe:
         pytest.skip("padim model doesn't support HPO.")
+    if model_name.endswith("_semisl"):
+        pytest.skip("Semi-supervised learning model doesn't support HPO.")
 
     tmp_path_hpo = tmp_path / f"otx_hpo_{model_name}"
     tmp_path_hpo.mkdir(parents=True)
