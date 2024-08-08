@@ -487,7 +487,7 @@ class TinyViT(nn.Module):
 
     def __init__(
         self,
-        img_size: int = 224,
+        img_size: int = 1024,
         in_chans: int = 3,
         embed_dims: list[int] | None = None,
         depths: list[int] | None = None,
@@ -495,7 +495,7 @@ class TinyViT(nn.Module):
         window_sizes: list[int] | None = None,
         mlp_ratio: float = 4.0,
         drop_rate: float = 0.0,
-        drop_path_rate: float = 0.1,
+        drop_path_rate: float = 0.0,
         mbconv_expand_ratio: float = 4.0,
         local_conv_size: int = 3,
         layer_lr_decay: float = 1.0,
