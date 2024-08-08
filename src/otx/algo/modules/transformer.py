@@ -254,7 +254,7 @@ class FFN(BaseModule):
         num_fcs (int, optional): The number of fully-connected layers in
             FFNs. Default: 2.
         activation_callable (Callable[..., nn.Module]): Activation layer module.
-            Defaults to `partial(nn.ReLU, inplace=True)`.
+            Defaults to ``partial(nn.ReLU, inplace=True)``.
         ffn_drop (float, optional): Probability of an element to be
             zeroed in FFN. Default 0.0.
         add_identity (bool, optional): Whether to add the

@@ -100,7 +100,7 @@ class CSPNeXtBlock(BaseModule):
         norm_callable (Callable[..., nn.Module] | None): Normalization layer module.
             Defaults to ``partial(nn.BatchNorm2d, momentum=0.03, eps=0.001)``.
         activation_callable (Callable[..., nn.Module]): Activation layer module.
-            Defaults to `nn.SiLU`.
+            Defaults to ``nn.SiLU``.
         init_cfg (dict or list[dict], optional): Initialization config dict.
             Defaults to None.
     """
@@ -252,7 +252,7 @@ class CSPLayer(BaseModule):
         norm_callable (Callable[..., nn.Module]): Normalization layer module.
             Defaults to ``partial(nn.BatchNorm2d, momentum=0.03, eps=0.001)``.
         activation_callable (Callable[..., nn.Module] | None): Activation layer module.
-            Defaults to `Swish`.
+            Defaults to ``Swish``.
         init_cfg (dict or list[dict], optional): Initialization config dict.
             Defaults to None.
     """

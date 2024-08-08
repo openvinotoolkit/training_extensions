@@ -47,7 +47,7 @@ class FPN(BaseModule):
             Defaults to False.
         norm_callable (Callable[..., nn.Module] | None): Normalization layer module.
             Defaults to None.
-        activation_callable (Callable[..., nn.Module]): Activation layer module.
+        activation_callable (Callable[..., nn.Module] | None): Activation layer module.
             Defaults to None.
         upsample_cfg (dict, optional): Config dict
             for interpolate layer. Defaults to dict(mode='nearest').

@@ -86,7 +86,7 @@ class ConvModule(nn.Module):
         norm_name (str | None): The name of the normalization layer fpr ``build_norm_layer``.
             Defaults to None.
         activation_callable (Callable[..., nn.Module] | None): Activation layer module.
-            Defaults to `nn.ReLU`.
+            Defaults to ``nn.ReLU``.
         inplace (bool): Whether to use inplace mode for activation.
             Default: True.
         with_spectral_norm (bool): Whether use spectral norm in conv module.
@@ -299,7 +299,7 @@ class DepthwiseSeparableConvModule(nn.Module):
             Defaults to None.
         activation_callable (Callable[..., nn.Module]): Activation layer module
             for both depthwise ConvModule and pointwise ConvModule.
-            Defaults to `nn.ReLU`.
+            Defaults to ``nn.ReLU``.
         dw_norm_callable (dict): Normalization layer module of depthwise ConvModule.
             If it is None, it will be the same as `norm_callable`.
             Defaults to None.

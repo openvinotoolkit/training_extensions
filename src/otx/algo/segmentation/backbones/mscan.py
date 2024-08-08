@@ -65,7 +65,7 @@ class Mlp(BaseModule):
         out_features (int): The dimension of output features.
             Defaults: None.
         activation_callable (Callable[..., nn.Module]): Activation layer module.
-            Defaults to `nn.GELU`.
+            Defaults to ``nn.GELU``.
         drop (float): The number of dropout rate in MLP block.
             Defaults: 0.0.
     """
@@ -198,7 +198,7 @@ class MSCASpatialAttention(BaseModule):
         attention_kernel_sizes (List[Union[int, List[int]]]): The size of attention kernels.
         attention_kernel_paddings (List[Union[int, List[int]]]): The paddings of attention kernels.
         activation_callable (Callable[..., nn.Module]): Activation layer module.
-            Defaults to `nn.GELU`.
+            Defaults to ``nn.GELU``.
     """
 
     def __init__(
@@ -241,7 +241,7 @@ class MSCABlock(BaseModule):
         drop (float): The dropout rate.
         drop_path (float): The dropout rate for the path.
         activation_callable (Callable[..., nn.Module]): Activation layer module.
-            Defaults to `nn.GELU`.
+            Defaults to ``nn.GELU``.
         norm_callable (Callable[..., nn.Module]): Normalization layer module.
             Defaults to ``partial(SyncBatchNorm, requires_grad=True)``.
     """

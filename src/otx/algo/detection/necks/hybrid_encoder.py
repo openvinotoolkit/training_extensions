@@ -112,7 +112,7 @@ class HybridEncoder(BaseModule):
             in the transformer encoder. Defaults to 1024.
         dropout (float, optional): Dropout rate. Defaults to 0.0.
         enc_activation_callable (Callable[..., nn.Module]): Activation layer module.
-            Defaults to `nn.GELU`.
+            Defaults to ``nn.GELU``.
         norm_callable (Callable[..., nn.Module]): Normalization layer module.
             Defaults to ``nn.BatchNorm2d``.
         norm_name (str): The name of the normalization layer fpr ``build_norm_layer``.
@@ -128,7 +128,7 @@ class HybridEncoder(BaseModule):
         depth_mult (float, optional): Depth multiplier for the CSPRepLayer.
             Defaults to 1.0.
         activation_callable (Callable[..., nn.Module]): Activation layer module.
-            Defaults to `nn.SiLU`.
+            Defaults to ``nn.SiLU``.
         eval_spatial_size (tuple[int, int] | None, optional): Spatial size for
             evaluation. Defaults to None.
     """

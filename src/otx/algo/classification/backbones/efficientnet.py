@@ -296,7 +296,7 @@ class EffiInvResUnit(nn.Module):
         exp_factor (int): Factor for expansion of channels.
         se_factor (int): SE reduction factor for each unit.
         bn_eps (float): Small float added to variance in Batch norm.
-        activation_callable (Callable[..., nn.Module]): Name of activation function.
+        activation_callable (Callable[..., nn.Module]): Activation layer module.
         tf_mode (bool): Whether to use TF-like mode.
     """
 

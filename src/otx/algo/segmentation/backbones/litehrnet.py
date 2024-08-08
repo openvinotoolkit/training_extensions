@@ -127,7 +127,7 @@ class CrossResolutionWeighting(nn.Module):
             Defaults to None.
         activation_callable (Callable[..., nn.Module] | tuple[Callable[..., nn.Module], Callable[..., nn.Module]]): \
             Activation layer module or a tuple of activation layer modules.
-            Defaults to (`nn.ReLU`, `nn.Sigmoid`).
+            Defaults to ``(nn.ReLU, nn.Sigmoid)``.
     """
 
     def __init__(
@@ -191,7 +191,7 @@ class SpatialWeighting(nn.Module):
         activation_callable (Callable[..., nn.Module] | tuple[Callable[..., nn.Module], Callable[..., nn.Module]]): \
             Activation layer module or a tuple of activation layer modules.
             If a single module is provided, it will be used for both activation layers.
-            Defaults to (`nn.ReLU`, `nn.Sigmoid`).
+            Defaults to ``(nn.ReLU, nn.Sigmoid)``.
 
     Raises:
         ValueError: activation_callable must be a callable or a tuple of callables of length 2.

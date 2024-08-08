@@ -300,7 +300,7 @@ class TransformerDecoderLayer(nn.Module):
         dim_feedforward (int): The dimension of the feedforward network model.
         dropout (float): The dropout value.
         activation_callable (Callable[..., nn.Module]): Activation layer module.
-            Defaults to `nn.ReLU`.
+            Defaults to ``nn.ReLU``.
         n_levels (int): The number of levels in MSDeformableAttention.
         n_points (int): The number of points in MSDeformableAttention.
     """
@@ -468,7 +468,7 @@ class RTDETRTransformer(BaseModule):
         dim_feedforward (int): Dimension of the feedforward network.
         dropout (float): Dropout rate.
         activation_callable (Callable[..., nn.Module]): Activation layer module.
-            Defaults to `nn.ReLU`.
+            Defaults to ``nn.ReLU``.
         num_denoising (int): Number of denoising samples.
         label_noise_ratio (float): Ratio of label noise.
         box_noise_scale (float): Scale of box noise.

@@ -27,7 +27,7 @@ class BaseSegmHead(nn.Module, metaclass=ABCMeta):
         norm_callable (Callable[..., nn.Module] | None): Normalization layer module.
             Defaults to None.
         activation_callable (Callable[..., nn.Module] | None): Activation layer module.
-            Defaults to `nn.ReLU`.
+            Defaults to ``nn.ReLU``.
         in_index (int, list[int], optional): Input index. Defaults to -1.
         input_transform (Optional[str], optional): Input transform type.
             Defaults to None.

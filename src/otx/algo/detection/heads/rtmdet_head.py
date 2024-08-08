@@ -39,7 +39,7 @@ class RTMDetHead(ATSSHead):
         with_objectness (bool): Whether to add an objectness branch.
             Defaults to True.
         activation_callable (Callable[..., nn.Module]): Activation layer module.
-            Defaults to `nn.ReLU`.
+            Defaults to ``nn.ReLU``.
     """
 
     def __init__(
