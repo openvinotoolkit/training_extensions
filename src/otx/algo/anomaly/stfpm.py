@@ -7,23 +7,15 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Literal, Sequence
+from typing import Literal, Sequence
 
-from anomalib.callbacks.normalization.min_max_normalization import _MinMaxNormalizationCallback
-from anomalib.callbacks.post_processor import _PostProcessorCallback
-from anomalib.models.image.stfpm import Stfpm as AnomalibStfpm
+from anomalib.models import Stfpm as AnomalibStfpm
 
-from otx.core.model.anomaly import OTXAnomaly
+from otx.core.model.anomaly import AnomalyMixin, OTXAnomaly
 from otx.core.types.task import OTXTaskType
 
-if TYPE_CHECKING:
-    from lightning.pytorch.utilities.types import STEP_OUTPUT
-    from torch.optim.optimizer import Optimizer
 
-    from otx.core.model.anomaly import AnomalyModelInputs, AnomalyModelOutputs
-
-
-class Stfpm(OTXAnomaly, AnomalibStfpm):
+class Stfpm(AnomalyMixin, AnomalibStfpm, OTXAnomaly):
     """OTX STFPM model.
 
     Args:
@@ -45,94 +37,5 @@ class Stfpm(OTXAnomaly, AnomalibStfpm):
         ] = OTXTaskType.ANOMALY_CLASSIFICATION,
         **kwargs,
     ) -> None:
-        OTXAnomaly.__init__(self)
-        AnomalibStfpm.__init__(
-            self,
-            backbone=backbone,
-            layers=layers,
-        )
-        self.task = task
-
-    @property
-    def trainable_model(self) -> str:
-        """Used by configure optimizer."""
-        return "student_model"
-
-    def configure_metric(self) -> None:
-        """This does not follow OTX metric configuration."""
-        return
-
-    def configure_optimizers(self) -> tuple[list[Optimizer], list[Optimizer]] | None:
-        """STFPM does not follow OTX optimizer configuration."""
-        return AnomalibStfpm.configure_optimizers(self)
-
-    def on_validation_epoch_start(self) -> None:
-        """Callback triggered when the validation epoch starts."""
-        AnomalibStfpm.on_validation_epoch_start(self)
-
-    def on_test_epoch_start(self) -> None:
-        """Callback triggered when the test epoch starts."""
-        AnomalibStfpm.on_test_epoch_start(self)
-
-    def on_validation_epoch_end(self) -> None:
-        """Callback triggered when the validation epoch ends."""
-        AnomalibStfpm.on_validation_epoch_end(self)
-
-    def on_test_epoch_end(self) -> None:
-        """Callback triggered when the test epoch ends."""
-        AnomalibStfpm.on_test_epoch_end(self)
-
-    def training_step(
-        self,
-        inputs: AnomalyModelInputs,
-        batch_idx: int = 0,
-    ) -> STEP_OUTPUT:
-        """Call training step of the anomalib model."""
-        if not isinstance(inputs, dict):
-            inputs = self._customize_inputs(inputs)
-        return AnomalibStfpm.training_step(self, inputs, batch_idx)  # type: ignore[misc]
-
-    def validation_step(
-        self,
-        inputs: AnomalyModelInputs,
-        batch_idx: int = 0,
-    ) -> STEP_OUTPUT:
-        """Call validation step of the anomalib model."""
-        if not isinstance(inputs, dict):
-            inputs = self._customize_inputs(inputs)
-        return AnomalibStfpm.validation_step(self, inputs, batch_idx)  # type: ignore[misc]
-
-    def test_step(
-        self,
-        inputs: AnomalyModelInputs,
-        batch_idx: int = 0,
-        **kwargs,
-    ) -> STEP_OUTPUT:
-        """Call test step of the anomalib model."""
-        if not isinstance(inputs, dict):
-            inputs = self._customize_inputs(inputs)
-        return AnomalibStfpm.test_step(self, inputs, batch_idx, **kwargs)  # type: ignore[misc]
-
-    def predict_step(
-        self,
-        inputs: AnomalyModelInputs,
-        batch_idx: int = 0,
-        **kwargs,
-    ) -> STEP_OUTPUT:
-        """Call test step of the anomalib model."""
-        if not isinstance(inputs, dict):
-            inputs = self._customize_inputs(inputs)
-        return AnomalibStfpm.predict_step(self, inputs, batch_idx, **kwargs)  # type: ignore[misc]
-
-    def forward(
-        self,
-        inputs: AnomalyModelInputs,
-    ) -> AnomalyModelOutputs:
-        """Wrap forward method of the Anomalib model."""
-        outputs = self.validation_step(inputs)
-        # TODO(Ashwin): update forward implementation to comply with other OTX models
-        _PostProcessorCallback._post_process(outputs)  # noqa: SLF001
-        _PostProcessorCallback._compute_scores_and_labels(self, outputs)  # noqa: SLF001
-        _MinMaxNormalizationCallback._normalize_batch(outputs, self)  # noqa: SLF001
-
-        return self._customize_outputs(outputs=outputs, inputs=inputs)
+        super().__init__(layers=layers, backbone=backbone)
+        self.task = self.get_anomalib_task_type(task)
