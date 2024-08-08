@@ -7,12 +7,14 @@ from __future__ import annotations
 
 from typing import Callable
 
-from lightning.fabric.utilities.types import _TORCH_LRSCHEDULER
 from lightning.pytorch.cli import ReduceLROnPlateau
+from torch.optim.lr_scheduler import LRScheduler
 from torch.optim.optimizer import Optimizer
 
 from otx.core.schedulers.callable import SchedulerCallableSupportHPO
 from otx.core.schedulers.warmup_schedulers import LinearWarmupScheduler, LinearWarmupSchedulerCallable
+
+LRSchedulerListCallable = Callable[[Optimizer], list[LRScheduler | ReduceLROnPlateau]]
 
 __all__ = [
     "LRSchedulerListCallable",
@@ -20,6 +22,3 @@ __all__ = [
     "LinearWarmupSchedulerCallable",
     "SchedulerCallableSupportHPO",
 ]
-
-
-LRSchedulerListCallable = Callable[[Optimizer], list[_TORCH_LRSCHEDULER | ReduceLROnPlateau]]
