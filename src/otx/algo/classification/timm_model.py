@@ -145,7 +145,7 @@ class TimmModelForMultilabelCls(OTXMultilabelClsModel):
     def __init__(
         self,
         label_info: LabelInfoTypes,
-        backbone: TimmModelType = "efficientnetv2_s_21k",
+        backbone: TimmModelType,
         pretrained: bool = True,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
@@ -225,7 +225,7 @@ class TimmModelForHLabelCls(OTXHlabelClsModel):
     def __init__(
         self,
         label_info: HLabelInfo,
-        backbone: TimmModelType = "efficientnetv2_s_21k",
+        backbone: TimmModelType,
         pretrained: bool = True,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
