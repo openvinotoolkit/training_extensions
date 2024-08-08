@@ -12,7 +12,6 @@ import json
 import logging
 import warnings
 from abc import abstractmethod
-from collections.abc import Sequence
 from typing import TYPE_CHECKING, Any, Callable, Generic, Literal, NamedTuple, Sequence
 
 import numpy as np

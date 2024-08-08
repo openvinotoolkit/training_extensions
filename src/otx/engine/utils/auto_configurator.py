@@ -280,10 +280,7 @@ class AutoConfigurator:
         model_config = deepcopy(self.config["model"])
 
         if input_size is not None:
-            if isinstance(input_size, int):
-                input_size = (input_size, input_size)
-            else:
-                input_size = tuple(input_size)
+            input_size = (input_size, input_size) if isinstance(input_size, int) else input_size
             model_config["init_args"]["input_size"] = tuple(model_config["init_args"]["input_size"][:-2]) + input_size
 
         model_cls = get_model_cls_from_config(Namespace(model_config))

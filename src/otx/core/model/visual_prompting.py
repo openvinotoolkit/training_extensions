@@ -178,6 +178,7 @@ class OTXVisualPromptingModel(OTXModel[VisualPromptingBatchDataEntity, VisualPro
             metric=metric,
             torch_compile=torch_compile,
         )
+        self.input_size: tuple[int, int, int, int]
 
     @property
     def _exporter(self) -> OTXModelExporter:
@@ -303,6 +304,7 @@ class OTXZeroShotVisualPromptingModel(
             metric=metric,
             torch_compile=torch_compile,
         )
+        self.input_size: tuple[int, int, int, int]
 
     @property
     def _exporter(self) -> OTXModelExporter:

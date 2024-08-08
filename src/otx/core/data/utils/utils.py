@@ -137,7 +137,10 @@ def compute_robust_dataset_statistics(dataset: DatasetSubset, max_samples: int =
             if max_num_ann < len(anns):
                 max_ann_type = ann_type
                 max_num_ann = len(anns)
-        stat["annotation"]["size_of_shape"] = compute_robust_scale_statistics(np.array(size_of_shapes[max_ann_type]))
+        if max_ann_type is not None:
+            stat["annotation"]["size_of_shape"] = compute_robust_scale_statistics(
+                np.array(size_of_shapes[max_ann_type]),
+            )
 
     return stat
 
@@ -147,7 +150,7 @@ def adapt_input_size_to_dataset(
     base_input_size: int | tuple[int, int] | None = None,
     downscale_only: bool = True,
     input_size_multiplier: int | None = None,
-) -> tuple[int, int]:
+) -> tuple[int, int] | None:
     """Compute appropriate model input size w.r.t. dataset statistics.
 
     Args:
@@ -159,9 +162,9 @@ def adapt_input_size_to_dataset(
     Returns:
         Tuple[int, int]: (width, height)
     """
-    MIN_RECOGNIZABLE_OBJECT_SIZE = 32  # Minimum object size recognizable by NNs: typically 16 ~ 32
+    min_recognizable_object_size = 32  # Minimum object size recognizable by NNs: typically 16 ~ 32
     # meaning NxN input pixels being downscaled to 1x1 on feature map
-    MIN_DETECTION_INPUT_SIZE = 256  # Minimum input size for object detection
+    min_detection_input_size = 256  # Minimum input size for object detection
 
     if downscale_only and base_input_size is None:
         msg = "If downscale_only is set to True, base_input_size should be set but got None."
@@ -194,13 +197,13 @@ def adapt_input_size_to_dataset(
 
     # Refine using annotation shape size stat
     if min_object_size is not None and min_object_size > 0:
-        image_size = round(image_size * MIN_RECOGNIZABLE_OBJECT_SIZE / min_object_size)
+        image_size = round(image_size * min_recognizable_object_size / min_object_size)
         logger.info(f"-> Based on typical small object size {min_object_size}: {image_size}")
         if image_size > max_image_size:
             image_size = max_image_size
             logger.info(f"-> Restrict to max image size: {image_size}")
-        if image_size < MIN_DETECTION_INPUT_SIZE:
-            image_size = MIN_DETECTION_INPUT_SIZE
+        if image_size < min_detection_input_size:
+            image_size = min_detection_input_size
             logger.info(f"-> Based on minimum object detection input size: {image_size}")
 
     if input_size_multiplier is not None and image_size % input_size_multiplier != 0:
@@ -210,7 +213,7 @@ def adapt_input_size_to_dataset(
 
     if downscale_only:
 
-        def area(x):
+        def area(x: tuple[int, int]) -> int:
             return x[0] * x[1]
 
         if base_input_size and area(input_size) >= area(base_input_size):

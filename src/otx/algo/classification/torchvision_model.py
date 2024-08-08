@@ -445,6 +445,7 @@ class OTXTVModel(OTXModel):
             torch_compile=torch_compile,
             input_size=input_size,
         )
+        self.input_size: tuple[int, int, int, int]
 
     def _create_model(self) -> nn.Module:
         if self.task == OTXTaskType.MULTI_CLASS_CLS:

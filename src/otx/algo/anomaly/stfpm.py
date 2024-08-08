@@ -46,7 +46,7 @@ class Stfpm(OTXAnomaly, OTXModel, AnomalibStfpm):
         **kwargs,
     ) -> None:
         OTXAnomaly.__init__(self)
-        OTXModel.__init__(self, label_info=AnomalyLabelInfo())
+        OTXModel.__init__(self, label_info=AnomalyLabelInfo(), input_size=(224, 224))
         AnomalibStfpm.__init__(
             self,
             backbone=backbone,

@@ -41,6 +41,8 @@ if TYPE_CHECKING:
 class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity]):
     """Base class for the detection models used in OTX."""
 
+    input_size: tuple[int, int, int, int]
+
     def test_step(self, batch: DetBatchDataEntity, batch_idx: int) -> None:
         """Perform a single test step on a batch of data from the test set.
 

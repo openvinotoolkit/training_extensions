@@ -343,12 +343,13 @@ class OTXCLI:
             self.datamodule = self.get_config_value(self.config_init, "data")
 
             if (input_size := self.datamodule.input_size) is not None:
-                if isinstance(input_size, int):
-                    input_size = (input_size, input_size)
-                else:
-                    input_size = tuple(input_size)  # type: ignore[assignment]
+                input_size = (input_size, input_size) if isinstance(input_size, int) else tuple(input_size)  # type: ignore[assignment]
+                # if isinstance(input_size, int):
+                #     input_size = (input_size, input_size)
+                # else:
+                #     input_size = tuple(input_size)  # type: ignore[assignment]
                 model_config["init_args"]["input_size"] = (
-                    tuple(model_config["init_args"]["input_size"][:-2]) + input_size
+                    tuple(model_config["init_args"]["input_size"][:-2]) + input_size  # type: ignore[operator]
                 )
 
             # Instantiate the model and needed components

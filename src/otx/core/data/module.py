@@ -42,7 +42,7 @@ if TYPE_CHECKING:
 class OTXDataModule(LightningDataModule):
     """LightningDataModule extension for OTX pipeline."""
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         task: OTXTaskType,
         data_format: str,

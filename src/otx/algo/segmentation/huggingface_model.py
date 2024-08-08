@@ -90,9 +90,9 @@ class HuggingFaceModelForSegmentation(OTXSegmentationModel):
         if "image_size" in model_config:
             kwargs["image_size"] = self.input_size[-1]
 
-        if (patch_size := model_config.get("patch_sizes")) != None:
+        if (patch_size := model_config.get("patch_sizes")) is not None:
             if isinstance(patch_size, (list, tuple)):
-                patch_size = patch_size
+                patch_size = patch_size[0]
             if self.input_size[0] % patch_size != 0 or self.input_size[1] % patch_size != 0:
                 msg = (
                     f"It's recommended to set the input size to multiple of patch size({patch_size}). "

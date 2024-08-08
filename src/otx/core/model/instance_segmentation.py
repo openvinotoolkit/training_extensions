@@ -65,6 +65,7 @@ class OTXInstanceSegModel(OTXModel[InstanceSegBatchDataEntity, InstanceSegBatchP
             torch_compile=torch_compile,
             tile_config=tile_config,
         )
+        self.input_size: tuple[int, int, int, int]
 
     def _build_model(self, num_classes: int) -> nn.Module:
         raise NotImplementedError

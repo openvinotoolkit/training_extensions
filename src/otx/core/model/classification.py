@@ -56,6 +56,7 @@ class OTXMulticlassClsModel(OTXModel[MulticlassClsBatchDataEntity, MulticlassCls
             metric=metric,
             torch_compile=torch_compile,
         )
+        self.input_size: tuple[int, int, int, int]
 
     @property
     def _export_parameters(self) -> TaskLevelExportParameters:
@@ -110,6 +111,7 @@ class OTXMultilabelClsModel(OTXModel[MultilabelClsBatchDataEntity, MultilabelCls
             metric=metric,
             torch_compile=torch_compile,
         )
+        self.input_size: tuple[int, int, int, int]
 
     @property
     def _export_parameters(self) -> TaskLevelExportParameters:
@@ -163,6 +165,7 @@ class OTXHlabelClsModel(OTXModel[HlabelClsBatchDataEntity, HlabelClsBatchPredEnt
             metric=metric,
             torch_compile=torch_compile,
         )
+        self.input_size: tuple[int, int, int, int]
 
     @property
     def _export_parameters(self) -> TaskLevelExportParameters:

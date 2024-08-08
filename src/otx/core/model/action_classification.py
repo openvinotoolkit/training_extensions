@@ -53,6 +53,7 @@ class OTXActionClsModel(OTXModel[ActionClsBatchDataEntity, ActionClsBatchPredEnt
             metric=metric,
             torch_compile=torch_compile,
         )
+        self.input_size: tuple[int, int, int, int, int, int]
 
     @property
     def _export_parameters(self) -> TaskLevelExportParameters:
