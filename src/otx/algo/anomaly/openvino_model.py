@@ -105,6 +105,7 @@ class AnomalyOpenVINO(OVModel):
         model_api_configuration: dict[str, Any] | None = None,
         metric: MetricCallable = NullMetricCallable,  # Metrics is computed using Anomalib's metric
         task: Literal[
+            OTXTaskType.ANOMALY,
             OTXTaskType.ANOMALY_CLASSIFICATION,
             OTXTaskType.ANOMALY_DETECTION,
             OTXTaskType.ANOMALY_SEGMENTATION,

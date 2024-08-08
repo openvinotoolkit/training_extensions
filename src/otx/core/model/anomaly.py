@@ -108,7 +108,7 @@ class OTXAnomaly(OTXModel):
 
     @task.setter
     def task(self, value: OTXTaskType) -> None:
-        if value == OTXTaskType.ANOMALY_CLASSIFICATION:
+        if value in (OTXTaskType.ANOMALY_CLASSIFICATION, OTXTaskType.ANOMALY):
             self._task_type = AnomalibTaskType.CLASSIFICATION
         elif value == OTXTaskType.ANOMALY_DETECTION:
             self._task_type = AnomalibTaskType.DETECTION

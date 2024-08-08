@@ -5,6 +5,10 @@ from __future__ import annotations
 import pytest
 import torch
 from datumaro import Polygon
+from torch import LongTensor
+from torchvision import tv_tensors
+from torchvision.tv_tensors import Image, Mask
+
 from otx.core.data.entity.base import ImageInfo
 from otx.core.data.entity.classification import (
     HlabelClsBatchDataEntity,
@@ -27,10 +31,6 @@ from otx.core.data.entity.segmentation import SegBatchDataEntity, SegBatchPredEn
 from otx.core.data.mem_cache import MemCacheHandlerSingleton
 from otx.core.types.label import HLabelInfo, LabelInfo, NullLabelInfo, SegLabelInfo
 from otx.core.types.task import OTXTaskType
-from torch import LongTensor
-from torchvision import tv_tensors
-from torchvision.tv_tensors import Image, Mask
-
 from tests.utils import ExportCase2Test
 
 
@@ -467,6 +467,7 @@ def fxt_hlabel_multilabel_info() -> HLabelInfo:
 @pytest.fixture()
 def fxt_xpu_support_task() -> list[OTXTaskType]:
     return [
+        OTXTaskType.ANOMALY,
         OTXTaskType.ANOMALY_CLASSIFICATION,
         OTXTaskType.ANOMALY_DETECTION,
         OTXTaskType.ANOMALY_SEGMENTATION,
