@@ -5,7 +5,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>otx.tools.translate_mmrecipe &#8212; OpenVINO™ Training Extensions 2.2.0rc0 documentation</title>
+    <title>otx.core.model.keypoint_detection &#8212; OpenVINO™ Training Extensions 2.2.0rc0 documentation</title>
   
   
   
@@ -41,11 +41,11 @@
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../../_static/copybutton.js?v=f281be69"></script>
     <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = 'guide/reference/_autosummary/otx.tools.translate_mmrecipe';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'guide/reference/_autosummary/otx.core.model.keypoint_detection';</script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
-    <link rel="next" title="otx.utils" href="otx.utils.html" />
-    <link rel="prev" title="otx.tools.converter" href="otx.tools.converter.html" />
+    <link rel="next" title="otx.core.model.rotated_detection" href="otx.core.model.rotated_detection.html" />
+    <link rel="prev" title="otx.core.model.instance_segmentation" href="otx.core.model.instance_segmentation.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="docsearch:language" content="en">
   </head>
@@ -330,12 +330,12 @@
 <li class="toctree-l4"><a class="reference internal" href="otx.cli.utils.html">otx.cli.utils</a></li>
 </ul>
 </li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="otx.core.html">otx.core</a><input class="toctree-checkbox" id="toctree-checkbox-15" name="toctree-checkbox-15" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-15"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3 current active has-children"><a class="reference internal" href="otx.core.html">otx.core</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-15" name="toctree-checkbox-15" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-15"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
 <li class="toctree-l4"><a class="reference internal" href="otx.core.config.html">otx.core.config</a></li>
 <li class="toctree-l4"><a class="reference internal" href="otx.core.data.html">otx.core.data</a></li>
 <li class="toctree-l4"><a class="reference internal" href="otx.core.exporter.html">otx.core.exporter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="otx.core.metrics.html">otx.core.metrics</a></li>
-<li class="toctree-l4"><a class="reference internal" href="otx.core.model.html">otx.core.model</a></li>
+<li class="toctree-l4 current active"><a class="reference internal" href="otx.core.model.html">otx.core.model</a></li>
 <li class="toctree-l4"><a class="reference internal" href="otx.core.optimizer.html">otx.core.optimizer</a></li>
 <li class="toctree-l4"><a class="reference internal" href="otx.core.schedulers.html">otx.core.schedulers</a></li>
 <li class="toctree-l4"><a class="reference internal" href="otx.core.types.html">otx.core.types</a></li>
@@ -345,9 +345,8 @@
 <li class="toctree-l3"><a class="reference internal" href="otx.engine.html">otx.engine</a></li>
 <li class="toctree-l3"><a class="reference internal" href="otx.hpo.html">otx.hpo</a></li>
 <li class="toctree-l3"><a class="reference internal" href="otx.recipe.html">otx.recipe</a></li>
-<li class="toctree-l3 current active has-children"><a class="reference internal" href="otx.tools.html">otx.tools</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-16" name="toctree-checkbox-16" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-16"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
+<li class="toctree-l3 has-children"><a class="reference internal" href="otx.tools.html">otx.tools</a><input class="toctree-checkbox" id="toctree-checkbox-16" name="toctree-checkbox-16" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-16"><i class="fa-solid fa-chevron-down"></i></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="otx.tools.converter.html">otx.tools.converter</a></li>
-<li class="toctree-l4 current active"><a class="current reference internal" href="#">otx.tools.translate_mmrecipe</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="otx.utils.html">otx.utils</a></li>
@@ -392,21 +391,34 @@
             
             <article class="bd-article" role="main">
               
-  <section id="module-otx.tools.translate_mmrecipe">
-<span id="otx-tools-translate-mmrecipe"></span><h1>otx.tools.translate_mmrecipe<a class="headerlink" href="#module-otx.tools.translate_mmrecipe" title="Link to this heading">#</a></h1>
-<p>Python script to translate MMx recipe to OTX YAML recipe file.</p>
-<p class="rubric">Functions</p>
+  <section id="module-otx.core.model.keypoint_detection">
+<span id="otx-core-model-keypoint-detection"></span><h1>otx.core.model.keypoint_detection<a class="headerlink" href="#module-otx.core.model.keypoint_detection" title="Link to this heading">#</a></h1>
+<p>Class definition for keypoint detection model entity used in OTX.</p>
+<p class="rubric">Classes</p>
 <table class="autosummary longtable table autosummary">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#otx.tools.translate_mmrecipe.mmconfig_dict_to_dict" title="otx.tools.translate_mmrecipe.mmconfig_dict_to_dict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mmconfig_dict_to_dict</span></code></a>(obj)</p></td>
-<td><p>Convert MMEngine config object to Python dictionary.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.core.model.keypoint_detection.OTXKeypointDetectionModel" title="otx.core.model.keypoint_detection.OTXKeypointDetectionModel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OTXKeypointDetectionModel</span></code></a>(label_info, ...)</p></td>
+<td><p>Base class for the detection models used in OTX.</p></td>
 </tr>
 </tbody>
 </table>
-<dl class="py function">
-<dt class="sig sig-object py" id="otx.tools.translate_mmrecipe.mmconfig_dict_to_dict">
-<span class="sig-prename descclassname"><span class="pre">otx.tools.translate_mmrecipe.</span></span><span class="sig-name descname"><span class="pre">mmconfig_dict_to_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">MMConfig</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.12)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><span class="pre">MMConfig</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.12)"><span class="pre">list</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><span class="pre">dict</span></a></span></span><a class="reference internal" href="../../../_modules/otx/tools/translate_mmrecipe.html#mmconfig_dict_to_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.tools.translate_mmrecipe.mmconfig_dict_to_dict" title="Link to this definition">#</a></dt>
-<dd><p>Convert MMEngine config object to Python dictionary.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.core.model.keypoint_detection.OTXKeypointDetectionModel">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.core.model.keypoint_detection.</span></span><span class="sig-name descname"><span class="pre">OTXKeypointDetectionModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label_info:</span> <span class="pre">LabelInfoTypes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimizer:</span> <span class="pre">OptimizerCallable</span> <span class="pre">=</span> <span class="pre">&lt;function</span> <span class="pre">_default_optimizer_callable&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scheduler:</span> <span class="pre">LRSchedulerCallable</span> <span class="pre">|</span> <span class="pre">LRSchedulerListCallable</span> <span class="pre">=</span> <span class="pre">&lt;function</span> <span class="pre">_default_scheduler_callable&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metric:</span> <span class="pre">MetricCallable</span> <span class="pre">=</span> <span class="pre">&lt;function</span> <span class="pre">_pck_measure_callable&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">torch_compile:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/core/model/keypoint_detection.html#OTXKeypointDetectionModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.keypoint_detection.OTXKeypointDetectionModel" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="otx.core.model.base.html#otx.core.model.base.OTXModel" title="otx.core.model.base.OTXModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">OTXModel</span></code></a>[<code class="xref py py-class docutils literal notranslate"><span class="pre">KeypointDetBatchDataEntity</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">KeypointDetBatchPredEntity</span></code>]</p>
+<p>Base class for the detection models used in OTX.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.core.model.keypoint_detection.OTXKeypointDetectionModel.forward_for_tracing">
+<span class="sig-name descname"><span class="pre">forward_for_tracing</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tensor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/otx/core/model/keypoint_detection.html#OTXKeypointDetectionModel.forward_for_tracing"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.keypoint_detection.OTXKeypointDetectionModel.forward_for_tracing" title="Link to this definition">#</a></dt>
+<dd><p>Model forward function used for the model tracing during model exportation.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.core.model.keypoint_detection.OTXKeypointDetectionModel.get_classification_layers">
+<span class="sig-name descname"><span class="pre">get_classification_layers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prefix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'model.'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/otx/core/model/keypoint_detection.html#OTXKeypointDetectionModel.get_classification_layers"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.keypoint_detection.OTXKeypointDetectionModel.get_classification_layers" title="Link to this definition">#</a></dt>
+<dd><p>Get final classification layer information for incremental learning case.</p>
+</dd></dl>
+
 </dd></dl>
 
 </section>
@@ -419,17 +431,17 @@
             <footer class="bd-footer-article">
                 <!-- Previous / next buttons -->
 <div class='prev-next-area'>
-  <a class='left-prev' id="prev-link" href="otx.tools.converter.html" title="previous page">
+  <a class='left-prev' id="prev-link" href="otx.core.model.instance_segmentation.html" title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
           <p class="prev-next-subtitle">previous</p>
-          <p class="prev-next-title">otx.tools.converter</p>
+          <p class="prev-next-title">otx.core.model.instance_segmentation</p>
       </div>
   </a>
-  <a class='right-next' id="next-link" href="otx.utils.html" title="next page">
+  <a class='right-next' id="next-link" href="otx.core.model.rotated_detection.html" title="next page">
   <div class="prev-next-info">
       <p class="prev-next-subtitle">next</p>
-      <p class="prev-next-title">otx.utils</p>
+      <p class="prev-next-title">otx.core.model.rotated_detection</p>
   </div>
   <i class="fa-solid fa-angle-right"></i>
   </a>
@@ -450,13 +462,33 @@
 <nav id="bd-toc-nav" class="page-toc">
     <ul class="visible nav section-nav flex-column">
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#otx.tools.translate_mmrecipe.mmconfig_dict_to_dict">
+  <a class="reference internal nav-link" href="#otx.core.model.keypoint_detection.OTXKeypointDetectionModel">
    <code class="docutils literal notranslate">
     <span class="pre">
-     mmconfig_dict_to_dict()
+     OTXKeypointDetectionModel
     </span>
    </code>
   </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.core.model.keypoint_detection.OTXKeypointDetectionModel.forward_for_tracing">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       OTXKeypointDetectionModel.forward_for_tracing()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.core.model.keypoint_detection.OTXKeypointDetectionModel.get_classification_layers">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       OTXKeypointDetectionModel.get_classification_layers()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
  </li>
 </ul>
 
@@ -475,7 +507,7 @@
 <div class="toc-item">
   
 <div class="tocsection sourcelink">
-    <a href="../../../_sources/guide/reference/_autosummary/otx.tools.translate_mmrecipe.rst.txt">
+    <a href="../../../_sources/guide/reference/_autosummary/otx.core.model.keypoint_detection.rst.txt">
         <i class="fa-solid fa-file-lines"></i> Show Source
     </a>
 </div>

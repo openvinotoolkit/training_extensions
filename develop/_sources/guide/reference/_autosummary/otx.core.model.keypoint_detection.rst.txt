@@ -1,0 +1,29 @@
+otx.core.model.keypoint\_detection
+==================================
+
+.. automodule:: otx.core.model.keypoint_detection
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      OTXKeypointDetectionModel
+   
+   
+
+   
+   
+   
+
+
+

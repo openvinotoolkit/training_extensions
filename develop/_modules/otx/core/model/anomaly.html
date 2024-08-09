@@ -280,6 +280,7 @@
 <span class="p">)</span>
 <span class="kn">from</span> <span class="nn">otx.core.data.entity.base</span> <span class="kn">import</span> <span class="n">ImageInfo</span>
 <span class="kn">from</span> <span class="nn">otx.core.exporter.anomaly</span> <span class="kn">import</span> <span class="n">OTXAnomalyModelExporter</span>
+<span class="kn">from</span> <span class="nn">otx.core.model.base</span> <span class="kn">import</span> <span class="n">OTXModel</span>
 <span class="kn">from</span> <span class="nn">otx.core.types.export</span> <span class="kn">import</span> <span class="n">OTXExportFormatType</span>
 <span class="kn">from</span> <span class="nn">otx.core.types.precision</span> <span class="kn">import</span> <span class="n">OTXPrecisionType</span>
 <span class="kn">from</span> <span class="nn">otx.core.types.task</span> <span class="kn">import</span> <span class="n">OTXTaskType</span>
@@ -292,9 +293,8 @@
     <span class="kn">from</span> <span class="nn">lightning.pytorch</span> <span class="kn">import</span> <span class="n">Trainer</span>
     <span class="kn">from</span> <span class="nn">lightning.pytorch.callbacks.callback</span> <span class="kn">import</span> <span class="n">Callback</span>
     <span class="kn">from</span> <span class="nn">lightning.pytorch.cli</span> <span class="kn">import</span> <span class="n">LRSchedulerCallable</span><span class="p">,</span> <span class="n">OptimizerCallable</span>
-    <span class="kn">from</span> <span class="nn">lightning.pytorch.utilities.types</span> <span class="kn">import</span> <span class="n">STEP_OUTPUT</span>
     <span class="kn">from</span> <span class="nn">torchmetrics</span> <span class="kn">import</span> <span class="n">Metric</span>
-
+<span class="kn">from</span> <span class="nn">otx.core.types.label</span> <span class="kn">import</span> <span class="n">AnomalyLabelInfo</span>
 
 <span class="n">AnomalyModelInputs</span><span class="p">:</span> <span class="n">TypeAlias</span> <span class="o">=</span> <span class="p">(</span>
     <span class="n">AnomalyClassificationDataBatch</span> <span class="o">|</span> <span class="n">AnomalySegmentationDataBatch</span> <span class="o">|</span> <span class="n">AnomalyDetectionDataBatch</span>
@@ -306,10 +306,11 @@
 
 <div class="viewcode-block" id="OTXAnomaly">
 <a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.model.anomaly.html#otx.core.model.anomaly.OTXAnomaly">[docs]</a>
-<span class="k">class</span> <span class="nc">OTXAnomaly</span><span class="p">:</span>
+<span class="k">class</span> <span class="nc">OTXAnomaly</span><span class="p">(</span><span class="n">OTXModel</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Methods used to make OTX model compatible with the Anomalib model.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">label_info</span><span class="o">=</span><span class="n">AnomalyLabelInfo</span><span class="p">())</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">OptimizerCallable</span><span class="p">]</span> <span class="o">|</span> <span class="n">OptimizerCallable</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">scheduler</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">LRSchedulerCallable</span><span class="p">]</span> <span class="o">|</span> <span class="n">LRSchedulerCallable</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_input_size</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">256</span><span class="p">,</span> <span class="mi">256</span><span class="p">)</span>
@@ -420,43 +421,6 @@
         <span class="p">]</span></div>
 
 
-<div class="viewcode-block" id="OTXAnomaly.on_test_batch_end">
-<a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.model.anomaly.html#otx.core.model.anomaly.OTXAnomaly.on_test_batch_end">[docs]</a>
-    <span class="k">def</span> <span class="nf">on_test_batch_end</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
-        <span class="n">outputs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
-        <span class="n">batch</span><span class="p">:</span> <span class="n">AnomalyModelInputs</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">,</span>
-        <span class="n">batch_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-        <span class="n">dataloader_idx</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Called in the predict loop after the batch.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            outputs: The outputs of predict_step(x)</span>
-<span class="sd">            batch: The batched data as it is returned by the prediction DataLoader.</span>
-<span class="sd">            batch_idx: the index of the batch</span>
-<span class="sd">            dataloader_idx: the index of the dataloader</span>
-
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
-            <span class="n">batch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_customize_inputs</span><span class="p">(</span><span class="n">batch</span><span class="p">)</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">on_test_batch_end</span><span class="p">(</span><span class="n">outputs</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">batch_idx</span><span class="p">,</span> <span class="n">dataloader_idx</span><span class="p">)</span>  <span class="c1"># type: ignore[misc]</span></div>
-
-
-<div class="viewcode-block" id="OTXAnomaly.predict_step">
-<a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.model.anomaly.html#otx.core.model.anomaly.OTXAnomaly.predict_step">[docs]</a>
-    <span class="k">def</span> <span class="nf">predict_step</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
-        <span class="n">inputs</span><span class="p">:</span> <span class="n">AnomalyModelInputs</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">,</span>
-        <span class="n">batch_idx</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
-        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return predictions from the anomalib model.&quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
-            <span class="n">inputs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_customize_inputs</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
-        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">predict_step</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">batch_idx</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>  <span class="c1"># type: ignore[misc]</span></div>
-
-
 <div class="viewcode-block" id="OTXAnomaly.on_predict_batch_end">
 <a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.model.anomaly.html#otx.core.model.anomaly.OTXAnomaly.on_predict_batch_end">[docs]</a>
     <span class="k">def</span> <span class="nf">on_predict_batch_end</span><span class="p">(</span>
@@ -476,55 +440,6 @@
         <span class="n">_outputs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_customize_outputs</span><span class="p">(</span><span class="n">outputs</span><span class="p">,</span> <span class="n">batch</span><span class="p">)</span>
         <span class="n">outputs</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
         <span class="n">outputs</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;prediction&quot;</span><span class="p">:</span> <span class="n">_outputs</span><span class="p">})</span></div>
-
-
-<div class="viewcode-block" id="OTXAnomaly.configure_optimizers">
-<a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.model.anomaly.html#otx.core.model.anomaly.OTXAnomaly.configure_optimizers">[docs]</a>
-    <span class="k">def</span> <span class="nf">configure_optimizers</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Optimizer</span><span class="p">],</span> <span class="nb">list</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Optimizer</span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># type: ignore[override]</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Configure optimizers for Anomalib models.</span>
-
-<span class="sd">        If the anomalib lightning model supports optimizers, return the optimizer.</span>
-<span class="sd">        If ``self.trainable_model`` is None then the model does not support training.</span>
-<span class="sd">        Else don&#39;t return optimizer even if it is configured in the OTX model.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># [TODO](ashwinvaidya17): Revisit this method</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">trainable_model</span><span class="p">:</span>
-            <span class="n">optimizer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">optimizer</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
-                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">optimizer</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-                    <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Only one optimizer should be passed&quot;</span>
-                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
-                <span class="n">optimizer</span> <span class="o">=</span> <span class="n">optimizer</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-            <span class="n">params</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">trainable_model</span><span class="p">)</span><span class="o">.</span><span class="n">parameters</span><span class="p">()</span>
-            <span class="k">return</span> <span class="n">optimizer</span><span class="p">(</span><span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span>
-        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">configure_optimizers</span><span class="p">()</span>  <span class="c1"># type: ignore[misc]</span></div>
-
-
-<div class="viewcode-block" id="OTXAnomaly.validation_step">
-<a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.model.anomaly.html#otx.core.model.anomaly.OTXAnomaly.validation_step">[docs]</a>
-    <span class="k">def</span> <span class="nf">validation_step</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
-        <span class="n">inputs</span><span class="p">:</span> <span class="n">AnomalyModelInputs</span><span class="p">,</span>
-        <span class="n">batch_idx</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">STEP_OUTPUT</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Call validation step of the anomalib model.&quot;&quot;&quot;</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
-
-
-<div class="viewcode-block" id="OTXAnomaly.forward">
-<a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.model.anomaly.html#otx.core.model.anomaly.OTXAnomaly.forward">[docs]</a>
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
-        <span class="n">inputs</span><span class="p">:</span> <span class="n">AnomalyModelInputs</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AnomalyModelOutputs</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Wrap forward method of the Anomalib model.&quot;&quot;&quot;</span>
-        <span class="n">outputs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">validation_step</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
-        <span class="c1"># TODO(Ashwin): update forward implementation to comply with other OTX models</span>
-        <span class="n">_PostProcessorCallback</span><span class="o">.</span><span class="n">_post_process</span><span class="p">(</span><span class="n">outputs</span><span class="p">)</span>  <span class="c1"># noqa: SLF001</span>
-        <span class="n">_PostProcessorCallback</span><span class="o">.</span><span class="n">_compute_scores_and_labels</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">outputs</span><span class="p">)</span>  <span class="c1"># noqa: SLF001</span>
-        <span class="n">_MinMaxNormalizationCallback</span><span class="o">.</span><span class="n">_normalize_batch</span><span class="p">(</span><span class="n">outputs</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>  <span class="c1"># noqa: SLF001</span>
-
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_customize_outputs</span><span class="p">(</span><span class="n">outputs</span><span class="o">=</span><span class="n">outputs</span><span class="p">,</span> <span class="n">inputs</span><span class="o">=</span><span class="n">inputs</span><span class="p">)</span></div>
 
 
     <span class="k">def</span> <span class="nf">_customize_inputs</span><span class="p">(</span>

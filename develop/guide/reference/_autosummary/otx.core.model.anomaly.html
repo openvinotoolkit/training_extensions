@@ -347,7 +347,6 @@
 <li class="toctree-l3"><a class="reference internal" href="otx.recipe.html">otx.recipe</a></li>
 <li class="toctree-l3 has-children"><a class="reference internal" href="otx.tools.html">otx.tools</a><input class="toctree-checkbox" id="toctree-checkbox-16" name="toctree-checkbox-16" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-16"><i class="fa-solid fa-chevron-down"></i></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="otx.tools.converter.html">otx.tools.converter</a></li>
-<li class="toctree-l4"><a class="reference internal" href="otx.tools.translate_mmrecipe.html">otx.tools.translate_mmrecipe</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="otx.utils.html">otx.utils</a></li>
@@ -406,21 +405,12 @@
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.core.model.anomaly.OTXAnomaly">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.core.model.anomaly.</span></span><span class="sig-name descname"><span class="pre">OTXAnomaly</span></span><a class="reference internal" href="../../../_modules/otx/core/model/anomaly.html#OTXAnomaly"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.anomaly.OTXAnomaly" title="Link to this definition">#</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="otx.core.model.base.html#otx.core.model.base.OTXModel" title="otx.core.model.base.OTXModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">OTXModel</span></code></a></p>
 <p>Methods used to make OTX model compatible with the Anomalib model.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.core.model.anomaly.OTXAnomaly.configure_callbacks">
 <span class="sig-name descname"><span class="pre">configure_callbacks</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.12)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><span class="pre">Callback</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/otx/core/model/anomaly.html#OTXAnomaly.configure_callbacks"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.anomaly.OTXAnomaly.configure_callbacks" title="Link to this definition">#</a></dt>
 <dd><p>Get all necessary callbacks required for training and post-processing on Anomalib models.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="otx.core.model.anomaly.OTXAnomaly.configure_optimizers">
-<span class="sig-name descname"><span class="pre">configure_optimizers</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.12)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><span class="pre">Optimizer</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.12)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><span class="pre">Optimizer</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../_modules/otx/core/model/anomaly.html#OTXAnomaly.configure_optimizers"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.anomaly.OTXAnomaly.configure_optimizers" title="Link to this definition">#</a></dt>
-<dd><p>Configure optimizers for Anomalib models.</p>
-<p>If the anomalib lightning model supports optimizers, return the optimizer.
-If <code class="docutils literal notranslate"><span class="pre">self.trainable_model</span></code> is None then the model does not support training.
-Else don’t return optimizer even if it is configured in the OTX model.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -444,12 +434,6 @@ Else don’t return optimizer even if it is configured in the OTX model.</p>
 <dd class="field-odd"><p>Path</p>
 </dd>
 </dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="otx.core.model.anomaly.OTXAnomaly.forward">
-<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">AnomalyClassificationDataBatch</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">AnomalySegmentationDataBatch</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">AnomalyDetectionDataBatch</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">AnomalyClassificationBatchPrediction</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">AnomalySegmentationBatchPrediction</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">AnomalyDetectionBatchPrediction</span></span></span><a class="reference internal" href="../../../_modules/otx/core/model/anomaly.html#OTXAnomaly.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.anomaly.OTXAnomaly.forward" title="Link to this definition">#</a></dt>
-<dd><p>Wrap forward method of the Anomalib model.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -478,34 +462,6 @@ Instead of <code class="docutils literal notranslate"><span class="pre">engine.t
 <dt class="sig sig-object py" id="otx.core.model.anomaly.OTXAnomaly.on_save_checkpoint">
 <span class="sig-name descname"><span class="pre">on_save_checkpoint</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">checkpoint</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.12)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../_modules/otx/core/model/anomaly.html#OTXAnomaly.on_save_checkpoint"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.anomaly.OTXAnomaly.on_save_checkpoint" title="Link to this definition">#</a></dt>
 <dd><p>Callback on saving checkpoint.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="otx.core.model.anomaly.OTXAnomaly.on_test_batch_end">
-<span class="sig-name descname"><span class="pre">on_test_batch_end</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">outputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><span class="pre">dict</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">AnomalyClassificationDataBatch</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">AnomalySegmentationDataBatch</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">AnomalyDetectionDataBatch</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><span class="pre">dict</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_idx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataloader_idx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../_modules/otx/core/model/anomaly.html#OTXAnomaly.on_test_batch_end"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.anomaly.OTXAnomaly.on_test_batch_end" title="Link to this definition">#</a></dt>
-<dd><p>Called in the predict loop after the batch.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>outputs</strong> – The outputs of predict_step(x)</p></li>
-<li><p><strong>batch</strong> – The batched data as it is returned by the prediction DataLoader.</p></li>
-<li><p><strong>batch_idx</strong> – the index of the batch</p></li>
-<li><p><strong>dataloader_idx</strong> – the index of the dataloader</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="otx.core.model.anomaly.OTXAnomaly.predict_step">
-<span class="sig-name descname"><span class="pre">predict_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">AnomalyClassificationDataBatch</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">AnomalySegmentationDataBatch</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">AnomalyDetectionDataBatch</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><span class="pre">dict</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_idx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><span class="pre">dict</span></a></span></span><a class="reference internal" href="../../../_modules/otx/core/model/anomaly.html#OTXAnomaly.predict_step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.anomaly.OTXAnomaly.predict_step" title="Link to this definition">#</a></dt>
-<dd><p>Return predictions from the anomalib model.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="otx.core.model.anomaly.OTXAnomaly.validation_step">
-<span class="sig-name descname"><span class="pre">validation_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">AnomalyModelInputs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_idx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">STEP_OUTPUT</span></span></span><a class="reference internal" href="../../../_modules/otx/core/model/anomaly.html#OTXAnomaly.validation_step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.anomaly.OTXAnomaly.validation_step" title="Link to this definition">#</a></dt>
-<dd><p>Call validation step of the anomalib model.</p>
 </dd></dl>
 
 <dl class="py property">
@@ -599,28 +555,10 @@ to inform the OTX lightning model which model to train.</p>
     </a>
    </li>
    <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.core.model.anomaly.OTXAnomaly.configure_optimizers">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       OTXAnomaly.configure_optimizers()
-      </span>
-     </code>
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
     <a class="reference internal nav-link" href="#otx.core.model.anomaly.OTXAnomaly.export">
      <code class="docutils literal notranslate">
       <span class="pre">
        OTXAnomaly.export()
-      </span>
-     </code>
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.core.model.anomaly.OTXAnomaly.forward">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       OTXAnomaly.forward()
       </span>
      </code>
     </a>
@@ -657,33 +595,6 @@ to inform the OTX lightning model which model to train.</p>
      <code class="docutils literal notranslate">
       <span class="pre">
        OTXAnomaly.on_save_checkpoint()
-      </span>
-     </code>
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.core.model.anomaly.OTXAnomaly.on_test_batch_end">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       OTXAnomaly.on_test_batch_end()
-      </span>
-     </code>
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.core.model.anomaly.OTXAnomaly.predict_step">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       OTXAnomaly.predict_step()
-      </span>
-     </code>
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.core.model.anomaly.OTXAnomaly.validation_step">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       OTXAnomaly.validation_step()
       </span>
      </code>
     </a>
