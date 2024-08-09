@@ -129,7 +129,7 @@ class TestOTXCLI:
         cli = OTXCLI()
         cli.instantiate_classes()
 
-        assert cli.model.input_size == (1, 3, input_size, input_size)
+        assert cli.model.input_size == (input_size, input_size)
 
     @pytest.fixture()
     def mock_model_cls(self) -> MagicMock:

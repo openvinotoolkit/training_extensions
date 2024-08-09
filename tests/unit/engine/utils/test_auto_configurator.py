@@ -152,7 +152,7 @@ class TestAutoConfigurator:
 
         model = auto_configurator.get_model(label_info=label_info, input_size=input_size)
 
-        assert model.input_size == (1, 3, input_size, input_size)
+        assert model.input_size == (input_size, input_size)
 
     def test_get_optimizer(self, fxt_task: OTXTaskType) -> None:
         if fxt_task in {

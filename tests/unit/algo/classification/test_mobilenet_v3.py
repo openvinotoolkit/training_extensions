@@ -55,7 +55,7 @@ class TestMobileNetV3ForMulticlassCls:
         assert outputs.has_xai_outputs == explain_mode
 
     def test_set_input_size(self):
-        input_size = (1, 3, 300, 300)
+        input_size = (300, 300)
         model = MobileNetV3ForMulticlassCls(mode="large", label_info=10, input_size=input_size)
         assert model.model.backbone.in_size == input_size[-2:]
 
@@ -98,7 +98,7 @@ class TestMobileNetV3ForMultilabelCls:
         assert outputs.has_xai_outputs == explain_mode
 
     def test_set_input_size(self):
-        input_size = (1, 3, 300, 300)
+        input_size = (300, 300)
         model = MobileNetV3ForMultilabelCls(mode="large", label_info=10, input_size=input_size)
         assert model.model.backbone.in_size == input_size[-2:]
 
@@ -141,6 +141,6 @@ class TestMobileNetV3ForHLabelCls:
         assert outputs.has_xai_outputs == explain_mode
 
     def test_set_input_size(self, fxt_hlabel_data):
-        input_size = (1, 3, 300, 300)
+        input_size = (300, 300)
         model = MobileNetV3ForHLabelCls(mode="large", label_info=fxt_hlabel_data, input_size=input_size)
         assert model.model.backbone.in_size == input_size[-2:]

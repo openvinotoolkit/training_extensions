@@ -69,7 +69,7 @@ class TestEngine:
         data_root = "tests/assets/classification_dataset"
         engine = Engine(work_dir=tmp_path, data_root=data_root)
 
-        assert engine._model.input_size == (1, 3, 1234, 1234)
+        assert engine._model.input_size == (1234, 1234)
         assert engine._model.label_info.num_classes == 4321
 
     def test_model_setter(self, fxt_engine, mocker) -> None:
