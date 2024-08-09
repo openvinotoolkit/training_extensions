@@ -612,7 +612,6 @@ class SwinTransformer(BaseModule):
         self.patch_embed = PatchEmbed(
             in_channels=in_channels,
             embed_dims=embed_dims,
-            conv_type="Conv2d",
             kernel_size=patch_size,
             stride=strides[0],
             norm_cfg=norm_cfg if patch_norm else None,

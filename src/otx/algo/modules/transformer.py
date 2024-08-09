@@ -3,6 +3,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 
 """This implementation replaces the functionality of mmcv.cnn.bricks.transformer."""
+
 from __future__ import annotations
 
 import math
@@ -13,7 +14,6 @@ from torch import nn
 from otx.algo.modules.base_module import BaseModule, Sequential
 
 from .activation import build_activation_layer
-from .conv import build_conv_layer
 from .drop import build_dropout
 from .norm import build_norm_layer
 
@@ -122,11 +122,11 @@ class PatchEmbed(BaseModule):
 
     We use a conv layer to implement PatchEmbed.
 
+    TODO (sungchul): it is duplicated with otx.algo.instance_segmentation.layers.transformer.PatchEmbed
+
     Args:
         in_channels (int): The num of input channels. Default: 3
         embed_dims (int): The dimensions of embedding. Default: 768
-        conv_type (str): The type of convolution
-            to generate patch embedding. Default: "Conv2d".
         kernel_size (int): The kernel_size of embedding conv. Default: 16.
         stride (int): The slide stride of embedding conv.
             Default: 16.
@@ -149,7 +149,6 @@ class PatchEmbed(BaseModule):
         self,
         in_channels: int = 3,
         embed_dims: int = 768,
-        conv_type: str = "Conv2d",
         kernel_size: int | tuple[int, int] = 16,
         stride: int | tuple[int, int] = 16,
         padding: str | int | tuple[int, int] = "corner",
@@ -183,8 +182,7 @@ class PatchEmbed(BaseModule):
             self.adaptive_padding = None
         padding = padding if isinstance(padding, tuple) else (padding, padding)
 
-        self.projection = build_conv_layer(
-            {"type": conv_type},
+        self.projection = nn.Conv2d(
             in_channels=in_channels,
             out_channels=embed_dims,
             kernel_size=kernel_size,

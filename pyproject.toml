@@ -30,7 +30,7 @@ dependencies = [
     "omegaconf==2.3.0",
     "rich==13.7.1",
     "jsonargparse==4.30.0",
-    "psutil==5.9.8", # Mem cache needs system checks
+    "psutil==6.0.0", # Mem cache needs system checks
     "ftfy==6.2.0",
     "regex==2024.5.15",
     "importlib_resources==6.4.0",
@@ -91,8 +91,8 @@ xpu = [
 ]
 
 base = [
-    "torch==2.1.1",
-    "lightning==2.2",
+    "torch==2.2.2",
+    "lightning==2.3.3",
     "pytorchcv",
     "timm==1.0.3",
     "openvino==2024.3",

@@ -12,7 +12,7 @@ import torch.nn.functional
 from torch import Tensor, nn
 
 from otx.algo.modules.base_module import BaseModule
-from otx.algo.modules.conv_module import ConvModule
+from otx.algo.modules.conv_module import Conv2dModule
 
 
 class FPN(BaseModule):
@@ -34,8 +34,6 @@ class FPN(BaseModule):
             conv. Defaults to False.
         no_norm_on_lateral (bool): Whether to apply norm on lateral.
             Defaults to False.
-        conv_cfg (dict, optional): Config dict for
-            convolution layer. Defaults to None.
         norm_cfg (dict, optional): Config dict for
             normalization layer. Defaults to None.
         act_cfg (dict, optional): Config dict for
@@ -54,7 +52,6 @@ class FPN(BaseModule):
         end_level: int = -1,
         relu_before_extra_convs: bool = False,
         no_norm_on_lateral: bool = False,
-        conv_cfg: dict | None = None,
         norm_cfg: dict | None = None,
         act_cfg: dict | None = None,
         upsample_cfg: dict | None = None,
@@ -95,21 +92,19 @@ class FPN(BaseModule):
         self.fpn_convs = nn.ModuleList()
 
         for i in range(self.start_level, self.backbone_end_level):
-            l_conv = ConvModule(
+            l_conv = Conv2dModule(
                 in_channels[i],
                 out_channels,
                 1,
-                conv_cfg=conv_cfg,
                 norm_cfg=norm_cfg if not self.no_norm_on_lateral else None,
                 act_cfg=act_cfg,
                 inplace=False,
             )
-            fpn_conv = ConvModule(
+            fpn_conv = Conv2dModule(
                 out_channels,
                 out_channels,
                 3,
                 padding=1,
-                conv_cfg=conv_cfg,
                 norm_cfg=norm_cfg,
                 act_cfg=act_cfg,
                 inplace=False,

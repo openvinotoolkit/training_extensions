@@ -4,10 +4,10 @@
 import pytest
 import torch
 from otx.algo.classification.classifier import ImageClassifier
-from otx.algo.classification.efficientnet_v2 import (
-    EfficientNetV2ForHLabelCls,
-    EfficientNetV2ForMulticlassCls,
-    EfficientNetV2ForMultilabelCls,
+from otx.algo.classification.timm_model import (
+    TimmModelForHLabelCls,
+    TimmModelForMulticlassCls,
+    TimmModelForMultilabelCls,
 )
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.classification import (
@@ -19,12 +19,13 @@ from otx.core.data.entity.classification import (
 
 @pytest.fixture()
 def fxt_multi_class_cls_model():
-    return EfficientNetV2ForMulticlassCls(
+    return TimmModelForMulticlassCls(
         label_info=10,
+        backbone="efficientnetv2_s_21k",
     )
 
 
-class TestEfficientNetV2ForMulticlassCls:
+class TestTimmModelForMulticlassCls:
     def test_create_model(self, fxt_multi_class_cls_model):
         assert isinstance(fxt_multi_class_cls_model.model, ImageClassifier)
 
@@ -56,12 +57,13 @@ class TestEfficientNetV2ForMulticlassCls:
 
 @pytest.fixture()
 def fxt_multi_label_cls_model():
-    return EfficientNetV2ForMultilabelCls(
+    return TimmModelForMultilabelCls(
         label_info=10,
+        backbone="efficientnetv2_s_21k",
     )
 
 
-class TestEfficientNetV2ForMultilabelCls:
+class TestTimmModelForMultilabelCls:
     def test_create_model(self, fxt_multi_label_cls_model):
         assert isinstance(fxt_multi_label_cls_model.model, ImageClassifier)
 
@@ -93,12 +95,13 @@ class TestEfficientNetV2ForMultilabelCls:
 
 @pytest.fixture()
 def fxt_h_label_cls_model(fxt_hlabel_data):
-    return EfficientNetV2ForHLabelCls(
+    return TimmModelForHLabelCls(
         label_info=fxt_hlabel_data,
+        backbone="efficientnetv2_s_21k",
     )
 
 
-class TestEfficientNetV2ForHLabelCls:
+class TestTimmModelForHLabelCls:
     def test_create_model(self, fxt_h_label_cls_model):
         assert isinstance(fxt_h_label_cls_model.model, ImageClassifier)
 

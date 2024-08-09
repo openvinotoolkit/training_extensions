@@ -204,7 +204,7 @@ class TestOTXCLI:
                 cooldown: 0
                 min_lr: 0.0
                 eps: 1.0e-08
-                verbose: false
+                verbose: deprecated
         """
         expected_config = yaml.safe_load(expected_str)
         assert expected_config["scheduler"] == result_config["model"]["init_args"]["scheduler"]

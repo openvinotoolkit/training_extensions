@@ -1,7 +1,8 @@
-# Copyright (C) 2023 Intel Corporation
+# Copyright (C) 2023-2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 """EfficientNet Module."""
+
 from __future__ import annotations
 
 import math
@@ -14,7 +15,7 @@ from torch import nn
 from torch.nn import functional, init
 
 from otx.algo.modules.activation import build_activation_layer
-from otx.algo.modules.conv_module import ConvModule
+from otx.algo.modules.conv_module import Conv2dModule
 from otx.algo.utils.mmengine_utils import load_checkpoint_to_model
 
 PRETRAINED_ROOT = "https://github.com/osmr/imgclsmob/releases/download/v0.0.364/"
@@ -33,9 +34,9 @@ def conv1x1_block(
     use_bn: bool = True,
     bn_eps: float = 1e-5,
     activation: str | None = "ReLU",
-) -> ConvModule:
+) -> Conv2dModule:
     """Conv block."""
-    return ConvModule(
+    return Conv2dModule(
         in_channels=in_channels,
         out_channels=out_channels,
         kernel_size=1,
@@ -59,9 +60,9 @@ def conv3x3_block(
     use_bn: bool = True,
     bn_eps: float = 1e-5,
     activation: str | None = "ReLU",
-) -> ConvModule:
+) -> Conv2dModule:
     """Conv block."""
-    return ConvModule(
+    return Conv2dModule(
         in_channels=in_channels,
         out_channels=out_channels,
         kernel_size=3,
@@ -85,9 +86,9 @@ def dwconv3x3_block(
     use_bn: bool = True,
     bn_eps: float = 1e-5,
     activation: str | None = "ReLU",
-) -> ConvModule:
+) -> Conv2dModule:
     """Conv block."""
-    return ConvModule(
+    return Conv2dModule(
         in_channels=in_channels,
         out_channels=out_channels,
         kernel_size=3,
@@ -111,9 +112,9 @@ def dwconv5x5_block(
     use_bn: bool = True,
     bn_eps: float = 1e-5,
     activation: str | None = "ReLU",
-) -> ConvModule:
+) -> Conv2dModule:
     """Conv block."""
-    return ConvModule(
+    return Conv2dModule(
         in_channels=in_channels,
         out_channels=out_channels,
         kernel_size=5,
@@ -681,7 +682,7 @@ class OTXEfficientNet(EfficientNet):
             checkpoint = torch.load(pretrained, None)
             load_checkpoint_to_model(self, checkpoint)
             print(f"init weight - {pretrained}")
-        elif pretrained is not None:
+        elif pretrained:
             cache_dir = Path.home() / ".cache" / "torch" / "hub" / "checkpoints"
             download_model(net=self, model_name=self.model_name, local_model_store_dir_path=str(cache_dir))
-            print(f"init weight - {pretrained_urls[self.model_name]}")
+            print(f"Download model weight in {cache_dir!s}")

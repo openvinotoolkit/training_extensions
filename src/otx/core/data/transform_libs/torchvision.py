@@ -26,6 +26,7 @@ from datumaro.components.media import Video
 from lightning.pytorch.cli import instantiate_class
 from numpy import random
 from omegaconf import DictConfig
+from scipy.stats import truncnorm
 from torchvision import tv_tensors
 from torchvision._utils import sequence_to_str
 from torchvision.transforms.v2 import functional as F  # noqa: N812
@@ -3106,6 +3107,484 @@ class Normalize3D(tvt_v2.Normalize):
 
         inputs.image = F.normalize(inputs.image, self.mean, self.std, self.inplace)
         return inputs
+
+
+class GetBBoxCenterScale(tvt_v2.Transform):
+    """Convert bboxes from [x, y, w, h] to center and scale.
+
+    The center is the coordinates of the bbox center, and the scale is the
+    bbox width and height normalized by a scale factor.
+
+    Required Keys:
+
+        - bbox
+
+    Added Keys:
+
+        - bbox_center
+        - bbox_scale
+
+    Args:
+        padding (float): The bbox padding scale that will be multilied to
+            `bbox_scale`. Defaults to 1.25
+    """
+
+    def __init__(self, padding: float = 1.25) -> None:
+        super().__init__()
+
+        self.padding = padding
+
+    def __call__(self, *_inputs: T_OTXDataEntity) -> T_OTXDataEntity | None:
+        """The transform function of :class:`GetBBoxCenterScale`.
+
+        See ``transform()`` method of :class:`BaseTransform` for details.
+
+        Args:
+            results (dict): The result dict
+
+        Returns:
+            dict: The result dict.
+        """
+        assert len(_inputs) == 1, "[tmp] Multiple entity is not supported yet."  # noqa: S101
+        inputs = _inputs[0]
+
+        bbox = inputs.bboxes[0]
+        inputs.bbox_center = ((bbox[..., 2:] + bbox[..., :2]) * 0.5).unsqueeze(0)
+        inputs.bbox_scale = ((bbox[..., 2:] - bbox[..., :2]) * self.padding).unsqueeze(0)
+
+        return inputs
+
+    def __repr__(self) -> str:
+        """Print the basic information of the transform.
+
+        Returns:
+            str: Formatted string.
+        """
+        return self.__class__.__name__ + f"(padding={self.padding})"
+
+
+class RandomBBoxTransform(tvt_v2.Transform):
+    r"""Rnadomly shift, resize and rotate the bounding boxes.
+
+    Required Keys:
+
+        - bbox_center
+        - bbox_scale
+
+    Modified Keys:
+
+        - bbox_center
+        - bbox_scale
+
+    Added Keys:
+        - bbox_rotation
+
+    Args:
+        shift_factor (float): Randomly shift the bbox in range
+            :math:`[-dx, dx]` and :math:`[-dy, dy]` in X and Y directions,
+            where :math:`dx(y) = x(y)_scale \cdot shift_factor` in pixels.
+            Defaults to 0.16
+        shift_prob (float): Probability of applying random shift. Defaults to
+            0.3
+        scale_factor (Tuple[float, float]): Randomly resize the bbox in range
+            :math:`[scale_factor[0], scale_factor[1]]`. Defaults to (0.5, 1.5)
+        scale_prob (float): Probability of applying random resizing. Defaults
+            to 1.0
+        rotate_factor (float): Randomly rotate the bbox in
+            :math:`[-rotate_factor, rotate_factor]` in degrees. Defaults
+            to 80.0
+        rotate_prob (float): Probability of applying random rotation. Defaults
+            to 0.6
+    """
+
+    def __init__(
+        self,
+        shift_factor: float = 0.16,
+        shift_prob: float = 0.3,
+        scale_factor: tuple[float, float] = (0.5, 1.5),
+        scale_prob: float = 1.0,
+        rotate_factor: float = 80.0,
+        rotate_prob: float = 0.6,
+    ) -> None:
+        super().__init__()
+
+        self.shift_factor = shift_factor
+        self.shift_prob = shift_prob
+        self.scale_factor = scale_factor
+        self.scale_prob = scale_prob
+        self.rotate_factor = rotate_factor
+        self.rotate_prob = rotate_prob
+
+    @staticmethod
+    def _truncnorm(low: float = -1.0, high: float = 1.0, size: tuple = ()) -> torch.Tensor:
+        """Sample from a truncated normal distribution."""
+        return torch.Tensor(truncnorm.rvs(low, high, size=size).astype(np.float32))
+
+    @cache_randomness
+    def _get_transform_params(self, num_bboxes: int) -> tuple:
+        """Get random transform parameters.
+
+        Args:
+            num_bboxes (int): The number of bboxes
+
+        Returns:
+            tuple:
+            - offset (np.ndarray): Offset factor of each bbox in shape (n, 2)
+            - scale (np.ndarray): Scaling factor of each bbox in shape (n, 1)
+            - rotate (np.ndarray): Rotation degree of each bbox in shape (n,)
+        """
+        random_v = self._truncnorm(size=(num_bboxes, 4))
+        offset_v = random_v[:, :2]
+        scale_v = random_v[:, 2:3]
+        rotate_v = random_v[:, 3]
+
+        # Get shift parameters
+        offset = offset_v * self.shift_factor
+        offset = torch.where(torch.rand(num_bboxes, 1) < self.shift_prob, offset, 1.0)
+
+        # Get scaling parameters
+        scale_min, scale_max = self.scale_factor
+        mu = (scale_max + scale_min) * 0.5
+        sigma = (scale_max - scale_min) * 0.5
+        scale = scale_v * sigma + mu
+        scale = torch.where(torch.rand(num_bboxes, 1) < self.scale_prob, scale, 1.0)
+
+        # Get rotation parameters
+        rotate = rotate_v * self.rotate_factor
+        rotate = torch.where(torch.rand(num_bboxes, 1) < self.rotate_prob, rotate, 0.0)
+
+        return offset, scale, rotate
+
+    def __call__(self, *_inputs: T_OTXDataEntity) -> T_OTXDataEntity | None:
+        """The transform function of :class:`RandomBboxTransform`.
+
+        See ``transform()`` method of :class:`BaseTransform` for details.
+
+        Args:
+            results (dict): The result dict
+
+        Returns:
+            dict: The result dict.
+        """
+        assert len(_inputs) == 1, "[tmp] Multiple entity is not supported yet."  # noqa: S101
+        inputs = _inputs[0]
+
+        bbox_scale = inputs.bbox_scale
+
+        num_bboxes = 1
+        offset, scale, rotate = self._get_transform_params(num_bboxes)
+
+        inputs.bbox_center = inputs.bbox_center + offset * bbox_scale
+        inputs.bbox_scale = inputs.bbox_scale * scale
+        inputs.bbox_rotation = rotate
+
+        return inputs
+
+    def __repr__(self) -> str:
+        """Print the basic information of the transform.
+
+        Returns:
+            str: Formatted string.
+        """
+        repr_str = self.__class__.__name__
+        repr_str += f"(shift_prob={self.shift_prob}, "
+        repr_str += f"shift_factor={self.shift_factor}, "
+        repr_str += f"scale_prob={self.scale_prob}, "
+        repr_str += f"scale_factor={self.scale_factor}, "
+        repr_str += f"rotate_prob={self.rotate_prob}, "
+        repr_str += f"rotate_factor={self.rotate_factor})"
+        return repr_str
+
+
+class TopdownAffine(tvt_v2.Transform, NumpytoTVTensorMixin):
+    """Get the bbox image as the model input by affine transform.
+
+    Required Keys:
+
+        - img
+        - bbox_center
+        - bbox_scale
+        - bbox_rotation (optional)
+        - keypoints (optional)
+
+    Modified Keys:
+
+        - img
+        - bbox_scale
+
+    Added Keys:
+
+        - input_size
+        - transformed_keypoints
+
+    Args:
+        input_size (Tuple[int, int]): The input image size of the model in
+            [w, h]. The bbox region will be cropped and resize to `input_size`
+    """
+
+    def __init__(self, input_size: tuple[int, int], is_numpy_to_tvtensor: bool = False) -> None:
+        super().__init__()
+
+        self.input_size = input_size
+        self.is_numpy_to_tvtensor = is_numpy_to_tvtensor
+
+    @staticmethod
+    def _fix_aspect_ratio(bbox_scale: np.ndarray, aspect_ratio: float) -> np.ndarray:
+        """Reshape the bbox to a fixed aspect ratio.
+
+        Args:
+            bbox_scale (np.ndarray): The bbox scales (w, h) in shape (n, 2)
+            aspect_ratio (float): The ratio of ``w/h``
+
+        Returns:
+            np.darray: The reshaped bbox scales in (n, 2)
+        """
+        w, h = np.hsplit(bbox_scale, [1])
+        return np.where(w > h * aspect_ratio, np.hstack([w, w / aspect_ratio]), np.hstack([h * aspect_ratio, h]))
+
+    @staticmethod
+    def _get_warp_matrix(
+        center: np.ndarray,
+        scale: np.ndarray,
+        rot: float,
+        output_size: tuple[int, int],
+        shift: tuple[float, float] = (0.0, 0.0),
+        inv: bool = False,
+        fix_aspect_ratio: bool = True,
+    ) -> np.ndarray:
+        """Calculate the affine transformation matrix that can warp the bbox area.
+
+        Args:
+            center (np.ndarray[2, ]): Center of the bounding box (x, y).
+            scale (np.ndarray[2, ]): Scale of the bounding box
+                wrt [width, height].
+            rot (float): Rotation angle (degree).
+            output_size (np.ndarray[2, ] | list(2,)): Size of the
+                destination heatmaps.
+            shift (float): Shift translation ratio wrt the width/height.
+                Default (0., 0.).
+            inv (bool): Option to inverse the affine transform direction.
+                (inv=False: src->dst or inv=True: dst->src)
+            fix_aspect_ratio (bool): Whether to fix aspect ratio during transform.
+                Defaults to True.
+
+        Returns:
+            np.ndarray: A 2x3 transformation matrix
+        """
+        if len(center) != 2 or len(scale) != 2 or len(output_size) != 2 or len(shift) != 2:
+            msg = "center, scale, output_size, and shift should have the length of 2."
+            raise ValueError(msg)
+
+        def _rotate_point(pt: np.ndarray, angle_rad: float) -> np.ndarray:
+            """Rotate a point by an angle."""
+            sn, cs = np.sin(angle_rad), np.cos(angle_rad)
+            rot_mat = np.array([[cs, -sn], [sn, cs]])
+            return rot_mat @ pt
+
+        def _get_3rd_point(a: np.ndarray, b: np.ndarray) -> np.ndarray:
+            """To calculate the affine matrix, three pairs of points are required.
+
+            This function is used to get the 3rd point, given 2D points a & b.
+
+            The 3rd point is defined by rotating vector `a - b` by 90 degrees
+            anticlockwise, using b as the rotation center.
+            """
+            direction = a - b
+            return b + np.r_[-direction[1], direction[0]]
+
+        shift = np.array(shift)
+        src_w, src_h = scale[:2]
+        dst_w, dst_h = output_size[:2]
+
+        rot_rad = np.deg2rad(rot)
+        src_dir = _rotate_point(np.array([src_w * -0.5, 0.0]), rot_rad)
+        dst_dir = np.array([dst_w * -0.5, 0.0])
+
+        src = np.zeros((3, 2), dtype=np.float32)
+        src[0, :] = center + scale * shift
+        src[1, :] = center + src_dir + scale * shift
+
+        dst = np.zeros((3, 2), dtype=np.float32)
+        dst[0, :] = [dst_w * 0.5, dst_h * 0.5]
+        dst[1, :] = np.array([dst_w * 0.5, dst_h * 0.5]) + dst_dir
+
+        if fix_aspect_ratio:
+            src[2, :] = _get_3rd_point(src[0, :], src[1, :])
+            dst[2, :] = _get_3rd_point(dst[0, :], dst[1, :])
+        else:
+            src_dir_2 = _rotate_point(np.array([0.0, src_h * -0.5]), rot_rad)
+            dst_dir_2 = np.array([0.0, dst_h * -0.5])
+            src[2, :] = center + src_dir_2 + scale * shift
+            dst[2, :] = np.array([dst_w * 0.5, dst_h * 0.5]) + dst_dir_2
+
+        if inv:
+            warp_mat = cv2.getAffineTransform(np.float32(dst), np.float32(src))
+        else:
+            warp_mat = cv2.getAffineTransform(np.float32(src), np.float32(dst))
+        return warp_mat
+
+    @staticmethod
+    def _get_warp_image(
+        image: torch.Tensor | np.ndarray,
+        warp_mat: np.ndarray,
+        warp_size: tuple[int, int],
+    ) -> torch.Tensor:
+        numpy_image: np.ndarray = to_np_image(image)
+        warped_image = cv2.warpAffine(numpy_image, warp_mat, warp_size, flags=cv2.INTER_LINEAR)
+        return torch.from_numpy(warped_image).permute(2, 0, 1)
+
+    def __call__(self, *_inputs: T_OTXDataEntity) -> T_OTXDataEntity | None:
+        """The transform function of :class:`TopdownAffine`.
+
+        See ``transform()`` method of :class:`BaseTransform` for details.
+
+        Args:
+            results (dict): The result dict
+
+        Returns:
+            dict: The result dict.
+        """
+        assert len(_inputs) == 1, "[tmp] Multiple entity is not supported yet."  # noqa: S101
+        inputs = _inputs[0]
+
+        w, h = self.input_size
+        warp_size = (int(w), int(h))
+
+        # reshape bbox to fixed aspect ratio
+
+        center = inputs.bbox_center[0]
+        scale = self._fix_aspect_ratio(inputs.bbox_scale, aspect_ratio=w / h)[0]
+        rot = inputs.bbox_rotation[0] if hasattr(inputs, "bbox_rotation") else 0.0
+
+        warp_mat = self._get_warp_matrix(center, scale, rot, output_size=(w, h))
+
+        if isinstance(inputs.image, list):
+            inputs.image = [self._get_warp_image(img, warp_mat, warp_size) for img in inputs.image]
+        else:
+            inputs.image = self._get_warp_image(inputs.image, warp_mat, warp_size)
+
+        if inputs.keypoints is not None:
+            if hasattr(inputs, "transformed_keypoints"):
+                transformed_keypoints = inputs.transformed_keypoints
+            else:
+                transformed_keypoints = inputs.keypoints
+            # Only transform (x, y) coordinates
+            transformed_keypoints = cv2.transform(inputs.keypoints.unsqueeze(0).numpy(), warp_mat)
+            inputs.transformed_keypoints = transformed_keypoints
+        else:
+            inputs.transformed_keypoints = np.zeros([])
+            inputs.keypoints_visible = np.ones((1, 1, 1))
+
+        return self.convert(inputs)
+
+    def __repr__(self) -> str:
+        """Print the basic information of the transform.
+
+        Returns:
+            str: Formatted string.
+        """
+        repr_str = self.__class__.__name__
+        repr_str += f"(input_size={self.input_size},"
+        repr_str += f"is_numpy_to_tvtensor={self.is_numpy_to_tvtensor})."
+        return repr_str
+
+
+class GenerateTarget(tvt_v2.Transform, NumpytoTVTensorMixin):
+    """Encode keypoints into Target.
+
+    The generated target is usually the supervision signal of the model
+    learning, e.g. heatmaps or regression labels.
+
+    Required Keys:
+
+        - keypoints
+        - keypoints_visible
+        - dataset_keypoint_weights
+
+    Added Keys:
+
+        - The keys of the encoded items from the codec will be updated into
+            the results, e.g. ``'heatmaps'`` or ``'keypoint_weights'``. See
+            the specific codec for more details.
+
+    Args:
+        encoder (dict | list[dict]): The codec config for keypoint encoding.
+            Both single encoder and multiple encoders (given as a list) are
+            supported
+        target_type (str, deprecated): This argument is deprecated and has no
+            effect. Defaults to ``None``
+    """
+
+    def __init__(
+        self,
+        is_numpy_to_tvtensor: bool = False,
+    ) -> None:
+        super().__init__()
+        from otx.algo.keypoint_detection.utils.simcc_label import SimCCLabel
+
+        self.encoder = SimCCLabel(
+            input_size=(192, 256),
+            sigma=(4.9, 5.66),
+            simcc_split_ratio=2.0,
+            normalize=False,
+            use_dark=False,
+        )
+        self.is_numpy_to_tvtensor = is_numpy_to_tvtensor
+
+    def __call__(self, *_inputs: T_OTXDataEntity) -> T_OTXDataEntity | None:
+        """The transform function of :class:`GenerateTarget`.
+
+        See ``transform()`` method of :class:`BaseTransform` for details.
+        """
+        assert len(_inputs) == 1, "[tmp] Multiple entity is not supported yet."  # noqa: S101
+        inputs = _inputs[0]
+
+        if hasattr(inputs, "transformed_keypoints"):
+            # use keypoints transformed by TopdownAffine
+            keypoints = inputs.transformed_keypoints
+        elif hasattr(inputs, "keypoints"):
+            # use original keypoints
+            keypoints = inputs.keypoints
+        else:
+            msg = "GenerateTarget requires 'transformed_keypoints' or 'keypoints' in the results."
+            raise ValueError(msg)
+
+        if len(keypoints.shape) == 2:
+            keypoints = keypoints.unsqueeze(0)
+
+        if isinstance(keypoints, torch.Tensor):
+            keypoints = keypoints.numpy()
+
+        keypoints_visible = inputs.keypoints_visible.unsqueeze(0).numpy()
+        if keypoints_visible.ndim == 3 and keypoints_visible.shape[2] == 2:
+            keypoints_visible, keypoints_visible_weights = keypoints_visible[..., 0], keypoints_visible[..., 1]
+            inputs.keypoints_visible = keypoints_visible
+            inputs.keypoints_visible_weights = keypoints_visible_weights
+
+        # Encoded items from the encoder(s) will be updated into the results.
+        # Please refer to the document of the specific codec for details about
+        # encoded items.
+        encoded = self.encoder.encode(
+            keypoints=keypoints,
+            keypoints_visible=keypoints_visible,
+        )
+
+        inputs.keypoint_x_labels = torch.Tensor(encoded["keypoint_x_labels"])
+        inputs.keypoint_y_labels = torch.Tensor(encoded["keypoint_y_labels"])
+        inputs.keypoint_weights = torch.Tensor(encoded["keypoint_weights"])
+
+        return self.convert(inputs)
+
+    def __repr__(self) -> str:
+        """Print the basic information of the transform.
+
+        Returns:
+            str: Formatted string.
+        """
+        repr_str = self.__class__.__name__
+        repr_str += f"(encoder={self.encoder}, "
+        repr_str += f"is_numpy_to_tvtensor={self.is_numpy_to_tvtensor})"
+        return repr_str
 
 
 class TorchVisionTransformLib:

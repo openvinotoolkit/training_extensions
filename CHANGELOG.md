@@ -12,6 +12,8 @@ All notable changes to this project will be documented in this file.
   (https://github.com/openvinotoolkit/training_extensions/pull/3697)
 - Add Hugging-Face Model Wrapper for Classification
   (https://github.com/openvinotoolkit/training_extensions/pull/3710)
+- Add LoRA finetuning capability for ViT Architectures
+  (https://github.com/openvinotoolkit/training_extensions/pull/3729)
 - Add Hugging-Face Model Wrapper for Detection
   (https://github.com/openvinotoolkit/training_extensions/pull/3747)
 - Add Hugging-Face Model Wrapper for Semantic Segmentation
@@ -20,9 +22,13 @@ All notable changes to this project will be documented in this file.
   (https://github.com/openvinotoolkit/training_extensions/pull/3758)
 - Add `otx benchmark` subcommand
   (https://github.com/openvinotoolkit/training_extensions/pull/3762)
+- Add RTMPose for Keypoint Detection Task
+  (https://github.com/openvinotoolkit/training_extensions/pull/3781)
 
 ### Enhancements
 
+- Reimplement of ViT Architecture following TIMM
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3719>)
 - Enable to override data configurations
   (<https://github.com/openvinotoolkit/training_extensions/pull/3748>)
 - Enable to use input_size at transforms in recipe
