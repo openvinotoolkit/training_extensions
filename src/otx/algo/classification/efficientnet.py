@@ -57,7 +57,7 @@ class EfficientNetForMulticlassCls(OTXMulticlassClsModel):
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MultiClassClsMetricCallable,
         torch_compile: bool = False,
-        input_size: tuple[int, ...] = (1, 3, 224, 224),
+        input_size: tuple[int, int] = (224, 224),
         train_type: Literal[OTXTrainType.SUPERVISED, OTXTrainType.SEMI_SUPERVISED] = OTXTrainType.SUPERVISED,
     ) -> None:
         self.version = version
@@ -88,7 +88,7 @@ class EfficientNetForMulticlassCls(OTXMulticlassClsModel):
         return model
 
     def _build_model(self, num_classes: int) -> nn.Module:
-        backbone = OTXEfficientNet(version=self.version, input_size=self.input_size[-2:], pretrained=self.pretrained)
+        backbone = OTXEfficientNet(version=self.version, input_size=self.input_size, pretrained=self.pretrained)
         neck = GlobalAveragePooling(dim=2)
         loss = nn.CrossEntropyLoss(reduction="none")
         if self.train_type == OTXTrainType.SEMI_SUPERVISED:
@@ -151,7 +151,7 @@ class EfficientNetForMultilabelCls(OTXMultilabelClsModel):
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MultiLabelClsMetricCallable,
         torch_compile: bool = False,
-        input_size: tuple[int, ...] = (1, 3, 224, 224),
+        input_size: tuple[int, int] = (224, 224),
     ) -> None:
         self.version = version
         self.pretrained = pretrained
@@ -180,7 +180,7 @@ class EfficientNetForMultilabelCls(OTXMultilabelClsModel):
         return model
 
     def _build_model(self, num_classes: int) -> nn.Module:
-        backbone = OTXEfficientNet(version=self.version, input_size=self.input_size[-2:], pretrained=self.pretrained)
+        backbone = OTXEfficientNet(version=self.version, input_size=self.input_size, pretrained=self.pretrained)
         return ImageClassifier(
             backbone=backbone,
             neck=GlobalAveragePooling(dim=2),
@@ -233,7 +233,7 @@ class EfficientNetForHLabelCls(OTXHlabelClsModel):
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = HLabelClsMetricCallble,
         torch_compile: bool = False,
-        input_size: tuple[int, ...] = (1, 3, 224, 224),
+        input_size: tuple[int, int] = (224, 224),
     ) -> None:
         self.version = version
         self.pretrained = pretrained
@@ -268,7 +268,7 @@ class EfficientNetForHLabelCls(OTXHlabelClsModel):
         if not isinstance(self.label_info, HLabelInfo):
             raise TypeError(self.label_info)
 
-        backbone = OTXEfficientNet(version=self.version, input_size=self.input_size[-2:], pretrained=self.pretrained)
+        backbone = OTXEfficientNet(version=self.version, input_size=self.input_size, pretrained=self.pretrained)
         return ImageClassifier(
             backbone=backbone,
             neck=GlobalAveragePooling(dim=2),

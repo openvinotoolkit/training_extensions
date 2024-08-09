@@ -55,7 +55,7 @@ class SSD(ExplainableOTXDetModel):
     def __init__(
         self,
         label_info: LabelInfoTypes,
-        input_size: tuple[int, ...] = (1, 3, 864, 864),
+        input_size: tuple[int, int] = (864, 864),
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MeanAveragePrecisionFMeasureCallable,
@@ -168,11 +168,11 @@ class SSD(ExplainableOTXDetModel):
                 if isinstance(transform, Resize):
                     target_wh = transform.scale
         if target_wh is None:
-            target_wh = self.input_size[-2:]
+            target_wh = list(reversed(self.input_size))  # type: ignore[assignment]
             msg = f"Cannot get target_wh from the dataset. Assign it with the default value: {target_wh}"
             logger.warning(msg)
         group_as = [len(width) for width in anchor_generator.widths]
-        wh_stats = self._get_sizes_from_dataset_entity(dataset, list(target_wh))
+        wh_stats = self._get_sizes_from_dataset_entity(dataset, list(target_wh))  # type: ignore[arg-type]
 
         if len(wh_stats) < sum(group_as):
             logger.warning(
@@ -297,7 +297,7 @@ class SSD(ExplainableOTXDetModel):
 
         return OTXNativeModelExporter(
             task_level_export_parameters=self._export_parameters,
-            input_size=self.input_size,
+            input_size=(1, 3, *self.input_size),
             mean=self.mean,
             std=self.std,
             resize_mode="standard",

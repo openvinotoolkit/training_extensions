@@ -230,8 +230,7 @@ class AutoConfigurator:
 
         if data_config.get("adaptive_input_size", "none") != "none":
             model_cls = get_model_cls_from_config(Namespace(self.config["model"]))
-            if hasattr(model_cls, "input_size_multiplier"):
-                data_config["input_size_multiplier"] = model_cls.input_size_multiplier
+            data_config["input_size_multiplier"] = model_cls.input_size_multiplier
 
         return OTXDataModule(
             train_subset=SubsetConfig(sampler=SamplerConfig(**train_config.pop("sampler", {})), **train_config),
@@ -250,7 +249,7 @@ class AutoConfigurator:
         self,
         model_name: str | None = None,
         label_info: LabelInfoTypes | None = None,
-        input_size: tuple[int, ...] | int | None = None,
+        input_size: tuple[int, int] | int | None = None,
     ) -> OTXModel:
         """Retrieves the OTXModel instance based on the provided model name and meta information.
 
@@ -258,7 +257,7 @@ class AutoConfigurator:
             model_name (str | None): The name of the model to retrieve. If None, the default model will be used.
             label_info (LabelInfoTypes | None): The meta information about the labels.
                 If provided, the number of classes will be updated in the model's configuration.
-            input_size (tuple[int, ...] | int | None, optional): Input size of the model. Defaults to None.
+            input_size (tuple[int, int] | int | None, optional): Input size of the model. Defaults to None.
 
         Returns:
             OTXModel: The instantiated OTXModel instance.
@@ -286,8 +285,9 @@ class AutoConfigurator:
         model_config = deepcopy(self.config["model"])
 
         if input_size is not None:
-            input_size = (input_size, input_size) if isinstance(input_size, int) else input_size
-            model_config["init_args"]["input_size"] = tuple(model_config["init_args"]["input_size"][:-2]) + input_size
+            model_config["init_args"]["input_size"] = (
+                (input_size, input_size) if isinstance(input_size, int) else input_size
+            )
 
         model_cls = get_model_cls_from_config(Namespace(model_config))
 

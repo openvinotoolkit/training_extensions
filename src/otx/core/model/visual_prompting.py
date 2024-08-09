@@ -162,7 +162,7 @@ class OTXVisualPromptingModel(OTXModel[VisualPromptingBatchDataEntity, VisualPro
     def __init__(
         self,
         label_info: LabelInfoTypes = NullLabelInfo(),
-        input_size: tuple[int, ...] = (1, 3, 1024, 1024),
+        input_size: tuple[int, int] = (1024, 1024),
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = VisualPromptingMetricCallable,
@@ -178,14 +178,14 @@ class OTXVisualPromptingModel(OTXModel[VisualPromptingBatchDataEntity, VisualPro
             metric=metric,
             torch_compile=torch_compile,
         )
-        self.input_size: tuple[int, int, int, int]
+        self.input_size: tuple[int, int]
 
     @property
     def _exporter(self) -> OTXModelExporter:
         """Creates OTXModelExporter object that can export the model."""
         return OTXVisualPromptingModelExporter(
             task_level_export_parameters=self._export_parameters,
-            input_size=self.input_size,
+            input_size=(1, 3, *self.input_size),
             mean=(123.675, 116.28, 103.53),
             std=(58.395, 57.12, 57.375),
             resize_mode="fit_to_window",
@@ -265,7 +265,7 @@ class OTXVisualPromptingModel(OTXModel[VisualPromptingBatchDataEntity, VisualPro
 
     def get_dummy_input(self, batch_size: int = 1) -> VisualPromptingBatchDataEntity:
         """Returns a dummy input for VPT model."""
-        images = [torch.rand(self.input_size[1:]) for _ in range(batch_size)]
+        images = [torch.rand(3, *self.input_size) for _ in range(batch_size)]
         labels = [{"points": torch.LongTensor([0] * batch_size)}] * batch_size
         prompts = [torch.zeros((1, 2))] * batch_size
         return VisualPromptingBatchDataEntity(
@@ -287,7 +287,7 @@ class OTXZeroShotVisualPromptingModel(
 
     def __init__(
         self,
-        input_size: tuple[int, ...],
+        input_size: tuple[int, int],
         label_info: LabelInfoTypes = NullLabelInfo(),
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
@@ -304,14 +304,14 @@ class OTXZeroShotVisualPromptingModel(
             metric=metric,
             torch_compile=torch_compile,
         )
-        self.input_size: tuple[int, int, int, int]
+        self.input_size: tuple[int, int]
 
     @property
     def _exporter(self) -> OTXModelExporter:
         """Creates OTXModelExporter object that can export the model."""
         return OTXVisualPromptingModelExporter(
             task_level_export_parameters=self._export_parameters,
-            input_size=self.input_size,
+            input_size=(1, 3, *self.input_size),
             mean=(123.675, 116.28, 103.53),
             std=(58.395, 57.12, 57.375),
             resize_mode="fit_to_window",
@@ -450,7 +450,7 @@ class OTXZeroShotVisualPromptingModel(
 
     def get_dummy_input(self, batch_size: int = 1) -> ZeroShotVisualPromptingBatchDataEntity:
         """Returns a dummy input for ZSL VPT model."""
-        images = [torch.rand(self.input_size[1:]) for _ in range(batch_size)]
+        images = [torch.rand(3, *self.input_size) for _ in range(batch_size)]
         labels = [ZeroShotVisualPromptingLabel(prompts=torch.LongTensor([0]))] * batch_size
         prompts = [torch.zeros((1, 2))] * batch_size
         infos = []

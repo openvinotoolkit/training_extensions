@@ -31,7 +31,7 @@ if TYPE_CHECKING:
     from otx.core.metrics import MetricCallable
 
 
-DEFAULT_INPUT_SIZE = (1, 3, 224, 224)
+DEFAULT_INPUT_SIZE = (224, 224)
 logger = logging.getLogger(__name__)
 
 
@@ -44,7 +44,8 @@ class HuggingFaceModelForMulticlassCls(OTXMulticlassClsModel):
         optimizer (OptimizerCallable, optional): The optimizer callable for training the model.
         scheduler (LRSchedulerCallable | LRSchedulerListCallable, optional): The learning rate scheduler callable.
         torch_compile (bool, optional): Whether to compile the model using TorchScript. Defaults to False.
-        input_size (tuple[int, ...], optional): The input size of the model. Defaults to (1, 3, 224, 224)
+        input_size (tuple[int, int], optional):
+            Model input size in the order of height and width. Defaults to (224, 224)
 
     Example:
         1. API
@@ -66,7 +67,7 @@ class HuggingFaceModelForMulticlassCls(OTXMulticlassClsModel):
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MultiClassClsMetricCallable,
         torch_compile: bool = False,
-        input_size: tuple[int, ...] = DEFAULT_INPUT_SIZE,
+        input_size: tuple[int, int] = DEFAULT_INPUT_SIZE,
     ) -> None:
         self.model_name = model_name_or_path
 
@@ -83,7 +84,7 @@ class HuggingFaceModelForMulticlassCls(OTXMulticlassClsModel):
         model_config, _ = PretrainedConfig.get_config_dict(self.model_name)
         kwargs = {}
         if "image_size" in model_config:
-            kwargs["image_size"] = self.input_size[-1]
+            kwargs["image_size"] = self.input_size[0]
         elif self.input_size != DEFAULT_INPUT_SIZE:
             msg = "There is no 'image_size' argument in the model configuration. There may be unexpected results."
             logger.warning(msg)

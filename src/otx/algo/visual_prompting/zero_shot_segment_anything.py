@@ -661,7 +661,7 @@ class OTXZeroShotSegmentAnything(OTXZeroShotVisualPromptingModel):
         }
         super().__init__(
             label_info=label_info,
-            input_size=(1, 3, 1024, 1024),  # zero-shot visual prompting model uses fixed 1024x1024 input size
+            input_size=(1024, 1024),  # zero-shot visual prompting model uses fixed 1024x1024 input size
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,

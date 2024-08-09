@@ -99,11 +99,12 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
     """
 
     _OPTIMIZED_MODEL_BASE_NAME: str = "optimized_model"
+    input_size_multiplier = 1
 
     def __init__(
         self,
         label_info: LabelInfoTypes,
-        input_size: tuple[int, ...] | None = None,
+        input_size: tuple[int, int] | None = None,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = NullMetricCallable,
@@ -809,13 +810,11 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
 
         raise TypeError(label_info)
 
-    def _check_input_size(self, input_size: tuple[int, ...] | None = None) -> None:
-        if (
-            input_size is not None
-            and hasattr(self, "input_size_multiplier")
-            and (input_size[-1] % self.input_size_multiplier != 0 or input_size[-2] % self.input_size_multiplier != 0)
+    def _check_input_size(self, input_size: tuple[int, int] | None = None) -> None:
+        if input_size is not None and (
+            input_size[0] % self.input_size_multiplier != 0 or input_size[1] % self.input_size_multiplier != 0
         ):
-            msg = f"Input size should be a multiple of {self.input_size_multiplier}, but got {input_size[-2:]} instead."
+            msg = f"Input size should be a multiple of {self.input_size_multiplier}, but got {input_size} instead."
             raise ValueError(msg)
 
 

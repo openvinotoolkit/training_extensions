@@ -220,8 +220,7 @@ def adapt_input_size_to_dataset(
             logger.info(f"-> Downscale only: {input_size} -> {base_input_size}")
             return base_input_size
 
-    # Closest preset
-    logger.info(f"-> Closest preset: {input_size}")
+    logger.info(f"-> Adapted input size: {input_size}")
     return input_size
 
 

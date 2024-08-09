@@ -41,7 +41,7 @@ if TYPE_CHECKING:
 class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity]):
     """Base class for the detection models used in OTX."""
 
-    input_size: tuple[int, int, int, int]
+    input_size: tuple[int, int]
 
     def test_step(self, batch: DetBatchDataEntity, batch_idx: int) -> None:
         """Perform a single test step on a batch of data from the test set.
@@ -368,7 +368,7 @@ class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity]):
             msg = f"Input size attribute is not set for {self.__class__}"
             raise ValueError(msg)
 
-        images = [torch.rand(*self.input_size[1:]) for _ in range(batch_size)]
+        images = [torch.rand(3, *self.input_size) for _ in range(batch_size)]
         infos = []
         for i, img in enumerate(images):
             infos.append(
@@ -387,7 +387,7 @@ class ExplainableOTXDetModel(OTXDetectionModel):
     def __init__(
         self,
         label_info: LabelInfoTypes,
-        input_size: tuple[int, ...],
+        input_size: tuple[int, int],
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MeanAveragePrecisionFMeasureCallable,

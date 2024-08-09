@@ -496,7 +496,7 @@ class OTXSegmentAnything(OTXVisualPromptingModel):
         self,
         backbone: Literal["tiny_vit", "vit_b"],
         label_info: LabelInfoTypes = NullLabelInfo(),
-        input_size: tuple[int, ...] = (1, 3, 1024, 1024),
+        input_size: tuple[int, int] = (1024, 1024),
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = VisualPromptingMetricCallable,
@@ -509,14 +509,14 @@ class OTXSegmentAnything(OTXVisualPromptingModel):
         return_extra_metrics: bool = False,
         stability_score_offset: float = 1.0,
     ) -> None:
-        if input_size[-1] != input_size[-2]:
+        if input_size[0] != input_size[1]:
             msg = f"SAM should use square image size, but got {input_size}"
             raise ValueError(msg)
 
         self.config = {
             "backbone": backbone,
-            "image_size": input_size[-1],
-            "image_embedding_size": input_size[-1] // 16,
+            "image_size": input_size[0],
+            "image_embedding_size": input_size[0] // 16,
             "freeze_image_encoder": freeze_image_encoder,
             "freeze_prompt_encoder": freeze_prompt_encoder,
             "freeze_mask_decoder": freeze_mask_decoder,

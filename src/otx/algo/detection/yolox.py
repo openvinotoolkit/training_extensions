@@ -43,7 +43,7 @@ class YOLOX(ExplainableOTXDetModel):
     def __init__(
         self,
         label_info: LabelInfoTypes,
-        input_size: tuple[int, ...] = (1, 3, 640, 640),
+        input_size: tuple[int, int] = (640, 640),
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MeanAveragePrecisionFMeasureCallable,
@@ -79,7 +79,7 @@ class YOLOX(ExplainableOTXDetModel):
 
         return OTXNativeModelExporter(
             task_level_export_parameters=self._export_parameters,
-            input_size=self.input_size,
+            input_size=(1, 3, *self.input_size),
             mean=self.mean,
             std=self.std,
             resize_mode="fit_to_window_letterbox",
@@ -150,7 +150,7 @@ class YOLOXTINY(YOLOX):
     def __init__(
         self,
         label_info: LabelInfoTypes,
-        input_size: tuple[int, ...] = (1, 3, 416, 416),
+        input_size: tuple[int, int] = (416, 416),
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MeanAveragePrecisionFMeasureCallable,

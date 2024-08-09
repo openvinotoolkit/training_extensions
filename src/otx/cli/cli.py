@@ -335,8 +335,7 @@ class OTXCLI:
             # if adaptive_input_size will be executed and the model has input_size_multiplier, pass it to OTXDataModule
             if self.config[self.subcommand].data.adaptive_input_size != "none":
                 model_cls = get_model_cls_from_config(model_config)
-                if hasattr(model_cls, "input_size_multiplier"):
-                    self.config[self.subcommand].data.input_size_multiplier = model_cls.input_size_multiplier
+                self.config[self.subcommand].data.input_size_multiplier = model_cls.input_size_multiplier
 
             # Instantiate the things that don't need to special handling
             self.config_init = self.parser.instantiate_classes(self.config)
@@ -346,9 +345,8 @@ class OTXCLI:
             # pass OTXDataModule input size to the model
             if (input_size := self.datamodule.input_size) is not None and "input_size" in model_config["init_args"]:
                 # TODO(eunwoosh): After configurable input size is applied to anomaly, remove input_size check
-                input_size = (input_size, input_size) if isinstance(input_size, int) else tuple(input_size)  # type: ignore[assignment]
                 model_config["init_args"]["input_size"] = (
-                    tuple(model_config["init_args"]["input_size"][:-2]) + input_size  # type: ignore[operator]
+                    (input_size, input_size) if isinstance(input_size, int) else tuple(input_size)
                 )
 
             # Instantiate the model and needed components

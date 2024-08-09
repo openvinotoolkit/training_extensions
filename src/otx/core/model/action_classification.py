@@ -37,7 +37,7 @@ class OTXActionClsModel(OTXModel[ActionClsBatchDataEntity, ActionClsBatchPredEnt
     def __init__(
         self,
         label_info: LabelInfoTypes,
-        input_size: tuple[int, ...],
+        input_size: tuple[int, int],
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MultiClassClsMetricCallable,
@@ -53,7 +53,7 @@ class OTXActionClsModel(OTXModel[ActionClsBatchDataEntity, ActionClsBatchPredEnt
             metric=metric,
             torch_compile=torch_compile,
         )
-        self.input_size: tuple[int, int, int, int, int, int]
+        self.input_size: tuple[int, int]
 
     @property
     def _export_parameters(self) -> TaskLevelExportParameters:
@@ -133,7 +133,7 @@ class OTXActionClsModel(OTXModel[ActionClsBatchDataEntity, ActionClsBatchPredEnt
         """Creates OTXModelExporter object that can export the model."""
         return OTXNativeModelExporter(
             task_level_export_parameters=self._export_parameters,
-            input_size=self.input_size,
+            input_size=(1, 1, 3, 8, *self.input_size),
             mean=self.mean,
             std=self.std,
             resize_mode="standard",
@@ -165,7 +165,7 @@ class OTXActionClsModel(OTXModel[ActionClsBatchDataEntity, ActionClsBatchPredEnt
 
     def get_dummy_input(self, batch_size: int = 1) -> ActionClsBatchDataEntity:
         """Returns a dummy input for action classification model."""
-        images = torch.rand(batch_size, *self.input_size[1:])
+        images = torch.rand(batch_size, 1, 3, 8, *self.input_size)
         labels = [torch.LongTensor([0])] * batch_size
         infos = []
         for i, img in enumerate(images):

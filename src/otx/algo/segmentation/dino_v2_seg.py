@@ -56,7 +56,7 @@ class OTXDinoV2Seg(TorchVisionCompatibleModel):
     def __init__(
         self,
         label_info: LabelInfoTypes,
-        input_size: tuple[int, ...] = (1, 3, 560, 560),
+        input_size: tuple[int, int] = (560, 560),
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = SegmCallable,  # type: ignore[assignment]

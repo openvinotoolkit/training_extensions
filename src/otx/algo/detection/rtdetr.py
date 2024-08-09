@@ -46,7 +46,7 @@ class RTDETR(ExplainableOTXDetModel):
     def __init__(
         self,
         label_info: LabelInfoTypes,
-        input_size: tuple[int, ...] = (1, 3, 640, 640),
+        input_size: tuple[int, int] = (640, 640),
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MeanAveragePrecisionFMeasureCallable,
@@ -199,7 +199,7 @@ class RTDETR(ExplainableOTXDetModel):
 
         return OTXNativeModelExporter(
             task_level_export_parameters=self._export_parameters,
-            input_size=self.input_size,
+            input_size=(1, 3, *self.input_size),
             mean=self.mean,
             std=self.std,
             resize_mode="standard",
@@ -242,13 +242,13 @@ class RTDETR18(RTDETR):
         encoder = HybridEncoder(
             in_channels=[128, 256, 512],
             expansion=0.5,
-            eval_spatial_size=self.input_size[-2:],
+            eval_spatial_size=self.input_size,
         )
         decoder = RTDETRTransformer(
             num_classes=num_classes,
             num_decoder_layers=3,
             feat_channels=[256, 256, 256],
-            eval_spatial_size=self.input_size[-2:],
+            eval_spatial_size=self.input_size,
         )
 
         optimizer_configuration = [
@@ -266,7 +266,7 @@ class RTDETR18(RTDETR):
             decoder=decoder,
             num_classes=num_classes,
             optimizer_configuration=optimizer_configuration,
-            input_size=self.input_size[-1],
+            input_size=self.input_size[0],
         )
 
 
@@ -286,12 +286,12 @@ class RTDETR50(RTDETR):
             norm_cfg={"type": "FBN", "name": "norm"},
         )
         encoder = HybridEncoder(
-            eval_spatial_size=self.input_size[-2:],
+            eval_spatial_size=self.input_size,
         )
         decoder = RTDETRTransformer(
             num_classes=num_classes,
             feat_channels=[256, 256, 256],
-            eval_spatial_size=self.input_size[-2:],
+            eval_spatial_size=self.input_size,
             num_decoder_layers=6,
         )
 
@@ -310,7 +310,7 @@ class RTDETR50(RTDETR):
             decoder=decoder,
             num_classes=num_classes,
             optimizer_configuration=optimizer_configuration,
-            input_size=self.input_size[-1],
+            input_size=self.input_size[0],
         )
 
 
@@ -334,13 +334,13 @@ class RTDETR101(RTDETR):
             hidden_dim=384,
             dim_feedforward=2048,
             in_channels=[512, 1024, 2048],
-            eval_spatial_size=self.input_size[2:],
+            eval_spatial_size=self.input_size,
         )
 
         decoder = RTDETRTransformer(
             num_classes=num_classes,
             feat_channels=[384, 384, 384],
-            eval_spatial_size=self.input_size[2:],
+            eval_spatial_size=self.input_size,
         )
 
         # no bias decay and learning rate correction for the backbone.
@@ -360,5 +360,5 @@ class RTDETR101(RTDETR):
             decoder=decoder,
             num_classes=num_classes,
             optimizer_configuration=optimizer_configuration,
-            input_size=self.input_size[-1],
+            input_size=self.input_size[0],
         )

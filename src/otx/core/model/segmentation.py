@@ -37,7 +37,7 @@ class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity]):
     def __init__(
         self,
         label_info: LabelInfoTypes,
-        input_size: tuple[int, ...],
+        input_size: tuple[int, int],
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = SegmCallable,  # type: ignore[assignment]
@@ -47,7 +47,7 @@ class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity]):
 
         Args:
             label_info (LabelInfoTypes): The label information for the segmentation model.
-            input_size (tuple[int, ...]): The input size of the model.
+            input_size (tuple[int, int]): Model input size in the order of height and width.
             optimizer (OptimizerCallable, optional): The optimizer to use for training.
                 Defaults to DefaultOptimizerCallable.
             scheduler (LRSchedulerCallable | LRSchedulerListCallable, optional):
@@ -65,7 +65,7 @@ class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity]):
             metric=metric,
             torch_compile=torch_compile,
         )
-        self.input_size: tuple[int, int, int, int]
+        self.input_size: tuple[int, int]
 
     @property
     def _export_parameters(self) -> TaskLevelExportParameters:
@@ -112,7 +112,7 @@ class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity]):
             msg = f"Input size attribute is not set for {self.__class__}"
             raise ValueError(msg)
 
-        images = torch.rand(batch_size, *self.input_size[1:])
+        images = torch.rand(batch_size, 3, *self.input_size)
         infos = []
         for i, img in enumerate(images):
             infos.append(
@@ -131,7 +131,7 @@ class TorchVisionCompatibleModel(OTXSegmentationModel):
     def __init__(
         self,
         label_info: LabelInfoTypes,
-        input_size: tuple[int, ...],
+        input_size: tuple[int, int],
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = SegmCallable,  # type: ignore[assignment]
@@ -146,7 +146,7 @@ class TorchVisionCompatibleModel(OTXSegmentationModel):
 
         Args:
             label_info (LabelInfoTypes): The label information for the segmentation model.
-            input_size (tuple[int, ...]): The input size of the model.
+            input_size (tuple[int, int]): Model input size in the order of height and width.
             optimizer (OptimizerCallable, optional): The optimizer callable for the model.
                 Defaults to DefaultOptimizerCallable.
             scheduler (LRSchedulerCallable | LRSchedulerListCallable, optional):
@@ -220,7 +220,7 @@ class TorchVisionCompatibleModel(OTXSegmentationModel):
 
         return OTXNativeModelExporter(
             task_level_export_parameters=self._export_parameters,
-            input_size=self.input_size,
+            input_size=(1, 3, *self.input_size),
             mean=self.mean,
             std=self.scale,
             resize_mode="standard",

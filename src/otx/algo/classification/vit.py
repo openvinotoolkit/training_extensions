@@ -219,7 +219,7 @@ class VisionTransformerForMulticlassCls(ForwardExplainMixInForViT, OTXMulticlass
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MultiClassClsMetricCallable,
         torch_compile: bool = False,
-        input_size: tuple[int, ...] = (1, 3, 224, 224),
+        input_size: tuple[int, int] = (224, 224),
         train_type: Literal[OTXTrainType.SUPERVISED, OTXTrainType.SEMI_SUPERVISED] = OTXTrainType.SUPERVISED,
     ) -> None:
         self.arch = arch
@@ -279,7 +279,7 @@ class VisionTransformerForMulticlassCls(ForwardExplainMixInForViT, OTXMulticlass
             {"std": 0.2, "layer": "Linear", "type": "TruncNormal"},
             {"bias": 0.0, "val": 1.0, "layer": "LayerNorm", "type": "Constant"},
         ]
-        vit_backbone = VisionTransformer(arch=self.arch, img_size=self.input_size[-2:], lora=self.lora)
+        vit_backbone = VisionTransformer(arch=self.arch, img_size=self.input_size, lora=self.lora)
         if self.train_type == OTXTrainType.SEMI_SUPERVISED:
             return SemiSLClassifier(
                 backbone=vit_backbone,
@@ -320,7 +320,7 @@ class VisionTransformerForMulticlassClsSemiSL(VisionTransformerForMulticlassCls)
             {"std": 0.2, "layer": "Linear", "type": "TruncNormal"},
             {"bias": 0.0, "val": 1.0, "layer": "LayerNorm", "type": "Constant"},
         ]
-        vit_backbone = VisionTransformer(arch=self.arch, img_size=self.input_size[-2:])
+        vit_backbone = VisionTransformer(arch=self.arch, img_size=self.input_size)
         return SemiSLClassifier(
             backbone=vit_backbone,
             neck=None,
@@ -348,7 +348,7 @@ class VisionTransformerForMultilabelCls(ForwardExplainMixInForViT, OTXMultilabel
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MultiLabelClsMetricCallable,
         torch_compile: bool = False,
-        input_size: tuple[int, ...] = (1, 3, 224, 224),
+        input_size: tuple[int, int] = (224, 224),
     ) -> None:
         self.arch = arch
         self.lora = lora
@@ -405,7 +405,7 @@ class VisionTransformerForMultilabelCls(ForwardExplainMixInForViT, OTXMultilabel
             {"std": 0.2, "layer": "Linear", "type": "TruncNormal"},
             {"bias": 0.0, "val": 1.0, "layer": "LayerNorm", "type": "Constant"},
         ]
-        vit_backbone = VisionTransformer(arch=self.arch, img_size=self.input_size[-2:], lora=self.lora)
+        vit_backbone = VisionTransformer(arch=self.arch, img_size=self.input_size, lora=self.lora)
         return ImageClassifier(
             backbone=vit_backbone,
             neck=None,
@@ -434,7 +434,7 @@ class VisionTransformerForHLabelCls(ForwardExplainMixInForViT, OTXHlabelClsModel
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = HLabelClsMetricCallble,
         torch_compile: bool = False,
-        input_size: tuple[int, ...] = (1, 3, 224, 224),
+        input_size: tuple[int, int] = (224, 224),
     ) -> None:
         self.arch = arch
         self.lora = lora
@@ -496,7 +496,7 @@ class VisionTransformerForHLabelCls(ForwardExplainMixInForViT, OTXHlabelClsModel
             {"std": 0.2, "layer": "Linear", "type": "TruncNormal"},
             {"bias": 0.0, "val": 1.0, "layer": "LayerNorm", "type": "Constant"},
         ]
-        vit_backbone = VisionTransformer(arch=self.arch, img_size=self.input_size[-2:], lora=self.lora)
+        vit_backbone = VisionTransformer(arch=self.arch, img_size=self.input_size, lora=self.lora)
         return ImageClassifier(
             backbone=vit_backbone,
             neck=None,

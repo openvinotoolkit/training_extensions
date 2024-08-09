@@ -49,7 +49,7 @@ class OTXInstanceSegModel(OTXModel[InstanceSegBatchDataEntity, InstanceSegBatchP
     def __init__(
         self,
         label_info: LabelInfoTypes,
-        input_size: tuple[int, ...],
+        input_size: tuple[int, int],
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MaskRLEMeanAPFMeasureCallable,
@@ -65,7 +65,7 @@ class OTXInstanceSegModel(OTXModel[InstanceSegBatchDataEntity, InstanceSegBatchP
             torch_compile=torch_compile,
             tile_config=tile_config,
         )
-        self.input_size: tuple[int, int, int, int]
+        self.input_size: tuple[int, int]
 
     def _build_model(self, num_classes: int) -> nn.Module:
         raise NotImplementedError
@@ -366,7 +366,7 @@ class OTXInstanceSegModel(OTXModel[InstanceSegBatchDataEntity, InstanceSegBatchP
             msg = f"Input size attribute is not set for {self.__class__}"
             raise ValueError(msg)
 
-        images = [torch.rand(*self.input_size[1:]) for _ in range(batch_size)]
+        images = [torch.rand(3, *self.input_size) for _ in range(batch_size)]
         infos = []
         for i, img in enumerate(images):
             infos.append(
@@ -385,7 +385,7 @@ class ExplainableOTXInstanceSegModel(OTXInstanceSegModel):
     def __init__(
         self,
         label_info: LabelInfoTypes,
-        input_size: tuple[int, ...],
+        input_size: tuple[int, int],
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MaskRLEMeanAPFMeasureCallable,
