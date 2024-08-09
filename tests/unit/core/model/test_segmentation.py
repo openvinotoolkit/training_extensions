@@ -46,7 +46,7 @@ def torch_compile():
 class TestOTXSegmentationModel:
     @pytest.fixture()
     def model(self, label_info, optimizer, scheduler, metric, torch_compile):
-        return OTXSegmentationModel(label_info, optimizer, scheduler, metric, torch_compile)
+        return OTXSegmentationModel(label_info, (1, 3, 512, 512), optimizer, scheduler, metric, torch_compile)
 
     def test_export_parameters(self, model):
         params = model._export_parameters
@@ -74,7 +74,7 @@ class TestOTXSegmentationModel:
 class TestTorchVisionCompatibleModel:
     @pytest.fixture()
     def model(self, label_info, optimizer, scheduler, metric, torch_compile) -> TorchVisionCompatibleModel:
-        return TorchVisionCompatibleModel(label_info, optimizer, scheduler, metric, torch_compile)
+        return TorchVisionCompatibleModel(label_info, (1, 3, 512, 512), optimizer, scheduler, metric, torch_compile)
 
     @pytest.fixture()
     def batch_data_entity(self):

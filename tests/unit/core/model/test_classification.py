@@ -37,6 +37,7 @@ class TestOTXMulticlassClsModel:
     ) -> None:
         model = OTXMulticlassClsModel(
             label_info=1,
+            input_size=(1, 3, 224, 224),
             torch_compile=False,
             optimizer=mock_optimizer,
             scheduler=mock_scheduler,
@@ -50,6 +51,7 @@ class TestOTXMulticlassClsModel:
 
         model = OTXMultilabelClsModel(
             label_info=1,
+            input_size=(1, 3, 224, 224),
             torch_compile=False,
             optimizer=mock_optimizer,
             scheduler=mock_scheduler,
@@ -60,6 +62,7 @@ class TestOTXMulticlassClsModel:
 
         model = OTXHlabelClsModel(
             label_info=fxt_hlabel_multilabel_info,
+            input_size=(1, 3, 224, 224),
             torch_compile=False,
             optimizer=mock_optimizer,
             scheduler=mock_scheduler,
@@ -76,6 +79,7 @@ class TestOTXMulticlassClsModel:
     ) -> None:
         model = OTXMulticlassClsModel(
             label_info=1,
+            input_size=(1, 3, 224, 224),
             torch_compile=False,
             optimizer=mock_optimizer,
             scheduler=mock_scheduler,
@@ -106,6 +110,7 @@ class TestOTXMultilabelClsModel:
     ) -> None:
         model = OTXMultilabelClsModel(
             label_info=1,
+            input_size=(1, 3, 224, 224),
             torch_compile=False,
             optimizer=mock_optimizer,
             scheduler=mock_scheduler,
@@ -125,6 +130,7 @@ class TestOTXMultilabelClsModel:
     ) -> None:
         model = OTXMultilabelClsModel(
             label_info=1,
+            input_size=(1, 3, 224, 224),
             torch_compile=False,
             optimizer=mock_optimizer,
             scheduler=mock_scheduler,
@@ -156,6 +162,7 @@ class TestOTXHlabelClsModel:
     ) -> None:
         model = OTXHlabelClsModel(
             label_info=fxt_hlabel_multilabel_info,
+            input_size=(1, 3, 224, 224),
             torch_compile=False,
             optimizer=mock_optimizer,
             scheduler=mock_scheduler,
@@ -176,6 +183,7 @@ class TestOTXHlabelClsModel:
     ) -> None:
         model = OTXHlabelClsModel(
             label_info=fxt_hlabel_multilabel_info,
+            input_size=(1, 3, 224, 224),
             torch_compile=False,
             optimizer=mock_optimizer,
             scheduler=mock_scheduler,
@@ -199,7 +207,7 @@ class TestOTXHlabelClsModel:
         assert "target" in metric_input
 
     def test_set_label_info(self, fxt_hlabel_multilabel_info):
-        model = OTXHlabelClsModel(label_info=fxt_hlabel_multilabel_info)
+        model = OTXHlabelClsModel(label_info=fxt_hlabel_multilabel_info, input_size=(1, 3, 224, 224))
         assert model.label_info.num_multilabel_classes == fxt_hlabel_multilabel_info.num_multilabel_classes
 
         fxt_hlabel_multilabel_info.num_multilabel_classes = 0
