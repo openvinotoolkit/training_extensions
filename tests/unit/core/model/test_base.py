@@ -23,7 +23,7 @@ class TestOTXModel:
     def test_init(self, monkeypatch):
         monkeypatch.setattr(OTXModel, "input_size_multiplier", 10, raising=False)
         with pytest.raises(ValueError, match="Input size should be a multiple"):
-            OTXModel(label_info=2, input_size=(1, 3, 1024, 1024))
+            OTXModel(label_info=2, input_size=(1024, 1024))
 
     def test_smart_weight_loading(self, mocker) -> None:
         with mocker.patch.object(OTXModel, "_create_model", return_value=MockNNModule(2)):

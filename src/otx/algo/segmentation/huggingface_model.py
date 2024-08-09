@@ -96,7 +96,7 @@ class HuggingFaceModelForSegmentation(OTXSegmentationModel):
             if self.input_size[0] % patch_size != 0 or self.input_size[1] % patch_size != 0:
                 msg = (
                     f"It's recommended to set the input size to multiple of patch size({patch_size}). "
-                    "If not, score can decrease or model can't work."
+                    "If not, score can decrease or model may not work."
                 )
                 logger.warning(msg)
 

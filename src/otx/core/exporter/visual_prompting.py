@@ -175,7 +175,7 @@ class OTXVisualPromptingModelExporter(OTXNativeModelExporter):
                     model.image_embedding_size,
                     dtype=torch.float32,
                 ),
-                "point_coords": torch.randint(low=0, high=self.input_size[-1], size=(1, 2, 2), dtype=torch.float32),
+                "point_coords": torch.randint(low=0, high=self.input_size[0], size=(1, 2, 2), dtype=torch.float32),
                 "point_labels": torch.randint(low=0, high=4, size=(1, 2), dtype=torch.float32),
                 "mask_input": torch.randn(
                     1,
