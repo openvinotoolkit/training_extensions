@@ -32,6 +32,7 @@ updates:
       - dependency-name: "openvino*"
       - dependency-name: "nncf"
       - dependency-name: "anomalib"
+      - dependency-name: "intel-extension-for-pytorch"
     groups:
       pip-mmlab:
         applies-to: version-updates
