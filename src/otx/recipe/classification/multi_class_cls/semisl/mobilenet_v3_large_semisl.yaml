@@ -1,8 +1,9 @@
 model:
-  class_path: otx.algo.classification.mobilenet_v3.MobileNetV3ForMulticlassClsSemiSL
+  class_path: otx.algo.classification.mobilenet_v3.MobileNetV3ForMulticlassCls
   init_args:
     mode: large
     label_info: 1000
+    train_type: SEMI_SUPERVISED
 
     optimizer:
       class_path: torch.optim.SGD

@@ -16,8 +16,6 @@ from otx.core.data.entity.classification import (
     MulticlassClsBatchDataEntity,
     MulticlassClsBatchPredEntity,
 )
-from otx.core.exporter.base import OTXModelExporter
-from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.metrics.accuracy import MultiClassClsMetricCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
 from otx.core.model.classification import OTXMulticlassClsModel
@@ -103,22 +101,6 @@ class HuggingFaceModelForMulticlassCls(OTXMulticlassClsModel):
             imgs_info=inputs.imgs_info,
             scores=scores,
             labels=preds,
-        )
-
-    @property
-    def _exporter(self) -> OTXModelExporter:
-        """Creates OTXModelExporter object that can export the model."""
-        return OTXNativeModelExporter(
-            task_level_export_parameters=self._export_parameters,
-            input_size=self.image_size,
-            mean=(123.675, 116.28, 103.53),
-            std=(58.395, 57.12, 57.375),
-            resize_mode="standard",
-            pad_value=0,
-            swap_rgb=False,
-            via_onnx=False,
-            onnx_export_configuration=None,
-            output_names=["logits", "feature_vector", "saliency_map"] if self.explain_mode else None,
         )
 
     def forward_for_tracing(self, image: Tensor) -> Tensor | dict[str, Tensor]:

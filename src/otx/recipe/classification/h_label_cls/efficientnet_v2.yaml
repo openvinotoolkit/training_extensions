@@ -1,6 +1,8 @@
 model:
-  class_path: otx.algo.classification.efficientnet_v2.EfficientNetV2ForHLabelCls
+  class_path: otx.algo.classification.timm_model.TimmModelForHLabelCls
   init_args:
+    backbone: efficientnetv2_s_21k
+
     optimizer:
       class_path: torch.optim.SGD
       init_args:
