@@ -679,7 +679,7 @@ class OTXEfficientNet(EfficientNet):
             checkpoint = torch.load(pretrained, None)
             load_checkpoint_to_model(self, checkpoint)
             print(f"init weight - {pretrained}")
-        elif pretrained is not None:
+        elif pretrained:
             cache_dir = Path.home() / ".cache" / "torch" / "hub" / "checkpoints"
             download_model(net=self, model_name=self.model_name, local_model_store_dir_path=str(cache_dir))
-            print(f"init weight - {pretrained_urls[self.model_name]}")
+            print(f"Download model weight in {cache_dir!s}")

@@ -1,4 +1,4 @@
-# Copyright (C) 2023 Intel Corporation
+# Copyright (C) 2023-2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 """OTX task type definition."""
@@ -28,6 +28,7 @@ class OTXTaskType(str, Enum):
     DETECTION = "DETECTION"
     ROTATED_DETECTION = "ROTATED_DETECTION"
     DETECTION_SEMI_SL = "DETECTION_SEMI_SL"
+    KEYPOINT_DETECTION = "KEYPOINT_DETECTION"
 
     # Segmentation
     INSTANCE_SEGMENTATION = "INSTANCE_SEGMENTATION"

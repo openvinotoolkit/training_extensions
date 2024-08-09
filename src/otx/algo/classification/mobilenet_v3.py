@@ -41,6 +41,7 @@ from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallab
 from otx.core.model.classification import OTXHlabelClsModel, OTXMulticlassClsModel, OTXMultilabelClsModel
 from otx.core.schedulers import LRSchedulerListCallable
 from otx.core.types.label import HLabelInfo, LabelInfoTypes
+from otx.core.types.task import OTXTrainType
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
@@ -71,14 +72,17 @@ class MobileNetV3ForMulticlassCls(OTXMulticlassClsModel):
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MultiClassClsMetricCallable,
         torch_compile: bool = False,
+        train_type: Literal[OTXTrainType.SUPERVISED, OTXTrainType.SEMI_SUPERVISED] = OTXTrainType.SUPERVISED,
     ) -> None:
         self.mode = mode
+
         super().__init__(
             label_info=label_info,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
             torch_compile=torch_compile,
+            train_type=train_type,
         )
 
     def _create_model(self) -> nn.Module:
@@ -96,72 +100,35 @@ class MobileNetV3ForMulticlassCls(OTXMulticlassClsModel):
         return model
 
     def _build_model(self, num_classes: int) -> nn.Module:
+        backbone = OTXMobileNetV3(mode=self.mode)
+        neck = GlobalAveragePooling(dim=2)
+        loss = nn.CrossEntropyLoss(reduction="none")
+        in_channels = 960 if self.mode == "large" else 576
+        if self.train_type == OTXTrainType.SEMI_SUPERVISED:
+            return SemiSLClassifier(
+                backbone=backbone,
+                neck=neck,
+                head=OTXSemiSLLinearClsHead(
+                    num_classes=num_classes,
+                    in_channels=in_channels,
+                    loss=loss,
+                ),
+            )
+
         return ImageClassifier(
-            backbone=OTXMobileNetV3(mode=self.mode),
-            neck=GlobalAveragePooling(dim=2),
+            backbone=backbone,
+            neck=neck,
             head=LinearClsHead(
                 num_classes=num_classes,
-                in_channels=960,
+                in_channels=in_channels,
                 topk=(1, 5) if num_classes >= 5 else (1,),
-                loss=nn.CrossEntropyLoss(reduction="none"),
+                loss=loss,
             ),
         )
 
     def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.") -> dict:
         """Load the previous OTX ckpt according to OTX2.0."""
         return OTXv1Helper.load_cls_mobilenet_v3_ckpt(state_dict, "multiclass", add_prefix)
-
-    def _customize_inputs(self, inputs: MulticlassClsBatchDataEntity) -> dict[str, Any]:
-        if self.training:
-            mode = "loss"
-        elif self.explain_mode:
-            mode = "explain"
-        else:
-            mode = "predict"
-
-        return {
-            "images": inputs.stacked_images,
-            "labels": torch.cat(inputs.labels, dim=0),
-            "imgs_info": inputs.imgs_info,
-            "mode": mode,
-        }
-
-    def _customize_outputs(
-        self,
-        outputs: Any,  # noqa: ANN401
-        inputs: MulticlassClsBatchDataEntity,
-    ) -> MulticlassClsBatchPredEntity | OTXBatchLossEntity:
-        if self.training:
-            return OTXBatchLossEntity(loss=outputs)
-
-        # To list, batch-wise
-        logits = outputs if isinstance(outputs, torch.Tensor) else outputs["logits"]
-        scores = torch.unbind(logits, 0)
-        preds = logits.argmax(-1, keepdim=True).unbind(0)
-
-        return MulticlassClsBatchPredEntity(
-            batch_size=inputs.batch_size,
-            images=inputs.images,
-            imgs_info=inputs.imgs_info,
-            scores=scores,
-            labels=preds,
-        )
-
-    @property
-    def _exporter(self) -> OTXModelExporter:
-        """Creates OTXModelExporter object that can export the model."""
-        return OTXNativeModelExporter(
-            task_level_export_parameters=self._export_parameters,
-            input_size=self.image_size,
-            mean=(123.675, 116.28, 103.53),
-            std=(58.395, 57.12, 57.375),
-            resize_mode="standard",
-            pad_value=0,
-            swap_rgb=False,
-            via_onnx=False,
-            onnx_export_configuration=None,
-            output_names=["logits", "feature_vector", "saliency_map"] if self.explain_mode else None,
-        )
 
     def forward_explain(self, inputs: MulticlassClsBatchDataEntity) -> MulticlassClsBatchPredEntity:
         """Model forward explain function."""
@@ -183,93 +150,6 @@ class MobileNetV3ForMulticlassCls(OTXMulticlassClsModel):
             return self.model(images=image, mode="explain")
 
         return self.model(images=image, mode="tensor")
-
-
-class MobileNetV3ForMulticlassClsSemiSL(MobileNetV3ForMulticlassCls):
-    """MobileNetV3 model for multiclass classification with semi-supervised learning.
-
-    This class extends the `MobileNetV3ForMulticlassCls` class and adds support for semi-supervised learning.
-    It overrides the `_build_model` and `_customize_inputs` methods to incorporate the semi-supervised learning.
-
-    Args:
-        MobileNetV3ForMulticlassCls (class): The base class for MobileNetV3 multiclass classification.
-
-    Attributes:
-        mode (str): The mode of the OTXMobileNetV3 model.
-    """
-
-    def _build_model(self, num_classes: int) -> nn.Module:
-        return SemiSLClassifier(
-            backbone=OTXMobileNetV3(mode=self.mode),
-            neck=GlobalAveragePooling(dim=2),
-            head=OTXSemiSLLinearClsHead(
-                num_classes=num_classes,
-                in_channels=960,
-                loss=nn.CrossEntropyLoss(reduction="none"),
-            ),
-        )
-
-    def _customize_inputs(self, inputs: MulticlassClsBatchDataEntity) -> dict[str, Any]:
-        """Customizes the input data for the model based on the current mode.
-
-        Args:
-            inputs (MulticlassClsBatchDataEntity): The input batch of data.
-
-        Returns:
-            dict[str, Any]: The customized input data.
-        """
-        if self.training:
-            mode = "loss"
-        elif self.explain_mode:
-            mode = "explain"
-        else:
-            mode = "predict"
-
-        if isinstance(inputs, dict):
-            # When used with an unlabeled dataset, it comes in as a dict.
-            images = {key: inputs[key].images for key in inputs}
-            labels = {key: torch.cat(inputs[key].labels, dim=0) for key in inputs}
-            imgs_info = {key: inputs[key].imgs_info for key in inputs}
-            return {
-                "images": images,
-                "labels": labels,
-                "imgs_info": imgs_info,
-                "mode": mode,
-            }
-        return {
-            "images": inputs.stacked_images,
-            "labels": torch.cat(inputs.labels, dim=0),
-            "imgs_info": inputs.imgs_info,
-            "mode": mode,
-        }
-
-    def training_step(self, batch: MulticlassClsBatchDataEntity, batch_idx: int) -> Tensor:
-        """Performs a single training step on a batch of data.
-
-        Args:
-            batch (MulticlassClsBatchDataEntity): The input batch of data.
-            batch_idx (int): The index of the current batch.
-
-        Returns:
-            Tensor: The computed loss for the training step.
-        """
-        loss = super().training_step(batch, batch_idx)
-        # Collect metrics related to Semi-SL Training.
-        self.log(
-            "train/unlabeled_coef",
-            self.model.head.unlabeled_coef,
-            on_step=True,
-            on_epoch=False,
-            prog_bar=True,
-        )
-        self.log(
-            "train/num_pseudo_label",
-            self.model.head.num_pseudo_label,
-            on_step=True,
-            on_epoch=False,
-            prog_bar=True,
-        )
-        return loss
 
 
 class MobileNetV3ForMultilabelCls(OTXMultilabelClsModel):
