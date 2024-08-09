@@ -85,14 +85,17 @@ def compute_robust_dataset_statistics(dataset: DatasetSubset, max_samples: int =
     Returns:
         Dict[str, Any]: Robust avg, min, max values for images, and annotations optionally.
             ex) stat = {
-                    "image": {"avg": ...},
+                    "image": {
+                        "height" : {"avg": ...},
+                        "width" : {"avg": ...},
+                    }
                     "annotation": {
                        "num_per_image": {"avg": ...},
                        "size_of_shape": {"avg": ...},
                     }
                 }
     """
-    stat: dict = {}
+    stat: dict = {"image": {}, "annotation": {}}
     if len(dataset) == 0 or max_samples <= 0:
         return stat
 
@@ -101,14 +104,16 @@ def compute_robust_dataset_statistics(dataset: DatasetSubset, max_samples: int =
     rng = np.random.default_rng(42)
     data_ids = rng.choice(data_ids, max_image_samples, replace=False)[:max_image_samples]
 
-    image_sizes = []
+    height_arr = []
+    width_arr = []
     for idx in data_ids:
         data = dataset.get(id=idx, subset=dataset.name)
         height, width = data.media.size
-        image_sizes.append(np.sqrt(width * height))
-    stat["image"] = compute_robust_scale_statistics(np.array(image_sizes))
+        height_arr.append(height)
+        width_arr.append(width)
+    stat["image"]["height"] = compute_robust_scale_statistics(np.array(height_arr))
+    stat["image"]["width"] = compute_robust_scale_statistics(np.array(width_arr))
 
-    stat["annotation"] = {}
     num_per_images: list[int] = []
     size_of_shapes: dict[str, list] = defaultdict(list)
     for idx in data_ids:
@@ -181,12 +186,15 @@ def adapt_input_size_to_dataset(
 
     logger.info("Adapting model input size based on dataset stat")
     stat = compute_robust_dataset_statistics(train_dataset)
-    max_image_size = stat["image"].get("robust_max", 0)
+    max_image_size: list[int] = [
+        stat["image"].get("height", {}).get("robust_max", 0),
+        stat["image"].get("width", {}).get("robust_max", 0),
+    ]
     min_object_size = None
 
     logger.info(f"-> Current base input size: {base_input_size}")
 
-    if max_image_size <= 0:
+    if max_image_size[0] <= 0 or max_image_size[1] <= 0:
         return base_input_size
 
     image_size = max_image_size
@@ -197,31 +205,34 @@ def adapt_input_size_to_dataset(
     # -> "avg" size might be preferrable for efficiency
     min_object_size = stat.get("annotation", {}).get("size_of_shape", {}).get("robust_min", None)
     if min_object_size is not None and min_object_size > 0:
-        image_size = round(image_size * _MIN_RECOGNIZABLE_OBJECT_SIZE / min_object_size)
+        image_size = [round(val * _MIN_RECOGNIZABLE_OBJECT_SIZE / min_object_size) for val in image_size]
         logger.info(f"-> Based on typical small object size {min_object_size}: {image_size}")
-        if image_size > max_image_size:
+        if image_size[0] > max_image_size[0]:
             image_size = max_image_size
             logger.info(f"-> Restrict to max image size: {image_size}")
-        if image_size < _MIN_DETECTION_INPUT_SIZE:
-            image_size = _MIN_DETECTION_INPUT_SIZE
+        if image_size[0] < _MIN_DETECTION_INPUT_SIZE or image_size[1] < _MIN_DETECTION_INPUT_SIZE:
+            big_val_idx = 0 if image_size[0] > image_size[1] else 1
+            small_val_idx = 1 - big_val_idx
+            image_size[big_val_idx] = image_size[big_val_idx] * _MIN_DETECTION_INPUT_SIZE // image_size[small_val_idx]
+            image_size[small_val_idx] = _MIN_DETECTION_INPUT_SIZE
             logger.info(f"-> Based on minimum object detection input size: {image_size}")
 
-    if input_size_multiplier is not None and image_size % input_size_multiplier != 0:
-        image_size = (image_size // input_size_multiplier + 1) * input_size_multiplier
-
-    input_size = (round(image_size), round(image_size))
+    if input_size_multiplier is not None:
+        for i, val in enumerate(image_size):
+            if val % input_size_multiplier != 0:
+                image_size[i] = (val // input_size_multiplier + 1) * input_size_multiplier
 
     if downscale_only:
 
-        def area(x: tuple[int, int]) -> int:
+        def area(x: list[int] | tuple[int, int]) -> int:
             return x[0] * x[1]
 
-        if base_input_size and area(input_size) >= area(base_input_size):
-            logger.info(f"-> Downscale only: {input_size} -> {base_input_size}")
+        if base_input_size and area(image_size) >= area(base_input_size):
+            logger.info(f"-> Downscale only: {image_size} -> {base_input_size}")
             return base_input_size
 
-    logger.info(f"-> Adapted input size: {input_size}")
-    return input_size
+    logger.info(f"-> Adapted input size: {image_size}")
+    return tuple(image_size)  # type: ignore[return-value]
 
 
 def adapt_tile_config(tile_config: TileConfig, dataset: Dataset) -> None:

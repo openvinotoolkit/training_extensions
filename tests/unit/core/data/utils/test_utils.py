@@ -109,12 +109,15 @@ def test_compute_robuste_dataset_statistics(mock_dataset):
     subset = mock_dataset.get_subset("train")
 
     stat = compute_robust_dataset_statistics(subset, max_samples=0)
-    assert len(stat) == 0
+    assert stat["image"] == {}
+    assert stat["annotation"] == {}
     stat = compute_robust_dataset_statistics(subset, max_samples=-1)
-    assert len(stat) == 0
+    assert stat["image"] == {}
+    assert stat["annotation"] == {}
 
     stat = compute_robust_dataset_statistics(subset)
-    assert np.isclose(stat["image"]["avg"], 100)
+    assert np.isclose(stat["image"]["height"]["avg"], 100)
+    assert np.isclose(stat["image"]["width"]["avg"], 100)
     assert np.isclose(stat["annotation"]["num_per_image"]["avg"], 1.0)
     assert np.isclose(stat["annotation"]["size_of_shape"]["avg"], 10.0)
 
@@ -135,22 +138,52 @@ def test_adapt_input_size_to_dataset(mocker):
     input_size = adapt_input_size_to_dataset(dataset=MagicMock(), base_input_size=512)
     assert input_size == (512, 512)
 
-    mock_stat.return_value = {"image": {"robust_max": 150}, "annotation": {}}
+    mock_stat.return_value = {
+        "image": {
+            "height": {"robust_max": 150},
+            "width": {"robust_max": 200},
+        },
+        "annotation": {},
+    }
     input_size = adapt_input_size_to_dataset(dataset=MagicMock(), base_input_size=512)
-    assert input_size == (150, 150)
+    assert input_size == (150, 200)
 
-    mock_stat.return_value = {"image": {"robust_max": 150}, "annotation": {}}
+    mock_stat.return_value = {
+        "image": {
+            "height": {"robust_max": 150},
+            "width": {"robust_max": 200},
+        },
+        "annotation": {},
+    }
     input_size = adapt_input_size_to_dataset(dataset=MagicMock(), base_input_size=512, input_size_multiplier=32)
-    assert input_size == (160, 160)
+    assert input_size == (160, 224)
 
-    mock_stat.return_value = {"image": {"robust_max": 256}, "annotation": {"size_of_shape": {"robust_min": 64}}}
+    mock_stat.return_value = {
+        "image": {
+            "height": {"robust_max": 224},
+            "width": {"robust_max": 240},
+        },
+        "annotation": {"size_of_shape": {"robust_min": 64}},
+    }
     input_size = adapt_input_size_to_dataset(dataset=MagicMock(), base_input_size=512)
-    assert input_size == (256, 256)
+    assert input_size == (256, 274)
 
-    mock_stat.return_value = {"image": {"robust_max": 1024}, "annotation": {"size_of_shape": {"robust_min": 64}}}
+    mock_stat.return_value = {
+        "image": {
+            "height": {"robust_max": 1024},
+            "width": {"robust_max": 1200},
+        },
+        "annotation": {"size_of_shape": {"robust_min": 64}},
+    }
     input_size = adapt_input_size_to_dataset(dataset=MagicMock(), base_input_size=512)
     assert input_size == (512, 512)
 
-    mock_stat.return_value = {"image": {"robust_max": 2045}, "annotation": {"size_of_shape": {"robust_min": 64}}}
+    mock_stat.return_value = {
+        "image": {
+            "height": {"robust_max": 2045},
+            "width": {"robust_max": 2045},
+        },
+        "annotation": {"size_of_shape": {"robust_min": 64}},
+    }
     input_size = adapt_input_size_to_dataset(dataset=MagicMock(), downscale_only=False, base_input_size=512)
     assert input_size == (1022, 1022)
