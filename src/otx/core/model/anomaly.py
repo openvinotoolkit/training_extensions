@@ -81,7 +81,7 @@ class OTXAnomaly(OTXModel):
             for key, value in anomaly_attrs.items():
                 setattr(self, key, value)
 
-    @property
+    @property  # type: ignore[override]
     def input_size(self) -> tuple[int, int]:
         """Returns the input size of the model.
 

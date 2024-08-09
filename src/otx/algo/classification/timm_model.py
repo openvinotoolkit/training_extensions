@@ -54,6 +54,7 @@ class TimmModelForMulticlassCls(OTXMulticlassClsModel):
         self,
         label_info: LabelInfoTypes,
         backbone: TimmModelType,
+        input_size: tuple[int, ...] = (1, 3, 224, 224),  # input size of default classification data recipe
         pretrained: bool = True,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
@@ -66,6 +67,7 @@ class TimmModelForMulticlassCls(OTXMulticlassClsModel):
 
         super().__init__(
             label_info=label_info,
+            input_size=input_size,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
@@ -146,6 +148,7 @@ class TimmModelForMultilabelCls(OTXMultilabelClsModel):
         self,
         label_info: LabelInfoTypes,
         backbone: TimmModelType,
+        input_size: tuple[int, ...] = (1, 3, 224, 224),  # input size of default classification data recipe
         pretrained: bool = True,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
@@ -157,6 +160,7 @@ class TimmModelForMultilabelCls(OTXMultilabelClsModel):
 
         super().__init__(
             label_info=label_info,
+            input_size=input_size,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
@@ -226,6 +230,7 @@ class TimmModelForHLabelCls(OTXHlabelClsModel):
         self,
         label_info: HLabelInfo,
         backbone: TimmModelType,
+        input_size: tuple[int, ...] = (1, 3, 224, 224),  # input size of default classification data recipe
         pretrained: bool = True,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
@@ -237,6 +242,7 @@ class TimmModelForHLabelCls(OTXHlabelClsModel):
 
         super().__init__(
             label_info=label_info,
+            input_size=input_size,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
