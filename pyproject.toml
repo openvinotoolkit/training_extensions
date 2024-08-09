@@ -116,7 +116,7 @@ mmlab = [
     "mmdeploy==1.3.*",
     # Without the pip cache, oss2 will sometimes install to a lower version. This is related to the installation of the mmlab library.
     # This causes an error when training the mm model, so fix the version first.
-    "oss2==2.18.5",
+    "oss2==2.18.6",
 ]
 
 ci_tox = [
