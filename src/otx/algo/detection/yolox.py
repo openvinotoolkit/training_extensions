@@ -72,7 +72,7 @@ class YOLOX(ExplainableOTXDetModel):
     def _exporter(self) -> OTXModelExporter:
         """Creates OTXModelExporter object that can export the model."""
         if self.input_size is None:
-            msg = f"Inputhsize attribute is not set for {self.__class__}"
+            msg = f"Input size attribute is not set for {self.__class__}"
             raise ValueError(msg)
 
         swap_rgb = not isinstance(self, YOLOXTINY)  # only YOLOX-TINY uses RGB
