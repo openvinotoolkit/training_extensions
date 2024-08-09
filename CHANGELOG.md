@@ -24,6 +24,8 @@ All notable changes to this project will be documented in this file.
   (https://github.com/openvinotoolkit/training_extensions/pull/3762)
 - Add RTMPose for Keypoint Detection Task
   (https://github.com/openvinotoolkit/training_extensions/pull/3781)
+- Support configurable input size
+  (https://github.com/openvinotoolkit/training_extensions/pull/3788)
 
 ### Enhancements
 
