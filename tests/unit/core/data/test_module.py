@@ -16,6 +16,7 @@ from otx.core.config.data import (
     TileConfig,
     UnlabeledDataConfig,
 )
+from otx.core.data import module as target_file
 from otx.core.data.module import (
     OTXDataModule,
     OTXTaskType,
@@ -158,9 +159,42 @@ class TestModule:
             input_size=(1200, 1200),
         )
 
-        assert fxt_config.train_subset.input_size == (1000, 1000)
+        assert fxt_config.train_subset.input_size == (1200, 1200)
         assert fxt_config.val_subset.input_size == (1200, 1200)
-        assert fxt_config.test_subset.input_size == (800, 800)
+        assert fxt_config.test_subset.input_size == (1200, 1200)
+
+    @pytest.fixture()
+    def mock_adapt_input_size_to_dataset(self, mocker) -> MagicMock:
+        return mocker.patch.object(target_file, "adapt_input_size_to_dataset", return_value=(1234, 1234))
+
+    def test_init_adaptive_input_size(
+        self,
+        mock_dm_dataset,
+        mock_otx_dataset_factory,
+        mock_data_filtering,
+        fxt_config,
+        mock_adapt_input_size_to_dataset,
+    ) -> None:
+        # Dataset will have "train_0", "train_1", "val_0", ..., "test_1" subsets
+        mock_dm_subsets = {f"{name}_{idx}": MagicMock() for name in ["train", "val", "test"] for idx in range(2)}
+        mock_dm_dataset.return_value.subsets.return_value = mock_dm_subsets
+        fxt_config.train_subset.input_size = (1000, 1000)
+        fxt_config.val_subset.input_size = None
+        fxt_config.test_subset.input_size = (800, 800)
+
+        OTXDataModule(
+            task=OTXTaskType.MULTI_CLASS_CLS,
+            data_format=fxt_config.data_format,
+            data_root=fxt_config.data_root,
+            train_subset=fxt_config.train_subset,
+            val_subset=fxt_config.val_subset,
+            test_subset=fxt_config.test_subset,
+            adaptive_input_size="auto",
+        )
+
+        assert fxt_config.train_subset.input_size == (1234, 1234)
+        assert fxt_config.val_subset.input_size == (1234, 1234)
+        assert fxt_config.test_subset.input_size == (1234, 1234)
 
     def test_data_format_check(
         self,

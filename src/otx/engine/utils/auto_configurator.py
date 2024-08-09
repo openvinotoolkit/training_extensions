@@ -216,7 +216,7 @@ class AutoConfigurator:
         if self.data_root is None:
             return None
         self.config["data"]["data_root"] = self.data_root
-        data_config = deepcopy(self.config["data"])
+        data_config: dict = deepcopy(self.config["data"])
         train_config = data_config.pop("train_subset")
         val_config = data_config.pop("val_subset")
         test_config = data_config.pop("test_subset")
@@ -226,6 +226,11 @@ class AutoConfigurator:
 
         _ = data_config.pop("__path__", {})  # Remove __path__ key that for CLI
         _ = data_config.pop("config", {})  # Remove config key that for CLI
+
+        if data_config.get("adaptive_input_size", "none") != "none":
+            model_cls = get_model_cls_from_config(Namespace(self.config["model"]))
+            if hasattr(model_cls, "input_size_multiplier"):
+                data_config["input_size_multiplier"] = model_cls.input_size_multiplier
 
         return OTXDataModule(
             train_subset=SubsetConfig(sampler=SamplerConfig(**train_config.pop("sampler", {})), **train_config),
