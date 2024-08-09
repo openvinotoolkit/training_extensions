@@ -8,7 +8,6 @@ import logging as log
 from typing import TYPE_CHECKING, Any, TypeAlias
 
 import torch
-from anomalib import TaskType as AnomalibTaskType
 from anomalib.callbacks.metrics import _MetricsCallback
 from anomalib.callbacks.normalization.min_max_normalization import _MinMaxNormalizationCallback
 from anomalib.callbacks.post_processor import _PostProcessorCallback
@@ -96,19 +95,6 @@ class OTXAnomaly(OTXModel):
     def input_size(self, value: tuple[int, int]) -> None:
         self._input_size = value
 
-    def get_anomalib_task_type(self, value: OTXTaskType) -> AnomalibTaskType:
-        """Get the Anomalib task type from the OTX task type."""
-        if value == OTXTaskType.ANOMALY_CLASSIFICATION:
-            task_type = AnomalibTaskType.CLASSIFICATION
-        elif value == OTXTaskType.ANOMALY_DETECTION:
-            task_type = AnomalibTaskType.DETECTION
-        elif value == OTXTaskType.ANOMALY_SEGMENTATION:
-            task_type = AnomalibTaskType.SEGMENTATION
-        else:
-            msg = f"Unexpected task type: {value}"
-            raise ValueError(msg)
-        return task_type
-
     def _get_values_from_transforms(
         self,
     ) -> tuple[tuple[int, int], tuple[float, float, float], tuple[float, float, float]]:
@@ -130,7 +116,7 @@ class OTXAnomaly(OTXModel):
     def configure_callbacks(self) -> list[Callback]:
         """Get all necessary callbacks required for training and post-processing on Anomalib models."""
         image_metrics = ["AUROC", "F1Score"]
-        pixel_metrics = image_metrics if self.task != AnomalibTaskType.CLASSIFICATION else None
+        pixel_metrics = image_metrics if self.task != OTXTaskType.ANOMALY_CLASSIFICATION else None
         return [
             _PostProcessorCallback(),
             _MinMaxNormalizationCallback(),  # ModelAPI only supports min-max normalization as of now
@@ -203,7 +189,7 @@ class OTXAnomaly(OTXModel):
         outputs: dict,
         inputs: AnomalyModelInputs,
     ) -> AnomalyModelOutputs:
-        if self.task == AnomalibTaskType.CLASSIFICATION:
+        if self.task == OTXTaskType.ANOMALY_CLASSIFICATION:
             return AnomalyClassificationBatchPrediction(
                 batch_size=len(outputs),
                 images=inputs.images,
@@ -213,7 +199,7 @@ class OTXAnomaly(OTXModel):
                 scores=outputs["pred_scores"],
                 anomaly_maps=outputs["anomaly_maps"],
             )
-        if self.task == AnomalibTaskType.SEGMENTATION:
+        if self.task == OTXTaskType.ANOMALY_SEGMENTATION:
             return AnomalySegmentationBatchPrediction(
                 batch_size=len(outputs),
                 images=inputs.images,
@@ -224,7 +210,7 @@ class OTXAnomaly(OTXModel):
                 anomaly_maps=outputs["anomaly_maps"],
                 masks=outputs["mask"],
             )
-        if self.task == AnomalibTaskType.DETECTION:
+        if self.task == OTXTaskType.ANOMALY_DETECTION:
             return AnomalyDetectionBatchPrediction(
                 batch_size=len(outputs),
                 images=inputs.images,
@@ -313,14 +299,14 @@ class OTXAnomaly(OTXModel):
                     ori_shape=img.shape,
                 ),
             )
-        if self.task == AnomalibTaskType.CLASSIFICATION:
+        if self.task == OTXTaskType.ANOMALY_CLASSIFICATION:
             return AnomalyClassificationDataBatch(
                 batch_size=batch_size,
                 images=images,
                 imgs_info=infos,
                 labels=[torch.LongTensor(0)],
             )
-        if self.task == AnomalibTaskType.SEGMENTATION:
+        if self.task == OTXTaskType.ANOMALY_SEGMENTATION:
             return AnomalySegmentationDataBatch(
                 batch_size=batch_size,
                 images=images,
@@ -328,7 +314,7 @@ class OTXAnomaly(OTXModel):
                 labels=[torch.LongTensor(0)],
                 masks=torch.tensor(0),
             )
-        if self.task == AnomalibTaskType.DETECTION:
+        if self.task == OTXTaskType.ANOMALY_DETECTION:
             return AnomalyDetectionDataBatch(
                 batch_size=batch_size,
                 images=images,

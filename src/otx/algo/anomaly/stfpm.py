@@ -38,4 +38,4 @@ class Stfpm(AnomalyMixin, AnomalibStfpm, OTXAnomaly):
         **kwargs,
     ) -> None:
         super().__init__(layers=layers, backbone=backbone)
-        self.task = self.get_anomalib_task_type(task)
+        self.task = task

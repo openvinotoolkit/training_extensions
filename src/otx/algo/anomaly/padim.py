@@ -46,4 +46,4 @@ class Padim(AnomalyMixin, AnomalibPadim, OTXAnomaly):
             pre_trained=pre_trained,
             n_features=n_features,
         )
-        self.task = self.get_anomalib_task_type(task)
+        self.task = task
