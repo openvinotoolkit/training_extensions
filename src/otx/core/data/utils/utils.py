@@ -145,6 +145,11 @@ def compute_robust_dataset_statistics(dataset: DatasetSubset, max_samples: int =
     return stat
 
 
+_MIN_RECOGNIZABLE_OBJECT_SIZE = 32  # Minimum object size recognizable by NNs: typically 16 ~ 32
+# meaning NxN input pixels being downscaled to 1x1 on feature map
+_MIN_DETECTION_INPUT_SIZE = 256  # Minimum input size for object detection
+
+
 def adapt_input_size_to_dataset(
     dataset: Dataset,
     base_input_size: int | tuple[int, int] | None = None,
@@ -164,10 +169,6 @@ def adapt_input_size_to_dataset(
     Returns:
         tuple[int, int] | None: Recommended input size based on dataset statistics.
     """
-    min_recognizable_object_size = 32  # Minimum object size recognizable by NNs: typically 16 ~ 32
-    # meaning NxN input pixels being downscaled to 1x1 on feature map
-    min_detection_input_size = 256  # Minimum input size for object detection
-
     if downscale_only and base_input_size is None:
         msg = "If downscale_only is set to True, base_input_size should be set but got None."
         raise ValueError(msg)
@@ -175,19 +176,13 @@ def adapt_input_size_to_dataset(
     if isinstance(base_input_size, int):
         base_input_size = (base_input_size, base_input_size)
 
-    train_dataset = dataset.subsets().get("train")
-    if train_dataset is None:
+    if (train_dataset := dataset.subsets().get("train")) is None:
         return None
 
     logger.info("Adapting model input size based on dataset stat")
     stat = compute_robust_dataset_statistics(train_dataset)
-    max_image_size = stat["image"]["robust_max"]
+    max_image_size = stat["image"].get("robust_max", 0)
     min_object_size = None
-    if stat["annotation"]:
-        # Refine using annotation shape size stat
-        # Fit to typical small object size (conservative)
-        # -> "avg" size might be preferrable for efficiency
-        min_object_size = stat["annotation"].get("size_of_shape", {}).get("robust_min", None)
 
     logger.info(f"-> Current base input size: {base_input_size}")
 
@@ -198,14 +193,17 @@ def adapt_input_size_to_dataset(
     logger.info(f"-> Based on typical large image size: {image_size}")
 
     # Refine using annotation shape size stat
+    # Fit to typical small object size (conservative)
+    # -> "avg" size might be preferrable for efficiency
+    min_object_size = stat.get("annotation", {}).get("size_of_shape", {}).get("robust_min", None)
     if min_object_size is not None and min_object_size > 0:
-        image_size = round(image_size * min_recognizable_object_size / min_object_size)
+        image_size = round(image_size * _MIN_RECOGNIZABLE_OBJECT_SIZE / min_object_size)
         logger.info(f"-> Based on typical small object size {min_object_size}: {image_size}")
         if image_size > max_image_size:
             image_size = max_image_size
             logger.info(f"-> Restrict to max image size: {image_size}")
-        if image_size < min_detection_input_size:
-            image_size = min_detection_input_size
+        if image_size < _MIN_DETECTION_INPUT_SIZE:
+            image_size = _MIN_DETECTION_INPUT_SIZE
             logger.info(f"-> Based on minimum object detection input size: {image_size}")
 
     if input_size_multiplier is not None and image_size % input_size_multiplier != 0:
