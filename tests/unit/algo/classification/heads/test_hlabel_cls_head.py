@@ -8,7 +8,11 @@ from typing import Any
 
 import pytest
 import torch
-from otx.algo.classification.heads import HierarchicalLinearClsHead, HierarchicalNonLinearClsHead, HierarchicalCBAMClsHead
+from otx.algo.classification.heads import (
+    HierarchicalCBAMClsHead,
+    HierarchicalLinearClsHead,
+    HierarchicalNonLinearClsHead,
+)
 from otx.algo.classification.losses import AsymmetricAngularLossWithIgnore
 from otx.core.data.entity.base import ImageInfo
 from torch import nn
@@ -49,9 +53,9 @@ def fxt_data_sample_with_ignored_labels() -> dict:
 
 class TestHierarchicalLinearClsHead:
     @pytest.fixture()
-    def fxt_head_attrs(self, fxt_hlabel_multilabel_info) -> dict[str, Any]:
+    def fxt_head_attrs(self, fxt_hlabel_cifar) -> dict[str, Any]:
         return {
-            **fxt_hlabel_multilabel_info.as_head_config_dict(),
+            **fxt_hlabel_cifar.as_head_config_dict(),
             "in_channels": 24,
             "multiclass_loss": CrossEntropyLoss(),
             "multilabel_loss": AsymmetricAngularLossWithIgnore(),
@@ -67,6 +71,7 @@ class TestHierarchicalLinearClsHead:
 
     @pytest.fixture()
     def fxt_hlabel_cbam_head(self, fxt_head_attrs) -> nn.Module:
+        fxt_head_attrs["step_size"] = 1
         return HierarchicalCBAMClsHead(**fxt_head_attrs)
 
     @pytest.fixture(params=["fxt_hlabel_linear_head", "fxt_hlabel_non_linear_head", "fxt_hlabel_cbam_head"])
@@ -97,6 +102,6 @@ class TestHierarchicalLinearClsHead:
         result = fxt_hlabel_head.predict(dummy_input, **fxt_data_sample)
         assert isinstance(result, dict)
         assert "scores" in result
-        assert result["scores"].shape == (2, 6)
+        assert result["scores"].shape == (2, 3)
         assert "labels" in result
-        assert result["labels"].shape == (2, 6)
+        assert result["labels"].shape == (2, 3)

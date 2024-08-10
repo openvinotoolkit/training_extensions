@@ -264,7 +264,7 @@ class EfficientNetForHLabelCls(OTXHlabelClsModel):
 
         backbone = OTXEfficientNet(version=self.version, pretrained=self.pretrained)
         return ImageClassifier(
-            backbone=OTXEfficientNet(version=self.version, pretrained=True),
+            backbone=backbone,
             neck=nn.Identity(),
             head=HierarchicalLinearClsHead(
                 in_channels=1280,
