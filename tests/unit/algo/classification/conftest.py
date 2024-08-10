@@ -156,8 +156,8 @@ def fxt_hlabel_cifar() -> HLabelInfo:
         ],
         num_multiclass_heads=3,
         num_multilabel_classes=0,
-        head_idx_to_logits_range={"0": (0, 2), "1": (2, 7), "2": (7, 12)},
-        num_single_label_classes=10,
+        head_idx_to_logits_range={"0": (0, 5), "1": (5, 10), "2": (10, 12)},
+        num_single_label_classes=12,
         empty_multiclass_head_indices=[],
         class_to_group_idx={
             "beaver": (0, 0),

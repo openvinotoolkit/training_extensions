@@ -462,8 +462,7 @@ class HierarchicalCBAMClsHead(HierarchicalClsHead):
         """The process before the final classification head."""
         if isinstance(feats, Sequence):
             feats = feats[-1]
-            return feats.view(feats.size(0), self.in_channels * self.step_size * self.step_size)
-        return feats
+        return feats.view(feats.size(0), self.in_channels * self.step_size * self.step_size)
 
     def _init_layers(self) -> None:
         """Iniitialize weights of classification head."""
