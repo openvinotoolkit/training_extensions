@@ -15,7 +15,7 @@ from otx.algo.classification.backbones.efficientnet import EFFICIENTNET_VERSION,
 from otx.algo.classification.classifier.base_classifier import ImageClassifier
 from otx.algo.classification.classifier.semi_sl_classifier import SemiSLClassifier
 from otx.algo.classification.heads import (
-    HierarchicalLinearClsHead,
+    HierarchicalCBAMClsHead,
     LinearClsHead,
     MultiLabelLinearClsHead,
     OTXSemiSLLinearClsHead,
@@ -266,7 +266,7 @@ class EfficientNetForHLabelCls(OTXHlabelClsModel):
         return ImageClassifier(
             backbone=backbone,
             neck=nn.Identity(),
-            head=HierarchicalLinearClsHead(
+            head=HierarchicalCBAMClsHead(
                 in_channels=1280,
                 multiclass_loss=nn.CrossEntropyLoss(),
                 multilabel_loss=AsymmetricAngularLossWithIgnore(gamma_pos=0.0, gamma_neg=1.0, reduction="sum"),
