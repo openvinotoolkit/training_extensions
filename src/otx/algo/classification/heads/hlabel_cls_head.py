@@ -418,6 +418,8 @@ class HierarchicalCBAMClsHead(HierarchicalClsHead):
         multilabel_loss (dict | None): Config of multi-label loss.
         thr (float | None): Predictions with scores under the thresholds are considered
                             as negative. Defaults to 0.5.
+        init_cfg (dict | None, optional): Initialize configuration key-values, Defaults to None.
+        step_size (int, optional): Step size value for HierarchicalCBAMClsHead, Defaults to 7.
     """
 
     def __init__(

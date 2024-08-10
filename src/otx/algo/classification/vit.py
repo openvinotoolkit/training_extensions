@@ -501,5 +501,6 @@ class VisionTransformerForHLabelCls(ForwardExplainMixInForViT, OTXHlabelClsModel
                 step_size=1,
                 **head_config,
             ),
+            optimize_gap=False,
             init_cfg=init_cfg,
         )
