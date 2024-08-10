@@ -209,12 +209,13 @@ class TVClassificationModel(nn.Module):
                 loss=self.loss_module,
             )
         if self.task == OTXTaskType.H_LABEL_CLS:
-            self.neck = nn.Sequential(*layers) if layers else None
+            self.neck = nn.Sequential(*layers, nn.Identity()) if layers else None
             return HierarchicalCBAMClsHead(
                 in_channels=feature_channel,
                 multiclass_loss=nn.CrossEntropyLoss(),
                 multilabel_loss=self.loss_module,
                 **self.head_config,
+                step_size=1,
             )
 
         msg = f"Task type {self.task} is not supported."

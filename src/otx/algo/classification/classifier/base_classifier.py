@@ -61,7 +61,6 @@ class ImageClassifier(BaseModule):
         neck: nn.Module | None,
         head: nn.Module,
         pretrained: str | None = None,
-        optimize_gap: bool = True,
         mean: list[float] | None = None,
         std: list[float] | None = None,
         to_rgb: bool = False,
@@ -82,7 +81,6 @@ class ImageClassifier(BaseModule):
         self.explainer = ReciproCAM(
             self._head_forward_fn,
             num_classes=head.num_classes,
-            optimize_gap=optimize_gap,
         )
 
     def forward(
