@@ -408,15 +408,15 @@ class HierarchicalCBAMClsHead(HierarchicalClsHead):
     Args:
         num_multiclass_heads (int): Number of multi-class heads.
         num_multilabel_classes (int): Number of multi-label classes.
-        head_idx_to_logits_range: the logit range of each heads
-        num_single_label_classes: the number of single label classes
-        empty_multiclass_head_indices: the index of head that doesn't include any label
+        head_idx_to_logits_range (dict[str, tuple[int, int]]): the logit range of each heads
+        num_single_label_classes (int): the number of single label classes
+        empty_multiclass_head_indices (list[int]): the index of head that doesn't include any label
             due to the label removing
         in_channels (int): Number of channels in the input feature map.
         num_classes (int): Number of total classes.
-        multiclass_loss (dict | None): Config of multi-class loss.
-        multilabel_loss (dict | None): Config of multi-label loss.
-        thr (float | None): Predictions with scores under the thresholds are considered
+        multiclass_loss (nn.Module): Config of multi-class loss.
+        multilabel_loss (nn.Module | None, optional): Config of multi-label loss.
+        thr (float, optional): Predictions with scores under the thresholds are considered
                             as negative. Defaults to 0.5.
         init_cfg (dict | None, optional): Initialize configuration key-values, Defaults to None.
         step_size (int, optional): Step size value for HierarchicalCBAMClsHead, Defaults to 7.
