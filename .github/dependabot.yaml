@@ -24,24 +24,19 @@ updates:
     directory: /
     schedule:
       interval: daily
+    ignore:
+      - dependency-name: "torch"
+      - dependency-name: "torchvision"
+      - dependency-name: "lightning"
+      - dependency-name: "pytorchcv"
+      - dependency-name: "timm"
+      - dependency-name: "openvino*"
+      - dependency-name: "nncf"
+      - dependency-name: "anomalib"
+      - dependency-name: "intel-extension-for-pytorch"
+      - dependency-name: "oneccl_bind_pt"
     groups:
-      pip-base-dependencies:
-        applies-to: version-updates
-        patterns:
-          - "torch"
-          - "lightning"
-          - "pytorchcv"
-          - "timm"
-          - "openvino"
-          - "openvino-dev"
-          - "openvino-model-api"
-          - "onnx"
-          - "onnxconverter-common"
-          - "nncf"
-          - "anomalib"
-        update-types:
-          - "patch"
-      pip-mmlab-dependencies:
+      pip-mmlab:
         applies-to: version-updates
         patterns:
           - "mmdet"
@@ -52,20 +47,10 @@ updates:
           - "oss2"
         update-types:
           - "patch"
-      pip-other-dependencies:
+      pip-others:
         applies-to: version-updates
-        exclude-patterns:
-          - "torch"
-          - "lightning"
-          - "pytorchcv"
-          - "timm"
-          - "openvino"
-          - "openvino-dev"
-          - "openvino-model-api"
-          - "onnx"
-          - "onnxconverter-common"
-          - "nncf"
-          - "anomalib"
+        patterns:
+          - "*"
         update-types:
           - "minor"
           - "patch"
