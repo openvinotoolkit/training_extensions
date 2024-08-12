@@ -449,7 +449,7 @@ class OTXHlabelClsModel(OTXModel[HlabelClsBatchDataEntity, HlabelClsBatchPredEnt
 
     def get_dummy_input(self, batch_size: int = 1) -> HlabelClsBatchDataEntity:
         """Returns a dummy input for classification OV model."""
-        images = [torch.rand(3, self.input_size) for _ in range(batch_size)]
+        images = [torch.rand(3, *self.input_size) for _ in range(batch_size)]
         labels = [torch.LongTensor([0])] * batch_size
         return HlabelClsBatchDataEntity(batch_size, images, [], labels=labels)
 
