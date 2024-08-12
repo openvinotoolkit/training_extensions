@@ -5,7 +5,10 @@
 
 from __future__ import annotations
 
+from functools import partial
 from typing import TYPE_CHECKING
+
+from torch import nn
 
 from otx.algo.common.backbones import CSPNeXt
 from otx.algo.common.losses import CrossEntropyLoss, GIoULoss, QualityFocalLoss
@@ -138,7 +141,7 @@ class RTMDetInstTiny(RTMDetInst):
             widen_factor=0.375,
             channel_attention=True,
             norm_cfg={"type": "BN"},
-            act_cfg={"type": "SiLU", "inplace": True},
+            activation_callable=partial(nn.SiLU, inplace=True),
         )
 
         neck = CSPNeXtPAFPN(
@@ -147,7 +150,7 @@ class RTMDetInstTiny(RTMDetInst):
             num_csp_blocks=1,
             expand_ratio=0.5,
             norm_cfg={"type": "BN"},
-            act_cfg={"type": "SiLU", "inplace": True},
+            activation_callable=partial(nn.SiLU, inplace=True),
         )
 
         bbox_head = RTMDetInsSepBNHead(
@@ -157,7 +160,7 @@ class RTMDetInstTiny(RTMDetInst):
             share_conv=True,
             pred_kernel_size=1,
             feat_channels=96,
-            act_cfg={"type": "SiLU", "inplace": True},
+            activation_callable=partial(nn.SiLU, inplace=True),
             norm_cfg={"type": "BN", "requires_grad": True},
             anchor_generator=MlvlPointGenerator(
                 offset=0,

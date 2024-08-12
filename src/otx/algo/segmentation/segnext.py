@@ -2,9 +2,12 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 """SegNext model implementations."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, ClassVar
+
+from torch import nn
 
 from otx.algo.segmentation.backbones import MSCAN
 from otx.algo.segmentation.heads import LightHamHead
@@ -17,7 +20,6 @@ from .base_model import BaseSegmModel
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
-    from torch import nn
 
     from otx.core.metrics import MetricCallable
     from otx.core.schedulers import LRSchedulerListCallable
@@ -28,7 +30,7 @@ class SegNextB(BaseSegmModel):
     """SegNextB Model."""
 
     default_backbone_configuration: ClassVar[dict[str, Any]] = {
-        "act_cfg": {"type": "GELU"},
+        "activation_callable": nn.GELU,
         "attention_kernel_paddings": [2, [0, 3], [0, 5], [0, 10]],
         "attention_kernel_sizes": [5, [1, 7], [1, 11], [1, 21]],
         "depths": [3, 3, 12, 3],
@@ -55,7 +57,7 @@ class SegNextS(BaseSegmModel):
     """SegNextS Model."""
 
     default_backbone_configuration: ClassVar[dict[str, Any]] = {
-        "act_cfg": {"type": "GELU"},
+        "activation_callable": nn.GELU,
         "attention_kernel_paddings": [2, [0, 3], [0, 5], [0, 10]],
         "attention_kernel_sizes": [5, [1, 7], [1, 11], [1, 21]],
         "depths": [2, 2, 4, 2],
@@ -82,7 +84,7 @@ class SegNextT(BaseSegmModel):
     """SegNextT Model."""
 
     default_backbone_configuration: ClassVar[dict[str, Any]] = {
-        "act_cfg": {"type": "GELU"},
+        "activation_callable": nn.GELU,
         "attention_kernel_paddings": [2, [0, 3], [0, 5], [0, 10]],
         "attention_kernel_sizes": [5, [1, 7], [1, 11], [1, 21]],
         "depths": [3, 3, 5, 2],

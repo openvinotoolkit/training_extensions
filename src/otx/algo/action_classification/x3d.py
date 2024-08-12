@@ -5,6 +5,7 @@
 
 from __future__ import annotations
 
+from functools import partial
 from typing import TYPE_CHECKING
 
 from torch import nn
@@ -67,7 +68,7 @@ class X3D(OTXActionClsModel):
                 gamma_d=2.2,
                 gamma_w=1,
                 norm_cfg={"type": "BN3d", "requires_grad": True},
-                act_cfg={"type": "ReLU", "inplace": True},
+                activation_callable=partial(nn.ReLU, inplace=True),
             ),
             cls_head=X3DHead(
                 num_classes=num_classes,

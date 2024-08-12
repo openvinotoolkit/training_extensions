@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import logging
 import math
-from typing import Sequence
+from typing import Callable, Sequence
 
 import torch
 import torch.nn.functional as F  # noqa: N812
@@ -24,6 +24,7 @@ from otx.algo.common.utils.samplers import PseudoSampler
 from otx.algo.common.utils.utils import multi_apply, reduce_mean
 from otx.algo.detection.heads.base_head import BaseDenseHead
 from otx.algo.detection.losses import IoULoss
+from otx.algo.modules.activation import Swish
 from otx.algo.modules.conv_module import Conv2dModule, DepthwiseSeparableConvModule
 from otx.algo.utils.mmengine_utils import InstanceData
 
@@ -41,7 +42,7 @@ class YOLOXHead(BaseDenseHead):
         stacked_convs (int): Number of stacking convs of the head.
             Defaults to (8, 16, 32).
         strides (Sequence[int]): Downsample factor of each feature map.
-             Defaults to None.
+            Defaults to None.
         use_depthwise (bool): Whether to depthwise separable convolution in blocks.
             Defaults to False.
         dcn_on_last_conv (bool): If true, use dcn in the last layer of towers.
@@ -51,8 +52,8 @@ class YOLOXHead(BaseDenseHead):
             None, otherwise False. Defaults to "auto".
         norm_cfg (dict): Config dict for normalization layer.
             Defaults to dict(type='BN', momentum=0.03, eps=0.001).
-        act_cfg (dict): Config dict for activation layer.
-            Defaults to None.
+        activation_callable (Callable[..., nn.Module]): Activation layer module.
+            Defaults to `Swish`.
         loss_cls (nn.Module, optional): Module of classification loss.
         loss_bbox (nn.Module, optional): Module of localization loss.
         loss_obj (nn.Module, optional): Module of objectness loss.
@@ -76,7 +77,7 @@ class YOLOXHead(BaseDenseHead):
         dcn_on_last_conv: bool = False,
         conv_bias: bool | str = "auto",
         norm_cfg: dict | None = None,
-        act_cfg: dict | None = None,
+        activation_callable: Callable[..., nn.Module] = Swish,
         loss_cls: nn.Module | None = None,
         loss_bbox: nn.Module | None = None,
         loss_obj: nn.Module | None = None,
@@ -87,9 +88,6 @@ class YOLOXHead(BaseDenseHead):
     ) -> None:
         if norm_cfg is None:
             norm_cfg = {"type": "BN", "momentum": 0.03, "eps": 0.001}
-
-        if act_cfg is None:
-            act_cfg = {"type": "Swish"}
 
         if init_cfg is None:
             init_cfg = {
@@ -118,7 +116,7 @@ class YOLOXHead(BaseDenseHead):
         self.use_sigmoid_cls = True
 
         self.norm_cfg = norm_cfg
-        self.act_cfg = act_cfg
+        self.activation_callable = activation_callable
 
         self.loss_cls = loss_cls or CrossEntropyLoss(use_sigmoid=True, reduction="sum", loss_weight=1.0)
         self.loss_bbox = loss_bbox or IoULoss(mode="square", eps=1e-16, reduction="sum", loss_weight=5.0)
@@ -176,7 +174,7 @@ class YOLOXHead(BaseDenseHead):
                     stride=1,
                     padding=1,
                     norm_cfg=self.norm_cfg,
-                    act_cfg=self.act_cfg,
+                    activation_callable=self.activation_callable,
                     bias=self.conv_bias,
                 ),
             )
