@@ -231,8 +231,10 @@ def adapt_input_size_to_dataset(
             logger.info(f"-> Downscale only: {image_size} -> {base_input_size}")
             return base_input_size
 
+    image_size = tuple(int(val) for val in image_size)  # type: ignore[assignment]
+
     logger.info(f"-> Adapted input size: {image_size}")
-    return tuple(image_size)  # type: ignore[return-value]
+    return image_size  # type: ignore[return-value]
 
 
 def adapt_tile_config(tile_config: TileConfig, dataset: Dataset) -> None:

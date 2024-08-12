@@ -39,7 +39,20 @@ if TYPE_CHECKING:
 
 
 class OTXDataModule(LightningDataModule):
-    """LightningDataModule extension for OTX pipeline."""
+    """LightningDataModule extension for OTX pipeline.
+
+    Args:
+        input_size (int | tuple[int, int] | None, optional):
+            Final image or video shape of data after data transformation. It'll be applied to all subset configs
+            If it's not None. Defaults to None.
+        adaptive_input_size (Literal["auto", "downscale"] | None, optional):
+            The adaptive input size mode. If it's set, appropriate input size is found by analyzing dataset.
+            "auto" can find both bigger and smaller input size than current input size and "downscale" uses only
+            smaller size than default setting. Defaults to None.
+        input_size_multiplier (int, optional):
+            adaptive_input_size will finds multiple of input_size_multiplier value if it's set. It's usefull when
+            a model requries multiple of specific value as input_size. Defaults to 1.
+    """
 
     def __init__(  # noqa: PLR0913
         self,
@@ -62,7 +75,7 @@ class OTXDataModule(LightningDataModule):
         auto_num_workers: bool = False,
         device: DeviceType = DeviceType.auto,
         input_size: int | tuple[int, int] | None = None,
-        adaptive_input_size: Literal["auto", "downscale", "none"] = "none",
+        adaptive_input_size: Literal["auto", "downscale"] | None = None,
         input_size_multiplier: int = 1,
     ) -> None:
         """Constructor."""
@@ -122,7 +135,7 @@ class OTXDataModule(LightningDataModule):
                 subset=self.unlabeled_subset.subset_name,
             )
 
-        if adaptive_input_size != "none":
+        if adaptive_input_size is not None:
             input_size = adapt_input_size_to_dataset(
                 dataset,
                 input_size,

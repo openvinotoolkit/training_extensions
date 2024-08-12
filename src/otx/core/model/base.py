@@ -96,10 +96,13 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
 
     Attributes:
         explain_mode: If true, `self.predict_step()` will produce a XAI output as well
+        input_size_multiplier (int):
+            multiplier value for input size a model requires. If input_size isn't multiple of this value,
+            error is raised.
     """
 
     _OPTIMIZED_MODEL_BASE_NAME: str = "optimized_model"
-    input_size_multiplier = 1
+    input_size_multiplier: int = 1
 
     def __init__(
         self,
