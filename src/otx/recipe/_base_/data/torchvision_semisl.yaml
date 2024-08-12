@@ -1,4 +1,5 @@
 task: MULTI_CLASS_CLS
+input_size: 224
 mem_cache_size: 1GB
 mem_cache_img_max_size:
   - 500
@@ -8,7 +9,6 @@ stack_images: True
 data_format: imagenet_with_subset_dirs
 unannotated_items_ratio: 0.0
 train_subset:
-  input_size: 224
   subset_name: train
   transform_lib_type: TORCHVISION
   batch_size: 16
@@ -34,7 +34,6 @@ train_subset:
     class_path: otx.algo.samplers.balanced_sampler.BalancedSampler
 
 val_subset:
-  input_size: 224
   subset_name: val
   transform_lib_type: TORCHVISION
   batch_size: 64
@@ -57,7 +56,6 @@ val_subset:
     class_path: torch.utils.data.RandomSampler
 
 test_subset:
-  input_size: 224
   subset_name: test
   transform_lib_type: TORCHVISION
   batch_size: 64

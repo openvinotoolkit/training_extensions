@@ -1,4 +1,7 @@
 task: DETECTION
+input_size:
+  - 800
+  - 992
 mem_cache_size: 1GB
 mem_cache_img_max_size: null
 image_color_channel: RGB
@@ -6,9 +9,6 @@ stack_images: true
 data_format: coco_instances
 unannotated_items_ratio: 0.0
 train_subset:
-  input_size:
-    - 800
-    - 992
   subset_name: train
   transform_lib_type: TORCHVISION
   batch_size: 1
@@ -35,9 +35,6 @@ train_subset:
     class_path: torch.utils.data.RandomSampler
 
 val_subset:
-  input_size:
-    - 800
-    - 992
   subset_name: val
   transform_lib_type: TORCHVISION
   batch_size: 1
@@ -59,9 +56,6 @@ val_subset:
     class_path: torch.utils.data.RandomSampler
 
 test_subset:
-  input_size:
-    - 800
-    - 992
   subset_name: test
   transform_lib_type: TORCHVISION
   batch_size: 1

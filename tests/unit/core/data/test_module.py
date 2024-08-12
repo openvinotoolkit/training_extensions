@@ -144,7 +144,7 @@ class TestModule:
         # Dataset will have "train_0", "train_1", "val_0", ..., "test_1" subsets
         mock_dm_subsets = {f"{name}_{idx}": MagicMock() for name in ["train", "val", "test"] for idx in range(2)}
         mock_dm_dataset.return_value.subsets.return_value = mock_dm_subsets
-        fxt_config.train_subset.input_size = (1000, 1000)
+        fxt_config.train_subset.input_size = None
         fxt_config.val_subset.input_size = None
         fxt_config.test_subset.input_size = (800, 800)
 
@@ -160,7 +160,7 @@ class TestModule:
 
         assert fxt_config.train_subset.input_size == (1200, 1200)
         assert fxt_config.val_subset.input_size == (1200, 1200)
-        assert fxt_config.test_subset.input_size == (1200, 1200)
+        assert fxt_config.test_subset.input_size == (800, 800)
 
     @pytest.fixture()
     def mock_adapt_input_size_to_dataset(self, mocker) -> MagicMock:
@@ -177,9 +177,9 @@ class TestModule:
         # Dataset will have "train_0", "train_1", "val_0", ..., "test_1" subsets
         mock_dm_subsets = {f"{name}_{idx}": MagicMock() for name in ["train", "val", "test"] for idx in range(2)}
         mock_dm_dataset.return_value.subsets.return_value = mock_dm_subsets
-        fxt_config.train_subset.input_size = (1000, 1000)
-        fxt_config.val_subset.input_size = None
-        fxt_config.test_subset.input_size = (800, 800)
+        fxt_config.train_subset.input_size = None
+        fxt_config.val_subset.input_size = (1000, 1000)
+        fxt_config.test_subset.input_size = None
 
         OTXDataModule(
             task=OTXTaskType.MULTI_CLASS_CLS,
@@ -192,7 +192,7 @@ class TestModule:
         )
 
         assert fxt_config.train_subset.input_size == (1234, 1234)
-        assert fxt_config.val_subset.input_size == (1234, 1234)
+        assert fxt_config.val_subset.input_size == (1000, 1000)
         assert fxt_config.test_subset.input_size == (1234, 1234)
 
     @pytest.fixture()

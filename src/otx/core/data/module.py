@@ -144,7 +144,8 @@ class OTXDataModule(LightningDataModule):
             )
         if input_size is not None:
             for subset_cfg in [train_subset, val_subset, test_subset, unlabeled_subset]:
-                subset_cfg.input_size = input_size
+                if subset_cfg.input_size is None:
+                    subset_cfg.input_size = input_size
         self.input_size = input_size
 
         if self.tile_config.enable_tiler and self.tile_config.enable_adaptive_tiling:
