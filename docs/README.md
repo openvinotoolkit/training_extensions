@@ -9,7 +9,7 @@ This is the source code for the OTX documentation. It is built using sphinx-desi
 To install the dependencies, run the following command:
 
 ```bash
-otx install --option docs
+pip install otx[docs]
 ```
 
 ## Build
