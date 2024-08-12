@@ -13,7 +13,7 @@ import torch
 from torch import Tensor, nn
 
 from otx.algo.classification.backbones import OTXMobileNetV3
-from otx.algo.classification.classifier import ImageClassifier, SemiSLClassifier
+from otx.algo.classification.classifier import HLabelClassifier, ImageClassifier, SemiSLClassifier
 from otx.algo.classification.heads import (
     HierarchicalNonLinearClsHead,
     LinearClsHead,
@@ -111,8 +111,8 @@ class MobileNetV3ForMulticlassCls(OTXMulticlassClsModel):
                 head=OTXSemiSLLinearClsHead(
                     num_classes=num_classes,
                     in_channels=in_channels,
-                    loss=loss,
                 ),
+                loss=loss,
             )
 
         return ImageClassifier(
@@ -122,8 +122,8 @@ class MobileNetV3ForMulticlassCls(OTXMulticlassClsModel):
                 num_classes=num_classes,
                 in_channels=in_channels,
                 topk=(1, 5) if num_classes >= 5 else (1,),
-                loss=loss,
             ),
+            loss=loss,
         )
 
     def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.") -> dict:
@@ -198,8 +198,8 @@ class MobileNetV3ForMultilabelCls(OTXMultilabelClsModel):
                 normalized=True,
                 scale=7.0,
                 activation_callable=nn.PReLU(),
-                loss=AsymmetricAngularLossWithIgnore(gamma_pos=0.0, gamma_neg=1.0, reduction="sum"),
             ),
+            loss=AsymmetricAngularLossWithIgnore(gamma_pos=0.0, gamma_neg=1.0, reduction="sum"),
         )
 
     def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.") -> dict:
@@ -323,7 +323,7 @@ class MobileNetV3ForHLabelCls(OTXHlabelClsModel):
         if not isinstance(self.label_info, HLabelInfo):
             raise TypeError(self.label_info)
 
-        return ImageClassifier(
+        return HLabelClassifier(
             backbone=OTXMobileNetV3(mode=self.mode),
             neck=GlobalAveragePooling(dim=2),
             head=HierarchicalNonLinearClsHead(

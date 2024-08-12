@@ -42,7 +42,6 @@ class OTXSemiSLClsHead(nn.Module):
     def __init__(
         self,
         num_classes: int,
-        unlabeled_coef: float = 1.0,
         use_dynamic_threshold: bool = True,
         min_threshold: float = 0.5,
     ):
@@ -50,51 +49,18 @@ class OTXSemiSLClsHead(nn.Module):
 
         Args:
             num_classes (int): The number of classes.
-            unlabeled_coef (float, optional): The coefficient for the unlabeled loss. Defaults to 1.0.
             use_dynamic_threshold (bool, optional): Whether to use a dynamic threshold for pseudo-label selection.
                 Defaults to True.
             min_threshold (float, optional): The minimum threshold for pseudo-label selection. Defaults to 0.5.
         """
         self.num_classes = num_classes
 
-        self.unlabeled_coef = unlabeled_coef
         self.use_dynamic_threshold = use_dynamic_threshold
         self.min_threshold = (
             min_threshold if self.use_dynamic_threshold else 0.95
         )  # the range of threshold will be [min_thr, 1.0]
         self.num_pseudo_label = 0
         self.classwise_acc = torch.ones((self.num_classes,)) * self.min_threshold
-
-    def loss(
-        self,
-        feats: dict[str, torch.Tensor] | tuple[torch.Tensor] | torch.Tensor,
-        labels: dict[str, torch.Tensor] | torch.Tensor,
-        **kwargs,
-    ) -> torch.Tensor:
-        """Computes the loss function in which unlabeled data is considered.
-
-        Args:
-            feats (dict[str, Tensor] | Tensor): Input features.
-            labels (dict[str, Tensor] | Tensor): Target features.
-            **kwargs: Additional keyword arguments.
-
-        Returns:
-            Tensor: The computed loss.
-        """
-        logits, labels, pseudo_label, mask = self.get_logits(feats, labels)
-        logits_x, logits_u_s = logits
-        num_samples = len(logits_x)
-
-        # compute supervised loss
-        labeled_loss = self.loss_module(logits_x, labels).sum() / num_samples
-
-        unlabeled_loss = torch.tensor(0.0)
-        if len(logits_u_s) > 0 and self.num_pseudo_label > 0 and mask is not None:
-            # compute unsupervised loss
-            unlabeled_loss = (self.loss_module(logits_u_s, pseudo_label) * mask).sum() / mask.sum().item()
-            unlabeled_loss.masked_fill_(torch.isnan(unlabeled_loss), 0.0)
-
-        return labeled_loss + self.unlabeled_coef * unlabeled_loss
 
     def get_logits(
         self,
@@ -166,16 +132,13 @@ class OTXSemiSLLinearClsHead(OTXSemiSLClsHead, LinearClsHead):
         self,
         num_classes: int,
         in_channels: int,
-        loss: nn.Module,
-        unlabeled_coef: float = 1,
         use_dynamic_threshold: bool = True,
         min_threshold: float = 0.5,
     ):
-        LinearClsHead.__init__(self, num_classes=num_classes, in_channels=in_channels, loss=loss)
+        LinearClsHead.__init__(self, num_classes=num_classes, in_channels=in_channels)
         OTXSemiSLClsHead.__init__(
             self,
             num_classes=num_classes,
-            unlabeled_coef=unlabeled_coef,
             use_dynamic_threshold=use_dynamic_threshold,
             min_threshold=min_threshold,
         )
@@ -188,14 +151,11 @@ class OTXSemiSLNonLinearClsHead(OTXSemiSLClsHead):
         self,
         num_classes: int,
         in_channels: int,
-        loss: nn.Module,
         hid_channels: int = 1280,
-        unlabeled_coef: float = 1,
         use_dynamic_threshold: bool = True,
         min_threshold: float = 0.5,
     ):
         self.num_classes = num_classes
-        self.loss_module = loss
 
         self.in_channels = in_channels
         self.hid_channels = hid_channels
@@ -210,7 +170,7 @@ class OTXSemiSLNonLinearClsHead(OTXSemiSLClsHead):
         OTXSemiSLClsHead.__init__(
             self,
             num_classes=num_classes,
-            unlabeled_coef=unlabeled_coef,
+            # unlabeled_coef=unlabeled_coef,
             use_dynamic_threshold=use_dynamic_threshold,
             min_threshold=min_threshold,
         )
@@ -237,8 +197,6 @@ class OTXSemiSLVisionTransformerClsHead(OTXSemiSLClsHead, VisionTransformerClsHe
         self,
         num_classes: int,
         in_channels: int,
-        loss: nn.Module,
-        unlabeled_coef: float = 1,
         use_dynamic_threshold: bool = True,
         min_threshold: float = 0.5,
         hidden_dim: int | None = None,
@@ -249,7 +207,6 @@ class OTXSemiSLVisionTransformerClsHead(OTXSemiSLClsHead, VisionTransformerClsHe
             self,
             num_classes=num_classes,
             in_channels=in_channels,
-            loss=loss,
             hidden_dim=hidden_dim,
             init_cfg=init_cfg,
             **kwargs,
@@ -257,7 +214,6 @@ class OTXSemiSLVisionTransformerClsHead(OTXSemiSLClsHead, VisionTransformerClsHe
         OTXSemiSLClsHead.__init__(
             self,
             num_classes=num_classes,
-            unlabeled_coef=unlabeled_coef,
             use_dynamic_threshold=use_dynamic_threshold,
             min_threshold=min_threshold,
         )

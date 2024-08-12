@@ -194,7 +194,6 @@ class TVClassificationModel(nn.Module):
                 return OTXSemiSLLinearClsHead(
                     num_classes=self.num_classes,
                     in_channels=feature_channel,
-                    loss=self.loss_module,
                 )
             if classifier_len >= 1:
                 return nn.Sequential(*layers, nn.Linear(feature_channel, self.num_classes))
@@ -206,7 +205,6 @@ class TVClassificationModel(nn.Module):
                 in_channels=feature_channel,
                 scale=7.0,
                 normalized=True,
-                loss=self.loss_module,
             )
         if self.task == OTXTaskType.H_LABEL_CLS:
             self.neck = nn.Sequential(*layers) if layers else None
@@ -328,8 +326,35 @@ class TVClassificationModel(nn.Module):
         """
         if hasattr(self.head, "loss"):
             return self.head.loss(inputs, labels)
+        if isinstance(inputs, dict) and hasattr(self.head, "get_logits"):
+            return self._semi_sl_loss(inputs, labels)
         logits = self.head(inputs)
         return self.loss_module(logits, labels).sum() / logits.size(0)
+
+    def _semi_sl_loss(self, inputs: dict[str, torch.Tensor], labels: torch.Tensor) -> torch.Tensor:
+        """Computes the loss function in which unlabeled data is considered.
+
+        Args:
+            inputs (dict[str, torch.Tensor]): Input features.
+            labels (dict[str, torch.Tensor] | torch.Tensor): Target features.
+
+        Returns:
+            torch.Tensor: The computed loss.
+        """
+        logits, labels, pseudo_label, mask = self.head.get_logits(inputs, labels)
+        logits_x, logits_u_s = logits
+        num_samples = len(logits_x)
+
+        # compute supervised loss
+        labeled_loss = self.loss_module(logits_x, labels).sum() / num_samples
+
+        unlabeled_loss = torch.tensor(0.0)
+        if len(logits_u_s) > 0 and self.head.num_pseudo_label > 0 and mask is not None:
+            # compute unsupervised loss
+            unlabeled_loss = (self.loss_module(logits_u_s, pseudo_label) * mask).sum() / mask.sum().item()
+            unlabeled_loss.masked_fill_(torch.isnan(unlabeled_loss), 0.0)
+
+        return labeled_loss + self.head.unlabeled_coef * unlabeled_loss
 
     def predict(self, inputs: torch.Tensor, **kwargs) -> list[torch.Tensor]:
         """Predict results from a batch of inputs.

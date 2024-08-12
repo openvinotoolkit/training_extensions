@@ -10,6 +10,9 @@ Implementing Classifier with dict logic to handle unlabeled datasets with multi-
 from __future__ import annotations
 
 import torch
+from torch import nn
+
+from otx.algo.classification.heads.semi_sl_head import OTXSemiSLClsHead
 
 from .base_classifier import ImageClassifier
 
@@ -17,11 +20,31 @@ from .base_classifier import ImageClassifier
 class SemiSLClassifier(ImageClassifier):
     """Semi-SL Classifier."""
 
+    head: OTXSemiSLClsHead
+
+    def __init__(
+        self,
+        backbone: nn.Module,
+        neck: nn.Module | None,
+        head: nn.Module,
+        loss: nn.Module,
+        unlabeled_coef: float = 1.0,
+        init_cfg: dict | list[dict] | None = None,
+    ):
+        super().__init__(
+            backbone=backbone,
+            neck=neck,
+            head=head,
+            loss=loss,
+            init_cfg=init_cfg,
+        )
+        self.unlabeled_coef = unlabeled_coef
+
     def extract_feat(
         self,
         inputs: dict[str, torch.Tensor],
         stage: str = "neck",
-    ) -> dict[str, tuple | torch.Tensor] | tuple | torch.Tensor:
+    ) -> dict[str, torch.Tensor] | tuple[torch.Tensor] | torch.Tensor:
         """Extract features from the input tensor with shape (N, C, ...).
 
         Args:
@@ -56,3 +79,32 @@ class SemiSLClassifier(ImageClassifier):
         x["unlabeled_strong"] = super().extract_feat(unlabeled_strong_inputs, stage)
 
         return x
+
+    def loss(self, inputs: dict[str, torch.Tensor], labels: torch.Tensor, **kwargs) -> dict:
+        """Calculate losses from a batch of inputs and data samples.
+
+        Args:
+            inputs (torch.Tensor): The input tensor with shape
+                (N, C, ...) in general.
+            labels (torch.Tensor): The annotation data of
+                every samples.
+
+        Returns:
+            dict[str, Tensor]: a dictionary of loss components
+        """
+        semi_inputs = self.extract_feat(inputs)
+        logits, labels, pseudo_label, mask = self.head.get_logits(semi_inputs, labels)
+        logits_x, logits_u_s = logits
+        num_samples = len(logits_x)
+
+        # compute supervised loss
+        labeled_loss = self.loss_module(logits_x, labels).sum() / num_samples
+
+        unlabeled_loss = torch.tensor(0.0)
+        num_pseudo_labels = 0 if mask is None else int(mask.sum().item())
+        if len(logits_u_s) > 0 and num_pseudo_labels > 0 and mask is not None:
+            # compute unsupervised loss
+            unlabeled_loss = (self.loss_module(logits_u_s, pseudo_label) * mask).sum() / mask.sum().item()
+            unlabeled_loss.masked_fill_(torch.isnan(unlabeled_loss), 0.0)
+
+        return labeled_loss + self.unlabeled_coef * unlabeled_loss

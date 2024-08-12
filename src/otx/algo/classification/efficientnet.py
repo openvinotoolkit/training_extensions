@@ -12,8 +12,7 @@ from typing import TYPE_CHECKING, Literal
 from torch import Tensor, nn
 
 from otx.algo.classification.backbones.efficientnet import EFFICIENTNET_VERSION, OTXEfficientNet
-from otx.algo.classification.classifier.base_classifier import ImageClassifier
-from otx.algo.classification.classifier.semi_sl_classifier import SemiSLClassifier
+from otx.algo.classification.classifier import HLabelClassifier, ImageClassifier, SemiSLClassifier
 from otx.algo.classification.heads import (
     HierarchicalLinearClsHead,
     LinearClsHead,
@@ -96,8 +95,8 @@ class EfficientNetForMulticlassCls(OTXMulticlassClsModel):
                 head=OTXSemiSLLinearClsHead(
                     num_classes=num_classes,
                     in_channels=backbone.num_features,
-                    loss=loss,
                 ),
+                loss=loss,
             )
 
         return ImageClassifier(
@@ -107,8 +106,8 @@ class EfficientNetForMulticlassCls(OTXMulticlassClsModel):
                 num_classes=num_classes,
                 in_channels=backbone.num_features,
                 topk=(1, 5) if num_classes >= 5 else (1,),
-                loss=loss,
             ),
+            loss=loss,
         )
 
     def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.") -> dict:
@@ -185,8 +184,8 @@ class EfficientNetForMultilabelCls(OTXMultilabelClsModel):
                 in_channels=backbone.num_features,
                 scale=7.0,
                 normalized=True,
-                loss=AsymmetricAngularLossWithIgnore(gamma_pos=0.0, gamma_neg=1.0, reduction="sum"),
             ),
+            loss=AsymmetricAngularLossWithIgnore(gamma_pos=0.0, gamma_neg=1.0, reduction="sum"),
         )
 
     def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.") -> dict:
@@ -263,7 +262,7 @@ class EfficientNetForHLabelCls(OTXHlabelClsModel):
             raise TypeError(self.label_info)
 
         backbone = OTXEfficientNet(version=self.version, pretrained=self.pretrained)
-        return ImageClassifier(
+        return HLabelClassifier(
             backbone=backbone,
             neck=GlobalAveragePooling(dim=2),
             head=HierarchicalLinearClsHead(

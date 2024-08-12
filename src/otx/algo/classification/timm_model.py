@@ -11,7 +11,7 @@ import torch
 from torch import nn
 
 from otx.algo.classification.backbones.timm import TimmBackbone, TimmModelType
-from otx.algo.classification.classifier import ImageClassifier, SemiSLClassifier
+from otx.algo.classification.classifier import HLabelClassifier, ImageClassifier, SemiSLClassifier
 from otx.algo.classification.heads import (
     HierarchicalLinearClsHead,
     LinearClsHead,
@@ -98,8 +98,8 @@ class TimmModelForMulticlassCls(OTXMulticlassClsModel):
                 head=OTXSemiSLLinearClsHead(
                     num_classes=num_classes,
                     in_channels=backbone.num_features,
-                    loss=loss,
                 ),
+                loss=loss,
             )
 
         return ImageClassifier(
@@ -109,8 +109,8 @@ class TimmModelForMulticlassCls(OTXMulticlassClsModel):
                 num_classes=num_classes,
                 in_channels=backbone.num_features,
                 topk=(1, 5) if num_classes >= 5 else (1,),
-                loss=loss,
             ),
+            loss=loss,
         )
 
     def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.") -> dict:
@@ -187,8 +187,8 @@ class TimmModelForMultilabelCls(OTXMultilabelClsModel):
                 in_channels=backbone.num_features,
                 normalized=True,
                 scale=7.0,
-                loss=AsymmetricAngularLossWithIgnore(gamma_pos=0.0, gamma_neg=1.0, reduction="sum"),
             ),
+            loss=AsymmetricAngularLossWithIgnore(gamma_pos=0.0, gamma_neg=1.0, reduction="sum"),
         )
 
     def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.") -> dict:
@@ -262,7 +262,7 @@ class TimmModelForHLabelCls(OTXHlabelClsModel):
 
     def _build_model(self, head_config: dict) -> nn.Module:
         backbone = TimmBackbone(backbone=self.backbone, pretrained=self.pretrained)
-        return ImageClassifier(
+        return HLabelClassifier(
             backbone=backbone,
             neck=GlobalAveragePooling(dim=2),
             head=HierarchicalLinearClsHead(

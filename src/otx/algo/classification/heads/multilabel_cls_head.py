@@ -11,7 +11,6 @@ you can refer https://github.com/open-mmlab/mmpretrain/blob/main/mmpretrain/mode
 
 from __future__ import annotations
 
-import inspect
 from typing import Callable, Sequence
 
 import torch
@@ -20,7 +19,6 @@ from torch.nn import functional
 
 from otx.algo.modules.base_module import BaseModule
 from otx.algo.utils.weight_init import constant_init, normal_init
-from otx.core.data.entity.base import ImageInfo
 
 
 class AnglularLinear(nn.Module):
@@ -61,7 +59,6 @@ class MultiLabelClsHead(BaseModule):
         scale (float): The scaling factor for the classification score.
 
     Methods:
-        loss(feats, labels, **kwargs): Calculate losses from the classification score.
         get_valid_label_mask(img_metas): Get valid label mask using ignored_label.
         predict(feats, labels): Inference without augmentation.
     """
@@ -70,7 +67,6 @@ class MultiLabelClsHead(BaseModule):
         self,
         num_classes: int,
         in_channels: int,
-        loss: nn.Module,
         normalized: bool = False,
         scale: float = 1.0,
         thr: float | None = None,
@@ -84,53 +80,12 @@ class MultiLabelClsHead(BaseModule):
         self.in_channels = in_channels
         self.normalized = normalized
         self.scale = scale
-        self.loss_module = loss
-        self.is_ignored_label_loss = "valid_label_mask" in inspect.getfullargspec(self.loss_module.forward).args
 
         if thr is None and topk is None:
             thr = 0.5
 
         self.thr = thr
         self.topk = topk
-
-    def loss(self, feats: tuple[torch.Tensor], labels: torch.Tensor, **kwargs) -> torch.Tensor:
-        """Calculate losses from the classification score.
-
-        Args:
-            feats (tuple[Tensor]): The features extracted from the backbone.
-                Multiple stage inputs are acceptable but only the last stage
-                will be used to classify. The shape of every item should be
-                ``(num_samples, num_classes)``.
-            labels (torch.Tensor): The annotation data of
-                every samples.
-            **kwargs: Other keyword arguments to forward the loss module.
-
-        Returns:
-            dict[str, Tensor]: a dictionary of loss components
-        """
-        cls_score = self(feats) * self.scale
-        imgs_info = kwargs.pop("imgs_info", None)
-        if imgs_info is not None and self.is_ignored_label_loss:
-            kwargs["valid_label_mask"] = self.get_valid_label_mask(imgs_info).to(cls_score.device)
-        loss = self.loss_module(cls_score, labels, avg_factor=cls_score.size(0), **kwargs)
-        return loss / self.scale
-
-    def get_valid_label_mask(self, img_metas: list[ImageInfo]) -> torch.Tensor:
-        """Get valid label mask using ignored_label.
-
-        Args:
-            img_metas (list[ImageInfo]): The metadata of the input images.
-
-        Returns:
-            torch.Tensor: The valid label mask.
-        """
-        valid_label_mask = []
-        for meta in img_metas:
-            mask = torch.Tensor([1 for _ in range(self.num_classes)])
-            if meta.ignored_labels:
-                mask[meta.ignored_labels] = 0
-            valid_label_mask.append(mask)
-        return torch.stack(valid_label_mask, dim=0)
 
     # ------------------------------------------------------------------------ #
     # Copy from mmpretrain.models.heads.MultiLabelClsHead
@@ -180,7 +135,6 @@ class MultiLabelLinearClsHead(MultiLabelClsHead):
         in_channels (int): Number of channels in the input feature map.
         normalized (bool): Normalize input features and weights.
         scale (float): positive scale parameter.
-        loss (dict): Config of classification loss.
     """
 
     fc: nn.Module
@@ -189,7 +143,6 @@ class MultiLabelLinearClsHead(MultiLabelClsHead):
         self,
         num_classes: int,
         in_channels: int,
-        loss: nn.Module,
         normalized: bool = False,
         scale: float = 1.0,
         thr: float | None = None,
@@ -200,7 +153,6 @@ class MultiLabelLinearClsHead(MultiLabelClsHead):
         super().__init__(
             num_classes=num_classes,
             in_channels=in_channels,
-            loss=loss,
             normalized=normalized,
             scale=scale,
             thr=thr,
@@ -243,7 +195,6 @@ class MultiLabelNonLinearClsHead(MultiLabelClsHead):
         hid_channels (int): Number of channels in the hidden feature map.
         act_cfg (dict | optional): The configuration of the activation function.
         scale (float): Positive scale parameter.
-        loss (dict): Config of classification loss.
         dropout (bool): Whether use the dropout or not.
         normalized (bool): Normalize input features and weights in the last linar layer.
     """
@@ -252,7 +203,6 @@ class MultiLabelNonLinearClsHead(MultiLabelClsHead):
         self,
         num_classes: int,
         in_channels: int,
-        loss: nn.Module,
         hid_channels: int = 1280,
         activation_callable: Callable[[], nn.Module] = nn.ReLU,
         scale: float = 1.0,
@@ -266,7 +216,6 @@ class MultiLabelNonLinearClsHead(MultiLabelClsHead):
         super().__init__(
             num_classes=num_classes,
             in_channels=in_channels,
-            loss=loss,
             normalized=normalized,
             scale=scale,
             thr=thr,
