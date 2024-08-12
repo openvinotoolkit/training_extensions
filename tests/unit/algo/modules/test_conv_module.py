@@ -3,6 +3,8 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 # https://github.com/open-mmlab/mmcv/blob/main/tests/test_cnn/test_conv_module.py
 
+from functools import partial
+
 import pytest
 import torch
 from otx.algo.modules.conv_module import Conv2dModule, DepthwiseSeparableConvModule
@@ -15,15 +17,20 @@ def test_conv_module():
         # norm_cfg must be a dict or None
         Conv2dModule(3, 8, 2, norm_cfg=norm_cfg)
 
-    act_cfg = {"type": "softmax"}
-    with pytest.raises(KeyError):
+    activation_callable = nn.Softmax
+    with pytest.raises(ValueError, match="Unsupported activation"):
         # softmax is not supported
-        Conv2dModule(3, 8, 2, act_cfg=act_cfg)
+        Conv2dModule(3, 8, 2, activation_callable=activation_callable)
+
+    activation_callable = partial(nn.Softmax)
+    with pytest.raises(ValueError, match="Unsupported activation"):
+        # softmax is not supported
+        Conv2dModule(3, 8, 2, activation_callable=activation_callable)
 
     # conv + norm + act
     conv = Conv2dModule(3, 8, 2, norm_cfg={"type": "BN"})
     assert conv.with_activation
-    assert hasattr(conv, "activate")
+    assert isinstance(conv.activation, nn.Module)
     assert conv.with_norm
     assert hasattr(conv, "norm_layer")
     x = torch.rand(1, 3, 256, 256)
@@ -33,7 +40,7 @@ def test_conv_module():
     # conv + act
     conv = Conv2dModule(3, 8, 2)
     assert conv.with_activation
-    assert hasattr(conv, "activate")
+    assert isinstance(conv.activation, nn.Module)
     assert not conv.with_norm
     assert conv.norm_layer is None
     x = torch.rand(1, 3, 256, 256)
@@ -41,11 +48,11 @@ def test_conv_module():
     assert output.shape == (1, 8, 255, 255)
 
     # conv
-    conv = Conv2dModule(3, 8, 2, act_cfg=None)
+    conv = Conv2dModule(3, 8, 2, activation_callable=None)
     assert not conv.with_norm
     assert conv.norm_layer is None
     assert not conv.with_activation
-    assert not hasattr(conv, "activate")
+    assert conv.activation is None
     x = torch.rand(1, 3, 256, 256)
     output = conv(x)
     assert output.shape == (1, 8, 255, 255)
@@ -65,26 +72,26 @@ def test_conv_module():
         conv = Conv2dModule(3, 8, 3, padding=1, padding_mode="non_exists")
 
     # leaky relu
-    conv = Conv2dModule(3, 8, 3, padding=1, act_cfg={"type": "LeakyReLU"})
-    assert isinstance(conv.activate, nn.LeakyReLU)
+    conv = Conv2dModule(3, 8, 3, padding=1, activation_callable=nn.LeakyReLU)
+    assert isinstance(conv.activation, nn.LeakyReLU)
     output = conv(x)
     assert output.shape == (1, 8, 256, 256)
 
     # tanh
-    conv = Conv2dModule(3, 8, 3, padding=1, act_cfg={"type": "Tanh"})
-    assert isinstance(conv.activate, nn.Tanh)
+    conv = Conv2dModule(3, 8, 3, padding=1, activation_callable=nn.Tanh)
+    assert isinstance(conv.activation, nn.Tanh)
     output = conv(x)
     assert output.shape == (1, 8, 256, 256)
 
     # Sigmoid
-    conv = Conv2dModule(3, 8, 3, padding=1, act_cfg={"type": "Sigmoid"})
-    assert isinstance(conv.activate, nn.Sigmoid)
+    conv = Conv2dModule(3, 8, 3, padding=1, activation_callable=nn.Sigmoid)
+    assert isinstance(conv.activation, nn.Sigmoid)
     output = conv(x)
     assert output.shape == (1, 8, 256, 256)
 
     # PReLU
-    conv = Conv2dModule(3, 8, 3, padding=1, act_cfg={"type": "PReLU"})
-    assert isinstance(conv.activate, nn.PReLU)
+    conv = Conv2dModule(3, 8, 3, padding=1, activation_callable=nn.PReLU)
+    assert isinstance(conv.activation, nn.PReLU)
     output = conv(x)
     assert output.shape == (1, 8, 256, 256)
 
@@ -132,8 +139,8 @@ class TestDepthwiseSeparableConvModule:
         assert conv.pointwise_conv.conv.kernel_size == (1, 1)
         assert not conv.depthwise_conv.with_norm
         assert not conv.pointwise_conv.with_norm
-        assert conv.depthwise_conv.activate.__class__.__name__ == "ReLU"
-        assert conv.pointwise_conv.activate.__class__.__name__ == "ReLU"
+        assert conv.depthwise_conv.activation.__class__.__name__ == "ReLU"
+        assert conv.pointwise_conv.activation.__class__.__name__ == "ReLU"
         x = torch.rand(1, 3, 256, 256)
         output = conv(x)
         assert output.shape == (1, 8, 255, 255)
@@ -179,29 +186,29 @@ class TestDepthwiseSeparableConvModule:
         output = conv(x)
         assert output.shape == (1, 8, 256, 256)
 
-    def test_forward_with_dw_act_cfg(self) -> None:
-        # test dw_act_cfg
-        conv = DepthwiseSeparableConvModule(3, 8, 3, padding=1, dw_act_cfg={"type": "LeakyReLU"})
+    def test_forward_with_dw_activation_callable(self) -> None:
+        # test dw_activation_callable
+        conv = DepthwiseSeparableConvModule(3, 8, 3, padding=1, dw_activation_callable=nn.LeakyReLU)
         x = torch.rand(1, 3, 256, 256)
-        assert conv.depthwise_conv.activate.__class__.__name__ == "LeakyReLU"
-        assert conv.pointwise_conv.activate.__class__.__name__ == "ReLU"
+        assert conv.depthwise_conv.activation.__class__.__name__ == "LeakyReLU"
+        assert conv.pointwise_conv.activation.__class__.__name__ == "ReLU"
         output = conv(x)
         assert output.shape == (1, 8, 256, 256)
 
-    def test_forward_with_pw_act_cfg(self) -> None:
-        # test pw_act_cfg
-        conv = DepthwiseSeparableConvModule(3, 8, 3, padding=1, pw_act_cfg={"type": "LeakyReLU"})
+    def test_forward_with_pw_activation_callable(self) -> None:
+        # test pw_activation_callable
+        conv = DepthwiseSeparableConvModule(3, 8, 3, padding=1, pw_activation_callable=nn.LeakyReLU)
         x = torch.rand(1, 3, 256, 256)
-        assert conv.depthwise_conv.activate.__class__.__name__ == "ReLU"
-        assert conv.pointwise_conv.activate.__class__.__name__ == "LeakyReLU"
+        assert conv.depthwise_conv.activation.__class__.__name__ == "ReLU"
+        assert conv.pointwise_conv.activation.__class__.__name__ == "LeakyReLU"
         output = conv(x)
         assert output.shape == (1, 8, 256, 256)
 
-    def test_forward_with_act_cfg(self) -> None:
-        # test act_cfg
-        conv = DepthwiseSeparableConvModule(3, 8, 3, padding=1, act_cfg={"type": "LeakyReLU"})
+    def test_forward_with_activation_callable(self) -> None:
+        # test activation_callable
+        conv = DepthwiseSeparableConvModule(3, 8, 3, padding=1, activation_callable=nn.LeakyReLU)
         x = torch.rand(1, 3, 256, 256)
-        assert conv.depthwise_conv.activate.__class__.__name__ == "LeakyReLU"
-        assert conv.pointwise_conv.activate.__class__.__name__ == "LeakyReLU"
+        assert conv.depthwise_conv.activation.__class__.__name__ == "LeakyReLU"
+        assert conv.pointwise_conv.activation.__class__.__name__ == "LeakyReLU"
         output = conv(x)
         assert output.shape == (1, 8, 256, 256)
