@@ -14,7 +14,8 @@ train_subset:
   transforms:
     - class_path: otx.core.data.transform_libs.torchvision.GetBBoxCenterScale
     - class_path: otx.core.data.transform_libs.torchvision.TopdownAffine
-      init_args: $(input_size)
+      init_args:
+        input_size: $(input_size)
     - class_path: otx.core.data.transform_libs.torchvision.YOLOXHSVRandomAug
     - class_path: otx.core.data.transform_libs.torchvision.GenerateTarget
       init_args:
@@ -35,7 +36,8 @@ val_subset:
   transforms:
     - class_path: otx.core.data.transform_libs.torchvision.GetBBoxCenterScale
     - class_path: otx.core.data.transform_libs.torchvision.TopdownAffine
-      init_args: $(input_size)
+      init_args:
+        input_size: $(input_size)
     - class_path: otx.core.data.transform_libs.torchvision.GenerateTarget
       init_args:
         is_numpy_to_tvtensor: true
@@ -55,7 +57,8 @@ test_subset:
   transforms:
     - class_path: otx.core.data.transform_libs.torchvision.GetBBoxCenterScale
     - class_path: otx.core.data.transform_libs.torchvision.TopdownAffine
-      init_args: $(input_size)
+      init_args:
+        input_size: $(input_size)
     - class_path: otx.core.data.transform_libs.torchvision.GenerateTarget
       init_args:
         is_numpy_to_tvtensor: true
