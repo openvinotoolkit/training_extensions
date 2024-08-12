@@ -77,7 +77,7 @@ class TestOpenVINOTask:
         # call evaluate
         result_set = ResultSetEntity(output_model, dataset, predicted_dataset)
         openvino_task.evaluate(result_set)
-        if task_type in (TaskType.ANOMALY_CLASSIFICATION, TaskType.ANOMALY_DETECTION):
+        if task_type in (TaskType.ANOMALY, TaskType.ANOMALY_CLASSIFICATION, TaskType.ANOMALY_DETECTION):
             assert result_set.performance.score.name == "f-measure"
         elif task_type == TaskType.ANOMALY_SEGMENTATION:
             assert result_set.performance.score.name == "Dice Average"

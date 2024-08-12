@@ -25,7 +25,13 @@ class TestEnvironment:
 
 
 @pytest.fixture(
-    scope="session", params=[TaskType.ANOMALY_CLASSIFICATION, TaskType.ANOMALY_DETECTION, TaskType.ANOMALY_SEGMENTATION]
+    scope="session",
+    params=[
+        TaskType.ANOMALY,
+        TaskType.ANOMALY_CLASSIFICATION,
+        TaskType.ANOMALY_DETECTION,
+        TaskType.ANOMALY_SEGMENTATION,
+    ],
 )
 def setup_task_environment(request):
     """Returns a task environment, a model and datset."""

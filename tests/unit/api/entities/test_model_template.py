@@ -20,8 +20,8 @@ from otx.api.entities.model_template import (
     ExportableCodePaths,
     HyperParameterData,
     InstantiationType,
-    ModelOptimizationMethod,
     ModelCategory,
+    ModelOptimizationMethod,
     ModelStatus,
     ModelTemplate,
     NullModelTemplate,
@@ -233,6 +233,7 @@ class TestTaskType:
         assert TaskType.INSTANCE_SEGMENTATION.value == 9
         assert TaskType.ACTIVELEARNING.value == 10
         assert TaskType.ANOMALY_SEGMENTATION.value == 11
+        assert TaskType.ANOMALY.value == 12
         assert TaskType.ANOMALY_CLASSIFICATION.value == 12
         assert TaskType.ROTATED_DETECTION.value == 13
         assert TaskType.ACTION_CLASSIFICATION.value == 14
@@ -274,6 +275,8 @@ class TestTaskType:
         assert task_type_to_label_domain(TaskType.DETECTION) == Domain.DETECTION
         assert task_type_to_label_domain(TaskType.SEGMENTATION) == Domain.SEGMENTATION
         assert task_type_to_label_domain(TaskType.INSTANCE_SEGMENTATION) == Domain.INSTANCE_SEGMENTATION
+        assert task_type_to_label_domain(TaskType.ANOMALY) == Domain.ANOMALY
+        assert task_type_to_label_domain(TaskType.ANOMALY) == Domain.ANOMALY_CLASSIFICATION
         assert task_type_to_label_domain(TaskType.ANOMALY_CLASSIFICATION) == Domain.ANOMALY_CLASSIFICATION
         assert task_type_to_label_domain(TaskType.ANOMALY_DETECTION) == Domain.ANOMALY_DETECTION
         assert task_type_to_label_domain(TaskType.ANOMALY_SEGMENTATION) == Domain.ANOMALY_SEGMENTATION
@@ -964,6 +967,7 @@ class TestModelTemplate:
         # Check is_task_global method returns True for CLASSIFICATION and ANOMALY_CLASSIFICATION
         for global_task_type in (
             TaskType.CLASSIFICATION,
+            TaskType.ANOMALY,
             TaskType.ANOMALY_CLASSIFICATION,
         ):
             default_parameters = self.default_model_parameters()
@@ -1025,6 +1029,7 @@ class TestTaskTypesConstants:
         Test passes if ANOMALY_TASK_TYPES and TRAINABLE_TASK_TYPES constants return expected values
         """
         assert ANOMALY_TASK_TYPES == (
+            TaskType.ANOMALY,
             TaskType.ANOMALY_DETECTION,
             TaskType.ANOMALY_CLASSIFICATION,
             TaskType.ANOMALY_SEGMENTATION,
@@ -1034,6 +1039,7 @@ class TestTaskTypesConstants:
             TaskType.DETECTION,
             TaskType.SEGMENTATION,
             TaskType.INSTANCE_SEGMENTATION,
+            TaskType.ANOMALY,
             TaskType.ANOMALY_DETECTION,
             TaskType.ANOMALY_CLASSIFICATION,
             TaskType.ANOMALY_SEGMENTATION,

@@ -22,6 +22,7 @@ class Domain(Enum):
     DETECTION = auto()
     SEGMENTATION = auto()
     ANOMALY_CLASSIFICATION = auto()
+    ANOMALY = ANOMALY_CLASSIFICATION  # Alias
     ANOMALY_DETECTION = auto()
     ANOMALY_SEGMENTATION = auto()
     INSTANCE_SEGMENTATION = auto()

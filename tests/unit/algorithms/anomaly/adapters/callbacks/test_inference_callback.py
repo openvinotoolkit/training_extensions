@@ -14,7 +14,8 @@ from tests.unit.algorithms.anomaly.helpers.dummy_model import DummyModel
 
 class TestInferenceCallback:
     @pytest.mark.parametrize(
-        "task_type", [TaskType.ANOMALY_CLASSIFICATION, TaskType.ANOMALY_DETECTION, TaskType.ANOMALY_SEGMENTATION]
+        "task_type",
+        [TaskType.ANOMALY, TaskType.ANOMALY_CLASSIFICATION, TaskType.ANOMALY_DETECTION, TaskType.ANOMALY_SEGMENTATION],
     )
     def test_inference_callback(self, task_type):
         """For each task type test the inference callback.

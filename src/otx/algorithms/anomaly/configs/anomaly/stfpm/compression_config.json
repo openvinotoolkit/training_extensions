@@ -1,0 +1,36 @@
+{
+  "base": {
+    "find_unused_parameters": true,
+    "target_metric_name": "image_F1Score",
+    "nncf_config": {
+      "input_info": {
+        "sample_size": [1, 3, 256, 256]
+      },
+      "compression": [],
+      "log_dir": "/tmp"
+    }
+  },
+  "nncf_quantization": {
+    "model": {
+      "lr": 0.004
+    },
+    "nncf_config": {
+      "compression": [
+        {
+          "algorithm": "quantization",
+          "preset": "mixed",
+          "initializer": {
+            "range": {
+              "num_init_samples": 250
+            },
+            "batchnorm_adaptation": {
+              "num_bn_adaptation_samples": 250
+            }
+          },
+          "ignored_scopes": ["{re}.*__pow__.*"]
+        }
+      ]
+    }
+  },
+  "order_of_parts": ["nncf_quantization"]
+}

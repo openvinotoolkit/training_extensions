@@ -3,9 +3,9 @@
 # Copyright (C) 2021-2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
-import pytest
-
 from copy import deepcopy
+
+import pytest
 
 from otx.algorithms.anomaly.tasks.inference import InferenceTask
 from otx.algorithms.anomaly.tasks.train import TrainingTask
@@ -70,7 +70,7 @@ class TestInferenceTask:
             model=output_model, ground_truth_dataset=gt_val_dataset, prediction_dataset=pred_val_dataset
         )
         inference_task.evaluate(result_set)
-        if task_type in (TaskType.ANOMALY_CLASSIFICATION, TaskType.ANOMALY_DETECTION):
+        if task_type in (TaskType.ANOMALY, TaskType.ANOMALY_CLASSIFICATION, TaskType.ANOMALY_DETECTION):
             assert result_set.performance.score.name == "f-measure"
         elif task_type == TaskType.ANOMALY_SEGMENTATION:
             assert result_set.performance.score.name == "Dice Average"

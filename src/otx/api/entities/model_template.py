@@ -198,6 +198,7 @@ class TaskType(Enum):
         is_global=True,
         is_local=False,
     )
+    ANOMALY = ANOMALY_CLASSIFICATION  # alias
     ROTATED_DETECTION = 13, TaskInfo(
         domain=Domain.ROTATED_DETECTION,
         is_trainable=True,

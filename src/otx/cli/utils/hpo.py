@@ -46,6 +46,7 @@ def _check_hpo_enabled_task(task_type):
         TaskType.SEGMENTATION,
         TaskType.INSTANCE_SEGMENTATION,
         TaskType.ROTATED_DETECTION,
+        TaskType.ANOMALY,
         TaskType.ANOMALY_CLASSIFICATION,
         TaskType.ANOMALY_DETECTION,
         TaskType.ANOMALY_SEGMENTATION,
@@ -110,6 +111,7 @@ class TaskManager:
             bool: whether task is run on anomalib
         """
         return self._task_type in [
+            TaskType.ANOMALY,
             TaskType.ANOMALY_CLASSIFICATION,
             TaskType.ANOMALY_DETECTION,
             TaskType.ANOMALY_SEGMENTATION,

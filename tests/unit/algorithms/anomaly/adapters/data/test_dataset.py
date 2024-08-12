@@ -10,7 +10,7 @@ from tests.unit.algorithms.anomaly.helpers.dummy_dataset import HazelnutDataModu
 
 
 @pytest.mark.parametrize("stage", ["predict", "fit", "validate", "test"])
-@pytest.mark.parametrize("task_type", [TaskType.ANOMALY_CLASSIFICATION, TaskType.ANOMALY_DETECTION])
+@pytest.mark.parametrize("task_type", [TaskType.ANOMALY, TaskType.ANOMALY_CLASSIFICATION, TaskType.ANOMALY_DETECTION])
 def test_dataloaders(task_type, stage):
     """Tests whether the datamodule can load the data correctly.
 

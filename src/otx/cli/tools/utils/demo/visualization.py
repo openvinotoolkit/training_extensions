@@ -152,7 +152,7 @@ def draw_predictions(task_type: TaskType, predictions: List[Annotation], frame: 
         frame = cv2.resize(frame, None, fx=ratio, fy=ratio)
     if task_type in {TaskType.DETECTION, TaskType.ANOMALY_DETECTION}:
         frame = draw_bounding_boxes(frame, predictions, put_object_count=True)
-    elif task_type in {TaskType.CLASSIFICATION, TaskType.ANOMALY_CLASSIFICATION}:
+    elif task_type in {TaskType.CLASSIFICATION, TaskType.ANOMALY, TaskType.ANOMALY_CLASSIFICATION}:
         frame = put_labels(frame, predictions)
     elif task_type in {TaskType.INSTANCE_SEGMENTATION, TaskType.ROTATED_DETECTION}:
         frame = draw_masks(frame, predictions, put_object_count=True)

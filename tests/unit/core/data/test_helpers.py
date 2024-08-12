@@ -2,16 +2,15 @@
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
-from typing import List, Optional
 import os
+from typing import List, Optional
 
 import cv2
 import numpy as np
-from datumaro.components.annotation import Label, Bbox, Mask
+from datumaro.components.annotation import Bbox, Label, Mask
 from datumaro.components.dataset import Dataset
 from datumaro.components.dataset_base import DatasetItem
 from datumaro.components.media import ImageFromFile, ImageFromNumpy
-
 
 from otx.api.entities.model_template import TaskType
 
@@ -21,6 +20,7 @@ TASK_NAME_TO_TASK_TYPE = {
     "rotated_detection": TaskType.ROTATED_DETECTION,
     "instance_segmentation": TaskType.INSTANCE_SEGMENTATION,
     "segmentation": TaskType.SEGMENTATION,
+    "anomaly": TaskType.ANOMALY,
     "anomaly_classification": TaskType.ANOMALY_CLASSIFICATION,
     "anomaly_detection": TaskType.ANOMALY_DETECTION,
     "anomaly_segmentation": TaskType.ANOMALY_SEGMENTATION,

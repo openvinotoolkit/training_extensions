@@ -1,5 +1,4 @@
 import json
-import yaml
 from copy import deepcopy
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -7,6 +6,7 @@ from typing import List
 from unittest.mock import MagicMock
 
 import pytest
+import yaml
 
 import otx
 from otx.api.configuration.helper import create as create_conf_hp
@@ -33,7 +33,12 @@ from tests.test_suite.e2e_test_system import e2e_pytest_unit
 CLASSIFCATION_TASK = {TaskType.CLASSIFICATION}
 DETECTION_TASK = {TaskType.DETECTION, TaskType.INSTANCE_SEGMENTATION, TaskType.ROTATED_DETECTION}
 SEGMENTATION_TASK = {TaskType.SEGMENTATION}
-ANOMALY_TASK = {TaskType.ANOMALY_CLASSIFICATION, TaskType.ANOMALY_DETECTION, TaskType.ANOMALY_SEGMENTATION}
+ANOMALY_TASK = {
+    TaskType.ANOMALY,
+    TaskType.ANOMALY_CLASSIFICATION,
+    TaskType.ANOMALY_DETECTION,
+    TaskType.ANOMALY_SEGMENTATION,
+}
 MMCV_TASK = CLASSIFCATION_TASK | DETECTION_TASK | SEGMENTATION_TASK
 ALL_TASK = MMCV_TASK | ANOMALY_TASK
 OTX_ROOT_PATH = Path(otx.__file__).parent
