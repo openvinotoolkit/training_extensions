@@ -7,7 +7,7 @@
 
 from __future__ import annotations
 
-from typing import Literal, Sequence
+from typing import Sequence
 
 from anomalib.models import Stfpm as AnomalibStfpm
 
@@ -21,21 +21,20 @@ class Stfpm(AnomalyMixin, AnomalibStfpm, OTXAnomaly):
     Args:
         layers (Sequence[str]): Feature extractor layers.
         backbone (str, optional): Feature extractor backbone. Defaults to "resnet18".
-        task (Literal[
-                OTXTaskType.ANOMALY_CLASSIFICATION, OTXTaskType.ANOMALY_DETECTION, OTXTaskType.ANOMALY_SEGMENTATION
-            ], optional): Task type of Anomaly Task. Defaults to OTXTaskType.ANOMALY_CLASSIFICATION.
+        task (OTXTaskType.ANOMALY_CLASSIFICATION | OTXTaskType.ANOMALY_DETECTION| OTXTaskType.ANOMALY_SEGMENTATION | str
+           , optional): Task type of Anomaly Task. CLI passes the task type as a string so it needs to be converted to
+            OTXTaskType. Defaults to OTXTaskType.ANOMALY_CLASSIFICATION.
     """
 
     def __init__(
         self,
         layers: Sequence[str] = ["layer1", "layer2", "layer3"],
         backbone: str = "resnet18",
-        task: Literal[
-            OTXTaskType.ANOMALY_CLASSIFICATION,
-            OTXTaskType.ANOMALY_DETECTION,
-            OTXTaskType.ANOMALY_SEGMENTATION,
-        ] = OTXTaskType.ANOMALY_CLASSIFICATION,
+        task: OTXTaskType.ANOMALY_CLASSIFICATION
+        | OTXTaskType.ANOMALY_DETECTION
+        | OTXTaskType.ANOMALY_SEGMENTATION
+        | str = OTXTaskType.ANOMALY_CLASSIFICATION,
         **kwargs,
     ) -> None:
         super().__init__(layers=layers, backbone=backbone)
-        self.task = task
+        self.task = OTXTaskType(task)

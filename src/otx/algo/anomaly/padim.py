@@ -7,8 +7,6 @@
 
 from __future__ import annotations
 
-from typing import Literal
-
 from anomalib.models import Padim as AnomalibPadim
 
 from otx.core.model.anomaly import AnomalyMixin, OTXAnomaly
@@ -23,9 +21,9 @@ class Padim(AnomalyMixin, AnomalibPadim, OTXAnomaly):
         layers (list[str], optional): Feature extractor layers. Defaults to ["layer1", "layer2", "layer3"].
         pre_trained (bool, optional): Pretrained backbone. Defaults to True.
         n_features (int | None, optional): Number of features. Defaults to None.
-        task (Literal[
-                OTXTaskType.ANOMALY_CLASSIFICATION, OTXTaskType.ANOMALY_DETECTION, OTXTaskType.ANOMALY_SEGMENTATION
-            ], optional): Task type of Anomaly Task. Defaults to OTXTaskType.ANOMALY_CLASSIFICATION.
+        task (OTXTaskType.ANOMALY_CLASSIFICATION | OTXTaskType.ANOMALY_DETECTION| OTXTaskType.ANOMALY_SEGMENTATION | str
+           , optional): Task type of Anomaly Task. CLI passes the task type as a string so it needs to be converted to
+            OTXTaskType. Defaults to OTXTaskType.ANOMALY_CLASSIFICATION.
     """
 
     def __init__(
@@ -34,11 +32,9 @@ class Padim(AnomalyMixin, AnomalibPadim, OTXAnomaly):
         layers: list[str] = ["layer1", "layer2", "layer3"],  # noqa: B006
         pre_trained: bool = True,
         n_features: int | None = None,
-        task: Literal[
-            OTXTaskType.ANOMALY_CLASSIFICATION,
-            OTXTaskType.ANOMALY_DETECTION,
-            OTXTaskType.ANOMALY_SEGMENTATION,
-        ] = OTXTaskType.ANOMALY_CLASSIFICATION,
+        task: OTXTaskType.ANOMALY_CLASSIFICATION
+        | OTXTaskType.ANOMALY_DETECTION
+        | OTXTaskType.ANOMALY_SEGMENTATION = OTXTaskType.ANOMALY_CLASSIFICATION,
     ) -> None:
         super().__init__(
             backbone=backbone,
@@ -46,4 +42,4 @@ class Padim(AnomalyMixin, AnomalibPadim, OTXAnomaly):
             pre_trained=pre_trained,
             n_features=n_features,
         )
-        self.task = task
+        self.task = OTXTaskType(task)

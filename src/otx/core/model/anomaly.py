@@ -5,9 +5,10 @@
 from __future__ import annotations
 
 import logging as log
-from typing import TYPE_CHECKING, Any, TypeAlias
+from typing import TYPE_CHECKING, Any, Sequence, TypeAlias
 
 import torch
+from anomalib import TaskType as AnomalibTaskType
 from anomalib.callbacks.metrics import _MetricsCallback
 from anomalib.callbacks.normalization.min_max_normalization import _MinMaxNormalizationCallback
 from anomalib.callbacks.post_processor import _PostProcessorCallback
@@ -31,6 +32,7 @@ from otx.core.types.precision import OTXPrecisionType
 from otx.core.types.task import OTXTaskType
 
 if TYPE_CHECKING:
+    import types
     from pathlib import Path
 
     from anomalib.metrics import AnomalibMetricCollection
@@ -53,7 +55,7 @@ AnomalyModelOutputs: TypeAlias = (
 class OTXAnomaly(OTXModel):
     """Methods used to make OTX model compatible with the Anomalib model."""
 
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(self) -> None:
         super().__init__(label_info=AnomalyLabelInfo())
         self.optimizer: list[OptimizerCallable] | OptimizerCallable = None
         self.scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = None
@@ -68,11 +70,27 @@ class OTXAnomaly(OTXModel):
         self.image_metrics: AnomalibMetricCollection
         self.pixel_metrics: AnomalibMetricCollection
 
+    def save_hyperparameters(
+        self,
+        *args: Any,  # noqa: ANN401
+        ignore: Sequence[str] | str | None = None,
+        frame: types.FrameType | None = None,
+        logger: bool = True,
+    ) -> None:
+        """Ignore task from hyperparameters.
+
+        Need to ignore task from hyperparameters as it is passed as a string from the CLI. This causes
+        ``log_hyperparameters`` to fail as it does not match with instance of ``OTXTaskType`` from
+        ``OTXDataModule``.
+        """
+        ignore = ["task"] if ignore is None else [*ignore, "task"]
+        return super().save_hyperparameters(*args, ignore=ignore, frame=frame, logger=logger)
+
     def on_save_checkpoint(self, checkpoint: dict[str, Any]) -> None:
         """Callback on saving checkpoint."""
         super().on_save_checkpoint(checkpoint)  # type: ignore[misc]
 
-        attrs = ["_task_type", "_input_size", "image_threshold", "pixel_threshold"]
+        attrs = ["_input_size", "image_threshold", "pixel_threshold"]
         checkpoint["anomaly"] = {key: getattr(self, key, None) for key in attrs}
 
     def on_load_checkpoint(self, checkpoint: dict[str, Any]) -> None:
@@ -113,6 +131,17 @@ class OTXAnomaly(OTXModel):
         """This does not follow OTX metric configuration."""
         return
 
+    @property
+    def anomalib_task(self) -> AnomalibTaskType:
+        """Convert OTX task type to Anomalib task type."""
+        if self.task == OTXTaskType.ANOMALY_CLASSIFICATION:
+            task_type = AnomalibTaskType.CLASSIFICATION
+        elif self.task == OTXTaskType.ANOMALY_DETECTION:
+            task_type = AnomalibTaskType.DETECTION
+        elif self.task == OTXTaskType.ANOMALY_SEGMENTATION:
+            task_type = AnomalibTaskType.SEGMENTATION
+        return task_type
+
     def configure_callbacks(self) -> list[Callback]:
         """Get all necessary callbacks required for training and post-processing on Anomalib models."""
         image_metrics = ["AUROC", "F1Score"]
@@ -122,7 +151,7 @@ class OTXAnomaly(OTXModel):
             _MinMaxNormalizationCallback(),  # ModelAPI only supports min-max normalization as of now
             _ThresholdCallback(threshold="F1AdaptiveThreshold"),
             _MetricsCallback(
-                task=self.task,
+                task=self.anomalib_task,
                 image_metrics=image_metrics,
                 pixel_metrics=pixel_metrics,
             ),
