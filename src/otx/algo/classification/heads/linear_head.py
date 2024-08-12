@@ -28,7 +28,6 @@ class LinearClsHead(BaseModule):
         num_classes (int): Number of categories excluding the background
             category.
         in_channels (int): Number of channels in the input feature map.
-        topk (int | Tuple[int]): Top-k accuracy. Defaults to ``(1, )``.
         cal_acc (bool): Whether to calculate accuracy during training.
             If you use batch augmentations like Mixup and CutMix during
             training, it is pointless to calculate accuracy.
@@ -41,7 +40,6 @@ class LinearClsHead(BaseModule):
         self,
         num_classes: int,
         in_channels: int,
-        topk: int | tuple = (1,),
         init_cfg: dict = {"type": "Normal", "layer": "Linear", "std": 0.01},  # noqa: B006
         **kwargs,
     ):
@@ -49,8 +47,6 @@ class LinearClsHead(BaseModule):
         self._is_init = False
 
         self.init_cfg = copy.deepcopy(init_cfg)
-
-        self.topk = topk
 
         self.in_channels = in_channels
         self.num_classes = num_classes

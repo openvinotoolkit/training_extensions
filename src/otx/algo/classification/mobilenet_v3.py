@@ -121,7 +121,6 @@ class MobileNetV3ForMulticlassCls(OTXMulticlassClsModel):
             head=LinearClsHead(
                 num_classes=num_classes,
                 in_channels=in_channels,
-                topk=(1, 5) if num_classes >= 5 else (1,),
             ),
             loss=loss,
         )
@@ -196,10 +195,10 @@ class MobileNetV3ForMultilabelCls(OTXMultilabelClsModel):
                 in_channels=960,
                 hid_channels=1280,
                 normalized=True,
-                scale=7.0,
                 activation_callable=nn.PReLU(),
             ),
             loss=AsymmetricAngularLossWithIgnore(gamma_pos=0.0, gamma_neg=1.0, reduction="sum"),
+            loss_scale=7.0,
         )
 
     def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.") -> dict:

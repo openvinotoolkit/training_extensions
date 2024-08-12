@@ -116,6 +116,7 @@ class TVClassificationModel(nn.Module):
         backbone (TVModelType): The backbone model to use for feature extraction.
         num_classes (int): The number of classes for the classification task.
         loss (Callable | None, optional): The loss function to use.
+        loss_scale (float, optional): Multiply by that scale before calculating loss.
         freeze_backbone (bool, optional): Whether to freeze the backbone model. Defaults to False.
         task (Literal[OTXTaskType.MULTI_CLASS_CLS, OTXTaskType.MULTI_LABEL_CLS, OTXTaskType.H_LABEL_CLS], optional):
             The type of classification task.
@@ -133,6 +134,7 @@ class TVClassificationModel(nn.Module):
         backbone: TVModelType,
         num_classes: int,
         loss: nn.Module,
+        loss_scale: float = 1.0,
         freeze_backbone: bool = False,
         task: Literal[
             OTXTaskType.MULTI_CLASS_CLS,
@@ -159,6 +161,7 @@ class TVClassificationModel(nn.Module):
 
         self.softmax = nn.Softmax(dim=-1)
         self.loss_module = loss
+        self.loss_scale = loss_scale
         self.neck: nn.Module | None = None
         self.head = self._get_head(net)
 
@@ -203,7 +206,6 @@ class TVClassificationModel(nn.Module):
             return MultiLabelLinearClsHead(
                 num_classes=self.num_classes,
                 in_channels=feature_channel,
-                scale=7.0,
                 normalized=True,
             )
         if self.task == OTXTaskType.H_LABEL_CLS:
@@ -471,10 +473,12 @@ class OTXTVModel(OTXModel):
         )
 
     def _create_model(self) -> nn.Module:
+        loss_scale = 1.0
         if self.task == OTXTaskType.MULTI_CLASS_CLS:
             loss = nn.CrossEntropyLoss(reduction="none")
         else:
             loss = AsymmetricAngularLossWithIgnore(gamma_pos=0.0, gamma_neg=1.0, reduction="sum")
+            loss_scale = 7.0
         head_config = {}
         if self.task == OTXTaskType.H_LABEL_CLS:
             if not isinstance(self.label_info, HLabelInfo):
@@ -486,6 +490,7 @@ class OTXTVModel(OTXModel):
             backbone=self.backbone,
             num_classes=self.num_classes,
             loss=loss,
+            loss_scale=loss_scale,
             freeze_backbone=self.freeze_backbone,
             task=self.task,
             train_type=self.train_type,

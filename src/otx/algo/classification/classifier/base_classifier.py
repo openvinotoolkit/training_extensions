@@ -46,6 +46,8 @@ class ImageClassifier(BaseModule):
         neck: nn.Module | None,
         head: nn.Module,
         loss: nn.Module,
+        loss_scale: float = 1.0,
+        optimize_gap: bool = True,
         init_cfg: dict | list[dict] | None = None,
     ):
         super().__init__(init_cfg=init_cfg)
@@ -57,12 +59,13 @@ class ImageClassifier(BaseModule):
         self.neck = neck
         self.head = head
         self.loss_module = loss
+        self.loss_scale = loss_scale
         self.is_ignored_label_loss = "valid_label_mask" in inspect.getfullargspec(self.loss_module.forward).args
 
         self.explainer = ReciproCAM(
             self._head_forward_fn,
             num_classes=head.num_classes,
-            optimize_gap=True,
+            optimize_gap=optimize_gap,
         )
 
     def forward(
@@ -142,7 +145,7 @@ class ImageClassifier(BaseModule):
         Returns:
             dict[str, Tensor]: a dictionary of loss components
         """
-        cls_score = self.extract_feat(inputs, stage="head")
+        cls_score = self.extract_feat(inputs, stage="head") * self.loss_scale
         imgs_info = kwargs.pop("imgs_info", None)
         if imgs_info is not None and self.is_ignored_label_loss:
             kwargs["valid_label_mask"] = get_valid_label_mask(imgs_info, self.head.num_classes).to(cls_score.device)

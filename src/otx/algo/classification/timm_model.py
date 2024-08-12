@@ -108,7 +108,6 @@ class TimmModelForMulticlassCls(OTXMulticlassClsModel):
             head=LinearClsHead(
                 num_classes=num_classes,
                 in_channels=backbone.num_features,
-                topk=(1, 5) if num_classes >= 5 else (1,),
             ),
             loss=loss,
         )
@@ -186,9 +185,9 @@ class TimmModelForMultilabelCls(OTXMultilabelClsModel):
                 num_classes=num_classes,
                 in_channels=backbone.num_features,
                 normalized=True,
-                scale=7.0,
             ),
             loss=AsymmetricAngularLossWithIgnore(gamma_pos=0.0, gamma_neg=1.0, reduction="sum"),
+            loss_scale=7.0,
         )
 
     def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.") -> dict:

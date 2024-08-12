@@ -22,6 +22,7 @@ class HLabelClassifier(ImageClassifier):
         backbone: nn.Module,
         neck: nn.Module | None,
         head: nn.Module,
+        optimize_gap: bool = True,
         init_cfg: dict | list[dict] | None = None,
     ):
         super().__init__(
@@ -29,6 +30,7 @@ class HLabelClassifier(ImageClassifier):
             neck=neck,
             head=head,
             loss=head.multiclass_loss,
+            optimize_gap=optimize_gap,
             init_cfg=init_cfg,
         )
 

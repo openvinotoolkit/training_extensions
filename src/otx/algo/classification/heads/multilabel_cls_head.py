@@ -68,9 +68,6 @@ class MultiLabelClsHead(BaseModule):
         num_classes: int,
         in_channels: int,
         normalized: bool = False,
-        scale: float = 1.0,
-        thr: float | None = None,
-        topk: int | None = None,
         init_cfg: dict | None = None,
         **kwargs,
     ):
@@ -79,13 +76,6 @@ class MultiLabelClsHead(BaseModule):
         self.num_classes = num_classes
         self.in_channels = in_channels
         self.normalized = normalized
-        self.scale = scale
-
-        if thr is None and topk is None:
-            thr = 0.5
-
-        self.thr = thr
-        self.topk = topk
 
     # ------------------------------------------------------------------------ #
     # Copy from mmpretrain.models.heads.MultiLabelClsHead
@@ -144,9 +134,6 @@ class MultiLabelLinearClsHead(MultiLabelClsHead):
         num_classes: int,
         in_channels: int,
         normalized: bool = False,
-        scale: float = 1.0,
-        thr: float | None = None,
-        topk: int | None = None,
         init_cfg: dict | None = None,
         **kwargs,
     ):
@@ -154,9 +141,6 @@ class MultiLabelLinearClsHead(MultiLabelClsHead):
             num_classes=num_classes,
             in_channels=in_channels,
             normalized=normalized,
-            scale=scale,
-            thr=thr,
-            topk=topk,
             init_cfg=init_cfg,
             **kwargs,
         )
@@ -205,11 +189,8 @@ class MultiLabelNonLinearClsHead(MultiLabelClsHead):
         in_channels: int,
         hid_channels: int = 1280,
         activation_callable: Callable[[], nn.Module] = nn.ReLU,
-        scale: float = 1.0,
         dropout: bool = False,
         normalized: bool = False,
-        thr: float | None = None,
-        topk: int | None = None,
         init_cfg: dict | None = None,
         **kwargs,
     ):
@@ -217,9 +198,6 @@ class MultiLabelNonLinearClsHead(MultiLabelClsHead):
             num_classes=num_classes,
             in_channels=in_channels,
             normalized=normalized,
-            scale=scale,
-            thr=thr,
-            topk=topk,
             init_cfg=init_cfg,
             **kwargs,
         )

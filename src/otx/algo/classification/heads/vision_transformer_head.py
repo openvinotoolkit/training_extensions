@@ -34,13 +34,11 @@ class VisionTransformerClsHead(BaseModule):
         self,
         num_classes: int,
         in_channels: int,
-        topk: int | tuple = (1,),
         hidden_dim: int | None = None,
         init_cfg: dict = {"type": "Constant", "layer": "Linear", "val": 0},  # noqa: B006
         **kwargs,
     ):
         super().__init__(init_cfg=init_cfg, **kwargs)
-        self.topk = topk
 
         self.in_channels = in_channels
         self.num_classes = num_classes
