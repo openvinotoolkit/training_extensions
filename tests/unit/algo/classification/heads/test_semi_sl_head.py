@@ -4,7 +4,6 @@
 import pytest
 import torch
 from otx.algo.classification.heads import OTXSemiSLLinearClsHead
-from torch import nn
 
 
 class TestSemiSLClsHead:
@@ -14,7 +13,6 @@ class TestSemiSLClsHead:
         return OTXSemiSLLinearClsHead(
             num_classes=10,
             in_channels=10,
-            loss=nn.CrossEntropyLoss(reduction="none"),
         )
 
     def test_build_type_error(self):
@@ -23,14 +21,12 @@ class TestSemiSLClsHead:
             OTXSemiSLLinearClsHead(
                 num_classes=[1],
                 in_channels=10,
-                loss=nn.CrossEntropyLoss(reduction="none"),
             )
 
         with pytest.raises(TypeError):
             OTXSemiSLLinearClsHead(
                 num_classes=10,
                 in_channels=[1],
-                loss=nn.CrossEntropyLoss(reduction="none"),
             )
 
     def test_head_initialize(self, fxt_semi_sl_head):
@@ -56,16 +52,6 @@ class TestSemiSLClsHead:
                 "unlabeled_strong": torch.tensor([]),
             },
         }
-
-    def test_loss(self, fxt_semi_sl_head, fxt_head_inputs):
-        """Verifies that SemiSLClsHead forward function works."""
-        loss = fxt_semi_sl_head.loss(**fxt_head_inputs)
-        # Check that the loss is always non-negative
-        assert loss >= 0
-
-        # Check that the loss is proportional to the size of the input
-        size = sum(v.numel() for v in fxt_head_inputs["feats"].values())
-        assert loss <= size
 
     def test_classwise_acc(self, fxt_semi_sl_head, fxt_head_inputs):
         """Verifies that SemiSLClsHead classwise_acc function works."""
