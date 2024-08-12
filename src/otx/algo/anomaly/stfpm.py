@@ -30,8 +30,8 @@ class Stfpm(OTXAnomaly, OTXModel, AnomalibStfpm):
         layers (Sequence[str]): Feature extractor layers.
         backbone (str, optional): Feature extractor backbone. Defaults to "resnet18".
         task (Literal[
-                OTXTaskType.ANOMALY_CLASSIFICATION, OTXTaskType.ANOMALY_DETECTION, OTXTaskType.ANOMALY_SEGMENTATION
-            ], optional): Task type of Anomaly Task. Defaults to OTXTaskType.ANOMALY_CLASSIFICATION.
+                OTXTaskType.ANOMALY, OTXTaskType.ANOMALY_DETECTION, OTXTaskType.ANOMALY_SEGMENTATION
+            ], optional): Task type of Anomaly Task. Defaults to OTXTaskType.ANOMALY.
     """
 
     def __init__(
@@ -40,10 +40,9 @@ class Stfpm(OTXAnomaly, OTXModel, AnomalibStfpm):
         backbone: str = "resnet18",
         task: Literal[
             OTXTaskType.ANOMALY,
-            OTXTaskType.ANOMALY_CLASSIFICATION,
             OTXTaskType.ANOMALY_DETECTION,
             OTXTaskType.ANOMALY_SEGMENTATION,
-        ] = OTXTaskType.ANOMALY_CLASSIFICATION,
+        ] = OTXTaskType.ANOMALY,
         **kwargs,
     ) -> None:
         OTXAnomaly.__init__(self)

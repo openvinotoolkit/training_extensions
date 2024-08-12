@@ -74,7 +74,7 @@ class AnomalyDataset(OTXDataset):
             torch.tensor(0.0, dtype=torch.long) if "good" in datumaro_item.id else torch.tensor(1.0, dtype=torch.long)
         )
         item: AnomalyClassificationDataItem | AnomalySegmentationDataItem | AnomalyDetectionDataItem
-        if self.task_type in (OTXTaskType.ANOMALY_CLASSIFICATION, OTXTaskType.ANOMALY):
+        if self.task_type in (OTXTaskType.ANOMALY):
             item = AnomalyClassificationDataItem(
                 image=img_data,
                 img_info=ImageInfo(
@@ -145,7 +145,7 @@ class AnomalyDataset(OTXDataset):
     @property
     def collate_fn(self) -> Callable:
         """Collection function to collect SegDataEntity into SegBatchDataEntity in data loader."""
-        if self.task_type == OTXTaskType.ANOMALY_CLASSIFICATION:
+        if self.task_type == OTXTaskType.ANOMALY:
             return AnomalyClassificationDataBatch.collate_fn
         if self.task_type == OTXTaskType.ANOMALY_SEGMENTATION:
             return AnomalySegmentationDataBatch.collate_fn

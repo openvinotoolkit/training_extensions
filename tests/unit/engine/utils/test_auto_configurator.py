@@ -136,7 +136,6 @@ class TestAutoConfigurator:
             OTXTaskType.ANOMALY,
             OTXTaskType.ANOMALY_SEGMENTATION,
             OTXTaskType.ANOMALY_DETECTION,
-            OTXTaskType.ANOMALY_CLASSIFICATION,
         }:
             pytest.xfail(reason="Not working")
 
@@ -153,7 +152,6 @@ class TestAutoConfigurator:
             OTXTaskType.ANOMALY,
             OTXTaskType.ANOMALY_SEGMENTATION,
             OTXTaskType.ANOMALY_DETECTION,
-            OTXTaskType.ANOMALY_CLASSIFICATION,
         }:
             pytest.xfail(reason="Not working")
 

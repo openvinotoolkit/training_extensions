@@ -32,8 +32,8 @@ class Padim(OTXAnomaly, OTXModel, AnomalibPadim):
         pre_trained (bool, optional): Pretrained backbone. Defaults to True.
         n_features (int | None, optional): Number of features. Defaults to None.
         task (Literal[
-                OTXTaskType.ANOMALY_CLASSIFICATION, OTXTaskType.ANOMALY_DETECTION, OTXTaskType.ANOMALY_SEGMENTATION
-            ], optional): Task type of Anomaly Task. Defaults to OTXTaskType.ANOMALY_CLASSIFICATION.
+                OTXTaskType.ANOMALY, OTXTaskType.ANOMALY_DETECTION, OTXTaskType.ANOMALY_SEGMENTATION
+            ], optional): Task type of Anomaly Task. Defaults to OTXTaskType.ANOMALY.
     """
 
     def __init__(
@@ -44,10 +44,9 @@ class Padim(OTXAnomaly, OTXModel, AnomalibPadim):
         n_features: int | None = None,
         task: Literal[
             OTXTaskType.ANOMALY,
-            OTXTaskType.ANOMALY_CLASSIFICATION,
             OTXTaskType.ANOMALY_DETECTION,
             OTXTaskType.ANOMALY_SEGMENTATION,
-        ] = OTXTaskType.ANOMALY_CLASSIFICATION,
+        ] = OTXTaskType.ANOMALY,
     ) -> None:
         OTXAnomaly.__init__(self)
         OTXModel.__init__(self, label_info=AnomalyLabelInfo())
