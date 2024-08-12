@@ -7,6 +7,7 @@ from pathlib import Path
 
 import cv2
 import pytest
+import torch
 import yaml
 from otx.core.types.task import OTXTaskType
 from otx.engine.utils.auto_configurator import DEFAULT_CONFIG_PER_TASK
@@ -555,3 +556,66 @@ def test_otx_adaptive_bs_e2e(
     ]
 
     run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)
+
+
+@pytest.mark.parametrize("task", pytest.TASK_LIST)
+def test_otx_configurable_input_size_e2e(
+    task: OTXTaskType,
+    tmp_path: Path,
+    fxt_accelerator: str,
+    fxt_target_dataset_per_task: dict,
+    fxt_cli_override_command_per_task: dict,
+    fxt_open_subprocess: bool,
+) -> None:
+    """
+    Test adaptive batch size e2e commands with default template of each task.
+
+    Args:
+        task (OTXTaskType): The task to run adaptive batch size with.
+        tmp_path (Path): The temporary path for storing the training outputs.
+
+    Returns:
+        None
+    """
+    if task not in DEFAULT_CONFIG_PER_TASK:
+        pytest.skip(f"Task {task} is not supported in the auto-configuration.")
+    if task in [
+        OTXTaskType.ZERO_SHOT_VISUAL_PROMPTING,
+        OTXTaskType.ANOMALY_CLASSIFICATION,
+        OTXTaskType.ANOMALY_DETECTION,
+        OTXTaskType.ANOMALY_SEGMENTATION,
+        OTXTaskType.KEYPOINT_DETECTION,
+    ]:
+        pytest.skip(f"{task} doesn't support configurable input size.")
+
+    task = task.lower()
+    tmp_path_cfg_ipt_size = tmp_path / f"otx_configurable_input_size_{task}"
+    tmp_path_cfg_ipt_size.mkdir(parents=True)
+
+    command_cfg = [
+        "otx",
+        "train",
+        "--task",
+        task.upper(),
+        "--data_root",
+        fxt_target_dataset_per_task[task],
+        "--work_dir",
+        str(tmp_path_cfg_ipt_size),
+        "--engine.device",
+        fxt_accelerator,
+        "--data.input_size",
+        str(448),
+        "--max_epoch",
+        "1",
+        *fxt_cli_override_command_per_task[task],
+    ]
+
+    run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)
+
+    best_ckpt_files = list(tmp_path_cfg_ipt_size.rglob("best_checkpoint.ckpt"))
+    assert len(best_ckpt_files) != 0
+    best_ckpt = torch.load(best_ckpt_files[0])
+    assert best_ckpt["hyper_parameters"]["input_size"] == (448, 448)
+    for param_name in best_ckpt["datamodule_hyper_parameters"]:
+        if "subset" in param_name:
+            assert best_ckpt["datamodule_hyper_parameters"][param_name].input_size == 448
