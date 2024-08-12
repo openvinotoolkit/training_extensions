@@ -9,7 +9,7 @@ Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/b
 from __future__ import annotations
 
 import math
-from typing import Any, ClassVar, Sequence
+from typing import Any, Callable, ClassVar, Sequence
 
 import torch
 from torch import Tensor, nn
@@ -17,6 +17,7 @@ from torch.nn.modules.batchnorm import _BatchNorm
 
 from otx.algo.common.layers import SPPBottleneck
 from otx.algo.detection.layers import CSPLayer
+from otx.algo.modules.activation import Swish
 from otx.algo.modules.base_module import BaseModule
 from otx.algo.modules.conv_module import Conv2dModule, DepthwiseSeparableConvModule
 
@@ -31,8 +32,8 @@ class Focus(nn.Module):
         stride (int): The stride of the convolution. Default: 1
         norm_cfg (dict): Config dict for normalization layer.
             Default: dict(type='BN', momentum=0.03, eps=0.001).
-        act_cfg (dict): Config dict for activation layer.
-            Default: dict(type='Swish').
+        activation_callable (Callable[..., nn.Module] | None): Activation layer module.
+            Defaults to `Swish`.
     """
 
     def __init__(
@@ -42,11 +43,10 @@ class Focus(nn.Module):
         kernel_size: int = 1,
         stride: int = 1,
         norm_cfg: dict | None = None,
-        act_cfg: dict | None = None,
+        activation_callable: Callable[..., nn.Module] | None = Swish,
     ):
         super().__init__()
         norm_cfg = norm_cfg or {"type": "BN", "momentum": 0.03, "eps": 0.001}
-        act_cfg = act_cfg or {"type": "Swish"}
         self.conv = Conv2dModule(
             in_channels * 4,
             out_channels,
@@ -54,7 +54,7 @@ class Focus(nn.Module):
             stride,
             padding=(kernel_size - 1) // 2,
             norm_cfg=norm_cfg,
-            act_cfg=act_cfg,
+            activation_callable=activation_callable,
         )
 
     def forward(self, x: Tensor) -> Tensor:
@@ -110,8 +110,8 @@ class CSPDarknet(BaseModule):
             layers. Default: (5, 9, 13).
         norm_cfg (dict): Dictionary to construct and config norm layer.
             Default: dict(type='BN', requires_grad=True).
-        act_cfg (dict): Config dict for activation layer.
-            Default: dict(type='LeakyReLU', negative_slope=0.1).
+        activation_callable (Callable[..., nn.Module] | None): Activation layer module.
+            Defaults to ``Swish``.
         norm_eval (bool): Whether to set norm layers to eval mode, namely,
             freeze running stats (mean and var). Note: Effect on Batch Norm
             and its variants only.
@@ -148,7 +148,7 @@ class CSPDarknet(BaseModule):
         arch_ovewrite: list | None = None,
         spp_kernal_sizes: tuple[int, ...] = (5, 9, 13),
         norm_cfg: dict | None = None,
-        act_cfg: dict | None = None,
+        activation_callable: Callable[..., nn.Module] = Swish,
         norm_eval: bool = False,
         init_cfg: dict | list[dict] | None = None,
     ):
@@ -162,7 +162,6 @@ class CSPDarknet(BaseModule):
         }
         super().__init__(init_cfg=init_cfg)
         norm_cfg = norm_cfg or {"type": "BN", "momentum": 0.03, "eps": 0.001}
-        act_cfg = act_cfg or {"type": "Swish"}
 
         arch_setting = self.arch_settings[arch]
         if arch_ovewrite:
@@ -183,7 +182,7 @@ class CSPDarknet(BaseModule):
             int(arch_setting[0][0] * widen_factor),
             kernel_size=3,
             norm_cfg=norm_cfg,
-            act_cfg=act_cfg,
+            activation_callable=activation_callable,
         )
         self.layers = ["stem"]
 
@@ -199,7 +198,7 @@ class CSPDarknet(BaseModule):
                 stride=2,
                 padding=1,
                 norm_cfg=norm_cfg,
-                act_cfg=act_cfg,
+                activation_callable=activation_callable,
             )
             stage.append(conv_layer)
             if use_spp:
@@ -208,7 +207,7 @@ class CSPDarknet(BaseModule):
                     out_channels,
                     kernel_sizes=spp_kernal_sizes,
                     norm_cfg=norm_cfg,
-                    act_cfg=act_cfg,
+                    activation_callable=activation_callable,
                 )
                 stage.append(spp)
             csp_layer = CSPLayer(
@@ -218,7 +217,7 @@ class CSPDarknet(BaseModule):
                 add_identity=add_identity,
                 use_depthwise=use_depthwise,
                 norm_cfg=norm_cfg,
-                act_cfg=act_cfg,
+                activation_callable=activation_callable,
             )
             stage.append(csp_layer)
             self.add_module(f"stage{i + 1}", nn.Sequential(*stage))

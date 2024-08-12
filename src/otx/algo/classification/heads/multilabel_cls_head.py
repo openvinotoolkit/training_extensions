@@ -177,7 +177,8 @@ class MultiLabelNonLinearClsHead(MultiLabelClsHead):
         num_classes (int): Number of categories.
         in_channels (int): Number of channels in the input feature map.
         hid_channels (int): Number of channels in the hidden feature map.
-        act_cfg (dict | optional): The configuration of the activation function.
+        activation_callable (Callable[..., nn.Module]): Activation layer module.
+            Defaults to nn.ReLU.
         scale (float): Positive scale parameter.
         dropout (bool): Whether use the dropout or not.
         normalized (bool): Normalize input features and weights in the last linar layer.

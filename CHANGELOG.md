@@ -35,6 +35,8 @@ All notable changes to this project will be documented in this file.
   (<https://github.com/openvinotoolkit/training_extensions/pull/3759>)
 - Enable to use polygon and bitmap mask as prompt inputs for zero-shot learning
   (<https://github.com/openvinotoolkit/training_extensions/pull/3769>)
+- Refactoring `ConvModule` by removing `conv_cfg` and `act_cfg`
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3783>, <https://github.com/openvinotoolkit/training_extensions/pull/3809>)
 
 ### Bug fixes
 

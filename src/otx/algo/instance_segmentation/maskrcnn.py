@@ -7,6 +7,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from torch import nn
 from torchvision.ops import RoIAlign
 
 from otx.algo.common.backbones import ResNet, build_model_including_pytorchcv
@@ -330,7 +331,7 @@ class MaskRCNNEfficientNet(MaskRCNN):
                 "out_indices": [2, 3, 4, 5],
                 "frozen_stages": -1,
                 "pretrained": True,
-                "activation_cfg": {"type": "torch_swish"},
+                "activation_callable": nn.SiLU,
                 "norm_cfg": {"type": "BN", "requires_grad": True},
             },
         )

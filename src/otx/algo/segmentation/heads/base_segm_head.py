@@ -7,6 +7,7 @@ from __future__ import annotations
 
 from abc import ABCMeta, abstractmethod
 from pathlib import Path
+from typing import Callable
 
 import torch
 from torch import nn
@@ -16,7 +17,23 @@ from otx.algo.utils.mmengine_utils import load_checkpoint_to_model, load_from_ht
 
 
 class BaseSegmHead(nn.Module, metaclass=ABCMeta):
-    """Base class for segmentation heads."""
+    """Base class for segmentation heads.
+
+    Args:
+        in_channels (int | list[int]): Number of input channels.
+        channels (int): Number of channels in the feature map.
+        num_classes (int): Number of classes for segmentation.
+        dropout_ratio (float, optional): The dropout ratio. Defaults to 0.1.
+        norm_cfg (Optional[ConfigType], optional): Config for normalization layer.
+            Defaults to None.
+        activation_callable (Callable[..., nn.Module] | None): Activation layer module.
+            Defaults to `nn.ReLU`.
+        in_index (int, list[int], optional): Input index. Defaults to -1.
+        input_transform (Optional[str], optional): Input transform type.
+            Defaults to None.
+        ignore_index (int, optional): The index to be ignored. Defaults to 255.
+        align_corners (bool, optional): Whether to align corners. Defaults to False.
+    """
 
     def __init__(
         self,
@@ -25,39 +42,21 @@ class BaseSegmHead(nn.Module, metaclass=ABCMeta):
         num_classes: int,
         dropout_ratio: float = 0.1,
         norm_cfg: dict[str, str] | None = None,
-        act_cfg: dict[str, str] | None = None,
+        activation_callable: Callable[..., nn.Module] | None = nn.ReLU,
         in_index: int | list[int] = -1,
         input_transform: str | None = None,
         ignore_index: int = 255,
         align_corners: bool = False,
         pretrained_weights: str | None = None,
     ) -> None:
-        """Initialize the BaseSegmHead.
-
-        Args:
-            in_channels (int | list[int]): Number of input channels.
-            channels (int): Number of channels in the feature map.
-            num_classes (int): Number of classes for segmentation.
-            dropout_ratio (float, optional): The dropout ratio. Defaults to 0.1.
-            norm_cfg (Optional[ConfigType], optional): Config for normalization layer.
-                Defaults to None.
-            act_cfg (Dict[str, Union[str, Dict]], optional): Activation config.
-                Defaults to dict(type='ReLU').
-            in_index (int, list[int], optional): Input index. Defaults to -1.
-            input_transform (Optional[str], optional): Input transform type.
-                Defaults to None.
-            ignore_index (int, optional): The index to be ignored. Defaults to 255.
-            align_corners (bool, optional): Whether to align corners. Defaults to False.
-        """
+        """Initialize the BaseSegmHead."""
         super().__init__()
-        if act_cfg is None:
-            act_cfg = {"type": "ReLU"}
         self.channels = channels
         self.num_classes = num_classes
         self.input_transform = input_transform
         self.dropout_ratio = dropout_ratio
         self.norm_cfg = norm_cfg
-        self.act_cfg = act_cfg
+        self.activation_callable = activation_callable
         if self.input_transform is not None and not isinstance(in_index, list):
             msg = f'"in_index" expects a list, but got {type(in_index)}'
             raise TypeError(msg)

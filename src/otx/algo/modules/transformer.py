@@ -7,13 +7,14 @@
 from __future__ import annotations
 
 import math
+from functools import partial
+from typing import Callable
 
 import torch
 from torch import nn
 
 from otx.algo.modules.base_module import BaseModule, Sequential
 
-from .activation import build_activation_layer
 from .drop import build_dropout
 from .norm import build_norm_layer
 
@@ -252,8 +253,8 @@ class FFN(BaseModule):
             Defaults: 1024.
         num_fcs (int, optional): The number of fully-connected layers in
             FFNs. Default: 2.
-        act_cfg (dict, optional): The activation config for FFNs.
-            Default: dict(type='ReLU')
+        activation_callable (Callable[..., nn.Module]): Activation layer module.
+            Defaults to `partial(nn.ReLU, inplace=True)`.
         ffn_drop (float, optional): Probability of an element to be
             zeroed in FFN. Default 0.0.
         add_identity (bool, optional): Whether to add the
@@ -269,7 +270,7 @@ class FFN(BaseModule):
         embed_dims: int = 256,
         feedforward_channels: int = 1024,
         num_fcs: int = 2,
-        act_cfg: dict = {"type": "ReLU", "inplace": True},  # noqa: B006
+        activation_callable: Callable[..., nn.Module] = partial(nn.ReLU, inplace=True),
         ffn_drop: float = 0.0,
         dropout_layer: dict | None = None,
         add_identity: bool = True,
@@ -289,7 +290,7 @@ class FFN(BaseModule):
             layers.append(
                 Sequential(
                     nn.Linear(in_channels, feedforward_channels),
-                    build_activation_layer(act_cfg),
+                    activation_callable(),
                     nn.Dropout(ffn_drop),
                 ),
             )

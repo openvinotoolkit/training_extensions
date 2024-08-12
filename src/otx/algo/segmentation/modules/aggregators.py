@@ -68,7 +68,7 @@ class IterativeAggregator(nn.Module):
                         kernel_size=1,
                         stride=1,
                         norm_cfg=norm_cfg,
-                        act_cfg={"type": "ReLU"},
+                        activation_callable=nn.ReLU,
                     ),
                 )
 
@@ -85,9 +85,9 @@ class IterativeAggregator(nn.Module):
                     stride=1,
                     padding=1,
                     norm_cfg=norm_cfg,
-                    act_cfg={"type": "ReLU"},
-                    dw_act_cfg=None,
-                    pw_act_cfg={"type": "ReLU"},
+                    activation_callable=nn.ReLU,
+                    dw_activation_callable=None,
+                    pw_activation_callable=nn.ReLU,
                 ),
             )
 
@@ -99,7 +99,7 @@ class IterativeAggregator(nn.Module):
                         kernel_size=1,
                         stride=1,
                         norm_cfg=norm_cfg,
-                        act_cfg={"type": "ReLU"},
+                        activation_callable=nn.ReLU,
                     ),
                 )
             else:
