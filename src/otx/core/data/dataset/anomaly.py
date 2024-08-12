@@ -74,7 +74,7 @@ class AnomalyDataset(OTXDataset):
             torch.tensor(0.0, dtype=torch.long) if "good" in datumaro_item.id else torch.tensor(1.0, dtype=torch.long)
         )
         item: AnomalyClassificationDataItem | AnomalySegmentationDataItem | AnomalyDetectionDataItem
-        if self.task_type in (OTXTaskType.ANOMALY):
+        if self.task_type == OTXTaskType.ANOMALY:
             item = AnomalyClassificationDataItem(
                 image=img_data,
                 img_info=ImageInfo(
