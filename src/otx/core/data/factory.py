@@ -94,7 +94,6 @@ class OTXDatasetFactory:
 
         if task in (
             OTXTaskType.ANOMALY,
-            OTXTaskType.ANOMALY_CLASSIFICATION,
             OTXTaskType.ANOMALY_DETECTION,
             OTXTaskType.ANOMALY_SEGMENTATION,
         ):

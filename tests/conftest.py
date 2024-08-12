@@ -468,7 +468,6 @@ def fxt_hlabel_multilabel_info() -> HLabelInfo:
 def fxt_xpu_support_task() -> list[OTXTaskType]:
     return [
         OTXTaskType.ANOMALY,
-        OTXTaskType.ANOMALY_CLASSIFICATION,
         OTXTaskType.ANOMALY_DETECTION,
         OTXTaskType.ANOMALY_SEGMENTATION,
         OTXTaskType.MULTI_CLASS_CLS,

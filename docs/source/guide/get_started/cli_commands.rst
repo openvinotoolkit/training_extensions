@@ -214,13 +214,13 @@ Find
     (otx) ...$ otx find --help
     ╭─ Arguments ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
     │ Usage: otx [options] find [-h]                                                                                                                                                            │
-    │                           [--task {ACTION_CLASSIFICATION,ACTION_DETECTION,ANOMALY_CLASSIFICATION,ANOMALY_DETECTION,ANOMALY_SEGMENTATION,MULTI_CLASS_CLS,MULTI_LABEL_CLS,H_LABEL_CLS,DETEC │
+    │                           [--task {ACTION_CLASSIFICATION,ACTION_DETECTION,ANOMALY,ANOMALY_DETECTION,ANOMALY_SEGMENTATION,MULTI_CLASS_CLS,MULTI_LABEL_CLS,H_LABEL_CLS,DETEC │
     │                           [--pattern PATTERN]                                                                                                                                             │
     │                                                                                                                                                                                           │
     │                                                                                                                                                                                           │
     │ Options:                                                                                                                                                                                  │
     │   -h, --help            Show this help message and exit.                                                                                                                                  │
-    │   --task {ACTION_CLASSIFICATION,ACTION_DETECTION,ANOMALY_CLASSIFICATION,ANOMALY_DETECTION,ANOMALY_SEGMENTATION,MULTI_CLASS_CLS,MULTI_LABEL_CLS,H_LABEL_CLS,DETECTION,ROTATED_DETECTION,DE │
+    │   --task {ACTION_CLASSIFICATION,ACTION_DETECTION,ANOMALY,ANOMALY_DETECTION,ANOMALY_SEGMENTATION,MULTI_CLASS_CLS,MULTI_LABEL_CLS,H_LABEL_CLS,DETECTION,ROTATED_DETECTION,DE │
     │                         Value for filtering by task. Default is None, which shows all recipes. (type: None, default: None)                                                                │
     │   --pattern PATTERN     This allows you to filter the model name of the recipe. For example, if you want to find all models that contain the word 'efficient', you can use '--pattern     │
     │                         efficient' (type: None, default: None)                                                                                                                            │

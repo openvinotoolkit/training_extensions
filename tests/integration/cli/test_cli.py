@@ -9,9 +9,9 @@ import cv2
 import pytest
 import torch
 import yaml
+
 from otx.core.types.task import OTXTaskType
 from otx.engine.utils.auto_configurator import DEFAULT_CONFIG_PER_TASK
-
 from tests.utils import ExportCase2Test, run_main
 
 
@@ -397,7 +397,7 @@ def test_otx_ov_test(
         "h_label_cls",
         "visual_prompting",
         "zero_shot_visual_prompting",
-        "anomaly_classification",
+        "anomaly",
         "anomaly_detection",
         "anomaly_segmentation",
         "action_classification",

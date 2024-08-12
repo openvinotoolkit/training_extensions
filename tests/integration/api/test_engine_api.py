@@ -75,7 +75,6 @@ def test_engine_from_config(
         OTXTaskType.H_LABEL_CLS,
         OTXTaskType.ROTATED_DETECTION,
         OTXTaskType.ANOMALY,
-        OTXTaskType.ANOMALY_CLASSIFICATION,
         OTXTaskType.ANOMALY_DETECTION,
         OTXTaskType.ANOMALY_SEGMENTATION,
     ]:

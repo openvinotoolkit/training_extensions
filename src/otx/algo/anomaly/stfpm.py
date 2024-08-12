@@ -42,7 +42,6 @@ class Stfpm(OTXAnomaly, AnomalibStfpm):
         backbone: str = "resnet18",
         task: Literal[
             OTXTaskType.ANOMALY,
-            OTXTaskType.ANOMALY_CLASSIFICATION,
             OTXTaskType.ANOMALY_DETECTION,
             OTXTaskType.ANOMALY_SEGMENTATION,
         ] = OTXTaskType.ANOMALY_CLASSIFICATION,
