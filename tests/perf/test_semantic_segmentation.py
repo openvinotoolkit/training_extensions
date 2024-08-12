@@ -18,36 +18,41 @@ class TestPerfSemanticSegmentation(PerfTestBase):
 
     MODEL_TEST_CASES = [  # noqa: RUF012
         Benchmark.Model(task="semantic_segmentation", name="litehrnet_18", category="balance"),
-        Benchmark.Model(task="semantic_segmentation", name="litehrnet_s", category="speed"),
-        Benchmark.Model(task="semantic_segmentation", name="litehrnet_x", category="accuracy"),
-        Benchmark.Model(task="semantic_segmentation", name="segnext_b", category="other"),
+        # Benchmark.Model(task="semantic_segmentation", name="litehrnet_s", category="speed"),
+        # Benchmark.Model(task="semantic_segmentation", name="litehrnet_x", category="accuracy"),
+        # Benchmark.Model(task="semantic_segmentation", name="segnext_b", category="other"),
         Benchmark.Model(task="semantic_segmentation", name="segnext_s", category="other"),
-        Benchmark.Model(task="semantic_segmentation", name="segnext_t", category="other"),
+        # Benchmark.Model(task="semantic_segmentation", name="segnext_t", category="other"),
         Benchmark.Model(task="semantic_segmentation", name="dino_v2", category="other"),
     ]
 
-    DATASET_TEST_CASES = [
+    DATASET_TEST_CASES = [  # noqa: RUF012
         Benchmark.Dataset(
-            name=f"kvasir_small_{idx}",
-            path=Path("semantic_seg/kvasir_small") / f"{idx}",
+            name="kvasir",
+            path=Path("/home/kprokofi/datasets/kvasir_24"),
             group="small",
-            num_repeat=5,
-            extra_overrides={},
-        )
-        for idx in (1, 2, 3)
-    ] + [
-        Benchmark.Dataset(
-            name="kvasir_medium",
-            path=Path("semantic_seg/kvasir_medium"),
-            group="medium",
-            num_repeat=5,
+            num_repeat=3,
             extra_overrides={},
         ),
         Benchmark.Dataset(
-            name="kvasir_large",
-            path=Path("semantic_seg/kvasir_large"),
+            name="kitti",
+            path=Path("/home/kprokofi/datasets/kitti_36"),
+            group="small",
+            num_repeat=3,
+            extra_overrides={},
+        ),
+        Benchmark.Dataset(
+            name="cityscapes",
+            path=Path("/home/kprokofi/datasets/citiscapes_semisl"),
+            group="medium",
+            num_repeat=3,
+            extra_overrides={},
+        ),
+        Benchmark.Dataset(
+            name="pascal_voc",
+            path=Path("/home/kprokofi/datasets/voc_otx_cut"),
             group="large",
-            num_repeat=5,
+            num_repeat=3,
             extra_overrides={},
         ),
     ]
@@ -102,46 +107,46 @@ class TestPerfSemanticSegmentationSemiSL(TestPerfSemanticSegmentation):
     """Benchmark semantic segmentation."""
 
     MODEL_TEST_CASES = [  # noqa: RUF012
-        Benchmark.Model(task="semantic_segmentation", name="litehrnet_18_semisl", category="balance"),
-        Benchmark.Model(task="semantic_segmentation", name="litehrnet_s_semisl", category="speed"),
-        Benchmark.Model(task="semantic_segmentation", name="litehrnet_x_semisl", category="accuracy"),
-        Benchmark.Model(task="semantic_segmentation", name="segnext_b_semisl", category="other"),
-        Benchmark.Model(task="semantic_segmentation", name="segnext_s_semisl", category="other"),
-        Benchmark.Model(task="semantic_segmentation", name="segnext_t_semisl", category="other"),
-        Benchmark.Model(task="semantic_segmentation", name="dino_v2_semisl", category="other"),
+        Benchmark.Model(task="semantic_segmentation", name="semisl/litehrnet_18_semisl", category="balance"),
+        # Benchmark.Model(task="semantic_segmentation", name="litehrnet_s_semisl", category="speed"),
+        # Benchmark.Model(task="semantic_segmentation", name="litehrnet_x_semisl", category="accuracy"),
+        # Benchmark.Model(task="semantic_segmentation", name="segnext_b_semisl", category="other"),
+        Benchmark.Model(task="semantic_segmentation", name="semisl/segnext_s_semisl", category="other"),
+        # Benchmark.Model(task="semantic_segmentation", name="segnext_t_semisl", category="other"),
+        Benchmark.Model(task="semantic_segmentation", name="semisl/dino_v2_semisl", category="other"),
     ]
 
     DATASET_TEST_CASES = [  # noqa: RUF012
         Benchmark.Dataset(
             name="kvasir",
-            path=Path("semantic_seg/semisl/kvasir_24"),
+            path=Path("/home/kprokofi/datasets/kvasir_24"),
             group="small",
-            num_repeat=5,
-            unlabeled_data_path=Path("semantic_seg/semisl/unlabeled_images/kvasir"),
+            num_repeat=3,
+            unlabeled_data_path=Path("/home/kprokofi/datasets/unlabeled_images_kvasir"),
             extra_overrides={},
         ),
         Benchmark.Dataset(
             name="kitti",
-            path=Path("semantic_seg/semisl/kitti_18"),
+            path=Path("/home/kprokofi/datasets/kitti_36"),
             group="small",
-            num_repeat=5,
-            unlabeled_data_path=Path("semantic_seg/semisl/unlabeled_images/kitti"),
+            num_repeat=3,
+            unlabeled_data_path=Path("/home/kprokofi/datasets/unlabeled_images_kitti"),
             extra_overrides={},
         ),
         Benchmark.Dataset(
             name="cityscapes",
-            path=Path("semantic_seg/semisl/cityscapes"),
+            path=Path("/home/kprokofi/datasets/citiscapes_semisl"),
             group="medium",
-            num_repeat=5,
-            unlabeled_data_path=Path("semantic_seg/semisl/unlabeled_images/cityscapes"),
+            num_repeat=3,
+            unlabeled_data_path=Path("/home/kprokofi/datasets/unlabeled_images_cityscapes"),
             extra_overrides={},
         ),
         Benchmark.Dataset(
             name="pascal_voc",
-            path=Path("semantic_seg/semisl/pascal_voc"),
+            path=Path("/home/kprokofi/datasets/voc_otx_cut"),
             group="large",
-            num_repeat=5,
-            unlabeled_data_path=Path("semantic_seg/semisl/unlabeled_images/pascal_voc"),
+            num_repeat=3,
+            unlabeled_data_path=Path("/home/kprokofi/datasets/unlabeled_images_pascal"),
             extra_overrides={},
         ),
     ]

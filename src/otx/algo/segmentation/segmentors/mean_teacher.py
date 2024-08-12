@@ -31,9 +31,11 @@ class MeanTeacher(nn.Module):
     def __init__(
         self,
         model: nn.Module,
+        proto_head: nn.Module | None = None,
         unsup_weight: float = 1.0,
         drop_unrel_pixels_percent: int = 20,
         semisl_start_epoch: int = 0,
+        proto_pretrain_epochs: int = 0,
         filter_pixels_epochs: int = 100,
     ) -> None:
         super().__init__()
@@ -48,6 +50,8 @@ class MeanTeacher(nn.Module):
         # filter unreliable pixels during first X epochs
         self.filter_pixels_epochs = filter_pixels_epochs
         self.semisl_start_epoch = semisl_start_epoch
+        self.proto_net = proto_head
+        self.proto_pretrain_epochs = proto_pretrain_epochs
 
     def forward(
         self,
@@ -76,13 +80,27 @@ class MeanTeacher(nn.Module):
         """
         if mode != "loss":
             # only labeled images for validation and testing
+            # teacher_lbld_backbone_feats = self.teacher_model.backbone(inputs)
             return self.teacher_model(inputs, img_metas, masks, mode=mode)
+            # return self.proto_net(teacher_lbld_backbone_feats, gt_semantic_seg=masks, pretrain_prototype=False)
 
         if global_step is None or steps_per_epoch is None:
             msg = "global_step and steps_per_epoch should be provided"
             raise ValueError(msg)
 
-        if global_step > self.semisl_start_epoch * steps_per_epoch:
+        run_semisl_training = global_step > self.semisl_start_epoch * steps_per_epoch
+        # extract features from labeled and unlabeled augmented images
+        # we need to separate features from backbone and decode head for proto network
+        student_lbld_backbone_feats = self.student_model.backbone(inputs)
+        student_labeled_logits = self.student_model.decode_head(student_lbld_backbone_feats)
+        loss_decode = self.student_model.calculate_loss(
+                student_labeled_logits,
+                img_metas,
+                masks=masks,
+                interpolate=True,
+            )
+
+        if run_semisl_training:
             # generate pseudo labels, filter high entropy pixels, compute loss reweight
             percent_unreliable = self.drop_unrel_pixels_percent * (
                 1 - global_step / self.filter_pixels_epochs * steps_per_epoch
@@ -92,16 +110,11 @@ class MeanTeacher(nn.Module):
                 percent_unreliable=percent_unreliable,
             )
             unlabeled_strong_images_aug, pl_from_teacher_aug = cut_mixer(unlabeled_strong_images, pl_from_teacher)
-            # extract features from labeled and unlabeled augmented images
-            student_labeled_logits = self.student_model(inputs, mode="tensor")
-            student_unlabeled_logits = self.student_model(unlabeled_strong_images_aug, mode="tensor")
-            # loss computation
-            loss_decode = self.student_model.calculate_loss(
-                student_labeled_logits,
-                img_metas,
-                masks=masks,
-                interpolate=True,
-            )
+
+            student_unlbld_backbone_feats = self.student_model.backbone(unlabeled_strong_images_aug)
+            student_unlabeled_logits = self.student_model.decode_head(student_unlbld_backbone_feats)
+
+            # unsupervised loss
             loss_decode_u = self.student_model.calculate_loss(
                 student_unlabeled_logits,
                 unlabeled_img_metas,
@@ -110,9 +123,25 @@ class MeanTeacher(nn.Module):
             )
             loss_decode_u = {f"{k}_unlabeled": v * reweight_unsup * self.unsup_weight for k, v in loss_decode_u.items()}
             loss_decode.update(loss_decode_u)
+
+        else:
+            student_unlbld_backbone_feats, pl_from_teacher_aug, reweight_unsup = None, None, 1.0
+
+
+        if self.proto_net:
+            pretrain_proto = global_step < self.proto_pretrain_epochs * steps_per_epoch
+            loss_decode.update(self.decode_proto_network(features_sup=student_lbld_backbone_feats,
+                                                        gt_semantic_seg=masks,
+                                                        img_metas=img_metas,
+                                                        unlabeled_img_metas=unlabeled_img_metas,
+                                                        pretrain_proto=pretrain_proto,
+                                                        features_unsup=student_unlbld_backbone_feats,
+                                                        pl_from_teacher=pl_from_teacher_aug,
+                                                        reweight_unsup=reweight_unsup))
+
             return loss_decode
 
-        return self.student_model(inputs, img_metas, masks, mode="loss")
+        return loss_decode
 
     def _generate_pseudo_labels(self, ul_w_img: Tensor, percent_unreliable: float) -> tuple[Tensor, Tensor]:
         """Generate pseudo labels from teacher model, apply filter loss method.
@@ -151,3 +180,33 @@ class MeanTeacher(nn.Module):
             reweight_unsup = batch_size * h * w / torch.sum(pl_from_teacher != 255)
 
         return pl_from_teacher, reweight_unsup
+
+    def decode_proto_network(
+        self, features_sup, gt_semantic_seg, img_metas, unlabeled_img_metas=None, pretrain_proto=False, features_unsup=None, pl_from_teacher=None, reweight_unsup=1.0
+    ):
+        """Forward prototype network, compute proto loss.
+
+        If there is no unsupervised part, only supervised loss will be computed.
+
+        Args:
+            features_sup (torch.Tensor): student backbone features from labeled images
+            gt_semantic_seg (torch.Tensor): ground truth semantic segmentation label maps
+            features_unsup (torch.Tensor): student backbone features from unlabeled images. Default: None
+            pl_from_teacher (torch.Tensor): teacher generated pseudo labels. Default: None
+            reweight_unsup (float): reweighting coefficient for unsupervised part after
+                filtering high entropy pixels. Default: 1.0
+        """
+        # supervised branch
+        proto_out_supervised = self.proto_net(inputs=features_sup, gt_semantic_seg=gt_semantic_seg, pretrain_prototype=pretrain_proto)
+        valid_label_mask = self.student_model.get_valid_label_mask(img_metas)
+        loss_proto = self.proto_net.calculate_loss(**proto_out_supervised, seg_label=gt_semantic_seg, valid_label_mask=valid_label_mask, interpolate=True)
+        proto_losses = {"loss_proto": loss_proto}
+
+        # unsupervised branch
+        if not pretrain_proto and features_unsup is not None and pl_from_teacher is not None:
+            proto_out_unsupervised = self.proto_net(features_unsup, pl_from_teacher, pretrain_proto)
+            unlbld_valid_label_mask = self.student_model.get_valid_label_mask(unlabeled_img_metas)
+            loss_proto_u = self.proto_net.calculate_loss(**proto_out_unsupervised, seg_label=pl_from_teacher, valid_label_mask=unlbld_valid_label_mask, interpolate=True)
+            proto_losses.update({"loss_proto_unlabeled": loss_proto_u * reweight_unsup * self.unsup_weight})
+
+        return proto_losses

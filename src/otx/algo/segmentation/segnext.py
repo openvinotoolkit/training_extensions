@@ -11,7 +11,7 @@ import torch
 from torch import nn
 
 from otx.algo.segmentation.backbones import MSCAN
-from otx.algo.segmentation.heads import LightHamHead
+from otx.algo.segmentation.heads import LightHamHead, ProtoNet
 from otx.algo.segmentation.segmentors import BaseSegmModel, MeanTeacher
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.data.entity.segmentation import SegBatchDataEntity
@@ -189,4 +189,6 @@ class SemiSLSegNext(OTXSegNext):
             decode_head=decode_head,
             criterion_configuration=self.criterion_configuration,
         )
-        return MeanTeacher(base_model, unsup_weight=0.7, drop_unrel_pixels_percent=20, semisl_start_epoch=2)
+        prototype_net = ProtoNet(gamma=0.999, num_prototype=10, in_proto_channels=1024, num_classes=self.num_classes)
+        return MeanTeacher(base_model, unsup_weight=0.7, drop_unrel_pixels_percent=20, semisl_start_epoch=2, proto_pretrain_epochs=0, proto_head=prototype_net)
+

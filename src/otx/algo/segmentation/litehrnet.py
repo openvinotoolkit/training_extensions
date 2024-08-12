@@ -11,7 +11,7 @@ import torch
 from torch.onnx import OperatorExportTypes
 
 from otx.algo.segmentation.backbones import LiteHRNet
-from otx.algo.segmentation.heads import FCNHead
+from otx.algo.segmentation.heads import FCNHead, ProtoNet
 from otx.algo.segmentation.segmentors import BaseSegmModel, MeanTeacher
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.data.entity.segmentation import SegBatchDataEntity
@@ -597,7 +597,8 @@ class LiteHRNetSemiSL(OTXLiteHRNet):
             criterion_configuration=self.criterion_configuration,
         )
 
-        return MeanTeacher(base_model, unsup_weight=0.7, drop_unrel_pixels_percent=20, semisl_start_epoch=2)
+        prototype_net = ProtoNet(gamma=0.999, num_prototype=10, in_proto_channels=600, num_classes=self.num_classes)
+        return MeanTeacher(base_model, unsup_weight=0.7, drop_unrel_pixels_percent=20, semisl_start_epoch=2, proto_pretrain_epochs=0, proto_head=prototype_net)
 
     def _customize_inputs(self, entity: SegBatchDataEntity) -> dict[str, Any]:
         if not isinstance(entity, dict):

@@ -5,5 +5,6 @@
 
 from .fcn_head import FCNHead
 from .ham_head import LightHamHead
+from .prototype_net import ProtoNet
 
-__all__ = ["FCNHead", "LightHamHead"]
+__all__ = ["FCNHead", "LightHamHead", "ProtoNet"]

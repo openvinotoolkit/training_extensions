@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING, Any, ClassVar
 import torch
 
 from otx.algo.segmentation.backbones import DinoVisionTransformer
-from otx.algo.segmentation.heads import FCNHead
+from otx.algo.segmentation.heads import FCNHead, ProtoNet
 from otx.algo.segmentation.segmentors import BaseSegmModel, MeanTeacher
 from otx.core.data.entity.segmentation import SegBatchDataEntity
 from otx.core.model.segmentation import TorchVisionCompatibleModel
@@ -112,4 +112,5 @@ class DinoV2SegSemiSL(OTXDinoV2Seg):
             criterion_configuration=self.criterion_configuration,
         )
 
-        return MeanTeacher(base_model, unsup_weight=0.7, drop_unrel_pixels_percent=20, semisl_start_epoch=2)
+        prototype_net = ProtoNet(gamma=0.999, num_prototype=10, in_proto_channels=1536, num_classes=self.num_classes)
+        return MeanTeacher(base_model, unsup_weight=0.7, drop_unrel_pixels_percent=20, semisl_start_epoch=2, proto_pretrain_epochs=0, proto_head=prototype_net)

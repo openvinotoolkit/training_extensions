@@ -41,3 +41,8 @@ overrides:
     - class_path: otx.algo.callbacks.adaptive_early_stopping.EarlyStoppingWithWarmup
       init_args:
         warmup_iters: 100
+    # - class_path: otx.algo.callbacks.adaptive_train_scheduling.AdaptiveTrainScheduling
+    #   init_args:
+    #     max_interval: 1
+    #     decay: -0.025
+    #     min_lrschedule_patience: 5
