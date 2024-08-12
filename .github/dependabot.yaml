@@ -26,6 +26,7 @@ updates:
       interval: daily
     ignore:
       - dependency-name: "torch"
+      - dependency-name: "torchvision"
       - dependency-name: "lightning"
       - dependency-name: "pytorchcv"
       - dependency-name: "timm"
@@ -33,6 +34,7 @@ updates:
       - dependency-name: "nncf"
       - dependency-name: "anomalib"
       - dependency-name: "intel-extension-for-pytorch"
+      - dependency-name: "oneccl_bind_pt"
     groups:
       pip-mmlab:
         applies-to: version-updates
