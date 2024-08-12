@@ -156,11 +156,6 @@ include = ["otx*"]
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # COVERAGE CONFIGURATION.                                                     #
-[tool.coverage.paths]
-source = [
-    "src",
-]
-
 [tool.coverage.report]
 exclude_lines = [
     "pragma: no cover",
@@ -168,6 +163,9 @@ exclude_lines = [
 ]
 
 [tool.coverage.run]
+source = [
+    "src/otx/",
+]
 omit = [
     "**/__init__.py",
     "src/otx/recipes/*",
@@ -184,6 +182,10 @@ omit = [
     "src/otx/core/data/transform_libs/mmseg.py",
     "src/otx/core/exporter/mmdeploy.py",
     "src/otx/core/model/utils/*",
+
+    # Ignore some generated files by opencv-python
+    "config.py",
+    "config-3.py",
 ]
 
 
