@@ -133,6 +133,9 @@ def compute_robust_dataset_statistics(dataset: DatasetSubset, max_samples: int =
             )
 
     stat["annotation"]["num_per_image"] = compute_robust_statistics(np.array(num_per_images))
+    # The reason why polygon is used prior to others is based on assumtion that it is more accurate than other shapes.
+    # Especially, polygon can be used in the case both polygon and bbox exist like instance segmentation task.
+    # it's needed to refine this algorithm considering not only instance segmentation but also other tasks.
     if "Polygon" in size_of_shapes:
         stat["annotation"]["size_of_shape"] = compute_robust_scale_statistics(np.array(size_of_shapes["Polygon"]))
     else:
