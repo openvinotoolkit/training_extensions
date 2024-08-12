@@ -1,7 +1,4 @@
 task: VISUAL_PROMPTING
-input_size:
-  - 1024
-  - 1024
 mem_cache_size: 1GB
 mem_cache_img_max_size: null
 image_color_channel: RGB
@@ -12,6 +9,9 @@ vpm_config:
   use_bbox: true
   use_point: false
 train_subset:
+  input_size:
+    - 1024
+    - 1024
   subset_name: train
   transform_lib_type: TORCHVISION
   batch_size: 2
@@ -39,6 +39,9 @@ train_subset:
     class_path: torch.utils.data.RandomSampler
 
 val_subset:
+  input_size:
+    - 1024
+    - 1024
   subset_name: val
   transform_lib_type: TORCHVISION
   batch_size: 1
@@ -66,6 +69,9 @@ val_subset:
     class_path: torch.utils.data.RandomSampler
 
 test_subset:
+  input_size:
+    - 1024
+    - 1024
   subset_name: test
   transform_lib_type: TORCHVISION
   batch_size: 1
