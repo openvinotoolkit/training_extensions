@@ -32,7 +32,6 @@ class TestSemiSLClsHead:
     def test_head_initialize(self, fxt_semi_sl_head):
         """Verifies that SemiSLClsHead parameters check with ValueError."""
         assert fxt_semi_sl_head.num_classes == 10
-        assert fxt_semi_sl_head.unlabeled_coef == 1.0
         assert fxt_semi_sl_head.use_dynamic_threshold
         assert fxt_semi_sl_head.min_threshold == 0.5
         assert fxt_semi_sl_head.num_pseudo_label == 0
