@@ -3508,22 +3508,20 @@ class GenerateTarget(tvt_v2.Transform, NumpytoTVTensorMixin):
             the specific codec for more details.
 
     Args:
-        encoder (dict | list[dict]): The codec config for keypoint encoding.
-            Both single encoder and multiple encoders (given as a list) are
-            supported
-        target_type (str, deprecated): This argument is deprecated and has no
-            effect. Defaults to ``None``
+        input_size (tuple[int, int]): Input image size in [w, h]
+        is_numpy_to_tvtensor (bool): Whether convert outputs to tensor. Defaults to False.
     """
 
     def __init__(
         self,
+        input_size: tuple[int, int],
         is_numpy_to_tvtensor: bool = False,
     ) -> None:
         super().__init__()
         from otx.algo.keypoint_detection.utils.simcc_label import SimCCLabel
 
         self.encoder = SimCCLabel(
-            input_size=(192, 256),
+            input_size=input_size,
             sigma=(4.9, 5.66),
             simcc_split_ratio=2.0,
             normalize=False,
