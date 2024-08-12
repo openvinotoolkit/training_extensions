@@ -423,7 +423,6 @@ def test_otx_hpo_e2e_cli(
     model_cfg = []
     if task in {
         OTXTaskType.ANOMALY,
-        OTXTaskType.ANOMALY_CLASSIFICATION,
         OTXTaskType.ANOMALY_DETECTION,
         OTXTaskType.ANOMALY_SEGMENTATION,
     }:

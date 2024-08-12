@@ -388,7 +388,7 @@ Segmentation and Classification
 *******************************
 
 While the above example shows Anomaly Detection, you can also train Anomaly Segmentation and Classification models.
-To see what tasks are available, you can pass ``ANOMALY_SEGMENTATION`` and ``ANOMALY_CLASSIFICATION`` to ``otx find`` mentioned in the `Training`_ section. You can then use the same commands to train, evaluate, export and optimize the models.
+To see what tasks are available, you can pass ``ANOMALY_SEGMENTATION`` and ``ANOMALY`` to ``otx find`` mentioned in the `Training`_ section. You can then use the same commands to train, evaluate, export and optimize the models.
 
 .. note::
 

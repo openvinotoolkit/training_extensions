@@ -9,6 +9,7 @@ import pytest
 import torch
 from anomalib.metrics.min_max import MinMax
 from anomalib.metrics.threshold import ManualThreshold
+
 from otx.algo.anomaly.openvino_model import AnomalyOpenVINO
 from otx.algo.anomaly.padim import Padim
 from otx.algo.anomaly.stfpm import Stfpm
@@ -40,7 +41,7 @@ class TestAnomalyOpenVINO:
         model.normalization_metrics.max = torch.tensor(1.0)
         model.image_threshold = ManualThreshold(0.0)
         model.pixel_threshold = ManualThreshold(0.0)
-        model.task = OTXTaskType.ANOMALY_CLASSIFICATION
+        model.task = OTXTaskType.ANOMALY
         return model
 
     def test_label_info(self, otx_model):

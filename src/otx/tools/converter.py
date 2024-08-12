@@ -120,12 +120,12 @@ TEMPLATE_ID_DICT = {
         "task": OTXTaskType.SEMANTIC_SEGMENTATION,
         "model_name": "segnext_b",
     },
-    # ANOMALY_CLASSIFICATION
-    "ote_anomaly_classification_padim": {
+    # ANOMALY
+    "ote_anomaly_padim": {
         "task": OTXTaskType.SEMANTIC_SEGMENTATION,
         "model_name": "padim",
     },
-    "ote_anomaly_classification_stfpm": {
+    "ote_anomaly_stfpm": {
         "task": OTXTaskType.SEMANTIC_SEGMENTATION,
         "model_name": "stfpm",
     },
