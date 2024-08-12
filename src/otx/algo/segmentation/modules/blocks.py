@@ -73,7 +73,7 @@ class AsymmetricPositionAttentionModule(nn.Module):
             stride=1,
             padding=0,
             norm_cfg=self.norm_cfg,
-            act_cfg={"type": "ReLU"},
+            activation_callable=nn.ReLU,
         )
         self.key_psp = PSPModule(psp_size, method="max")
 
@@ -84,7 +84,7 @@ class AsymmetricPositionAttentionModule(nn.Module):
             stride=1,
             padding=0,
             norm_cfg=self.norm_cfg,
-            act_cfg={"type": "ReLU"},
+            activation_callable=nn.ReLU,
         )
         self.value_psp = PSPModule(psp_size, method="max")
 
@@ -95,7 +95,7 @@ class AsymmetricPositionAttentionModule(nn.Module):
             stride=1,
             padding=0,
             norm_cfg=self.norm_cfg,
-            act_cfg=None,
+            activation_callable=None,
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -171,7 +171,7 @@ class LocalAttentionModule(nn.Module):
             padding=1,
             groups=self.num_channels,
             norm_cfg=self.norm_cfg,
-            act_cfg={"type": "ReLU"},
+            activation_callable=nn.ReLU,
         )
         self.dwconv2 = Conv2dModule(
             in_channels=self.num_channels,
@@ -181,7 +181,7 @@ class LocalAttentionModule(nn.Module):
             padding=1,
             groups=self.num_channels,
             norm_cfg=self.norm_cfg,
-            act_cfg={"type": "ReLU"},
+            activation_callable=nn.ReLU,
         )
         self.dwconv3 = Conv2dModule(
             in_channels=self.num_channels,
@@ -191,7 +191,7 @@ class LocalAttentionModule(nn.Module):
             padding=1,
             groups=self.num_channels,
             norm_cfg=self.norm_cfg,
-            act_cfg={"type": "ReLU"},
+            activation_callable=nn.ReLU,
         )
         self.sigmoid_spatial = nn.Sigmoid()
 

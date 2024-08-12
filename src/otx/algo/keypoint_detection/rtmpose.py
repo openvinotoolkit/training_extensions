@@ -5,6 +5,7 @@
 
 from __future__ import annotations
 
+from functools import partial
 from typing import TYPE_CHECKING
 
 from otx.algo.common.backbones import CSPNeXt
@@ -13,6 +14,7 @@ from otx.algo.keypoint_detection.losses.kl_discret_loss import KLDiscretLoss
 from otx.algo.keypoint_detection.topdown import TopdownPoseEstimator
 from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.model.keypoint_detection import OTXKeypointDetectionModel
+from torch import nn
 
 if TYPE_CHECKING:
     from otx.core.exporter.base import OTXModelExporter
@@ -77,7 +79,7 @@ class RTMPoseTiny(RTMPose):
             out_indices=(4,),
             channel_attention=True,
             norm_cfg={"type": "BN"},
-            act_cfg={"type": "SiLU", "inplace": True},
+            activation_callable=partial(nn.SiLU, inplace=True),
         )
         head = RTMCCHead(
             out_channels=num_classes,

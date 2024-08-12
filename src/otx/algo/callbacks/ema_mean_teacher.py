@@ -1,7 +1,8 @@
-"""Module for exponential moving average for SemiSL mean teacher algorithm."""
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
+"""Module for exponential moving average for SemiSL mean teacher algorithm."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any

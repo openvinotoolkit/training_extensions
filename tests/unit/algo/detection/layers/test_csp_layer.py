@@ -19,7 +19,7 @@ class TestCSPLayer:
         assert isinstance(csp_layer.blocks[0].conv2, Conv2dModule)
         assert isinstance(csp_layer.blocks[0].conv1.conv, Conv2d)
         assert isinstance(csp_layer.blocks[0].conv1.bn, BatchNorm2d)
-        assert isinstance(csp_layer.blocks[0].conv1.activate, Swish)
+        assert isinstance(csp_layer.blocks[0].conv1.activation, Swish)
         assert not hasattr(csp_layer, "attention")
 
         # use DepthwiseSeparableConvModule

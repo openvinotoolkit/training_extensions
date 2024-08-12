@@ -1,4 +1,4 @@
-# Copyright (C) 2023 Intel Corporation
+# Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 """Base segmentation model."""
@@ -54,10 +54,10 @@ class BaseSegmModel(nn.Module):
         """Performs the forward pass of the model.
 
         Args:
-            inputs: Input images to the model.
-            img_metas: Image meta information. Defaults to None.
-            masks: Ground truth masks for training. Defaults to None.
-            mode: The mode of operation. Defaults to "tensor".
+            inputs (Tensor): Input images to the model.
+            img_metas (list[ImageInfo]): Image meta information. Defaults to None.
+            masks (Tensor): Ground truth masks for training. Defaults to None.
+            mode (str): The mode of operation. Defaults to "tensor".
 
         Returns:
             Depending on the mode:
@@ -97,9 +97,9 @@ class BaseSegmModel(nn.Module):
         """Calculates the loss of the model.
 
         Args:
-            model_features: model outputs of the model.
-            img_metas: Image meta information. Defaults to None.
-            masks: Ground truth masks for training. Defaults to None.
+            model_features (Tensor): model outputs of the model.
+            img_metas (list[ImageInfo]): Image meta information. Defaults to None.
+            masks (Tensor): Ground truth masks for training. Defaults to None.
 
         Returns:
             Tensor: The loss of the model.

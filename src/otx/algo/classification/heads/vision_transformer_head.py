@@ -26,8 +26,6 @@ class VisionTransformerClsHead(BaseModule):
         in_channels (int): Number of channels in the input feature map.
         hidden_dim (int, optional): Number of the dimensions for hidden layer.
             Defaults to None, which means no extra hidden layer.
-        act_cfg (dict): The activation config. Only available during
-            pre-training. Defaults to ``dict(type='Tanh')``.
         init_cfg (dict): The extra initialization configs. Defaults to
             ``dict(type='Constant', layer='Linear', val=0)``.
     """
