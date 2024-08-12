@@ -337,7 +337,7 @@ class TestOVVisualPromptingModel:
             ov_visual_prompting_model.model.decoder,
             "infer_sync",
             return_value={
-                "iou_predictions": 0.0,
+                "iou_predictions": np.ones((1, 10), dtype=np.float32),
                 "upscaled_masks": np.zeros((1, 1, 1024, 1024), dtype=np.float32),
             },
         )
@@ -345,12 +345,12 @@ class TestOVVisualPromptingModel:
             ov_visual_prompting_model.model.decoder,
             "postprocess",
             return_value={
-                "low_res_masks": np.zeros((1, 1, 1024, 1024), dtype=np.float32),
-                "upscaled_masks": np.zeros((1, 1, 1024, 1024), dtype=np.float32),
-                "hard_prediction": np.zeros((1, 1, 1024, 1024), dtype=np.float32),
-                "soft_prediction": np.zeros((1, 1, 1024, 1024), dtype=np.float32),
-                "scores": np.zeros((1, 1), dtype=np.float32),
-                "iou_predictions": np.zeros((1, 1), dtype=np.float32),
+                "low_res_masks": np.zeros((1, 2, 1024, 1024), dtype=np.float32),
+                "upscaled_masks": np.zeros((1, 2, 1024, 1024), dtype=np.float32),
+                "hard_prediction": np.ones((2, 1024, 1024), dtype=np.float32),
+                "soft_prediction": np.zeros((1, 2, 1024, 1024), dtype=np.float32),
+                "scores": np.array([[1, 1]], dtype=np.float32),
+                "iou_predictions": np.array([[1, 1]], dtype=np.float32),
                 "labels": np.zeros((1, 1), dtype=np.float32),
             },
         )
@@ -535,23 +535,23 @@ class TestOVZeroShotVisualPromptingModel:
         [
             [
                 {
-                    1: PredictedMask(mask=[[1, 2, 3], [4, 5, 6]], points=[[13, 14, 15], [16, 17, 18]]),
-                    2: PredictedMask(mask=[[7, 8, 9], [10, 11, 12]], points=[[19, 20, 21], [22, 23, 24]]),
+                    1: PredictedMask(mask=[[1, 2, 3], [4, 5, 6]], points=[[13, 14, 15], [16, 17, 18]], scores=[1, 1]),
+                    2: PredictedMask(mask=[[7, 8, 9], [10, 11, 12]], points=[[19, 20, 21], [22, 23, 24]], scores=[1, 1]),
                 },
             ],
             [
                 {
-                    1: PredictedMask(mask=[], points=[]),
+                    1: PredictedMask(mask=[], points=[], scores=[]),
                 },
             ],
             [
                 {
-                    1: PredictedMask(mask=[[1, 2, 3], [4, 5, 6]], points=[[13, 14, 15], [16, 17, 18]]),
-                    2: PredictedMask(mask=[[7, 8, 9], [10, 11, 12]], points=[[19, 20, 21], [22, 23, 24]]),
+                    1: PredictedMask(mask=[[1, 2, 3], [4, 5, 6]], points=[[13, 14, 15], [16, 17, 18]], scores=[1, 1]),
+                    2: PredictedMask(mask=[[7, 8, 9], [10, 11, 12]], points=[[19, 20, 21], [22, 23, 24]], scores=[1, 1]),
                 },
                 {
-                    1: PredictedMask(mask=[[1, 2, 3], [4, 5, 6]], points=[[13, 14, 15], [16, 17, 18]]),
-                    2: PredictedMask(mask=[[7, 8, 9], [10, 11, 12]], points=[[19, 20, 21], [22, 23, 24]]),
+                    1: PredictedMask(mask=[[1, 2, 3], [4, 5, 6]], points=[[13, 14, 15], [16, 17, 18]], scores=[1, 1]),
+                    2: PredictedMask(mask=[[7, 8, 9], [10, 11, 12]], points=[[19, 20, 21], [22, 23, 24]], scores=[1, 1]),
                 },
             ],
         ],
