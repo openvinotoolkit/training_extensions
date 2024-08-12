@@ -48,6 +48,7 @@ class OTXKeypointDetectionModel(OTXModel[KeypointDetBatchDataEntity, KeypointDet
             metric=metric,
             torch_compile=torch_compile,
         )
+        self.input_size: tuple[int, int]
 
     @abstractmethod
     def _build_model(self, num_classes: int) -> nn.Module:

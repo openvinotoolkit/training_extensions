@@ -12,18 +12,17 @@ from otx.algo.keypoint_detection.heads.rtmcc_head import RTMCCHead
 from otx.algo.keypoint_detection.losses.kl_discret_loss import KLDiscretLoss
 from otx.algo.keypoint_detection.topdown import TopdownPoseEstimator
 from otx.core.exporter.native import OTXNativeModelExporter
-from otx.core.model.keypoint_detection import OTXKeypointDetectionModel
-from otx.core.metrics import MetricCallable
 from otx.core.metrics.pck import PCKMeasureCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
-from otx.core.schedulers import LRSchedulerListCallable
-from otx.core.types.export import TaskLevelExportParameters
-from otx.core.types.label import LabelInfoTypes
+from otx.core.model.keypoint_detection import OTXKeypointDetectionModel
 
 if TYPE_CHECKING:
-    from otx.core.exporter.base import OTXModelExporter
-    from otx.core.types.export import TaskLevelExportParameters
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
+    from otx.core.exporter.base import OTXModelExporter
+    from otx.core.metrics import MetricCallable
+    from otx.core.schedulers import LRSchedulerListCallable
+    from otx.core.types.export import TaskLevelExportParameters
+    from otx.core.types.label import LabelInfoTypes
 
 
 class RTMPose(OTXKeypointDetectionModel):
