@@ -9,7 +9,6 @@ import pytest
 import torch
 import yaml
 from otx.cli import OTXCLI, main
-from otx.cli import cli as target_file
 from rich.console import Console
 
 
@@ -145,7 +144,7 @@ class TestOTXCLI:
         mock_model_cls,
     ) -> None:
         mocker.patch("otx.cli.OTXCLI.run")
-        mocker.patch.object(target_file, "get_model_cls_from_config", return_value=mock_model_cls)
+        mocker.patch("otx.utils.utils.get_model_cls_from_config", return_value=mock_model_cls)
         fxt_train_argv.extend(["--data.adaptive_input_size", "auto"])
         monkeypatch.setattr("sys.argv", fxt_train_argv)
         mock_data_module = mocker.patch("otx.core.data.module.adapt_input_size_to_dataset", return_value=1024)
