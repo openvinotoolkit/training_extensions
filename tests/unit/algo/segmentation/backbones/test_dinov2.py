@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from pathlib import Path
 from unittest.mock import MagicMock
 
 import pytest
@@ -74,7 +75,6 @@ class TestDinoVisionTransformer:
 
     def test_load_pretrained_weights(self, dino_vit, pretrained_weight, mock_torch_load, mock_load_checkpoint_to_model):
         dino_vit.load_pretrained_weights(pretrained=pretrained_weight)
-
         mock_torch_load.assert_called_once_with(pretrained_weight, "cpu")
         mock_load_checkpoint_to_model.assert_called_once()
 
@@ -82,5 +82,6 @@ class TestDinoVisionTransformer:
         pretrained_weight = "www.fake.com/fake.pth"
         dino_vit.load_pretrained_weights(pretrained=pretrained_weight)
 
-        mock_load_from_http.assert_called_once_with(pretrained_weight, "cpu")
+        cache_dir = Path.home() / ".cache" / "torch" / "hub" / "checkpoints"
+        mock_load_from_http.assert_called_once_with(filename=pretrained_weight, map_location="cpu", model_dir=cache_dir)
         mock_load_checkpoint_to_model.assert_called_once()
