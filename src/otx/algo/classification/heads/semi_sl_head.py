@@ -125,7 +125,7 @@ class OTXSemiSLClsHead(nn.Module):
         return logits, labels, label_u, mask
 
 
-class OTXSemiSLLinearClsHead(OTXSemiSLClsHead, LinearClsHead):
+class SemiSLLinearClsHead(OTXSemiSLClsHead, LinearClsHead):
     """LinearClsHead for OTXSemiSLClsHead."""
 
     def __init__(
@@ -190,7 +190,7 @@ class OTXSemiSLNonLinearClsHead(OTXSemiSLClsHead):
         return self.classifier(feats)
 
 
-class OTXSemiSLVisionTransformerClsHead(OTXSemiSLClsHead, VisionTransformerClsHead):
+class SemiSLVisionTransformerClsHead(OTXSemiSLClsHead, VisionTransformerClsHead):
     """VisionTransformerClsHead for OTXSemiSLClsHead."""
 
     def __init__(

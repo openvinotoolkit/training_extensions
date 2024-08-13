@@ -11,7 +11,7 @@ import torch
 from torch import Tensor, nn
 from torchvision.models import get_model, get_model_weights
 
-from otx.algo.classification.heads import HierarchicalLinearClsHead, MultiLabelLinearClsHead, OTXSemiSLLinearClsHead
+from otx.algo.classification.heads import HierarchicalLinearClsHead, MultiLabelLinearClsHead, SemiSLLinearClsHead
 from otx.algo.classification.losses import AsymmetricAngularLossWithIgnore
 from otx.algo.explain.explain_algo import ReciproCAM, feature_vector_fn
 from otx.core.data.entity.base import OTXBatchLossEntity
@@ -194,7 +194,7 @@ class TVClassificationModel(nn.Module):
         if self.task == OTXTaskType.MULTI_CLASS_CLS:
             if self.train_type == OTXTrainType.SEMI_SUPERVISED:
                 self.neck = nn.Sequential(*layers) if layers else None
-                return OTXSemiSLLinearClsHead(
+                return SemiSLLinearClsHead(
                     num_classes=self.num_classes,
                     in_channels=feature_channel,
                 )

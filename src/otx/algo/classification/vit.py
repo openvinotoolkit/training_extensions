@@ -20,7 +20,7 @@ from otx.algo.classification.classifier import HLabelClassifier, ImageClassifier
 from otx.algo.classification.heads import (
     HierarchicalLinearClsHead,
     MultiLabelLinearClsHead,
-    OTXSemiSLVisionTransformerClsHead,
+    SemiSLVisionTransformerClsHead,
     VisionTransformerClsHead,
 )
 from otx.algo.classification.losses import AsymmetricAngularLossWithIgnore
@@ -282,7 +282,7 @@ class VisionTransformerForMulticlassCls(ForwardExplainMixInForViT, OTXMulticlass
             return SemiSLClassifier(
                 backbone=vit_backbone,
                 neck=None,
-                head=OTXSemiSLVisionTransformerClsHead(
+                head=SemiSLVisionTransformerClsHead(
                     num_classes=num_classes,
                     in_channels=vit_backbone.embed_dim,
                 ),

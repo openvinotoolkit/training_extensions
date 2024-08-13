@@ -3,14 +3,14 @@
 
 import pytest
 import torch
-from otx.algo.classification.heads import OTXSemiSLLinearClsHead
+from otx.algo.classification.heads import SemiSLLinearClsHead
 
 
 class TestSemiSLClsHead:
     @pytest.fixture()
     def fxt_semi_sl_head(self):
         """Semi-SL for Classification Head Settings."""
-        return OTXSemiSLLinearClsHead(
+        return SemiSLLinearClsHead(
             num_classes=10,
             in_channels=10,
         )
@@ -18,13 +18,13 @@ class TestSemiSLClsHead:
     def test_build_type_error(self):
         """Verifies that SemiSLClsHead parameters check with TypeError."""
         with pytest.raises(TypeError):
-            OTXSemiSLLinearClsHead(
+            SemiSLLinearClsHead(
                 num_classes=[1],
                 in_channels=10,
             )
 
         with pytest.raises(TypeError):
-            OTXSemiSLLinearClsHead(
+            SemiSLLinearClsHead(
                 num_classes=10,
                 in_channels=[1],
             )

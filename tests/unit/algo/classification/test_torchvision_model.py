@@ -3,7 +3,7 @@
 
 import pytest
 import torch
-from otx.algo.classification.heads import OTXSemiSLLinearClsHead
+from otx.algo.classification.heads import SemiSLLinearClsHead
 from otx.algo.classification.torchvision_model import OTXTVModel, TVClassificationModel
 from otx.core.data.entity.base import OTXBatchLossEntity, OTXBatchPredEntity
 from otx.core.data.entity.classification import MulticlassClsBatchPredEntity
@@ -46,7 +46,7 @@ class TestOTXTVModel:
         assert isinstance(fxt_tv_model.model, TVClassificationModel)
 
         semi_sl_model = OTXTVModel(backbone="mobilenet_v3_small", label_info=10, train_type="SEMI_SUPERVISED")
-        assert isinstance(semi_sl_model.model.head, OTXSemiSLLinearClsHead)
+        assert isinstance(semi_sl_model.model.head, SemiSLLinearClsHead)
 
     @pytest.mark.parametrize(
         "fxt_tv_model_and_data_entity",

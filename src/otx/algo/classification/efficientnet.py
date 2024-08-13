@@ -17,7 +17,7 @@ from otx.algo.classification.heads import (
     HierarchicalLinearClsHead,
     LinearClsHead,
     MultiLabelLinearClsHead,
-    OTXSemiSLLinearClsHead,
+    SemiSLLinearClsHead,
 )
 from otx.algo.classification.losses.asymmetric_angular_loss_with_ignore import AsymmetricAngularLossWithIgnore
 from otx.algo.classification.necks.gap import GlobalAveragePooling
@@ -91,7 +91,7 @@ class EfficientNetForMulticlassCls(OTXMulticlassClsModel):
             return SemiSLClassifier(
                 backbone=backbone,
                 neck=neck,
-                head=OTXSemiSLLinearClsHead(
+                head=SemiSLLinearClsHead(
                     num_classes=num_classes,
                     in_channels=backbone.num_features,
                 ),
