@@ -71,6 +71,18 @@ TVModelType = Literal[
 ]
 
 
+def get_in_features(sequential: nn.Sequential) -> int:
+    """Get the in_features value from the first layer of an nn.Sequential object."""
+    for layer in sequential.children():
+        if isinstance(layer, nn.Linear):
+            return layer.in_features
+        if isinstance(layer, nn.Conv2d):
+            return layer.in_channels
+        # Add more conditions if needed for other layer types
+    msg = "No suitable layer found to extract in_features"
+    raise ValueError(msg)
+
+
 class TorchvisionBackbone(nn.Module):
     """TorchvisionBackbone is a class that represents a backbone model from the torchvision library."""
 
@@ -89,10 +101,7 @@ class TorchvisionBackbone(nn.Module):
         self.features = net.features
 
         last_layer = list(net.children())[-1]
-        classifier_len = len(list(last_layer.children()))
-        self.in_features = (
-            next(iter(last_layer.children())).in_features if classifier_len >= 1 else last_layer.in_features
-        )
+        self.in_features = get_in_features(last_layer)
 
     def forward(self, *args) -> torch.Tensor:
         """Forward pass of the model."""
