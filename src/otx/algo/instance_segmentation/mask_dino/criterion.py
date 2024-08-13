@@ -15,6 +15,7 @@ from detectron2.projects.point_rend.point_features import (
     point_sample,
 )
 from detectron2.utils.comm import get_world_size
+from otx.algo.instance_segmentation.mask_dino import box_ops
 from otx.algo.instance_segmentation.mask_dino.misc import is_dist_avail_and_initialized, nested_tensor_from_tensor_list
 from torch import nn
 

@@ -14,12 +14,16 @@ from detectron2.utils.memory import retry_if_cuda_oom
 from torch import nn
 from torch.nn import functional as F
 from torch.nn.modules import Module
+from torchvision import tv_tensors
 
 from otx.algo.instance_segmentation.mask_dino import box_ops
 from otx.algo.instance_segmentation.mask_dino.criterion import SetCriterion
 from otx.algo.instance_segmentation.mask_dino.maskdino_head import MaskDINOHead
 from otx.algo.instance_segmentation.mask_dino.matcher import HungarianMatcher
+from otx.core.data.entity.instance_segmentation import InstanceSegBatchDataEntity
+from otx.core.data.entity.utils import stack_batch
 from otx.core.model.instance_segmentation import ExplainableOTXInstanceSegModel
+from otx.core.utils.mask_util import polygon_to_bitmap
 
 
 class MaskDINO(nn.Module):
@@ -216,49 +220,34 @@ class MaskDINO(nn.Module):
             and not cfg.MODEL.MaskDINO.TEST.PANOPTIC_ON,
         }
 
-    def forward(self, batched_inputs):
-        """Args:
-            batched_inputs: a list, batched outputs of :class:`DatasetMapper`.
-                Each item in the list contains the inputs for one image.
-                For now, each item in the list is a dict that contains:
-                   * "image": Tensor, image in (C, H, W) format.
-                   * "instances": per-region ground truth
-                   * Other information that's included in the original dicts, such as:
-                     "height", "width" (int): the output resolution of the model (may be different
-                     from input resolution), used in inference.
-
-        Returns:
-            list[dict]:
-                each dict has the results for one image. The dict contains the following keys:
-
-                * "sem_seg":
-                    A Tensor that represents the
-                    per-pixel segmentation prediced by the head.
-                    The prediction has shape KxHxW that represents the logits of
-                    each class for each pixel.
-                * "panoptic_seg":
-                    A tuple that represent panoptic output
-                    panoptic_seg (Tensor): of shape (height, width) where the values are ids for each segment.
-                    segments_info (list[dict]): Describe each segment in `panoptic_seg`.
-                        Each dict contains keys "id", "category_id", "isthing".
-        """
-        images = [x["image"].to(self.device) for x in batched_inputs]
-        images = [(x - self.pixel_mean) / self.pixel_std for x in images]
-        images = ImageList.from_tensors(images, self.size_divisibility)
+    def forward(self, entity: InstanceSegBatchDataEntity):
+        ori_shapes = [img_info.ori_shape for img_info in entity.imgs_info]
+        img_shapes = [img_info.img_shape for img_info in entity.imgs_info]
+        images = ImageList(entity.images, img_shapes)
 
         features = self.backbone(images.tensor)
 
         if self.training:
-            # dn_args={"scalar":30,"noise_scale":0.4}
-            # mask classification target
-            if "instances" in batched_inputs[0]:
-                gt_instances = [x["instances"].to(self.device) for x in batched_inputs]
-                if "detr" in self.data_loader:
-                    targets = self.prepare_targets_detr(gt_instances, images)
-                else:
-                    targets = self.prepare_targets(gt_instances, images)
-            else:
-                targets = None
+            targets = []
+            for img_info, bboxes, labels, masks, polygons in zip(
+                entity.imgs_info,
+                entity.bboxes,
+                entity.labels,
+                entity.masks,
+                entity.polygons,
+            ):
+                masks = polygon_to_bitmap(polygons, *img_info.img_shape)
+                masks = tv_tensors.Mask(masks, device=img_info.device, dtype=torch.bool)
+                norm_shape = torch.tile(torch.tensor(img_info.img_shape, device=img_info.device), (2,))
+
+                targets.append(
+                    {
+                        "boxes": box_ops.box_xyxy_to_cxcywh(bboxes) / norm_shape,
+                        "labels": labels,
+                        "masks": masks,
+                    },
+                )
+
             outputs, mask_dict = self.sem_seg_head(features, targets=targets)
             # bipartite matching-based loss
             losses = self.criterion(outputs, targets, mask_dict)
@@ -675,3 +664,8 @@ class MaskDINOR50(ExplainableOTXInstanceSegModel):
         cfg.merge_from_file("src/otx/recipe/instance_segmentation/config.yaml")
         cfg.MODEL.SEM_SEG_HEAD.NUM_CLASSES = num_classes
         return MaskDINO(cfg)
+
+    def _customize_inputs(self, entity: InstanceSegBatchDataEntity):
+        if isinstance(entity.images, list):
+            entity.images, entity.imgs_info = stack_batch(entity.images, entity.imgs_info, pad_size_divisor=32)
+        return {"entity": entity}
