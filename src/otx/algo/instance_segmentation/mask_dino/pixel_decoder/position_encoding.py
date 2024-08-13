@@ -3,8 +3,7 @@
 # Licensed under the Apache License, Version 2.0 [see LICENSE for details]
 # ------------------------------------------------------------------------
 # Modified from Mask2Former https://github.com/facebookresearch/Mask2Former by Feng Li and Hao Zhang.
-"""
-Various positional encodings for the transformer.
+"""Various positional encodings for the transformer.
 """
 import math
 
@@ -13,8 +12,7 @@ from torch import nn
 
 
 class PositionEmbeddingSine(nn.Module):
-    """
-    This is a more standard version of the position embedding, very similar to the one
+    """This is a more standard version of the position embedding, very similar to the one
     used by the Attention is all you need paper, generalized to work on images.
     """
 
@@ -46,10 +44,12 @@ class PositionEmbeddingSine(nn.Module):
         pos_x = x_embed[:, :, :, None] / dim_t
         pos_y = y_embed[:, :, :, None] / dim_t
         pos_x = torch.stack(
-            (pos_x[:, :, :, 0::2].sin(), pos_x[:, :, :, 1::2].cos()), dim=4
+            (pos_x[:, :, :, 0::2].sin(), pos_x[:, :, :, 1::2].cos()),
+            dim=4,
         ).flatten(3)
         pos_y = torch.stack(
-            (pos_y[:, :, :, 0::2].sin(), pos_y[:, :, :, 1::2].cos()), dim=4
+            (pos_y[:, :, :, 0::2].sin(), pos_y[:, :, :, 1::2].cos()),
+            dim=4,
         ).flatten(3)
         pos = torch.cat((pos_y, pos_x), dim=3).permute(0, 3, 1, 2)
         return pos
@@ -57,10 +57,10 @@ class PositionEmbeddingSine(nn.Module):
     def __repr__(self, _repr_indent=4):
         head = "Positional encoding " + self.__class__.__name__
         body = [
-            "num_pos_feats: {}".format(self.num_pos_feats),
-            "temperature: {}".format(self.temperature),
-            "normalize: {}".format(self.normalize),
-            "scale: {}".format(self.scale),
+            f"num_pos_feats: {self.num_pos_feats}",
+            f"temperature: {self.temperature}",
+            f"normalize: {self.normalize}",
+            f"scale: {self.scale}",
         ]
         # _repr_indent = 4
         lines = [head] + [" " * _repr_indent + line for line in body]

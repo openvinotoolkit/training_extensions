@@ -7,28 +7,38 @@
 # ------------------------------------------------------------------------
 
 from typing import Optional
-import torch
-from torch import nn, Tensor
-from torch.cuda.amp import autocast
 
-from otx.algo.instance_segmentation.mask_dino.utils import MLP, _get_clones, _get_activation_fn, gen_sineembed_for_position, inverse_sigmoid
+import torch
 from otx.algo.instance_segmentation.mask_dino.pixel_decoder.ops.modules import MSDeformAttn
+from otx.algo.instance_segmentation.mask_dino.utils import (
+    MLP,
+    _get_activation_fn,
+    _get_clones,
+    gen_sineembed_for_position,
+    inverse_sigmoid,
+)
+from torch import Tensor, nn
+from torch.cuda.amp import autocast
 
 
 class TransformerDecoder(nn.Module):
-
-    def __init__(self, decoder_layer, num_layers, norm=None,
-                 return_intermediate=False,
-                 d_model=256, query_dim=4,
-                 modulate_hw_attn=True,
-                 num_feature_levels=1,
-                 deformable_decoder=True,
-                 decoder_query_perturber=None,
-                 dec_layer_number=None,  # number of queries each layer in decoder
-                 rm_dec_query_scale=True,
-                 dec_layer_share=False,
-                 dec_layer_dropout_prob=None,
-                 ):
+    def __init__(
+        self,
+        decoder_layer,
+        num_layers,
+        norm=None,
+        return_intermediate=False,
+        d_model=256,
+        query_dim=4,
+        modulate_hw_attn=True,
+        num_feature_levels=1,
+        deformable_decoder=True,
+        decoder_query_perturber=None,
+        dec_layer_number=None,  # number of queries each layer in decoder
+        rm_dec_query_scale=True,
+        dec_layer_share=False,
+        dec_layer_dropout_prob=None,
+    ):
         super().__init__()
         if num_layers > 0:
             self.layers = _get_clones(decoder_layer, num_layers, layer_share=dec_layer_share)
@@ -39,7 +49,7 @@ class TransformerDecoder(nn.Module):
         self.return_intermediate = return_intermediate
         assert return_intermediate, "support return_intermediate only"
         self.query_dim = query_dim
-        assert query_dim in [2, 4], "query_dim should be 2/4 but {}".format(query_dim)
+        assert query_dim in [2, 4], f"query_dim should be 2/4 but {query_dim}"
         self.num_feature_levels = num_feature_levels
 
         self.ref_point_head = MLP(query_dim // 2 * d_model, d_model, d_model, 2)
@@ -91,26 +101,27 @@ class TransformerDecoder(nn.Module):
             if isinstance(m, MSDeformAttn):
                 m._reset_parameters()
 
-    def forward(self, tgt, memory,
-                tgt_mask: Optional[Tensor] = None,
-                memory_mask: Optional[Tensor] = None,
-                tgt_key_padding_mask: Optional[Tensor] = None,
-                memory_key_padding_mask: Optional[Tensor] = None,
-                pos: Optional[Tensor] = None,
-                refpoints_unsigmoid: Optional[Tensor] = None,  # num_queries, bs, 2
-                # for memory
-                level_start_index: Optional[Tensor] = None,  # num_levels
-                spatial_shapes: Optional[Tensor] = None,  # bs, num_levels, 2
-                valid_ratios: Optional[Tensor] = None,
-
-                ):
-        """
-        Input:
-            - tgt: nq, bs, d_model
-            - memory: hw, bs, d_model
-            - pos: hw, bs, d_model
-            - refpoints_unsigmoid: nq, bs, 2/4
-            - valid_ratios/spatial_shapes: bs, nlevel, 2
+    def forward(
+        self,
+        tgt,
+        memory,
+        tgt_mask: Optional[Tensor] = None,
+        memory_mask: Optional[Tensor] = None,
+        tgt_key_padding_mask: Optional[Tensor] = None,
+        memory_key_padding_mask: Optional[Tensor] = None,
+        pos: Optional[Tensor] = None,
+        refpoints_unsigmoid: Optional[Tensor] = None,  # num_queries, bs, 2
+        # for memory
+        level_start_index: Optional[Tensor] = None,  # num_levels
+        spatial_shapes: Optional[Tensor] = None,  # bs, num_levels, 2
+        valid_ratios: Optional[Tensor] = None,
+    ):
+        """Input:
+        - tgt: nq, bs, d_model
+        - memory: hw, bs, d_model
+        - pos: hw, bs, d_model
+        - refpoints_unsigmoid: nq, bs, 2/4
+        - valid_ratios/spatial_shapes: bs, nlevel, 2
         """
         output = tgt
         device = tgt.device
@@ -124,9 +135,10 @@ class TransformerDecoder(nn.Module):
             if self.training and self.decoder_query_perturber is not None and layer_id != 0:
                 reference_points = self.decoder_query_perturber(reference_points)
 
-            reference_points_input = reference_points[:, :, None] \
-                                         * torch.cat([valid_ratios, valid_ratios], -1)[None, :]  # nq, bs, nlevel, 4
-            query_sine_embed = gen_sineembed_for_position(reference_points_input[:, :, 0, :]) # nq, bs, 256*2
+            reference_points_input = (
+                reference_points[:, :, None] * torch.cat([valid_ratios, valid_ratios], -1)[None, :]
+            )  # nq, bs, nlevel, 4
+            query_sine_embed = gen_sineembed_for_position(reference_points_input[:, :, 0, :])  # nq, bs, 256*2
 
             raw_query_pos = self.ref_point_head(query_sine_embed)  # nq, bs, 256
             pos_scale = self.query_scale(output) if self.query_scale is not None else 1
@@ -138,15 +150,13 @@ class TransformerDecoder(nn.Module):
                 tgt_query_sine_embed=query_sine_embed,
                 tgt_key_padding_mask=tgt_key_padding_mask,
                 tgt_reference_points=reference_points_input,
-
                 memory=memory,
                 memory_key_padding_mask=memory_key_padding_mask,
                 memory_level_start_index=level_start_index,
                 memory_spatial_shapes=spatial_shapes,
                 memory_pos=pos,
-
                 self_attn_mask=tgt_mask,
-                cross_attn_mask=memory_mask
+                cross_attn_mask=memory_mask,
             )
 
             # iter update
@@ -164,18 +174,23 @@ class TransformerDecoder(nn.Module):
 
         return [
             [itm_out.transpose(0, 1) for itm_out in intermediate],
-            [itm_refpoint.transpose(0, 1) for itm_refpoint in ref_points]
+            [itm_refpoint.transpose(0, 1) for itm_refpoint in ref_points],
         ]
 
 
 class DeformableTransformerDecoderLayer(nn.Module):
-
-    def __init__(self, d_model=256, d_ffn=1024,
-                 dropout=0.1, activation="relu",
-                 n_levels=4, n_heads=8, n_points=4,
-                 use_deformable_box_attn=False,
-                 key_aware_type=None,
-                 ):
+    def __init__(
+        self,
+        d_model=256,
+        d_ffn=1024,
+        dropout=0.1,
+        activation="relu",
+        n_levels=4,
+        n_heads=8,
+        n_points=4,
+        use_deformable_box_attn=False,
+        key_aware_type=None,
+    ):
         super().__init__()
 
         # cross attention
@@ -218,29 +233,27 @@ class DeformableTransformerDecoderLayer(nn.Module):
         return tgt
 
     @autocast(enabled=False)
-    def forward(self,
-                # for tgt
-                tgt: Optional[Tensor],  # nq, bs, d_model
-                tgt_query_pos: Optional[Tensor] = None,  # pos for query. MLP(Sine(pos))
-                tgt_query_sine_embed: Optional[Tensor] = None,  # pos for query. Sine(pos)
-                tgt_key_padding_mask: Optional[Tensor] = None,
-                tgt_reference_points: Optional[Tensor] = None,  # nq, bs, 4
-
-                # for memory
-                memory: Optional[Tensor] = None,  # hw, bs, d_model
-                memory_key_padding_mask: Optional[Tensor] = None,
-                memory_level_start_index: Optional[Tensor] = None,  # num_levels
-                memory_spatial_shapes: Optional[Tensor] = None,  # bs, num_levels, 2
-                memory_pos: Optional[Tensor] = None,  # pos for memory
-
-                # sa
-                self_attn_mask: Optional[Tensor] = None,  # mask used for self-attention
-                cross_attn_mask: Optional[Tensor] = None,  # mask used for cross-attention
-                ):
-        """
-        Input:
-            - tgt/tgt_query_pos: nq, bs, d_model
-            -
+    def forward(
+        self,
+        # for tgt
+        tgt: Optional[Tensor],  # nq, bs, d_model
+        tgt_query_pos: Optional[Tensor] = None,  # pos for query. MLP(Sine(pos))
+        tgt_query_sine_embed: Optional[Tensor] = None,  # pos for query. Sine(pos)
+        tgt_key_padding_mask: Optional[Tensor] = None,
+        tgt_reference_points: Optional[Tensor] = None,  # nq, bs, 4
+        # for memory
+        memory: Optional[Tensor] = None,  # hw, bs, d_model
+        memory_key_padding_mask: Optional[Tensor] = None,
+        memory_level_start_index: Optional[Tensor] = None,  # num_levels
+        memory_spatial_shapes: Optional[Tensor] = None,  # bs, num_levels, 2
+        memory_pos: Optional[Tensor] = None,  # pos for memory
+        # sa
+        self_attn_mask: Optional[Tensor] = None,  # mask used for self-attention
+        cross_attn_mask: Optional[Tensor] = None,  # mask used for cross-attention
+    ):
+        """Input:
+        - tgt/tgt_query_pos: nq, bs, d_model
+        -
         """
         # self attention
         if self.self_attn is not None:
@@ -251,16 +264,20 @@ class DeformableTransformerDecoderLayer(nn.Module):
 
         # cross attention
         if self.key_aware_type is not None:
-            if self.key_aware_type == 'mean':
+            if self.key_aware_type == "mean":
                 tgt = tgt + memory.mean(0, keepdim=True)
-            elif self.key_aware_type == 'proj_mean':
+            elif self.key_aware_type == "proj_mean":
                 tgt = tgt + self.key_aware_proj(memory).mean(0, keepdim=True)
             else:
-                raise NotImplementedError("Unknown key_aware_type: {}".format(self.key_aware_type))
-        tgt2 = self.cross_attn(self.with_pos_embed(tgt, tgt_query_pos).transpose(0, 1),
-                               tgt_reference_points.transpose(0, 1).contiguous(),
-                               memory.transpose(0, 1), memory_spatial_shapes, memory_level_start_index,
-                               memory_key_padding_mask).transpose(0, 1)
+                raise NotImplementedError(f"Unknown key_aware_type: {self.key_aware_type}")
+        tgt2 = self.cross_attn(
+            self.with_pos_embed(tgt, tgt_query_pos).transpose(0, 1),
+            tgt_reference_points.transpose(0, 1).contiguous(),
+            memory.transpose(0, 1),
+            memory_spatial_shapes,
+            memory_level_start_index,
+            memory_key_padding_mask,
+        ).transpose(0, 1)
         tgt = tgt + self.dropout1(tgt2)
         tgt = self.norm1(tgt)
 
@@ -268,5 +285,3 @@ class DeformableTransformerDecoderLayer(nn.Module):
         tgt = self.forward_ffn(tgt)
 
         return tgt
-
-

@@ -1,7 +1,6 @@
 # Copyright (c) Facebook, Inc. and its affiliates.
 # Modified by Bowen Cheng from https://github.com/facebookresearch/detr/blob/master/util/misc.py
-"""
-Misc functions, including distributed helpers.
+"""Misc functions, including distributed helpers.
 
 Mostly copy-paste from torchvision references.
 """
@@ -22,13 +21,13 @@ def _max_by_axis(the_list):
     return maxes
 
 
-class NestedTensor(object):
+class NestedTensor:
     def __init__(self, tensors, mask: Optional[Tensor]):
         self.tensors = tensors
         self.mask = mask
 
     def to(self, device):
-        # type: (Device) -> NestedTensor # noqa
+        # type: (Device) -> NestedTensor
         cast_tensor = self.tensors.to(device)
         mask = self.mask
         if mask is not None:
@@ -77,7 +76,7 @@ def _onnx_nested_tensor_from_tensor_list(tensor_list: List[Tensor]) -> NestedTen
     max_size = []
     for i in range(tensor_list[0].dim()):
         max_size_i = torch.max(
-            torch.stack([img.shape[i] for img in tensor_list]).to(torch.float32)
+            torch.stack([img.shape[i] for img in tensor_list]).to(torch.float32),
         ).to(torch.int64)
         max_size.append(max_size_i)
     max_size = tuple(max_size)
@@ -109,6 +108,7 @@ def is_dist_avail_and_initialized():
     if not dist.is_initialized():
         return False
     return True
+
 
 def masks_to_boxes(masks):
     """Compute the bounding boxes around the provided masks

@@ -4,21 +4,17 @@
 # Licensed under the Apache License, Version 2.0 [see LICENSE for details]
 # ------------------------------------------------------------------------
 # Modified from Mask2Former https://github.com/facebookresearch/Mask2Former by Feng Li and Hao Zhang.
-import logging
-import fvcore.nn.weight_init as weight_init
 import torch
-from torch import nn
-from torch.nn import functional as F
-
 from detectron2.config import configurable
 from detectron2.layers import Conv2d
-from detectron2.utils.registry import Registry
 from detectron2.structures import BitMasks
-
-from .dino_decoder import TransformerDecoder, DeformableTransformerDecoderLayer
-from otx.algo.instance_segmentation.mask_dino.utils import MLP, gen_encoder_output_proposals, inverse_sigmoid
+from detectron2.utils.registry import Registry
+from fvcore.nn import weight_init
 from otx.algo.instance_segmentation.mask_dino import box_ops
+from otx.algo.instance_segmentation.mask_dino.utils import MLP, gen_encoder_output_proposals, inverse_sigmoid
+from torch import nn
 
+from .dino_decoder import DeformableTransformerDecoderLayer, TransformerDecoder
 
 TRANSFORMER_DECODER_REGISTRY = Registry("TRANSFORMER_MODULE")
 TRANSFORMER_DECODER_REGISTRY.__doc__ = """
@@ -27,9 +23,7 @@ Registry for transformer module in MaskDINO.
 
 
 def build_transformer_decoder(cfg, in_channels, mask_classification=True):
-    """
-    Build a instance embedding branch from `cfg.MODEL.INS_EMBED_HEAD.NAME`.
-    """
+    """Build a instance embedding branch from `cfg.MODEL.INS_EMBED_HEAD.NAME`."""
     name = cfg.MODEL.MaskDINO.TRANSFORMER_DECODER_NAME
     return TRANSFORMER_DECODER_REGISTRY.get(name)(cfg, in_channels, mask_classification)
 
@@ -38,37 +32,37 @@ def build_transformer_decoder(cfg, in_channels, mask_classification=True):
 class MaskDINODecoder(nn.Module):
     @configurable
     def __init__(
-            self,
-            in_channels,
-            mask_classification=True,
-            *,
-            num_classes: int,
-            hidden_dim: int,
-            num_queries: int,
-            nheads: int,
-            dim_feedforward: int,
-            dec_layers: int,
-            mask_dim: int,
-            enforce_input_project: bool,
-            two_stage: bool,
-            dn: str,
-            noise_scale:float,
-            dn_num:int,
-            initialize_box_type:bool,
-            initial_pred:bool,
-            learn_tgt: bool,
-            total_num_feature_levels: int = 4,
-            dropout: float = 0.0,
-            activation: str = 'relu',
-            nhead: int = 8,
-            dec_n_points: int = 4,
-            return_intermediate_dec: bool = True,
-            query_dim: int = 4,
-            dec_layer_share: bool = False,
-            semantic_ce_loss: bool = False,
+        self,
+        in_channels,
+        mask_classification=True,
+        *,
+        num_classes: int,
+        hidden_dim: int,
+        num_queries: int,
+        nheads: int,
+        dim_feedforward: int,
+        dec_layers: int,
+        mask_dim: int,
+        enforce_input_project: bool,
+        two_stage: bool,
+        dn: str,
+        noise_scale: float,
+        dn_num: int,
+        initialize_box_type: bool,
+        initial_pred: bool,
+        learn_tgt: bool,
+        total_num_feature_levels: int = 4,
+        dropout: float = 0.0,
+        activation: str = "relu",
+        nhead: int = 8,
+        dec_n_points: int = 4,
+        return_intermediate_dec: bool = True,
+        query_dim: int = 4,
+        dec_layer_share: bool = False,
+        semantic_ce_loss: bool = False,
     ):
-        """
-        NOTE: this interface is experimental.
+        """NOTE: this interface is experimental.
+
         Args:
             in_channels: channels of the input features
             mask_classification: whether to add mask classifier or not
@@ -101,13 +95,13 @@ class MaskDINODecoder(nn.Module):
         self.initial_pred = initial_pred
 
         # define Transformer decoder here
-        self.dn=dn
+        self.dn = dn
         self.learn_tgt = learn_tgt
-        self.noise_scale=noise_scale
-        self.dn_num=dn_num
+        self.noise_scale = noise_scale
+        self.dn_num = dn_num
         self.num_heads = nheads
         self.num_layers = dec_layers
-        self.two_stage=two_stage
+        self.two_stage = two_stage
         self.initialize_box_type = initialize_box_type
         self.total_num_feature_levels = total_num_feature_levels
 
@@ -116,7 +110,7 @@ class MaskDINODecoder(nn.Module):
         # learnable query features
         if not two_stage or self.learn_tgt:
             self.query_feat = nn.Embedding(num_queries, hidden_dim)
-        if not two_stage and initialize_box_type == 'no':
+        if not two_stage and initialize_box_type == "no":
             self.query_embed = nn.Embedding(num_queries, 4)
         if two_stage:
             self.enc_output = nn.Linear(hidden_dim, hidden_dim)
@@ -129,28 +123,32 @@ class MaskDINODecoder(nn.Module):
                 weight_init.c2_xavier_fill(self.input_proj[-1])
             else:
                 self.input_proj.append(nn.Sequential())
-        self.num_classes=num_classes
+        self.num_classes = num_classes
         # output FFNs
         assert self.mask_classification, "why not class embedding?"
         if self.mask_classification:
             if self.semantic_ce_loss:
-                self.class_embed = nn.Linear(hidden_dim, num_classes+1)
+                self.class_embed = nn.Linear(hidden_dim, num_classes + 1)
             else:
                 self.class_embed = nn.Linear(hidden_dim, num_classes)
-        self.label_enc=nn.Embedding(num_classes,hidden_dim)
+        self.label_enc = nn.Embedding(num_classes, hidden_dim)
         self.mask_embed = MLP(hidden_dim, hidden_dim, mask_dim, 3)
 
         # init decoder
         self.decoder_norm = decoder_norm = nn.LayerNorm(hidden_dim)
-        decoder_layer = DeformableTransformerDecoderLayer(hidden_dim, dim_feedforward,
-                                                          dropout, activation,
-                                                          self.num_feature_levels, nhead, dec_n_points)
-        self.decoder = TransformerDecoder(decoder_layer, self.num_layers, decoder_norm,
-                                          return_intermediate=return_intermediate_dec,
-                                          d_model=hidden_dim, query_dim=query_dim,
-                                          num_feature_levels=self.num_feature_levels,
-                                          dec_layer_share=dec_layer_share,
-                                          )
+        decoder_layer = DeformableTransformerDecoderLayer(
+            hidden_dim, dim_feedforward, dropout, activation, self.num_feature_levels, nhead, dec_n_points
+        )
+        self.decoder = TransformerDecoder(
+            decoder_layer,
+            self.num_layers,
+            decoder_norm,
+            return_intermediate=return_intermediate_dec,
+            d_model=hidden_dim,
+            query_dim=query_dim,
+            num_feature_levels=self.num_feature_levels,
+            dec_layer_share=dec_layer_share,
+        )
 
         self.hidden_dim = hidden_dim
         self._bbox_embed = _bbox_embed = MLP(hidden_dim, hidden_dim, 4, 3)
@@ -159,7 +157,6 @@ class MaskDINODecoder(nn.Module):
         box_embed_layerlist = [_bbox_embed for i in range(self.num_layers)]  # share box prediction each layer
         self.bbox_embed = nn.ModuleList(box_embed_layerlist)
         self.decoder.bbox_embed = self.bbox_embed
-
 
     @classmethod
     def from_config(cls, cfg, in_channels, mask_classification):
@@ -176,38 +173,41 @@ class MaskDINODecoder(nn.Module):
         ret["dec_layers"] = cfg.MODEL.MaskDINO.DEC_LAYERS
         ret["enforce_input_project"] = cfg.MODEL.MaskDINO.ENFORCE_INPUT_PROJ
         ret["mask_dim"] = cfg.MODEL.SEM_SEG_HEAD.MASK_DIM
-        ret["two_stage"] =cfg.MODEL.MaskDINO.TWO_STAGE
+        ret["two_stage"] = cfg.MODEL.MaskDINO.TWO_STAGE
         ret["initialize_box_type"] = cfg.MODEL.MaskDINO.INITIALIZE_BOX_TYPE  # ['no', 'bitmask', 'mask2box']
-        ret["dn"]=cfg.MODEL.MaskDINO.DN
-        ret["noise_scale"] =cfg.MODEL.MaskDINO.DN_NOISE_SCALE
-        ret["dn_num"] =cfg.MODEL.MaskDINO.DN_NUM
-        ret["initial_pred"] =cfg.MODEL.MaskDINO.INITIAL_PRED
+        ret["dn"] = cfg.MODEL.MaskDINO.DN
+        ret["noise_scale"] = cfg.MODEL.MaskDINO.DN_NOISE_SCALE
+        ret["dn_num"] = cfg.MODEL.MaskDINO.DN_NUM
+        ret["initial_pred"] = cfg.MODEL.MaskDINO.INITIAL_PRED
         ret["learn_tgt"] = cfg.MODEL.MaskDINO.LEARN_TGT
         ret["total_num_feature_levels"] = cfg.MODEL.SEM_SEG_HEAD.TOTAL_NUM_FEATURE_LEVELS
-        ret["semantic_ce_loss"] = cfg.MODEL.MaskDINO.TEST.SEMANTIC_ON and cfg.MODEL.MaskDINO.SEMANTIC_CE_LOSS and ~cfg.MODEL.MaskDINO.TEST.PANOPTIC_ON
+        ret["semantic_ce_loss"] = (
+            cfg.MODEL.MaskDINO.TEST.SEMANTIC_ON
+            and cfg.MODEL.MaskDINO.SEMANTIC_CE_LOSS
+            and ~cfg.MODEL.MaskDINO.TEST.PANOPTIC_ON
+        )
 
         return ret
 
     def prepare_for_dn(self, targets, tgt, refpoint_emb, batch_size):
-        """
-        modified from dn-detr. You can refer to dn-detr
+        """Modified from dn-detr. You can refer to dn-detr
         https://github.com/IDEA-Research/DN-DETR/blob/main/models/dn_dab_deformable_detr/dn_components.py
         for more details
             :param dn_args: scalar, noise_scale
             :param tgt: original tgt (content) in the matching part
             :param refpoint_emb: positional anchor queries in the matching part
             :param batch_size: bs
-            """
+        """
         if self.training:
-            scalar, noise_scale = self.dn_num,self.noise_scale
+            scalar, noise_scale = self.dn_num, self.noise_scale
 
-            known = [(torch.ones_like(t['labels'])).cuda() for t in targets]
+            known = [(torch.ones_like(t["labels"])).cuda() for t in targets]
             know_idx = [torch.nonzero(t) for t in known]
             known_num = [sum(k) for k in known]
 
             # use fix number of dn queries
-            if max(known_num)>0:
-                scalar = scalar//(int(max(known_num)))
+            if max(known_num) > 0:
+                scalar = scalar // (int(max(known_num)))
             else:
                 scalar = 0
             if scalar == 0:
@@ -219,9 +219,9 @@ class MaskDINODecoder(nn.Module):
 
             # can be modified to selectively denosie some label or boxes; also known label prediction
             unmask_bbox = unmask_label = torch.cat(known)
-            labels = torch.cat([t['labels'] for t in targets])
-            boxes = torch.cat([t['boxes'] for t in targets])
-            batch_idx = torch.cat([torch.full_like(t['labels'].long(), i) for i, t in enumerate(targets)])
+            labels = torch.cat([t["labels"] for t in targets])
+            boxes = torch.cat([t["boxes"] for t in targets])
+            batch_idx = torch.cat([torch.full_like(t["labels"].long(), i) for i, t in enumerate(targets)])
             # known
             known_indice = torch.nonzero(unmask_label + unmask_bbox)
             known_indice = known_indice.view(-1)
@@ -244,11 +244,12 @@ class MaskDINODecoder(nn.Module):
                 diff = torch.zeros_like(known_bbox_expand)
                 diff[:, :2] = known_bbox_expand[:, 2:] / 2
                 diff[:, 2:] = known_bbox_expand[:, 2:]
-                known_bbox_expand += torch.mul((torch.rand_like(known_bbox_expand) * 2 - 1.0),
-                                               diff).cuda() * noise_scale
+                known_bbox_expand += (
+                    torch.mul((torch.rand_like(known_bbox_expand) * 2 - 1.0), diff).cuda() * noise_scale
+                )
                 known_bbox_expand = known_bbox_expand.clamp(min=0.0, max=1.0)
 
-            m = known_labels_expaned.long().to('cuda')
+            m = known_labels_expaned.long().to("cuda")
             input_label_embed = self.label_enc(m)
             input_bbox_embed = inverse_sigmoid(known_bbox_expand)
             single_pad = int(max(known_num))
@@ -257,15 +258,15 @@ class MaskDINODecoder(nn.Module):
             padding_label = torch.zeros(pad_size, self.hidden_dim).cuda()
             padding_bbox = torch.zeros(pad_size, 4).cuda()
 
-            if not refpoint_emb is None:
+            if refpoint_emb is not None:
                 input_query_label = torch.cat([padding_label, tgt], dim=0).repeat(batch_size, 1, 1)
                 input_query_bbox = torch.cat([padding_bbox, refpoint_emb], dim=0).repeat(batch_size, 1, 1)
             else:
-                input_query_label=padding_label.repeat(batch_size, 1, 1)
+                input_query_label = padding_label.repeat(batch_size, 1, 1)
                 input_query_bbox = padding_bbox.repeat(batch_size, 1, 1)
 
             # map
-            map_known_indice = torch.tensor([]).to('cuda')
+            map_known_indice = torch.tensor([]).to("cuda")
             if len(known_num):
                 map_known_indice = torch.cat([torch.tensor(range(num)) for num in known_num])  # [1,2, 1,2,3]
                 map_known_indice = torch.cat([map_known_indice + single_pad * i for i in range(scalar)]).long()
@@ -274,61 +275,64 @@ class MaskDINODecoder(nn.Module):
                 input_query_bbox[(known_bid.long(), map_known_indice)] = input_bbox_embed
 
             tgt_size = pad_size + self.num_queries
-            attn_mask = torch.ones(tgt_size, tgt_size).to('cuda') < 0
+            attn_mask = torch.ones(tgt_size, tgt_size).to("cuda") < 0
             # match query cannot see the reconstruct
             attn_mask[pad_size:, :pad_size] = True
             # reconstruct cannot see each other
             for i in range(scalar):
                 if i == 0:
-                    attn_mask[single_pad * i:single_pad * (i + 1), single_pad * (i + 1):pad_size] = True
+                    attn_mask[single_pad * i : single_pad * (i + 1), single_pad * (i + 1) : pad_size] = True
                 if i == scalar - 1:
-                    attn_mask[single_pad * i:single_pad * (i + 1), :single_pad * i] = True
+                    attn_mask[single_pad * i : single_pad * (i + 1), : single_pad * i] = True
                 else:
-                    attn_mask[single_pad * i:single_pad * (i + 1), single_pad * (i + 1):pad_size] = True
-                    attn_mask[single_pad * i:single_pad * (i + 1), :single_pad * i] = True
+                    attn_mask[single_pad * i : single_pad * (i + 1), single_pad * (i + 1) : pad_size] = True
+                    attn_mask[single_pad * i : single_pad * (i + 1), : single_pad * i] = True
             mask_dict = {
-                'known_indice': torch.as_tensor(known_indice).long(),
-                'batch_idx': torch.as_tensor(batch_idx).long(),
-                'map_known_indice': torch.as_tensor(map_known_indice).long(),
-                'known_lbs_bboxes': (known_labels, known_bboxs),
-                'know_idx': know_idx,
-                'pad_size': pad_size,
-                'scalar': scalar,
+                "known_indice": torch.as_tensor(known_indice).long(),
+                "batch_idx": torch.as_tensor(batch_idx).long(),
+                "map_known_indice": torch.as_tensor(map_known_indice).long(),
+                "known_lbs_bboxes": (known_labels, known_bboxs),
+                "know_idx": know_idx,
+                "pad_size": pad_size,
+                "scalar": scalar,
             }
         else:
-            if not refpoint_emb is None:
+            if refpoint_emb is not None:
                 input_query_label = tgt.repeat(batch_size, 1, 1)
                 input_query_bbox = refpoint_emb.repeat(batch_size, 1, 1)
             else:
-                input_query_label=None
-                input_query_bbox=None
+                input_query_label = None
+                input_query_bbox = None
             attn_mask = None
-            mask_dict=None
+            mask_dict = None
 
         # 100*batch*256
-        if not input_query_bbox is None:
+        if input_query_bbox is not None:
             input_query_label = input_query_label
             input_query_bbox = input_query_bbox
 
-        return input_query_label,input_query_bbox,attn_mask,mask_dict
+        return input_query_label, input_query_bbox, attn_mask, mask_dict
 
     def dn_post_process(self, outputs_class, outputs_coord, mask_dict, outputs_mask):
+        """Post process of dn after output from the transformer
+        put the dn part in the mask_dict
         """
-            post process of dn after output from the transformer
-            put the dn part in the mask_dict
-            """
-        assert mask_dict['pad_size'] > 0
-        output_known_class = outputs_class[:, :, :mask_dict['pad_size'], :]
-        outputs_class = outputs_class[:, :, mask_dict['pad_size']:, :]
-        output_known_coord = outputs_coord[:, :, :mask_dict['pad_size'], :]
-        outputs_coord = outputs_coord[:, :, mask_dict['pad_size']:, :]
+        assert mask_dict["pad_size"] > 0
+        output_known_class = outputs_class[:, :, : mask_dict["pad_size"], :]
+        outputs_class = outputs_class[:, :, mask_dict["pad_size"] :, :]
+        output_known_coord = outputs_coord[:, :, : mask_dict["pad_size"], :]
+        outputs_coord = outputs_coord[:, :, mask_dict["pad_size"] :, :]
         if outputs_mask is not None:
-            output_known_mask = outputs_mask[:, :, :mask_dict['pad_size'], :]
-            outputs_mask = outputs_mask[:, :, mask_dict['pad_size']:, :]
-        out = {'pred_logits': output_known_class[-1], 'pred_boxes': output_known_coord[-1],'pred_masks': output_known_mask[-1]}
+            output_known_mask = outputs_mask[:, :, : mask_dict["pad_size"], :]
+            outputs_mask = outputs_mask[:, :, mask_dict["pad_size"] :, :]
+        out = {
+            "pred_logits": output_known_class[-1],
+            "pred_boxes": output_known_coord[-1],
+            "pred_masks": output_known_mask[-1],
+        }
 
-        out['aux_outputs'] = self._set_aux_loss(output_known_class, output_known_mask,output_known_coord)
-        mask_dict['output_known_lbs_bboxes']=out
+        out["aux_outputs"] = self._set_aux_loss(output_known_class, output_known_mask, output_known_coord)
+        mask_dict["output_known_lbs_bboxes"] = out
         return outputs_class, outputs_coord, outputs_mask
 
     def get_valid_ratio(self, mask):
@@ -341,8 +345,7 @@ class MaskDINODecoder(nn.Module):
         return valid_ratio
 
     def pred_box(self, reference, hs, ref0=None):
-        """
-        :param reference: reference box coordinates from each decoder layer
+        """:param reference: reference box coordinates from each decoder layer
         :param hs: content
         :param ref0: whether there are prediction from the first layer
         """
@@ -361,8 +364,7 @@ class MaskDINODecoder(nn.Module):
         return outputs_coord_list
 
     def forward(self, x, mask_features, masks, targets=None):
-        """
-        :param x: input, a list of multi-scale feature
+        """:param x: input, a list of multi-scale feature
         :param mask_features: is the per-pixel embeddings with resolution 1/4 of the original image,
         obtained by fusing backbone encoder encoded features. This is used to produce binary masks.
         :param masks: mask in the original image
@@ -378,13 +380,15 @@ class MaskDINODecoder(nn.Module):
                 if src.size(2) % 32 or src.size(3) % 32:
                     enable_mask = 1
         if enable_mask == 0:
-            masks = [torch.zeros((src.size(0), src.size(2), src.size(3)), device=src.device, dtype=torch.bool) for src in x]
+            masks = [
+                torch.zeros((src.size(0), src.size(2), src.size(3)), device=src.device, dtype=torch.bool) for src in x
+            ]
         src_flatten = []
         mask_flatten = []
         spatial_shapes = []
         for i in range(self.num_feature_levels):
-            idx = self.num_feature_levels-1-i
-            bs, c , h, w = x[idx].shape
+            idx = self.num_feature_levels - 1 - i
+            bs, c, h, w = x[idx].shape
             size_list.append(x[i].shape[-2:])
             spatial_shapes.append(x[idx].shape[-2:])
             src_flatten.append(self.input_proj[idx](x[idx]).flatten(2).transpose(1, 2))
@@ -401,39 +405,43 @@ class MaskDINODecoder(nn.Module):
             output_memory, output_proposals = gen_encoder_output_proposals(src_flatten, mask_flatten, spatial_shapes)
             output_memory = self.enc_output_norm(self.enc_output(output_memory))
             enc_outputs_class_unselected = self.class_embed(output_memory)
-            enc_outputs_coord_unselected = self._bbox_embed(
-                output_memory) + output_proposals  # (bs, \sum{hw}, 4) unsigmoid
+            enc_outputs_coord_unselected = (
+                self._bbox_embed(output_memory) + output_proposals
+            )  # (bs, \sum{hw}, 4) unsigmoid
             topk = self.num_queries
             topk_proposals = torch.topk(enc_outputs_class_unselected.max(-1)[0], topk, dim=1)[1]
-            refpoint_embed_undetach = torch.gather(enc_outputs_coord_unselected, 1,
-                                                   topk_proposals.unsqueeze(-1).repeat(1, 1, 4))  # unsigmoid
+            refpoint_embed_undetach = torch.gather(
+                enc_outputs_coord_unselected, 1, topk_proposals.unsqueeze(-1).repeat(1, 1, 4)
+            )  # unsigmoid
             refpoint_embed = refpoint_embed_undetach.detach()
 
-            tgt_undetach = torch.gather(output_memory, 1,
-                                  topk_proposals.unsqueeze(-1).repeat(1, 1, self.hidden_dim))  # unsigmoid
+            tgt_undetach = torch.gather(
+                output_memory, 1, topk_proposals.unsqueeze(-1).repeat(1, 1, self.hidden_dim)
+            )  # unsigmoid
 
             outputs_class, outputs_mask = self.forward_prediction_heads(tgt_undetach.transpose(0, 1), mask_features)
             tgt = tgt_undetach.detach()
             if self.learn_tgt:
                 tgt = self.query_feat.weight[None].repeat(bs, 1, 1)
-            interm_outputs=dict()
-            interm_outputs['pred_logits'] = outputs_class
-            interm_outputs['pred_boxes'] = refpoint_embed_undetach.sigmoid()
-            interm_outputs['pred_masks'] = outputs_mask
+            interm_outputs = dict()
+            interm_outputs["pred_logits"] = outputs_class
+            interm_outputs["pred_boxes"] = refpoint_embed_undetach.sigmoid()
+            interm_outputs["pred_masks"] = outputs_mask
 
-            if self.initialize_box_type != 'no':
+            if self.initialize_box_type != "no":
                 # convert masks into boxes to better initialize box in the decoder
                 assert self.initial_pred
                 flaten_mask = outputs_mask.detach().flatten(0, 1)
                 h, w = outputs_mask.shape[-2:]
-                if self.initialize_box_type == 'bitmask':  # slower, but more accurate
+                if self.initialize_box_type == "bitmask":  # slower, but more accurate
                     refpoint_embed = BitMasks(flaten_mask > 0).get_bounding_boxes().tensor.to(device)
-                elif self.initialize_box_type == 'mask2box':  # faster conversion
+                elif self.initialize_box_type == "mask2box":  # faster conversion
                     refpoint_embed = box_ops.masks_to_boxes(flaten_mask > 0).to(device)
                 else:
                     assert NotImplementedError
-                refpoint_embed = box_ops.box_xyxy_to_cxcywh(refpoint_embed) / torch.as_tensor([w, h, w, h],
-                                                                                              dtype=torch.float).to(device)
+                refpoint_embed = box_ops.box_xyxy_to_cxcywh(refpoint_embed) / torch.as_tensor(
+                    [w, h, w, h], dtype=torch.float
+                ).to(device)
                 refpoint_embed = refpoint_embed.reshape(outputs_mask.shape[0], outputs_mask.shape[1], 4)
                 refpoint_embed = inverse_sigmoid(refpoint_embed)
         elif not self.two_stage:
@@ -444,18 +452,21 @@ class MaskDINODecoder(nn.Module):
         mask_dict = None
         if self.dn != "no" and self.training:
             assert targets is not None
-            input_query_label, input_query_bbox, tgt_mask, mask_dict = \
-                self.prepare_for_dn(targets, None, None, x[0].shape[0])
+            input_query_label, input_query_bbox, tgt_mask, mask_dict = self.prepare_for_dn(
+                targets, None, None, x[0].shape[0]
+            )
             if mask_dict is not None:
-                tgt=torch.cat([input_query_label, tgt],dim=1)
+                tgt = torch.cat([input_query_label, tgt], dim=1)
 
         # direct prediction from the matching and denoising part in the begining
         if self.initial_pred:
-            outputs_class, outputs_mask = self.forward_prediction_heads(tgt.transpose(0, 1), mask_features, self.training)
+            outputs_class, outputs_mask = self.forward_prediction_heads(
+                tgt.transpose(0, 1), mask_features, self.training
+            )
             predictions_class.append(outputs_class)
             predictions_mask.append(outputs_mask)
         if self.dn != "no" and self.training and mask_dict is not None:
-            refpoint_embed=torch.cat([input_query_bbox,refpoint_embed],dim=1)
+            refpoint_embed = torch.cat([input_query_bbox, refpoint_embed], dim=1)
 
         hs, references = self.decoder(
             tgt=tgt.transpose(0, 1),
@@ -466,10 +477,12 @@ class MaskDINODecoder(nn.Module):
             level_start_index=level_start_index,
             spatial_shapes=spatial_shapes,
             valid_ratios=valid_ratios,
-            tgt_mask=tgt_mask
+            tgt_mask=tgt_mask,
         )
         for i, output in enumerate(hs):
-            outputs_class, outputs_mask = self.forward_prediction_heads(output.transpose(0, 1), mask_features, self.training or (i == len(hs)-1))
+            outputs_class, outputs_mask = self.forward_prediction_heads(
+                output.transpose(0, 1), mask_features, self.training or (i == len(hs) - 1)
+            )
             predictions_class.append(outputs_class)
             predictions_mask.append(outputs_mask)
 
@@ -480,24 +493,27 @@ class MaskDINODecoder(nn.Module):
         else:
             out_boxes = self.pred_box(references, hs)
         if mask_dict is not None:
-            predictions_mask=torch.stack(predictions_mask)
-            predictions_class=torch.stack(predictions_class)
-            predictions_class, out_boxes,predictions_mask=\
-                self.dn_post_process(predictions_class,out_boxes,mask_dict,predictions_mask)
-            predictions_class,predictions_mask=list(predictions_class),list(predictions_mask)
+            predictions_mask = torch.stack(predictions_mask)
+            predictions_class = torch.stack(predictions_class)
+            predictions_class, out_boxes, predictions_mask = self.dn_post_process(
+                predictions_class, out_boxes, mask_dict, predictions_mask
+            )
+            predictions_class, predictions_mask = list(predictions_class), list(predictions_mask)
         elif self.training:  # this is to insure self.label_enc participate in the model
-            predictions_class[-1] += 0.0*self.label_enc.weight.sum()
+            predictions_class[-1] += 0.0 * self.label_enc.weight.sum()
 
         out = {
-            'pred_logits': predictions_class[-1],
-            'pred_masks': predictions_mask[-1],
-            'pred_boxes':out_boxes[-1],
-            'aux_outputs': self._set_aux_loss(
-                predictions_class if self.mask_classification else None, predictions_mask,out_boxes
-            )
+            "pred_logits": predictions_class[-1],
+            "pred_masks": predictions_mask[-1],
+            "pred_boxes": out_boxes[-1],
+            "aux_outputs": self._set_aux_loss(
+                predictions_class if self.mask_classification else None,
+                predictions_mask,
+                out_boxes,
+            ),
         }
         if self.two_stage:
-            out['interm_outputs'] = interm_outputs
+            out["interm_outputs"] = interm_outputs
         return out, mask_dict
 
     def forward_prediction_heads(self, output, mask_features, pred_mask=True):
@@ -518,12 +534,9 @@ class MaskDINODecoder(nn.Module):
         # as a dict having both a Tensor and a list.
         # if self.mask_classification:
         if out_boxes is None:
-            return [
-                {"pred_logits": a, "pred_masks": b}
-                for a, b in zip(outputs_class[:-1], outputs_seg_masks[:-1])
-            ]
+            return [{"pred_logits": a, "pred_masks": b} for a, b in zip(outputs_class[:-1], outputs_seg_masks[:-1])]
         else:
             return [
-                {"pred_logits": a, "pred_masks": b, "pred_boxes":c}
+                {"pred_logits": a, "pred_masks": b, "pred_boxes": c}
                 for a, b, c in zip(outputs_class[:-1], outputs_seg_masks[:-1], out_boxes[:-1])
             ]

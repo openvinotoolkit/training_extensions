@@ -1,14 +1,13 @@
-import torch
 import copy
-from torch import nn, Tensor
-
 import math
+
+import torch
 import torch.nn.functional as F
-from torch import nn
+from torch import Tensor, nn
 
 
 class MLP(nn.Module):
-    """ Very simple multi-layer perceptron (also called FFN)"""
+    """Very simple multi-layer perceptron (also called FFN)"""
 
     def __init__(self, input_dim, hidden_dim, output_dim, num_layers):
         super().__init__()
@@ -26,12 +25,11 @@ def inverse_sigmoid(x, eps=1e-5):
     x = x.clamp(min=0, max=1)
     x1 = x.clamp(min=eps)
     x2 = (1 - x).clamp(min=eps)
-    return torch.log(x1/x2)
+    return torch.log(x1 / x2)
 
 
-def gen_encoder_output_proposals(memory:Tensor, memory_padding_mask:Tensor, spatial_shapes:Tensor):
-    """
-    Input:
+def gen_encoder_output_proposals(memory: Tensor, memory_padding_mask: Tensor, spatial_shapes: Tensor):
+    r"""Input:
         - memory: bs, \sum{hw}, d_model
         - memory_padding_mask: bs, \sum{hw}
         - spatial_shapes: nlevel, 2
@@ -44,25 +42,27 @@ def gen_encoder_output_proposals(memory:Tensor, memory_padding_mask:Tensor, spat
     proposals = []
     _cur = 0
     for lvl, (H_, W_) in enumerate(spatial_shapes):
-        mask_flatten_ = memory_padding_mask[:, _cur:(_cur + H_ * W_)].view(N_, H_, W_, 1)
+        mask_flatten_ = memory_padding_mask[:, _cur : (_cur + H_ * W_)].view(N_, H_, W_, 1)
         valid_H = torch.sum(~mask_flatten_[:, :, 0, 0], 1)
         valid_W = torch.sum(~mask_flatten_[:, 0, :, 0], 1)
 
-        grid_y, grid_x = torch.meshgrid(torch.linspace(0, H_ - 1, H_, dtype=torch.float32, device=memory.device),
-                                        torch.linspace(0, W_ - 1, W_, dtype=torch.float32, device=memory.device))
+        grid_y, grid_x = torch.meshgrid(
+            torch.linspace(0, H_ - 1, H_, dtype=torch.float32, device=memory.device),
+            torch.linspace(0, W_ - 1, W_, dtype=torch.float32, device=memory.device),
+        )
         grid = torch.cat([grid_x.unsqueeze(-1), grid_y.unsqueeze(-1)], -1)
 
         scale = torch.cat([valid_W.unsqueeze(-1), valid_H.unsqueeze(-1)], 1).view(N_, 1, 1, 2)
         grid = (grid.unsqueeze(0).expand(N_, -1, -1, -1) + 0.5) / scale
-        wh = torch.ones_like(grid) * 0.05 * (2.0 ** lvl)
+        wh = torch.ones_like(grid) * 0.05 * (2.0**lvl)
         proposal = torch.cat((grid, wh), -1).view(N_, -1, 4)
         proposals.append(proposal)
-        _cur += (H_ * W_)
+        _cur += H_ * W_
     output_proposals = torch.cat(proposals, 1)
     output_proposals_valid = ((output_proposals > 0.01) & (output_proposals < 0.99)).all(-1, keepdim=True)
     output_proposals = torch.log(output_proposals / (1 - output_proposals))
-    output_proposals = output_proposals.masked_fill(memory_padding_mask.unsqueeze(-1), float('inf'))
-    output_proposals = output_proposals.masked_fill(~output_proposals_valid, float('inf'))
+    output_proposals = output_proposals.masked_fill(memory_padding_mask.unsqueeze(-1), float("inf"))
+    output_proposals = output_proposals.masked_fill(~output_proposals_valid, float("inf"))
 
     output_memory = memory
     output_memory = output_memory.masked_fill(memory_padding_mask.unsqueeze(-1), float(0))
@@ -95,7 +95,7 @@ def gen_sineembed_for_position(pos_tensor):
 
         pos = torch.cat((pos_y, pos_x, pos_w, pos_h), dim=2)
     else:
-        raise ValueError("Unknown pos_tensor shape(-1):{}".format(pos_tensor.size(-1)))
+        raise ValueError(f"Unknown pos_tensor shape(-1):{pos_tensor.size(-1)}")
     return pos
 
 
@@ -111,11 +111,10 @@ def _get_activation_fn(activation):
         return nn.PReLU()
     if activation == "selu":
         return F.selu
-    raise RuntimeError(F"activation should be relu/gelu, not {activation}.")
+    raise RuntimeError(f"activation should be relu/gelu, not {activation}.")
 
 
 def _get_clones(module, N, layer_share=False):
-
     if layer_share:
         return nn.ModuleList([module for i in range(N)])
     else:
