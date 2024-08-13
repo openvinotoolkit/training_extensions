@@ -330,10 +330,9 @@ class MaskRCNNEfficientNet(MaskRCNN):
                 "type": "efficientnet_b2b",
                 "out_indices": [2, 3, 4, 5],
                 "frozen_stages": -1,
-                "pretrained": True,
+                "pretrained": False,
                 "activation_callable": nn.SiLU,
                 "norm_cfg": {"type": "BN", "requires_grad": True},
-                "pretrained": False,
             },
         )
 
