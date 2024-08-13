@@ -142,7 +142,7 @@ class SAM(OTXVisualPromptingModel):
 
     def __init__(
         self,
-        backbone: Literal["tiny_vit", "vit_b"],
+        backbone_type: Literal["tiny_vit", "vit_b"],
         label_info: LabelInfoTypes = NullLabelInfo(),
         input_size: Sequence[int] = (1, 3, 1024, 1024),
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
@@ -157,7 +157,7 @@ class SAM(OTXVisualPromptingModel):
         return_extra_metrics: bool = False,
         stability_score_offset: float = 1.0,
     ) -> None:
-        self.backbone = backbone
+        self.backbone_type = backbone_type
         self.image_size = input_size[-1]
         self.image_embedding_size = input_size[-1] // 16
 
@@ -178,11 +178,11 @@ class SAM(OTXVisualPromptingModel):
         )
 
         # TODO (sungchul): update to use `load_from`
-        self.load_checkpoint(load_from=DEFAULT_CONFIG_SEGMENT_ANYTHING[backbone]["load_from"])
+        self.load_checkpoint(load_from=DEFAULT_CONFIG_SEGMENT_ANYTHING[backbone_type]["load_from"])
         self.freeze_networks(freeze_image_encoder, freeze_prompt_encoder, freeze_mask_decoder)
 
     def _build_model(self) -> nn.Module:
-        image_encoder = SAMImageEncoder(backbone=self.backbone)
+        image_encoder = SAMImageEncoder(backbone=self.backbone_type)
         prompt_encoder = SAMPromptEncoder(
             image_embedding_size=(self.image_embedding_size, self.image_embedding_size),
             input_image_size=(self.image_size, self.image_size),
