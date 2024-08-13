@@ -48,7 +48,7 @@ def get_extensions():
             raise NotImplementedError("CUDA_HOME is None. Please set environment variable CUDA_HOME.")
         else:
             raise NotImplementedError(
-                "No CUDA runtime is found. Please set FORCE_CUDA=1 or test it by running torch.cuda.is_available()."
+                "No CUDA runtime is found. Please set FORCE_CUDA=1 or test it by running torch.cuda.is_available().",
             )
 
     sources = [os.path.join(extensions_dir, s) for s in sources]

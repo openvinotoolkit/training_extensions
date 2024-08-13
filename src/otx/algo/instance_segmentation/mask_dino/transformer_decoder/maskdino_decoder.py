@@ -137,7 +137,13 @@ class MaskDINODecoder(nn.Module):
         # init decoder
         self.decoder_norm = decoder_norm = nn.LayerNorm(hidden_dim)
         decoder_layer = DeformableTransformerDecoderLayer(
-            hidden_dim, dim_feedforward, dropout, activation, self.num_feature_levels, nhead, dec_n_points
+            hidden_dim,
+            dim_feedforward,
+            dropout,
+            activation,
+            self.num_feature_levels,
+            nhead,
+            dec_n_points,
         )
         self.decoder = TransformerDecoder(
             decoder_layer,
@@ -411,12 +417,16 @@ class MaskDINODecoder(nn.Module):
             topk = self.num_queries
             topk_proposals = torch.topk(enc_outputs_class_unselected.max(-1)[0], topk, dim=1)[1]
             refpoint_embed_undetach = torch.gather(
-                enc_outputs_coord_unselected, 1, topk_proposals.unsqueeze(-1).repeat(1, 1, 4)
+                enc_outputs_coord_unselected,
+                1,
+                topk_proposals.unsqueeze(-1).repeat(1, 1, 4),
             )  # unsigmoid
             refpoint_embed = refpoint_embed_undetach.detach()
 
             tgt_undetach = torch.gather(
-                output_memory, 1, topk_proposals.unsqueeze(-1).repeat(1, 1, self.hidden_dim)
+                output_memory,
+                1,
+                topk_proposals.unsqueeze(-1).repeat(1, 1, self.hidden_dim),
             )  # unsigmoid
 
             outputs_class, outputs_mask = self.forward_prediction_heads(tgt_undetach.transpose(0, 1), mask_features)
@@ -440,7 +450,8 @@ class MaskDINODecoder(nn.Module):
                 else:
                     assert NotImplementedError
                 refpoint_embed = box_ops.box_xyxy_to_cxcywh(refpoint_embed) / torch.as_tensor(
-                    [w, h, w, h], dtype=torch.float
+                    [w, h, w, h],
+                    dtype=torch.float,
                 ).to(device)
                 refpoint_embed = refpoint_embed.reshape(outputs_mask.shape[0], outputs_mask.shape[1], 4)
                 refpoint_embed = inverse_sigmoid(refpoint_embed)
@@ -453,7 +464,10 @@ class MaskDINODecoder(nn.Module):
         if self.dn != "no" and self.training:
             assert targets is not None
             input_query_label, input_query_bbox, tgt_mask, mask_dict = self.prepare_for_dn(
-                targets, None, None, x[0].shape[0]
+                targets,
+                None,
+                None,
+                x[0].shape[0],
             )
             if mask_dict is not None:
                 tgt = torch.cat([input_query_label, tgt], dim=1)
@@ -461,7 +475,9 @@ class MaskDINODecoder(nn.Module):
         # direct prediction from the matching and denoising part in the begining
         if self.initial_pred:
             outputs_class, outputs_mask = self.forward_prediction_heads(
-                tgt.transpose(0, 1), mask_features, self.training
+                tgt.transpose(0, 1),
+                mask_features,
+                self.training,
             )
             predictions_class.append(outputs_class)
             predictions_mask.append(outputs_mask)
@@ -481,7 +497,9 @@ class MaskDINODecoder(nn.Module):
         )
         for i, output in enumerate(hs):
             outputs_class, outputs_mask = self.forward_prediction_heads(
-                output.transpose(0, 1), mask_features, self.training or (i == len(hs) - 1)
+                output.transpose(0, 1),
+                mask_features,
+                self.training or (i == len(hs) - 1),
             )
             predictions_class.append(outputs_class)
             predictions_mask.append(outputs_mask)
@@ -496,7 +514,10 @@ class MaskDINODecoder(nn.Module):
             predictions_mask = torch.stack(predictions_mask)
             predictions_class = torch.stack(predictions_class)
             predictions_class, out_boxes, predictions_mask = self.dn_post_process(
-                predictions_class, out_boxes, mask_dict, predictions_mask
+                predictions_class,
+                out_boxes,
+                mask_dict,
+                predictions_mask,
             )
             predictions_class, predictions_mask = list(predictions_class), list(predictions_mask)
         elif self.training:  # this is to insure self.label_enc participate in the model

@@ -12,9 +12,9 @@ DATASETS:
   PROPOSAL_FILES_TEST: []
   PROPOSAL_FILES_TRAIN: []
   TEST:
-  - coco_2017_val
+    - coco_2017_val
   TRAIN:
-  - coco_2017_train
+    - coco_2017_train
 Default_loading: true
 GLOBAL:
   HACK: 1.0
@@ -24,8 +24,8 @@ INPUT:
     ENABLED: false
     SINGLE_CATEGORY_MAX_AREA: 1.0
     SIZE:
-    - 0.9
-    - 0.9
+      - 0.9
+      - 0.9
     TYPE: relative_range
   DATASET_MAPPER_NAME: coco_instance_lsj
   FORMAT: RGB
@@ -37,28 +37,28 @@ INPUT:
   MIN_SCALE: 0.1
   MIN_SIZE_TEST: 800
   MIN_SIZE_TRAIN:
-  - 800
+    - 800
   MIN_SIZE_TRAIN_SAMPLING: choice
   RANDOM_FLIP: horizontal
   SIZE_DIVISIBILITY: -1
 MODEL:
   ANCHOR_GENERATOR:
     ANGLES:
-    - - -90
-      - 0
-      - 90
+      - - -90
+        - 0
+        - 90
     ASPECT_RATIOS:
-    - - 0.5
-      - 1.0
-      - 2.0
+      - - 0.5
+        - 1.0
+        - 2.0
     NAME: DefaultAnchorGenerator
     OFFSET: 0.0
     SIZES:
-    - - 32
-      - 64
-      - 128
-      - 256
-      - 512
+      - - 32
+        - 64
+        - 128
+        - 256
+        - 512
   BACKBONE:
     FREEZE_AT: 0
     NAME: build_resnet_backbone
@@ -66,7 +66,7 @@ MODEL:
   FPN:
     FUSE_TYPE: sum
     IN_FEATURES: []
-    NORM: ''
+    NORM: ""
     OUT_CHANNELS: 256
   KEYPOINT_ON: false
   LOAD_PROPOSALS: false
@@ -129,13 +129,13 @@ MODEL:
       STUFF_AREA_LIMIT: 4096
     INSTANCE_LOSS_WEIGHT: 1.0
   PIXEL_MEAN:
-  - 123.675
-  - 116.28
-  - 103.53
+    - 123.675
+    - 116.28
+    - 103.53
   PIXEL_STD:
-  - 58.395
-  - 57.12
-  - 57.375
+    - 58.395
+    - 57.12
+    - 57.375
   PROPOSAL_GENERATOR:
     MIN_SIZE: 0
     NAME: RPN
@@ -143,25 +143,25 @@ MODEL:
     DEFORM_MODULATED: false
     DEFORM_NUM_GROUPS: 1
     DEFORM_ON_PER_STAGE:
-    - false
-    - false
-    - false
-    - false
+      - false
+      - false
+      - false
+      - false
     DEPTH: 50
     NORM: FrozenBN
     NUM_GROUPS: 1
     OUT_FEATURES:
-    - res2
-    - res3
-    - res4
-    - res5
+      - res2
+      - res3
+      - res4
+      - res5
     RES2_OUT_CHANNELS: 256
     RES4_DILATION: 1
     RES5_DILATION: 1
     RES5_MULTI_GRID:
-    - 1
-    - 1
-    - 1
+      - 1
+      - 1
+      - 1
     STEM_OUT_CHANNELS: 64
     STEM_TYPE: basic
     STRIDE_IN_1X1: false
@@ -169,27 +169,27 @@ MODEL:
   RETINANET:
     BBOX_REG_LOSS_TYPE: smooth_l1
     BBOX_REG_WEIGHTS: &id002
-    - 1.0
-    - 1.0
-    - 1.0
-    - 1.0
+      - 1.0
+      - 1.0
+      - 1.0
+      - 1.0
     FOCAL_LOSS_ALPHA: 0.25
     FOCAL_LOSS_GAMMA: 2.0
     IN_FEATURES:
-    - p3
-    - p4
-    - p5
-    - p6
-    - p7
+      - p3
+      - p4
+      - p5
+      - p6
+      - p7
     IOU_LABELS:
-    - 0
-    - -1
-    - 1
+      - 0
+      - -1
+      - 1
     IOU_THRESHOLDS:
-    - 0.4
-    - 0.5
+      - 0.4
+      - 0.5
     NMS_THRESH_TEST: 0.5
-    NORM: ''
+    NORM: ""
     NUM_CLASSES: 80
     NUM_CONVS: 4
     PRIOR_PROB: 0.01
@@ -198,23 +198,23 @@ MODEL:
     TOPK_CANDIDATES_TEST: 1000
   ROI_BOX_CASCADE_HEAD:
     BBOX_REG_WEIGHTS:
-    - &id001
-      - 10.0
-      - 10.0
-      - 5.0
-      - 5.0
-    - - 20.0
-      - 20.0
-      - 10.0
-      - 10.0
-    - - 30.0
-      - 30.0
-      - 15.0
-      - 15.0
+      - &id001
+        - 10.0
+        - 10.0
+        - 5.0
+        - 5.0
+      - - 20.0
+        - 20.0
+        - 10.0
+        - 10.0
+      - - 30.0
+        - 30.0
+        - 15.0
+        - 15.0
     IOUS:
-    - 0.5
-    - 0.6
-    - 0.7
+      - 0.5
+      - 0.6
+      - 0.7
   ROI_BOX_HEAD:
     BBOX_REG_LOSS_TYPE: smooth_l1
     BBOX_REG_LOSS_WEIGHT: 1.0
@@ -224,8 +224,8 @@ MODEL:
     FC_DIM: 1024
     FED_LOSS_FREQ_WEIGHT_POWER: 0.5
     FED_LOSS_NUM_CLASSES: 50
-    NAME: ''
-    NORM: ''
+    NAME: ""
+    NORM: ""
     NUM_CONV: 0
     NUM_FC: 0
     POOLER_RESOLUTION: 14
@@ -238,12 +238,12 @@ MODEL:
   ROI_HEADS:
     BATCH_SIZE_PER_IMAGE: 512
     IN_FEATURES:
-    - res4
+      - res4
     IOU_LABELS:
-    - 0
-    - 1
+      - 0
+      - 1
     IOU_THRESHOLDS:
-    - 0.5
+      - 0.5
     NAME: Res5ROIHeads
     NMS_THRESH_TEST: 0.5
     NUM_CLASSES: 80
@@ -252,14 +252,14 @@ MODEL:
     SCORE_THRESH_TEST: 0.05
   ROI_KEYPOINT_HEAD:
     CONV_DIMS:
-    - 512
-    - 512
-    - 512
-    - 512
-    - 512
-    - 512
-    - 512
-    - 512
+      - 512
+      - 512
+      - 512
+      - 512
+      - 512
+      - 512
+      - 512
+      - 512
     LOSS_WEIGHT: 1.0
     MIN_KEYPOINTS_PER_IMAGE: 1
     NAME: KRCNNConvDeconvUpsampleHead
@@ -272,7 +272,7 @@ MODEL:
     CLS_AGNOSTIC_MASK: false
     CONV_DIM: 256
     NAME: MaskRCNNConvUpsampleHead
-    NORM: ''
+    NORM: ""
     NUM_CONV: 0
     POOLER_RESOLUTION: 14
     POOLER_SAMPLING_RATIO: 0
@@ -284,17 +284,17 @@ MODEL:
     BBOX_REG_WEIGHTS: *id002
     BOUNDARY_THRESH: -1
     CONV_DIMS:
-    - -1
+      - -1
     HEAD_NAME: StandardRPNHead
     IN_FEATURES:
-    - res4
+      - res4
     IOU_LABELS:
-    - 0
-    - -1
-    - 1
+      - 0
+      - -1
+      - 1
     IOU_THRESHOLDS:
-    - 0.3
-    - 0.7
+      - 0.3
+      - 0.7
     LOSS_WEIGHT: 1.0
     NMS_THRESH: 0.7
     POSITIVE_FRACTION: 0.5
@@ -306,26 +306,26 @@ MODEL:
   SEM_SEG_HEAD:
     ASPP_CHANNELS: 256
     ASPP_DILATIONS:
-    - 6
-    - 12
-    - 18
+      - 6
+      - 12
+      - 18
     ASPP_DROPOUT: 0.1
     COMMON_STRIDE: 4
     CONVS_DIM: 256
     DEFORMABLE_TRANSFORMER_ENCODER_IN_FEATURES:
-    - res3
-    - res4
-    - res5
+      - res3
+      - res4
+      - res5
     DEFORMABLE_TRANSFORMER_ENCODER_N_HEADS: 8
     DEFORMABLE_TRANSFORMER_ENCODER_N_POINTS: 4
     DIM_FEEDFORWARD: 2048
     FEATURE_ORDER: low2high
     IGNORE_VALUE: 255
     IN_FEATURES:
-    - res2
-    - res3
-    - res4
-    - res5
+      - res2
+      - res3
+      - res4
+      - res5
     LOSS_TYPE: hard_pixel_mining
     LOSS_WEIGHT: 1.0
     MASK_DIM: 256
@@ -335,9 +335,9 @@ MODEL:
     NUM_FEATURE_LEVELS: 3
     PIXEL_DECODER_NAME: MaskDINOEncoder
     PROJECT_CHANNELS:
-    - 48
+      - 48
     PROJECT_FEATURES:
-    - res2
+      - res2
     TOTAL_NUM_FEATURE_LEVELS: 4
     TRANSFORMER_ENC_LAYERS: 6
     USE_DEPTHWISE_SEPARABLE_CONV: false
@@ -345,24 +345,24 @@ MODEL:
     APE: false
     ATTN_DROP_RATE: 0.0
     DEPTHS:
-    - 2
-    - 2
-    - 6
-    - 2
+      - 2
+      - 2
+      - 6
+      - 2
     DROP_PATH_RATE: 0.3
     DROP_RATE: 0.0
     EMBED_DIM: 96
     MLP_RATIO: 4.0
     NUM_HEADS:
-    - 3
-    - 6
-    - 12
-    - 24
+      - 3
+      - 6
+      - 12
+      - 24
     OUT_FEATURES:
-    - res2
-    - res3
-    - res4
-    - res5
+      - res2
+      - res3
+      - res4
+      - res5
     PATCH_NORM: true
     PATCH_SIZE: 4
     PRETRAIN_IMG_SIZE: 224
@@ -399,8 +399,8 @@ SOLVER:
   REFERENCE_WORLD_SIZE: 0
   RESCALE_INTERVAL: false
   STEPS:
-  - 327778
-  - 355092
+    - 327778
+    - 355092
   WARMUP_FACTOR: 1.0
   WARMUP_ITERS: 10
   WARMUP_METHOD: linear
@@ -414,15 +414,15 @@ TEST:
     FLIP: true
     MAX_SIZE: 4000
     MIN_SIZES:
-    - 400
-    - 500
-    - 600
-    - 700
-    - 800
-    - 900
-    - 1000
-    - 1100
-    - 1200
+      - 400
+      - 500
+      - 600
+      - 700
+      - 800
+      - 900
+      - 1000
+      - 1100
+      - 1200
   DETECTIONS_PER_IMAGE: 100
   EVAL_PERIOD: 5000
   EXPECTED_RESULTS: []

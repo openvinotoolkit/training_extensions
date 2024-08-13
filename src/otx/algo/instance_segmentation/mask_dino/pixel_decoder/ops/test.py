@@ -53,7 +53,7 @@ def check_forward_equal_with_pytorch_double():
     max_rel_err = ((output_cuda - output_pytorch).abs() / output_pytorch.abs()).max()
 
     print(
-        f"* {fwdok} check_forward_equal_with_pytorch_double: max_abs_err {max_abs_err:.2e} max_rel_err {max_rel_err:.2e}"
+        f"* {fwdok} check_forward_equal_with_pytorch_double: max_abs_err {max_abs_err:.2e} max_rel_err {max_rel_err:.2e}",
     )
 
 
@@ -75,7 +75,7 @@ def check_forward_equal_with_pytorch_float():
     max_rel_err = ((output_cuda - output_pytorch).abs() / output_pytorch.abs()).max()
 
     print(
-        f"* {fwdok} check_forward_equal_with_pytorch_float: max_abs_err {max_abs_err:.2e} max_rel_err {max_rel_err:.2e}"
+        f"* {fwdok} check_forward_equal_with_pytorch_float: max_abs_err {max_abs_err:.2e} max_rel_err {max_rel_err:.2e}",
     )
 
 

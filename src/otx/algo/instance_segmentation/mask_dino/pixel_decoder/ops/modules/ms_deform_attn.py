@@ -44,7 +44,7 @@ class MSDeformAttn(nn.Module):
         if not _is_power_of_2(_d_per_head):
             warnings.warn(
                 "You'd better set d_model in MSDeformAttn to make the dimension of each attention head a power of 2 "
-                "which is more efficient in our CUDA implementation."
+                "which is more efficient in our CUDA implementation.",
             )
 
         self.im2col_step = 128
@@ -125,7 +125,7 @@ class MSDeformAttn(nn.Module):
             )
         else:
             raise ValueError(
-                f"Last dim of reference_points must be 2 or 4, but get {reference_points.shape[-1]} instead."
+                f"Last dim of reference_points must be 2 or 4, but get {reference_points.shape[-1]} instead.",
             )
         try:
             output = MSDeformAttnFunction.apply(

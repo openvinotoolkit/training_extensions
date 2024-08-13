@@ -53,7 +53,13 @@ class MSDeformAttnTransformerEncoderOnly(nn.Module):
         self.nhead = nhead
 
         encoder_layer = MSDeformAttnTransformerEncoderLayer(
-            d_model, dim_feedforward, dropout, activation, num_feature_levels, nhead, enc_n_points
+            d_model,
+            dim_feedforward,
+            dropout,
+            activation,
+            num_feature_levels,
+            nhead,
+            enc_n_points,
         )
         self.encoder = MSDeformAttnTransformerEncoder(encoder_layer, num_encoder_layers)
 
@@ -113,7 +119,12 @@ class MSDeformAttnTransformerEncoderOnly(nn.Module):
 
         # encoder
         memory = self.encoder(
-            src_flatten, spatial_shapes, level_start_index, valid_ratios, lvl_pos_embed_flatten, mask_flatten
+            src_flatten,
+            spatial_shapes,
+            level_start_index,
+            valid_ratios,
+            lvl_pos_embed_flatten,
+            mask_flatten,
         )
 
         return memory, spatial_shapes, level_start_index
@@ -149,7 +160,12 @@ class MSDeformAttnTransformerEncoderLayer(nn.Module):
     def forward(self, src, pos, reference_points, spatial_shapes, level_start_index, padding_mask=None):
         # self attention
         src2 = self.self_attn(
-            self.with_pos_embed(src, pos), reference_points, src, spatial_shapes, level_start_index, padding_mask
+            self.with_pos_embed(src, pos),
+            reference_points,
+            src,
+            spatial_shapes,
+            level_start_index,
+            padding_mask,
         )
         src = src + self.dropout1(src2)
         src = self.norm1(src)
@@ -260,7 +276,7 @@ class MaskDINOEncoder(nn.Module):
                     nn.Sequential(
                         nn.Conv2d(in_channels, conv_dim, kernel_size=1),
                         nn.GroupNorm(32, conv_dim),
-                    )
+                    ),
                 )
             # input projectino for downsample
             in_channels = max(transformer_in_channels)
@@ -269,7 +285,7 @@ class MaskDINOEncoder(nn.Module):
                     nn.Sequential(
                         nn.Conv2d(in_channels, conv_dim, kernel_size=3, stride=2, padding=1),
                         nn.GroupNorm(32, conv_dim),
-                    )
+                    ),
                 )
                 in_channels = conv_dim
             self.input_proj = nn.ModuleList(input_proj_list)
@@ -279,8 +295,8 @@ class MaskDINOEncoder(nn.Module):
                     nn.Sequential(
                         nn.Conv2d(transformer_in_channels[-1], conv_dim, kernel_size=1),
                         nn.GroupNorm(32, conv_dim),
-                    )
-                ]
+                    ),
+                ],
             )
 
         for proj in self.input_proj:
@@ -428,7 +444,10 @@ class MaskDINOEncoder(nn.Module):
             cur_fpn = lateral_conv(x)
             # Following FPN implementation, we use nearest upsampling here
             y = cur_fpn + F.interpolate(
-                out[self.high_resolution_index], size=cur_fpn.shape[-2:], mode="bilinear", align_corners=False
+                out[self.high_resolution_index],
+                size=cur_fpn.shape[-2:],
+                mode="bilinear",
+                align_corners=False,
             )
             y = output_conv(y)
             out.append(y)
