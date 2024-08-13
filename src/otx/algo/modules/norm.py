@@ -201,10 +201,6 @@ def build_norm_layer(
         msg = f"normalization_callable must be a callable, but got {type(normalization_callable)}."
         raise TypeError(msg)
 
-    if (layer_type := _get_norm_type(normalization_callable)) not in AVAILABLE_NORM_LIST:
-        msg = f"Unsupported normalization: {layer_type.__name__}."
-        raise ValueError(msg)
-
     if isinstance(normalization_callable, partial) and normalization_callable.func.__name__ == "build_norm_layer":
         # add arguments to `normalization_callable` and return it
         signature = inspect.signature(normalization_callable.func)
@@ -225,6 +221,10 @@ def build_norm_layer(
         # manually update kwargs
         fn_kwargs.update(_locals.get("kwargs", {}))
         return normalization_callable(**fn_kwargs)
+
+    if (layer_type := _get_norm_type(normalization_callable)) not in AVAILABLE_NORM_LIST:
+        msg = f"Unsupported normalization: {layer_type.__name__}."
+        raise ValueError(msg)
 
     # set norm name
     abbr = layer_name or infer_abbr(layer_type)
