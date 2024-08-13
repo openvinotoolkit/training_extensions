@@ -356,7 +356,7 @@ class TVClassificationModel(nn.Module):
             unlabeled_loss = (self.loss_module(logits_u_s, pseudo_label) * mask).sum() / mask.sum().item()
             unlabeled_loss.masked_fill_(torch.isnan(unlabeled_loss), 0.0)
 
-        return labeled_loss + self.head.unlabeled_coef * unlabeled_loss
+        return labeled_loss + self.unlabeled_coef * unlabeled_loss
 
     def predict(self, inputs: torch.Tensor, **kwargs) -> list[torch.Tensor]:
         """Predict results from a batch of inputs.
@@ -610,7 +610,7 @@ class OTXTVModel(OTXModel):
         if self.train_type == OTXTrainType.SEMI_SUPERVISED:
             self.log(
                 "train/unlabeled_coef",
-                self.model.head.unlabeled_coef,
+                self.model.unlabeled_coef,
                 on_step=True,
                 on_epoch=False,
                 prog_bar=True,

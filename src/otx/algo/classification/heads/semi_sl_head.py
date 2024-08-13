@@ -170,7 +170,6 @@ class OTXSemiSLNonLinearClsHead(OTXSemiSLClsHead):
         OTXSemiSLClsHead.__init__(
             self,
             num_classes=num_classes,
-            # unlabeled_coef=unlabeled_coef,
             use_dynamic_threshold=use_dynamic_threshold,
             min_threshold=min_threshold,
         )

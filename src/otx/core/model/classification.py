@@ -127,10 +127,10 @@ class OTXMulticlassClsModel(OTXModel[MulticlassClsBatchDataEntity, MulticlassCls
         loss = super().training_step(batch, batch_idx)
         # Collect metrics related to Semi-SL Training.
         if self.train_type == OTXTrainType.SEMI_SUPERVISED:
-            if hasattr(self.model.head, "unlabeled_coef"):
+            if hasattr(self.model, "unlabeled_coef"):
                 self.log(
                     "train/unlabeled_coef",
-                    self.model.head.unlabeled_coef,
+                    self.model.unlabeled_coef,
                     on_step=True,
                     on_epoch=False,
                     prog_bar=True,
