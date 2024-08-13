@@ -155,7 +155,7 @@ class MaskRCNNResNet50(MaskRCNN):
         backbone = ResNet(
             depth=50,
             frozen_stages=1,
-            normalization_callable=partial(nn.BatchNorm2d, requires_grad=True),
+            normalization_callable=partial(build_norm_layer, nn.BatchNorm2d, requires_grad=True),
             norm_eval=True,
             num_stages=4,
             out_indices=(0, 1, 2, 3),

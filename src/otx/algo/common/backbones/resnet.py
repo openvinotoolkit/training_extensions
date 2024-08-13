@@ -142,7 +142,7 @@ class ResNet(BaseModule):
         frozen_stages (int): Stages to be frozen (stop grad and set eval mode).
             -1 means not freezing any parameters.
         normalization_callable (Callable[..., nn.Module] | None): Normalization layer module.
-            Defaults to ``partial(nn.BatchNorm2d, requires_grad=True)``.
+            Defaults to ``partial(build_norm_layer, nn.BatchNorm2d, requires_grad=True)``.
         norm_eval (bool): Whether to set norm layers to eval mode, namely,
             freeze running stats (mean and var). Note: Effect on Batch Norm
             and its variants only.
@@ -294,7 +294,6 @@ class ResNet(BaseModule):
             self.normalization_callable,
             stem_channels,
             postfix=1,
-            requires_grad=True,
         )
         self.add_module(self.norm1_name, norm1)
         self.relu = nn.ReLU(inplace=True)
