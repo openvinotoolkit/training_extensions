@@ -7,6 +7,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, ClassVar
 
+import torch
 from torch.onnx import OperatorExportTypes
 
 from otx.algo.segmentation.backbones import LiteHRNetBackbone
@@ -14,6 +15,7 @@ from otx.algo.segmentation.heads import FCNHead
 from otx.algo.segmentation.losses import CrossEntropyLossWithIgnore
 from otx.algo.segmentation.segmentors import BaseSegmModel
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
+from otx.core.data.entity.segmentation import SegBatchDataEntity
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.model.segmentation import OTXSegmentationModel
