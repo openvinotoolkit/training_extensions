@@ -17,6 +17,7 @@ from typing import TYPE_CHECKING
 
 import torch
 
+from otx.algo.classification.necks.gap import GlobalAveragePooling
 from otx.algo.classification.utils.ignored_labels import get_valid_label_mask
 from otx.algo.explain.explain_algo import ReciproCAM
 from otx.algo.modules.base_module import BaseModule
@@ -36,6 +37,7 @@ class ImageClassifier(BaseModule):
             Notice that if the head is not set, almost all methods cannot be
             used except :meth:`extract_feat`. Defaults to None.
         loss (nn.Module): The loss module to calculate the loss.
+        loss_scale (float, optional): The scaling factor for the loss. Defaults to 1.0.
         init_cfg (dict, optional): the config to control the initialization.
             Defaults to None.
     """
@@ -47,7 +49,6 @@ class ImageClassifier(BaseModule):
         head: nn.Module,
         loss: nn.Module,
         loss_scale: float = 1.0,
-        optimize_gap: bool = True,
         init_cfg: dict | list[dict] | None = None,
     ):
         super().__init__(init_cfg=init_cfg)
@@ -65,7 +66,7 @@ class ImageClassifier(BaseModule):
         self.explainer = ReciproCAM(
             self._head_forward_fn,
             num_classes=head.num_classes,
-            optimize_gap=optimize_gap,
+            optimize_gap=isinstance(neck, GlobalAveragePooling),
         )
 
     def forward(
@@ -133,7 +134,7 @@ class ImageClassifier(BaseModule):
 
         return self.head(x)
 
-    def loss(self, inputs: torch.Tensor, labels: torch.Tensor, **kwargs) -> dict:
+    def loss(self, inputs: torch.Tensor, labels: torch.Tensor, **kwargs) -> torch.Tensor:
         """Calculate losses from a batch of inputs and data samples.
 
         Args:
@@ -143,7 +144,7 @@ class ImageClassifier(BaseModule):
                 every samples.
 
         Returns:
-            dict[str, Tensor]: a dictionary of loss components
+            torch.Tensor: loss components
         """
         cls_score = self.extract_feat(inputs, stage="head") * self.loss_scale
         imgs_info = kwargs.pop("imgs_info", None)
@@ -151,7 +152,7 @@ class ImageClassifier(BaseModule):
             kwargs["valid_label_mask"] = get_valid_label_mask(imgs_info, self.head.num_classes).to(cls_score.device)
         return self.loss_module(cls_score, labels, **kwargs) / self.loss_scale
 
-    def predict(self, inputs: torch.Tensor, **kwargs) -> list[torch.Tensor]:
+    def predict(self, inputs: torch.Tensor, **kwargs) -> torch.Tensor:
         """Predict results from a batch of inputs.
 
         Args:
@@ -191,13 +192,8 @@ class ImageClassifier(BaseModule):
 
         logits = self.head(x)
         pred_results = self.head._get_predictions(logits)  # noqa: SLF001
-        # H-Label Classification Case
-        if isinstance(pred_results, dict):
-            scores = pred_results["scores"]
-            preds = pred_results["labels"]
-        else:
-            scores = pred_results.unbind(0)
-            preds = logits.argmax(-1, keepdim=True).unbind(0)
+        scores = pred_results.unbind(0)
+        preds = logits.argmax(-1, keepdim=True).unbind(0)
 
         outputs = {
             "logits": logits,

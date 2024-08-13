@@ -42,13 +42,13 @@ class SemiSLClassifier(ImageClassifier):
 
     def extract_feat(
         self,
-        inputs: dict[str, torch.Tensor],
+        inputs: dict[str, torch.Tensor] | torch.Tensor,
         stage: str = "neck",
     ) -> dict[str, torch.Tensor] | tuple[torch.Tensor] | torch.Tensor:
         """Extract features from the input tensor with shape (N, C, ...).
 
         Args:
-            inputs (dict[str, Tensor]): A batch of inputs. The shape of it should be
+            inputs (dict[str, torch.Tensor] | torch.Tensor): A batch of inputs. The shape of it should be
                 ``(num_samples, num_channels, *img_shape)``.
             stage (str): Which stage to output the feature. Choose from:
 
@@ -80,7 +80,7 @@ class SemiSLClassifier(ImageClassifier):
 
         return x
 
-    def loss(self, inputs: dict[str, torch.Tensor], labels: torch.Tensor, **kwargs) -> dict:
+    def loss(self, inputs: dict[str, torch.Tensor], labels: torch.Tensor, **kwargs) -> torch.Tensor:
         """Calculate losses from a batch of inputs and data samples.
 
         Args:
@@ -90,7 +90,7 @@ class SemiSLClassifier(ImageClassifier):
                 every samples.
 
         Returns:
-            dict[str, Tensor]: a dictionary of loss components
+            torch.Tensor: loss components
         """
         semi_inputs = self.extract_feat(inputs)
         logits, labels, pseudo_label, mask = self.head.get_logits(semi_inputs, labels)
