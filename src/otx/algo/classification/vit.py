@@ -18,7 +18,7 @@ from torch.hub import download_url_to_file
 from otx.algo.classification.backbones.vision_transformer import VIT_ARCH_TYPE, VisionTransformer
 from otx.algo.classification.classifier import HLabelClassifier, ImageClassifier, SemiSLClassifier
 from otx.algo.classification.heads import (
-    HierarchicalLinearClsHead,
+    HierarchicalCBAMClsHead,
     MultiLabelLinearClsHead,
     SemiSLVisionTransformerClsHead,
     VisionTransformerClsHead,
@@ -465,10 +465,11 @@ class VisionTransformerForHLabelCls(ForwardExplainMixInForViT, OTXHlabelClsModel
         return HLabelClassifier(
             backbone=vit_backbone,
             neck=None,
-            head=HierarchicalLinearClsHead(
+            head=HierarchicalCBAMClsHead(
                 in_channels=vit_backbone.embed_dim,
                 multiclass_loss=nn.CrossEntropyLoss(),
                 multilabel_loss=AsymmetricAngularLossWithIgnore(gamma_pos=0.0, gamma_neg=1.0, reduction="sum"),
+                step_size=1,
                 **head_config,
             ),
             init_cfg=init_cfg,

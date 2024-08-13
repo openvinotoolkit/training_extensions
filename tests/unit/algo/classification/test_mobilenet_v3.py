@@ -94,10 +94,10 @@ class TestMobileNetV3ForMultilabelCls:
 
 
 @pytest.fixture()
-def fxt_h_label_cls_model(fxt_hlabel_data):
+def fxt_h_label_cls_model(fxt_hlabel_cifar):
     return MobileNetV3ForHLabelCls(
         mode="large",
-        label_info=fxt_hlabel_data,
+        label_info=fxt_hlabel_cifar,
     )
 
 
