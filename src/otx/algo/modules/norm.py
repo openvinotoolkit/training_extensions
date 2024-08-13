@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import inspect
 from functools import partial
-from typing import Callable
+from typing import Any, Callable
 
 import torch
 from torch import nn
@@ -171,8 +171,9 @@ def build_norm_layer(
     """Build normalization layer.
 
     Args:
-        normalization_callable (Callable[..., nn.Module] | tuple[str, nn.Module] | nn.Module): Normalization layer
-            module. If tuple is given, return it as is. If callable is given, create the layer.
+        normalization_callable (Callable[..., nn.Module] | tuple[str, nn.Module] | nn.Module | None):
+            Normalization layer module. If tuple or None is given, return it as is.
+            If nn.Module is given, return it with empty name string. If callable is given, create the layer.
         num_features (int): Number of input channels.
         postfix (int | str): The postfix to be appended into norm abbreviation
             to create named layer.
@@ -184,31 +185,17 @@ def build_norm_layer(
             Defaults to 1e-5.
 
     Returns:
-        tuple[str, nn.Module]: The first element is the layer name consisting
+        (tuple[str, nn.Module] | None): The first element is the layer name consisting
         of abbreviation and postfix, e.g., bn1, gn. The second element is the
         created norm layer.
     """
-    if isinstance(normalization_callable, tuple):
-        # return tuple as is
+    if normalization_callable is None or isinstance(normalization_callable, tuple):
+        # return tuple or None as is
         return normalization_callable
 
     if isinstance(normalization_callable, nn.Module):
         # return nn.Module with empty name string
         return "", normalization_callable
-
-    def _build_layer(normalization_callable: Callable[..., nn.Module]) -> nn.Module:
-        if layer_type is not nn.GroupNorm:
-            layer = normalization_callable(num_features, eps=eps, **kwargs)
-            if layer_type == SyncBatchNorm and hasattr(layer, "_specify_ddp_gpu_num"):
-                layer._specify_ddp_gpu_num(1)  # noqa: SLF001
-        else:
-            layer = normalization_callable(num_channels=num_features, eps=eps, **kwargs)
-        return layer
-
-    if isinstance(normalization_callable, partial) and normalization_callable.func.__name__ == "build_norm_layer":
-        # add `num_features` to `normalization_callable` and return it
-        # TODO (sungchul): is adding more arguments needed?
-        return normalization_callable(num_features=num_features)
 
     if not callable(normalization_callable):
         msg = f"normalization_callable must be a callable, but got {type(normalization_callable)}."
@@ -218,12 +205,39 @@ def build_norm_layer(
         msg = f"Unsupported normalization: {layer_type.__name__}."
         raise ValueError(msg)
 
+    if isinstance(normalization_callable, partial) and normalization_callable.func.__name__ == "build_norm_layer":
+        # add arguments to `normalization_callable` and return it
+        signature = inspect.signature(normalization_callable.func)
+        predefined_key_list: list[str] = ["kwargs"]
+
+        # find keys according to normalization_callable.args except for normalization type (index=0)
+        predefined_key_list.extend(list(signature.parameters.keys())[: len(normalization_callable.args)])
+
+        # find keys according to normalization_callable.keywords
+        predefined_key_list.extend(list(normalization_callable.keywords.keys()))
+
+        # set the remaining parameters previously undefined in normalization_callable
+        _locals = locals()
+        fn_kwargs: dict[str, Any] = {
+            k: _locals.get(k, None) for k in signature.parameters if k not in predefined_key_list
+        }
+
+        # manually update kwargs
+        fn_kwargs.update(_locals.get("kwargs", {}))
+        return normalization_callable(**fn_kwargs)
+
     # set norm name
     abbr = layer_name or infer_abbr(layer_type)
     name = abbr + str(postfix)
 
     # set norm layer
-    layer = _build_layer(normalization_callable)
+    if layer_type is not nn.GroupNorm:
+        layer = normalization_callable(num_features, eps=eps, **kwargs)
+        if layer_type == SyncBatchNorm and hasattr(layer, "_specify_ddp_gpu_num"):
+            layer._specify_ddp_gpu_num(1)  # noqa: SLF001
+    else:
+        layer = normalization_callable(num_channels=num_features, eps=eps, **kwargs)
+
     for param in layer.parameters():
         param.requires_grad = requires_grad
 
