@@ -1,28 +1,23 @@
 model:
-  class_path: otx.algo.classification.mobilenet_v3.MobileNetV3ForMulticlassCls
+  class_path: otx.algo.classification.vit.VisionTransformerForMulticlassCls
   init_args:
-    mode: large
     label_info: 1000
+    arch: "dinov2-small"
     train_type: SEMI_SUPERVISED
 
     optimizer:
-      class_path: torch.optim.SGD
+      class_path: torch.optim.AdamW
       init_args:
-        lr: 0.0058
-        momentum: 0.9
-        weight_decay: 0.0001
+        lr: 0.0001
+        weight_decay: 0.05
 
     scheduler:
-      class_path: otx.core.schedulers.LinearWarmupSchedulerCallable
+      class_path: lightning.pytorch.cli.ReduceLROnPlateau
       init_args:
-        num_warmup_steps: 10
-        main_scheduler_callable:
-          class_path: lightning.pytorch.cli.ReduceLROnPlateau
-          init_args:
-            mode: max
-            factor: 0.5
-            patience: 1
-            monitor: val/accuracy
+        mode: max
+        factor: 0.5
+        patience: 1
+        monitor: val/accuracy
 
 engine:
   task: MULTI_CLASS_CLS
@@ -30,7 +25,7 @@ engine:
 
 callback_monitor: val/accuracy
 
-data: ../../_base_/data/torchvision_semisl.yaml
+data: ../../../_base_/data/semisl/torchvision_semisl.yaml
 overrides:
   max_epochs: 200
   callbacks:

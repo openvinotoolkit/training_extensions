@@ -16,6 +16,7 @@ from __future__ import annotations
 from functools import partial
 from typing import Callable
 
+import numpy as np
 import torch
 import torch.distributed as dist
 from torch import Tensor
@@ -259,3 +260,69 @@ def inverse_sigmoid(x: Tensor, eps: float = 1e-5) -> Tensor:
     x1 = x.clamp(min=eps)
     x2 = (1 - x).clamp(min=eps)
     return torch.log(x1 / x2)
+
+
+def cut_mixer(images: Tensor, masks: Tensor) -> tuple[Tensor, Tensor]:
+    """Applies cut-mix augmentation to the input images and masks.
+
+    Args:
+        images (Tensor): The input images tensor.
+        masks (Tensor): The input masks tensor.
+
+    Returns:
+        tuple[Tensor, Tensor]: A tuple containing the augmented images and masks tensors.
+    """
+
+    def rand_bbox(size: tuple[int, ...], lam: float) -> tuple[list[int], ...]:
+        """Generates random bounding box coordinates.
+
+        Args:
+            size (tuple[int, ...]): The size of the input tensor.
+            lam (float): The lambda value for cut-mix augmentation.
+
+        Returns:
+            tuple[list[int, ...], ...]: The bounding box coordinates (bbx1, bby1, bbx2, bby2).
+        """
+        # past implementation
+        w = size[2]
+        h = size[3]
+        b = size[0]
+        cut_rat = np.sqrt(1.0 - lam)
+        cut_w = int(w * cut_rat)
+        cut_h = int(h * cut_rat)
+
+        cx = np.random.randint(size=[b], low=int(w / 8), high=w)
+        cy = np.random.randint(size=[b], low=int(h / 8), high=h)
+
+        bbx1 = np.clip(cx - cut_w // 2, 0, w)
+        bby1 = np.clip(cy - cut_h // 2, 0, h)
+
+        bbx2 = np.clip(cx + cut_w // 2, 0, w)
+        bby2 = np.clip(cy + cut_h // 2, 0, h)
+
+        return bbx1, bby1, bbx2, bby2
+
+    target_device = images.device
+    mix_data = images.clone()
+    mix_masks = masks.clone()
+    u_rand_index = torch.randperm(images.size()[0])[: images.size()[0]].to(target_device)
+    u_bbx1, u_bby1, u_bbx2, u_bby2 = rand_bbox(images.size(), lam=np.random.beta(4, 4))
+
+    for i in range(mix_data.shape[0]):
+        mix_data[i, :, u_bbx1[i] : u_bbx2[i], u_bby1[i] : u_bby2[i]] = images[
+            u_rand_index[i],
+            :,
+            u_bbx1[i] : u_bbx2[i],
+            u_bby1[i] : u_bby2[i],
+        ]
+
+        mix_masks[i, :, u_bbx1[i] : u_bbx2[i], u_bby1[i] : u_bby2[i]] = masks[
+            u_rand_index[i],
+            :,
+            u_bbx1[i] : u_bbx2[i],
+            u_bby1[i] : u_bby2[i],
+        ]
+
+    del images, masks
+
+    return mix_data, mix_masks.squeeze(dim=1)
