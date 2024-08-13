@@ -382,7 +382,7 @@ class AutoConfigurator:
         """
         class_path = OVMODEL_PER_TASK.get(self.task, None)
         if class_path is None:
-            msg = f"{self.task} is not support OVModel."
+            msg = f"{self.task} doesn't support OVModel."
             raise NotImplementedError(msg)
         class_module, class_name = class_path.rsplit(".", 1)
         module = __import__(class_module, fromlist=[class_name])

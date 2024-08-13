@@ -3447,7 +3447,7 @@ class TopdownAffine(tvt_v2.Transform, NumpytoTVTensorMixin):
         assert len(_inputs) == 1, "[tmp] Multiple entity is not supported yet."  # noqa: S101
         inputs = _inputs[0]
 
-        w, h = self.input_size
+        h, w = self.input_size
         warp_size = (int(w), int(h))
 
         # reshape bbox to fixed aspect ratio
@@ -3508,7 +3508,7 @@ class GenerateTarget(tvt_v2.Transform, NumpytoTVTensorMixin):
             the specific codec for more details.
 
     Args:
-        input_size (tuple[int, int]): Input image size in [w, h]  TODO[wonjulee]: need to change order of shape
+        input_size (tuple[int, int]): Input image size in [h, w]
         is_numpy_to_tvtensor (bool): Whether convert outputs to tensor. Defaults to False.
     """
 

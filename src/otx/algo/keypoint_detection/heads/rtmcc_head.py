@@ -31,7 +31,7 @@ class RTMCCHead(BaseModule):
         in_channels (int | sequence[int]): Number of channels in the input
             feature map.
         out_channels (int): Number of channels in the output heatmap.
-        input_size (tuple): Size of input image in shape [w, h].
+        input_size (tuple): Size of input image in shape [h, w].
         in_featuremap_size (int | sequence[int]): Size of input feature map.
         loss (nn.module): keypoint loss.
         decoder_cfg (dict): Config dict for the keypoint decoder.
@@ -87,8 +87,8 @@ class RTMCCHead(BaseModule):
         )
         self.mlp = nn.Sequential(ScaleNorm(flatten_dims), nn.Linear(flatten_dims, gau_cfg["in_token_dims"], bias=False))
         self.gau = RTMCCBlock(**gau_cfg)
-        self.cls_x = nn.Linear(gau_cfg["out_token_dims"], int(self.input_size[0] * self.simcc_split_ratio), bias=False)
-        self.cls_y = nn.Linear(gau_cfg["out_token_dims"], int(self.input_size[1] * self.simcc_split_ratio), bias=False)
+        self.cls_x = nn.Linear(gau_cfg["out_token_dims"], int(self.input_size[1] * self.simcc_split_ratio), bias=False)
+        self.cls_y = nn.Linear(gau_cfg["out_token_dims"], int(self.input_size[0] * self.simcc_split_ratio), bias=False)
 
     def forward(self, feats: tuple[Tensor]) -> tuple[Tensor, Tensor]:
         """Forward the network.

@@ -6,8 +6,8 @@ data_format: coco_person_keypoints
 unannotated_items_ratio: 0.0
 image_color_channel: RGB
 input_size:
-  - 192
   - 256
+  - 192
 train_subset:
   subset_name: train
   batch_size: 32
