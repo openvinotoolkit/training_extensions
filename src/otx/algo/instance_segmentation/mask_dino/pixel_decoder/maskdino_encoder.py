@@ -12,7 +12,7 @@ from detectron2.config import configurable
 from detectron2.layers import Conv2d, ShapeSpec, get_norm
 from detectron2.modeling import SEM_SEG_HEADS_REGISTRY
 from fvcore.nn import weight_init
-from otx.algo.instance_segmentation.mask_dino.pixel_decoder.ops.modules import MSDeformAttn
+from otx.algo.instance_segmentation.mask_dino.pixel_decoder.ops.modules.ms_deform_attn import MSDeformAttn
 from otx.algo.instance_segmentation.mask_dino.pixel_decoder.position_encoding import PositionEmbeddingSine
 from otx.algo.instance_segmentation.mask_dino.utils import _get_activation_fn, _get_clones
 from torch import nn

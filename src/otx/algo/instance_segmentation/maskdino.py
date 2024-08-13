@@ -4,7 +4,7 @@ import torch
 from detectron2.config import CfgNode as CN
 from detectron2.config import configurable, get_cfg
 from detectron2.data import MetadataCatalog
-from detectron2.modeling import build_backbone, build_sem_seg_head
+from detectron2.modeling import build_backbone
 from detectron2.modeling.backbone import Backbone
 from detectron2.modeling.postprocessing import sem_seg_postprocess
 from detectron2.projects.deeplab import add_deeplab_config
@@ -16,6 +16,7 @@ from torch.nn.modules import Module
 
 from otx.algo.instance_segmentation.mask_dino import box_ops
 from otx.algo.instance_segmentation.mask_dino.criterion import SetCriterion
+from otx.algo.instance_segmentation.mask_dino.maskdino_head import MaskDINOHead
 from otx.algo.instance_segmentation.mask_dino.matcher import HungarianMatcher
 from otx.core.model.instance_segmentation import ExplainableOTXInstanceSegModel
 
@@ -108,9 +109,11 @@ class MaskDINO(nn.Module):
         print("criterion.weight_dict ", self.criterion.weight_dict)
 
     @classmethod
-    def from_config(cls, cfg):
+    def from_config(cls, cfg, num_classes):
         backbone = build_backbone(cfg)
-        sem_seg_head = build_sem_seg_head(cfg, backbone.output_shape())
+
+        cfg.MODEL.SEM_SEG_HEAD.NUM_CLASSES = num_classes
+        sem_seg_head = MaskDINOHead.from_config(cfg, backbone.output_shape())
 
         # Loss parameters:
         deep_supervision = cfg.MODEL.MaskDINO.DEEP_SUPERVISION
@@ -663,4 +666,4 @@ class MaskDINOR50(ExplainableOTXInstanceSegModel):
                 "maskdino_r50_50ep_300q_hid2048_3sd1_instance_maskenhanced_mask46.3ap_box51.7ap.pth",
             ],
         )
-        return MaskDINO.from_config(cfg)
+        return MaskDINO.from_config(cfg, num_classes)

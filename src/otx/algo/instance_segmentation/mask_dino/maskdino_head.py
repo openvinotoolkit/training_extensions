@@ -8,13 +8,11 @@ from typing import Dict
 
 from detectron2.config import configurable
 from detectron2.layers import ShapeSpec
-from detectron2.modeling import SEM_SEG_HEADS_REGISTRY
 from otx.algo.instance_segmentation.mask_dino.pixel_decoder.maskdino_encoder import build_pixel_decoder
 from otx.algo.instance_segmentation.mask_dino.transformer_decoder.maskdino_decoder import build_transformer_decoder
 from torch import nn
 
 
-@SEM_SEG_HEADS_REGISTRY.register()
 class MaskDINOHead(nn.Module):
     @configurable
     def __init__(

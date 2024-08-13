@@ -9,7 +9,7 @@
 from typing import Optional
 
 import torch
-from otx.algo.instance_segmentation.mask_dino.pixel_decoder.ops.modules import MSDeformAttn
+from otx.algo.instance_segmentation.mask_dino.pixel_decoder.ops.modules.ms_deform_attn import MSDeformAttn
 from otx.algo.instance_segmentation.mask_dino.utils import (
     MLP,
     _get_activation_fn,

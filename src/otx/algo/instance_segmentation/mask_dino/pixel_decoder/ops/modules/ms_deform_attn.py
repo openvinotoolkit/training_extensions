@@ -15,11 +15,12 @@ import warnings
 
 import torch
 import torch.nn.functional as F
+from otx.algo.instance_segmentation.mask_dino.pixel_decoder.ops.functions.ms_deform_attn_func import (
+    MSDeformAttnFunction,
+    ms_deform_attn_core_pytorch,
+)
 from torch import nn
 from torch.nn.init import constant_, xavier_uniform_
-
-from ..functions import MSDeformAttnFunction
-from ..functions.ms_deform_attn_func import ms_deform_attn_core_pytorch
 
 
 def _is_power_of_2(n):
