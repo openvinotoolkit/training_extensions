@@ -184,24 +184,10 @@ class SAM(OTXVisualPromptingModel):
     def _build_model(self) -> nn.Module:
         image_encoder = SAMImageEncoder(backbone=self.backbone)
         prompt_encoder = SAMPromptEncoder(
-            embed_dim=256,
-            image_embedding_size=(
-                self.image_embedding_size,
-                self.image_embedding_size,
-            ),
-            input_image_size=(
-                self.image_size,
-                self.image_size,
-            ),
-            mask_in_chans=16,
+            image_embedding_size=(self.image_embedding_size, self.image_embedding_size),
+            input_image_size=(self.image_size, self.image_size),
         )
-        mask_decoder = SAMMaskDecoder(
-            num_multimask_outputs=3,
-            transformer_cfg={"depth": 2, "embedding_dim": 256, "mlp_dim": 2048, "num_heads": 8},
-            transformer_dim=256,
-            iou_head_depth=3,
-            iou_head_hidden_dim=256,
-        )
+        mask_decoder = SAMMaskDecoder()
         criterion = SAMCriterion(image_size=self.image_size)
         return SegmentAnything(
             image_encoder=image_encoder,

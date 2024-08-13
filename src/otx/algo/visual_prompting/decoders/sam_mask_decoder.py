@@ -21,24 +21,33 @@ class SAMMaskDecoder(nn.Module):
 
     Args:
         transformer_dim (int): Channel dimension of the transformer.
+            Defaults to 256.
         transformer_cfg (dict): Configuration of the transformer.
+            Defaults to `{"depth": 2, "embedding_dim": 256, "mlp_dim": 2048, "num_heads": 8}`.
         num_multimask_outputs (int): The number of masks to predict when disambiguating masks.
+            Defaults to 3.
         activation (nn.Module): Type of activation to use when upscaling masks.
+            Defaults to ``nn.GELU``.
         iou_head_depth (int): Depth of the MLP used to predict mask quality.
+            Defaults to 3.
         iou_head_hidden_dim (int): Hidden dimension of the MLP used to predict mask quality.
+            Defaults to 256.
     """
 
     def __init__(
         self,
         *,
-        transformer_dim: int,
-        transformer_cfg: dict,
+        transformer_dim: int = 256,
+        transformer_cfg: dict | None = None,
         num_multimask_outputs: int = 3,
         activation: type[nn.Module] = nn.GELU,
         iou_head_depth: int = 3,
         iou_head_hidden_dim: int = 256,
     ) -> None:
         super().__init__()
+        if transformer_cfg is None:
+            transformer_cfg = {"depth": 2, "embedding_dim": 256, "mlp_dim": 2048, "num_heads": 8}
+
         self.transformer_dim = transformer_dim
         self.transformer = TwoWayTransformer(**transformer_cfg)
 
