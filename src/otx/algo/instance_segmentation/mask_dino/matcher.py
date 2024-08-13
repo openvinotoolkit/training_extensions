@@ -5,22 +5,19 @@
 # ------------------------------------------------------------------------
 # Modified from DINO https://github.com/IDEA-Research/DINO by Feng Li and Hao Zhang.
 
-"""
-Modules to compute the matching cost and solve the corresponding LSAP.
+"""Modules to compute the matching cost and solve the corresponding LSAP.
 """
 import torch
 import torch.nn.functional as F
+from detectron2.projects.point_rend.point_features import point_sample
+from otx.algo.instance_segmentation.mask_dino.box_ops import box_cxcywh_to_xyxy, generalized_box_iou
 from scipy.optimize import linear_sum_assignment
 from torch import nn
 from torch.cuda.amp import autocast
 
-from detectron2.projects.point_rend.point_features import point_sample
-from maskdino.utils.box_ops import generalized_box_iou,box_cxcywh_to_xyxy
-
 
 def batch_dice_loss(inputs: torch.Tensor, targets: torch.Tensor):
-    """
-    Compute the DICE loss, similar to generalized IOU for masks
+    """Compute the DICE loss, similar to generalized IOU for masks
     Args:
         inputs: A float tensor of arbitrary shape.
                 The predictions for each example.
@@ -37,39 +34,45 @@ def batch_dice_loss(inputs: torch.Tensor, targets: torch.Tensor):
 
 
 batch_dice_loss_jit = torch.jit.script(
-    batch_dice_loss
+    batch_dice_loss,
 )  # type: torch.jit.ScriptModule
 
 
 def batch_sigmoid_ce_loss(inputs: torch.Tensor, targets: torch.Tensor):
-    """
-    Args:
+    """Args:
         inputs: A float tensor of arbitrary shape.
                 The predictions for each example.
         targets: A float tensor with the same shape as inputs. Stores the binary
                  classification label for each element in inputs
                 (0 for the negative class and 1 for the positive class).
+
     Returns:
         Loss tensor
     """
     hw = inputs.shape[1]
 
     pos = F.binary_cross_entropy_with_logits(
-        inputs, torch.ones_like(inputs), reduction="none"
+        inputs,
+        torch.ones_like(inputs),
+        reduction="none",
     )
     neg = F.binary_cross_entropy_with_logits(
-        inputs, torch.zeros_like(inputs), reduction="none"
+        inputs,
+        torch.zeros_like(inputs),
+        reduction="none",
     )
 
     loss = torch.einsum("nc,mc->nm", pos, targets) + torch.einsum(
-        "nc,mc->nm", neg, (1 - targets)
+        "nc,mc->nm",
+        neg,
+        (1 - targets),
     )
 
     return loss / hw
 
 
 batch_sigmoid_ce_loss_jit = torch.jit.script(
-    batch_sigmoid_ce_loss
+    batch_sigmoid_ce_loss,
 )  # type: torch.jit.ScriptModule
 
 
@@ -81,8 +84,16 @@ class HungarianMatcher(nn.Module):
     while the others are un-matched (and thus treated as non-objects).
     """
 
-    def __init__(self, cost_class: float = 1, cost_mask: float = 1, cost_dice: float = 1, num_points: int = 0,
-                 cost_box: float = 0, cost_giou: float = 0, panoptic_on: bool = False):
+    def __init__(
+        self,
+        cost_class: float = 1,
+        cost_mask: float = 1,
+        cost_dice: float = 1,
+        num_points: int = 0,
+        cost_box: float = 0,
+        cost_giou: float = 0,
+        panoptic_on: bool = False,
+    ):
         """Creates the matcher
 
         Params:
@@ -113,8 +124,8 @@ class HungarianMatcher(nn.Module):
         # Iterate through batch size
         for b in range(bs):
             out_bbox = outputs["pred_boxes"][b]
-            if 'box' in cost:
-                tgt_bbox=targets[b]["boxes"]
+            if "box" in cost:
+                tgt_bbox = targets[b]["boxes"]
                 cost_bbox = torch.cdist(out_bbox, tgt_bbox, p=1)
                 cost_giou = -generalized_box_iou(box_cxcywh_to_xyxy(out_bbox), box_cxcywh_to_xyxy(tgt_bbox))
             else:
@@ -126,7 +137,7 @@ class HungarianMatcher(nn.Module):
             # focal loss
             alpha = 0.25
             gamma = 2.0
-            neg_cost_class = (1 - alpha) * (out_prob ** gamma) * (-(1 - out_prob + 1e-8).log())
+            neg_cost_class = (1 - alpha) * (out_prob**gamma) * (-(1 - out_prob + 1e-8).log())
             pos_cost_class = alpha * ((1 - out_prob) ** gamma) * (-(out_prob + 1e-8).log())
             cost_class = pos_cost_class[:, tgt_ids] - neg_cost_class[:, tgt_ids]
 
@@ -134,7 +145,7 @@ class HungarianMatcher(nn.Module):
             # but approximate it in 1 - proba[target class].
             # The 1 is a constant that doesn't change the matching, it can be ommitted.
             # cost_class = -out_prob[:, tgt_ids]
-            if 'mask' in cost:
+            if "mask" in cost:
                 out_mask = outputs["pred_masks"][b]  # [num_queries, H_pred, W_pred]
                 # gt masks are already padded when preparing target
                 tgt_mask = targets[b]["masks"].to(out_mask)
@@ -172,10 +183,10 @@ class HungarianMatcher(nn.Module):
             else:
                 cost_mask = torch.tensor(0).to(out_bbox)
                 cost_dice = torch.tensor(0).to(out_bbox)
-            
+
             # Final cost matrix
             if self.panoptic_on:
-                isthing = tgt_ids<80
+                isthing = tgt_ids < 80
                 cost_bbox[:, ~isthing] = cost_bbox[:, isthing].mean()
                 cost_giou[:, ~isthing] = cost_giou[:, isthing].mean()
                 cost_bbox[cost_bbox.isnan()] = 0.0
@@ -185,16 +196,13 @@ class HungarianMatcher(nn.Module):
                 self.cost_mask * cost_mask
                 + self.cost_class * cost_class
                 + self.cost_dice * cost_dice
-                + self.cost_box*cost_bbox
-                + self.cost_giou*cost_giou
+                + self.cost_box * cost_bbox
+                + self.cost_giou * cost_giou
             )
             C = C.reshape(num_queries, -1).cpu()
             indices.append(linear_sum_assignment(C))
 
-        return [
-            (torch.as_tensor(i, dtype=torch.int64), torch.as_tensor(j, dtype=torch.int64))
-            for i, j in indices
-        ]
+        return [(torch.as_tensor(i, dtype=torch.int64), torch.as_tensor(j, dtype=torch.int64)) for i, j in indices]
 
     @torch.no_grad()
     def forward(self, outputs, targets, cost=["cls", "box", "mask"]):
@@ -222,9 +230,9 @@ class HungarianMatcher(nn.Module):
     def __repr__(self, _repr_indent=4):
         head = "Matcher " + self.__class__.__name__
         body = [
-            "cost_class: {}".format(self.cost_class),
-            "cost_mask: {}".format(self.cost_mask),
-            "cost_dice: {}".format(self.cost_dice),
+            f"cost_class: {self.cost_class}",
+            f"cost_mask: {self.cost_mask}",
+            f"cost_dice: {self.cost_dice}",
         ]
         lines = [head] + [" " * _repr_indent + line for line in body]
         return "\n".join(lines)
