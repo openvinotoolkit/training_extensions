@@ -189,7 +189,7 @@ class MultiLabelNonLinearClsHead(MultiLabelClsHead):
         num_classes: int,
         in_channels: int,
         hid_channels: int = 1280,
-        activation_callable: Callable[[], nn.Module] = nn.ReLU,
+        activation_callable: Callable[..., nn.Module] = nn.ReLU,
         dropout: bool = False,
         normalized: bool = False,
         init_cfg: dict | None = None,
