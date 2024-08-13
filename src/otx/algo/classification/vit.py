@@ -297,7 +297,7 @@ class VisionTransformerForMulticlassCls(ForwardExplainMixInForViT, OTXMulticlass
                 num_classes=num_classes,
                 in_channels=vit_backbone.embed_dim,
             ),
-            loss=nn.CrossEntropyLoss(reduction="none"),
+            loss=nn.CrossEntropyLoss(),
             init_cfg=init_cfg,
         )
 
@@ -381,7 +381,6 @@ class VisionTransformerForMultilabelCls(ForwardExplainMixInForViT, OTXMultilabel
                 in_channels=vit_backbone.embed_dim,
             ),
             loss=AsymmetricAngularLossWithIgnore(gamma_pos=0.0, gamma_neg=1.0, reduction="sum"),
-            loss_scale=7.0,
             init_cfg=init_cfg,
         )
 

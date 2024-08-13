@@ -149,8 +149,7 @@ class ImageClassifier(BaseModule):
         imgs_info = kwargs.pop("imgs_info", None)
         if imgs_info is not None and self.is_ignored_label_loss:
             kwargs["valid_label_mask"] = get_valid_label_mask(imgs_info, self.head.num_classes).to(cls_score.device)
-        loss = self.loss_module(cls_score, labels, **kwargs)
-        return loss.sum() / cls_score.size(0)
+        return self.loss_module(cls_score, labels, **kwargs) / self.loss_scale
 
     def predict(self, inputs: torch.Tensor, **kwargs) -> list[torch.Tensor]:
         """Predict results from a batch of inputs.

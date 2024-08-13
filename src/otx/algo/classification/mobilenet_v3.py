@@ -102,7 +102,6 @@ class MobileNetV3ForMulticlassCls(OTXMulticlassClsModel):
     def _build_model(self, num_classes: int) -> nn.Module:
         backbone = OTXMobileNetV3(mode=self.mode)
         neck = GlobalAveragePooling(dim=2)
-        loss = nn.CrossEntropyLoss(reduction="none")
         in_channels = 960 if self.mode == "large" else 576
         if self.train_type == OTXTrainType.SEMI_SUPERVISED:
             return SemiSLClassifier(
@@ -112,7 +111,7 @@ class MobileNetV3ForMulticlassCls(OTXMulticlassClsModel):
                     num_classes=num_classes,
                     in_channels=in_channels,
                 ),
-                loss=loss,
+                loss=nn.CrossEntropyLoss(reduction="none"),
             )
 
         return ImageClassifier(
@@ -122,7 +121,7 @@ class MobileNetV3ForMulticlassCls(OTXMulticlassClsModel):
                 num_classes=num_classes,
                 in_channels=in_channels,
             ),
-            loss=loss,
+            loss=nn.CrossEntropyLoss(),
         )
 
     def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.") -> dict:

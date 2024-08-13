@@ -90,7 +90,6 @@ class TimmModelForMulticlassCls(OTXMulticlassClsModel):
     def _build_model(self, num_classes: int) -> nn.Module:
         backbone = TimmBackbone(backbone=self.backbone, pretrained=self.pretrained)
         neck = GlobalAveragePooling(dim=2)
-        loss = nn.CrossEntropyLoss(reduction="none")
         if self.train_type == OTXTrainType.SEMI_SUPERVISED:
             return SemiSLClassifier(
                 backbone=backbone,
@@ -99,7 +98,7 @@ class TimmModelForMulticlassCls(OTXMulticlassClsModel):
                     num_classes=num_classes,
                     in_channels=backbone.num_features,
                 ),
-                loss=loss,
+                loss=nn.CrossEntropyLoss(reduction="none"),
             )
 
         return ImageClassifier(
@@ -109,7 +108,7 @@ class TimmModelForMulticlassCls(OTXMulticlassClsModel):
                 num_classes=num_classes,
                 in_channels=backbone.num_features,
             ),
-            loss=loss,
+            loss=nn.CrossEntropyLoss(),
         )
 
     def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.") -> dict:

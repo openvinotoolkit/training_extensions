@@ -475,7 +475,8 @@ class OTXTVModel(OTXModel):
     def _create_model(self) -> nn.Module:
         loss_scale = 1.0
         if self.task == OTXTaskType.MULTI_CLASS_CLS:
-            loss = nn.CrossEntropyLoss(reduction="none")
+            reduction = "none" if self.train_type == OTXTrainType.SEMI_SUPERVISED else "mean"
+            loss = nn.CrossEntropyLoss(reduction=reduction)
         else:
             loss = AsymmetricAngularLossWithIgnore(gamma_pos=0.0, gamma_neg=1.0, reduction="sum")
             loss_scale = 7.0
