@@ -4,8 +4,8 @@ from unittest.mock import MagicMock
 
 import pytest
 import torch
-from otx.algo.segmentation.backbones import litehrnet as target_file
-from otx.algo.segmentation.backbones.litehrnet import LiteHRNet, NeighbourSupport, SpatialWeightingV2, StemV2
+from otx.algo.segmentation.backbones import LiteHRNetBackbone
+from otx.algo.segmentation.backbones.litehrnet import NeighbourSupport, NNLiteHRNet, SpatialWeightingV2, StemV2
 
 
 class TestSpatialWeightingV2:
@@ -52,7 +52,7 @@ class TestNeighbourSupport:
         assert outputs is not None
 
 
-class TestLiteHRNet:
+class TestNNLiteHRNet:
     @pytest.fixture()
     def extra_cfg(self) -> dict:
         return {
@@ -96,19 +96,19 @@ class TestLiteHRNet:
         }
 
     @pytest.fixture()
-    def backbone(self, extra_cfg) -> LiteHRNet:
-        return LiteHRNet(extra=extra_cfg)
+    def backbone(self, extra_cfg) -> NNLiteHRNet:
+        return NNLiteHRNet(**extra_cfg)
 
     def test_init(self, extra_cfg) -> None:
         extra = deepcopy(extra_cfg)
 
         extra["add_stem_features"] = True
-        model = LiteHRNet(extra=extra)
+        model = NNLiteHRNet(**extra)
         assert model is not None
 
         extra["stages_spec"]["module_type"] = ("NAIVE", "NAIVE", "NAIVE")
         extra["stages_spec"]["weighting_module_version"] = "v2"
-        model = LiteHRNet(extra=extra)
+        model = NNLiteHRNet(extra=extra)
         assert model is not None
 
     def test_init_weights(self, backbone) -> None:
@@ -126,17 +126,17 @@ class TestLiteHRNet:
         extra = deepcopy(extra_cfg)
         extra["stages_spec"]["module_type"] = ("NAIVE", "NAIVE", "NAIVE")
         extra["stages_spec"]["weighting_module_version"] = "v2"
-        model = LiteHRNet(extra=extra)
+        model = NNLiteHRNet(extra=extra)
         outputs = model(inputs)
         assert outputs is not None
 
     @pytest.fixture()
     def mock_load_from_http(self, mocker) -> MagicMock:
-        return mocker.patch.object(target_file, "load_from_http")
+        return mocker.patch.object(LiteHRNetBackbone, "load_from_http")
 
     @pytest.fixture()
     def mock_load_checkpoint_to_model(self, mocker) -> MagicMock:
-        return mocker.patch.object(target_file, "load_checkpoint_to_model")
+        return mocker.patch.object(LiteHRNetBackbone, "load_checkpoint_to_model")
 
     @pytest.fixture()
     def pretrained_weight(self, tmp_path) -> str:
@@ -156,7 +156,7 @@ class TestLiteHRNet:
         mock_load_checkpoint_to_model,
     ):
         extra_cfg["add_stem_features"] = True
-        model = LiteHRNet(extra=extra_cfg)
+        model = NNLiteHRNet(extra=extra_cfg)
         model.load_pretrained_weights(pretrained=pretrained_weight)
 
         mock_torch_load.assert_called_once_with(pretrained_weight, "cpu")
@@ -165,7 +165,7 @@ class TestLiteHRNet:
     def test_load_pretrained_weights_from_url(self, extra_cfg, mock_load_from_http, mock_load_checkpoint_to_model):
         pretrained_weight = "www.fake.com/fake.pth"
         extra_cfg["add_stem_features"] = True
-        model = LiteHRNet(extra=extra_cfg)
+        model = NNLiteHRNet(extra=extra_cfg)
         model.load_pretrained_weights(pretrained=pretrained_weight)
 
         cache_dir = Path.home() / ".cache" / "torch" / "hub" / "checkpoints"

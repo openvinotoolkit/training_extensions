@@ -4,7 +4,7 @@
 
 
 import torch
-from otx.algo.segmentation.litehrnet import OTXLiteHRNet
+from otx.algo.segmentation.litehrnet import LiteHRNet
 from otx.core.data.entity.base import ImageInfo
 
 
@@ -14,7 +14,7 @@ class MockGT:
 
 class TestClassIncrementalMixin:
     def test_ignore_label(self) -> None:
-        hrnet = OTXLiteHRNet(3, name_base_model="LiteHRNet18")
+        hrnet = LiteHRNet(3, model_version="lite_hrnet_18")
 
         seg_logits = torch.randn(1, 3, 128, 128)
         # no annotations for class=3

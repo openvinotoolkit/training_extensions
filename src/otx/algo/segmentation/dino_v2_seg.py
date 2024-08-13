@@ -18,7 +18,7 @@ if TYPE_CHECKING:
     from typing_extensions import Self
 
 
-class OTXDinoV2Seg(OTXSegmentationModel):
+class DinoV2Seg(OTXSegmentationModel):
     """DinoV2Seg Model."""
 
     AVAILABLE_MODEL_VERSIONS: ClassVar[list[str]] = [

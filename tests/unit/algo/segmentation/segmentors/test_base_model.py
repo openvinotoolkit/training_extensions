@@ -1,10 +1,11 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
-import torch
 import pytest
-from otx.core.data.entity.base import ImageInfo
+import torch
 from otx.algo.segmentation.segmentors.base_model import BaseSegmModel
+from otx.core.data.entity.base import ImageInfo
+
 
 class TestBaseSegmModel:
     @pytest.fixture()
@@ -27,7 +28,7 @@ class TestBaseSegmModel:
 
     def test_forward_returns_loss(self, model, inputs):
         model.criterion.name = "CrossEntropyLoss"
-        images, masks  = inputs
+        images, masks = inputs
         img_metas = [ImageInfo(img_shape=(256, 256), img_idx=0, ori_shape=(256, 256))]
         output = model.forward(images, img_metas=img_metas, masks=masks, mode="loss")
         assert isinstance(output, dict)

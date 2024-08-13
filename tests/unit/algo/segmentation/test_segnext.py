@@ -3,17 +3,17 @@
 
 
 import pytest
-from otx.algo.segmentation.segnext import OTXSegNext
+from otx.algo.segmentation.segnext import SegNext
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
 
 
 class TestSegNext:
     @pytest.fixture()
-    def fxt_segnext(self) -> OTXSegNext:
-        return OTXSegNext(10, name_base_model="SegNextB")
+    def fxt_segnext(self) -> SegNext:
+        return SegNext(10, model_version="segnext_base")
 
     def test_segnext_init(self, fxt_segnext):
-        assert isinstance(fxt_segnext, OTXSegNext)
+        assert isinstance(fxt_segnext, SegNext)
         assert fxt_segnext.num_classes == 10
 
     def test_load_from_otx_v1_ckpt(self, fxt_segnext, mocker):
