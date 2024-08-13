@@ -146,21 +146,21 @@ def infer_abbr(class_type: type) -> str:
     return "norm"
 
 
-def _get_norm_type(norm_callable: Callable[..., nn.Module]) -> type:
+def _get_norm_type(normalization_callable: Callable[..., nn.Module]) -> type:
     """Get class type or name of given normalization callable.
 
     Args:
-        norm_callable (Callable[..., nn.Module]): Normalization layer module.
+        normalization_callable (Callable[..., nn.Module]): Normalization layer module.
 
     Returns:
         (type): Class type of given normalization callable.
 
     """
-    return norm_callable.func if isinstance(norm_callable, partial) else norm_callable
+    return normalization_callable.func if isinstance(normalization_callable, partial) else normalization_callable
 
 
 def build_norm_layer(
-    norm_callable: Callable[..., nn.Module],
+    normalization_callable: Callable[..., nn.Module] | tuple[str, nn.Module] | nn.Module,
     num_features: int,
     postfix: int | str = "",
     layer_name: str | None = None,
@@ -171,7 +171,8 @@ def build_norm_layer(
     """Build normalization layer.
 
     Args:
-        norm_callable (Callable[..., nn.Module] | None): Normalization layer module.
+        normalization_callable (Callable[..., nn.Module] | tuple[str, nn.Module] | nn.Module): Normalization layer module.
+            If tuple is given, return it as is. If callable is given, create the layer.
         num_features (int): Number of input channels.
         postfix (int | str): The postfix to be appended into norm abbreviation
             to create named layer.
@@ -187,24 +188,41 @@ def build_norm_layer(
         of abbreviation and postfix, e.g., bn1, gn. The second element is the
         created norm layer.
     """
-    if not callable(norm_callable):
-        msg = f"norm_callable must be a callable, but got {type(norm_callable)}."
+    if isinstance(normalization_callable, tuple):
+        # return tuple as is
+        return normalization_callable
+
+    if isinstance(normalization_callable, nn.Module):
+        # return nn.Module with empty name string
+        return "", normalization_callable
+
+    def _build_layer(normalization_callable: Callable[..., nn.Module]) -> nn.Module:
+        if layer_type is not nn.GroupNorm:
+            layer = normalization_callable(num_features, eps=eps, **kwargs)
+            if layer_type == SyncBatchNorm and hasattr(layer, "_specify_ddp_gpu_num"):
+                layer._specify_ddp_gpu_num(1)  # noqa: SLF001
+        else:
+            layer = normalization_callable(num_channels=num_features, eps=eps, **kwargs)
+        return layer
+
+    if isinstance(normalization_callable, partial) and normalization_callable.func.__name__ == "build_norm_layer":
+        # add `num_features` to `normalization_callable` and return it
+        return normalization_callable(num_features=num_features)
+
+    if not callable(normalization_callable):
+        msg = f"normalization_callable must be a callable, but got {type(normalization_callable)}."
         raise TypeError(msg)
 
-    if (layer_type := _get_norm_type(norm_callable)) not in AVAILABLE_NORM_LIST:
+    if (layer_type := _get_norm_type(normalization_callable)) not in AVAILABLE_NORM_LIST:
         msg = f"Unsupported normalization: {layer_type.__name__}."
         raise ValueError(msg)
 
+    # set norm name
     abbr = layer_name or infer_abbr(layer_type)
     name = abbr + str(postfix)
 
-    if layer_type is not nn.GroupNorm:
-        layer = norm_callable(num_features, eps=eps, **kwargs)
-        if layer_type == SyncBatchNorm and hasattr(layer, "_specify_ddp_gpu_num"):
-            layer._specify_ddp_gpu_num(1)  # noqa: SLF001
-    else:
-        layer = norm_callable(num_channels=num_features, eps=eps, **kwargs)
-
+    # set norm layer
+    layer = _build_layer(normalization_callable)
     for param in layer.parameters():
         param.requires_grad = requires_grad
 
