@@ -6,7 +6,8 @@
 
 from __future__ import annotations
 
-from copy import deepcopy
+from copy import copy, deepcopy
+from math import ceil
 from typing import TYPE_CHECKING, Literal
 
 from torch import Tensor, nn
@@ -269,6 +270,10 @@ class EfficientNetForHLabelCls(OTXHlabelClsModel):
             raise TypeError(self.label_info)
 
         backbone = OTXEfficientNet(version=self.version, input_size=self.input_size, pretrained=self.pretrained)
+
+        copied_head_config = copy(head_config)
+        copied_head_config["step_size"] = (ceil(self.input_size[0] / 32), ceil(self.input_size[1] / 32))
+
         return ImageClassifier(
             backbone=backbone,
             neck=nn.Identity(),
@@ -276,7 +281,7 @@ class EfficientNetForHLabelCls(OTXHlabelClsModel):
                 in_channels=backbone.num_features,
                 multiclass_loss=nn.CrossEntropyLoss(),
                 multilabel_loss=AsymmetricAngularLossWithIgnore(gamma_pos=0.0, gamma_neg=1.0, reduction="sum"),
-                **head_config,
+                **copied_head_config,
             ),
             optimize_gap=False,
         )

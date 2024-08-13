@@ -6,7 +6,8 @@
 
 from __future__ import annotations
 
-from copy import deepcopy
+from copy import copy, deepcopy
+from math import ceil
 from typing import TYPE_CHECKING, Any, Literal
 
 import torch
@@ -331,6 +332,9 @@ class MobileNetV3ForHLabelCls(OTXHlabelClsModel):
         if not isinstance(self.label_info, HLabelInfo):
             raise TypeError(self.label_info)
 
+        copied_head_config = copy(head_config)
+        copied_head_config["step_size"] = (ceil(self.input_size[0] / 32), ceil(self.input_size[1] / 32))
+
         return ImageClassifier(
             backbone=OTXMobileNetV3(mode=self.mode, input_size=self.input_size),
             neck=nn.Identity(),
@@ -338,7 +342,7 @@ class MobileNetV3ForHLabelCls(OTXHlabelClsModel):
                 in_channels=960,
                 multiclass_loss=nn.CrossEntropyLoss(),
                 multilabel_loss=AsymmetricAngularLossWithIgnore(gamma_pos=0.0, gamma_neg=1.0, reduction="sum"),
-                **head_config,
+                **copied_head_config,
             ),
             optimize_gap=False,
         )
