@@ -6,7 +6,7 @@
 from __future__ import annotations
 
 import logging as log
-from typing import TYPE_CHECKING, Any, Literal, Sequence
+from typing import TYPE_CHECKING, ClassVar, Literal, Sequence
 
 import torch
 from torch import Tensor, nn
@@ -27,21 +27,6 @@ if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
 
     from otx.core.metrics import MetricCallable
-
-DEFAULT_CONFIG_SEGMENT_ANYTHING: dict[str, dict[str, Any]] = {
-    "tiny_vit": {
-        "load_from": "https://github.com/ChaoningZhang/MobileSAM/raw/master/weights/mobile_sam.pt",
-    },
-    "vit_b": {
-        "load_from": "https://dl.fbaipublicfiles.com/segment_anything/sam_vit_b_01ec64.pth",
-    },
-    "vit_l": {
-        "load_from": "https://dl.fbaipublicfiles.com/segment_anything/sam_vit_l_0b3195.pth",
-    },
-    "vit_h": {
-        "load_from": "https://dl.fbaipublicfiles.com/segment_anything/sam_vit_h_4b8939.pth",
-    },
-}
 
 
 class SegmentAnything(nn.Module):
@@ -140,6 +125,13 @@ class SegmentAnything(nn.Module):
 class SAM(OTXVisualPromptingModel):
     """OTX visual prompting model class for Segment Anything Model (SAM)."""
 
+    load_from: ClassVar[dict[str, str]] = {
+        "tiny_vit": "https://github.com/ChaoningZhang/MobileSAM/raw/master/weights/mobile_sam.pt",
+        "vit_b": "https://dl.fbaipublicfiles.com/segment_anything/sam_vit_b_01ec64.pth",
+        "vit_l": "https://dl.fbaipublicfiles.com/segment_anything/sam_vit_l_0b3195.pth",
+        "vit_h": "https://dl.fbaipublicfiles.com/segment_anything/sam_vit_h_4b8939.pth",
+    }
+
     def __init__(
         self,
         backbone_type: Literal["tiny_vit", "vit_b"],
@@ -177,8 +169,7 @@ class SAM(OTXVisualPromptingModel):
             torch_compile=torch_compile,
         )
 
-        # TODO (sungchul): update to use `load_from`
-        self.load_checkpoint(load_from=DEFAULT_CONFIG_SEGMENT_ANYTHING[backbone_type]["load_from"])
+        self.load_checkpoint(load_from=self.load_from[backbone_type])
         self.freeze_networks(freeze_image_encoder, freeze_prompt_encoder, freeze_mask_decoder)
 
     def _build_model(self) -> nn.Module:
