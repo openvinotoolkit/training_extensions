@@ -13,7 +13,7 @@ from torch import nn
 from otx.algo.classification.backbones.timm import TimmBackbone, TimmModelType
 from otx.algo.classification.classifier import ImageClassifier, SemiSLClassifier
 from otx.algo.classification.heads import (
-    HierarchicalLinearClsHead,
+    HierarchicalCBAMClsHead,
     LinearClsHead,
     MultiLabelLinearClsHead,
     OTXSemiSLLinearClsHead,
@@ -270,13 +270,14 @@ class TimmModelForHLabelCls(OTXHlabelClsModel):
         backbone = TimmBackbone(backbone=self.backbone, pretrained=self.pretrained)
         return ImageClassifier(
             backbone=backbone,
-            neck=GlobalAveragePooling(dim=2),
-            head=HierarchicalLinearClsHead(
+            neck=nn.Identity(),
+            head=HierarchicalCBAMClsHead(
                 in_channels=backbone.num_features,
                 multiclass_loss=nn.CrossEntropyLoss(),
                 multilabel_loss=AsymmetricAngularLossWithIgnore(gamma_pos=0.0, gamma_neg=1.0, reduction="sum"),
                 **head_config,
             ),
+            optimize_gap=False,
         )
 
     def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.") -> dict:

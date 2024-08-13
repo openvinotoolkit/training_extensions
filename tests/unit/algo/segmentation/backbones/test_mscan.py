@@ -1,3 +1,4 @@
+from pathlib import Path
 from unittest.mock import MagicMock
 
 import pytest
@@ -101,5 +102,6 @@ class TestMSCABlock:
         pretrained_weight = "www.fake.com/fake.pth"
         MSCAN(pretrained_weights=pretrained_weight)
 
-        mock_load_from_http.assert_called_once_with(pretrained_weight, "cpu")
+        cache_dir = Path.home() / ".cache" / "torch" / "hub" / "checkpoints"
+        mock_load_from_http.assert_called_once_with(filename=pretrained_weight, map_location="cpu", model_dir=cache_dir)
         mock_load_checkpoint_to_model.assert_called_once()

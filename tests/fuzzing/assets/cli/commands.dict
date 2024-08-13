@@ -1,3 +1,5 @@
+"-h"
+"-v"
 "install"
 "find"
 "train"
@@ -6,3 +8,4 @@
 "export"
 "optimize"
 "explain"
+"benchmark"
