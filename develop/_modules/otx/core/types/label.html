@@ -569,14 +569,6 @@
 
     <span class="n">ignore_index</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">255</span>
 
-    <span class="k">def</span> <span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">label_names</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span>
-                <span class="s2">&quot;The number of labels must be larger than 1. &quot;</span>
-                <span class="s2">&quot;Please, check dataset labels and add background label in case of binary segmentation.&quot;</span>
-            <span class="p">)</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
-
 <div class="viewcode-block" id="SegLabelInfo.from_num_classes">
 <a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.types.html#otx.core.types.SegLabelInfo.from_num_classes">[docs]</a>
     <span class="nd">@classmethod</span>

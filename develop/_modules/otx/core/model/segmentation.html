@@ -275,10 +275,13 @@
 <span class="kn">from</span> <span class="nn">otx.core.metrics.dice</span> <span class="kn">import</span> <span class="n">SegmCallable</span>
 <span class="kn">from</span> <span class="nn">otx.core.model.base</span> <span class="kn">import</span> <span class="n">DefaultOptimizerCallable</span><span class="p">,</span> <span class="n">DefaultSchedulerCallable</span><span class="p">,</span> <span class="n">OTXModel</span><span class="p">,</span> <span class="n">OVModel</span>
 <span class="kn">from</span> <span class="nn">otx.core.schedulers</span> <span class="kn">import</span> <span class="n">LRSchedulerListCallable</span>
-<span class="kn">from</span> <span class="nn">otx.core.types.export</span> <span class="kn">import</span> <span class="n">TaskLevelExportParameters</span>
+<span class="kn">from</span> <span class="nn">otx.core.types.export</span> <span class="kn">import</span> <span class="n">OTXExportFormatType</span><span class="p">,</span> <span class="n">TaskLevelExportParameters</span>
 <span class="kn">from</span> <span class="nn">otx.core.types.label</span> <span class="kn">import</span> <span class="n">LabelInfo</span><span class="p">,</span> <span class="n">LabelInfoTypes</span><span class="p">,</span> <span class="n">SegLabelInfo</span>
+<span class="kn">from</span> <span class="nn">otx.core.types.precision</span> <span class="kn">import</span> <span class="n">OTXPrecisionType</span>
 
 <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+
     <span class="kn">from</span> <span class="nn">lightning.pytorch.cli</span> <span class="kn">import</span> <span class="n">LRSchedulerCallable</span><span class="p">,</span> <span class="n">OptimizerCallable</span>
     <span class="kn">from</span> <span class="nn">model_api.models.utils</span> <span class="kn">import</span> <span class="n">ImageResultWithSoftPrediction</span>
     <span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">Tensor</span>
@@ -383,6 +386,35 @@
                 <span class="p">),</span>
             <span class="p">)</span>
         <span class="k">return</span> <span class="n">SegBatchDataEntity</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">images</span><span class="p">,</span> <span class="n">infos</span><span class="p">,</span> <span class="n">masks</span><span class="o">=</span><span class="p">[])</span></div>
+
+
+<div class="viewcode-block" id="OTXSegmentationModel.export">
+<a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.model.segmentation.html#otx.core.model.segmentation.OTXSegmentationModel.export">[docs]</a>
+    <span class="k">def</span> <span class="nf">export</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">output_dir</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span>
+        <span class="n">base_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">export_format</span><span class="p">:</span> <span class="n">OTXExportFormatType</span><span class="p">,</span>
+        <span class="n">precision</span><span class="p">:</span> <span class="n">OTXPrecisionType</span> <span class="o">=</span> <span class="n">OTXPrecisionType</span><span class="o">.</span><span class="n">FP32</span><span class="p">,</span>
+        <span class="n">to_exportable_code</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Export this model to the specified output directory.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            output_dir (Path): directory for saving the exported model</span>
+<span class="sd">            base_name: (str): base name for the exported model file. Extension is defined by the target export format</span>
+<span class="sd">            export_format (OTXExportFormatType): format of the output model</span>
+<span class="sd">            precision (OTXExportPrecisionType): precision of the output model</span>
+<span class="sd">            to_exportable_code (bool): flag to export model in exportable code with demo package</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Path: path to the exported model.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="s2">&quot;student_model&quot;</span><span class="p">):</span>
+            <span class="c1"># use only teacher model</span>
+            <span class="c1"># TODO(Kirill): make this based on the training type</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">teacher_model</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">export</span><span class="p">(</span><span class="n">output_dir</span><span class="p">,</span> <span class="n">base_name</span><span class="p">,</span> <span class="n">export_format</span><span class="p">,</span> <span class="n">precision</span><span class="p">,</span> <span class="n">to_exportable_code</span><span class="p">)</span></div>
 </div>
 
 
