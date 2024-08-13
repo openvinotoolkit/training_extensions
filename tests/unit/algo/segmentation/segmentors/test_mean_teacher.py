@@ -1,3 +1,7 @@
+# Copyright (C) 2024 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+#
+
 import pytest
 import torch
 from otx.algo.segmentation.segmentors import BaseSegmModel, MeanTeacher

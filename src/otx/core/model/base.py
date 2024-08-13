@@ -48,9 +48,9 @@ from otx.core.schedulers import (
     SchedulerCallableSupportHPO,
 )
 from otx.core.types.export import OTXExportFormatType, TaskLevelExportParameters
-from otx.core.types.task import OTXTrainType
 from otx.core.types.label import LabelInfo, LabelInfoTypes, NullLabelInfo
 from otx.core.types.precision import OTXPrecisionType
+from otx.core.types.task import OTXTrainType
 from otx.core.utils.build import get_default_num_async_infer_requests
 from otx.core.utils.miscellaneous import ensure_callable
 from otx.core.utils.utils import is_ckpt_for_finetuning, is_ckpt_from_otx_v1, remove_state_dict_prefix
@@ -115,13 +115,13 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
         super().__init__()
 
         self._label_info = self._dispatch_label_info(label_info)
+        self.train_type = train_type
         self.classification_layers: dict[str, dict[str, Any]] = {}
         self.model = self._create_model()
         self._explain_mode = False
         self.optimizer_callable = ensure_callable(optimizer)
         self.scheduler_callable = ensure_callable(scheduler)
         self.metric_callable = ensure_callable(metric)
-        self.train_type = train_type
 
         self.torch_compile = torch_compile
         self._explain_mode = False

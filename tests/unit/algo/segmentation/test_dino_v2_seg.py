@@ -1,6 +1,6 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-
+#
 
 import pytest
 from otx.algo.segmentation.dino_v2_seg import OTXDinoV2Seg

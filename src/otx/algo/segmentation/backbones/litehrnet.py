@@ -10,7 +10,7 @@ Modified from:
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Callable
+from typing import Any, Callable, ClassVar
 
 import torch
 import torch.utils.checkpoint as cp
@@ -18,10 +18,7 @@ from torch import nn
 from torch.nn import functional
 
 from otx.algo.modules import Conv2dModule, build_norm_layer
-from otx.algo.modules.base_module import BaseModule
 from otx.algo.segmentation.modules import (
-    AsymmetricPositionAttentionModule,
-    LocalAttentionModule,
     channel_shuffle,
 )
 from otx.algo.utils.mmengine_utils import load_checkpoint_to_model, load_from_http
@@ -1190,7 +1187,7 @@ class LiteHRModule(nn.Module):
         return out
 
 
-class LiteHRNet_NN(BaseModule):
+class NNLiteHRNet(nn.Module):
     """Lite-HRNet backbone.
 
     `High-Resolution Representations for Labeling Pixels and Regions
@@ -1211,21 +1208,19 @@ class LiteHRNet_NN(BaseModule):
 
     def __init__(
         self,
-        stem: dict,
+        stem: dict[str, Any],
         num_stages: int,
-        stages_spec: dict,
-        out_modules_cfg: dict,
+        stages_spec: dict[str, Any],
         in_channels: int = 3,
-        norm_cfg: dict | None = None,
+        norm_cfg: dict[str, Any] | None = None,
         norm_eval: bool = False,
         with_cp: bool = False,
         zero_init_residual: bool = False,
         dropout: float | None = None,
-        init_cfg: dict | None = None,
         pretrained_weights: str | None = None,
     ) -> None:
         """Init."""
-        super().__init__(init_cfg=init_cfg)
+        super().__init__()
 
         if norm_cfg is None:
             norm_cfg = {"type": "BN", "requires_grad": True}
@@ -1239,11 +1234,6 @@ class LiteHRNet_NN(BaseModule):
             norm_cfg=self.norm_cfg,
             **stem,
         )
-
-        self.enable_stem_pool = stem.get("out_pool", False)
-        if self.enable_stem_pool:
-            self.stem_pool = nn.AvgPool2d(kernel_size=3, stride=2)
-
         self.num_stages = num_stages
         self.stages_spec = stages_spec
 
@@ -1269,38 +1259,6 @@ class LiteHRNet_NN(BaseModule):
             )
             setattr(self, f"stage{i}", stage)
 
-        self.out_modules = None
-        out_modules_list = []
-        in_modules_channels, out_modules_channels = num_channels_last[-1], None
-        if out_modules_cfg["conv"]["enable"]:
-            out_modules_list.append(
-                Conv2dModule(
-                    in_channels=in_modules_channels,
-                    out_channels=out_modules_cfg["conv"]["channels"],
-                    kernel_size=1,
-                    stride=1,
-                    padding=0,
-                    norm_cfg=self.norm_cfg,
-                    activation_callable=nn.ReLU,
-                ),
-            )
-            in_modules_channels = out_modules_channels
-        if out_modules_cfg["position_att"]["enable"]:
-            out_modules_list.append(
-                AsymmetricPositionAttentionModule(
-                    in_channels=in_modules_channels,
-                    key_channels=out_modules_cfg["position_att"]["key_channels"],
-                    value_channels=out_modules_cfg["position_att"]["value_channels"],
-                    psp_size=out_modules_cfg["position_att"]["psp_size"],
-                    norm_cfg=self.norm_cfg,
-                ),
-            )
-
-        if len(out_modules_list) > 0:
-            self.out_modules = nn.Sequential(*out_modules_list)
-            num_channels_last.append(in_modules_channels)
-            num_channels_last = [num_channels_last[0], *num_channels_last]
-        breakpoint()
         if pretrained_weights is not None:
             self.load_pretrained_weights(pretrained_weights, prefix="backbone")
 
@@ -1433,11 +1391,7 @@ class LiteHRNet_NN(BaseModule):
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Forward function."""
         stem_outputs = self.stem(x)
-        y_x2 = y_x4 = stem_outputs
-        y = y_x4
-
-        if self.enable_stem_pool:
-            y = self.stem_pool(y)
+        y = stem_outputs
 
         y_list = [y]
         for i in range(self.num_stages):
@@ -1456,9 +1410,6 @@ class LiteHRNet_NN(BaseModule):
             stage_module = getattr(self, f"stage{i}")
             y_list = stage_module(stage_inputs)
 
-        if self.out_modules is not None:
-            y_list.append(self.out_modules(y_list[-1]))
-
         return y_list
 
     def load_pretrained_weights(self, pretrained: str | None = None, prefix: str = "") -> None:
@@ -1475,34 +1426,32 @@ class LiteHRNet_NN(BaseModule):
             load_checkpoint_to_model(self, checkpoint, prefix=prefix)
 
 
-class LiteHRNet:
-    litehrnet_configuration = {
-        "small": {
-                "stem": {
-                    "stem_channels": 32,
-                    "out_channels": 32,
-                    "expand_ratio": 1,
-                    "strides": [2, 2],
-                    "extra_stride": True,
-                    "input_norm": False,
-                },
-                "num_stages": 2,
-                "stages_spec": {
-                    "num_modules": [4, 4],
-                    "num_branches": [2, 3],
-                    "num_blocks": [2, 2],
-                    "module_type": ["LITE", "LITE"],
-                    "with_fuse": [True, True],
-                    "reduce_ratios": [8, 8],
-                    "num_channels": [[60, 120], [60, 120, 240]],
-                },
-                "out_modules": {
-                    "conv": {"enable": False, "channels": 160},
-                    "position_att": {"enable": False, "key_channels": 64, "value_channels": 240, "psp_size": [1, 3, 6, 8]},
-                },
-                "pretrained_weights": "https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/custom_semantic_segmentation/litehrnetsv2_imagenet1k_rsc.pth",
+class LiteHRNetBackbone:
+    """LiteHRNet backbone factory."""
+
+    LITEHRNET_CFG: ClassVar[dict[str, Any]] = {
+        "lite_hrnet_s": {
+            "stem": {
+                "stem_channels": 32,
+                "out_channels": 32,
+                "expand_ratio": 1,
+                "strides": [2, 2],
+                "extra_stride": True,
+                "input_norm": False,
+            },
+            "num_stages": 2,
+            "stages_spec": {
+                "num_modules": [4, 4],
+                "num_branches": [2, 3],
+                "num_blocks": [2, 2],
+                "module_type": ["LITE", "LITE"],
+                "with_fuse": [True, True],
+                "reduce_ratios": [8, 8],
+                "num_channels": [[60, 120], [60, 120, 240]],
+            },
+            "pretrained_weights": "https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/custom_semantic_segmentation/litehrnetsv2_imagenet1k_rsc.pth",
         },
-        "18": {
+        "lite_hrnet_18": {
             "stem": {
                 "stem_channels": 32,
                 "out_channels": 32,
@@ -1521,13 +1470,9 @@ class LiteHRNet:
                 "reduce_ratios": [8, 8, 8],
                 "num_channels": [[40, 80], [40, 80, 160], [40, 80, 160, 320]],
             },
-            "out_modules": {
-                "conv": {"enable": False, "channels": 320},
-                "position_att": {"enable": False, "key_channels": 128, "value_channels": 320, "psp_size": [1, 3, 6, 8]},
-            },
             "pretrained_weights": "https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/custom_semantic_segmentation/litehrnet18_imagenet1k_rsc.pth",
         },
-        "x": {
+        "lite_hrnet_x": {
             "stem": {
                 "stem_channels": 60,
                 "out_channels": 60,
@@ -1547,13 +1492,14 @@ class LiteHRNet:
                 "reduce_ratios": [2, 4, 8, 8],
                 "num_channels": [[18, 60], [18, 60, 80], [18, 60, 80, 160], [18, 60, 80, 160, 320]],
             },
-            "out_modules": {
-                "conv": {"enable": False, "channels": 320},
-                "position_att": {"enable": False, "key_channels": 128, "value_channels": 320, "psp_size": [1, 3, 6, 8]},
-            },
-            "pretrained_weights": "https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/custom_semantic_segmentation/litehrnetxv3_imagenet1k_rsc.pth"
-        }
+            "pretrained_weights": "https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/custom_semantic_segmentation/litehrnetxv3_imagenet1k_rsc.pth",
+        },
     }
 
-    def __new__(cls, version):
-        return LiteHRNet_NN(cls.litehrnet_configuration[version])
+    def __new__(cls, version: str) -> NNLiteHRNet:
+        """Constructor for LiteHRNet backbone."""
+        if version not in cls.LITEHRNET_CFG:
+            msg = f"model type '{version}' is not supported"
+            raise KeyError(msg)
+
+        return NNLiteHRNet(**cls.LITEHRNET_CFG[version])

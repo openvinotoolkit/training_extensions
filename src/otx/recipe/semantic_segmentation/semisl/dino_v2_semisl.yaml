@@ -2,11 +2,8 @@ model:
   class_path: otx.algo.segmentation.dino_v2_seg.DinoV2SegSemiSL
   init_args:
     label_info: 2
-
-    criterion_configuration:
-      - type: CrossEntropyLoss
-        params:
-          ignore_index: 255
+    model_version: dinov2_vits14
+    train_type: SEMI_SUPERVISED
 
     optimizer:
       class_path: torch.optim.AdamW

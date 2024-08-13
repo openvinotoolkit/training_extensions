@@ -58,7 +58,7 @@ class OTXMulticlassClsModel(OTXModel[MulticlassClsBatchDataEntity, MulticlassCls
             scheduler=scheduler,
             metric=metric,
             torch_compile=torch_compile,
-            train_type=train_type
+            train_type=train_type,
         )
         self.image_size = (1, 3, 224, 224)
 

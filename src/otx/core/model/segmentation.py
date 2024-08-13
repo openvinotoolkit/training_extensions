@@ -6,12 +6,15 @@
 from __future__ import annotations
 
 import json
+from abc import abstractmethod
 from collections.abc import Sequence
 from typing import TYPE_CHECKING, Any, Literal
 
 import torch
+from torch import nn
 from torchvision import tv_tensors
 
+from otx.algo.segmentation.segmentors import MeanTeacher
 from otx.core.data.entity.base import ImageInfo, OTXBatchLossEntity
 from otx.core.data.entity.segmentation import SegBatchDataEntity, SegBatchPredEntity
 from otx.core.exporter.base import OTXModelExporter
@@ -52,7 +55,6 @@ class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity]):
         unsupervised_weight: float = 0.7,
         semisl_start_epoch: int = 2,
         drop_unreliable_pixels_percent: int = 20,
-
     ):
         """Base semantic segmentation model.
 
@@ -76,19 +78,39 @@ class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity]):
             drop_unreliable_pixels_percent (int, optional): The percentage of unreliable pixels to drop.
                 Only for semi-supervised learning. Defaults to 20.
         """
+        self.model_version = model_version
+        self.unsupervised_weight = unsupervised_weight
+        self.semisl_start_epoch = semisl_start_epoch
+        self.drop_unreliable_pixels_percent = drop_unreliable_pixels_percent
+
         super().__init__(
             label_info=label_info,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
             torch_compile=torch_compile,
-            train_type=train_type
+            train_type=train_type,
         )
 
-        self.model_version = model_version
-        self.unsupervised_weight = unsupervised_weight
-        self.semisl_start_epoch = semisl_start_epoch
-        self.drop_unreliable_pixels_percent = drop_unreliable_pixels_percent
+    def _create_model(self) -> nn.Module:
+        base_model = self._build_model()
+        if self.train_type == OTXTrainType.SEMI_SUPERVISED:
+            return MeanTeacher(
+                base_model,
+                unsup_weight=self.unsupervised_weight,
+                drop_unrel_pixels_percent=self.drop_unreliable_pixels_percent,
+                semisl_start_epoch=self.semisl_start_epoch,
+            )
+
+        return base_model
+
+    @abstractmethod
+    def _build_model(self) -> nn.Module:
+        """Building base nn.Module model.
+
+        Returns:
+            nn.Module: base nn.Module model for supervised training
+        """
 
     def _customize_inputs(self, entity: SegBatchDataEntity) -> dict[str, Any]:
         mode = "loss" if self.training else "predict"
