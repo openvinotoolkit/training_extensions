@@ -13,6 +13,7 @@ from torch import nn
 
 from otx.algo.modules.base_module import BaseModule
 from otx.algo.modules.conv_module import Conv2dModule
+from otx.algo.modules.norm import build_norm_layer
 
 __all__ = ["PResNet"]
 
@@ -30,8 +31,7 @@ class BasicBlock(nn.Module):
         shortcut: bool,
         activation_callable: Callable[..., nn.Module] | None = None,
         variant: str = "b",
-        norm_callable: Callable[..., nn.Module] | None = None,
-        norm_name: str | None = None,
+        normalization_callable: Callable[..., nn.Module] | None = None,
     ) -> None:
         super().__init__()
 
@@ -51,8 +51,7 @@ class BasicBlock(nn.Module):
                                     1,
                                     1,
                                     activation_callable=None,
-                                    norm_callable=norm_callable,
-                                    norm_name=norm_name,
+                                    normalization=build_norm_layer(normalization_callable, num_features=ch_out),
                                 ),
                             ),
                         ],
@@ -65,8 +64,7 @@ class BasicBlock(nn.Module):
                     1,
                     stride,
                     activation_callable=None,
-                    norm_callable=norm_callable,
-                    norm_name=norm_name,
+                    normalization=build_norm_layer(normalization_callable, num_features=ch_out),
                 )
 
         self.branch2a = Conv2dModule(
@@ -76,8 +74,7 @@ class BasicBlock(nn.Module):
             stride,
             padding=1,
             activation_callable=activation_callable,
-            norm_callable=norm_callable,
-            norm_name=norm_name,
+            normalization=build_norm_layer(normalization_callable, num_features=ch_out),
         )
         self.branch2b = Conv2dModule(
             ch_out,
@@ -86,8 +83,7 @@ class BasicBlock(nn.Module):
             1,
             padding=1,
             activation_callable=None,
-            norm_callable=norm_callable,
-            norm_name=norm_name,
+            normalization=build_norm_layer(normalization_callable, num_features=ch_out),
         )
         self.act = activation_callable() if activation_callable else nn.Identity()
 
@@ -115,8 +111,7 @@ class BottleNeck(nn.Module):
         shortcut: bool,
         activation_callable: Callable[..., nn.Module] | None = None,
         variant: str = "b",
-        norm_callable: Callable[..., nn.Module] | None = None,
-        norm_name: str | None = None,
+        normalization_callable: Callable[..., nn.Module] | None = None,
     ) -> None:
         super().__init__()
 
@@ -133,8 +128,7 @@ class BottleNeck(nn.Module):
             1,
             stride1,
             activation_callable=activation_callable,
-            norm_callable=norm_callable,
-            norm_name=norm_name,
+            normalization=build_norm_layer(normalization_callable, num_features=width),
         )
         self.branch2b = Conv2dModule(
             width,
@@ -143,8 +137,7 @@ class BottleNeck(nn.Module):
             stride2,
             padding=1,
             activation_callable=activation_callable,
-            norm_callable=norm_callable,
-            norm_name=norm_name,
+            normalization=build_norm_layer(normalization_callable, num_features=width),
         )
         self.branch2c = Conv2dModule(
             width,
@@ -152,8 +145,10 @@ class BottleNeck(nn.Module):
             1,
             1,
             activation_callable=None,
-            norm_callable=norm_callable,
-            norm_name=norm_name,
+            normalization=build_norm_layer(
+                normalization_callable,
+                num_features=ch_out * self.expansion,
+            ),
         )
 
         self.shortcut = shortcut
@@ -171,8 +166,10 @@ class BottleNeck(nn.Module):
                                     1,
                                     1,
                                     activation_callable=None,
-                                    norm_callable=norm_callable,
-                                    norm_name=norm_name,
+                                    normalization=build_norm_layer(
+                                        normalization_callable,
+                                        num_features=ch_out * self.expansion,
+                                    ),
                                 ),
                             ),
                         ],
@@ -185,8 +182,10 @@ class BottleNeck(nn.Module):
                     1,
                     stride,
                     activation_callable=None,
-                    norm_callable=norm_callable,
-                    norm_name=norm_name,
+                    normalization=build_norm_layer(
+                        normalization_callable,
+                        num_features=ch_out * self.expansion,
+                    ),
                 )
 
         self.act = activation_callable() if activation_callable else nn.Identity()
@@ -213,8 +212,7 @@ class Blocks(nn.Module):
         stage_num: int,
         activation_callable: Callable[..., nn.Module] | None = None,
         variant: str = "b",
-        norm_callable: Callable[..., nn.Module] | None = None,
-        norm_name: str | None = None,
+        normalization_callable: Callable[..., nn.Module] | None = None,
     ) -> None:
         super().__init__()
 
@@ -228,8 +226,7 @@ class Blocks(nn.Module):
                     shortcut=i != 0,
                     variant=variant,
                     activation_callable=activation_callable,
-                    norm_callable=norm_callable,
-                    norm_name=norm_name,
+                    normalization_callable=normalization_callable,
                 ),
             )
 
@@ -254,10 +251,8 @@ class PResNet(BaseModule):
         return_idx (list[int]): The indices of the stages to return as output. Defaults to [0, 1, 2, 3].
         activation_callable (Callable[..., nn.Module] | None): Activation layer module.
             Defaults to None.
-        norm_callable (Callable[..., nn.Module] | None): Normalization layer module.
+        normalization_callable (Callable[..., nn.Module] | None): Normalization layer module.
             Defaults to ``nn.BatchNorm2d``.
-        norm_name (str | None): The name of the normalization layer fpr ``build_norm_layer``.
-            Defaults to 'norm'.
         freeze_at (int): The stage at which to freeze the parameters. Defaults to -1.
         pretrained (bool): Whether to load pretrained weights. Defaults to False.
     """
@@ -283,8 +278,7 @@ class PResNet(BaseModule):
         num_stages: int = 4,
         return_idx: list[int] = [0, 1, 2, 3],  # noqa: B006
         activation_callable: Callable[..., nn.Module] | None = nn.ReLU,
-        norm_callable: Callable[..., nn.Module] = nn.BatchNorm2d,
-        norm_name: str = "norm",
+        normalization_callable: Callable[..., nn.Module] = nn.BatchNorm2d,
         freeze_at: int = -1,
         pretrained: bool = False,
     ) -> None:
@@ -314,8 +308,7 @@ class PResNet(BaseModule):
                             s,
                             padding=(k - 1) // 2,
                             activation_callable=activation_callable,
-                            norm_callable=norm_callable,
-                            norm_name=norm_name,
+                            normalization=build_norm_layer(normalization_callable, num_features=c_out),
                         ),
                     )
                     for c_in, c_out, k, s, _name in conv_def
@@ -341,8 +334,7 @@ class PResNet(BaseModule):
                     stage_num,
                     activation_callable=activation_callable,
                     variant=variant,
-                    norm_callable=norm_callable,
-                    norm_name=norm_name,
+                    normalization_callable=normalization_callable,
                 ),
             )
             ch_in = _out_channels[i]

@@ -6,7 +6,6 @@
 from __future__ import annotations
 
 import math
-from functools import partial
 from pathlib import Path
 from typing import Callable, Literal
 
@@ -17,6 +16,7 @@ from torch.nn import functional, init
 
 from otx.algo.modules.activation import Swish
 from otx.algo.modules.conv_module import Conv2dModule
+from otx.algo.modules.norm import build_norm_layer
 from otx.algo.utils.mmengine_utils import load_checkpoint_to_model
 
 PRETRAINED_ROOT = "https://github.com/osmr/imgclsmob/releases/download/v0.0.364/"
@@ -45,7 +45,7 @@ def conv1x1_block(
         padding=padding,
         groups=groups,
         bias=bias,
-        norm_callable=partial(nn.BatchNorm2d, eps=bn_eps) if use_bn else None,
+        normalization=build_norm_layer(nn.BatchNorm2d, num_features=out_channels, eps=bn_eps) if use_bn else None,
         activation_callable=activation_callable,
     )
 
@@ -72,7 +72,7 @@ def conv3x3_block(
         dilation=dilation,
         groups=groups,
         bias=bias,
-        norm_callable=partial(nn.BatchNorm2d, eps=bn_eps) if use_bn else None,
+        normalization=build_norm_layer(nn.BatchNorm2d, num_features=out_channels, eps=bn_eps) if use_bn else None,
         activation_callable=activation_callable,
     )
 
@@ -98,7 +98,7 @@ def dwconv3x3_block(
         dilation=dilation,
         groups=out_channels,
         bias=bias,
-        norm_callable=partial(nn.BatchNorm2d, eps=bn_eps) if use_bn else None,
+        normalization=build_norm_layer(nn.BatchNorm2d, num_features=out_channels, eps=bn_eps) if use_bn else None,
         activation_callable=activation_callable,
     )
 
@@ -124,7 +124,7 @@ def dwconv5x5_block(
         dilation=dilation,
         groups=out_channels,
         bias=bias,
-        norm_callable=partial(nn.BatchNorm2d, eps=bn_eps) if use_bn else None,
+        normalization=build_norm_layer(nn.BatchNorm2d, num_features=out_channels, eps=bn_eps) if use_bn else None,
         activation_callable=activation_callable,
     )
 

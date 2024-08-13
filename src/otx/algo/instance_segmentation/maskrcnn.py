@@ -22,6 +22,7 @@ from otx.algo.instance_segmentation.heads import CustomConvFCBBoxHead, CustomRoI
 from otx.algo.instance_segmentation.necks import FPN
 from otx.algo.instance_segmentation.two_stage import TwoStageDetector
 from otx.algo.instance_segmentation.utils.roi_extractors import SingleRoIExtractor
+from otx.algo.modules.norm import build_norm_layer
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter
@@ -154,7 +155,7 @@ class MaskRCNNResNet50(MaskRCNN):
         backbone = ResNet(
             depth=50,
             frozen_stages=1,
-            norm_callable=partial(nn.BatchNorm2d, requires_grad=True),
+            normalization_callable=partial(nn.BatchNorm2d, requires_grad=True),
             norm_eval=True,
             num_stages=4,
             out_indices=(0, 1, 2, 3),
@@ -333,7 +334,7 @@ class MaskRCNNEfficientNet(MaskRCNN):
                 "frozen_stages": -1,
                 "pretrained": True,
                 "activation_callable": nn.SiLU,
-                "norm_callable": partial(nn.BatchNorm2d, requires_grad=True),
+                "normalization_callable": partial(build_norm_layer, nn.BatchNorm2d, requires_grad=True),
             },
         )
 

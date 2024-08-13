@@ -15,6 +15,7 @@ from otx.algo.detection.layers import ChannelAttention
 from otx.algo.modules.activation import Swish
 from otx.algo.modules.base_module import BaseModule
 from otx.algo.modules.conv_module import Conv2dModule, DepthwiseSeparableConvModule
+from otx.algo.modules.norm import build_norm_layer
 
 
 class DarknetBottleneck(BaseModule):
@@ -34,7 +35,7 @@ class DarknetBottleneck(BaseModule):
             Defaults to True.
         use_depthwise (bool): Whether to use depthwise separable convolution.
             Defaults to False.
-        norm_callable (Callable[..., nn.Module]): Normalization layer module.
+        normalization_callable (Callable[..., nn.Module]): Normalization layer module.
             Defaults to ``partial(nn.BatchNorm2d, momentum=0.03, eps=0.001)``.
         activation_callable (Callable[..., nn.Module]): Activation layer module.
             Defaults to ``Swish``.
@@ -47,7 +48,7 @@ class DarknetBottleneck(BaseModule):
         expansion: float = 0.5,
         add_identity: bool = True,
         use_depthwise: bool = False,
-        norm_callable: Callable[..., nn.Module] = partial(nn.BatchNorm2d, momentum=0.03, eps=0.001),
+        normalization_callable: Callable[..., nn.Module] = partial(nn.BatchNorm2d, momentum=0.03, eps=0.001),
         activation_callable: Callable[..., nn.Module] = Swish,
         init_cfg: dict | list[dict] | None = None,
     ) -> None:
@@ -59,7 +60,7 @@ class DarknetBottleneck(BaseModule):
             in_channels,
             hidden_channels,
             1,
-            norm_callable=norm_callable,
+            normalization=build_norm_layer(normalization_callable, num_features=hidden_channels),
             activation_callable=activation_callable,
         )
         self.conv2 = conv(
@@ -68,7 +69,7 @@ class DarknetBottleneck(BaseModule):
             3,
             stride=1,
             padding=1,
-            norm_callable=norm_callable,
+            normalization=build_norm_layer(normalization_callable, num_features=out_channels),
             activation_callable=activation_callable,
         )
         self.add_identity = add_identity and in_channels == out_channels
@@ -97,7 +98,7 @@ class CSPNeXtBlock(BaseModule):
             Defaults to False.
         kernel_size (int): The kernel size of the second convolution layer.
             Defaults to 5.
-        norm_callable (Callable[..., nn.Module] | None): Normalization layer module.
+        normalization_callable (Callable[..., nn.Module] | None): Normalization layer module.
             Defaults to ``partial(nn.BatchNorm2d, momentum=0.03, eps=0.001)``.
         activation_callable (Callable[..., nn.Module]): Activation layer module.
             Defaults to ``nn.SiLU``.
@@ -113,7 +114,7 @@ class CSPNeXtBlock(BaseModule):
         add_identity: bool = True,
         use_depthwise: bool = False,
         kernel_size: int = 5,
-        norm_callable: Callable[..., nn.Module] = partial(nn.BatchNorm2d, momentum=0.03, eps=0.001),
+        normalization_callable: Callable[..., nn.Module] = partial(nn.BatchNorm2d, momentum=0.03, eps=0.001),
         activation_callable: Callable[..., nn.Module] = nn.SiLU,
         init_cfg: dict | list[dict] | None = None,
     ) -> None:
@@ -127,7 +128,7 @@ class CSPNeXtBlock(BaseModule):
             3,
             stride=1,
             padding=1,
-            norm_callable=norm_callable,
+            normalization=build_norm_layer(normalization_callable, num_features=hidden_channels),
             activation_callable=activation_callable,
         )
         self.conv2 = DepthwiseSeparableConvModule(
@@ -136,7 +137,7 @@ class CSPNeXtBlock(BaseModule):
             kernel_size,
             stride=1,
             padding=kernel_size // 2,
-            norm_callable=norm_callable,
+            normalization=build_norm_layer(normalization_callable, num_features=out_channels),
             activation_callable=activation_callable,
         )
         self.add_identity = add_identity and in_channels == out_channels
@@ -160,9 +161,7 @@ class RepVggBlock(nn.Module):
         ch_out (int): The output channels of this Module.
         activation_callable (Callable[..., nn.Module] | None): Activation layer module.
             Defaults to None.
-        norm_callable (Callable[..., nn.Module] | None): Normalization layer module.
-            Defaults to None.
-        norm_name (str | None): The name of the normalization layer fpr ``build_norm_layer``.
+        normalization_callable (Callable[..., nn.Module] | None): Normalization layer module.
             Defaults to None.
     """
 
@@ -171,8 +170,7 @@ class RepVggBlock(nn.Module):
         ch_in: int,
         ch_out: int,
         activation_callable: Callable[..., nn.Module] | None = None,
-        norm_callable: Callable[..., nn.Module] | None = None,
-        norm_name: str | None = None,
+        normalization_callable: Callable[..., nn.Module] | None = None,
     ) -> None:
         """Initialize RepVggBlock."""
         super().__init__()
@@ -185,8 +183,7 @@ class RepVggBlock(nn.Module):
             1,
             padding=1,
             activation_callable=None,
-            norm_callable=norm_callable,
-            norm_name=norm_name,
+            normalization=build_norm_layer(normalization_callable, num_features=ch_out),
         )
         self.conv2 = Conv2dModule(
             ch_in,
@@ -194,8 +191,7 @@ class RepVggBlock(nn.Module):
             1,
             1,
             activation_callable=None,
-            norm_callable=norm_callable,
-            norm_name=norm_name,
+            normalization=build_norm_layer(normalization_callable, num_features=ch_out),
         )
         self.act = activation_callable() if activation_callable else nn.Identity()
 
@@ -249,7 +245,7 @@ class CSPLayer(BaseModule):
             blocks. Defaults to False.
         channel_attention (bool): Whether to add channel attention in each
             stage. Defaults to True.
-        norm_callable (Callable[..., nn.Module]): Normalization layer module.
+        normalization_callable (Callable[..., nn.Module]): Normalization layer module.
             Defaults to ``partial(nn.BatchNorm2d, momentum=0.03, eps=0.001)``.
         activation_callable (Callable[..., nn.Module] | None): Activation layer module.
             Defaults to ``Swish``.
@@ -267,7 +263,7 @@ class CSPLayer(BaseModule):
         use_depthwise: bool = False,
         use_cspnext_block: bool = False,
         channel_attention: bool = False,
-        norm_callable: Callable[..., nn.Module] = partial(nn.BatchNorm2d, momentum=0.03, eps=0.001),
+        normalization_callable: Callable[..., nn.Module] = partial(nn.BatchNorm2d, momentum=0.03, eps=0.001),
         activation_callable: Callable[..., nn.Module] | None = Swish,
         init_cfg: dict | list[dict] | None = None,
     ) -> None:
@@ -280,21 +276,21 @@ class CSPLayer(BaseModule):
             in_channels,
             mid_channels,
             1,
-            norm_callable=norm_callable,
+            normalization=build_norm_layer(normalization_callable, num_features=mid_channels),
             activation_callable=activation_callable,
         )
         self.short_conv = Conv2dModule(
             in_channels,
             mid_channels,
             1,
-            norm_callable=norm_callable,
+            normalization=build_norm_layer(normalization_callable, num_features=mid_channels),
             activation_callable=activation_callable,
         )
         self.final_conv = Conv2dModule(
             2 * mid_channels,
             out_channels,
             1,
-            norm_callable=norm_callable,
+            normalization=build_norm_layer(normalization_callable, num_features=out_channels),
             activation_callable=activation_callable,
         )
 
@@ -306,7 +302,7 @@ class CSPLayer(BaseModule):
                     1.0,
                     add_identity,
                     use_depthwise,
-                    norm_callable=norm_callable,
+                    normalization_callable=normalization_callable,
                     activation_callable=activation_callable,
                 )
                 for _ in range(num_blocks)
@@ -342,9 +338,7 @@ class CSPRepLayer(nn.Module):
             Defaults to False.
         activation_callable (Callable[..., nn.Module] | None): Activation layer module.
             Defaults to None.
-        norm_callable (Callable[..., nn.Module] | None): Normalization layer module.
-            Defaults to None.
-        norm_name (str | None): The name of the normalization layer fpr ``build_norm_layer``.
+        normalization_callable (Callable[..., nn.Module] | None): Normalization layer module.
             Defaults to None.
     """
 
@@ -356,8 +350,7 @@ class CSPRepLayer(nn.Module):
         expansion: float = 1.0,
         bias: bool = False,
         activation_callable: Callable[..., nn.Module] | None = None,
-        norm_callable: Callable[..., nn.Module] | None = None,
-        norm_name: str | None = None,
+        normalization_callable: Callable[..., nn.Module] | None = None,
     ) -> None:
         """Initialize CSPRepLayer."""
         super().__init__()
@@ -369,8 +362,7 @@ class CSPRepLayer(nn.Module):
             1,
             bias=bias,
             activation_callable=activation_callable,
-            norm_callable=norm_callable,
-            norm_name=norm_name,
+            normalization=build_norm_layer(normalization_callable, num_features=hidden_channels),
         )
         self.conv2 = Conv2dModule(
             in_channels,
@@ -379,8 +371,7 @@ class CSPRepLayer(nn.Module):
             1,
             bias=bias,
             activation_callable=activation_callable,
-            norm_callable=norm_callable,
-            norm_name=norm_name,
+            normalization=build_norm_layer(normalization_callable, num_features=hidden_channels),
         )
         self.bottlenecks = nn.Sequential(
             *[
@@ -388,8 +379,7 @@ class CSPRepLayer(nn.Module):
                     hidden_channels,
                     hidden_channels,
                     activation_callable=activation_callable,
-                    norm_callable=norm_callable,
-                    norm_name=norm_name,
+                    normalization_callable=normalization_callable,
                 )
                 for _ in range(num_blocks)
             ],
@@ -402,8 +392,7 @@ class CSPRepLayer(nn.Module):
                 1,
                 bias=bias,
                 activation_callable=activation_callable,
-                norm_callable=norm_callable,
-                norm_name=norm_name,
+                normalization=build_norm_layer(normalization_callable, num_features=out_channels),
             )
         else:
             self.conv3 = nn.Identity()

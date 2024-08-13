@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING, Any, ClassVar
 
 from torch.nn import SyncBatchNorm
 
+from otx.algo.modules.norm import build_norm_layer
 from otx.algo.segmentation.backbones import DinoVisionTransformer
 from otx.algo.segmentation.heads import FCNHead
 from otx.core.model.segmentation import TorchVisionCompatibleModel
@@ -30,7 +31,7 @@ class DinoV2Seg(BaseSegmModel):
         "out_index": [8, 9, 10, 11],
     }
     default_decode_head_configuration: ClassVar[dict[str, Any]] = {
-        "norm_callable": partial(SyncBatchNorm, requires_grad=True),
+        "normalization_callable": partial(build_norm_layer, SyncBatchNorm, requires_grad=True),
         "in_channels": [384, 384, 384, 384],
         "in_index": [0, 1, 2, 3],
         "input_transform": "resize_concat",

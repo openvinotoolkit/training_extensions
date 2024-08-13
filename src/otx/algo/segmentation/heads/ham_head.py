@@ -12,6 +12,7 @@ import torch.nn.functional as f
 from torch import nn
 
 from otx.algo.modules import Conv2dModule
+from otx.algo.modules.norm import build_norm_layer
 from otx.algo.segmentation.modules import resize
 
 from .base_segm_head import BaseSegmHead
@@ -26,7 +27,7 @@ class Hamburger(nn.Module):
     Args:
         ham_channels (int): Input and output channels of feature.
         ham_kwargs (dict): Config of matrix decomposition module.
-        norm_callable (Callable[..., nn.Module] | None): Normalization layer module.
+        normalization_callable (Callable[..., nn.Module] | None): Normalization layer module.
             Defaults to None.
     """
 
@@ -34,13 +35,13 @@ class Hamburger(nn.Module):
         self,
         ham_channels: int,
         ham_kwargs: dict[str, Any],
-        norm_callable: Callable[..., nn.Module] | None = None,
+        normalization_callable: Callable[..., nn.Module] | None = None,
         **kwargs: Any,  # noqa: ANN401
     ) -> None:
         """Initialize Hamburger Module."""
         super().__init__()
 
-        self.ham_in = Conv2dModule(ham_channels, ham_channels, 1, norm_callable=None, activation_callable=None)
+        self.ham_in = Conv2dModule(ham_channels, ham_channels, 1, normalization=None, activation_callable=None)
 
         self.ham = NMF2D(ham_channels=ham_channels, **ham_kwargs)
 
@@ -48,7 +49,7 @@ class Hamburger(nn.Module):
             ham_channels,
             ham_channels,
             1,
-            norm_callable=norm_callable,
+            normalization=build_norm_layer(normalization_callable, num_features=ham_channels),
             activation_callable=None,
         )
 
@@ -102,7 +103,7 @@ class LightHamHead(BaseSegmHead):
             sum(self.in_channels),
             self.ham_channels,
             1,
-            norm_callable=self.norm_callable,
+            normalization=build_norm_layer(self.normalization_callable, num_features=self.ham_channels),
             activation_callable=self.activation_callable,
         )
 
@@ -112,7 +113,7 @@ class LightHamHead(BaseSegmHead):
             self.ham_channels,
             self.channels,
             1,
-            norm_callable=self.norm_callable,
+            normalization=build_norm_layer(self.normalization_callable, num_features=self.channels),
             activation_callable=self.activation_callable,
         )
 

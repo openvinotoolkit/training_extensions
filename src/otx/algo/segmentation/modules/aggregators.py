@@ -12,6 +12,7 @@ from torch import nn
 from torch.nn import functional as f
 
 from otx.algo.modules import Conv2dModule, DepthwiseSeparableConvModule
+from otx.algo.modules.norm import build_norm_layer
 
 from .utils import normalize
 
@@ -24,7 +25,7 @@ class IterativeAggregator(nn.Module):
     Args:
         in_channels (list[int]): List of input channels for each branch.
         min_channels (int | None): Minimum number of channels. Defaults to None.
-        norm_callable (Callable[..., nn.Module] | None): Normalization layer module.
+        normalization_callable (Callable[..., nn.Module] | None): Normalization layer module.
             Defaults to ``nn.BatchNorm2d``.
         merge_norm (str | None): Whether to merge normalization layers. Defaults to None.
         use_concat (bool): Whether to use concatenation. Defaults to False.
@@ -34,7 +35,7 @@ class IterativeAggregator(nn.Module):
         self,
         in_channels: list[int],
         min_channels: int | None = None,
-        norm_callable: Callable[..., nn.Module] | None = nn.BatchNorm2d,
+        normalization_callable: Callable[..., nn.Module] | None = nn.BatchNorm2d,
         merge_norm: str | None = None,
         use_concat: bool = False,
     ) -> None:
@@ -63,7 +64,7 @@ class IterativeAggregator(nn.Module):
                         out_channels=out_channels,
                         kernel_size=1,
                         stride=1,
-                        norm_callable=norm_callable,
+                        normalization=build_norm_layer(normalization_callable, num_features=out_channels),
                         activation_callable=nn.ReLU,
                     ),
                 )
@@ -80,7 +81,7 @@ class IterativeAggregator(nn.Module):
                     kernel_size=3,
                     stride=1,
                     padding=1,
-                    norm_callable=norm_callable,
+                    normalization=build_norm_layer(normalization_callable, num_features=out_channels),
                     activation_callable=nn.ReLU,
                     dw_activation_callable=None,
                     pw_activation_callable=nn.ReLU,
@@ -94,7 +95,7 @@ class IterativeAggregator(nn.Module):
                         out_channels=min_channels,
                         kernel_size=1,
                         stride=1,
-                        norm_callable=norm_callable,
+                        normalization=build_norm_layer(normalization_callable, num_features=min_channels),
                         activation_callable=nn.ReLU,
                     ),
                 )

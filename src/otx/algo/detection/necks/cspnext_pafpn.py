@@ -21,6 +21,7 @@ from otx.algo.detection.layers import CSPLayer
 from otx.algo.modules.activation import Swish
 from otx.algo.modules.base_module import BaseModule
 from otx.algo.modules.conv_module import Conv2dModule, DepthwiseSeparableConvModule
+from otx.algo.modules.norm import build_norm_layer
 
 
 class CSPNeXtPAFPN(BaseModule):
@@ -33,7 +34,7 @@ class CSPNeXtPAFPN(BaseModule):
         use_depthwise (bool): Whether to use depthwise separable convolution in blocks. Defaults to False.
         expand_ratio (float): Ratio to adjust the number of channels of the hidden layer. Default: 0.5
         upsample_cfg (dict): Config dict for interpolate layer. Default: `dict(scale_factor=2, mode='nearest')`
-        norm_callable (Callable[..., nn.Module] | None): Normalization layer module.
+        normalization_callable (Callable[..., nn.Module] | None): Normalization layer module.
             Defaults to ``partial(nn.BatchNorm2d, momentum=0.03, eps=0.001)``.
         activation_callable (Callable[..., nn.Module]): Activation layer module.
             Defaults to ``Swish``.
@@ -48,7 +49,7 @@ class CSPNeXtPAFPN(BaseModule):
         use_depthwise: bool = False,
         expand_ratio: float = 0.5,
         upsample_cfg: dict | None = None,
-        norm_callable: Callable[..., nn.Module] = partial(nn.BatchNorm2d, momentum=0.03, eps=0.001),
+        normalization_callable: Callable[..., nn.Module] = partial(nn.BatchNorm2d, momentum=0.03, eps=0.001),
         activation_callable: Callable[..., nn.Module] = Swish,
         init_cfg: dict | None = None,
     ) -> None:
@@ -78,7 +79,7 @@ class CSPNeXtPAFPN(BaseModule):
                     in_channels[idx],
                     in_channels[idx - 1],
                     1,
-                    norm_callable=norm_callable,
+                    normalization=build_norm_layer(normalization_callable, num_features=in_channels[idx - 1]),
                     activation_callable=activation_callable,
                 ),
             )
@@ -91,7 +92,7 @@ class CSPNeXtPAFPN(BaseModule):
                     use_depthwise=use_depthwise,
                     use_cspnext_block=True,
                     expand_ratio=expand_ratio,
-                    norm_callable=norm_callable,
+                    normalization_callable=normalization_callable,
                     activation_callable=activation_callable,
                 ),
             )
@@ -107,7 +108,7 @@ class CSPNeXtPAFPN(BaseModule):
                     3,
                     stride=2,
                     padding=1,
-                    norm_callable=norm_callable,
+                    normalization=build_norm_layer(normalization_callable, num_features=in_channels[idx]),
                     activation_callable=activation_callable,
                 ),
             )
@@ -120,7 +121,7 @@ class CSPNeXtPAFPN(BaseModule):
                     use_depthwise=use_depthwise,
                     use_cspnext_block=True,
                     expand_ratio=expand_ratio,
-                    norm_callable=norm_callable,
+                    normalization_callable=normalization_callable,
                     activation_callable=activation_callable,
                 ),
             )
@@ -133,7 +134,7 @@ class CSPNeXtPAFPN(BaseModule):
                     out_channels,
                     3,
                     padding=1,
-                    norm_callable=norm_callable,
+                    normalization=build_norm_layer(normalization_callable, num_features=out_channels),
                     activation_callable=activation_callable,
                 ),
             )

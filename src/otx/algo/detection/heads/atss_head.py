@@ -24,6 +24,7 @@ from otx.algo.detection.heads.class_incremental_mixin import (
 from otx.algo.detection.utils.prior_generators.utils import anchor_inside_flags
 from otx.algo.detection.utils.utils import unmap
 from otx.algo.modules.conv_module import Conv2dModule
+from otx.algo.modules.norm import build_norm_layer
 from otx.algo.modules.scale import Scale
 from otx.algo.utils.mmengine_utils import InstanceData
 
@@ -42,8 +43,8 @@ class ATSSHead(ClassIncrementalMixin, AnchorHead):
         in_channels (int): Number of channels in the input feature map.
         pred_kernel_size (int): Kernel size of ``nn.Conv2d``. Defaults to 3.
         stacked_convs (int): Number of stacking convs of the head. Defaults to 4.
-        norm_callable (Callable[..., nn.Module] | None): Normalization layer module.
-            Defaults to ``partial(nn.GroupNorm, num_groups=32, requires_grad=True)``.
+        normalization_callable (Callable[..., nn.Module] | None): Normalization layer module.
+            Defaults to ``partial(build_norm_layer, nn.GroupNorm, num_groups=32, requires_grad=True)``.
         reg_decoded_bbox (bool): If true, the regression loss would be
             applied directly on decoded bounding boxes, converting both
             the predicted boxes and regression targets to absolute
@@ -59,7 +60,12 @@ class ATSSHead(ClassIncrementalMixin, AnchorHead):
         in_channels: int,
         pred_kernel_size: int = 3,
         stacked_convs: int = 4,
-        norm_callable: Callable[..., nn.Module] = partial(nn.GroupNorm, num_groups=32, requires_grad=True),
+        normalization_callable: Callable[..., nn.Module] = partial(
+            build_norm_layer,
+            nn.GroupNorm,
+            num_groups=32,
+            requires_grad=True,
+        ),
         reg_decoded_bbox: bool = True,
         loss_centerness: nn.Module | None = None,
         init_cfg: dict | None = None,
@@ -70,7 +76,7 @@ class ATSSHead(ClassIncrementalMixin, AnchorHead):
     ) -> None:
         self.pred_kernel_size = pred_kernel_size
         self.stacked_convs = stacked_convs
-        self.norm_callable = norm_callable
+        self.normalization_callable = normalization_callable
         init_cfg = init_cfg or {
             "type": "Normal",
             "layer": "Conv2d",
@@ -116,7 +122,7 @@ class ATSSHead(ClassIncrementalMixin, AnchorHead):
                     3,
                     stride=1,
                     padding=1,
-                    norm_callable=self.norm_callable,
+                    normalization=build_norm_layer(self.normalization_callable, num_features=self.feat_channels),
                 ),
             )
             self.reg_convs.append(
@@ -126,7 +132,7 @@ class ATSSHead(ClassIncrementalMixin, AnchorHead):
                     3,
                     stride=1,
                     padding=1,
-                    norm_callable=self.norm_callable,
+                    normalization=build_norm_layer(self.normalization_callable, num_features=self.feat_channels),
                 ),
             )
         pred_pad_size = self.pred_kernel_size // 2

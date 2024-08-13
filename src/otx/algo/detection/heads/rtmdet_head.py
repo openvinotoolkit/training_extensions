@@ -24,7 +24,7 @@ from otx.algo.detection.utils.utils import (
     unmap,
 )
 from otx.algo.modules.conv_module import Conv2dModule, DepthwiseSeparableConvModule
-from otx.algo.modules.norm import is_norm
+from otx.algo.modules.norm import build_norm_layer, is_norm
 from otx.algo.modules.scale import Scale
 from otx.algo.utils.mmengine_utils import InstanceData
 from otx.algo.utils.weight_init import bias_init_with_prob, constant_init, normal_init
@@ -69,7 +69,7 @@ class RTMDetHead(ATSSHead):
                     3,
                     stride=1,
                     padding=1,
-                    norm_callable=self.norm_callable,
+                    normalization=build_norm_layer(self.normalization_callable, num_features=self.feat_channels),
                     activation_callable=self.activation_callable,
                 ),
             )
@@ -80,7 +80,7 @@ class RTMDetHead(ATSSHead):
                     3,
                     stride=1,
                     padding=1,
-                    norm_callable=self.norm_callable,
+                    normalization=build_norm_layer(self.normalization_callable, num_features=self.feat_channels),
                     activation_callable=self.activation_callable,
                 ),
             )
@@ -644,7 +644,7 @@ class RTMDetSepBNHead(RTMDetHead):
             Defaults to True.
         use_depthwise (bool): Whether to use depthwise separable convolution in head.
             Defaults to False.
-        norm_callable (Callable[..., nn.Module]): Normalization layer module.
+        normalization_callable (Callable[..., nn.Module]): Normalization layer module.
             Defaults to ``partial(nn.BatchNorm2d, momentum=0.03, eps=0.001)``.
         activation_callable (Callable[..., nn.Module]): Activation layer module.
             Defaults to ``nn.SiLU``.
@@ -658,7 +658,7 @@ class RTMDetSepBNHead(RTMDetHead):
         in_channels: int,
         share_conv: bool = True,
         use_depthwise: bool = False,
-        norm_callable: Callable[..., nn.Module] = partial(nn.BatchNorm2d, momentum=0.03, eps=0.001),
+        normalization_callable: Callable[..., nn.Module] = partial(nn.BatchNorm2d, momentum=0.03, eps=0.001),
         activation_callable: Callable[..., nn.Module] = nn.SiLU,
         pred_kernel_size: int = 1,
         exp_on_reg: bool = False,
@@ -670,7 +670,7 @@ class RTMDetSepBNHead(RTMDetHead):
         super().__init__(
             num_classes,
             in_channels,
-            norm_callable=norm_callable,
+            normalization_callable=normalization_callable,
             activation_callable=activation_callable,
             pred_kernel_size=pred_kernel_size,
             **kwargs,
@@ -698,7 +698,7 @@ class RTMDetSepBNHead(RTMDetHead):
                         3,
                         stride=1,
                         padding=1,
-                        norm_callable=self.norm_callable,
+                        normalization=build_norm_layer(self.normalization_callable, num_features=self.feat_channels),
                         activation_callable=self.activation_callable,
                     ),
                 )
@@ -709,7 +709,7 @@ class RTMDetSepBNHead(RTMDetHead):
                         3,
                         stride=1,
                         padding=1,
-                        norm_callable=self.norm_callable,
+                        normalization=build_norm_layer(self.normalization_callable, num_features=self.feat_channels),
                         activation_callable=self.activation_callable,
                     ),
                 )

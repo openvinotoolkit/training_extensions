@@ -10,6 +10,7 @@ from typing import Any, ClassVar
 
 from torch import nn
 
+from otx.algo.modules.norm import build_norm_layer
 from otx.algo.segmentation.backbones import MSCAN
 from otx.algo.segmentation.heads import LightHamHead
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
@@ -30,14 +31,14 @@ class SegNextB(BaseSegmModel):
         "drop_rate": 0.0,
         "embed_dims": [64, 128, 320, 512],
         "mlp_ratios": [8, 8, 4, 4],
-        "norm_callable": partial(nn.BatchNorm2d, requires_grad=True),
+        "normalization_callable": partial(build_norm_layer, nn.BatchNorm2d, requires_grad=True),
         "pretrained_weights": "https://download.openmmlab.com/mmsegmentation/v0.5/pretrain/segnext/mscan_b_20230227-3ab7d230.pth",
     }
     default_decode_head_configuration: ClassVar[dict[str, Any]] = {
         "ham_kwargs": {"md_r": 16, "md_s": 1, "eval_steps": 7, "train_steps": 6},
         "in_channels": [128, 320, 512],
         "in_index": [1, 2, 3],
-        "norm_callable": partial(nn.GroupNorm, num_groups=32, requires_grad=True),
+        "normalization_callable": partial(build_norm_layer, nn.GroupNorm, num_groups=32, requires_grad=True),
         "align_corners": False,
         "channels": 512,
         "dropout_ratio": 0.1,
@@ -57,11 +58,11 @@ class SegNextS(BaseSegmModel):
         "drop_rate": 0.0,
         "embed_dims": [64, 128, 320, 512],
         "mlp_ratios": [8, 8, 4, 4],
-        "norm_callable": partial(nn.BatchNorm2d, requires_grad=True),
+        "normalization_callable": partial(build_norm_layer, nn.BatchNorm2d, requires_grad=True),
         "pretrained_weights": "https://download.openmmlab.com/mmsegmentation/v0.5/pretrain/segnext/mscan_s_20230227-f33ccdf2.pth",
     }
     default_decode_head_configuration: ClassVar[dict[str, Any]] = {
-        "norm_callable": partial(nn.GroupNorm, num_groups=32, requires_grad=True),
+        "normalization_callable": partial(build_norm_layer, nn.GroupNorm, num_groups=32, requires_grad=True),
         "ham_kwargs": {"md_r": 16, "md_s": 1, "eval_steps": 7, "rand_init": True, "train_steps": 6},
         "in_channels": [128, 320, 512],
         "in_index": [1, 2, 3],
@@ -84,12 +85,12 @@ class SegNextT(BaseSegmModel):
         "drop_rate": 0.0,
         "embed_dims": [32, 64, 160, 256],
         "mlp_ratios": [8, 8, 4, 4],
-        "norm_callable": partial(nn.BatchNorm2d, requires_grad=True),
+        "normalization_callable": partial(build_norm_layer, nn.BatchNorm2d, requires_grad=True),
         "pretrained_weights": "https://download.openmmlab.com/mmsegmentation/v0.5/pretrain/segnext/mscan_t_20230227-119e8c9f.pth",
     }
     default_decode_head_configuration: ClassVar[dict[str, Any]] = {
         "ham_kwargs": {"md_r": 16, "md_s": 1, "eval_steps": 7, "rand_init": True, "train_steps": 6},
-        "norm_callable": partial(nn.GroupNorm, num_groups=32, requires_grad=True),
+        "normalization_callable": partial(build_norm_layer, nn.GroupNorm, num_groups=32, requires_grad=True),
         "in_channels": [64, 160, 256],
         "in_index": [1, 2, 3],
         "align_corners": False,

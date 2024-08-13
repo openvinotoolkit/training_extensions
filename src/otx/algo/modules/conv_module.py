@@ -8,9 +8,9 @@
 
 from __future__ import annotations
 
-from copy import deepcopy
 import inspect
 import warnings
+from copy import deepcopy
 from functools import partial
 from typing import TYPE_CHECKING, Callable
 
@@ -324,9 +324,9 @@ class DepthwiseSeparableConvModule(nn.Module):
         dilation: int | tuple[int, int] = 1,
         normalization: tuple[str, nn.Module] | None = None,
         activation_callable: Callable[..., nn.Module] = nn.ReLU,
-        dw_normalization: Callable[..., nn.Module] | tuple[str, nn.Module] | None = None,
+        dw_normalization: tuple[str, nn.Module] | None = None,
         dw_activation_callable: Callable[..., nn.Module] | None = None,
-        pw_normalization: Callable[..., nn.Module] | tuple[str, nn.Module] | None = None,
+        pw_normalization: tuple[str, nn.Module] | None = None,
         pw_activation_callable: Callable[..., nn.Module] | None = None,
         **kwargs,
     ):

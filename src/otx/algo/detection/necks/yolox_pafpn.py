@@ -19,6 +19,7 @@ from otx.algo.detection.layers import CSPLayer
 from otx.algo.modules.activation import Swish
 from otx.algo.modules.base_module import BaseModule
 from otx.algo.modules.conv_module import Conv2dModule, DepthwiseSeparableConvModule
+from otx.algo.modules.norm import build_norm_layer
 
 
 class YOLOXPAFPN(BaseModule):
@@ -32,7 +33,7 @@ class YOLOXPAFPN(BaseModule):
             blocks. Default: False
         upsample_cfg (dict): Config dict for interpolate layer.
             Default: `dict(scale_factor=2, mode='nearest')`
-        norm_callable (Callable[..., nn.Module] | None): Normalization layer module.
+        normalization_callable (Callable[..., nn.Module] | None): Normalization layer module.
             Defaults to ``partial(nn.BatchNorm2d, momentum=0.03, eps=0.001)``.
         activation_callable (Callable[..., nn.Module]): Activation layer module.
             Defaults to ``nn.Swish``.
@@ -47,7 +48,7 @@ class YOLOXPAFPN(BaseModule):
         num_csp_blocks: int = 3,
         use_depthwise: bool = False,
         upsample_cfg: dict | None = None,
-        norm_callable: Callable[..., nn.Module] = partial(nn.BatchNorm2d, momentum=0.03, eps=0.001),
+        normalization_callable: Callable[..., nn.Module] = partial(nn.BatchNorm2d, momentum=0.03, eps=0.001),
         activation_callable: Callable[..., nn.Module] = Swish,
         init_cfg: dict | list[dict] | None = None,
     ):
@@ -78,7 +79,7 @@ class YOLOXPAFPN(BaseModule):
                     in_channels[idx],
                     in_channels[idx - 1],
                     1,
-                    norm_callable=norm_callable,
+                    normalization=build_norm_layer(normalization_callable, num_features=in_channels[idx - 1]),
                     activation_callable=activation_callable,
                 ),
             )
@@ -89,7 +90,7 @@ class YOLOXPAFPN(BaseModule):
                     num_blocks=num_csp_blocks,
                     add_identity=False,
                     use_depthwise=use_depthwise,
-                    norm_callable=norm_callable,
+                    normalization_callable=normalization_callable,
                     activation_callable=activation_callable,
                 ),
             )
@@ -105,7 +106,7 @@ class YOLOXPAFPN(BaseModule):
                     3,
                     stride=2,
                     padding=1,
-                    norm_callable=norm_callable,
+                    normalization=build_norm_layer(normalization_callable, num_features=in_channels[idx]),
                     activation_callable=activation_callable,
                 ),
             )
@@ -116,7 +117,7 @@ class YOLOXPAFPN(BaseModule):
                     num_blocks=num_csp_blocks,
                     add_identity=False,
                     use_depthwise=use_depthwise,
-                    norm_callable=norm_callable,
+                    normalization_callable=normalization_callable,
                     activation_callable=activation_callable,
                 ),
             )
@@ -128,7 +129,7 @@ class YOLOXPAFPN(BaseModule):
                     in_channels[i],
                     out_channels,
                     1,
-                    norm_callable=norm_callable,
+                    normalization=build_norm_layer(normalization_callable, num_features=out_channels),
                     activation_callable=activation_callable,
                 ),
             )

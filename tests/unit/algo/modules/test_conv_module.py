@@ -8,9 +8,8 @@ from functools import partial
 import pytest
 import torch
 from otx.algo.modules.conv_module import Conv2dModule, DepthwiseSeparableConvModule
-from torch import nn
-
 from otx.algo.modules.norm import build_norm_layer
+from torch import nn
 
 
 def test_conv_module_with_unsupported_activation():

@@ -29,13 +29,13 @@ def replace_activation(model: nn.Module, activation_callable: Callable[..., nn.M
     return model
 
 
-def replace_norm(model: nn.Module, norm_callable: Callable[..., nn.Module]) -> nn.Module:
+def replace_norm(model: nn.Module, normalization_callable: Callable[..., nn.Module]) -> nn.Module:
     """Replace norm funtion."""
     for name, module in model._modules.items():
         if len(list(module.children())) > 0:
-            model._modules[name] = replace_norm(module, norm_callable)
+            model._modules[name] = replace_norm(module, normalization_callable)
         if "bn" in name:
-            model._modules[name] = build_norm_layer(norm_callable, num_features=module.num_features)[1]
+            model._modules[name] = build_norm_layer(normalization_callable, num_features=module.num_features)[1]
     return model
 
 
@@ -120,7 +120,7 @@ def _build_pytorchcv_model(
     norm_eval: bool = False,
     verbose: bool = False,
     activation_callable: Callable[..., nn.Module] | None = None,
-    norm_callable: Callable[..., nn.Module] | None = None,
+    normalization_callable: Callable[..., nn.Module] | None = None,
     **kwargs,
 ) -> nn.Module:
     """Build pytorchcv model."""
@@ -132,8 +132,8 @@ def _build_pytorchcv_model(
     model = _models[type](**kwargs)
     if activation_callable:
         model = replace_activation(model, activation_callable)
-    if norm_callable:
-        model = replace_norm(model, norm_callable)
+    if normalization_callable:
+        model = replace_norm(model, normalization_callable)
     model.out_indices = out_indices
     model.frozen_stages = frozen_stages
     model.norm_eval = norm_eval

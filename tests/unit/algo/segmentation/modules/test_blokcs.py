@@ -16,7 +16,7 @@ class TestAsymmetricPositionAttentionModule:
             "key_channels": 128,
             "value_channels": 320,
             "psp_size": [1, 3, 6, 8],
-            "norm_callable": nn.BatchNorm2d,
+            "normalization_callable": nn.BatchNorm2d,
         }
 
     def test_init(self, init_cfg):
@@ -25,7 +25,7 @@ class TestAsymmetricPositionAttentionModule:
         assert module.in_channels == init_cfg["in_channels"]
         assert module.key_channels == init_cfg["key_channels"]
         assert module.value_channels == init_cfg["value_channels"]
-        assert module.norm_callable == init_cfg["norm_callable"]
+        assert module.normalization_callable == init_cfg["normalization_callable"]
 
     @pytest.fixture()
     def fake_input(self) -> torch.Tensor:
@@ -43,14 +43,14 @@ class TestLocalAttentionModule:
     def init_cfg(self) -> dict[str, Any]:
         return {
             "num_channels": 320,
-            "norm_callable": nn.BatchNorm2d,
+            "normalization_callable": nn.BatchNorm2d,
         }
 
     def test_init(self, init_cfg):
         module = LocalAttentionModule(**init_cfg)
 
         assert module.num_channels == init_cfg["num_channels"]
-        assert module.norm_callable == init_cfg["norm_callable"]
+        assert module.normalization_callable == init_cfg["normalization_callable"]
 
     @pytest.fixture()
     def fake_input(self) -> torch.Tensor:

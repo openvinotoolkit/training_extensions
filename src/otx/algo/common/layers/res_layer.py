@@ -26,7 +26,7 @@ class ResLayer(Sequential):
         stride (int): stride of the first block. Defaults to 1
         avg_down (bool): Use AvgPool instead of stride conv when
             downsampling in the bottleneck. Defaults to False
-        norm_callable (Callable[..., nn.Module]): Normalization layer module.
+        normalization_callable (Callable[..., nn.Module]): Normalization layer module.
             Defaults to ``nn.BatchNorm2d``.
         downsample_first (bool): Downsample at the first block or last block.
             False for Hourglass, True for ResNet. Defaults to True
@@ -38,7 +38,7 @@ class ResLayer(Sequential):
         inplanes: int,
         planes: int,
         num_blocks: int,
-        norm_callable: Callable[..., nn.Module],
+        normalization_callable: Callable[..., nn.Module],
         stride: int = 1,
         avg_down: bool = False,
         downsample_first: bool = True,
@@ -69,7 +69,7 @@ class ResLayer(Sequential):
                         stride=conv_stride,
                         bias=False,
                     ),
-                    build_norm_layer(norm_callable, planes * block.expansion)[1],
+                    build_norm_layer(normalization_callable, planes * block.expansion)[1],
                 ],
             )
             downsample = nn.Sequential(*downsample)
@@ -82,14 +82,20 @@ class ResLayer(Sequential):
                     planes=planes,
                     stride=stride,
                     downsample=downsample,
-                    norm_callable=norm_callable,
+                    normalization_callable=normalization_callable,
                     **kwargs,
                 ),
             )
             inplanes = planes * block.expansion
             layers.extend(
                 [
-                    block(inplanes=inplanes, planes=planes, stride=1, norm_callable=norm_callable, **kwargs)
+                    block(
+                        inplanes=inplanes,
+                        planes=planes,
+                        stride=1,
+                        normalization_callable=normalization_callable,
+                        **kwargs,
+                    )
                     for _ in range(1, num_blocks)
                 ],
             )

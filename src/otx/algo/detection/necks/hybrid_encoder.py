@@ -14,6 +14,7 @@ from torch import nn
 from otx.algo.detection.layers import CSPRepLayer
 from otx.algo.modules import Conv2dModule
 from otx.algo.modules.base_module import BaseModule
+from otx.algo.modules.norm import build_norm_layer
 
 __all__ = ["HybridEncoder"]
 
@@ -113,10 +114,8 @@ class HybridEncoder(BaseModule):
         dropout (float, optional): Dropout rate. Defaults to 0.0.
         enc_activation_callable (Callable[..., nn.Module]): Activation layer module.
             Defaults to ``nn.GELU``.
-        norm_callable (Callable[..., nn.Module]): Normalization layer module.
+        normalization_callable (Callable[..., nn.Module]): Normalization layer module.
             Defaults to ``nn.BatchNorm2d``.
-        norm_name (str): The name of the normalization layer fpr ``build_norm_layer``.
-            Defaults to 'norm'.
         use_encoder_idx (list[int], optional): List of indices of the encoder to use.
             Defaults to [2].
         num_encoder_layers (int, optional): Number of layers in the transformer encoder.
@@ -142,8 +141,7 @@ class HybridEncoder(BaseModule):
         dim_feedforward: int = 1024,
         dropout: float = 0.0,
         enc_activation_callable: Callable[..., nn.Module] = nn.GELU,
-        norm_callable: Callable[..., nn.Module] = nn.BatchNorm2d,
-        norm_name: str = "norm",
+        normalization_callable: Callable[..., nn.Module] = nn.BatchNorm2d,
         use_encoder_idx: list[int] = [2],  # noqa: B006
         num_encoder_layers: int = 1,
         pe_temperature: float = 10000,
@@ -198,8 +196,7 @@ class HybridEncoder(BaseModule):
                     1,
                     1,
                     activation_callable=activation_callable,
-                    norm_callable=norm_callable,
-                    norm_name=norm_name,
+                    normalization=build_norm_layer(normalization_callable, num_features=hidden_dim),
                 ),
             )
             self.fpn_blocks.append(
@@ -209,8 +206,7 @@ class HybridEncoder(BaseModule):
                     round(3 * depth_mult),
                     activation_callable=activation_callable,
                     expansion=expansion,
-                    norm_callable=norm_callable,
-                    norm_name=norm_name,
+                    normalization_callable=normalization_callable,
                 ),
             )
 
@@ -226,8 +222,7 @@ class HybridEncoder(BaseModule):
                     2,
                     padding=1,
                     activation_callable=activation_callable,
-                    norm_callable=norm_callable,
-                    norm_name=norm_name,
+                    normalization=build_norm_layer(normalization_callable, num_features=hidden_dim),
                 ),
             )
             self.pan_blocks.append(
@@ -237,8 +232,7 @@ class HybridEncoder(BaseModule):
                     round(3 * depth_mult),
                     activation_callable=activation_callable,
                     expansion=expansion,
-                    norm_callable=norm_callable,
-                    norm_name=norm_name,
+                    normalization_callable=normalization_callable,
                 ),
             )
 

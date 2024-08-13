@@ -16,6 +16,7 @@ from otx.algo.common.layers import SPPBottleneck
 from otx.algo.detection.layers import CSPLayer
 from otx.algo.modules.base_module import BaseModule
 from otx.algo.modules.conv_module import Conv2dModule, DepthwiseSeparableConvModule
+from otx.algo.modules.norm import build_norm_layer
 from torch import Tensor, nn
 from torch.nn.modules.batchnorm import _BatchNorm
 
@@ -44,7 +45,7 @@ class CSPNeXt(BaseModule):
             layers. Defaults to (5, 9, 13).
         channel_attention (bool): Whether to add channel attention in each
             stage. Defaults to True.
-        norm_callable (Callable[..., nn.Module]): Normalization layer module.
+        normalization_callable (Callable[..., nn.Module]): Normalization layer module.
             Defaults to ``partial(nn.BatchNorm2d, momentum=0.03, eps=0.001)``.
         activation_callable (Callable[..., nn.Module] | None): Activation layer module.
             Defaults to ``nn.SiLU``.
@@ -84,7 +85,7 @@ class CSPNeXt(BaseModule):
         arch_ovewrite: dict | None = None,
         spp_kernel_sizes: tuple[int, int, int] = (5, 9, 13),
         channel_attention: bool = True,
-        norm_callable: Callable[..., nn.Module] = partial(nn.BatchNorm2d, momentum=0.03, eps=0.001),
+        normalization_callable: Callable[..., nn.Module] = partial(nn.BatchNorm2d, momentum=0.03, eps=0.001),
         activation_callable: Callable[..., nn.Module] = nn.SiLU,
         norm_eval: bool = False,
         init_cfg: dict | None = None,
@@ -123,7 +124,10 @@ class CSPNeXt(BaseModule):
                 3,
                 padding=1,
                 stride=2,
-                norm_callable=norm_callable,
+                normalization=build_norm_layer(
+                    normalization_callable,
+                    num_features=int(arch_setting[0][0] * widen_factor // 2),
+                ),
                 activation_callable=activation_callable,
             ),
             Conv2dModule(
@@ -132,7 +136,10 @@ class CSPNeXt(BaseModule):
                 3,
                 padding=1,
                 stride=1,
-                norm_callable=norm_callable,
+                normalization=build_norm_layer(
+                    normalization_callable,
+                    num_features=int(arch_setting[0][0] * widen_factor // 2),
+                ),
                 activation_callable=activation_callable,
             ),
             Conv2dModule(
@@ -141,7 +148,10 @@ class CSPNeXt(BaseModule):
                 3,
                 padding=1,
                 stride=1,
-                norm_callable=norm_callable,
+                normalization=build_norm_layer(
+                    normalization_callable,
+                    num_features=int(arch_setting[0][0] * widen_factor),
+                ),
                 activation_callable=activation_callable,
             ),
         )
@@ -158,7 +168,7 @@ class CSPNeXt(BaseModule):
                 3,
                 stride=2,
                 padding=1,
-                norm_callable=norm_callable,
+                normalization=build_norm_layer(normalization_callable, num_features=out_channels),
                 activation_callable=activation_callable,
             )
             stage.append(conv_layer)
@@ -167,7 +177,7 @@ class CSPNeXt(BaseModule):
                     out_channels,
                     out_channels,
                     kernel_sizes=spp_kernel_sizes,
-                    norm_callable=norm_callable,
+                    normalization_callable=normalization_callable,
                     activation_callable=activation_callable,
                 )
                 stage.append(spp)
@@ -180,7 +190,7 @@ class CSPNeXt(BaseModule):
                 use_cspnext_block=True,
                 expand_ratio=expand_ratio,
                 channel_attention=channel_attention,
-                norm_callable=norm_callable,
+                normalization_callable=normalization_callable,
                 activation_callable=activation_callable,
             )
             stage.append(csp_layer)

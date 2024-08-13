@@ -15,6 +15,7 @@ import torch
 from otx.algo.modules.activation import Swish
 from otx.algo.modules.base_module import BaseModule
 from otx.algo.modules.conv_module import Conv2dModule
+from otx.algo.modules.norm import build_norm_layer
 from torch import Tensor, nn
 
 
@@ -26,7 +27,7 @@ class SPPBottleneck(BaseModule):
         out_channels (int): The output channels of this Module.
         kernel_sizes (tuple[int]): Sequential of kernel sizes of pooling
             layers. Default: (5, 9, 13).
-        norm_callable (Callable[..., nn.Module]): Normalization layer module.
+        normalization_callable (Callable[..., nn.Module]): Normalization layer module.
             Defaults to ``partial(nn.BatchNorm2d, momentum=0.03, eps=0.001)``.
         activation_callable (Callable[..., nn.Module] | None): Activation layer module.
             Defaults to ``Swish``.
@@ -39,7 +40,7 @@ class SPPBottleneck(BaseModule):
         in_channels: int,
         out_channels: int,
         kernel_sizes: tuple[int, ...] = (5, 9, 13),
-        norm_callable: Callable[..., nn.Module] = partial(nn.BatchNorm2d, momentum=0.03, eps=0.001),
+        normalization_callable: Callable[..., nn.Module] = partial(nn.BatchNorm2d, momentum=0.03, eps=0.001),
         activation_callable: Callable[..., nn.Module] | None = Swish,
         init_cfg: dict | list[dict] | None = None,
     ):
@@ -50,7 +51,7 @@ class SPPBottleneck(BaseModule):
             mid_channels,
             1,
             stride=1,
-            norm_callable=norm_callable,
+            normalization=build_norm_layer(normalization_callable, num_features=mid_channels),
             activation_callable=activation_callable,
         )
         self.poolings = nn.ModuleList([nn.MaxPool2d(kernel_size=ks, stride=1, padding=ks // 2) for ks in kernel_sizes])
@@ -59,7 +60,7 @@ class SPPBottleneck(BaseModule):
             conv2_channels,
             out_channels,
             1,
-            norm_callable=norm_callable,
+            normalization=build_norm_layer(normalization_callable, num_features=out_channels),
             activation_callable=activation_callable,
         )
 

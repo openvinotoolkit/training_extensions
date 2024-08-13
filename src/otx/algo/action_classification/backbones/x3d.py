@@ -16,6 +16,7 @@ from torch.nn.modules.batchnorm import _BatchNorm
 
 from otx.algo.modules.activation import Swish
 from otx.algo.modules.conv_module import Conv3dModule
+from otx.algo.modules.norm import build_norm_layer
 from otx.algo.utils.mmengine_utils import load_checkpoint
 from otx.algo.utils.weight_init import constant_init, kaiming_init
 
@@ -73,7 +74,7 @@ class BlockX3D(nn.Module):
             unit. If set as None, it means not using SE unit. Default: None.
         use_swish (bool): Whether to use swish as the activation function
             before and after the 3x3x3 conv. Default: True.
-        norm_callable (Callable[..., nn.Module] | None): Normalization layer module.
+        normalization_callable (Callable[..., nn.Module] | None): Normalization layer module.
             Defaults to ``nn.BatchNorm3d``.
         activation_callable (Callable[..., nn.Module] | None): Activation layer module.
             Defaults to ``nn.ReLU``.
@@ -90,7 +91,7 @@ class BlockX3D(nn.Module):
         downsample: nn.Module | None = None,
         se_ratio: float | None = None,
         use_swish: bool = True,
-        norm_callable: Callable[..., nn.Module] | None = nn.BatchNorm3d,
+        normalization_callable: Callable[..., nn.Module] | None = nn.BatchNorm3d,
         activation_callable: Callable[..., nn.Module] | None = nn.ReLU,
         with_cp: bool = False,
     ):
@@ -103,7 +104,7 @@ class BlockX3D(nn.Module):
         self.downsample = downsample
         self.se_ratio = se_ratio
         self.use_swish = use_swish
-        self.norm_callable = norm_callable
+        self.normalization_callable = normalization_callable
         self.activation_callable = activation_callable
         self.with_cp = with_cp
 
@@ -114,7 +115,7 @@ class BlockX3D(nn.Module):
             stride=1,
             padding=0,
             bias=False,
-            norm_callable=self.norm_callable,
+            normalization=build_norm_layer(normalization_callable, num_features=planes),
             activation_callable=self.activation_callable,
         )
         # Here we use the channel-wise conv
@@ -126,7 +127,7 @@ class BlockX3D(nn.Module):
             padding=1,
             groups=planes,
             bias=False,
-            norm_callable=self.norm_callable,
+            normalization=build_norm_layer(normalization_callable, num_features=planes),
             activation_callable=None,
         )
 
@@ -139,7 +140,7 @@ class BlockX3D(nn.Module):
             stride=1,
             padding=0,
             bias=False,
-            norm_callable=self.norm_callable,
+            normalization=build_norm_layer(normalization_callable, num_features=outplanes),
             activation_callable=None,
         )
 
@@ -196,8 +197,8 @@ class X3DBackbone(nn.Module):
             unit. If set as None, it means not using SE unit. Default: 1 / 16.
         use_swish (bool): Whether to use swish as the activation function
             before and after the 3x3x3 conv. Default: True.
-        norm_callable (Callable[..., nn.Module] | None): Normalization layer module.
-            Defaults to ``partial(nn.BatchNorm3d, requires_grad=True)``.
+        normalization_callable (Callable[..., nn.Module] | None): Normalization layer module.
+            Defaults to ``partial(build_norm_layer, nn.BatchNorm3d, requires_grad=True)``.
         activation_callable (Callable[..., nn.Module] | None): Activation layer module.
             Defaults to ``nn.ReLU``.
         norm_eval (bool): Whether to set BN layers to eval mode, namely, freeze
@@ -223,7 +224,11 @@ class X3DBackbone(nn.Module):
         se_style: str = "half",
         se_ratio: float = 1 / 16,
         use_swish: bool = True,
-        norm_callable: Callable[..., nn.Module] | None = partial(nn.BatchNorm3d, requires_grad=True),
+        normalization_callable: Callable[..., nn.Module] | None = partial(
+            build_norm_layer,
+            nn.BatchNorm3d,
+            requires_grad=True,
+        ),
         activation_callable: Callable[..., nn.Module] | None = nn.ReLU,
         norm_eval: bool = False,
         with_cp: bool = False,
@@ -266,7 +271,7 @@ class X3DBackbone(nn.Module):
             raise ValueError(msg)
         self.use_swish = use_swish
 
-        self.norm_callable = norm_callable
+        self.normalization_callable = normalization_callable
         self.activation_callable = activation_callable
         self.norm_eval = norm_eval
         self.with_cp = with_cp
@@ -293,7 +298,7 @@ class X3DBackbone(nn.Module):
                 se_style=self.se_style,
                 se_ratio=self.se_ratio,
                 use_swish=self.use_swish,
-                norm_callable=self.norm_callable,
+                normalization_callable=self.normalization_callable,
                 activation_callable=self.activation_callable,
                 with_cp=with_cp,
                 **kwargs,
@@ -311,7 +316,7 @@ class X3DBackbone(nn.Module):
             stride=1,
             padding=0,
             bias=False,
-            norm_callable=self.norm_callable,
+            normalization=build_norm_layer(self.normalization_callable, num_features=int(self.feat_dim * self.gamma_b)),
             activation_callable=self.activation_callable,
         )
         self.feat_dim = int(self.feat_dim * self.gamma_b)
@@ -349,7 +354,7 @@ class X3DBackbone(nn.Module):
         se_style: str = "half",
         se_ratio: float | None = None,
         use_swish: bool = True,
-        norm_callable: Callable[..., nn.Module] | None = None,
+        normalization_callable: Callable[..., nn.Module] | None = None,
         activation_callable: Callable[..., nn.Module] | None = nn.ReLU,
         with_cp: bool = False,
         **kwargs,
@@ -375,7 +380,7 @@ class X3DBackbone(nn.Module):
                 Default: None.
             use_swish (bool): Whether to use swish as the activation function
                 before and after the 3x3x3 conv. Default: True.
-            norm_callable (Callable[..., nn.Module] | None): Normalization layer module.
+            normalization_callable (Callable[..., nn.Module] | None): Normalization layer module.
                 Defaults to None.
             activation_callable (Callable[..., nn.Module] | None): Activation layer module.
                 Defaults to ``nn.ReLU``.
@@ -395,7 +400,7 @@ class X3DBackbone(nn.Module):
                 stride=(1, spatial_stride, spatial_stride),
                 padding=0,
                 bias=False,
-                norm_callable=norm_callable,
+                normalization=build_norm_layer(normalization_callable, num_features=inplanes),
                 activation_callable=None,
             )
 
@@ -417,7 +422,7 @@ class X3DBackbone(nn.Module):
                 downsample=downsample,
                 se_ratio=se_ratio if use_se[0] else None,
                 use_swish=use_swish,
-                norm_callable=norm_callable,
+                normalization_callable=normalization_callable,
                 activation_callable=activation_callable,
                 with_cp=with_cp,
                 **kwargs,
@@ -433,7 +438,7 @@ class X3DBackbone(nn.Module):
                     spatial_stride=1,
                     se_ratio=se_ratio if use_se[i] else None,
                     use_swish=use_swish,
-                    norm_callable=norm_callable,
+                    normalization_callable=normalization_callable,
                     activation_callable=activation_callable,
                     with_cp=with_cp,
                     **kwargs,
@@ -451,7 +456,7 @@ class X3DBackbone(nn.Module):
             stride=(1, 2, 2),
             padding=(0, 1, 1),
             bias=False,
-            norm_callable=None,
+            normalization=None,
             activation_callable=None,
         )
         self.conv1_t = Conv3dModule(
@@ -462,7 +467,7 @@ class X3DBackbone(nn.Module):
             padding=(2, 0, 0),
             groups=self.base_channels,
             bias=False,
-            norm_callable=self.norm_callable,
+            normalization=build_norm_layer(self.normalization_callable, num_features=self.base_channels),
             activation_callable=self.activation_callable,
         )
 

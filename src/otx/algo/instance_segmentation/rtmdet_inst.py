@@ -114,7 +114,7 @@ class RTMDetInstTiny(RTMDetInst):
             deepen_factor=0.167,
             widen_factor=0.375,
             channel_attention=True,
-            norm_callable=nn.BatchNorm2d,
+            normalization_callable=nn.BatchNorm2d,
             activation_callable=partial(nn.SiLU, inplace=True),
         )
 
@@ -123,7 +123,7 @@ class RTMDetInstTiny(RTMDetInst):
             out_channels=96,
             num_csp_blocks=1,
             expand_ratio=0.5,
-            norm_callable=nn.BatchNorm2d,
+            normalization_callable=nn.BatchNorm2d,
             activation_callable=partial(nn.SiLU, inplace=True),
         )
 
@@ -135,7 +135,7 @@ class RTMDetInstTiny(RTMDetInst):
             pred_kernel_size=1,
             feat_channels=96,
             activation_callable=partial(nn.SiLU, inplace=True),
-            norm_callable=partial(nn.BatchNorm2d, requires_grad=True),
+            normalization=partial(nn.BatchNorm2d, requires_grad=True),
             anchor_generator=MlvlPointGenerator(
                 offset=0,
                 strides=[8, 16, 32],

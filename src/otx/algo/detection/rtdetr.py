@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import copy
 import re
+from functools import partial
 from typing import Any
 
 import torch
@@ -18,7 +19,7 @@ from otx.algo.detection.backbones import PResNet
 from otx.algo.detection.base_models.detection_transformer import DETR
 from otx.algo.detection.heads import RTDETRTransformer
 from otx.algo.detection.necks import HybridEncoder
-from otx.algo.modules.norm import FrozenBatchNorm2d
+from otx.algo.modules.norm import FrozenBatchNorm2d, build_norm_layer
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.detection import DetBatchDataEntity, DetBatchPredEntity
 from otx.core.exporter.base import OTXModelExporter
@@ -253,8 +254,7 @@ class RTDETR50(RTDETR):
             return_idx=[1, 2, 3],
             pretrained=True,
             freeze_at=0,
-            norm_callable=FrozenBatchNorm2d,
-            norm_name="norm",
+            normalization_callable=partial(build_norm_layer, FrozenBatchNorm2d, layer_name="norm"),
         )
         encoder = HybridEncoder(
             eval_spatial_size=self.image_size[2:],
@@ -295,8 +295,7 @@ class RTDETR101(RTDETR):
         backbone = PResNet(
             depth=101,
             return_idx=[1, 2, 3],
-            norm_callable=FrozenBatchNorm2d,
-            norm_name="norm",
+            normalization_callable=partial(build_norm_layer, FrozenBatchNorm2d, layer_name="norm"),
             pretrained=True,
             freeze_at=0,
         )

@@ -171,8 +171,8 @@ def build_norm_layer(
     """Build normalization layer.
 
     Args:
-        normalization_callable (Callable[..., nn.Module] | tuple[str, nn.Module] | nn.Module): Normalization layer module.
-            If tuple is given, return it as is. If callable is given, create the layer.
+        normalization_callable (Callable[..., nn.Module] | tuple[str, nn.Module] | nn.Module): Normalization layer
+            module. If tuple is given, return it as is. If callable is given, create the layer.
         num_features (int): Number of input channels.
         postfix (int | str): The postfix to be appended into norm abbreviation
             to create named layer.
@@ -207,6 +207,7 @@ def build_norm_layer(
 
     if isinstance(normalization_callable, partial) and normalization_callable.func.__name__ == "build_norm_layer":
         # add `num_features` to `normalization_callable` and return it
+        # TODO (sungchul): is adding more arguments needed?
         return normalization_callable(num_features=num_features)
 
     if not callable(normalization_callable):

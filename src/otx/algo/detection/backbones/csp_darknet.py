@@ -21,6 +21,7 @@ from otx.algo.detection.layers import CSPLayer
 from otx.algo.modules.activation import Swish
 from otx.algo.modules.base_module import BaseModule
 from otx.algo.modules.conv_module import Conv2dModule, DepthwiseSeparableConvModule
+from otx.algo.modules.norm import build_norm_layer
 
 
 class Focus(nn.Module):
@@ -31,7 +32,7 @@ class Focus(nn.Module):
         out_channels (int): The output channels of this Module.
         kernel_size (int): The kernel size of the convolution. Default: 1
         stride (int): The stride of the convolution. Default: 1
-        norm_callable (Callable[..., nn.Module] | None): Normalization layer module.
+        normalization_callable (Callable[..., nn.Module] | None): Normalization layer module.
             Defaults to ``partial(nn.BatchNorm2d, momentum=0.03, eps=0.001)``.
         activation_callable (Callable[..., nn.Module] | None): Activation layer module.
             Defaults to ``Swish``.
@@ -43,7 +44,7 @@ class Focus(nn.Module):
         out_channels: int,
         kernel_size: int = 1,
         stride: int = 1,
-        norm_callable: Callable[..., nn.Module] = partial(nn.BatchNorm2d, momentum=0.03, eps=0.001),
+        normalization_callable: Callable[..., nn.Module] = partial(nn.BatchNorm2d, momentum=0.03, eps=0.001),
         activation_callable: Callable[..., nn.Module] | None = Swish,
     ):
         super().__init__()
@@ -53,7 +54,7 @@ class Focus(nn.Module):
             kernel_size,
             stride,
             padding=(kernel_size - 1) // 2,
-            norm_callable=norm_callable,
+            normalization=build_norm_layer(normalization_callable, num_features=out_channels),
             activation_callable=activation_callable,
         )
 
@@ -108,7 +109,7 @@ class CSPDarknet(BaseModule):
         arch_ovewrite(list): Overwrite default arch settings. Default: None.
         spp_kernal_sizes: (tuple[int]): Sequential of kernel sizes of SPP
             layers. Default: (5, 9, 13).
-        norm_callable (Callable[..., nn.Module] | None): Normalization layer module.
+        normalization_callable (Callable[..., nn.Module] | None): Normalization layer module.
             Defaults to ``partial(nn.BatchNorm2d, momentum=0.03, eps=0.001)``.
         activation_callable (Callable[..., nn.Module] | None): Activation layer module.
             Defaults to ``Swish``.
@@ -147,7 +148,7 @@ class CSPDarknet(BaseModule):
         use_depthwise: bool = False,
         arch_ovewrite: list | None = None,
         spp_kernal_sizes: tuple[int, ...] = (5, 9, 13),
-        norm_callable: Callable[..., nn.Module] = partial(nn.BatchNorm2d, momentum=0.03, eps=0.001),
+        normalization_callable: Callable[..., nn.Module] = partial(nn.BatchNorm2d, momentum=0.03, eps=0.001),
         activation_callable: Callable[..., nn.Module] = Swish,
         norm_eval: bool = False,
         init_cfg: dict | list[dict] | None = None,
@@ -180,7 +181,7 @@ class CSPDarknet(BaseModule):
             3,
             int(arch_setting[0][0] * widen_factor),
             kernel_size=3,
-            norm_callable=norm_callable,
+            normalization_callable=normalization_callable,
             activation_callable=activation_callable,
         )
         self.layers = ["stem"]
@@ -196,7 +197,7 @@ class CSPDarknet(BaseModule):
                 3,
                 stride=2,
                 padding=1,
-                norm_callable=norm_callable,
+                normalization=build_norm_layer(normalization_callable, num_features=out_channels),
                 activation_callable=activation_callable,
             )
             stage.append(conv_layer)
@@ -205,7 +206,7 @@ class CSPDarknet(BaseModule):
                     out_channels,
                     out_channels,
                     kernel_sizes=spp_kernal_sizes,
-                    norm_callable=norm_callable,
+                    normalization_callable=normalization_callable,
                     activation_callable=activation_callable,
                 )
                 stage.append(spp)
@@ -215,7 +216,7 @@ class CSPDarknet(BaseModule):
                 num_blocks=num_blocks,
                 add_identity=add_identity,
                 use_depthwise=use_depthwise,
-                norm_callable=norm_callable,
+                normalization_callable=normalization_callable,
                 activation_callable=activation_callable,
             )
             stage.append(csp_layer)
