@@ -1,6 +1,7 @@
 from typing import Tuple
 
 import torch
+from detectron2.checkpoint import DetectionCheckpointer
 from detectron2.config import CfgNode as CN
 from detectron2.config import configurable, get_cfg
 from detectron2.data import MetadataCatalog
@@ -109,11 +110,10 @@ class MaskDINO(nn.Module):
         print("criterion.weight_dict ", self.criterion.weight_dict)
 
     @classmethod
-    def from_config(cls, cfg, num_classes):
+    def from_config(cls, cfg):
         backbone = build_backbone(cfg)
 
-        cfg.MODEL.SEM_SEG_HEAD.NUM_CLASSES = num_classes
-        sem_seg_head = MaskDINOHead.from_config(cfg, backbone.output_shape())
+        sem_seg_head = MaskDINOHead(cfg, backbone.output_shape())
 
         # Loss parameters:
         deep_supervision = cfg.MODEL.MaskDINO.DEEP_SUPERVISION
@@ -512,6 +512,8 @@ class MaskDINO(nn.Module):
 
 
 class MaskDINOR50(ExplainableOTXInstanceSegModel):
+    load_from = "https://github.com/IDEA-Research/detrex-storage/releases/download/maskdino-v0.1.0/maskdino_r50_50ep_300q_hid2048_3sd1_instance_maskenhanced_mask46.3ap_box51.7ap.pth"
+
     @staticmethod
     def add_maskdino_config(cfg):
         """Add config for MaskDINO."""
@@ -654,16 +656,22 @@ class MaskDINOR50(ExplainableOTXInstanceSegModel):
 
         cfg.Default_loading = True  # a bug in my d2. resume use this; if first time ResNet load, set it false
 
+    def _create_model(self) -> nn.Module:
+        detector = self._build_model(num_classes=self.label_info.num_classes)
+        self.classification_layers = self.get_classification_layers("model.")
+
+        if self.load_from is not None:
+            DetectionCheckpointer(detector).resume_or_load(
+                self.load_from,
+                resume=False,
+            )
+        return detector
+
     def _build_model(self, num_classes: int) -> Module:
         cfg = get_cfg()
         # for poly lr schedule
         add_deeplab_config(cfg)
         MaskDINOR50.add_maskdino_config(cfg)
         cfg.merge_from_file("src/otx/recipe/instance_segmentation/config.yaml")
-        cfg.merge_from_list(
-            [
-                "MODEL.WEIGHTS",
-                "maskdino_r50_50ep_300q_hid2048_3sd1_instance_maskenhanced_mask46.3ap_box51.7ap.pth",
-            ],
-        )
-        return MaskDINO.from_config(cfg, num_classes)
+        cfg.MODEL.SEM_SEG_HEAD.NUM_CLASSES = num_classes
+        return MaskDINO(cfg)
