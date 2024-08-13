@@ -333,6 +333,7 @@ class MaskRCNNEfficientNet(MaskRCNN):
                 "pretrained": True,
                 "activation_callable": nn.SiLU,
                 "norm_cfg": {"type": "BN", "requires_grad": True},
+                "pretrained": False,
             },
         )
 
