@@ -145,7 +145,7 @@ class OTXHlabelClsDataset(OTXDataset[HlabelClsDataEntity]):
 
         def _find_ancestor_recursively(label_name: str, ancestors: list) -> list[str]:
             _, dm_label_category = self.dm_categories.find(label_name)
-            parent_name = dm_label_category.parent
+            parent_name = dm_label_category.parent if dm_label_category else ""
 
             if parent_name != "":
                 ancestors.append(parent_name)
@@ -200,21 +200,22 @@ class OTXHlabelClsDataset(OTXDataset[HlabelClsDataEntity]):
         """Convert format of the label to the h-label.
 
         It converts the label format to h-label format.
+        Total length of result is sum of number of hierarchy and number of multilabel classes.
 
         i.e.
         Let's assume that we used the same dataset with example of the definition of HLabelData
-        and the original labels are ["Rigid", "Panda", "Lion"].
+        and the original labels are ["Rigid", "Triangle", "Lion"].
 
-        Then, h-label format will be [1, -1, 0, 1, 1].
+        Then, h-label format will be [0, 1, 1, 0].
         The first N-th indices represent the label index of multiclass heads (N=num_multiclass_heads),
         others represent the multilabel labels.
 
-        [Multiclass Heads: [1, -1]]
-        0-th index = 1 -> ["Non-Rigid"(X), "Rigid"(O)] <- First multiclass head
-        1-st index = -1 -> ["Rectangle"(X), "Triangle"(X)] <- Second multiclass head
+        [Multiclass Heads]
+        0-th index = 0 -> ["Rigid"(O), "Non-Rigid"(X)] <- First multiclass head
+        1-st index = 1 -> ["Rectangle"(O), "Triangle"(X), "Circle"(X)] <- Second multiclass head
 
-        [Multilabel Head: [0, 1, 1]]
-        2, 3, 4 indices = [0, 1, 1] -> ["Circle"(X), "Lion"(O), "Panda"(O)]
+        [Multilabel Head]
+        2, 3 indices = [1, 0] -> ["Lion"(O), "Panda"(X)]
         """
         if not isinstance(self.label_info, HLabelInfo):
             msg = f"The type of label_info should be HLabelInfo, got {type(self.label_info)}."
@@ -229,10 +230,16 @@ class OTXHlabelClsDataset(OTXDataset[HlabelClsDataEntity]):
 
         for ann in label_anns:
             ann_name = self.dm_categories.items[ann.label].name
+            ann_parent = self.dm_categories.items[ann.label].parent
             group_idx, in_group_idx = self.label_info.class_to_group_idx[ann_name]
+            (parent_group_idx, parent_in_group_idx) = (
+                self.label_info.class_to_group_idx[ann_parent] if ann_parent else (None, None)
+            )
 
             if group_idx < num_multiclass_heads:
                 class_indices[group_idx] = in_group_idx
+                if parent_group_idx is not None and parent_in_group_idx is not None:
+                    class_indices[parent_group_idx] = parent_in_group_idx
             elif not ignored_labels or ann.label not in ignored_labels:
                 class_indices[num_multiclass_heads + in_group_idx] = 1
             else:

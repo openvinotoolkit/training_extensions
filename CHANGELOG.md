@@ -26,6 +26,8 @@ All notable changes to this project will be documented in this file.
   (https://github.com/openvinotoolkit/training_extensions/pull/3781)
 - Add Semi-SL MeanTeacher algorithm for Semantic Segmentation
   (https://github.com/openvinotoolkit/training_extensions/pull/3801)
+- Update head and h-label format for hierarchical label classification
+  (https://github.com/openvinotoolkit/training_extensions/pull/3810)
 
 ### Enhancements
 

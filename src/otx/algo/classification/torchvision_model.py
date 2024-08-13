@@ -11,7 +11,7 @@ import torch
 from torch import Tensor, nn
 from torchvision.models import get_model, get_model_weights
 
-from otx.algo.classification.heads import HierarchicalLinearClsHead, MultiLabelLinearClsHead, OTXSemiSLLinearClsHead
+from otx.algo.classification.heads import HierarchicalCBAMClsHead, MultiLabelLinearClsHead, OTXSemiSLLinearClsHead
 from otx.algo.classification.losses import AsymmetricAngularLossWithIgnore
 from otx.algo.explain.explain_algo import ReciproCAM, feature_vector_fn
 from otx.core.data.entity.base import OTXBatchLossEntity
@@ -209,12 +209,13 @@ class TVClassificationModel(nn.Module):
                 loss=self.loss_module,
             )
         if self.task == OTXTaskType.H_LABEL_CLS:
-            self.neck = nn.Sequential(*layers) if layers else None
-            return HierarchicalLinearClsHead(
+            self.neck = nn.Sequential(*layers, nn.Identity()) if layers else None
+            return HierarchicalCBAMClsHead(
                 in_channels=feature_channel,
                 multiclass_loss=nn.CrossEntropyLoss(),
                 multilabel_loss=self.loss_module,
                 **self.head_config,
+                step_size=1,
             )
 
         msg = f"Task type {self.task} is not supported."
