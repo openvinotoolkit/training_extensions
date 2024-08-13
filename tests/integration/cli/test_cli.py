@@ -579,14 +579,10 @@ def test_otx_configurable_input_size_e2e(
     """
     if task not in DEFAULT_CONFIG_PER_TASK:
         pytest.skip(f"Task {task} is not supported in the auto-configuration.")
-    if task in [
-        OTXTaskType.ZERO_SHOT_VISUAL_PROMPTING,
-        OTXTaskType.ANOMALY_CLASSIFICATION,
-        OTXTaskType.ANOMALY_DETECTION,
-        OTXTaskType.ANOMALY_SEGMENTATION,
-        OTXTaskType.KEYPOINT_DETECTION,
-    ]:
+    if task == OTXTaskType.ZERO_SHOT_VISUAL_PROMPTING:
         pytest.skip(f"{task} doesn't support configurable input size.")
+    if task == OTXTaskType.KEYPOINT_DETECTION:
+        pytest.skip(f"{task} isn't prepared to run integration test.")
 
     task = task.lower()
     tmp_path_cfg_ipt_size = tmp_path / f"otx_configurable_input_size_{task}"
