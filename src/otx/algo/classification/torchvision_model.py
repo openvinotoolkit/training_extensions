@@ -330,8 +330,8 @@ class TVClassificationModel(nn.Module):
             return self.head.loss(inputs, labels)
         if isinstance(inputs, dict) and hasattr(self.head, "get_logits"):
             return self._semi_sl_loss(inputs, labels)
-        logits = self.head(inputs)
-        return self.loss_module(logits, labels).sum() / logits.size(0)
+        logits = self.head(inputs) * self.loss_scale
+        return self.loss_module(logits, labels) / self.loss_scale
 
     def _semi_sl_loss(self, inputs: dict[str, torch.Tensor], labels: torch.Tensor) -> torch.Tensor:
         """Computes the loss function in which unlabeled data is considered.
