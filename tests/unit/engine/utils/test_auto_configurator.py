@@ -25,7 +25,7 @@ def fxt_data_root_per_task_type() -> dict:
         "tests/assets/classification_dataset": OTXTaskType.MULTI_CLASS_CLS,
         "tests/assets/multilabel_classification": OTXTaskType.MULTI_LABEL_CLS,
         "tests/assets/car_tree_bug": OTXTaskType.DETECTION,
-        "tests/assets/common_semantic_segmentation_dataset": OTXTaskType.SEMANTIC_SEGMENTATION,
+        "tests/assets/common_semantic_segmentation_dataset/supervised": OTXTaskType.SEMANTIC_SEGMENTATION,
     }
 
 

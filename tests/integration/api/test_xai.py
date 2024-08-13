@@ -41,13 +41,14 @@ def test_forward_explain(
     Returns:
         None
     """
-    task = recipe.split("/")[-2]
-    model_name = recipe.split("/")[-1].split(".")[0]
+
+    recipe_split = recipe.split("/")
+    model_name = recipe_split[-1].split(".")[0]
+    is_semisl = model_name.endswith("_semisl")
+    task = recipe_split[-2] if not is_semisl else recipe_split[-3]
 
     if "dino" in model_name:
         pytest.skip("DINO is not supported.")
-    if "_semisl" in model_name:
-        pytest.skip("Semi-SL is not supported.")
 
     if "maskrcnn_r50_tv" in model_name:
         pytest.skip("MaskRCNN R50 Torchvision model doesn't support explain.")
@@ -101,8 +102,10 @@ def test_predict_with_explain(
     Returns:
         None
     """
-    task = recipe.split("/")[-2]
-    model_name = recipe.split("/")[-1].split(".")[0]
+    recipe_split = recipe.split("/")
+    model_name = recipe_split[-1].split(".")[0]
+    is_semisl = model_name.endswith("_semisl")
+    task = recipe_split[-2] if not is_semisl else recipe_split[-3]
 
     if "dino" in model_name:
         pytest.skip("DINO is not supported.")
