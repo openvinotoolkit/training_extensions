@@ -39,8 +39,6 @@ dependencies = [
     "einops==0.8.0",
     "decord==0.6.0",
     "typeguard==4.3.*",
-    # TODO(ashwinvaidya17): https://github.com/openvinotoolkit/anomalib/issues/2126
-    "setuptools<70",
 ]
 
 [project.optional-dependencies]
@@ -87,7 +85,7 @@ xpu = [
     "onnx==1.16.1",
     "onnxconverter-common==1.14.0",
     "nncf==2.12.0",
-    "anomalib[core]==1.1.0",
+    "anomalib[core]==1.1.1",
 ]
 
 base = [
@@ -101,7 +99,7 @@ base = [
     "onnx==1.16.1",
     "onnxconverter-common==1.14.0",
     "nncf==2.12.0",
-    "anomalib[core]==1.1.0",
+    "anomalib[core]==1.1.1",
 ]
 
 transformers = [
