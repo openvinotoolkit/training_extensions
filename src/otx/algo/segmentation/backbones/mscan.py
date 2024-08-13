@@ -6,7 +6,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable
+from typing import TYPE_CHECKING, Any, Callable, ClassVar
 
 import torch
 from torch import nn
@@ -329,7 +329,7 @@ class OverlapPatchEmbed(BaseModule):
         return x, h, w
 
 
-class MSCAN(BaseModule):
+class MSCAN_NN(nn.Module):
     """SegNeXt Multi-Scale Convolutional Attention Network (MCSAN) backbone.
 
     This backbone is the implementation of `SegNeXt: Rethinking
@@ -450,3 +450,47 @@ class MSCAN(BaseModule):
             print(f"init weight - {pretrained}")
         if checkpoint is not None:
             load_checkpoint_to_model(self, checkpoint, prefix=prefix)
+
+
+class MSCAN:
+    MSCAN_CFG: ClassVar ={
+        "tiny": {
+            "activation_callable": nn.GELU,
+            "attention_kernel_paddings": [2, [0, 3], [0, 5], [0, 10]],
+            "attention_kernel_sizes": [5, [1, 7], [1, 11], [1, 21]],
+            "depths": [3, 3, 5, 2],
+            "drop_path_rate": 0.1,
+            "drop_rate": 0.0,
+            "embed_dims": [32, 64, 160, 256],
+            "mlp_ratios": [8, 8, 4, 4],
+            "norm_cfg": {"requires_grad": True, "type": "BN"},
+            "pretrained_weights": "https://download.openmmlab.com/mmsegmentation/v0.5/pretrain/segnext/mscan_t_20230227-119e8c9f.pth",
+        },
+        "small": {
+            "activation_callable": nn.GELU,
+            "attention_kernel_paddings": [2, [0, 3], [0, 5], [0, 10]],
+            "attention_kernel_sizes": [5, [1, 7], [1, 11], [1, 21]],
+            "depths": [2, 2, 4, 2],
+            "drop_path_rate": 0.1,
+            "drop_rate": 0.0,
+            "embed_dims": [64, 128, 320, 512],
+            "mlp_ratios": [8, 8, 4, 4],
+            "norm_cfg": {"requires_grad": True, "type": "BN"},
+            "pretrained_weights": "https://download.openmmlab.com/mmsegmentation/v0.5/pretrain/segnext/mscan_s_20230227-f33ccdf2.pth",
+        },
+        "base": {
+            "activation_callable": nn.GELU,
+            "attention_kernel_paddings": [2, [0, 3], [0, 5], [0, 10]],
+            "attention_kernel_sizes": [5, [1, 7], [1, 11], [1, 21]],
+            "depths": [3, 3, 12, 3],
+            "drop_path_rate": 0.1,
+            "drop_rate": 0.0,
+            "embed_dims": [64, 128, 320, 512],
+            "mlp_ratios": [8, 8, 4, 4],
+            "norm_cfg": {"requires_grad": True, "type": "BN"},
+            "pretrained_weights": "https://download.openmmlab.com/mmsegmentation/v0.5/pretrain/segnext/mscan_b_20230227-3ab7d230.pth",
+        }
+
+    }
+    def __new__(cls, version):
+        return MSCAN_NN(**cls.MSCAN_CFG[version])

@@ -48,6 +48,7 @@ from otx.core.schedulers import (
     SchedulerCallableSupportHPO,
 )
 from otx.core.types.export import OTXExportFormatType, TaskLevelExportParameters
+from otx.core.types.task import OTXTrainType
 from otx.core.types.label import LabelInfo, LabelInfoTypes, NullLabelInfo
 from otx.core.types.precision import OTXPrecisionType
 from otx.core.utils.build import get_default_num_async_infer_requests
@@ -109,6 +110,7 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
         metric: MetricCallable = NullMetricCallable,
         torch_compile: bool = False,
         tile_config: TileConfig = TileConfig(enable_tiler=False),
+        train_type: Literal[OTXTrainType.SUPERVISED, OTXTrainType.SEMI_SUPERVISED] = OTXTrainType.SUPERVISED,
     ) -> None:
         super().__init__()
 
@@ -119,6 +121,7 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
         self.optimizer_callable = ensure_callable(optimizer)
         self.scheduler_callable = ensure_callable(scheduler)
         self.metric_callable = ensure_callable(metric)
+        self.train_type = train_type
 
         self.torch_compile = torch_compile
         self._explain_mode = False
