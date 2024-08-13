@@ -345,7 +345,6 @@ class OTXCLI:
 
             # pass OTXDataModule input size to the model
             if (input_size := self.datamodule.input_size) is not None and "input_size" in model_config["init_args"]:
-                # TODO(eunwoosh): After configurable input size is applied to anomaly, remove input_size check
                 model_config["init_args"]["input_size"] = (
                     (input_size, input_size) if isinstance(input_size, int) else tuple(input_size)
                 )
