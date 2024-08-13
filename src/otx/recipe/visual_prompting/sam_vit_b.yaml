@@ -1,5 +1,5 @@
 model:
-  class_path: otx.algo.visual_prompting.segment_anything.SAM
+  class_path: otx.algo.visual_prompting.sam.SAM
   init_args:
     backbone_type: vit_b
     label_info: 0

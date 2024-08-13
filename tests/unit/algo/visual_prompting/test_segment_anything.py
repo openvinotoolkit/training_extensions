@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import pytest
 import torch
-from otx.algo.visual_prompting.segment_anything import OTXSegmentAnything, SegmentAnything
+from otx.algo.visual_prompting.sam import OTXSegmentAnything, SegmentAnything
 from otx.core.data.entity.base import Points
 from otx.core.data.entity.visual_prompting import VisualPromptingBatchPredEntity
 from torch import Tensor

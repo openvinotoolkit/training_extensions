@@ -3,7 +3,7 @@
 #
 """Module for OTX visual prompting models."""
 
-from .segment_anything import SAM
+from .sam import SAM
 from .zero_shot_segment_anything import OTXZeroShotSegmentAnything, ZeroShotSegmentAnything
 
 __all__ = [

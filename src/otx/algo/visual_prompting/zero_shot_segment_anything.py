@@ -21,7 +21,7 @@ from torch.nn import functional as F  # noqa: N812
 from torchvision import tv_tensors
 from torchvision.tv_tensors import BoundingBoxes, Image, Mask
 
-from otx.algo.visual_prompting.segment_anything import DEFAULT_CONFIG_SEGMENT_ANYTHING, SegmentAnything
+from otx.algo.visual_prompting.sam import DEFAULT_CONFIG_SEGMENT_ANYTHING, SegmentAnything
 from otx.core.data.entity.base import OTXBatchLossEntity, Points
 from otx.core.data.entity.visual_prompting import (
     ZeroShotVisualPromptingBatchDataEntity,
