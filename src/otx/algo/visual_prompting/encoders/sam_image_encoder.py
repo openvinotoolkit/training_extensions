@@ -38,17 +38,17 @@ class SAMImageEncoder(nn.Module):
         },
     }
 
-    def __new__(cls, backbone: str, *args, **kwargs):  # noqa: ARG003
+    def __new__(cls, backbone_type: str, *args, **kwargs):  # noqa: ARG003
         """Initialize image encoder to target backbone."""
-        if backbone.lower() == "tiny_vit":
+        if backbone_type.lower() == "tiny_vit":
             from otx.algo.visual_prompting.backbones.tiny_vit import TinyViT
 
-            return TinyViT(**cls.backbone_configs.get(backbone.lower()))  # type: ignore[arg-type]
-        elif backbone.lower() in ["vit_b", "vit_l", "vit_h"]:  # noqa: RET505
+            return TinyViT(**cls.backbone_configs.get(backbone_type.lower()))  # type: ignore[arg-type]
+        elif backbone_type.lower() in ["vit_b", "vit_l", "vit_h"]:  # noqa: RET505
             from otx.algo.visual_prompting.backbones.vit import ViT
 
-            return ViT(**cls.backbone_configs.get(backbone.lower()))  # type: ignore[arg-type]
+            return ViT(**cls.backbone_configs.get(backbone_type.lower()))  # type: ignore[arg-type]
 
         else:
-            error_log = f"{backbone} is not supported for SAMImageEncoder. Set among tiny_vit and vit_b."
+            error_log = f"{backbone_type} is not supported for SAMImageEncoder. Set among tiny_vit and vit_b."
             raise ValueError(error_log)

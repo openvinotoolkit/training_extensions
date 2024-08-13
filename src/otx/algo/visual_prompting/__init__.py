@@ -3,11 +3,6 @@
 #
 """Module for OTX visual prompting models."""
 
-from .sam import SAM
-from .zero_shot_segment_anything import OTXZeroShotSegmentAnything, ZeroShotSegmentAnything
+from .sam import SAM, ZeroShotSAM
 
-__all__ = [
-    "SAM",
-    "OTXZeroShotSegmentAnything",
-    "ZeroShotSegmentAnything",
-]
+__all__ = ["SAM", "ZeroShotSAM"]

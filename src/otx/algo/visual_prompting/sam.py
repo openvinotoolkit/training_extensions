@@ -6,97 +6,57 @@
 from __future__ import annotations
 
 import logging as log
-from typing import TYPE_CHECKING, ClassVar, Literal, Sequence
+import pickle  # nosec  B403   used pickle for dumping object
+from collections import defaultdict
+from copy import deepcopy
+from pathlib import Path
+from typing import TYPE_CHECKING, Callable, ClassVar, Literal, Sequence
 
 import torch
+import torchvision.transforms.v2 as tvt_v2
 from torch import Tensor, nn
+from torchvision.tv_tensors import BoundingBoxes, Image, Mask
 
 from otx.algo.visual_prompting.decoders import SAMMaskDecoder
 from otx.algo.visual_prompting.encoders import SAMImageEncoder, SAMPromptEncoder
 from otx.algo.visual_prompting.losses.sam_loss import SAMCriterion
-from otx.algo.visual_prompting.utils.postprocess import postprocess_masks
-from otx.algo.visual_prompting.visual_prompters import SegmentAnything
+from otx.algo.visual_prompting.visual_prompters import SegmentAnything, ZeroShotSegmentAnything
+from otx.core.data.entity.base import OTXBatchLossEntity, Points
+from otx.core.data.entity.visual_prompting import (
+    ZeroShotVisualPromptingBatchDataEntity,
+    ZeroShotVisualPromptingBatchPredEntity,
+)
 from otx.core.metrics.visual_prompting import VisualPromptingMetricCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
-from otx.core.model.visual_prompting import OTXVisualPromptingModel
+from otx.core.model.visual_prompting import OTXVisualPromptingModel, OTXZeroShotVisualPromptingModel
 from otx.core.schedulers import LRSchedulerListCallable
 from otx.core.types.label import LabelInfoTypes, NullLabelInfo
 
 if TYPE_CHECKING:
+    import numpy as np
+    from datumaro import Polygon as dmPolygon
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
 
     from otx.core.metrics import MetricCallable
 
 
-class SAM(OTXVisualPromptingModel):
-    """OTX visual prompting model class for Segment Anything Model (SAM)."""
+class CommonSettingMixin:
+    """Mixin class for common settings in SAM.
 
+    Attributes:
+        model (nn.Module): The model used in SAM.
+        load_from (ClassVar[dict[str, str]]): A dictionary containing the URLs to load checkpoints from.
+
+    """
+
+    model: nn.Module
     load_from: ClassVar[dict[str, str]] = {
         "tiny_vit": "https://github.com/ChaoningZhang/MobileSAM/raw/master/weights/mobile_sam.pt",
         "vit_b": "https://dl.fbaipublicfiles.com/segment_anything/sam_vit_b_01ec64.pth",
         "vit_l": "https://dl.fbaipublicfiles.com/segment_anything/sam_vit_l_0b3195.pth",
         "vit_h": "https://dl.fbaipublicfiles.com/segment_anything/sam_vit_h_4b8939.pth",
     }
-
-    def __init__(
-        self,
-        backbone_type: Literal["tiny_vit", "vit_b"],
-        label_info: LabelInfoTypes = NullLabelInfo(),
-        input_size: Sequence[int] = (1, 3, 1024, 1024),
-        optimizer: OptimizerCallable = DefaultOptimizerCallable,
-        scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
-        metric: MetricCallable = VisualPromptingMetricCallable,
-        torch_compile: bool = False,
-        freeze_image_encoder: bool = True,
-        freeze_prompt_encoder: bool = True,
-        freeze_mask_decoder: bool = False,
-        use_stability_score: bool = False,
-        return_single_mask: bool = True,
-        return_extra_metrics: bool = False,
-        stability_score_offset: float = 1.0,
-    ) -> None:
-        self.backbone_type = backbone_type
-        self.image_size = input_size[-1]
-        self.image_embedding_size = input_size[-1] // 16
-
-        self.freeze_image_encoder = freeze_image_encoder
-        self.freeze_prompt_encoder = freeze_prompt_encoder
-        self.freeze_mask_decoder = freeze_mask_decoder
-        self.use_stability_score = use_stability_score
-        self.return_single_mask = return_single_mask
-        self.return_extra_metrics = return_extra_metrics
-        self.stability_score_offset = stability_score_offset
-
-        super().__init__(
-            label_info=label_info,
-            optimizer=optimizer,
-            scheduler=scheduler,
-            metric=metric,
-            torch_compile=torch_compile,
-        )
-
-        self.load_checkpoint(load_from=self.load_from[backbone_type])
-        self.freeze_networks(freeze_image_encoder, freeze_prompt_encoder, freeze_mask_decoder)
-
-    def _build_model(self) -> nn.Module:
-        image_encoder = SAMImageEncoder(backbone=self.backbone_type)
-        prompt_encoder = SAMPromptEncoder(
-            image_embedding_size=(self.image_embedding_size, self.image_embedding_size),
-            input_image_size=(self.image_size, self.image_size),
-        )
-        mask_decoder = SAMMaskDecoder()
-        criterion = SAMCriterion(image_size=self.image_size)
-        return SegmentAnything(
-            image_encoder=image_encoder,
-            prompt_encoder=prompt_encoder,
-            mask_decoder=mask_decoder,
-            criterion=criterion,
-            image_size=self.image_size,
-            use_stability_score=self.use_stability_score,
-            return_single_mask=self.return_single_mask,
-            return_extra_metrics=self.return_extra_metrics,
-            stability_score_offset=self.stability_score_offset,
-        )
+    load_state_dict: Callable[[dict[str, Tensor]], None]
 
     def load_checkpoint(self, load_from: str | None) -> None:
         """Load checkpoint for SAM.
@@ -133,18 +93,82 @@ class SAM(OTXVisualPromptingModel):
         freeze_prompt_encoder: bool,
         freeze_mask_decoder: bool,
     ) -> None:
-        """Freeze networks depending on config."""
-        if freeze_image_encoder:
-            for param in self.model.image_encoder.parameters():
-                param.requires_grad = False
+        """Freeze networks depending on config.
 
-        if freeze_prompt_encoder:
-            for param in self.model.prompt_encoder.parameters():
-                param.requires_grad = False
+        Args:
+            freeze_image_encoder (bool): Whether to freeze the image encoder.
+            freeze_prompt_encoder (bool): Whether to freeze the prompt encoder.
+            freeze_mask_decoder (bool): Whether to freeze the mask decoder.
+        """
+        for param in self.model.image_encoder.parameters():
+            param.requires_grad = not freeze_image_encoder
 
-        if freeze_mask_decoder:
-            for param in self.model.mask_decoder.parameters():
-                param.requires_grad = False
+        for param in self.model.prompt_encoder.parameters():
+            param.requires_grad = not freeze_prompt_encoder
+
+        for param in self.model.mask_decoder.parameters():
+            param.requires_grad = not freeze_mask_decoder
+
+
+class SAM(OTXVisualPromptingModel, CommonSettingMixin):
+    """OTX visual prompting model class for Segment Anything Model (SAM)."""
+
+    def __init__(
+        self,
+        backbone_type: Literal["tiny_vit", "vit_b"],
+        label_info: LabelInfoTypes = NullLabelInfo(),
+        input_size: Sequence[int] = (1, 3, 1024, 1024),
+        optimizer: OptimizerCallable = DefaultOptimizerCallable,
+        scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
+        metric: MetricCallable = VisualPromptingMetricCallable,
+        torch_compile: bool = False,
+        freeze_image_encoder: bool = True,
+        freeze_prompt_encoder: bool = True,
+        freeze_mask_decoder: bool = False,
+        use_stability_score: bool = False,
+        return_single_mask: bool = True,
+        return_extra_metrics: bool = False,
+        stability_score_offset: float = 1.0,
+    ) -> None:
+        self.backbone_type = backbone_type
+        self.image_size = input_size[-1]
+        self.image_embedding_size = input_size[-1] // 16
+
+        self.use_stability_score = use_stability_score
+        self.return_single_mask = return_single_mask
+        self.return_extra_metrics = return_extra_metrics
+        self.stability_score_offset = stability_score_offset
+
+        super().__init__(
+            label_info=label_info,
+            optimizer=optimizer,
+            scheduler=scheduler,
+            metric=metric,
+            torch_compile=torch_compile,
+        )
+
+        self.load_checkpoint(load_from=self.load_from[backbone_type])
+        self.freeze_networks(freeze_image_encoder, freeze_prompt_encoder, freeze_mask_decoder)
+
+    def _build_model(self) -> nn.Module:
+        image_encoder = SAMImageEncoder(backbone_type=self.backbone_type)
+        prompt_encoder = SAMPromptEncoder(
+            image_embedding_size=(self.image_embedding_size, self.image_embedding_size),
+            input_image_size=(self.image_size, self.image_size),
+        )
+        mask_decoder = SAMMaskDecoder()
+        criterion = SAMCriterion(image_size=self.image_size)
+        return SegmentAnything(
+            image_encoder=image_encoder,
+            prompt_encoder=prompt_encoder,
+            mask_decoder=mask_decoder,
+            criterion=criterion,
+            image_size=self.image_size,
+            use_stability_score=self.use_stability_score,
+            return_single_mask=self.return_single_mask,
+            return_extra_metrics=self.return_extra_metrics,
+            stability_score_offset=self.stability_score_offset,
+        )
 
     @torch.no_grad()
     def forward_for_tracing(
@@ -178,136 +202,330 @@ class SAM(OTXVisualPromptingModel):
             ori_shape (Tensor): The size of the input image in (H,W) format, before any transformation.
                 This input has 1x2 shape due to supporting openvino input layout.
         """
-        sparse_embedding = self._embed_points(point_coords, point_labels)
-        dense_embedding = self._embed_masks(mask_input, has_mask_input)
-
-        masks, scores = self.model.mask_decoder.predict_masks(
+        return self.model.forward_for_tracing(
             image_embeddings=image_embeddings,
-            image_pe=self.model.prompt_encoder.get_dense_pe(),
-            sparse_prompt_embeddings=sparse_embedding,
-            dense_prompt_embeddings=dense_embedding,
+            point_coords=point_coords,
+            point_labels=point_labels,
+            mask_input=mask_input,
+            has_mask_input=has_mask_input,
+            ori_shape=ori_shape,
         )
 
-        if self.use_stability_score:
-            scores = self.calculate_stability_score(
-                masks,
-                self.model.mask_threshold,
-                self.model.stability_score_offset,
+
+class ZeroShotSAM(OTXZeroShotVisualPromptingModel, CommonSettingMixin):
+    """Zero-Shot Visual Prompting model."""
+
+    def __init__(  # noqa: PLR0913
+        self,
+        backbone_type: Literal["tiny_vit", "vit_b"],
+        label_info: LabelInfoTypes = NullLabelInfo(),
+        input_size: Sequence[int] = (1, 3, 1024, 1024),
+        optimizer: OptimizerCallable = DefaultOptimizerCallable,
+        scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
+        metric: MetricCallable = VisualPromptingMetricCallable,
+        torch_compile: bool = False,
+        reference_info_dir: Path | str = "reference_infos",
+        infer_reference_info_root: Path | str = "../.latest/train",
+        save_outputs: bool = True,
+        pixel_mean: list[float] | None = [123.675, 116.28, 103.53],  # noqa: B006
+        pixel_std: list[float] | None = [58.395, 57.12, 57.375],  # noqa: B006
+        freeze_image_encoder: bool = True,
+        freeze_prompt_encoder: bool = True,
+        freeze_mask_decoder: bool = True,
+        default_threshold_reference: float = 0.3,
+        default_threshold_target: float = 0.65,
+        use_stability_score: bool = False,
+        return_single_mask: bool = False,
+        return_extra_metrics: bool = False,
+        stability_score_offset: float = 1.0,
+    ) -> None:
+        self.backbone_type = backbone_type
+        self.image_size = input_size[-1]
+        self.image_embedding_size = input_size[-1] // 16
+
+        self.default_threshold_reference = default_threshold_reference
+        self.default_threshold_target = default_threshold_target
+
+        self.use_stability_score = use_stability_score
+        self.return_single_mask = return_single_mask
+        self.return_extra_metrics = return_extra_metrics
+        self.stability_score_offset = stability_score_offset
+
+        super().__init__(
+            label_info=label_info,
+            optimizer=optimizer,
+            scheduler=scheduler,
+            metric=metric,
+            torch_compile=torch_compile,
+        )
+
+        # check freeze conditions
+        if not (freeze_image_encoder and freeze_prompt_encoder and freeze_mask_decoder):
+            log.warning(
+                "All of freeze_image_encoder, freeze_prompt_encoder, freeze_mask_decoder "
+                "must be set to True, changed.",
             )
+            freeze_image_encoder = True
+            freeze_prompt_encoder = True
+            freeze_mask_decoder = True
 
-        if self.return_single_mask:
-            masks, scores = self.select_masks(masks, scores, point_coords.shape[1])
+        self.load_checkpoint(load_from=self.load_from[backbone_type])
+        self.freeze_networks(freeze_image_encoder, freeze_prompt_encoder, freeze_mask_decoder)
 
-        upscaled_masks = postprocess_masks(masks, self.image_size, ori_shape)
+        self.save_outputs = save_outputs
+        self.reference_info_dir: Path = Path(reference_info_dir)
+        self.infer_reference_info_root: Path = Path(infer_reference_info_root)
 
-        if self.return_extra_metrics:
-            stability_scores = self.calculate_stability_score(
-                upscaled_masks,
-                self.model.mask_threshold,
-                self.model.stability_score_offset,
-            )
-            areas = (upscaled_masks > self.model.mask_threshold).sum(-1).sum(-1)
-            return upscaled_masks, scores, stability_scores, areas, masks
+        self.register_buffer("pixel_mean", Tensor(pixel_mean).view(-1, 1, 1), False)
+        self.register_buffer("pixel_std", Tensor(pixel_std).view(-1, 1, 1), False)
 
-        return upscaled_masks, scores, masks
+        self.initialize_reference_info()
 
-    def _embed_points(self, point_coords: Tensor, point_labels: Tensor) -> Tensor:
-        """Embed sparse input prompts.
-
-        Args:
-            point_coords (Tensor): Coordinates of sparse input prompts,
-                corresponding to both point inputs and box inputs. Boxes are encoded using two points,
-                one for the top-left corner and one for the bottom-right corner.
-                Coordinates must already be transformed to long-side 1024. Has a batch index of length 1.
-            point_labels (Tensor): Labels for the sparse input prompts.
-                0 is a negative input point, 1 is a positive input point,
-                2 is a top-left box corner, 3 is a bottom-right box corner, and -1 is a padding point.
-                If there is no box input, a single padding point with label -1 and
-                coordinates (0.0, 0.0) should be concatenated.
-
-        Returns:
-            point_embedding (Tensor): The embedded sparse input prompts.
-        """
-        point_coords = point_coords + 0.5
-        point_coords = point_coords / self.image_size
-        point_embedding = self.model.prompt_encoder.pe_layer._pe_encoding(point_coords)  # noqa: SLF001
-        point_labels = point_labels.unsqueeze(-1).expand_as(point_embedding)
-
-        point_embedding = point_embedding * (point_labels != -1)
-        point_embedding = point_embedding + self.model.prompt_encoder.not_a_point_embed.weight * (point_labels == -1)
-
-        for i in range(self.model.prompt_encoder.num_point_embeddings):
-            point_embedding = point_embedding + self.model.prompt_encoder.point_embeddings[i].weight * (
-                point_labels == i
-            )
-
-        return point_embedding
-
-    def _embed_masks(self, input_mask: Tensor, has_mask_input: Tensor) -> Tensor:
-        """Embed the mask input.
-
-        Args:
-            input_mask (Tensor): A mask input to the model with shape 1x1x256x256.
-                This must be supplied even if there is no mask input. In this case, it can just be zeros.
-            has_mask_input (Tensor): An indicator for the mask input.
-                1 indicates a mask input, 0 indicates no mask input.
-
-        Returns:
-            mask_embedding (Tensor): The embedded mask input.
-        """
-        mask_embedding = has_mask_input * self.model.prompt_encoder.mask_downscaling(input_mask)
-        return mask_embedding + (1 - has_mask_input) * self.model.prompt_encoder.no_mask_embed.weight.reshape(
-            1,
-            -1,
-            1,
-            1,
+    def _build_model(self) -> nn.Module:
+        image_encoder = SAMImageEncoder(backbone_type=self.backbone_type)
+        prompt_encoder = SAMPromptEncoder(
+            image_embedding_size=(self.image_embedding_size, self.image_embedding_size),
+            input_image_size=(self.image_size, self.image_size),
+        )
+        mask_decoder = SAMMaskDecoder()
+        criterion = None
+        return ZeroShotSegmentAnything(
+            image_encoder=image_encoder,
+            prompt_encoder=prompt_encoder,
+            mask_decoder=mask_decoder,
+            criterion=criterion,
+            image_size=self.image_size,
+            default_threshold_reference=self.default_threshold_reference,
+            default_threshold_target=self.default_threshold_target,
+            use_stability_score=self.use_stability_score,
+            return_single_mask=self.return_single_mask,
+            return_extra_metrics=self.return_extra_metrics,
+            stability_score_offset=self.stability_score_offset,
         )
 
-    def calculate_stability_score(self, masks: Tensor, mask_threshold: float, threshold_offset: float = 1.0) -> Tensor:
-        """Computes the stability score for a batch of masks.
+    def forward(  # type: ignore[override]
+        self,
+        inputs: ZeroShotVisualPromptingBatchDataEntity,  # type: ignore[override]
+    ) -> ZeroShotVisualPromptingBatchPredEntity | OTXBatchLossEntity:
+        """Model forward function."""
+        forward_fn = self.learn if self.training else self.infer
+        return forward_fn(inputs)  # type: ignore[operator]
 
-        The stability score is the IoU between the binary masks obtained
-        by thresholding the predicted mask logits at high and low values.
+    def learn(
+        self,
+        inputs: ZeroShotVisualPromptingBatchDataEntity,
+        reference_feats: Tensor | None = None,
+        used_indices: Tensor | None = None,
+        reset_feat: bool = False,
+        is_cascade: bool = False,
+    ) -> ZeroShotVisualPromptingBatchPredEntity | OTXBatchLossEntity:
+        """Learn to directly connect to the model."""
+        self.training = True
+        if reset_feat:
+            self.initialize_reference_info()
+
+        outputs = self.model.learn(
+            **self._customize_inputs(inputs, reference_feats=reference_feats, used_indices=used_indices),
+            is_cascade=is_cascade,
+        )
+        return self._customize_outputs(outputs, inputs)
+
+    def infer(
+        self,
+        inputs: ZeroShotVisualPromptingBatchDataEntity,
+        reference_feats: Tensor | None = None,
+        used_indices: Tensor | None = None,
+        threshold: float = 0.0,
+        num_bg_points: int = 1,
+        is_cascade: bool = True,
+    ) -> ZeroShotVisualPromptingBatchPredEntity | OTXBatchLossEntity:
+        """Infer to directly connect to the model."""
+        self.training = False
+        outputs = self.model.infer(
+            **self._customize_inputs(inputs, reference_feats=reference_feats, used_indices=used_indices),
+            threshold=threshold,
+            num_bg_points=num_bg_points,
+            is_cascade=is_cascade,
+        )
+        return self._customize_outputs(outputs, inputs)
+
+    def _gather_prompts_with_labels(
+        self,
+        inputs: ZeroShotVisualPromptingBatchDataEntity,
+    ) -> list[dict[int, list[BoundingBoxes | Points | dmPolygon | Mask]]]:
+        """Gather prompts according to labels."""
+        total_processed_prompts: list[dict[int, list[BoundingBoxes | Points | dmPolygon | Mask]]] = []
+        for batch, batch_labels in enumerate(inputs.labels):
+            processed_prompts = defaultdict(list)
+            for prompt_type in ["prompts", "polygons", "masks"]:
+                _prompts = getattr(inputs, prompt_type, None)
+                prompt_labels = getattr(batch_labels, prompt_type, None)
+                if _prompts is None or prompt_labels is None:
+                    continue
+
+                for idx, _label in enumerate(prompt_labels):
+                    if prompt_type in ("prompts", "polygons"):
+                        processed_prompts[int(_label)].append(_prompts[batch][idx])
+                    else:
+                        # for mask
+                        processed_prompts[int(_label)].append(Mask(_prompts[batch][idx]))
+
+            sorted_processed_prompts = dict(sorted(processed_prompts.items(), key=lambda x: x))
+            total_processed_prompts.append(sorted_processed_prompts)
+
+        return total_processed_prompts
+
+    def apply_image(self, image: Image | np.ndarray, target_length: int = 1024) -> Image:
+        """Preprocess image to be used in the model."""
+        h, w = image.shape[-2:]
+        target_size = self.get_preprocess_shape(h, w, target_length)
+        return tvt_v2.functional.resize(tvt_v2.functional.to_image(image), target_size, antialias=True)
+
+    def apply_coords(self, coords: Tensor, ori_shape: tuple[int, ...], target_length: int = 1024) -> Tensor:
+        """Preprocess points to be used in the model."""
+        old_h, old_w = ori_shape
+        new_h, new_w = self.get_preprocess_shape(ori_shape[0], ori_shape[1], target_length)
+        coords = deepcopy(coords).to(torch.float32)
+        coords[..., 0] = coords[..., 0] * (new_w / old_w)
+        coords[..., 1] = coords[..., 1] * (new_h / old_h)
+        return coords
+
+    def apply_points(self, points: Points, ori_shape: tuple[int, ...], target_length: int = 1024) -> Points:
+        """Preprocess points to be used in the model."""
+        return Points(self.apply_coords(points, ori_shape, target_length), canvas_size=(target_length, target_length))
+
+    def apply_boxes(self, boxes: BoundingBoxes, ori_shape: tuple[int, ...], target_length: int = 1024) -> BoundingBoxes:
+        """Preprocess boxes to be used in the model."""
+        return BoundingBoxes(
+            self.apply_coords(boxes.reshape(-1, 2, 2), ori_shape, target_length).reshape(-1, 4),
+            format=boxes.format,
+            canvas_size=(target_length, target_length),
+        )
+
+    def apply_prompts(
+        self,
+        prompts: list[Points | BoundingBoxes],
+        ori_shape: tuple[int, ...],
+        target_length: int = 1024,
+    ) -> list[Points | BoundingBoxes]:
+        """Preprocess prompts to be used in the model."""
+        transformed_prompts: list[Points | BoundingBoxes] = []
+        for prompt in prompts:
+            if isinstance(prompt, Points):
+                transformed_prompts.append(self.apply_points(prompt, ori_shape, target_length))
+            elif isinstance(prompt, BoundingBoxes):
+                transformed_prompts.append(self.apply_boxes(prompt, ori_shape, target_length))
+            else:
+                log.info(f"Current prompt ({prompt.__class__.__name__}) is not supported, saved as it is.")
+                transformed_prompts.append(prompt)
+        return transformed_prompts
+
+    def get_preprocess_shape(self, oldh: int, oldw: int, target_length: int) -> tuple[int, int]:
+        """Get preprocess shape."""
+        scale = target_length * 1.0 / max(oldh, oldw)
+        newh, neww = oldh * scale, oldw * scale
+        neww = int(neww + 0.5)
+        newh = int(newh + 0.5)
+        return (newh, neww)
+
+    def preprocess(self, x: Image) -> Image:
+        """Normalize pixel values and pad to a square input."""
+        # Normalize colors
+        x = (x - self.pixel_mean) / self.pixel_std
+
+        # Pad
+        x = self.model.pad_to_square(x)
+        return Image(x)
+
+    def transforms(self, entity: ZeroShotVisualPromptingBatchDataEntity) -> ZeroShotVisualPromptingBatchDataEntity:
+        """Transforms for ZeroShotVisualPromptingBatchDataEntity."""
+        return entity.wrap(
+            images=[self.preprocess(self.apply_image(image)) for image in entity.images],
+            prompts=[
+                self.apply_prompts(prompt, info.ori_shape, self.model.image_size)
+                for prompt, info in zip(entity.prompts, entity.imgs_info)
+            ],
+            masks=entity.masks,
+            polygons=entity.polygons,
+            labels=entity.labels,
+        )
+
+    def initialize_reference_info(self) -> None:
+        """Initialize reference information."""
+        self.register_buffer("reference_feats", torch.zeros(0, 1, self.model.prompt_encoder.embed_dim), False)
+        self.register_buffer("used_indices", torch.tensor([], dtype=torch.int64), False)
+
+    def save_reference_info(self, default_root_dir: Path | str) -> None:
+        """Save reference info."""
+        reference_info = {
+            "reference_feats": self.reference_feats,
+            "used_indices": self.used_indices,
+        }
+        # save reference info
+        self.saved_reference_info_path: Path = Path(default_root_dir) / self.reference_info_dir / "reference_info.pt"
+        self.saved_reference_info_path.parent.mkdir(parents=True, exist_ok=True)
+        # TODO (sungchul): ticket no. 139210
+        torch.save(reference_info, self.saved_reference_info_path)
+        pickle.dump(
+            {k: v.numpy() for k, v in reference_info.items()},
+            self.saved_reference_info_path.with_suffix(".pickle").open("wb"),
+        )
+        log.info(f"Saved reference info at {self.saved_reference_info_path}.")
+
+    def load_reference_info(
+        self,
+        default_root_dir: Path | str,
+        device: str | torch.device = "cpu",
+        path_to_directly_load: Path | None = None,
+    ) -> bool:
+        """Load latest reference info to be used.
 
         Args:
-            masks (Tensor): A batch of predicted masks with shape BxHxW.
-            mask_threshold (float): The threshold used to binarize the masks.
-            threshold_offset (float, optional): The offset used to compute the stability score.
+            default_root_dir (Path | str): Default root directory to be used
+                when inappropriate infer_reference_info_root is given.
+            device (str | torch.device): Device that reference infos will be attached.
+            path_to_directly_load (Path | None): Reference info path to directly be loaded.
+                Normally, it is obtained after `learn` which is executed when trying to do `infer`
+                without reference features in `on_test_start` or `on_predict_start`.
 
         Returns:
-            stability_scores (Tensor): The stability scores for the batch of masks.
+            (bool): Whether normally loading checkpoint or not.
         """
-        # One mask is always contained inside the other.
-        # Save memory by preventing unnecessary cast to torch.int64
-        intersections = (
-            (masks > (mask_threshold + threshold_offset)).sum(-1, dtype=torch.int16).sum(-1, dtype=torch.int32)
+        if path_to_directly_load is not None:
+            # if `path_to_directly_load` is given, forcely load
+            reference_info = torch.load(path_to_directly_load)
+            retval = True
+            log.info(f"reference info saved at {path_to_directly_load} was successfully loaded.")
+
+        else:
+            if str(self.infer_reference_info_root) == "../.latest/train":
+                # for default setting
+                path_reference_info = (
+                    Path(default_root_dir)
+                    / self.infer_reference_info_root
+                    / self.reference_info_dir
+                    / "reference_info.pt"
+                )
+            else:
+                # for user input
+                path_reference_info = self.infer_reference_info_root / self.reference_info_dir / "reference_info.pt"
+
+            if path_reference_info.is_file():
+                reference_info = torch.load(path_reference_info)
+                retval = True
+                log.info(f"reference info saved at {path_reference_info} was successfully loaded.")
+            else:
+                reference_info = {}
+                retval = False
+
+        self.register_buffer(
+            "reference_feats",
+            reference_info.get("reference_feats", torch.zeros(0, 1, self.model.prompt_encoder.embed_dim)).to(device),
+            False,
         )
-        unions = (masks > (mask_threshold - threshold_offset)).sum(-1, dtype=torch.int16).sum(-1, dtype=torch.int32)
-        return intersections / unions
-
-    def select_masks(self, masks: Tensor, iou_preds: Tensor, num_points: int) -> tuple[Tensor, Tensor]:
-        """Selects the best mask from a batch of masks.
-
-        Args:
-            masks (Tensor): A batch of predicted masks with shape BxMxHxW.
-            iou_preds (Tensor): A batch of predicted IoU scores with shape BxM.
-            num_points (int): The number of points in the input.
-
-        Returns:
-            masks (Tensor): The selected masks with shape Bx1xHxW.
-            iou_preds (Tensor): The selected IoU scores with shape Bx1.
-        """
-        # Determine if we should return the multiclick mask or not from the number of points.
-        # The reweighting is used to avoid control flow.
-        score_reweight = torch.tensor([[1000] + [0] * (self.model.mask_decoder.num_mask_tokens - 1)]).to(
-            iou_preds.device,
+        self.register_buffer(
+            "used_indices",
+            reference_info.get("used_indices", torch.tensor([], dtype=torch.int64)).to(device),
+            False,
         )
-        score = iou_preds + (num_points - 2.5) * score_reweight
-        best_idx = torch.argmax(score, dim=1)
-        masks = masks[torch.arange(masks.shape[0]), best_idx, :, :].unsqueeze(1)
-        iou_preds = iou_preds[torch.arange(masks.shape[0]), best_idx].unsqueeze(1)
-
-        return masks, iou_preds
-
-
-DEFAULT_CONFIG_SEGMENT_ANYTHING = SAM.load_from  # TODO (sungchul): remove
+        return retval

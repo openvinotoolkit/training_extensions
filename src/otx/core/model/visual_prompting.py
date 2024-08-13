@@ -339,6 +339,9 @@ class OTXZeroShotVisualPromptingModel(
 ):
     """Base class for the zero-shot visual prompting models used in OTX."""
 
+    reference_feats: Tensor
+    used_indices: Tensor
+
     def __init__(
         self,
         label_info: LabelInfoTypes = NullLabelInfo(),
@@ -355,6 +358,91 @@ class OTXZeroShotVisualPromptingModel(
             scheduler=scheduler,
             metric=metric,
             torch_compile=torch_compile,
+        )
+
+    @abstractmethod
+    def _build_model(self) -> nn.Module:
+        raise NotImplementedError
+
+    def _create_model(self) -> nn.Module:
+        return self._build_model()
+
+    def _customize_inputs(  # type: ignore[override]
+        self,
+        inputs: ZeroShotVisualPromptingBatchDataEntity,
+        reference_feats: Tensor | None = None,
+        used_indices: Tensor | None = None,
+    ) -> dict[str, Any]:  # type: ignore[override]
+        """Customize the inputs for the model."""
+        inputs = self.transforms(inputs)
+        forward_inputs = {
+            "images": [tv_tensors.wrap(image.unsqueeze(0), like=image) for image in inputs.images],
+            "reference_feats": reference_feats if reference_feats is not None else self.reference_feats,
+            "used_indices": used_indices if used_indices is not None else self.used_indices,
+            "ori_shapes": [torch.tensor(info.ori_shape) for info in inputs.imgs_info],
+        }
+        if self.training:
+            # learn
+            forward_inputs.update({"processed_prompts": self._gather_prompts_with_labels(inputs)})
+
+        return forward_inputs
+
+    def _customize_outputs(  # type: ignore[override]
+        self,
+        outputs: Any,  # noqa: ANN401
+        inputs: ZeroShotVisualPromptingBatchDataEntity,  # type: ignore[override]
+    ) -> ZeroShotVisualPromptingBatchPredEntity | OTXBatchLossEntity:
+        """Customize OTX output batch data entity if needed for you model."""
+        if self.training:
+            self.reference_feats = outputs[0].get("reference_feats")
+            self.used_indices = outputs[0].get("used_indices")
+            return outputs
+
+        masks: list[tv_tensors.Mask] = []
+        prompts: list[Points] = []
+        scores: list[Tensor] = []
+        labels: list[Tensor] = []
+        for idx, (predicted_masks, used_points) in enumerate(outputs):
+            _masks: list[Tensor] = []
+            _prompts: list[Tensor] = []
+            _scores: list[Tensor] = []
+            _labels: list[Tensor] = []
+            for label, predicted_mask in predicted_masks.items():
+                if len(predicted_mask) == 0:
+                    continue
+                _masks.append(torch.stack(predicted_mask, dim=0))
+                _used_points_scores = torch.stack(used_points[label], dim=0)
+                _prompts.append(_used_points_scores[:, :2])
+                _scores.append(_used_points_scores[:, 2])
+                _labels.append(torch.tensor([label] * len(_used_points_scores), dtype=torch.int64, device=self.device))
+
+            if len(_masks) == 0:
+                masks.append(
+                    tv_tensors.Mask(
+                        torch.zeros((1, *inputs.imgs_info[idx].ori_shape), dtype=torch.float32, device=self.device),
+                    ),
+                )
+                prompts.append(
+                    Points([], canvas_size=inputs.imgs_info[idx].ori_shape, dtype=torch.float32, device=self.device),
+                )
+                scores.append(torch.tensor([-1.0], dtype=torch.float32, device=self.device))
+                labels.append(torch.tensor([-1], dtype=torch.int64, device=self.device))
+                continue
+
+            masks.append(tv_tensors.Mask(torch.cat(_masks, dim=0)))
+            prompts.append(Points(torch.cat(_prompts, dim=0), canvas_size=inputs.imgs_info[idx].ori_shape))
+            scores.append(torch.cat(_scores, dim=0))
+            labels.append(torch.cat(_labels, dim=0))
+
+        return ZeroShotVisualPromptingBatchPredEntity(
+            batch_size=len(outputs),
+            images=inputs.images,
+            imgs_info=inputs.imgs_info,
+            scores=scores,
+            prompts=prompts,
+            masks=masks,
+            polygons=[],
+            labels=labels,
         )
 
     @property
