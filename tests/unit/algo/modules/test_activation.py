@@ -38,12 +38,12 @@ def test_build_activation_layer():
 
 
 def test_build_activation_layer_with_unsupported_activation():
-    activation_callable = nn.Softmax
+    activation = nn.Softmax
     with pytest.raises(ValueError, match="Unsupported activation"):
         # softmax is not supported
-        build_activation_layer(activation_callable=activation_callable)
+        build_activation_layer(activation=activation)
 
-    activation_callable = partial(nn.Softmax)
+    activation = partial(nn.Softmax)
     with pytest.raises(ValueError, match="Unsupported activation"):
         # softmax is not supported
-        build_activation_layer(activation_callable=activation_callable)
+        build_activation_layer(activation=activation)
