@@ -53,10 +53,10 @@ class MultiLabelClsHead(BaseModule):
     backbone network and predicts the class labels.
 
     Args:
-        BaseModule (class): The base module class.
-
-    Methods:
-        predict(feats, labels): Inference without augmentation.
+        num_classes (int): Number of categories.
+        in_channels (int): Number of channels in the input feature map.
+        normalized (bool): Normalize input features and weights.
+        init_cfg (dict | None, optional): Initialize configuration key-values, Defaults to None.
     """
 
     def __init__(
