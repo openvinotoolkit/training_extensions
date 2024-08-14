@@ -9,21 +9,21 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Literal
 
+from anomalib.callbacks.normalization.min_max_normalization import _MinMaxNormalizationCallback
+from anomalib.callbacks.post_processor import _PostProcessorCallback
 from anomalib.models.image import Padim as AnomalibPadim
 
 from otx.core.model.anomaly import OTXAnomaly
-from otx.core.model.base import OTXModel
-from otx.core.types.label import AnomalyLabelInfo
 from otx.core.types.task import OTXTaskType
 
 if TYPE_CHECKING:
     from lightning.pytorch.utilities.types import STEP_OUTPUT
     from torch.optim.optimizer import Optimizer
 
-    from otx.core.model.anomaly import AnomalyModelInputs
+    from otx.core.model.anomaly import AnomalyModelInputs, AnomalyModelOutputs
 
 
-class Padim(OTXAnomaly, OTXModel, AnomalibPadim):
+class Padim(OTXAnomaly, AnomalibPadim):
     """OTX Padim model.
 
     Args:
@@ -34,6 +34,8 @@ class Padim(OTXAnomaly, OTXModel, AnomalibPadim):
         task (Literal[
                 OTXTaskType.ANOMALY, OTXTaskType.ANOMALY_DETECTION, OTXTaskType.ANOMALY_SEGMENTATION
             ], optional): Task type of Anomaly Task. Defaults to OTXTaskType.ANOMALY.
+        input_size (tuple[int, int], optional):
+            Model input size in the order of height and width. Defaults to (256, 256)
     """
 
     def __init__(
@@ -47,9 +49,9 @@ class Padim(OTXAnomaly, OTXModel, AnomalibPadim):
             OTXTaskType.ANOMALY_DETECTION,
             OTXTaskType.ANOMALY_SEGMENTATION,
         ] = OTXTaskType.ANOMALY,
+        input_size: tuple[int, int] = (256, 256),
     ) -> None:
-        OTXAnomaly.__init__(self)
-        OTXModel.__init__(self, label_info=AnomalyLabelInfo())
+        OTXAnomaly.__init__(self, input_size)
         AnomalibPadim.__init__(
             self,
             backbone=backbone,
@@ -58,6 +60,7 @@ class Padim(OTXAnomaly, OTXModel, AnomalibPadim):
             n_features=n_features,
         )
         self.task = task
+        self.input_size = input_size
 
     def configure_optimizers(self) -> tuple[list[Optimizer], list[Optimizer]] | None:
         """PADIM doesn't require optimization, therefore returns no optimizers."""
@@ -132,3 +135,16 @@ class Padim(OTXAnomaly, OTXModel, AnomalibPadim):
         if not isinstance(inputs, dict):
             inputs = self._customize_inputs(inputs)
         return AnomalibPadim.predict_step(self, inputs, batch_idx, **kwargs)  # type: ignore[misc]
+
+    def forward(
+        self,
+        inputs: AnomalyModelInputs,
+    ) -> AnomalyModelOutputs:
+        """Wrap forward method of the Anomalib model."""
+        outputs = self.validation_step(inputs)
+        # TODO(Ashwin): update forward implementation to comply with other OTX models
+        _PostProcessorCallback._post_process(outputs)  # noqa: SLF001
+        _PostProcessorCallback._compute_scores_and_labels(self, outputs)  # noqa: SLF001
+        _MinMaxNormalizationCallback._normalize_batch(outputs, self)  # noqa: SLF001
+
+        return self._customize_outputs(outputs=outputs, inputs=inputs)

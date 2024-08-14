@@ -129,6 +129,7 @@ def fxt_target_dataset_per_task() -> dict:
         "rotated_detection": "tests/assets/car_tree_bug",
         "instance_segmentation": "tests/assets/car_tree_bug",
         "semantic_segmentation": "tests/assets/common_semantic_segmentation_dataset/supervised",
+        "semantic_segmentation_semisl": "tests/assets/common_semantic_segmentation_dataset/unlabeled",
         "action_classification": "tests/assets/action_classification_dataset/",
         "visual_prompting": "tests/assets/car_tree_bug",
         "zero_shot_visual_prompting": "tests/assets/car_tree_bug_zero_shot",

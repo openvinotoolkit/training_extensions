@@ -8,6 +8,8 @@ Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/n
 
 from __future__ import annotations
 
+from typing import Callable
+
 import torch.nn.functional
 from torch import Tensor, nn
 
@@ -36,8 +38,8 @@ class FPN(BaseModule):
             Defaults to False.
         norm_cfg (dict, optional): Config dict for
             normalization layer. Defaults to None.
-        act_cfg (dict, optional): Config dict for
-            activation layer in ConvModule. Defaults to None.
+        activation_callable (Callable[..., nn.Module] | None): Activation layer module.
+            Defaults to None.
         upsample_cfg (dict, optional): Config dict
             for interpolate layer. Defaults to dict(mode='nearest').
         init_cfg (dict or list[dict]): Initialization config dict.
@@ -53,7 +55,7 @@ class FPN(BaseModule):
         relu_before_extra_convs: bool = False,
         no_norm_on_lateral: bool = False,
         norm_cfg: dict | None = None,
-        act_cfg: dict | None = None,
+        activation_callable: Callable[..., nn.Module] | None = None,
         upsample_cfg: dict | None = None,
         init_cfg: dict | list[dict] | None = None,
     ) -> None:
@@ -97,7 +99,7 @@ class FPN(BaseModule):
                 out_channels,
                 1,
                 norm_cfg=norm_cfg if not self.no_norm_on_lateral else None,
-                act_cfg=act_cfg,
+                activation_callable=activation_callable,
                 inplace=False,
             )
             fpn_conv = Conv2dModule(
@@ -106,7 +108,7 @@ class FPN(BaseModule):
                 3,
                 padding=1,
                 norm_cfg=norm_cfg,
-                act_cfg=act_cfg,
+                activation_callable=activation_callable,
                 inplace=False,
             )
 

@@ -2,6 +2,8 @@
 # SPDX-License-Identifier: Apache-2.0
 """Test of RTMDetHead."""
 
+from functools import partial
+
 import pytest
 import torch
 from omegaconf import DictConfig
@@ -11,6 +13,7 @@ from otx.algo.common.utils.coders import DistancePointBBoxCoder
 from otx.algo.common.utils.prior_generators import MlvlPointGenerator
 from otx.algo.common.utils.samplers import PseudoSampler
 from otx.algo.detection.heads.rtmdet_head import RTMDetHead, RTMDetSepBNHead
+from torch import nn
 
 
 @pytest.fixture()
@@ -54,7 +57,7 @@ class TestRTMDetHead:
             with_objectness=False,
             pred_kernel_size=1,
             norm_cfg={"type": "BN"},
-            act_cfg={"type": "SiLU", "inplace": True},
+            activation_callable=partial(nn.SiLU, inplace=True),
             train_cfg=train_cfg,
             test_cfg=test_cfg,
         )
@@ -166,7 +169,7 @@ class TestRTMDetSepBNHead:
             share_conv=True,
             pred_kernel_size=1,
             norm_cfg={"type": "BN"},
-            act_cfg={"type": "SiLU", "inplace": True},
+            activation_callable=partial(nn.SiLU, inplace=True),
             train_cfg=train_cfg,
             test_cfg=test_cfg,
         )

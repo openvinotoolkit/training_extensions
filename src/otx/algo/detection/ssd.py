@@ -22,14 +22,21 @@ from otx.algo.detection.base_models import SingleStageDetector
 from otx.algo.detection.heads import SSDHead
 from otx.algo.detection.utils.prior_generators import SSDAnchorGeneratorClustered
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
+from otx.core.config.data import TileConfig
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter
+from otx.core.metrics.fmeasure import MeanAveragePrecisionFMeasureCallable
+from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
 from otx.core.model.detection import ExplainableOTXDetModel
 
 if TYPE_CHECKING:
     import torch
+    from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
 
     from otx.core.data.dataset.base import OTXDataset
+    from otx.core.metrics import MetricCallable
+    from otx.core.schedulers import LRSchedulerListCallable
+    from otx.core.types.label import LabelInfoTypes
 
 
 logger = logging.getLogger()
@@ -42,10 +49,28 @@ class SSD(ExplainableOTXDetModel):
         "https://storage.openvinotoolkit.org/repositories/openvino_training_extensions"
         "/models/object_detection/v2/mobilenet_v2-2s_ssd-992x736.pth"
     )
-    image_size = (1, 3, 864, 864)
-    tile_image_size = (1, 3, 864, 864)
     mean = (0.0, 0.0, 0.0)
     std = (255.0, 255.0, 255.0)
+
+    def __init__(
+        self,
+        label_info: LabelInfoTypes,
+        input_size: tuple[int, int] = (864, 864),
+        optimizer: OptimizerCallable = DefaultOptimizerCallable,
+        scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
+        metric: MetricCallable = MeanAveragePrecisionFMeasureCallable,
+        torch_compile: bool = False,
+        tile_config: TileConfig = TileConfig(enable_tiler=False),
+    ) -> None:
+        super().__init__(
+            label_info=label_info,
+            input_size=input_size,
+            optimizer=optimizer,
+            scheduler=scheduler,
+            metric=metric,
+            torch_compile=torch_compile,
+            tile_config=tile_config,
+        )
 
     def _build_model(self, num_classes: int) -> SingleStageDetector:
         train_cfg = {
@@ -143,11 +168,11 @@ class SSD(ExplainableOTXDetModel):
                 if isinstance(transform, Resize):
                     target_wh = transform.scale
         if target_wh is None:
-            target_wh = (864, 864)
+            target_wh = list(reversed(self.input_size))  # type: ignore[assignment]
             msg = f"Cannot get target_wh from the dataset. Assign it with the default value: {target_wh}"
             logger.warning(msg)
         group_as = [len(width) for width in anchor_generator.widths]
-        wh_stats = self._get_sizes_from_dataset_entity(dataset, list(target_wh))
+        wh_stats = self._get_sizes_from_dataset_entity(dataset, list(target_wh))  # type: ignore[arg-type]
 
         if len(wh_stats) < sum(group_as):
             logger.warning(
@@ -266,13 +291,13 @@ class SSD(ExplainableOTXDetModel):
     @property
     def _exporter(self) -> OTXModelExporter:
         """Creates OTXModelExporter object that can export the model."""
-        if self.image_size is None:
-            msg = f"Image size attribute is not set for {self.__class__}"
+        if self.input_size is None:
+            msg = f"Input size attribute is not set for {self.__class__}"
             raise ValueError(msg)
 
         return OTXNativeModelExporter(
             task_level_export_parameters=self._export_parameters,
-            input_size=self.image_size,
+            input_size=(1, 3, *self.input_size),
             mean=self.mean,
             std=self.std,
             resize_mode="standard",

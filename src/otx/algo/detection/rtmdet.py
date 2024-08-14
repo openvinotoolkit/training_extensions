@@ -5,6 +5,11 @@
 
 from __future__ import annotations
 
+from functools import partial
+from typing import TYPE_CHECKING
+
+from torch import nn
+
 from otx.algo.common.backbones import CSPNeXt
 from otx.algo.common.losses import GIoULoss, QualityFocalLoss
 from otx.algo.common.losses.cross_entropy_loss import CrossEntropyLoss
@@ -15,25 +20,57 @@ from otx.algo.common.utils.samplers import PseudoSampler
 from otx.algo.detection.base_models import SingleStageDetector
 from otx.algo.detection.heads import RTMDetSepBNHead
 from otx.algo.detection.necks import CSPNeXtPAFPN
+from otx.core.config.data import TileConfig
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter
+from otx.core.metrics.fmeasure import MeanAveragePrecisionFMeasureCallable
+from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
 from otx.core.model.detection import ExplainableOTXDetModel
 from otx.core.types.export import TaskLevelExportParameters
+
+if TYPE_CHECKING:
+    from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
+
+    from otx.core.metrics import MetricCallable
+    from otx.core.schedulers import LRSchedulerListCallable
+    from otx.core.types.label import LabelInfoTypes
 
 
 class RTMDet(ExplainableOTXDetModel):
     """OTX Detection model class for RTMDet."""
 
+    input_size_multiplier = 32
+
+    def __init__(
+        self,
+        label_info: LabelInfoTypes,
+        input_size: tuple[int, int] = (640, 640),
+        optimizer: OptimizerCallable = DefaultOptimizerCallable,
+        scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
+        metric: MetricCallable = MeanAveragePrecisionFMeasureCallable,
+        torch_compile: bool = False,
+        tile_config: TileConfig = TileConfig(enable_tiler=False),
+    ) -> None:
+        super().__init__(
+            label_info=label_info,
+            input_size=input_size,
+            optimizer=optimizer,
+            scheduler=scheduler,
+            metric=metric,
+            torch_compile=torch_compile,
+            tile_config=tile_config,
+        )
+
     @property
     def _exporter(self) -> OTXModelExporter:
         """Creates OTXModelExporter object that can export the model."""
-        if self.image_size is None:
-            msg = f"Image size attribute is not set for {self.__class__}"
+        if self.input_size is None:
+            msg = f"Input size attribute is not set for {self.__class__}"
             raise ValueError(msg)
 
         return OTXNativeModelExporter(
             task_level_export_parameters=self._export_parameters,
-            input_size=self.image_size,
+            input_size=(1, 3, *self.input_size),
             mean=self.mean,
             std=self.std,
             resize_mode="fit_to_window_letterbox",
@@ -63,8 +100,6 @@ class RTMDetTiny(RTMDet):
     """RTMDet Tiny Model."""
 
     load_from = "https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/object_detection/v2/rtmdet_tiny.pth"
-    image_size = (1, 3, 640, 640)
-    tile_image_size = (1, 3, 640, 640)
     mean = (103.53, 116.28, 123.675)
     std = (57.375, 57.12, 58.395)
 
@@ -90,7 +125,7 @@ class RTMDetTiny(RTMDet):
             deepen_factor=0.167,
             widen_factor=0.375,
             norm_cfg={"type": "BN"},
-            act_cfg={"type": "SiLU", "inplace": True},
+            activation_callable=partial(nn.SiLU, inplace=True),
         )
 
         neck = CSPNeXtPAFPN(
@@ -98,7 +133,7 @@ class RTMDetTiny(RTMDet):
             out_channels=96,
             num_csp_blocks=1,
             norm_cfg={"type": "BN"},
-            act_cfg={"type": "SiLU", "inplace": True},
+            activation_callable=partial(nn.SiLU, inplace=True),
         )
 
         bbox_head = RTMDetSepBNHead(
@@ -113,7 +148,7 @@ class RTMDetTiny(RTMDet):
             loss_bbox=GIoULoss(loss_weight=2.0),
             loss_centerness=CrossEntropyLoss(use_sigmoid=True, loss_weight=1.0),
             norm_cfg={"type": "BN"},
-            act_cfg={"type": "SiLU", "inplace": True},
+            activation_callable=partial(nn.SiLU, inplace=True),
             train_cfg=train_cfg,
             test_cfg=test_cfg,
         )

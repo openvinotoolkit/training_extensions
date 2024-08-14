@@ -1,8 +1,9 @@
 model:
-  class_path: otx.algo.classification.vit.VisionTransformerForMulticlassClsSemiSL
+  class_path: otx.algo.classification.vit.VisionTransformerForMulticlassCls
   init_args:
     label_info: 1000
-    arch: "vit-tiny"
+    arch: "dinov2-small"
+    train_type: SEMI_SUPERVISED
 
     optimizer:
       class_path: torch.optim.AdamW
@@ -24,7 +25,7 @@ engine:
 
 callback_monitor: val/accuracy
 
-data: ../../_base_/data/torchvision_semisl.yaml
+data: ../../../_base_/data/semisl/torchvision_semisl.yaml
 overrides:
   max_epochs: 200
   callbacks:

@@ -1,7 +1,9 @@
 model:
-  class_path: otx.algo.classification.efficientnet_v2.EfficientNetV2ForMulticlassClsSemiSL
+  class_path: otx.algo.classification.timm_model.TimmModelForMulticlassCls
   init_args:
     label_info: 1000
+    backbone: efficientnetv2_s_21k
+    train_type: SEMI_SUPERVISED
 
     optimizer:
       class_path: torch.optim.SGD
@@ -24,7 +26,7 @@ engine:
 
 callback_monitor: val/accuracy
 
-data: ../../_base_/data/torchvision_semisl.yaml
+data: ../../../_base_/data/semisl/torchvision_semisl.yaml
 overrides:
   max_epochs: 200
   callbacks:

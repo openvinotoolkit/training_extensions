@@ -109,7 +109,7 @@ class FCNHead(BaseSegmHead):
                 padding=conv_padding,
                 dilation=dilation,
                 norm_cfg=self.norm_cfg,
-                act_cfg=self.act_cfg,
+                activation_callable=self.activation_callable,
             ),
         ]
         convs.extend(
@@ -121,7 +121,7 @@ class FCNHead(BaseSegmHead):
                     padding=conv_padding,
                     dilation=dilation,
                     norm_cfg=self.norm_cfg,
-                    act_cfg=self.act_cfg,
+                    activation_callable=self.activation_callable,
                 )
                 for _ in range(num_convs - 1)
             ],
@@ -137,12 +137,12 @@ class FCNHead(BaseSegmHead):
                 kernel_size=kernel_size,
                 padding=kernel_size // 2,
                 norm_cfg=self.norm_cfg,
-                act_cfg=self.act_cfg,
+                activation_callable=self.activation_callable,
             )
 
-        if self.act_cfg:
+        if self.activation_callable:
             self.convs[-1].with_activation = False
-            delattr(self.convs[-1], "activate")  # why we delete last activation?
+            delattr(self.convs[-1], "activation")  # why we delete last activation?
 
     def _forward_feature(self, inputs: Tensor) -> Tensor:
         """Forward function for feature maps.

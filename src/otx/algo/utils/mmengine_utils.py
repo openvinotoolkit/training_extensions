@@ -72,7 +72,7 @@ def load_checkpoint(
 def load_from_http(
     filename: str,
     map_location: str | None = None,
-    model_dir: str | None = None,
+    model_dir: Path | str | None = None,
     progress: bool = os.isatty(0),
 ) -> dict[str, Any]:
     """Loads a checkpoint from an HTTP URL.

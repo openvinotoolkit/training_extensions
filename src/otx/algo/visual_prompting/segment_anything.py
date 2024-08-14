@@ -82,7 +82,7 @@ class SegmentAnything(nn.Module):
         self.return_extra_metrics = return_extra_metrics
         self.stability_score_offset = stability_score_offset
 
-        self.image_encoder = SAMImageEncoder(backbone=backbone)
+        self.image_encoder = SAMImageEncoder(backbone=backbone, img_size=image_size)
         self.prompt_encoder = SAMPromptEncoder(
             embed_dim=embed_dim,
             image_embedding_size=(image_embedding_size, image_embedding_size),
@@ -139,7 +139,7 @@ class SegmentAnything(nn.Module):
                 if key in state_dict:
                     state_dict.pop(key)
             self.load_state_dict(state_dict)
-        except ValueError as e:
+        except (ValueError, RuntimeError) as e:
             log.info(
                 f"{e}: {load_from} is not desirable format for torch.hub.load_state_dict_from_url. "
                 f"To manually load {load_from}, try to set it to trainer.checkpoint.",
@@ -490,10 +490,13 @@ class SegmentAnything(nn.Module):
 class OTXSegmentAnything(OTXVisualPromptingModel):
     """Visual Prompting model."""
 
+    input_size_multiplier = 16
+
     def __init__(
         self,
         backbone: Literal["tiny_vit", "vit_b"],
         label_info: LabelInfoTypes = NullLabelInfo(),
+        input_size: tuple[int, int] = (1024, 1024),
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = VisualPromptingMetricCallable,
@@ -506,8 +509,14 @@ class OTXSegmentAnything(OTXVisualPromptingModel):
         return_extra_metrics: bool = False,
         stability_score_offset: float = 1.0,
     ) -> None:
+        if input_size[0] != input_size[1]:
+            msg = f"SAM should use square image size, but got {input_size}"
+            raise ValueError(msg)
+
         self.config = {
             "backbone": backbone,
+            "image_size": input_size[0],
+            "image_embedding_size": input_size[0] // 16,
             "freeze_image_encoder": freeze_image_encoder,
             "freeze_prompt_encoder": freeze_prompt_encoder,
             "freeze_mask_decoder": freeze_mask_decoder,
@@ -519,6 +528,7 @@ class OTXSegmentAnything(OTXVisualPromptingModel):
         }
         super().__init__(
             label_info=label_info,
+            input_size=input_size,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,

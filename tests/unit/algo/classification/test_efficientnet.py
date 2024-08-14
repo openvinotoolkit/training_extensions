@@ -54,6 +54,11 @@ class TestEfficientNetForMulticlassCls:
         assert isinstance(outputs, MulticlassClsBatchPredEntity)
         assert outputs.has_xai_outputs == explain_mode
 
+    def test_set_input_size(self):
+        input_size = (300, 300)
+        model = EfficientNetForMulticlassCls(version="b0", label_info=10, input_size=input_size)
+        assert model.model.backbone.in_size == input_size[-2:]
+
 
 @pytest.fixture()
 def fxt_multi_label_cls_model():
@@ -92,12 +97,17 @@ class TestEfficientNetForMultilabelCls:
         assert isinstance(outputs, MultilabelClsBatchPredEntity)
         assert outputs.has_xai_outputs == explain_mode
 
+    def test_set_input_size(self):
+        input_size = (300, 300)
+        model = EfficientNetForMultilabelCls(version="b0", label_info=10, input_size=input_size)
+        assert model.model.backbone.in_size == input_size[-2:]
+
 
 @pytest.fixture()
-def fxt_h_label_cls_model(fxt_hlabel_data):
+def fxt_h_label_cls_model(fxt_hlabel_cifar):
     return EfficientNetForHLabelCls(
         version="b0",
-        label_info=fxt_hlabel_data,
+        label_info=fxt_hlabel_cifar,
     )
 
 
@@ -129,3 +139,8 @@ class TestEfficientNetForHLabelCls:
 
         assert isinstance(outputs, HlabelClsBatchPredEntity)
         assert outputs.has_xai_outputs == explain_mode
+
+    def test_set_input_size(self, fxt_hlabel_data):
+        input_size = (300, 300)
+        model = EfficientNetForHLabelCls(version="b0", label_info=fxt_hlabel_data, input_size=input_size)
+        assert model.model.backbone.in_size == input_size[-2:]

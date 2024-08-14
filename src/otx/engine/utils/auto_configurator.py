@@ -221,7 +221,7 @@ class AutoConfigurator:
         if self.data_root is None:
             return None
         self.config["data"]["data_root"] = self.data_root
-        data_config = deepcopy(self.config["data"])
+        data_config: dict = deepcopy(self.config["data"])
         train_config = data_config.pop("train_subset")
         val_config = data_config.pop("val_subset")
         test_config = data_config.pop("test_subset")
@@ -231,6 +231,10 @@ class AutoConfigurator:
 
         _ = data_config.pop("__path__", {})  # Remove __path__ key that for CLI
         _ = data_config.pop("config", {})  # Remove config key that for CLI
+
+        if data_config.get("adaptive_input_size") is not None:
+            model_cls = get_model_cls_from_config(Namespace(self.config["model"]))
+            data_config["input_size_multiplier"] = model_cls.input_size_multiplier
 
         return OTXDataModule(
             train_subset=SubsetConfig(sampler=SamplerConfig(**train_config.pop("sampler", {})), **train_config),
@@ -245,13 +249,21 @@ class AutoConfigurator:
             **data_config,
         )
 
-    def get_model(self, model_name: str | None = None, label_info: LabelInfoTypes | None = None) -> OTXModel:
+    def get_model(
+        self,
+        model_name: str | None = None,
+        label_info: LabelInfoTypes | None = None,
+        input_size: tuple[int, int] | int | None = None,
+    ) -> OTXModel:
         """Retrieves the OTXModel instance based on the provided model name and meta information.
 
         Args:
             model_name (str | None): The name of the model to retrieve. If None, the default model will be used.
             label_info (LabelInfoTypes | None): The meta information about the labels.
                 If provided, the number of classes will be updated in the model's configuration.
+            input_size (tuple[int, int] | int | None, optional):
+                Model input size in the order of height and width or a single integer for a side of a square.
+                Defaults to None.
 
         Returns:
             OTXModel: The instantiated OTXModel instance.
@@ -277,6 +289,11 @@ class AutoConfigurator:
         skip = set()
 
         model_config = deepcopy(self.config["model"])
+
+        if input_size is not None:
+            model_config["init_args"]["input_size"] = (
+                (input_size, input_size) if isinstance(input_size, int) else input_size
+            )
 
         model_cls = get_model_cls_from_config(Namespace(model_config))
 
@@ -369,7 +386,7 @@ class AutoConfigurator:
         """
         class_path = OVMODEL_PER_TASK.get(self.task, None)
         if class_path is None:
-            msg = f"{self.task} is not support OVModel."
+            msg = f"{self.task} doesn't support OVModel."
             raise NotImplementedError(msg)
         class_module, class_name = class_path.rsplit(".", 1)
         module = __import__(class_module, fromlist=[class_name])

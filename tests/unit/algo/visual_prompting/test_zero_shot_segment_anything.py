@@ -423,7 +423,7 @@ class TestZeroShotSegmentAnything:
         )
 
         zero_shot_segment_anything = build_zero_shot_segment_anything()
-        zero_shot_segment_anything.image_size = 6
+        zero_shot_segment_anything.input_size = 6
 
         mask = zero_shot_segment_anything._predict_masks(
             mode="infer",

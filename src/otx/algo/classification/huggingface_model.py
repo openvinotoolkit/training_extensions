@@ -5,19 +5,19 @@
 
 from __future__ import annotations
 
+import logging
 from typing import TYPE_CHECKING, Any
 
 import torch
 from torch import Tensor, nn
 from transformers import AutoModelForImageClassification
+from transformers.configuration_utils import PretrainedConfig
 
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.classification import (
     MulticlassClsBatchDataEntity,
     MulticlassClsBatchPredEntity,
 )
-from otx.core.exporter.base import OTXModelExporter
-from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.metrics.accuracy import MultiClassClsMetricCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
 from otx.core.model.classification import OTXMulticlassClsModel
@@ -31,6 +31,10 @@ if TYPE_CHECKING:
     from otx.core.metrics import MetricCallable
 
 
+DEFAULT_INPUT_SIZE = (224, 224)
+logger = logging.getLogger(__name__)
+
+
 class HuggingFaceModelForMulticlassCls(OTXMulticlassClsModel):
     """HuggingFaceModelForMulticlassCls is a class that represents a Hugging Face model for multiclass classification.
 
@@ -40,6 +44,8 @@ class HuggingFaceModelForMulticlassCls(OTXMulticlassClsModel):
         optimizer (OptimizerCallable, optional): The optimizer callable for training the model.
         scheduler (LRSchedulerCallable | LRSchedulerListCallable, optional): The learning rate scheduler callable.
         torch_compile (bool, optional): Whether to compile the model using TorchScript. Defaults to False.
+        input_size (tuple[int, int], optional):
+            Model input size in the order of height and width. Defaults to (224, 224)
 
     Example:
         1. API
@@ -61,6 +67,7 @@ class HuggingFaceModelForMulticlassCls(OTXMulticlassClsModel):
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MultiClassClsMetricCallable,
         torch_compile: bool = False,
+        input_size: tuple[int, int] = DEFAULT_INPUT_SIZE,
     ) -> None:
         self.model_name = model_name_or_path
 
@@ -70,13 +77,23 @@ class HuggingFaceModelForMulticlassCls(OTXMulticlassClsModel):
             scheduler=scheduler,
             metric=metric,
             torch_compile=torch_compile,
+            input_size=input_size,
         )
 
     def _create_model(self) -> nn.Module:
+        model_config, _ = PretrainedConfig.get_config_dict(self.model_name)
+        kwargs = {}
+        if "image_size" in model_config:
+            kwargs["image_size"] = self.input_size[0]
+        elif self.input_size != DEFAULT_INPUT_SIZE:
+            msg = "There is no 'image_size' argument in the model configuration. There may be unexpected results."
+            logger.warning(msg)
+
         return AutoModelForImageClassification.from_pretrained(
             pretrained_model_name_or_path=self.model_name,
             num_labels=self.label_info.num_classes,
             ignore_mismatched_sizes=True,
+            **kwargs,
         )
 
     def _customize_inputs(self, inputs: MulticlassClsBatchDataEntity) -> dict[str, Any]:
@@ -103,22 +120,6 @@ class HuggingFaceModelForMulticlassCls(OTXMulticlassClsModel):
             imgs_info=inputs.imgs_info,
             scores=scores,
             labels=preds,
-        )
-
-    @property
-    def _exporter(self) -> OTXModelExporter:
-        """Creates OTXModelExporter object that can export the model."""
-        return OTXNativeModelExporter(
-            task_level_export_parameters=self._export_parameters,
-            input_size=self.image_size,
-            mean=(123.675, 116.28, 103.53),
-            std=(58.395, 57.12, 57.375),
-            resize_mode="standard",
-            pad_value=0,
-            swap_rgb=False,
-            via_onnx=False,
-            onnx_export_configuration=None,
-            output_names=["logits", "feature_vector", "saliency_map"] if self.explain_mode else None,
         )
 
     def forward_for_tracing(self, image: Tensor) -> Tensor | dict[str, Tensor]:

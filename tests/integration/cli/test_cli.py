@@ -7,6 +7,7 @@ from pathlib import Path
 
 import cv2
 import pytest
+import torch
 import yaml
 
 from otx.core.types.task import OTXTaskType
@@ -27,8 +28,10 @@ def fxt_trained_model(
     tmp_path,
 ):
     recipe = request.param
-    task = recipe.split("/")[-2]
-    model_name = recipe.split("/")[-1].split(".")[0]
+    recipe_split = recipe.split("/")
+    model_name = recipe_split[-1].split(".")[0]
+    is_semisl = model_name.endswith("_semisl")
+    task = recipe_split[-2] if not is_semisl else recipe_split[-3]
 
     # 1) otx train
     tmp_path_train = tmp_path / f"otx_train_{model_name}"
@@ -48,11 +51,11 @@ def fxt_trained_model(
         *fxt_cli_override_command_per_task[task],
     ]
 
-    if model_name.endswith("_semisl") and "multi_class_cls" in recipe:
+    if is_semisl:
         command_cfg.extend(
             [
                 "--data.unlabeled_subset.data_root",
-                fxt_target_dataset_per_task["multi_class_cls_semisl"],
+                fxt_target_dataset_per_task[f"{task}_semisl"],
             ],
         )
 
@@ -434,9 +437,8 @@ def test_otx_ov_test(
     assert len(metric_result) > 0
 
 
-@pytest.mark.parametrize("recipe", pytest.RECIPE_LIST, ids=lambda x: "/".join(Path(x).parts[-2:]))
 def test_otx_hpo_e2e(
-    recipe: str,
+    fxt_trained_model,
     tmp_path: Path,
     fxt_accelerator: str,
     fxt_target_dataset_per_task: dict,
@@ -453,13 +455,14 @@ def test_otx_hpo_e2e(
     Returns:
         None
     """
-    task = recipe.split("/")[-2]
-    model_name = recipe.split("/")[-1].split(".")[0]
+    recipe, task, model_name, _ = fxt_trained_model
 
     if task.upper() == OTXTaskType.ZERO_SHOT_VISUAL_PROMPTING:
         pytest.skip("ZERO_SHOT_VISUAL_PROMPTING doesn't support HPO.")
     if "padim" in recipe:
         pytest.skip("padim model doesn't support HPO.")
+    if model_name.endswith("_semisl"):
+        pytest.skip("Semi-supervised learning model doesn't support HPO.")
 
     tmp_path_hpo = tmp_path / f"otx_hpo_{model_name}"
     tmp_path_hpo.mkdir(parents=True)
@@ -555,3 +558,62 @@ def test_otx_adaptive_bs_e2e(
     ]
 
     run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)
+
+
+@pytest.mark.parametrize("task", pytest.TASK_LIST)
+def test_otx_configurable_input_size_e2e(
+    task: OTXTaskType,
+    tmp_path: Path,
+    fxt_accelerator: str,
+    fxt_target_dataset_per_task: dict,
+    fxt_cli_override_command_per_task: dict,
+    fxt_open_subprocess: bool,
+) -> None:
+    """
+    Test adaptive batch size e2e commands with default template of each task.
+
+    Args:
+        task (OTXTaskType): The task to run adaptive batch size with.
+        tmp_path (Path): The temporary path for storing the training outputs.
+
+    Returns:
+        None
+    """
+    if task not in DEFAULT_CONFIG_PER_TASK:
+        pytest.skip(f"Task {task} is not supported in the auto-configuration.")
+    if task == OTXTaskType.ZERO_SHOT_VISUAL_PROMPTING:
+        pytest.skip(f"{task} doesn't support configurable input size.")
+    if task == OTXTaskType.KEYPOINT_DETECTION:
+        pytest.skip(f"{task} isn't prepared to run integration test.")
+
+    task = task.lower()
+    tmp_path_cfg_ipt_size = tmp_path / f"otx_configurable_input_size_{task}"
+    tmp_path_cfg_ipt_size.mkdir(parents=True)
+
+    command_cfg = [
+        "otx",
+        "train",
+        "--task",
+        task.upper(),
+        "--data_root",
+        fxt_target_dataset_per_task[task],
+        "--work_dir",
+        str(tmp_path_cfg_ipt_size),
+        "--engine.device",
+        fxt_accelerator,
+        "--data.input_size",
+        str(448),
+        "--max_epoch",
+        "1",
+        *fxt_cli_override_command_per_task[task],
+    ]
+
+    run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)
+
+    best_ckpt_files = list(tmp_path_cfg_ipt_size.rglob("best_checkpoint.ckpt"))
+    assert len(best_ckpt_files) != 0
+    best_ckpt = torch.load(best_ckpt_files[0])
+    assert best_ckpt["hyper_parameters"]["input_size"] == (448, 448)
+    for param_name in best_ckpt["datamodule_hyper_parameters"]:
+        if "subset" in param_name:
+            assert best_ckpt["datamodule_hyper_parameters"][param_name].input_size == 448
