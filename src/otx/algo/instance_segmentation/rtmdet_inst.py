@@ -20,6 +20,7 @@ from otx.algo.detection.base_models import SingleStageDetector
 from otx.algo.detection.necks import CSPNeXtPAFPN
 from otx.algo.instance_segmentation.heads import RTMDetInsSepBNHead
 from otx.algo.instance_segmentation.losses import DiceLoss
+from otx.algo.modules.norm import build_norm_layer
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.model.instance_segmentation import ExplainableOTXInstanceSegModel
@@ -135,7 +136,7 @@ class RTMDetInstTiny(RTMDetInst):
             pred_kernel_size=1,
             feat_channels=96,
             activation_callable=partial(nn.SiLU, inplace=True),
-            normalization=partial(nn.BatchNorm2d, requires_grad=True),
+            normalization_callable=partial(build_norm_layer, nn.BatchNorm2d, requires_grad=True),
             anchor_generator=MlvlPointGenerator(
                 offset=0,
                 strides=[8, 16, 32],
