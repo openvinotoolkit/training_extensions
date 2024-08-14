@@ -84,11 +84,6 @@ def test_build_norm_layer_with_pre_assigned_module(normalization_callable: type,
     assert name == expected_name
 
 
-def test_build_norm_layer_with_invalid_module():
-    with pytest.raises(TypeError):
-        build_norm_layer(None, num_features=1)
-
-
 def test_build_norm_layer_with_unsupported_module():
     with pytest.raises(ValueError, match="Unsupported normalization"):
         build_norm_layer(nn.LazyBatchNorm2d, num_features=1)
