@@ -50,13 +50,17 @@ AnomalyModelOutputs: TypeAlias = (
 
 
 class OTXAnomaly(OTXModel):
-    """Methods used to make OTX model compatible with the Anomalib model."""
+    """Methods used to make OTX model compatible with the Anomalib model.
 
-    def __init__(self) -> None:
-        super().__init__(label_info=AnomalyLabelInfo())
+    Args:
+        input_size (tuple[int, int] | None):
+            Model input size in the order of height and width. Defaults to None.
+    """
+
+    def __init__(self, input_size: tuple[int, int]) -> None:
+        super().__init__(label_info=AnomalyLabelInfo(), input_size=input_size)
         self.optimizer: list[OptimizerCallable] | OptimizerCallable = None
         self.scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = None
-        self._input_size: tuple[int, int] = (256, 256)
         self.trainer: Trainer
         self.model: nn.Module
         self.image_threshold: BaseThreshold
@@ -81,7 +85,7 @@ class OTXAnomaly(OTXModel):
             for key, value in anomaly_attrs.items():
                 setattr(self, key, value)
 
-    @property
+    @property  # type: ignore[override]
     def input_size(self) -> tuple[int, int]:
         """Returns the input size of the model.
 
@@ -116,17 +120,15 @@ class OTXAnomaly(OTXModel):
 
     def _get_values_from_transforms(
         self,
-    ) -> tuple[tuple[int, int], tuple[float, float, float], tuple[float, float, float]]:
+    ) -> tuple[tuple[float, float, float], tuple[float, float, float]]:
         """Get the value requested value from default transforms."""
-        image_size, mean_value, std_value = (256, 256), (123.675, 116.28, 103.53), (58.395, 57.12, 57.375)
+        mean_value, std_value = (123.675, 116.28, 103.53), (58.395, 57.12, 57.375)
         for transform in self.configure_transforms().transforms:  # type: ignore[attr-defined]
             name = transform.__class__.__name__
-            if "Resize" in name:
-                image_size = tuple(transform.size)  # type: ignore[assignment]
-            elif "Normalize" in name:
+            if "Normalize" in name:
                 mean_value = tuple(value * 255 for value in transform.mean)  # type: ignore[assignment]
                 std_value = tuple(value * 255 for value in transform.std)  # type: ignore[assignment]
-        return image_size, mean_value, std_value
+        return mean_value, std_value
 
     @property
     def trainable_model(self) -> str | None:
@@ -243,7 +245,7 @@ class OTXAnomaly(OTXModel):
         """Creates OTXAnomalyModelExporter object that can export anomaly models."""
         min_val = self.normalization_metrics.state_dict()["min"].cpu().numpy().tolist()
         max_val = self.normalization_metrics.state_dict()["max"].cpu().numpy().tolist()
-        image_shape, mean_values, scale_values = self._get_values_from_transforms()
+        mean_values, scale_values = self._get_values_from_transforms()
         onnx_export_configuration = {
             "opset_version": 14,
             "dynamic_axes": {"input": {0: "batch_size"}, "output": {0: "batch_size"}},
@@ -251,7 +253,7 @@ class OTXAnomaly(OTXModel):
             "output_names": ["output"],
         }
         return OTXAnomalyModelExporter(
-            image_shape=image_shape,
+            image_shape=self.input_size,
             image_threshold=self.image_threshold.value.cpu().numpy().tolist(),
             pixel_threshold=self.pixel_threshold.value.cpu().numpy().tolist(),
             task=self.task,
@@ -299,8 +301,7 @@ class OTXAnomaly(OTXModel):
 
     def get_dummy_input(self, batch_size: int = 1) -> AnomalyModelInputs:
         """Returns a dummy input for anomaly model."""
-        image_size, _, _ = self._get_values_from_transforms()
-        images = torch.rand(batch_size, 3, *image_size)
+        images = torch.rand(batch_size, 3, *self.input_size)
         infos = []
         for i, img in enumerate(images):
             infos.append(

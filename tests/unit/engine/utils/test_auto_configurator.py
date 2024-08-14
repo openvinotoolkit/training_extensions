@@ -11,6 +11,7 @@ from otx.core.model.base import OTXModel
 from otx.core.types.label import LabelInfo, SegLabelInfo
 from otx.core.types.task import OTXTaskType
 from otx.core.types.transformer_libs import TransformLibType
+from otx.engine.utils import auto_configurator as target_file
 from otx.engine.utils.auto_configurator import (
     DEFAULT_CONFIG_PER_TASK,
     AutoConfigurator,
@@ -108,6 +109,19 @@ class TestAutoConfigurator:
         assert isinstance(datamodule, OTXDataModule)
         assert datamodule.task == task
 
+    def test_get_datamodule_set_input_size_multiplier(self, mocker) -> None:
+        mock_otxdatamodule = mocker.patch.object(target_file, "OTXDataModule")
+        auto_configurator = AutoConfigurator(
+            data_root="tests/assets/car_tree_bug",
+            task=OTXTaskType.DETECTION,
+            model_name="yolox_tiny",
+        )
+        auto_configurator.config["data"]["adaptive_input_size"] = "auto"
+
+        auto_configurator.get_datamodule()
+
+        assert mock_otxdatamodule.call_args.kwargs["input_size_multiplier"] == 32
+
     def test_get_model(self, fxt_task: OTXTaskType) -> None:
         if fxt_task is OTXTaskType.H_LABEL_CLS:
             pytest.xfail(reason="Not working")
@@ -129,6 +143,16 @@ class TestAutoConfigurator:
         if should_pass_label_info(model_cls):
             with pytest.raises(ValueError, match="Given model class (.*) requires a valid label_info to instantiate."):
                 _ = auto_configurator.get_model(label_info=None)
+
+    def test_get_model_set_input_size(self) -> None:
+        auto_configurator = AutoConfigurator(task=OTXTaskType.MULTI_CLASS_CLS)
+        label_names = ["class1", "class2", "class3"]
+        label_info = LabelInfo(label_names=label_names, label_groups=[label_names])
+        input_size = 300
+
+        model = auto_configurator.get_model(label_info=label_info, input_size=input_size)
+
+        assert model.input_size == (input_size, input_size)
 
     def test_get_optimizer(self, fxt_task: OTXTaskType) -> None:
         if fxt_task in {

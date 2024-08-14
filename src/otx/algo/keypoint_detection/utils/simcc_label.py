@@ -21,7 +21,7 @@ class SimCCLabel:
         - instance number: N
         - keypoint number: K
         - keypoint dimension: D
-        - image size: [w, h]
+        - image size: [h, w]
 
     Encoded:
 
@@ -36,7 +36,7 @@ class SimCCLabel:
         - keypoint_weights (np.ndarray): The target weights in shape (N, K)
 
     Args:
-        input_size (tuple): Input image size in [w, h]
+        input_size (tuple): Input image size in [h, w]
         smoothing_type (str): The SimCC label smoothing strategy. Options are
             ``'gaussian'`` and ``'standard'``. Defaults to ``'gaussian'``
         sigma (float | int | tuple): The sigma value in the Gaussian SimCC
@@ -201,7 +201,7 @@ class SimCCLabel:
         Labels will be one-hot vectors if self.label_smooth_weight==0.0
         """
         batch_size, num_keypoints, _ = keypoints.shape
-        w, h = self.input_size
+        h, w = self.input_size
         x_dim = np.around(w * self.simcc_split_ratio).astype(int)
         y_dim = np.around(h * self.simcc_split_ratio).astype(int)
 
@@ -239,7 +239,7 @@ class SimCCLabel:
     ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
         """Encoding keypoints into SimCC labels with Gaussian Label Smoothing strategy."""
         batch_size, num_keypoints, _ = keypoints.shape
-        w, h = self.input_size
+        h, w = self.input_size
         x_dim = np.around(w * self.simcc_split_ratio).astype(int)
         y_dim = np.around(h * self.simcc_split_ratio).astype(int)
 

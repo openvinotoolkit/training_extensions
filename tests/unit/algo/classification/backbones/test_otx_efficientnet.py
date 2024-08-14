@@ -13,3 +13,8 @@ class TestOTXEfficientNet:
         model = OTXEfficientNet(version, pretrained=None)
         assert model(torch.randn(1, 3, 244, 244))[0].shape[-1] == 8
         assert model(torch.randn(1, 3, 244, 244))[0].shape[-2] == 8
+
+    def test_set_input_size(self):
+        input_size = (300, 300)
+        model = OTXEfficientNet("b0", input_size=input_size, pretrained=None)
+        assert model.in_size == input_size
