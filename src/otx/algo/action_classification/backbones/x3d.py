@@ -7,7 +7,6 @@
 from __future__ import annotations
 
 import math
-from functools import partial
 from typing import Callable
 
 import torch.utils.checkpoint as cp
