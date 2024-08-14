@@ -16,7 +16,7 @@ from detectron2.projects.point_rend.point_features import (
 )
 from detectron2.utils.comm import get_world_size
 from otx.algo.instance_segmentation.mask_dino import box_ops
-from otx.algo.instance_segmentation.mask_dino.misc import is_dist_avail_and_initialized, nested_tensor_from_tensor_list
+from otx.algo.instance_segmentation.mask_dino.misc import is_dist_avail_and_initialized
 from torch import nn
 
 
@@ -116,6 +116,14 @@ def calculate_uncertainty(logits):
     assert logits.shape[1] == 1
     gt_class_logits = logits.clone()
     return -(torch.abs(gt_class_logits))
+
+
+def select_masks(tgt_idx, mask_labels):
+    gt_masks = []
+    batch_size = torch.max(tgt_idx[0]) + 1
+    for b in range(batch_size):
+        gt_masks.append(mask_labels[b][tgt_idx[1][tgt_idx[0] == b]])
+    return torch.cat(gt_masks, dim=0)
 
 
 class SetCriterion(nn.Module):
@@ -282,10 +290,7 @@ class SetCriterion(nn.Module):
         src_masks = outputs["pred_masks"]
         src_masks = src_masks[src_idx]
         masks = [t["masks"] for t in targets]
-        # TODO use valid to mask invalid areas due to padding in loss
-        target_masks, valid = nested_tensor_from_tensor_list(masks).decompose()
-        target_masks = target_masks.to(src_masks)
-        target_masks = target_masks[tgt_idx]
+        target_masks = select_masks(tgt_idx, masks)
 
         # No need to upsample predictions as we are using normalized coordinates :)
         # N x 1 x H x W
@@ -303,7 +308,7 @@ class SetCriterion(nn.Module):
             )
             # get gt labels
             point_labels = point_sample(
-                target_masks,
+                target_masks.float(),
                 point_coords,
                 align_corners=False,
             ).squeeze(1)
