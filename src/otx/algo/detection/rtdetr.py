@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import copy
 import re
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import torch
 from torch import Tensor, nn
@@ -18,20 +18,50 @@ from otx.algo.detection.backbones import PResNet
 from otx.algo.detection.base_models.detection_transformer import DETR
 from otx.algo.detection.heads import RTDETRTransformer
 from otx.algo.detection.necks import HybridEncoder
+from otx.core.config.data import TileConfig
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.detection import DetBatchDataEntity, DetBatchPredEntity
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter
+from otx.core.metrics.fmeasure import MeanAveragePrecisionFMeasureCallable
+from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
 from otx.core.model.detection import ExplainableOTXDetModel
+
+if TYPE_CHECKING:
+    from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
+
+    from otx.core.metrics import MetricCallable
+    from otx.core.schedulers import LRSchedulerListCallable
+    from otx.core.types.label import LabelInfoTypes
 
 
 class RTDETR(ExplainableOTXDetModel):
     """RTDETR model."""
 
-    image_size = (1, 3, 640, 640)
+    input_size_multiplier = 32
     mean: tuple[float, float, float] = (0.0, 0.0, 0.0)
     std: tuple[float, float, float] = (255.0, 255.0, 255.0)
     load_from: str | None = None
+
+    def __init__(
+        self,
+        label_info: LabelInfoTypes,
+        input_size: tuple[int, int] = (640, 640),
+        optimizer: OptimizerCallable = DefaultOptimizerCallable,
+        scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
+        metric: MetricCallable = MeanAveragePrecisionFMeasureCallable,
+        torch_compile: bool = False,
+        tile_config: TileConfig = TileConfig(enable_tiler=False),
+    ) -> None:
+        super().__init__(
+            label_info=label_info,
+            input_size=input_size,
+            optimizer=optimizer,
+            scheduler=scheduler,
+            metric=metric,
+            torch_compile=torch_compile,
+            tile_config=tile_config,
+        )
 
     def _customize_inputs(
         self,
@@ -163,13 +193,13 @@ class RTDETR(ExplainableOTXDetModel):
     @property
     def _exporter(self) -> OTXModelExporter:
         """Creates OTXModelExporter object that can export the model."""
-        if self.image_size is None:
-            msg = f"Image size attribute is not set for {self.__class__}"
+        if self.input_size is None:
+            msg = f"Input size attribute is not set for {self.__class__}"
             raise ValueError(msg)
 
         return OTXNativeModelExporter(
             task_level_export_parameters=self._export_parameters,
-            input_size=self.image_size,
+            input_size=(1, 3, *self.input_size),
             mean=self.mean,
             std=self.std,
             resize_mode="standard",
@@ -212,13 +242,13 @@ class RTDETR18(RTDETR):
         encoder = HybridEncoder(
             in_channels=[128, 256, 512],
             expansion=0.5,
-            eval_spatial_size=self.image_size[2:],
+            eval_spatial_size=self.input_size,
         )
         decoder = RTDETRTransformer(
             num_classes=num_classes,
             num_decoder_layers=3,
             feat_channels=[256, 256, 256],
-            eval_spatial_size=self.image_size[2:],
+            eval_spatial_size=self.input_size,
         )
 
         optimizer_configuration = [
@@ -236,6 +266,7 @@ class RTDETR18(RTDETR):
             decoder=decoder,
             num_classes=num_classes,
             optimizer_configuration=optimizer_configuration,
+            input_size=self.input_size[0],
         )
 
 
@@ -255,12 +286,12 @@ class RTDETR50(RTDETR):
             norm_cfg={"type": "FBN", "name": "norm"},
         )
         encoder = HybridEncoder(
-            eval_spatial_size=self.image_size[2:],
+            eval_spatial_size=self.input_size,
         )
         decoder = RTDETRTransformer(
             num_classes=num_classes,
             feat_channels=[256, 256, 256],
-            eval_spatial_size=self.image_size[2:],
+            eval_spatial_size=self.input_size,
             num_decoder_layers=6,
         )
 
@@ -279,6 +310,7 @@ class RTDETR50(RTDETR):
             decoder=decoder,
             num_classes=num_classes,
             optimizer_configuration=optimizer_configuration,
+            input_size=self.input_size[0],
         )
 
 
@@ -302,13 +334,13 @@ class RTDETR101(RTDETR):
             hidden_dim=384,
             dim_feedforward=2048,
             in_channels=[512, 1024, 2048],
-            eval_spatial_size=self.image_size[2:],
+            eval_spatial_size=self.input_size,
         )
 
         decoder = RTDETRTransformer(
             num_classes=num_classes,
             feat_channels=[384, 384, 384],
-            eval_spatial_size=self.image_size[2:],
+            eval_spatial_size=self.input_size,
         )
 
         # no bias decay and learning rate correction for the backbone.
@@ -328,4 +360,5 @@ class RTDETR101(RTDETR):
             decoder=decoder,
             num_classes=num_classes,
             optimizer_configuration=optimizer_configuration,
+            input_size=self.input_size[0],
         )

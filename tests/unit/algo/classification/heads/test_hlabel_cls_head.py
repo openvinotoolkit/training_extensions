@@ -138,3 +138,22 @@ class TestHierarchicalCBAMClsHead:
         input_tensor = torch.rand((8, 64, 7, 7))
         pre_logits = fxt_hierarchical_cbam_cls_head.pre_logits(input_tensor)
         assert pre_logits.shape == (8, 64 * 7 * 7)
+
+    def test_pre_logits_tuple_step_size(self) -> None:
+        head_idx_to_logits_range = {"0": (0, 5), "1": (5, 10), "2": (10, 12)}
+        head = HierarchicalCBAMClsHead(
+            num_multiclass_heads=3,
+            num_multilabel_classes=0,
+            head_idx_to_logits_range=head_idx_to_logits_range,
+            num_single_label_classes=12,
+            empty_multiclass_head_indices=[],
+            in_channels=64,
+            num_classes=12,
+            multiclass_loss=CrossEntropyLoss(),
+            multilabel_loss=None,
+            step_size=(14, 7),
+        )
+
+        input_tensor = torch.rand((8, 64, 14, 7))
+        pre_logits = head.pre_logits(input_tensor)
+        assert pre_logits.shape == (8, 64 * 14 * 7)

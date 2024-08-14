@@ -60,12 +60,14 @@ class TVModelForMulticlassCls(OTXMulticlassClsModel):
         metric: MetricCallable = MultiClassClsMetricCallable,
         torch_compile: bool = False,
         train_type: Literal[OTXTrainType.SUPERVISED, OTXTrainType.SEMI_SUPERVISED] = OTXTrainType.SUPERVISED,
+        input_size: tuple[int, int] = (224, 224),
     ) -> None:
         self.backbone = backbone
         self.pretrained = pretrained
 
         super().__init__(
             label_info=label_info,
+            input_size=input_size,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
@@ -146,6 +148,7 @@ class TVModelForMultilabelCls(OTXMultilabelClsModel):
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MultiLabelClsMetricCallable,
         torch_compile: bool = False,
+        input_size: tuple[int, int] = (224, 224),
     ) -> None:
         self.backbone = backbone
         self.pretrained = pretrained
@@ -156,7 +159,9 @@ class TVModelForMultilabelCls(OTXMultilabelClsModel):
             scheduler=scheduler,
             metric=metric,
             torch_compile=torch_compile,
+            input_size=input_size,
         )
+        self.input_size: tuple[int, int]
 
     def _create_model(self) -> nn.Module:
         # Get classification_layers for class-incr learning
@@ -222,6 +227,7 @@ class TVModelForHLabelCls(OTXHlabelClsModel):
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = HLabelClsMetricCallble,
         torch_compile: bool = False,
+        input_size: tuple[int, int] = (224, 224),
     ) -> None:
         self.backbone = backbone
         self.pretrained = pretrained
@@ -232,6 +238,7 @@ class TVModelForHLabelCls(OTXHlabelClsModel):
             scheduler=scheduler,
             metric=metric,
             torch_compile=torch_compile,
+            input_size=input_size,
         )
 
     def _create_model(self) -> nn.Module:

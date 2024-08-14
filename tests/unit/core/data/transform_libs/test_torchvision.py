@@ -946,7 +946,7 @@ class TestGenerateTarget:
         )
 
     def test_forward(self, keypoint_det_entity) -> None:
-        transform = GenerateTarget()
+        transform = GenerateTarget(input_size=(256, 192))
         results = transform(deepcopy(keypoint_det_entity))
 
         assert hasattr(results, "keypoint_x_labels")

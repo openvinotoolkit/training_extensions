@@ -322,7 +322,7 @@ class HierarchicalCBAMClsHead(HierarchicalClsHead):
         thr (float, optional): Predictions with scores under the thresholds are considered
                             as negative. Defaults to 0.5.
         init_cfg (dict | None, optional): Initialize configuration key-values, Defaults to None.
-        step_size (int, optional): Step size value for HierarchicalCBAMClsHead, Defaults to 7.
+        step_size (int | tuple[int, int], optional): Step size value for HierarchicalCBAMClsHead, Defaults to 7.
     """
 
     def __init__(
@@ -336,7 +336,7 @@ class HierarchicalCBAMClsHead(HierarchicalClsHead):
         num_classes: int,
         thr: float = 0.5,
         init_cfg: dict | None = None,
-        step_size: int = 7,
+        step_size: int | tuple[int, int] = 7,
         **kwargs,
     ):
         super().__init__(
@@ -351,11 +351,11 @@ class HierarchicalCBAMClsHead(HierarchicalClsHead):
             init_cfg=init_cfg,
             **kwargs,
         )
-        self.step_size = step_size
-        self.fc_superclass = nn.Linear(in_channels * step_size * step_size, num_multiclass_heads)
-        self.attention_fc = nn.Linear(num_multiclass_heads, in_channels * step_size * step_size)
+        self.step_size = (step_size, step_size) if isinstance(step_size, int) else tuple(step_size)
+        self.fc_superclass = nn.Linear(in_channels * self.step_size[0] * self.step_size[1], num_multiclass_heads)
+        self.attention_fc = nn.Linear(num_multiclass_heads, in_channels * self.step_size[0] * self.step_size[1])
         self.cbam = CBAM(in_channels)
-        self.fc_subclass = nn.Linear(in_channels * step_size * step_size, num_single_label_classes)
+        self.fc_subclass = nn.Linear(in_channels * self.step_size[0] * self.step_size[1], num_single_label_classes)
 
         self._init_layers()
 
@@ -363,7 +363,7 @@ class HierarchicalCBAMClsHead(HierarchicalClsHead):
         """The process before the final classification head."""
         if isinstance(feats, Sequence):
             feats = feats[-1]
-        return feats.view(feats.size(0), self.in_channels * self.step_size * self.step_size)
+        return feats.view(feats.size(0), self.in_channels * self.step_size[0] * self.step_size[1])
 
     def _init_layers(self) -> None:
         """Iniitialize weights of classification head."""
@@ -378,10 +378,15 @@ class HierarchicalCBAMClsHead(HierarchicalClsHead):
         attention_weights = torch.sigmoid(self.attention_fc(out_superclass))
         attended_features = pre_logits * attention_weights
 
-        attended_features = attended_features.view(pre_logits.size(0), self.in_channels, self.step_size, self.step_size)
+        attended_features = attended_features.view(
+            pre_logits.size(0),
+            self.in_channels,
+            self.step_size[0],
+            self.step_size[1],
+        )
         attended_features = self.cbam(attended_features)
         attended_features = attended_features.view(
             pre_logits.size(0),
-            self.in_channels * self.step_size * self.step_size,
+            self.in_channels * self.step_size[0] * self.step_size[1],
         )
         return self.fc_subclass(attended_features)

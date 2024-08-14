@@ -140,12 +140,12 @@ class Engine:
         self.task = task if task is not None else self._auto_configurator.task
 
         self._trainer: Trainer | None = None
+        get_model_args: dict[str, Any] = {}
+        if self._datamodule is not None:
+            get_model_args["label_info"] = self._datamodule.label_info
+            get_model_args["input_size"] = self._datamodule.input_size
         self._model: OTXModel = (
-            model
-            if isinstance(model, OTXModel)
-            else self._auto_configurator.get_model(
-                label_info=self._datamodule.label_info if self._datamodule is not None else None,
-            )
+            model if isinstance(model, OTXModel) else self._auto_configurator.get_model(**get_model_args)
         )
 
     # ------------------------------------------------------------------------ #

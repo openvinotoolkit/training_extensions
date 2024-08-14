@@ -32,21 +32,23 @@ class OTXKeypointDetectionModel(OTXModel[KeypointDetBatchDataEntity, KeypointDet
     def __init__(
         self,
         label_info: LabelInfoTypes,
+        input_size: tuple[int, int],
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = PCKMeasureCallable,
         torch_compile: bool = False,
     ) -> None:
-        self.image_size = (1, 3, 192, 256)
         self.mean = (0.0, 0.0, 0.0)
         self.std = (255.0, 255.0, 255.0)
         super().__init__(
             label_info=label_info,
+            input_size=input_size,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
             torch_compile=torch_compile,
         )
+        self.input_size: tuple[int, int]
 
     @abstractmethod
     def _build_model(self, num_classes: int) -> nn.Module:

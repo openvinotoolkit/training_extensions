@@ -33,6 +33,7 @@ class TestSegmentAnything:
         )
         segment_anything = SegmentAnything(
             backbone=backbone,
+            image_size=2048,
             freeze_image_encoder=freeze_image_encoder,
             freeze_prompt_encoder=freeze_prompt_encoder,
             freeze_mask_decoder=freeze_mask_decoder,
@@ -40,6 +41,7 @@ class TestSegmentAnything:
 
         # check import modules
         assert hasattr(segment_anything, "image_encoder")
+        assert segment_anything.image_encoder.img_size == 2048
         assert segment_anything.image_encoder.__class__.__name__ == expected_backbone
         assert hasattr(segment_anything, "prompt_encoder")
         assert hasattr(segment_anything, "mask_decoder")
@@ -295,6 +297,10 @@ class TestOTXSegmentAnything:
     @pytest.fixture()
     def model(self) -> OTXSegmentAnything:
         return OTXSegmentAnything(backbone="tiny_vit")
+
+    def test_set_input_size(self):
+        with pytest.raises(ValueError, match="SAM should use square image size"):
+            OTXSegmentAnything(backbone="tiny_vit", input_size=(1, 3, 1024, 2048))
 
     def test_create_model(self, model) -> None:
         """Test _create_model."""

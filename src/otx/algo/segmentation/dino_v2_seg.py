@@ -13,11 +13,18 @@ from otx.algo.segmentation.backbones import DinoVisionTransformer
 from otx.algo.segmentation.heads import FCNHead
 from otx.algo.segmentation.segmentors import BaseSegmModel, MeanTeacher
 from otx.core.data.entity.segmentation import SegBatchDataEntity
+from otx.core.metrics.dice import SegmCallable
+from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
 from otx.core.model.segmentation import TorchVisionCompatibleModel
 
 if TYPE_CHECKING:
+    from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
     from torch import nn
     from typing_extensions import Self
+
+    from otx.core.metrics import MetricCallable
+    from otx.core.schedulers import LRSchedulerListCallable
+    from otx.core.types.label import LabelInfoTypes
 
 
 class DinoV2Seg(BaseSegmModel):
@@ -45,6 +52,36 @@ class DinoV2Seg(BaseSegmModel):
 
 class OTXDinoV2Seg(TorchVisionCompatibleModel):
     """DinoV2Seg Model."""
+
+    input_size_multiplier = 14
+
+    def __init__(
+        self,
+        label_info: LabelInfoTypes,
+        input_size: tuple[int, int] = (560, 560),
+        optimizer: OptimizerCallable = DefaultOptimizerCallable,
+        scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
+        metric: MetricCallable = SegmCallable,  # type: ignore[assignment]
+        torch_compile: bool = False,
+        backbone_configuration: dict[str, Any] | None = None,
+        decode_head_configuration: dict[str, Any] | None = None,
+        criterion_configuration: list[dict[str, Any]] | None = None,
+        export_image_configuration: dict[str, Any] | None = None,
+        name_base_model: str = "semantic_segmentation_model",
+    ):
+        super().__init__(
+            label_info=label_info,
+            input_size=input_size,
+            optimizer=optimizer,
+            scheduler=scheduler,
+            metric=metric,
+            torch_compile=torch_compile,
+            backbone_configuration=backbone_configuration,
+            decode_head_configuration=decode_head_configuration,
+            criterion_configuration=criterion_configuration,
+            export_image_configuration=export_image_configuration,
+            name_base_model=name_base_model,
+        )
 
     def _create_model(self) -> nn.Module:
         # merge configurations with defaults overriding them
