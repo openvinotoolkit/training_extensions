@@ -92,6 +92,7 @@ class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity]):
             torch_compile=torch_compile,
             train_type=train_type,
         )
+        self.input_size: tuple[int, int]
 
     def _create_model(self) -> nn.Module:
         base_model = self._build_model()
