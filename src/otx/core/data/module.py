@@ -146,6 +146,14 @@ class OTXDataModule(LightningDataModule):
             for subset_cfg in [train_subset, val_subset, test_subset, unlabeled_subset]:
                 if subset_cfg.input_size is None:
                     subset_cfg.input_size = input_size
+
+            if self.mem_cache_img_max_size is None:
+                self.mem_cache_img_max_size = (
+                    (input_size, input_size)  # type: ignore[assignment]
+                    if isinstance(input_size, int)
+                    else tuple(input_size)
+                )
+
         self.input_size = input_size
 
         if self.tile_config.enable_tiler and self.tile_config.enable_adaptive_tiling:
@@ -193,7 +201,7 @@ class OTXDataModule(LightningDataModule):
                 dm_subset=dm_subset.as_dataset(),
                 cfg_subset=config_mapping[name],
                 mem_cache_handler=mem_cache_handler,
-                mem_cache_img_max_size=mem_cache_img_max_size,
+                mem_cache_img_max_size=self.mem_cache_img_max_size,
                 image_color_channel=image_color_channel,
                 stack_images=stack_images,
                 include_polygons=include_polygons,
@@ -231,7 +239,7 @@ class OTXDataModule(LightningDataModule):
                         dm_subset=dm_subset,
                         cfg_subset=unlabeled_config,
                         mem_cache_handler=mem_cache_handler,
-                        mem_cache_img_max_size=mem_cache_img_max_size,
+                        mem_cache_img_max_size=self.mem_cache_img_max_size,
                         image_color_channel=image_color_channel,
                         stack_images=stack_images,
                         include_polygons=include_polygons,
@@ -245,7 +253,7 @@ class OTXDataModule(LightningDataModule):
                     dm_subset=dm_subset.as_dataset(),
                     cfg_subset=self.unlabeled_subset,
                     mem_cache_handler=mem_cache_handler,
-                    mem_cache_img_max_size=mem_cache_img_max_size,
+                    mem_cache_img_max_size=self.mem_cache_img_max_size,
                     image_color_channel=image_color_channel,
                     stack_images=stack_images,
                     include_polygons=include_polygons,
