@@ -276,7 +276,6 @@ class EfficientNetForHLabelCls(OTXHlabelClsModel):
             neck=nn.Identity(),
             head=HierarchicalCBAMClsHead(
                 in_channels=backbone.num_features,
-                **head_config,
                 **copied_head_config,
             ),
             multiclass_loss=nn.CrossEntropyLoss(),
