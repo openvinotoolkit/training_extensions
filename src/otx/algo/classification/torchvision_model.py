@@ -284,7 +284,3 @@ class TVModelForHLabelCls(OTXHlabelClsModel):
             return self.model(images=image, mode="explain")
 
         return self.model(images=image, mode="tensor")
-
-
-if __name__ == "__main__":
-    model = TVModelForMulticlassCls(label_info=10, backbone="mobilenet_v3_small")
