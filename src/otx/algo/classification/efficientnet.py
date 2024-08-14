@@ -6,7 +6,8 @@
 
 from __future__ import annotations
 
-from copy import deepcopy
+from copy import copy, deepcopy
+from math import ceil
 from typing import TYPE_CHECKING, Literal
 
 from torch import Tensor, nn
@@ -57,6 +58,7 @@ class EfficientNetForMulticlassCls(OTXMulticlassClsModel):
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MultiClassClsMetricCallable,
         torch_compile: bool = False,
+        input_size: tuple[int, int] = (224, 224),
         train_type: Literal[OTXTrainType.SUPERVISED, OTXTrainType.SEMI_SUPERVISED] = OTXTrainType.SUPERVISED,
     ) -> None:
         self.version = version
@@ -64,6 +66,7 @@ class EfficientNetForMulticlassCls(OTXMulticlassClsModel):
 
         super().__init__(
             label_info=label_info,
+            input_size=input_size,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
@@ -86,7 +89,7 @@ class EfficientNetForMulticlassCls(OTXMulticlassClsModel):
         return model
 
     def _build_model(self, num_classes: int) -> nn.Module:
-        backbone = OTXEfficientNet(version=self.version, pretrained=self.pretrained)
+        backbone = OTXEfficientNet(version=self.version, input_size=self.input_size, pretrained=self.pretrained)
         neck = GlobalAveragePooling(dim=2)
         loss = nn.CrossEntropyLoss(reduction="none")
         if self.train_type == OTXTrainType.SEMI_SUPERVISED:
@@ -149,6 +152,7 @@ class EfficientNetForMultilabelCls(OTXMultilabelClsModel):
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MultiLabelClsMetricCallable,
         torch_compile: bool = False,
+        input_size: tuple[int, int] = (224, 224),
     ) -> None:
         self.version = version
         self.pretrained = pretrained
@@ -159,6 +163,7 @@ class EfficientNetForMultilabelCls(OTXMultilabelClsModel):
             scheduler=scheduler,
             metric=metric,
             torch_compile=torch_compile,
+            input_size=input_size,
         )
 
     def _create_model(self) -> nn.Module:
@@ -176,7 +181,7 @@ class EfficientNetForMultilabelCls(OTXMultilabelClsModel):
         return model
 
     def _build_model(self, num_classes: int) -> nn.Module:
-        backbone = OTXEfficientNet(version=self.version, pretrained=self.pretrained)
+        backbone = OTXEfficientNet(version=self.version, input_size=self.input_size, pretrained=self.pretrained)
         return ImageClassifier(
             backbone=backbone,
             neck=GlobalAveragePooling(dim=2),
@@ -229,6 +234,7 @@ class EfficientNetForHLabelCls(OTXHlabelClsModel):
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = HLabelClsMetricCallble,
         torch_compile: bool = False,
+        input_size: tuple[int, int] = (224, 224),
     ) -> None:
         self.version = version
         self.pretrained = pretrained
@@ -239,6 +245,7 @@ class EfficientNetForHLabelCls(OTXHlabelClsModel):
             scheduler=scheduler,
             metric=metric,
             torch_compile=torch_compile,
+            input_size=input_size,
         )
 
     def _create_model(self) -> nn.Module:
@@ -262,7 +269,11 @@ class EfficientNetForHLabelCls(OTXHlabelClsModel):
         if not isinstance(self.label_info, HLabelInfo):
             raise TypeError(self.label_info)
 
-        backbone = OTXEfficientNet(version=self.version, pretrained=self.pretrained)
+        backbone = OTXEfficientNet(version=self.version, input_size=self.input_size, pretrained=self.pretrained)
+
+        copied_head_config = copy(head_config)
+        copied_head_config["step_size"] = (ceil(self.input_size[0] / 32), ceil(self.input_size[1] / 32))
+
         return ImageClassifier(
             backbone=backbone,
             neck=nn.Identity(),
@@ -270,7 +281,7 @@ class EfficientNetForHLabelCls(OTXHlabelClsModel):
                 in_channels=backbone.num_features,
                 multiclass_loss=nn.CrossEntropyLoss(),
                 multilabel_loss=AsymmetricAngularLossWithIgnore(gamma_pos=0.0, gamma_neg=1.0, reduction="sum"),
-                **head_config,
+                **copied_head_config,
             ),
             optimize_gap=False,
         )

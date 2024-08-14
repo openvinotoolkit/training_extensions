@@ -331,10 +331,23 @@ class OTXCLI:
             # For num_classes update, Model and Metric are instantiated separately.
             model_config = self.config[self.subcommand].pop("model")
 
+            # if adaptive_input_size will be executed and the model has input_size_multiplier, pass it to OTXDataModule
+            if self.config[self.subcommand].data.get("adaptive_input_size") is not None:
+                from otx.utils.utils import get_model_cls_from_config
+
+                model_cls = get_model_cls_from_config(model_config)
+                self.config[self.subcommand].data.input_size_multiplier = model_cls.input_size_multiplier
+
             # Instantiate the things that don't need to special handling
             self.config_init = self.parser.instantiate_classes(self.config)
             self.workspace = self.get_config_value(self.config_init, "workspace")
             self.datamodule = self.get_config_value(self.config_init, "data")
+
+            # pass OTXDataModule input size to the model
+            if (input_size := self.datamodule.input_size) is not None and "input_size" in model_config["init_args"]:
+                model_config["init_args"]["input_size"] = (
+                    (input_size, input_size) if isinstance(input_size, int) else tuple(input_size)
+                )
 
             # Instantiate the model and needed components
             self.model = self.instantiate_model(model_config=model_config)
@@ -407,12 +420,6 @@ class OTXCLI:
         model_parser.add_subclass_arguments(OTXModel, "model", skip=skip, required=False, fail_untyped=False)
         model: OTXModel = model_parser.instantiate_classes(Namespace(model=model_config)).get("model")
         self.config_init[self.subcommand]["model"] = model
-
-        # Update tile config due to adaptive tiling
-        if model.tile_config.enable_tiler:
-            # TODO(Eugene): Ticket no. 139000: Need to find a better way to configure image size for OV Models
-            # https://github.com/openvinotoolkit/training_extensions/pull/2925
-            model.image_size = model.tile_image_size
 
         # Update self.config with model
         self.config[self.subcommand].update(Namespace(model=model_config))

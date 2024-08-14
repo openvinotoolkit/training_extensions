@@ -33,6 +33,7 @@ class X3D(OTXActionClsModel):
     def __init__(
         self,
         label_info: LabelInfoTypes,
+        input_size: tuple[int, int] = (224, 224),
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MultiClassClsMetricCallable,
@@ -41,6 +42,7 @@ class X3D(OTXActionClsModel):
         self.load_from = "https://download.openmmlab.com/mmaction/recognition/x3d/facebook/x3d_m_facebook_16x5x1_kinetics400_rgb_20201027-3f42382a.pth"
         super().__init__(
             label_info=label_info,
+            input_size=input_size,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,

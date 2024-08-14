@@ -17,27 +17,55 @@ from otx.algo.detection.heads import ATSSHead
 from otx.algo.detection.necks import FPN
 from otx.algo.detection.utils.assigners import ATSSAssigner
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
+from otx.core.config.data import TileConfig
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter
+from otx.core.metrics.fmeasure import MeanAveragePrecisionFMeasureCallable
+from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
 from otx.core.model.detection import ExplainableOTXDetModel
 
 if TYPE_CHECKING:
+    from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
     from typing_extensions import Self
+
+    from otx.core.metrics import MetricCallable
+    from otx.core.schedulers import LRSchedulerListCallable
+    from otx.core.types.label import LabelInfoTypes
 
 
 class ATSS(ExplainableOTXDetModel):
     """OTX Detection model class for ATSS."""
 
+    def __init__(
+        self,
+        label_info: LabelInfoTypes,
+        input_size: tuple[int, int] = (800, 992),
+        optimizer: OptimizerCallable = DefaultOptimizerCallable,
+        scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
+        metric: MetricCallable = MeanAveragePrecisionFMeasureCallable,
+        torch_compile: bool = False,
+        tile_config: TileConfig = TileConfig(enable_tiler=False),
+    ) -> None:
+        super().__init__(
+            label_info=label_info,
+            input_size=input_size,
+            optimizer=optimizer,
+            scheduler=scheduler,
+            metric=metric,
+            torch_compile=torch_compile,
+            tile_config=tile_config,
+        )
+
     @property
     def _exporter(self) -> OTXModelExporter:
         """Creates OTXModelExporter object that can export the model."""
-        if self.image_size is None:
-            msg = f"Image size attribute is not set for {self.__class__}"
+        if self.input_size is None:
+            msg = f"Input size attribute is not set for {self.__class__}"
             raise ValueError(msg)
 
         return OTXNativeModelExporter(
             task_level_export_parameters=self._export_parameters,
-            input_size=self.image_size,
+            input_size=(1, 3, *self.input_size),
             mean=self.mean,
             std=self.std,
             resize_mode="standard",
@@ -69,8 +97,6 @@ class MobileNetV2ATSS(ATSS):
         "https://storage.openvinotoolkit.org/repositories/"
         "openvino_training_extensions/models/object_detection/v2/mobilenet_v2-atss.pth"
     )
-    image_size = (1, 3, 800, 992)
-    tile_image_size = (1, 3, 800, 992)
     mean = (0.0, 0.0, 0.0)
     std = (255.0, 255.0, 255.0)
 
@@ -141,8 +167,6 @@ class ResNeXt101ATSS(ATSS):
         "https://storage.openvinotoolkit.org/repositories/"
         "openvino_training_extensions/models/object_detection/v2/resnext101_atss_070623.pth"
     )
-    image_size = (1, 3, 800, 992)
-    tile_image_size = (1, 3, 800, 992)
     mean = (0.0, 0.0, 0.0)
     std = (255.0, 255.0, 255.0)
 
