@@ -263,19 +263,18 @@ For example, to increase the batch size to 4, fix the number of epochs to 100, e
 
         .. code-block:: shell
 
-            (otx) ...$ otx train ... --data.config.train_subset.batch_size 4 \
+            (otx) ...$ otx train ... --data.train_subset.batch_size 4 \
                                      --max_epochs 100
 
     .. tab-item:: API
 
         .. code-block:: python
 
-            from otx.core.config.data import DataModuleConfig, SubsetConfig
+            from otx.core.config.data import SubsetConfig
             from otx.core.data.module import OTXDataModule
             from otx.engine import Engine
 
-            data_config = DataModuleConfig(..., train_subset=SubsetConfig(..., batch_size=4))
-            datamodule = OTXDataModule(..., config=data_config)
+            datamodule = OTXDataModule(..., train_subset=SubsetConfig(..., batch_size=4))
 
             engine = Engine(..., datamodule=datamodule)
 
@@ -551,7 +550,7 @@ with OpenVINO™ PTQ.
 
             (otx) ...$ otx optimize  --work_dir otx-workspace \ 
                                      --checkpoint otx-workspace/.latest/export/exported_model_decoder.xml \
-                                     --data.config.train_subset.num_workers 0
+                                     --data.train_subset.num_workers 0
 
             ...
             Statistics collection ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 100% 55/55 • 0:00:35 • 0:00:00
@@ -571,7 +570,7 @@ Please note, that PTQ will take some time without logging to optimize the model.
 .. note::
     Optimization is performed in the following order: image encoder  then decoder. 
     Because the optimized image encoder is used for decoder optimization, segmentation fault error can occur when releasing threads and memories after optimization step.
-    It doesn't affect optimization results, but it's recommended to set ``--data.config.train_subset.num_workers 0`` to avoid this error.
+    It doesn't affect optimization results, but it's recommended to set ``--data.train_subset.num_workers 0`` to avoid this error.
 
 3. Finally, we can also evaluate the optimized model by passing
 it to the ``otx test`` function.
