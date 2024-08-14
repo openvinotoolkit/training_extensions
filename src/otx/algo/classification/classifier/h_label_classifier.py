@@ -40,8 +40,6 @@ class HLabelClassifier(ImageClassifier):
         _forward_explain(images): Perform forward pass for explanation.
     """
 
-    head: HierarchicalClsHead
-
     def __init__(
         self,
         backbone: nn.Module,
