@@ -5,7 +5,6 @@
 
 from __future__ import annotations
 
-import inspect
 from typing import Callable, Sequence
 
 import torch
@@ -13,7 +12,6 @@ from torch import nn
 
 from otx.algo.modules.base_module import BaseModule
 from otx.algo.utils.weight_init import constant_init, normal_init
-from otx.core.data.entity.base import ImageInfo
 
 
 class HierarchicalClsHead(BaseModule):
@@ -32,8 +30,6 @@ class HierarchicalClsHead(BaseModule):
         empty_multiclass_head_indices: list[int],
         in_channels: int,
         num_classes: int,
-        multiclass_loss: nn.Module,
-        multilabel_loss: nn.Module | None = None,
         thr: float = 0.5,
         init_cfg: dict | None = None,
         **kwargs,
@@ -52,13 +48,6 @@ class HierarchicalClsHead(BaseModule):
             msg = "num_multiclass_head should be larger than 0"
             raise ValueError(msg)
 
-        self.multiclass_loss = multiclass_loss
-        self.multilabel_loss = None
-        self.is_ignored_label_loss = False
-        if num_multilabel_classes > 0 and multilabel_loss is not None:
-            self.multilabel_loss = multilabel_loss
-            self.is_ignored_label_loss = "valid_label_mask" in inspect.getfullargspec(self.multilabel_loss.forward).args
-
     def pre_logits(self, feats: tuple[torch.Tensor] | torch.Tensor) -> torch.Tensor:
         """The process before the final classification head."""
         if isinstance(feats, Sequence):
@@ -71,78 +60,6 @@ class HierarchicalClsHead(BaseModule):
             self.head_idx_to_logits_range[str(idx)][0],
             self.head_idx_to_logits_range[str(idx)][1],
         )
-
-    def loss(self, feats: tuple[torch.Tensor], labels: torch.Tensor, **kwargs) -> torch.Tensor:
-        """Calculate losses from the classification score.
-
-        Args:
-            feats (tuple[Tensor]): The features extracted from the backbone.
-                Multiple stage inputs are acceptable but only the last stage
-                will be used to classify. The shape of every item should be
-                ``(num_samples, num_classes)``.
-            labels (torch.Tensor): The annotation data of
-                every samples.
-            **kwargs: Other keyword arguments to forward the loss module.
-
-        Returns:
-            dict[str, Tensor]: a dictionary of loss components
-        """
-        cls_scores = self(feats)
-
-        loss_score = torch.tensor(0.0, device=cls_scores.device)
-
-        # Multiclass loss
-        num_effective_heads_in_batch = 0  # consider the label removal case
-        for i in range(self.num_multiclass_heads):
-            if i not in self.empty_multiclass_head_indices:
-                head_gt = labels[:, i]
-                logit_range = self._get_head_idx_to_logits_range(i)
-                head_logits = cls_scores[:, logit_range[0] : logit_range[1]]
-                valid_mask = head_gt >= 0
-
-                head_gt = head_gt[valid_mask]
-                if len(head_gt) > 0:
-                    head_logits = head_logits[valid_mask, :]
-                    loss_score += self.multiclass_loss(head_logits, head_gt)
-                    num_effective_heads_in_batch += 1
-
-        if num_effective_heads_in_batch > 0:
-            loss_score /= num_effective_heads_in_batch
-
-        # Multilabel loss
-        if self.num_multilabel_classes > 0:
-            head_gt = labels[:, self.num_multiclass_heads :]
-            head_logits = cls_scores[:, self.num_single_label_classes :]
-            valid_mask = head_gt > 0
-            head_gt = head_gt[valid_mask]
-            if len(head_gt) > 0 and self.multilabel_loss is not None:
-                head_logits = head_logits[valid_mask]
-                imgs_info = kwargs.pop("imgs_info", None)
-                if imgs_info is not None and self.is_ignored_label_loss:
-                    valid_label_mask = self.get_valid_label_mask(imgs_info).to(head_logits.device)
-                    valid_label_mask = valid_label_mask[:, self.num_single_label_classes :]
-                    valid_label_mask = valid_label_mask[valid_mask]
-                    kwargs["valid_label_mask"] = valid_label_mask
-                loss_score += self.multilabel_loss(head_logits, head_gt, **kwargs)
-
-        return loss_score
-
-    def get_valid_label_mask(self, img_metas: list[ImageInfo]) -> torch.Tensor:
-        """Get valid label mask using ignored_label.
-
-        Args:
-            img_metas (list[ImageInfo]): The metadata of the input images.
-
-        Returns:
-            torch.Tensor: The valid label mask.
-        """
-        valid_label_mask = []
-        for meta in img_metas:
-            mask = torch.Tensor([1 for _ in range(self.num_classes)])
-            if meta.ignored_labels:
-                mask[meta.ignored_labels] = 0
-            valid_label_mask.append(mask)
-        return torch.stack(valid_label_mask, dim=0)
 
     def predict(
         self,
@@ -217,8 +134,6 @@ class HierarchicalLinearClsHead(HierarchicalClsHead):
             due to the label removing
         in_channels (int): Number of channels in the input feature map.
         num_classes (int): Number of total classes.
-        multiclass_loss (dict | None): Config of multi-class loss.
-        multilabel_loss (dict | None): Config of multi-label loss.
         thr (float | None): Predictions with scores under the thresholds are considered
                             as negative. Defaults to 0.5.
     """
@@ -232,8 +147,6 @@ class HierarchicalLinearClsHead(HierarchicalClsHead):
         empty_multiclass_head_indices: list[int],
         in_channels: int,
         num_classes: int,
-        multiclass_loss: nn.Module,
-        multilabel_loss: nn.Module | None = None,
         thr: float = 0.5,
         init_cfg: dict | None = None,
         **kwargs,
@@ -246,8 +159,6 @@ class HierarchicalLinearClsHead(HierarchicalClsHead):
             empty_multiclass_head_indices=empty_multiclass_head_indices,
             in_channels=in_channels,
             num_classes=num_classes,
-            multiclass_loss=multiclass_loss,
-            multilabel_loss=multilabel_loss,
             thr=thr,
             init_cfg=init_cfg,
             **kwargs,
@@ -278,8 +189,6 @@ class HierarchicalNonLinearClsHead(HierarchicalClsHead):
             due to the label removing
         in_channels (int): Number of channels in the input feature map.
         num_classes (int): Number of total classes.
-        multiclass_loss (dict | None): Config of multi-class loss.
-        multilabel_loss (dict | None): Config of multi-label loss.
         thr (float | None): Predictions with scores under the thresholds are considered
                             as negative. Defaults to 0.5.
         hid_cahnnels (int): Number of channels in the hidden feature map at the classifier.
@@ -297,8 +206,6 @@ class HierarchicalNonLinearClsHead(HierarchicalClsHead):
         empty_multiclass_head_indices: list[int],
         in_channels: int,
         num_classes: int,
-        multiclass_loss: nn.Module,
-        multilabel_loss: nn.Module | None = None,
         thr: float = 0.5,
         hid_channels: int = 1280,
         activation_callable: Callable[[], nn.Module] = nn.ReLU,
@@ -314,8 +221,6 @@ class HierarchicalNonLinearClsHead(HierarchicalClsHead):
             empty_multiclass_head_indices=empty_multiclass_head_indices,
             in_channels=in_channels,
             num_classes=num_classes,
-            multiclass_loss=multiclass_loss,
-            multilabel_loss=multilabel_loss,
             thr=thr,
             init_cfg=init_cfg,
             **kwargs,
@@ -414,8 +319,6 @@ class HierarchicalCBAMClsHead(HierarchicalClsHead):
             due to the label removing
         in_channels (int): Number of channels in the input feature map.
         num_classes (int): Number of total classes.
-        multiclass_loss (nn.Module): Config of multi-class loss.
-        multilabel_loss (nn.Module | None, optional): Config of multi-label loss.
         thr (float, optional): Predictions with scores under the thresholds are considered
                             as negative. Defaults to 0.5.
         init_cfg (dict | None, optional): Initialize configuration key-values, Defaults to None.
@@ -431,8 +334,6 @@ class HierarchicalCBAMClsHead(HierarchicalClsHead):
         empty_multiclass_head_indices: list[int],
         in_channels: int,
         num_classes: int,
-        multiclass_loss: nn.Module,
-        multilabel_loss: nn.Module | None = None,
         thr: float = 0.5,
         init_cfg: dict | None = None,
         step_size: int = 7,
@@ -446,8 +347,6 @@ class HierarchicalCBAMClsHead(HierarchicalClsHead):
             empty_multiclass_head_indices=empty_multiclass_head_indices,
             in_channels=in_channels,
             num_classes=num_classes,
-            multiclass_loss=multiclass_loss,
-            multilabel_loss=multilabel_loss,
             thr=thr,
             init_cfg=init_cfg,
             **kwargs,

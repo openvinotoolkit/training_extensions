@@ -36,22 +36,6 @@ def fxt_data_sample() -> dict:
     }
 
 
-@pytest.fixture()
-def fxt_data_sample_with_ignored_labels() -> dict:
-    return {
-        "labels": torch.ones((18, 6), dtype=torch.long),
-        "imgs_info": [
-            ImageInfo(
-                img_idx=i,
-                ori_shape=(24, 24, 3),
-                img_shape=(24, 24, 3),
-                ignored_labels=[3],
-            )
-            for i in range(18)
-        ],
-    }
-
-
 class TestHierarchicalLinearClsHead:
     @pytest.fixture()
     def fxt_head_attrs(self, fxt_hlabel_cifar) -> dict[str, Any]:
@@ -78,21 +62,6 @@ class TestHierarchicalLinearClsHead:
     @pytest.fixture(params=["fxt_hlabel_linear_head", "fxt_hlabel_non_linear_head", "fxt_hlabel_cbam_head"])
     def fxt_hlabel_head(self, request) -> nn.Module:
         return request.getfixturevalue(request.param)
-
-    def test_loss(
-        self,
-        fxt_hlabel_head,
-        fxt_data_sample,
-        fxt_data_sample_with_ignored_labels,
-    ) -> None:
-        dummy_input = (torch.ones((18, 24)), torch.ones((18, 24)))
-        result_without_ignored_labels = fxt_hlabel_head.loss(dummy_input, **fxt_data_sample)
-
-        result_with_ignored_labels = fxt_hlabel_head.loss(
-            dummy_input,
-            **fxt_data_sample_with_ignored_labels,
-        )
-        assert result_with_ignored_labels <= result_without_ignored_labels
 
     def test_predict(
         self,

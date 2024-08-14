@@ -265,10 +265,10 @@ class TimmModelForHLabelCls(OTXHlabelClsModel):
             neck=nn.Identity(),
             head=HierarchicalCBAMClsHead(
                 in_channels=backbone.num_features,
-                multiclass_loss=nn.CrossEntropyLoss(),
-                multilabel_loss=AsymmetricAngularLossWithIgnore(gamma_pos=0.0, gamma_neg=1.0, reduction="sum"),
                 **head_config,
             ),
+            multiclass_loss=nn.CrossEntropyLoss(),
+            multilabel_loss=AsymmetricAngularLossWithIgnore(gamma_pos=0.0, gamma_neg=1.0, reduction="sum"),
         )
 
     def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.") -> dict:

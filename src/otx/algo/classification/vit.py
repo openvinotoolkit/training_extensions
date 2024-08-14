@@ -467,10 +467,10 @@ class VisionTransformerForHLabelCls(ForwardExplainMixInForViT, OTXHlabelClsModel
             neck=None,
             head=HierarchicalCBAMClsHead(
                 in_channels=vit_backbone.embed_dim,
-                multiclass_loss=nn.CrossEntropyLoss(),
-                multilabel_loss=AsymmetricAngularLossWithIgnore(gamma_pos=0.0, gamma_neg=1.0, reduction="sum"),
                 step_size=1,
                 **head_config,
             ),
+            multiclass_loss=nn.CrossEntropyLoss(),
+            multilabel_loss=AsymmetricAngularLossWithIgnore(gamma_pos=0.0, gamma_neg=1.0, reduction="sum"),
             init_cfg=init_cfg,
         )

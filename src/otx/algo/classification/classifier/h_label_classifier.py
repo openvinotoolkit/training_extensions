@@ -5,9 +5,13 @@
 
 from __future__ import annotations
 
+import inspect
 from typing import TYPE_CHECKING
 
 import torch
+
+from otx.algo.classification.heads.hlabel_cls_head import HierarchicalClsHead
+from otx.algo.classification.utils.ignored_labels import get_valid_label_mask
 
 from .base_classifier import ImageClassifier
 
@@ -18,20 +22,30 @@ if TYPE_CHECKING:
 class HLabelClassifier(ImageClassifier):
     """HLabel Classifier."""
 
+    head: HierarchicalClsHead
+
     def __init__(
         self,
         backbone: nn.Module,
         neck: nn.Module | None,
         head: nn.Module,
+        multiclass_loss: nn.Module,
+        multilabel_loss: nn.Module | None = None,
         init_cfg: dict | list[dict] | None = None,
     ):
         super().__init__(
             backbone=backbone,
             neck=neck,
             head=head,
-            loss=head.multiclass_loss,
+            loss=multiclass_loss,
             init_cfg=init_cfg,
         )
+
+        self.multiclass_loss = multiclass_loss
+        self.multilabel_loss = None
+        if self.head.num_multilabel_classes > 0 and multilabel_loss is not None:
+            self.multilabel_loss = multilabel_loss
+            self.is_ignored_label_loss = "valid_label_mask" in inspect.getfullargspec(self.multilabel_loss.forward).args
 
     def loss(self, inputs: torch.Tensor, labels: torch.Tensor, **kwargs) -> torch.Tensor:
         """Calculate losses from a batch of inputs and data samples.
@@ -45,8 +59,44 @@ class HLabelClassifier(ImageClassifier):
         Returns:
             torch.Tensor: loss components
         """
-        feats = self.extract_feat(inputs)
-        return self.head.loss(feats, labels, **kwargs)
+        cls_scores = self.extract_feat(inputs, stage="head")
+        loss_score = torch.tensor(0.0, device=cls_scores.device)
+
+        # Multiclass loss
+        num_effective_heads_in_batch = 0  # consider the label removal case
+        for i in range(self.head.num_multiclass_heads):
+            if i not in self.head.empty_multiclass_head_indices:
+                head_gt = labels[:, i]
+                logit_range = self.head._get_head_idx_to_logits_range(i)  # noqa: SLF001
+                head_logits = cls_scores[:, logit_range[0] : logit_range[1]]
+                valid_mask = head_gt >= 0
+
+                head_gt = head_gt[valid_mask]
+                if len(head_gt) > 0:
+                    head_logits = head_logits[valid_mask, :]
+                    loss_score += self.multiclass_loss(head_logits, head_gt)
+                    num_effective_heads_in_batch += 1
+
+        if num_effective_heads_in_batch > 0:
+            loss_score /= num_effective_heads_in_batch
+
+        # Multilabel loss
+        if self.head.num_multilabel_classes > 0:
+            head_gt = labels[:, self.head.num_multiclass_heads :]
+            head_logits = cls_scores[:, self.head.num_single_label_classes :]
+            valid_mask = head_gt > 0
+            head_gt = head_gt[valid_mask]
+            if len(head_gt) > 0 and self.multilabel_loss is not None:
+                head_logits = head_logits[valid_mask]
+                imgs_info = kwargs.pop("imgs_info", None)
+                if imgs_info is not None and self.is_ignored_label_loss:
+                    valid_label_mask = get_valid_label_mask(imgs_info, self.head.num_classes).to(head_logits.device)
+                    valid_label_mask = valid_label_mask[:, self.head.num_single_label_classes :]
+                    valid_label_mask = valid_label_mask[valid_mask]
+                    kwargs["valid_label_mask"] = valid_label_mask
+                loss_score += self.multilabel_loss(head_logits, head_gt, **kwargs)
+
+        return loss_score
 
     @torch.no_grad()
     def _forward_explain(self, images: torch.Tensor) -> dict[str, torch.Tensor | list[torch.Tensor]]:

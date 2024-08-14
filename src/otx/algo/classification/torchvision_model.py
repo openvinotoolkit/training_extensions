@@ -258,10 +258,10 @@ class TVModelForHLabelCls(OTXHlabelClsModel):
             neck=nn.Identity(),
             head=HierarchicalCBAMClsHead(
                 in_channels=backbone.in_features,
-                multiclass_loss=nn.CrossEntropyLoss(),
-                multilabel_loss=AsymmetricAngularLossWithIgnore(gamma_pos=0.0, gamma_neg=1.0, reduction="sum"),
                 **head_config,
             ),
+            multiclass_loss=nn.CrossEntropyLoss(),
+            multilabel_loss=AsymmetricAngularLossWithIgnore(gamma_pos=0.0, gamma_neg=1.0, reduction="sum"),
         )
 
     def forward_explain(self, inputs: HlabelClsBatchDataEntity) -> HlabelClsBatchPredEntity:
