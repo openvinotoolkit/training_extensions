@@ -157,7 +157,6 @@ class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity]):
             scores=[],
             masks=outputs,
         )
-        self.input_size: tuple[int, int]
 
     @property
     def _export_parameters(self) -> TaskLevelExportParameters:
@@ -173,15 +172,15 @@ class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity]):
     @property
     def _exporter(self) -> OTXModelExporter:
         """Creates OTXModelExporter object that can export the model."""
-        if self.image_size is None:
+        if self.input_size is None:
             msg = f"Image size attribute is not set for {self.__class__}"
             raise ValueError(msg)
 
         return OTXNativeModelExporter(
             task_level_export_parameters=self._export_parameters,
-            input_size=self.image_size,
-            mean=self.mean,
-            std=self.scale,
+            input_size=(1, 3, *self.input_size),
+            mean=self.MEAN,
+            std=self.STD,
             resize_mode="standard",
             pad_value=0,
             swap_rgb=False,

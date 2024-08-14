@@ -370,11 +370,10 @@ class NNMSCAN(nn.Module):
         attention_kernel_paddings: list[int | list[int]] = [2, [0, 3], [0, 5], [0, 10]],  # noqa: B006
         activation_callable: Callable[..., nn.Module] = nn.GELU,
         norm_cfg: dict[str, str | bool] | None = None,
-        init_cfg: dict[str, str] | list[dict[str, str]] | None = None,
         pretrained_weights: str | None = None,
     ) -> None:
         """Initialize a MSCAN backbone."""
-        super().__init__(init_cfg=init_cfg)
+        super().__init__()
         if norm_cfg is None:
             norm_cfg = {"type": "BN", "requires_grad": True}
 

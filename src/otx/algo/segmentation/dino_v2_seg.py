@@ -7,8 +7,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, ClassVar
 
-import torch
-
 from otx.algo.segmentation.backbones import DinoVisionTransformer
 from otx.algo.segmentation.heads import FCNHead
 from otx.algo.segmentation.losses import CrossEntropyLossWithIgnore
@@ -24,10 +22,11 @@ class DinoV2Seg(OTXSegmentationModel):
     """DinoV2Seg Model."""
 
     AVAILABLE_MODEL_VERSIONS: ClassVar[list[str]] = [
-        "segnext_tiny",
-        "segnext_small",
-        "segnext_base",
+        "dinov2_vits14",
     ]
+
+    MEAN: ClassVar[list[float]] = [0.485, 0.456, 0.406]
+    STD: ClassVar[list[float]] = [0.229, 0.224, 0.225]
 
     def _build_model(self) -> nn.Module:
         if self.model_version not in self.AVAILABLE_MODEL_VERSIONS:

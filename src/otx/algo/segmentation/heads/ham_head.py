@@ -338,4 +338,4 @@ class LightHamHead:
             msg = f"model type '{version}' is not supported"
             raise KeyError(msg)
 
-        return LightHamHead(**cls.HAMHEAD_CFG[version], num_classes=num_classes)
+        return NNLightHamHead(**cls.HAMHEAD_CFG[version], num_classes=num_classes)

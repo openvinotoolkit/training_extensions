@@ -7,7 +7,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, ClassVar
 
-import torch
 from torch.onnx import OperatorExportTypes
 
 from otx.algo.segmentation.backbones import LiteHRNetBackbone
@@ -15,18 +14,12 @@ from otx.algo.segmentation.heads import FCNHead
 from otx.algo.segmentation.losses import CrossEntropyLossWithIgnore
 from otx.algo.segmentation.segmentors import BaseSegmModel
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
-from otx.core.data.entity.segmentation import SegBatchDataEntity
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.model.segmentation import OTXSegmentationModel
 
 if TYPE_CHECKING:
-    from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
     from torch import nn
-
-    from otx.core.metrics import MetricCallable
-    from otx.core.schedulers import LRSchedulerListCallable
-    from otx.core.types.label import LabelInfoTypes
 
 
 class LiteHRNet(OTXSegmentationModel):
@@ -37,6 +30,8 @@ class LiteHRNet(OTXSegmentationModel):
         "lite_hrnet_18",
         "lite_hrnet_x",
     ]
+    MEAN: ClassVar[list[float]] = [0.485, 0.456, 0.406]
+    STD: ClassVar[list[float]] = [0.229, 0.224, 0.225]
 
     def _build_model(self) -> nn.Module:
         if self.model_version not in self.AVAILABLE_MODEL_VERSIONS:
