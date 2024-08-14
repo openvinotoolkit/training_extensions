@@ -397,16 +397,21 @@
 <p class="rubric">Classes</p>
 <table class="autosummary longtable table autosummary">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#otx.core.model.anomaly.OTXAnomaly" title="otx.core.model.anomaly.OTXAnomaly"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OTXAnomaly</span></code></a>()</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.core.model.anomaly.OTXAnomaly" title="otx.core.model.anomaly.OTXAnomaly"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OTXAnomaly</span></code></a>(input_size)</p></td>
 <td><p>Methods used to make OTX model compatible with the Anomalib model.</p></td>
 </tr>
 </tbody>
 </table>
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.core.model.anomaly.OTXAnomaly">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.core.model.anomaly.</span></span><span class="sig-name descname"><span class="pre">OTXAnomaly</span></span><a class="reference internal" href="../../../_modules/otx/core/model/anomaly.html#OTXAnomaly"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.anomaly.OTXAnomaly" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.core.model.anomaly.</span></span><span class="sig-name descname"><span class="pre">OTXAnomaly</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/core/model/anomaly.html#OTXAnomaly"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.anomaly.OTXAnomaly" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="otx.core.model.base.html#otx.core.model.base.OTXModel" title="otx.core.model.base.OTXModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">OTXModel</span></code></a></p>
 <p>Methods used to make OTX model compatible with the Anomalib model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>input_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><em>tuple</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a><em>] </em><em>| </em><em>None</em>) – Model input size in the order of height and width. Defaults to None.</p>
+</dd>
+</dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.core.model.anomaly.OTXAnomaly.configure_callbacks">
 <span class="sig-name descname"><span class="pre">configure_callbacks</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.12)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><span class="pre">Callback</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/otx/core/model/anomaly.html#OTXAnomaly.configure_callbacks"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.anomaly.OTXAnomaly.configure_callbacks" title="Link to this definition">#</a></dt>

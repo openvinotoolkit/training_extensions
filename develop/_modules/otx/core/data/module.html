@@ -262,7 +262,7 @@
 
 <span class="kn">import</span> <span class="nn">logging</span> <span class="k">as</span> <span class="nn">log</span>
 <span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Iterable</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Literal</span>
 
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">from</span> <span class="nn">datumaro</span> <span class="kn">import</span> <span class="n">Dataset</span> <span class="k">as</span> <span class="n">DmDataset</span>
@@ -278,7 +278,7 @@
     <span class="n">parse_mem_cache_size_to_int</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">from</span> <span class="nn">otx.core.data.pre_filtering</span> <span class="kn">import</span> <span class="n">pre_filtering</span>
-<span class="kn">from</span> <span class="nn">otx.core.data.tile_adaptor</span> <span class="kn">import</span> <span class="n">adapt_tile_config</span>
+<span class="kn">from</span> <span class="nn">otx.core.data.utils</span> <span class="kn">import</span> <span class="n">adapt_input_size_to_dataset</span><span class="p">,</span> <span class="n">adapt_tile_config</span>
 <span class="kn">from</span> <span class="nn">otx.core.types.device</span> <span class="kn">import</span> <span class="n">DeviceType</span>
 <span class="kn">from</span> <span class="nn">otx.core.types.image</span> <span class="kn">import</span> <span class="n">ImageColorChannel</span>
 <span class="kn">from</span> <span class="nn">otx.core.types.label</span> <span class="kn">import</span> <span class="n">LabelInfo</span>
@@ -296,9 +296,22 @@
 <div class="viewcode-block" id="OTXDataModule">
 <a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.data.html#otx.core.data.OTXDataModule">[docs]</a>
 <span class="k">class</span> <span class="nc">OTXDataModule</span><span class="p">(</span><span class="n">LightningDataModule</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;LightningDataModule extension for OTX pipeline.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;LightningDataModule extension for OTX pipeline.</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+<span class="sd">    Args:</span>
+<span class="sd">        input_size (int | tuple[int, int] | None, optional):</span>
+<span class="sd">            Final image or video shape of data after data transformation. It&#39;ll be applied to all subset configs</span>
+<span class="sd">            If it&#39;s not None. Defaults to None.</span>
+<span class="sd">        adaptive_input_size (Literal[&quot;auto&quot;, &quot;downscale&quot;] | None, optional):</span>
+<span class="sd">            The adaptive input size mode. If it&#39;s set, appropriate input size is found by analyzing dataset.</span>
+<span class="sd">            &quot;auto&quot; can find both bigger and smaller input size than current input size and &quot;downscale&quot; uses only</span>
+<span class="sd">            smaller size than default setting. Defaults to None.</span>
+<span class="sd">        input_size_multiplier (int, optional):</span>
+<span class="sd">            adaptive_input_size will finds multiple of input_size_multiplier value if it&#39;s set. It&#39;s usefull when</span>
+<span class="sd">            a model requries multiple of specific value as input_size. Defaults to 1.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>  <span class="c1"># noqa: PLR0913</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">task</span><span class="p">:</span> <span class="n">OTXTaskType</span><span class="p">,</span>
         <span class="n">data_format</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -319,17 +332,14 @@
         <span class="n">auto_num_workers</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">device</span><span class="p">:</span> <span class="n">DeviceType</span> <span class="o">=</span> <span class="n">DeviceType</span><span class="o">.</span><span class="n">auto</span><span class="p">,</span>
         <span class="n">input_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">adaptive_input_size</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;auto&quot;</span><span class="p">,</span> <span class="s2">&quot;downscale&quot;</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">input_size_multiplier</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Constructor.&quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">task</span> <span class="o">=</span> <span class="n">task</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">data_format</span> <span class="o">=</span> <span class="n">data_format</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">data_root</span> <span class="o">=</span> <span class="n">data_root</span>
-
-        <span class="k">if</span> <span class="n">input_size</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">for</span> <span class="n">subset_cfg</span> <span class="ow">in</span> <span class="p">[</span><span class="n">train_subset</span><span class="p">,</span> <span class="n">val_subset</span><span class="p">,</span> <span class="n">test_subset</span><span class="p">,</span> <span class="n">unlabeled_subset</span><span class="p">]:</span>
-                <span class="k">if</span> <span class="n">subset_cfg</span><span class="o">.</span><span class="n">input_size</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="n">subset_cfg</span><span class="o">.</span><span class="n">input_size</span> <span class="o">=</span> <span class="n">input_size</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">train_subset</span> <span class="o">=</span> <span class="n">train_subset</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">val_subset</span> <span class="o">=</span> <span class="n">val_subset</span>
@@ -352,7 +362,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">device</span> <span class="o">=</span> <span class="n">device</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">subsets</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">OTXDataset</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">save_hyperparameters</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">save_hyperparameters</span><span class="p">(</span><span class="n">ignore</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;input_size&quot;</span><span class="p">])</span>
 
         <span class="c1"># TODO (Jaeguk): This is workaround for a bug in Datumaro.</span>
         <span class="c1"># These lines should be removed after next datumaro release.</span>
@@ -381,6 +391,19 @@
                 <span class="nb">format</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">unlabeled_subset</span><span class="o">.</span><span class="n">data_format</span><span class="p">,</span>
                 <span class="n">subset</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">unlabeled_subset</span><span class="o">.</span><span class="n">subset_name</span><span class="p">,</span>
             <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">adaptive_input_size</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">input_size</span> <span class="o">=</span> <span class="n">adapt_input_size_to_dataset</span><span class="p">(</span>
+                <span class="n">dataset</span><span class="p">,</span>
+                <span class="n">input_size</span><span class="p">,</span>
+                <span class="n">adaptive_input_size</span> <span class="o">==</span> <span class="s2">&quot;downscale&quot;</span><span class="p">,</span>
+                <span class="n">input_size_multiplier</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="n">input_size</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">subset_cfg</span> <span class="ow">in</span> <span class="p">[</span><span class="n">train_subset</span><span class="p">,</span> <span class="n">val_subset</span><span class="p">,</span> <span class="n">test_subset</span><span class="p">,</span> <span class="n">unlabeled_subset</span><span class="p">]:</span>
+                <span class="k">if</span> <span class="n">subset_cfg</span><span class="o">.</span><span class="n">input_size</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">subset_cfg</span><span class="o">.</span><span class="n">input_size</span> <span class="o">=</span> <span class="n">input_size</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">input_size</span> <span class="o">=</span> <span class="n">input_size</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">tile_config</span><span class="o">.</span><span class="n">enable_tiler</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">tile_config</span><span class="o">.</span><span class="n">enable_adaptive_tiling</span><span class="p">:</span>
             <span class="n">adapt_tile_config</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tile_config</span><span class="p">,</span> <span class="n">dataset</span><span class="o">=</span><span class="n">dataset</span><span class="p">)</span>
@@ -719,6 +742,7 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">unannotated_items_ratio</span><span class="p">,</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">auto_num_workers</span><span class="p">,</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">input_size</span><span class="p">,</span>
             <span class="p">),</span>
         <span class="p">)</span></div>
 
