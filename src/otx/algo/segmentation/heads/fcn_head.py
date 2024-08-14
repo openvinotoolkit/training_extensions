@@ -11,6 +11,7 @@ import torch
 from torch import Tensor, nn
 
 from otx.algo.modules import Conv2dModule
+from otx.algo.modules.activation import build_activation_layer
 from otx.algo.modules.norm import build_norm_layer
 from otx.algo.segmentation.modules import IterativeAggregator
 
@@ -104,7 +105,7 @@ class FCNHead(BaseSegmHead):
                 padding=conv_padding,
                 dilation=dilation,
                 normalization=build_norm_layer(self.normalization_callable, num_features=self.channels),
-                activation_callable=self.activation_callable,
+                activation=build_activation_layer(self.activation_callable),
             ),
         ]
         convs.extend(
@@ -116,7 +117,7 @@ class FCNHead(BaseSegmHead):
                     padding=conv_padding,
                     dilation=dilation,
                     normalization=build_norm_layer(self.normalization_callable, num_features=self.channels),
-                    activation_callable=self.activation_callable,
+                    activation=build_activation_layer(self.activation_callable),
                 )
                 for _ in range(num_convs - 1)
             ],
@@ -132,7 +133,7 @@ class FCNHead(BaseSegmHead):
                 kernel_size=kernel_size,
                 padding=kernel_size // 2,
                 normalization=build_norm_layer(self.normalization_callable, num_features=self.channels),
-                activation_callable=self.activation_callable,
+                activation=build_activation_layer(self.activation_callable),
             )
 
         if self.activation_callable:

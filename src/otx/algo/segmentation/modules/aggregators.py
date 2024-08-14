@@ -12,6 +12,7 @@ from torch import nn
 from torch.nn import functional as f
 
 from otx.algo.modules import Conv2dModule, DepthwiseSeparableConvModule
+from otx.algo.modules.activation import build_activation_layer
 from otx.algo.modules.norm import build_norm_layer
 
 from .utils import normalize
@@ -65,7 +66,7 @@ class IterativeAggregator(nn.Module):
                         kernel_size=1,
                         stride=1,
                         normalization=build_norm_layer(normalization_callable, num_features=out_channels),
-                        activation_callable=nn.ReLU,
+                        activation=build_activation_layer(nn.ReLU),
                     ),
                 )
 
@@ -82,9 +83,9 @@ class IterativeAggregator(nn.Module):
                     stride=1,
                     padding=1,
                     normalization=build_norm_layer(normalization_callable, num_features=out_channels),
-                    activation_callable=nn.ReLU,
-                    dw_activation_callable=None,
-                    pw_activation_callable=nn.ReLU,
+                    activation=build_activation_layer(nn.ReLU),
+                    dw_activation=None,
+                    pw_activation=build_activation_layer(nn.ReLU),
                 ),
             )
 
@@ -96,7 +97,7 @@ class IterativeAggregator(nn.Module):
                         kernel_size=1,
                         stride=1,
                         normalization=build_norm_layer(normalization_callable, num_features=min_channels),
-                        activation_callable=nn.ReLU,
+                        activation=build_activation_layer(nn.ReLU),
                     ),
                 )
             else:

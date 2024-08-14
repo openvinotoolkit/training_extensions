@@ -18,6 +18,7 @@ from torch import nn
 from torch.nn import functional
 
 from otx.algo.modules import Conv2dModule, build_norm_layer
+from otx.algo.modules.activation import build_activation_layer
 from otx.algo.modules.base_module import BaseModule
 from otx.algo.segmentation.modules import (
     AsymmetricPositionAttentionModule,
@@ -62,7 +63,7 @@ class NeighbourSupport(nn.Module):
                 kernel_size=1,
                 stride=1,
                 normalization=build_norm_layer(normalization_callable, num_features=self.key_channels),
-                activation_callable=nn.ReLU,
+                activation=build_activation_layer(nn.ReLU),
             ),
             Conv2dModule(
                 self.key_channels,
@@ -72,7 +73,7 @@ class NeighbourSupport(nn.Module):
                 padding=(self.kernel_size - 1) // 2,
                 groups=self.key_channels,
                 normalization=build_norm_layer(normalization_callable, num_features=self.key_channels),
-                activation_callable=None,
+                activation=None,
             ),
             Conv2dModule(
                 in_channels=self.key_channels,
@@ -83,7 +84,7 @@ class NeighbourSupport(nn.Module):
                     normalization_callable,
                     num_features=self.kernel_size * self.kernel_size,
                 ),
-                activation_callable=None,
+                activation=None,
             ),
         )
         self.value = nn.Sequential(
@@ -93,7 +94,7 @@ class NeighbourSupport(nn.Module):
                 kernel_size=1,
                 stride=1,
                 normalization=build_norm_layer(normalization_callable, num_features=self.value_channels),
-                activation_callable=None,
+                activation=None,
             ),
             nn.Unfold(kernel_size=self.kernel_size, stride=1, padding=1),
         )
@@ -103,7 +104,7 @@ class NeighbourSupport(nn.Module):
             kernel_size=1,
             stride=1,
             normalization=build_norm_layer(normalization_callable, num_features=self.in_channels),
-            activation_callable=None,
+            activation=None,
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -161,7 +162,7 @@ class CrossResolutionWeighting(nn.Module):
             kernel_size=1,
             stride=1,
             normalization=build_norm_layer(normalization_callable, num_features=int(total_channel / ratio)),
-            activation_callable=activation_callable[0],
+            activation=build_activation_layer(activation_callable[0]),
         )
         self.conv2 = Conv2dModule(
             in_channels=int(total_channel / ratio),
@@ -169,7 +170,7 @@ class CrossResolutionWeighting(nn.Module):
             kernel_size=1,
             stride=1,
             normalization=build_norm_layer(normalization_callable, num_features=total_channel),
-            activation_callable=activation_callable[1],
+            activation=build_activation_layer(activation_callable[1]),
         )
 
     def forward(self, x: torch.Tensor) -> list[torch.Tensor]:
@@ -226,14 +227,14 @@ class SpatialWeighting(nn.Module):
             out_channels=int(channels / ratio),
             kernel_size=1,
             stride=1,
-            activation_callable=activation_callable[0],
+            activation=build_activation_layer(activation_callable[0]),
         )
         self.conv2 = Conv2dModule(
             in_channels=int(channels / ratio),
             out_channels=channels,
             kernel_size=1,
             stride=1,
-            activation_callable=activation_callable[1],
+            activation=build_activation_layer(activation_callable[1]),
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -280,7 +281,7 @@ class SpatialWeightingV2(nn.Module):
             normalization=build_norm_layer(normalization_callable, num_features=self.internal_channels)
             if enable_norm
             else None,
-            activation_callable=None,
+            activation=None,
         )
         self.q_channel = Conv2dModule(
             in_channels=self.in_channels,
@@ -289,7 +290,7 @@ class SpatialWeightingV2(nn.Module):
             stride=1,
             bias=False,
             normalization=build_norm_layer(normalization_callable, num_features=1) if enable_norm else None,
-            activation_callable=None,
+            activation=None,
         )
         self.out_channel = Conv2dModule(
             in_channels=self.internal_channels,
@@ -297,7 +298,7 @@ class SpatialWeightingV2(nn.Module):
             kernel_size=1,
             stride=1,
             normalization=build_norm_layer(normalization_callable, num_features=self.in_channels),
-            activation_callable=nn.Sigmoid,
+            activation=build_activation_layer(nn.Sigmoid),
         )
 
         # spatial-only branch
@@ -310,7 +311,7 @@ class SpatialWeightingV2(nn.Module):
             normalization=build_norm_layer(normalization_callable, num_features=self.internal_channels)
             if enable_norm
             else None,
-            activation_callable=None,
+            activation=None,
         )
         self.q_spatial = Conv2dModule(
             in_channels=self.in_channels,
@@ -321,7 +322,7 @@ class SpatialWeightingV2(nn.Module):
             normalization=build_norm_layer(normalization_callable, num_features=self.internal_channels)
             if enable_norm
             else None,
-            activation_callable=None,
+            activation=None,
         )
         self.global_avgpool = nn.AdaptiveAvgPool2d(1)
 
@@ -437,7 +438,7 @@ class ConditionalChannelWeighting(nn.Module):
                     padding=dw_ksize // 2,
                     groups=channel,
                     normalization=build_norm_layer(normalization_callable, num_features=channel),
-                    activation_callable=None,
+                    activation=None,
                 )
                 for channel in branch_channels
             ],
@@ -565,7 +566,7 @@ class Stem(nn.Module):
             stride=strides[0],
             padding=1,
             normalization=build_norm_layer(self.normalization_callable, num_features=stem_channels),
-            activation_callable=nn.ReLU,
+            activation=build_activation_layer(nn.ReLU),
         )
 
         self.conv2 = None
@@ -577,7 +578,7 @@ class Stem(nn.Module):
                 stride=2,
                 padding=1,
                 normalization=build_norm_layer(self.normalization_callable, num_features=stem_channels),
-                activation_callable=nn.ReLU,
+                activation=build_activation_layer(nn.ReLU),
             )
 
         mid_channels = int(round(stem_channels * expand_ratio))
@@ -596,7 +597,7 @@ class Stem(nn.Module):
                 padding=1,
                 groups=branch_channels,
                 normalization=build_norm_layer(normalization_callable, num_features=branch_channels),
-                activation_callable=None,
+                activation=None,
             ),
             Conv2dModule(
                 branch_channels,
@@ -605,7 +606,7 @@ class Stem(nn.Module):
                 stride=1,
                 padding=0,
                 normalization=build_norm_layer(normalization_callable, num_features=inc_channels),
-                activation_callable=nn.ReLU,
+                activation=build_activation_layer(nn.ReLU),
             ),
         )
 
@@ -616,7 +617,7 @@ class Stem(nn.Module):
             stride=1,
             padding=0,
             normalization=build_norm_layer(normalization_callable, num_features=mid_channels),
-            activation_callable=nn.ReLU,
+            activation=build_activation_layer(nn.ReLU),
         )
         self.depthwise_conv = Conv2dModule(
             mid_channels,
@@ -626,7 +627,7 @@ class Stem(nn.Module):
             padding=1,
             groups=mid_channels,
             normalization=build_norm_layer(normalization_callable, num_features=mid_channels),
-            activation_callable=None,
+            activation=None,
         )
         self.linear_conv = Conv2dModule(
             mid_channels,
@@ -638,7 +639,7 @@ class Stem(nn.Module):
                 normalization_callable,
                 num_features=branch_channels if stem_channels == self.out_channels else stem_channels,
             ),
-            activation_callable=nn.ReLU,
+            activation=build_activation_layer(nn.ReLU),
         )
 
     def _inner_forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -740,7 +741,7 @@ class StemV2(nn.Module):
             stride=strides[0],
             padding=1,
             normalization=build_norm_layer(self.normalization_callable, num_features=stem_channels),
-            activation_callable=nn.ReLU,
+            activation=build_activation_layer(nn.ReLU),
         )
 
         self.conv2 = None
@@ -752,7 +753,7 @@ class StemV2(nn.Module):
                 stride=2,
                 padding=1,
                 normalization=build_norm_layer(self.normalization_callable, num_features=stem_channels),
-                activation_callable=nn.ReLU,
+                activation=build_activation_layer(nn.ReLU),
             )
 
         mid_channels = int(round(stem_channels * expand_ratio))
@@ -771,7 +772,7 @@ class StemV2(nn.Module):
                         padding=1,
                         groups=internal_branch_channels,
                         normalization=build_norm_layer(normalization_callable, num_features=internal_branch_channels),
-                        activation_callable=None,
+                        activation=None,
                     ),
                     Conv2dModule(
                         internal_branch_channels,
@@ -783,7 +784,7 @@ class StemV2(nn.Module):
                             normalization_callable,
                             num_features=out_branch_channels if stage == num_stages else internal_branch_channels,
                         ),
-                        activation_callable=nn.ReLU,
+                        activation=build_activation_layer(nn.ReLU),
                     ),
                 ),
             )
@@ -797,7 +798,7 @@ class StemV2(nn.Module):
                         stride=1,
                         padding=0,
                         normalization=build_norm_layer(normalization_callable, num_features=mid_channels),
-                        activation_callable=nn.ReLU,
+                        activation=build_activation_layer(nn.ReLU),
                     ),
                     Conv2dModule(
                         mid_channels,
@@ -807,7 +808,7 @@ class StemV2(nn.Module):
                         padding=1,
                         groups=mid_channels,
                         normalization=build_norm_layer(normalization_callable, num_features=mid_channels),
-                        activation_callable=None,
+                        activation=None,
                     ),
                     Conv2dModule(
                         mid_channels,
@@ -819,7 +820,7 @@ class StemV2(nn.Module):
                             normalization_callable,
                             num_features=out_branch_channels if stage == num_stages else internal_branch_channels,
                         ),
-                        activation_callable=nn.ReLU,
+                        activation=build_activation_layer(nn.ReLU),
                     ),
                 ),
             )
@@ -906,7 +907,7 @@ class ShuffleUnit(nn.Module):
                     padding=1,
                     groups=in_channels,
                     normalization=build_norm_layer(normalization_callable, num_features=in_channels),
-                    activation_callable=None,
+                    activation=None,
                 ),
                 Conv2dModule(
                     in_channels,
@@ -915,7 +916,7 @@ class ShuffleUnit(nn.Module):
                     stride=1,
                     padding=0,
                     normalization=build_norm_layer(normalization_callable, num_features=branch_features),
-                    activation_callable=activation_callable,
+                    activation=build_activation_layer(activation_callable),
                 ),
             )
 
@@ -927,7 +928,7 @@ class ShuffleUnit(nn.Module):
                 stride=1,
                 padding=0,
                 normalization=build_norm_layer(normalization_callable, num_features=branch_features),
-                activation_callable=activation_callable,
+                activation=build_activation_layer(activation_callable),
             ),
             Conv2dModule(
                 branch_features,
@@ -937,7 +938,7 @@ class ShuffleUnit(nn.Module):
                 padding=1,
                 groups=branch_features,
                 normalization=build_norm_layer(normalization_callable, num_features=branch_features),
-                activation_callable=None,
+                activation=None,
             ),
             Conv2dModule(
                 branch_features,
@@ -946,7 +947,7 @@ class ShuffleUnit(nn.Module):
                 stride=1,
                 padding=0,
                 normalization=build_norm_layer(normalization_callable, num_features=branch_features),
-                activation_callable=activation_callable,
+                activation=build_activation_layer(activation_callable),
             ),
         )
 
@@ -1295,7 +1296,7 @@ class LiteHRNet(BaseModule):
                         stride=1,
                         padding=0,
                         normalization=build_norm_layer(self.normalization_callable, num_features=out_modules_channels),
-                        activation_callable=nn.ReLU,
+                        activation=build_activation_layer(nn.ReLU),
                     ),
                 )
                 in_modules_channels = out_modules_channels
@@ -1332,7 +1333,7 @@ class LiteHRNet(BaseModule):
                     padding=1,
                     groups=self.stem.out_channels,
                     normalization=build_norm_layer(normalization_callable, num_features=self.stem.out_channels),
-                    activation_callable=None,
+                    activation=None,
                 ),
                 Conv2dModule(
                     self.stem.out_channels,
@@ -1341,7 +1342,7 @@ class LiteHRNet(BaseModule):
                     stride=1,
                     padding=0,
                     normalization=build_norm_layer(normalization_callable, num_features=num_channels_last[0]),
-                    activation_callable=nn.ReLU,
+                    activation=build_activation_layer(nn.ReLU),
                 ),
             )
 

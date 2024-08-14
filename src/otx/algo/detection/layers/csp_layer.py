@@ -12,7 +12,7 @@ import torch
 from torch import Tensor, nn
 
 from otx.algo.detection.layers import ChannelAttention
-from otx.algo.modules.activation import Swish
+from otx.algo.modules.activation import Swish, build_activation_layer
 from otx.algo.modules.base_module import BaseModule
 from otx.algo.modules.conv_module import Conv2dModule, DepthwiseSeparableConvModule
 from otx.algo.modules.norm import build_norm_layer
@@ -61,7 +61,7 @@ class DarknetBottleneck(BaseModule):
             hidden_channels,
             1,
             normalization=build_norm_layer(normalization_callable, num_features=hidden_channels),
-            activation_callable=activation_callable,
+            activation=build_activation_layer(activation_callable),
         )
         self.conv2 = conv(
             hidden_channels,
@@ -70,7 +70,7 @@ class DarknetBottleneck(BaseModule):
             stride=1,
             padding=1,
             normalization=build_norm_layer(normalization_callable, num_features=out_channels),
-            activation_callable=activation_callable,
+            activation=build_activation_layer(activation_callable),
         )
         self.add_identity = add_identity and in_channels == out_channels
 
@@ -129,7 +129,7 @@ class CSPNeXtBlock(BaseModule):
             stride=1,
             padding=1,
             normalization=build_norm_layer(normalization_callable, num_features=hidden_channels),
-            activation_callable=activation_callable,
+            activation=build_activation_layer(activation_callable),
         )
         self.conv2 = DepthwiseSeparableConvModule(
             hidden_channels,
@@ -138,7 +138,7 @@ class CSPNeXtBlock(BaseModule):
             stride=1,
             padding=kernel_size // 2,
             normalization=build_norm_layer(normalization_callable, num_features=out_channels),
-            activation_callable=activation_callable,
+            activation=build_activation_layer(activation_callable),
         )
         self.add_identity = add_identity and in_channels == out_channels
 
@@ -182,16 +182,16 @@ class RepVggBlock(nn.Module):
             3,
             1,
             padding=1,
-            activation_callable=None,
             normalization=build_norm_layer(normalization_callable, num_features=ch_out),
+            activation=None,
         )
         self.conv2 = Conv2dModule(
             ch_in,
             ch_out,
             1,
             1,
-            activation_callable=None,
             normalization=build_norm_layer(normalization_callable, num_features=ch_out),
+            activation=None,
         )
         self.act = activation_callable() if activation_callable else nn.Identity()
 
@@ -277,21 +277,21 @@ class CSPLayer(BaseModule):
             mid_channels,
             1,
             normalization=build_norm_layer(normalization_callable, num_features=mid_channels),
-            activation_callable=activation_callable,
+            activation=build_activation_layer(activation_callable),
         )
         self.short_conv = Conv2dModule(
             in_channels,
             mid_channels,
             1,
             normalization=build_norm_layer(normalization_callable, num_features=mid_channels),
-            activation_callable=activation_callable,
+            activation=build_activation_layer(activation_callable),
         )
         self.final_conv = Conv2dModule(
             2 * mid_channels,
             out_channels,
             1,
             normalization=build_norm_layer(normalization_callable, num_features=out_channels),
-            activation_callable=activation_callable,
+            activation=build_activation_layer(activation_callable),
         )
 
         self.blocks = nn.Sequential(
@@ -361,8 +361,8 @@ class CSPRepLayer(nn.Module):
             1,
             1,
             bias=bias,
-            activation_callable=activation_callable,
             normalization=build_norm_layer(normalization_callable, num_features=hidden_channels),
+            activation=build_activation_layer(activation_callable),
         )
         self.conv2 = Conv2dModule(
             in_channels,
@@ -370,8 +370,8 @@ class CSPRepLayer(nn.Module):
             1,
             1,
             bias=bias,
-            activation_callable=activation_callable,
             normalization=build_norm_layer(normalization_callable, num_features=hidden_channels),
+            activation=build_activation_layer(activation_callable),
         )
         self.bottlenecks = nn.Sequential(
             *[
@@ -391,8 +391,8 @@ class CSPRepLayer(nn.Module):
                 1,
                 1,
                 bias=bias,
-                activation_callable=activation_callable,
                 normalization=build_norm_layer(normalization_callable, num_features=out_channels),
+                activation=build_activation_layer(activation_callable),
             )
         else:
             self.conv3 = nn.Identity()

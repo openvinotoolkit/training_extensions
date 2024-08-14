@@ -32,6 +32,7 @@ from otx.algo.detection.heads.rtmdet_head import RTMDetHead
 from otx.algo.instance_segmentation.utils.roi_extractors import OTXRoIAlign
 from otx.algo.instance_segmentation.utils.structures.bbox.transforms import get_box_wh, scale_boxes
 from otx.algo.instance_segmentation.utils.utils import unpack_inst_seg_entity
+from otx.algo.modules.activation import build_activation_layer
 from otx.algo.modules.base_module import BaseModule
 from otx.algo.modules.conv_module import Conv2dModule
 from otx.algo.modules.norm import build_norm_layer, is_norm
@@ -111,7 +112,7 @@ class RTMDetInsHead(RTMDetHead):
                     stride=1,
                     padding=1,
                     normalization=build_norm_layer(self.normalization_callable, num_features=self.feat_channels),
-                    activation_callable=self.activation_callable,
+                    activation=build_activation_layer(self.activation_callable),
                 ),
             )
         pred_pad_size = self.pred_kernel_size // 2
@@ -741,8 +742,8 @@ class MaskFeatModule(BaseModule):
                     feat_channels,
                     3,
                     padding=1,
-                    activation_callable=activation_callable,
                     normalization=build_norm_layer(normalization_callable, num_features=feat_channels),
+                    activation=build_activation_layer(activation_callable),
                 ),
             )
         self.stacked_convs = nn.Sequential(*convs)
@@ -850,7 +851,7 @@ class RTMDetInsSepBNHead(RTMDetInsHead):
                         stride=1,
                         padding=1,
                         normalization=build_norm_layer(self.normalization_callable, num_features=self.feat_channels),
-                        activation_callable=self.activation_callable,
+                        activation=build_activation_layer(self.activation_callable),
                     ),
                 )
                 reg_convs.append(
@@ -861,7 +862,7 @@ class RTMDetInsSepBNHead(RTMDetInsHead):
                         stride=1,
                         padding=1,
                         normalization=build_norm_layer(self.normalization_callable, num_features=self.feat_channels),
-                        activation_callable=self.activation_callable,
+                        activation=build_activation_layer(self.activation_callable),
                     ),
                 )
                 kernel_convs.append(
@@ -872,7 +873,7 @@ class RTMDetInsSepBNHead(RTMDetInsHead):
                         stride=1,
                         padding=1,
                         normalization=build_norm_layer(self.normalization_callable, num_features=self.feat_channels),
-                        activation_callable=self.activation_callable,
+                        activation=build_activation_layer(self.activation_callable),
                     ),
                 )
             self.cls_convs.append(cls_convs)

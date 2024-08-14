@@ -14,6 +14,7 @@ from typing import Callable
 
 from torch import Tensor, nn
 
+from otx.algo.modules.activation import build_activation_layer
 from otx.algo.modules.base_module import BaseModule
 from otx.algo.modules.conv_module import Conv2dModule
 from otx.algo.modules.norm import build_norm_layer
@@ -108,7 +109,7 @@ class FPN(BaseModule):
                 normalization=build_norm_layer(normalization_callable, num_features=out_channels)
                 if not self.no_norm_on_lateral
                 else None,
-                activation_callable=activation_callable,
+                activation=build_activation_layer(activation_callable),
                 inplace=False,
             )
             fpn_conv = Conv2dModule(
@@ -117,7 +118,7 @@ class FPN(BaseModule):
                 3,
                 padding=1,
                 normalization=build_norm_layer(normalization_callable, num_features=out_channels),
-                activation_callable=activation_callable,
+                activation=build_activation_layer(activation_callable),
                 inplace=False,
             )
 
@@ -139,7 +140,7 @@ class FPN(BaseModule):
                     stride=2,
                     padding=1,
                     normalization=build_norm_layer(normalization_callable, num_features=out_channels),
-                    activation_callable=activation_callable,
+                    activation=build_activation_layer(activation_callable),
                     inplace=False,
                 )
                 self.fpn_convs.append(extra_fpn_conv)

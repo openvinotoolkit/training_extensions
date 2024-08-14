@@ -23,6 +23,7 @@ from otx.algo.detection.utils.utils import (
     sigmoid_geometric_mean,
     unmap,
 )
+from otx.algo.modules.activation import build_activation_layer
 from otx.algo.modules.conv_module import Conv2dModule, DepthwiseSeparableConvModule
 from otx.algo.modules.norm import build_norm_layer, is_norm
 from otx.algo.modules.scale import Scale
@@ -70,7 +71,7 @@ class RTMDetHead(ATSSHead):
                     stride=1,
                     padding=1,
                     normalization=build_norm_layer(self.normalization_callable, num_features=self.feat_channels),
-                    activation_callable=self.activation_callable,
+                    activation=build_activation_layer(self.activation_callable),
                 ),
             )
             self.reg_convs.append(
@@ -81,7 +82,7 @@ class RTMDetHead(ATSSHead):
                     stride=1,
                     padding=1,
                     normalization=build_norm_layer(self.normalization_callable, num_features=self.feat_channels),
-                    activation_callable=self.activation_callable,
+                    activation=build_activation_layer(self.activation_callable),
                 ),
             )
         pred_pad_size = self.pred_kernel_size // 2
@@ -699,7 +700,7 @@ class RTMDetSepBNHead(RTMDetHead):
                         stride=1,
                         padding=1,
                         normalization=build_norm_layer(self.normalization_callable, num_features=self.feat_channels),
-                        activation_callable=self.activation_callable,
+                        activation=build_activation_layer(self.activation_callable),
                     ),
                 )
                 reg_convs.append(
@@ -710,7 +711,7 @@ class RTMDetSepBNHead(RTMDetHead):
                         stride=1,
                         padding=1,
                         normalization=build_norm_layer(self.normalization_callable, num_features=self.feat_channels),
-                        activation_callable=self.activation_callable,
+                        activation=build_activation_layer(self.activation_callable),
                     ),
                 )
             self.cls_convs.append(cls_convs)

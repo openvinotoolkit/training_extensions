@@ -14,7 +14,7 @@ import torch.utils.checkpoint as cp
 from torch import Tensor, nn
 from torch.nn.modules.batchnorm import _BatchNorm
 
-from otx.algo.modules.activation import Swish
+from otx.algo.modules.activation import Swish, build_activation_layer
 from otx.algo.modules.conv_module import Conv3dModule
 from otx.algo.modules.norm import build_norm_layer
 from otx.algo.utils.mmengine_utils import load_checkpoint
@@ -116,7 +116,7 @@ class BlockX3D(nn.Module):
             padding=0,
             bias=False,
             normalization=build_norm_layer(normalization_callable, num_features=planes),
-            activation_callable=self.activation_callable,
+            activation=build_activation_layer(activation_callable),
         )
         # Here we use the channel-wise conv
         self.conv2 = Conv3dModule(
@@ -128,7 +128,7 @@ class BlockX3D(nn.Module):
             groups=planes,
             bias=False,
             normalization=build_norm_layer(normalization_callable, num_features=planes),
-            activation_callable=None,
+            activation=None,
         )
 
         self.swish = Swish()
@@ -141,7 +141,7 @@ class BlockX3D(nn.Module):
             padding=0,
             bias=False,
             normalization=build_norm_layer(normalization_callable, num_features=outplanes),
-            activation_callable=None,
+            activation=None,
         )
 
         if self.se_ratio is not None:
@@ -317,7 +317,7 @@ class X3DBackbone(nn.Module):
             padding=0,
             bias=False,
             normalization=build_norm_layer(self.normalization_callable, num_features=int(self.feat_dim * self.gamma_b)),
-            activation_callable=self.activation_callable,
+            activation=build_activation_layer(self.activation_callable),
         )
         self.feat_dim = int(self.feat_dim * self.gamma_b)
 
@@ -401,7 +401,7 @@ class X3DBackbone(nn.Module):
                 padding=0,
                 bias=False,
                 normalization=build_norm_layer(normalization_callable, num_features=inplanes),
-                activation_callable=None,
+                activation=None,
             )
 
         use_se = [False] * blocks
@@ -457,7 +457,7 @@ class X3DBackbone(nn.Module):
             padding=(0, 1, 1),
             bias=False,
             normalization=None,
-            activation_callable=None,
+            activation=None,
         )
         self.conv1_t = Conv3dModule(
             self.base_channels,
@@ -468,7 +468,7 @@ class X3DBackbone(nn.Module):
             groups=self.base_channels,
             bias=False,
             normalization=build_norm_layer(self.normalization_callable, num_features=self.base_channels),
-            activation_callable=self.activation_callable,
+            activation=build_activation_layer(self.activation_callable),
         )
 
     def _freeze_stages(self) -> None:

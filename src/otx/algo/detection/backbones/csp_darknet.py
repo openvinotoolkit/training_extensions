@@ -18,7 +18,7 @@ from torch.nn.modules.batchnorm import _BatchNorm
 
 from otx.algo.common.layers import SPPBottleneck
 from otx.algo.detection.layers import CSPLayer
-from otx.algo.modules.activation import Swish
+from otx.algo.modules.activation import Swish, build_activation_layer
 from otx.algo.modules.base_module import BaseModule
 from otx.algo.modules.conv_module import Conv2dModule, DepthwiseSeparableConvModule
 from otx.algo.modules.norm import build_norm_layer
@@ -55,7 +55,7 @@ class Focus(nn.Module):
             stride,
             padding=(kernel_size - 1) // 2,
             normalization=build_norm_layer(normalization_callable, num_features=out_channels),
-            activation_callable=activation_callable,
+            activation=build_activation_layer(activation_callable),
         )
 
     def forward(self, x: Tensor) -> Tensor:
@@ -198,7 +198,7 @@ class CSPDarknet(BaseModule):
                 stride=2,
                 padding=1,
                 normalization=build_norm_layer(normalization_callable, num_features=out_channels),
-                activation_callable=activation_callable,
+                activation=build_activation_layer(activation_callable),
             )
             stage.append(conv_layer)
             if use_spp:

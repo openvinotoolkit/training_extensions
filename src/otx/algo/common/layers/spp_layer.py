@@ -12,7 +12,7 @@ from functools import partial
 from typing import Callable
 
 import torch
-from otx.algo.modules.activation import Swish
+from otx.algo.modules.activation import Swish, build_activation_layer
 from otx.algo.modules.base_module import BaseModule
 from otx.algo.modules.conv_module import Conv2dModule
 from otx.algo.modules.norm import build_norm_layer
@@ -52,7 +52,7 @@ class SPPBottleneck(BaseModule):
             1,
             stride=1,
             normalization=build_norm_layer(normalization_callable, num_features=mid_channels),
-            activation_callable=activation_callable,
+            activation=build_activation_layer(activation_callable),
         )
         self.poolings = nn.ModuleList([nn.MaxPool2d(kernel_size=ks, stride=1, padding=ks // 2) for ks in kernel_sizes])
         conv2_channels = mid_channels * (len(kernel_sizes) + 1)
@@ -61,7 +61,7 @@ class SPPBottleneck(BaseModule):
             out_channels,
             1,
             normalization=build_norm_layer(normalization_callable, num_features=out_channels),
-            activation_callable=activation_callable,
+            activation=build_activation_layer(activation_callable),
         )
 
     def forward(self, x: Tensor) -> Tensor:

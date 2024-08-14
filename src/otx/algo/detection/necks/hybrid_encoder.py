@@ -13,6 +13,7 @@ from torch import nn
 
 from otx.algo.detection.layers import CSPRepLayer
 from otx.algo.modules import Conv2dModule
+from otx.algo.modules.activation import build_activation_layer
 from otx.algo.modules.base_module import BaseModule
 from otx.algo.modules.norm import build_norm_layer
 
@@ -195,8 +196,8 @@ class HybridEncoder(BaseModule):
                     hidden_dim,
                     1,
                     1,
-                    activation_callable=activation_callable,
                     normalization=build_norm_layer(normalization_callable, num_features=hidden_dim),
+                    activation=build_activation_layer(activation_callable),
                 ),
             )
             self.fpn_blocks.append(
@@ -221,8 +222,8 @@ class HybridEncoder(BaseModule):
                     3,
                     2,
                     padding=1,
-                    activation_callable=activation_callable,
                     normalization=build_norm_layer(normalization_callable, num_features=hidden_dim),
+                    activation=build_activation_layer(activation_callable),
                 ),
             )
             self.pan_blocks.append(

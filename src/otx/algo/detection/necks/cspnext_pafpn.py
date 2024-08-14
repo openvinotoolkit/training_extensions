@@ -18,7 +18,7 @@ import torch
 from torch import Tensor, nn
 
 from otx.algo.detection.layers import CSPLayer
-from otx.algo.modules.activation import Swish
+from otx.algo.modules.activation import Swish, build_activation_layer
 from otx.algo.modules.base_module import BaseModule
 from otx.algo.modules.conv_module import Conv2dModule, DepthwiseSeparableConvModule
 from otx.algo.modules.norm import build_norm_layer
@@ -80,7 +80,7 @@ class CSPNeXtPAFPN(BaseModule):
                     in_channels[idx - 1],
                     1,
                     normalization=build_norm_layer(normalization_callable, num_features=in_channels[idx - 1]),
-                    activation_callable=activation_callable,
+                    activation=build_activation_layer(activation_callable),
                 ),
             )
             self.top_down_blocks.append(
@@ -109,7 +109,7 @@ class CSPNeXtPAFPN(BaseModule):
                     stride=2,
                     padding=1,
                     normalization=build_norm_layer(normalization_callable, num_features=in_channels[idx]),
-                    activation_callable=activation_callable,
+                    activation=build_activation_layer(activation_callable),
                 ),
             )
             self.bottom_up_blocks.append(
@@ -135,7 +135,7 @@ class CSPNeXtPAFPN(BaseModule):
                     3,
                     padding=1,
                     normalization=build_norm_layer(normalization_callable, num_features=out_channels),
-                    activation_callable=activation_callable,
+                    activation=build_activation_layer(activation_callable),
                 ),
             )
 

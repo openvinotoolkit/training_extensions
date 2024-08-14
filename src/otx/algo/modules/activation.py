@@ -71,7 +71,7 @@ def _get_act_type(activation_callable: Callable[..., nn.Module]) -> type:
         (type): Class type of given activation callable.
 
     """
-    return activation_callable.func if isinstance(activation_callable, partial) else activation_callable
+    return activation_callable.func if isinstance(activation_callable, partial) else activation_callable  # type: ignore[return-value]
 
 
 def build_activation_layer(

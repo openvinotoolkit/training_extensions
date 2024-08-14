@@ -13,6 +13,7 @@ from torch import nn
 from torch.nn import AdaptiveAvgPool2d, AdaptiveMaxPool2d
 
 from otx.algo.modules import Conv2dModule
+from otx.algo.modules.activation import build_activation_layer
 from otx.algo.modules.norm import build_norm_layer
 
 
@@ -72,7 +73,7 @@ class AsymmetricPositionAttentionModule(nn.Module):
             stride=1,
             padding=0,
             normalization=build_norm_layer(self.normalization_callable, num_features=self.key_channels),
-            activation_callable=nn.ReLU,
+            activation=build_activation_layer(nn.ReLU),
         )
         self.key_psp = PSPModule(psp_size, method="max")
 
@@ -83,7 +84,7 @@ class AsymmetricPositionAttentionModule(nn.Module):
             stride=1,
             padding=0,
             normalization=build_norm_layer(self.normalization_callable, num_features=self.value_channels),
-            activation_callable=nn.ReLU,
+            activation=build_activation_layer(nn.ReLU),
         )
         self.value_psp = PSPModule(psp_size, method="max")
 
@@ -94,7 +95,7 @@ class AsymmetricPositionAttentionModule(nn.Module):
             stride=1,
             padding=0,
             normalization=build_norm_layer(self.normalization_callable, num_features=self.in_channels),
-            activation_callable=None,
+            activation=None,
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -172,7 +173,7 @@ class LocalAttentionModule(nn.Module):
             padding=1,
             groups=self.num_channels,
             normalization=build_norm_layer(self.normalization_callable, num_features=self.num_channels),
-            activation_callable=nn.ReLU,
+            activation=build_activation_layer(nn.ReLU),
         )
         self.dwconv2 = Conv2dModule(
             in_channels=self.num_channels,
@@ -182,7 +183,7 @@ class LocalAttentionModule(nn.Module):
             padding=1,
             groups=self.num_channels,
             normalization=build_norm_layer(self.normalization_callable, num_features=self.num_channels),
-            activation_callable=nn.ReLU,
+            activation=build_activation_layer(nn.ReLU),
         )
         self.dwconv3 = Conv2dModule(
             in_channels=self.num_channels,
@@ -192,7 +193,7 @@ class LocalAttentionModule(nn.Module):
             padding=1,
             groups=self.num_channels,
             normalization=build_norm_layer(self.normalization_callable, num_features=self.num_channels),
-            activation_callable=nn.ReLU,
+            activation=build_activation_layer(nn.ReLU),
         )
         self.sigmoid_spatial = nn.Sigmoid()
 

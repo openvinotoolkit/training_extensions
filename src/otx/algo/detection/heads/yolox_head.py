@@ -25,7 +25,7 @@ from otx.algo.common.utils.samplers import PseudoSampler
 from otx.algo.common.utils.utils import multi_apply, reduce_mean
 from otx.algo.detection.heads.base_head import BaseDenseHead
 from otx.algo.detection.losses import IoULoss
-from otx.algo.modules.activation import Swish
+from otx.algo.modules.activation import Swish, build_activation_layer
 from otx.algo.modules.conv_module import Conv2dModule, DepthwiseSeparableConvModule
 from otx.algo.modules.norm import build_norm_layer
 from otx.algo.utils.mmengine_utils import InstanceData
@@ -173,7 +173,7 @@ class YOLOXHead(BaseDenseHead):
                     stride=1,
                     padding=1,
                     normalization=build_norm_layer(self.normalization_callable, num_features=self.feat_channels),
-                    activation_callable=self.activation_callable,
+                    activation=build_activation_layer(self.activation_callable),
                     bias=self.conv_bias,
                 ),
             )

@@ -14,7 +14,7 @@ from pytorchcv.models.model_store import download_model
 from torch import nn
 from torch.nn import functional, init
 
-from otx.algo.modules.activation import Swish
+from otx.algo.modules.activation import Swish, build_activation_layer
 from otx.algo.modules.conv_module import Conv2dModule
 from otx.algo.modules.norm import build_norm_layer
 from otx.algo.utils.mmengine_utils import load_checkpoint_to_model
@@ -46,7 +46,7 @@ def conv1x1_block(
         groups=groups,
         bias=bias,
         normalization=build_norm_layer(nn.BatchNorm2d, num_features=out_channels, eps=bn_eps) if use_bn else None,
-        activation_callable=activation_callable,
+        activation=build_activation_layer(activation_callable),
     )
 
 
@@ -73,7 +73,7 @@ def conv3x3_block(
         groups=groups,
         bias=bias,
         normalization=build_norm_layer(nn.BatchNorm2d, num_features=out_channels, eps=bn_eps) if use_bn else None,
-        activation_callable=activation_callable,
+        activation=build_activation_layer(activation_callable),
     )
 
 
@@ -99,7 +99,7 @@ def dwconv3x3_block(
         groups=out_channels,
         bias=bias,
         normalization=build_norm_layer(nn.BatchNorm2d, num_features=out_channels, eps=bn_eps) if use_bn else None,
-        activation_callable=activation_callable,
+        activation=build_activation_layer(activation_callable),
     )
 
 
@@ -125,7 +125,7 @@ def dwconv5x5_block(
         groups=out_channels,
         bias=bias,
         normalization=build_norm_layer(nn.BatchNorm2d, num_features=out_channels, eps=bn_eps) if use_bn else None,
-        activation_callable=activation_callable,
+        activation=build_activation_layer(activation_callable),
     )
 
 

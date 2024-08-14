@@ -14,6 +14,7 @@ from typing import Callable, ClassVar
 
 from otx.algo.common.layers import SPPBottleneck
 from otx.algo.detection.layers import CSPLayer
+from otx.algo.modules.activation import build_activation_layer
 from otx.algo.modules.base_module import BaseModule
 from otx.algo.modules.conv_module import Conv2dModule, DepthwiseSeparableConvModule
 from otx.algo.modules.norm import build_norm_layer
@@ -128,7 +129,7 @@ class CSPNeXt(BaseModule):
                     normalization_callable,
                     num_features=int(arch_setting[0][0] * widen_factor // 2),
                 ),
-                activation_callable=activation_callable,
+                activation=build_activation_layer(activation_callable),
             ),
             Conv2dModule(
                 int(arch_setting[0][0] * widen_factor // 2),
@@ -140,7 +141,7 @@ class CSPNeXt(BaseModule):
                     normalization_callable,
                     num_features=int(arch_setting[0][0] * widen_factor // 2),
                 ),
-                activation_callable=activation_callable,
+                activation=build_activation_layer(activation_callable),
             ),
             Conv2dModule(
                 int(arch_setting[0][0] * widen_factor // 2),
@@ -152,7 +153,7 @@ class CSPNeXt(BaseModule):
                     normalization_callable,
                     num_features=int(arch_setting[0][0] * widen_factor),
                 ),
-                activation_callable=activation_callable,
+                activation=build_activation_layer(activation_callable),
             ),
         )
         self.layers = ["stem"]
@@ -169,7 +170,7 @@ class CSPNeXt(BaseModule):
                 stride=2,
                 padding=1,
                 normalization=build_norm_layer(normalization_callable, num_features=out_channels),
-                activation_callable=activation_callable,
+                activation=build_activation_layer(activation_callable),
             )
             stage.append(conv_layer)
             if use_spp:

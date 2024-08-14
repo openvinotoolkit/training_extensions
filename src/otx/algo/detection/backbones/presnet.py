@@ -11,6 +11,7 @@ from typing import Any, Callable, ClassVar
 import torch
 from torch import nn
 
+from otx.algo.modules.activation import build_activation_layer
 from otx.algo.modules.base_module import BaseModule
 from otx.algo.modules.conv_module import Conv2dModule
 from otx.algo.modules.norm import build_norm_layer
@@ -50,8 +51,8 @@ class BasicBlock(nn.Module):
                                     ch_out,
                                     1,
                                     1,
-                                    activation_callable=None,
                                     normalization=build_norm_layer(normalization_callable, num_features=ch_out),
+                                    activation=None,
                                 ),
                             ),
                         ],
@@ -63,8 +64,8 @@ class BasicBlock(nn.Module):
                     ch_out,
                     1,
                     stride,
-                    activation_callable=None,
                     normalization=build_norm_layer(normalization_callable, num_features=ch_out),
+                    activation=None,
                 )
 
         self.branch2a = Conv2dModule(
@@ -73,8 +74,8 @@ class BasicBlock(nn.Module):
             3,
             stride,
             padding=1,
-            activation_callable=activation_callable,
             normalization=build_norm_layer(normalization_callable, num_features=ch_out),
+            activation=activation_callable,
         )
         self.branch2b = Conv2dModule(
             ch_out,
@@ -82,8 +83,8 @@ class BasicBlock(nn.Module):
             3,
             1,
             padding=1,
-            activation_callable=None,
             normalization=build_norm_layer(normalization_callable, num_features=ch_out),
+            activation=None,
         )
         self.act = activation_callable() if activation_callable else nn.Identity()
 
@@ -127,8 +128,8 @@ class BottleNeck(nn.Module):
             width,
             1,
             stride1,
-            activation_callable=activation_callable,
             normalization=build_norm_layer(normalization_callable, num_features=width),
+            activation=build_activation_layer(activation_callable),
         )
         self.branch2b = Conv2dModule(
             width,
@@ -136,19 +137,19 @@ class BottleNeck(nn.Module):
             3,
             stride2,
             padding=1,
-            activation_callable=activation_callable,
             normalization=build_norm_layer(normalization_callable, num_features=width),
+            activation=build_activation_layer(activation_callable),
         )
         self.branch2c = Conv2dModule(
             width,
             ch_out * self.expansion,
             1,
             1,
-            activation_callable=None,
             normalization=build_norm_layer(
                 normalization_callable,
                 num_features=ch_out * self.expansion,
             ),
+            activation=None,
         )
 
         self.shortcut = shortcut
@@ -165,11 +166,11 @@ class BottleNeck(nn.Module):
                                     ch_out * self.expansion,
                                     1,
                                     1,
-                                    activation_callable=None,
                                     normalization=build_norm_layer(
                                         normalization_callable,
                                         num_features=ch_out * self.expansion,
                                     ),
+                                    activation=None,
                                 ),
                             ),
                         ],
@@ -181,11 +182,11 @@ class BottleNeck(nn.Module):
                     ch_out * self.expansion,
                     1,
                     stride,
-                    activation_callable=None,
                     normalization=build_norm_layer(
                         normalization_callable,
                         num_features=ch_out * self.expansion,
                     ),
+                    activation=None,
                 )
 
         self.act = activation_callable() if activation_callable else nn.Identity()
@@ -307,8 +308,8 @@ class PResNet(BaseModule):
                             k,
                             s,
                             padding=(k - 1) // 2,
-                            activation_callable=activation_callable,
                             normalization=build_norm_layer(normalization_callable, num_features=c_out),
+                            activation=build_activation_layer(activation_callable),
                         ),
                     )
                     for c_in, c_out, k, s, _name in conv_def

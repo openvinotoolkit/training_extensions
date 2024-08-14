@@ -12,6 +12,7 @@ import torch.nn.functional as f
 from torch import nn
 
 from otx.algo.modules import Conv2dModule
+from otx.algo.modules.activation import build_activation_layer
 from otx.algo.modules.norm import build_norm_layer
 from otx.algo.segmentation.modules import resize
 
@@ -41,7 +42,7 @@ class Hamburger(nn.Module):
         """Initialize Hamburger Module."""
         super().__init__()
 
-        self.ham_in = Conv2dModule(ham_channels, ham_channels, 1, normalization=None, activation_callable=None)
+        self.ham_in = Conv2dModule(ham_channels, ham_channels, 1, normalization=None, activation=None)
 
         self.ham = NMF2D(ham_channels=ham_channels, **ham_kwargs)
 
@@ -50,7 +51,7 @@ class Hamburger(nn.Module):
             ham_channels,
             1,
             normalization=build_norm_layer(normalization_callable, num_features=ham_channels),
-            activation_callable=None,
+            activation=None,
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -104,7 +105,7 @@ class LightHamHead(BaseSegmHead):
             self.ham_channels,
             1,
             normalization=build_norm_layer(self.normalization_callable, num_features=self.ham_channels),
-            activation_callable=self.activation_callable,
+            activation=build_activation_layer(self.activation_callable),
         )
 
         self.hamburger = Hamburger(self.ham_channels, ham_kwargs=self.ham_kwargs, **kwargs)
@@ -114,7 +115,7 @@ class LightHamHead(BaseSegmHead):
             self.channels,
             1,
             normalization=build_norm_layer(self.normalization_callable, num_features=self.channels),
-            activation_callable=self.activation_callable,
+            activation=build_activation_layer(self.activation_callable),
         )
 
     def forward(self, inputs: list[torch.Tensor]) -> torch.Tensor:
