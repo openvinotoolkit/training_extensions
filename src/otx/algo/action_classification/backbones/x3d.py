@@ -75,7 +75,7 @@ class BlockX3D(nn.Module):
         use_swish (bool): Whether to use swish as the activation function
             before and after the 3x3x3 conv. Default: True.
         normalization (Callable[..., nn.Module] | None): Normalization layer module.
-            Defaults to ``nn.BatchNorm3d``.
+            Defaults to None.
         activation (Callable[..., nn.Module] | None): Activation layer module.
             Defaults to ``nn.ReLU``.
         with_cp (bool): Use checkpoint or not. Using checkpoint will save some
@@ -91,7 +91,7 @@ class BlockX3D(nn.Module):
         downsample: nn.Module | None = None,
         se_ratio: float | None = None,
         use_swish: bool = True,
-        normalization: Callable[..., nn.Module] | None = nn.BatchNorm3d,
+        normalization: Callable[..., nn.Module] | None = None,
         activation: Callable[..., nn.Module] | None = nn.ReLU,
         with_cp: bool = False,
     ):
@@ -198,7 +198,7 @@ class X3DBackbone(nn.Module):
         use_swish (bool): Whether to use swish as the activation function
             before and after the 3x3x3 conv. Default: True.
         normalization (Callable[..., nn.Module] | None): Normalization layer module.
-            Defaults to ``partial(build_norm_layer, nn.BatchNorm3d, requires_grad=True)``.
+            Defaults to None.
         activation (Callable[..., nn.Module] | None): Activation layer module.
             Defaults to ``nn.ReLU``.
         norm_eval (bool): Whether to set BN layers to eval mode, namely, freeze
@@ -224,11 +224,7 @@ class X3DBackbone(nn.Module):
         se_style: str = "half",
         se_ratio: float = 1 / 16,
         use_swish: bool = True,
-        normalization: Callable[..., nn.Module] | None = partial(
-            build_norm_layer,
-            nn.BatchNorm3d,
-            requires_grad=True,
-        ),
+        normalization: Callable[..., nn.Module] | None = None,
         activation: Callable[..., nn.Module] | None = nn.ReLU,
         norm_eval: bool = False,
         with_cp: bool = False,

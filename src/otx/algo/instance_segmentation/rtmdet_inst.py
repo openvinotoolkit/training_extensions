@@ -161,8 +161,8 @@ class RTMDetInstTiny(RTMDetInst):
             share_conv=True,
             pred_kernel_size=1,
             feat_channels=96,
-            activation=partial(nn.SiLU, inplace=True),
             normalization=partial(build_norm_layer, nn.BatchNorm2d, requires_grad=True),
+            activation=partial(nn.SiLU, inplace=True),
             anchor_generator=MlvlPointGenerator(
                 offset=0,
                 strides=[8, 16, 32],

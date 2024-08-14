@@ -96,7 +96,6 @@ class ResNeXt(ResNet):
         frozen_stages (int): Stages to be frozen (all param fixed). -1 means
             not freezing any parameters.
         normalization (Callable[..., nn.Module] | None): Normalization layer module.
-            Defaults to ``partial(nn.BatchNorm2d, requires_grad=True)``.
         norm_eval (bool): Whether to set norm layers to eval mode, namely,
             freeze running stats (mean and var). Note: Effect on Batch Norm
             and its variants only.
