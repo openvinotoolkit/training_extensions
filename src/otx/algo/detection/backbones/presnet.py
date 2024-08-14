@@ -6,6 +6,7 @@
 from __future__ import annotations
 
 from collections import OrderedDict
+from functools import partial
 from typing import Any, Callable, ClassVar
 
 import torch
@@ -279,7 +280,7 @@ class PResNet(BaseModule):
         num_stages: int = 4,
         return_idx: list[int] = [0, 1, 2, 3],  # noqa: B006
         activation: Callable[..., nn.Module] | None = nn.ReLU,
-        normalization: Callable[..., nn.Module] = nn.BatchNorm2d,
+        normalization: Callable[..., nn.Module] = partial(build_norm_layer, nn.BatchNorm2d, layer_name="norm"),
         freeze_at: int = -1,
         pretrained: bool = False,
     ) -> None:
