@@ -85,7 +85,7 @@ class FrozenBatchNorm2d(nn.Module):
         return "{num_features}, eps={eps}".format(**self.__dict__)
 
 
-AVAILABLE_NORM_LIST = [
+AVAILABLE_NORMALIZATION_LIST = [
     nn.BatchNorm1d,
     nn.BatchNorm2d,
     nn.BatchNorm3d,
@@ -222,7 +222,7 @@ def build_norm_layer(
         fn_kwargs.update(_locals.get("kwargs", {}))
         return normalization_callable(**fn_kwargs)
 
-    if (layer_type := _get_norm_type(normalization_callable)) not in AVAILABLE_NORM_LIST:
+    if (layer_type := _get_norm_type(normalization_callable)) not in AVAILABLE_NORMALIZATION_LIST:
         msg = f"Unsupported normalization: {layer_type.__name__}."
         raise ValueError(msg)
 
