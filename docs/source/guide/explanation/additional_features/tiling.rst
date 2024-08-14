@@ -58,7 +58,7 @@ To enable tiling in OTX training, set ``data.tile_config.enable_tiler`` paramete
             from otx.core.config.data import TileConfig
             from otx.core.data.module import OTXDataModule
 
-            datamodule = OTXDataModule(..., config=data_configtile_config=TileConfig(enable_tiler=True))
+            datamodule = OTXDataModule(..., tile_config=TileConfig(enable_tiler=True))
 
     .. tab-item:: CLI
 
