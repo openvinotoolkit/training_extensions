@@ -75,7 +75,7 @@ def train(self: nn.Module, mode: bool = True) -> None:
                 module.eval()
 
 
-def init_weights(self: nn.Module, pretrained: bool = False) -> None:
+def init_weights(self: nn.Module, pretrained: bool = True) -> None:
     """Init weights function for new model (copy from mmdet)."""
     if pretrained:
         rank, world_size = get_dist_info()

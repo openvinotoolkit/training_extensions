@@ -95,7 +95,7 @@ class MobileNetV2ATSS(ATSS):
                 "out_indices": [2, 3, 4, 5],
                 "frozen_stages": -1,
                 "norm_eval": False,
-                "pretrained": False,
+                "pretrained": True,
             },
         )
         neck = FPN(

@@ -76,7 +76,7 @@ class SSD(ExplainableOTXDetModel):
                 "out_indices": [4, 5],
                 "frozen_stages": -1,
                 "norm_eval": False,
-                "pretrained": False,
+                "pretrained": True,
             },
         )
         bbox_head = SSDHead(
