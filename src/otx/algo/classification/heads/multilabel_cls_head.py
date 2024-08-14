@@ -55,11 +55,7 @@ class MultiLabelClsHead(BaseModule):
     Args:
         BaseModule (class): The base module class.
 
-    Attributes:
-        scale (float): The scaling factor for the classification score.
-
     Methods:
-        get_valid_label_mask(img_metas): Get valid label mask using ignored_label.
         predict(feats, labels): Inference without augmentation.
     """
 
@@ -76,10 +72,6 @@ class MultiLabelClsHead(BaseModule):
         self.num_classes = num_classes
         self.in_channels = in_channels
         self.normalized = normalized
-
-    # ------------------------------------------------------------------------ #
-    # Copy from mmpretrain.models.heads.MultiLabelClsHead
-    # ------------------------------------------------------------------------ #
 
     def predict(self, feats: tuple[torch.Tensor], **kwargs) -> torch.Tensor:
         """Inference without augmentation.
@@ -124,7 +116,7 @@ class MultiLabelLinearClsHead(MultiLabelClsHead):
         num_classes (int): Number of categories.
         in_channels (int): Number of channels in the input feature map.
         normalized (bool): Normalize input features and weights.
-        scale (float): positive scale parameter.
+        init_cfg (dict | None, optional): Initialize configuration key-values, Defaults to None.
     """
 
     fc: nn.Module
@@ -179,9 +171,9 @@ class MultiLabelNonLinearClsHead(MultiLabelClsHead):
         hid_channels (int): Number of channels in the hidden feature map.
         activation_callable (Callable[..., nn.Module]): Activation layer module.
             Defaults to nn.ReLU.
-        scale (float): Positive scale parameter.
         dropout (bool): Whether use the dropout or not.
         normalized (bool): Normalize input features and weights in the last linar layer.
+        init_cfg (dict | None, optional): Initialize configuration key-values, Defaults to None.
     """
 
     def __init__(

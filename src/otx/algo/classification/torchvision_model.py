@@ -48,7 +48,26 @@ if TYPE_CHECKING:
 
 
 class TVModelForMulticlassCls(OTXMulticlassClsModel):
-    """Torchvision Model for multi-class classification task."""
+    """Torchvision model for multiclass classification.
+
+    Args:
+        label_info (LabelInfoTypes): Information about the labels.
+        backbone (TVModelType): Backbone model for feature extraction.
+        pretrained (bool, optional): Whether to use pretrained weights. Defaults to True.
+        optimizer (OptimizerCallable, optional): Optimizer for model training. Defaults to DefaultOptimizerCallable.
+        scheduler (LRSchedulerCallable | LRSchedulerListCallable, optional): Learning rate scheduler.
+            Defaults to DefaultSchedulerCallable.
+        metric (MetricCallable, optional): Metric for model evaluation. Defaults to MultiClassClsMetricCallable.
+        torch_compile (bool, optional): Whether to compile the model using TorchScript. Defaults to False.
+        train_type (Literal[OTXTrainType.SUPERVISED, OTXTrainType.SEMI_SUPERVISED], optional): Type of training.
+            Defaults to OTXTrainType.SUPERVISED.
+        input_size (tuple[int, int], optional): Input size of the images. Defaults to (224, 224).
+
+    Attributes:
+        backbone (TVModelType): Backbone model for feature extraction.
+        pretrained (bool): Whether to use pretrained weights.
+        classification_layers (nn.ModuleDict): Classification layers for class-incremental learning.
+    """
 
     def __init__(
         self,
@@ -137,7 +156,24 @@ class TVModelForMulticlassCls(OTXMulticlassClsModel):
 
 
 class TVModelForMultilabelCls(OTXMultilabelClsModel):
-    """Torchvision model for multi-label classification task."""
+    """Torchvision model for multilabel classification.
+
+    Args:
+        label_info (LabelInfoTypes): Information about the labels.
+        backbone (TVModelType): Backbone model for feature extraction.
+        pretrained (bool, optional): Whether to use pretrained weights. Defaults to True.
+        optimizer (OptimizerCallable, optional): Optimizer for model training. Defaults to DefaultOptimizerCallable.
+        scheduler (LRSchedulerCallable | LRSchedulerListCallable, optional): Learning rate scheduler.
+            Defaults to DefaultSchedulerCallable.
+        metric (MetricCallable, optional): Metric for model evaluation. Defaults to MultiLabelClsMetricCallable.
+        torch_compile (bool, optional): Whether to compile the model using TorchScript. Defaults to False.
+        input_size (tuple[int, int], optional): Input size of the images. Defaults to (224, 224).
+
+    Attributes:
+        backbone (TVModelType): Backbone model for feature extraction.
+        pretrained (bool): Whether to use pretrained weights.
+        input_size (tuple[int, int]): Input size of the images.
+    """
 
     def __init__(
         self,
@@ -214,7 +250,24 @@ class TVModelForMultilabelCls(OTXMultilabelClsModel):
 
 
 class TVModelForHLabelCls(OTXHlabelClsModel):
-    """Torchvision Model for hierarchical label classification task."""
+    """TVModelForHLabelCls class represents a Torchvision model for hierarchical label classification.
+
+    Args:
+        label_info (HLabelInfo): Information about the hierarchical labels.
+        backbone (TVModelType): The type of Torchvision backbone model.
+        pretrained (bool, optional): Whether to use pretrained weights. Defaults to True.
+        optimizer (OptimizerCallable, optional): The optimizer callable. Defaults to DefaultOptimizerCallable.
+        scheduler (LRSchedulerCallable | LRSchedulerListCallable, optional): The learning rate scheduler callable.
+            Defaults to DefaultSchedulerCallable.
+        metric (MetricCallable, optional): The metric callable. Defaults to HLabelClsMetricCallble.
+        torch_compile (bool, optional): Whether to compile the model using TorchScript. Defaults to False.
+        input_size (tuple[int, int], optional): The input size of the images. Defaults to (224, 224).
+
+    Attributes:
+        backbone (TVModelType): The type of Torchvision backbone model.
+        pretrained (bool): Whether to use pretrained weights.
+        classification_layers (nn.Module): The classification layers for class-incremental learning.
+    """
 
     label_info: HLabelInfo
 

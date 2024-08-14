@@ -20,7 +20,25 @@ if TYPE_CHECKING:
 
 
 class HLabelClassifier(ImageClassifier):
-    """HLabel Classifier."""
+    """Hierarchical label classifier.
+
+    Args:
+        backbone (nn.Module): Backbone network.
+        neck (nn.Module | None): Neck network.
+        head (nn.Module): Head network.
+        multiclass_loss (nn.Module): Multiclass loss function.
+        multilabel_loss (nn.Module | None, optional): Multilabel loss function.
+        init_cfg (dict | list[dict] | None, optional): Initialization configuration.
+
+    Attributes:
+        multiclass_loss (nn.Module): Multiclass loss function.
+        multilabel_loss (nn.Module | None): Multilabel loss function.
+        is_ignored_label_loss (bool): Flag indicating if ignored label loss is used.
+
+    Methods:
+        loss(inputs, labels, **kwargs): Calculate losses from a batch of inputs and data samples.
+        _forward_explain(images): Perform forward pass for explanation.
+    """
 
     head: HierarchicalClsHead
 
@@ -28,7 +46,7 @@ class HLabelClassifier(ImageClassifier):
         self,
         backbone: nn.Module,
         neck: nn.Module | None,
-        head: nn.Module,
+        head: HierarchicalClsHead,
         multiclass_loss: nn.Module,
         multilabel_loss: nn.Module | None = None,
         init_cfg: dict | list[dict] | None = None,

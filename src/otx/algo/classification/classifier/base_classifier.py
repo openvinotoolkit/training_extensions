@@ -31,9 +31,8 @@ class ImageClassifier(BaseModule):
 
     Args:
         backbone (nn.Module): The backbone module.
-        neck (nn.Module, optional): The neck module to process features from
-            backbone. Defaults to None.
-        head (nn.Module, optional): The head module to do prediction and calculate loss from processed features.
+        neck (nn.Module | None): The neck module to process features from backbone.
+        head (nn.Module): The head module to do prediction and calculate loss from processed features.
             Notice that if the head is not set, almost all methods cannot be
             used except :meth:`extract_feat`. Defaults to None.
         loss (nn.Module): The loss module to calculate the loss.
@@ -116,10 +115,8 @@ class ImageClassifier(BaseModule):
                 Defaults to "neck".
 
         Returns:
-            tuple | Tensor: The output of specified stage.
-            The output depends on detailed implementation. In general, the
-            output of backbone and neck is a tuple and the output of
-            pre_logits is a tensor.
+            torch.Tensor: The output of specified stage.
+                In general, the output of pre_logits is a tensor.
         """
         x = self.backbone(inputs)
 

@@ -18,7 +18,16 @@ from .base_classifier import ImageClassifier
 
 
 class SemiSLClassifier(ImageClassifier):
-    """Semi-SL Classifier."""
+    """Semi-SL classifier.
+
+    Args:
+        backbone (nn.Module): The backbone network.
+        neck (nn.Module | None): The neck module. Defaults to None.
+        head (nn.Module): The head module.
+        loss (nn.Module): The loss module.
+        unlabeled_coef (float): The coefficient for the unlabeled loss. Defaults to 1.0.
+        init_cfg (dict | list[dict] | None): The initialization configuration. Defaults to None.
+    """
 
     head: OTXSemiSLClsHead
 
@@ -60,7 +69,7 @@ class SemiSLClassifier(ImageClassifier):
                 Defaults to "neck".
 
         Returns:
-            dict[str, tuple | torch.Tensor] | tuple | Tensor: The output of specified stage.
+            dict[str, torch.Tensor] | tuple[torch.Tensor] | torch.Tensor: The output of specified stage.
             The output depends on detailed implementation. In general, the Semi-SL
             output is a dict of labeled feats and unlabeled feats.
         """
