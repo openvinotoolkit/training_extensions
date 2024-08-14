@@ -27,8 +27,10 @@ def fxt_trained_model(
     tmp_path,
 ):
     recipe = request.param
-    task = recipe.split("/")[-2]
-    model_name = recipe.split("/")[-1].split(".")[0]
+    recipe_split = recipe.split("/")
+    model_name = recipe_split[-1].split(".")[0]
+    is_semisl = model_name.endswith("_semisl")
+    task = recipe_split[-2] if not is_semisl else recipe_split[-3]
 
     # 1) otx train
     tmp_path_train = tmp_path / f"otx_train_{model_name}"
@@ -48,11 +50,11 @@ def fxt_trained_model(
         *fxt_cli_override_command_per_task[task],
     ]
 
-    if model_name.endswith("_semisl") and "multi_class_cls" in recipe:
+    if is_semisl:
         command_cfg.extend(
             [
                 "--data.unlabeled_subset.data_root",
-                fxt_target_dataset_per_task["multi_class_cls_semisl"],
+                fxt_target_dataset_per_task[f"{task}_semisl"],
             ],
         )
 
@@ -434,9 +436,8 @@ def test_otx_ov_test(
     assert len(metric_result) > 0
 
 
-@pytest.mark.parametrize("recipe", pytest.RECIPE_LIST, ids=lambda x: "/".join(Path(x).parts[-2:]))
 def test_otx_hpo_e2e(
-    recipe: str,
+    fxt_trained_model,
     tmp_path: Path,
     fxt_accelerator: str,
     fxt_target_dataset_per_task: dict,
@@ -453,13 +454,14 @@ def test_otx_hpo_e2e(
     Returns:
         None
     """
-    task = recipe.split("/")[-2]
-    model_name = recipe.split("/")[-1].split(".")[0]
+    recipe, task, model_name, _ = fxt_trained_model
 
     if task.upper() == OTXTaskType.ZERO_SHOT_VISUAL_PROMPTING:
         pytest.skip("ZERO_SHOT_VISUAL_PROMPTING doesn't support HPO.")
     if "padim" in recipe:
         pytest.skip("padim model doesn't support HPO.")
+    if model_name.endswith("_semisl"):
+        pytest.skip("Semi-supervised learning model doesn't support HPO.")
 
     tmp_path_hpo = tmp_path / f"otx_hpo_{model_name}"
     tmp_path_hpo.mkdir(parents=True)

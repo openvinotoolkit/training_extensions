@@ -437,7 +437,8 @@ class MSCAN(BaseModule):
             checkpoint = torch.load(pretrained, "cpu")
             print(f"init weight - {pretrained}")
         elif pretrained is not None:
-            checkpoint = load_from_http(pretrained, "cpu")
+            cache_dir = Path.home() / ".cache" / "torch" / "hub" / "checkpoints"
+            checkpoint = load_from_http(filename=pretrained, map_location="cpu", model_dir=cache_dir)
             print(f"init weight - {pretrained}")
         if checkpoint is not None:
             load_checkpoint_to_model(self, checkpoint, prefix=prefix)
