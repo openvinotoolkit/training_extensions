@@ -2,7 +2,7 @@ model:
   class_path: otx.algo.segmentation.segnext.SegNext
   init_args:
     label_info: 2
-    name_base_model: segnext_base
+    model_version: segnext_base
 
     optimizer:
       class_path: torch.optim.AdamW

@@ -3,6 +3,9 @@ model:
   init_args:
     label_info: 2
     model_version: dinov2_vits14
+    input_size:
+      - 560
+      - 560
 
     optimizer:
       class_path: torch.optim.AdamW

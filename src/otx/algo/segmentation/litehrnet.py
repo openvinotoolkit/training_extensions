@@ -54,8 +54,7 @@ class LiteHRNet(OTXSegmentationModel):
     @property
     def _optimization_config(self) -> dict[str, Any]:
         """PTQ config for LiteHRNet."""
-        # TODO(Kirill): check PTQ without adding the whole backbone to ignored_scope
-        ignored_scope = self.model.ignore_scope
+        ignored_scope = self.ignore_scope
         optim_config = {
             "advanced_parameters": {
                 "activations_range_estimator_params": {
@@ -77,8 +76,8 @@ class LiteHRNet(OTXSegmentationModel):
         return OTXNativeModelExporter(
             task_level_export_parameters=self._export_parameters,
             input_size=(1, 3, *self.input_size),
-            mean=self.mean,
-            std=self.scale,
+            mean=self.MEAN,
+            std=self.STD,
             resize_mode="standard",
             pad_value=0,
             swap_rgb=False,
