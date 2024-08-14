@@ -44,8 +44,14 @@ def test_otx_e2e_cli(
     Returns:
         None
     """
-    task = recipe.split("/")[-2].upper()
-    model_name = recipe.split("/")[-1].split(".")[0]
+    recipe_split = recipe.split("/")
+    model_name = recipe_split[-1].split(".")[0]
+    is_semisl = model_name.endswith("_semisl")
+    task = recipe_split[-2].upper() if not is_semisl else recipe_split[-3].upper()
+
+    if is_semisl:
+        #TODO(Kirill): add e2e tests for semi-sl task
+        pytest.skip("SEMI-SL is not supported for e2e yet.")
 
     if task == OTXTaskType.INSTANCE_SEGMENTATION:
         is_tiling = "tile" in recipe
@@ -171,6 +177,7 @@ def test_otx_e2e_cli(
             key=lambda p: p.stat().st_mtime,
         )
         assert latest_dir.exists()
+        breakpoint()
         assert (latest_dir / export_case.expected_output).exists()
 
     # 4) infer of the exported models
@@ -282,8 +289,13 @@ def test_otx_explain_e2e_cli(
     """
     import cv2
 
-    task = recipe.split("/")[-2].upper()
-    model_name = recipe.split("/")[-1].split(".")[0]
+    recipe_split = recipe.split("/")
+    model_name = recipe_split[-1].split(".")[0]
+    is_semisl = model_name.endswith("_semisl")
+    task = recipe_split[-2].upper() if not is_semisl else recipe_split[-3].upper()
+
+    if is_semisl:
+        pytest.skip("SEMI-SL is not supported for explain.")
 
     if task not in [
         OTXTaskType.MULTI_CLASS_CLS,
