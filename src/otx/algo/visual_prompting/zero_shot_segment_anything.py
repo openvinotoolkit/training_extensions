@@ -647,6 +647,7 @@ class OTXZeroShotSegmentAnything(OTXZeroShotVisualPromptingModel):
     ) -> None:
         self.config = {
             "backbone": backbone,
+            "image_size": 1024,
             "freeze_image_encoder": freeze_image_encoder,
             "freeze_prompt_encoder": freeze_prompt_encoder,
             "freeze_mask_decoder": freeze_mask_decoder,
@@ -660,6 +661,7 @@ class OTXZeroShotSegmentAnything(OTXZeroShotVisualPromptingModel):
         }
         super().__init__(
             label_info=label_info,
+            input_size=(1024, 1024),  # zero-shot visual prompting model uses fixed 1024x1024 input size
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,

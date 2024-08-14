@@ -405,6 +405,8 @@ class OTXTVModel(OTXModel):
         task (Literal[OTXTaskType.MULTI_CLASS_CLS, OTXTaskType.MULTI_LABEL_CLS, OTXTaskType.H_LABEL_CLS], optional):
             The type of classification task.
         train_type (Literal[OTXTrainType.SUPERVISED, OTXTrainType.SEMI_SUPERVISED], optional): The type of training.
+        input_size (tuple[int, int], optional):
+            Model input size in the order of height and width. Defaults to (224, 224)
     """
 
     model: TVClassificationModel
@@ -423,12 +425,12 @@ class OTXTVModel(OTXModel):
             OTXTaskType.H_LABEL_CLS,
         ] = OTXTaskType.MULTI_CLASS_CLS,
         train_type: Literal[OTXTrainType.SUPERVISED, OTXTrainType.SEMI_SUPERVISED] = OTXTrainType.SUPERVISED,
+        input_size: tuple[int, int] = (224, 224),
     ) -> None:
         self.backbone = backbone
         self.freeze_backbone = freeze_backbone
         self.train_type = train_type
         self.task = task
-        self.image_size: tuple[int, ...] = (1, 3, 224, 224)
 
         # TODO(@harimkang): Need to make it configurable.
         if task == OTXTaskType.MULTI_CLASS_CLS:
@@ -444,7 +446,9 @@ class OTXTVModel(OTXModel):
             scheduler=scheduler,
             metric=metric,
             torch_compile=torch_compile,
+            input_size=input_size,
         )
+        self.input_size: tuple[int, int]
 
     def _create_model(self) -> nn.Module:
         if self.task == OTXTaskType.MULTI_CLASS_CLS:
@@ -554,7 +558,7 @@ class OTXTVModel(OTXModel):
         """Creates OTXModelExporter object that can export the model."""
         return OTXNativeModelExporter(
             task_level_export_parameters=self._export_parameters,
-            input_size=self.image_size,
+            input_size=(1, 3, *self.input_size),
             mean=(123.675, 116.28, 103.53),
             std=(58.395, 57.12, 57.375),
             resize_mode="standard",
@@ -652,7 +656,7 @@ class OTXTVModel(OTXModel):
 
     def get_dummy_input(self, batch_size: int = 1) -> CLASSIFICATION_BATCH_DATA_ENTITY:
         """Returns a dummy input for classification model."""
-        images = [torch.rand(*self.image_size[1:]) for _ in range(batch_size)]
+        images = [torch.rand(3, *self.input_size) for _ in range(batch_size)]
         labels = [torch.LongTensor([0])] * batch_size
 
         if self.task == OTXTaskType.MULTI_CLASS_CLS:

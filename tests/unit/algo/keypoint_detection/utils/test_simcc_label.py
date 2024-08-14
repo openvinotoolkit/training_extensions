@@ -18,12 +18,12 @@ class TestSimCCLabel:
 
     @pytest.fixture()
     def fxt_codec_gaussian(self):
-        return SimCCLabel(input_size=(192, 256), smoothing_type="gaussian", sigma=6.0, simcc_split_ratio=2.0)
+        return SimCCLabel(input_size=(256, 192), smoothing_type="gaussian", sigma=6.0, simcc_split_ratio=2.0)
 
     @pytest.fixture()
     def fxt_codec_smoothing(self):
         return SimCCLabel(
-            input_size=(192, 256),
+            input_size=(256, 192),
             smoothing_type="standard",
             sigma=5.0,
             simcc_split_ratio=3.0,
@@ -32,11 +32,11 @@ class TestSimCCLabel:
 
     @pytest.fixture()
     def fxt_codec_dark(self):
-        return SimCCLabel(input_size=(192, 256), smoothing_type="gaussian", sigma=(4.9, 5.66), simcc_split_ratio=2.0)
+        return SimCCLabel(input_size=(256, 192), smoothing_type="gaussian", sigma=(4.9, 5.66), simcc_split_ratio=2.0)
 
     @pytest.fixture()
     def fxt_codec_separated_sigma(self):
-        return SimCCLabel(input_size=(192, 256), smoothing_type="gaussian", sigma=(4.9, 5.66), simcc_split_ratio=2.0)
+        return SimCCLabel(input_size=(256, 192), smoothing_type="gaussian", sigma=(4.9, 5.66), simcc_split_ratio=2.0)
 
     @pytest.mark.parametrize(
         "fxt_codec",

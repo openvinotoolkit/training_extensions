@@ -12,8 +12,7 @@ import json
 import logging
 import warnings
 from abc import abstractmethod
-from collections.abc import Sequence
-from typing import TYPE_CHECKING, Any, Callable, Generic, Literal, NamedTuple
+from typing import TYPE_CHECKING, Any, Callable, Generic, Literal, NamedTuple, Sequence
 
 import numpy as np
 import openvino
@@ -98,13 +97,18 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
 
     Attributes:
         explain_mode: If true, `self.predict_step()` will produce a XAI output as well
+        input_size_multiplier (int):
+            multiplier value for input size a model requires. If input_size isn't multiple of this value,
+            error is raised.
     """
 
     _OPTIMIZED_MODEL_BASE_NAME: str = "optimized_model"
+    input_size_multiplier: int = 1
 
     def __init__(
         self,
         label_info: LabelInfoTypes,
+        input_size: tuple[int, int] | None = None,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = NullMetricCallable,
@@ -116,6 +120,8 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
 
         self._label_info = self._dispatch_label_info(label_info)
         self.train_type = train_type
+        self._check_input_size(input_size)
+        self.input_size = input_size
         self.classification_layers: dict[str, dict[str, Any]] = {}
         self.model = self._create_model()
         self._explain_mode = False
@@ -809,6 +815,13 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
             return label_info
 
         raise TypeError(label_info)
+
+    def _check_input_size(self, input_size: tuple[int, int] | None = None) -> None:
+        if input_size is not None and (
+            input_size[0] % self.input_size_multiplier != 0 or input_size[1] % self.input_size_multiplier != 0
+        ):
+            msg = f"Input size should be a multiple of {self.input_size_multiplier}, but got {input_size} instead."
+            raise ValueError(msg)
 
 
 class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
