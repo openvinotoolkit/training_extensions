@@ -88,7 +88,7 @@ def test_patch_embed():
         stride=stride,
         padding=0,
         dilation=1,
-        normalization_callable=None,
+        normalization=None,
     )
 
     x1, shape = patch_merge_1(dummy_input)
@@ -115,7 +115,7 @@ def test_patch_embed():
         stride=stride,
         padding=0,
         dilation=2,
-        normalization_callable=None,
+        normalization=None,
     )
 
     x2, shape = patch_merge_2(dummy_input)
@@ -138,7 +138,7 @@ def test_patch_embed():
         stride=stride,
         padding=0,
         dilation=2,
-        normalization_callable=nn.LayerNorm,
+        normalization=nn.LayerNorm,
         input_size=input_size,
     )
 
@@ -165,7 +165,7 @@ def test_patch_embed():
         stride=stride,
         padding=0,
         dilation=2,
-        normalization_callable=nn.LayerNorm,
+        normalization=nn.LayerNorm,
         input_size=input_size,
     )
 
@@ -184,7 +184,7 @@ def test_patch_embed():
         stride=stride,
         padding=0,
         dilation=2,
-        normalization_callable=nn.LayerNorm,
+        normalization=nn.LayerNorm,
         input_size=input_size,
     )
 

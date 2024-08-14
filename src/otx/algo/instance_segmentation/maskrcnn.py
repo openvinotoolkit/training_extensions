@@ -155,7 +155,7 @@ class MaskRCNNResNet50(MaskRCNN):
         backbone = ResNet(
             depth=50,
             frozen_stages=1,
-            normalization_callable=partial(build_norm_layer, nn.BatchNorm2d, requires_grad=True),
+            normalization=partial(build_norm_layer, nn.BatchNorm2d, requires_grad=True),
             norm_eval=True,
             num_stages=4,
             out_indices=(0, 1, 2, 3),
@@ -333,8 +333,8 @@ class MaskRCNNEfficientNet(MaskRCNN):
                 "out_indices": [2, 3, 4, 5],
                 "frozen_stages": -1,
                 "pretrained": True,
-                "activation_callable": nn.SiLU,
-                "normalization_callable": partial(build_norm_layer, nn.BatchNorm2d, requires_grad=True),
+                "activation": nn.SiLU,
+                "normalization": partial(build_norm_layer, nn.BatchNorm2d, requires_grad=True),
             },
         )
 

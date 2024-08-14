@@ -35,7 +35,7 @@ class ConvFCBBoxHead(BBoxHead):
         num_reg_fcs: int = 0,
         conv_out_channels: int = 256,
         fc_out_channels: int = 1024,
-        normalization_callable: Callable[..., nn.Module] | None = None,
+        normalization: Callable[..., nn.Module] | None = None,
         init_cfg: dict | None = None,
         *args,
         **kwargs,
@@ -64,7 +64,7 @@ class ConvFCBBoxHead(BBoxHead):
         self.num_reg_fcs = num_reg_fcs
         self.conv_out_channels = conv_out_channels
         self.fc_out_channels = fc_out_channels
-        self.normalization_callable = normalization_callable
+        self.normalization = normalization
 
         # add shared convs and fcs
         self.shared_convs, self.shared_fcs, last_layer_dim = self._add_conv_fc_branch(

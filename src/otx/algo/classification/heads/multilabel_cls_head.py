@@ -241,7 +241,7 @@ class MultiLabelNonLinearClsHead(MultiLabelClsHead):
         num_classes (int): Number of categories.
         in_channels (int): Number of channels in the input feature map.
         hid_channels (int): Number of channels in the hidden feature map.
-        activation_callable (Callable[..., nn.Module]): Activation layer module.
+        activation (Callable[..., nn.Module]): Activation layer module.
             Defaults to ``nn.ReLU``.
         scale (float): Positive scale parameter.
         loss (dict): Config of classification loss.
@@ -255,7 +255,7 @@ class MultiLabelNonLinearClsHead(MultiLabelClsHead):
         in_channels: int,
         loss: nn.Module,
         hid_channels: int = 1280,
-        activation_callable: Callable[..., nn.Module] = nn.ReLU,
+        activation: Callable[..., nn.Module] = nn.ReLU,
         scale: float = 1.0,
         dropout: bool = False,
         normalized: bool = False,
@@ -278,7 +278,7 @@ class MultiLabelNonLinearClsHead(MultiLabelClsHead):
 
         self.hid_channels = hid_channels
         self.dropout = dropout
-        self.activation_callable = activation_callable
+        self.activation = activation
 
         if self.num_classes <= 0:
             msg = f"num_classes={num_classes} must be a positive integer"
@@ -291,7 +291,7 @@ class MultiLabelNonLinearClsHead(MultiLabelClsHead):
         modules = [
             nn.Linear(self.in_channels, self.hid_channels),
             nn.BatchNorm1d(self.hid_channels),
-            self.activation_callable if isinstance(self.activation_callable, nn.Module) else self.activation_callable(),
+            self.activation if isinstance(self.activation, nn.Module) else self.activation(),
         ]
         if self.dropout:
             modules.append(nn.Dropout(p=0.2))

@@ -17,7 +17,7 @@ class TestLightHamHead:
             "ham_kwargs": {"md_r": 16, "md_s": 1, "eval_steps": 7, "train_steps": 6},
             "in_channels": [128, 320, 512],
             "in_index": [1, 2, 3],
-            "normalization_callable": partial(build_norm_layer, nn.GroupNorm, num_groups=32, requires_grad=True),
+            "normalization": partial(build_norm_layer, nn.GroupNorm, num_groups=32, requires_grad=True),
             "align_corners": False,
             "channels": 512,
             "dropout_ratio": 0.1,

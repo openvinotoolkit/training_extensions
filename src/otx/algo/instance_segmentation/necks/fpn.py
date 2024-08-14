@@ -38,9 +38,9 @@ class FPN(BaseModule):
             conv. Defaults to False.
         no_norm_on_lateral (bool): Whether to apply norm on lateral.
             Defaults to False.
-        normalization_callable (Callable[..., nn.Module] | None): Normalization layer module.
+        normalization (Callable[..., nn.Module] | None): Normalization layer module.
             Defaults to None.
-        activation_callable (Callable[..., nn.Module] | None): Activation layer module.
+        activation (Callable[..., nn.Module] | None): Activation layer module.
             Defaults to None.
         upsample_cfg (dict, optional): Config dict
             for interpolate layer. Defaults to dict(mode='nearest').
@@ -56,8 +56,8 @@ class FPN(BaseModule):
         end_level: int = -1,
         relu_before_extra_convs: bool = False,
         no_norm_on_lateral: bool = False,
-        normalization_callable: Callable[..., nn.Module] | None = None,
-        activation_callable: Callable[..., nn.Module] | None = None,
+        normalization: Callable[..., nn.Module] | None = None,
+        activation: Callable[..., nn.Module] | None = None,
         upsample_cfg: dict | None = None,
         init_cfg: dict | list[dict] | None = None,
     ) -> None:
@@ -100,10 +100,10 @@ class FPN(BaseModule):
                 in_channels[i],
                 out_channels,
                 1,
-                normalization=build_norm_layer(normalization_callable, num_features=out_channels)
+                normalization=build_norm_layer(normalization, num_features=out_channels)
                 if not self.no_norm_on_lateral
                 else None,
-                activation=build_activation_layer(activation_callable),
+                activation=build_activation_layer(activation),
                 inplace=False,
             )
             fpn_conv = Conv2dModule(
@@ -111,8 +111,8 @@ class FPN(BaseModule):
                 out_channels,
                 3,
                 padding=1,
-                normalization=build_norm_layer(normalization_callable, num_features=out_channels),
-                activation=build_activation_layer(activation_callable),
+                normalization=build_norm_layer(normalization, num_features=out_channels),
+                activation=build_activation_layer(activation),
                 inplace=False,
             )
 

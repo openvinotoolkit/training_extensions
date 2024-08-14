@@ -34,9 +34,9 @@ class CSPNeXtPAFPN(BaseModule):
         use_depthwise (bool): Whether to use depthwise separable convolution in blocks. Defaults to False.
         expand_ratio (float): Ratio to adjust the number of channels of the hidden layer. Default: 0.5
         upsample_cfg (dict): Config dict for interpolate layer. Default: `dict(scale_factor=2, mode='nearest')`
-        normalization_callable (Callable[..., nn.Module] | None): Normalization layer module.
+        normalization (Callable[..., nn.Module] | None): Normalization layer module.
             Defaults to ``partial(nn.BatchNorm2d, momentum=0.03, eps=0.001)``.
-        activation_callable (Callable[..., nn.Module]): Activation layer module.
+        activation (Callable[..., nn.Module]): Activation layer module.
             Defaults to ``Swish``.
         init_cfg (dict or list[dict], optional): Initialization config dict. Default: None.
     """
@@ -49,8 +49,8 @@ class CSPNeXtPAFPN(BaseModule):
         use_depthwise: bool = False,
         expand_ratio: float = 0.5,
         upsample_cfg: dict | None = None,
-        normalization_callable: Callable[..., nn.Module] = partial(nn.BatchNorm2d, momentum=0.03, eps=0.001),
-        activation_callable: Callable[..., nn.Module] = Swish,
+        normalization: Callable[..., nn.Module] = partial(nn.BatchNorm2d, momentum=0.03, eps=0.001),
+        activation: Callable[..., nn.Module] = Swish,
         init_cfg: dict | None = None,
     ) -> None:
         upsample_cfg = upsample_cfg or {"scale_factor": 2, "mode": "nearest"}
@@ -79,8 +79,8 @@ class CSPNeXtPAFPN(BaseModule):
                     in_channels[idx],
                     in_channels[idx - 1],
                     1,
-                    normalization=build_norm_layer(normalization_callable, num_features=in_channels[idx - 1]),
-                    activation=build_activation_layer(activation_callable),
+                    normalization=build_norm_layer(normalization, num_features=in_channels[idx - 1]),
+                    activation=build_activation_layer(activation),
                 ),
             )
             self.top_down_blocks.append(
@@ -92,8 +92,8 @@ class CSPNeXtPAFPN(BaseModule):
                     use_depthwise=use_depthwise,
                     use_cspnext_block=True,
                     expand_ratio=expand_ratio,
-                    normalization_callable=normalization_callable,
-                    activation_callable=activation_callable,
+                    normalization=normalization,
+                    activation=activation,
                 ),
             )
 
@@ -108,8 +108,8 @@ class CSPNeXtPAFPN(BaseModule):
                     3,
                     stride=2,
                     padding=1,
-                    normalization=build_norm_layer(normalization_callable, num_features=in_channels[idx]),
-                    activation=build_activation_layer(activation_callable),
+                    normalization=build_norm_layer(normalization, num_features=in_channels[idx]),
+                    activation=build_activation_layer(activation),
                 ),
             )
             self.bottom_up_blocks.append(
@@ -121,8 +121,8 @@ class CSPNeXtPAFPN(BaseModule):
                     use_depthwise=use_depthwise,
                     use_cspnext_block=True,
                     expand_ratio=expand_ratio,
-                    normalization_callable=normalization_callable,
-                    activation_callable=activation_callable,
+                    normalization=normalization,
+                    activation=activation,
                 ),
             )
 
@@ -134,8 +134,8 @@ class CSPNeXtPAFPN(BaseModule):
                     out_channels,
                     3,
                     padding=1,
-                    normalization=build_norm_layer(normalization_callable, num_features=out_channels),
-                    activation=build_activation_layer(activation_callable),
+                    normalization=build_norm_layer(normalization, num_features=out_channels),
+                    activation=build_activation_layer(activation),
                 ),
             )
 

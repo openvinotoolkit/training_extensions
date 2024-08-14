@@ -42,9 +42,9 @@ class Bottleneck(_Bottleneck):
 
         width = self.planes if groups == 1 else math.floor(self.planes * (base_width / base_channels)) * groups
 
-        self.norm1_name, norm1 = build_norm_layer(self.normalization_callable, width, postfix=1)
-        self.norm2_name, norm2 = build_norm_layer(self.normalization_callable, width, postfix=2)
-        self.norm3_name, norm3 = build_norm_layer(self.normalization_callable, self.planes * self.expansion, postfix=3)
+        self.norm1_name, norm1 = build_norm_layer(self.normalization, width, postfix=1)
+        self.norm2_name, norm2 = build_norm_layer(self.normalization, width, postfix=2)
+        self.norm3_name, norm3 = build_norm_layer(self.normalization, self.planes * self.expansion, postfix=3)
 
         self.conv1 = nn.Conv2d(
             self.inplanes,
@@ -95,7 +95,7 @@ class ResNeXt(ResNet):
             the first 1x1 conv layer.
         frozen_stages (int): Stages to be frozen (all param fixed). -1 means
             not freezing any parameters.
-        normalization_callable (Callable[..., nn.Module] | None): Normalization layer module.
+        normalization (Callable[..., nn.Module] | None): Normalization layer module.
             Defaults to ``partial(nn.BatchNorm2d, requires_grad=True)``.
         norm_eval (bool): Whether to set norm layers to eval mode, namely,
             freeze running stats (mean and var). Note: Effect on Batch Norm

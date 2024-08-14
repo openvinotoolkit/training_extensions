@@ -27,9 +27,9 @@ class SPPBottleneck(BaseModule):
         out_channels (int): The output channels of this Module.
         kernel_sizes (tuple[int]): Sequential of kernel sizes of pooling
             layers. Default: (5, 9, 13).
-        normalization_callable (Callable[..., nn.Module]): Normalization layer module.
+        normalization (Callable[..., nn.Module]): Normalization layer module.
             Defaults to ``partial(nn.BatchNorm2d, momentum=0.03, eps=0.001)``.
-        activation_callable (Callable[..., nn.Module] | None): Activation layer module.
+        activation (Callable[..., nn.Module] | None): Activation layer module.
             Defaults to ``Swish``.
         init_cfg (dict, list[dict], optional): Initialization config dict.
             Default: None.
@@ -40,8 +40,8 @@ class SPPBottleneck(BaseModule):
         in_channels: int,
         out_channels: int,
         kernel_sizes: tuple[int, ...] = (5, 9, 13),
-        normalization_callable: Callable[..., nn.Module] = partial(nn.BatchNorm2d, momentum=0.03, eps=0.001),
-        activation_callable: Callable[..., nn.Module] | None = Swish,
+        normalization: Callable[..., nn.Module] = partial(nn.BatchNorm2d, momentum=0.03, eps=0.001),
+        activation: Callable[..., nn.Module] | None = Swish,
         init_cfg: dict | list[dict] | None = None,
     ):
         super().__init__(init_cfg=init_cfg)
@@ -51,8 +51,8 @@ class SPPBottleneck(BaseModule):
             mid_channels,
             1,
             stride=1,
-            normalization=build_norm_layer(normalization_callable, num_features=mid_channels),
-            activation=build_activation_layer(activation_callable),
+            normalization=build_norm_layer(normalization, num_features=mid_channels),
+            activation=build_activation_layer(activation),
         )
         self.poolings = nn.ModuleList([nn.MaxPool2d(kernel_size=ks, stride=1, padding=ks // 2) for ks in kernel_sizes])
         conv2_channels = mid_channels * (len(kernel_sizes) + 1)
@@ -60,8 +60,8 @@ class SPPBottleneck(BaseModule):
             conv2_channels,
             out_channels,
             1,
-            normalization=build_norm_layer(normalization_callable, num_features=out_channels),
-            activation=build_activation_layer(activation_callable),
+            normalization=build_norm_layer(normalization, num_features=out_channels),
+            activation=build_activation_layer(activation),
         )
 
     def forward(self, x: Tensor) -> Tensor:

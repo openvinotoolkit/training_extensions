@@ -32,7 +32,7 @@ class DinoV2Seg(BaseSegmModel):
         "out_index": [8, 9, 10, 11],
     }
     default_decode_head_configuration: ClassVar[dict[str, Any]] = {
-        "normalization_callable": partial(build_norm_layer, SyncBatchNorm, requires_grad=True),
+        "normalization": partial(build_norm_layer, SyncBatchNorm, requires_grad=True),
         "in_channels": [384, 384, 384, 384],
         "in_index": [0, 1, 2, 3],
         "input_transform": "resize_concat",

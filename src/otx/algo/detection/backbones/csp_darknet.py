@@ -32,9 +32,9 @@ class Focus(nn.Module):
         out_channels (int): The output channels of this Module.
         kernel_size (int): The kernel size of the convolution. Default: 1
         stride (int): The stride of the convolution. Default: 1
-        normalization_callable (Callable[..., nn.Module] | None): Normalization layer module.
+        normalization (Callable[..., nn.Module] | None): Normalization layer module.
             Defaults to ``partial(nn.BatchNorm2d, momentum=0.03, eps=0.001)``.
-        activation_callable (Callable[..., nn.Module] | None): Activation layer module.
+        activation (Callable[..., nn.Module] | None): Activation layer module.
             Defaults to ``Swish``.
     """
 
@@ -44,8 +44,8 @@ class Focus(nn.Module):
         out_channels: int,
         kernel_size: int = 1,
         stride: int = 1,
-        normalization_callable: Callable[..., nn.Module] = partial(nn.BatchNorm2d, momentum=0.03, eps=0.001),
-        activation_callable: Callable[..., nn.Module] | None = Swish,
+        normalization: Callable[..., nn.Module] = partial(nn.BatchNorm2d, momentum=0.03, eps=0.001),
+        activation: Callable[..., nn.Module] | None = Swish,
     ):
         super().__init__()
         self.conv = Conv2dModule(
@@ -54,8 +54,8 @@ class Focus(nn.Module):
             kernel_size,
             stride,
             padding=(kernel_size - 1) // 2,
-            normalization=build_norm_layer(normalization_callable, num_features=out_channels),
-            activation=build_activation_layer(activation_callable),
+            normalization=build_norm_layer(normalization, num_features=out_channels),
+            activation=build_activation_layer(activation),
         )
 
     def forward(self, x: Tensor) -> Tensor:
@@ -109,9 +109,9 @@ class CSPDarknet(BaseModule):
         arch_ovewrite(list): Overwrite default arch settings. Default: None.
         spp_kernal_sizes: (tuple[int]): Sequential of kernel sizes of SPP
             layers. Default: (5, 9, 13).
-        normalization_callable (Callable[..., nn.Module] | None): Normalization layer module.
+        normalization (Callable[..., nn.Module] | None): Normalization layer module.
             Defaults to ``partial(nn.BatchNorm2d, momentum=0.03, eps=0.001)``.
-        activation_callable (Callable[..., nn.Module] | None): Activation layer module.
+        activation (Callable[..., nn.Module] | None): Activation layer module.
             Defaults to ``Swish``.
         norm_eval (bool): Whether to set norm layers to eval mode, namely,
             freeze running stats (mean and var). Note: Effect on Batch Norm
@@ -148,8 +148,8 @@ class CSPDarknet(BaseModule):
         use_depthwise: bool = False,
         arch_ovewrite: list | None = None,
         spp_kernal_sizes: tuple[int, ...] = (5, 9, 13),
-        normalization_callable: Callable[..., nn.Module] = partial(nn.BatchNorm2d, momentum=0.03, eps=0.001),
-        activation_callable: Callable[..., nn.Module] = Swish,
+        normalization: Callable[..., nn.Module] = partial(nn.BatchNorm2d, momentum=0.03, eps=0.001),
+        activation: Callable[..., nn.Module] = Swish,
         norm_eval: bool = False,
         init_cfg: dict | list[dict] | None = None,
     ):
@@ -181,8 +181,8 @@ class CSPDarknet(BaseModule):
             3,
             int(arch_setting[0][0] * widen_factor),
             kernel_size=3,
-            normalization_callable=normalization_callable,
-            activation_callable=activation_callable,
+            normalization=normalization,
+            activation=activation,
         )
         self.layers = ["stem"]
 
@@ -197,8 +197,8 @@ class CSPDarknet(BaseModule):
                 3,
                 stride=2,
                 padding=1,
-                normalization=build_norm_layer(normalization_callable, num_features=out_channels),
-                activation=build_activation_layer(activation_callable),
+                normalization=build_norm_layer(normalization, num_features=out_channels),
+                activation=build_activation_layer(activation),
             )
             stage.append(conv_layer)
             if use_spp:
@@ -206,8 +206,8 @@ class CSPDarknet(BaseModule):
                     out_channels,
                     out_channels,
                     kernel_sizes=spp_kernal_sizes,
-                    normalization_callable=normalization_callable,
-                    activation_callable=activation_callable,
+                    normalization=normalization,
+                    activation=activation,
                 )
                 stage.append(spp)
             csp_layer = CSPLayer(
@@ -216,8 +216,8 @@ class CSPDarknet(BaseModule):
                 num_blocks=num_blocks,
                 add_identity=add_identity,
                 use_depthwise=use_depthwise,
-                normalization_callable=normalization_callable,
-                activation_callable=activation_callable,
+                normalization=normalization,
+                activation=activation,
             )
             stage.append(csp_layer)
             self.add_module(f"stage{i + 1}", nn.Sequential(*stage))

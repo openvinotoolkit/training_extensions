@@ -46,9 +46,9 @@ class CSPNeXt(BaseModule):
             layers. Defaults to (5, 9, 13).
         channel_attention (bool): Whether to add channel attention in each
             stage. Defaults to True.
-        normalization_callable (Callable[..., nn.Module]): Normalization layer module.
+        normalization (Callable[..., nn.Module]): Normalization layer module.
             Defaults to ``partial(nn.BatchNorm2d, momentum=0.03, eps=0.001)``.
-        activation_callable (Callable[..., nn.Module] | None): Activation layer module.
+        activation (Callable[..., nn.Module] | None): Activation layer module.
             Defaults to ``nn.SiLU``.
         norm_eval (bool): Whether to set norm layers to eval mode, namely,
             freeze running stats (mean and var). Note: Effect on Batch Norm
@@ -86,8 +86,8 @@ class CSPNeXt(BaseModule):
         arch_ovewrite: dict | None = None,
         spp_kernel_sizes: tuple[int, int, int] = (5, 9, 13),
         channel_attention: bool = True,
-        normalization_callable: Callable[..., nn.Module] = partial(nn.BatchNorm2d, momentum=0.03, eps=0.001),
-        activation_callable: Callable[..., nn.Module] = nn.SiLU,
+        normalization: Callable[..., nn.Module] = partial(nn.BatchNorm2d, momentum=0.03, eps=0.001),
+        activation: Callable[..., nn.Module] = nn.SiLU,
         norm_eval: bool = False,
         init_cfg: dict | None = None,
     ) -> None:
@@ -126,10 +126,10 @@ class CSPNeXt(BaseModule):
                 padding=1,
                 stride=2,
                 normalization=build_norm_layer(
-                    normalization_callable,
+                    normalization,
                     num_features=int(arch_setting[0][0] * widen_factor // 2),
                 ),
-                activation=build_activation_layer(activation_callable),
+                activation=build_activation_layer(activation),
             ),
             Conv2dModule(
                 int(arch_setting[0][0] * widen_factor // 2),
@@ -138,10 +138,10 @@ class CSPNeXt(BaseModule):
                 padding=1,
                 stride=1,
                 normalization=build_norm_layer(
-                    normalization_callable,
+                    normalization,
                     num_features=int(arch_setting[0][0] * widen_factor // 2),
                 ),
-                activation=build_activation_layer(activation_callable),
+                activation=build_activation_layer(activation),
             ),
             Conv2dModule(
                 int(arch_setting[0][0] * widen_factor // 2),
@@ -150,10 +150,10 @@ class CSPNeXt(BaseModule):
                 padding=1,
                 stride=1,
                 normalization=build_norm_layer(
-                    normalization_callable,
+                    normalization,
                     num_features=int(arch_setting[0][0] * widen_factor),
                 ),
-                activation=build_activation_layer(activation_callable),
+                activation=build_activation_layer(activation),
             ),
         )
         self.layers = ["stem"]
@@ -169,8 +169,8 @@ class CSPNeXt(BaseModule):
                 3,
                 stride=2,
                 padding=1,
-                normalization=build_norm_layer(normalization_callable, num_features=out_channels),
-                activation=build_activation_layer(activation_callable),
+                normalization=build_norm_layer(normalization, num_features=out_channels),
+                activation=build_activation_layer(activation),
             )
             stage.append(conv_layer)
             if use_spp:
@@ -178,8 +178,8 @@ class CSPNeXt(BaseModule):
                     out_channels,
                     out_channels,
                     kernel_sizes=spp_kernel_sizes,
-                    normalization_callable=normalization_callable,
-                    activation_callable=activation_callable,
+                    normalization=normalization,
+                    activation=activation,
                 )
                 stage.append(spp)
             csp_layer = CSPLayer(
@@ -191,8 +191,8 @@ class CSPNeXt(BaseModule):
                 use_cspnext_block=True,
                 expand_ratio=expand_ratio,
                 channel_attention=channel_attention,
-                normalization_callable=normalization_callable,
-                activation_callable=activation_callable,
+                normalization=normalization,
+                activation=activation,
             )
             stage.append(csp_layer)
             self.add_module(f"stage{i + 1}", nn.Sequential(*stage))

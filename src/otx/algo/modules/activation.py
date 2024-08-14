@@ -61,27 +61,27 @@ ACTIVATION_LIST_NOT_SUPPORTING_INPLACE: list[nn.Module] = [
 ]
 
 
-def _get_act_type(activation_callable: Callable[..., nn.Module]) -> type:
+def _get_act_type(activation: Callable[..., nn.Module]) -> type:
     """Get class type or name of given activation callable.
 
     Args:
-        activation_callable (Callable[..., nn.Module]): Activation layer module.
+        activation (Callable[..., nn.Module]): Activation layer module.
 
     Returns:
         (type): Class type of given activation callable.
 
     """
-    return activation_callable.func if isinstance(activation_callable, partial) else activation_callable  # type: ignore[return-value]
+    return activation.func if isinstance(activation, partial) else activation  # type: ignore[return-value]
 
 
 def build_activation_layer(
-    activation_callable: Callable[..., nn.Module] | nn.Module | None,
+    activation: Callable[..., nn.Module] | nn.Module | None,
     inplace: bool = True,
 ) -> nn.Module | None:
     """Build activation layer.
 
     Args:
-        activation_callable (Callable[..., nn.Module]): Activation layer module.
+        activation (Callable[..., nn.Module]): Activation layer module.
             If None or pre-instanstiated module is given, return it as is.
             If callable is given, create the layer.
         inplace (bool): Whether to use inplace mode for activation.
@@ -90,14 +90,14 @@ def build_activation_layer(
     Returns:
         nn.Module: Created activation layer.
     """
-    if activation_callable is None or isinstance(activation_callable, nn.Module):
-        return activation_callable
+    if activation is None or isinstance(activation, nn.Module):
+        return activation
 
-    if (layer_type := _get_act_type(activation_callable)) not in AVAILABLE_ACTIVATION_LIST:
+    if (layer_type := _get_act_type(activation)) not in AVAILABLE_ACTIVATION_LIST:
         msg = f"Unsupported activation: {layer_type.__name__}."
         raise ValueError(msg)
 
-    layer = activation_callable()
+    layer = activation()
 
     # update inplace
     if layer.__class__ not in ACTIVATION_LIST_NOT_SUPPORTING_INPLACE:

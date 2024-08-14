@@ -146,21 +146,21 @@ def infer_abbr(class_type: type) -> str:
     return "norm"
 
 
-def _get_norm_type(normalization_callable: Callable[..., nn.Module]) -> type:
+def _get_norm_type(normalization: Callable[..., nn.Module]) -> type:
     """Get class type or name of given normalization callable.
 
     Args:
-        normalization_callable (Callable[..., nn.Module]): Normalization layer module.
+        normalization (Callable[..., nn.Module]): Normalization layer module.
 
     Returns:
         (type): Class type of given normalization callable.
 
     """
-    return normalization_callable.func if isinstance(normalization_callable, partial) else normalization_callable
+    return normalization.func if isinstance(normalization, partial) else normalization
 
 
 def build_norm_layer(
-    normalization_callable: Callable[..., nn.Module] | tuple[str, nn.Module] | nn.Module,
+    normalization: Callable[..., nn.Module] | tuple[str, nn.Module] | nn.Module,
     num_features: int,
     postfix: int | str = "",
     layer_name: str | None = None,
@@ -171,7 +171,7 @@ def build_norm_layer(
     """Build normalization layer.
 
     Args:
-        normalization_callable (Callable[..., nn.Module] | tuple[str, nn.Module] | nn.Module | None):
+        normalization (Callable[..., nn.Module] | tuple[str, nn.Module] | nn.Module | None):
             Normalization layer module. If tuple or None is given, return it as is.
             If nn.Module is given, return it with empty name string. If callable is given, create the layer.
         num_features (int): Number of input channels.
@@ -189,30 +189,30 @@ def build_norm_layer(
         of abbreviation and postfix, e.g., bn1, gn. The second element is the
         created norm layer.
     """
-    if normalization_callable is None or isinstance(normalization_callable, tuple):
+    if normalization is None or isinstance(normalization, tuple):
         # return tuple or None as is
-        return normalization_callable
+        return normalization
 
-    if isinstance(normalization_callable, nn.Module):
+    if isinstance(normalization, nn.Module):
         # return nn.Module with empty name string
-        return "", normalization_callable
+        return "", normalization
 
-    if not callable(normalization_callable):
-        msg = f"normalization_callable must be a callable, but got {type(normalization_callable)}."
+    if not callable(normalization):
+        msg = f"normalization must be a callable, but got {type(normalization)}."
         raise TypeError(msg)
 
-    if isinstance(normalization_callable, partial) and normalization_callable.func.__name__ == "build_norm_layer":
-        # add arguments to `normalization_callable` and return it
-        signature = inspect.signature(normalization_callable.func)
+    if isinstance(normalization, partial) and normalization.func.__name__ == "build_norm_layer":
+        # add arguments to `normalization` and return it
+        signature = inspect.signature(normalization.func)
         predefined_key_list: list[str] = ["kwargs"]
 
-        # find keys according to normalization_callable.args except for normalization type (index=0)
-        predefined_key_list.extend(list(signature.parameters.keys())[: len(normalization_callable.args)])
+        # find keys according to normalization.args except for normalization type (index=0)
+        predefined_key_list.extend(list(signature.parameters.keys())[: len(normalization.args)])
 
-        # find keys according to normalization_callable.keywords
-        predefined_key_list.extend(list(normalization_callable.keywords.keys()))
+        # find keys according to normalization.keywords
+        predefined_key_list.extend(list(normalization.keywords.keys()))
 
-        # set the remaining parameters previously undefined in normalization_callable
+        # set the remaining parameters previously undefined in normalization
         _locals = locals()
         fn_kwargs: dict[str, Any] = {
             k: _locals.get(k, None) for k in signature.parameters if k not in predefined_key_list
@@ -220,9 +220,9 @@ def build_norm_layer(
 
         # manually update kwargs
         fn_kwargs.update(_locals.get("kwargs", {}))
-        return normalization_callable(**fn_kwargs)
+        return normalization(**fn_kwargs)
 
-    if (layer_type := _get_norm_type(normalization_callable)) not in AVAILABLE_NORMALIZATION_LIST:
+    if (layer_type := _get_norm_type(normalization)) not in AVAILABLE_NORMALIZATION_LIST:
         msg = f"Unsupported normalization: {layer_type.__name__}."
         raise ValueError(msg)
 
@@ -232,11 +232,11 @@ def build_norm_layer(
 
     # set norm layer
     if layer_type is not nn.GroupNorm:
-        layer = normalization_callable(num_features, eps=eps, **kwargs)
+        layer = normalization(num_features, eps=eps, **kwargs)
         if layer_type == SyncBatchNorm and hasattr(layer, "_specify_ddp_gpu_num"):
             layer._specify_ddp_gpu_num(1)  # noqa: SLF001
     else:
-        layer = normalization_callable(num_channels=num_features, eps=eps, **kwargs)
+        layer = normalization(num_channels=num_features, eps=eps, **kwargs)
 
     for param in layer.parameters():
         param.requires_grad = requires_grad

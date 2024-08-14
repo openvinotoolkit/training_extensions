@@ -24,7 +24,7 @@ class FCNHead(BaseSegmHead):
     This head is implemented of `FCNNet <https://arxiv.org/abs/1411.4038>`_.
 
     Args:
-        normalization_callable (Callable[..., nn.Module] | None): Normalization layer module.
+        normalization (Callable[..., nn.Module] | None): Normalization layer module.
             Defaults to None.
         num_convs (int): Number of convs in the head. Default: 2.
         kernel_size (int): The kernel size for convs in the head. Default: 3.
@@ -37,7 +37,7 @@ class FCNHead(BaseSegmHead):
         self,
         in_channels: list[int] | int,
         in_index: list[int] | int,
-        normalization_callable: Callable[..., nn.Module] | None = None,
+        normalization: Callable[..., nn.Module] | None = None,
         input_transform: str | None = None,
         num_convs: int = 2,
         kernel_size: int = 3,
@@ -68,7 +68,7 @@ class FCNHead(BaseSegmHead):
             aggregator = IterativeAggregator(
                 in_channels=in_channels,
                 min_channels=aggregator_min_channels,
-                normalization_callable=normalization_callable,
+                normalization=normalization,
                 merge_norm=aggregator_merge_norm,
                 use_concat=aggregator_use_concat,
             )
@@ -84,7 +84,7 @@ class FCNHead(BaseSegmHead):
 
         super().__init__(
             in_index=in_index,
-            normalization_callable=normalization_callable,
+            normalization=normalization,
             input_transform=input_transform,
             in_channels=in_channels,
             **kwargs,
@@ -104,8 +104,8 @@ class FCNHead(BaseSegmHead):
                 kernel_size=kernel_size,
                 padding=conv_padding,
                 dilation=dilation,
-                normalization=build_norm_layer(self.normalization_callable, num_features=self.channels),
-                activation=build_activation_layer(self.activation_callable),
+                normalization=build_norm_layer(self.normalization, num_features=self.channels),
+                activation=build_activation_layer(self.activation),
             ),
         ]
         convs.extend(
@@ -116,8 +116,8 @@ class FCNHead(BaseSegmHead):
                     kernel_size=kernel_size,
                     padding=conv_padding,
                     dilation=dilation,
-                    normalization=build_norm_layer(self.normalization_callable, num_features=self.channels),
-                    activation=build_activation_layer(self.activation_callable),
+                    normalization=build_norm_layer(self.normalization, num_features=self.channels),
+                    activation=build_activation_layer(self.activation),
                 )
                 for _ in range(num_convs - 1)
             ],
@@ -132,11 +132,11 @@ class FCNHead(BaseSegmHead):
                 self.channels,
                 kernel_size=kernel_size,
                 padding=kernel_size // 2,
-                normalization=build_norm_layer(self.normalization_callable, num_features=self.channels),
-                activation=build_activation_layer(self.activation_callable),
+                normalization=build_norm_layer(self.normalization, num_features=self.channels),
+                activation=build_activation_layer(self.activation),
             )
 
-        if self.activation_callable:
+        if self.activation:
             self.convs[-1].with_activation = False
             delattr(self.convs[-1], "activation")  # why we delete last activation?
 

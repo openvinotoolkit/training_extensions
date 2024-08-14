@@ -3,7 +3,6 @@
 
 """MobileNetV3 model implementation."""
 
-
 from __future__ import annotations
 
 from copy import deepcopy
@@ -197,7 +196,7 @@ class MobileNetV3ForMultilabelCls(OTXMultilabelClsModel):
                 hid_channels=1280,
                 normalized=True,
                 scale=7.0,
-                activation_callable=nn.PReLU(),
+                activation=nn.PReLU(),
                 loss=AsymmetricAngularLossWithIgnore(gamma_pos=0.0, gamma_neg=1.0, reduction="sum"),
             ),
         )

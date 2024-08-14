@@ -43,7 +43,7 @@ class ATSSHead(ClassIncrementalMixin, AnchorHead):
         in_channels (int): Number of channels in the input feature map.
         pred_kernel_size (int): Kernel size of ``nn.Conv2d``. Defaults to 3.
         stacked_convs (int): Number of stacking convs of the head. Defaults to 4.
-        normalization_callable (Callable[..., nn.Module] | None): Normalization layer module.
+        normalization (Callable[..., nn.Module] | None): Normalization layer module.
             Defaults to ``partial(build_norm_layer, nn.GroupNorm, num_groups=32, requires_grad=True)``.
         reg_decoded_bbox (bool): If true, the regression loss would be
             applied directly on decoded bounding boxes, converting both
@@ -60,7 +60,7 @@ class ATSSHead(ClassIncrementalMixin, AnchorHead):
         in_channels: int,
         pred_kernel_size: int = 3,
         stacked_convs: int = 4,
-        normalization_callable: Callable[..., nn.Module] = partial(
+        normalization: Callable[..., nn.Module] = partial(
             build_norm_layer,
             nn.GroupNorm,
             num_groups=32,
@@ -76,7 +76,7 @@ class ATSSHead(ClassIncrementalMixin, AnchorHead):
     ) -> None:
         self.pred_kernel_size = pred_kernel_size
         self.stacked_convs = stacked_convs
-        self.normalization_callable = normalization_callable
+        self.normalization = normalization
         init_cfg = init_cfg or {
             "type": "Normal",
             "layer": "Conv2d",
@@ -122,7 +122,7 @@ class ATSSHead(ClassIncrementalMixin, AnchorHead):
                     3,
                     stride=1,
                     padding=1,
-                    normalization=build_norm_layer(self.normalization_callable, num_features=self.feat_channels),
+                    normalization=build_norm_layer(self.normalization, num_features=self.feat_channels),
                 ),
             )
             self.reg_convs.append(
@@ -132,7 +132,7 @@ class ATSSHead(ClassIncrementalMixin, AnchorHead):
                     3,
                     stride=1,
                     padding=1,
-                    normalization=build_norm_layer(self.normalization_callable, num_features=self.feat_channels),
+                    normalization=build_norm_layer(self.normalization, num_features=self.feat_channels),
                 ),
             )
         pred_pad_size = self.pred_kernel_size // 2

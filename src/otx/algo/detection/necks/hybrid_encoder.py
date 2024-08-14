@@ -28,7 +28,7 @@ class TransformerEncoderLayer(nn.Module):
         nhead: int,
         dim_feedforward: int = 2048,
         dropout: float = 0.1,
-        activation_callable: Callable[..., nn.Module] = nn.GELU,
+        activation: Callable[..., nn.Module] = nn.GELU,
         normalize_before: bool = False,
     ) -> None:
         super().__init__()
@@ -44,7 +44,7 @@ class TransformerEncoderLayer(nn.Module):
         self.norm2 = nn.LayerNorm(d_model)
         self.dropout1 = nn.Dropout(dropout)
         self.dropout2 = nn.Dropout(dropout)
-        self.activation = activation_callable()
+        self.activation = activation()
 
     @staticmethod
     def with_pos_embed(tensor: torch.Tensor, pos_embed: torch.Tensor | None) -> torch.Tensor:
@@ -113,9 +113,9 @@ class HybridEncoder(BaseModule):
         dim_feedforward (int, optional): Dimension of the feedforward network
             in the transformer encoder. Defaults to 1024.
         dropout (float, optional): Dropout rate. Defaults to 0.0.
-        enc_activation_callable (Callable[..., nn.Module]): Activation layer module.
+        enc_activation (Callable[..., nn.Module]): Activation layer module.
             Defaults to ``nn.GELU``.
-        normalization_callable (Callable[..., nn.Module]): Normalization layer module.
+        normalization (Callable[..., nn.Module]): Normalization layer module.
             Defaults to ``nn.BatchNorm2d``.
         use_encoder_idx (list[int], optional): List of indices of the encoder to use.
             Defaults to [2].
@@ -127,7 +127,7 @@ class HybridEncoder(BaseModule):
             Defaults to 1.0.
         depth_mult (float, optional): Depth multiplier for the CSPRepLayer.
             Defaults to 1.0.
-        activation_callable (Callable[..., nn.Module]): Activation layer module.
+        activation (Callable[..., nn.Module]): Activation layer module.
             Defaults to ``nn.SiLU``.
         eval_spatial_size (tuple[int, int] | None, optional): Spatial size for
             evaluation. Defaults to None.
@@ -141,14 +141,14 @@ class HybridEncoder(BaseModule):
         nhead: int = 8,
         dim_feedforward: int = 1024,
         dropout: float = 0.0,
-        enc_activation_callable: Callable[..., nn.Module] = nn.GELU,
-        normalization_callable: Callable[..., nn.Module] = nn.BatchNorm2d,
+        enc_activation: Callable[..., nn.Module] = nn.GELU,
+        normalization: Callable[..., nn.Module] = nn.BatchNorm2d,
         use_encoder_idx: list[int] = [2],  # noqa: B006
         num_encoder_layers: int = 1,
         pe_temperature: float = 10000,
         expansion: float = 1.0,
         depth_mult: float = 1.0,
-        activation_callable: Callable[..., nn.Module] = nn.SiLU,
+        activation: Callable[..., nn.Module] = nn.SiLU,
         eval_spatial_size: tuple[int, int] | None = None,
     ) -> None:
         """Initialize the HybridEncoder module."""
@@ -179,7 +179,7 @@ class HybridEncoder(BaseModule):
             nhead=nhead,
             dim_feedforward=dim_feedforward,
             dropout=dropout,
-            activation_callable=enc_activation_callable,
+            activation=enc_activation,
         )
 
         self.encoder = nn.ModuleList(
@@ -196,8 +196,8 @@ class HybridEncoder(BaseModule):
                     hidden_dim,
                     1,
                     1,
-                    normalization=build_norm_layer(normalization_callable, num_features=hidden_dim),
-                    activation=build_activation_layer(activation_callable),
+                    normalization=build_norm_layer(normalization, num_features=hidden_dim),
+                    activation=build_activation_layer(activation),
                 ),
             )
             self.fpn_blocks.append(
@@ -205,9 +205,9 @@ class HybridEncoder(BaseModule):
                     hidden_dim * 2,
                     hidden_dim,
                     round(3 * depth_mult),
-                    activation_callable=activation_callable,
+                    activation=activation,
                     expansion=expansion,
-                    normalization_callable=normalization_callable,
+                    normalization=normalization,
                 ),
             )
 
@@ -222,8 +222,8 @@ class HybridEncoder(BaseModule):
                     3,
                     2,
                     padding=1,
-                    normalization=build_norm_layer(normalization_callable, num_features=hidden_dim),
-                    activation=build_activation_layer(activation_callable),
+                    normalization=build_norm_layer(normalization, num_features=hidden_dim),
+                    activation=build_activation_layer(activation),
                 ),
             )
             self.pan_blocks.append(
@@ -231,9 +231,9 @@ class HybridEncoder(BaseModule):
                     hidden_dim * 2,
                     hidden_dim,
                     round(3 * depth_mult),
-                    activation_callable=activation_callable,
+                    activation=activation,
                     expansion=expansion,
-                    normalization_callable=normalization_callable,
+                    normalization=normalization,
                 ),
             )
 

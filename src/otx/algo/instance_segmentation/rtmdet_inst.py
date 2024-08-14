@@ -115,8 +115,8 @@ class RTMDetInstTiny(RTMDetInst):
             deepen_factor=0.167,
             widen_factor=0.375,
             channel_attention=True,
-            normalization_callable=nn.BatchNorm2d,
-            activation_callable=partial(nn.SiLU, inplace=True),
+            normalization=nn.BatchNorm2d,
+            activation=partial(nn.SiLU, inplace=True),
         )
 
         neck = CSPNeXtPAFPN(
@@ -124,8 +124,8 @@ class RTMDetInstTiny(RTMDetInst):
             out_channels=96,
             num_csp_blocks=1,
             expand_ratio=0.5,
-            normalization_callable=nn.BatchNorm2d,
-            activation_callable=partial(nn.SiLU, inplace=True),
+            normalization=nn.BatchNorm2d,
+            activation=partial(nn.SiLU, inplace=True),
         )
 
         bbox_head = RTMDetInsSepBNHead(
@@ -135,8 +135,8 @@ class RTMDetInstTiny(RTMDetInst):
             share_conv=True,
             pred_kernel_size=1,
             feat_channels=96,
-            activation_callable=partial(nn.SiLU, inplace=True),
-            normalization_callable=partial(build_norm_layer, nn.BatchNorm2d, requires_grad=True),
+            activation=partial(nn.SiLU, inplace=True),
+            normalization=partial(build_norm_layer, nn.BatchNorm2d, requires_grad=True),
             anchor_generator=MlvlPointGenerator(
                 offset=0,
                 strides=[8, 16, 32],

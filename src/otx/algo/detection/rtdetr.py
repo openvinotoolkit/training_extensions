@@ -254,7 +254,7 @@ class RTDETR50(RTDETR):
             return_idx=[1, 2, 3],
             pretrained=True,
             freeze_at=0,
-            normalization_callable=partial(build_norm_layer, FrozenBatchNorm2d, layer_name="norm"),
+            normalization=partial(build_norm_layer, FrozenBatchNorm2d, layer_name="norm"),
         )
         encoder = HybridEncoder(
             eval_spatial_size=self.image_size[2:],
@@ -295,7 +295,7 @@ class RTDETR101(RTDETR):
         backbone = PResNet(
             depth=101,
             return_idx=[1, 2, 3],
-            normalization_callable=partial(build_norm_layer, FrozenBatchNorm2d, layer_name="norm"),
+            normalization=partial(build_norm_layer, FrozenBatchNorm2d, layer_name="norm"),
             pretrained=True,
             freeze_at=0,
         )

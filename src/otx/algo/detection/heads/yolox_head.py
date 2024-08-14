@@ -50,11 +50,11 @@ class YOLOXHead(BaseDenseHead):
         dcn_on_last_conv (bool): If true, use dcn in the last layer of towers.
             Defaults to False.
         conv_bias (bool or str): If specified as `auto`, it will be decided by
-            the normalization_callable. Bias of conv will be set as True if `normalization_callable` is
+            the normalization. Bias of conv will be set as True if `normalization` is
             None, otherwise False. Defaults to "auto".
-        normalization_callable (Callable[..., nn.Module]): Normalization layer module.
+        normalization (Callable[..., nn.Module]): Normalization layer module.
             Defaults to ``partial(nn.BatchNorm2d, momentum=0.03, eps=0.001)``.
-        activation_callable (Callable[..., nn.Module]): Activation layer module.
+        activation (Callable[..., nn.Module]): Activation layer module.
             Defaults to ``Swish``.
         loss_cls (nn.Module, optional): Module of classification loss.
         loss_bbox (nn.Module, optional): Module of localization loss.
@@ -78,8 +78,8 @@ class YOLOXHead(BaseDenseHead):
         use_depthwise: bool = False,
         dcn_on_last_conv: bool = False,
         conv_bias: bool | str = "auto",
-        normalization_callable: Callable[..., nn.Module] = partial(nn.BatchNorm2d, momentum=0.03, eps=0.001),
-        activation_callable: Callable[..., nn.Module] = Swish,
+        normalization: Callable[..., nn.Module] = partial(nn.BatchNorm2d, momentum=0.03, eps=0.001),
+        activation: Callable[..., nn.Module] = Swish,
         loss_cls: nn.Module | None = None,
         loss_bbox: nn.Module | None = None,
         loss_obj: nn.Module | None = None,
@@ -114,8 +114,8 @@ class YOLOXHead(BaseDenseHead):
         self.conv_bias = conv_bias
         self.use_sigmoid_cls = True
 
-        self.normalization_callable = normalization_callable
-        self.activation_callable = activation_callable
+        self.normalization = normalization
+        self.activation = activation
 
         self.loss_cls = loss_cls or CrossEntropyLoss(use_sigmoid=True, reduction="sum", loss_weight=1.0)
         self.loss_bbox = loss_bbox or IoULoss(mode="square", eps=1e-16, reduction="sum", loss_weight=5.0)
@@ -172,8 +172,8 @@ class YOLOXHead(BaseDenseHead):
                     3,
                     stride=1,
                     padding=1,
-                    normalization=build_norm_layer(self.normalization_callable, num_features=self.feat_channels),
-                    activation=build_activation_layer(self.activation_callable),
+                    normalization=build_norm_layer(self.normalization, num_features=self.feat_channels),
+                    activation=build_activation_layer(self.activation),
                     bias=self.conv_bias,
                 ),
             )

@@ -137,7 +137,7 @@ class PatchEmbed(BaseModule):
             Default: "corner".
         dilation (int): The dilation rate of embedding conv. Default: 1.
         bias (bool): Bias of embed conv. Default: True.
-        normalization_callable (Callable[..., nn.Module] | None): Normalization layer module.
+        normalization (Callable[..., nn.Module] | None): Normalization layer module.
             Defaults to None.
         input_size (int | tuple | None): The size of input, which will be
             used to calculate the out size. Only works when `dynamic_size`
@@ -155,7 +155,7 @@ class PatchEmbed(BaseModule):
         padding: str | int | tuple[int, int] = "corner",
         dilation: int | tuple[int, int] = 1,
         bias: bool = True,
-        normalization_callable: Callable[..., nn.Module] | None = None,
+        normalization: Callable[..., nn.Module] | None = None,
         input_size: int | tuple[int, int] | None = None,
         init_cfg: dict | None = None,
     ):
@@ -194,8 +194,8 @@ class PatchEmbed(BaseModule):
         )
 
         self.norm: nn.Module | None
-        if normalization_callable is not None:
-            self.norm = build_norm_layer(normalization_callable, embed_dims)[1]
+        if normalization is not None:
+            self.norm = build_norm_layer(normalization, embed_dims)[1]
         else:
             self.norm = None
 
@@ -253,7 +253,7 @@ class FFN(BaseModule):
             Defaults: 1024.
         num_fcs (int, optional): The number of fully-connected layers in
             FFNs. Default: 2.
-        activation_callable (Callable[..., nn.Module]): Activation layer module.
+        activation (Callable[..., nn.Module]): Activation layer module.
             Defaults to ``partial(nn.ReLU, inplace=True)``.
         ffn_drop (float, optional): Probability of an element to be
             zeroed in FFN. Default 0.0.
@@ -270,7 +270,7 @@ class FFN(BaseModule):
         embed_dims: int = 256,
         feedforward_channels: int = 1024,
         num_fcs: int = 2,
-        activation_callable: Callable[..., nn.Module] = partial(nn.ReLU, inplace=True),
+        activation: Callable[..., nn.Module] = partial(nn.ReLU, inplace=True),
         ffn_drop: float = 0.0,
         dropout_layer: dict | None = None,
         add_identity: bool = True,
@@ -290,7 +290,7 @@ class FFN(BaseModule):
             layers.append(
                 Sequential(
                     nn.Linear(in_channels, feedforward_channels),
-                    activation_callable(),
+                    activation(),
                     nn.Dropout(ffn_drop),
                 ),
             )

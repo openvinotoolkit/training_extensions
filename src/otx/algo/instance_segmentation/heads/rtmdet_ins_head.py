@@ -111,8 +111,8 @@ class RTMDetInsHead(RTMDetHead):
                     3,
                     stride=1,
                     padding=1,
-                    normalization=build_norm_layer(self.normalization_callable, num_features=self.feat_channels),
-                    activation=build_activation_layer(self.activation_callable),
+                    normalization=build_norm_layer(self.normalization, num_features=self.feat_channels),
+                    activation=build_activation_layer(self.activation),
                 ),
             )
         pred_pad_size = self.pred_kernel_size // 2
@@ -128,8 +128,8 @@ class RTMDetInsHead(RTMDetHead):
             stacked_convs=4,
             num_levels=len(self.prior_generator.strides),
             num_prototypes=self.num_prototypes,
-            activation_callable=self.activation_callable,
-            normalization_callable=self.normalization_callable,
+            activation=self.activation,
+            normalization=self.normalization,
         )
 
     def forward(self, feats: tuple[Tensor, ...]) -> tuple:
@@ -713,9 +713,9 @@ class MaskFeatModule(BaseModule):
             feature map that to be dynamically convolved with the predicted
             kernel.
         stacked_convs (int): Number of convs in mask feature branch.
-        activation_callable (Callable[..., nn.Module]): Activation layer module.
+        activation (Callable[..., nn.Module]): Activation layer module.
             Defaults to ``partial(nn.ReLU, inplace=True)``.
-        normalization_callable (Callable[..., nn.Module] | None): Normalization layer module.
+        normalization (Callable[..., nn.Module] | None): Normalization layer module.
             Defaults to ``nn.BatchNorm2d``.
     """
 
@@ -726,8 +726,8 @@ class MaskFeatModule(BaseModule):
         stacked_convs: int = 4,
         num_levels: int = 3,
         num_prototypes: int = 8,
-        activation_callable: Callable[..., nn.Module] = partial(nn.ReLU, inplace=True),
-        normalization_callable: Callable[..., nn.Module] = nn.BatchNorm2d,
+        activation: Callable[..., nn.Module] = partial(nn.ReLU, inplace=True),
+        normalization: Callable[..., nn.Module] = nn.BatchNorm2d,
     ) -> None:
         super().__init__(init_cfg=None)
 
@@ -742,8 +742,8 @@ class MaskFeatModule(BaseModule):
                     feat_channels,
                     3,
                     padding=1,
-                    normalization=build_norm_layer(normalization_callable, num_features=feat_channels),
-                    activation=build_activation_layer(activation_callable),
+                    normalization=build_norm_layer(normalization, num_features=feat_channels),
+                    activation=build_activation_layer(activation),
                 ),
             )
         self.stacked_convs = nn.Sequential(*convs)
@@ -773,9 +773,9 @@ class RTMDetInsSepBNHead(RTMDetInsHead):
         in_channels (int): Number of channels in the input feature map.
         share_conv (bool): Whether to share conv layers between stages.
             Defaults to True.
-        normalization_callable (Callable[..., nn.Module]): Normalization layer module.
+        normalization (Callable[..., nn.Module]): Normalization layer module.
             Defaults to ``partial(nn.BatchNorm2d, requires_grad=True)``.
-        activation_callable (Callable[..., nn.Module]): Activation layer module.
+        activation (Callable[..., nn.Module]): Activation layer module.
             Defaults to ``partial(nn.SiLU, inplace=True)``.
         pred_kernel_size (int): Kernel size of prediction layer. Defaults to 1.
     """
@@ -786,8 +786,8 @@ class RTMDetInsSepBNHead(RTMDetInsHead):
         in_channels: int,
         share_conv: bool = True,
         with_objectness: bool = False,
-        normalization_callable: Callable[..., nn.Module] = partial(nn.BatchNorm2d, requires_grad=True),
-        activation_callable: Callable[..., nn.Module] = partial(nn.SiLU, inplace=True),
+        normalization: Callable[..., nn.Module] = partial(nn.BatchNorm2d, requires_grad=True),
+        activation: Callable[..., nn.Module] = partial(nn.SiLU, inplace=True),
         pred_kernel_size: int = 1,
         **kwargs,
     ) -> None:
@@ -795,8 +795,8 @@ class RTMDetInsSepBNHead(RTMDetInsHead):
         super().__init__(
             num_classes,
             in_channels,
-            normalization_callable=normalization_callable,
-            activation_callable=activation_callable,
+            normalization=normalization,
+            activation=activation,
             pred_kernel_size=pred_kernel_size,
             with_objectness=with_objectness,
             **kwargs,
@@ -850,8 +850,8 @@ class RTMDetInsSepBNHead(RTMDetInsHead):
                         3,
                         stride=1,
                         padding=1,
-                        normalization=build_norm_layer(self.normalization_callable, num_features=self.feat_channels),
-                        activation=build_activation_layer(self.activation_callable),
+                        normalization=build_norm_layer(self.normalization, num_features=self.feat_channels),
+                        activation=build_activation_layer(self.activation),
                     ),
                 )
                 reg_convs.append(
@@ -861,8 +861,8 @@ class RTMDetInsSepBNHead(RTMDetInsHead):
                         3,
                         stride=1,
                         padding=1,
-                        normalization=build_norm_layer(self.normalization_callable, num_features=self.feat_channels),
-                        activation=build_activation_layer(self.activation_callable),
+                        normalization=build_norm_layer(self.normalization, num_features=self.feat_channels),
+                        activation=build_activation_layer(self.activation),
                     ),
                 )
                 kernel_convs.append(
@@ -872,8 +872,8 @@ class RTMDetInsSepBNHead(RTMDetInsHead):
                         3,
                         stride=1,
                         padding=1,
-                        normalization=build_norm_layer(self.normalization_callable, num_features=self.feat_channels),
-                        activation=build_activation_layer(self.activation_callable),
+                        normalization=build_norm_layer(self.normalization, num_features=self.feat_channels),
+                        activation=build_activation_layer(self.activation),
                     ),
                 )
             self.cls_convs.append(cls_convs)
@@ -909,8 +909,8 @@ class RTMDetInsSepBNHead(RTMDetInsHead):
             stacked_convs=4,
             num_levels=len(self.prior_generator.strides),
             num_prototypes=self.num_prototypes,
-            activation_callable=self.activation_callable,
-            normalization_callable=self.normalization_callable,
+            activation=self.activation,
+            normalization=self.normalization,
         )
 
     def init_weights(self) -> None:

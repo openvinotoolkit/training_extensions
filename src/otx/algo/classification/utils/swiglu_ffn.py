@@ -28,7 +28,7 @@ class SwiGLUFFN(nn.Module):
         out_dims: int | None = None,
         bias: bool = True,
         dropout_layer: dict | None = None,
-        normalization_callable: Callable[..., nn.Module] | None = None,
+        normalization: Callable[..., nn.Module] | None = None,
         add_identity: bool = True,
     ) -> None:
         super().__init__()
@@ -38,8 +38,8 @@ class SwiGLUFFN(nn.Module):
 
         self.w12 = nn.Linear(self.embed_dims, 2 * hidden_dims, bias=bias)
 
-        if normalization_callable is not None:
-            _, self.norm = build_norm_layer(normalization_callable, hidden_dims)
+        if normalization is not None:
+            _, self.norm = build_norm_layer(normalization, hidden_dims)
         else:
             self.norm = nn.Identity()
 

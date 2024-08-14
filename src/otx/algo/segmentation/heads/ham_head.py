@@ -28,7 +28,7 @@ class Hamburger(nn.Module):
     Args:
         ham_channels (int): Input and output channels of feature.
         ham_kwargs (dict): Config of matrix decomposition module.
-        normalization_callable (Callable[..., nn.Module] | None): Normalization layer module.
+        normalization (Callable[..., nn.Module] | None): Normalization layer module.
             Defaults to None.
     """
 
@@ -36,7 +36,7 @@ class Hamburger(nn.Module):
         self,
         ham_channels: int,
         ham_kwargs: dict[str, Any],
-        normalization_callable: Callable[..., nn.Module] | None = None,
+        normalization: Callable[..., nn.Module] | None = None,
         **kwargs: Any,  # noqa: ANN401
     ) -> None:
         """Initialize Hamburger Module."""
@@ -50,7 +50,7 @@ class Hamburger(nn.Module):
             ham_channels,
             ham_channels,
             1,
-            normalization=build_norm_layer(normalization_callable, num_features=ham_channels),
+            normalization=build_norm_layer(normalization, num_features=ham_channels),
             activation=None,
         )
 
@@ -104,8 +104,8 @@ class LightHamHead(BaseSegmHead):
             sum(self.in_channels),
             self.ham_channels,
             1,
-            normalization=build_norm_layer(self.normalization_callable, num_features=self.ham_channels),
-            activation=build_activation_layer(self.activation_callable),
+            normalization=build_norm_layer(self.normalization, num_features=self.ham_channels),
+            activation=build_activation_layer(self.activation),
         )
 
         self.hamburger = Hamburger(self.ham_channels, ham_kwargs=self.ham_kwargs, **kwargs)
@@ -114,8 +114,8 @@ class LightHamHead(BaseSegmHead):
             self.ham_channels,
             self.channels,
             1,
-            normalization=build_norm_layer(self.normalization_callable, num_features=self.channels),
-            activation=build_activation_layer(self.activation_callable),
+            normalization=build_norm_layer(self.normalization, num_features=self.channels),
+            activation=build_activation_layer(self.activation),
         )
 
     def forward(self, inputs: list[torch.Tensor]) -> torch.Tensor:

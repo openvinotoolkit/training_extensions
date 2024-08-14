@@ -56,7 +56,7 @@ class AsymmetricPositionAttentionModule(nn.Module):
         key_channels: int,
         value_channels: int | None = None,
         psp_size: tuple | None = None,
-        normalization_callable: Callable[..., nn.Module] = nn.BatchNorm2d,
+        normalization: Callable[..., nn.Module] = nn.BatchNorm2d,
     ):
         super().__init__()
 
@@ -65,14 +65,14 @@ class AsymmetricPositionAttentionModule(nn.Module):
         self.value_channels = value_channels if value_channels is not None else in_channels
         if psp_size is None:
             psp_size = (1, 3, 6, 8)
-        self.normalization_callable = normalization_callable
+        self.normalization = normalization
         self.query_key = Conv2dModule(
             in_channels=self.in_channels,
             out_channels=self.key_channels,
             kernel_size=1,
             stride=1,
             padding=0,
-            normalization=build_norm_layer(self.normalization_callable, num_features=self.key_channels),
+            normalization=build_norm_layer(self.normalization, num_features=self.key_channels),
             activation=build_activation_layer(nn.ReLU),
         )
         self.key_psp = PSPModule(psp_size, method="max")
@@ -83,7 +83,7 @@ class AsymmetricPositionAttentionModule(nn.Module):
             kernel_size=1,
             stride=1,
             padding=0,
-            normalization=build_norm_layer(self.normalization_callable, num_features=self.value_channels),
+            normalization=build_norm_layer(self.normalization, num_features=self.value_channels),
             activation=build_activation_layer(nn.ReLU),
         )
         self.value_psp = PSPModule(psp_size, method="max")
@@ -94,7 +94,7 @@ class AsymmetricPositionAttentionModule(nn.Module):
             kernel_size=1,
             stride=1,
             padding=0,
-            normalization=build_norm_layer(self.normalization_callable, num_features=self.in_channels),
+            normalization=build_norm_layer(self.normalization, num_features=self.in_channels),
             activation=None,
         )
 
@@ -158,12 +158,12 @@ class LocalAttentionModule(nn.Module):
     def __init__(
         self,
         num_channels: int,
-        normalization_callable: Callable[..., nn.Module] = nn.BatchNorm2d,
+        normalization: Callable[..., nn.Module] = nn.BatchNorm2d,
     ):
         super().__init__()
 
         self.num_channels = num_channels
-        self.normalization_callable = normalization_callable
+        self.normalization = normalization
 
         self.dwconv1 = Conv2dModule(
             in_channels=self.num_channels,
@@ -172,7 +172,7 @@ class LocalAttentionModule(nn.Module):
             stride=2,
             padding=1,
             groups=self.num_channels,
-            normalization=build_norm_layer(self.normalization_callable, num_features=self.num_channels),
+            normalization=build_norm_layer(self.normalization, num_features=self.num_channels),
             activation=build_activation_layer(nn.ReLU),
         )
         self.dwconv2 = Conv2dModule(
@@ -182,7 +182,7 @@ class LocalAttentionModule(nn.Module):
             stride=2,
             padding=1,
             groups=self.num_channels,
-            normalization=build_norm_layer(self.normalization_callable, num_features=self.num_channels),
+            normalization=build_norm_layer(self.normalization, num_features=self.num_channels),
             activation=build_activation_layer(nn.ReLU),
         )
         self.dwconv3 = Conv2dModule(
@@ -192,7 +192,7 @@ class LocalAttentionModule(nn.Module):
             stride=2,
             padding=1,
             groups=self.num_channels,
-            normalization=build_norm_layer(self.normalization_callable, num_features=self.num_channels),
+            normalization=build_norm_layer(self.normalization, num_features=self.num_channels),
             activation=build_activation_layer(nn.ReLU),
         )
         self.sigmoid_spatial = nn.Sigmoid()

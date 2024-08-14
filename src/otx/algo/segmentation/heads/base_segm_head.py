@@ -24,9 +24,9 @@ class BaseSegmHead(nn.Module, metaclass=ABCMeta):
         channels (int): Number of channels in the feature map.
         num_classes (int): Number of classes for segmentation.
         dropout_ratio (float, optional): The dropout ratio. Defaults to 0.1.
-        normalization_callable (Callable[..., nn.Module] | None): Normalization layer module.
+        normalization (Callable[..., nn.Module] | None): Normalization layer module.
             Defaults to None.
-        activation_callable (Callable[..., nn.Module] | None): Activation layer module.
+        activation (Callable[..., nn.Module] | None): Activation layer module.
             Defaults to ``nn.ReLU``.
         in_index (int, list[int], optional): Input index. Defaults to -1.
         input_transform (Optional[str], optional): Input transform type.
@@ -41,8 +41,8 @@ class BaseSegmHead(nn.Module, metaclass=ABCMeta):
         channels: int,
         num_classes: int,
         dropout_ratio: float = 0.1,
-        normalization_callable: Callable[..., nn.Module] | None = None,
-        activation_callable: Callable[..., nn.Module] | None = nn.ReLU,
+        normalization: Callable[..., nn.Module] | None = None,
+        activation: Callable[..., nn.Module] | None = nn.ReLU,
         in_index: int | list[int] = -1,
         input_transform: str | None = None,
         ignore_index: int = 255,
@@ -55,8 +55,8 @@ class BaseSegmHead(nn.Module, metaclass=ABCMeta):
         self.num_classes = num_classes
         self.input_transform = input_transform
         self.dropout_ratio = dropout_ratio
-        self.normalization_callable = normalization_callable
-        self.activation_callable = activation_callable
+        self.normalization = normalization
+        self.activation = activation
         if self.input_transform is not None and not isinstance(in_index, list):
             msg = f'"in_index" expects a list, but got {type(in_index)}'
             raise TypeError(msg)

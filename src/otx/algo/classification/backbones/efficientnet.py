@@ -34,7 +34,7 @@ def conv1x1_block(
     bias: bool = False,
     use_bn: bool = True,
     bn_eps: float = 1e-5,
-    activation_callable: Callable[..., nn.Module] | None = nn.ReLU,
+    activation: Callable[..., nn.Module] | None = nn.ReLU,
 ) -> Conv2dModule:
     """Conv block."""
     return Conv2dModule(
@@ -46,7 +46,7 @@ def conv1x1_block(
         groups=groups,
         bias=bias,
         normalization=build_norm_layer(nn.BatchNorm2d, num_features=out_channels, eps=bn_eps) if use_bn else None,
-        activation=build_activation_layer(activation_callable),
+        activation=build_activation_layer(activation),
     )
 
 
@@ -60,7 +60,7 @@ def conv3x3_block(
     bias: bool = False,
     use_bn: bool = True,
     bn_eps: float = 1e-5,
-    activation_callable: Callable[..., nn.Module] | None = nn.ReLU,
+    activation: Callable[..., nn.Module] | None = nn.ReLU,
 ) -> Conv2dModule:
     """Conv block."""
     return Conv2dModule(
@@ -73,7 +73,7 @@ def conv3x3_block(
         groups=groups,
         bias=bias,
         normalization=build_norm_layer(nn.BatchNorm2d, num_features=out_channels, eps=bn_eps) if use_bn else None,
-        activation=build_activation_layer(activation_callable),
+        activation=build_activation_layer(activation),
     )
 
 
@@ -86,7 +86,7 @@ def dwconv3x3_block(
     bias: bool = False,
     use_bn: bool = True,
     bn_eps: float = 1e-5,
-    activation_callable: Callable[..., nn.Module] | None = nn.ReLU,
+    activation: Callable[..., nn.Module] | None = nn.ReLU,
 ) -> Conv2dModule:
     """Conv block."""
     return Conv2dModule(
@@ -99,7 +99,7 @@ def dwconv3x3_block(
         groups=out_channels,
         bias=bias,
         normalization=build_norm_layer(nn.BatchNorm2d, num_features=out_channels, eps=bn_eps) if use_bn else None,
-        activation=build_activation_layer(activation_callable),
+        activation=build_activation_layer(activation),
     )
 
 
@@ -112,7 +112,7 @@ def dwconv5x5_block(
     bias: bool = False,
     use_bn: bool = True,
     bn_eps: float = 1e-5,
-    activation_callable: Callable[..., nn.Module] | None = nn.ReLU,
+    activation: Callable[..., nn.Module] | None = nn.ReLU,
 ) -> Conv2dModule:
     """Conv block."""
     return Conv2dModule(
@@ -125,7 +125,7 @@ def dwconv5x5_block(
         groups=out_channels,
         bias=bias,
         normalization=build_norm_layer(nn.BatchNorm2d, num_features=out_channels, eps=bn_eps) if use_bn else None,
-        activation=build_activation_layer(activation_callable),
+        activation=build_activation_layer(activation),
     )
 
 
@@ -170,9 +170,9 @@ class SEBlock(nn.Module):
         mid_channels (int | None): Number of middle channels. Defaults to None.
         round_mid (bool): Whether to round middle channel number (make divisible by 8). Defaults to False.
         use_conv (bool): Whether to convolutional layers instead of fully-connected ones. Defaults to True.
-        mid_activation_callable (Callable[..., nn.Module]): Activation layer module after the first convolution.
+        mid_activation (Callable[..., nn.Module]): Activation layer module after the first convolution.
             Defaults to ``nn.ReLU``.
-        out_activation_callable (Callable[..., nn.Module]): Activation layer module after the last convolution.
+        out_activation (Callable[..., nn.Module]): Activation layer module after the last convolution.
             Defaults to ``nn.Sigmoid``.
     """
 
@@ -183,8 +183,8 @@ class SEBlock(nn.Module):
         mid_channels: int | None = None,
         round_mid: bool = False,
         use_conv: bool = True,
-        mid_activation_callable: Callable[..., nn.Module] = nn.ReLU,
-        out_activation_callable: Callable[..., nn.Module] = nn.Sigmoid,
+        mid_activation: Callable[..., nn.Module] = nn.ReLU,
+        out_activation: Callable[..., nn.Module] = nn.Sigmoid,
     ):
         super().__init__()
         self.use_conv = use_conv
@@ -203,7 +203,7 @@ class SEBlock(nn.Module):
             )
         else:
             self.fc1 = nn.Linear(in_features=channels, out_features=mid_channels)
-        self.activ = mid_activation_callable()
+        self.activ = mid_activation()
         if use_conv:
             self.conv2 = nn.Conv2d(
                 in_channels=mid_channels,
@@ -215,7 +215,7 @@ class SEBlock(nn.Module):
             )
         else:
             self.fc2 = nn.Linear(in_features=mid_channels, out_features=channels)
-        self.sigmoid = out_activation_callable()
+        self.sigmoid = out_activation()
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Forward."""
@@ -239,7 +239,7 @@ class EffiDwsConvUnit(nn.Module):
         out_channels (int): Number of output channels.
         stride (int | tuple[int, int]): Strides of the second convolution layer.
         bn_eps (float): Small float added to variance in Batch norm.
-        activation_callable (Callable[..., nn.Module]): Activation layer module.
+        activation (Callable[..., nn.Module]): Activation layer module.
         tf_mode (bool): Whether to use TF-like mode.
     """
 
@@ -249,7 +249,7 @@ class EffiDwsConvUnit(nn.Module):
         out_channels: int,
         stride: int | tuple[int, int],
         bn_eps: float,
-        activation_callable: Callable[..., nn.Module],
+        activation: Callable[..., nn.Module],
         tf_mode: bool,
     ):
         super().__init__()
@@ -261,14 +261,14 @@ class EffiDwsConvUnit(nn.Module):
             out_channels=in_channels,
             padding=(0 if tf_mode else 1),
             bn_eps=bn_eps,
-            activation_callable=activation_callable,
+            activation=activation,
         )
-        self.se = SEBlock(channels=in_channels, reduction=4, mid_activation_callable=activation_callable)
+        self.se = SEBlock(channels=in_channels, reduction=4, mid_activation=activation)
         self.pw_conv = conv1x1_block(
             in_channels=in_channels,
             out_channels=out_channels,
             bn_eps=bn_eps,
-            activation_callable=None,
+            activation=None,
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -296,7 +296,7 @@ class EffiInvResUnit(nn.Module):
         exp_factor (int): Factor for expansion of channels.
         se_factor (int): SE reduction factor for each unit.
         bn_eps (float): Small float added to variance in Batch norm.
-        activation_callable (Callable[..., nn.Module]): Activation layer module.
+        activation (Callable[..., nn.Module]): Activation layer module.
         tf_mode (bool): Whether to use TF-like mode.
     """
 
@@ -309,7 +309,7 @@ class EffiInvResUnit(nn.Module):
         exp_factor: int,
         se_factor: int,
         bn_eps: float,
-        activation_callable: Callable[..., nn.Module],
+        activation: Callable[..., nn.Module],
         tf_mode: bool,
     ):
         super().__init__()
@@ -325,7 +325,7 @@ class EffiInvResUnit(nn.Module):
             in_channels=in_channels,
             out_channels=mid_channels,
             bn_eps=bn_eps,
-            activation_callable=activation_callable,
+            activation=activation,
         )
         self.conv2 = dwconv_block_fn(
             in_channels=mid_channels,
@@ -333,19 +333,19 @@ class EffiInvResUnit(nn.Module):
             stride=stride,
             padding=(0 if tf_mode else kernel_size // 2),
             bn_eps=bn_eps,
-            activation_callable=activation_callable,
+            activation=activation,
         )
         if self.use_se:
             self.se = SEBlock(
                 channels=mid_channels,
                 reduction=(exp_factor * se_factor),
-                mid_activation_callable=activation_callable,
+                mid_activation=activation,
             )
         self.conv3 = conv1x1_block(
             in_channels=mid_channels,
             out_channels=out_channels,
             bn_eps=bn_eps,
-            activation_callable=None,
+            activation=None,
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -374,7 +374,7 @@ class EffiInitBlock(nn.Module):
         in_channels (int): Number of input channels.
         out_channels (int): Number of output channels.
         bn_eps (float): Small float added to variance in Batch norm.
-        activation_callable (Callable[..., nn.Module] | None): Activation layer module.
+        activation (Callable[..., nn.Module] | None): Activation layer module.
         tf_mode (bool): Whether to use TF-like mode.
     """
 
@@ -383,7 +383,7 @@ class EffiInitBlock(nn.Module):
         in_channels: int,
         out_channels: int,
         bn_eps: float,
-        activation_callable: Callable[..., nn.Module] | None,
+        activation: Callable[..., nn.Module] | None,
         tf_mode: bool,
     ):
         super().__init__()
@@ -395,7 +395,7 @@ class EffiInitBlock(nn.Module):
             stride=2,
             padding=(0 if tf_mode else 1),
             bn_eps=bn_eps,
-            activation_callable=activation_callable,
+            activation=activation,
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -456,7 +456,7 @@ class EfficientNet(nn.Module):
         self.bn_frozen = bn_frozen
         self.pooling_type = pooling_type
         self.num_features = self.num_head_features = final_block_channels
-        activation_callable = Swish
+        activation = Swish
         self.features = nn.Sequential()
         self.features.add_module(
             "init_block",
@@ -464,7 +464,7 @@ class EfficientNet(nn.Module):
                 in_channels=in_channels,
                 out_channels=init_block_channels,
                 bn_eps=bn_eps,
-                activation_callable=activation_callable,
+                activation=activation,
                 tf_mode=tf_mode,
             ),
         )
@@ -485,7 +485,7 @@ class EfficientNet(nn.Module):
                             out_channels=out_channels,
                             stride=stride,
                             bn_eps=bn_eps,
-                            activation_callable=activation_callable,
+                            activation=activation,
                             tf_mode=tf_mode,
                         ),
                     )
@@ -500,7 +500,7 @@ class EfficientNet(nn.Module):
                             exp_factor=expansion_factor,
                             se_factor=4,
                             bn_eps=bn_eps,
-                            activation_callable=activation_callable,
+                            activation=activation,
                             tf_mode=tf_mode,
                         ),
                     )
@@ -513,7 +513,7 @@ class EfficientNet(nn.Module):
                 in_channels=in_channels,
                 out_channels=final_block_channels,
                 bn_eps=bn_eps,
-                activation_callable=activation_callable,
+                activation=activation,
             ),
         )
         self._init_params()

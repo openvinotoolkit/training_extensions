@@ -104,7 +104,7 @@ class PatchEmbed(BaseModule):
             Default: "corner".
         dilation (int): The dilation rate of embedding conv. Default: 1.
         bias (bool): Bias of embed conv. Default: True.
-        normalization_callable (Callable[..., nn.Module] | None): Normalization layer module.
+        normalization (Callable[..., nn.Module] | None): Normalization layer module.
             Defaults to None.
         init_cfg (dict, optional): The Config for
             initialization. Default: None.
@@ -119,7 +119,7 @@ class PatchEmbed(BaseModule):
         padding: int | tuple | str = "corner",
         dilation: int = 1,
         bias: bool = True,
-        normalization_callable: Callable[..., nn.Module] | None = None,
+        normalization: Callable[..., nn.Module] | None = None,
         init_cfg: dict | None = None,
     ) -> None:
         super().__init__(init_cfg=init_cfg)
@@ -156,8 +156,8 @@ class PatchEmbed(BaseModule):
             bias=bias,
         )
 
-        if normalization_callable is not None:
-            self.norm = build_norm_layer(normalization_callable, embed_dims)[1]
+        if normalization is not None:
+            self.norm = build_norm_layer(normalization, embed_dims)[1]
         else:
             self.norm = None
 
@@ -210,7 +210,7 @@ class PatchMerging(BaseModule):
             layer. Default: 1.
         bias (bool, optional): Whether to add bias in linear layer or not.
             Defaults: False.
-        normalization_callable (Callable[..., nn.Module] | None): Normalization layer module.
+        normalization (Callable[..., nn.Module] | None): Normalization layer module.
             Defaults to ``nn.LayerNorm``.
         init_cfg (dict, optional): The extra config for initialization.
             Default: None.
@@ -225,7 +225,7 @@ class PatchMerging(BaseModule):
         padding: int | tuple | str = "corner",
         dilation: int | tuple = 1,
         bias: bool = False,
-        normalization_callable: Callable[..., nn.Module] | None = nn.LayerNorm,
+        normalization: Callable[..., nn.Module] | None = nn.LayerNorm,
         init_cfg: dict | None = None,
     ) -> None:
         super().__init__(init_cfg=init_cfg)
@@ -255,8 +255,8 @@ class PatchMerging(BaseModule):
 
         sample_dim = _kernel_size[0] * _kernel_size[1] * in_channels
 
-        if normalization_callable is not None:
-            self.norm = build_norm_layer(normalization_callable, sample_dim)[1]
+        if normalization is not None:
+            self.norm = build_norm_layer(normalization, sample_dim)[1]
         else:
             self.norm = None
 

@@ -31,7 +31,7 @@ class TestPresnet:
     def test_presnet_freeze_norm(self):
         model = PResNet(
             depth=50,
-            normalization_callable=partial(build_norm_layer, FrozenBatchNorm2d, layer_name="norm"),
+            normalization=partial(build_norm_layer, FrozenBatchNorm2d, layer_name="norm"),
         )
         for name, param in model.named_parameters():
             if "norm" in name:
