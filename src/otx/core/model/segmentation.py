@@ -20,10 +20,13 @@ from otx.core.metrics import MetricInput
 from otx.core.metrics.dice import SegmCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable, OTXModel, OVModel
 from otx.core.schedulers import LRSchedulerListCallable
-from otx.core.types.export import TaskLevelExportParameters
+from otx.core.types.export import OTXExportFormatType, TaskLevelExportParameters
 from otx.core.types.label import LabelInfo, LabelInfoTypes, SegLabelInfo
+from otx.core.types.precision import OTXPrecisionType
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
     from model_api.models.utils import ImageResultWithSoftPrediction
     from torch import Tensor
@@ -123,6 +126,32 @@ class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity]):
                 ),
             )
         return SegBatchDataEntity(batch_size, images, infos, masks=[])
+
+    def export(
+        self,
+        output_dir: Path,
+        base_name: str,
+        export_format: OTXExportFormatType,
+        precision: OTXPrecisionType = OTXPrecisionType.FP32,
+        to_exportable_code: bool = False,
+    ) -> Path:
+        """Export this model to the specified output directory.
+
+        Args:
+            output_dir (Path): directory for saving the exported model
+            base_name: (str): base name for the exported model file. Extension is defined by the target export format
+            export_format (OTXExportFormatType): format of the output model
+            precision (OTXExportPrecisionType): precision of the output model
+            to_exportable_code (bool): flag to export model in exportable code with demo package
+
+        Returns:
+            Path: path to the exported model.
+        """
+        if hasattr(self.model, "student_model"):
+            # use only teacher model
+            # TODO(Kirill): make this based on the training type
+            self.model = self.model.teacher_model
+        return super().export(output_dir, base_name, export_format, precision, to_exportable_code)
 
 
 class TorchVisionCompatibleModel(OTXSegmentationModel):
