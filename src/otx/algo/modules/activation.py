@@ -75,20 +75,22 @@ def _get_act_type(activation_callable: Callable[..., nn.Module]) -> type:
 
 
 def build_activation_layer(
-    activation_callable: Callable[..., nn.Module] | None,
+    activation_callable: Callable[..., nn.Module] | nn.Module | None,
     inplace: bool = True,
 ) -> nn.Module | None:
     """Build activation layer.
 
     Args:
         activation_callable (Callable[..., nn.Module]): Activation layer module.
+            If None or pre-instanstiated module is given, return it as is.
+            If callable is given, create the layer.
         inplace (bool): Whether to use inplace mode for activation.
             Default: True.
 
     Returns:
         nn.Module: Created activation layer.
     """
-    if activation_callable is None:
+    if activation_callable is None or isinstance(activation_callable, nn.Module):
         return activation_callable
 
     if (layer_type := _get_act_type(activation_callable)) not in AVAILABLE_ACTIVATION_LIST:
