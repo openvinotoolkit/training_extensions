@@ -30,8 +30,6 @@ class LiteHRNet(OTXSegmentationModel):
         "lite_hrnet_18",
         "lite_hrnet_x",
     ]
-    MEAN: ClassVar[list[float]] = [0.485, 0.456, 0.406]
-    STD: ClassVar[list[float]] = [0.229, 0.224, 0.225]
 
     def _build_model(self) -> nn.Module:
         if self.model_version not in self.AVAILABLE_MODEL_VERSIONS:
@@ -76,8 +74,8 @@ class LiteHRNet(OTXSegmentationModel):
         return OTXNativeModelExporter(
             task_level_export_parameters=self._export_parameters,
             input_size=(1, 3, *self.input_size),
-            mean=self.MEAN,
-            std=self.STD,
+            mean=self.mean,
+            std=self.scale,
             resize_mode="standard",
             pad_value=0,
             swap_rgb=False,

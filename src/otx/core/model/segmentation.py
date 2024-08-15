@@ -8,7 +8,7 @@ from __future__ import annotations
 import json
 from abc import abstractmethod
 from collections.abc import Sequence
-from typing import TYPE_CHECKING, Any, Literal
+from typing import TYPE_CHECKING, Any, ClassVar, Literal
 
 import torch
 from torch import nn
@@ -41,10 +41,13 @@ if TYPE_CHECKING:
 class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity]):
     """Base class for the semantic segmentation models used in OTX."""
 
+    mean: ClassVar[tuple[float, float, float]] = (0.485, 0.456, 0.406)
+    scale: ClassVar[tuple[float, float, float]] = (0.229, 0.224, 0.225)
+
     def __init__(
         self,
         label_info: LabelInfoTypes,
-        input_size: tuple[int, int]  = (512, 512),
+        input_size: tuple[int, int] = (512, 512),
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = SegmCallable,  # type: ignore[assignment]
@@ -180,8 +183,8 @@ class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity]):
         return OTXNativeModelExporter(
             task_level_export_parameters=self._export_parameters,
             input_size=(1, 3, *self.input_size),
-            mean=self.MEAN,
-            std=self.STD,
+            mean=self.mean,
+            std=self.scale,
             resize_mode="standard",
             pad_value=0,
             swap_rgb=False,

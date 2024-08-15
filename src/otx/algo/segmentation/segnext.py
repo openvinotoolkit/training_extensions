@@ -25,8 +25,6 @@ class SegNext(OTXSegmentationModel):
         "segnext_small",
         "segnext_base",
     ]
-    MEAN: ClassVar[list[float]] = [0.485, 0.456, 0.406]
-    STD: ClassVar[list[float]] = [0.229, 0.224, 0.225]
 
     def _build_model(self) -> nn.Module:
         # initialize backbones

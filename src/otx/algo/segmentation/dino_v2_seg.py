@@ -25,9 +25,6 @@ class DinoV2Seg(OTXSegmentationModel):
         "dinov2_vits14",
     ]
 
-    MEAN: ClassVar[list[float]] = [0.485, 0.456, 0.406]
-    STD: ClassVar[list[float]] = [0.229, 0.224, 0.225]
-
     def _build_model(self) -> nn.Module:
         if self.model_version not in self.AVAILABLE_MODEL_VERSIONS:
             msg = f"Model version {self.model_version} is not supported."
