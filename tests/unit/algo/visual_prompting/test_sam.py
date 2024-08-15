@@ -100,9 +100,11 @@ class TestSAM:
     def sam(self) -> SAM:
         return SAM(backbone_type="tiny_vit")
 
-    def test_initialization(self, mocker, sam: SAM) -> None:
+    def test_initialization(self, mocker) -> None:
         mock_freeze_networks = mocker.patch.object(CommonSettingMixin, "freeze_networks")
         mock_load_checkpoint = mocker.patch.object(CommonSettingMixin, "load_checkpoint")
+
+        sam = SAM(backbone_type="tiny_vit")
 
         assert sam.backbone_type == "tiny_vit"
         assert sam.image_size == 1024
