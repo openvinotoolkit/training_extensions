@@ -1,5 +1,5 @@
 model:
-  class_path: otx.algo.segmentation.litehrnet.LiteHRNetSemiSL
+  class_path: otx.algo.segmentation.litehrnet.LiteHRNet
   init_args:
     label_info: 2
     model_version: lite_hrnet_s

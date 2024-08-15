@@ -1,5 +1,5 @@
 model:
-  class_path: otx.algo.segmentation.dino_v2_seg.DinoV2SegSemiSL
+  class_path: otx.algo.segmentation.dino_v2_seg.DinoV2Seg
   init_args:
     label_info: 2
     model_version: dinov2_vits14
