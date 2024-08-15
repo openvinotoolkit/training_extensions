@@ -100,7 +100,7 @@ def fxt_target_dataset_per_task(fxt_ci_data_root) -> dict:
             "tiling": Path(fxt_ci_data_root / "v2/tiling_instance_seg/vitens_aeromonas_small/1"),
         },
         OTXTaskType.SEMANTIC_SEGMENTATION: {
-            "supervised": Path(fxt_ci_data_root / "v2/semantic_seg/kvasir_small/1"),
+            "supervised": Path(fxt_ci_data_root / "v2/semantic_seg_bg/kvasir_small/1"),
             "unlabeled": Path(fxt_ci_data_root / "v2/semantic_seg/semisl/unlabeled_images/kvasir"),
         },
         OTXTaskType.ACTION_CLASSIFICATION: Path(
