@@ -1,3 +1,5 @@
+import copy
+import itertools
 from typing import Tuple
 
 import torch
@@ -8,6 +10,7 @@ from detectron2.data import MetadataCatalog
 from detectron2.modeling import build_backbone
 from detectron2.modeling.backbone import Backbone
 from detectron2.projects.deeplab import add_deeplab_config
+from detectron2.solver.build import maybe_add_gradient_clipping
 from detectron2.structures import ImageList
 from torch import Tensor, nn
 from torch.nn.modules import Module
@@ -444,6 +447,105 @@ class MaskDINOR50(ExplainableOTXInstanceSegModel):
             )
         return detector
 
+    def configure_optimizers(self):
+        optimizer = self.build_optimizer(self.cfg, self.model)
+
+        schedulers = self.scheduler_callable(optimizer)
+
+        def ensure_list(item) -> list:
+            return item if isinstance(item, list) else [item]
+
+        lr_scheduler_configs = []
+        for scheduler in ensure_list(schedulers):
+            lr_scheduler_config = {"scheduler": scheduler}
+            if hasattr(scheduler, "interval"):
+                lr_scheduler_config["interval"] = scheduler.interval
+            if hasattr(scheduler, "monitor"):
+                lr_scheduler_config["monitor"] = scheduler.monitor
+            lr_scheduler_configs.append(lr_scheduler_config)
+
+        return [optimizer], lr_scheduler_configs
+
+    def build_optimizer(self, cfg, model):
+        weight_decay_norm = cfg.SOLVER.WEIGHT_DECAY_NORM
+        weight_decay_embed = cfg.SOLVER.WEIGHT_DECAY_EMBED
+
+        defaults = {}
+        defaults["lr"] = cfg.SOLVER.BASE_LR
+        defaults["weight_decay"] = cfg.SOLVER.WEIGHT_DECAY
+
+        norm_module_types = (
+            torch.nn.BatchNorm1d,
+            torch.nn.BatchNorm2d,
+            torch.nn.BatchNorm3d,
+            torch.nn.SyncBatchNorm,
+            # NaiveSyncBatchNorm inherits from BatchNorm2d
+            torch.nn.GroupNorm,
+            torch.nn.InstanceNorm1d,
+            torch.nn.InstanceNorm2d,
+            torch.nn.InstanceNorm3d,
+            torch.nn.LayerNorm,
+            torch.nn.LocalResponseNorm,
+        )
+
+        params = []
+        memo = set()
+        for module_name, module in model.named_modules():
+            for module_param_name, value in module.named_parameters(recurse=False):
+                if not value.requires_grad:
+                    continue
+                # Avoid duplicating parameters
+                if value in memo:
+                    continue
+                memo.add(value)
+
+                hyperparams = copy.copy(defaults)
+                if "backbone" in module_name:
+                    hyperparams["lr"] = hyperparams["lr"] * cfg.SOLVER.BACKBONE_MULTIPLIER
+                if "relative_position_bias_table" in module_param_name or "absolute_pos_embed" in module_param_name:
+                    print(module_param_name)
+                    hyperparams["weight_decay"] = 0.0
+                if isinstance(module, norm_module_types):
+                    hyperparams["weight_decay"] = weight_decay_norm
+                if isinstance(module, torch.nn.Embedding):
+                    hyperparams["weight_decay"] = weight_decay_embed
+                params.append({"params": [value], **hyperparams})
+
+        def maybe_add_full_model_gradient_clipping(optim):
+            # detectron2 doesn't have full model gradient clipping now
+            clip_norm_val = cfg.SOLVER.CLIP_GRADIENTS.CLIP_VALUE
+            enable = (
+                cfg.SOLVER.CLIP_GRADIENTS.ENABLED
+                and cfg.SOLVER.CLIP_GRADIENTS.CLIP_TYPE == "full_model"
+                and clip_norm_val > 0.0
+            )
+
+            class FullModelGradientClippingOptimizer(optim):
+                def step(self, closure=None):
+                    all_params = itertools.chain(*[x["params"] for x in self.param_groups])
+                    torch.nn.utils.clip_grad_norm_(all_params, clip_norm_val)
+                    super().step(closure=closure)
+
+            return FullModelGradientClippingOptimizer if enable else optim
+
+        optimizer_type = cfg.SOLVER.OPTIMIZER
+        if optimizer_type == "SGD":
+            optimizer = maybe_add_full_model_gradient_clipping(torch.optim.SGD)(
+                params,
+                cfg.SOLVER.BASE_LR,
+                momentum=cfg.SOLVER.MOMENTUM,
+            )
+        elif optimizer_type == "ADAMW":
+            optimizer = maybe_add_full_model_gradient_clipping(torch.optim.AdamW)(
+                params,
+                cfg.SOLVER.BASE_LR,
+            )
+        else:
+            raise NotImplementedError(f"no optimizer type {optimizer_type}")
+        if cfg.SOLVER.CLIP_GRADIENTS.CLIP_TYPE != "full_model":
+            optimizer = maybe_add_gradient_clipping(cfg, optimizer)
+        return optimizer
+
     def _build_model(self, num_classes: int) -> Module:
         cfg = get_cfg()
         # for poly lr schedule
@@ -451,6 +553,7 @@ class MaskDINOR50(ExplainableOTXInstanceSegModel):
         MaskDINOR50.add_maskdino_config(cfg)
         cfg.merge_from_file("src/otx/recipe/instance_segmentation/config.yaml")
         cfg.MODEL.SEM_SEG_HEAD.NUM_CLASSES = num_classes
+        self.cfg = cfg
         return MaskDINO(cfg)
 
     def _customize_inputs(self, entity: InstanceSegBatchDataEntity):
@@ -466,11 +569,9 @@ class MaskDINOR50(ExplainableOTXInstanceSegModel):
         if self.training:
             return outputs
 
-        target_sizes = [(max(m.shape), max(m.shape)) for m in inputs.masks]
         masks, bboxes, labels, scores = self.post_process_instance_segmentation(
             outputs,
             inputs.imgs_info,
-            target_sizes=target_sizes,
         )
 
         if self.explain_mode:
@@ -492,45 +593,45 @@ class MaskDINOR50(ExplainableOTXInstanceSegModel):
         self,
         outputs,
         imgs_info,
-        target_sizes: list[tuple[int, int]] | None = None,
     ) -> tuple[Tensor, Tensor, Tensor, Tensor]:
         class_queries_logits = outputs["pred_logits"]
         masks_queries_logits = outputs["pred_masks"]
         mask_box_results = outputs["pred_boxes"]
 
-        # Scale back to preprocessed image size - (384, 384) for all models
-        masks_queries_logits = torch.nn.functional.interpolate(
-            masks_queries_logits,
-            size=(384, 384),
-            mode="bilinear",
-            align_corners=False,
-        )
-
         device = masks_queries_logits.device
         num_classes = self.model.sem_seg_head.num_classes
-        num_queries = self.model.test_topk_per_image
+        num_queries = self.model.num_queries
+        test_topk_per_image = self.model.test_topk_per_image
 
         batch_scores: list[Tensor] = []
         batch_bboxes: list[tv_tensors.BoundingBoxes] = []
         batch_labels: list[torch.LongTensor] = []
         batch_masks: list[tv_tensors.Mask] = []
 
-        for mask_pred, mask_cls, pred_boxes, img_info, target_size in zip(
+        for mask_pred, mask_cls, pred_boxes, img_info in zip(
             masks_queries_logits,
             class_queries_logits,
             mask_box_results,
             imgs_info,
-            target_sizes,
         ):
             ori_h, ori_w = img_info.ori_shape
             scores = mask_cls.sigmoid()
             labels = torch.arange(num_classes, device=device).unsqueeze(0).repeat(num_queries, 1).flatten(0, 1)
 
-            scores_per_image, topk_indices = scores.flatten(0, 1).topk(num_queries, sorted=False)
+            scores_per_image, topk_indices = scores.flatten(0, 1).topk(test_topk_per_image, sorted=False)
             labels_per_image = labels[topk_indices]
 
-            topk_indices = torch.div(topk_indices, num_classes, rounding_mode="floor")
+            topk_indices = topk_indices // num_classes
+
+            mask_pred = torch.nn.functional.interpolate(
+                mask_pred.unsqueeze(0),
+                size=(ori_h, ori_w),
+                mode="bilinear",
+                align_corners=False,
+            )[0]
+
             mask_pred = mask_pred[topk_indices]
+            pred_boxes = pred_boxes[topk_indices]
             pred_masks = (mask_pred > 0).float()
 
             # Calculate average mask prob
@@ -539,18 +640,18 @@ class MaskDINOR50(ExplainableOTXInstanceSegModel):
             )
             pred_scores = scores_per_image * mask_scores_per_image
             pred_classes = labels_per_image
-            pred_masks = torch.nn.functional.interpolate(
-                pred_masks.unsqueeze(0),
-                size=target_size,
-                mode="nearest",
-            )[0][:, :ori_h, :ori_w]
 
-            pred_boxes = box_ops.box_cxcywh_to_xyxy(pred_boxes)
-            pred_boxes *= pred_boxes.new_tensor(img_info.img_shape).repeat((1, 2))
-            pred_boxes /= pred_boxes.new_tensor(img_info.scale_factor[::-1]).repeat((1, 2))
+            if len(pred_boxes) == 0:
+                print("No instance detected.")
+                raise ValueError("No instance detected.")
+
+            pred_boxes = pred_boxes.new_tensor([[ori_w, ori_h, ori_w, ori_h]]) * box_ops.box_cxcywh_to_xyxy(pred_boxes)
+            pred_boxes[:, 0::2].clamp_(min=0, max=ori_w - 1)
+            pred_boxes[:, 1::2].clamp_(min=0, max=ori_h - 1)
+
             area = (pred_boxes[:, 2] - pred_boxes[:, 0]) * (pred_boxes[:, 3] - pred_boxes[:, 1])
+            keep = (pred_masks.sum((1, 2)) > 5) & (area > 10) & (pred_scores > 0.05)
 
-            keep = (pred_masks.sum((1, 2)) > 10) & (pred_scores > 0.05) & (area > 10)
             batch_masks.append(pred_masks[keep])
             batch_bboxes.append(pred_boxes[keep])
             batch_labels.append(pred_classes[keep])

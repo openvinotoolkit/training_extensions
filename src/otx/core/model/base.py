@@ -15,6 +15,7 @@ from abc import abstractmethod
 from collections.abc import Sequence
 from typing import TYPE_CHECKING, Any, Callable, Generic, Literal, NamedTuple
 
+import cv2
 import numpy as np
 import openvino
 import torch
@@ -37,6 +38,7 @@ from otx.core.data.entity.base import (
     T_OTXBatchDataEntity,
     T_OTXBatchPredEntity,
 )
+from otx.core.data.entity.instance_segmentation import InstanceSegBatchDataEntity, InstanceSegBatchPredEntity
 from otx.core.data.entity.tile import OTXTileBatchDataEntity
 from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.metrics import MetricInput, NullMetricCallable
@@ -167,6 +169,42 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
 
         raise TypeError(train_loss)
 
+    def visualize(
+        self,
+        preds: InstanceSegBatchPredEntity,
+        inputs: InstanceSegBatchDataEntity,
+    ):
+        file_names = self.trainer.datamodule.file_names["val"]
+
+        for gt_boxes, pred_boxes, gt_polygons, pred_masks, img_info in zip(
+            inputs.bboxes,
+            preds.bboxes,
+            inputs.polygons,
+            preds.masks,
+            inputs.imgs_info,
+        ):
+            img_idx = img_info.img_idx
+            img_path = file_names[img_idx]
+            img = cv2.imread(img_path)
+            img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+            h, w, _ = img.shape
+
+            # for gt_bbox, gt_polygon in zip(gt_boxes, gt_polygons):
+            #     np_bbox = gt_bbox.cpu().numpy()
+            #     np_mask = polygon_to_bitmap([gt_polygon], h, w)[0]
+            #     x1, y1, x2, y2 = [int(v) for v in np_bbox]
+            #     cv2.rectangle(img, (x1, y1), (x2, y2), (0, 255, 0), 2)
+            #     img[np_mask == 1, 1] = 128
+
+            for pred_bbox, pred_mask in zip(pred_boxes, pred_masks):
+                np_mask = pred_mask.cpu().numpy()
+                np_bbox = pred_bbox.cpu().numpy()
+                x1, y1, x2, y2 = (int(v) for v in np_bbox)
+                cv2.rectangle(img, (x1, y1), (x2, y2), (255, 0, 0), 2)
+                img[np_mask == 1, 1] = 128
+
+            print()
+
     def validation_step(self, batch: T_OTXBatchDataEntity, batch_idx: int) -> None:
         """Perform a single validation step on a batch of data from the validation set.
 
@@ -175,6 +213,8 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
         :param batch_idx: The index of the current batch.
         """
         preds = self.forward(inputs=batch)
+
+        # self.visualize(preds, batch)
 
         if isinstance(preds, OTXBatchLossEntity):
             raise TypeError(preds)
