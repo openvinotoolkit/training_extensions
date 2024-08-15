@@ -49,15 +49,14 @@ def test_otx_e2e_cli(
     is_semisl = model_name.endswith("_semisl")
     task = recipe_split[-2].upper() if not is_semisl else recipe_split[-3].upper()
 
-    if is_semisl:
-        #TODO(Kirill): add e2e tests for semi-sl task
-        pytest.skip("SEMI-SL is not supported for e2e yet.")
-
     if task == OTXTaskType.INSTANCE_SEGMENTATION:
         is_tiling = "tile" in recipe
         dataset_path = fxt_target_dataset_per_task[task]["tiling" if is_tiling else "non_tiling"]
     else:
         dataset_path = fxt_target_dataset_per_task[task]
+
+    if isinstance(dataset_path, dict) and "supervised" in dataset_path:
+        dataset_path = dataset_path["supervised"]
 
     # 1) otx train
     tmp_path_train = tmp_path / f"otx_train_{model_name}"
@@ -149,8 +148,9 @@ def test_otx_e2e_cli(
 
     tmp_path_test = tmp_path / f"otx_test_{model_name}"
     for export_case in fxt_export_list:
-        if (task.lower() in ("visual_prompting", "zero_shot_visual_prompting")
-            or task.lower().startswith("anomaly")) and export_case.export_demo_package:
+        if (
+            task.lower() in ("visual_prompting", "zero_shot_visual_prompting") or task.lower().startswith("anomaly")
+        ) and export_case.export_demo_package:
             # Skip exportable code checking for visual_prompting, zero_shot_visual_prompting and anomaly tasks
             return
 

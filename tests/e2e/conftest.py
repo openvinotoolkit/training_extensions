@@ -87,8 +87,10 @@ def pytest_configure(config):
 @pytest.fixture()
 def fxt_target_dataset_per_task(fxt_ci_data_root) -> dict:
     return {
-        OTXTaskType.MULTI_CLASS_CLS: {"supervised" : Path(fxt_ci_data_root / "v2/multiclass_classification/multiclass_CUB_small/1"),
-                                      "unlabeled": Path(fxt_ci_data_root / "v2/multiclass_classification/multiclass_CUB_small/unlabeled")},
+        OTXTaskType.MULTI_CLASS_CLS: {
+            "supervised": Path(fxt_ci_data_root / "v2/multiclass_classification/multiclass_CUB_small/1"),
+            "unlabeled": Path(fxt_ci_data_root / "v2/multiclass_classification/multiclass_CUB_small/unlabeled"),
+        },
         OTXTaskType.MULTI_LABEL_CLS: Path(fxt_ci_data_root / "v2/multilabel_classification/multilabel_CUB_small/1"),
         OTXTaskType.H_LABEL_CLS: Path(fxt_ci_data_root / "v2/hlabel_classification/hlabel_CUB_small/1"),
         OTXTaskType.DETECTION: Path(fxt_ci_data_root / "v2/detection/pothole_small/1"),
@@ -97,8 +99,10 @@ def fxt_target_dataset_per_task(fxt_ci_data_root) -> dict:
             "non_tiling": Path(fxt_ci_data_root / "v2/instance_seg/wgisd_small/1"),
             "tiling": Path(fxt_ci_data_root / "v2/tiling_instance_seg/vitens_aeromonas_small/1"),
         },
-        OTXTaskType.SEMANTIC_SEGMENTATION: {"supervised" : Path(fxt_ci_data_root / "v2/semantic_seg/kvasir_small/1"),
-                                            "unlabeled": Path(fxt_ci_data_root / "v2/semantic_seg/kvasir_small/unlabeled")},
+        OTXTaskType.SEMANTIC_SEGMENTATION: {
+            "supervised": Path(fxt_ci_data_root / "v2/semantic_seg/kvasir_small/1"),
+            "unlabeled": Path(fxt_ci_data_root / "v2/semantic_seg/kvasir_small/unlabeled"),
+        },
         OTXTaskType.ACTION_CLASSIFICATION: Path(
             fxt_ci_data_root / "v2/action/action_classification/ucf_kinetics_5percent_small",
         ),
