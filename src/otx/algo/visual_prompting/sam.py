@@ -10,7 +10,7 @@ import pickle  # nosec  B403   used pickle for dumping object
 from collections import defaultdict
 from copy import deepcopy
 from pathlib import Path
-from typing import TYPE_CHECKING, Callable, ClassVar, Literal, Sequence
+from typing import TYPE_CHECKING, Callable, ClassVar, Literal
 
 import torch
 import torchvision.transforms.v2 as tvt_v2
@@ -81,7 +81,7 @@ class CommonSettingMixin:
 
             self.load_state_dict(state_dict)
 
-        except ValueError as e:
+        except (ValueError, RuntimeError) as e:
             log.info(
                 f"{e}: {load_from} is not desirable format for torch.hub.load_state_dict_from_url. "
                 f"To manually load {load_from}, try to set it to trainer.checkpoint.",
@@ -113,11 +113,13 @@ class CommonSettingMixin:
 class SAM(OTXVisualPromptingModel, CommonSettingMixin):
     """OTX visual prompting model class for Segment Anything Model (SAM)."""
 
+    input_size_multiplier = 16
+
     def __init__(
         self,
         backbone_type: Literal["tiny_vit", "vit_b"],
         label_info: LabelInfoTypes = NullLabelInfo(),
-        input_size: Sequence[int] = (1, 3, 1024, 1024),
+        input_size: tuple[int, int] = (1024, 1024),
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = VisualPromptingMetricCallable,
@@ -130,9 +132,13 @@ class SAM(OTXVisualPromptingModel, CommonSettingMixin):
         return_extra_metrics: bool = False,
         stability_score_offset: float = 1.0,
     ) -> None:
+        if input_size[0] != input_size[1]:
+            msg = f"SAM should use square image size, but got {input_size}"
+            raise ValueError(msg)
+
         self.backbone_type = backbone_type
-        self.image_size = input_size[-1]
-        self.image_embedding_size = input_size[-1] // 16
+        self.image_size = input_size[0]
+        self.image_embedding_size = input_size[0] // 16
 
         self.use_stability_score = use_stability_score
         self.return_single_mask = return_single_mask
@@ -141,6 +147,7 @@ class SAM(OTXVisualPromptingModel, CommonSettingMixin):
 
         super().__init__(
             label_info=label_info,
+            input_size=input_size,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
@@ -219,7 +226,6 @@ class ZeroShotSAM(OTXZeroShotVisualPromptingModel, CommonSettingMixin):
         self,
         backbone_type: Literal["tiny_vit", "vit_b"],
         label_info: LabelInfoTypes = NullLabelInfo(),
-        input_size: Sequence[int] = (1, 3, 1024, 1024),
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = VisualPromptingMetricCallable,
@@ -240,8 +246,8 @@ class ZeroShotSAM(OTXZeroShotVisualPromptingModel, CommonSettingMixin):
         stability_score_offset: float = 1.0,
     ) -> None:
         self.backbone_type = backbone_type
-        self.image_size = input_size[-1]
-        self.image_embedding_size = input_size[-1] // 16
+        self.image_size = 1024  # zero-shot visual prompting model uses fixed 1024x1024 input size
+        self.image_embedding_size = 1024 // 16  # zero-shot visual prompting model uses fixed 1024x1024 input size
 
         self.default_threshold_reference = default_threshold_reference
         self.default_threshold_target = default_threshold_target
@@ -253,6 +259,7 @@ class ZeroShotSAM(OTXZeroShotVisualPromptingModel, CommonSettingMixin):
 
         super().__init__(
             label_info=label_info,
+            input_size=(1024, 1024),  # zero-shot visual prompting model uses fixed 1024x1024 input size
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
@@ -282,7 +289,7 @@ class ZeroShotSAM(OTXZeroShotVisualPromptingModel, CommonSettingMixin):
         self.initialize_reference_info()
 
     def _build_model(self) -> nn.Module:
-        image_encoder = SAMImageEncoder(backbone_type=self.backbone_type)
+        image_encoder = SAMImageEncoder(backbone_type=self.backbone_type, img_size=self.image_size)
         prompt_encoder = SAMPromptEncoder(
             image_embedding_size=(self.image_embedding_size, self.image_embedding_size),
             input_image_size=(self.image_size, self.image_size),

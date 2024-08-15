@@ -6,8 +6,6 @@ import torch
 from otx.algo.visual_prompting.losses.sam_loss import SAMCriterion
 from torch import Tensor
 
-from otx.algo.visual_prompting.utils.postprocess import postprocess_masks
-
 
 class TestSAMCriterion:
     @pytest.fixture()
@@ -37,9 +35,9 @@ class TestSAMCriterion:
         expected_loss_dice = torch.tensor(0.3194)
         expected_loss_iou = torch.tensor(0.3700)
 
-        mocker.patch("otx.algo.visual_prompting.losses.sam_loss.postprocess_masks", lambda x, y, z: x)
+        mocker.patch("otx.algo.visual_prompting.losses.sam_loss.postprocess_masks", lambda x, y, z: x)  # noqa: ARG005
         mocker.patch("torch.Tensor.sigmoid", lambda x: x)
-        mocker.patch("torch.Tensor.flatten", lambda x, y: x)
+        mocker.patch("torch.Tensor.flatten", lambda x, y: x)  # noqa: ARG005
 
         results = sam_criterion.forward(pred_masks, gt_masks, ious, ori_shapes)
 
@@ -59,7 +57,11 @@ class TestSAMCriterion:
         ],
     )
     def test_calculate_dice_loss(
-        self, sam_criterion: SAMCriterion, inputs: Tensor, targets: Tensor, expected: Tensor
+        self,
+        sam_criterion: SAMCriterion,
+        inputs: Tensor,
+        targets: Tensor,
+        expected: Tensor,
     ) -> None:
         """Test calculate_dice_loss."""
         results = sam_criterion.calculate_dice_loss(inputs, targets, num_masks=1)
@@ -75,7 +77,11 @@ class TestSAMCriterion:
         ],
     )
     def test_calculate_sigmoid_ce_focal_loss(
-        self, sam_criterion: SAMCriterion, inputs: Tensor, targets: Tensor, expected: Tensor
+        self,
+        sam_criterion: SAMCriterion,
+        inputs: Tensor,
+        targets: Tensor,
+        expected: Tensor,
     ) -> None:
         """Test calculate_sigmoid_ce_focal_loss."""
         results = sam_criterion.calculate_sigmoid_ce_focal_loss(inputs, targets, num_masks=1)
@@ -91,7 +97,11 @@ class TestSAMCriterion:
         ],
     )
     def test_calculate_iou(
-        self, sam_criterion: SAMCriterion, inputs: Tensor, targets: Tensor, expected: Tensor
+        self,
+        sam_criterion: SAMCriterion,
+        inputs: Tensor,
+        targets: Tensor,
+        expected: Tensor,
     ) -> None:
         """Test calculate_iou."""
         results = sam_criterion.calculate_iou(inputs, targets)
