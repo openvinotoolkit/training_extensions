@@ -11,7 +11,7 @@ import torch
 from torch import Tensor, nn
 from torchvision.models import get_model, get_model_weights
 
-from otx.algo.classification.heads import HierarchicalLinearClsHead, MultiLabelLinearClsHead, OTXSemiSLLinearClsHead
+from otx.algo.classification.heads import HierarchicalCBAMClsHead, MultiLabelLinearClsHead, OTXSemiSLLinearClsHead
 from otx.algo.classification.losses import AsymmetricAngularLossWithIgnore
 from otx.algo.explain.explain_algo import ReciproCAM, feature_vector_fn
 from otx.core.data.entity.base import OTXBatchLossEntity
@@ -209,12 +209,13 @@ class TVClassificationModel(nn.Module):
                 loss=self.loss_module,
             )
         if self.task == OTXTaskType.H_LABEL_CLS:
-            self.neck = nn.Sequential(*layers) if layers else None
-            return HierarchicalLinearClsHead(
+            self.neck = nn.Sequential(*layers, nn.Identity()) if layers else None
+            return HierarchicalCBAMClsHead(
                 in_channels=feature_channel,
                 multiclass_loss=nn.CrossEntropyLoss(),
                 multilabel_loss=self.loss_module,
                 **self.head_config,
+                step_size=1,
             )
 
         msg = f"Task type {self.task} is not supported."
@@ -404,6 +405,8 @@ class OTXTVModel(OTXModel):
         task (Literal[OTXTaskType.MULTI_CLASS_CLS, OTXTaskType.MULTI_LABEL_CLS, OTXTaskType.H_LABEL_CLS], optional):
             The type of classification task.
         train_type (Literal[OTXTrainType.SUPERVISED, OTXTrainType.SEMI_SUPERVISED], optional): The type of training.
+        input_size (tuple[int, int], optional):
+            Model input size in the order of height and width. Defaults to (224, 224)
     """
 
     model: TVClassificationModel
@@ -422,12 +425,12 @@ class OTXTVModel(OTXModel):
             OTXTaskType.H_LABEL_CLS,
         ] = OTXTaskType.MULTI_CLASS_CLS,
         train_type: Literal[OTXTrainType.SUPERVISED, OTXTrainType.SEMI_SUPERVISED] = OTXTrainType.SUPERVISED,
+        input_size: tuple[int, int] = (224, 224),
     ) -> None:
         self.backbone = backbone
         self.freeze_backbone = freeze_backbone
         self.train_type = train_type
         self.task = task
-        self.image_size: tuple[int, ...] = (1, 3, 224, 224)
 
         # TODO(@harimkang): Need to make it configurable.
         if task == OTXTaskType.MULTI_CLASS_CLS:
@@ -443,7 +446,9 @@ class OTXTVModel(OTXModel):
             scheduler=scheduler,
             metric=metric,
             torch_compile=torch_compile,
+            input_size=input_size,
         )
+        self.input_size: tuple[int, int]
 
     def _create_model(self) -> nn.Module:
         if self.task == OTXTaskType.MULTI_CLASS_CLS:
@@ -553,7 +558,7 @@ class OTXTVModel(OTXModel):
         """Creates OTXModelExporter object that can export the model."""
         return OTXNativeModelExporter(
             task_level_export_parameters=self._export_parameters,
-            input_size=self.image_size,
+            input_size=(1, 3, *self.input_size),
             mean=(123.675, 116.28, 103.53),
             std=(58.395, 57.12, 57.375),
             resize_mode="standard",
@@ -651,7 +656,7 @@ class OTXTVModel(OTXModel):
 
     def get_dummy_input(self, batch_size: int = 1) -> CLASSIFICATION_BATCH_DATA_ENTITY:
         """Returns a dummy input for classification model."""
-        images = [torch.rand(*self.image_size[1:]) for _ in range(batch_size)]
+        images = [torch.rand(3, *self.input_size) for _ in range(batch_size)]
         labels = [torch.LongTensor([0])] * batch_size
 
         if self.task == OTXTaskType.MULTI_CLASS_CLS:

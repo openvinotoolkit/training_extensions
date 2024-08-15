@@ -6,7 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### New features
 
-- Add RT-DETR model for object detection task
+- Add RT-DETR model for Object Detection
   (https://github.com/openvinotoolkit/training_extensions/pull/3741)
 - Add Multi-Label & H-label Classification with torchvision models
   (https://github.com/openvinotoolkit/training_extensions/pull/3697)
@@ -14,7 +14,7 @@ All notable changes to this project will be documented in this file.
   (https://github.com/openvinotoolkit/training_extensions/pull/3710)
 - Add LoRA finetuning capability for ViT Architectures
   (https://github.com/openvinotoolkit/training_extensions/pull/3729)
-- Add Hugging-Face Model Wrapper for Detection
+- Add Hugging-Face Model Wrapper for Object Detection
   (https://github.com/openvinotoolkit/training_extensions/pull/3747)
 - Add Hugging-Face Model Wrapper for Semantic Segmentation
   (https://github.com/openvinotoolkit/training_extensions/pull/3749)
@@ -24,6 +24,12 @@ All notable changes to this project will be documented in this file.
   (https://github.com/openvinotoolkit/training_extensions/pull/3762)
 - Add RTMPose for Keypoint Detection Task
   (https://github.com/openvinotoolkit/training_extensions/pull/3781)
+- Add Semi-SL MeanTeacher algorithm for Semantic Segmentation
+  (https://github.com/openvinotoolkit/training_extensions/pull/3801)
+- Update head and h-label format for hierarchical label classification
+  (https://github.com/openvinotoolkit/training_extensions/pull/3810)
+- Support configurable input size
+  (https://github.com/openvinotoolkit/training_extensions/pull/3788)
 
 ### Enhancements
 

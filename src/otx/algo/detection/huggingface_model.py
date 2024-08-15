@@ -36,6 +36,8 @@ class HuggingFaceModelForDetection(OTXDetectionModel):
     Args:
         model_name_or_path (str): The name or path of the pre-trained model.
         label_info (LabelInfoTypes): The label information for the model.
+        input_size (tuple[int, int], optional):
+            Model input size in the order of height and width. Defaults to (800, 992).
         optimizer (OptimizerCallable, optional): The optimizer for training the model.
             Defaults to DefaultOptimizerCallable.
         scheduler (LRSchedulerCallable | LRSchedulerListCallable, optional):
@@ -60,6 +62,7 @@ class HuggingFaceModelForDetection(OTXDetectionModel):
         self,
         model_name_or_path: str,  # https://huggingface.co/models?pipeline_tag=object-detection
         label_info: LabelInfoTypes,
+        input_size: tuple[int, int] = (800, 992),  # input size of default detection data recipe
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MeanAveragePrecisionFMeasureCallable,
@@ -70,6 +73,7 @@ class HuggingFaceModelForDetection(OTXDetectionModel):
 
         super().__init__(
             label_info=label_info,
+            input_size=input_size,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
@@ -148,13 +152,12 @@ class HuggingFaceModelForDetection(OTXDetectionModel):
     @property
     def _exporter(self) -> OTXModelExporter:
         """Creates OTXModelExporter object that can export the model."""
-        image_size = (1, 3, *self.image_processor.size.values())
         image_mean = (0.0, 0.0, 0.0)
         image_std = (255.0, 255.0, 255.0)
 
         return OTXNativeModelExporter(
             task_level_export_parameters=self._export_parameters,
-            input_size=image_size,
+            input_size=(1, 3, *self.input_size),
             mean=image_mean,  # type: ignore[arg-type]
             std=image_std,  # type: ignore[arg-type]
             resize_mode="standard",

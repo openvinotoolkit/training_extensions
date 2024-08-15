@@ -70,11 +70,11 @@ class SAMImageEncoder(nn.Module):
         if backbone.lower() == "tiny_vit":
             from otx.algo.visual_prompting.backbones.tiny_vit import TinyViT
 
-            return TinyViT(**cls.backbone_configs.get(backbone.lower()))  # type: ignore[arg-type]
+            return TinyViT(**{**cls.backbone_configs.get(backbone.lower()), **kwargs})  # type: ignore[dict-item]
         elif backbone.lower() in ["vit_b", "vit_l", "vit_h"]:  # noqa: RET505
             from otx.algo.visual_prompting.backbones.vit import ViT
 
-            return ViT(**cls.backbone_configs.get(backbone.lower()))  # type: ignore[arg-type]
+            return ViT(**{**cls.backbone_configs.get(backbone.lower()), **kwargs})  # type: ignore[dict-item]
 
         else:
             error_log = f"{backbone} is not supported for SAMImageEncoder. Set among tiny_vit and vit_b."

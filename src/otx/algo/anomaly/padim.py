@@ -34,6 +34,8 @@ class Padim(OTXAnomaly, AnomalibPadim):
         task (Literal[
                 OTXTaskType.ANOMALY_CLASSIFICATION, OTXTaskType.ANOMALY_DETECTION, OTXTaskType.ANOMALY_SEGMENTATION
             ], optional): Task type of Anomaly Task. Defaults to OTXTaskType.ANOMALY_CLASSIFICATION.
+        input_size (tuple[int, int], optional):
+            Model input size in the order of height and width. Defaults to (256, 256)
     """
 
     def __init__(
@@ -47,8 +49,9 @@ class Padim(OTXAnomaly, AnomalibPadim):
             OTXTaskType.ANOMALY_DETECTION,
             OTXTaskType.ANOMALY_SEGMENTATION,
         ] = OTXTaskType.ANOMALY_CLASSIFICATION,
+        input_size: tuple[int, int] = (256, 256),
     ) -> None:
-        OTXAnomaly.__init__(self)
+        OTXAnomaly.__init__(self, input_size)
         AnomalibPadim.__init__(
             self,
             backbone=backbone,
@@ -57,6 +60,7 @@ class Padim(OTXAnomaly, AnomalibPadim):
             n_features=n_features,
         )
         self.task = task
+        self.input_size = input_size
 
     def configure_optimizers(self) -> tuple[list[Optimizer], list[Optimizer]] | None:
         """PADIM doesn't require optimization, therefore returns no optimizers."""

@@ -133,6 +133,81 @@ def fxt_hlabel_multilabel_info() -> HLabelInfo:
 
 
 @pytest.fixture()
+def fxt_hlabel_cifar() -> HLabelInfo:
+    return HLabelInfo(
+        label_names=[
+            "beaver",
+            "dolphin",
+            "otter",
+            "seal",
+            "whale",
+            "aquarium_fish",
+            "flatfish",
+            "ray",
+            "shark",
+            "trout",
+            "aquatic_mammals",
+            "fish",
+        ],
+        label_groups=[
+            ["beaver", "dolphin", "otter", "seal", "whale"],
+            ["aquarium_fish", "flatfish", "ray", "shark", "trout"],
+            ["aquatic_mammals", "fish"],
+        ],
+        num_multiclass_heads=3,
+        num_multilabel_classes=0,
+        head_idx_to_logits_range={"0": (0, 5), "1": (5, 10), "2": (10, 12)},
+        num_single_label_classes=12,
+        empty_multiclass_head_indices=[],
+        class_to_group_idx={
+            "beaver": (0, 0),
+            "dolphin": (0, 1),
+            "otter": (0, 2),
+            "seal": (0, 3),
+            "whale": (0, 4),
+            "aquarium_fish": (1, 0),
+            "flatfish": (1, 1),
+            "ray": (1, 2),
+            "shark": (1, 3),
+            "trout": (1, 4),
+            "aquatic_mammals": (2, 0),
+            "fish": (2, 1),
+        },
+        all_groups=[
+            ["beaver", "dolphin", "otter", "seal", "whale"],
+            ["aquarium_fish", "flatfish", "ray", "shark", "trout"],
+            ["aquatic_mammals", "fish"],
+        ],
+        label_to_idx={
+            "aquarium_fish": 0,
+            "beaver": 1,
+            "dolphin": 2,
+            "flatfish": 3,
+            "otter": 4,
+            "ray": 5,
+            "seal": 6,
+            "shark": 7,
+            "trout": 8,
+            "whale": 9,
+            "aquatic_mammals": 10,
+            "fish": 11,
+        },
+        label_tree_edges=[
+            ["aquarium_fish", "fish"],
+            ["beaver", "aquatic_mammals"],
+            ["dolphin", "aquatic_mammals"],
+            ["otter", "aquatic_mammals"],
+            ["seal", "aquatic_mammals"],
+            ["whale", "aquatic_mammals"],
+            ["flatfish", "aquarium_fish"],
+            ["ray", "aquarium_fish"],
+            ["shark", "aquarium_fish"],
+            ["trout", "aquarium_fish"],
+        ],
+    )
+
+
+@pytest.fixture()
 def fxt_multiclass_cls_batch_data_entity() -> MulticlassClsBatchDataEntity:
     batch_size = 2
     random_tensor = torch.randn((batch_size, 3, 224, 224))

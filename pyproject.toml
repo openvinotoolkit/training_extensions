@@ -31,8 +31,8 @@ dependencies = [
     "rich==13.7.1",
     "jsonargparse==4.30.0",
     "psutil==6.0.0", # Mem cache needs system checks
-    "ftfy==6.2.0",
-    "regex==2024.5.15",
+    "ftfy==6.2.3",
+    "regex==2024.7.24",
     "importlib_resources==6.4.0",
     "docstring_parser==0.16", # CLI help-formatter
     "rich_argparse==1.5.2", # CLI help-formatter
@@ -45,8 +45,8 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
-    "tox==4.15.0",
-    "pre-commit==3.7.1",
+    "tox==4.17.1",
+    "pre-commit==3.8.0",
     "pylint",
     "pytest",
     "coverage",
@@ -54,7 +54,7 @@ dev = [
     "pytest-mock",
     "pytest-csv",
     "pytest-cov",
-    "mlflow==2.15.0",     # For perf benchmark
+    "mlflow==2.15.1",     # For perf benchmark
     "py-cpuinfo==9.0.0",  # For perf benchmark
     "openpyxl",           # For perf benchmark
 ]
@@ -83,8 +83,8 @@ xpu = [
     "timm==1.0.3",
     "openvino==2024.3",
     "openvino-dev==2024.3",
-    "openvino-model-api==0.2.2",
-    "onnx==1.16.1",
+    "openvino-model-api==0.2.2.1",
+    "onnx==1.16.2",
     "onnxconverter-common==1.14.0",
     "nncf==2.12.0",
     "anomalib[core]==1.1.0",
@@ -97,15 +97,15 @@ base = [
     "timm==1.0.3",
     "openvino==2024.3",
     "openvino-dev==2024.3",
-    "openvino-model-api==0.2.2",
-    "onnx==1.16.1",
+    "openvino-model-api==0.2.2.1",
+    "onnx==1.16.2",
     "onnxconverter-common==1.14.0",
     "nncf==2.12.0",
     "anomalib[core]==1.1.0",
 ]
 
 transformers = [
-    "transformers==4.42.3",
+    "transformers==4.44.0",
 ]
 
 mmlab = [
@@ -120,20 +120,20 @@ mmlab = [
 ]
 
 ci_tox = [
-    "tox==4.15.0",
+    "tox==4.17.1",
 ]
 
 ci_publish = [
-    "build==1.1.1",
+    "build==1.2.1",
 ]
 
 ci_benchmark = [
     "pandas<2.2",       # To avoid conflict with nncf==2.9.0
-    "matplotlib==3.8.4",
-    "nbconvert==7.16.3",
+    "matplotlib==3.9.2",
+    "nbconvert==7.16.4",
     "ipython==8.26.0",
-    "ipykernel==6.29.4",
-    "openpyxl==3.1.4",
+    "ipykernel==6.29.5",
+    "openpyxl==3.1.5",
 ]
 
 [project.scripts]
@@ -156,11 +156,6 @@ include = ["otx*"]
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # COVERAGE CONFIGURATION.                                                     #
-[tool.coverage.paths]
-source = [
-    "src",
-]
-
 [tool.coverage.report]
 exclude_lines = [
     "pragma: no cover",
@@ -168,6 +163,9 @@ exclude_lines = [
 ]
 
 [tool.coverage.run]
+source = [
+    "src/otx/",
+]
 omit = [
     "**/__init__.py",
     "src/otx/recipes/*",
@@ -184,6 +182,10 @@ omit = [
     "src/otx/core/data/transform_libs/mmseg.py",
     "src/otx/core/exporter/mmdeploy.py",
     "src/otx/core/model/utils/*",
+
+    # Ignore some generated files by opencv-python
+    "config.py",
+    "config-3.py",
 ]
 
 

@@ -33,6 +33,7 @@ class DETR(BaseModule):
             Defaults to None.
         num_top_queries (int, optional): Number of top queries to return.
             Defaults to 300.
+        input_size (int, optional): The input size of the model. Default to 640.
     """
 
     def __init__(
@@ -45,17 +46,18 @@ class DETR(BaseModule):
         optimizer_configuration: list[dict] | None = None,
         multi_scale: list[int] | None = None,
         num_top_queries: int = 300,
+        input_size: int = 640,
     ) -> None:
         """DETR model implementation."""
         super().__init__()
         self.backbone = backbone
         self.decoder = decoder
         self.encoder = encoder
-        self.multi_scale = (
-            multi_scale
-            if multi_scale is not None
-            else [480, 512, 544, 576, 608, 640, 640, 640, 672, 704, 736, 768, 800]
-        )
+        if multi_scale is not None:
+            self.multi_scale = multi_scale
+        else:
+            self.multi_scale = [input_size - i * 32 for i in range(-5, 6)] + [input_size] * 2
+
         self.num_classes = num_classes
         self.num_top_queries = num_top_queries
         self.criterion = (

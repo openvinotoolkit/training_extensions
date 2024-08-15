@@ -13,7 +13,7 @@ from torch import nn
 from otx.algo.classification.backbones.timm import TimmBackbone, TimmModelType
 from otx.algo.classification.classifier import ImageClassifier, SemiSLClassifier
 from otx.algo.classification.heads import (
-    HierarchicalLinearClsHead,
+    HierarchicalCBAMClsHead,
     LinearClsHead,
     MultiLabelLinearClsHead,
     OTXSemiSLLinearClsHead,
@@ -54,6 +54,7 @@ class TimmModelForMulticlassCls(OTXMulticlassClsModel):
         self,
         label_info: LabelInfoTypes,
         backbone: TimmModelType,
+        input_size: tuple[int, int] = (224, 224),  # input size of default classification data recipe
         pretrained: bool = True,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
@@ -66,6 +67,7 @@ class TimmModelForMulticlassCls(OTXMulticlassClsModel):
 
         super().__init__(
             label_info=label_info,
+            input_size=input_size,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
@@ -146,6 +148,7 @@ class TimmModelForMultilabelCls(OTXMultilabelClsModel):
         self,
         label_info: LabelInfoTypes,
         backbone: TimmModelType,
+        input_size: tuple[int, int] = (224, 224),  # input size of default classification data recipe
         pretrained: bool = True,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
@@ -157,6 +160,7 @@ class TimmModelForMultilabelCls(OTXMultilabelClsModel):
 
         super().__init__(
             label_info=label_info,
+            input_size=input_size,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
@@ -226,6 +230,7 @@ class TimmModelForHLabelCls(OTXHlabelClsModel):
         self,
         label_info: HLabelInfo,
         backbone: TimmModelType,
+        input_size: tuple[int, int] = (224, 224),  # input size of default classification data recipe
         pretrained: bool = True,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
@@ -237,6 +242,7 @@ class TimmModelForHLabelCls(OTXHlabelClsModel):
 
         super().__init__(
             label_info=label_info,
+            input_size=input_size,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
@@ -264,13 +270,14 @@ class TimmModelForHLabelCls(OTXHlabelClsModel):
         backbone = TimmBackbone(backbone=self.backbone, pretrained=self.pretrained)
         return ImageClassifier(
             backbone=backbone,
-            neck=GlobalAveragePooling(dim=2),
-            head=HierarchicalLinearClsHead(
+            neck=nn.Identity(),
+            head=HierarchicalCBAMClsHead(
                 in_channels=backbone.num_features,
                 multiclass_loss=nn.CrossEntropyLoss(),
                 multilabel_loss=AsymmetricAngularLossWithIgnore(gamma_pos=0.0, gamma_neg=1.0, reduction="sum"),
                 **head_config,
             ),
+            optimize_gap=False,
         )
 
     def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.") -> dict:

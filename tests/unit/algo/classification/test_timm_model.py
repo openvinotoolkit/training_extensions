@@ -94,9 +94,9 @@ class TestTimmModelForMultilabelCls:
 
 
 @pytest.fixture()
-def fxt_h_label_cls_model(fxt_hlabel_data):
+def fxt_h_label_cls_model(fxt_hlabel_cifar):
     return TimmModelForHLabelCls(
-        label_info=fxt_hlabel_data,
+        label_info=fxt_hlabel_cifar,
         backbone="efficientnetv2_s_21k",
     )
 

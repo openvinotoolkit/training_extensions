@@ -32,6 +32,8 @@ class Stfpm(OTXAnomaly, AnomalibStfpm):
         task (Literal[
                 OTXTaskType.ANOMALY_CLASSIFICATION, OTXTaskType.ANOMALY_DETECTION, OTXTaskType.ANOMALY_SEGMENTATION
             ], optional): Task type of Anomaly Task. Defaults to OTXTaskType.ANOMALY_CLASSIFICATION.
+        input_size (tuple[int, int], optional):
+            Model input size in the order of height and width. Defaults to (256, 256)
     """
 
     def __init__(
@@ -43,15 +45,17 @@ class Stfpm(OTXAnomaly, AnomalibStfpm):
             OTXTaskType.ANOMALY_DETECTION,
             OTXTaskType.ANOMALY_SEGMENTATION,
         ] = OTXTaskType.ANOMALY_CLASSIFICATION,
+        input_size: tuple[int, int] = (256, 256),
         **kwargs,
     ) -> None:
-        OTXAnomaly.__init__(self)
+        OTXAnomaly.__init__(self, input_size=input_size)
         AnomalibStfpm.__init__(
             self,
             backbone=backbone,
             layers=layers,
         )
         self.task = task
+        self.input_size = input_size
 
     @property
     def trainable_model(self) -> str:
