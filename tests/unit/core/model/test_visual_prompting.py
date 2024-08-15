@@ -337,7 +337,7 @@ class TestOVVisualPromptingModel:
             ov_visual_prompting_model.model.decoder,
             "infer_sync",
             return_value={
-                "iou_predictions": np.ones((1, 10), dtype=np.float32),
+                "iou_predictions": 0.0,
                 "upscaled_masks": np.zeros((1, 1, 1024, 1024), dtype=np.float32),
             },
         )
@@ -345,12 +345,12 @@ class TestOVVisualPromptingModel:
             ov_visual_prompting_model.model.decoder,
             "postprocess",
             return_value={
-                "low_res_masks": np.zeros((1, 2, 1024, 1024), dtype=np.float32),
-                "upscaled_masks": np.zeros((1, 2, 1024, 1024), dtype=np.float32),
-                "hard_prediction": np.ones((2, 1024, 1024), dtype=np.float32),
-                "soft_prediction": np.zeros((1, 2, 1024, 1024), dtype=np.float32),
-                "scores": np.array([[1, 1]], dtype=np.float32),
-                "iou_predictions": np.array([[1, 1]], dtype=np.float32),
+                "low_res_masks": np.zeros((1, 1, 1024, 1024), dtype=np.float32),
+                "upscaled_masks": np.zeros((1, 1, 1024, 1024), dtype=np.float32),
+                "hard_prediction": np.zeros((1, 1, 1024, 1024), dtype=np.float32),
+                "soft_prediction": np.zeros((1, 1, 1024, 1024), dtype=np.float32),
+                "scores": np.zeros((1, 1), dtype=np.float32),
+                "iou_predictions": np.zeros((1, 1), dtype=np.float32),
                 "labels": np.zeros((1, 1), dtype=np.float32),
             },
         )
