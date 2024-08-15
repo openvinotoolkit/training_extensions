@@ -641,10 +641,6 @@ class MaskDINOR50(ExplainableOTXInstanceSegModel):
             pred_scores = scores_per_image * mask_scores_per_image
             pred_classes = labels_per_image
 
-            if len(pred_boxes) == 0:
-                print("No instance detected.")
-                raise ValueError("No instance detected.")
-
             pred_boxes = pred_boxes.new_tensor([[ori_w, ori_h, ori_w, ori_h]]) * box_ops.box_cxcywh_to_xyxy(pred_boxes)
             pred_boxes[:, 0::2].clamp_(min=0, max=ori_w - 1)
             pred_boxes[:, 1::2].clamp_(min=0, max=ori_h - 1)

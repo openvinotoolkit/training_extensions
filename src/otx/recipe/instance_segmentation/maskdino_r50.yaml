@@ -18,7 +18,7 @@ model:
           init_args:
             mode: max
             factor: 0.1
-            patience: 4
+            patience: 6
             monitor: val/map_50
 
 engine:
@@ -29,6 +29,21 @@ callback_monitor: val/map_50
 
 data: ../_base_/data/instance_segmentation.yaml
 overrides:
+  callbacks:
+    - class_path: otx.algo.callbacks.adaptive_train_scheduling.AdaptiveTrainScheduling
+      init_args:
+        max_interval: 1
+        decay: -0.025
+        min_lrschedule_patience: 3
+    - class_path: otx.algo.callbacks.adaptive_early_stopping.EarlyStoppingWithWarmup
+      init_args:
+        monitor: null
+        mode: max
+        patience: 10
+        check_on_train_epoch_end: false
+        min_delta: 0.001
+        warmup_iters: 100
+        warmup_epochs: 7
   max_epochs: 100
   data:
     train_subset:
