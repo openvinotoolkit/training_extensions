@@ -80,10 +80,9 @@ def test_otx_e2e_cli(
         command_cfg.extend(
             [
                 "--data.unlabeled_subset.data_root",
-                fxt_target_dataset_per_task[task]["unlabeled"],
+                str(fxt_target_dataset_per_task[task]["unlabeled"]),
             ],
         )
-
     run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)
 
     outputs_dir = tmp_path_train / "outputs"
