@@ -32,10 +32,7 @@ engine:
 callback_monitor: val/Dice
 
 data: ../../_base_/data/semisl/semantic_segmentation_semisl.yaml
-
 overrides:
-  model:
-    class_path: otx.algo.segmentation.segnext.SemiSLSegNext
   callbacks:
     - class_path: otx.algo.callbacks.adaptive_early_stopping.EarlyStoppingWithWarmup
       init_args:

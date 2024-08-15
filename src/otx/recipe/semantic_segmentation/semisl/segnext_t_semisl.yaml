@@ -2,7 +2,7 @@ model:
   class_path: otx.algo.segmentation.segnext.SegNext
   init_args:
     label_info: 2
-    model_version: segnext_base
+    model_version: segnext_tiny
     train_type: SEMI_SUPERVISED
 
     optimizer:
@@ -32,6 +32,7 @@ engine:
 callback_monitor: val/Dice
 
 data: ../../_base_/data/semisl/semantic_segmentation_semisl.yaml
+
 overrides:
   callbacks:
     - class_path: otx.algo.callbacks.adaptive_early_stopping.EarlyStoppingWithWarmup
