@@ -21,8 +21,7 @@ from otx.algo.common.utils.structures import SamplingResult
 from otx.algo.instance_segmentation.utils.structures.mask import mask_target
 from otx.algo.instance_segmentation.utils.utils import empty_instances
 from otx.algo.modules.base_module import BaseModule, ModuleList
-from otx.algo.modules.conv import build_conv_layer
-from otx.algo.modules.conv_module import ConvModule
+from otx.algo.modules.conv_module import Conv2dModule
 
 BYTES_PER_FLOAT = 4
 #  determine it based on available resources.
@@ -46,7 +45,6 @@ class FCNMaskHead(BaseModule):
         conv_out_channels: int = 256,
         num_classes: int = 80,
         class_agnostic: int = False,
-        conv_cfg: dict | None = None,
         norm_cfg: dict | None = None,
         init_cfg: dict | list[dict] | None = None,
     ) -> None:
@@ -63,9 +61,7 @@ class FCNMaskHead(BaseModule):
         self.conv_out_channels = conv_out_channels
         self.num_classes = num_classes
         self.class_agnostic = class_agnostic
-        self.conv_cfg = conv_cfg
         self.norm_cfg = norm_cfg
-        self.predictor_cfg = {"type": "Conv"}
 
         self.loss_mask = loss_mask
 
@@ -74,12 +70,11 @@ class FCNMaskHead(BaseModule):
             in_channels = self.in_channels if i == 0 else self.conv_out_channels
             padding = (self.conv_kernel_size - 1) // 2
             self.convs.append(
-                ConvModule(
+                Conv2dModule(
                     in_channels,
                     self.conv_out_channels,
                     self.conv_kernel_size,
                     padding=padding,
-                    conv_cfg=conv_cfg,
                     norm_cfg=norm_cfg,
                 ),
             )
@@ -95,7 +90,7 @@ class FCNMaskHead(BaseModule):
         self.upsample = nn.ConvTranspose2d(**upsample_cfg)
         out_channels = 1 if self.class_agnostic else self.num_classes
         logits_in_channel = self.conv_out_channels
-        self.conv_logits = build_conv_layer(self.predictor_cfg, logits_in_channel, out_channels, 1)
+        self.conv_logits = nn.Conv2d(logits_in_channel, out_channels, 1)
         self.relu = nn.ReLU(inplace=True)
         self.debug_imgs = None
 

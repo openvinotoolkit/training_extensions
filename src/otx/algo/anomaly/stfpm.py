@@ -9,21 +9,21 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Literal, Sequence
 
+from anomalib.callbacks.normalization.min_max_normalization import _MinMaxNormalizationCallback
+from anomalib.callbacks.post_processor import _PostProcessorCallback
 from anomalib.models.image.stfpm import Stfpm as AnomalibStfpm
 
 from otx.core.model.anomaly import OTXAnomaly
-from otx.core.model.base import OTXModel
-from otx.core.types.label import AnomalyLabelInfo
 from otx.core.types.task import OTXTaskType
 
 if TYPE_CHECKING:
     from lightning.pytorch.utilities.types import STEP_OUTPUT
     from torch.optim.optimizer import Optimizer
 
-    from otx.core.model.anomaly import AnomalyModelInputs
+    from otx.core.model.anomaly import AnomalyModelInputs, AnomalyModelOutputs
 
 
-class Stfpm(OTXAnomaly, OTXModel, AnomalibStfpm):
+class Stfpm(OTXAnomaly, AnomalibStfpm):
     """OTX STFPM model.
 
     Args:
@@ -32,6 +32,8 @@ class Stfpm(OTXAnomaly, OTXModel, AnomalibStfpm):
         task (Literal[
                 OTXTaskType.ANOMALY_CLASSIFICATION, OTXTaskType.ANOMALY_DETECTION, OTXTaskType.ANOMALY_SEGMENTATION
             ], optional): Task type of Anomaly Task. Defaults to OTXTaskType.ANOMALY_CLASSIFICATION.
+        input_size (tuple[int, int], optional):
+            Model input size in the order of height and width. Defaults to (256, 256)
     """
 
     def __init__(
@@ -43,16 +45,17 @@ class Stfpm(OTXAnomaly, OTXModel, AnomalibStfpm):
             OTXTaskType.ANOMALY_DETECTION,
             OTXTaskType.ANOMALY_SEGMENTATION,
         ] = OTXTaskType.ANOMALY_CLASSIFICATION,
+        input_size: tuple[int, int] = (256, 256),
         **kwargs,
     ) -> None:
-        OTXAnomaly.__init__(self)
-        OTXModel.__init__(self, label_info=AnomalyLabelInfo())
+        OTXAnomaly.__init__(self, input_size=input_size)
         AnomalibStfpm.__init__(
             self,
             backbone=backbone,
             layers=layers,
         )
         self.task = task
+        self.input_size = input_size
 
     @property
     def trainable_model(self) -> str:
@@ -124,3 +127,16 @@ class Stfpm(OTXAnomaly, OTXModel, AnomalibStfpm):
         if not isinstance(inputs, dict):
             inputs = self._customize_inputs(inputs)
         return AnomalibStfpm.predict_step(self, inputs, batch_idx, **kwargs)  # type: ignore[misc]
+
+    def forward(
+        self,
+        inputs: AnomalyModelInputs,
+    ) -> AnomalyModelOutputs:
+        """Wrap forward method of the Anomalib model."""
+        outputs = self.validation_step(inputs)
+        # TODO(Ashwin): update forward implementation to comply with other OTX models
+        _PostProcessorCallback._post_process(outputs)  # noqa: SLF001
+        _PostProcessorCallback._compute_scores_and_labels(self, outputs)  # noqa: SLF001
+        _MinMaxNormalizationCallback._normalize_batch(outputs, self)  # noqa: SLF001
+
+        return self._customize_outputs(outputs=outputs, inputs=inputs)

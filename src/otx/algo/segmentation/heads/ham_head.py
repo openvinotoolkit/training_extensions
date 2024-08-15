@@ -11,7 +11,7 @@ import torch
 import torch.nn.functional as f
 from torch import nn
 
-from otx.algo.modules import ConvModule
+from otx.algo.modules import Conv2dModule
 from otx.algo.segmentation.modules import resize
 
 from .base_segm_head import BaseSegmHead
@@ -45,11 +45,11 @@ class Hamburger(nn.Module):
         """
         super().__init__()
 
-        self.ham_in = ConvModule(ham_channels, ham_channels, 1, norm_cfg=None, act_cfg=None)
+        self.ham_in = Conv2dModule(ham_channels, ham_channels, 1, norm_cfg=None, activation_callable=None)
 
         self.ham = NMF2D(ham_channels=ham_channels, **ham_kwargs)
 
-        self.ham_out = ConvModule(ham_channels, ham_channels, 1, norm_cfg=norm_cfg, act_cfg=None)
+        self.ham_out = Conv2dModule(ham_channels, ham_channels, 1, norm_cfg=norm_cfg, activation_callable=None)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Forward."""
@@ -97,24 +97,22 @@ class LightHamHead(BaseSegmHead):
         self.ham_channels: int = ham_channels
         self.ham_kwargs: dict[str, Any] = ham_kwargs if ham_kwargs is not None else {}
 
-        self.squeeze = ConvModule(
+        self.squeeze = Conv2dModule(
             sum(self.in_channels),
             self.ham_channels,
             1,
-            conv_cfg=self.conv_cfg,
             norm_cfg=self.norm_cfg,
-            act_cfg=self.act_cfg,
+            activation_callable=self.activation_callable,
         )
 
         self.hamburger = Hamburger(self.ham_channels, ham_kwargs=self.ham_kwargs, **kwargs)
 
-        self.align = ConvModule(
+        self.align = Conv2dModule(
             self.ham_channels,
             self.channels,
             1,
-            conv_cfg=self.conv_cfg,
             norm_cfg=self.norm_cfg,
-            act_cfg=self.act_cfg,
+            activation_callable=self.activation_callable,
         )
 
     def forward(self, inputs: list[torch.Tensor]) -> torch.Tensor:

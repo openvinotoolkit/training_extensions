@@ -6,9 +6,9 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Callable
 
 import torch
-from otx.algo.modules.activation import build_activation_layer
 from otx.algo.modules.norm import build_norm_layer
 from otx.algo.utils.mmengine_utils import get_dist_info
 from pytorchcv.model_provider import _models
@@ -19,16 +19,13 @@ from torch.nn.modules.batchnorm import _BatchNorm
 # ruff: noqa: SLF001
 
 
-def replace_activation(model: nn.Module, activation_cfg: dict) -> nn.Module:
-    """Replace activate funtion."""
+def replace_activation(model: nn.Module, activation_callable: Callable[..., nn.Module]) -> nn.Module:
+    """Replace activation funtion."""
     for name, module in model._modules.items():
         if len(list(module.children())) > 0:
-            model._modules[name] = replace_activation(module, activation_cfg)
+            model._modules[name] = replace_activation(module, activation_callable)
         if "activ" in name:
-            if activation_cfg["type"] == "torch_swish":
-                model._modules[name] = nn.SiLU()
-            else:
-                model._modules[name] = build_activation_layer(activation_cfg)
+            model._modules[name] = activation_callable()
     return model
 
 
@@ -122,19 +119,17 @@ def _build_pytorchcv_model(
     frozen_stages: int = 0,
     norm_eval: bool = False,
     verbose: bool = False,
-    activation_cfg: dict | None = None,
+    activation_callable: Callable[..., nn.Module] | None = None,
     norm_cfg: dict | None = None,
     **kwargs,
 ) -> nn.Module:
     """Build pytorchcv model."""
-    models_cache_root = kwargs.get("root", Path.home() / ".cache" / "torch" / "hub" / "checkpoints")
-    is_pretrained = kwargs.get("pretrained", False)
-    print(
-        f"Init model {type}, pretrained={is_pretrained}, models cache {models_cache_root}",
-    )
-    model = _models[type](**kwargs)
-    if activation_cfg:
-        model = replace_activation(model, activation_cfg)
+    models_cache_root = kwargs.pop("root", Path.home() / ".cache" / "torch" / "hub" / "checkpoints")
+    pretrained = kwargs.pop("pretrained", False)
+    print(f"Init model {type}, pretrained={pretrained}, models cache {models_cache_root}")
+    model = _models[type](root=models_cache_root, pretrained=pretrained, **kwargs)
+    if activation_callable:
+        model = replace_activation(model, activation_callable)
     if norm_cfg:
         model = replace_norm(model, norm_cfg)
     model.out_indices = out_indices

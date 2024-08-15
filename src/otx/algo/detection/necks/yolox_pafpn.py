@@ -9,15 +9,15 @@ Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/n
 from __future__ import annotations
 
 import math
-from typing import Any
+from typing import Any, Callable
 
 import torch
 from torch import Tensor, nn
 
 from otx.algo.detection.layers import CSPLayer
+from otx.algo.modules.activation import Swish
 from otx.algo.modules.base_module import BaseModule
-from otx.algo.modules.conv_module import ConvModule
-from otx.algo.modules.depthwise_separable_conv_module import DepthwiseSeparableConvModule
+from otx.algo.modules.conv_module import Conv2dModule, DepthwiseSeparableConvModule
 
 
 class YOLOXPAFPN(BaseModule):
@@ -31,12 +31,10 @@ class YOLOXPAFPN(BaseModule):
             blocks. Default: False
         upsample_cfg (dict): Config dict for interpolate layer.
             Default: `dict(scale_factor=2, mode='nearest')`
-        conv_cfg (dict, optional): Config dict for convolution layer.
-            Default: None, which means using conv2d.
         norm_cfg (dict): Config dict for normalization layer.
             Default: dict(type='BN')
-        act_cfg (dict): Config dict for activation layer.
-            Default: dict(type='Swish')
+        activation_callable (Callable[..., nn.Module]): Activation layer module.
+            Defaults to `nn.Swish`.
         init_cfg (dict or list[dict], optional): Initialization config dict.
             Default: None.
     """
@@ -48,14 +46,12 @@ class YOLOXPAFPN(BaseModule):
         num_csp_blocks: int = 3,
         use_depthwise: bool = False,
         upsample_cfg: dict | None = None,
-        conv_cfg: dict | None = None,
         norm_cfg: dict | None = None,
-        act_cfg: dict | None = None,
+        activation_callable: Callable[..., nn.Module] = Swish,
         init_cfg: dict | list[dict] | None = None,
     ):
         upsample_cfg = upsample_cfg or {"scale_factor": 2, "mode": "nearest"}
         norm_cfg = norm_cfg or {"type": "BN", "momentum": 0.03, "eps": 0.001}
-        act_cfg = act_cfg or {"type": "Swish"}
         init_cfg = init_cfg or {
             "type": "Kaiming",
             "layer": "Conv2d",
@@ -70,7 +66,7 @@ class YOLOXPAFPN(BaseModule):
         self.in_channels = in_channels
         self.out_channels = out_channels
 
-        conv = DepthwiseSeparableConvModule if use_depthwise else ConvModule
+        conv = DepthwiseSeparableConvModule if use_depthwise else Conv2dModule
 
         # build top-down blocks
         self.upsample = nn.Upsample(**upsample_cfg)
@@ -78,13 +74,12 @@ class YOLOXPAFPN(BaseModule):
         self.top_down_blocks = nn.ModuleList()
         for idx in range(len(in_channels) - 1, 0, -1):
             self.reduce_layers.append(
-                ConvModule(
+                Conv2dModule(
                     in_channels[idx],
                     in_channels[idx - 1],
                     1,
-                    conv_cfg=conv_cfg,
                     norm_cfg=norm_cfg,
-                    act_cfg=act_cfg,
+                    activation_callable=activation_callable,
                 ),
             )
             self.top_down_blocks.append(
@@ -94,9 +89,8 @@ class YOLOXPAFPN(BaseModule):
                     num_blocks=num_csp_blocks,
                     add_identity=False,
                     use_depthwise=use_depthwise,
-                    conv_cfg=conv_cfg,
                     norm_cfg=norm_cfg,
-                    act_cfg=act_cfg,
+                    activation_callable=activation_callable,
                 ),
             )
 
@@ -111,9 +105,8 @@ class YOLOXPAFPN(BaseModule):
                     3,
                     stride=2,
                     padding=1,
-                    conv_cfg=conv_cfg,
                     norm_cfg=norm_cfg,
-                    act_cfg=act_cfg,
+                    activation_callable=activation_callable,
                 ),
             )
             self.bottom_up_blocks.append(
@@ -123,16 +116,21 @@ class YOLOXPAFPN(BaseModule):
                     num_blocks=num_csp_blocks,
                     add_identity=False,
                     use_depthwise=use_depthwise,
-                    conv_cfg=conv_cfg,
                     norm_cfg=norm_cfg,
-                    act_cfg=act_cfg,
+                    activation_callable=activation_callable,
                 ),
             )
 
         self.out_convs = nn.ModuleList()
         for i in range(len(in_channels)):
             self.out_convs.append(
-                ConvModule(in_channels[i], out_channels, 1, conv_cfg=conv_cfg, norm_cfg=norm_cfg, act_cfg=act_cfg),
+                Conv2dModule(
+                    in_channels[i],
+                    out_channels,
+                    1,
+                    norm_cfg=norm_cfg,
+                    activation_callable=activation_callable,
+                ),
             )
 
     def forward(self, inputs: tuple[Tensor]) -> tuple[Any, ...]:

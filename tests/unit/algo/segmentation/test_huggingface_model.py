@@ -1,6 +1,8 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
+from unittest.mock import MagicMock
+
 import pytest
 import torch
 from otx.core.data.entity.base import ImageInfo, OTXBatchLossEntity
@@ -8,6 +10,7 @@ from otx.core.data.entity.segmentation import SegBatchDataEntity, SegBatchPredEn
 
 SKIP_TRANSFORMERS_TEST = False
 try:
+    from otx.algo.segmentation import huggingface_model as target_file
     from otx.algo.segmentation.huggingface_model import HuggingFaceModelForSegmentation
     from transformers.modeling_outputs import SemanticSegmenterOutput
     from transformers.models.segformer.image_processing_segformer import SegformerImageProcessor
@@ -69,3 +72,23 @@ class TestHuggingFaceModelForSegmentation:
         fxt_seg_model.explain_mode = True
         with pytest.raises(NotImplementedError):
             fxt_seg_model._customize_outputs(outputs, fxt_seg_batch_data_entity)
+
+    @pytest.fixture()
+    def mock_pretrainedconfig(self, mocker) -> MagicMock:
+        mock_obj = mocker.patch.object(target_file, "PretrainedConfig")
+        mock_obj.get_config_dict.return_value = ({"image_size": 512}, None)
+        return mock_obj
+
+    @pytest.fixture()
+    def mock_automodel(self, mocker) -> MagicMock:
+        return mocker.patch.object(target_file, "AutoModelForSemanticSegmentation")
+
+    def test_set_input_size(self, mock_pretrainedconfig, mock_automodel):
+        input_size = (1, 3, 1024, 1024)
+        HuggingFaceModelForSegmentation(
+            model_name_or_path="facebook/deit-tiny-patch16-224",
+            label_info=10,
+            input_size=input_size,
+        )
+
+        assert mock_automodel.from_pretrained.call_args.kwargs["image_size"] == input_size[-1]

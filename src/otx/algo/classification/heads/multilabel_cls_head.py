@@ -241,7 +241,8 @@ class MultiLabelNonLinearClsHead(MultiLabelClsHead):
         num_classes (int): Number of categories.
         in_channels (int): Number of channels in the input feature map.
         hid_channels (int): Number of channels in the hidden feature map.
-        act_cfg (dict | optional): The configuration of the activation function.
+        activation_callable (Callable[..., nn.Module]): Activation layer module.
+            Defaults to nn.ReLU.
         scale (float): Positive scale parameter.
         loss (dict): Config of classification loss.
         dropout (bool): Whether use the dropout or not.
@@ -254,7 +255,7 @@ class MultiLabelNonLinearClsHead(MultiLabelClsHead):
         in_channels: int,
         loss: nn.Module,
         hid_channels: int = 1280,
-        activation_callable: Callable[[], nn.Module] = nn.ReLU,
+        activation_callable: Callable[..., nn.Module] = nn.ReLU,
         scale: float = 1.0,
         dropout: bool = False,
         normalized: bool = False,

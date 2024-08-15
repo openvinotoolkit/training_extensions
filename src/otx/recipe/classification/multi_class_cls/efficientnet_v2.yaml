@@ -1,7 +1,8 @@
 model:
-  class_path: otx.algo.classification.efficientnet_v2.EfficientNetV2ForMulticlassCls
+  class_path: otx.algo.classification.timm_model.TimmModelForMulticlassCls
   init_args:
     label_info: 1000
+    backbone: efficientnetv2_s_21k
 
     optimizer:
       class_path: torch.optim.SGD

@@ -10,10 +10,12 @@ Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/n
 
 from __future__ import annotations
 
+from typing import Callable
+
 from torch import Tensor, nn
 
 from otx.algo.modules.base_module import BaseModule
-from otx.algo.modules.conv_module import ConvModule
+from otx.algo.modules.conv_module import Conv2dModule
 
 
 class FPN(BaseModule):
@@ -43,12 +45,10 @@ class FPN(BaseModule):
             conv. Defaults to False.
         no_norm_on_lateral (bool): Whether to apply norm on lateral.
             Defaults to False.
-        conv_cfg (dict, optional): Config dict for
-            convolution layer. Defaults to None.
         norm_cfg (dict, optional): Config dict for
             normalization layer. Defaults to None.
-        act_cfg (dict, optional): Config dict for
-            activation layer in ConvModule. Defaults to None.
+        activation_callable (Callable[..., nn.Module]): Activation layer module.
+            Defaults to None.
         upsample_cfg (dict, optional): Config dict
             for interpolate layer. Defaults to dict(mode='nearest').
         init_cfg (dict, list[dict], optional): Initialization config dict.
@@ -64,9 +64,8 @@ class FPN(BaseModule):
         add_extra_convs: bool | str = False,
         relu_before_extra_convs: bool = False,
         no_norm_on_lateral: bool = False,
-        conv_cfg: dict | None = None,
         norm_cfg: dict | None = None,
-        act_cfg: dict | None = None,
+        activation_callable: Callable[..., nn.Module] | None = None,
         upsample_cfg: dict | None = None,
         init_cfg: dict | list[dict] | None = None,
     ) -> None:
@@ -101,23 +100,21 @@ class FPN(BaseModule):
         self.fpn_convs = nn.ModuleList()
 
         for i in range(self.start_level, self.backbone_end_level):
-            l_conv = ConvModule(
+            l_conv = Conv2dModule(
                 in_channels[i],
                 out_channels,
                 1,
-                conv_cfg=conv_cfg,
                 norm_cfg=norm_cfg if not self.no_norm_on_lateral else None,
-                act_cfg=act_cfg,
+                activation_callable=activation_callable,
                 inplace=False,
             )
-            fpn_conv = ConvModule(
+            fpn_conv = Conv2dModule(
                 out_channels,
                 out_channels,
                 3,
                 padding=1,
-                conv_cfg=conv_cfg,
                 norm_cfg=norm_cfg,
-                act_cfg=act_cfg,
+                activation_callable=activation_callable,
                 inplace=False,
             )
 
@@ -132,15 +129,14 @@ class FPN(BaseModule):
                     conv_in_channels = self.in_channels[self.backbone_end_level - 1]
                 else:
                     conv_in_channels = out_channels
-                extra_fpn_conv = ConvModule(
+                extra_fpn_conv = Conv2dModule(
                     conv_in_channels,
                     out_channels,
                     3,
                     stride=2,
                     padding=1,
-                    conv_cfg=conv_cfg,
                     norm_cfg=norm_cfg,
-                    act_cfg=act_cfg,
+                    activation_callable=activation_callable,
                     inplace=False,
                 )
                 self.fpn_convs.append(extra_fpn_conv)

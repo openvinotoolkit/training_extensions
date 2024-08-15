@@ -9,13 +9,12 @@ Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/b
 from __future__ import annotations
 
 import math
-from typing import ClassVar
+from typing import Callable, ClassVar
 
 from otx.algo.common.layers import SPPBottleneck
 from otx.algo.detection.layers import CSPLayer
 from otx.algo.modules.base_module import BaseModule
-from otx.algo.modules.conv_module import ConvModule
-from otx.algo.modules.depthwise_separable_conv_module import DepthwiseSeparableConvModule
+from otx.algo.modules.conv_module import Conv2dModule, DepthwiseSeparableConvModule
 from torch import Tensor, nn
 from torch.nn.modules.batchnorm import _BatchNorm
 
@@ -44,12 +43,10 @@ class CSPNeXt(BaseModule):
             layers. Defaults to (5, 9, 13).
         channel_attention (bool): Whether to add channel attention in each
             stage. Defaults to True.
-        conv_cfg (dict, optional): Config dict for
-            convolution layer. Defaults to None.
         norm_cfg (dict): Dictionary to construct and
             config norm layer. Defaults to dict(type='BN', requires_grad=True).
-        act_cfg (dict): Config dict for activation layer.
-            Defaults to dict(type='SiLU').
+        activation_callable (Callable[..., nn.Module] | None): Activation layer module.
+            Defaults to `nn.SiLU`.
         norm_eval (bool): Whether to set norm layers to eval mode, namely,
             freeze running stats (mean and var). Note: Effect on Batch Norm
             and its variants only.
@@ -79,16 +76,15 @@ class CSPNeXt(BaseModule):
         arch: str = "P5",
         deepen_factor: float = 1.0,
         widen_factor: float = 1.0,
-        out_indices: tuple[int, int, int] = (2, 3, 4),
+        out_indices: tuple[int, ...] = (2, 3, 4),
         frozen_stages: int = -1,
         use_depthwise: bool = False,
         expand_ratio: float = 0.5,
         arch_ovewrite: dict | None = None,
         spp_kernel_sizes: tuple[int, int, int] = (5, 9, 13),
         channel_attention: bool = True,
-        conv_cfg: dict | None = None,
         norm_cfg: dict | None = None,
-        act_cfg: dict | None = None,
+        activation_callable: Callable[..., nn.Module] | None = nn.SiLU,
         norm_eval: bool = False,
         init_cfg: dict | None = None,
     ) -> None:
@@ -103,7 +99,6 @@ class CSPNeXt(BaseModule):
 
         super().__init__(init_cfg=init_cfg)
         norm_cfg = norm_cfg or {"type": "BN", "momentum": 0.03, "eps": 0.001}
-        act_cfg = act_cfg or {"type": "SiLU"}
 
         arch_setting = self.arch_settings[arch]
         if arch_ovewrite:
@@ -121,34 +116,34 @@ class CSPNeXt(BaseModule):
         self.frozen_stages = frozen_stages
         self.use_depthwise = use_depthwise
         self.norm_eval = norm_eval
-        conv = DepthwiseSeparableConvModule if use_depthwise else ConvModule
+        conv = DepthwiseSeparableConvModule if use_depthwise else Conv2dModule
         self.stem = nn.Sequential(
-            ConvModule(
+            Conv2dModule(
                 3,
                 int(arch_setting[0][0] * widen_factor // 2),
                 3,
                 padding=1,
                 stride=2,
                 norm_cfg=norm_cfg,
-                act_cfg=act_cfg,
+                activation_callable=activation_callable,
             ),
-            ConvModule(
+            Conv2dModule(
                 int(arch_setting[0][0] * widen_factor // 2),
                 int(arch_setting[0][0] * widen_factor // 2),
                 3,
                 padding=1,
                 stride=1,
                 norm_cfg=norm_cfg,
-                act_cfg=act_cfg,
+                activation_callable=activation_callable,
             ),
-            ConvModule(
+            Conv2dModule(
                 int(arch_setting[0][0] * widen_factor // 2),
                 int(arch_setting[0][0] * widen_factor),
                 3,
                 padding=1,
                 stride=1,
                 norm_cfg=norm_cfg,
-                act_cfg=act_cfg,
+                activation_callable=activation_callable,
             ),
         )
         self.layers = ["stem"]
@@ -164,9 +159,8 @@ class CSPNeXt(BaseModule):
                 3,
                 stride=2,
                 padding=1,
-                conv_cfg=conv_cfg,
                 norm_cfg=norm_cfg,
-                act_cfg=act_cfg,
+                activation_callable=activation_callable,
             )
             stage.append(conv_layer)
             if use_spp:
@@ -174,9 +168,8 @@ class CSPNeXt(BaseModule):
                     out_channels,
                     out_channels,
                     kernel_sizes=spp_kernel_sizes,
-                    conv_cfg=conv_cfg,
                     norm_cfg=norm_cfg,
-                    act_cfg=act_cfg,
+                    activation_callable=activation_callable,
                 )
                 stage.append(spp)
             csp_layer = CSPLayer(
@@ -188,9 +181,8 @@ class CSPNeXt(BaseModule):
                 use_cspnext_block=True,
                 expand_ratio=expand_ratio,
                 channel_attention=channel_attention,
-                conv_cfg=conv_cfg,
                 norm_cfg=norm_cfg,
-                act_cfg=act_cfg,
+                activation_callable=activation_callable,
             )
             stage.append(csp_layer)
             self.add_module(f"stage{i + 1}", nn.Sequential(*stage))

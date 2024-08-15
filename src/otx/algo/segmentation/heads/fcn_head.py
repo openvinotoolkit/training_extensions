@@ -10,7 +10,7 @@ from typing import Any
 import torch
 from torch import Tensor, nn
 
-from otx.algo.modules import ConvModule
+from otx.algo.modules import Conv2dModule
 from otx.algo.segmentation.modules import IterativeAggregator
 
 from .base_segm_head import BaseSegmHead
@@ -34,7 +34,6 @@ class FCNHead(BaseSegmHead):
         in_channels: list[int] | int,
         in_index: list[int] | int,
         norm_cfg: dict[str, Any] | None = None,
-        conv_cfg: dict[str, Any] | None = None,
         input_transform: str | None = None,
         num_convs: int = 2,
         kernel_size: int = 3,
@@ -73,7 +72,6 @@ class FCNHead(BaseSegmHead):
             aggregator = IterativeAggregator(
                 in_channels=in_channels,
                 min_channels=aggregator_min_channels,
-                conv_cfg=conv_cfg,
                 norm_cfg=norm_cfg,
                 merge_norm=aggregator_merge_norm,
                 use_concat=aggregator_use_concat,
@@ -91,7 +89,6 @@ class FCNHead(BaseSegmHead):
         super().__init__(
             in_index=in_index,
             norm_cfg=norm_cfg,
-            conv_cfg=conv_cfg,
             input_transform=input_transform,
             in_channels=in_channels,
             **kwargs,
@@ -105,26 +102,26 @@ class FCNHead(BaseSegmHead):
 
         conv_padding = (kernel_size // 2) * dilation
         convs = [
-            ConvModule(
+            Conv2dModule(
                 self.in_channels,
                 self.channels,
                 kernel_size=kernel_size,
                 padding=conv_padding,
                 dilation=dilation,
                 norm_cfg=self.norm_cfg,
-                act_cfg=self.act_cfg,
+                activation_callable=self.activation_callable,
             ),
         ]
         convs.extend(
             [
-                ConvModule(
+                Conv2dModule(
                     self.channels,
                     self.channels,
                     kernel_size=kernel_size,
                     padding=conv_padding,
                     dilation=dilation,
                     norm_cfg=self.norm_cfg,
-                    act_cfg=self.act_cfg,
+                    activation_callable=self.activation_callable,
                 )
                 for _ in range(num_convs - 1)
             ],
@@ -134,19 +131,18 @@ class FCNHead(BaseSegmHead):
         else:
             self.convs = nn.Sequential(*convs)
         if self.concat_input:
-            self.conv_cat = ConvModule(
+            self.conv_cat = Conv2dModule(
                 self.in_channels + self.channels,
                 self.channels,
                 kernel_size=kernel_size,
                 padding=kernel_size // 2,
-                conv_cfg=self.conv_cfg,
                 norm_cfg=self.norm_cfg,
-                act_cfg=self.act_cfg,
+                activation_callable=self.activation_callable,
             )
 
-        if self.act_cfg:
+        if self.activation_callable:
             self.convs[-1].with_activation = False
-            delattr(self.convs[-1], "activate")  # why we delete last activation?
+            delattr(self.convs[-1], "activation")  # why we delete last activation?
 
     def _forward_feature(self, inputs: Tensor) -> Tensor:
         """Forward function for feature maps.

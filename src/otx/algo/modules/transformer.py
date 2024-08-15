@@ -3,17 +3,18 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 
 """This implementation replaces the functionality of mmcv.cnn.bricks.transformer."""
+
 from __future__ import annotations
 
 import math
+from functools import partial
+from typing import Callable
 
 import torch
 from torch import nn
 
 from otx.algo.modules.base_module import BaseModule, Sequential
 
-from .activation import build_activation_layer
-from .conv import build_conv_layer
 from .drop import build_dropout
 from .norm import build_norm_layer
 
@@ -122,11 +123,11 @@ class PatchEmbed(BaseModule):
 
     We use a conv layer to implement PatchEmbed.
 
+    TODO (sungchul): it is duplicated with otx.algo.instance_segmentation.layers.transformer.PatchEmbed
+
     Args:
         in_channels (int): The num of input channels. Default: 3
         embed_dims (int): The dimensions of embedding. Default: 768
-        conv_type (str): The type of convolution
-            to generate patch embedding. Default: "Conv2d".
         kernel_size (int): The kernel_size of embedding conv. Default: 16.
         stride (int): The slide stride of embedding conv.
             Default: 16.
@@ -149,7 +150,6 @@ class PatchEmbed(BaseModule):
         self,
         in_channels: int = 3,
         embed_dims: int = 768,
-        conv_type: str = "Conv2d",
         kernel_size: int | tuple[int, int] = 16,
         stride: int | tuple[int, int] = 16,
         padding: str | int | tuple[int, int] = "corner",
@@ -183,8 +183,7 @@ class PatchEmbed(BaseModule):
             self.adaptive_padding = None
         padding = padding if isinstance(padding, tuple) else (padding, padding)
 
-        self.projection = build_conv_layer(
-            {"type": conv_type},
+        self.projection = nn.Conv2d(
             in_channels=in_channels,
             out_channels=embed_dims,
             kernel_size=kernel_size,
@@ -254,8 +253,8 @@ class FFN(BaseModule):
             Defaults: 1024.
         num_fcs (int, optional): The number of fully-connected layers in
             FFNs. Default: 2.
-        act_cfg (dict, optional): The activation config for FFNs.
-            Default: dict(type='ReLU')
+        activation_callable (Callable[..., nn.Module]): Activation layer module.
+            Defaults to `partial(nn.ReLU, inplace=True)`.
         ffn_drop (float, optional): Probability of an element to be
             zeroed in FFN. Default 0.0.
         add_identity (bool, optional): Whether to add the
@@ -271,7 +270,7 @@ class FFN(BaseModule):
         embed_dims: int = 256,
         feedforward_channels: int = 1024,
         num_fcs: int = 2,
-        act_cfg: dict = {"type": "ReLU", "inplace": True},  # noqa: B006
+        activation_callable: Callable[..., nn.Module] = partial(nn.ReLU, inplace=True),
         ffn_drop: float = 0.0,
         dropout_layer: dict | None = None,
         add_identity: bool = True,
@@ -291,7 +290,7 @@ class FFN(BaseModule):
             layers.append(
                 Sequential(
                     nn.Linear(in_channels, feedforward_channels),
-                    build_activation_layer(act_cfg),
+                    activation_callable(),
                     nn.Dropout(ffn_drop),
                 ),
             )

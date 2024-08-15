@@ -6,13 +6,15 @@ All notable changes to this project will be documented in this file.
 
 ### New features
 
-- Add RT-DETR model for object detection task
+- Add RT-DETR model for Object Detection
   (https://github.com/openvinotoolkit/training_extensions/pull/3741)
 - Add Multi-Label & H-label Classification with torchvision models
   (https://github.com/openvinotoolkit/training_extensions/pull/3697)
 - Add Hugging-Face Model Wrapper for Classification
   (https://github.com/openvinotoolkit/training_extensions/pull/3710)
-- Add Hugging-Face Model Wrapper for Detection
+- Add LoRA finetuning capability for ViT Architectures
+  (https://github.com/openvinotoolkit/training_extensions/pull/3729)
+- Add Hugging-Face Model Wrapper for Object Detection
   (https://github.com/openvinotoolkit/training_extensions/pull/3747)
 - Add Hugging-Face Model Wrapper for Semantic Segmentation
   (https://github.com/openvinotoolkit/training_extensions/pull/3749)
@@ -20,15 +22,27 @@ All notable changes to this project will be documented in this file.
   (https://github.com/openvinotoolkit/training_extensions/pull/3758)
 - Add `otx benchmark` subcommand
   (https://github.com/openvinotoolkit/training_extensions/pull/3762)
+- Add RTMPose for Keypoint Detection Task
+  (https://github.com/openvinotoolkit/training_extensions/pull/3781)
+- Add Semi-SL MeanTeacher algorithm for Semantic Segmentation
+  (https://github.com/openvinotoolkit/training_extensions/pull/3801)
+- Update head and h-label format for hierarchical label classification
+  (https://github.com/openvinotoolkit/training_extensions/pull/3810)
+- Support configurable input size
+  (https://github.com/openvinotoolkit/training_extensions/pull/3788)
 
 ### Enhancements
 
+- Reimplement of ViT Architecture following TIMM
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3719>)
 - Enable to override data configurations
   (<https://github.com/openvinotoolkit/training_extensions/pull/3748>)
 - Enable to use input_size at transforms in recipe
   (<https://github.com/openvinotoolkit/training_extensions/pull/3759>)
 - Enable to use polygon and bitmap mask as prompt inputs for zero-shot learning
   (<https://github.com/openvinotoolkit/training_extensions/pull/3769>)
+- Refactoring `ConvModule` by removing `conv_cfg` and `act_cfg`
+  (<https://github.com/openvinotoolkit/training_extensions/pull/3783>, <https://github.com/openvinotoolkit/training_extensions/pull/3809>)
 
 ### Bug fixes
 

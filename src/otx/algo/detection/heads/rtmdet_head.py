@@ -8,6 +8,8 @@ Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/d
 
 from __future__ import annotations
 
+from typing import Callable
+
 import torch
 from torch import Tensor, nn
 
@@ -20,8 +22,7 @@ from otx.algo.detection.utils.utils import (
     sigmoid_geometric_mean,
     unmap,
 )
-from otx.algo.modules.conv_module import ConvModule
-from otx.algo.modules.depthwise_separable_conv_module import DepthwiseSeparableConvModule
+from otx.algo.modules.conv_module import Conv2dModule, DepthwiseSeparableConvModule
 from otx.algo.modules.norm import is_norm
 from otx.algo.modules.scale import Scale
 from otx.algo.utils.mmengine_utils import InstanceData
@@ -36,8 +37,8 @@ class RTMDetHead(ATSSHead):
         in_channels (int): Number of channels in the input feature map.
         with_objectness (bool): Whether to add an objectness branch.
             Defaults to True.
-        act_cfg (dict): Config dict for activation layer.
-            Default: dict(type='ReLU')
+        activation_callable (Callable[..., nn.Module]): Activation layer module.
+            Defaults to `nn.ReLU`.
     """
 
     def __init__(
@@ -45,10 +46,10 @@ class RTMDetHead(ATSSHead):
         num_classes: int,
         in_channels: int,
         with_objectness: bool = True,
-        act_cfg: dict | None = None,
+        activation_callable: Callable[..., nn.Module] = nn.ReLU,
         **kwargs,
     ) -> None:
-        self.act_cfg = act_cfg or {"type": "ReLU"}
+        self.activation_callable = activation_callable
         self.with_objectness = with_objectness
         super().__init__(num_classes, in_channels, **kwargs)
         if self.train_cfg:
@@ -61,27 +62,25 @@ class RTMDetHead(ATSSHead):
         for i in range(self.stacked_convs):
             chn = self.in_channels if i == 0 else self.feat_channels
             self.cls_convs.append(
-                ConvModule(
+                Conv2dModule(
                     chn,
                     self.feat_channels,
                     3,
                     stride=1,
                     padding=1,
-                    conv_cfg=self.conv_cfg,
                     norm_cfg=self.norm_cfg,
-                    act_cfg=self.act_cfg,
+                    activation_callable=self.activation_callable,
                 ),
             )
             self.reg_convs.append(
-                ConvModule(
+                Conv2dModule(
                     chn,
                     self.feat_channels,
                     3,
                     stride=1,
                     padding=1,
-                    conv_cfg=self.conv_cfg,
                     norm_cfg=self.norm_cfg,
-                    act_cfg=self.act_cfg,
+                    activation_callable=self.activation_callable,
                 ),
             )
         pred_pad_size = self.pred_kernel_size // 2
@@ -646,8 +645,8 @@ class RTMDetSepBNHead(RTMDetHead):
             Defaults to False.
         norm_cfg (dict): Config dict for normalization layer.
             Defaults to dict(type='BN', momentum=0.03, eps=0.001).
-        act_cfg (dict): Config dict for activation layer.
-            Defaults to dict(type='SiLU').
+        activation_callable (Callable[..., nn.Module]): Activation layer module.
+            Defaults to `nn.SiLU`.
         pred_kernel_size (int): Kernel size of prediction layer. Defaults to 1.
         exp_on_reg (bool): Whether using exponential of regression features or not. Defaults to False.
     """
@@ -659,12 +658,11 @@ class RTMDetSepBNHead(RTMDetHead):
         share_conv: bool = True,
         use_depthwise: bool = False,
         norm_cfg: dict | None = None,
-        act_cfg: dict | None = None,
+        activation_callable: Callable[..., nn.Module] = nn.SiLU,
         pred_kernel_size: int = 1,
         exp_on_reg: bool = False,
         **kwargs,
     ) -> None:
-        act_cfg = act_cfg or {"type": "SiLU"}
         norm_cfg = norm_cfg or {"type": "BN", "momentum": 0.03, "eps": 0.001}
         self.share_conv = share_conv
         self.exp_on_reg = exp_on_reg
@@ -673,14 +671,14 @@ class RTMDetSepBNHead(RTMDetHead):
             num_classes,
             in_channels,
             norm_cfg=norm_cfg,
-            act_cfg=act_cfg,
+            activation_callable=activation_callable,
             pred_kernel_size=pred_kernel_size,
             **kwargs,
         )
 
     def _init_layers(self) -> None:
         """Initialize layers of the head."""
-        conv = DepthwiseSeparableConvModule if self.use_depthwise else ConvModule
+        conv = DepthwiseSeparableConvModule if self.use_depthwise else Conv2dModule
         self.cls_convs = nn.ModuleList()
         self.reg_convs = nn.ModuleList()
 
@@ -700,9 +698,8 @@ class RTMDetSepBNHead(RTMDetHead):
                         3,
                         stride=1,
                         padding=1,
-                        conv_cfg=self.conv_cfg,
                         norm_cfg=self.norm_cfg,
-                        act_cfg=self.act_cfg,
+                        activation_callable=self.activation_callable,
                     ),
                 )
                 reg_convs.append(
@@ -712,9 +709,8 @@ class RTMDetSepBNHead(RTMDetHead):
                         3,
                         stride=1,
                         padding=1,
-                        conv_cfg=self.conv_cfg,
                         norm_cfg=self.norm_cfg,
-                        act_cfg=self.act_cfg,
+                        activation_callable=self.activation_callable,
                     ),
                 )
             self.cls_convs.append(cls_convs)

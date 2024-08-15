@@ -8,8 +8,9 @@ Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/d
 
 from __future__ import annotations
 
+import logging
 import math
-from typing import Sequence
+from typing import Callable, Sequence
 
 import torch
 import torch.nn.functional as F  # noqa: N812
@@ -23,9 +24,11 @@ from otx.algo.common.utils.samplers import PseudoSampler
 from otx.algo.common.utils.utils import multi_apply, reduce_mean
 from otx.algo.detection.heads.base_head import BaseDenseHead
 from otx.algo.detection.losses import IoULoss
-from otx.algo.modules.conv_module import ConvModule
-from otx.algo.modules.depthwise_separable_conv_module import DepthwiseSeparableConvModule
+from otx.algo.modules.activation import Swish
+from otx.algo.modules.conv_module import Conv2dModule, DepthwiseSeparableConvModule
 from otx.algo.utils.mmengine_utils import InstanceData
+
+logger = logging.getLogger()
 
 
 class YOLOXHead(BaseDenseHead):
@@ -39,7 +42,7 @@ class YOLOXHead(BaseDenseHead):
         stacked_convs (int): Number of stacking convs of the head.
             Defaults to (8, 16, 32).
         strides (Sequence[int]): Downsample factor of each feature map.
-             Defaults to None.
+            Defaults to None.
         use_depthwise (bool): Whether to depthwise separable convolution in blocks.
             Defaults to False.
         dcn_on_last_conv (bool): If true, use dcn in the last layer of towers.
@@ -47,12 +50,10 @@ class YOLOXHead(BaseDenseHead):
         conv_bias (bool or str): If specified as `auto`, it will be decided by
             the norm_cfg. Bias of conv will be set as True if `norm_cfg` is
             None, otherwise False. Defaults to "auto".
-        conv_cfg (dict, optional): Config dict for convolution layer.
-            Defaults to None.
         norm_cfg (dict): Config dict for normalization layer.
             Defaults to dict(type='BN', momentum=0.03, eps=0.001).
-        act_cfg (dict): Config dict for activation layer.
-            Defaults to None.
+        activation_callable (Callable[..., nn.Module]): Activation layer module.
+            Defaults to `Swish`.
         loss_cls (nn.Module, optional): Module of classification loss.
         loss_bbox (nn.Module, optional): Module of localization loss.
         loss_obj (nn.Module, optional): Module of objectness loss.
@@ -75,9 +76,8 @@ class YOLOXHead(BaseDenseHead):
         use_depthwise: bool = False,
         dcn_on_last_conv: bool = False,
         conv_bias: bool | str = "auto",
-        conv_cfg: dict | None = None,
         norm_cfg: dict | None = None,
-        act_cfg: dict | None = None,
+        activation_callable: Callable[..., nn.Module] = Swish,
         loss_cls: nn.Module | None = None,
         loss_bbox: nn.Module | None = None,
         loss_obj: nn.Module | None = None,
@@ -88,9 +88,6 @@ class YOLOXHead(BaseDenseHead):
     ) -> None:
         if norm_cfg is None:
             norm_cfg = {"type": "BN", "momentum": 0.03, "eps": 0.001}
-
-        if act_cfg is None:
-            act_cfg = {"type": "Swish"}
 
         if init_cfg is None:
             init_cfg = {
@@ -118,9 +115,8 @@ class YOLOXHead(BaseDenseHead):
         self.conv_bias = conv_bias
         self.use_sigmoid_cls = True
 
-        self.conv_cfg = conv_cfg
         self.norm_cfg = norm_cfg
-        self.act_cfg = act_cfg
+        self.activation_callable = activation_callable
 
         self.loss_cls = loss_cls or CrossEntropyLoss(use_sigmoid=True, reduction="sum", loss_weight=1.0)
         self.loss_bbox = loss_bbox or IoULoss(mode="square", eps=1e-16, reduction="sum", loss_weight=5.0)
@@ -158,11 +154,18 @@ class YOLOXHead(BaseDenseHead):
 
     def _build_stacked_convs(self) -> nn.Sequential:
         """Initialize conv layers of a single level head."""
-        conv = DepthwiseSeparableConvModule if self.use_depthwise else ConvModule
+        conv = DepthwiseSeparableConvModule if self.use_depthwise else Conv2dModule
         stacked_convs = []
         for i in range(self.stacked_convs):
             chn = self.in_channels if i == 0 else self.feat_channels
-            conv_cfg = {"type": "DCNv2"} if self.dcn_on_last_conv and i == self.stacked_convs - 1 else self.conv_cfg
+            # TODO (sungchul): enable deformable convolution implemented in mmcv
+            # conv_cfg = {"type": "DCNv2"} if self.dcn_on_last_conv and i == self.stacked_convs - 1 else self.conv_cfg
+            if self.dcn_on_last_conv and i == self.stacked_convs - 1:
+                logger.warning(
+                    f"stacked convs[{i}] : Deformable convolution is not supported in YOLOXHead, "
+                    "use normal convolution instead.",
+                )
+
             stacked_convs.append(
                 conv(
                     chn,
@@ -170,9 +173,8 @@ class YOLOXHead(BaseDenseHead):
                     3,
                     stride=1,
                     padding=1,
-                    conv_cfg=conv_cfg,
                     norm_cfg=self.norm_cfg,
-                    act_cfg=self.act_cfg,
+                    activation_callable=self.activation_callable,
                     bias=self.conv_bias,
                 ),
             )

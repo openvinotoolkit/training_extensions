@@ -1,4 +1,4 @@
-# Copyright (C) 2023 Intel Corporation
+# Copyright (C) 2023-2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 """HRNet network modules for base backbone.
@@ -7,17 +7,17 @@ Modified from:
 - https://github.com/HRNet/Lite-HRNet
 """
 
-
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Callable
 
 import torch
 import torch.utils.checkpoint as cp
 from torch import nn
 from torch.nn import functional
 
-from otx.algo.modules import ConvModule, build_conv_layer, build_norm_layer
+from otx.algo.modules import Conv2dModule, build_norm_layer
 from otx.algo.modules.base_module import BaseModule
 from otx.algo.segmentation.modules import (
     AsymmetricPositionAttentionModule,
@@ -37,7 +37,6 @@ class NeighbourSupport(nn.Module):
         kernel_size: int = 3,
         key_ratio: int = 8,
         value_ratio: int = 8,
-        conv_cfg: dict | None = None,
         norm_cfg: dict | None = None,
     ) -> None:
         """Neighbour support module.
@@ -47,7 +46,6 @@ class NeighbourSupport(nn.Module):
             kernel_size (int): Kernel size for convolutional layers. Default is 3.
             key_ratio (int): Ratio of input channels to key channels. Default is 8.
             value_ratio (int): Ratio of input channels to value channels. Default is 8.
-            conv_cfg (dict | None): Config for convolutional layers. Default is None.
             norm_cfg (dict | None): Config for normalization layers. Default is None.
         """
         super().__init__()
@@ -58,56 +56,51 @@ class NeighbourSupport(nn.Module):
         self.kernel_size = kernel_size
 
         self.key = nn.Sequential(
-            ConvModule(
+            Conv2dModule(
                 in_channels=self.in_channels,
                 out_channels=self.key_channels,
                 kernel_size=1,
                 stride=1,
-                conv_cfg=conv_cfg,
                 norm_cfg=norm_cfg,
-                act_cfg={"type": "ReLU"},
+                activation_callable=nn.ReLU,
             ),
-            ConvModule(
+            Conv2dModule(
                 self.key_channels,
                 self.key_channels,
                 kernel_size=self.kernel_size,
                 stride=1,
                 padding=(self.kernel_size - 1) // 2,
                 groups=self.key_channels,
-                conv_cfg=conv_cfg,
                 norm_cfg=norm_cfg,
-                act_cfg=None,
+                activation_callable=None,
             ),
-            ConvModule(
+            Conv2dModule(
                 in_channels=self.key_channels,
                 out_channels=self.kernel_size * self.kernel_size,
                 kernel_size=1,
                 stride=1,
-                conv_cfg=conv_cfg,
                 norm_cfg=norm_cfg,
-                act_cfg=None,
+                activation_callable=None,
             ),
         )
         self.value = nn.Sequential(
-            ConvModule(
+            Conv2dModule(
                 in_channels=self.in_channels,
                 out_channels=self.value_channels,
                 kernel_size=1,
                 stride=1,
-                conv_cfg=conv_cfg,
                 norm_cfg=norm_cfg,
-                act_cfg=None,
+                activation_callable=None,
             ),
             nn.Unfold(kernel_size=self.kernel_size, stride=1, padding=1),
         )
-        self.out_conv = ConvModule(
+        self.out_conv = Conv2dModule(
             in_channels=self.value_channels,
             out_channels=self.in_channels,
             kernel_size=1,
             stride=1,
-            conv_cfg=conv_cfg,
             norm_cfg=norm_cfg,
-            act_cfg=None,
+            activation_callable=None,
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -125,54 +118,54 @@ class NeighbourSupport(nn.Module):
 
 
 class CrossResolutionWeighting(nn.Module):
-    """Cross resolution weighting."""
+    """Cross resolution weighting.
+
+    Args:
+        channels (list[int]): Number of channels for each stage.
+        ratio (int): Reduction ratio of the bottleneck block.
+        norm_cfg (dict | None): Config dict for normalization layer. Default: None
+        activation_callable (Callable[..., nn.Module] | tuple[Callable[..., nn.Module], Callable[..., nn.Module]]): \
+            Activation layer module or a tuple of activation layer modules.
+            Defaults to (`nn.ReLU`, `nn.Sigmoid`).
+    """
 
     def __init__(
         self,
         channels: list[int],
         ratio: int = 16,
-        conv_cfg: dict | None = None,
         norm_cfg: dict | None = None,
-        act_cfg: dict | tuple[dict, dict] = ({"type": "ReLU"}, {"type": "Sigmoid"}),
+        activation_callable: Callable[..., nn.Module] | tuple[Callable[..., nn.Module], Callable[..., nn.Module]] = (
+            nn.ReLU,
+            nn.Sigmoid,
+        ),
     ) -> None:
-        """Cross resolution weighting.
-
-        Args:
-            channels (list[int]): Number of channels for each stage.
-            ratio (int): Reduction ratio of the bottleneck block.
-            conv_cfg (dict | None): Config dict for convolution layer. Default: None
-            norm_cfg (dict | None): Config dict for normalization layer. Default: None
-            act_cfg (dict | tuple[dict, dict]): Config dict or a tuple of config dicts for activation layer(s).
-                Default: ({"type": "ReLU"}, {"type": "Sigmoid"}).
-        """
         super().__init__()
 
-        if isinstance(act_cfg, dict):
-            act_cfg = (act_cfg, act_cfg)
-        if len(act_cfg) != 2:
-            msg = "act_cfg must be a dict or a tuple of dicts of length 2."
+        if callable(activation_callable):
+            activation_callable = (activation_callable, activation_callable)
+
+        if len(activation_callable) != 2:
+            msg = "activation_callable must be a callable or a tuple of callables of length 2."
             raise ValueError(msg)
 
         self.channels = channels
         total_channel = sum(channels)
 
-        self.conv1 = ConvModule(
+        self.conv1 = Conv2dModule(
             in_channels=total_channel,
             out_channels=int(total_channel / ratio),
             kernel_size=1,
             stride=1,
-            conv_cfg=conv_cfg,
             norm_cfg=norm_cfg,
-            act_cfg=act_cfg[0],
+            activation_callable=activation_callable[0],
         )
-        self.conv2 = ConvModule(
+        self.conv2 = Conv2dModule(
             in_channels=int(total_channel / ratio),
             out_channels=total_channel,
             kernel_size=1,
             stride=1,
-            conv_cfg=conv_cfg,
             norm_cfg=norm_cfg,
-            act_cfg=act_cfg[1],
+            activation_callable=activation_callable[1],
         )
 
     def forward(self, x: torch.Tensor) -> list[torch.Tensor]:
@@ -189,56 +182,54 @@ class CrossResolutionWeighting(nn.Module):
 
 
 class SpatialWeighting(nn.Module):
-    """Spatial weighting."""
+    """Spatial weighting.
+
+    Args:
+        channels (int): Number of input channels.
+        ratio (int): Reduction ratio for the bottleneck block. Default: 16.
+        activation_callable (Callable[..., nn.Module] | tuple[Callable[..., nn.Module], Callable[..., nn.Module]]): \
+            Activation layer module or a tuple of activation layer modules.
+            If a single module is provided, it will be used for both activation layers.
+            Defaults to (`nn.ReLU`, `nn.Sigmoid`).
+
+    Raises:
+        ValueError: activation_callable must be a callable or a tuple of callables of length 2.
+        TypeError: If activation_callable is not a callable or a tuple of callables.
+    """
 
     def __init__(
         self,
         channels: int,
         ratio: int = 16,
-        conv_cfg: dict | None = None,
-        norm_cfg: dict | None = None,
-        act_cfg: dict | tuple[dict, dict] = ({"type": "ReLU"}, {"type": "Sigmoid"}),
-        enable_norm: bool = False,
+        activation_callable: Callable[..., nn.Module] | tuple[Callable[..., nn.Module], Callable[..., nn.Module]] = (
+            nn.ReLU,
+            nn.Sigmoid,
+        ),
+        **kwargs,
     ) -> None:
-        """Spatial weighting.
-
-        Args:
-            channels (int): Number of input channels.
-            ratio (int): Reduction ratio for the bottleneck block. Default: 16.
-            conv_cfg (dict | None): Configuration dict for convolutional layers.
-                Default: None.
-            act_cfg (dict | tuple[dict]): Configuration dict or tuple of dicts for
-                activation layers. If a single dict is provided, it will be used for
-                both activation layers. Default: ({"type": "ReLU"}, {"type": "Sigmoid"}).
-
-        Raises:
-            ValueError: act_cfg must be a dict or a tuple of dicts of length 2.
-            TypeError: If act_cfg is not a dict or a tuple of dicts.
-        """
         super().__init__()
 
-        if isinstance(act_cfg, dict):
-            act_cfg = (act_cfg, act_cfg)
-        if len(act_cfg) != 2:
-            msg = "act_cfg must be a dict or a tuple of dicts of length 2."
+        if callable(activation_callable):
+            activation_callable = (activation_callable, activation_callable)
+
+        if len(activation_callable) != 2:
+            msg = "activation_callable must be a callable or a tuple of callables of length 2."
             raise ValueError(msg)
 
         self.global_avgpool = nn.AdaptiveAvgPool2d(1)
-        self.conv1 = ConvModule(
+        self.conv1 = Conv2dModule(
             in_channels=channels,
             out_channels=int(channels / ratio),
             kernel_size=1,
             stride=1,
-            conv_cfg=conv_cfg,
-            act_cfg=act_cfg[0],
+            activation_callable=activation_callable[0],
         )
-        self.conv2 = ConvModule(
+        self.conv2 = Conv2dModule(
             in_channels=int(channels / ratio),
             out_channels=channels,
             kernel_size=1,
             stride=1,
-            conv_cfg=conv_cfg,
-            act_cfg=act_cfg[1],
+            activation_callable=activation_callable[1],
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -257,7 +248,6 @@ class SpatialWeightingV2(nn.Module):
         self,
         channels: int,
         ratio: int = 16,
-        conv_cfg: dict | None = None,
         norm_cfg: dict | None = None,
         enable_norm: bool = False,
     ) -> None:
@@ -266,7 +256,6 @@ class SpatialWeightingV2(nn.Module):
         Args:
             channels (int): Number of input channels.
             ratio (int): Reduction ratio of internal channels.
-            conv_cfg (dict | None): Config dict for convolution layer.
             norm_cfg (dict | None): Config dict for normalization layer.
             enable_norm (bool): Whether to enable normalization layers.
         """
@@ -276,56 +265,51 @@ class SpatialWeightingV2(nn.Module):
         self.internal_channels = int(channels / ratio)
 
         # channel-only branch
-        self.v_channel = ConvModule(
+        self.v_channel = Conv2dModule(
             in_channels=self.in_channels,
             out_channels=self.internal_channels,
             kernel_size=1,
             stride=1,
             bias=False,
-            conv_cfg=conv_cfg,
             norm_cfg=norm_cfg if enable_norm else None,
-            act_cfg=None,
+            activation_callable=None,
         )
-        self.q_channel = ConvModule(
+        self.q_channel = Conv2dModule(
             in_channels=self.in_channels,
             out_channels=1,
             kernel_size=1,
             stride=1,
             bias=False,
-            conv_cfg=conv_cfg,
             norm_cfg=norm_cfg if enable_norm else None,
-            act_cfg=None,
+            activation_callable=None,
         )
-        self.out_channel = ConvModule(
+        self.out_channel = Conv2dModule(
             in_channels=self.internal_channels,
             out_channels=self.in_channels,
             kernel_size=1,
             stride=1,
-            conv_cfg=conv_cfg,
             norm_cfg=norm_cfg,
-            act_cfg={"type": "Sigmoid"},
+            activation_callable=nn.Sigmoid,
         )
 
         # spatial-only branch
-        self.v_spatial = ConvModule(
+        self.v_spatial = Conv2dModule(
             in_channels=self.in_channels,
             out_channels=self.internal_channels,
             kernel_size=1,
             stride=1,
             bias=False,
-            conv_cfg=conv_cfg,
             norm_cfg=norm_cfg if enable_norm else None,
-            act_cfg=None,
+            activation_callable=None,
         )
-        self.q_spatial = ConvModule(
+        self.q_spatial = Conv2dModule(
             in_channels=self.in_channels,
             out_channels=self.internal_channels,
             kernel_size=1,
             stride=1,
             bias=False,
-            conv_cfg=conv_cfg,
             norm_cfg=norm_cfg if enable_norm else None,
-            act_cfg=None,
+            activation_callable=None,
         )
         self.global_avgpool = nn.AdaptiveAvgPool2d(1)
 
@@ -392,7 +376,6 @@ class ConditionalChannelWeighting(nn.Module):
         in_channels: list[int],
         stride: int,
         reduce_ratio: int,
-        conv_cfg: dict | None = None,
         norm_cfg: dict | None = None,
         with_cp: bool = False,
         dropout: float | None = None,
@@ -406,7 +389,6 @@ class ConditionalChannelWeighting(nn.Module):
             in_channels (list[int]): Number of input channels for each input feature map.
             stride (int): Stride used in the first convolutional layer.
             reduce_ratio (int): Reduction ratio used in the cross-resolution weighting module.
-            conv_cfg (dict | None): Dictionary to construct and configure the convolutional layers.
             norm_cfg (dict | None): Dictionary to construct and configure the normalization layers.
             with_cp (bool): Whether to use checkpointing to save memory.
             dropout (float | None): Dropout probability used in the depthwise convolutional layers.
@@ -434,21 +416,19 @@ class ConditionalChannelWeighting(nn.Module):
         self.cross_resolution_weighting = CrossResolutionWeighting(
             branch_channels,
             ratio=reduce_ratio,
-            conv_cfg=conv_cfg,
             norm_cfg=norm_cfg,
         )
         self.depthwise_convs = nn.ModuleList(
             [
-                ConvModule(
+                Conv2dModule(
                     channel,
                     channel,
                     kernel_size=dw_ksize,
                     stride=self.stride,
                     padding=dw_ksize // 2,
                     groups=channel,
-                    conv_cfg=conv_cfg,
                     norm_cfg=norm_cfg,
-                    act_cfg=None,
+                    activation_callable=None,
                 )
                 for channel in branch_channels
             ],
@@ -458,7 +438,6 @@ class ConditionalChannelWeighting(nn.Module):
                 spatial_weighting_module(
                     channels=channel,
                     ratio=4,
-                    conv_cfg=conv_cfg,
                     norm_cfg=norm_cfg,
                     enable_norm=True,
                 )
@@ -475,7 +454,6 @@ class ConditionalChannelWeighting(nn.Module):
                         kernel_size=3,
                         key_ratio=8,
                         value_ratio=4,
-                        conv_cfg=conv_cfg,
                         norm_cfg=norm_cfg,
                     )
                     for channel in branch_channels
@@ -528,7 +506,6 @@ class Stem(nn.Module):
         stem_channels: int,
         out_channels: int,
         expand_ratio: int,
-        conv_cfg: dict | None = None,
         norm_cfg: dict | None = None,
         with_cp: bool = False,
         strides: tuple[int, int] = (2, 2),
@@ -542,7 +519,6 @@ class Stem(nn.Module):
             stem_channels (int): Number of output channels of the stem layer.
             out_channels (int): Number of output channels of the backbone network.
             expand_ratio (int): Expansion ratio of the internal channels.
-            conv_cfg (dict | None): Dictionary to construct and configure convolution layers.
             norm_cfg (dict | None): Dictionary to construct and configure normalization layers.
             with_cp (bool): Use checkpointing to save memory during forward pass.
             num_stages (int): Number of stages in the backbone network.
@@ -568,7 +544,6 @@ class Stem(nn.Module):
 
         self.in_channels = in_channels
         self.out_channels = out_channels
-        self.conv_cfg = conv_cfg
         self.norm_cfg = norm_cfg
         self.with_cp = with_cp
 
@@ -576,28 +551,26 @@ class Stem(nn.Module):
         if input_norm:
             self.input_norm = nn.InstanceNorm2d(in_channels)
 
-        self.conv1 = ConvModule(
+        self.conv1 = Conv2dModule(
             in_channels=in_channels,
             out_channels=stem_channels,
             kernel_size=3,
             stride=strides[0],
             padding=1,
-            conv_cfg=self.conv_cfg,
             norm_cfg=self.norm_cfg,
-            act_cfg={"type": "ReLU"},
+            activation_callable=nn.ReLU,
         )
 
         self.conv2 = None
         if extra_stride:
-            self.conv2 = ConvModule(
+            self.conv2 = Conv2dModule(
                 in_channels=stem_channels,
                 out_channels=stem_channels,
                 kernel_size=3,
                 stride=2,
                 padding=1,
-                conv_cfg=self.conv_cfg,
                 norm_cfg=self.norm_cfg,
-                act_cfg={"type": "ReLU"},
+                activation_callable=nn.ReLU,
             )
 
         mid_channels = int(round(stem_channels * expand_ratio))
@@ -608,59 +581,54 @@ class Stem(nn.Module):
             inc_channels = self.out_channels - stem_channels
 
         self.branch1 = nn.Sequential(
-            ConvModule(
+            Conv2dModule(
                 branch_channels,
                 branch_channels,
                 kernel_size=3,
                 stride=strides[1],
                 padding=1,
                 groups=branch_channels,
-                conv_cfg=conv_cfg,
                 norm_cfg=norm_cfg,
-                act_cfg=None,
+                activation_callable=None,
             ),
-            ConvModule(
+            Conv2dModule(
                 branch_channels,
                 inc_channels,
                 kernel_size=1,
                 stride=1,
                 padding=0,
-                conv_cfg=conv_cfg,
                 norm_cfg=norm_cfg,
-                act_cfg={"type": "ReLU"},
+                activation_callable=nn.ReLU,
             ),
         )
 
-        self.expand_conv = ConvModule(
+        self.expand_conv = Conv2dModule(
             branch_channels,
             mid_channels,
             kernel_size=1,
             stride=1,
             padding=0,
-            conv_cfg=conv_cfg,
             norm_cfg=norm_cfg,
-            act_cfg={"type": "ReLU"},
+            activation_callable=nn.ReLU,
         )
-        self.depthwise_conv = ConvModule(
+        self.depthwise_conv = Conv2dModule(
             mid_channels,
             mid_channels,
             kernel_size=3,
             stride=strides[1],
             padding=1,
             groups=mid_channels,
-            conv_cfg=conv_cfg,
             norm_cfg=norm_cfg,
-            act_cfg=None,
+            activation_callable=None,
         )
-        self.linear_conv = ConvModule(
+        self.linear_conv = Conv2dModule(
             mid_channels,
             branch_channels if stem_channels == self.out_channels else stem_channels,
             kernel_size=1,
             stride=1,
             padding=0,
-            conv_cfg=conv_cfg,
             norm_cfg=norm_cfg,
-            act_cfg={"type": "ReLU"},
+            activation_callable=nn.ReLU,
         )
 
     def _inner_forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -705,7 +673,6 @@ class StemV2(nn.Module):
         stem_channels: int,
         out_channels: int,
         expand_ratio: int,
-        conv_cfg: dict | None = None,
         norm_cfg: dict | None = None,
         with_cp: bool = False,
         num_stages: int = 1,
@@ -720,7 +687,6 @@ class StemV2(nn.Module):
             stem_channels (int): Number of output channels of the stem layer.
             out_channels (int): Number of output channels of the backbone network.
             expand_ratio (int): Expansion ratio of the internal channels.
-            conv_cfg (dict | None): Dictionary to construct and configure convolution layers.
             norm_cfg (dict | None): Dictionary to construct and configure normalization layers.
             with_cp (bool): Use checkpointing to save memory during forward pass.
             num_stages (int): Number of stages in the backbone network.
@@ -750,7 +716,6 @@ class StemV2(nn.Module):
 
         self.in_channels = in_channels
         self.out_channels = out_channels
-        self.conv_cfg = conv_cfg
         self.norm_cfg = norm_cfg
         self.with_cp = with_cp
         self.num_stages = num_stages
@@ -759,28 +724,26 @@ class StemV2(nn.Module):
         if input_norm:
             self.input_norm = nn.InstanceNorm2d(in_channels)
 
-        self.conv1 = ConvModule(
+        self.conv1 = Conv2dModule(
             in_channels=in_channels,
             out_channels=stem_channels,
             kernel_size=3,
             stride=strides[0],
             padding=1,
-            conv_cfg=self.conv_cfg,
             norm_cfg=self.norm_cfg,
-            act_cfg={"type": "ReLU"},
+            activation_callable=nn.ReLU,
         )
 
         self.conv2 = None
         if extra_stride:
-            self.conv2 = ConvModule(
+            self.conv2 = Conv2dModule(
                 in_channels=stem_channels,
                 out_channels=stem_channels,
                 kernel_size=3,
                 stride=2,
                 padding=1,
-                conv_cfg=self.conv_cfg,
                 norm_cfg=self.norm_cfg,
-                act_cfg={"type": "ReLU"},
+                activation_callable=nn.ReLU,
             )
 
         mid_channels = int(round(stem_channels * expand_ratio))
@@ -791,62 +754,57 @@ class StemV2(nn.Module):
         for stage in range(1, num_stages + 1):
             self.branch1.append(
                 nn.Sequential(
-                    ConvModule(
+                    Conv2dModule(
                         internal_branch_channels,
                         internal_branch_channels,
                         kernel_size=3,
                         stride=strides[stage],
                         padding=1,
                         groups=internal_branch_channels,
-                        conv_cfg=conv_cfg,
                         norm_cfg=norm_cfg,
-                        act_cfg=None,
+                        activation_callable=None,
                     ),
-                    ConvModule(
+                    Conv2dModule(
                         internal_branch_channels,
                         out_branch_channels if stage == num_stages else internal_branch_channels,
                         kernel_size=1,
                         stride=1,
                         padding=0,
-                        conv_cfg=conv_cfg,
                         norm_cfg=norm_cfg,
-                        act_cfg={"type": "ReLU"},
+                        activation_callable=nn.ReLU,
                     ),
                 ),
             )
 
             self.branch2.append(
                 nn.Sequential(
-                    ConvModule(
+                    Conv2dModule(
                         internal_branch_channels,
                         mid_channels,
                         kernel_size=1,
                         stride=1,
                         padding=0,
-                        conv_cfg=conv_cfg,
                         norm_cfg=norm_cfg,
-                        act_cfg={"type": "ReLU"},
+                        activation_callable=nn.ReLU,
                     ),
-                    ConvModule(
+                    Conv2dModule(
                         mid_channels,
                         mid_channels,
                         kernel_size=3,
                         stride=strides[stage],
                         padding=1,
                         groups=mid_channels,
-                        conv_cfg=conv_cfg,
                         norm_cfg=norm_cfg,
-                        act_cfg=None,
+                        activation_callable=None,
                     ),
-                    ConvModule(
+                    Conv2dModule(
                         mid_channels,
                         out_branch_channels if stage == num_stages else internal_branch_channels,
                         kernel_size=1,
                         stride=1,
                         padding=0,
-                        conv_cfg=conv_cfg,
                         norm_cfg=norm_cfg,
-                        act_cfg={"type": "ReLU"},
+                        activation_callable=nn.ReLU,
                     ),
                 ),
             )
@@ -886,40 +844,33 @@ class StemV2(nn.Module):
 
 
 class ShuffleUnit(nn.Module):
-    """InvertedResidual block for ShuffleNetV2 backbone."""
+    """InvertedResidual block for ShuffleNetV2 backbone.
+
+    Args:
+        in_channels (int): The input channels of the block.
+        out_channels (int): The output channels of the block.
+        stride (int): Stride of the 3x3 convolution layer. Default: 1
+        norm_cfg (dict): Config dict for normalization layer.
+            Default: dict(type='BN').
+        activation_callable (Callable[..., nn.Module]): Activation layer module.
+            Defaults to `nn.ReLU`.
+        with_cp (bool): Use checkpoint or not. Using checkpoint will save some
+            memory while slowing down the training speed. Default: False.
+    """
 
     def __init__(
         self,
         in_channels: int,
         out_channels: int,
         stride: int = 1,
-        conv_cfg: dict | None = None,
         norm_cfg: dict | None = None,
-        act_cfg: dict | None = None,
+        activation_callable: Callable[..., nn.Module] = nn.ReLU,
         with_cp: bool = False,
     ) -> None:
-        """InvertedResidual block for ShuffleNetV2 backbone.
-
-        Args:
-            in_channels (int): The input channels of the block.
-            out_channels (int): The output channels of the block.
-            stride (int): Stride of the 3x3 convolution layer. Default: 1
-            conv_cfg (dict): Config dict for convolution layer.
-                Default: None, which means using conv2d.
-            norm_cfg (dict): Config dict for normalization layer.
-                Default: dict(type='BN').
-            act_cfg (dict): Config dict for activation layer.
-                Default: dict(type='ReLU').
-            with_cp (bool): Use checkpoint or not. Using checkpoint will save some
-                memory while slowing down the training speed. Default: False.
-
-        """
         super().__init__()
 
         if norm_cfg is None:
             norm_cfg = {"type": "BN"}
-        if act_cfg is None:
-            act_cfg = {"type": "ReLU"}
 
         self.stride = stride
         self.with_cp = with_cp
@@ -935,60 +886,55 @@ class ShuffleUnit(nn.Module):
 
         if self.stride > 1:
             self.branch1 = nn.Sequential(
-                ConvModule(
+                Conv2dModule(
                     in_channels,
                     in_channels,
                     kernel_size=3,
                     stride=self.stride,
                     padding=1,
                     groups=in_channels,
-                    conv_cfg=conv_cfg,
                     norm_cfg=norm_cfg,
-                    act_cfg=None,
+                    activation_callable=None,
                 ),
-                ConvModule(
+                Conv2dModule(
                     in_channels,
                     branch_features,
                     kernel_size=1,
                     stride=1,
                     padding=0,
-                    conv_cfg=conv_cfg,
                     norm_cfg=norm_cfg,
-                    act_cfg=act_cfg,
+                    activation_callable=activation_callable,
                 ),
             )
 
         self.branch2 = nn.Sequential(
-            ConvModule(
+            Conv2dModule(
                 in_channels if (self.stride > 1) else branch_features,
                 branch_features,
                 kernel_size=1,
                 stride=1,
                 padding=0,
-                conv_cfg=conv_cfg,
                 norm_cfg=norm_cfg,
-                act_cfg=act_cfg,
+                activation_callable=activation_callable,
             ),
-            ConvModule(
+            Conv2dModule(
                 branch_features,
                 branch_features,
                 kernel_size=3,
                 stride=self.stride,
                 padding=1,
                 groups=branch_features,
-                conv_cfg=conv_cfg,
                 norm_cfg=norm_cfg,
-                act_cfg=None,
+                activation_callable=None,
             ),
-            ConvModule(
+            Conv2dModule(
                 branch_features,
                 branch_features,
                 kernel_size=1,
                 stride=1,
                 padding=0,
-                conv_cfg=conv_cfg,
                 norm_cfg=norm_cfg,
-                act_cfg=act_cfg,
+                activation_callable=activation_callable,
             ),
         )
 
@@ -1019,7 +965,6 @@ class LiteHRModule(nn.Module):
         module_type: str,
         multiscale_output: bool = False,
         with_fuse: bool = True,
-        conv_cfg: dict | None = None,
         norm_cfg: dict | None = None,
         with_cp: bool = False,
         dropout: float | None = None,
@@ -1036,7 +981,6 @@ class LiteHRModule(nn.Module):
             module_type (str): Type of module to use for the network. Can be "LITE" or "NAIVE".
             multiscale_output (bool, optional): Whether to output features from all branches. Defaults to False.
             with_fuse (bool, optional): Whether to use the fuse layer. Defaults to True.
-            conv_cfg (dict, optional): Configuration for the convolutional layers. Defaults to None.
             norm_cfg (dict, optional): Configuration for the normalization layers. Defaults to None.
             with_cp (bool, optional): Whether to use checkpointing. Defaults to False.
             dropout (float, optional): Dropout rate. Defaults to None.
@@ -1056,7 +1000,6 @@ class LiteHRModule(nn.Module):
         self.multiscale_output = multiscale_output
         self.with_fuse = with_fuse
         self.norm_cfg = norm_cfg
-        self.conv_cfg = conv_cfg
         self.with_cp = with_cp
         self.weighting_module_version = weighting_module_version
         self.neighbour_weighting = neighbour_weighting
@@ -1089,7 +1032,6 @@ class LiteHRModule(nn.Module):
                 self.in_channels,
                 stride=stride,
                 reduce_ratio=reduce_ratio,
-                conv_cfg=self.conv_cfg,
                 norm_cfg=self.norm_cfg,
                 with_cp=self.with_cp,
                 dropout=dropout,
@@ -1108,9 +1050,8 @@ class LiteHRModule(nn.Module):
                 self.in_channels[branch_index],
                 self.in_channels[branch_index],
                 stride=stride,
-                conv_cfg=self.conv_cfg,
                 norm_cfg=self.norm_cfg,
-                act_cfg={"type": "ReLU"},
+                activation_callable=nn.ReLU,
                 with_cp=self.with_cp,
             ),
         ] + [
@@ -1118,9 +1059,8 @@ class LiteHRModule(nn.Module):
                 self.in_channels[branch_index],
                 self.in_channels[branch_index],
                 stride=1,
-                conv_cfg=self.conv_cfg,
                 norm_cfg=self.norm_cfg,
-                act_cfg={"type": "ReLU"},
+                activation_callable=nn.ReLU,
                 with_cp=self.with_cp,
             )
             for _ in range(1, num_blocks)
@@ -1149,8 +1089,7 @@ class LiteHRModule(nn.Module):
                 if j > i:
                     fuse_layer.append(
                         nn.Sequential(
-                            build_conv_layer(
-                                self.conv_cfg,
+                            nn.Conv2d(
                                 in_channels[j],
                                 in_channels[i],
                                 kernel_size=1,
@@ -1169,8 +1108,7 @@ class LiteHRModule(nn.Module):
                         if k == i - j - 1:
                             conv_downsamples.append(
                                 nn.Sequential(
-                                    build_conv_layer(
-                                        self.conv_cfg,
+                                    nn.Conv2d(
                                         in_channels[j],
                                         in_channels[j],
                                         kernel_size=3,
@@ -1180,8 +1118,7 @@ class LiteHRModule(nn.Module):
                                         bias=False,
                                     ),
                                     build_norm_layer(self.norm_cfg, in_channels[j])[1],
-                                    build_conv_layer(
-                                        self.conv_cfg,
+                                    nn.Conv2d(
                                         in_channels[j],
                                         in_channels[i],
                                         kernel_size=1,
@@ -1195,8 +1132,7 @@ class LiteHRModule(nn.Module):
                         else:
                             conv_downsamples.append(
                                 nn.Sequential(
-                                    build_conv_layer(
-                                        self.conv_cfg,
+                                    nn.Conv2d(
                                         in_channels[j],
                                         in_channels[j],
                                         kernel_size=3,
@@ -1206,8 +1142,7 @@ class LiteHRModule(nn.Module):
                                         bias=False,
                                     ),
                                     build_norm_layer(self.norm_cfg, in_channels[j])[1],
-                                    build_conv_layer(
-                                        self.conv_cfg,
+                                    nn.Conv2d(
                                         in_channels[j],
                                         in_channels[j],
                                         kernel_size=1,
@@ -1265,7 +1200,6 @@ class LiteHRNet(BaseModule):
     Args:
         extra (dict): detailed configuration for each stage of HRNet.
         in_channels (int): Number of input image channels. Default: 3.
-        conv_cfg (dict): dictionary to construct and config conv layer.
         norm_cfg (dict): dictionary to construct and config norm layer.
         norm_eval (bool): Whether to set norm layers to eval mode, namely,
             freeze running stats (mean and var). Note: Effect on Batch Norm
@@ -1280,7 +1214,6 @@ class LiteHRNet(BaseModule):
         self,
         extra: dict,
         in_channels: int = 3,
-        conv_cfg: dict | None = None,
         norm_cfg: dict | None = None,
         norm_eval: bool = False,
         with_cp: bool = False,
@@ -1294,11 +1227,8 @@ class LiteHRNet(BaseModule):
 
         if norm_cfg is None:
             norm_cfg = {"type": "BN"}
-        if conv_cfg is None:
-            conv_cfg = {"type": "Conv2d"}
 
         self.extra = extra
-        self.conv_cfg = conv_cfg
         self.norm_cfg = norm_cfg
         self.norm_eval = norm_eval
         self.with_cp = with_cp
@@ -1311,7 +1241,6 @@ class LiteHRNet(BaseModule):
             expand_ratio=self.extra["stem"]["expand_ratio"],
             strides=self.extra["stem"]["strides"],
             extra_stride=self.extra["stem"]["extra_stride"],
-            conv_cfg=self.conv_cfg,
             norm_cfg=self.norm_cfg,
         )
 
@@ -1351,15 +1280,14 @@ class LiteHRNet(BaseModule):
             if self.extra["out_modules"]["conv"]["enable"]:
                 out_modules_channels = self.extra["out_modules"]["conv"]["channels"]
                 out_modules.append(
-                    ConvModule(
+                    Conv2dModule(
                         in_channels=in_modules_channels,
                         out_channels=out_modules_channels,
                         kernel_size=1,
                         stride=1,
                         padding=0,
-                        conv_cfg=self.conv_cfg,
                         norm_cfg=self.norm_cfg,
-                        act_cfg={"type": "ReLU"},
+                        activation_callable=nn.ReLU,
                     ),
                 )
                 in_modules_channels = out_modules_channels
@@ -1370,7 +1298,6 @@ class LiteHRNet(BaseModule):
                         key_channels=self.extra["out_modules"]["position_att"]["key_channels"],
                         value_channels=self.extra["out_modules"]["position_att"]["value_channels"],
                         psp_size=self.extra["out_modules"]["position_att"]["psp_size"],
-                        conv_cfg=self.conv_cfg,
                         norm_cfg=self.norm_cfg,
                     ),
                 )
@@ -1378,7 +1305,6 @@ class LiteHRNet(BaseModule):
                 out_modules.append(
                     LocalAttentionModule(
                         num_channels=in_modules_channels,
-                        conv_cfg=self.conv_cfg,
                         norm_cfg=self.norm_cfg,
                     ),
                 )
@@ -1390,26 +1316,24 @@ class LiteHRNet(BaseModule):
         self.add_stem_features = self.extra.get("add_stem_features", False)
         if self.add_stem_features:
             self.stem_transition = nn.Sequential(
-                ConvModule(
+                Conv2dModule(
                     self.stem.out_channels,
                     self.stem.out_channels,
                     kernel_size=3,
                     stride=1,
                     padding=1,
                     groups=self.stem.out_channels,
-                    conv_cfg=conv_cfg,
                     norm_cfg=norm_cfg,
-                    act_cfg=None,
+                    activation_callable=None,
                 ),
-                ConvModule(
+                Conv2dModule(
                     self.stem.out_channels,
                     num_channels_last[0],
                     kernel_size=1,
                     stride=1,
                     padding=0,
-                    conv_cfg=conv_cfg,
                     norm_cfg=norm_cfg,
-                    act_cfg={"type": "ReLU"},
+                    activation_callable=nn.ReLU,
                 ),
             )
 
@@ -1420,7 +1344,6 @@ class LiteHRNet(BaseModule):
             self.aggregator = IterativeAggregator(
                 in_channels=num_channels_last,
                 min_channels=self.extra["out_aggregator"].get("min_channels", None),
-                conv_cfg=self.conv_cfg,
                 norm_cfg=self.norm_cfg,
             )
 
@@ -1442,8 +1365,7 @@ class LiteHRNet(BaseModule):
                 if num_channels_cur_layer[i] != num_channels_pre_layer[i]:
                     transition_layers.append(
                         nn.Sequential(
-                            build_conv_layer(
-                                self.conv_cfg,
+                            nn.Conv2d(
                                 num_channels_pre_layer[i],
                                 num_channels_pre_layer[i],
                                 kernel_size=3,
@@ -1453,8 +1375,7 @@ class LiteHRNet(BaseModule):
                                 bias=False,
                             ),
                             build_norm_layer(self.norm_cfg, num_channels_pre_layer[i])[1],
-                            build_conv_layer(
-                                self.conv_cfg,
+                            nn.Conv2d(
                                 num_channels_pre_layer[i],
                                 num_channels_cur_layer[i],
                                 kernel_size=1,
@@ -1475,8 +1396,7 @@ class LiteHRNet(BaseModule):
                     out_channels = num_channels_cur_layer[i] if j == i - num_branches_pre else in_channels
                     conv_downsamples.append(
                         nn.Sequential(
-                            build_conv_layer(
-                                self.conv_cfg,
+                            nn.Conv2d(
                                 in_channels,
                                 in_channels,
                                 kernel_size=3,
@@ -1486,8 +1406,7 @@ class LiteHRNet(BaseModule):
                                 bias=False,
                             ),
                             build_norm_layer(self.norm_cfg, in_channels)[1],
-                            build_conv_layer(
-                                self.conv_cfg,
+                            nn.Conv2d(
                                 in_channels,
                                 out_channels,
                                 kernel_size=1,
@@ -1546,7 +1465,6 @@ class LiteHRNet(BaseModule):
                     module_type,
                     multiscale_output=reset_multiscale_output,
                     with_fuse=with_fuse,
-                    conv_cfg=self.conv_cfg,
                     norm_cfg=self.norm_cfg,
                     with_cp=self.with_cp,
                     dropout=dropout,
@@ -1607,7 +1525,8 @@ class LiteHRNet(BaseModule):
             checkpoint = torch.load(pretrained, "cpu")
             print(f"init weight - {pretrained}")
         elif pretrained is not None:
-            checkpoint = load_from_http(pretrained, "cpu")
+            cache_dir = Path.home() / ".cache" / "torch" / "hub" / "checkpoints"
+            checkpoint = load_from_http(filename=pretrained, map_location="cpu", model_dir=cache_dir)
             print(f"init weight - {pretrained}")
         if checkpoint is not None:
             load_checkpoint_to_model(self, checkpoint, prefix=prefix)

@@ -25,6 +25,7 @@ from otx.core.data.entity.anomaly import (
 )
 from otx.core.data.entity.base import ImageInfo
 from otx.core.exporter.anomaly import OTXAnomalyModelExporter
+from otx.core.model.base import OTXModel
 from otx.core.types.export import OTXExportFormatType
 from otx.core.types.precision import OTXPrecisionType
 from otx.core.types.task import OTXTaskType
@@ -37,9 +38,8 @@ if TYPE_CHECKING:
     from lightning.pytorch import Trainer
     from lightning.pytorch.callbacks.callback import Callback
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
-    from lightning.pytorch.utilities.types import STEP_OUTPUT
     from torchmetrics import Metric
-
+from otx.core.types.label import AnomalyLabelInfo
 
 AnomalyModelInputs: TypeAlias = (
     AnomalyClassificationDataBatch | AnomalySegmentationDataBatch | AnomalyDetectionDataBatch
@@ -49,13 +49,18 @@ AnomalyModelOutputs: TypeAlias = (
 )
 
 
-class OTXAnomaly:
-    """Methods used to make OTX model compatible with the Anomalib model."""
+class OTXAnomaly(OTXModel):
+    """Methods used to make OTX model compatible with the Anomalib model.
 
-    def __init__(self) -> None:
+    Args:
+        input_size (tuple[int, int] | None):
+            Model input size in the order of height and width. Defaults to None.
+    """
+
+    def __init__(self, input_size: tuple[int, int]) -> None:
+        super().__init__(label_info=AnomalyLabelInfo(), input_size=input_size)
         self.optimizer: list[OptimizerCallable] | OptimizerCallable = None
         self.scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = None
-        self._input_size: tuple[int, int] = (256, 256)
         self.trainer: Trainer
         self.model: nn.Module
         self.image_threshold: BaseThreshold
@@ -80,7 +85,7 @@ class OTXAnomaly:
             for key, value in anomaly_attrs.items():
                 setattr(self, key, value)
 
-    @property
+    @property  # type: ignore[override]
     def input_size(self) -> tuple[int, int]:
         """Returns the input size of the model.
 
@@ -115,17 +120,15 @@ class OTXAnomaly:
 
     def _get_values_from_transforms(
         self,
-    ) -> tuple[tuple[int, int], tuple[float, float, float], tuple[float, float, float]]:
+    ) -> tuple[tuple[float, float, float], tuple[float, float, float]]:
         """Get the value requested value from default transforms."""
-        image_size, mean_value, std_value = (256, 256), (123.675, 116.28, 103.53), (58.395, 57.12, 57.375)
+        mean_value, std_value = (123.675, 116.28, 103.53), (58.395, 57.12, 57.375)
         for transform in self.configure_transforms().transforms:  # type: ignore[attr-defined]
             name = transform.__class__.__name__
-            if "Resize" in name:
-                image_size = tuple(transform.size)  # type: ignore[assignment]
-            elif "Normalize" in name:
+            if "Normalize" in name:
                 mean_value = tuple(value * 255 for value in transform.mean)  # type: ignore[assignment]
                 std_value = tuple(value * 255 for value in transform.std)  # type: ignore[assignment]
-        return image_size, mean_value, std_value
+        return mean_value, std_value
 
     @property
     def trainable_model(self) -> str | None:
@@ -154,37 +157,6 @@ class OTXAnomaly:
             ),
         ]
 
-    def on_test_batch_end(
-        self,
-        outputs: dict,
-        batch: AnomalyModelInputs | dict,
-        batch_idx: int,
-        dataloader_idx: int = 0,
-    ) -> None:
-        """Called in the predict loop after the batch.
-
-        Args:
-            outputs: The outputs of predict_step(x)
-            batch: The batched data as it is returned by the prediction DataLoader.
-            batch_idx: the index of the batch
-            dataloader_idx: the index of the dataloader
-
-        """
-        if not isinstance(batch, dict):
-            batch = self._customize_inputs(batch)
-        super().on_test_batch_end(outputs, batch, batch_idx, dataloader_idx)  # type: ignore[misc]
-
-    def predict_step(
-        self,
-        inputs: AnomalyModelInputs | dict,
-        batch_idx: int = 0,
-        **kwargs,
-    ) -> dict:
-        """Return predictions from the anomalib model."""
-        if not isinstance(inputs, dict):
-            inputs = self._customize_inputs(inputs)
-        return super().predict_step(inputs, batch_idx, **kwargs)  # type: ignore[misc]
-
     def on_predict_batch_end(
         self,
         outputs: dict,
@@ -202,46 +174,6 @@ class OTXAnomaly:
         _outputs = self._customize_outputs(outputs, batch)
         outputs.clear()
         outputs.update({"prediction": _outputs})
-
-    def configure_optimizers(self) -> tuple[list[torch.optim.Optimizer], list[torch.optim.Optimizer]] | None:  # type: ignore[override]
-        """Configure optimizers for Anomalib models.
-
-        If the anomalib lightning model supports optimizers, return the optimizer.
-        If ``self.trainable_model`` is None then the model does not support training.
-        Else don't return optimizer even if it is configured in the OTX model.
-        """
-        # [TODO](ashwinvaidya17): Revisit this method
-        if self.optimizer and self.trainable_model:
-            optimizer = self.optimizer
-            if isinstance(optimizer, list):
-                if len(optimizer) > 1:
-                    msg = "Only one optimizer should be passed"
-                    raise ValueError(msg)
-                optimizer = optimizer[0]
-            params = getattr(self.model, self.trainable_model).parameters()
-            return optimizer(params=params)
-        return super().configure_optimizers()  # type: ignore[misc]
-
-    def validation_step(
-        self,
-        inputs: AnomalyModelInputs,
-        batch_idx: int = 0,
-    ) -> STEP_OUTPUT:
-        """Call validation step of the anomalib model."""
-        raise NotImplementedError
-
-    def forward(
-        self,
-        inputs: AnomalyModelInputs,
-    ) -> AnomalyModelOutputs:
-        """Wrap forward method of the Anomalib model."""
-        outputs = self.validation_step(inputs)
-        # TODO(Ashwin): update forward implementation to comply with other OTX models
-        _PostProcessorCallback._post_process(outputs)  # noqa: SLF001
-        _PostProcessorCallback._compute_scores_and_labels(self, outputs)  # noqa: SLF001
-        _MinMaxNormalizationCallback._normalize_batch(outputs, self)  # noqa: SLF001
-
-        return self._customize_outputs(outputs=outputs, inputs=inputs)
 
     def _customize_inputs(
         self,
@@ -313,7 +245,7 @@ class OTXAnomaly:
         """Creates OTXAnomalyModelExporter object that can export anomaly models."""
         min_val = self.normalization_metrics.state_dict()["min"].cpu().numpy().tolist()
         max_val = self.normalization_metrics.state_dict()["max"].cpu().numpy().tolist()
-        image_shape, mean_values, scale_values = self._get_values_from_transforms()
+        mean_values, scale_values = self._get_values_from_transforms()
         onnx_export_configuration = {
             "opset_version": 14,
             "dynamic_axes": {"input": {0: "batch_size"}, "output": {0: "batch_size"}},
@@ -321,7 +253,7 @@ class OTXAnomaly:
             "output_names": ["output"],
         }
         return OTXAnomalyModelExporter(
-            image_shape=image_shape,
+            image_shape=self.input_size,
             image_threshold=self.image_threshold.value.cpu().numpy().tolist(),
             pixel_threshold=self.pixel_threshold.value.cpu().numpy().tolist(),
             task=self.task,
@@ -369,8 +301,7 @@ class OTXAnomaly:
 
     def get_dummy_input(self, batch_size: int = 1) -> AnomalyModelInputs:
         """Returns a dummy input for anomaly model."""
-        image_size, _, _ = self._get_values_from_transforms()
-        images = torch.rand(batch_size, 3, *image_size)
+        images = torch.rand(batch_size, 3, *self.input_size)
         infos = []
         for i, img in enumerate(images):
             infos.append(

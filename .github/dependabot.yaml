@@ -3,23 +3,54 @@ updates:
   - package-ecosystem: docker
     directory: /
     schedule:
-      interval: weekly
+      interval: daily
     groups:
       dockerfile-dependency:
         applies-to: version-updates
+        patterns:
+          - "*"
 
   - package-ecosystem: github-actions
     directory: /
     schedule:
-      interval: weekly
+      interval: daily
     groups:
       github-actions-dependency:
         applies-to: version-updates
+        patterns:
+          - "*"
 
   - package-ecosystem: pip
     directory: /
     schedule:
-      interval: weekly
+      interval: daily
+    ignore:
+      - dependency-name: "torch"
+      - dependency-name: "torchvision"
+      - dependency-name: "lightning"
+      - dependency-name: "pytorchcv"
+      - dependency-name: "timm"
+      - dependency-name: "openvino*"
+      - dependency-name: "nncf"
+      - dependency-name: "anomalib"
+      - dependency-name: "intel-extension-for-pytorch"
+      - dependency-name: "oneccl_bind_pt"
     groups:
-      pip-dependency:
+      pip-mmlab:
         applies-to: version-updates
+        patterns:
+          - "mmdet"
+          - "mmpretrain"
+          - "mmsegmentation"
+          - "mmaction2"
+          - "mmdeploy"
+          - "oss2"
+        update-types:
+          - "patch"
+      pip-others:
+        applies-to: version-updates
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
