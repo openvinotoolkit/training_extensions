@@ -1041,9 +1041,9 @@ class OVZeroShotVisualPromptingModel(
                 if len(predicted_mask.mask) == 0:
                     continue
                 _masks.append(np.stack(predicted_mask.mask, axis=0))
-                _used_points_scores = np.stack(predicted_mask.points, axis=0)
-                _prompts.append(_used_points_scores[:, :2])
-                _scores.append(_used_points_scores[:, 2])
+                _used_points_scores = np.stack(predicted_mask.scores, axis=0)
+                _prompts.append(np.stack(predicted_mask.points, axis=0))
+                _scores.append(_used_points_scores)
                 _labels.append(np.array([label] * len(_used_points_scores)))
 
             if len(_masks) == 0:
