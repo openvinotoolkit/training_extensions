@@ -18,7 +18,7 @@ from datumaro.components.annotation import Bbox
 from otx.algo.common.backbones import build_model_including_pytorchcv
 from otx.algo.common.utils.assigners import MaxIoUAssigner
 from otx.algo.common.utils.coders import DeltaXYWHBBoxCoder
-from otx.algo.detection.base_models import SingleStageDetector
+from otx.algo.detection.detectors import SingleStageDetector
 from otx.algo.detection.heads import SSDHead
 from otx.algo.detection.utils.prior_generators import SSDAnchorGeneratorClustered
 from otx.algo.utils.support_otx_v1 import OTXv1Helper

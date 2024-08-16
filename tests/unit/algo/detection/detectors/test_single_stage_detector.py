@@ -5,7 +5,7 @@
 
 import pytest
 import torch
-from otx.algo.detection.base_models.single_stage_detector import SingleStageDetector
+from otx.algo.detection.detectors.single_stage_detector import SingleStageDetector
 from otx.core.data.entity.detection import DetBatchDataEntity
 from otx.core.types import LabelInfo
 from torch import nn

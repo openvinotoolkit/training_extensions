@@ -12,7 +12,7 @@ from otx.algo.common.losses import CrossEntropyLoss, CrossSigmoidFocalLoss, GIoU
 from otx.algo.common.utils.coders import DeltaXYWHBBoxCoder
 from otx.algo.common.utils.prior_generators import AnchorGenerator
 from otx.algo.common.utils.samplers import PseudoSampler
-from otx.algo.detection.base_models import SingleStageDetector
+from otx.algo.detection.detectors import SingleStageDetector
 from otx.algo.detection.heads import ATSSHead
 from otx.algo.detection.necks import FPN
 from otx.algo.detection.utils.assigners import ATSSAssigner

@@ -35,7 +35,7 @@ if TYPE_CHECKING:
     from model_api.models.utils import DetectionResult
     from torch import nn
 
-    from otx.algo.detection.base_models import SingleStageDetector
+    from otx.algo.detection.detectors import SingleStageDetector
 
 
 class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity]):
