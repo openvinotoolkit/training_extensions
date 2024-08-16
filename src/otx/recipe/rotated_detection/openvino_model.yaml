@@ -15,7 +15,7 @@ callback_monitor: val/map_50
 
 data: ../_base_/data/instance_segmentation.yaml
 overrides:
-  task: INSTANCE_SEGMENTATION
+  task: ROTATED_DETECTION
   reset:
     - data.train_subset.transforms
     - data.val_subset.transforms
