@@ -55,7 +55,7 @@ class NNFCNHead(BaseSegmHead):
         aggregator_use_concat: bool = False,
         align_corners: bool = False,
         dropout_ratio: float = -1,
-        activation_callable: Callable[..., nn.Module] | None = nn.ReLU,
+        activation: Callable[..., nn.Module] | None = nn.ReLU,
         pretrained_weights: Path | str | None = None,
     ) -> None:
         """Initialize a Fully Convolution Networks head."""
@@ -100,7 +100,7 @@ class NNFCNHead(BaseSegmHead):
             dropout_ratio=dropout_ratio,
             channels=channels,
             num_classes=num_classes,
-            activation_callable=activation_callable,
+            activation=activation,
             pretrained_weights=pretrained_weights,
         )
 
@@ -218,7 +218,7 @@ class FCNHead:
             "aggregator_use_concat": False,
         },
         "dinov2_vits14": {
-            "norm_cfg": {"type": "SyncBN", "requires_grad": True},
+            "normalization": partial(build_norm_layer, nn.SyncBatchNorm, requires_grad=True),
             "in_channels": [384, 384, 384, 384],
             "in_index": [0, 1, 2, 3],
             "input_transform": "resize_concat",

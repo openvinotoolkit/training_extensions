@@ -5,6 +5,7 @@
 
 from __future__ import annotations
 
+from functools import partial
 from typing import TYPE_CHECKING, Any, Callable, ClassVar
 
 import torch
@@ -75,8 +76,13 @@ class NNLightHamHead(BaseSegmHead):
         channels: int,
         num_classes: int,
         dropout_ratio: float = 0.1,
-        norm_cfg: dict[str, Any] | None = None,
-        activation_callable: Callable[..., nn.Module] | None = nn.ReLU,
+        normalization: Callable[..., nn.Module] | None = partial(
+            build_norm_layer,
+            nn.GroupNorm,
+            num_groups=32,
+            requires_grad=True,
+        ),
+        activation: Callable[..., nn.Module] | None = nn.ReLU,
         in_index: int | list[int] = [1, 2, 3],  # noqa: B006
         input_transform: str | None = "multiple_select",
         align_corners: bool = False,
@@ -104,17 +110,14 @@ class NNLightHamHead(BaseSegmHead):
         Returns:
             None
         """
-        if norm_cfg is None:
-            norm_cfg = {"num_groups": 32, "requires_grad": True, "type": "GN"}
-
         super().__init__(
             input_transform=input_transform,
             in_channels=in_channels,
             channels=channels,
             num_classes=num_classes,
             dropout_ratio=dropout_ratio,
-            norm_cfg=norm_cfg,
-            activation_callable=activation_callable,
+            normalization=normalization,
+            activation=activation,
             in_index=in_index,
             align_corners=align_corners,
             pretrained_weights=pretrained_weights,
@@ -137,7 +140,7 @@ class NNLightHamHead(BaseSegmHead):
             activation=build_activation_layer(self.activation),
         )
 
-        self.hamburger = Hamburger(self.ham_channels, ham_kwargs=self.ham_kwargs, norm_cfg=norm_cfg)
+        self.hamburger = Hamburger(self.ham_channels, ham_kwargs=self.ham_kwargs, normalization=normalization)
 
         self.align = Conv2dModule(
             self.ham_channels,

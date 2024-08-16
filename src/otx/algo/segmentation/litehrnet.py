@@ -7,7 +7,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, ClassVar
 
-from torch import nn
 from torch.onnx import OperatorExportTypes
 
 from otx.algo.segmentation.backbones import LiteHRNetBackbone
