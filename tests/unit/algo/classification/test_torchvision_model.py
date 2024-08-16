@@ -8,7 +8,7 @@ from otx.algo.classification.torchvision_model import OTXTVModel, TVClassificati
 from otx.core.data.entity.base import OTXBatchLossEntity, OTXBatchPredEntity
 from otx.core.data.entity.classification import MulticlassClsBatchPredEntity
 from otx.core.types.export import TaskLevelExportParameters
-from otx.core.types.task import OTXTaskType
+from otx.core.types.task import OTXTaskType, OTXTrainType
 
 
 @pytest.fixture()
@@ -45,7 +45,12 @@ class TestOTXTVModel:
     def test_create_model(self, fxt_tv_model):
         assert isinstance(fxt_tv_model.model, TVClassificationModel)
 
-        semi_sl_model = OTXTVModel(backbone="mobilenet_v3_small", label_info=10, train_type="SEMI_SUPERVISED")
+        semi_sl_model = OTXTVModel(
+            backbone="mobilenet_v3_small",
+            label_info=10,
+            train_type=OTXTrainType.SEMI_SUPERVISED,
+            task=OTXTaskType.MULTI_CLASS_CLS,
+        )
         assert isinstance(semi_sl_model.model.head, OTXSemiSLLinearClsHead)
 
     @pytest.mark.parametrize(

@@ -429,7 +429,6 @@ class OTXTVModel(OTXModel):
     ) -> None:
         self.backbone = backbone
         self.freeze_backbone = freeze_backbone
-        self.train_type = train_type
         self.task = task
 
         # TODO(@harimkang): Need to make it configurable.
@@ -447,6 +446,7 @@ class OTXTVModel(OTXModel):
             metric=metric,
             torch_compile=torch_compile,
             input_size=input_size,
+            train_type=train_type,
         )
         self.input_size: tuple[int, int]
 
