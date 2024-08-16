@@ -567,7 +567,7 @@ class MaskDINOR50(ExplainableOTXInstanceSegModel):
         inputs: InstanceSegBatchDataEntity,
     ):
         if self.training:
-            return outputs
+            return sum(outputs.values())
 
         masks, bboxes, labels, scores = self.post_process_instance_segmentation(
             outputs,
