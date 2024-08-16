@@ -158,7 +158,7 @@ class SAM(OTXVisualPromptingModel, CommonSettingMixin):
         self.freeze_networks(freeze_image_encoder, freeze_prompt_encoder, freeze_mask_decoder)
 
     def _build_model(self) -> nn.Module:
-        image_encoder = SAMImageEncoder(backbone_type=self.backbone_type)
+        image_encoder = SAMImageEncoder(backbone_type=self.backbone_type, img_size=self.image_size)
         prompt_encoder = SAMPromptEncoder(
             image_embedding_size=(self.image_embedding_size, self.image_embedding_size),
             input_image_size=(self.image_size, self.image_size),
