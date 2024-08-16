@@ -149,7 +149,8 @@ def test_otx_e2e_cli(
     tmp_path_test = tmp_path / f"otx_test_{model_name}"
     for export_case in fxt_export_list:
         if (
-            task.lower() in ("visual_prompting", "zero_shot_visual_prompting", "keypoint_detection") or task.lower().startswith("anomaly")
+            task.lower() in ("visual_prompting", "zero_shot_visual_prompting", "keypoint_detection")
+            or task.lower().startswith("anomaly")
         ) and export_case.export_demo_package:
             # Skip exportable code checking for visual_prompting, zero_shot_visual_prompting, anomaly and keypoint_detection tasks
             return
