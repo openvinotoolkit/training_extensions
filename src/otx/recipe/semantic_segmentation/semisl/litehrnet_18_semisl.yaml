@@ -1,13 +1,9 @@
 model:
-  class_path: otx.algo.segmentation.litehrnet.LiteHRNetSemiSL
+  class_path: otx.algo.segmentation.litehrnet.LiteHRNet
   init_args:
     label_info: 2
-    name_base_model: LiteHRNet18
-
-    criterion_configuration:
-      - type: CrossEntropyLoss
-        params:
-          ignore_index: 255
+    model_version: lite_hrnet_18
+    train_type: SEMI_SUPERVISED
 
     optimizer:
       class_path: torch.optim.Adam
