@@ -312,7 +312,7 @@
         <span class="c1"># Use the nested `image_encoder` and `decoder` models&#39; forward functions directly</span>
         <span class="n">models</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
             <span class="s2">&quot;image_encoder&quot;</span><span class="p">:</span> <span class="n">model</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">image_encoder</span><span class="p">,</span>
-            <span class="s2">&quot;decoder&quot;</span><span class="p">:</span> <span class="n">model</span><span class="o">.</span><span class="n">model</span><span class="p">,</span>
+            <span class="s2">&quot;decoder&quot;</span><span class="p">:</span> <span class="n">model</span><span class="p">,</span>
         <span class="p">}</span>
 
         <span class="k">if</span> <span class="n">export_format</span> <span class="o">==</span> <span class="n">OTXExportFormatType</span><span class="o">.</span><span class="n">OPENVINO</span><span class="p">:</span>
@@ -438,9 +438,8 @@
             <span class="n">dummy_inputs</span> <span class="o">=</span> <span class="p">{</span>
                 <span class="s2">&quot;image_embeddings&quot;</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span>
                     <span class="mi">1</span><span class="p">,</span>
-                    <span class="n">model</span><span class="o">.</span><span class="n">embed_dim</span><span class="p">,</span>
-                    <span class="n">model</span><span class="o">.</span><span class="n">image_embedding_size</span><span class="p">,</span>
-                    <span class="n">model</span><span class="o">.</span><span class="n">image_embedding_size</span><span class="p">,</span>
+                    <span class="n">model</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">prompt_encoder</span><span class="o">.</span><span class="n">embed_dim</span><span class="p">,</span>
+                    <span class="o">*</span><span class="n">model</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">prompt_encoder</span><span class="o">.</span><span class="n">image_embedding_size</span><span class="p">,</span>
                     <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span>
                 <span class="p">),</span>
                 <span class="s2">&quot;point_coords&quot;</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="n">low</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">input_size</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span>
@@ -448,8 +447,7 @@
                 <span class="s2">&quot;mask_input&quot;</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span>
                     <span class="mi">1</span><span class="p">,</span>
                     <span class="mi">1</span><span class="p">,</span>
-                    <span class="mi">4</span> <span class="o">*</span> <span class="n">model</span><span class="o">.</span><span class="n">image_embedding_size</span><span class="p">,</span>
-                    <span class="mi">4</span> <span class="o">*</span> <span class="n">model</span><span class="o">.</span><span class="n">image_embedding_size</span><span class="p">,</span>
+                    <span class="o">*</span><span class="p">(</span><span class="mi">4</span> <span class="o">*</span> <span class="n">size</span> <span class="k">for</span> <span class="n">size</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">prompt_encoder</span><span class="o">.</span><span class="n">image_embedding_size</span><span class="p">),</span>
                     <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span>
                 <span class="p">),</span>
                 <span class="s2">&quot;has_mask_input&quot;</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([[</span><span class="mi">1</span><span class="p">]],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span>
