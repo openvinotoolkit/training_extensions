@@ -310,8 +310,6 @@
         <span class="n">torch_compile</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">train_type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="n">OTXTrainType</span><span class="o">.</span><span class="n">SUPERVISED</span><span class="p">,</span> <span class="n">OTXTrainType</span><span class="o">.</span><span class="n">SEMI_SUPERVISED</span><span class="p">]</span> <span class="o">=</span> <span class="n">OTXTrainType</span><span class="o">.</span><span class="n">SUPERVISED</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">train_type</span> <span class="o">=</span> <span class="n">train_type</span>
-
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="n">label_info</span><span class="o">=</span><span class="n">label_info</span><span class="p">,</span>
             <span class="n">input_size</span><span class="o">=</span><span class="n">input_size</span><span class="p">,</span>
@@ -319,6 +317,7 @@
             <span class="n">scheduler</span><span class="o">=</span><span class="n">scheduler</span><span class="p">,</span>
             <span class="n">metric</span><span class="o">=</span><span class="n">metric</span><span class="p">,</span>
             <span class="n">torch_compile</span><span class="o">=</span><span class="n">torch_compile</span><span class="p">,</span>
+            <span class="n">train_type</span><span class="o">=</span><span class="n">train_type</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">input_size</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span>
 
