@@ -1,5 +1,5 @@
 model:
-  class_path: otx.core.model.instance_segmentation.OVInstanceSegmentationModel
+  class_path: otx.core.model.instance_segmentation.OVRotatedDetectionModel
   init_args:
     label_info: 80
     model_name: openvino.xml
@@ -13,8 +13,9 @@ engine:
 
 callback_monitor: val/map_50
 
-data: ../_base_/data/rotated_detection.yaml
+data: ../_base_/data/instance_segmentation.yaml
 overrides:
+  task: INSTANCE_SEGMENTATION
   reset:
     - data.train_subset.transforms
     - data.val_subset.transforms
