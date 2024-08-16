@@ -323,7 +323,7 @@ def compute_unnormalized_confusion_matrices_from_resultset(
         true_label_idx,
         predicted_label_idx,
     ) = __get_gt_and_predicted_label_indices_from_resultset(resultset)
-    task_labels = resultset.model.configuration.get_label_schema().get_labels(include_empty=False)
+    task_labels = resultset.model.configuration.get_label_schema().get_labels(include_empty=True)
 
     # Confusion matrix computation
     for label_group in resultset.model.configuration.get_label_schema().get_groups():
