@@ -4,10 +4,10 @@ from typing import Any
 
 import pytest
 import torch
-from otx.algo.segmentation.heads.ham_head import LightHamHead
+from otx.algo.segmentation.heads.ham_head import NNLightHamHead
 
 
-class TestLightHamHead:
+class TestNNLightHamHead:
     @pytest.fixture()
     def head_config(self) -> dict[str, Any]:
         return {
@@ -23,7 +23,7 @@ class TestLightHamHead:
         }
 
     def test_init(self, head_config):
-        light_ham_head = LightHamHead(**head_config)
+        light_ham_head = NNLightHamHead(**head_config)
         assert light_ham_head.ham_channels == head_config["ham_channels"]
 
     @pytest.fixture()
@@ -40,7 +40,7 @@ class TestLightHamHead:
         ]
 
     def test_forward(self, head_config, fake_input, batch_size):
-        light_ham_head = LightHamHead(**head_config)
+        light_ham_head = NNLightHamHead(**head_config)
         out = light_ham_head.forward(fake_input)
         assert out.size()[0] == batch_size
         assert out.size()[2] == fake_input[head_config["in_index"][0]].size()[2]

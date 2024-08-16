@@ -6,7 +6,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable
+from typing import TYPE_CHECKING, Any, Callable, ClassVar
 
 import torch
 from torch import nn
@@ -329,7 +329,7 @@ class OverlapPatchEmbed(BaseModule):
         return x, h, w
 
 
-class MSCAN(BaseModule):
+class NNMSCAN(nn.Module):
     """SegNeXt Multi-Scale Convolutional Attention Network (MCSAN) backbone.
 
     This backbone is the implementation of `SegNeXt: Rethinking
@@ -360,23 +360,22 @@ class MSCAN(BaseModule):
     def __init__(
         self,
         in_channels: int = 3,
-        embed_dims: list[int] = [64, 128, 256, 512],  # noqa: B006
-        mlp_ratios: list[int] = [4, 4, 4, 4],  # noqa: B006
+        embed_dims: list[int] = [64, 128, 320, 512],  # noqa: B006
+        mlp_ratios: list[int] = [8, 8, 4, 4],  # noqa: B006
         drop_rate: float = 0.0,
-        drop_path_rate: float = 0.0,
+        drop_path_rate: float = 0.1,
         depths: list[int] = [3, 4, 6, 3],  # noqa: B006
         num_stages: int = 4,
         attention_kernel_sizes: list[int | list[int]] = [5, [1, 7], [1, 11], [1, 21]],  # noqa: B006
         attention_kernel_paddings: list[int | list[int]] = [2, [0, 3], [0, 5], [0, 10]],  # noqa: B006
         activation_callable: Callable[..., nn.Module] = nn.GELU,
         norm_cfg: dict[str, str | bool] | None = None,
-        init_cfg: dict[str, str] | list[dict[str, str]] | None = None,
         pretrained_weights: str | None = None,
     ) -> None:
         """Initialize a MSCAN backbone."""
-        super().__init__(init_cfg=init_cfg)
+        super().__init__()
         if norm_cfg is None:
-            norm_cfg = {"type": "SyncBN", "requires_grad": True}
+            norm_cfg = {"type": "BN", "requires_grad": True}
 
         self.depths = depths
         self.num_stages = num_stages
@@ -450,3 +449,31 @@ class MSCAN(BaseModule):
             print(f"init weight - {pretrained}")
         if checkpoint is not None:
             load_checkpoint_to_model(self, checkpoint, prefix=prefix)
+
+
+class MSCAN:
+    """MSCAN backbone factory."""
+
+    MSCAN_CFG: ClassVar[dict[str, Any]] = {
+        "segnext_tiny": {
+            "depths": [3, 3, 5, 2],
+            "embed_dims": [32, 64, 160, 256],
+            "pretrained_weights": "https://download.openmmlab.com/mmsegmentation/v0.5/pretrain/segnext/mscan_t_20230227-119e8c9f.pth",
+        },
+        "segnext_small": {
+            "depths": [2, 2, 4, 2],
+            "pretrained_weights": "https://download.openmmlab.com/mmsegmentation/v0.5/pretrain/segnext/mscan_s_20230227-f33ccdf2.pth",
+        },
+        "segnext_base": {
+            "depths": [3, 3, 12, 3],
+            "pretrained_weights": "https://download.openmmlab.com/mmsegmentation/v0.5/pretrain/segnext/mscan_b_20230227-3ab7d230.pth",
+        },
+    }
+
+    def __new__(cls, version: str) -> NNMSCAN:
+        """Constructor for MSCAN backbone."""
+        if version not in cls.MSCAN_CFG:
+            msg = f"model type '{version}' is not supported"
+            raise KeyError(msg)
+
+        return NNMSCAN(**cls.MSCAN_CFG[version])
