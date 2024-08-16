@@ -13,14 +13,13 @@ from pathlib import Path
 import torch
 from torch import nn
 
-from otx.algo.modules.base_module import BaseModule
 from otx.algo.utils.mmengine_utils import load_checkpoint_to_model, load_from_http
 from otx.utils.utils import get_class_initial_arguments
 
 logger = logging.getLogger()
 
 
-class DinoVisionTransformer(BaseModule):
+class DinoVisionTransformer(nn.Module):
     """DINO-v2 Model."""
 
     def __init__(
@@ -28,10 +27,9 @@ class DinoVisionTransformer(BaseModule):
         name: str,
         freeze_backbone: bool,
         out_index: list[int],
-        init_cfg: dict | None = None,
         pretrained_weights: str | None = None,
     ):
-        super().__init__(init_cfg)
+        super().__init__()
         self._init_args = get_class_initial_arguments()
 
         ci_data_root = os.environ.get("CI_DATA_ROOT")

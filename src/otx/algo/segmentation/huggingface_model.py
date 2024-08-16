@@ -87,6 +87,7 @@ class HuggingFaceModelForSegmentation(OTXSegmentationModel):
     def _create_model(self) -> nn.Module:
         model_config, _ = PretrainedConfig.get_config_dict(self.model_name)
         kwargs = {}
+
         if "image_size" in model_config:
             kwargs["image_size"] = self.input_size[-1]
 
@@ -148,7 +149,7 @@ class HuggingFaceModelForSegmentation(OTXSegmentationModel):
 
         return OTXNativeModelExporter(
             task_level_export_parameters=self._export_parameters,
-            input_size=self.input_size,
+            input_size=(1, 3, *self.input_size),
             mean=image_mean,
             std=image_std,
             resize_mode="standard",

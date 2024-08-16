@@ -5,7 +5,8 @@
 
 from __future__ import annotations
 
-from typing import Any, Callable
+from functools import partial
+from typing import TYPE_CHECKING, Any, Callable, ClassVar
 
 import torch
 from torch import Tensor, nn
@@ -17,8 +18,11 @@ from otx.algo.segmentation.modules import IterativeAggregator
 
 from .base_segm_head import BaseSegmHead
 
+if TYPE_CHECKING:
+    from pathlib import Path
 
-class FCNHead(BaseSegmHead):
+
+class NNFCNHead(BaseSegmHead):
     """Fully Convolution Networks for Semantic Segmentation with aggregation.
 
     This head is implemented of `FCNNet <https://arxiv.org/abs/1411.4038>`_.
@@ -37,17 +41,22 @@ class FCNHead(BaseSegmHead):
         self,
         in_channels: list[int] | int,
         in_index: list[int] | int,
-        normalization: Callable[..., nn.Module] | None = None,
+        channels: int,
+        normalization: Callable[..., nn.Module] = partial(build_norm_layer, nn.BatchNorm2d, requires_grad=True),
         input_transform: str | None = None,
-        num_convs: int = 2,
-        kernel_size: int = 3,
-        concat_input: bool = True,
+        num_classes: int = 80,
+        num_convs: int = 1,
+        kernel_size: int = 1,
+        concat_input: bool = False,
         dilation: int = 1,
         enable_aggregator: bool = False,
         aggregator_min_channels: int = 0,
         aggregator_merge_norm: str | None = None,
         aggregator_use_concat: bool = False,
-        **kwargs: Any,  # noqa: ANN401
+        align_corners: bool = False,
+        dropout_ratio: float = -1,
+        activation_callable: Callable[..., nn.Module] | None = nn.ReLU,
+        pretrained_weights: Path | str | None = None,
     ) -> None:
         """Initialize a Fully Convolution Networks head."""
         if not isinstance(dilation, int):
@@ -87,7 +96,12 @@ class FCNHead(BaseSegmHead):
             normalization=normalization,
             input_transform=input_transform,
             in_channels=in_channels,
-            **kwargs,
+            align_corners=align_corners,
+            dropout_ratio=dropout_ratio,
+            channels=channels,
+            num_classes=num_classes,
+            activation_callable=activation_callable,
+            pretrained_weights=pretrained_weights,
         )
 
         self.aggregator = aggregator
@@ -171,3 +185,52 @@ class FCNHead(BaseSegmHead):
             Tensor: The transformed inputs
         """
         return self.aggregator(inputs)[0] if self.aggregator is not None else super()._transform_inputs(inputs)
+
+
+class FCNHead:
+    """FCNHead factory for segmentation."""
+
+    FCNHEAD_CFG: ClassVar[dict[str, Any]] = {
+        "lite_hrnet_s": {
+            "in_channels": [60, 120, 240],
+            "in_index": [0, 1, 2],
+            "input_transform": "multiple_select",
+            "channels": 60,
+            "enable_aggregator": True,
+            "aggregator_merge_norm": "None",
+            "aggregator_use_concat": False,
+        },
+        "lite_hrnet_18": {
+            "in_channels": [40, 80, 160, 320],
+            "in_index": [0, 1, 2, 3],
+            "input_transform": "multiple_select",
+            "channels": 40,
+            "enable_aggregator": True,
+        },
+        "lite_hrnet_x": {
+            "in_channels": [18, 60, 80, 160, 320],
+            "in_index": [0, 1, 2, 3, 4],
+            "input_transform": "multiple_select",
+            "channels": 60,
+            "enable_aggregator": True,
+            "aggregator_min_channels": 60,
+            "aggregator_merge_norm": "None",
+            "aggregator_use_concat": False,
+        },
+        "dinov2_vits14": {
+            "norm_cfg": {"type": "SyncBN", "requires_grad": True},
+            "in_channels": [384, 384, 384, 384],
+            "in_index": [0, 1, 2, 3],
+            "input_transform": "resize_concat",
+            "channels": 1536,
+            "pretrained_weights": "https://dl.fbaipublicfiles.com/dinov2/dinov2_vits14/dinov2_vits14_ade20k_linear_head.pth",
+        },
+    }
+
+    def __new__(cls, version: str, num_classes: int) -> NNFCNHead:
+        """Constructor for FCNHead."""
+        if version not in cls.FCNHEAD_CFG:
+            msg = f"model type '{version}' is not supported"
+            raise KeyError(msg)
+
+        return NNFCNHead(**cls.FCNHEAD_CFG[version], num_classes=num_classes)

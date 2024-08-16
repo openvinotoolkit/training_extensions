@@ -9,8 +9,9 @@ Modified from:
 
 from __future__ import annotations
 
+from functools import partial
 from pathlib import Path
-from typing import Callable
+from typing import Any, Callable, ClassVar
 
 import torch
 import torch.utils.checkpoint as cp
@@ -19,11 +20,7 @@ from torch.nn import functional
 
 from otx.algo.modules import Conv2dModule, build_norm_layer
 from otx.algo.modules.activation import build_activation_layer
-from otx.algo.modules.base_module import BaseModule
 from otx.algo.segmentation.modules import (
-    AsymmetricPositionAttentionModule,
-    IterativeAggregator,
-    LocalAttentionModule,
     channel_shuffle,
 )
 from otx.algo.utils.mmengine_utils import load_checkpoint_to_model, load_from_http
@@ -1196,7 +1193,7 @@ class LiteHRModule(nn.Module):
         return out
 
 
-class LiteHRNet(BaseModule):
+class NNLiteHRNet(nn.Module):
     """Lite-HRNet backbone.
 
     `High-Resolution Representations for Labeling Pixels and Regions
@@ -1218,41 +1215,31 @@ class LiteHRNet(BaseModule):
 
     def __init__(
         self,
-        extra: dict,
+        stem: dict[str, Any],
+        num_stages: int,
+        stages_spec: dict[str, Any],
         in_channels: int = 3,
-        normalization: Callable[..., nn.Module] = nn.BatchNorm2d,
+        normalization: Callable[..., nn.Module] = partial(build_norm_layer, nn.BatchNorm2d, requires_grad=True),
         norm_eval: bool = False,
         with_cp: bool = False,
         zero_init_residual: bool = False,
         dropout: float | None = None,
-        init_cfg: dict | None = None,
         pretrained_weights: str | None = None,
     ) -> None:
         """Init."""
-        super().__init__(init_cfg=init_cfg)
+        super().__init__()
 
-        self.extra = extra
         self.normalization = normalization
         self.norm_eval = norm_eval
         self.with_cp = with_cp
         self.zero_init_residual = zero_init_residual
         self.stem = Stem(
             in_channels,
-            input_norm=self.extra["stem"]["input_norm"],
-            stem_channels=self.extra["stem"]["stem_channels"],
-            out_channels=self.extra["stem"]["out_channels"],
-            expand_ratio=self.extra["stem"]["expand_ratio"],
-            strides=self.extra["stem"]["strides"],
-            extra_stride=self.extra["stem"]["extra_stride"],
             normalization=self.normalization,
+            **stem,
         )
-
-        self.enable_stem_pool = self.extra["stem"].get("out_pool", False)
-        if self.enable_stem_pool:
-            self.stem_pool = nn.AvgPool2d(kernel_size=3, stride=2)
-
-        self.num_stages = self.extra["num_stages"]
-        self.stages_spec = self.extra["stages_spec"]
+        self.num_stages = num_stages
+        self.stages_spec = stages_spec
 
         num_channels_last = [
             self.stem.out_channels,
@@ -1275,80 +1262,6 @@ class LiteHRNet(BaseModule):
                 dropout=dropout,
             )
             setattr(self, f"stage{i}", stage)
-
-        self.out_modules = None
-        if self.extra.get("out_modules") is not None:
-            out_modules = []
-            in_modules_channels, out_modules_channels = num_channels_last[-1], None
-            if self.extra["out_modules"]["conv"]["enable"]:
-                out_modules_channels = self.extra["out_modules"]["conv"]["channels"]
-                out_modules.append(
-                    Conv2dModule(
-                        in_channels=in_modules_channels,
-                        out_channels=out_modules_channels,
-                        kernel_size=1,
-                        stride=1,
-                        padding=0,
-                        normalization=build_norm_layer(self.normalization, num_features=out_modules_channels),
-                        activation=build_activation_layer(nn.ReLU),
-                    ),
-                )
-                in_modules_channels = out_modules_channels
-            if self.extra["out_modules"]["position_att"]["enable"]:
-                out_modules.append(
-                    AsymmetricPositionAttentionModule(
-                        in_channels=in_modules_channels,
-                        key_channels=self.extra["out_modules"]["position_att"]["key_channels"],
-                        value_channels=self.extra["out_modules"]["position_att"]["value_channels"],
-                        psp_size=self.extra["out_modules"]["position_att"]["psp_size"],
-                        normalization=self.normalization,
-                    ),
-                )
-            if self.extra["out_modules"]["local_att"]["enable"]:
-                out_modules.append(
-                    LocalAttentionModule(
-                        num_channels=in_modules_channels,
-                        normalization=self.normalization,
-                    ),
-                )
-
-            if len(out_modules) > 0:
-                self.out_modules = nn.Sequential(*out_modules)
-                num_channels_last.append(in_modules_channels)
-
-        self.add_stem_features = self.extra.get("add_stem_features", False)
-        if self.add_stem_features:
-            self.stem_transition = nn.Sequential(
-                Conv2dModule(
-                    self.stem.out_channels,
-                    self.stem.out_channels,
-                    kernel_size=3,
-                    stride=1,
-                    padding=1,
-                    groups=self.stem.out_channels,
-                    normalization=build_norm_layer(normalization, num_features=self.stem.out_channels),
-                    activation=None,
-                ),
-                Conv2dModule(
-                    self.stem.out_channels,
-                    num_channels_last[0],
-                    kernel_size=1,
-                    stride=1,
-                    padding=0,
-                    normalization=build_norm_layer(normalization, num_features=num_channels_last[0]),
-                    activation=build_activation_layer(nn.ReLU),
-                ),
-            )
-
-            num_channels_last = [num_channels_last[0], *num_channels_last]
-
-        self.with_aggregator = self.extra.get("out_aggregator") and self.extra["out_aggregator"]["enable"]
-        if self.with_aggregator:
-            self.aggregator = IterativeAggregator(
-                in_channels=num_channels_last,
-                min_channels=self.extra["out_aggregator"].get("min_channels", None),
-                normalization=self.normalization,
-            )
 
         if pretrained_weights is not None:
             self.load_pretrained_weights(pretrained_weights, prefix="backbone")
@@ -1482,11 +1395,7 @@ class LiteHRNet(BaseModule):
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Forward function."""
         stem_outputs = self.stem(x)
-        y_x2 = y_x4 = stem_outputs
-        y = y_x4
-
-        if self.enable_stem_pool:
-            y = self.stem_pool(y)
+        y = stem_outputs
 
         y_list = [y]
         for i in range(self.num_stages):
@@ -1505,21 +1414,7 @@ class LiteHRNet(BaseModule):
             stage_module = getattr(self, f"stage{i}")
             y_list = stage_module(stage_inputs)
 
-        if self.out_modules is not None:
-            y_list.append(self.out_modules(y_list[-1]))
-
-        if self.add_stem_features:
-            y_stem = self.stem_transition(y_x2)
-            y_list = [y_stem, *y_list]
-
-        out = y_list
-        if self.with_aggregator:
-            out = self.aggregator(out)
-
-        if self.extra.get("add_input", False):
-            out = [x, *out]
-
-        return out
+        return y_list
 
     def load_pretrained_weights(self, pretrained: str | None = None, prefix: str = "") -> None:
         """Initialize weights."""
@@ -1533,3 +1428,82 @@ class LiteHRNet(BaseModule):
             print(f"init weight - {pretrained}")
         if checkpoint is not None:
             load_checkpoint_to_model(self, checkpoint, prefix=prefix)
+
+
+class LiteHRNetBackbone:
+    """LiteHRNet backbone factory."""
+
+    LITEHRNET_CFG: ClassVar[dict[str, Any]] = {
+        "lite_hrnet_s": {
+            "stem": {
+                "stem_channels": 32,
+                "out_channels": 32,
+                "expand_ratio": 1,
+                "strides": [2, 2],
+                "extra_stride": True,
+                "input_norm": False,
+            },
+            "num_stages": 2,
+            "stages_spec": {
+                "num_modules": [4, 4],
+                "num_branches": [2, 3],
+                "num_blocks": [2, 2],
+                "module_type": ["LITE", "LITE"],
+                "with_fuse": [True, True],
+                "reduce_ratios": [8, 8],
+                "num_channels": [[60, 120], [60, 120, 240]],
+            },
+            "pretrained_weights": "https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/custom_semantic_segmentation/litehrnetsv2_imagenet1k_rsc.pth",
+        },
+        "lite_hrnet_18": {
+            "stem": {
+                "stem_channels": 32,
+                "out_channels": 32,
+                "expand_ratio": 1,
+                "strides": [2, 2],
+                "extra_stride": False,
+                "input_norm": False,
+            },
+            "num_stages": 3,
+            "stages_spec": {
+                "num_modules": [2, 4, 2],
+                "num_branches": [2, 3, 4],
+                "num_blocks": [2, 2, 2],
+                "module_type": ["LITE", "LITE", "LITE"],
+                "with_fuse": [True, True, True],
+                "reduce_ratios": [8, 8, 8],
+                "num_channels": [[40, 80], [40, 80, 160], [40, 80, 160, 320]],
+            },
+            "pretrained_weights": "https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/custom_semantic_segmentation/litehrnet18_imagenet1k_rsc.pth",
+        },
+        "lite_hrnet_x": {
+            "stem": {
+                "stem_channels": 60,
+                "out_channels": 60,
+                "expand_ratio": 1,
+                "strides": [2, 1],
+                "extra_stride": False,
+                "input_norm": False,
+            },
+            "num_stages": 4,
+            "stages_spec": {
+                "weighting_module_version": "v1",
+                "num_modules": [2, 4, 4, 2],
+                "num_branches": [2, 3, 4, 5],
+                "num_blocks": [2, 2, 2, 2],
+                "module_type": ["LITE", "LITE", "LITE", "LITE"],
+                "with_fuse": [True, True, True, True],
+                "reduce_ratios": [2, 4, 8, 8],
+                "num_channels": [[18, 60], [18, 60, 80], [18, 60, 80, 160], [18, 60, 80, 160, 320]],
+            },
+            "pretrained_weights": "https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/custom_semantic_segmentation/litehrnetxv3_imagenet1k_rsc.pth",
+        },
+    }
+
+    def __new__(cls, version: str) -> NNLiteHRNet:
+        """Constructor for LiteHRNet backbone."""
+        if version not in cls.LITEHRNET_CFG:
+            msg = f"model type '{version}' is not supported"
+            raise KeyError(msg)
+
+        return NNLiteHRNet(**cls.LITEHRNET_CFG[version])

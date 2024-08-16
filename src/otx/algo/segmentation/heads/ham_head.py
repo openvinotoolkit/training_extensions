@@ -5,7 +5,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Callable
+from typing import TYPE_CHECKING, Any, Callable, ClassVar
 
 import torch
 import torch.nn.functional as f
@@ -17,6 +17,9 @@ from otx.algo.modules.norm import build_norm_layer
 from otx.algo.segmentation.modules import resize
 
 from .base_segm_head import BaseSegmHead
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 class Hamburger(nn.Module):
@@ -37,7 +40,6 @@ class Hamburger(nn.Module):
         ham_channels: int,
         ham_kwargs: dict[str, Any],
         normalization: Callable[..., nn.Module] | None = None,
-        **kwargs: Any,  # noqa: ANN401
     ) -> None:
         """Initialize Hamburger Module."""
         super().__init__()
@@ -64,14 +66,23 @@ class Hamburger(nn.Module):
         return f.relu(x + enjoy, inplace=True)
 
 
-class LightHamHead(BaseSegmHead):
+class NNLightHamHead(BaseSegmHead):
     """SegNeXt decode head."""
 
     def __init__(
         self,
+        in_channels: int | list[int],
+        channels: int,
+        num_classes: int,
+        dropout_ratio: float = 0.1,
+        norm_cfg: dict[str, Any] | None = None,
+        activation_callable: Callable[..., nn.Module] | None = nn.ReLU,
+        in_index: int | list[int] = [1, 2, 3],  # noqa: B006
+        input_transform: str | None = "multiple_select",
+        align_corners: bool = False,
+        pretrained_weights: Path | str | None = None,
         ham_channels: int = 512,
         ham_kwargs: dict[str, Any] | None = None,
-        **kwargs: Any,  # noqa: ANN401
     ) -> None:
         """SegNeXt decode head.
 
@@ -87,18 +98,36 @@ class LightHamHead(BaseSegmHead):
         Args:
             ham_channels (int): input channels for Hamburger.
                 Defaults to 512.
-            ham_kwargs (Dict[str, Any]): kwagrs for Ham. Defaults to an empty dictionary.
+            ham_kwargs (Dict[str, Any] | None): kwagrs for Ham.
+                If None: {"md_r": 16, "md_s": 1, "eval_steps": 7, "train_steps": 6} will be used.
 
         Returns:
             None
         """
-        super().__init__(input_transform="multiple_select", **kwargs)
+        if norm_cfg is None:
+            norm_cfg = {"num_groups": 32, "requires_grad": True, "type": "GN"}
+
+        super().__init__(
+            input_transform=input_transform,
+            in_channels=in_channels,
+            channels=channels,
+            num_classes=num_classes,
+            dropout_ratio=dropout_ratio,
+            norm_cfg=norm_cfg,
+            activation_callable=activation_callable,
+            in_index=in_index,
+            align_corners=align_corners,
+            pretrained_weights=pretrained_weights,
+        )
+
         if not isinstance(self.in_channels, list):
             msg = f"Input channels type must be list, but got {type(self.in_channels)}"
             raise TypeError(msg)
 
-        self.ham_channels: int = ham_channels
-        self.ham_kwargs: dict[str, Any] = ham_kwargs if ham_kwargs is not None else {}
+        self.ham_channels = ham_channels
+        self.ham_kwargs = (
+            ham_kwargs if ham_kwargs is not None else {"md_r": 16, "md_s": 1, "eval_steps": 7, "train_steps": 6}
+        )
 
         self.squeeze = Conv2dModule(
             sum(self.in_channels),
@@ -108,7 +137,7 @@ class LightHamHead(BaseSegmHead):
             activation=build_activation_layer(self.activation),
         )
 
-        self.hamburger = Hamburger(self.ham_channels, ham_kwargs=self.ham_kwargs, **kwargs)
+        self.hamburger = Hamburger(self.ham_channels, ham_kwargs=self.ham_kwargs, norm_cfg=norm_cfg)
 
         self.align = Conv2dModule(
             self.ham_channels,
@@ -151,8 +180,6 @@ class NMF2D(nn.Module):
         md_r: int = 64,
         train_steps: int = 6,
         eval_steps: int = 7,
-        inv_t: int = 1,
-        rand_init: bool = True,
     ) -> None:
         """Initialize Non-negative Matrix Factorization (NMF) module.
 
@@ -175,7 +202,6 @@ class NMF2D(nn.Module):
         self.train_steps = train_steps
         self.eval_steps = eval_steps
 
-        self.rand_init = rand_init
         bases = f.normalize(torch.rand((self.s, ham_channels // self.s, self.r)))
         self.bases = torch.nn.parameter.Parameter(bases, requires_grad=False)
         self.inv_t = 1
@@ -286,3 +312,33 @@ class NMF2D(nn.Module):
         # multiplication update
 
         return coef * numerator / (denominator + 1e-6)
+
+
+class LightHamHead:
+    """LightHamHead factory for segmentation."""
+
+    HAMHEAD_CFG: ClassVar[dict[str, Any]] = {
+        "segnext_base": {
+            "in_channels": [128, 320, 512],
+            "channels": 512,
+            "ham_channels": 512,
+        },
+        "segnext_small": {
+            "in_channels": [128, 320, 512],
+            "channels": 256,
+            "ham_channels": 256,
+        },
+        "segnext_tiny": {
+            "in_channels": [64, 160, 256],
+            "channels": 256,
+            "ham_channels": 256,
+        },
+    }
+
+    def __new__(cls, version: str, num_classes: int) -> NNLightHamHead:
+        """Constructor for FCNHead."""
+        if version not in cls.HAMHEAD_CFG:
+            msg = f"model type '{version}' is not supported"
+            raise KeyError(msg)
+
+        return NNLightHamHead(**cls.HAMHEAD_CFG[version], num_classes=num_classes)
