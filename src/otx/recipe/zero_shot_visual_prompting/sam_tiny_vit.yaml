@@ -1,7 +1,7 @@
 model:
-  class_path: otx.algo.visual_prompting.zero_shot_segment_anything.OTXZeroShotSegmentAnything
+  class_path: otx.algo.visual_prompting.sam.ZeroShotSAM
   init_args:
-    backbone: tiny_vit
+    backbone_type: tiny_vit
     label_info: 0
     freeze_image_encoder: true
     freeze_prompt_encoder: true

@@ -1,44 +1,280 @@
 # Copyright (C) 2023-2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-
-"""Segment Anything model for the OTX zero-shot visual prompting."""
+# Copyright (c) Meta Platforms, Inc. and affiliates.
+#
+"""Segment Anything model for the OTX visual prompting."""
 
 from __future__ import annotations
 
 import logging as log
-import pickle  # nosec  B403   used pickle for dumping object
 from collections import defaultdict
 from copy import deepcopy
 from itertools import product
-from pathlib import Path
-from typing import TYPE_CHECKING, Any, Literal
+from typing import Any
 
 import torch
-import torchvision.transforms.v2 as tvt_v2
 from datumaro import Polygon as dmPolygon
 from torch import Tensor, nn
 from torch.nn import functional as F  # noqa: N812
 from torchvision import tv_tensors
-from torchvision.tv_tensors import BoundingBoxes, Image, Mask
 
-from otx.algo.visual_prompting.segment_anything import DEFAULT_CONFIG_SEGMENT_ANYTHING, SegmentAnything
-from otx.core.data.entity.base import OTXBatchLossEntity, Points
-from otx.core.data.entity.visual_prompting import (
-    ZeroShotVisualPromptingBatchDataEntity,
-    ZeroShotVisualPromptingBatchPredEntity,
-)
-from otx.core.metrics.visual_prompting import VisualPromptingMetricCallable
-from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
-from otx.core.model.visual_prompting import OTXZeroShotVisualPromptingModel
-from otx.core.schedulers import LRSchedulerListCallable
-from otx.core.types.label import LabelInfoTypes, NullLabelInfo
+from otx.algo.visual_prompting.utils.postprocess import get_prepadded_size, postprocess_masks
+from otx.core.data.entity.base import Points
 from otx.core.utils.mask_util import polygon_to_bitmap
 
-if TYPE_CHECKING:
-    import numpy as np
-    from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
 
-    from otx.core.metrics import MetricCallable
+class SegmentAnything(nn.Module):
+    """Visual prompting model class for Segment Anything."""
+
+    def __init__(
+        self,
+        image_encoder: nn.Module,
+        prompt_encoder: nn.Module,
+        mask_decoder: nn.Module,
+        criterion: nn.Module,
+        image_size: int = 1024,
+        mask_threshold: float = 0.0,
+        use_stability_score: bool = False,
+        return_single_mask: bool = False,
+        return_extra_metrics: bool = False,
+        stability_score_offset: float = 1.0,
+    ) -> None:
+        super().__init__()
+
+        self.image_size = image_size
+        self.mask_threshold = mask_threshold
+        self.use_stability_score = use_stability_score
+        self.return_single_mask = return_single_mask
+        self.return_extra_metrics = return_extra_metrics
+        self.stability_score_offset = stability_score_offset
+
+        self.image_encoder = image_encoder
+        self.prompt_encoder = prompt_encoder
+        self.mask_decoder = mask_decoder
+        self.criterion = criterion
+
+    def forward(
+        self,
+        images: tv_tensors.Image,
+        ori_shapes: list[Tensor],
+        bboxes: list[tv_tensors.BoundingBoxes | None],
+        points: list[tuple[Points, Tensor] | None],
+        gt_masks: list[tv_tensors.Mask] | None = None,
+    ) -> Tensor | tuple[list[Tensor], list[Tensor]]:
+        """Forward method for SAM training/validation/prediction.
+
+        Args:
+            images (tv_tensors.Image): Images with shape (B, C, H, W).
+            ori_shapes (List[Tensor]): List of original shapes per image.
+            bboxes (List[tv_tensors.BoundingBoxes], optional): A Nx4 array given a box prompt to the model,
+                in XYXY format.
+            points (List[Tuple[Points, Tensor]], optional): Point coordinates and labels to embed.
+                Point coordinates are BxNx2 arrays of point prompts to the model.
+                Each point is in (X,Y) in pixels. Labels are BxN arrays of labels for the point prompts.
+                1 indicates a foreground point and 0 indicates a background point.
+            gt_masks (List[tv_tensors.Mask], optional): Ground truth masks for loss calculation.
+
+        Returns:
+            (Tensor): Calculated loss values.
+            (Tuple[List[Tensor], List[Tensor]]): Tuple of list with predicted masks with shape (B, 1, H, W)
+                and List with IoU predictions with shape (N, 1).
+        """
+        image_embeddings = self.image_encoder(images)
+        pred_masks = []
+        ious = []
+        for idx, embedding in enumerate(image_embeddings):
+            low_res_masks, iou_predictions = [], []
+            for prompt in [bboxes[idx], points[idx]]:
+                if prompt is None:
+                    continue
+
+                sparse_embeddings, dense_embeddings = self.prompt_encoder(
+                    points=prompt if isinstance(prompt[0], Points) else None,
+                    boxes=prompt if isinstance(prompt, tv_tensors.BoundingBoxes) else None,
+                    masks=None,
+                )
+                _low_res_masks, _iou_predictions = self.mask_decoder(
+                    image_embeddings=embedding.unsqueeze(0),
+                    image_pe=self.prompt_encoder.get_dense_pe(),
+                    sparse_prompt_embeddings=sparse_embeddings,
+                    dense_prompt_embeddings=dense_embeddings,
+                    multimask_output=False,  # when given multiple prompts. if there is single prompt True would be better. # noqa: E501
+                )
+                low_res_masks.append(_low_res_masks)
+                iou_predictions.append(_iou_predictions)
+
+            pred_masks.append(torch.cat(low_res_masks, dim=0))
+            ious.append(torch.cat(iou_predictions, dim=0))
+
+        if self.training:
+            return self.criterion(pred_masks, gt_masks, ious, ori_shapes)
+
+        post_processed_pred_masks: list[Tensor] = []
+        for pred_mask, ori_shape in zip(pred_masks, ori_shapes):
+            post_processed_pred_mask = postprocess_masks(pred_mask, self.image_size, ori_shape)
+            post_processed_pred_masks.append(post_processed_pred_mask.squeeze(1).sigmoid())
+        return post_processed_pred_masks, ious
+
+    @torch.no_grad()
+    def forward_for_tracing(
+        self,
+        image_embeddings: Tensor,
+        point_coords: Tensor,
+        point_labels: Tensor,
+        mask_input: Tensor,
+        has_mask_input: Tensor,
+        ori_shape: Tensor,
+    ) -> tuple[Tensor, ...]:
+        """Forward method for SAM inference (export/deploy).
+
+        Args:
+            image_embeddings (Tensor): The image embedding with a batch index of length 1.
+                If it is a zero tensor, the image embedding will be computed from the image.
+            point_coords (Tensor): Coordinates of sparse input prompts,
+                corresponding to both point inputs and box inputs.
+                Boxes are encoded using two points, one for the top-left corner and one for the bottom-right corner.
+                Coordinates must already be transformed to long-side 1024. Has a batch index of length 1.
+            point_labels (Tensor): Labels for the sparse input prompts.
+                0 is a negative input point, 1 is a positive input point,
+                2 is a top-left box corner, 3 is a bottom-right box corner, and -1 is a padding point.
+                If there is no box input, a single padding point with label -1 and
+                coordinates (0.0, 0.0) should be concatenated.
+            mask_input (Tensor): A mask input to the model with shape 1x1x256x256.
+                This must be supplied even if there is no mask input. In this case, it can just be zeros.
+            has_mask_input (Tensor): An indicator for the mask input.
+                1 indicates a mask input, 0 indicates no mask input.
+                This input has 1x1 shape due to supporting openvino input layout.
+            ori_shape (Tensor): The size of the input image in (H,W) format, before any transformation.
+                This input has 1x2 shape due to supporting openvino input layout.
+        """
+        sparse_embedding = self._embed_points(point_coords, point_labels)
+        dense_embedding = self._embed_masks(mask_input, has_mask_input)
+
+        masks, scores = self.mask_decoder.predict_masks(
+            image_embeddings=image_embeddings,
+            image_pe=self.prompt_encoder.get_dense_pe(),
+            sparse_prompt_embeddings=sparse_embedding,
+            dense_prompt_embeddings=dense_embedding,
+        )
+
+        if self.use_stability_score:
+            scores = self.calculate_stability_score(
+                masks,
+                self.mask_threshold,
+                self.stability_score_offset,
+            )
+
+        if self.return_single_mask:
+            masks, scores = self.select_masks(masks, scores, point_coords.shape[1])
+
+        upscaled_masks = postprocess_masks(masks, self.image_size, ori_shape)
+
+        if self.return_extra_metrics:
+            stability_scores = self.calculate_stability_score(
+                upscaled_masks,
+                self.mask_threshold,
+                self.stability_score_offset,
+            )
+            areas = (upscaled_masks > self.mask_threshold).sum(-1).sum(-1)
+            return upscaled_masks, scores, stability_scores, areas, masks
+
+        return upscaled_masks, scores, masks
+
+    def _embed_points(self, point_coords: Tensor, point_labels: Tensor) -> Tensor:
+        """Embed sparse input prompts.
+
+        Args:
+            point_coords (Tensor): Coordinates of sparse input prompts,
+                corresponding to both point inputs and box inputs. Boxes are encoded using two points,
+                one for the top-left corner and one for the bottom-right corner.
+                Coordinates must already be transformed to long-side 1024. Has a batch index of length 1.
+            point_labels (Tensor): Labels for the sparse input prompts.
+                0 is a negative input point, 1 is a positive input point,
+                2 is a top-left box corner, 3 is a bottom-right box corner, and -1 is a padding point.
+                If there is no box input, a single padding point with label -1 and
+                coordinates (0.0, 0.0) should be concatenated.
+
+        Returns:
+            point_embedding (Tensor): The embedded sparse input prompts.
+        """
+        point_coords = point_coords + 0.5
+        point_coords = point_coords / self.image_size
+        point_embedding = self.prompt_encoder.pe_layer._pe_encoding(point_coords)  # noqa: SLF001
+        point_labels = point_labels.unsqueeze(-1).expand_as(point_embedding)
+
+        point_embedding = point_embedding * (point_labels != -1)
+        point_embedding = point_embedding + self.prompt_encoder.not_a_point_embed.weight * (point_labels == -1)
+
+        for i in range(self.prompt_encoder.num_point_embeddings):
+            point_embedding = point_embedding + self.prompt_encoder.point_embeddings[i].weight * (point_labels == i)
+
+        return point_embedding
+
+    def _embed_masks(self, input_mask: Tensor, has_mask_input: Tensor) -> Tensor:
+        """Embed the mask input.
+
+        Args:
+            input_mask (Tensor): A mask input to the model with shape 1x1x256x256.
+                This must be supplied even if there is no mask input. In this case, it can just be zeros.
+            has_mask_input (Tensor): An indicator for the mask input.
+                1 indicates a mask input, 0 indicates no mask input.
+
+        Returns:
+            mask_embedding (Tensor): The embedded mask input.
+        """
+        mask_embedding = has_mask_input * self.prompt_encoder.mask_downscaling(input_mask)
+        return mask_embedding + (1 - has_mask_input) * self.prompt_encoder.no_mask_embed.weight.reshape(
+            1,
+            -1,
+            1,
+            1,
+        )
+
+    def calculate_stability_score(self, masks: Tensor, mask_threshold: float, threshold_offset: float = 1.0) -> Tensor:
+        """Computes the stability score for a batch of masks.
+
+        The stability score is the IoU between the binary masks obtained
+        by thresholding the predicted mask logits at high and low values.
+
+        Args:
+            masks (Tensor): A batch of predicted masks with shape BxHxW.
+            mask_threshold (float): The threshold used to binarize the masks.
+            threshold_offset (float, optional): The offset used to compute the stability score.
+
+        Returns:
+            stability_scores (Tensor): The stability scores for the batch of masks.
+        """
+        # One mask is always contained inside the other.
+        # Save memory by preventing unnecessary cast to torch.int64
+        intersections = (
+            (masks > (mask_threshold + threshold_offset)).sum(-1, dtype=torch.int16).sum(-1, dtype=torch.int32)
+        )
+        unions = (masks > (mask_threshold - threshold_offset)).sum(-1, dtype=torch.int16).sum(-1, dtype=torch.int32)
+        return intersections / unions
+
+    def select_masks(self, masks: Tensor, iou_preds: Tensor, num_points: int) -> tuple[Tensor, Tensor]:
+        """Selects the best mask from a batch of masks.
+
+        Args:
+            masks (Tensor): A batch of predicted masks with shape BxMxHxW.
+            iou_preds (Tensor): A batch of predicted IoU scores with shape BxM.
+            num_points (int): The number of points in the input.
+
+        Returns:
+            masks (Tensor): The selected masks with shape Bx1xHxW.
+            iou_preds (Tensor): The selected IoU scores with shape Bx1.
+        """
+        # Determine if we should return the multi-click mask or not from the number of points.
+        # The reweighting is used to avoid control flow.
+        score_reweight = torch.tensor([[1000] + [0] * (self.mask_decoder.num_mask_tokens - 1)]).to(
+            iou_preds.device,
+        )
+        score = iou_preds + (num_points - 2.5) * score_reweight
+        best_idx = torch.argmax(score, dim=1)
+        masks = masks[torch.arange(masks.shape[0]), best_idx, :, :].unsqueeze(1)
+        iou_preds = iou_preds[torch.arange(masks.shape[0]), best_idx].unsqueeze(1)
+
+        return masks, iou_preds
 
 
 class PromptGetter(nn.Module):
@@ -101,7 +337,7 @@ class PromptGetter(nn.Module):
 
         sim = reference_feat @ target_feat
         sim = sim.reshape(1, 1, h_feat, w_feat)
-        sim = ZeroShotSegmentAnything.postprocess_masks(sim, self.image_size, ori_shape)
+        sim = postprocess_masks(sim, self.image_size, ori_shape)
 
         threshold = (threshold == 0) * self.default_threshold_target + threshold
         points_scores, bg_coords = self._point_selection(
@@ -170,68 +406,61 @@ class ZeroShotSegmentAnything(SegmentAnything):
 
     def __init__(
         self,
+        image_encoder: nn.Module,
+        prompt_encoder: nn.Module,
+        mask_decoder: nn.Module,
+        criterion: nn.Module | None = None,
+        image_size: int = 1024,
+        mask_threshold: float = 0.0,
         default_threshold_reference: float = 0.3,
         default_threshold_target: float = 0.65,
-        *args,
-        **kwargs,
+        use_stability_score: bool = False,
+        return_single_mask: bool = False,
+        return_extra_metrics: bool = False,
+        stability_score_offset: float = 1.0,
     ) -> None:
-        msg = ""
-        if len(kwargs) == 0:
-            msg += "There isn't any given argument. Default setting will be used."
-        elif len(kwargs) == 1 and "backbone" in kwargs:
-            msg += (
-                f"There is only backbone (={kwargs.get('backbone')}) argument. "
-                f"Other parameters will be set along with backbone (={kwargs.get('backbone')})."
-            )
-        elif "backbone" not in kwargs:
-            msg += "There isn't a backbone argument, it will be reset with backbone=tiny_vit."
-        if len(msg) > 0:
-            log.info(msg)
-            kwargs = self.set_default_config(**kwargs)
+        super().__init__(
+            image_encoder=image_encoder,
+            prompt_encoder=prompt_encoder,
+            mask_decoder=mask_decoder,
+            criterion=criterion,
+            image_size=image_size,
+            mask_threshold=mask_threshold,
+            use_stability_score=use_stability_score,
+            return_single_mask=return_single_mask,
+            return_extra_metrics=return_extra_metrics,
+            stability_score_offset=stability_score_offset,
+        )
 
-        # check freeze conditions
-        for condition in ["freeze_image_encoder", "freeze_prompt_encoder", "freeze_mask_decoder"]:
-            if not kwargs.get(condition, False):
-                log.warning(f"{condition}(=False) must be set to True, changed.")
-                kwargs[condition] = True
-
-        super().__init__(*args, **kwargs)
-
+        # set PromptGetter
         self.prompt_getter = PromptGetter(image_size=self.image_size)
         self.prompt_getter.set_default_thresholds(
             default_threshold_reference=default_threshold_reference,
             default_threshold_target=default_threshold_target,
         )
 
+        # set default constants
         self.point_labels_box = torch.tensor([[2, 3]], dtype=torch.float32)
         self.has_mask_inputs = [torch.tensor([[0.0]]), torch.tensor([[1.0]])]
 
-    def set_default_config(self, **kwargs) -> dict[str, Any]:
-        """Set default config when using independently."""
-        backbone = kwargs.get("backbone", "tiny_vit")
-        kwargs.update(
-            {
-                "backbone": backbone,
-                "load_from": kwargs.get("load_from", DEFAULT_CONFIG_SEGMENT_ANYTHING[backbone]["load_from"]),
-                "freeze_image_encoder": kwargs.get("freeze_image_encoder", True),
-                "freeze_mask_decoder": kwargs.get("freeze_mask_decoder", True),
-                "freeze_prompt_encoder": kwargs.get("freeze_prompt_encoder", True),
-            },
-        )
-        return kwargs
-
     def expand_reference_info(self, reference_feats: Tensor, new_largest_label: int) -> Tensor:
-        """Expand reference info dimensions if newly given processed prompts have more lables."""
+        """Expand reference info dimensions if newly given processed prompts have more labels."""
         if new_largest_label > (cur_largest_label := len(reference_feats) - 1):
             diff = new_largest_label - cur_largest_label
             reference_feats = F.pad(reference_feats, (0, 0, 0, 0, 0, diff), value=0.0)
         return reference_feats
 
+    def forward(self, *args: Any, **kwargs: Any) -> Any:  # noqa: ANN401
+        """Forward method for Zero-shot SAM."""
+        if self.training:
+            return self.learn(*args, **kwargs)
+        return self.infer(*args, **kwargs)
+
     @torch.no_grad()
     def learn(
         self,
-        images: list[Image],
-        processed_prompts: list[dict[int, list[BoundingBoxes | Points | dmPolygon | Mask]]],
+        images: list[tv_tensors.Image],
+        processed_prompts: list[dict[int, list[tv_tensors.BoundingBoxes | Points | dmPolygon | tv_tensors.Mask]]],
         reference_feats: Tensor,
         used_indices: Tensor,
         ori_shapes: list[Tensor],
@@ -269,13 +498,13 @@ class ZeroShotSegmentAnything(SegmentAnything):
                 # TODO (sungchul): ensemble multi reference features (current : use merged masks)
                 ref_mask = torch.zeros(*map(int, ori_shape), dtype=torch.uint8, device=image.device)
                 for input_prompt in input_prompts:
-                    if isinstance(input_prompt, Mask):
+                    if isinstance(input_prompt, tv_tensors.Mask):
                         # directly use annotation information as a mask
                         ref_mask[input_prompt] += 1
                     elif isinstance(input_prompt, dmPolygon):
                         ref_mask[torch.as_tensor(polygon_to_bitmap([input_prompt], *ori_shape)[0])] += 1
                     else:
-                        if isinstance(input_prompt, BoundingBoxes):
+                        if isinstance(input_prompt, tv_tensors.BoundingBoxes):
                             point_coords = input_prompt.reshape(-1, 2, 2)
                             point_labels = torch.tensor([[2, 3]], device=point_coords.device)
                         elif isinstance(input_prompt, Points):
@@ -286,7 +515,6 @@ class ZeroShotSegmentAnything(SegmentAnything):
                             continue
 
                         masks = self._predict_masks(
-                            mode="learn",
                             image_embeddings=image_embeddings,
                             point_coords=point_coords,
                             point_labels=point_labels,
@@ -317,7 +545,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
     @torch.no_grad()
     def infer(
         self,
-        images: list[Image],
+        images: list[tv_tensors.Image],
         reference_feats: Tensor,
         used_indices: Tensor,
         ori_shapes: list[Tensor],
@@ -380,7 +608,6 @@ class ZeroShotSegmentAnything(SegmentAnything):
                         device=point_coords.device,
                     ).unsqueeze(0)
                     mask = self._predict_masks(
-                        mode="infer",
                         image_embeddings=image_embeddings,
                         point_coords=point_coords,
                         point_labels=point_labels,
@@ -440,7 +667,6 @@ class ZeroShotSegmentAnything(SegmentAnything):
 
     def _predict_masks(
         self,
-        mode: str,
         image_embeddings: Tensor,
         point_coords: Tensor,
         point_labels: Tensor,
@@ -460,8 +686,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
             device=image_embeddings.device,
         )
         has_mask_input = self.has_mask_inputs[0].to(mask_input.device)
-        high_res_masks, scores, logits = self(
-            mode=mode,
+        high_res_masks, scores, logits = self.forward_for_tracing(
             image_embeddings=image_embeddings,
             point_coords=point_coords,
             point_labels=point_labels,
@@ -507,8 +732,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
                     point_coords = torch.cat((point_coords, box_coords), dim=1)
                     point_labels = torch.cat((point_labels, self.point_labels_box.to(point_labels.device)), dim=1)
 
-                high_res_masks, scores, logits = self(
-                    mode=mode,
+                high_res_masks, scores, logits = self.forward_for_tracing(
                     image_embeddings=image_embeddings,
                     point_coords=point_coords,
                     point_labels=point_labels,
@@ -524,7 +748,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
     def _preprocess_coords(
         self,
         coords: Tensor,
-        ori_shape: list[int] | tuple[int, int] | Tensor,
+        ori_shape: Tensor,
         target_length: int,
     ) -> Tensor:
         """Expects a torch tensor of length 2 in the final dimension.
@@ -533,14 +757,14 @@ class ZeroShotSegmentAnything(SegmentAnything):
 
         Args:
             coords (Tensor): Coordinates tensor.
-            ori_shape (List[int] | Tuple[int, int] | Tensor]): Original size of image.
+            ori_shape (Tensor): Original size of image.
             target_length (int): The length of the longest side of the image.
 
         Returns:
             (Tensor): Resized coordinates.
         """
         old_h, old_w = ori_shape
-        new_h, new_w = self.get_prepadded_size(ori_shape, target_length)
+        new_h, new_w = get_prepadded_size(ori_shape, target_length)
         coords[..., 0] = coords[..., 0] * (new_w / old_w)
         coords[..., 1] = coords[..., 1] * (new_h / old_h)
         return coords
@@ -617,371 +841,3 @@ class ZeroShotSegmentAnything(SegmentAnything):
 
             best_idx = torch.argmax(scores[0])
         return logits[:, [best_idx]], masks[0, best_idx]
-
-
-class OTXZeroShotSegmentAnything(OTXZeroShotVisualPromptingModel):
-    """Zero-Shot Visual Prompting model."""
-
-    def __init__(  # noqa: PLR0913
-        self,
-        backbone: Literal["tiny_vit", "vit_b"],
-        label_info: LabelInfoTypes = NullLabelInfo(),
-        optimizer: OptimizerCallable = DefaultOptimizerCallable,
-        scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
-        metric: MetricCallable = VisualPromptingMetricCallable,
-        torch_compile: bool = False,
-        reference_info_dir: Path | str = "reference_infos",
-        infer_reference_info_root: Path | str = "../.latest/train",
-        save_outputs: bool = True,
-        pixel_mean: list[float] | None = [123.675, 116.28, 103.53],  # noqa: B006
-        pixel_std: list[float] | None = [58.395, 57.12, 57.375],  # noqa: B006
-        freeze_image_encoder: bool = True,
-        freeze_prompt_encoder: bool = True,
-        freeze_mask_decoder: bool = True,
-        default_threshold_reference: float = 0.3,
-        default_threshold_target: float = 0.65,
-        use_stability_score: bool = False,
-        return_single_mask: bool = False,
-        return_extra_metrics: bool = False,
-        stability_score_offset: float = 1.0,
-    ) -> None:
-        self.config = {
-            "backbone": backbone,
-            "image_size": 1024,
-            "freeze_image_encoder": freeze_image_encoder,
-            "freeze_prompt_encoder": freeze_prompt_encoder,
-            "freeze_mask_decoder": freeze_mask_decoder,
-            "default_threshold_reference": default_threshold_reference,
-            "default_threshold_target": default_threshold_target,
-            "use_stability_score": use_stability_score,
-            "return_single_mask": return_single_mask,
-            "return_extra_metrics": return_extra_metrics,
-            "stability_score_offset": stability_score_offset,
-            **DEFAULT_CONFIG_SEGMENT_ANYTHING[backbone],
-        }
-        super().__init__(
-            label_info=label_info,
-            input_size=(1024, 1024),  # zero-shot visual prompting model uses fixed 1024x1024 input size
-            optimizer=optimizer,
-            scheduler=scheduler,
-            metric=metric,
-            torch_compile=torch_compile,
-        )
-
-        self.save_outputs = save_outputs
-        self.reference_info_dir: Path = Path(reference_info_dir)
-        self.infer_reference_info_root: Path = Path(infer_reference_info_root)
-
-        self.register_buffer("pixel_mean", Tensor(pixel_mean).view(-1, 1, 1), False)
-        self.register_buffer("pixel_std", Tensor(pixel_std).view(-1, 1, 1), False)
-
-        self.initialize_reference_info()
-
-    def _create_model(self) -> nn.Module:
-        """Create a PyTorch model for this class."""
-        return ZeroShotSegmentAnything(**self.config)
-
-    def forward(  # type: ignore[override]
-        self,
-        inputs: ZeroShotVisualPromptingBatchDataEntity,  # type: ignore[override]
-    ) -> ZeroShotVisualPromptingBatchPredEntity | OTXBatchLossEntity:
-        """Model forward function."""
-        forward_fn = self.learn if self.training else self.infer
-        return forward_fn(inputs)  # type: ignore[operator]
-
-    def learn(
-        self,
-        inputs: ZeroShotVisualPromptingBatchDataEntity,
-        reference_feats: Tensor | None = None,
-        used_indices: Tensor | None = None,
-        reset_feat: bool = False,
-        is_cascade: bool = False,
-    ) -> ZeroShotVisualPromptingBatchPredEntity | OTXBatchLossEntity:
-        """Learn to directly connect to the model."""
-        self.training = True
-        if reset_feat:
-            self.initialize_reference_info()
-
-        outputs = self.model.learn(
-            **self._customize_inputs(inputs, reference_feats=reference_feats, used_indices=used_indices),
-            is_cascade=is_cascade,
-        )
-        return self._customize_outputs(outputs, inputs)
-
-    def infer(
-        self,
-        inputs: ZeroShotVisualPromptingBatchDataEntity,
-        reference_feats: Tensor | None = None,
-        used_indices: Tensor | None = None,
-        threshold: float = 0.0,
-        num_bg_points: int = 1,
-        is_cascade: bool = True,
-    ) -> ZeroShotVisualPromptingBatchPredEntity | OTXBatchLossEntity:
-        """Infer to directly connect to the model."""
-        self.training = False
-        outputs = self.model.infer(
-            **self._customize_inputs(inputs, reference_feats=reference_feats, used_indices=used_indices),
-            threshold=threshold,
-            num_bg_points=num_bg_points,
-            is_cascade=is_cascade,
-        )
-        return self._customize_outputs(outputs, inputs)
-
-    def _customize_inputs(  # type: ignore[override]
-        self,
-        inputs: ZeroShotVisualPromptingBatchDataEntity,
-        reference_feats: Tensor | None = None,
-        used_indices: Tensor | None = None,
-    ) -> dict[str, Any]:  # type: ignore[override]
-        """Customize the inputs for the model."""
-        inputs = self.transforms(inputs)
-        forward_inputs = {
-            "images": [tv_tensors.wrap(image.unsqueeze(0), like=image) for image in inputs.images],
-            "reference_feats": reference_feats if reference_feats is not None else self.reference_feats,
-            "used_indices": used_indices if used_indices is not None else self.used_indices,
-            "ori_shapes": [torch.tensor(info.ori_shape) for info in inputs.imgs_info],
-        }
-        if self.training:
-            # learn
-            forward_inputs.update({"processed_prompts": self._gather_prompts_with_labels(inputs)})
-
-        return forward_inputs
-
-    def _customize_outputs(  # type: ignore[override]
-        self,
-        outputs: Any,  # noqa: ANN401
-        inputs: ZeroShotVisualPromptingBatchDataEntity,  # type: ignore[override]
-    ) -> ZeroShotVisualPromptingBatchPredEntity | OTXBatchLossEntity:
-        """Customize OTX output batch data entity if needed for you model."""
-        if self.training:
-            self.reference_feats = outputs[0].get("reference_feats")
-            self.used_indices = outputs[0].get("used_indices")
-            return outputs
-
-        masks: list[Mask] = []
-        prompts: list[Points] = []
-        scores: list[Tensor] = []
-        labels: list[Tensor] = []
-        for idx, (predicted_masks, used_points) in enumerate(outputs):
-            _masks: list[Tensor] = []
-            _prompts: list[Tensor] = []
-            _scores: list[Tensor] = []
-            _labels: list[Tensor] = []
-            for label, predicted_mask in predicted_masks.items():
-                if len(predicted_mask) == 0:
-                    continue
-                _masks.append(torch.stack(predicted_mask, dim=0))
-                _used_points_scores = torch.stack(used_points[label], dim=0)
-                _prompts.append(_used_points_scores[:, :2])
-                _scores.append(_used_points_scores[:, 2])
-                _labels.append(torch.tensor([label] * len(_used_points_scores), dtype=torch.int64, device=self.device))
-
-            if len(_masks) == 0:
-                masks.append(
-                    tv_tensors.Mask(
-                        torch.zeros((1, *inputs.imgs_info[idx].ori_shape), dtype=torch.float32, device=self.device),
-                    ),
-                )
-                prompts.append(
-                    Points([], canvas_size=inputs.imgs_info[idx].ori_shape, dtype=torch.float32, device=self.device),
-                )
-                scores.append(torch.tensor([-1.0], dtype=torch.float32, device=self.device))
-                labels.append(torch.tensor([-1], dtype=torch.int64, device=self.device))
-                continue
-
-            masks.append(tv_tensors.Mask(torch.cat(_masks, dim=0)))
-            prompts.append(Points(torch.cat(_prompts, dim=0), canvas_size=inputs.imgs_info[idx].ori_shape))
-            scores.append(torch.cat(_scores, dim=0))
-            labels.append(torch.cat(_labels, dim=0))
-
-        return ZeroShotVisualPromptingBatchPredEntity(
-            batch_size=len(outputs),
-            images=inputs.images,
-            imgs_info=inputs.imgs_info,
-            scores=scores,
-            prompts=prompts,
-            masks=masks,
-            polygons=[],
-            labels=labels,
-        )
-
-    def _gather_prompts_with_labels(
-        self,
-        inputs: ZeroShotVisualPromptingBatchDataEntity,
-    ) -> list[dict[int, list[BoundingBoxes | Points | dmPolygon | Mask]]]:
-        """Gather prompts according to labels."""
-        total_processed_prompts: list[dict[int, list[BoundingBoxes | Points | dmPolygon | Mask]]] = []
-        for batch, batch_labels in enumerate(inputs.labels):
-            processed_prompts = defaultdict(list)
-            for prompt_type in ["prompts", "polygons", "masks"]:
-                _prompts = getattr(inputs, prompt_type, None)
-                prompt_labels = getattr(batch_labels, prompt_type, None)
-                if _prompts is None or prompt_labels is None:
-                    continue
-
-                for idx, _label in enumerate(prompt_labels):
-                    if prompt_type in ("prompts", "polygons"):
-                        processed_prompts[int(_label)].append(_prompts[batch][idx])
-                    else:
-                        # for mask
-                        processed_prompts[int(_label)].append(Mask(_prompts[batch][idx]))
-
-            sorted_processed_prompts = dict(sorted(processed_prompts.items(), key=lambda x: x))
-            total_processed_prompts.append(sorted_processed_prompts)
-
-        return total_processed_prompts
-
-    def apply_image(self, image: Image | np.ndarray, target_length: int = 1024) -> Image:
-        """Preprocess image to be used in the model."""
-        h, w = image.shape[-2:]
-        target_size = self.get_preprocess_shape(h, w, target_length)
-        return tvt_v2.functional.resize(tvt_v2.functional.to_image(image), target_size, antialias=True)
-
-    def apply_coords(self, coords: Tensor, ori_shape: tuple[int, ...], target_length: int = 1024) -> Tensor:
-        """Preprocess points to be used in the model."""
-        old_h, old_w = ori_shape
-        new_h, new_w = self.get_preprocess_shape(ori_shape[0], ori_shape[1], target_length)
-        coords = deepcopy(coords).to(torch.float32)
-        coords[..., 0] = coords[..., 0] * (new_w / old_w)
-        coords[..., 1] = coords[..., 1] * (new_h / old_h)
-        return coords
-
-    def apply_points(self, points: Points, ori_shape: tuple[int, ...], target_length: int = 1024) -> Points:
-        """Preprocess points to be used in the model."""
-        return Points(self.apply_coords(points, ori_shape, target_length), canvas_size=(target_length, target_length))
-
-    def apply_boxes(self, boxes: BoundingBoxes, ori_shape: tuple[int, ...], target_length: int = 1024) -> BoundingBoxes:
-        """Preprocess boxes to be used in the model."""
-        return BoundingBoxes(
-            self.apply_coords(boxes.reshape(-1, 2, 2), ori_shape, target_length).reshape(-1, 4),
-            format=boxes.format,
-            canvas_size=(target_length, target_length),
-        )
-
-    def apply_prompts(
-        self,
-        prompts: list[Points | BoundingBoxes],
-        ori_shape: tuple[int, ...],
-        target_length: int = 1024,
-    ) -> list[Points | BoundingBoxes]:
-        """Preprocess prompts to be used in the model."""
-        transformed_prompts: list[Points | BoundingBoxes] = []
-        for prompt in prompts:
-            if isinstance(prompt, Points):
-                transformed_prompts.append(self.apply_points(prompt, ori_shape, target_length))
-            elif isinstance(prompt, BoundingBoxes):
-                transformed_prompts.append(self.apply_boxes(prompt, ori_shape, target_length))
-            else:
-                log.info(f"Current prompt ({prompt.__class__.__name__}) is not supported, saved as it is.")
-                transformed_prompts.append(prompt)
-        return transformed_prompts
-
-    def get_preprocess_shape(self, oldh: int, oldw: int, target_length: int) -> tuple[int, int]:
-        """Get preprocess shape."""
-        scale = target_length * 1.0 / max(oldh, oldw)
-        newh, neww = oldh * scale, oldw * scale
-        neww = int(neww + 0.5)
-        newh = int(newh + 0.5)
-        return (newh, neww)
-
-    def preprocess(self, x: Image) -> Image:
-        """Normalize pixel values and pad to a square input."""
-        # Normalize colors
-        x = (x - self.pixel_mean) / self.pixel_std
-
-        # Pad
-        x = self.model.pad_to_square(x)
-        return Image(x)
-
-    def transforms(self, entity: ZeroShotVisualPromptingBatchDataEntity) -> ZeroShotVisualPromptingBatchDataEntity:
-        """Transforms for ZeroShotVisualPromptingBatchDataEntity."""
-        return entity.wrap(
-            images=[self.preprocess(self.apply_image(image)) for image in entity.images],
-            prompts=[
-                self.apply_prompts(prompt, info.ori_shape, self.model.image_size)
-                for prompt, info in zip(entity.prompts, entity.imgs_info)
-            ],
-            masks=entity.masks,
-            polygons=entity.polygons,
-            labels=entity.labels,
-        )
-
-    def initialize_reference_info(self) -> None:
-        """Initialize reference information."""
-        self.register_buffer("reference_feats", torch.zeros(0, 1, self.model.embed_dim), False)
-        self.register_buffer("used_indices", torch.tensor([], dtype=torch.int64), False)
-
-    def save_reference_info(self, default_root_dir: Path | str) -> None:
-        """Save reference info."""
-        reference_info = {
-            "reference_feats": self.reference_feats,
-            "used_indices": self.used_indices,
-        }
-        # save reference info
-        self.saved_reference_info_path: Path = Path(default_root_dir) / self.reference_info_dir / "reference_info.pt"
-        self.saved_reference_info_path.parent.mkdir(parents=True, exist_ok=True)
-        # TODO (sungchul): ticket no. 139210
-        torch.save(reference_info, self.saved_reference_info_path)
-        pickle.dump(
-            {k: v.numpy() for k, v in reference_info.items()},
-            self.saved_reference_info_path.with_suffix(".pickle").open("wb"),
-        )
-        log.info(f"Saved reference info at {self.saved_reference_info_path}.")
-
-    def load_reference_info(
-        self,
-        default_root_dir: Path | str,
-        device: str | torch.device = "cpu",
-        path_to_directly_load: Path | None = None,
-    ) -> bool:
-        """Load latest reference info to be used.
-
-        Args:
-            default_root_dir (Path | str): Default root directory to be used
-                when inappropriate infer_reference_info_root is given.
-            device (str | torch.device): Device that reference infos will be attached.
-            path_to_directly_load (Path | None): Reference info path to directly be loaded.
-                Normally, it is obtained after `learn` which is executed when trying to do `infer`
-                without reference features in `on_test_start` or `on_predict_start`.
-
-        Returns:
-            (bool): Whether normally loading checkpoint or not.
-        """
-        if path_to_directly_load is not None:
-            # if `path_to_directly_load` is given, forcely load
-            reference_info = torch.load(path_to_directly_load)
-            retval = True
-            log.info(f"reference info saved at {path_to_directly_load} was successfully loaded.")
-
-        else:
-            if str(self.infer_reference_info_root) == "../.latest/train":
-                # for default setting
-                path_reference_info = (
-                    Path(default_root_dir)
-                    / self.infer_reference_info_root
-                    / self.reference_info_dir
-                    / "reference_info.pt"
-                )
-            else:
-                # for user input
-                path_reference_info = self.infer_reference_info_root / self.reference_info_dir / "reference_info.pt"
-
-            if path_reference_info.is_file():
-                reference_info = torch.load(path_reference_info)
-                retval = True
-                log.info(f"reference info saved at {path_reference_info} was successfully loaded.")
-            else:
-                reference_info = {}
-                retval = False
-
-        self.register_buffer(
-            "reference_feats",
-            reference_info.get("reference_feats", torch.zeros(0, 1, self.model.embed_dim)).to(device),
-            False,
-        )
-        self.register_buffer(
-            "used_indices",
-            reference_info.get("used_indices", torch.tensor([], dtype=torch.int64)).to(device),
-            False,
-        )
-        return retval

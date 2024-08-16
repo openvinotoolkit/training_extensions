@@ -25,9 +25,9 @@ For default setting, the square root of (number of old data/number of new data) 
         .. code-block:: shell
 
             (otx) ...$ otx train ... \
-                                 --data.config.train_subset.sampler.class_path otx.algo.samplers.class_incremental_sampler.ClassIncrementalSampler \
-                                 --data.config.train_subset.sampler.init_args.old_classes '[car,truck]' \
-                                 --data.config.train_subset.sampler.init_args.new_classes '[bus]'
+                                 --data.train_subset.sampler.class_path otx.algo.samplers.class_incremental_sampler.ClassIncrementalSampler \
+                                 --data.train_subset.sampler.init_args.old_classes '[car,truck]' \
+                                 --data.train_subset.sampler.init_args.new_classes '[bus]'
 
 
 Balanced Sampler
@@ -55,4 +55,4 @@ It helps ensure balanced sampling by class based on the distribution of class la
         .. code-block:: shell
 
             (otx) ...$ otx train ... \
-                                 --data.config.train_subset.sampler.class_path otx.algo.samplers.balanced_sampler.BalancedSampler
+                                 --data.train_subset.sampler.class_path otx.algo.samplers.balanced_sampler.BalancedSampler
