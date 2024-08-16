@@ -137,6 +137,7 @@ def test_otx_e2e_cli(
         task_name in recipe
         for task_name in [
             "dino_v2",
+            "maskrcnn_r50_tv_tile",
         ]
     ):
         return
@@ -148,9 +149,9 @@ def test_otx_e2e_cli(
     tmp_path_test = tmp_path / f"otx_test_{model_name}"
     for export_case in fxt_export_list:
         if (
-            task.lower() in ("visual_prompting", "zero_shot_visual_prompting") or task.lower().startswith("anomaly")
+            task.lower() in ("visual_prompting", "zero_shot_visual_prompting", "keypoint_detection") or task.lower().startswith("anomaly")
         ) and export_case.export_demo_package:
-            # Skip exportable code checking for visual_prompting, zero_shot_visual_prompting and anomaly tasks
+            # Skip exportable code checking for visual_prompting, zero_shot_visual_prompting, anomaly and keypoint_detection tasks
             return
 
         command_cfg = [
@@ -226,11 +227,9 @@ def test_otx_e2e_cli(
     if ("_cls" not in task) and (task not in ["detection", "instance_segmentation"]):
         return  # Supported only for classification, detection and instance segmentation task.
 
-    if "dino" in model_name:
-        return  # DINO is not supported.
-
-    if "rtdetr" in model_name:
-        return  # RT-DETR currently is not supported.
+    unsupported_models = ["dino", "rtdetr"]
+    if any(model in model_name for model in unsupported_models):
+        return  # The models are not supported.
 
     tmp_path_test = tmp_path / f"otx_export_xai_{model_name}"
     for export_case in fxt_export_list:
@@ -315,6 +314,9 @@ def test_otx_explain_e2e_cli(
         dataset_path = fxt_target_dataset_per_task[task]["tiling" if is_tiling else "non_tiling"]
     else:
         dataset_path = fxt_target_dataset_per_task[task]
+
+    if isinstance(dataset_path, dict) and "supervised" in dataset_path:
+        dataset_path = dataset_path["supervised"]
 
     if "dino" in model_name:
         pytest.skip("DINO is not supported.")
@@ -434,6 +436,9 @@ def test_otx_hpo_e2e_cli(
         dataset_path = fxt_target_dataset_per_task[task]["non_tiling"]
     else:
         dataset_path = fxt_target_dataset_per_task[task]
+
+    if isinstance(dataset_path, dict) and "supervised" in dataset_path:
+        dataset_path = dataset_path["supervised"]
 
     tmp_path_hpo = tmp_path / f"otx_hpo_{task.lower()}"
     tmp_path_hpo.mkdir(parents=True)
