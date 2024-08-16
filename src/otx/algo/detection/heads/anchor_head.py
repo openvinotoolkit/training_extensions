@@ -31,7 +31,9 @@ class AnchorHead(BaseDenseHead):
         anchor_generator (nn.Module): Module for anchor generator
         bbox_coder (nn.Module): Module of bounding box coder.
         loss_cls (nn.Module): Module of classification loss.
+            It is related to RPNHead for iseg, will be deprecated.
         loss_bbox (nn.Module): Module of localization loss.
+            It is related to RPNHead for iseg, will be deprecated.
         train_cfg (dict): Training config of anchor head.
         test_cfg (dict, optional): Testing config of anchor head.
         feat_channels (int): Number of hidden channels. Used in child classes.
@@ -49,8 +51,8 @@ class AnchorHead(BaseDenseHead):
         in_channels: tuple[int, ...] | int,
         anchor_generator: nn.Module,
         bbox_coder: nn.Module,
-        loss_cls: nn.Module,
-        loss_bbox: nn.Module,
+        loss_cls: nn.Module,  # TODO (eugene): deprecated
+        loss_bbox: nn.Module,  # TODO (eugene): deprecated
         train_cfg: dict,
         test_cfg: dict | None = None,
         feat_channels: int = 256,
@@ -410,6 +412,8 @@ class AnchorHead(BaseDenseHead):
     ) -> tuple:
         """Calculate the loss of a single scale level based on the features extracted by the detection head.
 
+        TODO (eugene): it is related to RPNHead for iseg, will be deprecated
+
         Args:
             cls_score (Tensor): Box scores for each scale level
                 Has shape (N, num_anchors * num_classes, H, W).
@@ -458,6 +462,8 @@ class AnchorHead(BaseDenseHead):
         batch_gt_instances_ignore: list[InstanceData] | None = None,
     ) -> dict:
         """Calculate the loss based on the features extracted by the detection head.
+
+        TODO (eugene): it is related to RPNHead for iseg, will be deprecated
 
         Args:
             cls_scores (list[Tensor]): Box scores for each scale level

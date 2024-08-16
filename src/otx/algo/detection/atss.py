@@ -14,6 +14,7 @@ from otx.algo.common.utils.prior_generators import AnchorGenerator
 from otx.algo.common.utils.samplers import PseudoSampler
 from otx.algo.detection.detectors import SingleStageDetector
 from otx.algo.detection.heads import ATSSHead
+from otx.algo.detection.losses import ATSSCriterion
 from otx.algo.detection.necks import FPN
 from otx.algo.detection.utils.assigners import ATSSAssigner
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
@@ -145,6 +146,23 @@ class MobileNetV2ATSS(ATSS):
                 target_means=(0.0, 0.0, 0.0, 0.0),
                 target_stds=(0.1, 0.1, 0.2, 0.2),
             ),
+            feat_channels=64,
+            train_cfg=train_cfg,
+            test_cfg=test_cfg,
+            loss_cls=CrossSigmoidFocalLoss(  # TODO (eugene): deprecated
+                use_sigmoid=True,
+                gamma=2.0,
+                alpha=0.25,
+                loss_weight=1.0,
+            ),
+            loss_bbox=GIoULoss(loss_weight=2.0),  # TODO (eugene): deprecated
+        )
+        criterion = ATSSCriterion(
+            num_classes=num_classes,
+            bbox_coder=DeltaXYWHBBoxCoder(
+                target_means=(0.0, 0.0, 0.0, 0.0),
+                target_stds=(0.1, 0.1, 0.2, 0.2),
+            ),
             loss_cls=CrossSigmoidFocalLoss(
                 use_sigmoid=True,
                 gamma=2.0,
@@ -153,11 +171,15 @@ class MobileNetV2ATSS(ATSS):
             ),
             loss_bbox=GIoULoss(loss_weight=2.0),
             loss_centerness=CrossEntropyLoss(use_sigmoid=True, loss_weight=1.0),
-            feat_channels=64,
+        )
+        return SingleStageDetector(
+            backbone=backbone,
+            neck=neck,
+            bbox_head=bbox_head,
+            criterion=criterion,
             train_cfg=train_cfg,
             test_cfg=test_cfg,
         )
-        return SingleStageDetector(backbone, bbox_head, neck=neck, train_cfg=train_cfg, test_cfg=test_cfg)
 
 
 class ResNeXt101ATSS(ATSS):
@@ -210,6 +232,24 @@ class ResNeXt101ATSS(ATSS):
                 target_means=(0.0, 0.0, 0.0, 0.0),
                 target_stds=(0.1, 0.1, 0.2, 0.2),
             ),
+            num_classes=num_classes,
+            in_channels=256,
+            train_cfg=train_cfg,
+            test_cfg=test_cfg,
+            loss_cls=CrossSigmoidFocalLoss(  # TODO (eugene): deprecated
+                use_sigmoid=True,
+                gamma=2.0,
+                alpha=0.25,
+                loss_weight=1.0,
+            ),
+            loss_bbox=GIoULoss(loss_weight=2.0),  # TODO (eugene): deprecated
+        )
+        criterion = ATSSCriterion(
+            num_classes=num_classes,
+            bbox_coder=DeltaXYWHBBoxCoder(
+                target_means=(0.0, 0.0, 0.0, 0.0),
+                target_stds=(0.1, 0.1, 0.2, 0.2),
+            ),
             loss_cls=CrossSigmoidFocalLoss(
                 use_sigmoid=True,
                 gamma=2.0,
@@ -218,12 +258,15 @@ class ResNeXt101ATSS(ATSS):
             ),
             loss_bbox=GIoULoss(loss_weight=2.0),
             loss_centerness=CrossEntropyLoss(use_sigmoid=True, loss_weight=1.0),
-            num_classes=num_classes,
-            in_channels=256,
+        )
+        return SingleStageDetector(
+            backbone=backbone,
+            neck=neck,
+            bbox_head=bbox_head,
+            criterion=criterion,
             train_cfg=train_cfg,
             test_cfg=test_cfg,
         )
-        return SingleStageDetector(backbone, bbox_head, neck=neck, train_cfg=train_cfg, test_cfg=test_cfg)
 
     def to(self, *args, **kwargs) -> Self:
         """Return a model with specified device."""

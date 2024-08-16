@@ -19,7 +19,7 @@ from otx.algo.common.utils.samplers import PseudoSampler
 from otx.algo.detection.detectors import SingleStageDetector
 from otx.algo.detection.necks import CSPNeXtPAFPN
 from otx.algo.instance_segmentation.heads import RTMDetInsSepBNHead
-from otx.algo.instance_segmentation.losses import DiceLoss
+from otx.algo.instance_segmentation.losses import DiceLoss, RTMDetInstCriterion
 from otx.core.config.data import TileConfig
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter
@@ -168,6 +168,11 @@ class RTMDetInstTiny(RTMDetInst):
             ),
             bbox_coder=DistancePointBBoxCoder(),
             loss_centerness=CrossEntropyLoss(use_sigmoid=True, loss_weight=1.0),
+            train_cfg=train_cfg,
+            test_cfg=test_cfg,
+        )
+        criterion = RTMDetInstCriterion(
+            num_classes=num_classes,
             loss_cls=QualityFocalLoss(
                 use_sigmoid=True,
                 beta=2.0,
@@ -179,14 +184,13 @@ class RTMDetInstTiny(RTMDetInst):
                 eps=5.0e-06,
                 reduction="mean",
             ),
-            train_cfg=train_cfg,
-            test_cfg=test_cfg,
         )
 
         return SingleStageDetector(
             backbone=backbone,
             neck=neck,
             bbox_head=bbox_head,
+            criterion=criterion,
             train_cfg=train_cfg,
             test_cfg=test_cfg,
         )

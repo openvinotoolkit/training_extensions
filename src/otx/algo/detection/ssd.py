@@ -20,6 +20,7 @@ from otx.algo.common.utils.assigners import MaxIoUAssigner
 from otx.algo.common.utils.coders import DeltaXYWHBBoxCoder
 from otx.algo.detection.detectors import SingleStageDetector
 from otx.algo.detection.heads import SSDHead
+from otx.algo.detection.losses import SSDCriterion
 from otx.algo.detection.utils.prior_generators import SSDAnchorGeneratorClustered
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.config.data import TileConfig
@@ -81,10 +82,8 @@ class SSD(ExplainableOTXDetModel):
                 pos_iou_thr=0.4,
                 neg_iou_thr=0.4,
             ),
-            "smoothl1_beta": 1.0,
             "allowed_border": -1,
             "pos_weight": -1,
-            "neg_pos_ratio": 3,
             "debug": False,
             "use_giou": False,
             "use_focal": False,
@@ -116,10 +115,6 @@ class SSD(ExplainableOTXDetModel):
                     [587.6216059488938, 381.60024152086544, 323.5988913027747, 702.7486097568518, 741.4865860938451],
                 ],
             ),
-            bbox_coder=DeltaXYWHBBoxCoder(
-                target_means=(0.0, 0.0, 0.0, 0.0),
-                target_stds=(0.1, 0.1, 0.2, 0.2),
-            ),
             num_classes=num_classes,
             in_channels=(96, 320),
             use_depthwise=True,
@@ -127,7 +122,20 @@ class SSD(ExplainableOTXDetModel):
             train_cfg=train_cfg,
             test_cfg=test_cfg,
         )
-        return SingleStageDetector(backbone, bbox_head, train_cfg=train_cfg, test_cfg=test_cfg)
+        criterion = SSDCriterion(
+            num_classes=num_classes,
+            bbox_coder=DeltaXYWHBBoxCoder(
+                target_means=(0.0, 0.0, 0.0, 0.0),
+                target_stds=(0.1, 0.1, 0.2, 0.2),
+            ),
+        )
+        return SingleStageDetector(
+            backbone=backbone,
+            bbox_head=bbox_head,
+            criterion=criterion,
+            train_cfg=train_cfg,
+            test_cfg=test_cfg,
+        )
 
     def setup(self, stage: str) -> None:
         """Callback for setup OTX SSD Model.
