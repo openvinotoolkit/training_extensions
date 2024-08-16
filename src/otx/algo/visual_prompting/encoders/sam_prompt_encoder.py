@@ -1,4 +1,4 @@
-# Copyright (C) 2023 Intel Corporation
+# Copyright (C) 2023-2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
 """SAM prompt encoder model for the OTX visual prompting."""
@@ -20,19 +20,21 @@ class SAMPromptEncoder(nn.Module):
     Reference: https://github.com/facebookresearch/segment-anything
 
     Args:
-        embed_dim (int): The prompts' embedding dimension.
         image_embedding_size (tuple(int, int)): The spatial size of the image embedding, as (H, W).
         input_image_size (int): The padded size of the image as input to the image encoder, as (H, W).
+        embed_dim (int): The prompts' embedding dimension.
+            Defaults to 256.
         mask_in_chans (int): The number of hidden channels used for encoding input masks.
+            Defaults to 16.
         activation (nn.Module): The activation to use when encoding input masks.
     """
 
     def __init__(
         self,
-        embed_dim: int,
         image_embedding_size: tuple[int, int],
         input_image_size: tuple[int, int],
-        mask_in_chans: int,
+        embed_dim: int = 256,
+        mask_in_chans: int = 16,
         activation: type[nn.Module] = nn.GELU,
     ) -> None:
         super().__init__()
