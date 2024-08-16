@@ -143,9 +143,11 @@ class OTXDataset(Dataset, Generic[T_OTXDataEntity]):
 
     def _get_img_data_and_shape(self, img: Image) -> tuple[np.ndarray, tuple[int, int]]:
         key = img.path if isinstance(img, ImageFromFile) else id(img)
+        img_shape =  img.size
 
-        if (img_data := self.mem_cache_handler.get(key=key)[0]) is not None:
-            return img_data, img_data.shape[:2]
+        img_data, meta = self.mem_cache_handler.get(key=key)
+        if img_data is not None:
+            return img_data, img_shape or img_data.shape[:2]
 
         with image_decode_context():
             img_data = (
@@ -160,7 +162,7 @@ class OTXDataset(Dataset, Generic[T_OTXDataEntity]):
 
         img_data = self._cache_img(key=key, img_data=img_data.astype(np.uint8))
 
-        return img_data, img_data.shape[:2]
+        return img_data, img_shape or img_data.shape[:2]
 
     def _cache_img(self, key: str | int, img_data: np.ndarray) -> np.ndarray:
         """Cache an image after resizing.
@@ -181,11 +183,11 @@ class OTXDataset(Dataset, Generic[T_OTXDataEntity]):
         if self.mem_cache_handler.frozen:
             return img_data
 
+        height, width = img_data.shape[:2]
         if self.mem_cache_img_max_size is None:
             self.mem_cache_handler.put(key=key, data=img_data, meta=None)
             return img_data
 
-        height, width = img_data.shape[:2]
         max_height, max_width = self.mem_cache_img_max_size
 
         if height <= max_height and width <= max_width:
