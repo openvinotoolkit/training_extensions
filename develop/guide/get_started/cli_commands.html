@@ -699,17 +699,17 @@ With Custom Model</label><div class="sd-tab-content docutils">
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p><code class="docutils literal notranslate"><span class="pre">--data.config.mem_cache_size</span></code> provides in-memory caching for decoded images in main memory.
+<p><code class="docutils literal notranslate"><span class="pre">--data.mem_cache_size</span></code> provides in-memory caching for decoded images in main memory.
 If the batch size is large, such as for classification tasks, or if your dataset contains high-resolution images,
 image decoding can account for a non-negligible overhead in data pre-processing.
 This option can be useful for maximizing GPU utilization and reducing model training time in those cases.
 If your machine has enough main memory, we recommend increasing this value as much as possible.
-For example, you can cache approximately 10,000 of <code class="docutils literal notranslate"><span class="pre">500x375~500x439</span></code> sized images with <code class="docutils literal notranslate"><span class="pre">--data.config.mem_cache_size</span> <span class="pre">8GB</span></code>.</p>
+For example, you can cache approximately 10,000 of <code class="docutils literal notranslate"><span class="pre">500x375~500x439</span></code> sized images with <code class="docutils literal notranslate"><span class="pre">--data.mem_cache_size</span> <span class="pre">8GB</span></code>.</p>
 </div>
 <p>It is also possible to start training by omitting the recipe and just passing the paths to dataset roots, then the <a class="reference internal" href="../explanation/additional_features/auto_configuration.html"><span class="doc">auto-configuration</span></a> will be enabled. Based on the dataset, OpenVINO™ Training Extensions will choose the task type and recipe with the best accuracy/speed trade-off.</p>
 <p>You can override the configurable arguments.
 For example, that is how you can change the max epochs and the batch size for the training:</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span>train<span class="w"> </span>...<span class="w"> </span>--data.config.train_subset.batch_size<span class="w"> </span>&lt;batch-size&gt;<span class="w"> </span>--max_epochs<span class="w"> </span>&lt;max-epochs&gt;
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span>train<span class="w"> </span>...<span class="w"> </span>--data.train_subset.batch_size<span class="w"> </span>&lt;batch-size&gt;<span class="w"> </span>--max_epochs<span class="w"> </span>&lt;max-epochs&gt;
 </pre></div>
 </div>
 <div class="admonition note">

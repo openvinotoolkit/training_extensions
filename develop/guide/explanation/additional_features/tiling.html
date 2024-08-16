@@ -425,23 +425,22 @@ The below context will be provided during evaluation:</p>
 <section id="enable-tiling-via-otx-training">
 <h2>Enable Tiling via OTX Training<a class="headerlink" href="#enable-tiling-via-otx-training" title="Link to this heading">#</a></h2>
 <p>Currently, tiling is supported for both detection and instance segmentation models. Please refer to <a class="reference internal" href="../algorithms/object_detection/object_detection.html"><span class="doc">Object Detection</span></a> and <a class="reference internal" href="../algorithms/segmentation/instance_segmentation.html"><span class="doc">Instance Segmentation</span></a> for more details.</p>
-<p>To enable tiling in OTX training, set <code class="docutils literal notranslate"><span class="pre">data.config.tile_config.enable_tiler</span></code> parameter to 1. Here’s an example of enabling tiling:</p>
+<p>To enable tiling in OTX training, set <code class="docutils literal notranslate"><span class="pre">data.tile_config.enable_tiler</span></code> parameter to 1. Here’s an example of enabling tiling:</p>
 <div class="sd-tab-set docutils">
 <input checked="checked" id="sd-tab-item-0" name="sd-tab-set-0" type="radio">
 <label class="sd-tab-label" for="sd-tab-item-0">
 API</label><div class="sd-tab-content docutils">
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">otx.core.config.data</span> <span class="kn">import</span> <span class="n">DataModuleConfig</span><span class="p">,</span> <span class="n">TileConfig</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">otx.core.config.data</span> <span class="kn">import</span> <span class="n">TileConfig</span>
 <span class="kn">from</span> <span class="nn">otx.core.data.module</span> <span class="kn">import</span> <span class="n">OTXDataModule</span>
 
-<span class="n">data_config</span> <span class="o">=</span> <span class="n">DataModuleConfig</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">tile_config</span><span class="o">=</span><span class="n">TileConfig</span><span class="p">(</span><span class="n">enable_tiler</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
-<span class="n">datamodule</span> <span class="o">=</span> <span class="n">OTXDataModule</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="n">data_config</span><span class="p">)</span>
+<span class="n">datamodule</span> <span class="o">=</span> <span class="n">OTXDataModule</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">tile_config</span><span class="o">=</span><span class="n">TileConfig</span><span class="p">(</span><span class="n">enable_tiler</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
 </pre></div>
 </div>
 </div>
 <input id="sd-tab-item-1" name="sd-tab-set-0" type="radio">
 <label class="sd-tab-label" for="sd-tab-item-1">
 CLI</label><div class="sd-tab-content docutils">
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span>train<span class="w"> </span>...<span class="w"> </span>--data.config.tile_config.enable_tiler<span class="w"> </span>True
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span>train<span class="w"> </span>...<span class="w"> </span>--data.tile_config.enable_tiler<span class="w"> </span>True
 </pre></div>
 </div>
 </div>
@@ -457,21 +456,20 @@ CLI</label><div class="sd-tab-content docutils">
 <input checked="checked" id="sd-tab-item-2" name="sd-tab-set-1" type="radio">
 <label class="sd-tab-label" for="sd-tab-item-2">
 API</label><div class="sd-tab-content docutils">
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">otx.core.config.data</span> <span class="kn">import</span> <span class="n">DataModuleConfig</span><span class="p">,</span> <span class="n">TileConfig</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">otx.core.config.data</span> <span class="kn">import</span> <span class="n">TileConfig</span>
 <span class="kn">from</span> <span class="nn">otx.core.data.module</span> <span class="kn">import</span> <span class="n">OTXDataModule</span>
 
 <span class="n">tile_config</span> <span class="o">=</span> <span class="n">TileConfig</span><span class="p">(</span><span class="n">enable_tiler</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">enable_adaptive_tiling</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">object_tile_ratio</span><span class="o">=</span><span class="mf">0.05</span><span class="p">)</span>
-<span class="n">data_config</span> <span class="o">=</span> <span class="n">DataModuleConfig</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">tile_config</span><span class="o">=</span><span class="n">tile_config</span><span class="p">)</span>
-<span class="n">datamodule</span> <span class="o">=</span> <span class="n">OTXDataModule</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="n">data_config</span><span class="p">)</span>
+<span class="n">datamodule</span> <span class="o">=</span> <span class="n">OTXDataModule</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">tile_config</span><span class="o">=</span><span class="n">tile_config</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <input id="sd-tab-item-3" name="sd-tab-set-1" type="radio">
 <label class="sd-tab-label" for="sd-tab-item-3">
 CLI</label><div class="sd-tab-content docutils">
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span>train<span class="w"> </span>...<span class="w"> </span>--data.config.tile_config.enable_tiler<span class="w"> </span>True<span class="w"> </span><span class="se">\ </span><span class="w">            </span><span class="c1"># enable tiling</span>
-<span class="w">                         </span>--data.config.tile_config.enable_adaptive_tiling<span class="w"> </span>True<span class="w"> </span><span class="se">\ </span><span class="w">  </span><span class="c1"># enable automatic tiling parameter optimization</span>
-<span class="w">                         </span>--data.config.tile_config.object_tile_ratio<span class="w"> </span><span class="m">0</span>.05<span class="w">          </span><span class="c1"># set the object size ratio to 5%</span>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span>train<span class="w"> </span>...<span class="w"> </span>--data.tile_config.enable_tiler<span class="w"> </span>True<span class="w"> </span><span class="se">\ </span><span class="w">            </span><span class="c1"># enable tiling</span>
+<span class="w">                         </span>--data.tile_config.enable_adaptive_tiling<span class="w"> </span>True<span class="w"> </span><span class="se">\ </span><span class="w">  </span><span class="c1"># enable automatic tiling parameter optimization</span>
+<span class="w">                         </span>--data.tile_config.object_tile_ratio<span class="w"> </span><span class="m">0</span>.05<span class="w">          </span><span class="c1"># set the object size ratio to 5%</span>
 </pre></div>
 </div>
 </div>
@@ -485,26 +483,25 @@ This calculation ensures that the largest object on the border of a tile is not 
 <p>To accelerate the training process, the OpenVINO Training Extensions introduces a tile sampling strategy. This strategy involves randomly sampling a percentage of tile images from the dataset to be used for training.</p>
 <p>Since training and validation on all tiles from a high-resolution image dataset can be time-consuming, sampling the tile dataset can significantly reduce the training and validation time.</p>
 <p>It’s important to note that sampling is applied to the training and validation datasets, not the test dataset.</p>
-<p>This can be configured with <code class="docutils literal notranslate"><span class="pre">data.config.tile_config.enable_adaptive_tiling</span></code> parameter. Here’s an example:</p>
+<p>This can be configured with <code class="docutils literal notranslate"><span class="pre">data.tile_config.enable_adaptive_tiling</span></code> parameter. Here’s an example:</p>
 <div class="sd-tab-set docutils">
 <input checked="checked" id="sd-tab-item-4" name="sd-tab-set-2" type="radio">
 <label class="sd-tab-label" for="sd-tab-item-4">
 API</label><div class="sd-tab-content docutils">
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">otx.core.config.data</span> <span class="kn">import</span> <span class="n">DataModuleConfig</span><span class="p">,</span> <span class="n">TileConfig</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">otx.core.config.data</span> <span class="kn">import</span> <span class="n">TileConfig</span>
 <span class="kn">from</span> <span class="nn">otx.core.data.module</span> <span class="kn">import</span> <span class="n">OTXDataModule</span>
 
 <span class="n">tile_config</span> <span class="o">=</span> <span class="n">TileConfig</span><span class="p">(</span><span class="n">enable_tiler</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">enable_adaptive_tiling</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">sampling_ratio</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
-<span class="n">data_config</span> <span class="o">=</span> <span class="n">DataModuleConfig</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">tile_config</span><span class="o">=</span><span class="n">tile_config</span><span class="p">)</span>
-<span class="n">datamodule</span> <span class="o">=</span> <span class="n">OTXDataModule</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="n">data_config</span><span class="p">)</span>
+<span class="n">datamodule</span> <span class="o">=</span> <span class="n">OTXDataModule</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">tile_config</span><span class="o">=</span><span class="n">tile_config</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <input id="sd-tab-item-5" name="sd-tab-set-2" type="radio">
 <label class="sd-tab-label" for="sd-tab-item-5">
 CLI</label><div class="sd-tab-content docutils">
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span>train<span class="w"> </span>...<span class="w"> </span>--data.config.tile_config.enable_tiler<span class="w"> </span>True
-<span class="w">                         </span>--data.config.tile_config.enable_adaptive_tiling<span class="w"> </span>True
-<span class="w">                         </span>--data.config.tile_config.sampling_ratio<span class="w"> </span><span class="m">0</span>.5
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span>train<span class="w"> </span>...<span class="w"> </span>--data.tile_config.enable_tiler<span class="w"> </span>True
+<span class="w">                         </span>--data.tile_config.enable_adaptive_tiling<span class="w"> </span>True
+<span class="w">                         </span>--data.tile_config.sampling_ratio<span class="w"> </span><span class="m">0</span>.5
 </pre></div>
 </div>
 </div>
@@ -517,22 +514,21 @@ CLI</label><div class="sd-tab-content docutils">
 <input checked="checked" id="sd-tab-item-6" name="sd-tab-set-3" type="radio">
 <label class="sd-tab-label" for="sd-tab-item-6">
 API</label><div class="sd-tab-content docutils">
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">otx.core.config.data</span> <span class="kn">import</span> <span class="n">DataModuleConfig</span><span class="p">,</span> <span class="n">TileConfig</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">otx.core.config.data</span> <span class="kn">import</span> <span class="n">TileConfig</span>
 <span class="kn">from</span> <span class="nn">otx.core.data.module</span> <span class="kn">import</span> <span class="n">OTXDataModule</span>
 
 <span class="n">tile_config</span> <span class="o">=</span> <span class="n">TileConfig</span><span class="p">(</span><span class="n">enable_tiler</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">enable_adaptive_tiling</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">tile_size</span><span class="o">=</span><span class="p">(</span><span class="mi">512</span><span class="p">,</span><span class="mi">512</span><span class="p">),</span> <span class="n">tile_overlap</span><span class="o">=</span><span class="mf">0.2</span><span class="p">)</span>
-<span class="n">data_config</span> <span class="o">=</span> <span class="n">DataModuleConfig</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">tile_config</span><span class="o">=</span><span class="n">tile_config</span><span class="p">)</span>
-<span class="n">datamodule</span> <span class="o">=</span> <span class="n">OTXDataModule</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="n">data_config</span><span class="p">)</span>
+<span class="n">datamodule</span> <span class="o">=</span> <span class="n">OTXDataModule</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">tile_config</span><span class="o">=</span><span class="n">tile_config</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <input id="sd-tab-item-7" name="sd-tab-set-3" type="radio">
 <label class="sd-tab-label" for="sd-tab-item-7">
 CLI</label><div class="sd-tab-content docutils">
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span>train<span class="w"> </span>...<span class="w"> </span>--data.config.tile_config.enable_tiler<span class="w"> </span>True
-<span class="w">                         </span>--data.config.tile_config.enable_adaptive_tiling<span class="w"> </span>False
-<span class="w">                         </span>--data.config.tile_config.tile_size<span class="w"> </span><span class="s1">&#39;[512,512]&#39;</span>
-<span class="w">                         </span>--data.config.tile_config.tile_overlap<span class="w"> </span><span class="m">0</span>.2
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span>train<span class="w"> </span>...<span class="w"> </span>--data.tile_config.enable_tiler<span class="w"> </span>True
+<span class="w">                         </span>--data.tile_config.enable_adaptive_tiling<span class="w"> </span>False
+<span class="w">                         </span>--data.tile_config.tile_size<span class="w"> </span><span class="s1">&#39;[512,512]&#39;</span>
+<span class="w">                         </span>--data.tile_config.tile_overlap<span class="w"> </span><span class="m">0</span>.2
 </pre></div>
 </div>
 </div>

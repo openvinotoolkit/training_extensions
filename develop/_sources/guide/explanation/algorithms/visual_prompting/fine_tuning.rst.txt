@@ -93,5 +93,5 @@ According to datasets, ``learning rate`` and ``batch size`` can be adjusted like
     (otx) ...$ otx train \
         --config <model_config_path> \
         --data_root <path_to_data_root> \
-        --data.config.train_subset.batch_size <batch_size_to_be_updated> \
+        --data.train_subset.batch_size <batch_size_to_be_updated> \
         --optimizer.lr <learning_rate_to_be_updated>

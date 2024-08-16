@@ -159,7 +159,7 @@ You can select the model configuration and run Semi-SL training with the command
     (otx) ...$ otx train \
                 --config {semi_sl_config_path} \
                 --data_root {path_to_labeled_data} \
-                --data.config.unlabeled_subset.data_root {path_to_unlabeled_data}
+                --data.unlabeled_subset.data_root {path_to_unlabeled_data}
 
 Below are the results of comparing supervised learning and semi-supervised learning for each label per class on three datasets, three models.
 

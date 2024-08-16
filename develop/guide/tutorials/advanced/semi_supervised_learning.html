@@ -503,7 +503,7 @@ CLI (with config)</label><div class="sd-tab-content docutils">
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span>train<span class="w"> </span><span class="se">\</span>
 <span class="w">            </span>--config<span class="w"> </span>src/otx/recipe/classification/multi_class_cls/mobilenet_v3_large_semisl.yaml<span class="w"> </span><span class="se">\</span>
 <span class="w">            </span>--data_root<span class="w"> </span>data/flower_photos/labeled<span class="w"> </span><span class="se">\</span>
-<span class="w">            </span>--data.config.unlabeled_subset.data_root<span class="w"> </span>data/flower_photos/unlabeled
+<span class="w">            </span>--data.unlabeled_subset.data_root<span class="w"> </span>data/flower_photos/unlabeled
 </pre></div>
 </div>
 </div>
@@ -514,7 +514,7 @@ API (from_config)</label><div class="sd-tab-content docutils">
 
 <span class="n">data_root</span> <span class="o">=</span> <span class="s2">&quot;data/flower_photos&quot;</span>
 <span class="n">recipe</span> <span class="o">=</span> <span class="s2">&quot;src/otx/recipe/classification/multi_class_cls/mobilenet_v3_large_semisl.yaml&quot;</span>
-<span class="n">overrides</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;data.config.unlabeled_subset.data_root&quot;</span><span class="p">:</span> <span class="s2">&quot;data/flower_photos/unlabeled&quot;</span><span class="p">}</span>
+<span class="n">overrides</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;data.unlabeled_subset.data_root&quot;</span><span class="p">:</span> <span class="s2">&quot;data/flower_photos/unlabeled&quot;</span><span class="p">}</span>
 
 <span class="n">engine</span> <span class="o">=</span> <span class="n">Engine</span><span class="o">.</span><span class="n">from_config</span><span class="p">(</span>
           <span class="n">config_path</span><span class="o">=</span><span class="n">recipe</span><span class="p">,</span>
@@ -530,12 +530,11 @@ API (from_config)</label><div class="sd-tab-content docutils">
 <input id="sd-tab-item-4" name="sd-tab-set-1" type="radio">
 <label class="sd-tab-label" for="sd-tab-item-4">
 API</label><div class="sd-tab-content docutils">
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">otx.core.config.data</span> <span class="kn">import</span> <span class="n">DataModuleConfig</span><span class="p">,</span> <span class="n">UnlabeledDataConfig</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">otx.core.config.data</span> <span class="kn">import</span> <span class="n">UnlabeledDataConfig</span>
 <span class="kn">from</span> <span class="nn">otx.core.data.module</span> <span class="kn">import</span> <span class="n">OTXDataModule</span>
 <span class="kn">from</span> <span class="nn">otx.engine</span> <span class="kn">import</span> <span class="n">Engine</span>
 
-<span class="n">data_config</span> <span class="o">=</span> <span class="n">DataModuleConfig</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">unlabeled_subset</span><span class="o">=</span><span class="n">UnlabeledDataConfig</span><span class="p">(</span><span class="n">data_root</span><span class="o">=</span><span class="s2">&quot;data/flower_photos/unlabeled&quot;</span><span class="p">,</span> <span class="o">...</span><span class="p">))</span>
-<span class="n">datamodule</span> <span class="o">=</span> <span class="n">OTXDataModule</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="n">data_config</span><span class="p">)</span>
+<span class="n">datamodule</span> <span class="o">=</span> <span class="n">OTXDataModule</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">unlabeled_subset</span><span class="o">=</span><span class="n">UnlabeledDataConfig</span><span class="p">(</span><span class="n">data_root</span><span class="o">=</span><span class="s2">&quot;data/flower_photos/unlabeled&quot;</span><span class="p">,</span> <span class="o">...</span><span class="p">))</span>
 
 <span class="n">engine</span> <span class="o">=</span> <span class="n">Engine</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">datamodule</span><span class="o">=</span><span class="n">datamodule</span><span class="p">)</span>
 

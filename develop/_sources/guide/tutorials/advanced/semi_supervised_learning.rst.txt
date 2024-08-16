@@ -127,7 +127,7 @@ Training
             (otx) ...$ otx train \
                         --config src/otx/recipe/classification/multi_class_cls/mobilenet_v3_large_semisl.yaml \
                         --data_root data/flower_photos/labeled \
-                        --data.config.unlabeled_subset.data_root data/flower_photos/unlabeled
+                        --data.unlabeled_subset.data_root data/flower_photos/unlabeled
 
     .. tab-item:: API (from_config)
 
@@ -137,7 +137,7 @@ Training
 
             data_root = "data/flower_photos"
             recipe = "src/otx/recipe/classification/multi_class_cls/mobilenet_v3_large_semisl.yaml"
-            overrides = {"data.config.unlabeled_subset.data_root": "data/flower_photos/unlabeled"}
+            overrides = {"data.unlabeled_subset.data_root": "data/flower_photos/unlabeled"}
 
             engine = Engine.from_config(
                       config_path=recipe,
@@ -152,12 +152,11 @@ Training
 
         .. code-block:: python
 
-            from otx.core.config.data import DataModuleConfig, UnlabeledDataConfig
+            from otx.core.config.data import UnlabeledDataConfig
             from otx.core.data.module import OTXDataModule
             from otx.engine import Engine
 
-            data_config = DataModuleConfig(..., unlabeled_subset=UnlabeledDataConfig(data_root="data/flower_photos/unlabeled", ...))
-            datamodule = OTXDataModule(..., config=data_config)
+            datamodule = OTXDataModule(..., unlabeled_subset=UnlabeledDataConfig(data_root="data/flower_photos/unlabeled", ...))
 
             engine = Engine(..., datamodule=datamodule)
 

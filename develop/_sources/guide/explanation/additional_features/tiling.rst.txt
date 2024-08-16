@@ -47,7 +47,7 @@ Enable Tiling via OTX Training
 
 Currently, tiling is supported for both detection and instance segmentation models. Please refer to :doc:`../algorithms/object_detection/object_detection` and :doc:`../algorithms/segmentation/instance_segmentation` for more details.
 
-To enable tiling in OTX training, set ``data.config.tile_config.enable_tiler`` parameter to 1. Here's an example of enabling tiling:
+To enable tiling in OTX training, set ``data.tile_config.enable_tiler`` parameter to 1. Here's an example of enabling tiling:
 
 .. tab-set::
 
@@ -55,17 +55,16 @@ To enable tiling in OTX training, set ``data.config.tile_config.enable_tiler`` p
 
         .. code-block:: python
 
-            from otx.core.config.data import DataModuleConfig, TileConfig
+            from otx.core.config.data import TileConfig
             from otx.core.data.module import OTXDataModule
 
-            data_config = DataModuleConfig(..., tile_config=TileConfig(enable_tiler=True))
-            datamodule = OTXDataModule(..., config=data_config)
+            datamodule = OTXDataModule(..., tile_config=TileConfig(enable_tiler=True))
 
     .. tab-item:: CLI
 
         .. code-block:: shell
 
-            (otx) ...$ otx train ... --data.config.tile_config.enable_tiler True
+            (otx) ...$ otx train ... --data.tile_config.enable_tiler True
 
 
 Tile Size and Tile Overlap Optimization
@@ -86,20 +85,19 @@ Here's an example of setting the object size ratio to 5%:
 
         .. code-block:: python
 
-            from otx.core.config.data import DataModuleConfig, TileConfig
+            from otx.core.config.data import TileConfig
             from otx.core.data.module import OTXDataModule
 
             tile_config = TileConfig(enable_tiler=True, enable_adaptive_tiling=True, object_tile_ratio=0.05)
-            data_config = DataModuleConfig(..., tile_config=tile_config)
-            datamodule = OTXDataModule(..., config=data_config)
+            datamodule = OTXDataModule(..., tile_config=tile_config)
 
     .. tab-item:: CLI
 
         .. code-block:: shell
 
-            (otx) ...$ otx train ... --data.config.tile_config.enable_tiler True \             # enable tiling
-                                     --data.config.tile_config.enable_adaptive_tiling True \   # enable automatic tiling parameter optimization
-                                     --data.config.tile_config.object_tile_ratio 0.05          # set the object size ratio to 5%
+            (otx) ...$ otx train ... --data.tile_config.enable_tiler True \             # enable tiling
+                                     --data.tile_config.enable_adaptive_tiling True \   # enable automatic tiling parameter optimization
+                                     --data.tile_config.object_tile_ratio 0.05          # set the object size ratio to 5%
 
 
 After determining the tile size, the tile overlap is computed by dividing the largest object size in the training dataset by the adaptive tile size. 
@@ -116,7 +114,7 @@ Since training and validation on all tiles from a high-resolution image dataset 
 
 It's important to note that sampling is applied to the training and validation datasets, not the test dataset.
 
-This can be configured with ``data.config.tile_config.enable_adaptive_tiling`` parameter. Here's an example:
+This can be configured with ``data.tile_config.enable_adaptive_tiling`` parameter. Here's an example:
 
 .. tab-set::
 
@@ -124,20 +122,19 @@ This can be configured with ``data.config.tile_config.enable_adaptive_tiling`` p
 
         .. code-block:: python
 
-            from otx.core.config.data import DataModuleConfig, TileConfig
+            from otx.core.config.data import TileConfig
             from otx.core.data.module import OTXDataModule
 
             tile_config = TileConfig(enable_tiler=True, enable_adaptive_tiling=True, sampling_ratio=0.5)
-            data_config = DataModuleConfig(..., tile_config=tile_config)
-            datamodule = OTXDataModule(..., config=data_config)
+            datamodule = OTXDataModule(..., tile_config=tile_config)
 
     .. tab-item:: CLI
 
         .. code-block:: shell
 
-            (otx) ...$ otx train ... --data.config.tile_config.enable_tiler True
-                                     --data.config.tile_config.enable_adaptive_tiling True
-                                     --data.config.tile_config.sampling_ratio 0.5
+            (otx) ...$ otx train ... --data.tile_config.enable_tiler True
+                                     --data.tile_config.enable_adaptive_tiling True
+                                     --data.tile_config.sampling_ratio 0.5
 
 
 Manual Tiling Parameter Configuration
@@ -151,21 +148,20 @@ Users can disable adaptive tiling and customize the tiling process by setting th
 
         .. code-block:: python
 
-            from otx.core.config.data import DataModuleConfig, TileConfig
+            from otx.core.config.data import TileConfig
             from otx.core.data.module import OTXDataModule
 
             tile_config = TileConfig(enable_tiler=True, enable_adaptive_tiling=False, tile_size=(512,512), tile_overlap=0.2)
-            data_config = DataModuleConfig(..., tile_config=tile_config)
-            datamodule = OTXDataModule(..., config=data_config)
+            datamodule = OTXDataModule(..., tile_config=tile_config)
 
     .. tab-item:: CLI
 
         .. code-block:: shell
 
-            (otx) ...$ otx train ... --data.config.tile_config.enable_tiler True
-                                     --data.config.tile_config.enable_adaptive_tiling False
-                                     --data.config.tile_config.tile_size '[512,512]'
-                                     --data.config.tile_config.tile_overlap 0.2
+            (otx) ...$ otx train ... --data.tile_config.enable_tiler True
+                                     --data.tile_config.enable_adaptive_tiling False
+                                     --data.tile_config.tile_size '[512,512]'
+                                     --data.tile_config.tile_overlap 0.2
 
 By specifying these parameters, automatic tiling parameter optimization is disabled, and the tile size is configured to 512x512 pixels with a 10% overlap between tiles.
 

@@ -630,7 +630,7 @@ Learn more about template-specific parameters using <code class="docutils litera
 <input checked="checked" id="sd-tab-item-6" name="sd-tab-set-2" type="radio">
 <label class="sd-tab-label" for="sd-tab-item-6">
 CLI</label><div class="sd-tab-content docutils">
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span>train<span class="w"> </span>...<span class="w"> </span>--data.config.train_subset.batch_size<span class="w"> </span><span class="m">4</span><span class="w"> </span><span class="se">\</span>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span>train<span class="w"> </span>...<span class="w"> </span>--data.train_subset.batch_size<span class="w"> </span><span class="m">4</span><span class="w"> </span><span class="se">\</span>
 <span class="w">                         </span>--max_epochs<span class="w"> </span><span class="m">100</span>
 </pre></div>
 </div>
@@ -638,12 +638,11 @@ CLI</label><div class="sd-tab-content docutils">
 <input id="sd-tab-item-7" name="sd-tab-set-2" type="radio">
 <label class="sd-tab-label" for="sd-tab-item-7">
 API</label><div class="sd-tab-content docutils">
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">otx.core.config.data</span> <span class="kn">import</span> <span class="n">DataModuleConfig</span><span class="p">,</span> <span class="n">SubsetConfig</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">otx.core.config.data</span> <span class="kn">import</span> <span class="n">SubsetConfig</span>
 <span class="kn">from</span> <span class="nn">otx.core.data.module</span> <span class="kn">import</span> <span class="n">OTXDataModule</span>
 <span class="kn">from</span> <span class="nn">otx.engine</span> <span class="kn">import</span> <span class="n">Engine</span>
 
-<span class="n">data_config</span> <span class="o">=</span> <span class="n">DataModuleConfig</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">train_subset</span><span class="o">=</span><span class="n">SubsetConfig</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">4</span><span class="p">))</span>
-<span class="n">datamodule</span> <span class="o">=</span> <span class="n">OTXDataModule</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="n">data_config</span><span class="p">)</span>
+<span class="n">datamodule</span> <span class="o">=</span> <span class="n">OTXDataModule</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">train_subset</span><span class="o">=</span><span class="n">SubsetConfig</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">4</span><span class="p">))</span>
 
 <span class="n">engine</span> <span class="o">=</span> <span class="n">Engine</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">datamodule</span><span class="o">=</span><span class="n">datamodule</span><span class="p">)</span>
 
@@ -907,7 +906,7 @@ with OpenVINO™ PTQ.</p>
 CLI</label><div class="sd-tab-content docutils">
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span>optimize<span class="w">  </span>--work_dir<span class="w"> </span>otx-workspace<span class="w"> </span><span class="se">\</span>
 <span class="w">                         </span>--checkpoint<span class="w"> </span>otx-workspace/.latest/export/exported_model_decoder.xml<span class="w"> </span><span class="se">\</span>
-<span class="w">                         </span>--data.config.train_subset.num_workers<span class="w"> </span><span class="m">0</span>
+<span class="w">                         </span>--data.train_subset.num_workers<span class="w"> </span><span class="m">0</span>
 
 ...
 Statistics<span class="w"> </span>collection<span class="w"> </span>━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━<span class="w"> </span><span class="m">100</span>%<span class="w"> </span><span class="m">55</span>/55<span class="w"> </span>•<span class="w"> </span><span class="m">0</span>:00:35<span class="w"> </span>•<span class="w"> </span><span class="m">0</span>:00:00
@@ -931,7 +930,7 @@ Please note, that PTQ will take some time without logging to optimize the model.
 <p class="admonition-title">Note</p>
 <p>Optimization is performed in the following order: image encoder  then decoder.
 Because the optimized image encoder is used for decoder optimization, segmentation fault error can occur when releasing threads and memories after optimization step.
-It doesn’t affect optimization results, but it’s recommended to set <code class="docutils literal notranslate"><span class="pre">--data.config.train_subset.num_workers</span> <span class="pre">0</span></code> to avoid this error.</p>
+It doesn’t affect optimization results, but it’s recommended to set <code class="docutils literal notranslate"><span class="pre">--data.train_subset.num_workers</span> <span class="pre">0</span></code> to avoid this error.</p>
 </div>
 <p>3. Finally, we can also evaluate the optimized model by passing
 it to the <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">test</span></code> function.</p>
