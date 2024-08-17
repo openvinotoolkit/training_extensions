@@ -300,20 +300,6 @@
     <span class="kn">from</span> <span class="nn">otx.core.metrics</span> <span class="kn">import</span> <span class="n">MetricCallable</span>
 
 
-<span class="n">LITMODULE_PER_TASK</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="n">OTXTaskType</span><span class="o">.</span><span class="n">MULTI_CLASS_CLS</span><span class="p">:</span> <span class="s2">&quot;otx.core.model.module.classification.OTXMulticlassClsLitModule&quot;</span><span class="p">,</span>
-    <span class="n">OTXTaskType</span><span class="o">.</span><span class="n">MULTI_LABEL_CLS</span><span class="p">:</span> <span class="s2">&quot;otx.core.model.module.classification.OTXMultilabelClsLitModule&quot;</span><span class="p">,</span>
-    <span class="n">OTXTaskType</span><span class="o">.</span><span class="n">H_LABEL_CLS</span><span class="p">:</span> <span class="s2">&quot;otx.core.model.module.classification.OTXHlabelClsLitModule&quot;</span><span class="p">,</span>
-    <span class="n">OTXTaskType</span><span class="o">.</span><span class="n">DETECTION</span><span class="p">:</span> <span class="s2">&quot;otx.core.model.module.detection.OTXDetectionLitModule&quot;</span><span class="p">,</span>
-    <span class="n">OTXTaskType</span><span class="o">.</span><span class="n">ROTATED_DETECTION</span><span class="p">:</span> <span class="s2">&quot;otx.core.model.module.rotated_detection.OTXRotatedDetLitModule&quot;</span><span class="p">,</span>
-    <span class="n">OTXTaskType</span><span class="o">.</span><span class="n">INSTANCE_SEGMENTATION</span><span class="p">:</span> <span class="s2">&quot;otx.core.model.module.instance_segmentation.OTXInstanceSegLitModule&quot;</span><span class="p">,</span>
-    <span class="n">OTXTaskType</span><span class="o">.</span><span class="n">SEMANTIC_SEGMENTATION</span><span class="p">:</span> <span class="s2">&quot;otx.core.model.module.segmentation.OTXSegmentationLitModule&quot;</span><span class="p">,</span>
-    <span class="n">OTXTaskType</span><span class="o">.</span><span class="n">ACTION_CLASSIFICATION</span><span class="p">:</span> <span class="s2">&quot;otx.core.model.module.action_classification.OTXActionClsLitModule&quot;</span><span class="p">,</span>
-    <span class="n">OTXTaskType</span><span class="o">.</span><span class="n">VISUAL_PROMPTING</span><span class="p">:</span> <span class="s2">&quot;otx.core.model.module.visual_prompting.OTXVisualPromptingLitModule&quot;</span><span class="p">,</span>
-    <span class="n">OTXTaskType</span><span class="o">.</span><span class="n">ZERO_SHOT_VISUAL_PROMPTING</span><span class="p">:</span> <span class="s2">&quot;otx.core.model.module.visual_prompting.OTXZeroShotVisualPromptingLitModule&quot;</span><span class="p">,</span>  <span class="c1"># noqa: E501</span>
-<span class="p">}</span>
-
-
 <span class="nd">@contextmanager</span>
 <span class="k">def</span> <span class="nf">override_metric_callable</span><span class="p">(</span><span class="n">model</span><span class="p">:</span> <span class="n">OTXModel</span><span class="p">,</span> <span class="n">new_metric_callable</span><span class="p">:</span> <span class="n">MetricCallable</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">OTXModel</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Override `OTXModel.metric_callable` to change the evaluation metric.</span>

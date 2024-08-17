@@ -387,10 +387,10 @@
         <span class="n">loss</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">training_step</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">batch_idx</span><span class="p">)</span>
         <span class="c1"># Collect metrics related to Semi-SL Training.</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">train_type</span> <span class="o">==</span> <span class="n">OTXTrainType</span><span class="o">.</span><span class="n">SEMI_SUPERVISED</span><span class="p">:</span>
-            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">head</span><span class="p">,</span> <span class="s2">&quot;unlabeled_coef&quot;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="s2">&quot;unlabeled_coef&quot;</span><span class="p">):</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span>
                     <span class="s2">&quot;train/unlabeled_coef&quot;</span><span class="p">,</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">head</span><span class="o">.</span><span class="n">unlabeled_coef</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">unlabeled_coef</span><span class="p">,</span>
                     <span class="n">on_step</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                     <span class="n">on_epoch</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                     <span class="n">prog_bar</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
