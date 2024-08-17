@@ -7,7 +7,6 @@ from __future__ import annotations
 import pytest
 import torch
 from otx.algo.classification.heads import MultiLabelLinearClsHead, MultiLabelNonLinearClsHead
-from otx.algo.classification.losses import AsymmetricAngularLossWithIgnore
 from otx.core.data.entity.base import ImageInfo
 from torch import nn
 
@@ -17,7 +16,6 @@ def fxt_linear_head() -> None:
     return MultiLabelLinearClsHead(
         num_classes=3,
         in_channels=5,
-        loss=AsymmetricAngularLossWithIgnore(),
     )
 
 
@@ -28,7 +26,6 @@ def fxt_non_linear_head() -> None:
         in_channels=5,
         hid_channels=10,
         activation=nn.PReLU(),
-        loss=AsymmetricAngularLossWithIgnore(),
     )
 
 
@@ -70,21 +67,6 @@ class TestMultiLabelClsHead:
     @pytest.fixture(params=["fxt_linear_head", "fxt_non_linear_head"])
     def fxt_multilabel_head(self, request) -> nn.Module:
         return request.getfixturevalue(request.param)
-
-    def test_loss(
-        self,
-        fxt_multilabel_head,
-        fxt_data_sample,
-        fxt_data_sample_with_ignore_labels,
-    ) -> None:
-        dummy_input = (torch.ones((2, 5)),)
-        result_without_ignored_labels = fxt_multilabel_head.loss(dummy_input, **fxt_data_sample)
-
-        result_with_ignored_labels = fxt_multilabel_head.loss(
-            dummy_input,
-            **fxt_data_sample_with_ignore_labels,
-        )
-        assert result_with_ignored_labels <= result_without_ignored_labels
 
     def test_predict(
         self,

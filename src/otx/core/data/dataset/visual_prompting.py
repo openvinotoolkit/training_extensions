@@ -90,7 +90,7 @@ class OTXVisualPromptingDataset(OTXDataset[VisualPromptingDataEntity]):
             if isinstance(annotation, dmPolygon):
                 mask = tvMask(polygon_to_bitmap([annotation], *img_shape)[0])
                 mask_points = torch.nonzero(mask)
-                if len(mask_points[0]) == 0:
+                if len(mask_points) == 0:
                     # skip very small region
                     continue
 
@@ -225,7 +225,7 @@ class OTXZeroShotVisualPromptingDataset(OTXDataset[ZeroShotVisualPromptingDataEn
                 # generate prompts from polygon
                 mask = tvMask(polygon_to_bitmap([annotation], *img_shape)[0])
                 mask_points = torch.nonzero(mask)
-                if len(mask_points[0]) == 0:
+                if len(mask_points) == 0:
                     # skip very small region
                     continue
 

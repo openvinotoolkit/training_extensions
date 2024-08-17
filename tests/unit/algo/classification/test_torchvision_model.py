@@ -3,17 +3,22 @@
 
 import pytest
 import torch
-from otx.algo.classification.heads import OTXSemiSLLinearClsHead
-from otx.algo.classification.torchvision_model import OTXTVModel, TVClassificationModel
+from otx.algo.classification.classifier import ImageClassifier
+from otx.algo.classification.heads import SemiSLLinearClsHead
+from otx.algo.classification.torchvision_model import (
+    TVModelForHLabelCls,
+    TVModelForMulticlassCls,
+    TVModelForMultilabelCls,
+)
 from otx.core.data.entity.base import OTXBatchLossEntity, OTXBatchPredEntity
 from otx.core.data.entity.classification import MulticlassClsBatchPredEntity
 from otx.core.types.export import TaskLevelExportParameters
-from otx.core.types.task import OTXTaskType, OTXTrainType
+from otx.core.types.task import OTXTaskType
 
 
 @pytest.fixture()
 def fxt_tv_model():
-    return OTXTVModel(backbone="mobilenet_v3_small", label_info=10)
+    return TVModelForMulticlassCls(backbone="mobilenet_v3_small", label_info=10)
 
 
 @pytest.fixture()
@@ -25,33 +30,33 @@ def fxt_tv_model_and_data_entity(
     fxt_hlabel_multilabel_info,
 ):
     if request.param == OTXTaskType.MULTI_CLASS_CLS:
-        return OTXTVModel(backbone="mobilenet_v3_small", label_info=10), fxt_multiclass_cls_batch_data_entity
-    if request.param == OTXTaskType.MULTI_LABEL_CLS:
-        return OTXTVModel(
+        return TVModelForMulticlassCls(
             backbone="mobilenet_v3_small",
             label_info=10,
-            task=OTXTaskType.MULTI_LABEL_CLS,
+        ), fxt_multiclass_cls_batch_data_entity
+    if request.param == OTXTaskType.MULTI_LABEL_CLS:
+        return TVModelForMultilabelCls(
+            backbone="mobilenet_v3_small",
+            label_info=10,
         ), fxt_multilabel_cls_batch_data_entity
     if request.param == OTXTaskType.H_LABEL_CLS:
-        return OTXTVModel(
+        return TVModelForHLabelCls(
             backbone="mobilenet_v3_small",
             label_info=fxt_hlabel_multilabel_info,
-            task=OTXTaskType.H_LABEL_CLS,
         ), fxt_hlabel_cls_batch_data_entity
     return None
 
 
 class TestOTXTVModel:
     def test_create_model(self, fxt_tv_model):
-        assert isinstance(fxt_tv_model.model, TVClassificationModel)
+        assert isinstance(fxt_tv_model.model, ImageClassifier)
 
-        semi_sl_model = OTXTVModel(
+        semi_sl_model = TVModelForMulticlassCls(
             backbone="mobilenet_v3_small",
             label_info=10,
-            train_type=OTXTrainType.SEMI_SUPERVISED,
-            task=OTXTaskType.MULTI_CLASS_CLS,
+            train_type="SEMI_SUPERVISED",
         )
-        assert isinstance(semi_sl_model.model.head, OTXSemiSLLinearClsHead)
+        assert isinstance(semi_sl_model.model.head, SemiSLLinearClsHead)
 
     @pytest.mark.parametrize(
         "fxt_tv_model_and_data_entity",
@@ -88,7 +93,7 @@ class TestOTXTVModel:
         assert export_parameters.task_type == "classification"
 
     @pytest.mark.parametrize("explain_mode", [True, False])
-    def test_predict_step(self, fxt_tv_model: OTXTVModel, fxt_multiclass_cls_batch_data_entity, explain_mode):
+    def test_predict_step(self, fxt_tv_model, fxt_multiclass_cls_batch_data_entity, explain_mode):
         fxt_tv_model.eval()
         fxt_tv_model.explain_mode = explain_mode
         outputs = fxt_tv_model.predict_step(batch=fxt_multiclass_cls_batch_data_entity, batch_idx=0)
@@ -99,8 +104,3 @@ class TestOTXTVModel:
             assert outputs.feature_vector.ndim == 2
             assert outputs.saliency_map.ndim == 4
             assert outputs.saliency_map.shape[-2:] != torch.Size([1, 1])
-
-    def test_freeze_backbone(self):
-        freezed_model = OTXTVModel(backbone="resnet50", label_info=10, freeze_backbone=True)
-        for param in freezed_model.model.backbone.parameters():
-            assert not param.requires_grad

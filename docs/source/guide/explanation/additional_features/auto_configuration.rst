@@ -152,14 +152,12 @@ To use this feature, add the following parameter:
 
         .. code-block:: python
 
-            from otx.core.config.data import DataModuleConfig
             from otx.core.data.module import OTXDataModule
 
-            data_config = DataModuleConfig(..., auto_num_workers=True)
-            datamodule = OTXDataModule(..., config=data_config)
+            datamodule = OTXDataModule(..., auto_num_workers=True)
 
     .. tab-item:: CLI
 
         .. code-block:: shell
 
-            (otx) ...$ otx train ... --data.config.auto_num_workers True
+            (otx) ...$ otx train ... --data.auto_num_workers True
