@@ -110,7 +110,7 @@ There are 58 different models available from torchvision, see `TVModelType <http
 
 .. code-block:: shell
 
-    (otx) ...$ otx train --model otx.algo.classification.torchvision_model.OTXTVModel --backbone {backbone_name} ...
+    (otx) ...$ otx train --model otx.algo.classification.torchvision_model.TVModelForMulticlassCls --backbone {backbone_name} ...
 
 
 ************************

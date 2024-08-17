@@ -13,13 +13,12 @@ from typing import TYPE_CHECKING, Literal
 from torch import Tensor, nn
 
 from otx.algo.classification.backbones.efficientnet import EFFICIENTNET_VERSION, OTXEfficientNet
-from otx.algo.classification.classifier.base_classifier import ImageClassifier
-from otx.algo.classification.classifier.semi_sl_classifier import SemiSLClassifier
+from otx.algo.classification.classifier import HLabelClassifier, ImageClassifier, SemiSLClassifier
 from otx.algo.classification.heads import (
     HierarchicalCBAMClsHead,
     LinearClsHead,
     MultiLabelLinearClsHead,
-    OTXSemiSLLinearClsHead,
+    SemiSLLinearClsHead,
 )
 from otx.algo.classification.losses.asymmetric_angular_loss_with_ignore import AsymmetricAngularLossWithIgnore
 from otx.algo.classification.necks.gap import GlobalAveragePooling
@@ -91,16 +90,15 @@ class EfficientNetForMulticlassCls(OTXMulticlassClsModel):
     def _build_model(self, num_classes: int) -> nn.Module:
         backbone = OTXEfficientNet(version=self.version, input_size=self.input_size, pretrained=self.pretrained)
         neck = GlobalAveragePooling(dim=2)
-        loss = nn.CrossEntropyLoss(reduction="none")
         if self.train_type == OTXTrainType.SEMI_SUPERVISED:
             return SemiSLClassifier(
                 backbone=backbone,
                 neck=neck,
-                head=OTXSemiSLLinearClsHead(
+                head=SemiSLLinearClsHead(
                     num_classes=num_classes,
                     in_channels=backbone.num_features,
-                    loss=loss,
                 ),
+                loss=nn.CrossEntropyLoss(reduction="none"),
             )
 
         return ImageClassifier(
@@ -109,9 +107,8 @@ class EfficientNetForMulticlassCls(OTXMulticlassClsModel):
             head=LinearClsHead(
                 num_classes=num_classes,
                 in_channels=backbone.num_features,
-                topk=(1, 5) if num_classes >= 5 else (1,),
-                loss=loss,
             ),
+            loss=nn.CrossEntropyLoss(),
         )
 
     def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.") -> dict:
@@ -188,10 +185,10 @@ class EfficientNetForMultilabelCls(OTXMultilabelClsModel):
             head=MultiLabelLinearClsHead(
                 num_classes=num_classes,
                 in_channels=backbone.num_features,
-                scale=7.0,
                 normalized=True,
-                loss=AsymmetricAngularLossWithIgnore(gamma_pos=0.0, gamma_neg=1.0, reduction="sum"),
             ),
+            loss=AsymmetricAngularLossWithIgnore(gamma_pos=0.0, gamma_neg=1.0, reduction="sum"),
+            loss_scale=7.0,
         )
 
     def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.") -> dict:
@@ -274,16 +271,15 @@ class EfficientNetForHLabelCls(OTXHlabelClsModel):
         copied_head_config = copy(head_config)
         copied_head_config["step_size"] = (ceil(self.input_size[0] / 32), ceil(self.input_size[1] / 32))
 
-        return ImageClassifier(
+        return HLabelClassifier(
             backbone=backbone,
             neck=nn.Identity(),
             head=HierarchicalCBAMClsHead(
                 in_channels=backbone.num_features,
-                multiclass_loss=nn.CrossEntropyLoss(),
-                multilabel_loss=AsymmetricAngularLossWithIgnore(gamma_pos=0.0, gamma_neg=1.0, reduction="sum"),
                 **copied_head_config,
             ),
-            optimize_gap=False,
+            multiclass_loss=nn.CrossEntropyLoss(),
+            multilabel_loss=AsymmetricAngularLossWithIgnore(gamma_pos=0.0, gamma_neg=1.0, reduction="sum"),
         )
 
     def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.") -> dict:

@@ -5,16 +5,23 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Literal
+from copy import deepcopy
+from typing import TYPE_CHECKING, Literal
 
 import torch
-from torch import Tensor, nn
-from torchvision.models import get_model, get_model_weights
+from torch import nn
 
-from otx.algo.classification.heads import HierarchicalCBAMClsHead, MultiLabelLinearClsHead, OTXSemiSLLinearClsHead
+from otx.algo.classification.backbones.torchvision import TorchvisionBackbone, TVModelType
+from otx.algo.classification.classifier import HLabelClassifier, ImageClassifier, SemiSLClassifier
+from otx.algo.classification.heads import (
+    HierarchicalCBAMClsHead,
+    LinearClsHead,
+    MultiLabelLinearClsHead,
+    SemiSLLinearClsHead,
+)
 from otx.algo.classification.losses import AsymmetricAngularLossWithIgnore
-from otx.algo.explain.explain_algo import ReciproCAM, feature_vector_fn
-from otx.core.data.entity.base import OTXBatchLossEntity
+from otx.algo.classification.necks.gap import GlobalAveragePooling
+from otx.algo.classification.utils import get_classification_layers
 from otx.core.data.entity.classification import (
     HlabelClsBatchDataEntity,
     HlabelClsBatchPredEntity,
@@ -23,421 +30,164 @@ from otx.core.data.entity.classification import (
     MultilabelClsBatchDataEntity,
     MultilabelClsBatchPredEntity,
 )
-from otx.core.exporter.base import OTXModelExporter
-from otx.core.exporter.native import OTXNativeModelExporter
-from otx.core.metrics import MetricInput
 from otx.core.metrics.accuracy import HLabelClsMetricCallble, MultiClassClsMetricCallable, MultiLabelClsMetricCallable
-from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable, OTXModel
+from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
+from otx.core.model.classification import (
+    OTXHlabelClsModel,
+    OTXMulticlassClsModel,
+    OTXMultilabelClsModel,
+)
 from otx.core.schedulers import LRSchedulerListCallable
-from otx.core.types.export import TaskLevelExportParameters
 from otx.core.types.label import HLabelInfo, LabelInfoTypes
-from otx.core.types.task import OTXTaskType, OTXTrainType
+from otx.core.types.task import OTXTrainType
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
 
-CLASSIFICATION_BATCH_DATA_ENTITY = (
-    MulticlassClsBatchDataEntity | MultilabelClsBatchDataEntity | HlabelClsBatchDataEntity
-)
-CLASSIFICATION_BATCH_PRED_ENTITY = (
-    MulticlassClsBatchPredEntity | MultilabelClsBatchPredEntity | HlabelClsBatchPredEntity
-)
+    from otx.core.metrics import MetricCallable
 
 
-TVModelType = Literal[
-    "alexnet",
-    "convnext_base",
-    "convnext_large",
-    "convnext_small",
-    "convnext_tiny",
-    "efficientnet_b0",
-    "efficientnet_b1",
-    "efficientnet_b2",
-    "efficientnet_b3",
-    "efficientnet_b4",
-    "efficientnet_b5",
-    "efficientnet_b6",
-    "efficientnet_b7",
-    "efficientnet_v2_l",
-    "efficientnet_v2_m",
-    "efficientnet_v2_s",
-    "googlenet",
-    "mobilenet_v3_large",
-    "mobilenet_v3_small",
-    "regnet_x_16gf",
-    "regnet_x_1_6gf",
-    "regnet_x_32gf",
-    "regnet_x_3_2gf",
-    "regnet_x_400mf",
-    "regnet_x_800mf",
-    "regnet_x_8gf",
-    "regnet_y_128gf",
-    "regnet_y_16gf",
-    "regnet_y_1_6gf",
-    "regnet_y_32gf",
-    "regnet_y_3_2gf",
-    "regnet_y_400mf",
-    "regnet_y_800mf",
-    "regnet_y_8gf",
-    "resnet101",
-    "resnet152",
-    "resnet18",
-    "resnet34",
-    "resnet50",
-    "resnext101_32x8d",
-    "resnext101_64x4d",
-    "resnext50_32x4d",
-    "swin_b",
-    "swin_s",
-    "swin_t",
-    "swin_v2_b",
-    "swin_v2_s",
-    "swin_v2_t",
-    "vgg11",
-    "vgg11_bn",
-    "vgg13",
-    "vgg13_bn",
-    "vgg16",
-    "vgg16_bn",
-    "vgg19",
-    "vgg19_bn",
-    "wide_resnet101_2",
-    "wide_resnet50_2",
-]
-
-
-class TVClassificationModel(nn.Module):
-    """TorchVision Model with Loss Computation.
-
-    This class represents a TorchVision model with loss computation for classification tasks.
-    It takes a backbone model, number of classes, and an optional loss function as input.
+class TVModelForMulticlassCls(OTXMulticlassClsModel):
+    """Torchvision model for multiclass classification.
 
     Args:
-        backbone (TVModelType): The backbone model to use for feature extraction.
-        num_classes (int): The number of classes for the classification task.
-        loss (Callable | None, optional): The loss function to use.
-        freeze_backbone (bool, optional): Whether to freeze the backbone model. Defaults to False.
-        task (Literal[OTXTaskType.MULTI_CLASS_CLS, OTXTaskType.MULTI_LABEL_CLS, OTXTaskType.H_LABEL_CLS], optional):
-            The type of classification task.
-        train_type (Literal[OTXTrainType.SUPERVISED, OTXTrainType.SEMI_SUPERVISED], optional): The type of training.
-        head_config (dict | None, optional): The configuration for the head module.
-
-    Methods:
-        forward(images: torch.Tensor, labels: torch.Tensor) -> torch.Tensor:
-            Performs forward pass of the model.
-
-    """
-
-    def __init__(
-        self,
-        backbone: TVModelType,
-        num_classes: int,
-        loss: nn.Module,
-        freeze_backbone: bool = False,
-        task: Literal[
-            OTXTaskType.MULTI_CLASS_CLS,
-            OTXTaskType.MULTI_LABEL_CLS,
-            OTXTaskType.H_LABEL_CLS,
-        ] = OTXTaskType.MULTI_CLASS_CLS,
-        train_type: Literal[OTXTrainType.SUPERVISED, OTXTrainType.SEMI_SUPERVISED] = OTXTrainType.SUPERVISED,
-        head_config: dict | None = None,
-    ) -> None:
-        super().__init__()
-        self.num_classes = num_classes
-        self.task = task
-        self.train_type = train_type
-        self.head_config = head_config if head_config else {}
-
-        net = get_model(name=backbone, weights=get_model_weights(backbone))
-
-        self.backbone = nn.Sequential(*list(net.children())[:-1])
-        self.use_layer_norm_2d = False
-
-        if freeze_backbone:
-            for param in self.backbone.parameters():
-                param.requires_grad = False
-
-        self.softmax = nn.Softmax(dim=-1)
-        self.loss_module = loss
-        self.neck: nn.Module | None = None
-        self.head = self._get_head(net)
-
-        avgpool_index = 0
-        for i, layer in enumerate(self.backbone.children()):
-            if isinstance(layer, nn.AdaptiveAvgPool2d):
-                avgpool_index = i
-        self.feature_extractor = nn.Sequential(*list(self.backbone.children())[:avgpool_index])
-        self.avgpool = nn.Sequential(
-            *list(self.backbone.children())[avgpool_index:],
-        )  # Avgpool and Dropout (if the model has it)
-
-        self.explainer = ReciproCAM(
-            self._head_forward_fn,
-            num_classes=num_classes,
-            optimize_gap=True,
-        )
-
-    def _get_head(self, net: nn.Module) -> nn.Module:
-        """Returns the head of the model."""
-        last_layer = list(net.children())[-1]
-        layers = []
-        classifier_len = len(list(last_layer.children()))
-        if classifier_len >= 1:
-            feature_channel = list(last_layer.children())[-1].in_features
-            layers = list(last_layer.children())[:-1]
-            self.use_layer_norm_2d = layers[0].__class__.__name__ == "LayerNorm2d"
-        else:
-            feature_channel = last_layer.in_features
-        if self.task == OTXTaskType.MULTI_CLASS_CLS:
-            if self.train_type == OTXTrainType.SEMI_SUPERVISED:
-                self.neck = nn.Sequential(*layers) if layers else None
-                return OTXSemiSLLinearClsHead(
-                    num_classes=self.num_classes,
-                    in_channels=feature_channel,
-                    loss=self.loss_module,
-                )
-            if classifier_len >= 1:
-                return nn.Sequential(*layers, nn.Linear(feature_channel, self.num_classes))
-            return nn.Linear(feature_channel, self.num_classes)
-        if self.task == OTXTaskType.MULTI_LABEL_CLS:
-            self.neck = nn.Sequential(*layers) if layers else None
-            return MultiLabelLinearClsHead(
-                num_classes=self.num_classes,
-                in_channels=feature_channel,
-                scale=7.0,
-                normalized=True,
-                loss=self.loss_module,
-            )
-        if self.task == OTXTaskType.H_LABEL_CLS:
-            self.neck = nn.Sequential(*layers, nn.Identity()) if layers else None
-            return HierarchicalCBAMClsHead(
-                in_channels=feature_channel,
-                multiclass_loss=nn.CrossEntropyLoss(),
-                multilabel_loss=self.loss_module,
-                **self.head_config,
-                step_size=1,
-            )
-
-        msg = f"Task type {self.task} is not supported."
-        raise NotImplementedError(msg)
-
-    def forward(
-        self,
-        images: torch.Tensor | dict[str, torch.Tensor],
-        labels: torch.Tensor | dict[str, torch.Tensor] | None = None,
-        mode: str = "tensor",
-        **kwargs,
-    ) -> dict[str, tuple | torch.Tensor] | tuple | torch.Tensor:
-        """Performs forward pass of the model.
-
-        Args:
-            images (torch.Tensor | dict[str, torch.Tensor]): The input images.
-                if Semi-SL task with multi-augmentation, it will comes as a dict.
-            labels (torch.Tensor | dict[str, torch.Tensor] | None, optional): The ground truth labels.
-            mode (str, optional): The mode of the forward pass. Defaults to "tensor".
-
-        Returns:
-            torch.Tensor: The output logits or loss, depending on the training mode.
-        """
-        if mode == "tensor":
-            return self.extract_feat(images, stage="head")
-        if mode == "loss":
-            feats = self.extract_feat(images, stage="neck")
-            return self.loss(feats, labels)
-        if mode == "predict":
-            feats = self.extract_feat(images, stage="neck")
-            return self.predict(feats, **kwargs)
-        if mode == "explain":
-            return self._forward_explain(images)
-        logits = self.extract_feat(images, stage="head")
-        return self.softmax(logits)
-
-    def extract_feat(
-        self,
-        inputs: dict[str, torch.Tensor] | torch.Tensor,
-        stage: str = "neck",
-    ) -> dict[str, tuple | torch.Tensor] | tuple | torch.Tensor:
-        """Extract features from the input tensor with shape (N, C, ...).
-
-        Args:
-            inputs (dict[str, torch.Tensor] | torch.Tensor): A batch of inputs. The shape of it should be
-                ``(num_samples, num_channels, *img_shape)``.
-            stage (str): Which stage to output the feature. Choose from:
-
-                - "backbone": The output of backbone network. Returns a tuple
-                  including multiple stages features.
-                - "neck": The output of neck module. Returns a tuple including
-                  multiple stages features.
-
-                Defaults to "neck".
-
-        Returns:
-            dict[str, tuple | torch.Tensor] | tuple | torch.Tensor: The output of specified stage.
-            The output depends on detailed implementation. In general, the
-            output of backbone and neck is a tuple.
-        """
-        if isinstance(inputs, dict):
-            return self._extract_feat_with_unlabeled(inputs, stage)
-
-        x = self._flatten_outputs(self.backbone(inputs))
-
-        if stage == "backbone":
-            return x
-
-        if self.neck is not None:
-            x = self.neck(x)
-
-        if stage == "neck":
-            return x
-
-        return self.head(x)
-
-    def _extract_feat_with_unlabeled(
-        self,
-        images: dict[str, torch.Tensor],
-        stage: str = "neck",
-    ) -> dict[str, torch.Tensor]:
-        if "labeled" not in images or "weak_transforms" not in images or "strong_transforms" not in images:
-            msg = "The input dictionary should contain 'labeled', 'weak_transforms', and 'strong_transforms' keys."
-            raise ValueError(msg)
-
-        labeled_inputs = images["labeled"]
-        unlabeled_weak_inputs = images["weak_transforms"]
-        unlabeled_strong_inputs = images["strong_transforms"]
-
-        x = {}
-        x["labeled"] = self.extract_feat(labeled_inputs, stage)
-        # For weak augmentation inputs, use no_grad to use as a pseudo-label.
-        with torch.no_grad():
-            x["unlabeled_weak"] = self.extract_feat(unlabeled_weak_inputs, stage)
-        x["unlabeled_strong"] = self.extract_feat(unlabeled_strong_inputs, stage)
-        return x
-
-    def loss(
-        self,
-        inputs: dict[str, torch.Tensor] | tuple | torch.Tensor,
-        labels: dict[str, torch.Tensor] | torch.Tensor,
-    ) -> torch.Tensor:
-        """Calculates the loss of the model.
-
-        Args:
-            inputs (dict[str, torch.Tensor] | tuple | torch.Tensor): The outputs of the model backbone.
-            labels (dict[str, torch.Tensor] | torch.Tensor): The ground truth labels.
-
-        Returns:
-            torch.Tensor: The computed loss.
-        """
-        if hasattr(self.head, "loss"):
-            return self.head.loss(inputs, labels)
-        logits = self.head(inputs)
-        return self.loss_module(logits, labels).sum() / logits.size(0)
-
-    def predict(self, inputs: torch.Tensor, **kwargs) -> list[torch.Tensor]:
-        """Predict results from a batch of inputs.
-
-        Args:
-            inputs (torch.Tensor): The input tensor with shape
-                (N, C, ...) in general.
-            **kwargs: Other keyword arguments accepted by the ``predict``
-                method of :attr:`head`.
-        """
-        if hasattr(self.head, "predict"):
-            return self.head.predict(inputs, **kwargs)
-        return self.softmax(self.head(inputs))
-
-    @torch.no_grad()
-    def _forward_explain(self, images: torch.Tensor) -> dict[str, torch.Tensor | list[torch.Tensor]]:
-        backbone_feat = self.feature_extractor(images)
-
-        saliency_map = self.explainer.func(backbone_feat)
-        feature_vector = feature_vector_fn(backbone_feat)
-
-        x = self._flatten_outputs(self.avgpool(backbone_feat))
-        if self.neck is not None:
-            x = self.neck(x)
-        logits = self.head(x)
-        pred_results = self.head.predict(x) if hasattr(self.head, "predict") else self.softmax(logits)
-
-        outputs = {
-            "logits": logits,
-            "feature_vector": feature_vector,
-            "saliency_map": saliency_map,
-        }
-
-        if not torch.jit.is_tracing():
-            if isinstance(pred_results, dict):
-                outputs["scores"] = pred_results["scores"]
-                outputs["preds"] = pred_results["labels"]
-            else:
-                outputs["scores"] = pred_results.unbind(0)
-                outputs["preds"] = logits.argmax(-1, keepdim=True).unbind(0)
-
-        return outputs
-
-    @torch.no_grad()
-    def _head_forward_fn(self, x: torch.Tensor) -> torch.Tensor:
-        """Performs model's neck and head forward."""
-        x = self._flatten_outputs(self.avgpool(x))
-        if self.neck is not None:
-            x = self.neck(x)
-        return self.head(x)
-
-    def _flatten_outputs(self, x: torch.Tensor) -> torch.Tensor:
-        # Flatten the output
-        if len(x.shape) == 4 and not self.use_layer_norm_2d:  # If feats is a 4D tensor: (b, c, h, w)
-            x = x.view(x.size(0), -1)  # Flatten the output of the backbone: (b, f)
-        return x
-
-
-class OTXTVModel(OTXModel):
-    """OTXTVModel is that represents a TorchVision model for classification.
-
-    Args:
-        backbone (TVModelType): The backbone architecture of the model.
-        label_info (LabelInfoTypes): The number of classes for classification.
-        optimizer (OptimizerCallable, optional): The optimizer to use for training.
-            Defaults to DefaultOptimizerCallable.
-        scheduler (LRSchedulerCallable | LRSchedulerListCallable, optional): The learning rate scheduler to use.
+        label_info (LabelInfoTypes): Information about the labels.
+        backbone (TVModelType): Backbone model for feature extraction.
+        pretrained (bool, optional): Whether to use pretrained weights. Defaults to True.
+        optimizer (OptimizerCallable, optional): Optimizer for model training. Defaults to DefaultOptimizerCallable.
+        scheduler (LRSchedulerCallable | LRSchedulerListCallable, optional): Learning rate scheduler.
             Defaults to DefaultSchedulerCallable.
-        metric (MetricCallable, optional): The metric to use for evaluation. Defaults to MultiClassClsMetricCallable.
+        metric (MetricCallable, optional): Metric for model evaluation. Defaults to MultiClassClsMetricCallable.
         torch_compile (bool, optional): Whether to compile the model using TorchScript. Defaults to False.
-        freeze_backbone (bool, optional): Whether to freeze the backbone model. Defaults to False.
-        task (Literal[OTXTaskType.MULTI_CLASS_CLS, OTXTaskType.MULTI_LABEL_CLS, OTXTaskType.H_LABEL_CLS], optional):
-            The type of classification task.
-        train_type (Literal[OTXTrainType.SUPERVISED, OTXTrainType.SEMI_SUPERVISED], optional): The type of training.
-        input_size (tuple[int, int], optional):
-            Model input size in the order of height and width. Defaults to (224, 224)
-    """
+        train_type (Literal[OTXTrainType.SUPERVISED, OTXTrainType.SEMI_SUPERVISED], optional): Type of training.
+            Defaults to OTXTrainType.SUPERVISED.
+        input_size (tuple[int, int], optional): Input size of the images. Defaults to (224, 224).
 
-    model: TVClassificationModel
+    Attributes:
+        backbone (TVModelType): Backbone model for feature extraction.
+        pretrained (bool): Whether to use pretrained weights.
+        classification_layers (nn.ModuleDict): Classification layers for class-incremental learning.
+    """
 
     def __init__(
         self,
-        backbone: TVModelType,
         label_info: LabelInfoTypes,
+        backbone: TVModelType,
+        pretrained: bool = True,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
+        metric: MetricCallable = MultiClassClsMetricCallable,
         torch_compile: bool = False,
-        freeze_backbone: bool = False,
-        task: Literal[
-            OTXTaskType.MULTI_CLASS_CLS,
-            OTXTaskType.MULTI_LABEL_CLS,
-            OTXTaskType.H_LABEL_CLS,
-        ] = OTXTaskType.MULTI_CLASS_CLS,
         train_type: Literal[OTXTrainType.SUPERVISED, OTXTrainType.SEMI_SUPERVISED] = OTXTrainType.SUPERVISED,
         input_size: tuple[int, int] = (224, 224),
     ) -> None:
         self.backbone = backbone
-        self.freeze_backbone = freeze_backbone
-        self.task = task
+        self.pretrained = pretrained
 
-        # TODO(@harimkang): Need to make it configurable.
-        if task == OTXTaskType.MULTI_CLASS_CLS:
-            metric = MultiClassClsMetricCallable
-        elif task == OTXTaskType.MULTI_LABEL_CLS:
-            metric = MultiLabelClsMetricCallable
-        elif task == OTXTaskType.H_LABEL_CLS:
-            metric = HLabelClsMetricCallble
+        super().__init__(
+            label_info=label_info,
+            input_size=input_size,
+            optimizer=optimizer,
+            scheduler=scheduler,
+            metric=metric,
+            torch_compile=torch_compile,
+            train_type=train_type,
+        )
+
+    def _create_model(self) -> nn.Module:
+        # Get classification_layers for class-incr learning
+        sample_model_dict = self._build_model(num_classes=5).state_dict()
+        incremental_model_dict = self._build_model(num_classes=6).state_dict()
+        self.classification_layers = get_classification_layers(
+            sample_model_dict,
+            incremental_model_dict,
+            prefix="model.",
+        )
+
+        model = self._build_model(num_classes=self.num_classes)
+        model.init_weights()
+        return model
+
+    def _build_model(self, num_classes: int) -> nn.Module:
+        backbone = TorchvisionBackbone(backbone=self.backbone, pretrained=self.pretrained)
+        neck = GlobalAveragePooling(dim=2)
+
+        if self.train_type == OTXTrainType.SEMI_SUPERVISED:
+            return SemiSLClassifier(
+                backbone=backbone,
+                neck=neck,
+                head=SemiSLLinearClsHead(
+                    num_classes=num_classes,
+                    in_channels=backbone.in_features,
+                ),
+                loss=nn.CrossEntropyLoss(reduction="none"),
+            )
+
+        return ImageClassifier(
+            backbone=backbone,
+            neck=neck,
+            head=LinearClsHead(
+                num_classes=num_classes,
+                in_channels=backbone.in_features,
+            ),
+            loss=nn.CrossEntropyLoss(),
+        )
+
+    def forward_explain(self, inputs: MulticlassClsBatchDataEntity) -> MulticlassClsBatchPredEntity:
+        """Model forward explain function."""
+        outputs = self.model(images=inputs.stacked_images, mode="explain")
+
+        return MulticlassClsBatchPredEntity(
+            batch_size=len(outputs["preds"]),
+            images=inputs.images,
+            imgs_info=inputs.imgs_info,
+            labels=outputs["preds"],
+            scores=outputs["scores"],
+            saliency_map=outputs["saliency_map"],
+            feature_vector=outputs["feature_vector"],
+        )
+
+    def forward_for_tracing(self, image: torch.Tensor) -> torch.Tensor | dict[str, torch.Tensor]:
+        """Model forward function used for the model tracing during model exportation."""
+        if self.explain_mode:
+            return self.model(images=image, mode="explain")
+
+        return self.model(images=image, mode="tensor")
+
+
+class TVModelForMultilabelCls(OTXMultilabelClsModel):
+    """Torchvision model for multilabel classification.
+
+    Args:
+        label_info (LabelInfoTypes): Information about the labels.
+        backbone (TVModelType): Backbone model for feature extraction.
+        pretrained (bool, optional): Whether to use pretrained weights. Defaults to True.
+        optimizer (OptimizerCallable, optional): Optimizer for model training. Defaults to DefaultOptimizerCallable.
+        scheduler (LRSchedulerCallable | LRSchedulerListCallable, optional): Learning rate scheduler.
+            Defaults to DefaultSchedulerCallable.
+        metric (MetricCallable, optional): Metric for model evaluation. Defaults to MultiLabelClsMetricCallable.
+        torch_compile (bool, optional): Whether to compile the model using TorchScript. Defaults to False.
+        input_size (tuple[int, int], optional): Input size of the images. Defaults to (224, 224).
+
+    Attributes:
+        backbone (TVModelType): Backbone model for feature extraction.
+        pretrained (bool): Whether to use pretrained weights.
+        input_size (tuple[int, int]): Input size of the images.
+    """
+
+    def __init__(
+        self,
+        label_info: LabelInfoTypes,
+        backbone: TVModelType,
+        pretrained: bool = True,
+        optimizer: OptimizerCallable = DefaultOptimizerCallable,
+        scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
+        metric: MetricCallable = MultiLabelClsMetricCallable,
+        torch_compile: bool = False,
+        input_size: tuple[int, int] = (224, 224),
+    ) -> None:
+        self.backbone = backbone
+        self.pretrained = pretrained
 
         super().__init__(
             label_info=label_info,
@@ -446,224 +196,151 @@ class OTXTVModel(OTXModel):
             metric=metric,
             torch_compile=torch_compile,
             input_size=input_size,
-            train_type=train_type,
         )
         self.input_size: tuple[int, int]
 
     def _create_model(self) -> nn.Module:
-        if self.task == OTXTaskType.MULTI_CLASS_CLS:
-            loss = nn.CrossEntropyLoss(reduction="none")
-        else:
-            loss = AsymmetricAngularLossWithIgnore(gamma_pos=0.0, gamma_neg=1.0, reduction="sum")
-        head_config = {}
-        if self.task == OTXTaskType.H_LABEL_CLS:
-            if not isinstance(self.label_info, HLabelInfo):
-                msg = "LabelInfo should be HLabelInfo for hierarchical classification."
-                raise ValueError(msg)
-            head_config = self.label_info.as_head_config_dict()
-
-        return TVClassificationModel(
-            backbone=self.backbone,
-            num_classes=self.num_classes,
-            loss=loss,
-            freeze_backbone=self.freeze_backbone,
-            task=self.task,
-            train_type=self.train_type,
-            head_config=head_config,
+        # Get classification_layers for class-incr learning
+        sample_model_dict = self._build_model(num_classes=5).state_dict()
+        incremental_model_dict = self._build_model(num_classes=6).state_dict()
+        self.classification_layers = get_classification_layers(
+            sample_model_dict,
+            incremental_model_dict,
+            prefix="model.",
         )
 
-    def _customize_inputs(self, inputs: CLASSIFICATION_BATCH_DATA_ENTITY) -> dict[str, Any]:
-        if self.training:
-            mode = "loss"
-        elif self.explain_mode:
-            mode = "explain"
-        else:
-            mode = "predict"
+        model = self._build_model(num_classes=self.num_classes)
+        model.init_weights()
+        return model
 
-        if isinstance(inputs, dict):
-            # When used with an unlabeled dataset, it comes in as a dict.
-            images = {key: inputs[key].stacked_images for key in inputs}
-            labels = {key: torch.cat(inputs[key].labels, dim=0) for key in inputs}
-            imgs_info = {key: inputs[key].imgs_info for key in inputs}
-            return {
-                "images": images,
-                "labels": labels,
-                "imgs_info": imgs_info,
-                "mode": mode,
-            }
-
-        labels = (
-            torch.cat(inputs.labels, dim=0) if self.task == OTXTaskType.MULTI_CLASS_CLS else torch.stack(inputs.labels)
-        )
-        return {
-            "images": inputs.stacked_images,
-            "labels": labels,
-            "imgs_info": inputs.imgs_info,
-            "mode": mode,
-        }
-
-    def _customize_outputs(
-        self,
-        outputs: Any,  # noqa: ANN401
-        inputs: CLASSIFICATION_BATCH_DATA_ENTITY,
-    ) -> CLASSIFICATION_BATCH_PRED_ENTITY | OTXBatchLossEntity:
-        if self.training:
-            return OTXBatchLossEntity(loss=outputs)
-
-        # To list, batch-wise
-        if self.task == OTXTaskType.H_LABEL_CLS:
-            # To list, batch-wise
-            if isinstance(outputs, dict):
-                scores = outputs["scores"]
-                labels = outputs["labels"]
-            else:
-                scores = outputs
-                labels = outputs.argmax(-1, keepdim=True).unbind(0)
-        else:
-            logits = outputs if isinstance(outputs, torch.Tensor) else outputs["logits"]
-            scores = torch.unbind(logits, 0)
-            labels = logits.argmax(-1, keepdim=True).unbind(0)
-
-        entity_kwargs = {
-            "batch_size": inputs.batch_size,
-            "images": inputs.images,
-            "imgs_info": inputs.imgs_info,
-            "scores": scores,
-            "labels": labels,
-        }
-
-        if self.task == OTXTaskType.MULTI_CLASS_CLS:
-            return MulticlassClsBatchPredEntity(**entity_kwargs)
-        if self.task == OTXTaskType.MULTI_LABEL_CLS:
-            return MultilabelClsBatchPredEntity(**entity_kwargs)
-        if self.task == OTXTaskType.H_LABEL_CLS:
-            return HlabelClsBatchPredEntity(**entity_kwargs)
-        msg = f"Task type {self.task} is not supported."
-        raise NotImplementedError(msg)
-
-    @property
-    def _export_parameters(self) -> TaskLevelExportParameters:
-        """Defines parameters required to export a particular model implementation."""
-        export_params = {
-            "model_type": "Classification",
-            "task_type": "classification",
-            "multilabel": self.task == OTXTaskType.MULTI_LABEL_CLS,
-            "hierarchical": self.task == OTXTaskType.H_LABEL_CLS,
-        }
-
-        return super()._export_parameters.wrap(**export_params)
-
-    @property
-    def _exporter(self) -> OTXModelExporter:
-        """Creates OTXModelExporter object that can export the model."""
-        return OTXNativeModelExporter(
-            task_level_export_parameters=self._export_parameters,
-            input_size=(1, 3, *self.input_size),
-            mean=(123.675, 116.28, 103.53),
-            std=(58.395, 57.12, 57.375),
-            resize_mode="standard",
-            pad_value=0,
-            swap_rgb=False,
-            via_onnx=False,
-            onnx_export_configuration=None,
-            output_names=["logits", "feature_vector", "saliency_map"] if self.explain_mode else None,
+    def _build_model(self, num_classes: int) -> nn.Module:
+        backbone = TorchvisionBackbone(backbone=self.backbone, pretrained=self.pretrained)
+        return ImageClassifier(
+            backbone=backbone,
+            neck=GlobalAveragePooling(dim=2),
+            head=MultiLabelLinearClsHead(
+                num_classes=num_classes,
+                in_channels=backbone.in_features,
+                normalized=True,
+            ),
+            loss=AsymmetricAngularLossWithIgnore(gamma_pos=0.0, gamma_neg=1.0, reduction="sum"),
+            loss_scale=7.0,
         )
 
-    def training_step(self, batch: CLASSIFICATION_BATCH_DATA_ENTITY, batch_idx: int) -> Tensor:
-        """Performs a single training step on a batch of data.
-
-        Args:
-            batch (MulticlassClsBatchDataEntity): The input batch of data.
-            batch_idx (int): The index of the current batch.
-
-        Returns:
-            Tensor: The computed loss for the training step.
-        """
-        loss = super().training_step(batch, batch_idx)
-        # Collect metrics related to Semi-SL Training.
-        if self.train_type == OTXTrainType.SEMI_SUPERVISED:
-            self.log(
-                "train/unlabeled_coef",
-                self.model.head.unlabeled_coef,
-                on_step=True,
-                on_epoch=False,
-                prog_bar=True,
-            )
-            self.log(
-                "train/num_pseudo_label",
-                self.model.head.num_pseudo_label,
-                on_step=True,
-                on_epoch=False,
-                prog_bar=True,
-            )
-        return loss
-
-    def forward_explain(self, inputs: CLASSIFICATION_BATCH_DATA_ENTITY) -> CLASSIFICATION_BATCH_PRED_ENTITY:
+    def forward_explain(self, inputs: MultilabelClsBatchDataEntity) -> MultilabelClsBatchPredEntity:
         """Model forward explain function."""
         outputs = self.model(images=inputs.stacked_images, mode="explain")
-        entity_kwargs = {
-            "batch_size": inputs.batch_size,
-            "images": inputs.images,
-            "imgs_info": inputs.imgs_info,
-            "labels": outputs["preds"],
-            "scores": outputs["scores"],
-            "saliency_map": outputs["saliency_map"],
-            "feature_vector": outputs["feature_vector"],
-        }
 
-        if self.task == OTXTaskType.MULTI_CLASS_CLS:
-            return MulticlassClsBatchPredEntity(**entity_kwargs)
-        if self.task == OTXTaskType.MULTI_LABEL_CLS:
-            return MultilabelClsBatchPredEntity(**entity_kwargs)
-        if self.task == OTXTaskType.H_LABEL_CLS:
-            return HlabelClsBatchPredEntity(**entity_kwargs)
-        msg = f"Task type {self.task} is not supported."
-        raise NotImplementedError(msg)
+        return MultilabelClsBatchPredEntity(
+            batch_size=len(outputs["preds"]),
+            images=inputs.images,
+            imgs_info=inputs.imgs_info,
+            labels=outputs["preds"],
+            scores=outputs["scores"],
+            saliency_map=outputs["saliency_map"],
+            feature_vector=outputs["feature_vector"],
+        )
 
-    def forward_for_tracing(self, image: Tensor) -> Tensor | dict[str, Tensor]:
+    def forward_for_tracing(self, image: torch.Tensor) -> torch.Tensor | dict[str, torch.Tensor]:
         """Model forward function used for the model tracing during model exportation."""
         if self.explain_mode:
             return self.model(images=image, mode="explain")
 
         return self.model(images=image, mode="tensor")
 
-    def _convert_pred_entity_to_compute_metric(
+
+class TVModelForHLabelCls(OTXHlabelClsModel):
+    """TVModelForHLabelCls class represents a Torchvision model for hierarchical label classification.
+
+    Args:
+        label_info (HLabelInfo): Information about the hierarchical labels.
+        backbone (TVModelType): The type of Torchvision backbone model.
+        pretrained (bool, optional): Whether to use pretrained weights. Defaults to True.
+        optimizer (OptimizerCallable, optional): The optimizer callable. Defaults to DefaultOptimizerCallable.
+        scheduler (LRSchedulerCallable | LRSchedulerListCallable, optional): The learning rate scheduler callable.
+            Defaults to DefaultSchedulerCallable.
+        metric (MetricCallable, optional): The metric callable. Defaults to HLabelClsMetricCallble.
+        torch_compile (bool, optional): Whether to compile the model using TorchScript. Defaults to False.
+        input_size (tuple[int, int], optional): The input size of the images. Defaults to (224, 224).
+
+    Attributes:
+        backbone (TVModelType): The type of Torchvision backbone model.
+        pretrained (bool): Whether to use pretrained weights.
+        classification_layers (nn.Module): The classification layers for class-incremental learning.
+    """
+
+    label_info: HLabelInfo
+
+    def __init__(
         self,
-        preds: CLASSIFICATION_BATCH_PRED_ENTITY,
-        inputs: CLASSIFICATION_BATCH_DATA_ENTITY,
-    ) -> MetricInput:
-        if self.task == OTXTaskType.MULTI_CLASS_CLS:
-            pred = torch.tensor(preds.labels)
-            target = torch.tensor(inputs.labels)
-        elif self.task == OTXTaskType.MULTI_LABEL_CLS:
-            pred = torch.stack(preds.scores)
-            target = torch.stack(inputs.labels)
-        elif self.task == OTXTaskType.H_LABEL_CLS:
-            hlabel_info: HLabelInfo = self.label_info  # type: ignore[assignment]
-            _labels = torch.stack(preds.labels) if isinstance(preds.labels, list) else preds.labels
-            _scores = torch.stack(preds.scores) if isinstance(preds.scores, list) else preds.scores
-            target = torch.stack(inputs.labels)
-            if hlabel_info.num_multilabel_classes > 0:
-                preds_multiclass = _labels[:, : hlabel_info.num_multiclass_heads]
-                preds_multilabel = _scores[:, hlabel_info.num_multiclass_heads :]
-                pred = torch.cat([preds_multiclass, preds_multilabel], dim=1)
-            else:
-                pred = _labels
-        return {
-            "preds": pred,
-            "target": target,
-        }
+        label_info: HLabelInfo,
+        backbone: TVModelType,
+        pretrained: bool = True,
+        optimizer: OptimizerCallable = DefaultOptimizerCallable,
+        scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
+        metric: MetricCallable = HLabelClsMetricCallble,
+        torch_compile: bool = False,
+        input_size: tuple[int, int] = (224, 224),
+    ) -> None:
+        self.backbone = backbone
+        self.pretrained = pretrained
 
-    def get_dummy_input(self, batch_size: int = 1) -> CLASSIFICATION_BATCH_DATA_ENTITY:
-        """Returns a dummy input for classification model."""
-        images = [torch.rand(3, *self.input_size) for _ in range(batch_size)]
-        labels = [torch.LongTensor([0])] * batch_size
+        super().__init__(
+            label_info=label_info,
+            optimizer=optimizer,
+            scheduler=scheduler,
+            metric=metric,
+            torch_compile=torch_compile,
+            input_size=input_size,
+        )
 
-        if self.task == OTXTaskType.MULTI_CLASS_CLS:
-            return MulticlassClsBatchDataEntity(batch_size, images, [], labels=labels)
-        if self.task == OTXTaskType.MULTI_LABEL_CLS:
-            return MultilabelClsBatchDataEntity(batch_size, images, [], labels=labels)
-        if self.task == OTXTaskType.H_LABEL_CLS:
-            return HlabelClsBatchDataEntity(batch_size, images, [], labels=labels)
-        msg = f"Task type {self.task} is not supported."
-        raise NotImplementedError(msg)
+    def _create_model(self) -> nn.Module:
+        # Get classification_layers for class-incr learning
+        sample_config = deepcopy(self.label_info.as_head_config_dict())
+        sample_config["num_classes"] = 5
+        sample_model_dict = self._build_model(head_config=sample_config).state_dict()
+        sample_config["num_classes"] = 6
+        incremental_model_dict = self._build_model(head_config=sample_config).state_dict()
+        self.classification_layers = get_classification_layers(
+            sample_model_dict,
+            incremental_model_dict,
+            prefix="model.",
+        )
+
+        model = self._build_model(head_config=self.label_info.as_head_config_dict())
+        model.init_weights()
+        return model
+
+    def _build_model(self, head_config: dict) -> nn.Module:
+        backbone = TorchvisionBackbone(backbone=self.backbone, pretrained=self.pretrained)
+        return HLabelClassifier(
+            backbone=backbone,
+            neck=nn.Identity(),
+            head=HierarchicalCBAMClsHead(
+                in_channels=backbone.in_features,
+                **head_config,
+            ),
+            multiclass_loss=nn.CrossEntropyLoss(),
+            multilabel_loss=AsymmetricAngularLossWithIgnore(gamma_pos=0.0, gamma_neg=1.0, reduction="sum"),
+        )
+
+    def forward_explain(self, inputs: HlabelClsBatchDataEntity) -> HlabelClsBatchPredEntity:
+        """Model forward explain function."""
+        outputs = self.model(images=inputs.stacked_images, mode="explain")
+
+        return HlabelClsBatchPredEntity(
+            batch_size=len(outputs["preds"]),
+            images=inputs.images,
+            imgs_info=inputs.imgs_info,
+            labels=outputs["preds"],
+            scores=outputs["scores"],
+            saliency_map=outputs["saliency_map"],
+            feature_vector=outputs["feature_vector"],
+        )
+
+    def forward_for_tracing(self, image: torch.Tensor) -> torch.Tensor | dict[str, torch.Tensor]:
+        """Model forward function used for the model tracing during model exportation."""
+        if self.explain_mode:
+            return self.model(images=image, mode="explain")
+
+        return self.model(images=image, mode="tensor")

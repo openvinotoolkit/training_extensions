@@ -16,11 +16,11 @@ from torch import nn
 from torch.hub import download_url_to_file
 
 from otx.algo.classification.backbones.vision_transformer import VIT_ARCH_TYPE, VisionTransformer
-from otx.algo.classification.classifier import ImageClassifier, SemiSLClassifier
+from otx.algo.classification.classifier import HLabelClassifier, ImageClassifier, SemiSLClassifier
 from otx.algo.classification.heads import (
     HierarchicalCBAMClsHead,
     MultiLabelLinearClsHead,
-    OTXSemiSLVisionTransformerClsHead,
+    SemiSLVisionTransformerClsHead,
     VisionTransformerClsHead,
 )
 from otx.algo.classification.losses import AsymmetricAngularLossWithIgnore
@@ -284,11 +284,11 @@ class VisionTransformerForMulticlassCls(ForwardExplainMixInForViT, OTXMulticlass
             return SemiSLClassifier(
                 backbone=vit_backbone,
                 neck=None,
-                head=OTXSemiSLVisionTransformerClsHead(
+                head=SemiSLVisionTransformerClsHead(
                     num_classes=num_classes,
                     in_channels=vit_backbone.embed_dim,
-                    loss=nn.CrossEntropyLoss(reduction="none"),
                 ),
+                loss=nn.CrossEntropyLoss(reduction="none"),
                 init_cfg=init_cfg,
             )
 
@@ -298,37 +298,8 @@ class VisionTransformerForMulticlassCls(ForwardExplainMixInForViT, OTXMulticlass
             head=VisionTransformerClsHead(
                 num_classes=num_classes,
                 in_channels=vit_backbone.embed_dim,
-                topk=(1, 5) if num_classes >= 5 else (1,),
-                loss=nn.CrossEntropyLoss(reduction="none"),
             ),
-            init_cfg=init_cfg,
-        )
-
-
-class VisionTransformerForMulticlassClsSemiSL(VisionTransformerForMulticlassCls):
-    """VisionTransformer model for multiclass classification with semi-supervised learning.
-
-    This class extends the `VisionTransformerForMulticlassCls` class and adds support for semi-supervised learning.
-    It overrides the `_build_model` and `_customize_inputs` methods to incorporate the semi-supervised learning.
-
-    Args:
-        VisionTransformerForMulticlassCls (class): The base class for VisionTransformer multiclass classification.
-    """
-
-    def _build_model(self, num_classes: int) -> nn.Module:
-        init_cfg = [
-            {"std": 0.2, "layer": "Linear", "type": "TruncNormal"},
-            {"bias": 0.0, "val": 1.0, "layer": "LayerNorm", "type": "Constant"},
-        ]
-        vit_backbone = VisionTransformer(arch=self.arch, img_size=self.input_size)
-        return SemiSLClassifier(
-            backbone=vit_backbone,
-            neck=None,
-            head=OTXSemiSLVisionTransformerClsHead(
-                num_classes=num_classes,
-                in_channels=vit_backbone.embed_dim,
-                loss=nn.CrossEntropyLoss(reduction="none"),
-            ),
+            loss=nn.CrossEntropyLoss(),
             init_cfg=init_cfg,
         )
 
@@ -412,8 +383,8 @@ class VisionTransformerForMultilabelCls(ForwardExplainMixInForViT, OTXMultilabel
             head=MultiLabelLinearClsHead(
                 num_classes=num_classes,
                 in_channels=vit_backbone.embed_dim,
-                loss=AsymmetricAngularLossWithIgnore(gamma_pos=0.0, gamma_neg=1.0, reduction="sum"),
             ),
+            loss=AsymmetricAngularLossWithIgnore(gamma_pos=0.0, gamma_neg=1.0, reduction="sum"),
             init_cfg=init_cfg,
         )
 
@@ -497,16 +468,15 @@ class VisionTransformerForHLabelCls(ForwardExplainMixInForViT, OTXHlabelClsModel
             {"bias": 0.0, "val": 1.0, "layer": "LayerNorm", "type": "Constant"},
         ]
         vit_backbone = VisionTransformer(arch=self.arch, img_size=self.input_size, lora=self.lora)
-        return ImageClassifier(
+        return HLabelClassifier(
             backbone=vit_backbone,
             neck=None,
             head=HierarchicalCBAMClsHead(
                 in_channels=vit_backbone.embed_dim,
-                multiclass_loss=nn.CrossEntropyLoss(),
-                multilabel_loss=AsymmetricAngularLossWithIgnore(gamma_pos=0.0, gamma_neg=1.0, reduction="sum"),
                 step_size=1,
                 **head_config,
             ),
-            optimize_gap=False,
+            multiclass_loss=nn.CrossEntropyLoss(),
+            multilabel_loss=AsymmetricAngularLossWithIgnore(gamma_pos=0.0, gamma_neg=1.0, reduction="sum"),
             init_cfg=init_cfg,
         )
