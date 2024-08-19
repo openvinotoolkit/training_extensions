@@ -9,7 +9,7 @@
 from typing import Optional
 
 import torch
-from otx.algo.instance_segmentation.mask_dino.pixel_decoder.ops.modules.ms_deform_attn import MSDeformAttn
+from otx.algo.detection.heads.rtdetr_decoder import MSDeformableAttention as MSDeformAttn
 from otx.algo.instance_segmentation.mask_dino.utils import (
     MLP,
     _get_activation_fn,
@@ -197,7 +197,13 @@ class DeformableTransformerDecoderLayer(nn.Module):
         if use_deformable_box_attn:
             raise NotImplementedError
         else:
-            self.cross_attn = MSDeformAttn(d_model, n_levels, n_heads, n_points)
+            self.cross_attn = MSDeformAttn(
+                embed_dim=d_model,
+                num_levels=n_levels,
+                num_heads=n_heads,
+                num_points=n_points,
+            )
+
         self.dropout1 = nn.Dropout(dropout)
         self.norm1 = nn.LayerNorm(d_model)
 
@@ -275,9 +281,9 @@ class DeformableTransformerDecoderLayer(nn.Module):
             tgt_reference_points.transpose(0, 1).contiguous(),
             memory.transpose(0, 1),
             memory_spatial_shapes,
-            memory_level_start_index,
             memory_key_padding_mask,
         ).transpose(0, 1)
+
         tgt = tgt + self.dropout1(tgt2)
         tgt = self.norm1(tgt)
 

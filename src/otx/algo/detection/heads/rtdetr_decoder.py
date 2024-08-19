@@ -235,8 +235,7 @@ class MSDeformableAttention(nn.Module):
 
         value = self.value_proj(value)
         if value_mask is not None:
-            value_mask = value_mask.astype(value.dtype).unsqueeze(-1)
-            value *= value_mask
+            value = value.masked_fill(value_mask[..., None], float(0))
         value = value.reshape(bs, len_v, self.num_heads, self.head_dim)
 
         sampling_offsets = self.sampling_offsets(query).reshape(

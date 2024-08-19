@@ -12,7 +12,7 @@ from detectron2.config import configurable
 from detectron2.layers import Conv2d, ShapeSpec, get_norm
 from detectron2.modeling import SEM_SEG_HEADS_REGISTRY
 from fvcore.nn import weight_init
-from otx.algo.instance_segmentation.mask_dino.pixel_decoder.ops.modules.ms_deform_attn import MSDeformAttn
+from otx.algo.detection.heads.rtdetr_decoder import MSDeformableAttention as MSDeformAttn
 from otx.algo.instance_segmentation.mask_dino.pixel_decoder.position_encoding import PositionEmbeddingSine
 from otx.algo.instance_segmentation.mask_dino.utils import _get_activation_fn, _get_clones
 from torch import nn
@@ -135,7 +135,12 @@ class MSDeformAttnTransformerEncoderLayer(nn.Module):
         super().__init__()
 
         # self attention
-        self.self_attn = MSDeformAttn(d_model, n_levels, n_heads, n_points)
+        self.self_attn = MSDeformAttn(
+            embed_dim=d_model,
+            num_levels=n_levels,
+            num_heads=n_heads,
+            num_points=n_points,
+        )
         self.dropout1 = nn.Dropout(dropout)
         self.norm1 = nn.LayerNorm(d_model)
 
@@ -164,7 +169,6 @@ class MSDeformAttnTransformerEncoderLayer(nn.Module):
             reference_points,
             src,
             spatial_shapes,
-            level_start_index,
             padding_mask,
         )
         src = src + self.dropout1(src2)
