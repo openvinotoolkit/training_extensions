@@ -36,9 +36,6 @@ class KeypointDetDataEntity(OTXDataEntity):
     :param keypoints: keypoint annotations
         ([[x1, y1], [x2, y2], ...]) format with absolute coordinate values
     :param keypoints_visible: keypoint visibilities with binary values
-    :param keypoints_x_label: x-axis keypoint coordinates according to simcc
-    :param keypoints_y_label: y-axis keypoint coordinates according to simcc
-    :param keypoints_weight: weight values for each keypoint
     """
 
     @property
@@ -68,9 +65,6 @@ class KeypointDetBatchDataEntity(OTXBatchDataEntity[KeypointDetDataEntity]):
     :param keypoints: keypoint annotations
         ([[x1, y1], [x2, y2], ...]) format with absolute coordinate values
     :param keypoints_visible: keypoint visibilities with binary values
-    :param keypoints_x_label: x-axis keypoint coordinates according to simcc
-    :param keypoints_y_label: y-axis keypoint coordinates according to simcc
-    :param keypoints_weight: weight values for each keypoint
     """
 
     bboxes: list[tv_tensors.BoundingBoxes]

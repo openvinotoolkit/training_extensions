@@ -23,7 +23,6 @@ from otx.core.data.transform_libs.torchvision import (
     Compose,
     DecodeVideo,
     FilterAnnotations,
-    GenerateTarget,
     GetBBoxCenterScale,
     MinIoURandomCrop,
     PackVideo,
@@ -924,34 +923,3 @@ class TestTopdownAffine:
         assert torch.all(results.bbox_scale == torch.Tensor([[8.75, 8.75]]))
         assert hasattr(results, "transformed_keypoints")
         assert results.transformed_keypoints.shape == (1, 4, 2)
-
-
-class TestGenerateTarget:
-    @pytest.fixture()
-    def keypoint_det_entity(self) -> KeypointDetDataEntity:
-        return KeypointDetDataEntity(
-            image=np.random.randint(0, 255, size=(10, 10), dtype=np.uint8),
-            img_info=ImageInfo(img_idx=0, img_shape=(10, 10), ori_shape=(10, 10)),
-            bboxes=tv_tensors.BoundingBoxes(
-                np.array([[0, 0, 7, 7]], dtype=np.float32),
-                format="xyxy",
-                canvas_size=(10, 10),
-            ),
-            labels=torch.LongTensor([0]),
-            keypoints=tv_tensors.TVTensor(np.array([[0, 4], [4, 2], [2, 6], [6, 0]])),
-            keypoints_visible=tv_tensors.TVTensor(np.array([1, 1, 1, 0])),
-            keypoint_x_labels=tv_tensors.TVTensor([]),
-            keypoint_y_labels=tv_tensors.TVTensor([]),
-            keypoint_weights=tv_tensors.TVTensor([]),
-        )
-
-    def test_forward(self, keypoint_det_entity) -> None:
-        transform = GenerateTarget(input_size=(256, 192))
-        results = transform(deepcopy(keypoint_det_entity))
-
-        assert hasattr(results, "keypoint_x_labels")
-        assert results.keypoint_x_labels.shape == (1, 4, 384)
-        assert hasattr(results, "keypoint_y_labels")
-        assert results.keypoint_y_labels.shape == (1, 4, 512)
-        assert hasattr(results, "keypoint_weights")
-        assert results.keypoint_weights.shape == (1, 4)
