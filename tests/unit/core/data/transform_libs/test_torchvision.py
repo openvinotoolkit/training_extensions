@@ -13,17 +13,15 @@ import pytest
 import torch
 from datumaro import Polygon
 from otx.core.data.entity.action_classification import ActionClsDataEntity
-from otx.core.data.entity.base import ImageInfo, OTXDataEntity, VideoInfo
+from otx.core.data.entity.base import BboxInfo, ImageInfo, OTXDataEntity, VideoInfo
 from otx.core.data.entity.detection import DetBatchDataEntity, DetDataEntity
 from otx.core.data.entity.instance_segmentation import InstanceSegBatchDataEntity, InstanceSegDataEntity
 from otx.core.data.entity.keypoint_detection import KeypointDetDataEntity
 from otx.core.data.transform_libs.torchvision import (
     CachedMixUp,
     CachedMosaic,
-    Compose,
     DecodeVideo,
     FilterAnnotations,
-    GetBBoxCenterScale,
     MinIoURandomCrop,
     PackVideo,
     Pad,
@@ -903,23 +901,12 @@ class TestTopdownAffine:
             labels=torch.LongTensor([0]),
             keypoints=tv_tensors.TVTensor(np.array([[0, 4], [4, 2], [2, 6], [6, 0]])),
             keypoints_visible=tv_tensors.TVTensor(np.array([1, 1, 1, 0])),
-            keypoint_x_labels=tv_tensors.TVTensor([]),
-            keypoint_y_labels=tv_tensors.TVTensor([]),
-            keypoint_weights=tv_tensors.TVTensor([]),
+            bbox_info=BboxInfo(center=np.array([3.5, 3.5]), scale=np.array([8.75, 8.75]), rotation=0),
         )
 
     def test_forward(self, keypoint_det_entity) -> None:
-        transform = Compose(
-            [
-                GetBBoxCenterScale(),
-                TopdownAffine(input_size=(5, 5)),
-            ],
-        )
+        transform = TopdownAffine(input_size=(5, 5))
         results = transform(deepcopy(keypoint_det_entity))
 
-        assert hasattr(results, "bbox_center")
-        assert torch.all(results.bbox_center == torch.Tensor([[3.5, 3.5]]))
-        assert hasattr(results, "bbox_scale")
-        assert torch.all(results.bbox_scale == torch.Tensor([[8.75, 8.75]]))
-        assert hasattr(results, "transformed_keypoints")
-        assert results.transformed_keypoints.shape == (1, 4, 2)
+        assert hasattr(results, "keypoints")
+        assert results.keypoints.shape == (4, 2)
