@@ -16,7 +16,7 @@ from tests.test_helpers import find_folder
 
 @pytest.fixture(scope="session")
 def fxt_ci_data_root() -> Path:
-    data_root = Path(os.environ.get("CI_DATA_ROOT", "/local/otx-ci/ci_datasets"))
+    data_root = Path(os.environ.get("CI_DATA_ROOT", "/home/validation/data"))
     if not Path.is_dir(data_root):
         msg = f"cannot find {data_root}"
         raise FileNotFoundError(msg)
