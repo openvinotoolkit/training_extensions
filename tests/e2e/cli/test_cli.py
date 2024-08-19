@@ -142,19 +142,20 @@ def test_otx_e2e_cli(
     ):
         return
 
+    fxt_export_list = []
+    if task in ("visual_prompting", "zero_shot_visual_prompting"):
+        fxt_export_list.append(ExportCase2Test("ONNX", False, "exported_model_decoder.onnx"))
+        fxt_export_list.append(ExportCase2Test("OPENVINO", False, "exported_model_decoder.xml"))
+    elif "anomaly" in task or "keypoint_detection" in task:
+        fxt_export_list.append(ExportCase2Test("ONNX", False, "exported_model.onnx"))
+        fxt_export_list.append(ExportCase2Test("OPENVINO", False, "exported_model.xml"))
+
     overrides = fxt_cli_override_command_per_task[task]
     if "anomaly" in task:
         overrides = {}  # Overrides are not needed in export
 
     tmp_path_test = tmp_path / f"otx_test_{model_name}"
     for export_case in fxt_export_list:
-        if (
-            task.lower() in ("visual_prompting", "zero_shot_visual_prompting", "keypoint_detection")
-            or task.lower().startswith("anomaly")
-        ) and export_case.export_demo_package:
-            # Skip exportable code checking for visual_prompting, zero_shot_visual_prompting, anomaly and keypoint_detection tasks
-            return
-
         command_cfg = [
             "otx",
             "export",
