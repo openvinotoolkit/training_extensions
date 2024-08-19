@@ -33,6 +33,7 @@ from torchvision.transforms.v2 import functional as F  # noqa: N812
 
 from otx.core.data.entity.action_classification import ActionClsDataEntity
 from otx.core.data.entity.base import (
+    BboxInfo,
     OTXDataEntity,
     Points,
     _crop_image_info,
@@ -3149,8 +3150,11 @@ class GetBBoxCenterScale(tvt_v2.Transform):
         inputs = _inputs[0]
 
         bbox = inputs.bboxes[0]
-        inputs.bbox_center = ((bbox[..., 2:] + bbox[..., :2]) * 0.5).unsqueeze(0)
-        inputs.bbox_scale = ((bbox[..., 2:] - bbox[..., :2]) * self.padding).unsqueeze(0)
+        bbox_center = ((bbox[..., 2:] + bbox[..., :2]) * 0.5).numpy()
+        bbox_scale = ((bbox[..., 2:] - bbox[..., :2]) * self.padding).numpy()
+        bbox_rotation = 0.0
+
+        inputs.bbox_info = BboxInfo(center=bbox_center, scale=bbox_scale, rotation=bbox_rotation)
 
         return inputs
 
@@ -3269,14 +3273,14 @@ class RandomBBoxTransform(tvt_v2.Transform):
         assert len(_inputs) == 1, "[tmp] Multiple entity is not supported yet."  # noqa: S101
         inputs = _inputs[0]
 
-        bbox_scale = inputs.bbox_scale
+        bbox_scale = inputs.bbox_info.scale
 
         num_bboxes = 1
         offset, scale, rotate = self._get_transform_params(num_bboxes)
 
-        inputs.bbox_center = inputs.bbox_center + offset * bbox_scale
-        inputs.bbox_scale = inputs.bbox_scale * scale
-        inputs.bbox_rotation = rotate
+        inputs.bbox_info.center = inputs.bbox_info.center + offset * bbox_scale
+        inputs.bbox_info.scale = inputs.bbox_info.scale * scale
+        inputs.bbox_info.rotation = rotate
 
         return inputs
 
@@ -3451,10 +3455,9 @@ class TopdownAffine(tvt_v2.Transform, NumpytoTVTensorMixin):
         warp_size = (int(w), int(h))
 
         # reshape bbox to fixed aspect ratio
-
-        center = inputs.bbox_center[0]
-        scale = self._fix_aspect_ratio(inputs.bbox_scale, aspect_ratio=w / h)[0]
-        rot = inputs.bbox_rotation[0] if hasattr(inputs, "bbox_rotation") else 0.0
+        center = inputs.bbox_info.center
+        scale = self._fix_aspect_ratio(inputs.bbox_info.scale, aspect_ratio=w / h)
+        rot = inputs.bbox_info.rotation
 
         warp_mat = self._get_warp_matrix(center, scale, rot, output_size=(w, h))
 
@@ -3464,15 +3467,10 @@ class TopdownAffine(tvt_v2.Transform, NumpytoTVTensorMixin):
             inputs.image = self._get_warp_image(inputs.image, warp_mat, warp_size)
 
         if inputs.keypoints is not None:
-            if hasattr(inputs, "transformed_keypoints"):
-                transformed_keypoints = inputs.transformed_keypoints
-            else:
-                transformed_keypoints = inputs.keypoints
-            # Only transform (x, y) coordinates
-            transformed_keypoints = cv2.transform(inputs.keypoints.unsqueeze(0).numpy(), warp_mat)
-            inputs.transformed_keypoints = transformed_keypoints
+            keypoints = np.expand_dims(inputs.keypoints, axis=0)
+            inputs.keypoints = cv2.transform(keypoints, warp_mat)[0]
         else:
-            inputs.transformed_keypoints = np.zeros([])
+            inputs.keypoints = np.zeros([])
             inputs.keypoints_visible = np.ones((1, 1, 1))
 
         return self.convert(inputs)
@@ -3537,39 +3535,22 @@ class GenerateTarget(tvt_v2.Transform, NumpytoTVTensorMixin):
         assert len(_inputs) == 1, "[tmp] Multiple entity is not supported yet."  # noqa: S101
         inputs = _inputs[0]
 
-        if hasattr(inputs, "transformed_keypoints"):
-            # use keypoints transformed by TopdownAffine
-            keypoints = inputs.transformed_keypoints
-        elif hasattr(inputs, "keypoints"):
-            # use original keypoints
-            keypoints = inputs.keypoints
-        else:
-            msg = "GenerateTarget requires 'transformed_keypoints' or 'keypoints' in the results."
-            raise ValueError(msg)
+        if inputs.keypoints.ndim == 2:
+            inputs.keypoints = np.expand_dims(inputs.keypoints, axis=0)
 
-        if len(keypoints.shape) == 2:
-            keypoints = keypoints.unsqueeze(0)
-
-        if isinstance(keypoints, torch.Tensor):
-            keypoints = keypoints.numpy()
-
-        keypoints_visible = inputs.keypoints_visible.unsqueeze(0).numpy()
-        if keypoints_visible.ndim == 3 and keypoints_visible.shape[2] == 2:
-            keypoints_visible, keypoints_visible_weights = keypoints_visible[..., 0], keypoints_visible[..., 1]
-            inputs.keypoints_visible = keypoints_visible
-            inputs.keypoints_visible_weights = keypoints_visible_weights
+        if inputs.keypoints_visible.ndim == 1:
+            inputs.keypoints_visible = np.expand_dims(inputs.keypoints_visible, axis=0)
 
         # Encoded items from the encoder(s) will be updated into the results.
         # Please refer to the document of the specific codec for details about
         # encoded items.
         encoded = self.encoder.encode(
-            keypoints=keypoints,
-            keypoints_visible=keypoints_visible,
+            keypoints=inputs.keypoints,
+            keypoints_visible=inputs.keypoints_visible,
         )
-
-        inputs.keypoint_x_labels = torch.Tensor(encoded["keypoint_x_labels"])
-        inputs.keypoint_y_labels = torch.Tensor(encoded["keypoint_y_labels"])
-        inputs.keypoint_weights = torch.Tensor(encoded["keypoint_weights"])
+        inputs.keypoints_x_label = encoded["keypoint_x_labels"]
+        inputs.keypoints_y_label = encoded["keypoint_y_labels"]
+        inputs.keypoints_weight = encoded["keypoint_weights"]
 
         return self.convert(inputs)
 

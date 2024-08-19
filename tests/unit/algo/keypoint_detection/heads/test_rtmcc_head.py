@@ -6,7 +6,6 @@ import pytest
 import torch
 from otx.algo.keypoint_detection.heads.rtmcc_head import RTMCCHead
 from otx.algo.keypoint_detection.losses.kl_discret_loss import KLDiscretLoss
-from otx.algo.keypoint_detection.utils.data_sample import PoseDataSample
 from otx.core.data.entity.base import ImageInfo
 from otx.core.data.entity.keypoint_detection import KeypointDetBatchDataEntity
 from torchvision import tv_tensors
@@ -87,8 +86,5 @@ class TestRTMCCHead:
     def test_predict(self, fxt_rtmcc_head, fxt_features) -> None:
         preds = fxt_rtmcc_head.predict(fxt_features)
         for pred in preds:
-            assert isinstance(pred, PoseDataSample)
-            assert hasattr(pred, "keypoints")
-            assert hasattr(pred, "keypoint_weights")
-            assert hasattr(pred, "keypoint_x_labels")
-            assert hasattr(pred, "keypoint_y_labels")
+            assert isinstance(pred, tuple)
+            assert len(pred) == 2

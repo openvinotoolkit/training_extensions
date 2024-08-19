@@ -11,6 +11,7 @@ from typing import TYPE_CHECKING
 from torchvision import tv_tensors
 
 from otx.core.data.entity.base import (
+    BboxInfo,
     OTXBatchDataEntity,
     OTXBatchPredEntity,
     OTXDataEntity,
@@ -20,7 +21,8 @@ from otx.core.data.entity.utils import register_pytree_node
 from otx.core.types.task import OTXTaskType
 
 if TYPE_CHECKING:
-    from torch import BoolTensor, LongTensor
+    import numpy as np
+    from torch import LongTensor
 
 
 @register_pytree_node
@@ -34,9 +36,9 @@ class KeypointDetDataEntity(OTXDataEntity):
     :param keypoints: keypoint annotations
         ([[x1, y1], [x2, y2], ...]) format with absolute coordinate values
     :param keypoints_visible: keypoint visibilities with binary values
-    :param keypoint_x_labels: x-axis keypoint coordinates according to simcc
-    :param keypoint_y_labels: y-axis keypoint coordinates according to simcc
-    :param keypoint_weights: weight values for each keypoint
+    :param keypoints_x_label: x-axis keypoint coordinates according to simcc
+    :param keypoints_y_label: y-axis keypoint coordinates according to simcc
+    :param keypoints_weight: weight values for each keypoint
     """
 
     @property
@@ -46,11 +48,9 @@ class KeypointDetDataEntity(OTXDataEntity):
 
     bboxes: tv_tensors.BoundingBoxes
     labels: LongTensor
-    keypoints: tv_tensors.TVTensor
-    keypoints_visible: BoolTensor
-    keypoint_x_labels: tv_tensors.TVTensor
-    keypoint_y_labels: tv_tensors.TVTensor
-    keypoint_weights: tv_tensors.TVTensor
+    keypoints: np.ndarray
+    keypoints_visible: np.ndarray
+    bbox_info: BboxInfo
 
 
 @dataclass
@@ -68,23 +68,21 @@ class KeypointDetBatchDataEntity(OTXBatchDataEntity[KeypointDetDataEntity]):
     :param keypoints: keypoint annotations
         ([[x1, y1], [x2, y2], ...]) format with absolute coordinate values
     :param keypoints_visible: keypoint visibilities with binary values
-    :param keypoint_x_labels: x-axis keypoint coordinates according to simcc
-    :param keypoint_y_labels: y-axis keypoint coordinates according to simcc
-    :param keypoint_weights: weight values for each keypoint
+    :param keypoints_x_label: x-axis keypoint coordinates according to simcc
+    :param keypoints_y_label: y-axis keypoint coordinates according to simcc
+    :param keypoints_weight: weight values for each keypoint
     """
 
     bboxes: list[tv_tensors.BoundingBoxes]
     labels: list[LongTensor]
-    keypoints: list[tv_tensors.TVTensor]
-    keypoints_visible: list[BoolTensor]
-    keypoint_x_labels: list[tv_tensors.TVTensor]
-    keypoint_y_labels: list[tv_tensors.TVTensor]
-    keypoint_weights: list[tv_tensors.TVTensor]
+    bbox_info: list[BboxInfo]
+    keypoints: list[np.ndarray]
+    keypoints_visible: list[np.ndarray]
 
     @property
     def task(self) -> OTXTaskType:
         """OTX Task type definition."""
-        return OTXTaskType.DETECTION
+        return OTXTaskType.KEYPOINT_DETECTION
 
     @classmethod
     def collate_fn(
@@ -103,34 +101,22 @@ class KeypointDetBatchDataEntity(OTXBatchDataEntity[KeypointDetDataEntity]):
             Collated `KeypointDetBatchDataEntity`
         """
         batch_data = super().collate_fn(entities, stack_images=stack_images)
-        bboxes, labels, keypoints, keypoints_visible, keypoint_x_labels, keypoint_y_labels, keypoint_weights = (
-            [],
-            [],
-            [],
-            [],
-            [],
-            [],
-            [],
-        )
+        bboxes, labels, bbox_info, kpts, kpts_visible = [], [], [], [], []
         for entity in entities:
             bboxes.append(entity.bboxes)
             labels.append(entity.labels)
-            keypoints.append(entity.keypoints)
-            keypoints_visible.append(entity.keypoints_visible)
-            keypoint_x_labels.append(entity.keypoint_x_labels)
-            keypoint_y_labels.append(entity.keypoint_y_labels)
-            keypoint_weights.append(entity.keypoint_weights)
+            bbox_info.append(entity.bbox_info)
+            kpts.append(entity.keypoints)
+            kpts_visible.append(entity.keypoints_visible)
         return KeypointDetBatchDataEntity(
             batch_size=batch_data.batch_size,
             images=batch_data.images,
             imgs_info=batch_data.imgs_info,
             bboxes=bboxes,
-            keypoints=keypoints,
-            keypoints_visible=keypoints_visible,
-            keypoint_x_labels=keypoint_x_labels,
-            keypoint_y_labels=keypoint_y_labels,
-            keypoint_weights=keypoint_weights,
             labels=labels,
+            bbox_info=bbox_info,
+            keypoints=kpts,
+            keypoints_visible=kpts_visible,
         )
 
     def pin_memory(self) -> KeypointDetBatchDataEntity:
@@ -140,23 +126,10 @@ class KeypointDetBatchDataEntity(OTXBatchDataEntity[KeypointDetDataEntity]):
             .pin_memory()
             .wrap(
                 bboxes=[tv_tensors.wrap(bbox.pin_memory(), like=bbox) for bbox in self.bboxes],
-                keypoints=[tv_tensors.wrap(keypoints.pin_memory(), like=keypoints) for keypoints in self.keypoints],
-                keypoints_visible=[
-                    tv_tensors.wrap(visible.pin_memory(), like=visible) for visible in self.keypoints_visible
-                ],
-                keypoint_x_labels=[
-                    tv_tensors.wrap(keypoint_x_labels.pin_memory(), like=keypoint_x_labels)
-                    for keypoint_x_labels in self.keypoint_x_labels
-                ],
-                keypoint_y_labels=[
-                    tv_tensors.wrap(keypoint_y_labels.pin_memory(), like=keypoint_y_labels)
-                    for keypoint_y_labels in self.keypoint_y_labels
-                ],
-                keypoint_weights=[
-                    tv_tensors.wrap(keypoint_weights.pin_memory(), like=keypoint_weights)
-                    for keypoint_weights in self.keypoint_weights
-                ],
                 labels=[label.pin_memory() for label in self.labels],
+                bbox_info=self.bbox_info,
+                keypoints=self.keypoints,
+                keypoints_visible=self.keypoints_visible,
             )
         )
 
