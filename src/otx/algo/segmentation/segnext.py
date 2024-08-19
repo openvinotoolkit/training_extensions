@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING, Any, ClassVar
 from otx.algo.segmentation.backbones import MSCAN
 from otx.algo.segmentation.heads import LightHamHead
 from otx.algo.segmentation.losses import CrossEntropyLossWithIgnore
-from otx.algo.segmentation.segmentors import BaseSegmModel
+from otx.algo.segmentation.segmentors import BaseSegmentationModel
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.model.segmentation import OTXSegmentationModel
 
@@ -36,7 +36,7 @@ class SegNext(OTXSegmentationModel):
         backbone = MSCAN(version=self.model_version)
         decode_head = LightHamHead(version=self.model_version, num_classes=self.num_classes)
         criterion = CrossEntropyLossWithIgnore(ignore_index=self.label_info.ignore_index)  # type: ignore[attr-defined]
-        return BaseSegmModel(
+        return BaseSegmentationModel(
             backbone=backbone,
             decode_head=decode_head,
             criterion=criterion,

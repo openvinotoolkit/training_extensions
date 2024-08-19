@@ -16,13 +16,13 @@ from otx.algo.modules.activation import build_activation_layer
 from otx.algo.modules.norm import build_norm_layer
 from otx.algo.segmentation.modules import IterativeAggregator
 
-from .base_segm_head import BaseSegmHead
+from .base_segm_head import BaseSegmentationHead
 
 if TYPE_CHECKING:
     from pathlib import Path
 
 
-class NNFCNHead(BaseSegmHead):
+class FCNHeadModule(BaseSegmentationHead):
     """Fully Convolution Networks for Semantic Segmentation with aggregation.
 
     This head is implemented of `FCNNet <https://arxiv.org/abs/1411.4038>`_.
@@ -227,10 +227,10 @@ class FCNHead:
         },
     }
 
-    def __new__(cls, version: str, num_classes: int) -> NNFCNHead:
+    def __new__(cls, version: str, num_classes: int) -> FCNHeadModule:
         """Constructor for FCNHead."""
         if version not in cls.FCNHEAD_CFG:
             msg = f"model type '{version}' is not supported"
             raise KeyError(msg)
 
-        return NNFCNHead(**cls.FCNHEAD_CFG[version], num_classes=num_classes)
+        return FCNHeadModule(**cls.FCNHEAD_CFG[version], num_classes=num_classes)

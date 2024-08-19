@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING, Any, ClassVar
 from otx.algo.segmentation.backbones import DinoVisionTransformer
 from otx.algo.segmentation.heads import FCNHead
 from otx.algo.segmentation.losses import CrossEntropyLossWithIgnore
-from otx.algo.segmentation.segmentors import BaseSegmModel
+from otx.algo.segmentation.segmentors import BaseSegmentationModel
 from otx.core.model.segmentation import OTXSegmentationModel
 
 if TYPE_CHECKING:
@@ -34,7 +34,7 @@ class DinoV2Seg(OTXSegmentationModel):
         decode_head = FCNHead(self.model_version, num_classes=self.num_classes)
         criterion = CrossEntropyLossWithIgnore(ignore_index=self.label_info.ignore_index)  # type: ignore[attr-defined]
 
-        return BaseSegmModel(
+        return BaseSegmentationModel(
             backbone=backbone,
             decode_head=decode_head,
             criterion=criterion,

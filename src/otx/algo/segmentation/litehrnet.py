@@ -12,7 +12,7 @@ from torch.onnx import OperatorExportTypes
 from otx.algo.segmentation.backbones import LiteHRNetBackbone
 from otx.algo.segmentation.heads import FCNHead
 from otx.algo.segmentation.losses import CrossEntropyLossWithIgnore
-from otx.algo.segmentation.segmentors import BaseSegmModel
+from otx.algo.segmentation.segmentors import BaseSegmentationModel
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter
@@ -39,7 +39,7 @@ class LiteHRNet(OTXSegmentationModel):
         backbone = LiteHRNetBackbone(self.model_version)
         decode_head = FCNHead(self.model_version, num_classes=self.num_classes)
         criterion = CrossEntropyLossWithIgnore(ignore_index=self.label_info.ignore_index)  # type: ignore[attr-defined]
-        return BaseSegmModel(
+        return BaseSegmentationModel(
             backbone=backbone,
             decode_head=decode_head,
             criterion=criterion,

@@ -17,7 +17,7 @@ from otx.algo.modules.activation import build_activation_layer
 from otx.algo.modules.norm import build_norm_layer
 from otx.algo.segmentation.modules import resize
 
-from .base_segm_head import BaseSegmHead
+from .base_segm_head import BaseSegmentationHead
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -67,7 +67,7 @@ class Hamburger(nn.Module):
         return f.relu(x + enjoy, inplace=True)
 
 
-class NNLightHamHead(BaseSegmHead):
+class LightHamHeadModule(BaseSegmentationHead):
     """SegNeXt decode head."""
 
     def __init__(
@@ -338,10 +338,10 @@ class LightHamHead:
         },
     }
 
-    def __new__(cls, version: str, num_classes: int) -> NNLightHamHead:
+    def __new__(cls, version: str, num_classes: int) -> LightHamHeadModule:
         """Constructor for FCNHead."""
         if version not in cls.HAMHEAD_CFG:
             msg = f"model type '{version}' is not supported"
             raise KeyError(msg)
 
-        return NNLightHamHead(**cls.HAMHEAD_CFG[version], num_classes=num_classes)
+        return LightHamHeadModule(**cls.HAMHEAD_CFG[version], num_classes=num_classes)
