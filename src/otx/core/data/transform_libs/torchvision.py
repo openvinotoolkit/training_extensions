@@ -3162,12 +3162,12 @@ class RandomBBoxTransform(tvt_v2.Transform):
         self.rotate_prob = rotate_prob
 
     @staticmethod
-    def _truncnorm(low: float = -1.0, high: float = 1.0, size: tuple = ()) -> torch.Tensor:
+    def _truncnorm(low: float = -1.0, high: float = 1.0, size: int = 4) -> torch.Tensor:
         """Sample from a truncated normal distribution."""
-        return torch.Tensor(truncnorm.rvs(low, high, size=size).astype(np.float32))
+        return truncnorm.rvs(low, high, size=(size)).astype(np.float32)
 
     @cache_randomness
-    def _get_transform_params(self, num_bboxes: int) -> tuple:
+    def _get_transform_params(self) -> tuple:
         """Get random transform parameters.
 
         Args:
@@ -3179,25 +3179,25 @@ class RandomBBoxTransform(tvt_v2.Transform):
             - scale (np.ndarray): Scaling factor of each bbox in shape (n, 1)
             - rotate (np.ndarray): Rotation degree of each bbox in shape (n,)
         """
-        random_v = self._truncnorm(size=(num_bboxes, 4))
-        offset_v = random_v[:, :2]
-        scale_v = random_v[:, 2:3]
-        rotate_v = random_v[:, 3]
+        random_v = self._truncnorm()
+        offset_v = random_v[:2]
+        scale_v = random_v[2:3]
+        rotate_v = random_v[3]
 
         # Get shift parameters
         offset = offset_v * self.shift_factor
-        offset = torch.where(torch.rand(num_bboxes, 1) < self.shift_prob, offset, 1.0)
+        offset = np.where(np.random.rand(1) < self.shift_prob, offset, 0.0)
 
         # Get scaling parameters
         scale_min, scale_max = self.scale_factor
         mu = (scale_max + scale_min) * 0.5
         sigma = (scale_max - scale_min) * 0.5
         scale = scale_v * sigma + mu
-        scale = torch.where(torch.rand(num_bboxes, 1) < self.scale_prob, scale, 1.0)
+        scale = np.where(np.random.rand(1) < self.scale_prob, scale, 1.0)
 
         # Get rotation parameters
         rotate = rotate_v * self.rotate_factor
-        rotate = torch.where(torch.rand(num_bboxes, 1) < self.rotate_prob, rotate, 0.0)
+        rotate = np.where(np.random.rand() < self.rotate_prob, rotate, 0.0)
 
         return offset, scale, rotate
 
@@ -3215,11 +3215,9 @@ class RandomBBoxTransform(tvt_v2.Transform):
         assert len(_inputs) == 1, "[tmp] Multiple entity is not supported yet."  # noqa: S101
         inputs = _inputs[0]
 
+        offset, scale, rotate = self._get_transform_params()
+
         bbox_scale = inputs.bbox_info.scale
-
-        num_bboxes = 1
-        offset, scale, rotate = self._get_transform_params(num_bboxes)
-
         inputs.bbox_info.center = inputs.bbox_info.center + offset * bbox_scale
         inputs.bbox_info.scale = inputs.bbox_info.scale * scale
         inputs.bbox_info.rotation = rotate
