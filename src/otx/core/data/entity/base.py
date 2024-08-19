@@ -345,16 +345,13 @@ class VideoInfo(tv_tensors.TVTensor):
 
 
 class BboxInfo(tv_tensors.TVTensor):
-    """`torch.Tensor` subclass for points.
+    """`torch.Tensor` subclass for bbox info, e.g., center, scale, and rotation.
 
     Attributes:
         data: Any data that can be turned into a tensor with `torch.as_tensor`.
-        canvas_size (two-tuple of ints): Height and width of the corresponding image or video.
-        dtype (torch.dtype, optional): Desired data type of the point. If omitted, will be inferred from `data`.
-        device (torch.device, optional): Desired device of the point. If omitted and `data` is a
-            `torch.Tensor`, the device is taken from it. Otherwise, the point is constructed on the CPU.
-        requires_grad (bool, optional): Whether autograd should record operations on the point. If omitted and
-            `data` is a `torch.Tensor`, the value is taken from it. Otherwise, defaults to `False`.
+        center (np.ndarray): Bbox center coordinates.
+        scale (np.ndarray): Bbox scales for width and height.
+        rotation (float): Bbox rotation for bbox augmentations.
     """
 
     center: np.ndarray
