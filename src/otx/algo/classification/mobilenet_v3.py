@@ -3,7 +3,6 @@
 
 """MobileNetV3 model implementation."""
 
-
 from __future__ import annotations
 
 from copy import copy, deepcopy
@@ -35,7 +34,7 @@ from otx.core.data.entity.classification import (
     MultilabelClsBatchPredEntity,
 )
 from otx.core.metrics import MetricInput
-from otx.core.metrics.accuracy import HLabelClsMetricCallble, MultiClassClsMetricCallable, MultiLabelClsMetricCallable
+from otx.core.metrics.accuracy import HLabelClsMetricCallable, MultiClassClsMetricCallable, MultiLabelClsMetricCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
 from otx.core.model.classification import OTXHlabelClsModel, OTXMulticlassClsModel, OTXMultilabelClsModel
 from otx.core.schedulers import LRSchedulerListCallable
@@ -199,7 +198,7 @@ class MobileNetV3ForMultilabelCls(OTXMultilabelClsModel):
                 in_channels=960,
                 hid_channels=1280,
                 normalized=True,
-                activation_callable=nn.PReLU(),
+                activation=nn.PReLU(),
             ),
             loss=AsymmetricAngularLossWithIgnore(gamma_pos=0.0, gamma_neg=1.0, reduction="sum"),
             loss_scale=7.0,
@@ -277,7 +276,7 @@ class MobileNetV3ForHLabelCls(OTXHlabelClsModel):
         mode: Literal["large", "small"] = "large",
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
-        metric: MetricCallable = HLabelClsMetricCallble,
+        metric: MetricCallable = HLabelClsMetricCallable,
         torch_compile: bool = False,
         input_size: tuple[int, int] = (224, 224),
     ) -> None:

@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 """ViT model implementation."""
+
 from __future__ import annotations
 
 import types
@@ -28,7 +29,7 @@ from otx.algo.classification.utils import get_classification_layers
 from otx.algo.explain.explain_algo import ViTReciproCAM, feature_vector_fn
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.data.entity.base import T_OTXBatchDataEntity, T_OTXBatchPredEntity
-from otx.core.metrics.accuracy import HLabelClsMetricCallble, MultiClassClsMetricCallable, MultiLabelClsMetricCallable
+from otx.core.metrics.accuracy import HLabelClsMetricCallable, MultiClassClsMetricCallable, MultiLabelClsMetricCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
 from otx.core.model.classification import (
     OTXHlabelClsModel,
@@ -403,7 +404,7 @@ class VisionTransformerForHLabelCls(ForwardExplainMixInForViT, OTXHlabelClsModel
         pretrained: bool = True,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
-        metric: MetricCallable = HLabelClsMetricCallble,
+        metric: MetricCallable = HLabelClsMetricCallable,
         torch_compile: bool = False,
         input_size: tuple[int, int] = (224, 224),
     ) -> None:

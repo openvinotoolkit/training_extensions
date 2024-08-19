@@ -24,10 +24,10 @@ class BaseSegmHead(nn.Module):
         channels (int): Number of channels in the feature map.
         num_classes (int): Number of classes for segmentation.
         dropout_ratio (float, optional): The dropout ratio. Defaults to 0.1.
-        norm_cfg (Optional[ConfigType], optional): Config for normalization layer.
+        normalization (Callable[..., nn.Module] | None): Normalization layer module.
             Defaults to None.
-        activation_callable (Callable[..., nn.Module] | None): Activation layer module.
-            Defaults to `nn.ReLU`.
+        activation (Callable[..., nn.Module] | None): Activation layer module.
+            Defaults to ``nn.ReLU``.
         in_index (int, list[int], optional): Input index. Defaults to -1.
         input_transform (Optional[str], optional): Input transform type.
             Defaults to None.
@@ -41,8 +41,8 @@ class BaseSegmHead(nn.Module):
         channels: int,
         num_classes: int,
         dropout_ratio: float = 0.1,
-        norm_cfg: dict[str, str] | None = None,
-        activation_callable: Callable[..., nn.Module] | None = nn.ReLU,
+        normalization: Callable[..., nn.Module] | None = None,
+        activation: Callable[..., nn.Module] | None = nn.ReLU,
         in_index: int | list[int] = -1,
         input_transform: str | None = None,
         align_corners: bool = False,
@@ -54,8 +54,8 @@ class BaseSegmHead(nn.Module):
         self.num_classes = num_classes
         self.input_transform = input_transform
         self.dropout_ratio = dropout_ratio
-        self.norm_cfg = norm_cfg
-        self.activation_callable = activation_callable
+        self.normalization = normalization
+        self.activation = activation
         if self.input_transform is not None and not isinstance(in_index, list):
             msg = f'"in_index" expects a list, but got {type(in_index)}'
             raise TypeError(msg)

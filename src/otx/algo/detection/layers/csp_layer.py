@@ -5,15 +5,17 @@
 
 from __future__ import annotations
 
+from functools import partial
 from typing import Callable
 
 import torch
 from torch import Tensor, nn
 
 from otx.algo.detection.layers import ChannelAttention
-from otx.algo.modules.activation import Swish
+from otx.algo.modules.activation import Swish, build_activation_layer
 from otx.algo.modules.base_module import BaseModule
 from otx.algo.modules.conv_module import Conv2dModule, DepthwiseSeparableConvModule
+from otx.algo.modules.norm import build_norm_layer
 
 
 class DarknetBottleneck(BaseModule):
@@ -33,10 +35,10 @@ class DarknetBottleneck(BaseModule):
             Defaults to True.
         use_depthwise (bool): Whether to use depthwise separable convolution.
             Defaults to False.
-        norm_cfg (dict): Config dict for normalization layer.
-            Defaults to dict(type='BN').
-        activation_callable (Callable[..., nn.Module]): Activation layer module.
-            Defaults to `Swish`.
+        normalization (Callable[..., nn.Module]): Normalization layer module.
+            Defaults to ``partial(nn.BatchNorm2d, momentum=0.03, eps=0.001)``.
+        activation (Callable[..., nn.Module]): Activation layer module.
+            Defaults to ``Swish``.
     """
 
     def __init__(
@@ -46,13 +48,10 @@ class DarknetBottleneck(BaseModule):
         expansion: float = 0.5,
         add_identity: bool = True,
         use_depthwise: bool = False,
-        norm_cfg: dict | None = None,
-        activation_callable: Callable[..., nn.Module] = Swish,
+        normalization: Callable[..., nn.Module] = partial(nn.BatchNorm2d, momentum=0.03, eps=0.001),
+        activation: Callable[..., nn.Module] = Swish,
         init_cfg: dict | list[dict] | None = None,
     ) -> None:
-        if norm_cfg is None:
-            norm_cfg = {"type": "BN", "momentum": 0.03, "eps": 0.001}
-
         super().__init__(init_cfg=init_cfg)
 
         hidden_channels = int(out_channels * expansion)
@@ -61,8 +60,8 @@ class DarknetBottleneck(BaseModule):
             in_channels,
             hidden_channels,
             1,
-            norm_cfg=norm_cfg,
-            activation_callable=activation_callable,
+            normalization=build_norm_layer(normalization, num_features=hidden_channels),
+            activation=build_activation_layer(activation),
         )
         self.conv2 = conv(
             hidden_channels,
@@ -70,8 +69,8 @@ class DarknetBottleneck(BaseModule):
             3,
             stride=1,
             padding=1,
-            norm_cfg=norm_cfg,
-            activation_callable=activation_callable,
+            normalization=build_norm_layer(normalization, num_features=out_channels),
+            activation=build_activation_layer(activation),
         )
         self.add_identity = add_identity and in_channels == out_channels
 
@@ -99,10 +98,10 @@ class CSPNeXtBlock(BaseModule):
             Defaults to False.
         kernel_size (int): The kernel size of the second convolution layer.
             Defaults to 5.
-        norm_cfg (dict): Config dict for normalization layer.
-            Defaults to dict(type='BN', momentum=0.03, eps=0.001).
-        activation_callable (Callable[..., nn.Module]): Activation layer module.
-            Defaults to `nn.SiLU`.
+        normalization (Callable[..., nn.Module] | None): Normalization layer module.
+            Defaults to ``partial(nn.BatchNorm2d, momentum=0.03, eps=0.001)``.
+        activation (Callable[..., nn.Module]): Activation layer module.
+            Defaults to ``nn.SiLU``.
         init_cfg (dict or list[dict], optional): Initialization config dict.
             Defaults to None.
     """
@@ -115,13 +114,10 @@ class CSPNeXtBlock(BaseModule):
         add_identity: bool = True,
         use_depthwise: bool = False,
         kernel_size: int = 5,
-        norm_cfg: dict | None = None,
-        activation_callable: Callable[..., nn.Module] = nn.SiLU,
+        normalization: Callable[..., nn.Module] = partial(nn.BatchNorm2d, momentum=0.03, eps=0.001),
+        activation: Callable[..., nn.Module] = nn.SiLU,
         init_cfg: dict | list[dict] | None = None,
     ) -> None:
-        if norm_cfg is None:
-            norm_cfg = {"type": "BN", "momentum": 0.03, "eps": 0.001}
-
         super().__init__(init_cfg=init_cfg)
 
         hidden_channels = int(out_channels * expansion)
@@ -132,8 +128,8 @@ class CSPNeXtBlock(BaseModule):
             3,
             stride=1,
             padding=1,
-            norm_cfg=norm_cfg,
-            activation_callable=activation_callable,
+            normalization=build_norm_layer(normalization, num_features=hidden_channels),
+            activation=build_activation_layer(activation),
         )
         self.conv2 = DepthwiseSeparableConvModule(
             hidden_channels,
@@ -141,8 +137,8 @@ class CSPNeXtBlock(BaseModule):
             kernel_size,
             stride=1,
             padding=kernel_size // 2,
-            norm_cfg=norm_cfg,
-            activation_callable=activation_callable,
+            normalization=build_norm_layer(normalization, num_features=out_channels),
+            activation=build_activation_layer(activation),
         )
         self.add_identity = add_identity and in_channels == out_channels
 
@@ -163,25 +159,41 @@ class RepVggBlock(nn.Module):
     Args:
         ch_in (int): The input channels of this Module.
         ch_out (int): The output channels of this Module.
-        activation_callable (Callable[..., nn.Module] | None): Activation layer module.
+        activation (Callable[..., nn.Module] | None): Activation layer module.
             Defaults to None.
-        norm_cfg (dict[str, str] | None): Config dict for normalization layer.
+        normalization (Callable[..., nn.Module] | None): Normalization layer module.
+            Defaults to None.
     """
 
     def __init__(
         self,
         ch_in: int,
         ch_out: int,
-        activation_callable: Callable[..., nn.Module] | None = None,
-        norm_cfg: dict[str, str] | None = None,
+        activation: Callable[..., nn.Module] | None = None,
+        normalization: Callable[..., nn.Module] | None = None,
     ) -> None:
         """Initialize RepVggBlock."""
         super().__init__()
         self.ch_in = ch_in
         self.ch_out = ch_out
-        self.conv1 = Conv2dModule(ch_in, ch_out, 3, 1, padding=1, activation_callable=None, norm_cfg=norm_cfg)
-        self.conv2 = Conv2dModule(ch_in, ch_out, 1, 1, activation_callable=None, norm_cfg=norm_cfg)
-        self.act = activation_callable() if activation_callable else nn.Identity()
+        self.conv1 = Conv2dModule(
+            ch_in,
+            ch_out,
+            3,
+            1,
+            padding=1,
+            normalization=build_norm_layer(normalization, num_features=ch_out),
+            activation=None,
+        )
+        self.conv2 = Conv2dModule(
+            ch_in,
+            ch_out,
+            1,
+            1,
+            normalization=build_norm_layer(normalization, num_features=ch_out),
+            activation=None,
+        )
+        self.act = activation() if activation else nn.Identity()
 
     def forward(self, x: Tensor) -> Tensor:
         """Forward function."""
@@ -233,10 +245,10 @@ class CSPLayer(BaseModule):
             blocks. Defaults to False.
         channel_attention (bool): Whether to add channel attention in each
             stage. Defaults to True.
-        norm_cfg (dict): Config dict for normalization layer.
-            Defaults to dict(type='BN')
-        activation_callable (Callable[..., nn.Module] | None): Activation layer module.
-            Defaults to `Swish`.
+        normalization (Callable[..., nn.Module]): Normalization layer module.
+            Defaults to ``partial(nn.BatchNorm2d, momentum=0.03, eps=0.001)``.
+        activation (Callable[..., nn.Module] | None): Activation layer module.
+            Defaults to ``Swish``.
         init_cfg (dict or list[dict], optional): Initialization config dict.
             Defaults to None.
     """
@@ -251,13 +263,10 @@ class CSPLayer(BaseModule):
         use_depthwise: bool = False,
         use_cspnext_block: bool = False,
         channel_attention: bool = False,
-        norm_cfg: dict | None = None,
-        activation_callable: Callable[..., nn.Module] | None = Swish,
+        normalization: Callable[..., nn.Module] = partial(nn.BatchNorm2d, momentum=0.03, eps=0.001),
+        activation: Callable[..., nn.Module] | None = Swish,
         init_cfg: dict | list[dict] | None = None,
     ) -> None:
-        if norm_cfg is None:
-            norm_cfg = {"type": "BN", "momentum": 0.03, "eps": 0.001}
-
         super().__init__(init_cfg=init_cfg)
 
         block = CSPNeXtBlock if use_cspnext_block else DarknetBottleneck
@@ -267,22 +276,22 @@ class CSPLayer(BaseModule):
             in_channels,
             mid_channels,
             1,
-            norm_cfg=norm_cfg,
-            activation_callable=activation_callable,
+            normalization=build_norm_layer(normalization, num_features=mid_channels),
+            activation=build_activation_layer(activation),
         )
         self.short_conv = Conv2dModule(
             in_channels,
             mid_channels,
             1,
-            norm_cfg=norm_cfg,
-            activation_callable=activation_callable,
+            normalization=build_norm_layer(normalization, num_features=mid_channels),
+            activation=build_activation_layer(activation),
         )
         self.final_conv = Conv2dModule(
             2 * mid_channels,
             out_channels,
             1,
-            norm_cfg=norm_cfg,
-            activation_callable=activation_callable,
+            normalization=build_norm_layer(normalization, num_features=out_channels),
+            activation=build_activation_layer(activation),
         )
 
         self.blocks = nn.Sequential(
@@ -293,8 +302,8 @@ class CSPLayer(BaseModule):
                     1.0,
                     add_identity,
                     use_depthwise,
-                    norm_cfg=norm_cfg,
-                    activation_callable=activation_callable,
+                    normalization=normalization,
+                    activation=activation,
                 )
                 for _ in range(num_blocks)
             ],
@@ -327,10 +336,10 @@ class CSPRepLayer(nn.Module):
             hidden layer. Defaults to 1.0.
         bias (bool): Whether to use bias in the convolution layer.
             Defaults to False.
-        activation_callable (Callable[..., nn.Module] | None): Activation layer module.
+        activation (Callable[..., nn.Module] | None): Activation layer module.
             Defaults to None.
-        norm_cfg (dict[str, str] | None): Config dict for normalization
-            layer. Defaults to None.
+        normalization (Callable[..., nn.Module] | None): Normalization layer module.
+            Defaults to None.
     """
 
     def __init__(
@@ -340,8 +349,8 @@ class CSPRepLayer(nn.Module):
         num_blocks: int = 3,
         expansion: float = 1.0,
         bias: bool = False,
-        activation_callable: Callable[..., nn.Module] | None = None,
-        norm_cfg: dict[str, str] | None = None,
+        activation: Callable[..., nn.Module] | None = None,
+        normalization: Callable[..., nn.Module] | None = None,
     ) -> None:
         """Initialize CSPRepLayer."""
         super().__init__()
@@ -352,8 +361,8 @@ class CSPRepLayer(nn.Module):
             1,
             1,
             bias=bias,
-            activation_callable=activation_callable,
-            norm_cfg=norm_cfg,
+            normalization=build_norm_layer(normalization, num_features=hidden_channels),
+            activation=build_activation_layer(activation),
         )
         self.conv2 = Conv2dModule(
             in_channels,
@@ -361,16 +370,16 @@ class CSPRepLayer(nn.Module):
             1,
             1,
             bias=bias,
-            activation_callable=activation_callable,
-            norm_cfg=norm_cfg,
+            normalization=build_norm_layer(normalization, num_features=hidden_channels),
+            activation=build_activation_layer(activation),
         )
         self.bottlenecks = nn.Sequential(
             *[
                 RepVggBlock(
                     hidden_channels,
                     hidden_channels,
-                    activation_callable=activation_callable,
-                    norm_cfg=norm_cfg,
+                    activation=activation,
+                    normalization=normalization,
                 )
                 for _ in range(num_blocks)
             ],
@@ -382,8 +391,8 @@ class CSPRepLayer(nn.Module):
                 1,
                 1,
                 bias=bias,
-                activation_callable=activation_callable,
-                norm_cfg=norm_cfg,
+                normalization=build_norm_layer(normalization, num_features=out_channels),
+                activation=build_activation_layer(activation),
             )
         else:
             self.conv3 = nn.Identity()

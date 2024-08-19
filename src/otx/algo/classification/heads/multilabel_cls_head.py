@@ -30,7 +30,7 @@ class AnglularLinear(nn.Module):
     """
 
     def __init__(self, in_features: int, out_features: int) -> None:
-        """Init fuction of AngularLinear class."""
+        """Init function of AngularLinear class."""
         super().__init__()
         self.in_features = in_features
         self.out_features = out_features
@@ -38,7 +38,7 @@ class AnglularLinear(nn.Module):
         self.weight.data.normal_().renorm_(2, 0, 1e-5).mul_(1e5)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        """Forward fuction of AngularLinear class."""
+        """Forward function of AngularLinear class."""
         cos_theta = functional.normalize(x.view(x.shape[0], -1), dim=1).mm(
             functional.normalize(self.weight.t(), p=2, dim=0),
         )
@@ -169,10 +169,10 @@ class MultiLabelNonLinearClsHead(MultiLabelClsHead):
         num_classes (int): Number of categories.
         in_channels (int): Number of channels in the input feature map.
         hid_channels (int): Number of channels in the hidden feature map.
-        activation_callable (Callable[..., nn.Module]): Activation layer module.
-            Defaults to nn.ReLU.
+        activation (Callable[..., nn.Module] | nn.Module): Activation layer module.
+            Defaults to ``nn.ReLU``.
         dropout (bool): Whether use the dropout or not.
-        normalized (bool): Normalize input features and weights in the last linar layer.
+        normalized (bool): Normalize input features and weights in the last linear layer.
         init_cfg (dict | None, optional): Initialize configuration key-values, Defaults to None.
     """
 
@@ -181,7 +181,7 @@ class MultiLabelNonLinearClsHead(MultiLabelClsHead):
         num_classes: int,
         in_channels: int,
         hid_channels: int = 1280,
-        activation_callable: Callable[..., nn.Module] = nn.ReLU,
+        activation: Callable[..., nn.Module] | nn.Module = nn.ReLU,
         dropout: bool = False,
         normalized: bool = False,
         init_cfg: dict | None = None,
@@ -197,7 +197,7 @@ class MultiLabelNonLinearClsHead(MultiLabelClsHead):
 
         self.hid_channels = hid_channels
         self.dropout = dropout
-        self.activation_callable = activation_callable
+        self.activation = activation
 
         if self.num_classes <= 0:
             msg = f"num_classes={num_classes} must be a positive integer"
@@ -210,7 +210,7 @@ class MultiLabelNonLinearClsHead(MultiLabelClsHead):
         modules = [
             nn.Linear(self.in_channels, self.hid_channels),
             nn.BatchNorm1d(self.hid_channels),
-            self.activation_callable if isinstance(self.activation_callable, nn.Module) else self.activation_callable(),
+            self.activation if isinstance(self.activation, nn.Module) else self.activation(),
         ]
         if self.dropout:
             modules.append(nn.Dropout(p=0.2))
@@ -223,7 +223,7 @@ class MultiLabelNonLinearClsHead(MultiLabelClsHead):
         self._init_weights()
 
     def _init_weights(self) -> None:
-        """Iniitalize weights of model."""
+        """Initialize weights of model."""
         for module in self.classifier:
             if isinstance(module, nn.Linear):
                 normal_init(module, mean=0, std=0.01, bias=0)

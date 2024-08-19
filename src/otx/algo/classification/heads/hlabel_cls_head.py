@@ -208,7 +208,7 @@ class HierarchicalNonLinearClsHead(HierarchicalClsHead):
         num_classes: int,
         thr: float = 0.5,
         hid_channels: int = 1280,
-        activation_callable: Callable[[], nn.Module] = nn.ReLU,
+        activation: Callable[[], nn.Module] = nn.ReLU,
         dropout: bool = False,
         init_cfg: dict | None = None,
         **kwargs,
@@ -229,12 +229,12 @@ class HierarchicalNonLinearClsHead(HierarchicalClsHead):
         self.hid_channels = hid_channels
         self.dropout = dropout
 
-        self.activation_callable = activation_callable
+        self.activation = activation
 
         classifier_modules = [
             nn.Linear(in_channels, hid_channels),
             nn.BatchNorm1d(hid_channels),
-            self.activation_callable if isinstance(self.activation_callable, nn.Module) else self.activation_callable(),
+            self.activation if isinstance(self.activation, nn.Module) else self.activation(),
         ]
 
         if self.dropout:

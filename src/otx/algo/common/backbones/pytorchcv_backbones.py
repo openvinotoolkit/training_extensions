@@ -19,23 +19,23 @@ from torch.nn.modules.batchnorm import _BatchNorm
 # ruff: noqa: SLF001
 
 
-def replace_activation(model: nn.Module, activation_callable: Callable[..., nn.Module]) -> nn.Module:
+def replace_activation(model: nn.Module, activation: Callable[..., nn.Module]) -> nn.Module:
     """Replace activation funtion."""
     for name, module in model._modules.items():
         if len(list(module.children())) > 0:
-            model._modules[name] = replace_activation(module, activation_callable)
+            model._modules[name] = replace_activation(module, activation)
         if "activ" in name:
-            model._modules[name] = activation_callable()
+            model._modules[name] = activation()
     return model
 
 
-def replace_norm(model: nn.Module, cfg: dict) -> nn.Module:
+def replace_norm(model: nn.Module, normalization: Callable[..., nn.Module]) -> nn.Module:
     """Replace norm funtion."""
     for name, module in model._modules.items():
         if len(list(module.children())) > 0:
-            model._modules[name] = replace_norm(module, cfg)
+            model._modules[name] = replace_norm(module, normalization)
         if "bn" in name:
-            model._modules[name] = build_norm_layer(cfg, num_features=module.num_features)[1]
+            model._modules[name] = build_norm_layer(normalization, num_features=module.num_features)[1]
     return model
 
 
@@ -119,8 +119,8 @@ def _build_pytorchcv_model(
     frozen_stages: int = 0,
     norm_eval: bool = False,
     verbose: bool = False,
-    activation_callable: Callable[..., nn.Module] | None = None,
-    norm_cfg: dict | None = None,
+    activation: Callable[..., nn.Module] | None = None,
+    normalization: Callable[..., nn.Module] | None = None,
     **kwargs,
 ) -> nn.Module:
     """Build pytorchcv model."""
@@ -128,10 +128,10 @@ def _build_pytorchcv_model(
     pretrained = kwargs.pop("pretrained", False)
     print(f"Init model {type}, pretrained={pretrained}, models cache {models_cache_root}")
     model = _models[type](root=models_cache_root, pretrained=pretrained, **kwargs)
-    if activation_callable:
-        model = replace_activation(model, activation_callable)
-    if norm_cfg:
-        model = replace_norm(model, norm_cfg)
+    if activation:
+        model = replace_activation(model, activation)
+    if normalization:
+        model = replace_norm(model, normalization)
     model.out_indices = out_indices
     model.frozen_stages = frozen_stages
     model.norm_eval = norm_eval

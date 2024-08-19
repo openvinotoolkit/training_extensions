@@ -25,7 +25,7 @@ def fxt_non_linear_head() -> None:
         num_classes=3,
         in_channels=5,
         hid_channels=10,
-        activation_callable=nn.PReLU(),
+        activation=nn.PReLU(),
     )
 
 
