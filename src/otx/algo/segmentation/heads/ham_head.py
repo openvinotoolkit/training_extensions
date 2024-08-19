@@ -5,6 +5,7 @@
 
 from __future__ import annotations
 
+from functools import partial
 from typing import TYPE_CHECKING, Any, Callable, ClassVar
 
 import torch
@@ -12,6 +13,8 @@ import torch.nn.functional as f
 from torch import nn
 
 from otx.algo.modules import Conv2dModule
+from otx.algo.modules.activation import build_activation_layer
+from otx.algo.modules.norm import build_norm_layer
 from otx.algo.segmentation.modules import resize
 
 from .base_segm_head import BaseSegmHead
@@ -29,29 +32,30 @@ class Hamburger(nn.Module):
     Args:
         ham_channels (int): Input and output channels of feature.
         ham_kwargs (dict): Config of matrix decomposition module.
-        norm_cfg (dict | None): Config of norm layers.
+        normalization (Callable[..., nn.Module] | None): Normalization layer module.
+            Defaults to None.
     """
 
     def __init__(
         self,
         ham_channels: int,
         ham_kwargs: dict[str, Any],
-        norm_cfg: dict[str, Any] | None = None,
+        normalization: Callable[..., nn.Module] | None = None,
     ) -> None:
-        """Initialize Hamburger Module.
-
-        Args:
-            ham_channels (int): Input and output channels of feature.
-            ham_kwargs (Dict[str, Any]): Config of matrix decomposition module.
-            norm_cfg (Optional[Dict[str, Any]]): Config of norm layers.
-        """
+        """Initialize Hamburger Module."""
         super().__init__()
 
-        self.ham_in = Conv2dModule(ham_channels, ham_channels, 1, norm_cfg=None, activation_callable=None)
+        self.ham_in = Conv2dModule(ham_channels, ham_channels, 1, normalization=None, activation=None)
 
         self.ham = NMF2D(ham_channels=ham_channels, **ham_kwargs)
 
-        self.ham_out = Conv2dModule(ham_channels, ham_channels, 1, norm_cfg=norm_cfg, activation_callable=None)
+        self.ham_out = Conv2dModule(
+            ham_channels,
+            ham_channels,
+            1,
+            normalization=build_norm_layer(normalization, num_features=ham_channels),
+            activation=None,
+        )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Forward."""
@@ -72,8 +76,13 @@ class NNLightHamHead(BaseSegmHead):
         channels: int,
         num_classes: int,
         dropout_ratio: float = 0.1,
-        norm_cfg: dict[str, Any] | None = None,
-        activation_callable: Callable[..., nn.Module] | None = nn.ReLU,
+        normalization: Callable[..., nn.Module] | None = partial(
+            build_norm_layer,
+            nn.GroupNorm,
+            num_groups=32,
+            requires_grad=True,
+        ),
+        activation: Callable[..., nn.Module] | None = nn.ReLU,
         in_index: int | list[int] = [1, 2, 3],  # noqa: B006
         input_transform: str | None = "multiple_select",
         align_corners: bool = False,
@@ -101,17 +110,14 @@ class NNLightHamHead(BaseSegmHead):
         Returns:
             None
         """
-        if norm_cfg is None:
-            norm_cfg = {"num_groups": 32, "requires_grad": True, "type": "GN"}
-
         super().__init__(
             input_transform=input_transform,
             in_channels=in_channels,
             channels=channels,
             num_classes=num_classes,
             dropout_ratio=dropout_ratio,
-            norm_cfg=norm_cfg,
-            activation_callable=activation_callable,
+            normalization=normalization,
+            activation=activation,
             in_index=in_index,
             align_corners=align_corners,
             pretrained_weights=pretrained_weights,
@@ -130,18 +136,18 @@ class NNLightHamHead(BaseSegmHead):
             sum(self.in_channels),
             self.ham_channels,
             1,
-            norm_cfg=self.norm_cfg,
-            activation_callable=self.activation_callable,
+            normalization=build_norm_layer(self.normalization, num_features=self.ham_channels),
+            activation=build_activation_layer(self.activation),
         )
 
-        self.hamburger = Hamburger(self.ham_channels, ham_kwargs=self.ham_kwargs, norm_cfg=norm_cfg)
+        self.hamburger = Hamburger(self.ham_channels, ham_kwargs=self.ham_kwargs, normalization=normalization)
 
         self.align = Conv2dModule(
             self.ham_channels,
             self.channels,
             1,
-            norm_cfg=self.norm_cfg,
-            activation_callable=self.activation_callable,
+            normalization=build_norm_layer(self.normalization, num_features=self.channels),
+            activation=build_activation_layer(self.activation),
         )
 
     def forward(self, inputs: list[torch.Tensor]) -> torch.Tensor:

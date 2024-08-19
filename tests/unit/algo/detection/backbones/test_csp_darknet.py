@@ -109,7 +109,7 @@ class TestCSPDarknet:
         assert feat[5].shape == torch.Size((1, 256, 2, 2))
 
         # Test CSPDarknet forward with dict(type='ReLU')
-        model = CSPDarknet(widen_factor=0.125, activation_callable=nn.ReLU, out_indices=range(5))
+        model = CSPDarknet(widen_factor=0.125, activation=nn.ReLU, out_indices=range(5))
         model.train()
 
         imgs = torch.randn(1, 3, 64, 64)

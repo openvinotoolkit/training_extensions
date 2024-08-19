@@ -9,7 +9,7 @@ Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/r
 from __future__ import annotations
 
 import warnings
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Callable
 
 import numpy as np
 import torch
@@ -22,6 +22,7 @@ from otx.algo.instance_segmentation.utils.structures.mask import mask_target
 from otx.algo.instance_segmentation.utils.utils import empty_instances
 from otx.algo.modules.base_module import BaseModule, ModuleList
 from otx.algo.modules.conv_module import Conv2dModule
+from otx.algo.modules.norm import build_norm_layer
 
 BYTES_PER_FLOAT = 4
 #  determine it based on available resources.
@@ -45,7 +46,7 @@ class FCNMaskHead(BaseModule):
         conv_out_channels: int = 256,
         num_classes: int = 80,
         class_agnostic: int = False,
-        norm_cfg: dict | None = None,
+        normalization: Callable[..., nn.Module] | None = None,
         init_cfg: dict | list[dict] | None = None,
     ) -> None:
         if init_cfg is not None:
@@ -61,7 +62,7 @@ class FCNMaskHead(BaseModule):
         self.conv_out_channels = conv_out_channels
         self.num_classes = num_classes
         self.class_agnostic = class_agnostic
-        self.norm_cfg = norm_cfg
+        self.normalization = normalization
 
         self.loss_mask = loss_mask
 
@@ -75,7 +76,7 @@ class FCNMaskHead(BaseModule):
                     self.conv_out_channels,
                     self.conv_kernel_size,
                     padding=padding,
-                    norm_cfg=norm_cfg,
+                    normalization=build_norm_layer(normalization, num_features=self.conv_out_channels),
                 ),
             )
         upsample_in_channels = self.conv_out_channels if self.num_convs > 0 else in_channels

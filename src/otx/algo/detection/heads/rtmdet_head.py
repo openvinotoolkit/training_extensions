@@ -8,6 +8,7 @@ Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/d
 
 from __future__ import annotations
 
+from functools import partial
 from typing import Callable
 
 import torch
@@ -22,8 +23,9 @@ from otx.algo.detection.utils.utils import (
     sigmoid_geometric_mean,
     unmap,
 )
+from otx.algo.modules.activation import build_activation_layer
 from otx.algo.modules.conv_module import Conv2dModule, DepthwiseSeparableConvModule
-from otx.algo.modules.norm import is_norm
+from otx.algo.modules.norm import build_norm_layer, is_norm
 from otx.algo.modules.scale import Scale
 from otx.algo.utils.mmengine_utils import InstanceData
 from otx.algo.utils.weight_init import bias_init_with_prob, constant_init, normal_init
@@ -37,8 +39,8 @@ class RTMDetHead(ATSSHead):
         in_channels (int): Number of channels in the input feature map.
         with_objectness (bool): Whether to add an objectness branch.
             Defaults to True.
-        activation_callable (Callable[..., nn.Module]): Activation layer module.
-            Defaults to `nn.ReLU`.
+        activation (Callable[..., nn.Module]): Activation layer module.
+            Defaults to ``nn.ReLU``.
     """
 
     def __init__(
@@ -46,10 +48,10 @@ class RTMDetHead(ATSSHead):
         num_classes: int,
         in_channels: int,
         with_objectness: bool = True,
-        activation_callable: Callable[..., nn.Module] = nn.ReLU,
+        activation: Callable[..., nn.Module] = nn.ReLU,
         **kwargs,
     ) -> None:
-        self.activation_callable = activation_callable
+        self.activation = activation
         self.with_objectness = with_objectness
         super().__init__(num_classes, in_channels, **kwargs)
         if self.train_cfg:
@@ -68,8 +70,8 @@ class RTMDetHead(ATSSHead):
                     3,
                     stride=1,
                     padding=1,
-                    norm_cfg=self.norm_cfg,
-                    activation_callable=self.activation_callable,
+                    normalization=build_norm_layer(self.normalization, num_features=self.feat_channels),
+                    activation=build_activation_layer(self.activation),
                 ),
             )
             self.reg_convs.append(
@@ -79,8 +81,8 @@ class RTMDetHead(ATSSHead):
                     3,
                     stride=1,
                     padding=1,
-                    norm_cfg=self.norm_cfg,
-                    activation_callable=self.activation_callable,
+                    normalization=build_norm_layer(self.normalization, num_features=self.feat_channels),
+                    activation=build_activation_layer(self.activation),
                 ),
             )
         pred_pad_size = self.pred_kernel_size // 2
@@ -643,10 +645,10 @@ class RTMDetSepBNHead(RTMDetHead):
             Defaults to True.
         use_depthwise (bool): Whether to use depthwise separable convolution in head.
             Defaults to False.
-        norm_cfg (dict): Config dict for normalization layer.
-            Defaults to dict(type='BN', momentum=0.03, eps=0.001).
-        activation_callable (Callable[..., nn.Module]): Activation layer module.
-            Defaults to `nn.SiLU`.
+        normalization (Callable[..., nn.Module]): Normalization layer module.
+            Defaults to ``partial(nn.BatchNorm2d, momentum=0.03, eps=0.001)``.
+        activation (Callable[..., nn.Module]): Activation layer module.
+            Defaults to ``nn.SiLU``.
         pred_kernel_size (int): Kernel size of prediction layer. Defaults to 1.
         exp_on_reg (bool): Whether using exponential of regression features or not. Defaults to False.
     """
@@ -657,21 +659,20 @@ class RTMDetSepBNHead(RTMDetHead):
         in_channels: int,
         share_conv: bool = True,
         use_depthwise: bool = False,
-        norm_cfg: dict | None = None,
-        activation_callable: Callable[..., nn.Module] = nn.SiLU,
+        normalization: Callable[..., nn.Module] = partial(nn.BatchNorm2d, momentum=0.03, eps=0.001),
+        activation: Callable[..., nn.Module] = nn.SiLU,
         pred_kernel_size: int = 1,
         exp_on_reg: bool = False,
         **kwargs,
     ) -> None:
-        norm_cfg = norm_cfg or {"type": "BN", "momentum": 0.03, "eps": 0.001}
         self.share_conv = share_conv
         self.exp_on_reg = exp_on_reg
         self.use_depthwise = use_depthwise
         super().__init__(
             num_classes,
             in_channels,
-            norm_cfg=norm_cfg,
-            activation_callable=activation_callable,
+            normalization=normalization,
+            activation=activation,
             pred_kernel_size=pred_kernel_size,
             **kwargs,
         )
@@ -698,8 +699,8 @@ class RTMDetSepBNHead(RTMDetHead):
                         3,
                         stride=1,
                         padding=1,
-                        norm_cfg=self.norm_cfg,
-                        activation_callable=self.activation_callable,
+                        normalization=build_norm_layer(self.normalization, num_features=self.feat_channels),
+                        activation=build_activation_layer(self.activation),
                     ),
                 )
                 reg_convs.append(
@@ -709,8 +710,8 @@ class RTMDetSepBNHead(RTMDetHead):
                         3,
                         stride=1,
                         padding=1,
-                        norm_cfg=self.norm_cfg,
-                        activation_callable=self.activation_callable,
+                        normalization=build_norm_layer(self.normalization, num_features=self.feat_channels),
+                        activation=build_activation_layer(self.activation),
                     ),
                 )
             self.cls_convs.append(cls_convs)

@@ -5,12 +5,15 @@
 
 from __future__ import annotations
 
+from functools import partial
 from typing import TYPE_CHECKING, Any, Callable, ClassVar
 
 import torch
 from torch import Tensor, nn
 
 from otx.algo.modules import Conv2dModule
+from otx.algo.modules.activation import build_activation_layer
+from otx.algo.modules.norm import build_norm_layer
 from otx.algo.segmentation.modules import IterativeAggregator
 
 from .base_segm_head import BaseSegmHead
@@ -25,6 +28,8 @@ class NNFCNHead(BaseSegmHead):
     This head is implemented of `FCNNet <https://arxiv.org/abs/1411.4038>`_.
 
     Args:
+        normalization (Callable[..., nn.Module] | None): Normalization layer module.
+            Defaults to None.
         num_convs (int): Number of convs in the head. Default: 2.
         kernel_size (int): The kernel size for convs in the head. Default: 3.
         concat_input (bool): Whether concat the input and output of convs
@@ -37,7 +42,7 @@ class NNFCNHead(BaseSegmHead):
         in_channels: list[int] | int,
         in_index: list[int] | int,
         channels: int,
-        norm_cfg: dict[str, Any] | None = None,
+        normalization: Callable[..., nn.Module] = partial(build_norm_layer, nn.BatchNorm2d, requires_grad=True),
         input_transform: str | None = None,
         num_classes: int = 80,
         num_convs: int = 1,
@@ -50,26 +55,16 @@ class NNFCNHead(BaseSegmHead):
         aggregator_use_concat: bool = False,
         align_corners: bool = False,
         dropout_ratio: float = -1,
-        activation_callable: Callable[..., nn.Module] | None = nn.ReLU,
+        activation: Callable[..., nn.Module] | None = nn.ReLU,
         pretrained_weights: Path | str | None = None,
     ) -> None:
-        """Initialize a Fully Convolution Networks head.
-
-        Args:
-            num_convs (int): Number of convs in the head.
-            kernel_size (int): The kernel size for convs in the head.
-            concat_input (bool): Whether to concat input and output of convs.
-            dilation (int): The dilation rate for convs in the head.
-            **kwargs: Additional arguments.
-        """
+        """Initialize a Fully Convolution Networks head."""
         if not isinstance(dilation, int):
             msg = f"dilation should be int, but got {type(dilation)}"
             raise TypeError(msg)
         if num_convs < 0 and dilation <= 0:
             msg = "num_convs and dilation should be larger than 0"
             raise ValueError(msg)
-        if norm_cfg is None:
-            norm_cfg = {"type": "BN", "requires_grad": True}
 
         self.num_convs = num_convs
         self.concat_input = concat_input
@@ -82,7 +77,7 @@ class NNFCNHead(BaseSegmHead):
             aggregator = IterativeAggregator(
                 in_channels=in_channels,
                 min_channels=aggregator_min_channels,
-                norm_cfg=norm_cfg,
+                normalization=normalization,
                 merge_norm=aggregator_merge_norm,
                 use_concat=aggregator_use_concat,
             )
@@ -98,14 +93,14 @@ class NNFCNHead(BaseSegmHead):
 
         super().__init__(
             in_index=in_index,
-            norm_cfg=norm_cfg,
+            normalization=normalization,
             input_transform=input_transform,
             in_channels=in_channels,
             align_corners=align_corners,
             dropout_ratio=dropout_ratio,
             channels=channels,
             num_classes=num_classes,
-            activation_callable=activation_callable,
+            activation=activation,
             pretrained_weights=pretrained_weights,
         )
 
@@ -123,8 +118,8 @@ class NNFCNHead(BaseSegmHead):
                 kernel_size=kernel_size,
                 padding=conv_padding,
                 dilation=dilation,
-                norm_cfg=self.norm_cfg,
-                activation_callable=self.activation_callable,
+                normalization=build_norm_layer(self.normalization, num_features=self.channels),
+                activation=build_activation_layer(self.activation),
             ),
         ]
         convs.extend(
@@ -135,8 +130,8 @@ class NNFCNHead(BaseSegmHead):
                     kernel_size=kernel_size,
                     padding=conv_padding,
                     dilation=dilation,
-                    norm_cfg=self.norm_cfg,
-                    activation_callable=self.activation_callable,
+                    normalization=build_norm_layer(self.normalization, num_features=self.channels),
+                    activation=build_activation_layer(self.activation),
                 )
                 for _ in range(num_convs - 1)
             ],
@@ -151,11 +146,11 @@ class NNFCNHead(BaseSegmHead):
                 self.channels,
                 kernel_size=kernel_size,
                 padding=kernel_size // 2,
-                norm_cfg=self.norm_cfg,
-                activation_callable=self.activation_callable,
+                normalization=build_norm_layer(self.normalization, num_features=self.channels),
+                activation=build_activation_layer(self.activation),
             )
 
-        if self.activation_callable:
+        if self.activation:
             self.convs[-1].with_activation = False
             delattr(self.convs[-1], "activation")  # why we delete last activation?
 
@@ -223,7 +218,7 @@ class FCNHead:
             "aggregator_use_concat": False,
         },
         "dinov2_vits14": {
-            "norm_cfg": {"type": "SyncBN", "requires_grad": True},
+            "normalization": partial(build_norm_layer, nn.SyncBatchNorm, requires_grad=True),
             "in_channels": [384, 384, 384, 384],
             "in_index": [0, 1, 2, 3],
             "input_transform": "resize_concat",

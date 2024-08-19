@@ -13,8 +13,9 @@ import torch.utils.checkpoint as cp
 from torch import Tensor, nn
 from torch.nn.modules.batchnorm import _BatchNorm
 
-from otx.algo.modules.activation import Swish
+from otx.algo.modules.activation import Swish, build_activation_layer
 from otx.algo.modules.conv_module import Conv3dModule
+from otx.algo.modules.norm import build_norm_layer
 from otx.algo.utils.mmengine_utils import load_checkpoint
 from otx.algo.utils.weight_init import constant_init, kaiming_init
 
@@ -72,10 +73,10 @@ class BlockX3D(nn.Module):
             unit. If set as None, it means not using SE unit. Default: None.
         use_swish (bool): Whether to use swish as the activation function
             before and after the 3x3x3 conv. Default: True.
-        norm_cfg (dict): Config for norm layers. required keys are ``type``,
-            Default: ``dict(type='BN3d')``.
-        activation_callable (Callable[..., nn.Module] | None): Activation layer module.
-            Defaults to `nn.ReLU`.
+        normalization (Callable[..., nn.Module] | None): Normalization layer module.
+            Defaults to None.
+        activation (Callable[..., nn.Module] | None): Activation layer module.
+            Defaults to ``nn.ReLU``.
         with_cp (bool): Use checkpoint or not. Using checkpoint will save some
             memory while slowing down the training speed. Default: False.
     """
@@ -89,8 +90,8 @@ class BlockX3D(nn.Module):
         downsample: nn.Module | None = None,
         se_ratio: float | None = None,
         use_swish: bool = True,
-        norm_cfg: dict | None = None,
-        activation_callable: Callable[..., nn.Module] | None = nn.ReLU,
+        normalization: Callable[..., nn.Module] | None = None,
+        activation: Callable[..., nn.Module] | None = nn.ReLU,
         with_cp: bool = False,
     ):
         super().__init__()
@@ -102,8 +103,8 @@ class BlockX3D(nn.Module):
         self.downsample = downsample
         self.se_ratio = se_ratio
         self.use_swish = use_swish
-        self.norm_cfg = norm_cfg
-        self.activation_callable = activation_callable
+        self.normalization = normalization
+        self.activation = activation
         self.with_cp = with_cp
 
         self.conv1 = Conv3dModule(
@@ -113,8 +114,8 @@ class BlockX3D(nn.Module):
             stride=1,
             padding=0,
             bias=False,
-            norm_cfg=self.norm_cfg,
-            activation_callable=self.activation_callable,
+            normalization=build_norm_layer(normalization, num_features=planes),
+            activation=build_activation_layer(activation),
         )
         # Here we use the channel-wise conv
         self.conv2 = Conv3dModule(
@@ -125,8 +126,8 @@ class BlockX3D(nn.Module):
             padding=1,
             groups=planes,
             bias=False,
-            norm_cfg=self.norm_cfg,
-            activation_callable=None,
+            normalization=build_norm_layer(normalization, num_features=planes),
+            activation=None,
         )
 
         self.swish = Swish()
@@ -138,14 +139,14 @@ class BlockX3D(nn.Module):
             stride=1,
             padding=0,
             bias=False,
-            norm_cfg=self.norm_cfg,
-            activation_callable=None,
+            normalization=build_norm_layer(normalization, num_features=outplanes),
+            activation=None,
         )
 
         if self.se_ratio is not None:
             self.se_module = SEModule(planes, self.se_ratio)
 
-        self.relu = self.activation_callable() if self.activation_callable else nn.ReLU(inplace=True)
+        self.relu = self.activation() if self.activation else nn.ReLU(inplace=True)
 
     def forward(self, x: Tensor) -> Tensor:
         """Defines the computation performed at every call."""
@@ -195,11 +196,10 @@ class X3DBackbone(nn.Module):
             unit. If set as None, it means not using SE unit. Default: 1 / 16.
         use_swish (bool): Whether to use swish as the activation function
             before and after the 3x3x3 conv. Default: True.
-        norm_cfg (dict): Config for norm layers. required keys are ``type`` and
-            ``requires_grad``.
-            Default: ``dict(type='BN3d', requires_grad=True)``.
-        activation_callable (Callable[..., nn.Module] | None): Activation layer module.
-            Defaults to `nn.ReLU`.
+        normalization (Callable[..., nn.Module] | None): Normalization layer module.
+            Defaults to None.
+        activation (Callable[..., nn.Module] | None): Activation layer module.
+            Defaults to ``nn.ReLU``.
         norm_eval (bool): Whether to set BN layers to eval mode, namely, freeze
             running stats (mean and var). Default: False.
         with_cp (bool): Use checkpoint or not. Using checkpoint will save some
@@ -223,8 +223,8 @@ class X3DBackbone(nn.Module):
         se_style: str = "half",
         se_ratio: float = 1 / 16,
         use_swish: bool = True,
-        norm_cfg: dict | None = None,
-        activation_callable: Callable[..., nn.Module] | None = nn.ReLU,
+        normalization: Callable[..., nn.Module] | None = None,
+        activation: Callable[..., nn.Module] | None = nn.ReLU,
         norm_eval: bool = False,
         with_cp: bool = False,
         zero_init_residual: bool = True,
@@ -266,8 +266,8 @@ class X3DBackbone(nn.Module):
             raise ValueError(msg)
         self.use_swish = use_swish
 
-        self.norm_cfg = norm_cfg
-        self.activation_callable = activation_callable
+        self.normalization = normalization
+        self.activation = activation
         self.norm_eval = norm_eval
         self.with_cp = with_cp
         self.zero_init_residual = zero_init_residual
@@ -293,8 +293,8 @@ class X3DBackbone(nn.Module):
                 se_style=self.se_style,
                 se_ratio=self.se_ratio,
                 use_swish=self.use_swish,
-                norm_cfg=self.norm_cfg,
-                activation_callable=self.activation_callable,
+                normalization=self.normalization,
+                activation=self.activation,
                 with_cp=with_cp,
                 **kwargs,
             )
@@ -311,8 +311,8 @@ class X3DBackbone(nn.Module):
             stride=1,
             padding=0,
             bias=False,
-            norm_cfg=self.norm_cfg,
-            activation_callable=self.activation_callable,
+            normalization=build_norm_layer(self.normalization, num_features=int(self.feat_dim * self.gamma_b)),
+            activation=build_activation_layer(self.activation),
         )
         self.feat_dim = int(self.feat_dim * self.gamma_b)
 
@@ -349,8 +349,8 @@ class X3DBackbone(nn.Module):
         se_style: str = "half",
         se_ratio: float | None = None,
         use_swish: bool = True,
-        norm_cfg: dict | None = None,
-        activation_callable: Callable[..., nn.Module] | None = nn.ReLU,
+        normalization: Callable[..., nn.Module] | None = None,
+        activation: Callable[..., nn.Module] | None = nn.ReLU,
         with_cp: bool = False,
         **kwargs,
     ) -> nn.Module:
@@ -375,9 +375,10 @@ class X3DBackbone(nn.Module):
                 Default: None.
             use_swish (bool): Whether to use swish as the activation function
                 before and after the 3x3x3 conv. Default: True.
-            norm_cfg (dict | None): Config for norm layers. Default: None.
-            activation_callable (Callable[..., nn.Module] | None): Activation layer module.
-                Defaults to `nn.ReLU`.
+            normalization (Callable[..., nn.Module] | None): Normalization layer module.
+                Defaults to None.
+            activation (Callable[..., nn.Module] | None): Activation layer module.
+                Defaults to ``nn.ReLU``.
             with_cp (bool | None): Use checkpoint or not. Using checkpoint
                 will save some memory while slowing down the training speed.
                 Default: False.
@@ -394,8 +395,8 @@ class X3DBackbone(nn.Module):
                 stride=(1, spatial_stride, spatial_stride),
                 padding=0,
                 bias=False,
-                norm_cfg=norm_cfg,
-                activation_callable=None,
+                normalization=build_norm_layer(normalization, num_features=inplanes),
+                activation=None,
             )
 
         use_se = [False] * blocks
@@ -416,8 +417,8 @@ class X3DBackbone(nn.Module):
                 downsample=downsample,
                 se_ratio=se_ratio if use_se[0] else None,
                 use_swish=use_swish,
-                norm_cfg=norm_cfg,
-                activation_callable=activation_callable,
+                normalization=normalization,
+                activation=activation,
                 with_cp=with_cp,
                 **kwargs,
             ),
@@ -432,8 +433,8 @@ class X3DBackbone(nn.Module):
                     spatial_stride=1,
                     se_ratio=se_ratio if use_se[i] else None,
                     use_swish=use_swish,
-                    norm_cfg=norm_cfg,
-                    activation_callable=activation_callable,
+                    normalization=normalization,
+                    activation=activation,
                     with_cp=with_cp,
                     **kwargs,
                 ),
@@ -450,8 +451,8 @@ class X3DBackbone(nn.Module):
             stride=(1, 2, 2),
             padding=(0, 1, 1),
             bias=False,
-            norm_cfg=None,
-            activation_callable=None,
+            normalization=None,
+            activation=None,
         )
         self.conv1_t = Conv3dModule(
             self.base_channels,
@@ -461,8 +462,8 @@ class X3DBackbone(nn.Module):
             padding=(2, 0, 0),
             groups=self.base_channels,
             bias=False,
-            norm_cfg=self.norm_cfg,
-            activation_callable=self.activation_callable,
+            normalization=build_norm_layer(self.normalization, num_features=self.base_channels),
+            activation=build_activation_layer(self.activation),
         )
 
     def _freeze_stages(self) -> None:

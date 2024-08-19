@@ -87,26 +87,33 @@ def pytest_configure(config):
 @pytest.fixture()
 def fxt_target_dataset_per_task(fxt_ci_data_root) -> dict:
     return {
-        OTXTaskType.MULTI_CLASS_CLS: Path(fxt_ci_data_root / "v2/multiclass_classification/multiclass_CUB_small/1"),
+        OTXTaskType.MULTI_CLASS_CLS: {
+            "supervised": Path(fxt_ci_data_root / "v2/multiclass_classification/multiclass_CUB_small/1"),
+            "unlabeled": Path(fxt_ci_data_root / "v2/multiclass_classification/semi-sl/CUB_unlabeled"),
+        },
         OTXTaskType.MULTI_LABEL_CLS: Path(fxt_ci_data_root / "v2/multilabel_classification/multilabel_CUB_small/1"),
         OTXTaskType.H_LABEL_CLS: Path(fxt_ci_data_root / "v2/hlabel_classification/hlabel_CUB_small/1"),
-        OTXTaskType.DETECTION: Path(fxt_ci_data_root / "v2/detection/pothole_small/1"),
-        OTXTaskType.ROTATED_DETECTION: Path(fxt_ci_data_root / "v2/detection/pothole_small/1"),
+        OTXTaskType.DETECTION: Path(fxt_ci_data_root / "v2/detection/bdd_small/1"),
+        OTXTaskType.ROTATED_DETECTION: Path(fxt_ci_data_root / "v2/rotated_detection/subway"),
         OTXTaskType.INSTANCE_SEGMENTATION: {
             "non_tiling": Path(fxt_ci_data_root / "v2/instance_seg/wgisd_small/1"),
             "tiling": Path(fxt_ci_data_root / "v2/tiling_instance_seg/vitens_aeromonas_small/1"),
         },
-        OTXTaskType.SEMANTIC_SEGMENTATION: Path(fxt_ci_data_root / "v2/semantic_seg/kvasir_small/1"),
+        OTXTaskType.SEMANTIC_SEGMENTATION: {
+            "supervised": Path(fxt_ci_data_root / "v2/semantic_seg/kvasir_small/1"),
+            "unlabeled": Path(fxt_ci_data_root / "v2/semantic_seg/semi-sl/unlabeled_images/kvasir"),
+        },
         OTXTaskType.ACTION_CLASSIFICATION: Path(
             fxt_ci_data_root / "v2/action/action_classification/ucf_kinetics_5percent_small",
         ),
-        OTXTaskType.VISUAL_PROMPTING: Path(fxt_ci_data_root / "v2/visual_prompting/wgisd_small/1"),
+        OTXTaskType.VISUAL_PROMPTING: Path(fxt_ci_data_root / "v2/visual_prompting/coco_car_person_medium"),
         OTXTaskType.ZERO_SHOT_VISUAL_PROMPTING: Path(
             fxt_ci_data_root / "v2/zero_shot_visual_prompting/coco_car_person_medium",
         ),
-        OTXTaskType.ANOMALY_CLASSIFICATION: Path(fxt_ci_data_root / "v2/anomaly/mvtec/bottle_small/1"),
+        OTXTaskType.ANOMALY_CLASSIFICATION: Path(fxt_ci_data_root / "v2/anomaly/mvtec/hazelnut_large"),
         OTXTaskType.ANOMALY_DETECTION: Path(fxt_ci_data_root / "v2/anomaly/mvtec/hazelnut_large"),
         OTXTaskType.ANOMALY_SEGMENTATION: Path(fxt_ci_data_root / "v2/anomaly/mvtec/hazelnut_large"),
+        OTXTaskType.KEYPOINT_DETECTION: Path(fxt_ci_data_root / "v2/keypoint_detection/coco_keypoint_medium"),
     }
 
 
@@ -126,4 +133,5 @@ def fxt_cli_override_command_per_task() -> dict:
         OTXTaskType.ANOMALY_CLASSIFICATION: [],
         OTXTaskType.ANOMALY_DETECTION: [],
         OTXTaskType.ANOMALY_SEGMENTATION: [],
+        OTXTaskType.KEYPOINT_DETECTION: [],
     }

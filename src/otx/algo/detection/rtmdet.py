@@ -124,16 +124,16 @@ class RTMDetTiny(RTMDet):
         backbone = CSPNeXt(
             deepen_factor=0.167,
             widen_factor=0.375,
-            norm_cfg={"type": "BN"},
-            activation_callable=partial(nn.SiLU, inplace=True),
+            normalization=nn.BatchNorm2d,
+            activation=partial(nn.SiLU, inplace=True),
         )
 
         neck = CSPNeXtPAFPN(
             in_channels=(96, 192, 384),
             out_channels=96,
             num_csp_blocks=1,
-            norm_cfg={"type": "BN"},
-            activation_callable=partial(nn.SiLU, inplace=True),
+            normalization=nn.BatchNorm2d,
+            activation=partial(nn.SiLU, inplace=True),
         )
 
         bbox_head = RTMDetSepBNHead(
@@ -147,8 +147,8 @@ class RTMDetTiny(RTMDet):
             loss_cls=QualityFocalLoss(use_sigmoid=True, beta=2.0, loss_weight=1.0),
             loss_bbox=GIoULoss(loss_weight=2.0),
             loss_centerness=CrossEntropyLoss(use_sigmoid=True, loss_weight=1.0),
-            norm_cfg={"type": "BN"},
-            activation_callable=partial(nn.SiLU, inplace=True),
+            normalization=nn.BatchNorm2d,
+            activation=partial(nn.SiLU, inplace=True),
             train_cfg=train_cfg,
             test_cfg=test_cfg,
         )

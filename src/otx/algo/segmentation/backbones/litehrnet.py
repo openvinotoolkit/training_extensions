@@ -9,6 +9,7 @@ Modified from:
 
 from __future__ import annotations
 
+from functools import partial
 from pathlib import Path
 from typing import Any, Callable, ClassVar
 
@@ -18,6 +19,7 @@ from torch import nn
 from torch.nn import functional
 
 from otx.algo.modules import Conv2dModule, build_norm_layer
+from otx.algo.modules.activation import build_activation_layer
 from otx.algo.segmentation.modules import (
     channel_shuffle,
 )
@@ -25,7 +27,16 @@ from otx.algo.utils.mmengine_utils import load_checkpoint_to_model, load_from_ht
 
 
 class NeighbourSupport(nn.Module):
-    """Neighbour support module."""
+    """Neighbour support module.
+
+    Args:
+        channels (int): Number of input channels.
+        kernel_size (int): Kernel size for convolutional layers. Default is 3.
+        key_ratio (int): Ratio of input channels to key channels. Default is 8.
+        value_ratio (int): Ratio of input channels to value channels. Default is 8.
+        normalization (Callable[..., nn.Module] | None): Normalization layer module.
+            Defaults to None.
+    """
 
     def __init__(
         self,
@@ -33,17 +44,8 @@ class NeighbourSupport(nn.Module):
         kernel_size: int = 3,
         key_ratio: int = 8,
         value_ratio: int = 8,
-        norm_cfg: dict | None = None,
+        normalization: Callable[..., nn.Module] | None = None,
     ) -> None:
-        """Neighbour support module.
-
-        Args:
-            channels (int): Number of input channels.
-            kernel_size (int): Kernel size for convolutional layers. Default is 3.
-            key_ratio (int): Ratio of input channels to key channels. Default is 8.
-            value_ratio (int): Ratio of input channels to value channels. Default is 8.
-            norm_cfg (dict | None): Config for normalization layers. Default is None.
-        """
         super().__init__()
 
         self.in_channels = channels
@@ -57,8 +59,8 @@ class NeighbourSupport(nn.Module):
                 out_channels=self.key_channels,
                 kernel_size=1,
                 stride=1,
-                norm_cfg=norm_cfg,
-                activation_callable=nn.ReLU,
+                normalization=build_norm_layer(normalization, num_features=self.key_channels),
+                activation=build_activation_layer(nn.ReLU),
             ),
             Conv2dModule(
                 self.key_channels,
@@ -67,16 +69,19 @@ class NeighbourSupport(nn.Module):
                 stride=1,
                 padding=(self.kernel_size - 1) // 2,
                 groups=self.key_channels,
-                norm_cfg=norm_cfg,
-                activation_callable=None,
+                normalization=build_norm_layer(normalization, num_features=self.key_channels),
+                activation=None,
             ),
             Conv2dModule(
                 in_channels=self.key_channels,
                 out_channels=self.kernel_size * self.kernel_size,
                 kernel_size=1,
                 stride=1,
-                norm_cfg=norm_cfg,
-                activation_callable=None,
+                normalization=build_norm_layer(
+                    normalization,
+                    num_features=self.kernel_size * self.kernel_size,
+                ),
+                activation=None,
             ),
         )
         self.value = nn.Sequential(
@@ -85,8 +90,8 @@ class NeighbourSupport(nn.Module):
                 out_channels=self.value_channels,
                 kernel_size=1,
                 stride=1,
-                norm_cfg=norm_cfg,
-                activation_callable=None,
+                normalization=build_norm_layer(normalization, num_features=self.value_channels),
+                activation=None,
             ),
             nn.Unfold(kernel_size=self.kernel_size, stride=1, padding=1),
         )
@@ -95,8 +100,8 @@ class NeighbourSupport(nn.Module):
             out_channels=self.in_channels,
             kernel_size=1,
             stride=1,
-            norm_cfg=norm_cfg,
-            activation_callable=None,
+            normalization=build_norm_layer(normalization, num_features=self.in_channels),
+            activation=None,
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -119,29 +124,30 @@ class CrossResolutionWeighting(nn.Module):
     Args:
         channels (list[int]): Number of channels for each stage.
         ratio (int): Reduction ratio of the bottleneck block.
-        norm_cfg (dict | None): Config dict for normalization layer. Default: None
-        activation_callable (Callable[..., nn.Module] | tuple[Callable[..., nn.Module], Callable[..., nn.Module]]): \
+        normalization (Callable[..., nn.Module] | None): Normalization layer module.
+            Defaults to None.
+        activation (Callable[..., nn.Module] | tuple[Callable[..., nn.Module], Callable[..., nn.Module]]): \
             Activation layer module or a tuple of activation layer modules.
-            Defaults to (`nn.ReLU`, `nn.Sigmoid`).
+            Defaults to ``(nn.ReLU, nn.Sigmoid)``.
     """
 
     def __init__(
         self,
         channels: list[int],
         ratio: int = 16,
-        norm_cfg: dict | None = None,
-        activation_callable: Callable[..., nn.Module] | tuple[Callable[..., nn.Module], Callable[..., nn.Module]] = (
+        normalization: Callable[..., nn.Module] | None = None,
+        activation: Callable[..., nn.Module] | tuple[Callable[..., nn.Module], Callable[..., nn.Module]] = (
             nn.ReLU,
             nn.Sigmoid,
         ),
     ) -> None:
         super().__init__()
 
-        if callable(activation_callable):
-            activation_callable = (activation_callable, activation_callable)
+        if callable(activation):
+            activation = (activation, activation)
 
-        if len(activation_callable) != 2:
-            msg = "activation_callable must be a callable or a tuple of callables of length 2."
+        if len(activation) != 2:
+            msg = "activation must be a callable or a tuple of callables of length 2."
             raise ValueError(msg)
 
         self.channels = channels
@@ -152,16 +158,16 @@ class CrossResolutionWeighting(nn.Module):
             out_channels=int(total_channel / ratio),
             kernel_size=1,
             stride=1,
-            norm_cfg=norm_cfg,
-            activation_callable=activation_callable[0],
+            normalization=build_norm_layer(normalization, num_features=int(total_channel / ratio)),
+            activation=build_activation_layer(activation[0]),
         )
         self.conv2 = Conv2dModule(
             in_channels=int(total_channel / ratio),
             out_channels=total_channel,
             kernel_size=1,
             stride=1,
-            norm_cfg=norm_cfg,
-            activation_callable=activation_callable[1],
+            normalization=build_norm_layer(normalization, num_features=total_channel),
+            activation=build_activation_layer(activation[1]),
         )
 
     def forward(self, x: torch.Tensor) -> list[torch.Tensor]:
@@ -183,21 +189,21 @@ class SpatialWeighting(nn.Module):
     Args:
         channels (int): Number of input channels.
         ratio (int): Reduction ratio for the bottleneck block. Default: 16.
-        activation_callable (Callable[..., nn.Module] | tuple[Callable[..., nn.Module], Callable[..., nn.Module]]): \
+        activation (Callable[..., nn.Module] | tuple[Callable[..., nn.Module], Callable[..., nn.Module]]): \
             Activation layer module or a tuple of activation layer modules.
             If a single module is provided, it will be used for both activation layers.
-            Defaults to (`nn.ReLU`, `nn.Sigmoid`).
+            Defaults to ``(nn.ReLU, nn.Sigmoid)``.
 
     Raises:
-        ValueError: activation_callable must be a callable or a tuple of callables of length 2.
-        TypeError: If activation_callable is not a callable or a tuple of callables.
+        ValueError: activation must be a callable or a tuple of callables of length 2.
+        TypeError: If activation is not a callable or a tuple of callables.
     """
 
     def __init__(
         self,
         channels: int,
         ratio: int = 16,
-        activation_callable: Callable[..., nn.Module] | tuple[Callable[..., nn.Module], Callable[..., nn.Module]] = (
+        activation: Callable[..., nn.Module] | tuple[Callable[..., nn.Module], Callable[..., nn.Module]] = (
             nn.ReLU,
             nn.Sigmoid,
         ),
@@ -205,11 +211,11 @@ class SpatialWeighting(nn.Module):
     ) -> None:
         super().__init__()
 
-        if callable(activation_callable):
-            activation_callable = (activation_callable, activation_callable)
+        if callable(activation):
+            activation = (activation, activation)
 
-        if len(activation_callable) != 2:
-            msg = "activation_callable must be a callable or a tuple of callables of length 2."
+        if len(activation) != 2:
+            msg = "activation must be a callable or a tuple of callables of length 2."
             raise ValueError(msg)
 
         self.global_avgpool = nn.AdaptiveAvgPool2d(1)
@@ -218,14 +224,14 @@ class SpatialWeighting(nn.Module):
             out_channels=int(channels / ratio),
             kernel_size=1,
             stride=1,
-            activation_callable=activation_callable[0],
+            activation=build_activation_layer(activation[0]),
         )
         self.conv2 = Conv2dModule(
             in_channels=int(channels / ratio),
             out_channels=channels,
             kernel_size=1,
             stride=1,
-            activation_callable=activation_callable[1],
+            activation=build_activation_layer(activation[1]),
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -238,23 +244,25 @@ class SpatialWeighting(nn.Module):
 
 
 class SpatialWeightingV2(nn.Module):
-    """The original repo: https://github.com/DeLightCMU/PSA."""
+    """SpatialWeightingV2.
+
+    The original repo: https://github.com/DeLightCMU/PSA.
+
+    Args:
+        channels (int): Number of input channels.
+        ratio (int): Reduction ratio of internal channels.
+        normalization (Callable[..., nn.Module] | None): Normalization layer module.
+            Defaults to None.
+        enable_norm (bool): Whether to enable normalization layers.
+    """
 
     def __init__(
         self,
         channels: int,
         ratio: int = 16,
-        norm_cfg: dict | None = None,
+        normalization: Callable[..., nn.Module] | None = None,
         enable_norm: bool = False,
     ) -> None:
-        """SpatialWeightingV2.
-
-        Args:
-            channels (int): Number of input channels.
-            ratio (int): Reduction ratio of internal channels.
-            norm_cfg (dict | None): Config dict for normalization layer.
-            enable_norm (bool): Whether to enable normalization layers.
-        """
         super().__init__()
 
         self.in_channels = channels
@@ -267,8 +275,8 @@ class SpatialWeightingV2(nn.Module):
             kernel_size=1,
             stride=1,
             bias=False,
-            norm_cfg=norm_cfg if enable_norm else None,
-            activation_callable=None,
+            normalization=build_norm_layer(normalization, num_features=self.internal_channels) if enable_norm else None,
+            activation=None,
         )
         self.q_channel = Conv2dModule(
             in_channels=self.in_channels,
@@ -276,16 +284,16 @@ class SpatialWeightingV2(nn.Module):
             kernel_size=1,
             stride=1,
             bias=False,
-            norm_cfg=norm_cfg if enable_norm else None,
-            activation_callable=None,
+            normalization=build_norm_layer(normalization, num_features=1) if enable_norm else None,
+            activation=None,
         )
         self.out_channel = Conv2dModule(
             in_channels=self.internal_channels,
             out_channels=self.in_channels,
             kernel_size=1,
             stride=1,
-            norm_cfg=norm_cfg,
-            activation_callable=nn.Sigmoid,
+            normalization=build_norm_layer(normalization, num_features=self.in_channels),
+            activation=build_activation_layer(nn.Sigmoid),
         )
 
         # spatial-only branch
@@ -295,8 +303,8 @@ class SpatialWeightingV2(nn.Module):
             kernel_size=1,
             stride=1,
             bias=False,
-            norm_cfg=norm_cfg if enable_norm else None,
-            activation_callable=None,
+            normalization=build_norm_layer(normalization, num_features=self.internal_channels) if enable_norm else None,
+            activation=None,
         )
         self.q_spatial = Conv2dModule(
             in_channels=self.in_channels,
@@ -304,8 +312,8 @@ class SpatialWeightingV2(nn.Module):
             kernel_size=1,
             stride=1,
             bias=False,
-            norm_cfg=norm_cfg if enable_norm else None,
-            activation_callable=None,
+            normalization=build_norm_layer(normalization, num_features=self.internal_channels) if enable_norm else None,
+            activation=None,
         )
         self.global_avgpool = nn.AdaptiveAvgPool2d(1)
 
@@ -365,40 +373,37 @@ class SpatialWeightingV2(nn.Module):
 
 
 class ConditionalChannelWeighting(nn.Module):
-    """Conditional channel weighting module."""
+    """Conditional channel weighting module.
+
+    Args:
+        in_channels (list[int]): Number of input channels for each input feature map.
+        stride (int): Stride used in the first convolutional layer.
+        reduce_ratio (int): Reduction ratio used in the cross-resolution weighting module.
+        normalization (Callable[..., nn.Module]): Normalization layer module.
+            Defaults to ``nn.BatchNorm2d``.
+        with_cp (bool): Whether to use checkpointing to save memory.
+        dropout (float | None): Dropout probability used in the depthwise convolutional layers.
+        weighting_module_version (str): Version of the spatial weighting module to use.
+        neighbour_weighting (bool): Whether to use the neighbour support module.
+        dw_ksize (int): Kernel size used in the depthwise convolutional layers.
+
+    Raises:
+        ValueError: If stride is not 1 or 2.
+    """
 
     def __init__(
         self,
         in_channels: list[int],
         stride: int,
         reduce_ratio: int,
-        norm_cfg: dict | None = None,
+        normalization: Callable[..., nn.Module] = nn.BatchNorm2d,
         with_cp: bool = False,
         dropout: float | None = None,
         weighting_module_version: str = "v1",
         neighbour_weighting: bool = False,
         dw_ksize: int = 3,
     ) -> None:
-        """Conditional channel weighting module.
-
-        Args:
-            in_channels (list[int]): Number of input channels for each input feature map.
-            stride (int): Stride used in the first convolutional layer.
-            reduce_ratio (int): Reduction ratio used in the cross-resolution weighting module.
-            norm_cfg (dict | None): Dictionary to construct and configure the normalization layers.
-            with_cp (bool): Whether to use checkpointing to save memory.
-            dropout (float | None): Dropout probability used in the depthwise convolutional layers.
-            weighting_module_version (str): Version of the spatial weighting module to use.
-            neighbour_weighting (bool): Whether to use the neighbour support module.
-            dw_ksize (int): Kernel size used in the depthwise convolutional layers.
-
-        Raises:
-            ValueError: If stride is not 1 or 2.
-        """
         super().__init__()
-
-        if norm_cfg is None:
-            norm_cfg = {"type": "BN"}
 
         self.with_cp = with_cp
         self.stride = stride
@@ -412,7 +417,7 @@ class ConditionalChannelWeighting(nn.Module):
         self.cross_resolution_weighting = CrossResolutionWeighting(
             branch_channels,
             ratio=reduce_ratio,
-            norm_cfg=norm_cfg,
+            normalization=normalization,
         )
         self.depthwise_convs = nn.ModuleList(
             [
@@ -423,18 +428,18 @@ class ConditionalChannelWeighting(nn.Module):
                     stride=self.stride,
                     padding=dw_ksize // 2,
                     groups=channel,
-                    norm_cfg=norm_cfg,
-                    activation_callable=None,
+                    normalization=build_norm_layer(normalization, num_features=channel),
+                    activation=None,
                 )
                 for channel in branch_channels
             ],
         )
         self.spatial_weighting = nn.ModuleList(
             [
-                spatial_weighting_module(
+                spatial_weighting_module(  # type: ignore[call-arg]
                     channels=channel,
                     ratio=4,
-                    norm_cfg=norm_cfg,
+                    normalization=normalization,
                     enable_norm=True,
                 )
                 for channel in branch_channels
@@ -450,7 +455,7 @@ class ConditionalChannelWeighting(nn.Module):
                         kernel_size=3,
                         key_ratio=8,
                         value_ratio=4,
-                        norm_cfg=norm_cfg,
+                        normalization=normalization,
                     )
                     for channel in branch_channels
                 ],
@@ -494,7 +499,25 @@ class ConditionalChannelWeighting(nn.Module):
 
 
 class Stem(nn.Module):
-    """Stem."""
+    """Stem.
+
+    Args:
+        in_channels (int): Number of input image channels. Typically 3.
+        stem_channels (int): Number of output channels of the stem layer.
+        out_channels (int): Number of output channels of the backbone network.
+        expand_ratio (int): Expansion ratio of the internal channels.
+        normalization (Callable[..., nn.Module] | None): Normalization layer module.
+            Defaults to ``nn.BatchNorm2d``.
+        with_cp (bool): Use checkpointing to save memory during forward pass.
+        num_stages (int): Number of stages in the backbone network.
+        strides (tuple[int, int]): Strides of the first and subsequent stages.
+        extra_stride (bool): Use an extra stride in the second stage.
+        input_norm (bool): Use instance normalization on the input image.
+
+    Raises:
+        TypeError: If strides is not a tuple or list.
+        ValueError: If len(strides) is not equal to num_stages + 1.
+    """
 
     def __init__(
         self,
@@ -502,34 +525,14 @@ class Stem(nn.Module):
         stem_channels: int,
         out_channels: int,
         expand_ratio: int,
-        norm_cfg: dict | None = None,
+        normalization: Callable[..., nn.Module] = nn.BatchNorm2d,
         with_cp: bool = False,
         strides: tuple[int, int] = (2, 2),
         extra_stride: bool = False,
         input_norm: bool = False,
     ) -> None:
-        """Stem initialization.
-
-        Args:
-            in_channels (int): Number of input image channels. Typically 3.
-            stem_channels (int): Number of output channels of the stem layer.
-            out_channels (int): Number of output channels of the backbone network.
-            expand_ratio (int): Expansion ratio of the internal channels.
-            norm_cfg (dict | None): Dictionary to construct and configure normalization layers.
-            with_cp (bool): Use checkpointing to save memory during forward pass.
-            num_stages (int): Number of stages in the backbone network.
-            strides (tuple[int, int]): Strides of the first and subsequent stages.
-            extra_stride (bool): Use an extra stride in the second stage.
-            input_norm (bool): Use instance normalization on the input image.
-
-        Raises:
-            TypeError: If strides is not a tuple or list.
-            ValueError: If len(strides) is not equal to num_stages + 1.
-        """
+        """Stem initialization."""
         super().__init__()
-
-        if norm_cfg is None:
-            norm_cfg = {"type": "BN"}
 
         if not isinstance(strides, (tuple, list)):
             msg = "strides must be tuple or list."
@@ -540,7 +543,7 @@ class Stem(nn.Module):
 
         self.in_channels = in_channels
         self.out_channels = out_channels
-        self.norm_cfg = norm_cfg
+        self.normalization = normalization
         self.with_cp = with_cp
 
         self.input_norm = None
@@ -553,8 +556,8 @@ class Stem(nn.Module):
             kernel_size=3,
             stride=strides[0],
             padding=1,
-            norm_cfg=self.norm_cfg,
-            activation_callable=nn.ReLU,
+            normalization=build_norm_layer(self.normalization, num_features=stem_channels),
+            activation=build_activation_layer(nn.ReLU),
         )
 
         self.conv2 = None
@@ -565,8 +568,8 @@ class Stem(nn.Module):
                 kernel_size=3,
                 stride=2,
                 padding=1,
-                norm_cfg=self.norm_cfg,
-                activation_callable=nn.ReLU,
+                normalization=build_norm_layer(self.normalization, num_features=stem_channels),
+                activation=build_activation_layer(nn.ReLU),
             )
 
         mid_channels = int(round(stem_channels * expand_ratio))
@@ -584,8 +587,8 @@ class Stem(nn.Module):
                 stride=strides[1],
                 padding=1,
                 groups=branch_channels,
-                norm_cfg=norm_cfg,
-                activation_callable=None,
+                normalization=build_norm_layer(normalization, num_features=branch_channels),
+                activation=None,
             ),
             Conv2dModule(
                 branch_channels,
@@ -593,8 +596,8 @@ class Stem(nn.Module):
                 kernel_size=1,
                 stride=1,
                 padding=0,
-                norm_cfg=norm_cfg,
-                activation_callable=nn.ReLU,
+                normalization=build_norm_layer(normalization, num_features=inc_channels),
+                activation=build_activation_layer(nn.ReLU),
             ),
         )
 
@@ -604,8 +607,8 @@ class Stem(nn.Module):
             kernel_size=1,
             stride=1,
             padding=0,
-            norm_cfg=norm_cfg,
-            activation_callable=nn.ReLU,
+            normalization=build_norm_layer(normalization, num_features=mid_channels),
+            activation=build_activation_layer(nn.ReLU),
         )
         self.depthwise_conv = Conv2dModule(
             mid_channels,
@@ -614,8 +617,8 @@ class Stem(nn.Module):
             stride=strides[1],
             padding=1,
             groups=mid_channels,
-            norm_cfg=norm_cfg,
-            activation_callable=None,
+            normalization=build_norm_layer(normalization, num_features=mid_channels),
+            activation=None,
         )
         self.linear_conv = Conv2dModule(
             mid_channels,
@@ -623,8 +626,11 @@ class Stem(nn.Module):
             kernel_size=1,
             stride=1,
             padding=0,
-            norm_cfg=norm_cfg,
-            activation_callable=nn.ReLU,
+            normalization=build_norm_layer(
+                normalization,
+                num_features=branch_channels if stem_channels == self.out_channels else stem_channels,
+            ),
+            activation=build_activation_layer(nn.ReLU),
         )
 
     def _inner_forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -661,7 +667,26 @@ class Stem(nn.Module):
 
 
 class StemV2(nn.Module):
-    """StemV2."""
+    """StemV2.
+
+    Args:
+        in_channels (int): Number of input image channels. Typically 3.
+        stem_channels (int): Number of output channels of the stem layer.
+        out_channels (int): Number of output channels of the backbone network.
+        expand_ratio (int): Expansion ratio of the internal channels.
+        normalization (Callable[..., nn.Module]): Normalization layer module.
+            Defaults to ``nn.BatchNorm2d``.
+        with_cp (bool): Use checkpointing to save memory during forward pass.
+        num_stages (int): Number of stages in the backbone network.
+        strides (tuple[int, int]): Strides of the first and subsequent stages.
+        extra_stride (bool): Use an extra stride in the second stage.
+        input_norm (bool): Use instance normalization on the input image.
+
+    Raises:
+        ValueError: If num_stages is less than 1.
+        TypeError: If strides is not a tuple or list.
+        ValueError: If len(strides) is not equal to num_stages + 1.
+    """
 
     def __init__(
         self,
@@ -669,36 +694,16 @@ class StemV2(nn.Module):
         stem_channels: int,
         out_channels: int,
         expand_ratio: int,
-        norm_cfg: dict | None = None,
+        normalization: Callable[..., nn.Module] = nn.BatchNorm2d,
         with_cp: bool = False,
         num_stages: int = 1,
         strides: tuple[int, int] = (2, 2),
         extra_stride: bool = False,
         input_norm: bool = False,
     ) -> None:
-        """StemV2 initialization.
-
-        Args:
-            in_channels (int): Number of input image channels. Typically 3.
-            stem_channels (int): Number of output channels of the stem layer.
-            out_channels (int): Number of output channels of the backbone network.
-            expand_ratio (int): Expansion ratio of the internal channels.
-            norm_cfg (dict | None): Dictionary to construct and configure normalization layers.
-            with_cp (bool): Use checkpointing to save memory during forward pass.
-            num_stages (int): Number of stages in the backbone network.
-            strides (tuple[int, int]): Strides of the first and subsequent stages.
-            extra_stride (bool): Use an extra stride in the second stage.
-            input_norm (bool): Use instance normalization on the input image.
-
-        Raises:
-            ValueError: If num_stages is less than 1.
-            TypeError: If strides is not a tuple or list.
-            ValueError: If len(strides) is not equal to num_stages + 1.
-        """
+        """StemV2 initialization."""
         super().__init__()
 
-        if norm_cfg is None:
-            norm_cfg = {"type": "BN"}
         if num_stages < 1:
             msg = "num_stages must be greater than 0."
             raise ValueError(msg)
@@ -712,7 +717,7 @@ class StemV2(nn.Module):
 
         self.in_channels = in_channels
         self.out_channels = out_channels
-        self.norm_cfg = norm_cfg
+        self.normalization = normalization
         self.with_cp = with_cp
         self.num_stages = num_stages
 
@@ -726,8 +731,8 @@ class StemV2(nn.Module):
             kernel_size=3,
             stride=strides[0],
             padding=1,
-            norm_cfg=self.norm_cfg,
-            activation_callable=nn.ReLU,
+            normalization=build_norm_layer(self.normalization, num_features=stem_channels),
+            activation=build_activation_layer(nn.ReLU),
         )
 
         self.conv2 = None
@@ -738,8 +743,8 @@ class StemV2(nn.Module):
                 kernel_size=3,
                 stride=2,
                 padding=1,
-                norm_cfg=self.norm_cfg,
-                activation_callable=nn.ReLU,
+                normalization=build_norm_layer(self.normalization, num_features=stem_channels),
+                activation=build_activation_layer(nn.ReLU),
             )
 
         mid_channels = int(round(stem_channels * expand_ratio))
@@ -757,8 +762,8 @@ class StemV2(nn.Module):
                         stride=strides[stage],
                         padding=1,
                         groups=internal_branch_channels,
-                        norm_cfg=norm_cfg,
-                        activation_callable=None,
+                        normalization=build_norm_layer(normalization, num_features=internal_branch_channels),
+                        activation=None,
                     ),
                     Conv2dModule(
                         internal_branch_channels,
@@ -766,8 +771,11 @@ class StemV2(nn.Module):
                         kernel_size=1,
                         stride=1,
                         padding=0,
-                        norm_cfg=norm_cfg,
-                        activation_callable=nn.ReLU,
+                        normalization=build_norm_layer(
+                            normalization,
+                            num_features=out_branch_channels if stage == num_stages else internal_branch_channels,
+                        ),
+                        activation=build_activation_layer(nn.ReLU),
                     ),
                 ),
             )
@@ -780,8 +788,8 @@ class StemV2(nn.Module):
                         kernel_size=1,
                         stride=1,
                         padding=0,
-                        norm_cfg=norm_cfg,
-                        activation_callable=nn.ReLU,
+                        normalization=build_norm_layer(normalization, num_features=mid_channels),
+                        activation=build_activation_layer(nn.ReLU),
                     ),
                     Conv2dModule(
                         mid_channels,
@@ -790,8 +798,8 @@ class StemV2(nn.Module):
                         stride=strides[stage],
                         padding=1,
                         groups=mid_channels,
-                        norm_cfg=norm_cfg,
-                        activation_callable=None,
+                        normalization=build_norm_layer(normalization, num_features=mid_channels),
+                        activation=None,
                     ),
                     Conv2dModule(
                         mid_channels,
@@ -799,8 +807,11 @@ class StemV2(nn.Module):
                         kernel_size=1,
                         stride=1,
                         padding=0,
-                        norm_cfg=norm_cfg,
-                        activation_callable=nn.ReLU,
+                        normalization=build_norm_layer(
+                            normalization,
+                            num_features=out_branch_channels if stage == num_stages else internal_branch_channels,
+                        ),
+                        activation=build_activation_layer(nn.ReLU),
                     ),
                 ),
             )
@@ -846,10 +857,10 @@ class ShuffleUnit(nn.Module):
         in_channels (int): The input channels of the block.
         out_channels (int): The output channels of the block.
         stride (int): Stride of the 3x3 convolution layer. Default: 1
-        norm_cfg (dict): Config dict for normalization layer.
-            Default: dict(type='BN').
-        activation_callable (Callable[..., nn.Module]): Activation layer module.
-            Defaults to `nn.ReLU`.
+        normalization (Callable[..., nn.Module]): Normalization layer module.
+            Defaults to ``nn.BatchNorm2d``.
+        activation (Callable[..., nn.Module]): Activation layer module.
+            Defaults to ``nn.ReLU``.
         with_cp (bool): Use checkpoint or not. Using checkpoint will save some
             memory while slowing down the training speed. Default: False.
     """
@@ -859,14 +870,11 @@ class ShuffleUnit(nn.Module):
         in_channels: int,
         out_channels: int,
         stride: int = 1,
-        norm_cfg: dict | None = None,
-        activation_callable: Callable[..., nn.Module] = nn.ReLU,
+        normalization: Callable[..., nn.Module] = nn.BatchNorm2d,
+        activation: Callable[..., nn.Module] = nn.ReLU,
         with_cp: bool = False,
     ) -> None:
         super().__init__()
-
-        if norm_cfg is None:
-            norm_cfg = {"type": "BN"}
 
         self.stride = stride
         self.with_cp = with_cp
@@ -889,8 +897,8 @@ class ShuffleUnit(nn.Module):
                     stride=self.stride,
                     padding=1,
                     groups=in_channels,
-                    norm_cfg=norm_cfg,
-                    activation_callable=None,
+                    normalization=build_norm_layer(normalization, num_features=in_channels),
+                    activation=None,
                 ),
                 Conv2dModule(
                     in_channels,
@@ -898,8 +906,8 @@ class ShuffleUnit(nn.Module):
                     kernel_size=1,
                     stride=1,
                     padding=0,
-                    norm_cfg=norm_cfg,
-                    activation_callable=activation_callable,
+                    normalization=build_norm_layer(normalization, num_features=branch_features),
+                    activation=build_activation_layer(activation),
                 ),
             )
 
@@ -910,8 +918,8 @@ class ShuffleUnit(nn.Module):
                 kernel_size=1,
                 stride=1,
                 padding=0,
-                norm_cfg=norm_cfg,
-                activation_callable=activation_callable,
+                normalization=build_norm_layer(normalization, num_features=branch_features),
+                activation=build_activation_layer(activation),
             ),
             Conv2dModule(
                 branch_features,
@@ -920,8 +928,8 @@ class ShuffleUnit(nn.Module):
                 stride=self.stride,
                 padding=1,
                 groups=branch_features,
-                norm_cfg=norm_cfg,
-                activation_callable=None,
+                normalization=build_norm_layer(normalization, num_features=branch_features),
+                activation=None,
             ),
             Conv2dModule(
                 branch_features,
@@ -929,8 +937,8 @@ class ShuffleUnit(nn.Module):
                 kernel_size=1,
                 stride=1,
                 padding=0,
-                norm_cfg=norm_cfg,
-                activation_callable=activation_callable,
+                normalization=build_norm_layer(normalization, num_features=branch_features),
+                activation=build_activation_layer(activation),
             ),
         )
 
@@ -950,7 +958,23 @@ class ShuffleUnit(nn.Module):
 
 
 class LiteHRModule(nn.Module):
-    """LiteHR module."""
+    """LiteHR module.
+
+    Args:
+        num_branches (int): Number of branches in the network.
+        num_blocks (int): Number of blocks in each branch.
+        in_channels (list[int]): List of input channels for each branch.
+        reduce_ratio (int): Reduction ratio for the weighting module.
+        module_type (str): Type of module to use for the network. Can be "LITE" or "NAIVE".
+        multiscale_output (bool, optional): Whether to output features from all branches. Defaults to False.
+        with_fuse (bool, optional): Whether to use the fuse layer. Defaults to True.
+        normalization (Callable[..., nn.Module]): Normalization layer module.
+            Defaults to ``nn.BatchNorm2d``.
+        with_cp (bool, optional): Whether to use checkpointing. Defaults to False.
+        dropout (float, optional): Dropout rate. Defaults to None.
+        weighting_module_version (str, optional): Version of the weighting module to use. Defaults to "v1".
+        neighbour_weighting (bool, optional): Whether to use neighbour weighting. Defaults to False.
+    """
 
     def __init__(
         self,
@@ -961,32 +985,14 @@ class LiteHRModule(nn.Module):
         module_type: str,
         multiscale_output: bool = False,
         with_fuse: bool = True,
-        norm_cfg: dict | None = None,
+        normalization: Callable[..., nn.Module] = nn.BatchNorm2d,
         with_cp: bool = False,
         dropout: float | None = None,
         weighting_module_version: str = "v1",
         neighbour_weighting: bool = False,
     ) -> None:
-        """LiteHR module.
-
-        Args:
-            num_branches (int): Number of branches in the network.
-            num_blocks (int): Number of blocks in each branch.
-            in_channels (list[int]): List of input channels for each branch.
-            reduce_ratio (int): Reduction ratio for the weighting module.
-            module_type (str): Type of module to use for the network. Can be "LITE" or "NAIVE".
-            multiscale_output (bool, optional): Whether to output features from all branches. Defaults to False.
-            with_fuse (bool, optional): Whether to use the fuse layer. Defaults to True.
-            norm_cfg (dict, optional): Configuration for the normalization layers. Defaults to None.
-            with_cp (bool, optional): Whether to use checkpointing. Defaults to False.
-            dropout (float, optional): Dropout rate. Defaults to None.
-            weighting_module_version (str, optional): Version of the weighting module to use. Defaults to "v1".
-            neighbour_weighting (bool, optional): Whether to use neighbour weighting. Defaults to False.
-        """
         super().__init__()
 
-        if norm_cfg is None:
-            norm_cfg = {"type": "BN"}
         self._check_branches(num_branches, in_channels)
 
         self.in_channels = in_channels
@@ -995,7 +1001,7 @@ class LiteHRModule(nn.Module):
         self.module_type = module_type
         self.multiscale_output = multiscale_output
         self.with_fuse = with_fuse
-        self.norm_cfg = norm_cfg
+        self.normalization = normalization
         self.with_cp = with_cp
         self.weighting_module_version = weighting_module_version
         self.neighbour_weighting = neighbour_weighting
@@ -1028,7 +1034,7 @@ class LiteHRModule(nn.Module):
                 self.in_channels,
                 stride=stride,
                 reduce_ratio=reduce_ratio,
-                norm_cfg=self.norm_cfg,
+                normalization=self.normalization,
                 with_cp=self.with_cp,
                 dropout=dropout,
                 weighting_module_version=self.weighting_module_version,
@@ -1046,8 +1052,8 @@ class LiteHRModule(nn.Module):
                 self.in_channels[branch_index],
                 self.in_channels[branch_index],
                 stride=stride,
-                norm_cfg=self.norm_cfg,
-                activation_callable=nn.ReLU,
+                normalization=self.normalization,
+                activation=nn.ReLU,
                 with_cp=self.with_cp,
             ),
         ] + [
@@ -1055,8 +1061,8 @@ class LiteHRModule(nn.Module):
                 self.in_channels[branch_index],
                 self.in_channels[branch_index],
                 stride=1,
-                norm_cfg=self.norm_cfg,
-                activation_callable=nn.ReLU,
+                normalization=self.normalization,
+                activation=nn.ReLU,
                 with_cp=self.with_cp,
             )
             for _ in range(1, num_blocks)
@@ -1093,7 +1099,7 @@ class LiteHRModule(nn.Module):
                                 padding=0,
                                 bias=False,
                             ),
-                            build_norm_layer(self.norm_cfg, in_channels[i])[1],
+                            build_norm_layer(self.normalization, in_channels[i])[1],
                         ),
                     )
                 elif j == i:
@@ -1113,7 +1119,7 @@ class LiteHRModule(nn.Module):
                                         groups=in_channels[j],
                                         bias=False,
                                     ),
-                                    build_norm_layer(self.norm_cfg, in_channels[j])[1],
+                                    build_norm_layer(self.normalization, in_channels[j])[1],
                                     nn.Conv2d(
                                         in_channels[j],
                                         in_channels[i],
@@ -1122,7 +1128,7 @@ class LiteHRModule(nn.Module):
                                         padding=0,
                                         bias=False,
                                     ),
-                                    build_norm_layer(self.norm_cfg, in_channels[i])[1],
+                                    build_norm_layer(self.normalization, in_channels[i])[1],
                                 ),
                             )
                         else:
@@ -1137,7 +1143,7 @@ class LiteHRModule(nn.Module):
                                         groups=in_channels[j],
                                         bias=False,
                                     ),
-                                    build_norm_layer(self.norm_cfg, in_channels[j])[1],
+                                    build_norm_layer(self.normalization, in_channels[j])[1],
                                     nn.Conv2d(
                                         in_channels[j],
                                         in_channels[j],
@@ -1146,7 +1152,7 @@ class LiteHRModule(nn.Module):
                                         padding=0,
                                         bias=False,
                                     ),
-                                    build_norm_layer(self.norm_cfg, in_channels[j])[1],
+                                    build_norm_layer(self.normalization, in_channels[j])[1],
                                     nn.ReLU(inplace=True),
                                 ),
                             )
@@ -1196,7 +1202,8 @@ class NNLiteHRNet(nn.Module):
     Args:
         extra (dict): detailed configuration for each stage of HRNet.
         in_channels (int): Number of input image channels. Default: 3.
-        norm_cfg (dict): dictionary to construct and config norm layer.
+        normalization (Callable[..., nn.Module]): Normalization layer module.
+            Defaults to ``nn.BatchNorm2d``.
         norm_eval (bool): Whether to set norm layers to eval mode, namely,
             freeze running stats (mean and var). Note: Effect on Batch Norm
             and its variants only. Default: False
@@ -1212,7 +1219,7 @@ class NNLiteHRNet(nn.Module):
         num_stages: int,
         stages_spec: dict[str, Any],
         in_channels: int = 3,
-        norm_cfg: dict[str, Any] | None = None,
+        normalization: Callable[..., nn.Module] = partial(build_norm_layer, nn.BatchNorm2d, requires_grad=True),
         norm_eval: bool = False,
         with_cp: bool = False,
         zero_init_residual: bool = False,
@@ -1222,16 +1229,13 @@ class NNLiteHRNet(nn.Module):
         """Init."""
         super().__init__()
 
-        if norm_cfg is None:
-            norm_cfg = {"type": "BN", "requires_grad": True}
-
-        self.norm_cfg = norm_cfg
+        self.normalization = normalization
         self.norm_eval = norm_eval
         self.with_cp = with_cp
         self.zero_init_residual = zero_init_residual
         self.stem = Stem(
             in_channels,
-            norm_cfg=self.norm_cfg,
+            normalization=self.normalization,
             **stem,
         )
         self.num_stages = num_stages
@@ -1286,7 +1290,7 @@ class NNLiteHRNet(nn.Module):
                                 groups=num_channels_pre_layer[i],
                                 bias=False,
                             ),
-                            build_norm_layer(self.norm_cfg, num_channels_pre_layer[i])[1],
+                            build_norm_layer(self.normalization, num_channels_pre_layer[i])[1],
                             nn.Conv2d(
                                 num_channels_pre_layer[i],
                                 num_channels_cur_layer[i],
@@ -1295,7 +1299,7 @@ class NNLiteHRNet(nn.Module):
                                 padding=0,
                                 bias=False,
                             ),
-                            build_norm_layer(self.norm_cfg, num_channels_cur_layer[i])[1],
+                            build_norm_layer(self.normalization, num_channels_cur_layer[i])[1],
                             nn.ReLU(),
                         ),
                     )
@@ -1317,7 +1321,7 @@ class NNLiteHRNet(nn.Module):
                                 groups=in_channels,
                                 bias=False,
                             ),
-                            build_norm_layer(self.norm_cfg, in_channels)[1],
+                            build_norm_layer(self.normalization, in_channels)[1],
                             nn.Conv2d(
                                 in_channels,
                                 out_channels,
@@ -1326,7 +1330,7 @@ class NNLiteHRNet(nn.Module):
                                 padding=0,
                                 bias=False,
                             ),
-                            build_norm_layer(self.norm_cfg, out_channels)[1],
+                            build_norm_layer(self.normalization, out_channels)[1],
                             nn.ReLU(),
                         ),
                     )
@@ -1377,7 +1381,7 @@ class NNLiteHRNet(nn.Module):
                     module_type,
                     multiscale_output=reset_multiscale_output,
                     with_fuse=with_fuse,
-                    norm_cfg=self.norm_cfg,
+                    normalization=self.normalization,
                     with_cp=self.with_cp,
                     dropout=dropout,
                     weighting_module_version=weighting_module_version,

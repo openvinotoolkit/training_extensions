@@ -5,6 +5,7 @@
 
 from __future__ import annotations
 
+from functools import partial
 from typing import TYPE_CHECKING, Any
 
 from torch import nn
@@ -21,6 +22,7 @@ from otx.algo.instance_segmentation.heads import CustomConvFCBBoxHead, CustomRoI
 from otx.algo.instance_segmentation.necks import FPN
 from otx.algo.instance_segmentation.two_stage import TwoStageDetector
 from otx.algo.instance_segmentation.utils.roi_extractors import SingleRoIExtractor
+from otx.algo.modules.norm import build_norm_layer
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.config.data import TileConfig
 from otx.core.exporter.base import OTXModelExporter
@@ -179,7 +181,7 @@ class MaskRCNNResNet50(MaskRCNN):
         backbone = ResNet(
             depth=50,
             frozen_stages=1,
-            norm_cfg={"type": "BN", "requires_grad": True},
+            normalization=partial(build_norm_layer, nn.BatchNorm2d, requires_grad=True),
             norm_eval=True,
             num_stages=4,
             out_indices=(0, 1, 2, 3),
@@ -375,8 +377,8 @@ class MaskRCNNEfficientNet(MaskRCNN):
                 "out_indices": [2, 3, 4, 5],
                 "frozen_stages": -1,
                 "pretrained": True,
-                "activation_callable": nn.SiLU,
-                "norm_cfg": {"type": "BN", "requires_grad": True},
+                "activation": nn.SiLU,
+                "normalization": partial(build_norm_layer, nn.BatchNorm2d, requires_grad=True),
             },
         )
 

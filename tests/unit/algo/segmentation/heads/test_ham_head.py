@@ -1,10 +1,13 @@
 from __future__ import annotations
 
+from functools import partial
 from typing import Any
 
 import pytest
 import torch
+from otx.algo.modules.norm import build_norm_layer
 from otx.algo.segmentation.heads.ham_head import NNLightHamHead
+from torch import nn
 
 
 class TestNNLightHamHead:
@@ -14,7 +17,7 @@ class TestNNLightHamHead:
             "ham_kwargs": {"md_r": 16, "md_s": 1, "eval_steps": 7, "train_steps": 6},
             "in_channels": [128, 320, 512],
             "in_index": [1, 2, 3],
-            "norm_cfg": {"num_groups": 32, "requires_grad": True, "type": "GN"},
+            "normalization": partial(build_norm_layer, nn.GroupNorm, num_groups=32, requires_grad=True),
             "align_corners": False,
             "channels": 512,
             "dropout_ratio": 0.1,

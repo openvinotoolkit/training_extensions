@@ -20,6 +20,7 @@ from otx.algo.detection.base_models import SingleStageDetector
 from otx.algo.detection.necks import CSPNeXtPAFPN
 from otx.algo.instance_segmentation.heads import RTMDetInsSepBNHead
 from otx.algo.instance_segmentation.losses import DiceLoss
+from otx.algo.modules.norm import build_norm_layer
 from otx.core.config.data import TileConfig
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter
@@ -140,8 +141,8 @@ class RTMDetInstTiny(RTMDetInst):
             deepen_factor=0.167,
             widen_factor=0.375,
             channel_attention=True,
-            norm_cfg={"type": "BN"},
-            activation_callable=partial(nn.SiLU, inplace=True),
+            normalization=nn.BatchNorm2d,
+            activation=partial(nn.SiLU, inplace=True),
         )
 
         neck = CSPNeXtPAFPN(
@@ -149,8 +150,8 @@ class RTMDetInstTiny(RTMDetInst):
             out_channels=96,
             num_csp_blocks=1,
             expand_ratio=0.5,
-            norm_cfg={"type": "BN"},
-            activation_callable=partial(nn.SiLU, inplace=True),
+            normalization=nn.BatchNorm2d,
+            activation=partial(nn.SiLU, inplace=True),
         )
 
         bbox_head = RTMDetInsSepBNHead(
@@ -160,8 +161,8 @@ class RTMDetInstTiny(RTMDetInst):
             share_conv=True,
             pred_kernel_size=1,
             feat_channels=96,
-            activation_callable=partial(nn.SiLU, inplace=True),
-            norm_cfg={"type": "BN", "requires_grad": True},
+            normalization=partial(build_norm_layer, nn.BatchNorm2d, requires_grad=True),
+            activation=partial(nn.SiLU, inplace=True),
             anchor_generator=MlvlPointGenerator(
                 offset=0,
                 strides=[8, 16, 32],
