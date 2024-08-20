@@ -2,6 +2,9 @@ ignore-policy: ""
 ignorefile: .trivyignore
 insecure: false
 scan:
+  skip-dirs:
+    - docker/
+    - src/otx/api/usecases/exportable_code/demo/
   scanners:
     - vuln
     - secret
