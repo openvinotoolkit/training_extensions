@@ -9,11 +9,12 @@ import torch
 from datumaro import Polygon
 from torchvision import tv_tensors
 
+from otx.algo.instance_segmentation.maskrcnn import MaskRCNN, MaskRCNNEfficientNet, MaskRCNNResNet50
 from otx.core.data.entity.instance_segmentation import InstanceSegBatchPredEntity
-from otx.core.model.instance_segmentation import OTXInstanceSegModel, OVInstanceSegmentationModel
+from otx.core.model.instance_segmentation import OVInstanceSegmentationModel
 
 
-class OTXRotatedDetModel(OTXInstanceSegModel):
+class RotatedMaskRCNNModel(MaskRCNN):
     """Base class for the rotated detection models used in OTX."""
 
     def predict_step(self, *args: torch.Any, **kwargs: torch.Any) -> InstanceSegBatchPredEntity:
@@ -91,6 +92,14 @@ class OTXRotatedDetModel(OTXInstanceSegModel):
             polygons=batch_polygons,
             labels=batch_labels,
         )
+
+
+class RotatedMaskRCNNResNet50(RotatedMaskRCNNModel, MaskRCNNResNet50):
+    """Rotated MaskRCNN model with ResNet50 backbone."""
+
+
+class RotatedMaskRCNNEfficientNet(RotatedMaskRCNNModel, MaskRCNNEfficientNet):
+    """Rotated MaskRCNN model with EfficientNet backbone."""
 
 
 class OVRotatedDetectionModel(OVInstanceSegmentationModel):
