@@ -4,41 +4,6 @@ Releases
 .. toctree::
   :maxdepth: 1
 
-v2.2.0 (2024.09)
-----------------
-
-New features
-^^^^^^^^^^^^
-
-- Add RT-DETR model for Object Detection
-- Add Multi-Label & H-label Classification with torchvision models
-- Add Hugging-Face Model Wrapper for Classification
-- Add LoRA finetuning capability for ViT Architectures
-- Add Hugging-Face Model Wrapper for Object Detection
-- Add Hugging-Face Model Wrapper for Semantic Segmentation
-- Enable torch.compile to work with classification
-- Add `otx benchmark` subcommand
-- Add RTMPose for Keypoint Detection Task
-- Add Semi-SL MeanTeacher algorithm for Semantic Segmentation
-- Update head and h-label format for hierarchical label classification
-- Support configurable input size
-
-Enhancements
-^^^^^^^^^^^^
-
-- Reimplement of ViT Architecture following TIMM
-- Enable to override data configurations
-- Enable to use input_size at transforms in recipe
-- Enable to use polygon and bitmap mask as prompt inputs for zero-shot learning
-- Refactoring `ConvModule` by removing `conv_cfg`, `norm_cfg`, and `act_cfg`
-
-Bug fixes
-^^^^^^^^^
-
-- Fix Combined Dataloader & unlabeled warmup loss in Semi-SL
-- Revert #3579 to fix issues with replacing coco_instance with a different format in some dataset
-- Add num_devices in Engine for multi-gpu training
-
 
 v2.1.0 (2024.07)
 ----------------
