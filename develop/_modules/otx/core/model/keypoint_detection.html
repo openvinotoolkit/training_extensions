@@ -265,7 +265,6 @@
 
 <span class="kn">import</span> <span class="nn">torch</span>
 
-<span class="kn">from</span> <span class="nn">otx.algo.keypoint_detection.utils.data_sample</span> <span class="kn">import</span> <span class="n">PoseDataSample</span>
 <span class="kn">from</span> <span class="nn">otx.algo.utils.mmengine_utils</span> <span class="kn">import</span> <span class="n">load_checkpoint</span>
 <span class="kn">from</span> <span class="nn">otx.core.data.entity.base</span> <span class="kn">import</span> <span class="n">OTXBatchLossEntity</span>
 <span class="kn">from</span> <span class="nn">otx.core.data.entity.keypoint_detection</span> <span class="kn">import</span> <span class="n">KeypointDetBatchDataEntity</span><span class="p">,</span> <span class="n">KeypointDetBatchPredEntity</span>
@@ -343,29 +342,23 @@
             <span class="k">return</span> <span class="n">losses</span>
 
         <span class="n">keypoints</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="n">keypoints_x_label</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="n">keypoints_y_label</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">scores</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">output</span> <span class="ow">in</span> <span class="n">outputs</span><span class="p">:</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">PoseDataSample</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
                 <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">output</span><span class="p">)</span>
-            <span class="n">keypoints</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span><span class="n">output</span><span class="o">.</span><span class="n">keypoints</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">))</span>
-            <span class="n">scores</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span><span class="n">output</span><span class="o">.</span><span class="n">keypoint_weights</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">))</span>
-            <span class="n">keypoints_x_label</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span><span class="n">output</span><span class="o">.</span><span class="n">keypoint_x_labels</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">))</span>
-            <span class="n">keypoints_y_label</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span><span class="n">output</span><span class="o">.</span><span class="n">keypoint_y_labels</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">))</span>
+            <span class="n">keypoints</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span><span class="n">output</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">))</span>
+            <span class="n">scores</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span><span class="n">output</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">))</span>
 
         <span class="k">return</span> <span class="n">KeypointDetBatchPredEntity</span><span class="p">(</span>
             <span class="n">batch_size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">outputs</span><span class="p">),</span>
             <span class="n">images</span><span class="o">=</span><span class="n">inputs</span><span class="o">.</span><span class="n">images</span><span class="p">,</span>
             <span class="n">imgs_info</span><span class="o">=</span><span class="n">inputs</span><span class="o">.</span><span class="n">imgs_info</span><span class="p">,</span>
             <span class="n">keypoints</span><span class="o">=</span><span class="n">keypoints</span><span class="p">,</span>
-            <span class="n">keypoint_x_labels</span><span class="o">=</span><span class="n">keypoints_x_label</span><span class="p">,</span>
-            <span class="n">keypoint_y_labels</span><span class="o">=</span><span class="n">keypoints_y_label</span><span class="p">,</span>
             <span class="n">scores</span><span class="o">=</span><span class="n">scores</span><span class="p">,</span>
             <span class="n">keypoints_visible</span><span class="o">=</span><span class="p">[],</span>
             <span class="n">bboxes</span><span class="o">=</span><span class="p">[],</span>
             <span class="n">labels</span><span class="o">=</span><span class="p">[],</span>
-            <span class="n">keypoint_weights</span><span class="o">=</span><span class="p">[],</span>
+            <span class="n">bbox_info</span><span class="o">=</span><span class="p">[],</span>
         <span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_convert_pred_entity_to_compute_metric</span><span class="p">(</span>
@@ -376,31 +369,17 @@
         <span class="k">return</span> <span class="p">{</span>
             <span class="s2">&quot;preds&quot;</span><span class="p">:</span> <span class="p">[</span>
                 <span class="p">{</span>
-                    <span class="s2">&quot;keypoints&quot;</span><span class="p">:</span> <span class="n">kpt</span><span class="o">.</span><span class="n">data</span><span class="p">,</span>
-                    <span class="s2">&quot;keypoint_x_labels&quot;</span><span class="p">:</span> <span class="n">kpt_x</span><span class="o">.</span><span class="n">data</span><span class="p">,</span>
-                    <span class="s2">&quot;keypoint_y_labels&quot;</span><span class="p">:</span> <span class="n">kpt_y</span><span class="o">.</span><span class="n">data</span><span class="p">,</span>
-                    <span class="s2">&quot;scores&quot;</span><span class="p">:</span> <span class="n">scores</span><span class="o">.</span><span class="n">data</span><span class="p">,</span>
+                    <span class="s2">&quot;keypoints&quot;</span><span class="p">:</span> <span class="n">kpt</span><span class="p">,</span>
+                    <span class="s2">&quot;scores&quot;</span><span class="p">:</span> <span class="n">score</span><span class="p">,</span>
                 <span class="p">}</span>
-                <span class="k">for</span> <span class="n">kpt</span><span class="p">,</span> <span class="n">kpt_x</span><span class="p">,</span> <span class="n">kpt_y</span><span class="p">,</span> <span class="n">scores</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span>
-                    <span class="n">preds</span><span class="o">.</span><span class="n">keypoints</span><span class="p">,</span>
-                    <span class="n">preds</span><span class="o">.</span><span class="n">keypoint_x_labels</span><span class="p">,</span>
-                    <span class="n">preds</span><span class="o">.</span><span class="n">keypoint_y_labels</span><span class="p">,</span>
-                    <span class="n">preds</span><span class="o">.</span><span class="n">scores</span><span class="p">,</span>
-                <span class="p">)</span>
+                <span class="k">for</span> <span class="n">kpt</span><span class="p">,</span> <span class="n">score</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">preds</span><span class="o">.</span><span class="n">keypoints</span><span class="p">,</span> <span class="n">preds</span><span class="o">.</span><span class="n">scores</span><span class="p">)</span>
             <span class="p">],</span>
             <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="p">[</span>
                 <span class="p">{</span>
-                    <span class="s2">&quot;keypoints&quot;</span><span class="p">:</span> <span class="n">kpt</span><span class="o">.</span><span class="n">data</span><span class="p">,</span>
-                    <span class="s2">&quot;keypoint_x_labels&quot;</span><span class="p">:</span> <span class="n">kpt_x</span><span class="o">.</span><span class="n">data</span><span class="p">,</span>
-                    <span class="s2">&quot;keypoint_y_labels&quot;</span><span class="p">:</span> <span class="n">kpt_y</span><span class="o">.</span><span class="n">data</span><span class="p">,</span>
-                    <span class="s2">&quot;keypoint_weights&quot;</span><span class="p">:</span> <span class="n">kpt_w</span><span class="o">.</span><span class="n">data</span><span class="p">,</span>
+                    <span class="s2">&quot;keypoints&quot;</span><span class="p">:</span> <span class="n">kpt</span><span class="p">,</span>
+                    <span class="s2">&quot;keypoints_visible&quot;</span><span class="p">:</span> <span class="n">kpt_visible</span><span class="p">,</span>
                 <span class="p">}</span>
-                <span class="k">for</span> <span class="n">kpt</span><span class="p">,</span> <span class="n">kpt_x</span><span class="p">,</span> <span class="n">kpt_y</span><span class="p">,</span> <span class="n">kpt_w</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span>
-                    <span class="n">inputs</span><span class="o">.</span><span class="n">keypoints</span><span class="p">,</span>
-                    <span class="n">inputs</span><span class="o">.</span><span class="n">keypoint_x_labels</span><span class="p">,</span>
-                    <span class="n">inputs</span><span class="o">.</span><span class="n">keypoint_y_labels</span><span class="p">,</span>
-                    <span class="n">inputs</span><span class="o">.</span><span class="n">keypoint_weights</span><span class="p">,</span>
-                <span class="p">)</span>
+                <span class="k">for</span> <span class="n">kpt</span><span class="p">,</span> <span class="n">kpt_visible</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">inputs</span><span class="o">.</span><span class="n">keypoints</span><span class="p">,</span> <span class="n">inputs</span><span class="o">.</span><span class="n">keypoints_visible</span><span class="p">)</span>
             <span class="p">],</span>
         <span class="p">}</span>
 

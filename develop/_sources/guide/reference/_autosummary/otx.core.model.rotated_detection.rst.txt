@@ -17,8 +17,10 @@ otx.core.model.rotated\_detection
 
    .. autosummary::
    
-      OTXRotatedDetModel
       OVRotatedDetectionModel
+      RotatedMaskRCNNEfficientNet
+      RotatedMaskRCNNModel
+      RotatedMaskRCNNResNet50
    
    
 

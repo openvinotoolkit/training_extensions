@@ -264,17 +264,18 @@
 <span class="kn">from</span> <span class="nn">datumaro</span> <span class="kn">import</span> <span class="n">Polygon</span>
 <span class="kn">from</span> <span class="nn">torchvision</span> <span class="kn">import</span> <span class="n">tv_tensors</span>
 
+<span class="kn">from</span> <span class="nn">otx.algo.instance_segmentation.maskrcnn</span> <span class="kn">import</span> <span class="n">MaskRCNN</span><span class="p">,</span> <span class="n">MaskRCNNEfficientNet</span><span class="p">,</span> <span class="n">MaskRCNNResNet50</span>
 <span class="kn">from</span> <span class="nn">otx.core.data.entity.instance_segmentation</span> <span class="kn">import</span> <span class="n">InstanceSegBatchPredEntity</span>
-<span class="kn">from</span> <span class="nn">otx.core.model.instance_segmentation</span> <span class="kn">import</span> <span class="n">OTXInstanceSegModel</span><span class="p">,</span> <span class="n">OVInstanceSegmentationModel</span>
+<span class="kn">from</span> <span class="nn">otx.core.model.instance_segmentation</span> <span class="kn">import</span> <span class="n">OVInstanceSegmentationModel</span>
 
 
-<div class="viewcode-block" id="OTXRotatedDetModel">
-<a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.model.rotated_detection.html#otx.core.model.rotated_detection.OTXRotatedDetModel">[docs]</a>
-<span class="k">class</span> <span class="nc">OTXRotatedDetModel</span><span class="p">(</span><span class="n">OTXInstanceSegModel</span><span class="p">):</span>
+<div class="viewcode-block" id="RotatedMaskRCNNModel">
+<a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.model.rotated_detection.html#otx.core.model.rotated_detection.RotatedMaskRCNNModel">[docs]</a>
+<span class="k">class</span> <span class="nc">RotatedMaskRCNNModel</span><span class="p">(</span><span class="n">MaskRCNN</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Base class for the rotated detection models used in OTX.&quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="OTXRotatedDetModel.predict_step">
-<a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.model.rotated_detection.html#otx.core.model.rotated_detection.OTXRotatedDetModel.predict_step">[docs]</a>
+<div class="viewcode-block" id="RotatedMaskRCNNModel.predict_step">
+<a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.model.rotated_detection.html#otx.core.model.rotated_detection.RotatedMaskRCNNModel.predict_step">[docs]</a>
     <span class="k">def</span> <span class="nf">predict_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Any</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">InstanceSegBatchPredEntity</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Predict step for rotated detection task.</span>
 
@@ -351,6 +352,20 @@
             <span class="n">labels</span><span class="o">=</span><span class="n">batch_labels</span><span class="p">,</span>
         <span class="p">)</span></div>
 </div>
+
+
+
+<div class="viewcode-block" id="RotatedMaskRCNNResNet50">
+<a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.model.rotated_detection.html#otx.core.model.rotated_detection.RotatedMaskRCNNResNet50">[docs]</a>
+<span class="k">class</span> <span class="nc">RotatedMaskRCNNResNet50</span><span class="p">(</span><span class="n">RotatedMaskRCNNModel</span><span class="p">,</span> <span class="n">MaskRCNNResNet50</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Rotated MaskRCNN model with ResNet50 backbone.&quot;&quot;&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="RotatedMaskRCNNEfficientNet">
+<a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.model.rotated_detection.html#otx.core.model.rotated_detection.RotatedMaskRCNNEfficientNet">[docs]</a>
+<span class="k">class</span> <span class="nc">RotatedMaskRCNNEfficientNet</span><span class="p">(</span><span class="n">RotatedMaskRCNNModel</span><span class="p">,</span> <span class="n">MaskRCNNEfficientNet</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Rotated MaskRCNN model with EfficientNet backbone.&quot;&quot;&quot;</span></div>
 
 
 
