@@ -34,15 +34,11 @@ class VisionTransformerClsHead(BaseModule):
         self,
         num_classes: int,
         in_channels: int,
-        loss: nn.Module,
-        topk: int | tuple = (1,),
         hidden_dim: int | None = None,
         init_cfg: dict = {"type": "Constant", "layer": "Linear", "val": 0},  # noqa: B006
         **kwargs,
     ):
         super().__init__(init_cfg=init_cfg, **kwargs)
-        self.topk = topk
-        self.loss_module = loss
 
         self.in_channels = in_channels
         self.num_classes = num_classes
@@ -97,24 +93,6 @@ class VisionTransformerClsHead(BaseModule):
         pre_logits = self.pre_logits(feats)
         # The final classification head.
         return self.layers.head(pre_logits)
-
-    def loss(self, feats: tuple[torch.Tensor] | torch.Tensor, labels: torch.Tensor, **kwargs) -> torch.Tensor:
-        """Calculate losses from the classification score.
-
-        Args:
-            feats (tuple[Tensor]): The features extracted from the backbone.
-                Multiple stage inputs are acceptable but only the last stage
-                will be used to classify. The shape of every item should be
-                ``(num_samples, num_classes)``.
-            **kwargs: Other keyword arguments to forward the loss module.
-
-        Returns:
-            torch.Tensor: loss components
-        """
-        cls_score = self(feats)
-
-        loss = self.loss_module(cls_score, labels)
-        return loss.sum() / cls_score.size(0)
 
     def predict(
         self,

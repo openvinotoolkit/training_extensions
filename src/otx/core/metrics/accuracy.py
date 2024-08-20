@@ -377,4 +377,4 @@ def _mixed_hlabel_accuracy(label_info: HLabelInfo) -> MetricCollection:
     )
 
 
-HLabelClsMetricCallble: MetricCallable = _mixed_hlabel_accuracy  # type: ignore[assignment]
+HLabelClsMetricCallable: MetricCallable = _mixed_hlabel_accuracy  # type: ignore[assignment]

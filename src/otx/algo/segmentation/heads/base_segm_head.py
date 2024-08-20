@@ -5,7 +5,7 @@
 
 from __future__ import annotations
 
-from abc import ABCMeta, abstractmethod
+from abc import abstractmethod
 from pathlib import Path
 from typing import Callable
 
@@ -16,7 +16,7 @@ from otx.algo.segmentation.modules import resize
 from otx.algo.utils.mmengine_utils import load_checkpoint_to_model, load_from_http
 
 
-class BaseSegmHead(nn.Module, metaclass=ABCMeta):
+class BaseSegmHead(nn.Module):
     """Base class for segmentation heads.
 
     Args:
@@ -24,10 +24,10 @@ class BaseSegmHead(nn.Module, metaclass=ABCMeta):
         channels (int): Number of channels in the feature map.
         num_classes (int): Number of classes for segmentation.
         dropout_ratio (float, optional): The dropout ratio. Defaults to 0.1.
-        norm_cfg (Optional[ConfigType], optional): Config for normalization layer.
+        normalization (Callable[..., nn.Module] | None): Normalization layer module.
             Defaults to None.
-        activation_callable (Callable[..., nn.Module] | None): Activation layer module.
-            Defaults to `nn.ReLU`.
+        activation (Callable[..., nn.Module] | None): Activation layer module.
+            Defaults to ``nn.ReLU``.
         in_index (int, list[int], optional): Input index. Defaults to -1.
         input_transform (Optional[str], optional): Input transform type.
             Defaults to None.
@@ -41,13 +41,12 @@ class BaseSegmHead(nn.Module, metaclass=ABCMeta):
         channels: int,
         num_classes: int,
         dropout_ratio: float = 0.1,
-        norm_cfg: dict[str, str] | None = None,
-        activation_callable: Callable[..., nn.Module] | None = nn.ReLU,
+        normalization: Callable[..., nn.Module] | None = None,
+        activation: Callable[..., nn.Module] | None = nn.ReLU,
         in_index: int | list[int] = -1,
         input_transform: str | None = None,
-        ignore_index: int = 255,
         align_corners: bool = False,
-        pretrained_weights: str | None = None,
+        pretrained_weights: Path | str | None = None,
     ) -> None:
         """Initialize the BaseSegmHead."""
         super().__init__()
@@ -55,13 +54,12 @@ class BaseSegmHead(nn.Module, metaclass=ABCMeta):
         self.num_classes = num_classes
         self.input_transform = input_transform
         self.dropout_ratio = dropout_ratio
-        self.norm_cfg = norm_cfg
-        self.activation_callable = activation_callable
+        self.normalization = normalization
+        self.activation = activation
         if self.input_transform is not None and not isinstance(in_index, list):
             msg = f'"in_index" expects a list, but got {type(in_index)}'
             raise TypeError(msg)
         self.in_index = in_index
-        self.ignore_index = ignore_index
         self.align_corners = align_corners
 
         if input_transform == "resize_concat":
@@ -141,7 +139,7 @@ class BaseSegmHead(nn.Module, metaclass=ABCMeta):
 
     def load_pretrained_weights(
         self,
-        pretrained: str | None = None,
+        pretrained: Path | str | None = None,
         prefix: str = "",
     ) -> None:
         """Initialize weights.
@@ -159,7 +157,15 @@ class BaseSegmHead(nn.Module, metaclass=ABCMeta):
             checkpoint = torch.load(pretrained, map_location=torch.device("cpu"))
             print(f"Init weights - {pretrained}")
         elif pretrained is not None:
-            checkpoint = load_from_http(pretrained, "cpu")
+            cache_dir = Path.home() / ".cache" / "torch" / "hub" / "checkpoints"
+            if isinstance(pretrained, Path):
+                msg = "pretrained path doesn't exists"
+                raise ValueError(msg)
+            checkpoint = load_from_http(
+                filename=pretrained,
+                map_location="cpu",
+                model_dir=cache_dir,
+            )
             print(f"Init weights - {pretrained}")
         if checkpoint is not None:
             load_checkpoint_to_model(self, checkpoint, prefix=prefix)

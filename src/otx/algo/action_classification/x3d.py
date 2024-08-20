@@ -13,6 +13,7 @@ from torch import nn
 from otx.algo.action_classification.backbones.x3d import X3DBackbone
 from otx.algo.action_classification.heads.x3d_head import X3DHead
 from otx.algo.action_classification.recognizers.recognizer import BaseRecognizer
+from otx.algo.modules.norm import build_norm_layer
 from otx.algo.utils.mmengine_utils import load_checkpoint
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.metrics.accuracy import MultiClassClsMetricCallable
@@ -67,8 +68,8 @@ class X3D(OTXActionClsModel):
                 gamma_b=2.25,
                 gamma_d=2.2,
                 gamma_w=1,
-                norm_cfg={"type": "BN3d", "requires_grad": True},
-                activation_callable=partial(nn.ReLU, inplace=True),
+                normalization=partial(build_norm_layer, nn.BatchNorm3d, requires_grad=True),
+                activation=partial(nn.ReLU, inplace=True),
             ),
             cls_head=X3DHead(
                 num_classes=num_classes,

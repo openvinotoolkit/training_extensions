@@ -6,7 +6,7 @@ from unittest.mock import MagicMock
 
 import pytest
 from otx.algo.classification.efficientnet import EfficientNetForMulticlassCls
-from otx.algo.classification.torchvision_model import OTXTVModel
+from otx.algo.classification.torchvision_model import TVModelForMulticlassCls
 from otx.core.model.base import OTXModel, OVModel
 from otx.core.types.export import OTXExportFormatType
 from otx.core.types.label import NullLabelInfo
@@ -73,7 +73,7 @@ class TestEngine:
         assert engine._model.label_info.num_classes == 4321
 
     def test_model_setter(self, fxt_engine, mocker) -> None:
-        assert isinstance(fxt_engine.model, OTXTVModel)
+        assert isinstance(fxt_engine.model, TVModelForMulticlassCls)
         fxt_engine.model = "efficientnet_b0"
         assert isinstance(fxt_engine.model, EfficientNetForMulticlassCls)
 

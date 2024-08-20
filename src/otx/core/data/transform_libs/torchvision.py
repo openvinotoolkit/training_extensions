@@ -3109,60 +3109,6 @@ class Normalize3D(tvt_v2.Normalize):
         return inputs
 
 
-class GetBBoxCenterScale(tvt_v2.Transform):
-    """Convert bboxes from [x, y, w, h] to center and scale.
-
-    The center is the coordinates of the bbox center, and the scale is the
-    bbox width and height normalized by a scale factor.
-
-    Required Keys:
-
-        - bbox
-
-    Added Keys:
-
-        - bbox_center
-        - bbox_scale
-
-    Args:
-        padding (float): The bbox padding scale that will be multilied to
-            `bbox_scale`. Defaults to 1.25
-    """
-
-    def __init__(self, padding: float = 1.25) -> None:
-        super().__init__()
-
-        self.padding = padding
-
-    def __call__(self, *_inputs: T_OTXDataEntity) -> T_OTXDataEntity | None:
-        """The transform function of :class:`GetBBoxCenterScale`.
-
-        See ``transform()`` method of :class:`BaseTransform` for details.
-
-        Args:
-            results (dict): The result dict
-
-        Returns:
-            dict: The result dict.
-        """
-        assert len(_inputs) == 1, "[tmp] Multiple entity is not supported yet."  # noqa: S101
-        inputs = _inputs[0]
-
-        bbox = inputs.bboxes[0]
-        inputs.bbox_center = ((bbox[..., 2:] + bbox[..., :2]) * 0.5).unsqueeze(0)
-        inputs.bbox_scale = ((bbox[..., 2:] - bbox[..., :2]) * self.padding).unsqueeze(0)
-
-        return inputs
-
-    def __repr__(self) -> str:
-        """Print the basic information of the transform.
-
-        Returns:
-            str: Formatted string.
-        """
-        return self.__class__.__name__ + f"(padding={self.padding})"
-
-
 class RandomBBoxTransform(tvt_v2.Transform):
     r"""Rnadomly shift, resize and rotate the bounding boxes.
 
@@ -3216,12 +3162,12 @@ class RandomBBoxTransform(tvt_v2.Transform):
         self.rotate_prob = rotate_prob
 
     @staticmethod
-    def _truncnorm(low: float = -1.0, high: float = 1.0, size: tuple = ()) -> torch.Tensor:
+    def _truncnorm(low: float = -1.0, high: float = 1.0, size: int = 4) -> torch.Tensor:
         """Sample from a truncated normal distribution."""
-        return torch.Tensor(truncnorm.rvs(low, high, size=size).astype(np.float32))
+        return truncnorm.rvs(low, high, size=(size)).astype(np.float32)
 
     @cache_randomness
-    def _get_transform_params(self, num_bboxes: int) -> tuple:
+    def _get_transform_params(self) -> tuple:
         """Get random transform parameters.
 
         Args:
@@ -3233,25 +3179,25 @@ class RandomBBoxTransform(tvt_v2.Transform):
             - scale (np.ndarray): Scaling factor of each bbox in shape (n, 1)
             - rotate (np.ndarray): Rotation degree of each bbox in shape (n,)
         """
-        random_v = self._truncnorm(size=(num_bboxes, 4))
-        offset_v = random_v[:, :2]
-        scale_v = random_v[:, 2:3]
-        rotate_v = random_v[:, 3]
+        random_v = self._truncnorm()
+        offset_v = random_v[:2]
+        scale_v = random_v[2:3]
+        rotate_v = random_v[3]
 
         # Get shift parameters
         offset = offset_v * self.shift_factor
-        offset = torch.where(torch.rand(num_bboxes, 1) < self.shift_prob, offset, 1.0)
+        offset = np.where(np.random.rand(1) < self.shift_prob, offset, 0.0)
 
         # Get scaling parameters
         scale_min, scale_max = self.scale_factor
         mu = (scale_max + scale_min) * 0.5
         sigma = (scale_max - scale_min) * 0.5
         scale = scale_v * sigma + mu
-        scale = torch.where(torch.rand(num_bboxes, 1) < self.scale_prob, scale, 1.0)
+        scale = np.where(np.random.rand(1) < self.scale_prob, scale, 1.0)
 
         # Get rotation parameters
         rotate = rotate_v * self.rotate_factor
-        rotate = torch.where(torch.rand(num_bboxes, 1) < self.rotate_prob, rotate, 0.0)
+        rotate = np.where(np.random.rand() < self.rotate_prob, rotate, 0.0)
 
         return offset, scale, rotate
 
@@ -3269,14 +3215,12 @@ class RandomBBoxTransform(tvt_v2.Transform):
         assert len(_inputs) == 1, "[tmp] Multiple entity is not supported yet."  # noqa: S101
         inputs = _inputs[0]
 
-        bbox_scale = inputs.bbox_scale
+        offset, scale, rotate = self._get_transform_params()
 
-        num_bboxes = 1
-        offset, scale, rotate = self._get_transform_params(num_bboxes)
-
-        inputs.bbox_center = inputs.bbox_center + offset * bbox_scale
-        inputs.bbox_scale = inputs.bbox_scale * scale
-        inputs.bbox_rotation = rotate
+        bbox_scale = inputs.bbox_info.scale
+        inputs.bbox_info.center = inputs.bbox_info.center + offset * bbox_scale
+        inputs.bbox_info.scale = inputs.bbox_info.scale * scale
+        inputs.bbox_info.rotation = rotate
 
         return inputs
 
@@ -3451,10 +3395,9 @@ class TopdownAffine(tvt_v2.Transform, NumpytoTVTensorMixin):
         warp_size = (int(w), int(h))
 
         # reshape bbox to fixed aspect ratio
-
-        center = inputs.bbox_center[0]
-        scale = self._fix_aspect_ratio(inputs.bbox_scale, aspect_ratio=w / h)[0]
-        rot = inputs.bbox_rotation[0] if hasattr(inputs, "bbox_rotation") else 0.0
+        center = inputs.bbox_info.center
+        scale = self._fix_aspect_ratio(inputs.bbox_info.scale, aspect_ratio=w / h)
+        rot = inputs.bbox_info.rotation
 
         warp_mat = self._get_warp_matrix(center, scale, rot, output_size=(w, h))
 
@@ -3464,15 +3407,10 @@ class TopdownAffine(tvt_v2.Transform, NumpytoTVTensorMixin):
             inputs.image = self._get_warp_image(inputs.image, warp_mat, warp_size)
 
         if inputs.keypoints is not None:
-            if hasattr(inputs, "transformed_keypoints"):
-                transformed_keypoints = inputs.transformed_keypoints
-            else:
-                transformed_keypoints = inputs.keypoints
-            # Only transform (x, y) coordinates
-            transformed_keypoints = cv2.transform(inputs.keypoints.unsqueeze(0).numpy(), warp_mat)
-            inputs.transformed_keypoints = transformed_keypoints
+            keypoints = np.expand_dims(inputs.keypoints, axis=0)
+            inputs.keypoints = cv2.transform(keypoints, warp_mat)[0]
         else:
-            inputs.transformed_keypoints = np.zeros([])
+            inputs.keypoints = np.zeros([])
             inputs.keypoints_visible = np.ones((1, 1, 1))
 
         return self.convert(inputs)
@@ -3486,102 +3424,6 @@ class TopdownAffine(tvt_v2.Transform, NumpytoTVTensorMixin):
         repr_str = self.__class__.__name__
         repr_str += f"(input_size={self.input_size},"
         repr_str += f"is_numpy_to_tvtensor={self.is_numpy_to_tvtensor})."
-        return repr_str
-
-
-class GenerateTarget(tvt_v2.Transform, NumpytoTVTensorMixin):
-    """Encode keypoints into Target.
-
-    The generated target is usually the supervision signal of the model
-    learning, e.g. heatmaps or regression labels.
-
-    Required Keys:
-
-        - keypoints
-        - keypoints_visible
-        - dataset_keypoint_weights
-
-    Added Keys:
-
-        - The keys of the encoded items from the codec will be updated into
-            the results, e.g. ``'heatmaps'`` or ``'keypoint_weights'``. See
-            the specific codec for more details.
-
-    Args:
-        input_size (tuple[int, int]): Input image size in [h, w]
-        is_numpy_to_tvtensor (bool): Whether convert outputs to tensor. Defaults to False.
-    """
-
-    def __init__(
-        self,
-        input_size: tuple[int, int],
-        is_numpy_to_tvtensor: bool = False,
-    ) -> None:
-        super().__init__()
-        from otx.algo.keypoint_detection.utils.simcc_label import SimCCLabel
-
-        self.encoder = SimCCLabel(
-            input_size=input_size,
-            sigma=(4.9, 5.66),
-            simcc_split_ratio=2.0,
-            normalize=False,
-            use_dark=False,
-        )
-        self.is_numpy_to_tvtensor = is_numpy_to_tvtensor
-
-    def __call__(self, *_inputs: T_OTXDataEntity) -> T_OTXDataEntity | None:
-        """The transform function of :class:`GenerateTarget`.
-
-        See ``transform()`` method of :class:`BaseTransform` for details.
-        """
-        assert len(_inputs) == 1, "[tmp] Multiple entity is not supported yet."  # noqa: S101
-        inputs = _inputs[0]
-
-        if hasattr(inputs, "transformed_keypoints"):
-            # use keypoints transformed by TopdownAffine
-            keypoints = inputs.transformed_keypoints
-        elif hasattr(inputs, "keypoints"):
-            # use original keypoints
-            keypoints = inputs.keypoints
-        else:
-            msg = "GenerateTarget requires 'transformed_keypoints' or 'keypoints' in the results."
-            raise ValueError(msg)
-
-        if len(keypoints.shape) == 2:
-            keypoints = keypoints.unsqueeze(0)
-
-        if isinstance(keypoints, torch.Tensor):
-            keypoints = keypoints.numpy()
-
-        keypoints_visible = inputs.keypoints_visible.unsqueeze(0).numpy()
-        if keypoints_visible.ndim == 3 and keypoints_visible.shape[2] == 2:
-            keypoints_visible, keypoints_visible_weights = keypoints_visible[..., 0], keypoints_visible[..., 1]
-            inputs.keypoints_visible = keypoints_visible
-            inputs.keypoints_visible_weights = keypoints_visible_weights
-
-        # Encoded items from the encoder(s) will be updated into the results.
-        # Please refer to the document of the specific codec for details about
-        # encoded items.
-        encoded = self.encoder.encode(
-            keypoints=keypoints,
-            keypoints_visible=keypoints_visible,
-        )
-
-        inputs.keypoint_x_labels = torch.Tensor(encoded["keypoint_x_labels"])
-        inputs.keypoint_y_labels = torch.Tensor(encoded["keypoint_y_labels"])
-        inputs.keypoint_weights = torch.Tensor(encoded["keypoint_weights"])
-
-        return self.convert(inputs)
-
-    def __repr__(self) -> str:
-        """Print the basic information of the transform.
-
-        Returns:
-            str: Formatted string.
-        """
-        repr_str = self.__class__.__name__
-        repr_str += f"(encoder={self.encoder}, "
-        repr_str += f"is_numpy_to_tvtensor={self.is_numpy_to_tvtensor})"
         return repr_str
 
 

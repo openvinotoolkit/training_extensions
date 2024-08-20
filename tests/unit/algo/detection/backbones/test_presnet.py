@@ -3,9 +3,12 @@
 #
 """Test of Presnet."""
 
+from functools import partial
+
 import torch
 from otx.algo.detection.backbones.presnet import PResNet
 from otx.algo.modules import FrozenBatchNorm2d
+from otx.algo.modules.norm import build_norm_layer
 
 
 class TestPresnet:
@@ -26,7 +29,10 @@ class TestPresnet:
                 assert not param.requires_grad
 
     def test_presnet_freeze_norm(self):
-        model = PResNet(depth=50, norm_cfg={"type": "FBN", "name": "norm"})
+        model = PResNet(
+            depth=50,
+            normalization=partial(build_norm_layer, FrozenBatchNorm2d, layer_name="norm"),
+        )
         for name, param in model.named_parameters():
             if "norm" in name:
                 assert isinstance(param, FrozenBatchNorm2d)

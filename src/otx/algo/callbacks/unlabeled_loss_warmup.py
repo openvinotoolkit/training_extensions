@@ -48,5 +48,5 @@ class UnlabeledLossWarmUpCallback(Callback):
             if trainer.model is None:
                 msg = "Model is not found in the trainer."
                 raise ValueError(msg)
-            trainer.model.model.head.unlabeled_coef = self.unlabeled_coef
+            trainer.model.model.unlabeled_coef = self.unlabeled_coef
         self.current_step += 1

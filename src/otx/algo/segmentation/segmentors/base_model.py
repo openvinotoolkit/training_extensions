@@ -5,44 +5,36 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 import torch.nn.functional as f
 from torch import Tensor, nn
-
-from otx.algo.segmentation.losses import create_criterion
 
 if TYPE_CHECKING:
     from otx.core.data.entity.base import ImageInfo
 
 
 class BaseSegmModel(nn.Module):
-    """Base Segmentation Model."""
+    """Base Segmentation Model.
+
+    Args:
+        backbone (nn.Module): The backbone of the segmentation model.
+        decode_head (nn.Module): The decode head of the segmentation model.
+        criterion (nn.Module, optional): The criterion of the model. Defaults to None.
+            If None, use CrossEntropyLoss with ignore_index=255.
+    """
 
     def __init__(
         self,
         backbone: nn.Module,
         decode_head: nn.Module,
-        criterion_configuration: list[dict[str, str | Any]] | None = None,
+        criterion: nn.Module | None = None,
     ) -> None:
-        """Initializes a segmentation model.
-
-        Args:
-            backbone (nn.Module): The backbone of the segmentation model.
-            decode_head (nn.Module): The decode head of the segmentation model.
-            criterion_configuration (Dict[str, str | Any]): The criterion of the model.
-                If None, use CrossEntropyLoss with ignore_index=255.
-
-        Returns:
-            None
-        """
         super().__init__()
 
-        if criterion_configuration is None:
-            criterion_configuration = [{"type": "CrossEntropyLoss", "params": {"ignore_index": 255}}]
+        self.criterion = nn.CrossEntropyLoss(ignore_index=255) if criterion is None else criterion
         self.backbone = backbone
         self.decode_head = decode_head
-        self.criterions = create_criterion(criterion_configuration)
 
     def forward(
         self,
@@ -66,8 +58,7 @@ class BaseSegmModel(nn.Module):
                 - If mode is "predict", returns the predicted outputs.
                 - Otherwise, returns the model outputs after interpolation.
         """
-        enc_feats = self.backbone(inputs)
-        outputs = self.decode_head(enc_feats)
+        outputs = self.extract_features(inputs)
         outputs = f.interpolate(outputs, size=inputs.size()[2:], mode="bilinear", align_corners=True)
 
         if mode == "tensor":
@@ -86,6 +77,11 @@ class BaseSegmModel(nn.Module):
             return outputs.argmax(dim=1)
 
         return outputs
+
+    def extract_features(self, inputs: Tensor) -> Tensor:
+        """Extract features from the backbone and head."""
+        enc_feats = self.backbone(inputs)
+        return self.decode_head(enc_feats)
 
     def calculate_loss(
         self,
@@ -112,22 +108,21 @@ class BaseSegmModel(nn.Module):
         # class incremental training
         valid_label_mask = self.get_valid_label_mask(img_metas)
         output_losses = {}
-        for criterion in self.criterions:
-            valid_label_mask_cfg = {}
-            if criterion.name == "loss_ce_ignore":
-                valid_label_mask_cfg["valid_label_mask"] = valid_label_mask
-            if criterion.name not in output_losses:
-                output_losses[criterion.name] = criterion(
-                    outputs,
-                    masks,
-                    **valid_label_mask_cfg,
-                )
-            else:
-                output_losses[criterion.name] += criterion(
-                    outputs,
-                    masks,
-                    **valid_label_mask_cfg,
-                )
+        valid_label_mask_cfg = {}
+        if self.criterion.name == "loss_ce_ignore":
+            valid_label_mask_cfg["valid_label_mask"] = valid_label_mask
+        if self.criterion.name not in output_losses:
+            output_losses[self.criterion.name] = self.criterion(
+                outputs,
+                masks,
+                **valid_label_mask_cfg,
+            )
+        else:
+            output_losses[self.criterion.name] += self.criterion(
+                outputs,
+                masks,
+                **valid_label_mask_cfg,
+            )
         return output_losses
 
     def get_valid_label_mask(self, img_metas: list[ImageInfo]) -> list[Tensor]:

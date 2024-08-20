@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import pytest
 import torch
-from otx.core.data.entity.base import ImageInfo
+from otx.core.data.entity.base import BboxInfo, ImageInfo
 from otx.core.data.entity.keypoint_detection import KeypointDetBatchDataEntity
 from torchvision import tv_tensors
 
@@ -31,9 +31,7 @@ def fxt_keypoint_det_batch_data_entity() -> KeypointDetBatchDataEntity:
         imgs_info=img_infos,
         bboxes=bboxes,
         labels=labels,
+        bbox_info=BboxInfo(center=(96, 128), scale=(1, 1), rotation=0),
         keypoints=keypoints,
         keypoints_visible=keypoints_visible,
-        keypoint_x_labels=[],
-        keypoint_y_labels=[],
-        keypoint_weights=[],
     )

@@ -8,7 +8,6 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 import torch
-from otx.algo.keypoint_detection.utils.data_sample import PoseDataSample
 from otx.algo.keypoint_detection.utils.keypoint_eval import simcc_pck_accuracy
 from otx.algo.keypoint_detection.utils.rtmcc_block import RTMCCBlock
 from otx.algo.keypoint_detection.utils.scale_norm import ScaleNorm
@@ -69,7 +68,7 @@ class RTMCCHead(BaseModule):
         self.simcc_split_ratio = simcc_split_ratio
 
         self.loss_module = loss
-        self.decoder = SimCCLabel(**decoder_cfg)
+        self.codec = SimCCLabel(**decoder_cfg)
 
         if isinstance(in_channels, (tuple, list)):
             msg = f"{self.__class__.__name__} does not support selecting multiple input features."
@@ -122,41 +121,30 @@ class RTMCCHead(BaseModule):
     def predict(
         self,
         feats: tuple[Tensor],
-    ) -> list[PoseDataSample]:
+    ) -> list[tuple[np.ndarray, np.ndarray]]:
         """Predict results from features.
 
         Args:
             feats (Tuple[Tensor] | List[Tuple[Tensor]]): The multi-stage features
 
         Returns:
-            List[PoseDataSample]: The pose predictions, each contains
+            List[tuple[np.ndarray, np.ndarray]]: The pose predictions and scores per each contains
             the following fields:
                 - keypoints (np.ndarray): predicted keypoint coordinates in
                     shape (num_instances, K, D) where K is the keypoint number
                     and D is the keypoint dimension
-                - keypoint_weights (np.ndarray): predicted keypoint scores in
+                - scores (np.ndarray): predicted keypoint scores in
                     shape (num_instances, K)
-                - keypoint_x_labels (np.ndarray, optional): The predicted 1-D
-                    intensity distribution in the x direction
-                - keypoint_y_labels (np.ndarray, optional): The predicted 1-D
-                    intensity distribution in the y direction
         """
         pred_x, pred_y = self(feats)
-        batch_keypoints, batch_scores = self.decoder.decode(
+        batch_keypoints, batch_scores = self.codec.decode(
             simcc_x=self.to_numpy(pred_x),
             simcc_y=self.to_numpy(pred_y),
         )
 
         preds = []
-        for p_x, p_y, keypoints, scores in zip(pred_x, pred_y, batch_keypoints, batch_scores):
-            preds.append(
-                PoseDataSample(
-                    keypoints=keypoints,
-                    keypoint_x_labels=p_x,
-                    keypoint_y_labels=p_y,
-                    keypoint_weights=scores,
-                ),
-            )
+        for keypoints, scores in zip(batch_keypoints, batch_scores):
+            preds.append((keypoints, scores))
         return preds
 
     def loss(self, x: tuple[Tensor], entity: KeypointDetBatchDataEntity) -> dict:
@@ -172,19 +160,25 @@ class RTMCCHead(BaseModule):
         """
         pred_x, pred_y = self(x)
 
-        gt_x = torch.cat(entity.keypoint_x_labels, dim=0)
-        gt_y = torch.cat(entity.keypoint_y_labels, dim=0)
-        keypoint_weights = torch.cat(entity.keypoint_weights, dim=0)
+        encoded = self.codec.encode(
+            keypoints=np.stack(entity.keypoints),
+            keypoints_visible=np.stack(entity.keypoints_visible),
+        )
+
+        device = pred_x.device
+        gt_x = torch.tensor(encoded["keypoint_x_labels"], device=device)
+        gt_y = torch.tensor(encoded["keypoint_y_labels"], device=device)
+        keypoints_weight = torch.tensor(encoded["keypoint_weights"], device=device)
 
         pred_simcc = (pred_x, pred_y)
         gt_simcc = (gt_x, gt_y)
 
         # calculate losses
         losses: dict = {}
-        loss = self.loss_module(pred_simcc, gt_simcc, keypoint_weights)
+        loss = self.loss_module(pred_simcc, gt_simcc, keypoints_weight)
         losses.update(loss_kpt=loss)
 
-        mask = self.to_numpy(keypoint_weights)
+        mask = self.to_numpy(keypoints_weight)
         if isinstance(mask, np.ndarray):
             mask = mask > 0
         elif isinstance(mask, tuple):
@@ -198,7 +192,7 @@ class RTMCCHead(BaseModule):
             mask=mask,
         )
 
-        loss_pose = torch.tensor(avg_acc, device=gt_x.device)
+        loss_pose = torch.tensor(avg_acc, device=device)
         losses.update(loss_pose=loss_pose)
 
         return losses

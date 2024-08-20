@@ -44,14 +44,19 @@ def test_otx_e2e_cli(
     Returns:
         None
     """
-    task = recipe.split("/")[-2].upper()
-    model_name = recipe.split("/")[-1].split(".")[0]
+    recipe_split = recipe.split("/")
+    model_name = recipe_split[-1].split(".")[0]
+    is_semisl = model_name.endswith("_semisl")
+    task = recipe_split[-2].upper() if not is_semisl else recipe_split[-3].upper()
 
     if task == OTXTaskType.INSTANCE_SEGMENTATION:
         is_tiling = "tile" in recipe
         dataset_path = fxt_target_dataset_per_task[task]["tiling" if is_tiling else "non_tiling"]
     else:
         dataset_path = fxt_target_dataset_per_task[task]
+
+    if isinstance(dataset_path, dict) and "supervised" in dataset_path:
+        dataset_path = dataset_path["supervised"]
 
     # 1) otx train
     tmp_path_train = tmp_path / f"otx_train_{model_name}"
@@ -71,6 +76,13 @@ def test_otx_e2e_cli(
         *fxt_cli_override_command_per_task[task],
     ]
 
+    if is_semisl:
+        command_cfg.extend(
+            [
+                "--data.unlabeled_subset.data_root",
+                str(fxt_target_dataset_per_task[task]["unlabeled"]),
+            ],
+        )
     run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)
 
     outputs_dir = tmp_path_train / "outputs"
@@ -121,23 +133,13 @@ def test_otx_e2e_cli(
     assert (latest_dir / "csv").exists()
 
     # 3) otx export
-    if any(
-        task_name in recipe
-        for task_name in [
-            "dino_v2",
-        ]
-    ):
-        return
+    fxt_export_list = []
     if task in ("visual_prompting", "zero_shot_visual_prompting"):
-        fxt_export_list = [
-            ExportCase2Test("ONNX", False, "exported_model_decoder.onnx"),
-            ExportCase2Test("OPENVINO", False, "exported_model_decoder.xml"),
-        ]  # TODO (sungchul): EXPORTABLE_CODE will be supported
-    elif "anomaly" in task:
-        fxt_export_list = [
-            ExportCase2Test("ONNX", False, "exported_model.onnx"),
-            ExportCase2Test("OPENVINO", False, "exported_model.xml"),
-        ]  # anomaly doesn't support exportable code
+        fxt_export_list.append(ExportCase2Test("ONNX", False, "exported_model_decoder.onnx"))
+        fxt_export_list.append(ExportCase2Test("OPENVINO", False, "exported_model_decoder.xml"))
+    elif "anomaly" in task or "keypoint_detection" in task:
+        fxt_export_list.append(ExportCase2Test("ONNX", False, "exported_model.onnx"))
+        fxt_export_list.append(ExportCase2Test("OPENVINO", False, "exported_model.xml"))
 
     overrides = fxt_cli_override_command_per_task[task]
     if "anomaly" in task:
@@ -218,11 +220,9 @@ def test_otx_e2e_cli(
     if ("_cls" not in task) and (task not in ["detection", "instance_segmentation"]):
         return  # Supported only for classification, detection and instance segmentation task.
 
-    if "dino" in model_name:
-        return  # DINO is not supported.
-
-    if "rtdetr" in model_name:
-        return  # RT-DETR currently is not supported.
+    unsupported_models = ["dino", "rtdetr"]
+    if any(model in model_name for model in unsupported_models):
+        return  # The models are not supported.
 
     tmp_path_test = tmp_path / f"otx_export_xai_{model_name}"
     for export_case in fxt_export_list:
@@ -282,8 +282,13 @@ def test_otx_explain_e2e_cli(
     """
     import cv2
 
-    task = recipe.split("/")[-2].upper()
-    model_name = recipe.split("/")[-1].split(".")[0]
+    recipe_split = recipe.split("/")
+    model_name = recipe_split[-1].split(".")[0]
+    is_semisl = model_name.endswith("_semisl")
+    task = recipe_split[-2].upper() if not is_semisl else recipe_split[-3].upper()
+
+    if is_semisl:
+        pytest.skip("SEMI-SL is not supported for explain.")
 
     if task not in [
         OTXTaskType.MULTI_CLASS_CLS,
@@ -302,6 +307,9 @@ def test_otx_explain_e2e_cli(
         dataset_path = fxt_target_dataset_per_task[task]["tiling" if is_tiling else "non_tiling"]
     else:
         dataset_path = fxt_target_dataset_per_task[task]
+
+    if isinstance(dataset_path, dict) and "supervised" in dataset_path:
+        dataset_path = dataset_path["supervised"]
 
     if "dino" in model_name:
         pytest.skip("DINO is not supported.")
@@ -421,6 +429,9 @@ def test_otx_hpo_e2e_cli(
         dataset_path = fxt_target_dataset_per_task[task]["non_tiling"]
     else:
         dataset_path = fxt_target_dataset_per_task[task]
+
+    if isinstance(dataset_path, dict) and "supervised" in dataset_path:
+        dataset_path = dataset_path["supervised"]
 
     tmp_path_hpo = tmp_path / f"otx_hpo_{task.lower()}"
     tmp_path_hpo.mkdir(parents=True)
