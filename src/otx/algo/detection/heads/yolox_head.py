@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import logging
 import math
+from functools import partial
 from typing import Callable, Sequence
 
 import torch
@@ -24,8 +25,9 @@ from otx.algo.common.utils.samplers import PseudoSampler
 from otx.algo.common.utils.utils import multi_apply, reduce_mean
 from otx.algo.detection.heads.base_head import BaseDenseHead
 from otx.algo.detection.losses import IoULoss
-from otx.algo.modules.activation import Swish
+from otx.algo.modules.activation import Swish, build_activation_layer
 from otx.algo.modules.conv_module import Conv2dModule, DepthwiseSeparableConvModule
+from otx.algo.modules.norm import build_norm_layer
 from otx.algo.utils.mmengine_utils import InstanceData
 
 logger = logging.getLogger()
@@ -48,12 +50,12 @@ class YOLOXHead(BaseDenseHead):
         dcn_on_last_conv (bool): If true, use dcn in the last layer of towers.
             Defaults to False.
         conv_bias (bool or str): If specified as `auto`, it will be decided by
-            the norm_cfg. Bias of conv will be set as True if `norm_cfg` is
+            the normalization. Bias of conv will be set as True if `normalization` is
             None, otherwise False. Defaults to "auto".
-        norm_cfg (dict): Config dict for normalization layer.
-            Defaults to dict(type='BN', momentum=0.03, eps=0.001).
-        activation_callable (Callable[..., nn.Module]): Activation layer module.
-            Defaults to `Swish`.
+        normalization (Callable[..., nn.Module]): Normalization layer module.
+            Defaults to ``partial(nn.BatchNorm2d, momentum=0.03, eps=0.001)``.
+        activation (Callable[..., nn.Module]): Activation layer module.
+            Defaults to ``Swish``.
         loss_cls (nn.Module, optional): Module of classification loss.
         loss_bbox (nn.Module, optional): Module of localization loss.
         loss_obj (nn.Module, optional): Module of objectness loss.
@@ -76,8 +78,8 @@ class YOLOXHead(BaseDenseHead):
         use_depthwise: bool = False,
         dcn_on_last_conv: bool = False,
         conv_bias: bool | str = "auto",
-        norm_cfg: dict | None = None,
-        activation_callable: Callable[..., nn.Module] = Swish,
+        normalization: Callable[..., nn.Module] = partial(nn.BatchNorm2d, momentum=0.03, eps=0.001),
+        activation: Callable[..., nn.Module] = Swish,
         loss_cls: nn.Module | None = None,
         loss_bbox: nn.Module | None = None,
         loss_obj: nn.Module | None = None,
@@ -86,9 +88,6 @@ class YOLOXHead(BaseDenseHead):
         test_cfg: dict | None = None,
         init_cfg: dict | list[dict] | None = None,
     ) -> None:
-        if norm_cfg is None:
-            norm_cfg = {"type": "BN", "momentum": 0.03, "eps": 0.001}
-
         if init_cfg is None:
             init_cfg = {
                 "type": "Kaiming",
@@ -115,8 +114,8 @@ class YOLOXHead(BaseDenseHead):
         self.conv_bias = conv_bias
         self.use_sigmoid_cls = True
 
-        self.norm_cfg = norm_cfg
-        self.activation_callable = activation_callable
+        self.normalization = normalization
+        self.activation = activation
 
         self.loss_cls = loss_cls or CrossEntropyLoss(use_sigmoid=True, reduction="sum", loss_weight=1.0)
         self.loss_bbox = loss_bbox or IoULoss(mode="square", eps=1e-16, reduction="sum", loss_weight=5.0)
@@ -173,8 +172,8 @@ class YOLOXHead(BaseDenseHead):
                     3,
                     stride=1,
                     padding=1,
-                    norm_cfg=self.norm_cfg,
-                    activation_callable=self.activation_callable,
+                    normalization=build_norm_layer(self.normalization, num_features=self.feat_channels),
+                    activation=build_activation_layer(self.activation),
                     bias=self.conv_bias,
                 ),
             )

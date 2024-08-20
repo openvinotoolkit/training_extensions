@@ -5,25 +5,15 @@
 
 import torch
 from otx.algo.segmentation.modules import (
-    AsymmetricPositionAttentionModule,
     IterativeAggregator,
-    LocalAttentionModule,
     channel_shuffle,
     normalize,
 )
-from otx.algo.segmentation.modules.blocks import OnnxLpNormalization, PSPModule
+from otx.algo.segmentation.modules.blocks import OnnxLpNormalization
 
 
 def test_channel_shuffle():
     assert channel_shuffle(torch.randn([1, 24, 8, 8]), 4).shape == torch.Size([1, 24, 8, 8])
-
-
-def test_psp_module():
-    assert PSPModule().forward(torch.randn([1, 24, 28, 8])).shape == torch.Size([1, 24, 110])
-
-
-def test_asymmetric_position_attention_module():
-    assert AsymmetricPositionAttentionModule(24, 48)(torch.randn([1, 24, 8, 8])).shape == torch.Size([1, 24, 8, 8])
 
 
 def test_onnx_lp_normalization():
@@ -49,7 +39,3 @@ def test_iterative_aggregator():
     assert len(out) == 2
     assert out[0].shape == torch.Size([1, 2, 16, 16])
     assert out[1].shape == torch.Size([1, 2, 8, 8])
-
-
-def test_local_attention_module():
-    assert LocalAttentionModule(24).forward(torch.randn([2, 24, 8, 8])).shape == torch.Size([2, 24, 8, 8])

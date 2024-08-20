@@ -1,5 +1,5 @@
 model:
-  class_path: otx.algo.instance_segmentation.maskrcnn.MaskRCNNResNet50
+  class_path: otx.core.model.rotated_detection.RotatedMaskRCNNResNet50
   init_args:
     label_info: 80
 
@@ -19,7 +19,7 @@ model:
           init_args:
             mode: max
             factor: 0.1
-            patience: 9
+            patience: 4
             monitor: val/map_50
 
 engine:
@@ -28,15 +28,30 @@ engine:
 
 callback_monitor: val/map_50
 
-data: ../_base_/data/rotated_detection.yaml
+data: ../_base_/data/instance_segmentation.yaml
 overrides:
+  task: ROTATED_DETECTION
   max_epochs: 100
+  gradient_clip_val: 35.0
   data:
     train_subset:
       batch_size: 4
+      num_workers: 8
+      transforms:
+        - class_path: otx.core.data.transform_libs.torchvision.Pad
+          init_args:
+            size_divisor: 32
 
     val_subset:
-      batch_size: 1
+      num_workers: 4
+      transforms:
+        - class_path: otx.core.data.transform_libs.torchvision.Pad
+          init_args:
+            size_divisor: 32
 
     test_subset:
-      batch_size: 1
+      num_workers: 4
+      transforms:
+        - class_path: otx.core.data.transform_libs.torchvision.Pad
+          init_args:
+            size_divisor: 32

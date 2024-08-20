@@ -139,13 +139,13 @@ class MLP(nn.Module):
         hidden_dim: int,
         output_dim: int,
         num_layers: int,
-        activation_callable: Callable[..., nn.Module] | None = None,
+        activation: Callable[..., nn.Module] | None = None,
     ) -> None:
         super().__init__()
         self.num_layers = num_layers
         h = [hidden_dim] * (num_layers - 1)
         self.layers = nn.ModuleList(nn.Linear(n, k) for n, k in zip([input_dim, *h], [*h, output_dim]))
-        self.act = activation_callable() if activation_callable else nn.Identity()
+        self.act = activation() if activation else nn.Identity()
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Forward function of MLP."""
@@ -299,8 +299,8 @@ class TransformerDecoderLayer(nn.Module):
         n_head (int): The number of heads in the multiheadattention models.
         dim_feedforward (int): The dimension of the feedforward network model.
         dropout (float): The dropout value.
-        activation_callable (Callable[..., nn.Module]): Activation layer module.
-            Defaults to `nn.ReLU`.
+        activation (Callable[..., nn.Module]): Activation layer module.
+            Defaults to ``nn.ReLU``.
         n_levels (int): The number of levels in MSDeformableAttention.
         n_points (int): The number of points in MSDeformableAttention.
     """
@@ -311,7 +311,7 @@ class TransformerDecoderLayer(nn.Module):
         n_head: int = 8,
         dim_feedforward: int = 1024,
         dropout: float = 0.0,
-        activation_callable: Callable[..., nn.Module] = nn.ReLU,
+        activation: Callable[..., nn.Module] = nn.ReLU,
         n_levels: int = 4,
         n_points: int = 4,
     ):
@@ -330,7 +330,7 @@ class TransformerDecoderLayer(nn.Module):
 
         # ffn
         self.linear1 = nn.Linear(d_model, dim_feedforward)
-        self.activation = activation_callable()
+        self.activation = activation()
         self.dropout3 = nn.Dropout(dropout)
         self.linear2 = nn.Linear(dim_feedforward, d_model)
         self.dropout4 = nn.Dropout(dropout)
@@ -467,8 +467,8 @@ class RTDETRTransformer(BaseModule):
         num_decoder_layers (int): Number of decoder layers.
         dim_feedforward (int): Dimension of the feedforward network.
         dropout (float): Dropout rate.
-        activation_callable (Callable[..., nn.Module]): Activation layer module.
-            Defaults to `nn.ReLU`.
+        activation (Callable[..., nn.Module]): Activation layer module.
+            Defaults to ``nn.ReLU``.
         num_denoising (int): Number of denoising samples.
         label_noise_ratio (float): Ratio of label noise.
         box_noise_scale (float): Scale of box noise.
@@ -493,7 +493,7 @@ class RTDETRTransformer(BaseModule):
         num_decoder_layers: int = 6,
         dim_feedforward: int = 1024,
         dropout: float = 0.0,
-        activation_callable: Callable[..., nn.Module] = nn.ReLU,
+        activation: Callable[..., nn.Module] = nn.ReLU,
         num_denoising: int = 100,
         label_noise_ratio: float = 0.5,
         box_noise_scale: float = 1.0,
@@ -540,7 +540,7 @@ class RTDETRTransformer(BaseModule):
             nhead,
             dim_feedforward,
             dropout,
-            activation_callable,
+            activation,
             num_levels,
             num_decoder_points,
         )
@@ -557,7 +557,7 @@ class RTDETRTransformer(BaseModule):
         self.learnt_init_query = learnt_init_query
         if learnt_init_query:
             self.tgt_embed = nn.Embedding(num_queries, hidden_dim)
-        self.query_pos_head = MLP(4, 2 * hidden_dim, hidden_dim, num_layers=2, activation_callable=activation_callable)
+        self.query_pos_head = MLP(4, 2 * hidden_dim, hidden_dim, num_layers=2, activation=activation)
 
         # encoder head
         self.enc_output = nn.Sequential(
@@ -565,15 +565,12 @@ class RTDETRTransformer(BaseModule):
             nn.LayerNorm(hidden_dim),
         )
         self.enc_score_head = nn.Linear(hidden_dim, num_classes)
-        self.enc_bbox_head = MLP(hidden_dim, hidden_dim, 4, num_layers=3, activation_callable=activation_callable)
+        self.enc_bbox_head = MLP(hidden_dim, hidden_dim, 4, num_layers=3, activation=activation)
 
         # decoder head
         self.dec_score_head = nn.ModuleList([nn.Linear(hidden_dim, num_classes) for _ in range(num_decoder_layers)])
         self.dec_bbox_head = nn.ModuleList(
-            [
-                MLP(hidden_dim, hidden_dim, 4, num_layers=3, activation_callable=activation_callable)
-                for _ in range(num_decoder_layers)
-            ],
+            [MLP(hidden_dim, hidden_dim, 4, num_layers=3, activation=activation) for _ in range(num_decoder_layers)],
         )
 
         # init encoder output anchors and valid_mask

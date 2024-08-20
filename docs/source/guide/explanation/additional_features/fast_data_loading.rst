@@ -27,14 +27,12 @@ training time in those cases.
 
       .. code-block:: python
 
-         from otx.core.config.data import DataModuleConfig
          from otx.core.data.module import OTXDataModule
 
-         data_config = DataModuleConfig(..., mem_cache_size="8GB")
-         datamodule = OTXDataModule(..., config=data_config)
+         datamodule = OTXDataModule(..., mem_cache_size="8GB")
 
    .. tab-item:: CLI
 
       .. code-block:: shell
 
-         (otx) ...$ otx train ... --data.config.mem_cache_size 8GB
+         (otx) ...$ otx train ... --data.mem_cache_size 8GB
