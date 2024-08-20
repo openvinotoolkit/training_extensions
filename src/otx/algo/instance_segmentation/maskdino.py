@@ -22,6 +22,8 @@ from otx.algo.instance_segmentation.mask_dino.maskdino_head import MaskDINOHead
 from otx.algo.instance_segmentation.mask_dino.matcher import HungarianMatcher
 from otx.core.data.entity.instance_segmentation import InstanceSegBatchDataEntity, InstanceSegBatchPredEntity
 from otx.core.data.entity.utils import stack_batch
+from otx.core.exporter.base import OTXModelExporter
+from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.model.instance_segmentation import ExplainableOTXInstanceSegModel
 from otx.core.utils.mask_util import polygon_to_bitmap
 
@@ -282,17 +284,102 @@ class MaskDINO(nn.Module):
             )
         return new_targets
 
-    def box_postprocess(self, out_bbox, img_h, img_w):
-        # postprocess box height and width
-        boxes = box_ops.box_cxcywh_to_xyxy(out_bbox)
-        scale_fct = torch.tensor([img_w, img_h, img_w, img_h])
-        scale_fct = scale_fct.to(out_bbox)
-        boxes = boxes * scale_fct
-        return boxes
+    def export(self, batch_inputs: Tensor, batch_img_metas: list[dict]):
+        b, c, h, w = batch_inputs.size()
+        if b != 1:
+            raise ValueError("Only support batch size 1 for export")
+
+        features = self.backbone(batch_inputs)
+        outputs, _ = self.sem_seg_head(features)
+        mask_cls = outputs["pred_logits"][0]
+        mask_pred = outputs["pred_masks"][0]
+        pred_boxes = outputs["pred_boxes"][0]
+
+        num_classes = self.sem_seg_head.num_classes
+        num_queries = self.num_queries
+        test_topk_per_image = self.test_topk_per_image
+
+        scores = mask_cls.sigmoid()
+        labels = torch.arange(num_classes).unsqueeze(0).repeat(num_queries, 1).flatten(0, 1)
+
+        scores_per_image, topk_indices = scores.flatten(0, 1).topk(test_topk_per_image, sorted=False)
+        labels_per_image = labels[topk_indices]
+
+        topk_indices = topk_indices // num_classes
+
+        mask_pred = torch.nn.functional.interpolate(
+            mask_pred.unsqueeze(0),
+            size=(h, w),
+            mode="bilinear",
+            align_corners=False,
+        )[0]
+
+        mask_pred = mask_pred[topk_indices]
+        pred_boxes = pred_boxes[topk_indices]
+        pred_masks = (mask_pred > 0).float()
+
+        # Calculate average mask prob
+        mask_scores_per_image = (mask_pred.sigmoid().flatten(1) * pred_masks.flatten(1)).sum(1) / (
+            pred_masks.flatten(1).sum(1) + 1e-6
+        )
+        pred_scores = scores_per_image * mask_scores_per_image
+        pred_classes = labels_per_image
+
+        pred_boxes = pred_boxes.new_tensor([[w, h, w, h]]) * box_ops.box_cxcywh_to_xyxy(pred_boxes)
+
+        boxes_with_scores = torch.cat([pred_boxes, pred_scores[:, None]], dim=1)
+
+        batch_masks, batch_bboxes, batch_labels = [], [], []
+
+        batch_masks.append(pred_masks)
+        batch_bboxes.append(boxes_with_scores)
+        batch_labels.append(pred_classes)
+
+        return (
+            batch_bboxes,
+            batch_labels,
+            batch_masks,
+        )
 
 
 class MaskDINOR50(ExplainableOTXInstanceSegModel):
     load_from = "https://github.com/IDEA-Research/detrex-storage/releases/download/maskdino-v0.1.0/maskdino_r50_50ep_300q_hid2048_3sd1_instance_maskenhanced_mask46.3ap_box51.7ap.pth"
+    image_size = (1, 3, 1024, 1024)
+    tile_image_size = (1, 3, 512, 512)
+    mean = (123.675, 116.28, 103.53)
+    std = (58.395, 57.12, 57.375)
+
+    @property
+    def _exporter(self) -> OTXModelExporter:
+        """Creates OTXModelExporter object that can export the model."""
+        if self.image_size is None:
+            msg = f"Image size attribute is not set for {self.__class__}"
+            raise ValueError(msg)
+
+        input_size = self.tile_image_size if self.tile_config.enable_tiler else self.image_size
+
+        return OTXNativeModelExporter(
+            task_level_export_parameters=self._export_parameters,
+            input_size=input_size,
+            mean=self.mean,
+            std=self.std,
+            resize_mode="standard",
+            swap_rgb=False,
+            via_onnx=True,
+            onnx_export_configuration={
+                "input_names": ["image"],
+                "output_names": ["boxes", "labels", "masks"],
+                "dynamic_axes": {
+                    "image": {0: "batch", 2: "height", 3: "width"},
+                    "boxes": {0: "batch", 1: "num_dets"},
+                    "labels": {0: "batch", 1: "num_dets"},
+                    "masks": {0: "batch", 1: "num_dets", 2: "height", 3: "width"},
+                },
+                "opset_version": 16,
+                "autograd_inlining": False,
+            },
+            output_names=["bboxes", "labels", "masks"],
+        )
 
     @staticmethod
     def add_maskdino_config(cfg):
