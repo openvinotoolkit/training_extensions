@@ -1006,7 +1006,6 @@ class RTMDetInsSepBNHead(RTMDetInsHead):
         kernel_preds: list[Tensor],
         mask_feat: Tensor,
         batch_img_metas: list[dict] | None = None,
-        cfg: dict | None = None,
         rescale: bool = False,
     ) -> tuple[Tensor, Tensor] | tuple[Tensor, Tensor, Tensor]:
         """Export the detection head."""
@@ -1015,7 +1014,6 @@ class RTMDetInsSepBNHead(RTMDetInsHead):
             raise ValueError(msg)
 
         device = cls_scores[0].device
-        cfg = self.test_cfg if cfg is None else cfg
         batch_size = bbox_preds[0].shape[0]
         featmap_sizes = [cls_score.shape[2:] for cls_score in cls_scores]
         mlvl_priors = self.prior_generator.grid_priors(featmap_sizes, device=device, with_stride=True)
@@ -1039,10 +1037,7 @@ class RTMDetInsSepBNHead(RTMDetInsHead):
         scores = flatten_cls_scores
 
         max_output_boxes_per_class = 100
-        iou_threshold = cfg["nms"].get("iou_threshold", 0.5)  # type: ignore[union-attr]
-        score_threshold = cfg.get("score_thr", 0.05)  # type: ignore[union-attr]
         pre_top_k = 300
-        keep_top_k = cfg.get("max_per_img", 100)  # type: ignore[union-attr]
 
         return self._nms_with_mask_static(
             priors,
@@ -1051,10 +1046,10 @@ class RTMDetInsSepBNHead(RTMDetInsHead):
             flatten_kernel_preds,
             mask_feat,
             max_output_boxes_per_class,
-            iou_threshold,
-            score_threshold,
+            self.nms_iou_threshold,
+            self.score_threshold,
             pre_top_k,
-            keep_top_k,
+            self.max_per_img,
         )
 
     def _nms_with_mask_static(

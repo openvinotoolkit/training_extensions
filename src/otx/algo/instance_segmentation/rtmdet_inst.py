@@ -40,6 +40,15 @@ if TYPE_CHECKING:
 class RTMDetInst(ExplainableOTXInstanceSegModel):
     """Implementation of RTMDet for instance segmentation."""
 
+    load_from = {
+        "rtmdet_tiny": (
+            "https://download.openmmlab.com/mmdetection/v3.0/rtmdet/rtmdet-ins_tiny_8xb32-300e_coco/"
+            "rtmdet-ins_tiny_8xb32-300e_coco_20221130_151727-ec670f7e.pth"
+        )
+    }
+    mean = (123.675, 116.28, 103.53)
+    std = (58.395, 57.12, 57.375)
+
     @property
     def _exporter(self) -> OTXModelExporter:
         """Creates OTXModelExporter object that can export the model."""
@@ -86,45 +95,9 @@ class RTMDetInst(ExplainableOTXInstanceSegModel):
         meta_info_list = [meta_info] * len(inputs)
         return self.model.export(inputs, meta_info_list, explain_mode=self.explain_mode)
 
-
-class RTMDetInstTiny(RTMDetInst):
-    """RTMDetInst Tiny Model."""
-
-    load_from = (
-        "https://download.openmmlab.com/mmdetection/v3.0/rtmdet/rtmdet-ins_tiny_8xb32-300e_coco/"
-        "rtmdet-ins_tiny_8xb32-300e_coco_20221130_151727-ec670f7e.pth"
-    )
-    mean = (123.675, 116.28, 103.53)
-    std = (58.395, 57.12, 57.375)
-
-    def __init__(
-        self,
-        label_info: LabelInfoTypes,
-        input_size: tuple[int, int] = (640, 640),
-        optimizer: OptimizerCallable = DefaultOptimizerCallable,
-        scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
-        metric: MetricCallable = MaskRLEMeanAPFMeasureCallable,
-        torch_compile: bool = False,
-        tile_config: TileConfig = TileConfig(enable_tiler=False),
-    ) -> None:
-        super().__init__(
-            label_info=label_info,
-            input_size=input_size,
-            optimizer=optimizer,
-            scheduler=scheduler,
-            metric=metric,
-            torch_compile=torch_compile,
-            tile_config=tile_config,
-        )
-
     def _build_model(self, num_classes: int) -> SingleStageDetector:
-        train_cfg = {
-            "assigner": DynamicSoftLabelAssigner(topk=13),
-            "sampler": PseudoSampler(),
-            "allowed_border": -1,
-            "pos_weight": -1,
-            "debug": False,
-        }
+        assigner = (DynamicSoftLabelAssigner(topk=13),)
+        sampler = (PseudoSampler(),)
 
         test_cfg = {
             "nms": {"type": "nms", "iou_threshold": 0.5},
@@ -154,6 +127,30 @@ class RTMDetInstTiny(RTMDetInst):
             activation=partial(nn.SiLU, inplace=True),
         )
 
+        loss_centerness = (CrossEntropyLoss(use_sigmoid=True, loss_weight=1.0),)
+        loss_cls = (
+            QualityFocalLoss(
+                use_sigmoid=True,
+                beta=2.0,
+                loss_weight=1.0,
+            ),
+        )
+        loss_bbox = (GIoULoss(loss_weight=2.0),)
+        loss_mask = (
+            DiceLoss(
+                loss_weight=2.0,
+                eps=5.0e-06,
+                reduction="mean",
+            ),
+        )
+        anchor_generator = (
+            MlvlPointGenerator(
+                offset=0,
+                strides=[8, 16, 32],
+            ),
+        )
+        bbox_coder = DistancePointBBoxCoder()
+
         bbox_head = RTMDetInsSepBNHead(
             num_classes=num_classes,
             in_channels=96,
@@ -163,24 +160,14 @@ class RTMDetInstTiny(RTMDetInst):
             feat_channels=96,
             normalization=partial(build_norm_layer, nn.BatchNorm2d, requires_grad=True),
             activation=partial(nn.SiLU, inplace=True),
-            anchor_generator=MlvlPointGenerator(
-                offset=0,
-                strides=[8, 16, 32],
-            ),
-            bbox_coder=DistancePointBBoxCoder(),
-            loss_centerness=CrossEntropyLoss(use_sigmoid=True, loss_weight=1.0),
-            loss_cls=QualityFocalLoss(
-                use_sigmoid=True,
-                beta=2.0,
-                loss_weight=1.0,
-            ),
-            loss_bbox=GIoULoss(loss_weight=2.0),
-            loss_mask=DiceLoss(
-                loss_weight=2.0,
-                eps=5.0e-06,
-                reduction="mean",
-            ),
-            train_cfg=train_cfg,
+            anchor_generator=anchor_generator,
+            loss_centerness=loss_centerness,
+            loss_cls=loss_cls,
+            loss_bbox=loss_bbox,
+            loss_mask=loss_mask,
+            bbox_coder=bbox_coder,
+            assigner=assigner,
+            sampler=sampler,
             test_cfg=test_cfg,
         )
 
@@ -188,6 +175,35 @@ class RTMDetInstTiny(RTMDetInst):
             backbone=backbone,
             neck=neck,
             bbox_head=bbox_head,
-            train_cfg=train_cfg,
-            test_cfg=test_cfg,
+        )
+
+
+class RTMDetInstTiny(RTMDetInst):
+    """RTMDetInst Tiny Model."""
+
+    load_from = (
+        "https://download.openmmlab.com/mmdetection/v3.0/rtmdet/rtmdet-ins_tiny_8xb32-300e_coco/"
+        "rtmdet-ins_tiny_8xb32-300e_coco_20221130_151727-ec670f7e.pth"
+    )
+    mean = (123.675, 116.28, 103.53)
+    std = (58.395, 57.12, 57.375)
+
+    def __init__(
+        self,
+        label_info: LabelInfoTypes,
+        input_size: tuple[int, int] = (640, 640),
+        optimizer: OptimizerCallable = DefaultOptimizerCallable,
+        scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
+        metric: MetricCallable = MaskRLEMeanAPFMeasureCallable,
+        torch_compile: bool = False,
+        tile_config: TileConfig = TileConfig(enable_tiler=False),
+    ) -> None:
+        super().__init__(
+            label_info=label_info,
+            input_size=input_size,
+            optimizer=optimizer,
+            scheduler=scheduler,
+            metric=metric,
+            torch_compile=torch_compile,
+            tile_config=tile_config,
         )

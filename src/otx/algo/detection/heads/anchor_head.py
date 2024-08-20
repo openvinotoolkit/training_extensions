@@ -32,15 +32,20 @@ class AnchorHead(BaseDenseHead):
         bbox_coder (nn.Module): Module of bounding box coder.
         loss_cls (nn.Module): Module of classification loss.
         loss_bbox (nn.Module): Module of localization loss.
-        train_cfg (dict): Training config of anchor head.
-        test_cfg (dict, optional): Testing config of anchor head.
+        assigner (nn.Module): Module of assigner.
+        sampler (nn.Module): Module of sampler.
         feat_channels (int): Number of hidden channels. Used in child classes.
         reg_decoded_bbox (bool): If true, the regression loss would be
             applied directly on decoded bounding boxes, converting both
             the predicted boxes and regression targets to absolute
             coordinates format. Default False. It should be `True` when
             using `IoULoss`, `GIoULoss`, or `DIoULoss` in the bbox head.
-        init_cfg (dict, list[dict], optional): Initialization config dict.
+        allowed_border (float): The border to allow the proposal target
+            when the height or width of an instance is smaller than
+            this value. In most cases, 0 is used. Only used in
+            `RCNNHead`.
+        pos_weight (float): Weight of positive examples in loss calculation.
+            Defaults to 1.
     """
 
     def __init__(
@@ -51,13 +56,26 @@ class AnchorHead(BaseDenseHead):
         bbox_coder: nn.Module,
         loss_cls: nn.Module,
         loss_bbox: nn.Module,
-        train_cfg: dict,
-        test_cfg: dict | None = None,
+        assigner: nn.Module,
+        sampler: nn.Module,
         feat_channels: int = 256,
         reg_decoded_bbox: bool = False,
-        init_cfg: dict | list[dict] | None = None,
+        allowed_border: float = 0.0,
+        pos_weight: float = 1.0,
+        max_per_img: int = 1000,
+        min_bbox_size: int = 0,
+        nms_iou_threshold: float = 0.7,
+        nms_pre: int = 1000,
+        with_nms: bool = True,
     ) -> None:
-        super().__init__(init_cfg=init_cfg)
+        super().__init__(
+            max_per_img=max_per_img,
+            min_bbox_size=min_bbox_size,
+            nms_iou_threshold=nms_iou_threshold,
+            nms_pre=nms_pre,
+            with_nms=with_nms,
+        )
+
         self.in_channels = in_channels
         self.num_classes = num_classes
         self.feat_channels = feat_channels
@@ -75,14 +93,10 @@ class AnchorHead(BaseDenseHead):
         self.bbox_coder = bbox_coder
         self.loss_cls = loss_cls
         self.loss_bbox = loss_bbox
-        self.train_cfg = train_cfg
-        self.test_cfg = test_cfg
-        if self.train_cfg:
-            self.assigner = self.train_cfg.get("assigner", None)
-            self.sampler = self.train_cfg.get("sampler", None)
-
-        self.fp16_enabled = False
-
+        self.assigner = assigner
+        self.sampler = sampler
+        self.allowed_border = allowed_border
+        self.pos_weight = pos_weight
         self.prior_generator = anchor_generator
 
         # Usually the numbers of anchors for each level are the same
@@ -233,7 +247,7 @@ class AnchorHead(BaseDenseHead):
             flat_anchors,
             valid_flags,
             img_meta["img_shape"][:2],
-            self.train_cfg["allowed_border"],
+            self.allowed_border,
         )
         if not inside_flags.any():
             msg = (
@@ -273,10 +287,10 @@ class AnchorHead(BaseDenseHead):
             bbox_weights[pos_inds, :] = 1.0
 
             labels[pos_inds] = sampling_result.pos_gt_labels
-            if self.train_cfg["pos_weight"] <= 0:
+            if self.pos_weight <= 0:
                 label_weights[pos_inds] = 1.0
             else:
-                label_weights[pos_inds] = self.train_cfg["pos_weight"]
+                label_weights[pos_inds] = self.pos_weight
         if len(neg_inds) > 0:
             label_weights[neg_inds] = 1.0
 

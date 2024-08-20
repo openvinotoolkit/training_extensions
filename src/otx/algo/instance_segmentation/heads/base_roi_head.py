@@ -10,7 +10,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from otx.algo.modules.base_module import BaseModule
 from otx.core.data.entity.instance_segmentation import InstanceSegBatchDataEntity
 
 if TYPE_CHECKING:
@@ -19,7 +18,7 @@ if TYPE_CHECKING:
     from otx.algo.utils.mmengine_utils import InstanceData
 
 
-class BaseRoIHead(BaseModule):
+class BaseRoIHead(nn.Module):
     """Base class for RoIHeads."""
 
     def __init__(
@@ -28,21 +27,26 @@ class BaseRoIHead(BaseModule):
         bbox_head: nn.Module,
         mask_roi_extractor: nn.Module,
         mask_head: nn.Module,
-        train_cfg: dict,
-        test_cfg: dict,
-        init_cfg: dict | list[dict] | None = None,
+        assigner: nn.Module,
+        sampler: nn.Module,
+        mask_thr_binary: float = 0.5,
+        max_per_img: int = 100,
+        nms_iou_threshold: float = 0.5,
+        score_thr: float = 0.05,
     ) -> None:
-        super().__init__(init_cfg=init_cfg)
-        self.train_cfg = train_cfg
-        self.test_cfg = test_cfg
+        super().__init__()
 
         self.bbox_roi_extractor = bbox_roi_extractor
         self.bbox_head = bbox_head
+        self.mask_thr_binary = mask_thr_binary
+        self.max_per_img = max_per_img
+        self.nms_iou_threshold = nms_iou_threshold
+        self.score_thr = score_thr
 
         self.mask_roi_extractor = mask_roi_extractor
         self.mask_head = mask_head
-
-        self.init_assigner_sampler()
+        self.bbox_assigner = assigner
+        self.bbox_sampler = sampler
 
     @property
     def with_bbox(self) -> bool:
@@ -89,7 +93,6 @@ class BaseRoIHead(BaseModule):
             x,
             batch_img_metas,
             rpn_results_list,
-            rcnn_test_cfg=self.test_cfg,
             rescale=bbox_rescale,
         )
 

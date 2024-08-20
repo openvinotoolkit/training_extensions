@@ -47,13 +47,8 @@ class FCNMaskHead(BaseModule):
         num_classes: int = 80,
         class_agnostic: int = False,
         normalization: Callable[..., nn.Module] | None = None,
-        init_cfg: dict | list[dict] | None = None,
     ) -> None:
-        if init_cfg is not None:
-            msg = "To prevent abnormal initialization behavior, init_cfg is not allowed to be set"
-            raise ValueError(msg)
-
-        super().__init__(init_cfg=init_cfg)
+        super().__init__()
         self.num_convs = num_convs
         # WARN: roi_feat_size is reserved and not used
         self.roi_feat_size = _pair(roi_feat_size)

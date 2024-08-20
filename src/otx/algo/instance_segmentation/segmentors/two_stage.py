@@ -11,7 +11,6 @@ from __future__ import annotations
 import torch
 from torch import Tensor, nn
 
-from otx.algo.modules.base_module import BaseModule
 from otx.algo.utils.mmengine_utils import InstanceData
 from otx.core.data.entity.instance_segmentation import InstanceSegBatchDataEntity
 
@@ -29,20 +28,13 @@ class TwoStageDetector(nn.Module):
         neck: nn.Module,
         rpn_head: nn.Module,
         roi_head: nn.Module,
-        train_cfg: dict,
-        test_cfg: dict,
-        init_cfg: dict | list[dict] | None = None,
-        **kwargs,
     ) -> None:
-        super().__init__(init_cfg=init_cfg)
+        super().__init__()
 
         self.backbone = backbone
         self.neck = neck
         self.rpn_head = rpn_head
         self.roi_head = roi_head
-
-        self.train_cfg = train_cfg
-        self.test_cfg = test_cfg
 
     def _load_from_state_dict(
         self,
@@ -160,9 +152,6 @@ class TwoStageDetector(nn.Module):
 
         losses = {}
 
-        # RPN forward and loss
-        proposal_cfg = self.train_cfg.get("rpn_proposal", self.test_cfg["rpn"])
-
         # Copy data entity and set gt_labels to 0 in RPN
         rpn_entity = InstanceSegBatchDataEntity(
             images=torch.empty(0),
@@ -177,7 +166,6 @@ class TwoStageDetector(nn.Module):
         rpn_losses, rpn_results_list = self.rpn_head.loss_and_predict(
             x,
             rpn_entity,
-            proposal_cfg=proposal_cfg,
         )
         # avoid get same name with roi_head loss
         keys = rpn_losses.keys()

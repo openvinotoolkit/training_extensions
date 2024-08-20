@@ -34,11 +34,6 @@ if TYPE_CHECKING:
 class StandardRoIHead(BaseRoIHead):
     """Simplest base roi head including one bbox head and one mask head."""
 
-    def init_assigner_sampler(self) -> None:
-        """Initialize assigner and sampler."""
-        self.bbox_assigner = self.train_cfg["assigner"]
-        self.bbox_sampler = self.train_cfg["sampler"]
-
     def _bbox_forward(self, x: tuple[Tensor], rois: Tensor) -> dict:
         """Box head forward function used in both training and testing.
 
@@ -94,7 +89,6 @@ class StandardRoIHead(BaseRoIHead):
             mask_preds=mask_results["mask_preds"],
             sampling_results=sampling_results,
             batch_gt_instances=batch_gt_instances,
-            rcnn_train_cfg=self.train_cfg,
         )
 
         mask_results.update(loss_mask=mask_loss_and_target["loss_mask"])
@@ -144,7 +138,6 @@ class StandardRoIHead(BaseRoIHead):
         x: tuple[Tensor],
         batch_img_metas: list[dict],
         rpn_results_list: list[InstanceData],
-        rcnn_test_cfg: dict,
         rescale: bool = False,
     ) -> list[InstanceData]:
         """Forward the bbox head and predict detection results on the features of the upstream network.
@@ -154,7 +147,6 @@ class StandardRoIHead(BaseRoIHead):
             batch_img_metas (list[dict]): List of image information.
             rpn_results_list (list[InstanceData]): List of region
                 proposals.
-            rcnn_test_cfg (dict): `test_cfg` of R-CNN.
             rescale (bool): If True, return boxes in original image space.
                 Defaults to False.
 
@@ -179,7 +171,7 @@ class StandardRoIHead(BaseRoIHead):
                 rois.device,
                 task_type="bbox",
                 num_classes=self.bbox_head.num_classes,
-                score_per_cls=rcnn_test_cfg is None,
+                score_per_cls=False,
             )
 
         bbox_results = self._bbox_forward(x, rois)
@@ -206,7 +198,6 @@ class StandardRoIHead(BaseRoIHead):
             cls_scores=cls_scores,
             bbox_preds=bbox_preds,
             batch_img_metas=batch_img_metas,
-            rcnn_test_cfg=rcnn_test_cfg,
             rescale=rescale,
         )
 
@@ -249,7 +240,7 @@ class StandardRoIHead(BaseRoIHead):
                 mask_rois.device,
                 task_type="mask",
                 instance_results=results_list,
-                mask_thr_binary=self.test_cfg["mask_thr_binary"],
+                mask_thr_binary=self.mask_thr_binary,
             )
 
         mask_results = self._mask_forward(x, mask_rois)
@@ -262,7 +253,6 @@ class StandardRoIHead(BaseRoIHead):
             mask_preds=mask_preds,
             results_list=results_list,
             batch_img_metas=batch_img_metas,
-            rcnn_test_cfg=self.test_cfg,
             rescale=rescale,
         )
 
@@ -350,7 +340,6 @@ class StandardRoIHead(BaseRoIHead):
             x,
             batch_img_metas,
             rpn_results_list,
-            rcnn_test_cfg=self.test_cfg,
             rescale=bbox_rescale,
         )
 
@@ -364,7 +353,6 @@ class StandardRoIHead(BaseRoIHead):
         x: tuple[Tensor],
         batch_img_metas: list[dict],
         rpn_results_list: tuple[Tensor, Tensor],
-        rcnn_test_cfg: dict,
         rescale: bool = False,
     ) -> tuple[Tensor, ...]:
         """Rewrite `predict_bbox` of `StandardRoIHead` for default backend.
@@ -374,7 +362,6 @@ class StandardRoIHead(BaseRoIHead):
             batch_img_metas (list[dict]): List of image information.
             rpn_results_list (list[Tensor]): List of region
                 proposals.
-            rcnn_test_cfg (dict): `test_cfg` of R-CNN.
             rescale (bool): If True, return boxes in original image space.
                 Defaults to False.
 
@@ -413,7 +400,6 @@ class StandardRoIHead(BaseRoIHead):
             cls_scores=cls_scores,
             bbox_preds=bbox_preds,
             batch_img_metas=batch_img_metas,
-            rcnn_test_cfg=rcnn_test_cfg,
             rescale=rescale,
         )
 
@@ -465,7 +451,6 @@ class StandardRoIHead(BaseRoIHead):
             mask_preds,
             results_list,
             batch_img_metas,
-            self.test_cfg,
             rescale=rescale,
         )
         segm_results = segm_results.reshape(batch_size, num_det, segm_results.shape[-2], segm_results.shape[-1])
@@ -538,7 +523,6 @@ class CustomRoIHead(StandardRoIHead):
             bbox_pred=bbox_results["bbox_pred"],
             rois=rois,
             sampling_results=sampling_results,
-            rcnn_train_cfg=self.train_cfg,
             batch_img_metas=batch_img_metas,
         )
         bbox_results.update(loss_bbox=bbox_loss_and_target["loss_bbox"])
@@ -555,7 +539,6 @@ class CustomConvFCBBoxHead(Shared2FCBBoxHead, ClassIncrementalMixin):
         bbox_pred: Tensor,
         rois: Tensor,
         sampling_results: list[SamplingResult],
-        rcnn_train_cfg: dict,
         batch_img_metas: list[dict],
         concat: bool = True,
         reduction_override: str | None = None,
@@ -575,7 +558,6 @@ class CustomConvFCBBoxHead(Shared2FCBBoxHead, ClassIncrementalMixin):
                 column indicates batch id of each RoI.
             sampling_results (list[SamplingResult]): Assign results of
                 all images in a batch after sampling.
-            rcnn_train_cfg (dict): `train_cfg` of RCNN.
             batch_img_metas (list[dict]): Meta information of each image, e.g., image size, scaling factor, etc.
             concat (bool): Whether to concatenate the results of all
                 the images in a single batch. Defaults to True.
@@ -590,7 +572,6 @@ class CustomConvFCBBoxHead(Shared2FCBBoxHead, ClassIncrementalMixin):
         """
         cls_reg_targets = self.get_targets(
             sampling_results,
-            rcnn_train_cfg,
             concat=concat,
             batch_img_metas=batch_img_metas,
         )
@@ -608,7 +589,6 @@ class CustomConvFCBBoxHead(Shared2FCBBoxHead, ClassIncrementalMixin):
     def get_targets(
         self,
         sampling_results: list[SamplingResult],
-        rcnn_train_cfg: dict,
         batch_img_metas: list[dict],
         concat: bool = True,
     ) -> tuple:
@@ -621,7 +601,6 @@ class CustomConvFCBBoxHead(Shared2FCBBoxHead, ClassIncrementalMixin):
         Args:
             sampling_results (list[obj:SamplingResult]): Assign results of
                 all images in a batch after sampling.
-            rcnn_train_cfg (dict): `train_cfg` of RCNN.
             batch_img_metas (list[dict]): Meta information of each image, e.g., image size, scaling factor, etc.
             concat (bool): Whether to concatenate the results of all
                 the images in a single batch.
@@ -659,7 +638,6 @@ class CustomConvFCBBoxHead(Shared2FCBBoxHead, ClassIncrementalMixin):
             neg_priors_list,
             pos_gt_bboxes_list,
             pos_gt_labels_list,
-            cfg=rcnn_train_cfg,
         )
 
         valid_label_mask = self.get_valid_label_mask(img_metas=batch_img_metas, all_labels=labels, use_bg=True)

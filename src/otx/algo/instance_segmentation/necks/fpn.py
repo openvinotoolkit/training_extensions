@@ -19,7 +19,7 @@ from otx.algo.modules.conv_module import Conv2dModule
 from otx.algo.modules.norm import build_norm_layer
 
 
-class FPN(BaseModule):
+class FPNModule(BaseModule):
     r"""Feature Pyramid Network.
 
     This is an implementation of paper `Feature Pyramid Networks for Object
@@ -162,3 +162,14 @@ class FPN(BaseModule):
             for _ in range(self.num_outs - used_backbone_levels):
                 outs.append(torch.nn.functional.max_pool2d(outs[-1], 1, stride=2))
         return tuple(outs)
+
+
+class FPN:
+    FPN_CFG = {
+        "maskrcnn_resnet50": {"in_channels": [256, 512, 1024, 2048], "num_outs": 5, "out_channels": 256},
+        "maskrcnn_efficientnet_b2b": {"in_channels": [24, 48, 120, 352], "out_channels": 80, "num_outs": 5},
+        "maskrcnn_swin_tiny": {"in_channels": [96, 192, 384, 768], "out_channels": 256, "num_outs": 5},
+    }
+
+    def __new__(cls, model_name: str) -> FPNModule:
+        return FPNModule(**cls.FPN_CFG[model_name])

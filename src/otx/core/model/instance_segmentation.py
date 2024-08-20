@@ -44,18 +44,31 @@ if TYPE_CHECKING:
 
 
 class OTXInstanceSegModel(OTXModel[InstanceSegBatchDataEntity, InstanceSegBatchPredEntity]):
-    """Base class for the Instance Segmentation models used in OTX."""
+    """Base class for the Instance Segmentation models used in OTX.
+
+    Args:
+        label_info (LabelInfoTypes): label information
+        input_size (tuple[int, int]): model input size
+        model_name (str): model name/version
+        optimizer (OptimizerCallable, optional): optimizer
+        scheduler (LRSchedulerCallable | LRSchedulerListCallable, optional): scheduler
+        metric (MetricCallable, optional): metric
+        torch_compile (bool, optional): torch compile
+        tile_config (TileConfig, optional): tile configuration
+    """
 
     def __init__(
         self,
         label_info: LabelInfoTypes,
         input_size: tuple[int, int],
+        model_name: str = "resnet_50",
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MaskRLEMeanAPFMeasureCallable,
         torch_compile: bool = False,
         tile_config: TileConfig = TileConfig(enable_tiler=False),
     ) -> None:
+        self.model_name = model_name
         super().__init__(
             label_info=label_info,
             input_size=input_size,
@@ -75,8 +88,11 @@ class OTXInstanceSegModel(OTXModel[InstanceSegBatchDataEntity, InstanceSegBatchP
         detector.init_weights()
         self.classification_layers = self.get_classification_layers("model.")
 
-        if self.load_from is not None:
+        if isinstance(self.load_from, dict):
+            load_checkpoint(detector, self.load_from[self.model_name], map_location="cpu")
+        elif self.load_from is not None:
             load_checkpoint(detector, self.load_from, map_location="cpu")
+
         return detector
 
     def _customize_inputs(self, entity: InstanceSegBatchDataEntity) -> dict[str, Any]:
@@ -380,12 +396,25 @@ class OTXInstanceSegModel(OTXModel[InstanceSegBatchDataEntity, InstanceSegBatchP
 
 
 class ExplainableOTXInstanceSegModel(OTXInstanceSegModel):
-    """OTX Instance Segmentation model which can attach a XAI (Explainable AI) branch."""
+    """OTX Instance Segmentation model which can attach a XAI (Explainable AI) branch.
+
+    Args:
+        label_info (LabelInfoTypes): label information
+        input_size (tuple[int, int]): model input size
+        model_name (str): model name/version
+        optimizer (OptimizerCallable, optional): optimizer
+        scheduler (LRSchedulerCallable | LRSchedulerListCallable, optional): scheduler
+        metric (MetricCallable, optional): metric
+        torch_compile (bool, optional): torch compile
+        tile_config (TileConfig, optional): tile configuration
+
+    """
 
     def __init__(
         self,
         label_info: LabelInfoTypes,
         input_size: tuple[int, int],
+        model_name: str,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MaskRLEMeanAPFMeasureCallable,
@@ -395,6 +424,7 @@ class ExplainableOTXInstanceSegModel(OTXInstanceSegModel):
         super().__init__(
             label_info=label_info,
             input_size=input_size,
+            model_name=model_name,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,

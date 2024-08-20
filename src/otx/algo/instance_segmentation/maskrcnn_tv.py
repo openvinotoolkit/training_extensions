@@ -5,7 +5,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import Any, ClassVar
 
 import torch
 from torch import Tensor, nn
@@ -18,22 +18,13 @@ from torchvision.models.detection.mask_rcnn import (
 )
 
 from otx.algo.instance_segmentation.heads import TVRoIHeads
-from otx.core.config.data import TileConfig
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.instance_segmentation import InstanceSegBatchDataEntity, InstanceSegBatchPredEntity
 from otx.core.data.entity.utils import stack_batch
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter
-from otx.core.metrics.mean_ap import MaskRLEMeanAPFMeasureCallable
-from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
 from otx.core.model.instance_segmentation import ExplainableOTXInstanceSegModel
 
-if TYPE_CHECKING:
-    from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
-
-    from otx.core.metrics import MetricCallable
-    from otx.core.schedulers import LRSchedulerListCallable
-    from otx.core.types.label import LabelInfoTypes
 
 
 class TVMaskRCNN(ExplainableOTXInstanceSegModel):
@@ -42,37 +33,28 @@ class TVMaskRCNN(ExplainableOTXInstanceSegModel):
     mean = (123.675, 116.28, 103.53)
     std = (58.395, 57.12, 57.375)
 
-    def __init__(
-        self,
-        label_info: LabelInfoTypes,
-        input_size: tuple[int, int] = (1024, 1024),
-        optimizer: OptimizerCallable = DefaultOptimizerCallable,
-        scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
-        metric: MetricCallable = MaskRLEMeanAPFMeasureCallable,
-        torch_compile: bool = False,
-        tile_config: TileConfig = TileConfig(enable_tiler=False),
-    ) -> None:
-        super().__init__(
-            label_info=label_info,
-            input_size=input_size,
-            optimizer=optimizer,
-            scheduler=scheduler,
-            metric=metric,
-            torch_compile=torch_compile,
-            tile_config=tile_config,
-        )
+    AVAILABLE_MODEL_VERSIONS: ClassVar[list[str]] = [
+        "resnet_50",
+    ]
 
     def _create_model(self) -> nn.Module:
         """create MaskRCNN model with TV implementation."""
+
+        if self.model_name not in self.AVAILABLE_MODEL_VERSIONS:
+            msg = f"Model {self.model_name} is not supported.
+                    Supported models are {self.AVAILABLE_MODEL_VERSIONS}"
+            raise ValueError(msg)
+
         # NOTE: Add 1 to num_classes to account for background class.
         num_classes = self.label_info.num_classes + 1
-        weights = self.load_from[self.model_version]
+        weights = self.load_from[self.model_name]
 
+        # init model components, model itself and load weights
         rpn_anchor_generator = _default_anchorgen()
-        backbone = MaskRCNNBackbone(version=self.model_version)
-        rpn_head = RPNHead(version=self.model_version, anchorgen=rpn_anchor_generator)
-        box_head = FastRCNNConvFCHead(version=self.model_version)
-        mask_head = MaskRCNNHeads(version=self.model_version)
+        backbone = MaskRCNNBackbone(version=self.model_name)
+        rpn_head = RPNHead(version=self.model_name, anchorgen=rpn_anchor_generator)
+        box_head = FastRCNNConvFCHead(version=self.model_name)
+        mask_head = MaskRCNNHeads(version=self.model_name)
 
         model = MaskRCNNTV(
             backbone,

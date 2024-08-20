@@ -11,7 +11,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from otx.algo.modules.base_module import BaseModule
 from otx.algo.utils.mmengine_utils import InstanceData
 from otx.core.data.entity.detection import DetBatchDataEntity
 
@@ -20,16 +19,13 @@ if TYPE_CHECKING:
     from torch import Tensor, nn
 
 
-class SingleStageDetector(BaseModule):
+class SingleStageDetector(nn.Module):
     """Single stage detector implementation.
 
     Args:
         backbone (nn.Module): Backbone module.
         bbox_head (nn.Module): Bbox head module.
         neck (nn.Module | None, optional): Neck module. Defaults to None.
-        train_cfg (dict | None, optional): Training config. Defaults to None.
-        test_cfg (dict | None, optional): Test config. Defaults to None.
-        init_cfg (dict | list[dict], optional): Initialization config. Defaults to None.
     """
 
     def __init__(
@@ -37,18 +33,12 @@ class SingleStageDetector(BaseModule):
         backbone: nn.Module,
         bbox_head: nn.Module,
         neck: nn.Module | None = None,
-        train_cfg: dict | None = None,
-        test_cfg: dict | None = None,
-        init_cfg: dict | list[dict] | None = None,
     ) -> None:
         super().__init__()
         self._is_init = False
         self.backbone = backbone
         self.bbox_head = bbox_head
         self.neck = neck
-        self.init_cfg = init_cfg
-        self.train_cfg = train_cfg
-        self.test_cfg = test_cfg
 
     def _load_from_state_dict(
         self,
