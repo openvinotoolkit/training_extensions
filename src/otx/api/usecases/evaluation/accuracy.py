@@ -218,7 +218,7 @@ def __get_gt_and_predicted_label_indices_from_resultset(
     pred_dataset.sort_items()
 
     # Iterate over each dataset item, and collect the labels for this item (pred and gt)
-    task_labels = resultset.model.configuration.get_label_schema().get_labels(include_empty=True)
+    task_labels = resultset.model.configuration.get_label_schema().get_labels(include_empty=False)
     for gt_item, pred_item in zip(gt_dataset, pred_dataset):
         if isinstance(gt_item, DatasetItemEntity) and isinstance(pred_item, DatasetItemEntity):
             true_label_idx.append({task_labels.index(label) for label in gt_item.get_roi_labels(task_labels)})
