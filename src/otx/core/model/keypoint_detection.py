@@ -10,7 +10,6 @@ from typing import TYPE_CHECKING, Any
 
 import torch
 
-from otx.algo.keypoint_detection.utils.data_sample import PoseDataSample
 from otx.algo.utils.mmengine_utils import load_checkpoint
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.keypoint_detection import KeypointDetBatchDataEntity, KeypointDetBatchPredEntity
@@ -86,29 +85,23 @@ class OTXKeypointDetectionModel(OTXModel[KeypointDetBatchDataEntity, KeypointDet
             return losses
 
         keypoints = []
-        keypoints_x_label = []
-        keypoints_y_label = []
         scores = []
         for output in outputs:
-            if not isinstance(output, PoseDataSample):
+            if not isinstance(output, tuple):
                 raise TypeError(output)
-            keypoints.append(torch.as_tensor(output.keypoints, device=self.device))
-            scores.append(torch.as_tensor(output.keypoint_weights, device=self.device))
-            keypoints_x_label.append(torch.as_tensor(output.keypoint_x_labels, device=self.device))
-            keypoints_y_label.append(torch.as_tensor(output.keypoint_y_labels, device=self.device))
+            keypoints.append(torch.as_tensor(output[0], device=self.device))
+            scores.append(torch.as_tensor(output[1], device=self.device))
 
         return KeypointDetBatchPredEntity(
             batch_size=len(outputs),
             images=inputs.images,
             imgs_info=inputs.imgs_info,
             keypoints=keypoints,
-            keypoint_x_labels=keypoints_x_label,
-            keypoint_y_labels=keypoints_y_label,
             scores=scores,
             keypoints_visible=[],
             bboxes=[],
             labels=[],
-            keypoint_weights=[],
+            bbox_info=[],
         )
 
     def _convert_pred_entity_to_compute_metric(
@@ -119,31 +112,17 @@ class OTXKeypointDetectionModel(OTXModel[KeypointDetBatchDataEntity, KeypointDet
         return {
             "preds": [
                 {
-                    "keypoints": kpt.data,
-                    "keypoint_x_labels": kpt_x.data,
-                    "keypoint_y_labels": kpt_y.data,
-                    "scores": scores.data,
+                    "keypoints": kpt,
+                    "scores": score,
                 }
-                for kpt, kpt_x, kpt_y, scores in zip(
-                    preds.keypoints,
-                    preds.keypoint_x_labels,
-                    preds.keypoint_y_labels,
-                    preds.scores,
-                )
+                for kpt, score in zip(preds.keypoints, preds.scores)
             ],
             "target": [
                 {
-                    "keypoints": kpt.data,
-                    "keypoint_x_labels": kpt_x.data,
-                    "keypoint_y_labels": kpt_y.data,
-                    "keypoint_weights": kpt_w.data,
+                    "keypoints": kpt,
+                    "keypoints_visible": kpt_visible,
                 }
-                for kpt, kpt_x, kpt_y, kpt_w in zip(
-                    inputs.keypoints,
-                    inputs.keypoint_x_labels,
-                    inputs.keypoint_y_labels,
-                    inputs.keypoint_weights,
-                )
+                for kpt, kpt_visible in zip(inputs.keypoints, inputs.keypoints_visible)
             ],
         }
 
