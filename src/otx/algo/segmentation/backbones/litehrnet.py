@@ -1247,7 +1247,7 @@ class LiteHRNetBackbone:
 
     LITEHRNET_CFG: ClassVar[dict[str, Any]] = {
         "lite_hrnet_s": {
-            "stem": Stem(extra_stride=True),
+            "stem": {"extra_stride": True},
             "num_stages": 2,
             "stages_spec": {
                 "num_modules": [4, 4],
@@ -1261,7 +1261,6 @@ class LiteHRNetBackbone:
             "pretrained_weights": "https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/custom_semantic_segmentation/litehrnetsv2_imagenet1k_rsc.pth",
         },
         "lite_hrnet_18": {
-            "stem": Stem(),
             "num_stages": 3,
             "stages_spec": {
                 "num_modules": [2, 4, 2],
@@ -1275,7 +1274,7 @@ class LiteHRNetBackbone:
             "pretrained_weights": "https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/custom_semantic_segmentation/litehrnet18_imagenet1k_rsc.pth",
         },
         "lite_hrnet_x": {
-            "stem": Stem(stem_channels=60, out_channels=60, strides=(2, 1)),
+            "stem": {"stem_channels": 60, "out_channels": 60, "strides": (2, 1)},
             "num_stages": 4,
             "stages_spec": {
                 "weighting_module_version": "v1",
@@ -1291,10 +1290,11 @@ class LiteHRNetBackbone:
         },
     }
 
-    def __new__(cls, version: str) -> LiteHRNetModule:
+    def __new__(cls, model_name: str) -> LiteHRNetModule:
         """Constructor for LiteHRNet backbone."""
-        if version not in cls.LITEHRNET_CFG:
-            msg = f"model type '{version}' is not supported"
+        if model_name not in cls.LITEHRNET_CFG:
+            msg = f"model type '{model_name}' is not supported"
             raise KeyError(msg)
-
-        return LiteHRNetModule(**cls.LITEHRNET_CFG[version])
+        stem_configuration = cls.LITEHRNET_CFG[model_name].pop("stem", {})
+        stem_module = Stem(**stem_configuration)
+        return LiteHRNetModule(stem=stem_module, **cls.LITEHRNET_CFG[model_name])

@@ -76,6 +76,8 @@ class TestOTXSegmentationModel:
 
     def test_init(self, model):
         assert model.num_classes == 3
+        assert model.model_name == "segm_model"
+        assert model.input_size == (512, 512)
 
     def test_customize_inputs(self, model, batch_data_entity):
         customized_inputs = model._customize_inputs(batch_data_entity)

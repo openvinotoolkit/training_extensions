@@ -47,7 +47,7 @@ class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity]):
     def __init__(
         self,
         label_info: LabelInfoTypes,
-        model_version: str,
+        model_name: str,
         input_size: tuple[int, int] = (512, 512),
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
@@ -62,7 +62,7 @@ class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity]):
 
         Args:
             label_info (LabelInfoTypes): The label information for the segmentation model.
-            model_version (str): The version/name/size of the model.
+            model_name (str): The version/name/size of the model.
             input_size (tuple[int, int]): Model input size in the order of height and width.
             optimizer (OptimizerCallable, optional): The optimizer to use for training.
                 Defaults to DefaultOptimizerCallable.
@@ -81,7 +81,7 @@ class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity]):
             drop_unreliable_pixels_percent (int, optional): The percentage of unreliable pixels to drop.
                 Only for semi-supervised learning. Defaults to 20.
         """
-        self.model_version = model_version
+        self.model_name = model_name
         self.unsupervised_weight = unsupervised_weight
         self.semisl_start_epoch = semisl_start_epoch
         self.drop_unreliable_pixels_percent = drop_unreliable_pixels_percent

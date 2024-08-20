@@ -39,7 +39,7 @@ class HuggingFaceModelForSegmentation(OTXSegmentationModel):
     """A class representing a Hugging Face model for segmentation.
 
     Args:
-        model_version (str): The name or path of the pre-trained model.
+        model_name (str): The name or path of the pre-trained model.
         label_info (LabelInfoTypes): The label information for the model.
         optimizer (OptimizerCallable, optional): The optimizer for training the model.
             Defaults to DefaultOptimizerCallable.
@@ -52,19 +52,19 @@ class HuggingFaceModelForSegmentation(OTXSegmentationModel):
     Example:
         1. API
             >>> model = HuggingFaceModelForSegmentation(
-            ...     model_version="nvidia/segformer-b0-finetuned-ade-512-512",
+            ...     model_name="nvidia/segformer-b0-finetuned-ade-512-512",
             ...     label_info=<Number-of-classes>,
             ... )
         2. CLI
             >>> otx train \
             ... --model otx.algo.segmentation.huggingface_model.HuggingFaceModelForSegmentation \
-            ... --model.model_name_or_path nvidia/segformer-b0-finetuned-ade-512-512
+            ... --model.model_name nvidia/segformer-b0-finetuned-ade-512-512
     """
 
     def __init__(
         self,
         label_info: LabelInfoTypes,
-        model_version: str,  # https://huggingface.co/models?pipeline_tag=image-segmentation
+        model_name: str,  # https://huggingface.co/models?pipeline_tag=image-segmentation
         input_size: tuple[int, int] = (512, 512),  # input size of default semantic segmentation data recipe
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
@@ -75,17 +75,17 @@ class HuggingFaceModelForSegmentation(OTXSegmentationModel):
 
         super().__init__(
             label_info=label_info,
-            model_version=model_version,
+            model_name=model_name,
             input_size=input_size,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
             torch_compile=torch_compile,
         )
-        self.image_processor = AutoImageProcessor.from_pretrained(self.model_version)
+        self.image_processor = AutoImageProcessor.from_pretrained(self.model_name)
 
     def _create_model(self) -> nn.Module:
-        model_config, _ = PretrainedConfig.get_config_dict(self.model_version)
+        model_config, _ = PretrainedConfig.get_config_dict(self.model_name)
         kwargs = {}
 
         if "image_size" in model_config:
@@ -102,7 +102,7 @@ class HuggingFaceModelForSegmentation(OTXSegmentationModel):
                 logger.warning(msg)
 
         return AutoModelForSemanticSegmentation.from_pretrained(
-            pretrained_model_name_or_path=self.model_version,
+            pretrained_model_name_or_path=self.model_name,
             num_labels=self.label_info.num_classes,
             ignore_mismatched_sizes=True,
             **kwargs,

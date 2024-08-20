@@ -462,10 +462,10 @@ class MSCAN:
         },
     }
 
-    def __new__(cls, version: str) -> MSCANModule:
+    def __new__(cls, model_name: str) -> MSCANModule:
         """Constructor for MSCAN backbone."""
-        if version not in cls.MSCAN_CFG:
-            msg = f"model type '{version}' is not supported"
+        if model_name not in cls.MSCAN_CFG:
+            msg = f"model type '{model_name}' is not supported"
             raise KeyError(msg)
 
-        return MSCANModule(**cls.MSCAN_CFG[version])
+        return MSCANModule(**cls.MSCAN_CFG[model_name])

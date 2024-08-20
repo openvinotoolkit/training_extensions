@@ -338,10 +338,10 @@ class LightHamHead:
         },
     }
 
-    def __new__(cls, version: str, num_classes: int) -> LightHamHeadModule:
+    def __new__(cls, model_name: str, num_classes: int) -> LightHamHeadModule:
         """Constructor for FCNHead."""
-        if version not in cls.HAMHEAD_CFG:
-            msg = f"model type '{version}' is not supported"
+        if model_name not in cls.HAMHEAD_CFG:
+            msg = f"model type '{model_name}' is not supported"
             raise KeyError(msg)
 
-        return LightHamHeadModule(**cls.HAMHEAD_CFG[version], num_classes=num_classes)
+        return LightHamHeadModule(**cls.HAMHEAD_CFG[model_name], num_classes=num_classes)

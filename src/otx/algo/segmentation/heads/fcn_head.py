@@ -218,7 +218,6 @@ class FCNHead:
             "aggregator_use_concat": False,
         },
         "dinov2_vits14": {
-            "normalization": partial(build_norm_layer, nn.SyncBatchNorm, requires_grad=True),
             "in_channels": [384, 384, 384, 384],
             "in_index": [0, 1, 2, 3],
             "input_transform": "resize_concat",
@@ -227,10 +226,16 @@ class FCNHead:
         },
     }
 
-    def __new__(cls, version: str, num_classes: int) -> FCNHeadModule:
+    def __new__(cls, model_name: str, num_classes: int) -> FCNHeadModule:
         """Constructor for FCNHead."""
-        if version not in cls.FCNHEAD_CFG:
-            msg = f"model type '{version}' is not supported"
+        if model_name not in cls.FCNHEAD_CFG:
+            msg = f"model type '{model_name}' is not supported"
             raise KeyError(msg)
 
-        return FCNHeadModule(**cls.FCNHEAD_CFG[version], num_classes=num_classes)
+        normalization = (
+            partial(build_norm_layer, nn.SyncBatchNorm, requires_grad=True)
+            if model_name == "dinov2_vits14"
+            else partial(build_norm_layer, nn.BatchNorm2d, requires_grad=True)
+        )
+
+        return FCNHeadModule(**cls.FCNHEAD_CFG[model_name], num_classes=num_classes, normalization=normalization)
