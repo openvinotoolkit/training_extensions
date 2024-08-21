@@ -15,7 +15,6 @@
 # and limitations under the License.
 
 from attr import attrs
-
 from otx.algorithms.anomaly.configs.base import PadimAnomalyBaseConfig
 
 
