@@ -98,11 +98,10 @@ You can find more details with examples in the [CLI command intro](https://openv
 
 ## Updates
 
-### v1.6.3 (3Q24)
+### v1.6.4 (3Q24)
 
-- Improve Vitens Kiemgetal OTX 1.6.x
-- Fix rotated detection data pipeline
-- Update dependencies to omit vulnerabilities
+- Pad input image to square when tiling is enabled
+- Fix confusion matrix calculation
 
 ### Release History
 
