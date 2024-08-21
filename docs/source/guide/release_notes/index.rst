@@ -4,6 +4,12 @@ Releases
 .. toctree::
    :maxdepth: 1
 
+v1.6.4 (3Q24)
+-------------
+
+- Pad input image to square when tiling is enabled
+- Fix confusion matrix calculation
+
 v1.6.3 (3Q24)
 -------------
 

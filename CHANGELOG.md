@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 ### Bug fixes
 
 - Pad input image to square when tiling is enabled (<https://github.com/openvinotoolkit/training_extensions/pull/3844>)
+- Fix confusion matrix calculation (<https://github.com/openvinotoolkit/training_extensions/pull/3857>)
 
 ## \[v1.6.3\]
 
