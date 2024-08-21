@@ -422,7 +422,6 @@ class EfficientNet(nn.Module):
         bn_eval : bool, default False. Whether to use BatchNorm eval mode.
         bn_frozen : bool, default False. Whether to freeze BatchNorm parameters.
         instance_norm_first : bool, default False. Whether to use instance normalization first.
-        pretrained : bool, default False. Whether to load ImageNet pre-trained weights.
     """
 
     def __init__(
