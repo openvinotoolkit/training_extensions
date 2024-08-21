@@ -114,20 +114,10 @@ class OTXInstanceSegModel(OTXModel[InstanceSegBatchDataEntity, InstanceSegBatchP
         masks: list[tv_tensors.Mask] = []
 
         predictions = outputs["predictions"] if isinstance(outputs, dict) else outputs
-        for img_info, prediction in zip(inputs.imgs_info, predictions):
+        for prediction in predictions:
             scores.append(prediction.scores)
-            bboxes.append(
-                tv_tensors.BoundingBoxes(
-                    prediction.bboxes,
-                    format="XYXY",
-                    canvas_size=img_info.ori_shape,
-                ),
-            )
-            output_masks = tv_tensors.Mask(
-                prediction.masks,
-                dtype=torch.bool,
-            )
-            masks.append(output_masks)
+            bboxes.append(prediction.bboxes)
+            masks.append(prediction.masks)
             labels.append(prediction.labels)
 
         if self.explain_mode:
