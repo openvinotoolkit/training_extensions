@@ -134,8 +134,10 @@ def test_otx_e2e_cli(
 
     # 3) otx export
     if task in ("visual_prompting", "zero_shot_visual_prompting"):
-        fxt_export_list.append(ExportCase2Test("ONNX", False, "exported_model_decoder.onnx"))
-        fxt_export_list.append(ExportCase2Test("OPENVINO", False, "exported_model_decoder.xml"))
+        fxt_export_list = [
+            ExportCase2Test("ONNX", False, "exported_model_decoder.onnx"),
+            ExportCase2Test("OPENVINO", False, "exported_model_decoder.xml"),
+        ]
     elif "anomaly" in task or "keypoint_detection" in task:
         fxt_export_list.append(ExportCase2Test("ONNX", False, "exported_model.onnx"))
         fxt_export_list.append(ExportCase2Test("OPENVINO", False, "exported_model.xml"))
