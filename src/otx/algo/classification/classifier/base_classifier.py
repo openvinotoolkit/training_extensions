@@ -12,10 +12,13 @@ you can refer https://github.com/open-mmlab/mmpretrain/blob/main/mmpretrain/mode
 from __future__ import annotations
 
 import copy
+import inspect
 from typing import TYPE_CHECKING
 
 import torch
 
+from otx.algo.classification.necks.gap import GlobalAveragePooling
+from otx.algo.classification.utils.ignored_labels import get_valid_label_mask
 from otx.algo.explain.explain_algo import ReciproCAM
 from otx.algo.modules.base_module import BaseModule
 
@@ -27,30 +30,13 @@ class ImageClassifier(BaseModule):
     """Image classifiers for supervised classification task.
 
     Args:
-        backbone (dict): The backbone module. See
-            :mod:`mmpretrain.models.backbones`.
-        neck (dict, optional): The neck module to process features from
-            backbone. See :mod:`mmpretrain.models.necks`. Defaults to None.
-        head (dict, optional): The head module to do prediction and calculate
-            loss from processed features. See :mod:`mmpretrain.models.heads`.
+        backbone (nn.Module): The backbone module.
+        neck (nn.Module | None): The neck module to process features from backbone.
+        head (nn.Module): The head module to do prediction and calculate loss from processed features.
             Notice that if the head is not set, almost all methods cannot be
             used except :meth:`extract_feat`. Defaults to None.
-        pretrained (str, optional): The pretrained checkpoint path, support
-            local path and remote path. Defaults to None.
-        train_cfg (dict, optional): The training setting. The acceptable
-            fields are:
-
-            - augments (List[dict]): The batch augmentation methods to use.
-              More details can be found in
-              :mod:`mmpretrain.model.utils.augment`.
-            - probs (List[float], optional): The probability of every batch
-              augmentation methods. If None, choose evenly. Defaults to None.
-
-            Defaults to None.
-        data_preprocessor (dict, optional): The config for preprocessing input
-            data. If None or no specified type, it will use
-            "ClsDataPreprocessor" as type. See :class:`ClsDataPreprocessor` for
-            more details. Defaults to None.
+        loss (nn.Module): The loss module to calculate the loss.
+        loss_scale (float, optional): The scaling factor for the loss. Defaults to 1.0.
         init_cfg (dict, optional): the config to control the initialization.
             Defaults to None.
     """
@@ -60,15 +46,10 @@ class ImageClassifier(BaseModule):
         backbone: nn.Module,
         neck: nn.Module | None,
         head: nn.Module,
-        pretrained: str | None = None,
-        mean: list[float] | None = None,
-        std: list[float] | None = None,
-        to_rgb: bool = False,
+        loss: nn.Module,
+        loss_scale: float = 1.0,
         init_cfg: dict | list[dict] | None = None,
     ):
-        if pretrained is not None:
-            init_cfg = {"type": "Pretrained", "checkpoint": pretrained}
-
         super().__init__(init_cfg=init_cfg)
 
         self._is_init = False
@@ -77,11 +58,14 @@ class ImageClassifier(BaseModule):
         self.backbone = backbone
         self.neck = neck
         self.head = head
+        self.loss_module = loss
+        self.loss_scale = loss_scale
+        self.is_ignored_label_loss = "valid_label_mask" in inspect.getfullargspec(self.loss_module.forward).args
 
         self.explainer = ReciproCAM(
             self._head_forward_fn,
             num_classes=head.num_classes,
-            optimize_gap=True,
+            optimize_gap=isinstance(neck, GlobalAveragePooling),
         )
 
     def forward(
@@ -102,8 +86,7 @@ class ImageClassifier(BaseModule):
             torch.Tensor: The output logits or loss, depending on the training mode.
         """
         if mode == "tensor":
-            feats = self.extract_feat(images)
-            return self.head(feats)
+            return self.extract_feat(images, stage="head")
         if mode == "loss":
             return self.loss(images, labels, **kwargs)
         if mode == "predict":
@@ -114,7 +97,7 @@ class ImageClassifier(BaseModule):
         msg = f'Invalid mode "{mode}".'
         raise RuntimeError(msg)
 
-    def extract_feat(self, inputs: torch.Tensor, stage: str = "neck") -> tuple | torch.Tensor:
+    def extract_feat(self, inputs: torch.Tensor, stage: str = "neck") -> torch.Tensor:
         """Extract features from the input tensor with shape (N, C, ...).
 
         Args:
@@ -132,10 +115,8 @@ class ImageClassifier(BaseModule):
                 Defaults to "neck".
 
         Returns:
-            tuple | Tensor: The output of specified stage.
-            The output depends on detailed implementation. In general, the
-            output of backbone and neck is a tuple and the output of
-            pre_logits is a tensor.
+            torch.Tensor: The output of specified stage.
+                In general, the output of pre_logits is a tensor.
         """
         x = self.backbone(inputs)
 
@@ -150,7 +131,7 @@ class ImageClassifier(BaseModule):
 
         return self.head(x)
 
-    def loss(self, inputs: torch.Tensor, labels: torch.Tensor, **kwargs) -> dict:
+    def loss(self, inputs: torch.Tensor, labels: torch.Tensor, **kwargs) -> torch.Tensor:
         """Calculate losses from a batch of inputs and data samples.
 
         Args:
@@ -160,12 +141,15 @@ class ImageClassifier(BaseModule):
                 every samples.
 
         Returns:
-            dict[str, Tensor]: a dictionary of loss components
+            torch.Tensor: loss components
         """
-        feats = self.extract_feat(inputs)
-        return self.head.loss(feats, labels, **kwargs)
+        cls_score = self.extract_feat(inputs, stage="head") * self.loss_scale
+        imgs_info = kwargs.pop("imgs_info", None)
+        if imgs_info is not None and self.is_ignored_label_loss:
+            kwargs["valid_label_mask"] = get_valid_label_mask(imgs_info, self.head.num_classes).to(cls_score.device)
+        return self.loss_module(cls_score, labels, **kwargs) / self.loss_scale
 
-    def predict(self, inputs: torch.Tensor, **kwargs) -> list[torch.Tensor]:
+    def predict(self, inputs: torch.Tensor, **kwargs) -> torch.Tensor:
         """Predict results from a batch of inputs.
 
         Args:
@@ -205,13 +189,8 @@ class ImageClassifier(BaseModule):
 
         logits = self.head(x)
         pred_results = self.head._get_predictions(logits)  # noqa: SLF001
-        # H-Label Classification Case
-        if isinstance(pred_results, dict):
-            scores = pred_results["scores"]
-            preds = pred_results["labels"]
-        else:
-            scores = pred_results.unbind(0)
-            preds = logits.argmax(-1, keepdim=True).unbind(0)
+        scores = pred_results.unbind(0)
+        preds = logits.argmax(-1, keepdim=True).unbind(0)
 
         outputs = {
             "logits": logits,

@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING, Callable
 
 import cv2
 import numpy as np
+import torch
 from datumaro.components.annotation import Ellipse, Image, Mask, Polygon
 from torchvision import tv_tensors
 
@@ -202,7 +203,12 @@ class OTXSegmentationDataset(OTXDataset[SegDataEntity]):
         img = item.media_as(Image)
         ignored_labels: list[int] = []
         img_data, img_shape = self._get_img_data_and_shape(img)
-        mask = _extract_class_mask(item=item, img_shape=img_shape, ignore_index=self.ignore_index)
+        if item.annotations:
+            extracted_mask = _extract_class_mask(item=item, img_shape=img_shape, ignore_index=self.ignore_index)
+            masks = tv_tensors.Mask(extracted_mask[None])
+        else:
+            # semi-supervised learning, unlabeled dataset
+            masks = torch.tensor([[0]])
 
         entity = SegDataEntity(
             image=img_data,
@@ -213,7 +219,7 @@ class OTXSegmentationDataset(OTXDataset[SegDataEntity]):
                 image_color_channel=self.image_color_channel,
                 ignored_labels=ignored_labels,
             ),
-            masks=tv_tensors.Mask(mask[None]),
+            masks=masks,
         )
         transformed_entity = self._apply_transforms(entity)
         return transformed_entity.wrap(masks=transformed_entity.masks[0]) if transformed_entity else None

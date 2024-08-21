@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 """ViT model implementation."""
+
 from __future__ import annotations
 
 import types
@@ -16,11 +17,11 @@ from torch import nn
 from torch.hub import download_url_to_file
 
 from otx.algo.classification.backbones.vision_transformer import VIT_ARCH_TYPE, VisionTransformer
-from otx.algo.classification.classifier import ImageClassifier, SemiSLClassifier
+from otx.algo.classification.classifier import HLabelClassifier, ImageClassifier, SemiSLClassifier
 from otx.algo.classification.heads import (
-    HierarchicalLinearClsHead,
+    HierarchicalCBAMClsHead,
     MultiLabelLinearClsHead,
-    OTXSemiSLVisionTransformerClsHead,
+    SemiSLVisionTransformerClsHead,
     VisionTransformerClsHead,
 )
 from otx.algo.classification.losses import AsymmetricAngularLossWithIgnore
@@ -28,7 +29,7 @@ from otx.algo.classification.utils import get_classification_layers
 from otx.algo.explain.explain_algo import ViTReciproCAM, feature_vector_fn
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.data.entity.base import T_OTXBatchDataEntity, T_OTXBatchPredEntity
-from otx.core.metrics.accuracy import HLabelClsMetricCallble, MultiClassClsMetricCallable, MultiLabelClsMetricCallable
+from otx.core.metrics.accuracy import HLabelClsMetricCallable, MultiClassClsMetricCallable, MultiLabelClsMetricCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
 from otx.core.model.classification import (
     OTXHlabelClsModel,
@@ -219,6 +220,7 @@ class VisionTransformerForMulticlassCls(ForwardExplainMixInForViT, OTXMulticlass
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MultiClassClsMetricCallable,
         torch_compile: bool = False,
+        input_size: tuple[int, int] = (224, 224),
         train_type: Literal[OTXTrainType.SUPERVISED, OTXTrainType.SEMI_SUPERVISED] = OTXTrainType.SUPERVISED,
     ) -> None:
         self.arch = arch
@@ -231,6 +233,7 @@ class VisionTransformerForMulticlassCls(ForwardExplainMixInForViT, OTXMulticlass
             scheduler=scheduler,
             metric=metric,
             torch_compile=torch_compile,
+            input_size=input_size,
             train_type=train_type,
         )
 
@@ -277,16 +280,16 @@ class VisionTransformerForMulticlassCls(ForwardExplainMixInForViT, OTXMulticlass
             {"std": 0.2, "layer": "Linear", "type": "TruncNormal"},
             {"bias": 0.0, "val": 1.0, "layer": "LayerNorm", "type": "Constant"},
         ]
-        vit_backbone = VisionTransformer(arch=self.arch, img_size=224, lora=self.lora)
+        vit_backbone = VisionTransformer(arch=self.arch, img_size=self.input_size, lora=self.lora)
         if self.train_type == OTXTrainType.SEMI_SUPERVISED:
             return SemiSLClassifier(
                 backbone=vit_backbone,
                 neck=None,
-                head=OTXSemiSLVisionTransformerClsHead(
+                head=SemiSLVisionTransformerClsHead(
                     num_classes=num_classes,
                     in_channels=vit_backbone.embed_dim,
-                    loss=nn.CrossEntropyLoss(reduction="none"),
                 ),
+                loss=nn.CrossEntropyLoss(reduction="none"),
                 init_cfg=init_cfg,
             )
 
@@ -296,37 +299,8 @@ class VisionTransformerForMulticlassCls(ForwardExplainMixInForViT, OTXMulticlass
             head=VisionTransformerClsHead(
                 num_classes=num_classes,
                 in_channels=vit_backbone.embed_dim,
-                topk=(1, 5) if num_classes >= 5 else (1,),
-                loss=nn.CrossEntropyLoss(reduction="none"),
             ),
-            init_cfg=init_cfg,
-        )
-
-
-class VisionTransformerForMulticlassClsSemiSL(VisionTransformerForMulticlassCls):
-    """VisionTransformer model for multiclass classification with semi-supervised learning.
-
-    This class extends the `VisionTransformerForMulticlassCls` class and adds support for semi-supervised learning.
-    It overrides the `_build_model` and `_customize_inputs` methods to incorporate the semi-supervised learning.
-
-    Args:
-        VisionTransformerForMulticlassCls (class): The base class for VisionTransformer multiclass classification.
-    """
-
-    def _build_model(self, num_classes: int) -> nn.Module:
-        init_cfg = [
-            {"std": 0.2, "layer": "Linear", "type": "TruncNormal"},
-            {"bias": 0.0, "val": 1.0, "layer": "LayerNorm", "type": "Constant"},
-        ]
-        vit_backbone = VisionTransformer(arch=self.arch, img_size=224)
-        return SemiSLClassifier(
-            backbone=vit_backbone,
-            neck=None,
-            head=OTXSemiSLVisionTransformerClsHead(
-                num_classes=num_classes,
-                in_channels=vit_backbone.embed_dim,
-                loss=nn.CrossEntropyLoss(reduction="none"),
-            ),
+            loss=nn.CrossEntropyLoss(),
             init_cfg=init_cfg,
         )
 
@@ -346,6 +320,7 @@ class VisionTransformerForMultilabelCls(ForwardExplainMixInForViT, OTXMultilabel
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MultiLabelClsMetricCallable,
         torch_compile: bool = False,
+        input_size: tuple[int, int] = (224, 224),
     ) -> None:
         self.arch = arch
         self.lora = lora
@@ -357,6 +332,7 @@ class VisionTransformerForMultilabelCls(ForwardExplainMixInForViT, OTXMultilabel
             scheduler=scheduler,
             metric=metric,
             torch_compile=torch_compile,
+            input_size=input_size,
         )
 
     def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.") -> dict:
@@ -401,15 +377,15 @@ class VisionTransformerForMultilabelCls(ForwardExplainMixInForViT, OTXMultilabel
             {"std": 0.2, "layer": "Linear", "type": "TruncNormal"},
             {"bias": 0.0, "val": 1.0, "layer": "LayerNorm", "type": "Constant"},
         ]
-        vit_backbone = VisionTransformer(arch=self.arch, img_size=224, lora=self.lora)
+        vit_backbone = VisionTransformer(arch=self.arch, img_size=self.input_size, lora=self.lora)
         return ImageClassifier(
             backbone=vit_backbone,
             neck=None,
             head=MultiLabelLinearClsHead(
                 num_classes=num_classes,
                 in_channels=vit_backbone.embed_dim,
-                loss=AsymmetricAngularLossWithIgnore(gamma_pos=0.0, gamma_neg=1.0, reduction="sum"),
             ),
+            loss=AsymmetricAngularLossWithIgnore(gamma_pos=0.0, gamma_neg=1.0, reduction="sum"),
             init_cfg=init_cfg,
         )
 
@@ -428,8 +404,9 @@ class VisionTransformerForHLabelCls(ForwardExplainMixInForViT, OTXHlabelClsModel
         pretrained: bool = True,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
-        metric: MetricCallable = HLabelClsMetricCallble,
+        metric: MetricCallable = HLabelClsMetricCallable,
         torch_compile: bool = False,
+        input_size: tuple[int, int] = (224, 224),
     ) -> None:
         self.arch = arch
         self.lora = lora
@@ -441,6 +418,7 @@ class VisionTransformerForHLabelCls(ForwardExplainMixInForViT, OTXHlabelClsModel
             scheduler=scheduler,
             metric=metric,
             torch_compile=torch_compile,
+            input_size=input_size,
         )
 
     def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.") -> dict:
@@ -490,15 +468,16 @@ class VisionTransformerForHLabelCls(ForwardExplainMixInForViT, OTXHlabelClsModel
             {"std": 0.2, "layer": "Linear", "type": "TruncNormal"},
             {"bias": 0.0, "val": 1.0, "layer": "LayerNorm", "type": "Constant"},
         ]
-        vit_backbone = VisionTransformer(arch=self.arch, img_size=224, lora=self.lora)
-        return ImageClassifier(
+        vit_backbone = VisionTransformer(arch=self.arch, img_size=self.input_size, lora=self.lora)
+        return HLabelClassifier(
             backbone=vit_backbone,
             neck=None,
-            head=HierarchicalLinearClsHead(
+            head=HierarchicalCBAMClsHead(
                 in_channels=vit_backbone.embed_dim,
-                multiclass_loss=nn.CrossEntropyLoss(),
-                multilabel_loss=AsymmetricAngularLossWithIgnore(gamma_pos=0.0, gamma_neg=1.0, reduction="sum"),
+                step_size=1,
                 **head_config,
             ),
+            multiclass_loss=nn.CrossEntropyLoss(),
+            multilabel_loss=AsymmetricAngularLossWithIgnore(gamma_pos=0.0, gamma_neg=1.0, reduction="sum"),
             init_cfg=init_cfg,
         )

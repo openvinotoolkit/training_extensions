@@ -9,8 +9,8 @@ from typing import TYPE_CHECKING
 from otx.algo.modules.base_module import BaseModule
 
 if TYPE_CHECKING:
+    import numpy as np
     import torch
-    from otx.algo.keypoint_detection.utils.data_sample import PoseDataSample
     from otx.core.data.entity.keypoint_detection import KeypointDetBatchDataEntity
     from torch import Tensor, nn
 
@@ -52,7 +52,7 @@ class TopdownPoseEstimator(BaseModule):
         inputs: torch.Tensor,
         entity: KeypointDetBatchDataEntity | None = None,
         mode: str = "tensor",
-    ) -> dict[str, torch.Tensor] | list[PoseDataSample] | tuple[torch.Tensor] | torch.Tensor:
+    ) -> dict[str, torch.Tensor] | list[tuple[np.ndarray, np.ndarray]] | tuple[torch.Tensor] | torch.Tensor:
         """The unified entry for a forward process in both training and test.
 
         The method should accept three modes: 'tensor', 'predict' and 'loss':
@@ -60,7 +60,7 @@ class TopdownPoseEstimator(BaseModule):
         - 'tensor': Forward the whole network and return tensor or tuple of
         tensor without any post-processing, same as a common nn.Module.
         - 'predict': Forward and return the predictions, which are fully
-        processed to a list of :obj:`PoseDataSample`.
+        processed to a list of :obj:`tuple[np.ndarray, np.ndarray]`.
         - 'loss': Forward and return a dict of losses according to the given
         inputs and data samples.
 
@@ -79,7 +79,7 @@ class TopdownPoseEstimator(BaseModule):
             The return type depends on ``mode``.
 
             - If ``mode='tensor'``, return a tensor or a tuple of tensors
-            - If ``mode='predict'``, return a list of :obj:``PoseDataSample``
+            - If ``mode='predict'``, return a list of :obj:``tuple[np.ndarray, np.ndarray]``
                 that contains the pose predictions
             - If ``mode='loss'``, return a dict of tensor(s) which is the loss
                 function value
@@ -132,8 +132,7 @@ class TopdownPoseEstimator(BaseModule):
 
         Args:
             inputs (Tensor): Inputs with shape (N, C, H, W).
-            data_samples (List[:obj:`PoseDataSample`]): The batch
-                data samples.
+            entity (List[:obj:`KeypointDetBatchDataEntity`]): The batch entities.
 
         Returns:
             dict: A dictionary of losses.
@@ -141,24 +140,20 @@ class TopdownPoseEstimator(BaseModule):
         feats = self.extract_feat(inputs)
         return self.head.loss(feats, entity)
 
-    def predict(self, inputs: torch.Tensor) -> list[PoseDataSample]:
+    def predict(self, inputs: torch.Tensor) -> list[tuple[np.ndarray, np.ndarray]]:
         """Predict results from inputs and data samples with post-processing.
 
         Args:
             inputs (Tensor): Inputs with shape (N, C, H, W)
 
         Returns:
-            List[PoseDataSample]: The pose predictions, each contains
+            List[tuple[np.ndarray, np.ndarray]]: The pose predictions, each contains
             the following fields:
                 - keypoints (np.ndarray): predicted keypoint coordinates in
                     shape (num_instances, K, D) where K is the keypoint number
                     and D is the keypoint dimension
                 - keypoint_weights (np.ndarray): predicted keypoint scores in
                     shape (num_instances, K)
-                - keypoint_x_labels (np.ndarray, optional): The predicted 1-D
-                    intensity distribution in the x direction
-                - keypoint_y_labels (np.ndarray, optional): The predicted 1-D
-                    intensity distribution in the y direction
         """
         feats = self.extract_feat(inputs)
         return self.head.predict(feats)

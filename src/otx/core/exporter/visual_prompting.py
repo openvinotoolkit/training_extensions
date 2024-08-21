@@ -53,7 +53,7 @@ class OTXVisualPromptingModelExporter(OTXNativeModelExporter):
         # Use the nested `image_encoder` and `decoder` models' forward functions directly
         models: dict[str, torch.nn.Module] = {
             "image_encoder": model.model.image_encoder,
-            "decoder": model.model,
+            "decoder": model,
         }
 
         if export_format == OTXExportFormatType.OPENVINO:
@@ -170,18 +170,16 @@ class OTXVisualPromptingModelExporter(OTXNativeModelExporter):
             dummy_inputs = {
                 "image_embeddings": torch.zeros(
                     1,
-                    model.embed_dim,
-                    model.image_embedding_size,
-                    model.image_embedding_size,
+                    model.model.prompt_encoder.embed_dim,
+                    *model.model.prompt_encoder.image_embedding_size,
                     dtype=torch.float32,
                 ),
-                "point_coords": torch.randint(low=0, high=1024, size=(1, 2, 2), dtype=torch.float32),
+                "point_coords": torch.randint(low=0, high=self.input_size[0], size=(1, 2, 2), dtype=torch.float32),
                 "point_labels": torch.randint(low=0, high=4, size=(1, 2), dtype=torch.float32),
                 "mask_input": torch.randn(
                     1,
                     1,
-                    4 * model.image_embedding_size,
-                    4 * model.image_embedding_size,
+                    *(4 * size for size in model.model.prompt_encoder.image_embedding_size),
                     dtype=torch.float32,
                 ),
                 "has_mask_input": torch.tensor([[1]], dtype=torch.float32),

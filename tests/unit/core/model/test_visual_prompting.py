@@ -36,7 +36,7 @@ from torchvision import tv_tensors
 @pytest.fixture()
 def otx_visual_prompting_model(mocker) -> OTXVisualPromptingModel:
     mocker.patch.object(OTXVisualPromptingModel, "_create_model")
-    model = OTXVisualPromptingModel(label_info=1)
+    model = OTXVisualPromptingModel(label_info=1, input_size=(1024, 1024))
     model.model.image_size = 1024
     return model
 
@@ -44,7 +44,7 @@ def otx_visual_prompting_model(mocker) -> OTXVisualPromptingModel:
 @pytest.fixture()
 def otx_zero_shot_visual_prompting_model(mocker) -> OTXZeroShotVisualPromptingModel:
     mocker.patch.object(OTXZeroShotVisualPromptingModel, "_create_model")
-    model = OTXZeroShotVisualPromptingModel(label_info=1)
+    model = OTXZeroShotVisualPromptingModel(label_info=1, input_size=(1024, 1024))
     model.model.image_size = 1024
     return model
 
@@ -535,23 +535,35 @@ class TestOVZeroShotVisualPromptingModel:
         [
             [
                 {
-                    1: PredictedMask(mask=[[1, 2, 3], [4, 5, 6]], points=[[13, 14, 15], [16, 17, 18]]),
-                    2: PredictedMask(mask=[[7, 8, 9], [10, 11, 12]], points=[[19, 20, 21], [22, 23, 24]]),
+                    1: PredictedMask(mask=[[1, 2, 3], [4, 5, 6]], points=[[13, 14, 15], [16, 17, 18]], scores=[1, 1]),
+                    2: PredictedMask(
+                        mask=[[7, 8, 9], [10, 11, 12]],
+                        points=[[19, 20, 21], [22, 23, 24]],
+                        scores=[1, 1],
+                    ),
                 },
             ],
             [
                 {
-                    1: PredictedMask(mask=[], points=[]),
+                    1: PredictedMask(mask=[], points=[], scores=[]),
                 },
             ],
             [
                 {
-                    1: PredictedMask(mask=[[1, 2, 3], [4, 5, 6]], points=[[13, 14, 15], [16, 17, 18]]),
-                    2: PredictedMask(mask=[[7, 8, 9], [10, 11, 12]], points=[[19, 20, 21], [22, 23, 24]]),
+                    1: PredictedMask(mask=[[1, 2, 3], [4, 5, 6]], points=[[13, 14, 15], [16, 17, 18]], scores=[1, 1]),
+                    2: PredictedMask(
+                        mask=[[7, 8, 9], [10, 11, 12]],
+                        points=[[19, 20, 21], [22, 23, 24]],
+                        scores=[1, 1],
+                    ),
                 },
                 {
-                    1: PredictedMask(mask=[[1, 2, 3], [4, 5, 6]], points=[[13, 14, 15], [16, 17, 18]]),
-                    2: PredictedMask(mask=[[7, 8, 9], [10, 11, 12]], points=[[19, 20, 21], [22, 23, 24]]),
+                    1: PredictedMask(mask=[[1, 2, 3], [4, 5, 6]], points=[[13, 14, 15], [16, 17, 18]], scores=[1, 1]),
+                    2: PredictedMask(
+                        mask=[[7, 8, 9], [10, 11, 12]],
+                        points=[[19, 20, 21], [22, 23, 24]],
+                        scores=[1, 1],
+                    ),
                 },
             ],
         ],

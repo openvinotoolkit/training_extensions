@@ -1,0 +1,43 @@
+model:
+  class_path: otx.algo.segmentation.segnext.SegNext
+  init_args:
+    label_info: 2
+    model_version: segnext_small
+    train_type: SEMI_SUPERVISED
+
+    optimizer:
+      class_path: torch.optim.AdamW
+      init_args:
+        lr: 0.00006
+        betas:
+          - 0.9
+          - 0.999
+        weight_decay: 0.01
+
+    scheduler:
+      class_path: otx.core.schedulers.LinearWarmupSchedulerCallable
+      init_args:
+        num_warmup_steps: 20
+        main_scheduler_callable:
+          class_path: torch.optim.lr_scheduler.PolynomialLR
+          init_args:
+            total_iters: 100
+            power: 0.9
+            last_epoch: -1
+
+engine:
+  task: SEMANTIC_SEGMENTATION
+  device: auto
+
+callback_monitor: val/Dice
+
+data: ../../_base_/data/semisl/semantic_segmentation_semisl.yaml
+overrides:
+  callbacks:
+    - class_path: otx.algo.callbacks.adaptive_early_stopping.EarlyStoppingWithWarmup
+      init_args:
+        warmup_iters: 100
+    - class_path: otx.algo.callbacks.ema_mean_teacher.EMAMeanTeacher
+      init_args:
+        momentum: 0.99
+        start_epoch: 2

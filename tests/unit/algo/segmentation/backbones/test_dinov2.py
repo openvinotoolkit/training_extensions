@@ -30,23 +30,18 @@ class TestDinoVisionTransformer:
         return mocker.patch("otx.algo.segmentation.backbones.dinov2.torch.hub.load", return_value=mock_backbone)
 
     def test_init(self, mock_backbone, mock_backbone_named_parameters):
-        dino = DinoVisionTransformer(name="dinov2_vits14_reg", freeze_backbone=True, out_index=[8, 9, 10, 11])
+        dino = DinoVisionTransformer(name="dinov2_vits14", freeze_backbone=True, out_index=[8, 9, 10, 11])
 
         assert dino.backbone == mock_backbone
         for parameter in mock_backbone_named_parameters.values():
             assert parameter.requires_grad is False
 
     @pytest.fixture()
-    def mock_init_cfg(self) -> MagicMock:
-        return MagicMock()
-
-    @pytest.fixture()
-    def dino_vit(self, mock_init_cfg) -> DinoVisionTransformer:
+    def dino_vit(self) -> DinoVisionTransformer:
         return DinoVisionTransformer(
-            name="dinov2_vits14_reg",
+            name="dinov2_vits14",
             freeze_backbone=True,
             out_index=[8, 9, 10, 11],
-            init_cfg=mock_init_cfg,
         )
 
     def test_forward(self, dino_vit, mock_backbone):

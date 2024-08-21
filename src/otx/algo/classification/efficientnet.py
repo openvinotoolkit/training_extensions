@@ -3,22 +3,21 @@
 
 """EfficientNet-B0 model implementation."""
 
-
 from __future__ import annotations
 
-from copy import deepcopy
+from copy import copy, deepcopy
+from math import ceil
 from typing import TYPE_CHECKING, Literal
 
 from torch import Tensor, nn
 
-from otx.algo.classification.backbones.efficientnet import EFFICIENTNET_VERSION, OTXEfficientNet
-from otx.algo.classification.classifier.base_classifier import ImageClassifier
-from otx.algo.classification.classifier.semi_sl_classifier import SemiSLClassifier
+from otx.algo.classification.backbones.efficientnet import EFFICIENTNET_VERSION, EfficientNetBackbone
+from otx.algo.classification.classifier import HLabelClassifier, ImageClassifier, SemiSLClassifier
 from otx.algo.classification.heads import (
-    HierarchicalLinearClsHead,
+    HierarchicalCBAMClsHead,
     LinearClsHead,
     MultiLabelLinearClsHead,
-    OTXSemiSLLinearClsHead,
+    SemiSLLinearClsHead,
 )
 from otx.algo.classification.losses.asymmetric_angular_loss_with_ignore import AsymmetricAngularLossWithIgnore
 from otx.algo.classification.necks.gap import GlobalAveragePooling
@@ -32,7 +31,7 @@ from otx.core.data.entity.classification import (
     MultilabelClsBatchDataEntity,
     MultilabelClsBatchPredEntity,
 )
-from otx.core.metrics.accuracy import HLabelClsMetricCallble, MultiClassClsMetricCallable, MultiLabelClsMetricCallable
+from otx.core.metrics.accuracy import HLabelClsMetricCallable, MultiClassClsMetricCallable, MultiLabelClsMetricCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
 from otx.core.model.classification import OTXHlabelClsModel, OTXMulticlassClsModel, OTXMultilabelClsModel
 from otx.core.schedulers import LRSchedulerListCallable
@@ -57,6 +56,7 @@ class EfficientNetForMulticlassCls(OTXMulticlassClsModel):
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MultiClassClsMetricCallable,
         torch_compile: bool = False,
+        input_size: tuple[int, int] = (224, 224),
         train_type: Literal[OTXTrainType.SUPERVISED, OTXTrainType.SEMI_SUPERVISED] = OTXTrainType.SUPERVISED,
     ) -> None:
         self.version = version
@@ -64,6 +64,7 @@ class EfficientNetForMulticlassCls(OTXMulticlassClsModel):
 
         super().__init__(
             label_info=label_info,
+            input_size=input_size,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
@@ -86,18 +87,17 @@ class EfficientNetForMulticlassCls(OTXMulticlassClsModel):
         return model
 
     def _build_model(self, num_classes: int) -> nn.Module:
-        backbone = OTXEfficientNet(version=self.version, pretrained=self.pretrained)
+        backbone = EfficientNetBackbone(version=self.version, input_size=self.input_size, pretrained=self.pretrained)
         neck = GlobalAveragePooling(dim=2)
-        loss = nn.CrossEntropyLoss(reduction="none")
         if self.train_type == OTXTrainType.SEMI_SUPERVISED:
             return SemiSLClassifier(
                 backbone=backbone,
                 neck=neck,
-                head=OTXSemiSLLinearClsHead(
+                head=SemiSLLinearClsHead(
                     num_classes=num_classes,
                     in_channels=backbone.num_features,
-                    loss=loss,
                 ),
+                loss=nn.CrossEntropyLoss(reduction="none"),
             )
 
         return ImageClassifier(
@@ -106,9 +106,8 @@ class EfficientNetForMulticlassCls(OTXMulticlassClsModel):
             head=LinearClsHead(
                 num_classes=num_classes,
                 in_channels=backbone.num_features,
-                topk=(1, 5) if num_classes >= 5 else (1,),
-                loss=loss,
             ),
+            loss=nn.CrossEntropyLoss(),
         )
 
     def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.") -> dict:
@@ -149,6 +148,7 @@ class EfficientNetForMultilabelCls(OTXMultilabelClsModel):
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MultiLabelClsMetricCallable,
         torch_compile: bool = False,
+        input_size: tuple[int, int] = (224, 224),
     ) -> None:
         self.version = version
         self.pretrained = pretrained
@@ -159,6 +159,7 @@ class EfficientNetForMultilabelCls(OTXMultilabelClsModel):
             scheduler=scheduler,
             metric=metric,
             torch_compile=torch_compile,
+            input_size=input_size,
         )
 
     def _create_model(self) -> nn.Module:
@@ -176,17 +177,17 @@ class EfficientNetForMultilabelCls(OTXMultilabelClsModel):
         return model
 
     def _build_model(self, num_classes: int) -> nn.Module:
-        backbone = OTXEfficientNet(version=self.version, pretrained=self.pretrained)
+        backbone = EfficientNetBackbone(version=self.version, input_size=self.input_size, pretrained=self.pretrained)
         return ImageClassifier(
             backbone=backbone,
             neck=GlobalAveragePooling(dim=2),
             head=MultiLabelLinearClsHead(
                 num_classes=num_classes,
                 in_channels=backbone.num_features,
-                scale=7.0,
                 normalized=True,
-                loss=AsymmetricAngularLossWithIgnore(gamma_pos=0.0, gamma_neg=1.0, reduction="sum"),
             ),
+            loss=AsymmetricAngularLossWithIgnore(gamma_pos=0.0, gamma_neg=1.0, reduction="sum"),
+            loss_scale=7.0,
         )
 
     def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.") -> dict:
@@ -227,8 +228,9 @@ class EfficientNetForHLabelCls(OTXHlabelClsModel):
         pretrained: bool = True,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
-        metric: MetricCallable = HLabelClsMetricCallble,
+        metric: MetricCallable = HLabelClsMetricCallable,
         torch_compile: bool = False,
+        input_size: tuple[int, int] = (224, 224),
     ) -> None:
         self.version = version
         self.pretrained = pretrained
@@ -239,6 +241,7 @@ class EfficientNetForHLabelCls(OTXHlabelClsModel):
             scheduler=scheduler,
             metric=metric,
             torch_compile=torch_compile,
+            input_size=input_size,
         )
 
     def _create_model(self) -> nn.Module:
@@ -262,16 +265,20 @@ class EfficientNetForHLabelCls(OTXHlabelClsModel):
         if not isinstance(self.label_info, HLabelInfo):
             raise TypeError(self.label_info)
 
-        backbone = OTXEfficientNet(version=self.version, pretrained=self.pretrained)
-        return ImageClassifier(
+        backbone = EfficientNetBackbone(version=self.version, input_size=self.input_size, pretrained=self.pretrained)
+
+        copied_head_config = copy(head_config)
+        copied_head_config["step_size"] = (ceil(self.input_size[0] / 32), ceil(self.input_size[1] / 32))
+
+        return HLabelClassifier(
             backbone=backbone,
-            neck=GlobalAveragePooling(dim=2),
-            head=HierarchicalLinearClsHead(
+            neck=nn.Identity(),
+            head=HierarchicalCBAMClsHead(
                 in_channels=backbone.num_features,
-                multiclass_loss=nn.CrossEntropyLoss(),
-                multilabel_loss=AsymmetricAngularLossWithIgnore(gamma_pos=0.0, gamma_neg=1.0, reduction="sum"),
-                **head_config,
+                **copied_head_config,
             ),
+            multiclass_loss=nn.CrossEntropyLoss(),
+            multilabel_loss=AsymmetricAngularLossWithIgnore(gamma_pos=0.0, gamma_neg=1.0, reduction="sum"),
         )
 
     def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.") -> dict:

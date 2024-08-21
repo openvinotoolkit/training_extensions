@@ -1,4 +1,4 @@
-# Copyright (C) 2023 Intel Corporation
+# Copyright (C) 2023-2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
 """TinyViT model for the OTX visual prompting."""
@@ -362,7 +362,9 @@ class TinyViTBlock(nn.Module):
         """Forward."""
         h, w = self.input_resolution
         b, l, c = x.shape  # noqa: E741
-        assert h * w == l, "input feature has wrong size"  # noqa: S101
+        if h * w != l:
+            msg = f"Input feature has wrong size. Expected that h({h}) * w({w}) == l({l})."
+            raise ValueError(msg)
         res_x = x
         if self.window_size == h and self.window_size == w:
             x = self.attn(x)
@@ -487,7 +489,7 @@ class TinyViT(nn.Module):
 
     def __init__(
         self,
-        img_size: int = 224,
+        img_size: int = 1024,
         in_chans: int = 3,
         embed_dims: list[int] | None = None,
         depths: list[int] | None = None,
@@ -495,7 +497,7 @@ class TinyViT(nn.Module):
         window_sizes: list[int] | None = None,
         mlp_ratio: float = 4.0,
         drop_rate: float = 0.0,
-        drop_path_rate: float = 0.1,
+        drop_path_rate: float = 0.0,
         mbconv_expand_ratio: float = 4.0,
         local_conv_size: int = 3,
         layer_lr_decay: float = 1.0,
@@ -634,6 +636,6 @@ class TinyViT(nn.Module):
             layer = self.layers[i]
             x = layer(x)
         batch, _, channel = x.size()
-        x = x.view(batch, 64, 64, channel)
+        x = x.view(batch, self.img_size // 16, self.img_size // 16, channel)
         x = x.permute(0, 3, 1, 2)
         return self.neck(x)

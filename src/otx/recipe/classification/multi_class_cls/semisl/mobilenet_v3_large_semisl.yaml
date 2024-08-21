@@ -1,0 +1,44 @@
+model:
+  class_path: otx.algo.classification.mobilenet_v3.MobileNetV3ForMulticlassCls
+  init_args:
+    mode: large
+    label_info: 1000
+    train_type: SEMI_SUPERVISED
+
+    optimizer:
+      class_path: torch.optim.SGD
+      init_args:
+        lr: 0.0058
+        momentum: 0.9
+        weight_decay: 0.0001
+
+    scheduler:
+      class_path: otx.core.schedulers.LinearWarmupSchedulerCallable
+      init_args:
+        num_warmup_steps: 10
+        main_scheduler_callable:
+          class_path: lightning.pytorch.cli.ReduceLROnPlateau
+          init_args:
+            mode: max
+            factor: 0.5
+            patience: 1
+            monitor: val/accuracy
+
+engine:
+  task: MULTI_CLASS_CLS
+  device: auto
+
+callback_monitor: val/accuracy
+
+data: ../../../_base_/data/semisl/torchvision_semisl.yaml
+overrides:
+  max_epochs: 200
+  callbacks:
+    - class_path: otx.algo.callbacks.adaptive_early_stopping.EarlyStoppingWithWarmup
+      init_args:
+        patience: 10
+        warmup_iters: 0
+        warmup_epochs: 20
+    - class_path: otx.algo.callbacks.unlabeled_loss_warmup.UnlabeledLossWarmUpCallback
+      init_args:
+        warmup_steps_ratio: 0.5

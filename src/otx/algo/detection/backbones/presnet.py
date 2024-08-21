@@ -6,13 +6,16 @@
 from __future__ import annotations
 
 from collections import OrderedDict
+from functools import partial
 from typing import Any, Callable, ClassVar
 
 import torch
 from torch import nn
 
+from otx.algo.modules.activation import build_activation_layer
 from otx.algo.modules.base_module import BaseModule
 from otx.algo.modules.conv_module import Conv2dModule
+from otx.algo.modules.norm import build_norm_layer
 
 __all__ = ["PResNet"]
 
@@ -28,9 +31,9 @@ class BasicBlock(nn.Module):
         ch_out: int,
         stride: int,
         shortcut: bool,
-        activation_callable: Callable[..., nn.Module] | None = None,
+        activation: Callable[..., nn.Module] | None = None,
         variant: str = "b",
-        norm_cfg: dict[str, str] | None = None,
+        normalization: Callable[..., nn.Module] | None = None,
     ) -> None:
         super().__init__()
 
@@ -42,12 +45,29 @@ class BasicBlock(nn.Module):
                     OrderedDict(
                         [
                             ("pool", nn.AvgPool2d(2, 2, 0, ceil_mode=True)),
-                            ("conv", Conv2dModule(ch_in, ch_out, 1, 1, activation_callable=None, norm_cfg=norm_cfg)),
+                            (
+                                "conv",
+                                Conv2dModule(
+                                    ch_in,
+                                    ch_out,
+                                    1,
+                                    1,
+                                    normalization=build_norm_layer(normalization, num_features=ch_out),
+                                    activation=None,
+                                ),
+                            ),
                         ],
                     ),
                 )
             else:
-                self.short = Conv2dModule(ch_in, ch_out, 1, stride, activation_callable=None, norm_cfg=norm_cfg)
+                self.short = Conv2dModule(
+                    ch_in,
+                    ch_out,
+                    1,
+                    stride,
+                    normalization=build_norm_layer(normalization, num_features=ch_out),
+                    activation=None,
+                )
 
         self.branch2a = Conv2dModule(
             ch_in,
@@ -55,11 +75,19 @@ class BasicBlock(nn.Module):
             3,
             stride,
             padding=1,
-            activation_callable=activation_callable,
-            norm_cfg=norm_cfg,
+            normalization=build_norm_layer(normalization, num_features=ch_out),
+            activation=activation,
         )
-        self.branch2b = Conv2dModule(ch_out, ch_out, 3, 1, padding=1, activation_callable=None, norm_cfg=norm_cfg)
-        self.act = activation_callable() if activation_callable else nn.Identity()
+        self.branch2b = Conv2dModule(
+            ch_out,
+            ch_out,
+            3,
+            1,
+            padding=1,
+            normalization=build_norm_layer(normalization, num_features=ch_out),
+            activation=None,
+        )
+        self.act = activation() if activation else nn.Identity()
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Forward."""
@@ -83,9 +111,9 @@ class BottleNeck(nn.Module):
         ch_out: int,
         stride: int,
         shortcut: bool,
-        activation_callable: Callable[..., nn.Module] | None = None,
+        activation: Callable[..., nn.Module] | None = None,
         variant: str = "b",
-        norm_cfg: dict[str, str] | None = None,
+        normalization: Callable[..., nn.Module] | None = None,
     ) -> None:
         super().__init__()
 
@@ -101,8 +129,8 @@ class BottleNeck(nn.Module):
             width,
             1,
             stride1,
-            activation_callable=activation_callable,
-            norm_cfg=norm_cfg,
+            normalization=build_norm_layer(normalization, num_features=width),
+            activation=build_activation_layer(activation),
         )
         self.branch2b = Conv2dModule(
             width,
@@ -110,10 +138,20 @@ class BottleNeck(nn.Module):
             3,
             stride2,
             padding=1,
-            activation_callable=activation_callable,
-            norm_cfg=norm_cfg,
+            normalization=build_norm_layer(normalization, num_features=width),
+            activation=build_activation_layer(activation),
         )
-        self.branch2c = Conv2dModule(width, ch_out * self.expansion, 1, 1, activation_callable=None, norm_cfg=norm_cfg)
+        self.branch2c = Conv2dModule(
+            width,
+            ch_out * self.expansion,
+            1,
+            1,
+            normalization=build_norm_layer(
+                normalization,
+                num_features=ch_out * self.expansion,
+            ),
+            activation=None,
+        )
 
         self.shortcut = shortcut
         if not shortcut:
@@ -129,8 +167,11 @@ class BottleNeck(nn.Module):
                                     ch_out * self.expansion,
                                     1,
                                     1,
-                                    activation_callable=None,
-                                    norm_cfg=norm_cfg,
+                                    normalization=build_norm_layer(
+                                        normalization,
+                                        num_features=ch_out * self.expansion,
+                                    ),
+                                    activation=None,
                                 ),
                             ),
                         ],
@@ -142,11 +183,14 @@ class BottleNeck(nn.Module):
                     ch_out * self.expansion,
                     1,
                     stride,
-                    activation_callable=None,
-                    norm_cfg=norm_cfg,
+                    normalization=build_norm_layer(
+                        normalization,
+                        num_features=ch_out * self.expansion,
+                    ),
+                    activation=None,
                 )
 
-        self.act = activation_callable() if activation_callable else nn.Identity()
+        self.act = activation() if activation else nn.Identity()
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Forward."""
@@ -168,9 +212,9 @@ class Blocks(nn.Module):
         ch_out: int,
         count: int,
         stage_num: int,
-        activation_callable: Callable[..., nn.Module] | None = None,
+        activation: Callable[..., nn.Module] | None = None,
         variant: str = "b",
-        norm_cfg: dict[str, str] | None = None,
+        normalization: Callable[..., nn.Module] | None = None,
     ) -> None:
         super().__init__()
 
@@ -183,8 +227,8 @@ class Blocks(nn.Module):
                     stride=2 if i == 0 and stage_num != 2 else 1,
                     shortcut=i != 0,
                     variant=variant,
-                    activation_callable=activation_callable,
-                    norm_cfg=norm_cfg,
+                    activation=activation,
+                    normalization=normalization,
                 ),
             )
 
@@ -207,9 +251,10 @@ class PResNet(BaseModule):
         variant (str): The variant of the PResNet backbone. Defaults to "d".
         num_stages (int): The number of stages in the PResNet backbone. Defaults to 4.
         return_idx (list[int]): The indices of the stages to return as output. Defaults to [0, 1, 2, 3].
-        activation_callable (Callable[..., nn.Module] | None): Activation layer module.
+        activation (Callable[..., nn.Module] | None): Activation layer module.
             Defaults to None.
-        norm_cfg (dict[str, str] | None, optional): The normalization configuration. Defaults to None.
+        normalization (Callable[..., nn.Module] | None): Normalization layer module.
+            Defaults to ``nn.BatchNorm2d``.
         freeze_at (int): The stage at which to freeze the parameters. Defaults to -1.
         pretrained (bool): Whether to load pretrained weights. Defaults to False.
     """
@@ -234,8 +279,8 @@ class PResNet(BaseModule):
         variant: str = "d",
         num_stages: int = 4,
         return_idx: list[int] = [0, 1, 2, 3],  # noqa: B006
-        activation_callable: Callable[..., nn.Module] | None = nn.ReLU,
-        norm_cfg: dict[str, str] | None = None,
+        activation: Callable[..., nn.Module] | None = nn.ReLU,
+        normalization: Callable[..., nn.Module] = partial(build_norm_layer, nn.BatchNorm2d, layer_name="norm"),
         freeze_at: int = -1,
         pretrained: bool = False,
     ) -> None:
@@ -253,7 +298,6 @@ class PResNet(BaseModule):
         else:
             conv_def = [[3, ch_in, 7, 2, "conv1_1"]]
 
-        norm_cfg = norm_cfg if norm_cfg is not None else {"type": "BN", "name": "norm"}
         self.conv1 = nn.Sequential(
             OrderedDict(
                 [
@@ -265,8 +309,8 @@ class PResNet(BaseModule):
                             k,
                             s,
                             padding=(k - 1) // 2,
-                            activation_callable=activation_callable,
-                            norm_cfg=norm_cfg,
+                            normalization=build_norm_layer(normalization, num_features=c_out),
+                            activation=build_activation_layer(activation),
                         ),
                     )
                     for c_in, c_out, k, s, _name in conv_def
@@ -290,9 +334,9 @@ class PResNet(BaseModule):
                     ch_out_list[i],
                     block_nums[i],
                     stage_num,
-                    activation_callable=activation_callable,
+                    activation=activation,
                     variant=variant,
-                    norm_cfg=norm_cfg,
+                    normalization=normalization,
                 ),
             )
             ch_in = _out_channels[i]

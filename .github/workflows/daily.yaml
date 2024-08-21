@@ -22,6 +22,8 @@ jobs:
           - task: "action"
           - task: "classification"
           - task: "detection"
+          - task: "rotated_detection"
+          - task: "keypoint_detection"
           - task: "instance_segmentation"
           - task: "semantic_segmentation"
           - task: "visual_prompting"

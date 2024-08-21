@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 """EfficientNetV2 model implementation."""
+
 from __future__ import annotations
 
 from copy import deepcopy
@@ -11,12 +12,12 @@ import torch
 from torch import nn
 
 from otx.algo.classification.backbones.timm import TimmBackbone, TimmModelType
-from otx.algo.classification.classifier import ImageClassifier, SemiSLClassifier
+from otx.algo.classification.classifier import HLabelClassifier, ImageClassifier, SemiSLClassifier
 from otx.algo.classification.heads import (
-    HierarchicalLinearClsHead,
+    HierarchicalCBAMClsHead,
     LinearClsHead,
     MultiLabelLinearClsHead,
-    OTXSemiSLLinearClsHead,
+    SemiSLLinearClsHead,
 )
 from otx.algo.classification.losses.asymmetric_angular_loss_with_ignore import AsymmetricAngularLossWithIgnore
 from otx.algo.classification.necks.gap import GlobalAveragePooling
@@ -30,7 +31,7 @@ from otx.core.data.entity.classification import (
     MultilabelClsBatchDataEntity,
     MultilabelClsBatchPredEntity,
 )
-from otx.core.metrics.accuracy import HLabelClsMetricCallble, MultiClassClsMetricCallable, MultiLabelClsMetricCallable
+from otx.core.metrics.accuracy import HLabelClsMetricCallable, MultiClassClsMetricCallable, MultiLabelClsMetricCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
 from otx.core.model.classification import (
     OTXHlabelClsModel,
@@ -54,6 +55,7 @@ class TimmModelForMulticlassCls(OTXMulticlassClsModel):
         self,
         label_info: LabelInfoTypes,
         backbone: TimmModelType,
+        input_size: tuple[int, int] = (224, 224),  # input size of default classification data recipe
         pretrained: bool = True,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
@@ -66,6 +68,7 @@ class TimmModelForMulticlassCls(OTXMulticlassClsModel):
 
         super().__init__(
             label_info=label_info,
+            input_size=input_size,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
@@ -90,16 +93,15 @@ class TimmModelForMulticlassCls(OTXMulticlassClsModel):
     def _build_model(self, num_classes: int) -> nn.Module:
         backbone = TimmBackbone(backbone=self.backbone, pretrained=self.pretrained)
         neck = GlobalAveragePooling(dim=2)
-        loss = nn.CrossEntropyLoss(reduction="none")
         if self.train_type == OTXTrainType.SEMI_SUPERVISED:
             return SemiSLClassifier(
                 backbone=backbone,
                 neck=neck,
-                head=OTXSemiSLLinearClsHead(
+                head=SemiSLLinearClsHead(
                     num_classes=num_classes,
                     in_channels=backbone.num_features,
-                    loss=loss,
                 ),
+                loss=nn.CrossEntropyLoss(reduction="none"),
             )
 
         return ImageClassifier(
@@ -108,9 +110,8 @@ class TimmModelForMulticlassCls(OTXMulticlassClsModel):
             head=LinearClsHead(
                 num_classes=num_classes,
                 in_channels=backbone.num_features,
-                topk=(1, 5) if num_classes >= 5 else (1,),
-                loss=loss,
             ),
+            loss=nn.CrossEntropyLoss(),
         )
 
     def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.") -> dict:
@@ -146,6 +147,7 @@ class TimmModelForMultilabelCls(OTXMultilabelClsModel):
         self,
         label_info: LabelInfoTypes,
         backbone: TimmModelType,
+        input_size: tuple[int, int] = (224, 224),  # input size of default classification data recipe
         pretrained: bool = True,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
@@ -157,6 +159,7 @@ class TimmModelForMultilabelCls(OTXMultilabelClsModel):
 
         super().__init__(
             label_info=label_info,
+            input_size=input_size,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
@@ -186,9 +189,9 @@ class TimmModelForMultilabelCls(OTXMultilabelClsModel):
                 num_classes=num_classes,
                 in_channels=backbone.num_features,
                 normalized=True,
-                scale=7.0,
-                loss=AsymmetricAngularLossWithIgnore(gamma_pos=0.0, gamma_neg=1.0, reduction="sum"),
             ),
+            loss=AsymmetricAngularLossWithIgnore(gamma_pos=0.0, gamma_neg=1.0, reduction="sum"),
+            loss_scale=7.0,
         )
 
     def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.") -> dict:
@@ -226,10 +229,11 @@ class TimmModelForHLabelCls(OTXHlabelClsModel):
         self,
         label_info: HLabelInfo,
         backbone: TimmModelType,
+        input_size: tuple[int, int] = (224, 224),  # input size of default classification data recipe
         pretrained: bool = True,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
-        metric: MetricCallable = HLabelClsMetricCallble,
+        metric: MetricCallable = HLabelClsMetricCallable,
         torch_compile: bool = False,
     ) -> None:
         self.backbone = backbone
@@ -237,6 +241,7 @@ class TimmModelForHLabelCls(OTXHlabelClsModel):
 
         super().__init__(
             label_info=label_info,
+            input_size=input_size,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
@@ -262,15 +267,15 @@ class TimmModelForHLabelCls(OTXHlabelClsModel):
 
     def _build_model(self, head_config: dict) -> nn.Module:
         backbone = TimmBackbone(backbone=self.backbone, pretrained=self.pretrained)
-        return ImageClassifier(
+        return HLabelClassifier(
             backbone=backbone,
-            neck=GlobalAveragePooling(dim=2),
-            head=HierarchicalLinearClsHead(
+            neck=nn.Identity(),
+            head=HierarchicalCBAMClsHead(
                 in_channels=backbone.num_features,
-                multiclass_loss=nn.CrossEntropyLoss(),
-                multilabel_loss=AsymmetricAngularLossWithIgnore(gamma_pos=0.0, gamma_neg=1.0, reduction="sum"),
                 **head_config,
             ),
+            multiclass_loss=nn.CrossEntropyLoss(),
+            multilabel_loss=AsymmetricAngularLossWithIgnore(gamma_pos=0.0, gamma_neg=1.0, reduction="sum"),
         )
 
     def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.") -> dict:

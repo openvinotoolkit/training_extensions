@@ -30,14 +30,14 @@ class MockModule(nn.Module):
 
 
 def test_replace_activation() -> None:
-    activation_callable = nn.GELU
+    activation = nn.GELU
     model = MockModule()
-    model = replace_activation(model, activation_callable)
+    model = replace_activation(model, activation)
     assert isinstance(model._modules["activ1"], nn.GELU)
     assert isinstance(model._modules["activ2"], nn.GELU)
 
-    activation_callable = nn.SiLU
-    model = replace_activation(model, activation_callable)
+    activation = nn.SiLU
+    model = replace_activation(model, activation)
     assert isinstance(model._modules["activ1"], nn.SiLU)
     assert isinstance(model._modules["activ2"], nn.SiLU)
 

@@ -6,8 +6,7 @@ import pytest
 import torch
 from otx.algo.keypoint_detection.heads.rtmcc_head import RTMCCHead
 from otx.algo.keypoint_detection.losses.kl_discret_loss import KLDiscretLoss
-from otx.algo.keypoint_detection.utils.data_sample import PoseDataSample
-from otx.core.data.entity.base import ImageInfo
+from otx.core.data.entity.base import BboxInfo, ImageInfo
 from otx.core.data.entity.keypoint_detection import KeypointDetBatchDataEntity
 from torchvision import tv_tensors
 
@@ -24,20 +23,17 @@ class TestRTMCCHead:
     def fxt_gt_entity(self):
         batch_size = 2
         img_infos = [ImageInfo(img_idx=i, img_shape=(192, 256), ori_shape=(192, 256)) for i in range(batch_size)]
-        keypoint_x_labels = [torch.randn((1, 17, 384)) for _ in range(batch_size)]
-        keypoint_y_labels = [torch.randn((1, 17, 512)) for _ in range(batch_size)]
-        keypoint_weights = [torch.randn((1, 17)) for _ in range(batch_size)]
+        keypoints = torch.randn((batch_size, 17, 2))
+        keypoints_visible = torch.randn((batch_size, 17))
         return KeypointDetBatchDataEntity(
             batch_size=batch_size,
             images=tv_tensors.Image(data=torch.randn((batch_size, 3, 192, 256))),
             imgs_info=img_infos,
-            keypoint_x_labels=keypoint_x_labels,
-            keypoint_y_labels=keypoint_y_labels,
-            keypoint_weights=keypoint_weights,
+            bbox_info=BboxInfo(center=(96, 128), scale=(1, 1), rotation=0),
             bboxes=[],
             labels=[],
-            keypoints=[],
-            keypoints_visible=[],
+            keypoints=keypoints,
+            keypoints_visible=keypoints_visible,
         )
 
     @pytest.fixture()
@@ -45,13 +41,13 @@ class TestRTMCCHead:
         return RTMCCHead(
             out_channels=17,
             in_channels=384,
-            input_size=(192, 256),
+            input_size=(256, 192),
             in_featuremap_size=(6, 8),
             simcc_split_ratio=2.0,
             final_layer_kernel_size=7,
             loss=KLDiscretLoss(use_target_weight=True, beta=10.0, label_softmax=True),
             decoder_cfg={
-                "input_size": (192, 256),
+                "input_size": (256, 192),
                 "simcc_split_ratio": 2.0,
                 "sigma": (4.9, 5.66),
                 "normalize": False,
@@ -72,9 +68,9 @@ class TestRTMCCHead:
     def test_forward(self, fxt_rtmcc_head, fxt_features) -> None:
         pred_x, pred_y = fxt_rtmcc_head(fxt_features)
         assert pred_x.shape[1] == fxt_rtmcc_head.out_channels
-        assert pred_x.shape[2] == fxt_rtmcc_head.decoder.input_size[0] * fxt_rtmcc_head.decoder.simcc_split_ratio
+        assert pred_x.shape[2] == fxt_rtmcc_head.codec.input_size[1] * fxt_rtmcc_head.codec.simcc_split_ratio
         assert pred_y.shape[1] == fxt_rtmcc_head.out_channels
-        assert pred_y.shape[2] == fxt_rtmcc_head.decoder.input_size[1] * fxt_rtmcc_head.decoder.simcc_split_ratio
+        assert pred_y.shape[2] == fxt_rtmcc_head.codec.input_size[0] * fxt_rtmcc_head.codec.simcc_split_ratio
 
     def test_loss(self, fxt_rtmcc_head, fxt_features, fxt_gt_entity) -> None:
         losses = fxt_rtmcc_head.loss(
@@ -87,8 +83,5 @@ class TestRTMCCHead:
     def test_predict(self, fxt_rtmcc_head, fxt_features) -> None:
         preds = fxt_rtmcc_head.predict(fxt_features)
         for pred in preds:
-            assert isinstance(pred, PoseDataSample)
-            assert hasattr(pred, "keypoints")
-            assert hasattr(pred, "keypoint_weights")
-            assert hasattr(pred, "keypoint_x_labels")
-            assert hasattr(pred, "keypoint_y_labels")
+            assert isinstance(pred, tuple)
+            assert len(pred) == 2

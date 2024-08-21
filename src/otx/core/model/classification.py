@@ -23,7 +23,7 @@ from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.metrics import MetricInput
 from otx.core.metrics.accuracy import (
-    HLabelClsMetricCallble,
+    HLabelClsMetricCallable,
     MultiClassClsMetricCallable,
     MultiLabelClsMetricCallable,
 )
@@ -46,22 +46,23 @@ class OTXMulticlassClsModel(OTXModel[MulticlassClsBatchDataEntity, MulticlassCls
     def __init__(
         self,
         label_info: LabelInfoTypes,
+        input_size: tuple[int, int],
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MultiClassClsMetricCallable,
         torch_compile: bool = False,
         train_type: Literal[OTXTrainType.SUPERVISED, OTXTrainType.SEMI_SUPERVISED] = OTXTrainType.SUPERVISED,
     ) -> None:
-        self.train_type = train_type
-
         super().__init__(
             label_info=label_info,
+            input_size=input_size,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
             torch_compile=torch_compile,
+            train_type=train_type,
         )
-        self.image_size = (1, 3, 224, 224)
+        self.input_size: tuple[int, int]
 
     def _customize_inputs(self, inputs: MulticlassClsBatchDataEntity) -> dict[str, Any]:
         if self.training:
@@ -127,10 +128,10 @@ class OTXMulticlassClsModel(OTXModel[MulticlassClsBatchDataEntity, MulticlassCls
         loss = super().training_step(batch, batch_idx)
         # Collect metrics related to Semi-SL Training.
         if self.train_type == OTXTrainType.SEMI_SUPERVISED:
-            if hasattr(self.model.head, "unlabeled_coef"):
+            if hasattr(self.model, "unlabeled_coef"):
                 self.log(
                     "train/unlabeled_coef",
-                    self.model.head.unlabeled_coef,
+                    self.model.unlabeled_coef,
                     on_step=True,
                     on_epoch=False,
                     prog_bar=True,
@@ -160,7 +161,7 @@ class OTXMulticlassClsModel(OTXModel[MulticlassClsBatchDataEntity, MulticlassCls
         """Creates OTXModelExporter object that can export the model."""
         return OTXNativeModelExporter(
             task_level_export_parameters=self._export_parameters,
-            input_size=self.image_size,
+            input_size=(1, 3, *self.input_size),
             mean=(123.675, 116.28, 103.53),
             std=(58.395, 57.12, 57.375),
             resize_mode="standard",
@@ -188,7 +189,7 @@ class OTXMulticlassClsModel(OTXModel[MulticlassClsBatchDataEntity, MulticlassCls
 
     def get_dummy_input(self, batch_size: int = 1) -> MulticlassClsBatchDataEntity:
         """Returns a dummy input for classification model."""
-        images = [torch.rand(*self.image_size[1:]) for _ in range(batch_size)]
+        images = [torch.rand(3, *self.input_size) for _ in range(batch_size)]
         labels = [torch.LongTensor([0])] * batch_size
         return MulticlassClsBatchDataEntity(batch_size, images, [], labels=labels)
 
@@ -207,6 +208,7 @@ class OTXMultilabelClsModel(OTXModel[MultilabelClsBatchDataEntity, MultilabelCls
     def __init__(
         self,
         label_info: LabelInfoTypes,
+        input_size: tuple[int, int],
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MultiLabelClsMetricCallable,
@@ -214,12 +216,13 @@ class OTXMultilabelClsModel(OTXModel[MultilabelClsBatchDataEntity, MultilabelCls
     ) -> None:
         super().__init__(
             label_info=label_info,
+            input_size=input_size,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
             torch_compile=torch_compile,
         )
-        self.image_size = (1, 3, 224, 224)
+        self.input_size: tuple[int, int]
 
     def _customize_inputs(self, inputs: MultilabelClsBatchDataEntity) -> dict[str, Any]:
         if self.training:
@@ -283,7 +286,7 @@ class OTXMultilabelClsModel(OTXModel[MultilabelClsBatchDataEntity, MultilabelCls
         """Creates OTXModelExporter object that can export the model."""
         return OTXNativeModelExporter(
             task_level_export_parameters=self._export_parameters,
-            input_size=self.image_size,
+            input_size=(1, 3, *self.input_size),
             mean=(123.675, 116.28, 103.53),
             std=(58.395, 57.12, 57.375),
             resize_mode="standard",
@@ -310,7 +313,7 @@ class OTXMultilabelClsModel(OTXModel[MultilabelClsBatchDataEntity, MultilabelCls
 
     def get_dummy_input(self, batch_size: int = 1) -> MultilabelClsBatchDataEntity:
         """Returns a dummy input for classification OV model."""
-        images = [torch.rand(*self.image_size[1:]) for _ in range(batch_size)]
+        images = [torch.rand(3, *self.input_size) for _ in range(batch_size)]
         labels = [torch.LongTensor([0])] * batch_size
         return MultilabelClsBatchDataEntity(batch_size, images, [], labels=labels)
 
@@ -323,19 +326,21 @@ class OTXHlabelClsModel(OTXModel[HlabelClsBatchDataEntity, HlabelClsBatchPredEnt
     def __init__(
         self,
         label_info: HLabelInfo,
+        input_size: tuple[int, int],
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
-        metric: MetricCallable = HLabelClsMetricCallble,
+        metric: MetricCallable = HLabelClsMetricCallable,
         torch_compile: bool = False,
     ) -> None:
         super().__init__(
             label_info=label_info,
+            input_size=input_size,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
             torch_compile=torch_compile,
         )
-        self.image_size = (1, 3, 224, 224)
+        self.input_size: tuple[int, int]
 
     def _customize_inputs(self, inputs: HlabelClsBatchDataEntity) -> dict[str, Any]:
         if self.training:
@@ -403,7 +408,7 @@ class OTXHlabelClsModel(OTXModel[HlabelClsBatchDataEntity, HlabelClsBatchPredEnt
         """Creates OTXModelExporter object that can export the model."""
         return OTXNativeModelExporter(
             task_level_export_parameters=self._export_parameters,
-            input_size=self.image_size,
+            input_size=(1, 3, *self.input_size),
             mean=(123.675, 116.28, 103.53),
             std=(58.395, 57.12, 57.375),
             resize_mode="standard",
@@ -443,7 +448,7 @@ class OTXHlabelClsModel(OTXModel[HlabelClsBatchDataEntity, HlabelClsBatchPredEnt
 
     def get_dummy_input(self, batch_size: int = 1) -> HlabelClsBatchDataEntity:
         """Returns a dummy input for classification OV model."""
-        images = [torch.rand(*self.image_size[1:]) for _ in range(batch_size)]
+        images = [torch.rand(3, *self.input_size) for _ in range(batch_size)]
         labels = [torch.LongTensor([0])] * batch_size
         return HlabelClsBatchDataEntity(batch_size, images, [], labels=labels)
 
@@ -616,7 +621,7 @@ class OVHlabelClassificationModel(OVModel[HlabelClsBatchDataEntity, HlabelClsBat
         max_num_requests: int | None = None,
         use_throughput_mode: bool = True,
         model_api_configuration: dict[str, Any] | None = None,
-        metric: MetricCallable = HLabelClsMetricCallble,
+        metric: MetricCallable = HLabelClsMetricCallable,
         **kwargs,
     ) -> None:
         model_api_configuration = model_api_configuration if model_api_configuration else {}

@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import logging as log
 import pickle  # nosec: B403   used pickle dump and load only to share inference results
+from abc import abstractmethod
 from collections import defaultdict
 from functools import partial
 from pathlib import Path
@@ -21,10 +22,10 @@ from model_api.models.visual_prompting import (
     SAMVisualPrompter,
     VisualPromptingFeatures,
 )
-from torch import Tensor
+from torch import Tensor, nn
 from torchvision import tv_tensors
 
-from otx.core.data.entity.base import ImageInfo, Points
+from otx.core.data.entity.base import ImageInfo, OTXBatchLossEntity, Points
 from otx.core.data.entity.visual_prompting import (
     VisualPromptingBatchDataEntity,
     VisualPromptingBatchPredEntity,
@@ -162,6 +163,7 @@ class OTXVisualPromptingModel(OTXModel[VisualPromptingBatchDataEntity, VisualPro
     def __init__(
         self,
         label_info: LabelInfoTypes = NullLabelInfo(),
+        input_size: tuple[int, int] = (1024, 1024),
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = VisualPromptingMetricCallable,
@@ -171,18 +173,79 @@ class OTXVisualPromptingModel(OTXModel[VisualPromptingBatchDataEntity, VisualPro
         log.debug(msg)
         super().__init__(
             label_info=NullLabelInfo(),
+            input_size=input_size,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
             torch_compile=torch_compile,
         )
+        self.input_size: tuple[int, int]
+
+    @abstractmethod
+    def _build_model(self) -> nn.Module:
+        raise NotImplementedError
+
+    def _create_model(self) -> nn.Module:
+        return self._build_model()
+
+    def _customize_inputs(self, inputs: VisualPromptingBatchDataEntity) -> dict[str, Any]:  # type: ignore[override]
+        """Customize the inputs for the model."""
+        images = tv_tensors.wrap(torch.stack(inputs.images, dim=0).to(dtype=torch.float32), like=inputs.images[0])
+        return {
+            "images": images,
+            "ori_shapes": [torch.tensor(info.ori_shape) for info in inputs.imgs_info],
+            "gt_masks": inputs.masks,
+            "bboxes": self._inspect_prompts(inputs.bboxes),
+            "points": [
+                (
+                    (tv_tensors.wrap(point.unsqueeze(1), like=point), torch.ones(len(point), 1, device=point.device))
+                    if point is not None
+                    else None
+                )
+                for point in self._inspect_prompts(inputs.points)
+            ],
+        }
+
+    def _customize_outputs(
+        self,
+        outputs: Any,  # noqa: ANN401
+        inputs: VisualPromptingBatchDataEntity,  # type: ignore[override]
+    ) -> VisualPromptingBatchPredEntity | OTXBatchLossEntity:
+        """Customize OTX output batch data entity if needed for model."""
+        if self.training:
+            return outputs
+
+        masks: list[tv_tensors.Mask] = []
+        scores: list[torch.Tensor] = []
+        for mask, score in zip(*outputs):
+            masks.append(tv_tensors.Mask(mask, dtype=torch.float32))
+            scores.append(score)
+
+        return VisualPromptingBatchPredEntity(
+            batch_size=len(outputs),
+            images=inputs.images,
+            imgs_info=inputs.imgs_info,
+            scores=scores,
+            masks=masks,
+            polygons=[],
+            points=[],
+            bboxes=[],
+            labels=[torch.cat(list(labels.values())) for labels in inputs.labels],
+        )
+
+    def _inspect_prompts(self, prompts: list[tv_tensors.TVTensor]) -> list[tv_tensors.TVTensor | None]:
+        """Inspect if given prompts are empty.
+
+        If there are empty prompts (shape=0), they will be converted to None.
+        """
+        return [None if p is None or p.shape[0] == 0 else p for p in prompts]
 
     @property
     def _exporter(self) -> OTXModelExporter:
         """Creates OTXModelExporter object that can export the model."""
         return OTXVisualPromptingModelExporter(
             task_level_export_parameters=self._export_parameters,
-            input_size=(1, 3, self.model.image_size, self.model.image_size),
+            input_size=(1, 3, *self.input_size),
             mean=(123.675, 116.28, 103.53),
             std=(58.395, 57.12, 57.375),
             resize_mode="fit_to_window",
@@ -217,9 +280,6 @@ class OTXVisualPromptingModel(OTXModel[VisualPromptingBatchDataEntity, VisualPro
                 },
             },
         }
-
-    def _reset_prediction_layer(self, num_classes: int) -> None:
-        return
 
     def validation_step(self, inputs: VisualPromptingBatchDataEntity, batch_idx: int) -> None:
         """Perform a single validation step on a batch of data from the validation set.
@@ -262,7 +322,7 @@ class OTXVisualPromptingModel(OTXModel[VisualPromptingBatchDataEntity, VisualPro
 
     def get_dummy_input(self, batch_size: int = 1) -> VisualPromptingBatchDataEntity:
         """Returns a dummy input for VPT model."""
-        images = [torch.rand(3, self.model.image_size, self.model.image_size) for _ in range(batch_size)]
+        images = [torch.rand(3, *self.input_size) for _ in range(batch_size)]
         labels = [{"points": torch.LongTensor([0] * batch_size)}] * batch_size
         prompts = [torch.zeros((1, 2))] * batch_size
         return VisualPromptingBatchDataEntity(
@@ -282,8 +342,12 @@ class OTXZeroShotVisualPromptingModel(
 ):
     """Base class for the zero-shot visual prompting models used in OTX."""
 
+    reference_feats: Tensor
+    used_indices: Tensor
+
     def __init__(
         self,
+        input_size: tuple[int, int],
         label_info: LabelInfoTypes = NullLabelInfo(),
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
@@ -294,10 +358,97 @@ class OTXZeroShotVisualPromptingModel(
         log.debug(msg)
         super().__init__(
             label_info=NullLabelInfo(),
+            input_size=input_size,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
             torch_compile=torch_compile,
+        )
+        self.input_size: tuple[int, int]
+
+    @abstractmethod
+    def _build_model(self) -> nn.Module:
+        raise NotImplementedError
+
+    def _create_model(self) -> nn.Module:
+        return self._build_model()
+
+    def _customize_inputs(  # type: ignore[override]
+        self,
+        inputs: ZeroShotVisualPromptingBatchDataEntity,
+        reference_feats: Tensor | None = None,
+        used_indices: Tensor | None = None,
+    ) -> dict[str, Any]:  # type: ignore[override]
+        """Customize the inputs for the model."""
+        inputs = self.transforms(inputs)
+        forward_inputs = {
+            "images": [tv_tensors.wrap(image.unsqueeze(0), like=image) for image in inputs.images],
+            "reference_feats": reference_feats if reference_feats is not None else self.reference_feats,
+            "used_indices": used_indices if used_indices is not None else self.used_indices,
+            "ori_shapes": [torch.tensor(info.ori_shape) for info in inputs.imgs_info],
+        }
+        if self.training:
+            # learn
+            forward_inputs.update({"processed_prompts": self._gather_prompts_with_labels(inputs)})
+
+        return forward_inputs
+
+    def _customize_outputs(  # type: ignore[override]
+        self,
+        outputs: Any,  # noqa: ANN401
+        inputs: ZeroShotVisualPromptingBatchDataEntity,  # type: ignore[override]
+    ) -> ZeroShotVisualPromptingBatchPredEntity | OTXBatchLossEntity:
+        """Customize OTX output batch data entity if needed for you model."""
+        if self.training:
+            self.reference_feats = outputs[0].get("reference_feats")
+            self.used_indices = outputs[0].get("used_indices")
+            return outputs
+
+        masks: list[tv_tensors.Mask] = []
+        prompts: list[Points] = []
+        scores: list[Tensor] = []
+        labels: list[Tensor] = []
+        for idx, (predicted_masks, used_points) in enumerate(outputs):
+            _masks: list[Tensor] = []
+            _prompts: list[Tensor] = []
+            _scores: list[Tensor] = []
+            _labels: list[Tensor] = []
+            for label, predicted_mask in predicted_masks.items():
+                if len(predicted_mask) == 0:
+                    continue
+                _masks.append(torch.stack(predicted_mask, dim=0))
+                _used_points_scores = torch.stack(used_points[label], dim=0)
+                _prompts.append(_used_points_scores[:, :2])
+                _scores.append(_used_points_scores[:, 2])
+                _labels.append(torch.tensor([label] * len(_used_points_scores), dtype=torch.int64, device=self.device))
+
+            if len(_masks) == 0:
+                masks.append(
+                    tv_tensors.Mask(
+                        torch.zeros((1, *inputs.imgs_info[idx].ori_shape), dtype=torch.float32, device=self.device),
+                    ),
+                )
+                prompts.append(
+                    Points([], canvas_size=inputs.imgs_info[idx].ori_shape, dtype=torch.float32, device=self.device),
+                )
+                scores.append(torch.tensor([-1.0], dtype=torch.float32, device=self.device))
+                labels.append(torch.tensor([-1], dtype=torch.int64, device=self.device))
+                continue
+
+            masks.append(tv_tensors.Mask(torch.cat(_masks, dim=0)))
+            prompts.append(Points(torch.cat(_prompts, dim=0), canvas_size=inputs.imgs_info[idx].ori_shape))
+            scores.append(torch.cat(_scores, dim=0))
+            labels.append(torch.cat(_labels, dim=0))
+
+        return ZeroShotVisualPromptingBatchPredEntity(
+            batch_size=len(outputs),
+            images=inputs.images,
+            imgs_info=inputs.imgs_info,
+            scores=scores,
+            prompts=prompts,
+            masks=masks,
+            polygons=[],
+            labels=labels,
         )
 
     @property
@@ -305,7 +456,7 @@ class OTXZeroShotVisualPromptingModel(
         """Creates OTXModelExporter object that can export the model."""
         return OTXVisualPromptingModelExporter(
             task_level_export_parameters=self._export_parameters,
-            input_size=(1, 3, self.model.image_size, self.model.image_size),
+            input_size=(1, 3, *self.input_size),
             mean=(123.675, 116.28, 103.53),
             std=(58.395, 57.12, 57.375),
             resize_mode="fit_to_window",
@@ -444,7 +595,7 @@ class OTXZeroShotVisualPromptingModel(
 
     def get_dummy_input(self, batch_size: int = 1) -> ZeroShotVisualPromptingBatchDataEntity:
         """Returns a dummy input for ZSL VPT model."""
-        images = [torch.rand(3, self.model.image_size, self.model.image_size) for _ in range(batch_size)]
+        images = [torch.rand(3, *self.input_size) for _ in range(batch_size)]
         labels = [ZeroShotVisualPromptingLabel(prompts=torch.LongTensor([0]))] * batch_size
         prompts = [torch.zeros((1, 2))] * batch_size
         infos = []
@@ -1035,9 +1186,9 @@ class OVZeroShotVisualPromptingModel(
                 if len(predicted_mask.mask) == 0:
                     continue
                 _masks.append(np.stack(predicted_mask.mask, axis=0))
-                _used_points_scores = np.stack(predicted_mask.points, axis=0)
-                _prompts.append(_used_points_scores[:, :2])
-                _scores.append(_used_points_scores[:, 2])
+                _used_points_scores = np.stack(predicted_mask.scores, axis=0)
+                _prompts.append(np.stack(predicted_mask.points, axis=0))
+                _scores.append(_used_points_scores)
                 _labels.append(np.array([label] * len(_used_points_scores)))
 
             if len(_masks) == 0:

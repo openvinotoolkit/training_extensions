@@ -1,7 +1,7 @@
 model:
-  class_path: otx.algo.visual_prompting.segment_anything.OTXSegmentAnything
+  class_path: otx.algo.visual_prompting.sam.SAM
   init_args:
-    backbone: vit_b
+    backbone_type: vit_b
     label_info: 0
     freeze_image_encoder: true
     freeze_prompt_encoder: true

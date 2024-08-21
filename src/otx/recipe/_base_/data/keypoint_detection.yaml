@@ -5,18 +5,18 @@ stack_images: true
 data_format: coco_person_keypoints
 unannotated_items_ratio: 0.0
 image_color_channel: RGB
+input_size:
+  - 256
+  - 192
 train_subset:
   subset_name: train
   batch_size: 32
   transforms:
-    - class_path: otx.core.data.transform_libs.torchvision.GetBBoxCenterScale
+    - class_path: otx.core.data.transform_libs.torchvision.RandomBBoxTransform
     - class_path: otx.core.data.transform_libs.torchvision.TopdownAffine
       init_args:
-        input_size:
-          - 192
-          - 256
+        input_size: $(input_size)
     - class_path: otx.core.data.transform_libs.torchvision.YOLOXHSVRandomAug
-    - class_path: otx.core.data.transform_libs.torchvision.GenerateTarget
       init_args:
         is_numpy_to_tvtensor: true
     - class_path: torchvision.transforms.v2.ToDtype
@@ -30,14 +30,9 @@ val_subset:
   subset_name: val
   batch_size: 32
   transforms:
-    - class_path: otx.core.data.transform_libs.torchvision.GetBBoxCenterScale
     - class_path: otx.core.data.transform_libs.torchvision.TopdownAffine
       init_args:
-        input_size:
-          - 192
-          - 256
-    - class_path: otx.core.data.transform_libs.torchvision.GenerateTarget
-      init_args:
+        input_size: $(input_size)
         is_numpy_to_tvtensor: true
     - class_path: torchvision.transforms.v2.ToDtype
       init_args:
@@ -50,14 +45,9 @@ test_subset:
   subset_name: test
   batch_size: 32
   transforms:
-    - class_path: otx.core.data.transform_libs.torchvision.GetBBoxCenterScale
     - class_path: otx.core.data.transform_libs.torchvision.TopdownAffine
       init_args:
-        input_size:
-          - 192
-          - 256
-    - class_path: otx.core.data.transform_libs.torchvision.GenerateTarget
-      init_args:
+        input_size: $(input_size)
         is_numpy_to_tvtensor: true
     - class_path: torchvision.transforms.v2.ToDtype
       init_args:

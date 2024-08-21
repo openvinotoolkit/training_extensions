@@ -3,40 +3,35 @@
 
 import pytest
 import torch
-from otx.algo.classification.heads import OTXSemiSLLinearClsHead
-from torch import nn
+from otx.algo.classification.heads import SemiSLLinearClsHead
 
 
 class TestSemiSLClsHead:
     @pytest.fixture()
     def fxt_semi_sl_head(self):
         """Semi-SL for Classification Head Settings."""
-        return OTXSemiSLLinearClsHead(
+        return SemiSLLinearClsHead(
             num_classes=10,
             in_channels=10,
-            loss=nn.CrossEntropyLoss(reduction="none"),
         )
 
     def test_build_type_error(self):
         """Verifies that SemiSLClsHead parameters check with TypeError."""
         with pytest.raises(TypeError):
-            OTXSemiSLLinearClsHead(
+            SemiSLLinearClsHead(
                 num_classes=[1],
                 in_channels=10,
-                loss=nn.CrossEntropyLoss(reduction="none"),
             )
 
         with pytest.raises(TypeError):
-            OTXSemiSLLinearClsHead(
+            SemiSLLinearClsHead(
                 num_classes=10,
                 in_channels=[1],
-                loss=nn.CrossEntropyLoss(reduction="none"),
             )
 
     def test_head_initialize(self, fxt_semi_sl_head):
         """Verifies that SemiSLClsHead parameters check with ValueError."""
         assert fxt_semi_sl_head.num_classes == 10
-        assert fxt_semi_sl_head.unlabeled_coef == 1.0
         assert fxt_semi_sl_head.use_dynamic_threshold
         assert fxt_semi_sl_head.min_threshold == 0.5
         assert fxt_semi_sl_head.num_pseudo_label == 0
@@ -56,16 +51,6 @@ class TestSemiSLClsHead:
                 "unlabeled_strong": torch.tensor([]),
             },
         }
-
-    def test_loss(self, fxt_semi_sl_head, fxt_head_inputs):
-        """Verifies that SemiSLClsHead forward function works."""
-        loss = fxt_semi_sl_head.loss(**fxt_head_inputs)
-        # Check that the loss is always non-negative
-        assert loss >= 0
-
-        # Check that the loss is proportional to the size of the input
-        size = sum(v.numel() for v in fxt_head_inputs["feats"].values())
-        assert loss <= size
 
     def test_classwise_acc(self, fxt_semi_sl_head, fxt_head_inputs):
         """Verifies that SemiSLClsHead classwise_acc function works."""

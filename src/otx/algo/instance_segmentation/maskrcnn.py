@@ -5,7 +5,8 @@
 
 from __future__ import annotations
 
-from typing import Any
+from functools import partial
+from typing import TYPE_CHECKING, Any
 
 from torch import nn
 from torchvision.ops import RoIAlign
@@ -21,10 +22,21 @@ from otx.algo.instance_segmentation.heads import CustomConvFCBBoxHead, CustomRoI
 from otx.algo.instance_segmentation.necks import FPN
 from otx.algo.instance_segmentation.two_stage import TwoStageDetector
 from otx.algo.instance_segmentation.utils.roi_extractors import SingleRoIExtractor
+from otx.algo.modules.norm import build_norm_layer
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
+from otx.core.config.data import TileConfig
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter
+from otx.core.metrics.mean_ap import MaskRLEMeanAPFMeasureCallable
+from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
 from otx.core.model.instance_segmentation import ExplainableOTXInstanceSegModel
+
+if TYPE_CHECKING:
+    from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
+
+    from otx.core.metrics import MetricCallable
+    from otx.core.schedulers import LRSchedulerListCallable
+    from otx.core.types.label import LabelInfoTypes
 
 
 class MaskRCNN(ExplainableOTXInstanceSegModel):
@@ -33,15 +45,13 @@ class MaskRCNN(ExplainableOTXInstanceSegModel):
     @property
     def _exporter(self) -> OTXModelExporter:
         """Creates OTXModelExporter object that can export the model."""
-        if self.image_size is None:
-            msg = f"Image size attribute is not set for {self.__class__}"
+        if self.input_size is None:
+            msg = f"Input size attribute is not set for {self.__class__}"
             raise ValueError(msg)
-
-        input_size = self.tile_image_size if self.tile_config.enable_tiler else self.image_size
 
         return OTXNativeModelExporter(
             task_level_export_parameters=self._export_parameters,
-            input_size=input_size,
+            input_size=(1, 3, *self.input_size),
             mean=self.mean,
             std=self.std,
             resize_mode="fit_to_window",
@@ -75,10 +85,28 @@ class MaskRCNNResNet50(MaskRCNN):
         "https://download.openmmlab.com/mmdetection/v2.0/mask_rcnn/mask_rcnn_r50_fpn_mstrain-poly_3x_coco/"
         "mask_rcnn_r50_fpn_mstrain-poly_3x_coco_20210524_201154-21b550bb.pth"
     )
-    image_size = (1, 3, 1024, 1024)
-    tile_image_size = (1, 3, 512, 512)
     mean = (123.675, 116.28, 103.53)
     std = (58.395, 57.12, 57.375)
+
+    def __init__(
+        self,
+        label_info: LabelInfoTypes,
+        input_size: tuple[int, int] = (1024, 1024),
+        optimizer: OptimizerCallable = DefaultOptimizerCallable,
+        scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
+        metric: MetricCallable = MaskRLEMeanAPFMeasureCallable,
+        torch_compile: bool = False,
+        tile_config: TileConfig = TileConfig(enable_tiler=False),
+    ) -> None:
+        super().__init__(
+            label_info=label_info,
+            input_size=input_size,
+            optimizer=optimizer,
+            scheduler=scheduler,
+            metric=metric,
+            torch_compile=torch_compile,
+            tile_config=tile_config,
+        )
 
     def _build_model(self, num_classes: int) -> TwoStageDetector:
         train_cfg = {
@@ -153,7 +181,7 @@ class MaskRCNNResNet50(MaskRCNN):
         backbone = ResNet(
             depth=50,
             frozen_stages=1,
-            norm_cfg={"type": "BN", "requires_grad": True},
+            normalization=partial(build_norm_layer, nn.BatchNorm2d, requires_grad=True),
             norm_eval=True,
             num_stages=4,
             out_indices=(0, 1, 2, 3),
@@ -247,10 +275,28 @@ class MaskRCNNEfficientNet(MaskRCNN):
         "https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/"
         "models/instance_segmentation/v2/efficientnet_b2b-mask_rcnn-576x576.pth"
     )
-    image_size = (1, 3, 1024, 1024)
-    tile_image_size = (1, 3, 512, 512)
     mean = (123.675, 116.28, 103.53)
     std = (1.0, 1.0, 1.0)
+
+    def __init__(
+        self,
+        label_info: LabelInfoTypes,
+        input_size: tuple[int, int] = (1024, 1024),
+        optimizer: OptimizerCallable = DefaultOptimizerCallable,
+        scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
+        metric: MetricCallable = MaskRLEMeanAPFMeasureCallable,
+        torch_compile: bool = False,
+        tile_config: TileConfig = TileConfig(enable_tiler=False),
+    ) -> None:
+        super().__init__(
+            label_info=label_info,
+            input_size=input_size,
+            optimizer=optimizer,
+            scheduler=scheduler,
+            metric=metric,
+            torch_compile=torch_compile,
+            tile_config=tile_config,
+        )
 
     def _build_model(self, num_classes: int) -> TwoStageDetector:
         train_cfg = {
@@ -331,8 +377,8 @@ class MaskRCNNEfficientNet(MaskRCNN):
                 "out_indices": [2, 3, 4, 5],
                 "frozen_stages": -1,
                 "pretrained": True,
-                "activation_callable": nn.SiLU,
-                "norm_cfg": {"type": "BN", "requires_grad": True},
+                "activation": nn.SiLU,
+                "normalization": partial(build_norm_layer, nn.BatchNorm2d, requires_grad=True),
             },
         )
 
@@ -436,10 +482,28 @@ class MaskRCNNSwinT(MaskRCNN):
         "mask_rcnn_swin-t-p4-w7_fpn_fp16_ms-crop-3x_coco/"
         "mask_rcnn_swin-t-p4-w7_fpn_fp16_ms-crop-3x_coco_20210908_165006-90a4008c.pth"
     )
-    image_size = (1, 3, 1344, 1344)
-    tile_image_size = (1, 3, 512, 512)
     mean = (123.675, 116.28, 103.53)
     std = (58.395, 57.12, 57.375)
+
+    def __init__(
+        self,
+        label_info: LabelInfoTypes,
+        input_size: tuple[int, int] = (1344, 1344),
+        optimizer: OptimizerCallable = DefaultOptimizerCallable,
+        scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
+        metric: MetricCallable = MaskRLEMeanAPFMeasureCallable,
+        torch_compile: bool = False,
+        tile_config: TileConfig = TileConfig(enable_tiler=False),
+    ) -> None:
+        super().__init__(
+            label_info=label_info,
+            input_size=input_size,
+            optimizer=optimizer,
+            scheduler=scheduler,
+            metric=metric,
+            torch_compile=torch_compile,
+            tile_config=tile_config,
+        )
 
     def _build_model(self, num_classes: int) -> TwoStageDetector:
         train_cfg = {

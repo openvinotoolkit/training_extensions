@@ -2,10 +2,11 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from pathlib import Path
+from unittest.mock import MagicMock
 
 import pytest
 from otx.algo.classification.efficientnet import EfficientNetForMulticlassCls
-from otx.algo.classification.torchvision_model import OTXTVModel
+from otx.algo.classification.torchvision_model import TVModelForMulticlassCls
 from otx.core.model.base import OTXModel, OVModel
 from otx.core.types.export import OTXExportFormatType
 from otx.core.types.label import NullLabelInfo
@@ -51,8 +52,28 @@ class TestEngine:
         with pytest.raises(ValueError, match="Given model class (.*) requires a valid label_info to instantiate."):
             _ = Engine(work_dir=tmp_path, task="MULTI_CLASS_CLS")
 
+    @pytest.fixture()
+    def mock_datamodule(self, mocker):
+        input_size = (1234, 1234)
+        label_info = 4321
+        mock_datamodule = MagicMock()
+        mock_datamodule.label_info = label_info
+        mock_datamodule.input_size = input_size
+
+        return mocker.patch(
+            "otx.engine.utils.auto_configurator.AutoConfigurator.get_datamodule",
+            return_value=mock_datamodule,
+        )
+
+    def test_model_init(self, tmp_path, mock_datamodule):
+        data_root = "tests/assets/classification_dataset"
+        engine = Engine(work_dir=tmp_path, data_root=data_root)
+
+        assert engine._model.input_size == (1234, 1234)
+        assert engine._model.label_info.num_classes == 4321
+
     def test_model_setter(self, fxt_engine, mocker) -> None:
-        assert isinstance(fxt_engine.model, OTXTVModel)
+        assert isinstance(fxt_engine.model, TVModelForMulticlassCls)
         fxt_engine.model = "efficientnet_b0"
         assert isinstance(fxt_engine.model, EfficientNetForMulticlassCls)
 

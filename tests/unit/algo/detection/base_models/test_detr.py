@@ -3,6 +3,8 @@
 #
 """Test of DETR."""
 
+from unittest.mock import MagicMock
+
 import pytest
 import torch
 import torchvision
@@ -103,3 +105,17 @@ class TestDETR:
         assert result["bboxes"].shape == (2, 10, 4)
         # ensure no scaling
         assert torch.all(result["bboxes"] < 2)
+
+    def test_set_input_size(self):
+        input_size = 1280
+        model = DETR(
+            backbone=MagicMock(),
+            encoder=MagicMock(),
+            decoder=MagicMock(),
+            num_classes=10,
+            input_size=input_size,
+        )
+
+        expected_multi_scale = sorted([input_size - i * 32 for i in range(-5, 6)] + [input_size] * 2)
+
+        assert sorted(model.multi_scale) == expected_multi_scale

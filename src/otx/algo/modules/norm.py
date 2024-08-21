@@ -3,12 +3,12 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 
 """This implementation replaces the functionality of mmcv.cnn.bricks.norm.build_norm_layer."""
-# TODO(someone): Revisit mypy errors after deprecation of mmlab
-# mypy: ignore-errors
 
 from __future__ import annotations
 
 import inspect
+from functools import partial
+from typing import Any, Callable
 
 import torch
 from torch import nn
@@ -83,20 +83,18 @@ class FrozenBatchNorm2d(nn.Module):
         return "{num_features}, eps={eps}".format(**self.__dict__)
 
 
-NORM_DICT = {
-    "BN": nn.BatchNorm2d,
-    "BN1d": nn.BatchNorm1d,
-    "BN2d": nn.BatchNorm2d,
-    "BN3d": nn.BatchNorm3d,
-    "SyncBN": SyncBatchNorm,
-    "GN": nn.GroupNorm,
-    "LN": nn.LayerNorm,
-    "IN": nn.InstanceNorm2d,
-    "IN1d": nn.InstanceNorm1d,
-    "IN2d": nn.InstanceNorm2d,
-    "IN3d": nn.InstanceNorm3d,
-    "FBN": FrozenBatchNorm2d,
-}
+AVAILABLE_NORMALIZATION_LIST = [
+    nn.BatchNorm1d,
+    nn.BatchNorm2d,
+    nn.BatchNorm3d,
+    SyncBatchNorm,
+    nn.GroupNorm,
+    nn.LayerNorm,
+    nn.InstanceNorm1d,
+    nn.InstanceNorm2d,
+    nn.InstanceNorm3d,
+    FrozenBatchNorm2d,
+]
 
 
 def infer_abbr(class_type: type) -> str:
@@ -146,57 +144,97 @@ def infer_abbr(class_type: type) -> str:
     return "norm"
 
 
-def build_norm_layer(cfg: dict, num_features: int, postfix: int | str = "") -> tuple[str, nn.Module]:
+def _get_norm_type(normalization: Callable[..., nn.Module]) -> type:
+    """Get class type or name of given normalization callable.
+
+    Args:
+        normalization (Callable[..., nn.Module]): Normalization layer module.
+
+    Returns:
+        (type): Class type of given normalization callable.
+
+    """
+    return normalization.func if isinstance(normalization, partial) else normalization  # type: ignore[return-value]
+
+
+def build_norm_layer(
+    normalization: Callable[..., nn.Module] | tuple[str, nn.Module] | nn.Module | None,
+    num_features: int,
+    postfix: int | str = "",
+    layer_name: str | None = None,
+    requires_grad: bool = True,
+    eps: float = 1e-5,
+    **kwargs,
+) -> tuple[str, nn.Module]:
     """Build normalization layer.
 
     Args:
-        cfg (dict): The norm layer config, which should contain:
-
-            - type (str): Layer type.
-            - layer args: Args needed to instantiate a norm layer.
-            - requires_grad (bool, optional): Whether stop gradient updates.
-            - name (str, optional): The name of the layer.
+        normalization (Callable[..., nn.Module] | tuple[str, nn.Module] | nn.Module | None):
+            Normalization layer module. If tuple or None is given, return it as is.
+            If nn.Module is given, return it with empty name string. If callable is given, create the layer.
         num_features (int): Number of input channels.
         postfix (int | str): The postfix to be appended into norm abbreviation
             to create named layer.
+        layer_name (str | None): The name of the layer.
+            Defaults to None.
+        requires_grad (bool): Whether stop gradient updates.
+            Defaults to True.
+        eps (float): A value added to the denominator for numerical stability.
+            Defaults to 1e-5.
 
     Returns:
-        tuple[str, nn.Module]: The first element is the layer name consisting
+        (tuple[str, nn.Module] | None): The first element is the layer name consisting
         of abbreviation and postfix, e.g., bn1, gn. The second element is the
         created norm layer.
     """
-    if not isinstance(cfg, dict):
-        msg = "cfg must be a dict"
+    if normalization is None or isinstance(normalization, tuple):
+        # return tuple or None as is
+        return normalization  # type: ignore[return-value]
+
+    if isinstance(normalization, nn.Module):
+        # return nn.Module with empty name string
+        return "", normalization
+
+    if not callable(normalization):
+        msg = f"normalization must be a callable, but got {type(normalization)}."
         raise TypeError(msg)
-    if "type" not in cfg:
-        msg = 'the cfg dict must contain the key "type"'
-        raise KeyError(msg)
-    cfg_ = cfg.copy()
 
-    layer_type = cfg_.pop("type")
-    layer_name = cfg_.pop("name", None)
+    if isinstance(normalization, partial) and normalization.func.__name__ == "build_norm_layer":
+        # add arguments to `normalization` and return it
+        signature = inspect.signature(normalization.func)
+        predefined_key_list: list[str] = ["kwargs"]
 
-    if inspect.isclass(layer_type):
-        norm_layer = layer_type
-    else:
-        # Switch registry to the target scope. If `norm_layer` cannot be found
-        # in the registry, fallback to search `norm_layer` in the
-        # mmengine.MODELS.
-        norm_layer = NORM_DICT.get(layer_type)
-        if norm_layer is None:
-            msg = f"Cannot find {norm_layer} in {NORM_DICT.keys()} "
-            raise KeyError(msg)
-    abbr = infer_abbr(norm_layer) if layer_name is None else layer_name
+        # find keys according to normalization.args except for normalization type (index=0)
+        predefined_key_list.extend(list(signature.parameters.keys())[: len(normalization.args)])
 
+        # find keys according to normalization.keywords
+        predefined_key_list.extend(list(normalization.keywords.keys()))
+
+        # set the remaining parameters previously undefined in normalization
+        _locals = locals()
+        fn_kwargs: dict[str, Any] = {
+            k: _locals.get(k, None) for k in signature.parameters if k not in predefined_key_list
+        }
+
+        # manually update kwargs
+        fn_kwargs.update(_locals.get("kwargs", {}))
+        return normalization(**fn_kwargs)
+
+    if (layer_type := _get_norm_type(normalization)) not in AVAILABLE_NORMALIZATION_LIST:
+        msg = f"Unsupported normalization: {layer_type.__name__}."
+        raise ValueError(msg)
+
+    # set norm name
+    abbr = layer_name or infer_abbr(layer_type)
     name = abbr + str(postfix)
-    requires_grad = cfg_.pop("requires_grad", True)
-    cfg_.setdefault("eps", 1e-5)
-    if norm_layer is not nn.GroupNorm:
-        layer = norm_layer(num_features, **cfg_)
-        if layer_type == "SyncBN" and hasattr(layer, "_specify_ddp_gpu_num"):
+
+    # set norm layer
+    if layer_type is not nn.GroupNorm:
+        layer = normalization(num_features, eps=eps, **kwargs)
+        if layer_type == SyncBatchNorm and hasattr(layer, "_specify_ddp_gpu_num"):
             layer._specify_ddp_gpu_num(1)  # noqa: SLF001
     else:
-        layer = norm_layer(num_channels=num_features, **cfg_)
+        layer = normalization(num_channels=num_features, eps=eps, **kwargs)
 
     for param in layer.parameters():
         param.requires_grad = requires_grad

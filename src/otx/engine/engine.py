@@ -45,20 +45,6 @@ if TYPE_CHECKING:
     from otx.core.metrics import MetricCallable
 
 
-LITMODULE_PER_TASK = {
-    OTXTaskType.MULTI_CLASS_CLS: "otx.core.model.module.classification.OTXMulticlassClsLitModule",
-    OTXTaskType.MULTI_LABEL_CLS: "otx.core.model.module.classification.OTXMultilabelClsLitModule",
-    OTXTaskType.H_LABEL_CLS: "otx.core.model.module.classification.OTXHlabelClsLitModule",
-    OTXTaskType.DETECTION: "otx.core.model.module.detection.OTXDetectionLitModule",
-    OTXTaskType.ROTATED_DETECTION: "otx.core.model.module.rotated_detection.OTXRotatedDetLitModule",
-    OTXTaskType.INSTANCE_SEGMENTATION: "otx.core.model.module.instance_segmentation.OTXInstanceSegLitModule",
-    OTXTaskType.SEMANTIC_SEGMENTATION: "otx.core.model.module.segmentation.OTXSegmentationLitModule",
-    OTXTaskType.ACTION_CLASSIFICATION: "otx.core.model.module.action_classification.OTXActionClsLitModule",
-    OTXTaskType.VISUAL_PROMPTING: "otx.core.model.module.visual_prompting.OTXVisualPromptingLitModule",
-    OTXTaskType.ZERO_SHOT_VISUAL_PROMPTING: "otx.core.model.module.visual_prompting.OTXZeroShotVisualPromptingLitModule",  # noqa: E501
-}
-
-
 @contextmanager
 def override_metric_callable(model: OTXModel, new_metric_callable: MetricCallable | None) -> Iterator[OTXModel]:
     """Override `OTXModel.metric_callable` to change the evaluation metric.
@@ -154,12 +140,12 @@ class Engine:
         self.task = task if task is not None else self._auto_configurator.task
 
         self._trainer: Trainer | None = None
+        get_model_args: dict[str, Any] = {}
+        if self._datamodule is not None:
+            get_model_args["label_info"] = self._datamodule.label_info
+            get_model_args["input_size"] = self._datamodule.input_size
         self._model: OTXModel = (
-            model
-            if isinstance(model, OTXModel)
-            else self._auto_configurator.get_model(
-                label_info=self._datamodule.label_info if self._datamodule is not None else None,
-            )
+            model if isinstance(model, OTXModel) else self._auto_configurator.get_model(**get_model_args)
         )
 
     # ------------------------------------------------------------------------ #

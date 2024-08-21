@@ -13,6 +13,7 @@ from torch import nn
 from otx.algo.action_classification.backbones.x3d import X3DBackbone
 from otx.algo.action_classification.heads.x3d_head import X3DHead
 from otx.algo.action_classification.recognizers.recognizer import BaseRecognizer
+from otx.algo.modules.norm import build_norm_layer
 from otx.algo.utils.mmengine_utils import load_checkpoint
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.metrics.accuracy import MultiClassClsMetricCallable
@@ -33,6 +34,7 @@ class X3D(OTXActionClsModel):
     def __init__(
         self,
         label_info: LabelInfoTypes,
+        input_size: tuple[int, int] = (224, 224),
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MultiClassClsMetricCallable,
@@ -41,6 +43,7 @@ class X3D(OTXActionClsModel):
         self.load_from = "https://download.openmmlab.com/mmaction/recognition/x3d/facebook/x3d_m_facebook_16x5x1_kinetics400_rgb_20201027-3f42382a.pth"
         super().__init__(
             label_info=label_info,
+            input_size=input_size,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
@@ -65,8 +68,8 @@ class X3D(OTXActionClsModel):
                 gamma_b=2.25,
                 gamma_d=2.2,
                 gamma_w=1,
-                norm_cfg={"type": "BN3d", "requires_grad": True},
-                activation_callable=partial(nn.ReLU, inplace=True),
+                normalization=partial(build_norm_layer, nn.BatchNorm3d, requires_grad=True),
+                activation=partial(nn.ReLU, inplace=True),
             ),
             cls_head=X3DHead(
                 num_classes=num_classes,

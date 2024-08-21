@@ -1,20 +1,23 @@
 from __future__ import annotations
 
+from functools import partial
 from typing import Any
 
 import pytest
 import torch
-from otx.algo.segmentation.heads.ham_head import LightHamHead
+from otx.algo.modules.norm import build_norm_layer
+from otx.algo.segmentation.heads.ham_head import NNLightHamHead
+from torch import nn
 
 
-class TestLightHamHead:
+class TestNNLightHamHead:
     @pytest.fixture()
     def head_config(self) -> dict[str, Any]:
         return {
             "ham_kwargs": {"md_r": 16, "md_s": 1, "eval_steps": 7, "train_steps": 6},
             "in_channels": [128, 320, 512],
             "in_index": [1, 2, 3],
-            "norm_cfg": {"num_groups": 32, "requires_grad": True, "type": "GN"},
+            "normalization": partial(build_norm_layer, nn.GroupNorm, num_groups=32, requires_grad=True),
             "align_corners": False,
             "channels": 512,
             "dropout_ratio": 0.1,
@@ -23,7 +26,7 @@ class TestLightHamHead:
         }
 
     def test_init(self, head_config):
-        light_ham_head = LightHamHead(**head_config)
+        light_ham_head = NNLightHamHead(**head_config)
         assert light_ham_head.ham_channels == head_config["ham_channels"]
 
     @pytest.fixture()
@@ -40,7 +43,7 @@ class TestLightHamHead:
         ]
 
     def test_forward(self, head_config, fake_input, batch_size):
-        light_ham_head = LightHamHead(**head_config)
+        light_ham_head = NNLightHamHead(**head_config)
         out = light_ham_head.forward(fake_input)
         assert out.size()[0] == batch_size
         assert out.size()[2] == fake_input[head_config["in_index"][0]].size()[2]
