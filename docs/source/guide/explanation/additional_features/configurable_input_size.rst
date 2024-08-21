@@ -16,7 +16,39 @@ Usage example:
 
     $ otx train \
         --config ... \
-        --data.input_size 512
+
+.. tab-set::
+
+    .. tab-item:: API 1
+
+        .. code-block:: python
+
+            from otx.algo.detection.yolox import YOLOXS
+            from otx.core.data.module import OTXDataModule
+            from otx.engine import Engine
+
+            input_size = (512, 512)
+            model = YOLOXS(label_info=5, input_size=input_size)  # should be tuple[int, int]
+            datamodule = OTXDataModule(..., input_size=input_size)
+            engine = Engine(model=model, datamodule=datamodule)
+            engine.train()
+
+    .. tab-item:: API 2
+
+        .. code-block:: python
+
+            from otx.core.data.module import OTXDataModule
+            from otx.engine import Engine
+
+            datamodule = OTXDataModule(..., input_size=(512, 512))
+            engine = Engine(model="yolox_s", datamodule=datamodule)  # model input size will be aligned with the datamodule input size
+            engine.train()
+
+    .. tab-item:: CLI
+
+        .. code-block:: bash
+
+            (otx) ...$ otx train ... --data.input_size 512
 
 .. _adaptive-input-size:
 
@@ -32,11 +64,30 @@ In "downscale" mode, the input size will either decrease or remain unchanged, en
 
 To activate this feature, use the following command with the desired mode:
 
-.. code-block::
+.. tab-set::
 
-    $ otx train \
-        --config ... \
-        --data.adaptive_input_size "auto | downscale"
+    .. tab-item:: API
+
+        .. code-block:: python
+
+            from otx.algo.detection.yolox import YOLOXS
+            from otx.core.data.module import OTXDataModule
+            from otx.engine import Engine
+
+            datamodule = OTXDataModule(
+                ...
+                adaptive_input_size="auto",  # auto or downscale
+                input_size_multiplier=YOLOXS.input_size_multiplier, # should set the input_size_multiplier of the model
+            )
+            model = YOLOXS(label_info=5, input_size=datamodule.input_size)
+            engine = Engine(model=model, datamodule=datamodule)
+            engine.train()
+
+    .. tab-item:: CLI
+
+        .. code-block:: bash
+
+            (otx) ...$ otx train ... --data.adaptive_input_size "auto | downscale"
 
 The adaptive process includes the following steps:
 

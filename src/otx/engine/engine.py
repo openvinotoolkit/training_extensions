@@ -143,7 +143,8 @@ class Engine:
         get_model_args: dict[str, Any] = {}
         if self._datamodule is not None:
             get_model_args["label_info"] = self._datamodule.label_info
-            get_model_args["input_size"] = self._datamodule.input_size
+            if (input_size := self._datamodule.input_size) is not None:
+                get_model_args["input_size"] = (input_size, input_size) if isinstance(input_size, int) else input_size
         self._model: OTXModel = (
             model if isinstance(model, OTXModel) else self._auto_configurator.get_model(**get_model_args)
         )
