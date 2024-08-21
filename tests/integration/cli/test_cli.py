@@ -9,9 +9,9 @@ import cv2
 import pytest
 import torch
 import yaml
-
 from otx.core.types.task import OTXTaskType
 from otx.engine.utils.auto_configurator import DEFAULT_CONFIG_PER_TASK
+
 from tests.utils import ExportCase2Test, run_main
 
 

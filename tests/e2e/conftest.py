@@ -9,8 +9,8 @@ import os
 from pathlib import Path
 
 import pytest
-
 from otx.core.types.task import OTXTaskType
+
 from tests.test_helpers import find_folder
 
 

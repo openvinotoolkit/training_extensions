@@ -4,7 +4,6 @@
 """Test Factory classes for dataset and transforms."""
 
 import pytest
-
 from otx.core.config.data import SubsetConfig, VisualPromptingConfig
 from otx.core.data.dataset.action_classification import OTXActionClsDataset
 from otx.core.data.dataset.anomaly import AnomalyDataset
