@@ -93,6 +93,14 @@ def test_conv_module():
     assert not hasattr(conv, "bn")
     assert conv.some_norm_layer == conv.norm_layer
 
+    # Test norm layer only
+    conv = Conv2dModule(3, 8, 2, normalization=nn.BatchNorm2d(num_features=8))
+    assert conv.norm_layer.__class__.__name__ == "BatchNorm2d"
+    assert conv.norm_name == "bn"
+    assert hasattr(conv, "norm_layer")
+    assert hasattr(conv, "bn")
+    assert conv.bn == conv.norm_layer
+
 
 def test_bias():
     # bias: auto, without norm
