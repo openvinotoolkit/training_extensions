@@ -11,7 +11,7 @@ from torch import Tensor, nn
 
 from otx.algo.common.losses import CrossEntropyLoss, CrossSigmoidFocalLoss, QualityFocalLoss
 from otx.algo.common.utils.bbox_overlaps import bbox_overlaps
-from otx.algo.common.utils.utils import reduce_mean
+from otx.algo.common.utils.utils import multi_apply, reduce_mean
 
 
 class ATSSCriterion(nn.Module):
@@ -84,6 +84,57 @@ class ATSSCriterion(nn.Module):
         """Compute loss of a single scale level.
 
         Args:
+            anchors (Tensor): Box reference for scale levels with shape (N, num_total_anchors, 4).
+            cls_score (Tensor): Box scores for scale levels have shape (N, num_anchors * num_classes, H, W).
+            bbox_pred (Tensor): Box energies / deltas for scale levels with shape (N, num_anchors * 4, H, W).
+            centerness(Tensor): Centerness scores for each scale level.
+            labels (Tensor): Labels of anchors with shape (N, num_total_anchors).
+            label_weights (Tensor): Label weights of anchors with shape (N, num_total_anchors)
+            bbox_targets (Tensor): BBox regression targets of anchors with shape (N, num_total_anchors, 4).
+            valid_label_mask (Tensor): Label mask for consideration of ignored label
+                with shape (N, num_total_anchors, 1).
+            avg_factor (float): Average factor that is used to average
+                the loss. When using sampling method, avg_factor is usually
+                the sum of positive and negative priors. When using
+                `PseudoSampler`, `avg_factor` is usually equal to the number
+                of positive priors.
+
+        Returns:
+            dict[str, Tensor]: A dictionary of loss components.
+        """
+        losses_cls, losses_bbox, loss_centerness, bbox_avg_factor = multi_apply(
+            self._forward,
+            anchors,
+            cls_score,
+            bbox_pred,
+            centerness,
+            labels,
+            label_weights,
+            bbox_targets,
+            valid_label_mask,
+            avg_factor=avg_factor,
+        )
+
+        bbox_avg_factor = sum(bbox_avg_factor)
+        bbox_avg_factor = reduce_mean(bbox_avg_factor).clamp_(min=1).item()
+        losses_bbox = [loss_bbox / bbox_avg_factor for loss_bbox in losses_bbox]
+        return {"loss_cls": losses_cls, "loss_bbox": losses_bbox, "loss_centerness": loss_centerness}
+
+    def _forward(
+        self,
+        anchors: Tensor,
+        cls_score: Tensor,
+        bbox_pred: Tensor,
+        centerness: Tensor,
+        labels: Tensor,
+        label_weights: Tensor,
+        bbox_targets: Tensor,
+        valid_label_mask: Tensor,
+        avg_factor: float,
+    ) -> tuple:
+        """Compute loss of a single scale level.
+
+        Args:
             anchors (Tensor): Box reference for each scale level with shape
                 (N, num_total_anchors, 4).
             cls_score (Tensor): Box scores for each scale level
@@ -106,7 +157,7 @@ class ATSSCriterion(nn.Module):
                 of positive priors.
 
         Returns:
-            dict[str, Tensor]: A dictionary of loss components.
+            tuple[Tensor]: A tuple of loss components.
         """
         anchors = anchors.reshape(-1, 4)
         cls_score = cls_score.permute(0, 2, 3, 1).reshape(-1, self.cls_out_channels).contiguous()
@@ -160,12 +211,7 @@ class ATSSCriterion(nn.Module):
         # classification loss
         loss_cls = self._get_loss_cls(cls_score, labels, label_weights, valid_label_mask, avg_factor)
 
-        bbox_avg_factor = centerness_targets.sum()
-
-        bbox_avg_factor = sum(bbox_avg_factor)
-        bbox_avg_factor = reduce_mean(bbox_avg_factor).clamp_(min=1).item()
-        loss_bbox = [x / bbox_avg_factor for x in loss_bbox]
-        return {"loss_cls": loss_cls, "loss_bbox": loss_bbox, "loss_centerness": loss_centerness}
+        return loss_cls, loss_bbox, loss_centerness, centerness_targets.sum()
 
     def centerness_target(self, anchors: Tensor, gts: Tensor) -> Tensor:
         """Calculate the centerness between anchors and gts.

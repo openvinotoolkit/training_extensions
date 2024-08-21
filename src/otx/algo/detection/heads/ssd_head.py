@@ -25,6 +25,7 @@ class SSDHead(AnchorHead):
 
     Args:
         anchor_generator (nn.Module): Config dict for anchor generator.
+        bbox_coder (nn.Module): Config of bounding box coder.
         init_cfg (dict, list[dict]): Initialization config dict.
         train_cfg (dict): Training config of anchor head.
         num_classes (int): Number of categories excluding the background category.
@@ -35,12 +36,18 @@ class SSDHead(AnchorHead):
             Defaults to 256.
         use_depthwise (bool): Whether to use DepthwiseSeparableConv.
             Defaults to False.
+        reg_decoded_bbox (bool): If true, the regression loss would be
+            applied directly on decoded bounding boxes, converting both
+            the predicted boxes and regression targets to absolute
+            coordinates format. Defaults to False. It should be `True` when
+            using `IoULoss`, `GIoULoss`, or `DIoULoss` in the bbox head.
         test_cfg (dict, Optional): Testing config of anchor head.
     """
 
     def __init__(
         self,
         anchor_generator: nn.Module,
+        bbox_coder: nn.Module,
         init_cfg: dict | list[dict],
         train_cfg: dict,
         num_classes: int = 80,
@@ -48,6 +55,7 @@ class SSDHead(AnchorHead):
         stacked_convs: int = 0,
         feat_channels: int = 256,
         use_depthwise: bool = False,
+        reg_decoded_bbox: bool = False,
         test_cfg: dict | None = None,
     ) -> None:
         super(AnchorHead, self).__init__(init_cfg=init_cfg)
@@ -67,6 +75,8 @@ class SSDHead(AnchorHead):
 
         self._init_layers()
 
+        self.bbox_coder = bbox_coder
+        self.reg_decoded_bbox = reg_decoded_bbox
         self.use_sigmoid_cls = False
         self.cls_focal_loss = False
         self.train_cfg = train_cfg
@@ -153,13 +163,13 @@ class SSDHead(AnchorHead):
         all_anchors = [torch.cat(anchor) for anchor in anchor_list]
 
         return {
-            "all_cls_scores": all_cls_scores,
-            "all_bbox_preds": all_bbox_preds,
-            "all_anchors": all_anchors,
-            "all_labels": all_labels,
-            "all_label_weights": all_label_weights,
-            "all_bbox_targets": all_bbox_targets,
-            "all_bbox_weights": all_bbox_weights,
+            "cls_score": all_cls_scores,
+            "bbox_pred": all_bbox_preds,
+            "anchor": all_anchors,
+            "labels": all_labels,
+            "label_weights": all_label_weights,
+            "bbox_targets": all_bbox_targets,
+            "bbox_weights": all_bbox_weights,
             "avg_factor": avg_factor,
         }
 

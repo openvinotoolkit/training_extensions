@@ -115,6 +115,10 @@ class SSD(ExplainableOTXDetModel):
                     [587.6216059488938, 381.60024152086544, 323.5988913027747, 702.7486097568518, 741.4865860938451],
                 ],
             ),
+            bbox_coder=DeltaXYWHBBoxCoder(
+                target_means=(0.0, 0.0, 0.0, 0.0),
+                target_stds=(0.1, 0.1, 0.2, 0.2),
+            ),
             num_classes=num_classes,
             in_channels=(96, 320),
             use_depthwise=True,

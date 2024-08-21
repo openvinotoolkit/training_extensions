@@ -37,6 +37,7 @@ class YOLOXCriterion(nn.Module):
         loss_bbox: nn.Module | None = None,
         loss_obj: nn.Module | None = None,
         loss_l1: nn.Module | None = None,
+        use_l1: bool = False,
     ) -> None:
         super().__init__()
         self.num_classes = num_classes
@@ -44,6 +45,7 @@ class YOLOXCriterion(nn.Module):
         self.loss_bbox = loss_bbox or IoULoss(mode="square", eps=1e-16, reduction="sum", loss_weight=5.0)
         self.loss_obj = loss_obj or CrossEntropyLoss(use_sigmoid=True, reduction="sum", loss_weight=1.0)
         self.loss_l1 = loss_l1 or L1Loss(reduction="sum", loss_weight=1.0)
+        self.use_l1 = use_l1
 
     def forward(
         self,

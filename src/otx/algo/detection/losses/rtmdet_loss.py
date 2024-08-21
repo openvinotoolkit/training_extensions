@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from torch import Tensor, nn
 
-from otx.algo.common.utils.utils import reduce_mean
+from otx.algo.common.utils.utils import multi_apply, reduce_mean
 
 
 class RTMDetCriterion(nn.Module):
@@ -35,7 +35,7 @@ class RTMDetCriterion(nn.Module):
             msg = f"num_classes={num_classes} is too small"
             raise ValueError(msg)
 
-    def forward(  # type: ignore[override]
+    def forward(
         self,
         cls_score: Tensor,
         bbox_pred: Tensor,
@@ -49,23 +49,46 @@ class RTMDetCriterion(nn.Module):
         """Compute loss of a single scale level.
 
         Args:
-            cls_score (Tensor): Box scores for each scale level
-                Has shape (N, num_anchors * num_classes, H, W).
-            bbox_pred (Tensor): Decoded bboxes for each scale
-                level with shape (N, num_anchors * 4, H, W).
-            labels (Tensor): Labels of each anchors with shape
-                (N, num_total_anchors).
-            label_weights (Tensor): Label weights of each anchor with shape
-                (N, num_total_anchors).
-            bbox_targets (Tensor): BBox regression targets of each anchor with
-                shape (N, num_total_anchors, 4).
-            assign_metrics (Tensor): Assign metrics with shape
-                (N, num_total_anchors).
+            cls_score (Tensor): Box scores for scale levels have shape (N, num_anchors * num_classes, H, W).
+            bbox_pred (Tensor): Decoded bboxes for scale levels with shape (N, num_anchors * 4, H, W).
+            labels (Tensor): Labels of anchors with shape (N, num_total_anchors).
+            label_weights (Tensor): Label weights of anchors with shape (N, num_total_anchors).
+            bbox_targets (Tensor): BBox regression targets of anchors with shape (N, num_total_anchors, 4).
+            assign_metrics (Tensor): Assign metrics with shape (N, num_total_anchors).
             stride (list[int]): Downsample stride of the feature map.
 
         Returns:
             dict[str, Tensor]: A dictionary of loss components.
         """
+        losses_cls, losses_bbox, cls_avg_factors, bbox_avg_factors = multi_apply(
+            self._forward,
+            cls_score,
+            bbox_pred,
+            labels,
+            label_weights,
+            bbox_targets,
+            assign_metrics,
+            stride,
+        )
+
+        cls_avg_factor = reduce_mean(sum(cls_avg_factors)).clamp_(min=1).item()
+        losses_cls = [x / cls_avg_factor for x in losses_cls]
+
+        bbox_avg_factor = reduce_mean(sum(bbox_avg_factors)).clamp_(min=1).item()
+        losses_bbox = [x / bbox_avg_factor for x in losses_bbox]
+        return {"loss_cls": losses_cls, "loss_bbox": losses_bbox}
+
+    def _forward(
+        self,
+        cls_score: Tensor,
+        bbox_pred: Tensor,
+        labels: Tensor,
+        label_weights: Tensor,
+        bbox_targets: Tensor,
+        assign_metrics: Tensor,
+        stride: list[int],
+    ) -> tuple[Tensor, ...]:
+        """Compute loss of a single scale level."""
         if stride[0] != stride[1]:
             msg = "h stride is not equal to w stride!"
             raise ValueError(msg)
@@ -103,12 +126,4 @@ class RTMDetCriterion(nn.Module):
             loss_bbox = bbox_pred.sum() * 0
             pos_bbox_weight = bbox_targets.new_tensor(0.0)
 
-        cls_avg_factors = assign_metrics.sum()
-        bbox_avg_factors = pos_bbox_weight.sum()
-
-        cls_avg_factor = reduce_mean(sum(cls_avg_factors)).clamp_(min=1).item()
-        loss_cls = [x / cls_avg_factor for x in loss_cls]
-
-        bbox_avg_factor = reduce_mean(sum(bbox_avg_factors)).clamp_(min=1).item()
-        loss_bbox = [x / bbox_avg_factor for x in loss_bbox]
-        return {"loss_cls": loss_cls, "loss_bbox": loss_bbox}
+        return loss_cls, loss_bbox, assign_metrics.sum(), pos_bbox_weight.sum()
