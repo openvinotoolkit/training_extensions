@@ -149,13 +149,13 @@ class MobileNetV2ATSS(ATSS):
             feat_channels=64,
             train_cfg=train_cfg,
             test_cfg=test_cfg,
-            loss_cls=CrossSigmoidFocalLoss(  # TODO (eugene): deprecated
+            loss_cls=CrossSigmoidFocalLoss(  # TODO (kirill): deprecated
                 use_sigmoid=True,
                 gamma=2.0,
                 alpha=0.25,
                 loss_weight=1.0,
             ),
-            loss_bbox=GIoULoss(loss_weight=2.0),  # TODO (eugene): deprecated
+            loss_bbox=GIoULoss(loss_weight=2.0),  # TODO (kirill): deprecated
         )
         criterion = ATSSCriterion(
             num_classes=num_classes,
@@ -236,13 +236,13 @@ class ResNeXt101ATSS(ATSS):
             in_channels=256,
             train_cfg=train_cfg,
             test_cfg=test_cfg,
-            loss_cls=CrossSigmoidFocalLoss(  # TODO (eugene): deprecated
+            loss_cls=CrossSigmoidFocalLoss(  # TODO (kirill): deprecated
                 use_sigmoid=True,
                 gamma=2.0,
                 alpha=0.25,
                 loss_weight=1.0,
             ),
-            loss_bbox=GIoULoss(loss_weight=2.0),  # TODO (eugene): deprecated
+            loss_bbox=GIoULoss(loss_weight=2.0),  # TODO (kirill): deprecated
         )
         criterion = ATSSCriterion(
             num_classes=num_classes,

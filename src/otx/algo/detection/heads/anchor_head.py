@@ -51,8 +51,8 @@ class AnchorHead(BaseDenseHead):
         in_channels: tuple[int, ...] | int,
         anchor_generator: nn.Module,
         bbox_coder: nn.Module,
-        loss_cls: nn.Module,  # TODO (eugene): deprecated
-        loss_bbox: nn.Module,  # TODO (eugene): deprecated
+        loss_cls: nn.Module,  # TODO (kirill): deprecated
+        loss_bbox: nn.Module,  # TODO (kirill): deprecated
         train_cfg: dict,
         test_cfg: dict | None = None,
         feat_channels: int = 256,
@@ -412,7 +412,7 @@ class AnchorHead(BaseDenseHead):
     ) -> tuple:
         """Calculate the loss of a single scale level based on the features extracted by the detection head.
 
-        TODO (eugene): it is related to RPNHead for iseg, will be deprecated
+        TODO (kirill): it is related to RPNHead for iseg, will be deprecated
 
         Args:
             cls_score (Tensor): Box scores for each scale level
@@ -463,7 +463,7 @@ class AnchorHead(BaseDenseHead):
     ) -> dict:
         """Calculate the loss based on the features extracted by the detection head.
 
-        TODO (eugene): it is related to RPNHead for iseg, will be deprecated
+        TODO (kirill): it is related to RPNHead for iseg, will be deprecated
 
         Args:
             cls_scores (list[Tensor]): Box scores for each scale level

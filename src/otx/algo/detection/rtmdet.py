@@ -148,8 +148,8 @@ class RTMDetTiny(RTMDet):
             activation_callable=partial(nn.SiLU, inplace=True),
             train_cfg=train_cfg,
             test_cfg=test_cfg,
-            loss_cls=QualityFocalLoss(use_sigmoid=True, beta=2.0, loss_weight=1.0),  # TODO (eugene): deprecated
-            loss_bbox=GIoULoss(loss_weight=2.0),  # TODO (eugene): deprecated
+            loss_cls=QualityFocalLoss(use_sigmoid=True, beta=2.0, loss_weight=1.0),  # TODO (kirill): deprecated
+            loss_bbox=GIoULoss(loss_weight=2.0),  # TODO (kirill): deprecated
         )
 
         criterion = RTMDetCriterion(
