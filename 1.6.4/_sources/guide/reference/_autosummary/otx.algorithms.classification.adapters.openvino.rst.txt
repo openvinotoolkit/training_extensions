@@ -1,0 +1,29 @@
+otx.algorithms.classification.adapters.openvino
+===============================================
+
+.. automodule:: otx.algorithms.classification.adapters.openvino
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      ClassificationOpenVINOTask
+   
+   
+
+   
+   
+   
+
+
+

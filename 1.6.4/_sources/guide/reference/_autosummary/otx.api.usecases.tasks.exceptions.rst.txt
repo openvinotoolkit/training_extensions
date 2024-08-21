@@ -1,0 +1,31 @@
+otx.api.usecases.tasks.exceptions
+=================================
+
+.. automodule:: otx.api.usecases.tasks.exceptions
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Exceptions
+
+   .. autosummary::
+   
+      OOMException
+      TrainingStallException
+      UnrecoverableTaskException
+   
+   
+
+
+

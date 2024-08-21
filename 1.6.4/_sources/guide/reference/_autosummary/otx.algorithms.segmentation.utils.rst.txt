@@ -1,0 +1,30 @@
+otx.algorithms.segmentation.utils
+=================================
+
+.. automodule:: otx.algorithms.segmentation.utils
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      get_activation_map
+      get_seg_model_api_configuration
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

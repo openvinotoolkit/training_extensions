@@ -1,0 +1,31 @@
+otx.algorithms.visual\_prompting.adapters.pytorch\_lightning.models.decoders
+============================================================================
+
+.. automodule:: otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.decoders
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.decoders.sam_mask_decoder
+

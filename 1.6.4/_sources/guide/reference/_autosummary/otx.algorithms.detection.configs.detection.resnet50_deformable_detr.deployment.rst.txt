@@ -1,0 +1,23 @@
+otx.algorithms.detection.configs.detection.resnet50\_deformable\_detr.deployment
+================================================================================
+
+.. automodule:: otx.algorithms.detection.configs.detection.resnet50_deformable_detr.deployment
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

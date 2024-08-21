@@ -1,0 +1,30 @@
+otx.algorithms.visual\_prompting.adapters.pytorch\_lightning.models.visual\_prompters.zero\_shot\_segment\_anything
+===================================================================================================================
+
+.. automodule:: otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.zero_shot_segment_anything
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      PromptGetter
+      ZeroShotSegmentAnything
+   
+   
+
+   
+   
+   
+
+
+

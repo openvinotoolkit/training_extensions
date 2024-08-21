@@ -1,0 +1,29 @@
+otx.algorithms.anomaly.configs.segmentation.padim
+=================================================
+
+.. automodule:: otx.algorithms.anomaly.configs.segmentation.padim
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      PadimAnomalySegmentationConfig
+   
+   
+
+   
+   
+   
+
+
+

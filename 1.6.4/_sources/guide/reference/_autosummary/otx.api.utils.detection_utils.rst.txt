@@ -1,0 +1,29 @@
+otx.api.utils.detection\_utils
+==============================
+
+.. automodule:: otx.api.utils.detection_utils
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      detection2array
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
