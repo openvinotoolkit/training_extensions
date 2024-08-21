@@ -49,6 +49,10 @@ class MaskRCNN(ExplainableOTXInstanceSegModel):
     effnet_std = (1.0, 1.0, 1.0)
 
     def _build_model(self, num_classes: int) -> TwoStageDetector:
+        if self.model_name not in self.AVAILABLE_MODEL_VERSIONS:
+            msg = f"Model version {self.model_name} is not supported."
+            raise ValueError(msg)
+
         rpn_assigner = MaxIoUAssigner(
             pos_iou_thr=0.7,
             neg_iou_thr=0.3,
@@ -224,7 +228,7 @@ class MaskRCNN(ExplainableOTXInstanceSegModel):
                 "preset": "mixed",
             }
 
-        elif self.model_name == "maskrcnn_swin_t":
+        if self.model_name == "maskrcnn_swin_t":
             return {
                 "ignored_scope": {
                     "types": [

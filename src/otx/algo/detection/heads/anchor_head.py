@@ -65,6 +65,7 @@ class AnchorHead(BaseDenseHead):
         max_per_img: int = 1000,
         min_bbox_size: int = 0,
         nms_iou_threshold: float = 0.7,
+        score_threshold: float = 0.05,
         nms_pre: int = 1000,
         with_nms: bool = True,
     ) -> None:
@@ -73,6 +74,7 @@ class AnchorHead(BaseDenseHead):
             min_bbox_size=min_bbox_size,
             nms_iou_threshold=nms_iou_threshold,
             nms_pre=nms_pre,
+            score_threshold=score_threshold,
             with_nms=with_nms,
         )
 

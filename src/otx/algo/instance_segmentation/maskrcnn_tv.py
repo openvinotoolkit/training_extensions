@@ -10,7 +10,6 @@ from typing import Any, ClassVar
 import torch
 from torch import Tensor, nn
 from torchvision import tv_tensors
-from otx.algo.instance_segmentation.segmentors.maskrcnn_tv import FastRCNNConvFCHead, RPNHead, MaskRCNNHeads, MaskRCNNBackbone, MaskRCNNTV
 from torchvision.models.detection.faster_rcnn import FastRCNNPredictor, _default_anchorgen
 from torchvision.models.detection.mask_rcnn import (
     MaskRCNN_ResNet50_FPN_V2_Weights,
@@ -18,6 +17,13 @@ from torchvision.models.detection.mask_rcnn import (
 )
 
 from otx.algo.instance_segmentation.heads import TVRoIHeads
+from otx.algo.instance_segmentation.segmentors.maskrcnn_tv import (
+    FastRCNNConvFCHead,
+    MaskRCNNBackbone,
+    MaskRCNNHeads,
+    MaskRCNNTV,
+    RPNHead,
+)
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.instance_segmentation import InstanceSegBatchDataEntity, InstanceSegBatchPredEntity
 from otx.core.data.entity.utils import stack_batch
@@ -26,23 +32,21 @@ from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.model.instance_segmentation import ExplainableOTXInstanceSegModel
 
 
-
 class TVMaskRCNN(ExplainableOTXInstanceSegModel):
     """Implementation of torchvision MaskRCNN for instance segmentation."""
-    load_from = {"resnet_50": MaskRCNN_ResNet50_FPN_V2_Weights.verify("DEFAULT")}
+
+    load_from: ClassVar[dict[str, Any]] = {"maskrcnn_resnet50": MaskRCNN_ResNet50_FPN_V2_Weights.verify("DEFAULT")}
     mean = (123.675, 116.28, 103.53)
     std = (58.395, 57.12, 57.375)
 
     AVAILABLE_MODEL_VERSIONS: ClassVar[list[str]] = [
-        "resnet_50",
+        "maskrcnn_resnet50",
     ]
 
     def _create_model(self) -> nn.Module:
-        """create MaskRCNN model with TV implementation."""
-
+        """Create MaskRCNN model with TV implementation."""
         if self.model_name not in self.AVAILABLE_MODEL_VERSIONS:
-            msg = f"Model {self.model_name} is not supported.
-                    Supported models are {self.AVAILABLE_MODEL_VERSIONS}"
+            msg = f"Model version {self.model_name} is not supported."
             raise ValueError(msg)
 
         # NOTE: Add 1 to num_classes to account for background class.
@@ -51,10 +55,10 @@ class TVMaskRCNN(ExplainableOTXInstanceSegModel):
 
         # init model components, model itself and load weights
         rpn_anchor_generator = _default_anchorgen()
-        backbone = MaskRCNNBackbone(version=self.model_name)
-        rpn_head = RPNHead(version=self.model_name, anchorgen=rpn_anchor_generator)
-        box_head = FastRCNNConvFCHead(version=self.model_name)
-        mask_head = MaskRCNNHeads(version=self.model_name)
+        backbone = MaskRCNNBackbone(model_name=self.model_name)
+        rpn_head = RPNHead(model_name=self.model_name, anchorgen=rpn_anchor_generator)
+        box_head = FastRCNNConvFCHead(model_name=self.model_name)
+        mask_head = MaskRCNNHeads(model_name=self.model_name)
 
         model = MaskRCNNTV(
             backbone,

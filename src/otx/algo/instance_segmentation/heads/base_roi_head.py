@@ -10,10 +10,12 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from torch import nn
+
 from otx.core.data.entity.instance_segmentation import InstanceSegBatchDataEntity
 
 if TYPE_CHECKING:
-    from torch import Tensor, nn
+    from torch import Tensor
 
     from otx.algo.utils.mmengine_utils import InstanceData
 

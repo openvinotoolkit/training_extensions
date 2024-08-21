@@ -9,6 +9,7 @@ Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/d
 from __future__ import annotations
 
 import warnings
+from typing import TYPE_CHECKING, Any, ClassVar
 
 import torch
 import torch.nn.functional
@@ -24,6 +25,12 @@ from otx.algo.modules.conv_module import Conv2dModule
 from otx.algo.utils.mmengine_utils import InstanceData
 from otx.core.data.entity.base import OTXBatchDataEntity
 from otx.core.data.entity.instance_segmentation import InstanceSegBatchDataEntity
+
+if TYPE_CHECKING:
+    from otx.algo.common.utils.assigners import MaxIoUAssigner
+    from otx.algo.common.utils.coders import DeltaXYWHBBoxCoder
+    from otx.algo.common.utils.prior_generators import AnchorGenerator
+    from otx.algo.common.utils.samplers.base_sampler import BaseSampler
 
 # ruff: noqa: PLW2901
 
@@ -513,7 +520,9 @@ class RPNHeadModule(AnchorHead):
 
 
 class RPNHead:
-    RPNHEAD_CFG = {
+    """RPNHead factory for instance segmentation regional proposal network."""
+
+    RPNHEAD_CFG: ClassVar[dict[str, Any]] = {
         "maskrcnn_resnet50": {
             "in_channels": 256,
             "feat_channels": 256,
@@ -541,10 +550,13 @@ class RPNHead:
         loss_cls: nn.Module,
         loss_bbox: nn.Module,
     ) -> RPNHeadModule:
+        """RPNHead factory for instance segmentation regional proposal network."""
         return RPNHeadModule(
             **cls.RPNHEAD_CFG[model_name],
             anchor_generator=anchor_generator,
             bbox_coder=bbox_coder,
             assigner=assigner,
             sampler=sampler,
+            loss_bbox=loss_bbox,
+            loss_cls=loss_cls,
         )

@@ -6,20 +6,24 @@
 from __future__ import annotations
 
 from collections import OrderedDict
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, ClassVar
 
 import torch
 from torch import Tensor, nn
-from torchvision.models.detection.image_list import ImageList
-from torchvision.models.detection.roi_heads import paste_masks_in_image
 from torchvision.models.detection.backbone_utils import _resnet_fpn_extractor, _validate_trainable_layers
-from torchvision.models.detection.faster_rcnn import FastRCNNConvFCHead as _FastRCNNConvFCHead, RPNHead as _RPNHead, AnchorGenerator
+from torchvision.models.detection.faster_rcnn import AnchorGenerator
+from torchvision.models.detection.faster_rcnn import FastRCNNConvFCHead as _FastRCNNConvFCHead
+from torchvision.models.detection.faster_rcnn import RPNHead as _RPNHead
+from torchvision.models.detection.image_list import ImageList
 from torchvision.models.detection.mask_rcnn import (
     MaskRCNN as _MaskRCNN,
+)
+from torchvision.models.detection.mask_rcnn import (
     MaskRCNNHeads as _MaskRCNNHeads,
 )
 from torchvision.models.detection.roi_heads import paste_masks_in_image
 from torchvision.models.resnet import resnet50
+
 if TYPE_CHECKING:
     from otx.core.data.entity.instance_segmentation import InstanceSegBatchDataEntity
 
@@ -121,11 +125,12 @@ class MaskRCNNTV(_MaskRCNN):
 
 class MaskRCNNBackbone:
     """Implementation of MaskRCNN torchvision factory for instance segmentation."""
-    MASKRCNN_CFG = {
-        "resnet_50": resnet50(progress=True),
+
+    MASKRCNN_CFG: ClassVar[dict[str, Any]] = {
+        "maskrcnn_resnet50": resnet50(progress=True),
     }
 
-    def __new__(cls, version: str) -> nn.Module:
+    def __new__(cls, model_name: str) -> nn.Module:
         """Create MaskRCNNBackbone."""
         trainable_backbone_layers = _validate_trainable_layers(
             is_trained=True,
@@ -133,47 +138,53 @@ class MaskRCNNBackbone:
             max_value=5,
             default_value=3,
         )
-        return _resnet_fpn_extractor(cls.MASKRCNN_CFG[version], trainable_backbone_layers, norm_layer=nn.BatchNorm2d)
+        return _resnet_fpn_extractor(cls.MASKRCNN_CFG[model_name], trainable_backbone_layers, norm_layer=nn.BatchNorm2d)
 
 
 class RPNHead:
     """Implementation of RPNHead for MaskRCNN."""
-    RPNHEAD_CFG = {
-        "resnet_50": {
-            "out_channels": 1024,
+
+    RPNHEAD_CFG: ClassVar[dict[str, Any]] = {
+        "maskrcnn_resnet50": {
+            "in_channels": 256,
             "conv_depth": 2,
         },
     }
-    def __new__(cls, version: str, anchorgen: AnchorGenerator) -> nn.Module:
+
+    def __new__(cls, model_name: str, anchorgen: AnchorGenerator) -> nn.Module:
         """Create RPNHead."""
-        return _RPNHead(**cls.RPNHEAD_CFG[version], anchorgen.num_anchors_per_location()[0])
+        return _RPNHead(**cls.RPNHEAD_CFG[model_name], num_anchors=anchorgen.num_anchors_per_location()[0])
 
 
 class FastRCNNConvFCHead:
     """Implementation of FastRCNNConvFCHead for MaskRCNN."""
-    FASTRCNN_CFG = {
-        "resnet_50": {
-            "input_size": (1024, 7, 7),
+
+    FASTRCNN_CFG: ClassVar[dict[str, Any]] = {
+        "maskrcnn_resnet50": {
+            "input_size": (256, 7, 7),
             "conv_layers": [256, 256, 256, 256],
             "fc_layers": [1024],
             "norm_layer": nn.BatchNorm2d,
         },
     }
-    def __new__(cls, version: str) -> nn.Module:
+
+    def __new__(cls, model_name: str) -> nn.Module:
         """Create FastRCNNConvFCHead."""
-        return _FastRCNNConvFCHead(**cls.FASTRCNN_CFG[version])
+        return _FastRCNNConvFCHead(**cls.FASTRCNN_CFG[model_name])
 
 
 class MaskRCNNHeads:
     """Implementation of MaskRCNNHeads for MaskRCNN."""
-    MASKRCNNHEADS_CFG = {
-        "resnet_50": {
-            "in_channels": 1024,
+
+    MASKRCNNHEADS_CFG: ClassVar[dict[str, Any]] = {
+        "maskrcnn_resnet50": {
+            "in_channels": 256,
             "layers": [256, 256, 256, 256],
             "dilation": 1,
             "norm_layer": nn.BatchNorm2d,
         },
     }
-    def __new__(cls, version: str) -> nn.Module:
+
+    def __new__(cls, model_name: str) -> nn.Module:
         """Create MaskRCNNHeads."""
-        return _MaskRCNNHeads(**cls.MASKRCNNHEADS_CFG[version])
+        return _MaskRCNNHeads(**cls.MASKRCNNHEADS_CFG[model_name])

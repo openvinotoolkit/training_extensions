@@ -11,12 +11,14 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from torch import nn
+
 from otx.algo.utils.mmengine_utils import InstanceData
 from otx.core.data.entity.detection import DetBatchDataEntity
 
 if TYPE_CHECKING:
     import torch
-    from torch import Tensor, nn
+    from torch import Tensor
 
 
 class SingleStageDetector(nn.Module):

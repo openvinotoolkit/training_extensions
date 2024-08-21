@@ -51,13 +51,14 @@ class ATSSHead(ClassIncrementalMixin, AnchorHead):
             coordinates format. Defaults to False. It should be `True` when
             using `IoULoss`, `GIoULoss`, or `DIoULoss` in the bbox head.
         loss_centerness (nn.Module, optinoal): Module of centerness loss. Defaults to None.
-        init_cfg (dict, list[dict], optional): Initialization config dict.
     """
 
     def __init__(
         self,
         num_classes: int,
         in_channels: int,
+        loss_cls: nn.Module,
+        loss_bbox: nn.Module,
         pred_kernel_size: int = 3,
         stacked_convs: int = 4,
         normalization: Callable[..., nn.Module] = partial(
@@ -68,34 +69,49 @@ class ATSSHead(ClassIncrementalMixin, AnchorHead):
         ),
         reg_decoded_bbox: bool = True,
         loss_centerness: nn.Module | None = None,
-        init_cfg: dict | None = None,
         bg_loss_weight: float = -1.0,
         use_qfl: bool = False,
         qfl_cfg: dict | None = None,
-        **kwargs,
+        allowed_border: float = 0.0,
+        pos_weight: float = 1.0,
+        max_per_img: int = 1000,
+        min_bbox_size: int = 0,
+        nms_iou_threshold: float = 0.7,
+        score_threshold: float = 0.05,
+        nms_pre: int = 1000,
+        with_nms: bool = True,
     ) -> None:
         self.pred_kernel_size = pred_kernel_size
         self.stacked_convs = stacked_convs
         self.normalization = normalization
-        init_cfg = init_cfg or {
-            "type": "Normal",
-            "layer": "Conv2d",
-            "std": 0.01,
-            "override": {"type": "Normal", "name": "atss_cls", "std": 0.01, "bias_prob": 0.01},
-        }
+        # init_cfg = {
+        #     "type": "Normal",
+        #     "layer": "Conv2d",
+        #     "std": 0.01,
+        #     "override": {"type": "Normal", "name": "atss_cls", "std": 0.01, "bias_prob": 0.01},
+        # }
         super().__init__(
+            loss_cls=loss_cls,
+            loss_bbox=loss_bbox,
             num_classes=num_classes,
             in_channels=in_channels,
             reg_decoded_bbox=reg_decoded_bbox,
             init_cfg=init_cfg,
-            **kwargs,
+            max_per_img=max_per_img,
+            min_bbox_size=min_bbox_size,
+            nms_iou_threshold=nms_iou_threshold,
+            nms_pre=nms_pre,
+            score_threshold=score_threshold,
+            with_nms=with_nms,
+            allowed_border=allowed_border,
+            pos_weight=pos_weight,
         )
 
         self.sampling = False
         self.loss_centerness = loss_centerness or CrossEntropyLoss(use_sigmoid=True, loss_weight=1.0)
 
         if use_qfl:
-            kwargs["loss_cls"] = (
+            self.loss_cls = (
                 qfl_cfg
                 if qfl_cfg
                 else {
@@ -513,7 +529,7 @@ class ATSSHead(ClassIncrementalMixin, AnchorHead):
             flat_anchors,
             valid_flags,
             img_meta["img_shape"][:2],
-            self.train_cfg["allowed_border"],
+            self.allowed_border,
         )
         if not inside_flags.any():
             msg = (
@@ -554,10 +570,10 @@ class ATSSHead(ClassIncrementalMixin, AnchorHead):
             bbox_weights[pos_inds, :] = 1.0
 
             labels[pos_inds] = sampling_result.pos_gt_labels
-            if self.train_cfg["pos_weight"] <= 0:
+            if self.pos_weight <= 0:
                 label_weights[pos_inds] = 1.0
             else:
-                label_weights[pos_inds] = self.train_cfg["pos_weight"]
+                label_weights[pos_inds] = self.pos_weight
         if len(neg_inds) > 0:
             label_weights[neg_inds] = 1.0
 

@@ -47,15 +47,35 @@ class RTMDetHead(ATSSHead):
         self,
         num_classes: int,
         in_channels: int,
+        assigner: nn.Module,
+        sampler: nn.Module,
         with_objectness: bool = True,
         activation: Callable[..., nn.Module] = nn.ReLU,
-        **kwargs,
+        allowed_border: float = 0.0,
+        pos_weight: float = 1.0,
+        max_per_img: int = 1000,
+        min_bbox_size: int = 0,
+        nms_iou_threshold: float = 0.7,
+        score_threshold: float = 0.05,
+        nms_pre: int = 1000,
+        with_nms: bool = True,
     ) -> None:
         self.activation = activation
         self.with_objectness = with_objectness
-        super().__init__(num_classes, in_channels, **kwargs)
-        if self.train_cfg:
-            self.assigner = self.train_cfg["assigner"]
+        super().__init__(
+            num_classes,
+            in_channels,
+            max_per_img=max_per_img,
+            min_bbox_size=min_bbox_size,
+            nms_iou_threshold=nms_iou_threshold,
+            nms_pre=nms_pre,
+            score_threshold=score_threshold,
+            with_nms=with_nms,
+            allowed_border=allowed_border,
+            pos_weight=pos_weight,
+        )
+        self.assigner = assigner
+        self.sampler = sampler
 
     def _init_layers(self) -> None:
         """Initialize layers of the head."""
@@ -317,7 +337,6 @@ class RTMDetHead(ATSSHead):
         cls_scores: list[Tensor],
         bbox_preds: list[Tensor],
         batch_img_metas: list[dict] | None = None,
-        cfg: dict | None = None,
         rescale: bool = False,
         with_nms: bool = True,
     ) -> tuple[Tensor, Tensor] | tuple[Tensor, Tensor, Tensor]:
@@ -334,9 +353,6 @@ class RTMDetHead(ATSSHead):
                 (batch_size, num_priors * 4, H, W).
             batch_img_metas (list[dict], Optional): Batch image meta info.
                 Defaults to None.
-            cfg (dict, optional): Test / postprocessing
-                configuration, if None, test_cfg would be used.
-                Defaults to None.
             rescale (bool): If True, return boxes in original image space.
                 Defaults to False.
             with_nms (bool): If True, do nms before return boxes.
@@ -351,7 +367,6 @@ class RTMDetHead(ATSSHead):
         """
         assert len(cls_scores) == len(bbox_preds)  # noqa: S101
         device = cls_scores[0].device
-        cfg = self.test_cfg if cfg is None else cfg
         batch_size = bbox_preds[0].shape[0]
         featmap_sizes = [cls_score.shape[2:] for cls_score in cls_scores]
         mlvl_priors = self.prior_generator.grid_priors(featmap_sizes, device=device)
@@ -376,10 +391,10 @@ class RTMDetHead(ATSSHead):
             bboxes,
             scores,
             max_output_boxes_per_class=200,
-            iou_threshold=cfg["nms"]["iou_threshold"],  # type: ignore[index]
-            score_threshold=cfg["score_thr"],  # type: ignore[index]
+            iou_threshold=self.nms_iou_threshold,
+            score_threshold=self.score_threshold,
             pre_top_k=5000,
-            keep_top_k=cfg["max_per_img"],  # type: ignore[index]
+            keep_top_k=self.max_per_img,
         )
 
     def get_targets(  # type: ignore[override]
@@ -546,7 +561,7 @@ class RTMDetHead(ATSSHead):
             flat_anchors,
             valid_flags,
             img_meta["img_shape"][:2],
-            self.train_cfg["allowed_border"],
+            self.allowed_border,
         )
         if not inside_flags.any():
             return (None,) * 7
@@ -577,10 +592,10 @@ class RTMDetHead(ATSSHead):
             bbox_targets[pos_inds, :] = pos_bbox_targets
 
             labels[pos_inds] = sampling_result.pos_gt_labels
-            if self.train_cfg["pos_weight"] <= 0:
+            if self.pos_weight <= 0:
                 label_weights[pos_inds] = 1.0
             else:
-                label_weights[pos_inds] = self.train_cfg["pos_weight"]
+                label_weights[pos_inds] = self.pos_weight
         if len(neg_inds) > 0:
             label_weights[neg_inds] = 1.0
 

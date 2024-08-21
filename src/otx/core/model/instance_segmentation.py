@@ -17,7 +17,7 @@ from torchmetrics import Metric, MetricCollection
 from torchvision import tv_tensors
 
 from otx.algo.explain.explain_algo import InstSegExplainAlgo, feature_vector_fn
-from otx.algo.instance_segmentation.two_stage import TwoStageDetector
+from otx.algo.instance_segmentation.segmentors.two_stage import TwoStageDetector
 from otx.algo.utils.mmengine_utils import InstanceData, load_checkpoint
 from otx.core.config.data import TileConfig
 from otx.core.data.entity.base import ImageInfo, OTXBatchLossEntity
@@ -60,8 +60,8 @@ class OTXInstanceSegModel(OTXModel[InstanceSegBatchDataEntity, InstanceSegBatchP
     def __init__(
         self,
         label_info: LabelInfoTypes,
-        input_size: tuple[int, int],
-        model_name: str = "resnet_50",
+        input_size: tuple[int, int] = (1024, 1024),
+        model_name: str = "inst_segm_model",
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MaskRLEMeanAPFMeasureCallable,
@@ -413,8 +413,8 @@ class ExplainableOTXInstanceSegModel(OTXInstanceSegModel):
     def __init__(
         self,
         label_info: LabelInfoTypes,
-        input_size: tuple[int, int],
         model_name: str,
+        input_size: tuple[int, int] = (1024, 1024),
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MaskRLEMeanAPFMeasureCallable,

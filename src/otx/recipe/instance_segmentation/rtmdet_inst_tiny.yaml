@@ -2,6 +2,9 @@ model:
   class_path: otx.algo.instance_segmentation.rtmdet_inst.RTMDetInstTiny
   init_args:
     label_info: 80
+    input_size:
+      - 640
+      - 640
 
     optimizer:
       class_path: torch.optim.SGD
@@ -39,6 +42,7 @@ overrides:
     input_size:
       - 640
       - 640
+
     train_subset:
       batch_size: 4
       num_workers: 8

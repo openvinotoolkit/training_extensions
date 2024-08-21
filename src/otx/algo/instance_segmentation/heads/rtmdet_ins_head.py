@@ -8,7 +8,6 @@ Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/d
 
 from __future__ import annotations
 
-import copy
 import math
 from functools import partial
 from typing import Callable
@@ -33,7 +32,6 @@ from otx.algo.instance_segmentation.utils.roi_extractors import OTXRoIAlign
 from otx.algo.instance_segmentation.utils.structures.bbox.transforms import get_box_wh, scale_boxes
 from otx.algo.instance_segmentation.utils.utils import unpack_inst_seg_entity
 from otx.algo.modules.activation import build_activation_layer
-from otx.algo.modules.base_module import BaseModule
 from otx.algo.modules.conv_module import Conv2dModule
 from otx.algo.modules.norm import build_norm_layer, is_norm
 from otx.algo.utils.mmengine_utils import InstanceData
@@ -63,19 +61,38 @@ class RTMDetInsHead(RTMDetHead):
 
     def __init__(
         self,
-        *args,
         loss_mask: nn.Module,
         num_prototypes: int = 8,
         dyconv_channels: int = 8,
         num_dyconvs: int = 3,
         mask_loss_stride: int = 4,
-        **kwargs,
+        allowed_border: float = 0.0,
+        pos_weight: float = 1.0,
+        max_per_img: int = 1000,
+        min_bbox_size: int = 0,
+        nms_iou_threshold: float = 0.7,
+        score_threshold: float = 0.05,
+        nms_pre: int = 1000,
+        mask_threshold_binary: float = 0.5,
+        with_nms: bool = True,
     ) -> None:
+        super().__init__(
+            allowed_border=allowed_border,
+            pos_weight=pos_weight,
+            with_nms=with_nms,
+            nms_pre=nms_pre,
+            max_per_img=max_per_img,
+            min_bbox_size=min_bbox_size,
+            nms_iou_threshold=nms_iou_threshold,
+            score_threshold=score_threshold,
+        )
+
         self.num_prototypes = num_prototypes
         self.num_dyconvs = num_dyconvs
         self.dyconv_channels = dyconv_channels
         self.mask_loss_stride = mask_loss_stride
-        super().__init__(*args, **kwargs)
+        self.mask_threshold_binary = mask_threshold_binary
+
         self.loss_mask = loss_mask
 
     def _init_layers(self) -> None:
@@ -192,7 +209,6 @@ class RTMDetInsHead(RTMDetHead):
         kernel_preds: tuple[Tensor],
         mask_feat: Tensor,
         batch_img_metas: list[dict],
-        cfg: dict | None = None,
         rescale: bool = False,
         with_nms: bool = True,
     ) -> list[InstanceData]:
@@ -228,7 +244,6 @@ class RTMDetInsHead(RTMDetHead):
                 score_factor_list=score_factor_list,
                 mlvl_priors=mlvl_priors,
                 img_meta=img_meta,
-                cfg=cfg,
                 rescale=rescale,
                 with_nms=with_nms,
             )
@@ -244,15 +259,12 @@ class RTMDetInsHead(RTMDetHead):
         score_factor_list: list[Tensor],
         mlvl_priors: list[Tensor],
         img_meta: dict,
-        cfg: dict | None = None,
         rescale: bool = False,
         with_nms: bool = True,
     ) -> InstanceData:
         """Transform a single image's features extracted from the head into bbox and mask results."""
-        test_cfg = self.test_cfg if cfg is None else cfg
-        test_cfg = copy.deepcopy(test_cfg)
         img_shape = img_meta["img_shape"]
-        nms_pre = test_cfg.get("nms_pre", -1)  # type: ignore[union-attr]
+        nms_pre = self.nms_pre
 
         mlvl_bbox_preds = []
         mlvl_kernels = []
@@ -281,7 +293,7 @@ class RTMDetInsHead(RTMDetHead):
             # There is no difference in performance for most models. If you
             # find a slight drop in performance, you can set a larger
             # `nms_pre` than before.
-            score_thr = test_cfg.get("score_thr", 0)  # type: ignore[union-attr]
+            score_thr = self.score_thr
 
             (
                 scores,
@@ -319,7 +331,6 @@ class RTMDetInsHead(RTMDetHead):
         return self._bbox_mask_post_process(
             results=results,
             mask_feat=mask_feat,
-            cfg=test_cfg,
             rescale=rescale,
             with_nms=with_nms,
             img_meta=img_meta,
@@ -378,7 +389,6 @@ class RTMDetInsHead(RTMDetHead):
         self,
         results: InstanceData,
         mask_feat: Tensor,
-        cfg: dict | None = None,
         rescale: bool = False,
         with_nms: bool = True,
         img_meta: dict | None = None,
@@ -392,8 +402,6 @@ class RTMDetInsHead(RTMDetHead):
             results (InstaceData): Detection instance results,
                 each item has shape (num_bboxes, ).
             mask_feat (Tensor): Mask prototype features of a single image
-            cfg (dict): Test / postprocessing configuration,
-                if None, test_cfg would be used.
             rescale (bool): If True, return boxes in original image space.
                 Default to False.
             with_nms (bool): If True, do nms before return boxes.
@@ -426,9 +434,9 @@ class RTMDetInsHead(RTMDetHead):
             results.scores = results.scores * score_factors
 
         # filter small size bboxes
-        if cfg["min_bbox_size"] >= 0:
+        if self.min_bbox_size >= 0:
             w, h = get_box_wh(results.bboxes)
-            valid_mask = (w > cfg["min_bbox_size"]) & (h > cfg["min_bbox_size"])
+            valid_mask = (w > self.min_bbox_size) & (h > self.min_bbox_size)
             if not valid_mask.all():
                 results = results[valid_mask]
 
@@ -437,11 +445,16 @@ class RTMDetInsHead(RTMDetHead):
             raise RuntimeError(msg)
 
         if results.bboxes.numel() > 0:
-            det_bboxes, keep_idxs = batched_nms(results.bboxes, results.scores, results.labels, cfg["nms"])
+            det_bboxes, keep_idxs = batched_nms(
+                results.bboxes,
+                results.scores,
+                results.labels,
+                iou_threshold=self.nms_iou_threshold,
+            )
             results = results[keep_idxs]
             # some nms would reweight the score, such as softnms
             results.scores = det_bboxes[:, -1]
-            results = results[: cfg["max_per_img"]]
+            results = results[: self.max_per_img]
 
             # process masks
             mask_logits = self._mask_predict_by_feat_single(mask_feat, results.kernels, results.priors)
@@ -457,12 +470,12 @@ class RTMDetInsHead(RTMDetHead):
                     mask_logits,
                     math.ceil(mask_logits.shape[-1] * scale_factor[1]),
                     math.ceil(mask_logits.shape[-2] * scale_factor[0]),
-                    threshold=cfg["mask_thr_binary"],
+                    threshold=self.mask_thr_binary,
                 )[..., :ori_h, :ori_w]
                 masks = masks.squeeze(0)
             else:
                 masks = mask_logits.sigmoid().squeeze(0)
-                masks = masks > cfg["mask_thr_binary"]
+                masks = masks > self.mask_thr_binary
             results.masks = masks
         else:
             h, w = img_meta["ori_shape"][:2] if rescale else img_meta["img_shape"][:2]
@@ -699,7 +712,7 @@ class RTMDetInsHead(RTMDetHead):
         return {"loss_cls": losses_cls, "loss_bbox": losses_bbox, "loss_mask": loss_mask}
 
 
-class MaskFeatModule(BaseModule):
+class MaskFeatModule(nn.Module):
     """Mask feature head used in RTMDet-Ins.
 
     Args:
@@ -729,7 +742,7 @@ class MaskFeatModule(BaseModule):
         activation: Callable[..., nn.Module] = partial(nn.ReLU, inplace=True),
         normalization: Callable[..., nn.Module] = nn.BatchNorm2d,
     ) -> None:
-        super().__init__(init_cfg=None)
+        super().__init__()
 
         self.num_levels = num_levels
         self.fusion_conv = nn.Conv2d(num_levels * in_channels, in_channels, 1)
