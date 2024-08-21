@@ -57,8 +57,8 @@ class TestPerfSingleLabelClassification(PerfTestBase):
             extra_overrides={},
         ),
         Benchmark.Dataset(
-            name="multiclass_food101_large",
-            path=Path("multiclass_classification/multiclass_food101_large"),
+            name="multiclass_food20_large",
+            path=Path("multiclass_classification/multiclass_food20_large"),
             group="large",
             num_repeat=5,
             extra_overrides={},
@@ -139,8 +139,8 @@ class TestPerfMultiLabelClassification(PerfTestBase):
             extra_overrides={},
         ),
         Benchmark.Dataset(
-            name="multilabel_food101_large",
-            path=Path("multilabel_classification/multilabel_food101_large"),
+            name="multilabel_food20_large",
+            path=Path("multilabel_classification/multilabel_food20_large"),
             group="large",
             num_repeat=5,
             extra_overrides={},
@@ -220,7 +220,13 @@ class TestPerfHierarchicalLabelClassification(PerfTestBase):
             num_repeat=5,
             extra_overrides={},
         ),
-        # Add large dataset
+        Benchmark.Dataset(
+            name="cifar100_label_group_datum_format_large",
+            path=Path("hlabel_classification/cifar100_label_group_datum_format_large"),
+            group="large",
+            num_repeat=5,
+            extra_overrides={},
+        ),
     ]
 
     BENCHMARK_CRITERIA = [  # noqa: RUF012
@@ -273,14 +279,14 @@ class TestPerfSemiSLMultiClass(PerfTestBase):
     """Benchmark single-label classification for Semi-SL task."""
 
     MODEL_TEST_CASES = [  # noqa: RUF012
-        Benchmark.Model(task="classification/multi_class_cls", name="efficientnet_b0_semisl", category="balance"),
-        Benchmark.Model(task="classification/multi_class_cls", name="mobilenet_v3_large_semisl", category="speed"),
-        Benchmark.Model(task="classification/multi_class_cls", name="efficientnet_v2_semisl", category="accuracy"),
-        Benchmark.Model(task="classification/multi_class_cls", name="deit_tiny_semisl", category="other"),
-        Benchmark.Model(task="classification/multi_class_cls", name="dino_v2_semisl", category="other"),
-        Benchmark.Model(task="classification/multi_class_cls", name="tv_efficientnet_b3_semisl", category="other"),
-        Benchmark.Model(task="classification/multi_class_cls", name="tv_efficientnet_v2_l_semisl", category="other"),
-        Benchmark.Model(task="classification/multi_class_cls", name="tv_mobilenet_v3_small_semisl", category="other"),
+        Benchmark.Model(task="classification/multi_class_cls/semisl", name="efficientnet_b0_semisl", category="balance"),
+        Benchmark.Model(task="classification/multi_class_cls/semisl", name="mobilenet_v3_large_semisl", category="speed"),
+        Benchmark.Model(task="classification/multi_class_cls/semisl", name="efficientnet_v2_semisl", category="accuracy"),
+        Benchmark.Model(task="classification/multi_class_cls/semisl", name="deit_tiny_semisl", category="other"),
+        Benchmark.Model(task="classification/multi_class_cls/semisl", name="dino_v2_semisl", category="other"),
+        Benchmark.Model(task="classification/multi_class_cls/semisl", name="tv_efficientnet_b3_semisl", category="other"),
+        Benchmark.Model(task="classification/multi_class_cls/semisl", name="tv_efficientnet_v2_l_semisl", category="other"),
+        Benchmark.Model(task="classification/multi_class_cls/semisl", name="tv_mobilenet_v3_small_semisl", category="other"),
     ]
 
     DATASET_TEST_CASES = (
