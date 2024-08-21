@@ -190,7 +190,7 @@ class ImageClassifier(BaseModule):
         logits = self.head(x)
         pred_results = self.head._get_predictions(logits)  # noqa: SLF001
         scores = pred_results.unbind(0)
-        preds = logits.argmax(-1, keepdim=True).unbind(0)
+        preds = pred_results.argmax(-1, keepdim=True).unbind(0)
 
         outputs = {
             "logits": logits,
