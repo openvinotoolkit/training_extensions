@@ -139,8 +139,10 @@ def test_otx_e2e_cli(
             ExportCase2Test("OPENVINO", False, "exported_model_decoder.xml"),
         ]
     elif "anomaly" in task or "keypoint_detection" in task:
-        fxt_export_list.append(ExportCase2Test("ONNX", False, "exported_model.onnx"))
-        fxt_export_list.append(ExportCase2Test("OPENVINO", False, "exported_model.xml"))
+        fxt_export_list = [
+            ExportCase2Test("ONNX", False, "exported_model.onnx"),
+            ExportCase2Test("OPENVINO", False, "exported_model.xml"),
+        ]
 
     overrides = fxt_cli_override_command_per_task[task]
     if "anomaly" in task:
