@@ -59,6 +59,11 @@ TASK_NAME_TO_DATA_ROOT = {
         "test": "tests/assets/common_semantic_segmentation_dataset/val",
         "unlabeled": "tests/assets/common_semantic_segmentation_dataset/val",
     },
+    "anomaly": {
+        "train": "tests/assets/anomaly/hazelnut",
+        "val": "tests/assets/anomaly/hazelnut",
+        "test": "tests/assets/anomaly/hazelnut",
+    },
     "anomaly_classification": {
         "train": "tests/assets/anomaly/hazelnut",
         "val": "tests/assets/anomaly/hazelnut",

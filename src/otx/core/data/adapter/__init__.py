@@ -60,6 +60,12 @@ ADAPTERS = {
             "class": "SelfSLSegmentationDatasetAdapter",
         },
     },
+    TaskType.ANOMALY: {
+        "Incremental": {
+            "module_name": "anomaly_dataset_adapter",
+            "class": "AnomalyClassificationDatasetAdapter",
+        }
+    },
     TaskType.ANOMALY_CLASSIFICATION: {
         "Incremental": {
             "module_name": "anomaly_dataset_adapter",

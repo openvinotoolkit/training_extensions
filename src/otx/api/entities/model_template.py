@@ -615,6 +615,7 @@ class NullModelTemplate(ModelTemplate):
 
 
 ANOMALY_TASK_TYPES: Sequence[TaskType] = (
+    TaskType.ANOMALY,
     TaskType.ANOMALY_DETECTION,
     TaskType.ANOMALY_CLASSIFICATION,
     TaskType.ANOMALY_SEGMENTATION,
@@ -626,6 +627,7 @@ TRAINABLE_TASK_TYPES: Sequence[TaskType] = (
     TaskType.DETECTION,
     TaskType.SEGMENTATION,
     TaskType.INSTANCE_SEGMENTATION,
+    TaskType.ANOMALY,
     TaskType.ANOMALY_DETECTION,
     TaskType.ANOMALY_CLASSIFICATION,
     TaskType.ANOMALY_SEGMENTATION,
