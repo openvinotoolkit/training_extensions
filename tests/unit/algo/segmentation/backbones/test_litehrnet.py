@@ -53,7 +53,7 @@ class TestLiteHRNetModule:
     @pytest.fixture()
     def cfg(self) -> dict:
         return {
-            "stem": Stem(),
+            "stem_configuration": {},
             "num_stages": 3,
             "stages_spec": {
                 "num_modules": (2, 4, 2),

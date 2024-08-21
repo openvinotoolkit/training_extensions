@@ -521,7 +521,7 @@ class Stem(nn.Module):
 
     def __init__(
         self,
-        in_channels: int = 3,
+        in_channels: int,
         stem_channels: int = 32,
         out_channels: int = 32,
         expand_ratio: int = 1,
@@ -1031,8 +1031,8 @@ class LiteHRNetModule(nn.Module):
 
     def __init__(
         self,
-        stem: Stem,
         num_stages: int,
+        stem_configuration: dict[str, Any],
         stages_spec: dict[str, Any],
         in_channels: int = 3,
         normalization: Callable[..., nn.Module] = partial(build_norm_layer, nn.BatchNorm2d, requires_grad=True),
@@ -1049,7 +1049,7 @@ class LiteHRNetModule(nn.Module):
         self.norm_eval = norm_eval
         self.with_cp = with_cp
         self.zero_init_residual = zero_init_residual
-        self.stem = stem
+        self.stem = Stem(in_channels=in_channels, **stem_configuration, normalization=normalization)
         self.num_stages = num_stages
         self.stages_spec = stages_spec
 
@@ -1247,7 +1247,7 @@ class LiteHRNetBackbone:
 
     LITEHRNET_CFG: ClassVar[dict[str, Any]] = {
         "lite_hrnet_s": {
-            "stem": {"extra_stride": True},
+            "stem_configuration": {"extra_stride": True},
             "num_stages": 2,
             "stages_spec": {
                 "num_modules": [4, 4],
@@ -1261,6 +1261,7 @@ class LiteHRNetBackbone:
             "pretrained_weights": "https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/custom_semantic_segmentation/litehrnetsv2_imagenet1k_rsc.pth",
         },
         "lite_hrnet_18": {
+            "stem_configuration" : {},
             "num_stages": 3,
             "stages_spec": {
                 "num_modules": [2, 4, 2],
@@ -1274,7 +1275,7 @@ class LiteHRNetBackbone:
             "pretrained_weights": "https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/custom_semantic_segmentation/litehrnet18_imagenet1k_rsc.pth",
         },
         "lite_hrnet_x": {
-            "stem": {"stem_channels": 60, "out_channels": 60, "strides": (2, 1)},
+            "stem_configuration": {"stem_channels": 60, "out_channels": 60, "strides": (2, 1)},
             "num_stages": 4,
             "stages_spec": {
                 "weighting_module_version": "v1",
@@ -1295,6 +1296,4 @@ class LiteHRNetBackbone:
         if model_name not in cls.LITEHRNET_CFG:
             msg = f"model type '{model_name}' is not supported"
             raise KeyError(msg)
-        stem_configuration = cls.LITEHRNET_CFG[model_name].pop("stem", {})
-        stem_module = Stem(**stem_configuration)
-        return LiteHRNetModule(stem=stem_module, **cls.LITEHRNET_CFG[model_name])
+        return LiteHRNetModule(**cls.LITEHRNET_CFG[model_name])
