@@ -23,7 +23,7 @@ from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.metrics import MetricInput
 from otx.core.metrics.accuracy import (
-    HLabelClsMetricCallble,
+    HLabelClsMetricCallable,
     MultiClassClsMetricCallable,
     MultiLabelClsMetricCallable,
 )
@@ -53,8 +53,6 @@ class OTXMulticlassClsModel(OTXModel[MulticlassClsBatchDataEntity, MulticlassCls
         torch_compile: bool = False,
         train_type: Literal[OTXTrainType.SUPERVISED, OTXTrainType.SEMI_SUPERVISED] = OTXTrainType.SUPERVISED,
     ) -> None:
-        self.train_type = train_type
-
         super().__init__(
             label_info=label_info,
             input_size=input_size,
@@ -62,6 +60,7 @@ class OTXMulticlassClsModel(OTXModel[MulticlassClsBatchDataEntity, MulticlassCls
             scheduler=scheduler,
             metric=metric,
             torch_compile=torch_compile,
+            train_type=train_type,
         )
         self.input_size: tuple[int, int]
 
@@ -129,10 +128,10 @@ class OTXMulticlassClsModel(OTXModel[MulticlassClsBatchDataEntity, MulticlassCls
         loss = super().training_step(batch, batch_idx)
         # Collect metrics related to Semi-SL Training.
         if self.train_type == OTXTrainType.SEMI_SUPERVISED:
-            if hasattr(self.model.head, "unlabeled_coef"):
+            if hasattr(self.model, "unlabeled_coef"):
                 self.log(
                     "train/unlabeled_coef",
-                    self.model.head.unlabeled_coef,
+                    self.model.unlabeled_coef,
                     on_step=True,
                     on_epoch=False,
                     prog_bar=True,
@@ -330,7 +329,7 @@ class OTXHlabelClsModel(OTXModel[HlabelClsBatchDataEntity, HlabelClsBatchPredEnt
         input_size: tuple[int, int],
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
-        metric: MetricCallable = HLabelClsMetricCallble,
+        metric: MetricCallable = HLabelClsMetricCallable,
         torch_compile: bool = False,
     ) -> None:
         super().__init__(
@@ -622,7 +621,7 @@ class OVHlabelClassificationModel(OVModel[HlabelClsBatchDataEntity, HlabelClsBat
         max_num_requests: int | None = None,
         use_throughput_mode: bool = True,
         model_api_configuration: dict[str, Any] | None = None,
-        metric: MetricCallable = HLabelClsMetricCallble,
+        metric: MetricCallable = HLabelClsMetricCallable,
         **kwargs,
     ) -> None:
         model_api_configuration = model_api_configuration if model_api_configuration else {}

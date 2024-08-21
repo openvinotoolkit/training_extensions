@@ -1,5 +1,10 @@
+# Copyright (C) 2024 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+#
+
 import pytest
 import torch
+from otx.algo.segmentation.losses import CrossEntropyLossWithIgnore
 from otx.algo.segmentation.segmentors import BaseSegmModel, MeanTeacher
 from otx.core.data.entity.base import ImageInfo
 from torch import nn
@@ -10,9 +15,11 @@ class TestMeanTeacher:
     def model(self):
         decode_head = nn.Conv2d(3, 2, 1)
         decode_head.num_classes = 2
+        loss = CrossEntropyLossWithIgnore(ignore_index=255)
         model = BaseSegmModel(
             backbone=nn.Sequential(nn.Conv2d(3, 5, 1), nn.ReLU(), nn.Conv2d(5, 3, 1)),
             decode_head=decode_head,
+            criterion=loss,
         )
         return MeanTeacher(model)
 

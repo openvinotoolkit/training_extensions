@@ -5,6 +5,9 @@
 
 from __future__ import annotations
 
+from functools import partial
+from typing import Callable
+
 import torch
 import torch.nn.functional as F  # noqa: N812
 from torch import Tensor, nn
@@ -26,13 +29,13 @@ class ViT(nn.Module):
         mlp_ratio (float): Ratio of mlp hidden dim to embedding dim.
         out_chans (int): Number of output channels.
         qkv_bias (bool): If True, add a learnable bias to query, key, value.
-        norm_layer (nn.Module): Normalization layer.
+        norm_layer (Callable[..., nn.Module]): Normalization layer.
         act_layer (nn.Module): Activation layer.
         use_abs_pos (bool): If True, use absolute positional embeddings.
         use_rel_pos (bool): If True, add relative positional embeddings to the attention map.
         rel_pos_zero_init (bool): If True, zero initialize relative positional parameters.
         window_size (int): Window size for window attention blocks.
-        global_attn_indexes (list): Indexes for blocks using global attention.
+        global_attn_indexes (tuple[int, ...]): Indexes for blocks using global attention.
     """
 
     def __init__(
@@ -46,12 +49,12 @@ class ViT(nn.Module):
         mlp_ratio: float = 4.0,
         out_chans: int = 256,
         qkv_bias: bool = True,
-        norm_layer: nn.Module = nn.LayerNorm,
+        norm_layer: Callable[..., nn.Module] = partial(nn.LayerNorm, eps=1e-6),
         act_layer: nn.Module = nn.GELU,
         use_abs_pos: bool = True,
-        use_rel_pos: bool = False,
+        use_rel_pos: bool = True,
         rel_pos_zero_init: bool = True,
-        window_size: int = 0,
+        window_size: int = 14,
         global_attn_indexes: tuple[int, ...] = (),
     ) -> None:
         super().__init__()
@@ -130,7 +133,7 @@ class Block(nn.Module):
         num_heads (int): Number of attention heads in each ViT block.
         mlp_ratio (float): Ratio of mlp hidden dim to embedding dim.
         qkv_bias (bool): If True, add a learnable bias to query, key, value.
-        norm_layer (nn.Module): Normalization layer.
+        norm_layer (Callable[..., nn.Module] | nn.Module): Normalization layer.
         act_layer (nn.Module): Activation layer.
         use_rel_pos (bool): If True, add relative positional embeddings to the attention map.
         rel_pos_zero_init (bool): If True, zero initialize relative positional parameters.
@@ -146,7 +149,7 @@ class Block(nn.Module):
         num_heads: int,
         mlp_ratio: float = 4.0,
         qkv_bias: bool = True,
-        norm_layer: type[nn.Module] = nn.LayerNorm,
+        norm_layer: Callable[..., nn.Module] | type[nn.Module] = nn.LayerNorm,
         act_layer: type[nn.Module] = nn.GELU,
         use_rel_pos: bool = False,
         rel_pos_zero_init: bool = True,

@@ -20,6 +20,7 @@ from otx.algo.common.utils.utils import dynamic_topk, gather_topk
 from otx.algo.detection.heads.anchor_head import AnchorHead
 from otx.algo.instance_segmentation.utils.structures.bbox import empty_box_as, get_box_wh
 from otx.algo.instance_segmentation.utils.utils import unpack_inst_seg_entity
+from otx.algo.modules.activation import build_activation_layer
 from otx.algo.modules.conv_module import Conv2dModule
 from otx.algo.utils.mmengine_utils import InstanceData
 from otx.core.data.entity.base import OTXBatchDataEntity
@@ -71,7 +72,15 @@ class RPNHead(AnchorHead):
                 # use ``inplace=False`` to avoid error: one of the variables
                 # needed for gradient computation has been modified by an
                 # inplace operation.
-                rpn_convs.append(Conv2dModule(in_channels, self.feat_channels, 3, padding=1, inplace=False))
+                rpn_convs.append(
+                    Conv2dModule(
+                        in_channels,
+                        self.feat_channels,
+                        3,
+                        padding=1,
+                        activation=build_activation_layer(nn.ReLU, inplace=False),
+                    ),
+                )
             self.rpn_conv = nn.Sequential(*rpn_convs)
         else:
             self.rpn_conv = nn.Conv2d(self.in_channels, self.feat_channels, 3, padding=1)

@@ -56,8 +56,8 @@ class TestRTMDetHead:
             loss_bbox=GIoULoss(loss_weight=2.0),
             with_objectness=False,
             pred_kernel_size=1,
-            norm_cfg={"type": "BN"},
-            activation_callable=partial(nn.SiLU, inplace=True),
+            normalization=nn.BatchNorm2d,
+            activation=partial(nn.SiLU, inplace=True),
             train_cfg=train_cfg,
             test_cfg=test_cfg,
         )
@@ -145,8 +145,8 @@ class TestRTMDetSepBNHead:
             exp_on_reg=False,
             share_conv=True,
             pred_kernel_size=1,
-            norm_cfg={"type": "BN"},
-            activation_callable=partial(nn.SiLU, inplace=True),
+            normalization=nn.BatchNorm2d,
+            activation=partial(nn.SiLU, inplace=True),
             train_cfg=train_cfg,
             test_cfg=test_cfg,
         )

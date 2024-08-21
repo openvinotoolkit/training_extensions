@@ -14,7 +14,7 @@ import torch
 from datumaro import AnnotationType, Bbox, Dataset, DatasetSubset, Image, Points
 from torchvision import tv_tensors
 
-from otx.core.data.entity.base import ImageInfo
+from otx.core.data.entity.base import BboxInfo, ImageInfo
 from otx.core.data.entity.keypoint_detection import KeypointDetBatchDataEntity, KeypointDetDataEntity
 from otx.core.data.mem_cache import NULL_MEM_CACHE_HANDLER, MemCacheHandlerBase
 from otx.core.data.transform_libs.torchvision import Compose
@@ -100,9 +100,13 @@ class OTXKeypointDetectionDataset(OTXDataset[KeypointDetDataEntity]):
         keypoints = (
             np.stack([ann.points for ann in keypoint_anns], axis=0).astype(np.float32)
             if len(keypoint_anns) > 0
-            else np.zeros((0, 4), dtype=np.float32)
+            else np.zeros((0, len(self.label_info.label_names) * 2), dtype=np.float32)
         ).reshape(-1, 2)
         keypoints_visible = np.minimum(1, keypoints)[..., 0]
+
+        bbox_center = (bboxes[0, 2:] + bboxes[0, :2]) * 0.5
+        bbox_scale = (bboxes[0, 2:] - bboxes[0, :2]) * 1.25
+        bbox_rotation = 0.0
 
         entity = KeypointDetDataEntity(
             image=img_data,
@@ -118,12 +122,10 @@ class OTXKeypointDetectionDataset(OTXDataset[KeypointDetDataEntity]):
                 format=tv_tensors.BoundingBoxFormat.XYXY,
                 canvas_size=img_shape,
             ),
-            keypoints=tv_tensors.TVTensor(keypoints),
-            keypoints_visible=tv_tensors.TVTensor(keypoints_visible),
             labels=torch.as_tensor([ann.label for ann in bbox_anns]),
-            keypoint_x_labels=tv_tensors.TVTensor([]),
-            keypoint_y_labels=tv_tensors.TVTensor([]),
-            keypoint_weights=tv_tensors.TVTensor([]),
+            bbox_info=BboxInfo(center=bbox_center, scale=bbox_scale, rotation=bbox_rotation),
+            keypoints=keypoints,
+            keypoints_visible=keypoints_visible,
         )
 
         return self._apply_transforms(entity)

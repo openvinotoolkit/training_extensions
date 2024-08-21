@@ -1,5 +1,5 @@
 model:
-  class_path: otx.algo.instance_segmentation.maskrcnn.MaskRCNNEfficientNet
+  class_path: otx.core.model.rotated_detection.RotatedMaskRCNNEfficientNet
   init_args:
     label_info: 80
 
@@ -28,13 +28,18 @@ engine:
 
 callback_monitor: val/map_50
 
-data: ../_base_/data/rotated_detection.yaml
+data: ../_base_/data/instance_segmentation.yaml
 overrides:
+  task: ROTATED_DETECTION
   max_epochs: 100
   data:
     train_subset:
       batch_size: 4
+      num_workers: 8
       transforms:
+        - class_path: otx.core.data.transform_libs.torchvision.Pad
+          init_args:
+            size_divisor: 32
         - class_path: torchvision.transforms.v2.Normalize
           init_args:
             std: [1.0, 1.0, 1.0]
@@ -42,15 +47,21 @@ overrides:
         class_path: otx.algo.samplers.balanced_sampler.BalancedSampler
 
     val_subset:
-      batch_size: 1
+      num_workers: 4
       transforms:
+        - class_path: otx.core.data.transform_libs.torchvision.Pad
+          init_args:
+            size_divisor: 32
         - class_path: torchvision.transforms.v2.Normalize
           init_args:
             std: [1.0, 1.0, 1.0]
 
     test_subset:
-      batch_size: 1
+      num_workers: 4
       transforms:
+        - class_path: otx.core.data.transform_libs.torchvision.Pad
+          init_args:
+            size_divisor: 32
         - class_path: torchvision.transforms.v2.Normalize
           init_args:
             std: [1.0, 1.0, 1.0]

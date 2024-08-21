@@ -1,13 +1,9 @@
 model:
-  class_path: otx.algo.segmentation.segnext.OTXSegNext
+  class_path: otx.algo.segmentation.segnext.SegNext
   init_args:
     label_info: 2
-    name_base_model: SegNextB
-
-    criterion_configuration:
-      - type: CrossEntropyLoss
-        params:
-          ignore_index: 255
+    model_version: segnext_base
+    train_type: SEMI_SUPERVISED
 
     optimizer:
       class_path: torch.optim.AdamW
@@ -36,10 +32,7 @@ engine:
 callback_monitor: val/Dice
 
 data: ../../_base_/data/semisl/semantic_segmentation_semisl.yaml
-
 overrides:
-  model:
-    class_path: otx.algo.segmentation.segnext.SemiSLSegNext
   callbacks:
     - class_path: otx.algo.callbacks.adaptive_early_stopping.EarlyStoppingWithWarmup
       init_args:

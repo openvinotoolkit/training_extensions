@@ -9,15 +9,17 @@ Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/n
 from __future__ import annotations
 
 import math
+from functools import partial
 from typing import Any, Callable
 
 import torch
 from torch import Tensor, nn
 
 from otx.algo.detection.layers import CSPLayer
-from otx.algo.modules.activation import Swish
+from otx.algo.modules.activation import Swish, build_activation_layer
 from otx.algo.modules.base_module import BaseModule
 from otx.algo.modules.conv_module import Conv2dModule, DepthwiseSeparableConvModule
+from otx.algo.modules.norm import build_norm_layer
 
 
 class YOLOXPAFPN(BaseModule):
@@ -31,10 +33,10 @@ class YOLOXPAFPN(BaseModule):
             blocks. Default: False
         upsample_cfg (dict): Config dict for interpolate layer.
             Default: `dict(scale_factor=2, mode='nearest')`
-        norm_cfg (dict): Config dict for normalization layer.
-            Default: dict(type='BN')
-        activation_callable (Callable[..., nn.Module]): Activation layer module.
-            Defaults to `nn.Swish`.
+        normalization (Callable[..., nn.Module] | None): Normalization layer module.
+            Defaults to ``partial(nn.BatchNorm2d, momentum=0.03, eps=0.001)``.
+        activation (Callable[..., nn.Module]): Activation layer module.
+            Defaults to ``nn.Swish``.
         init_cfg (dict or list[dict], optional): Initialization config dict.
             Default: None.
     """
@@ -46,12 +48,11 @@ class YOLOXPAFPN(BaseModule):
         num_csp_blocks: int = 3,
         use_depthwise: bool = False,
         upsample_cfg: dict | None = None,
-        norm_cfg: dict | None = None,
-        activation_callable: Callable[..., nn.Module] = Swish,
+        normalization: Callable[..., nn.Module] = partial(nn.BatchNorm2d, momentum=0.03, eps=0.001),
+        activation: Callable[..., nn.Module] = Swish,
         init_cfg: dict | list[dict] | None = None,
     ):
         upsample_cfg = upsample_cfg or {"scale_factor": 2, "mode": "nearest"}
-        norm_cfg = norm_cfg or {"type": "BN", "momentum": 0.03, "eps": 0.001}
         init_cfg = init_cfg or {
             "type": "Kaiming",
             "layer": "Conv2d",
@@ -78,8 +79,8 @@ class YOLOXPAFPN(BaseModule):
                     in_channels[idx],
                     in_channels[idx - 1],
                     1,
-                    norm_cfg=norm_cfg,
-                    activation_callable=activation_callable,
+                    normalization=build_norm_layer(normalization, num_features=in_channels[idx - 1]),
+                    activation=build_activation_layer(activation),
                 ),
             )
             self.top_down_blocks.append(
@@ -89,8 +90,8 @@ class YOLOXPAFPN(BaseModule):
                     num_blocks=num_csp_blocks,
                     add_identity=False,
                     use_depthwise=use_depthwise,
-                    norm_cfg=norm_cfg,
-                    activation_callable=activation_callable,
+                    normalization=normalization,
+                    activation=activation,
                 ),
             )
 
@@ -105,8 +106,8 @@ class YOLOXPAFPN(BaseModule):
                     3,
                     stride=2,
                     padding=1,
-                    norm_cfg=norm_cfg,
-                    activation_callable=activation_callable,
+                    normalization=build_norm_layer(normalization, num_features=in_channels[idx]),
+                    activation=build_activation_layer(activation),
                 ),
             )
             self.bottom_up_blocks.append(
@@ -116,8 +117,8 @@ class YOLOXPAFPN(BaseModule):
                     num_blocks=num_csp_blocks,
                     add_identity=False,
                     use_depthwise=use_depthwise,
-                    norm_cfg=norm_cfg,
-                    activation_callable=activation_callable,
+                    normalization=normalization,
+                    activation=activation,
                 ),
             )
 
@@ -128,8 +129,8 @@ class YOLOXPAFPN(BaseModule):
                     in_channels[i],
                     out_channels,
                     1,
-                    norm_cfg=norm_cfg,
-                    activation_callable=activation_callable,
+                    normalization=build_norm_layer(normalization, num_features=out_channels),
+                    activation=build_activation_layer(activation),
                 ),
             )
 

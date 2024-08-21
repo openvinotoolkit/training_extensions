@@ -45,20 +45,6 @@ if TYPE_CHECKING:
     from otx.core.metrics import MetricCallable
 
 
-LITMODULE_PER_TASK = {
-    OTXTaskType.MULTI_CLASS_CLS: "otx.core.model.module.classification.OTXMulticlassClsLitModule",
-    OTXTaskType.MULTI_LABEL_CLS: "otx.core.model.module.classification.OTXMultilabelClsLitModule",
-    OTXTaskType.H_LABEL_CLS: "otx.core.model.module.classification.OTXHlabelClsLitModule",
-    OTXTaskType.DETECTION: "otx.core.model.module.detection.OTXDetectionLitModule",
-    OTXTaskType.ROTATED_DETECTION: "otx.core.model.module.rotated_detection.OTXRotatedDetLitModule",
-    OTXTaskType.INSTANCE_SEGMENTATION: "otx.core.model.module.instance_segmentation.OTXInstanceSegLitModule",
-    OTXTaskType.SEMANTIC_SEGMENTATION: "otx.core.model.module.segmentation.OTXSegmentationLitModule",
-    OTXTaskType.ACTION_CLASSIFICATION: "otx.core.model.module.action_classification.OTXActionClsLitModule",
-    OTXTaskType.VISUAL_PROMPTING: "otx.core.model.module.visual_prompting.OTXVisualPromptingLitModule",
-    OTXTaskType.ZERO_SHOT_VISUAL_PROMPTING: "otx.core.model.module.visual_prompting.OTXZeroShotVisualPromptingLitModule",  # noqa: E501
-}
-
-
 @contextmanager
 def override_metric_callable(model: OTXModel, new_metric_callable: MetricCallable | None) -> Iterator[OTXModel]:
     """Override `OTXModel.metric_callable` to change the evaluation metric.

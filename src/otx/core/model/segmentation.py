@@ -6,12 +6,15 @@
 from __future__ import annotations
 
 import json
+from abc import abstractmethod
 from collections.abc import Sequence
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, ClassVar, Literal
 
 import torch
+from torch import nn
 from torchvision import tv_tensors
 
+from otx.algo.segmentation.segmentors import MeanTeacher
 from otx.core.data.entity.base import ImageInfo, OTXBatchLossEntity
 from otx.core.data.entity.segmentation import SegBatchDataEntity, SegBatchPredEntity
 from otx.core.exporter.base import OTXModelExporter
@@ -23,6 +26,7 @@ from otx.core.schedulers import LRSchedulerListCallable
 from otx.core.types.export import OTXExportFormatType, TaskLevelExportParameters
 from otx.core.types.label import LabelInfo, LabelInfoTypes, SegLabelInfo
 from otx.core.types.precision import OTXPrecisionType
+from otx.core.types.task import OTXTrainType
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -37,14 +41,22 @@ if TYPE_CHECKING:
 class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity]):
     """Base class for the semantic segmentation models used in OTX."""
 
+    mean: ClassVar[tuple[float, float, float]] = (0.485, 0.456, 0.406)
+    scale: ClassVar[tuple[float, float, float]] = (0.229, 0.224, 0.225)
+
     def __init__(
         self,
         label_info: LabelInfoTypes,
-        input_size: tuple[int, int],
+        input_size: tuple[int, int] = (512, 512),
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = SegmCallable,  # type: ignore[assignment]
         torch_compile: bool = False,
+        train_type: Literal[OTXTrainType.SUPERVISED, OTXTrainType.SEMI_SUPERVISED] = OTXTrainType.SUPERVISED,
+        model_version: str | None = None,
+        unsupervised_weight: float = 0.7,
+        semisl_start_epoch: int = 2,
+        drop_unreliable_pixels_percent: int = 20,
     ):
         """Base semantic segmentation model.
 
@@ -59,7 +71,21 @@ class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity]):
                 Defaults to SegmCallable.
             torch_compile (bool, optional): Whether to compile the model using TorchScript.
                 Defaults to False.
+            train_type (Literal[OTXTrainType.SUPERVISED, OTXTrainType.SEMI_SUPERVISED], optional):
+                The training type of the model. Defaults to OTXTrainType.SUPERVISED.
+            model_version (str | None, optional): The version of the model. Defaults to None.
+            unsupervised_weight (float, optional): The weight of the unsupervised loss.
+                Only for semi-supervised learning. Defaults to 0.7.
+            semisl_start_epoch (int, optional): The epoch at which the semi-supervised learning starts.
+                Only for semi-supervised learning. Defaults to 2.
+            drop_unreliable_pixels_percent (int, optional): The percentage of unreliable pixels to drop.
+                Only for semi-supervised learning. Defaults to 20.
         """
+        self.model_version = model_version
+        self.unsupervised_weight = unsupervised_weight
+        self.semisl_start_epoch = semisl_start_epoch
+        self.drop_unreliable_pixels_percent = drop_unreliable_pixels_percent
+
         super().__init__(
             label_info=label_info,
             input_size=input_size,
@@ -67,8 +93,74 @@ class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity]):
             scheduler=scheduler,
             metric=metric,
             torch_compile=torch_compile,
+            train_type=train_type,
         )
         self.input_size: tuple[int, int]
+
+    def _create_model(self) -> nn.Module:
+        base_model = self._build_model()
+        if self.train_type == OTXTrainType.SEMI_SUPERVISED:
+            return MeanTeacher(
+                base_model,
+                unsup_weight=self.unsupervised_weight,
+                drop_unrel_pixels_percent=self.drop_unreliable_pixels_percent,
+                semisl_start_epoch=self.semisl_start_epoch,
+            )
+
+        return base_model
+
+    @abstractmethod
+    def _build_model(self) -> nn.Module:
+        """Building base nn.Module model.
+
+        Returns:
+            nn.Module: base nn.Module model for supervised training
+        """
+
+    def _customize_inputs(self, entity: SegBatchDataEntity) -> dict[str, Any]:
+        mode = "loss" if self.training else "predict"
+
+        if self.train_type == OTXTrainType.SEMI_SUPERVISED and mode == "loss":
+            if not isinstance(entity, dict):
+                msg = "unlabeled inputs should be provided for semi-sl training"
+                raise RuntimeError(msg)
+
+            return {
+                "inputs": entity["labeled"].images,
+                "unlabeled_weak_images": entity["weak_transforms"].images,
+                "unlabeled_strong_images": entity["strong_transforms"].images,
+                "global_step": self.trainer.global_step,
+                "steps_per_epoch": self.trainer.num_training_batches,
+                "img_metas": entity["labeled"].imgs_info,
+                "unlabeled_img_metas": entity["weak_transforms"].imgs_info,
+                "masks": torch.stack(entity["labeled"].masks).long(),
+                "mode": mode,
+            }
+
+        masks = torch.stack(entity.masks).long() if mode == "loss" else None
+        return {"inputs": entity.images, "img_metas": entity.imgs_info, "masks": masks, "mode": mode}
+
+    def _customize_outputs(
+        self,
+        outputs: Any,  # noqa: ANN401
+        inputs: SegBatchDataEntity,
+    ) -> SegBatchPredEntity | OTXBatchLossEntity:
+        if self.training:
+            if not isinstance(outputs, dict):
+                raise TypeError(outputs)
+
+            losses = OTXBatchLossEntity()
+            for k, v in outputs.items():
+                losses[k] = v
+            return losses
+
+        return SegBatchPredEntity(
+            batch_size=len(outputs),
+            images=inputs.images,
+            imgs_info=inputs.imgs_info,
+            scores=[],
+            masks=outputs,
+        )
 
     @property
     def _export_parameters(self) -> TaskLevelExportParameters:
@@ -79,6 +171,26 @@ class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity]):
             return_soft_prediction=True,
             soft_threshold=0.5,
             blur_strength=-1,
+        )
+
+    @property
+    def _exporter(self) -> OTXModelExporter:
+        """Creates OTXModelExporter object that can export the model."""
+        if self.input_size is None:
+            msg = f"Image size attribute is not set for {self.__class__}"
+            raise ValueError(msg)
+
+        return OTXNativeModelExporter(
+            task_level_export_parameters=self._export_parameters,
+            input_size=(1, 3, *self.input_size),
+            mean=self.mean,
+            std=self.scale,
+            resize_mode="standard",
+            pad_value=0,
+            swap_rgb=False,
+            via_onnx=False,
+            onnx_export_configuration=None,
+            output_names=None,
         )
 
     def _convert_pred_entity_to_compute_metric(
@@ -147,118 +259,10 @@ class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity]):
         Returns:
             Path: path to the exported model.
         """
-        if hasattr(self.model, "student_model"):
-            # use only teacher model
-            # TODO(Kirill): make this based on the training type
+        if self.train_type == OTXTrainType.SEMI_SUPERVISED:
+            # use only teacher model for deployment
             self.model = self.model.teacher_model
         return super().export(output_dir, base_name, export_format, precision, to_exportable_code)
-
-
-class TorchVisionCompatibleModel(OTXSegmentationModel):
-    """Segmentation model compatible with torchvision data pipeline."""
-
-    def __init__(
-        self,
-        label_info: LabelInfoTypes,
-        input_size: tuple[int, int],
-        optimizer: OptimizerCallable = DefaultOptimizerCallable,
-        scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
-        metric: MetricCallable = SegmCallable,  # type: ignore[assignment]
-        torch_compile: bool = False,
-        backbone_configuration: dict[str, Any] | None = None,
-        decode_head_configuration: dict[str, Any] | None = None,
-        criterion_configuration: list[dict[str, Any]] | None = None,
-        export_image_configuration: dict[str, Any] | None = None,
-        name_base_model: str = "semantic_segmentation_model",
-    ):
-        """Torchvision compatible model.
-
-        Args:
-            label_info (LabelInfoTypes): The label information for the segmentation model.
-            input_size (tuple[int, int]): Model input size in the order of height and width.
-            optimizer (OptimizerCallable, optional): The optimizer callable for the model.
-                Defaults to DefaultOptimizerCallable.
-            scheduler (LRSchedulerCallable | LRSchedulerListCallable, optional):
-                The learning rate scheduler callable for the model. Defaults to DefaultSchedulerCallable.
-            metric (MetricCallable, optional): The metric callable for the model.
-                Defaults to SegmCallable.
-            torch_compile (bool, optional): Whether to compile the model using Torch. Defaults to False.
-            backbone_configuration (dict[str, Any] | None, optional):
-                The configuration for the backbone of the model. Defaults to None.
-            decode_head_configuration (dict[str, Any] | None, optional):
-                The configuration for the decode head of the model. Defaults to None.
-            criterion_configuration (list[dict[str, Any]] | None, optional):
-                The configuration for the criterion of the model. Defaults to None.
-            export_image_configuration (dict[str, Any] | None, optional):
-                The configuration for the export of the model like mean and scale. Defaults to None.
-            name_base_model (str, optional): The name of the base model used for trainig.
-                Defaults to "semantic_segmentation_model".
-        """
-        self.backbone_configuration = backbone_configuration if backbone_configuration is not None else {}
-        self.decode_head_configuration = decode_head_configuration if decode_head_configuration is not None else {}
-        export_image_configuration = export_image_configuration if export_image_configuration is not None else {}
-        self.criterion_configuration = criterion_configuration
-        self.mean = export_image_configuration.get("mean", [123.675, 116.28, 103.53])
-        self.scale = export_image_configuration.get("std", [58.395, 57.12, 57.375])
-        self.name_base_model = name_base_model
-
-        super().__init__(
-            label_info=label_info,
-            input_size=input_size,
-            optimizer=optimizer,
-            scheduler=scheduler,
-            metric=metric,
-            torch_compile=torch_compile,
-        )
-
-    def _customize_inputs(self, entity: SegBatchDataEntity) -> dict[str, Any]:
-        mode = "loss" if self.training else "predict"
-
-        masks = torch.stack(entity.masks).long() if mode == "loss" else None
-
-        return {"inputs": entity.images, "img_metas": entity.imgs_info, "masks": masks, "mode": mode}
-
-    def _customize_outputs(
-        self,
-        outputs: Any,  # noqa: ANN401
-        inputs: SegBatchDataEntity,
-    ) -> SegBatchPredEntity | OTXBatchLossEntity:
-        if self.training:
-            if not isinstance(outputs, dict):
-                raise TypeError(outputs)
-
-            losses = OTXBatchLossEntity()
-            for k, v in outputs.items():
-                losses[k] = v
-            return losses
-
-        return SegBatchPredEntity(
-            batch_size=len(outputs),
-            images=inputs.images,
-            imgs_info=inputs.imgs_info,
-            scores=[],
-            masks=outputs,
-        )
-
-    @property
-    def _exporter(self) -> OTXModelExporter:
-        """Creates OTXModelExporter object that can export the model."""
-        if self.input_size is None:
-            msg = f"Input size attribute is not set for {self.__class__}"
-            raise ValueError(msg)
-
-        return OTXNativeModelExporter(
-            task_level_export_parameters=self._export_parameters,
-            input_size=(1, 3, *self.input_size),
-            mean=self.mean,
-            std=self.scale,
-            resize_mode="standard",
-            pad_value=0,
-            swap_rgb=False,
-            via_onnx=False,
-            onnx_export_configuration=None,
-            output_names=None,
-        )
 
 
 class OVSegmentationModel(OVModel[SegBatchDataEntity, SegBatchPredEntity]):

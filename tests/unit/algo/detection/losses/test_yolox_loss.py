@@ -3,7 +3,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 
 import torch
-
 from otx.algo.detection.heads.yolox_head import YOLOXHead
 from otx.algo.detection.losses import YOLOXCriterion
 from otx.algo.detection.utils.assigners.sim_ota_assigner import SimOTAAssigner

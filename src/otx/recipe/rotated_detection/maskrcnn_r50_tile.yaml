@@ -1,0 +1,79 @@
+model:
+  class_path: otx.core.model.rotated_detection.RotatedMaskRCNNResNet50
+  init_args:
+    label_info: 80
+
+    optimizer:
+      class_path: torch.optim.SGD
+      init_args:
+        lr: 0.007
+        momentum: 0.9
+        weight_decay: 0.001
+
+    scheduler:
+      class_path: otx.core.schedulers.LinearWarmupSchedulerCallable
+      init_args:
+        num_warmup_steps: 100
+        main_scheduler_callable:
+          class_path: lightning.pytorch.cli.ReduceLROnPlateau
+          init_args:
+            mode: max
+            factor: 0.1
+            patience: 4
+            monitor: val/map_50
+
+engine:
+  task: ROTATED_DETECTION
+  device: auto
+
+callback_monitor: val/map_50
+
+data: ../_base_/data/instance_segmentation.yaml
+overrides:
+  task: ROTATED_DETECTION
+  max_epochs: 100
+  gradient_clip_val: 35.0
+  data:
+    input_size:
+      - 512
+      - 512
+    tile_config:
+      enable_tiler: true
+      enable_adaptive_tiling: true
+
+    train_subset:
+      batch_size: 4
+      num_workers: 8
+      transforms:
+        - class_path: otx.core.data.transform_libs.torchvision.Resize
+          init_args:
+            keep_ratio: false
+            scale: $(input_size)
+        - class_path: otx.core.data.transform_libs.torchvision.Pad
+          init_args:
+            pad_to_square: false
+            size_divisor: 32
+
+    val_subset:
+      num_workers: 4
+      transforms:
+        - class_path: otx.core.data.transform_libs.torchvision.Resize
+          init_args:
+            keep_ratio: false
+            scale: $(input_size)
+        - class_path: otx.core.data.transform_libs.torchvision.Pad
+          init_args:
+            pad_to_square: false
+            size_divisor: 32
+
+    test_subset:
+      num_workers: 4
+      transforms:
+        - class_path: otx.core.data.transform_libs.torchvision.Resize
+          init_args:
+            keep_ratio: false
+            scale: $(input_size)
+        - class_path: otx.core.data.transform_libs.torchvision.Pad
+          init_args:
+            pad_to_square: false
+            size_divisor: 32

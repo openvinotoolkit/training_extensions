@@ -349,12 +349,12 @@ The results will be saved in ``./otx-workspace/`` folder by default. The output 
     You also can visualize the training using ``Tensorboard`` as these logs are located in ``<work_dir>/tensorboard``.
 
 .. note::
-    ``--data.config.mem_cache_size`` provides in-memory caching for decoded images in main memory.
+    ``--data.mem_cache_size`` provides in-memory caching for decoded images in main memory.
     If the batch size is large, such as for classification tasks, or if your dataset contains high-resolution images,
     image decoding can account for a non-negligible overhead in data pre-processing.
     This option can be useful for maximizing GPU utilization and reducing model training time in those cases.
     If your machine has enough main memory, we recommend increasing this value as much as possible.
-    For example, you can cache approximately 10,000 of ``500x375~500x439`` sized images with ``--data.config.mem_cache_size 8GB``.
+    For example, you can cache approximately 10,000 of ``500x375~500x439`` sized images with ``--data.mem_cache_size 8GB``.
 
 It is also possible to start training by omitting the recipe and just passing the paths to dataset roots, then the :doc:`auto-configuration <../explanation/additional_features/auto_configuration>` will be enabled. Based on the dataset, OpenVINO™ Training Extensions will choose the task type and recipe with the best accuracy/speed trade-off.
 
@@ -363,7 +363,7 @@ For example, that is how you can change the max epochs and the batch size for th
 
 .. code-block:: shell
 
-    (otx) ...$ otx train ... --data.config.train_subset.batch_size <batch-size> --max_epochs <max-epochs>
+    (otx) ...$ otx train ... --data.train_subset.batch_size <batch-size> --max_epochs <max-epochs>
 
 .. note::
 

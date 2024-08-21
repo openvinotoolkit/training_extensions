@@ -1,9 +1,8 @@
 model:
-  class_path: otx.algo.classification.torchvision_model.OTXTVModel
+  class_path: otx.algo.classification.torchvision_model.TVModelForMulticlassCls
   init_args:
     backbone: mobilenet_v3_small
     label_info: 1000
-    task: MULTI_CLASS_CLS
 
     optimizer:
       class_path: torch.optim.SGD

@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import logging
 import math
+from functools import partial
 from typing import Callable, Sequence
 
 import torch
@@ -22,8 +23,9 @@ from otx.algo.common.utils.prior_generators import MlvlPointGenerator
 from otx.algo.common.utils.samplers import PseudoSampler
 from otx.algo.common.utils.utils import multi_apply, reduce_mean
 from otx.algo.detection.heads.base_head import BaseDenseHead
-from otx.algo.modules.activation import Swish
+from otx.algo.modules.activation import Swish, build_activation_layer
 from otx.algo.modules.conv_module import Conv2dModule, DepthwiseSeparableConvModule
+from otx.algo.modules.norm import build_norm_layer
 from otx.algo.utils.mmengine_utils import InstanceData
 
 logger = logging.getLogger()
@@ -46,12 +48,12 @@ class YOLOXHead(BaseDenseHead):
         dcn_on_last_conv (bool): If true, use dcn in the last layer of towers.
             Defaults to False.
         conv_bias (bool or str): If specified as `auto`, it will be decided by
-            the norm_cfg. Bias of conv will be set as True if `norm_cfg` is
+            the normalization. Bias of conv will be set as True if `normalization` is
             None, otherwise False. Defaults to "auto".
-        norm_cfg (dict): Config dict for normalization layer.
-            Defaults to dict(type='BN', momentum=0.03, eps=0.001).
-        activation_callable (Callable[..., nn.Module]): Activation layer module.
-            Defaults to `Swish`.
+        normalization (Callable[..., nn.Module]): Normalization layer module.
+            Defaults to ``partial(nn.BatchNorm2d, momentum=0.03, eps=0.001)``.
+        activation (Callable[..., nn.Module]): Activation layer module.
+            Defaults to ``Swish``.
         train_cfg (dict, optional): Training config of anchor head.
             Defaults to None.
         test_cfg (dict, optional): Testing config of anchor head.
@@ -70,15 +72,12 @@ class YOLOXHead(BaseDenseHead):
         use_depthwise: bool = False,
         dcn_on_last_conv: bool = False,
         conv_bias: bool | str = "auto",
-        norm_cfg: dict | None = None,
-        activation_callable: Callable[..., nn.Module] = Swish,
+        normalization: Callable[..., nn.Module] = partial(nn.BatchNorm2d, momentum=0.03, eps=0.001),
+        activation: Callable[..., nn.Module] = Swish,
         train_cfg: dict | None = None,
         test_cfg: dict | None = None,
         init_cfg: dict | list[dict] | None = None,
     ) -> None:
-        if norm_cfg is None:
-            norm_cfg = {"type": "BN", "momentum": 0.03, "eps": 0.001}
-
         if init_cfg is None:
             init_cfg = {
                 "type": "Kaiming",
@@ -105,8 +104,8 @@ class YOLOXHead(BaseDenseHead):
         self.conv_bias = conv_bias
         self.use_sigmoid_cls = True
 
-        self.norm_cfg = norm_cfg
-        self.activation_callable = activation_callable
+        self.normalization = normalization
+        self.activation = activation
 
         self.use_l1 = False  # This flag will be modified by hooks.
 
@@ -158,8 +157,8 @@ class YOLOXHead(BaseDenseHead):
                     3,
                     stride=1,
                     padding=1,
-                    norm_cfg=self.norm_cfg,
-                    activation_callable=self.activation_callable,
+                    normalization=build_norm_layer(self.normalization, num_features=self.feat_channels),
+                    activation=build_activation_layer(self.activation),
                     bias=self.conv_bias,
                 ),
             )
@@ -380,7 +379,7 @@ class YOLOXHead(BaseDenseHead):
         """Decode regression results (delta_x, delta_x, w, h) to bboxes (tl_x, tl_y, br_x, br_y).
 
         Args:
-            priors (Tensor): Center proiors of an image, has shape (num_instances, 2).
+            priors (Tensor): Center priors of an image, has shape (num_instances, 2).
             bbox_preds (Tensor): Box energies / deltas for all instances, has shape (batch_size, num_instances, 4).
 
         Returns:
@@ -411,7 +410,7 @@ class YOLOXHead(BaseDenseHead):
         the nms operation. Usually `with_nms` is False is used for aug test.
 
         Args:
-            results (InstaceData): Detection instance results,
+            results (InstanceData): Detection instance results,
                 each item has shape (num_bboxes, ).
             cfg (dict): Test / postprocessing configuration,
                 if None, test_cfg would be used.

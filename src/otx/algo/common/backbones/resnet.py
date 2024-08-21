@@ -9,7 +9,8 @@
 from __future__ import annotations
 
 import warnings
-from typing import ClassVar
+from functools import partial
+from typing import Callable, ClassVar
 
 import torch
 import torch.utils.checkpoint as cp
@@ -21,7 +22,11 @@ from torch.nn.modules.batchnorm import _BatchNorm
 
 
 class Bottleneck(BaseModule):
-    """Bottleneck block for ResNet."""
+    """Bottleneck block for ResNet.
+
+    If style is "pytorch", the stride-two layer is the 3x3 conv layer, if
+    it is "caffe", the stride-two layer is the first 1x1 conv layer
+    """
 
     expansion = 4
 
@@ -29,18 +34,13 @@ class Bottleneck(BaseModule):
         self,
         inplanes: int,
         planes: int,
-        norm_cfg: dict,
+        normalization: Callable[..., nn.Module],
         stride: int = 1,
         dilation: int = 1,
         downsample: nn.Module | None = None,
         with_cp: bool = False,
         init_cfg: dict | None = None,
     ):
-        """Bottleneck block for ResNet.
-
-        If style is "pytorch", the stride-two layer is the 3x3 conv layer, if
-        it is "caffe", the stride-two layer is the first 1x1 conv layer.
-        """
         super().__init__(init_cfg)
 
         self.inplanes = inplanes
@@ -48,14 +48,14 @@ class Bottleneck(BaseModule):
         self.stride = stride
         self.dilation = dilation
         self.with_cp = with_cp
-        self.norm_cfg = norm_cfg
+        self.normalization = normalization
 
         self.conv1_stride = 1
         self.conv2_stride = stride
 
-        self.norm1_name, norm1 = build_norm_layer(norm_cfg, planes, postfix=1)
-        self.norm2_name, norm2 = build_norm_layer(norm_cfg, planes, postfix=2)
-        self.norm3_name, norm3 = build_norm_layer(norm_cfg, planes * self.expansion, postfix=3)
+        self.norm1_name, norm1 = build_norm_layer(normalization, planes, postfix=1)
+        self.norm2_name, norm2 = build_norm_layer(normalization, planes, postfix=2)
+        self.norm3_name, norm3 = build_norm_layer(normalization, planes * self.expansion, postfix=3)
 
         self.conv1 = nn.Conv2d(inplanes, planes, kernel_size=1, stride=self.conv1_stride, bias=False)
         self.add_module(self.norm1_name, norm1)
@@ -141,7 +141,8 @@ class ResNet(BaseModule):
             downsampling in the bottleneck.
         frozen_stages (int): Stages to be frozen (stop grad and set eval mode).
             -1 means not freezing any parameters.
-        norm_cfg (dict): Dictionary to construct and config norm layer.
+        normalization (Callable[..., nn.Module] | None): Normalization layer module.
+            Defaults to ``partial(build_norm_layer, nn.BatchNorm2d, requires_grad=True)``.
         norm_eval (bool): Whether to set norm layers to eval mode, namely,
             freeze running stats (mean and var). Note: Effect on Batch Norm
             and its variants only.
@@ -179,7 +180,11 @@ class ResNet(BaseModule):
         out_indices: tuple[int, int, int, int] = (0, 1, 2, 3),
         avg_down: bool = False,
         frozen_stages: int = -1,
-        norm_cfg: dict | None = None,
+        normalization: Callable[..., nn.Module] = partial(
+            build_norm_layer,
+            nn.BatchNorm2d,
+            requires_grad=True,
+        ),
         norm_eval: bool = True,
         with_cp: bool = False,
         zero_init_residual: bool = True,
@@ -212,9 +217,6 @@ class ResNet(BaseModule):
             msg = "pretrained must be a str or None"
             raise TypeError(msg)
 
-        if norm_cfg is None:
-            norm_cfg = {"type": "BN", "requires_grad": True}
-
         self.depth = depth
         if stem_channels is None:
             stem_channels = base_channels
@@ -235,7 +237,7 @@ class ResNet(BaseModule):
             raise ValueError(msg)
         self.avg_down = avg_down
         self.frozen_stages = frozen_stages
-        self.norm_cfg = norm_cfg
+        self.normalization = normalization
         self.with_cp = with_cp
         self.norm_eval = norm_eval
         self.block, stage_blocks = self.arch_settings[depth]
@@ -258,7 +260,7 @@ class ResNet(BaseModule):
                 dilation=dilation,
                 avg_down=self.avg_down,
                 with_cp=with_cp,
-                norm_cfg=norm_cfg,
+                normalization=normalization,
                 init_cfg=block_init_cfg,
             )
             self.inplanes = planes * self.block.expansion
@@ -288,7 +290,11 @@ class ResNet(BaseModule):
             padding=3,
             bias=False,
         )
-        self.norm1_name, norm1 = build_norm_layer(self.norm_cfg, stem_channels, postfix=1)
+        self.norm1_name, norm1 = build_norm_layer(
+            self.normalization,
+            stem_channels,
+            postfix=1,
+        )
         self.add_module(self.norm1_name, norm1)
         self.relu = nn.ReLU(inplace=True)
         self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
