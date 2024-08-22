@@ -14,7 +14,7 @@ if TYPE_CHECKING:
     from otx.core.data.entity.base import ImageInfo
 
 
-class BaseSegmModel(nn.Module):
+class BaseSegmentationModel(nn.Module):
     """Base Segmentation Model.
 
     Args:

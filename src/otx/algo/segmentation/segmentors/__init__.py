@@ -3,7 +3,7 @@
 #
 """Module for base NN segmentation models."""
 
-from .base_model import BaseSegmModel
+from .base_model import BaseSegmentationModel
 from .mean_teacher import MeanTeacher
 
-__all__ = ["BaseSegmModel", "MeanTeacher"]
+__all__ = ["BaseSegmentationModel", "MeanTeacher"]
