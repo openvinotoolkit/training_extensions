@@ -123,7 +123,9 @@ def get_cls_model_api_configuration(label_schema: LabelSchemaEntity, inference_c
     hierarchical_config["cls_heads_info"] = get_multihead_class_info(label_schema)
     hierarchical_config["label_tree_edges"] = []
     for edge in label_schema.label_tree.edges:  # (child, parent)
-        hierarchical_config["label_tree_edges"].append((get_normalized_label_name(edge[0]), get_normalized_label_name(edge[1])))
+        hierarchical_config["label_tree_edges"].append(
+            (get_normalized_label_name(edge[0]), get_normalized_label_name(edge[1]))
+        )
 
     mapi_config[("model_info", "hierarchical_config")] = json.dumps(hierarchical_config)
     return mapi_config
