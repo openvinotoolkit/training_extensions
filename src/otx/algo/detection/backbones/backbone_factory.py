@@ -11,30 +11,42 @@ class DetectionBackboneFactory:
 
     def __new__(cls, version: str) -> nn.Module:
         """Create backbone instance."""
-        if "mobilenetv2" in version:
-            # TODO (sungchul): check if checking detector type is necessary
+        if "ssd" in version and "mobilenetv2" in version:
             from otx.algo.common.backbones import build_model_including_pytorchcv
 
             return build_model_including_pytorchcv(
                 cfg={
                     "type": "mobilenetv2_w1",
-                    "out_indices": [2, 3, 4, 5],
+                    "out_indices": [4, 5],
                     "frozen_stages": -1,
                     "norm_eval": False,
                     "pretrained": True,
                 },
             )
 
-        if "resnext101" in version:
-            # TODO (sungchul): check if checking detector type is necessary
-            from otx.algo.common.backbones import ResNeXt
+        if "atss" in version:
+            if "mobilenetv2" in version:
+                from otx.algo.common.backbones import build_model_including_pytorchcv
 
-            return ResNeXt(
-                depth=101,
-                groups=64,
-                frozen_stages=1,
-                init_cfg={"type": "Pretrained", "checkpoint": "open-mmlab://resnext101_64x4d"},
-            )
+                return build_model_including_pytorchcv(
+                    cfg={
+                        "type": "mobilenetv2_w1",
+                        "out_indices": [2, 3, 4, 5],
+                        "frozen_stages": -1,
+                        "norm_eval": False,
+                        "pretrained": True,
+                    },
+                )
+
+            if "resnext101" in version:
+                from otx.algo.common.backbones import ResNeXt
+
+                return ResNeXt(
+                    depth=101,
+                    groups=64,
+                    frozen_stages=1,
+                    init_cfg={"type": "Pretrained", "checkpoint": "open-mmlab://resnext101_64x4d"},
+                )
 
         if "yolox" in version:
             from otx.algo.detection.backbones import CSPDarknet

@@ -10,14 +10,14 @@ Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/d
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, ClassVar
 
 import numpy as np
 from datumaro.components.annotation import Bbox
 
-from otx.algo.common.backbones import build_model_including_pytorchcv
 from otx.algo.common.utils.assigners import MaxIoUAssigner
 from otx.algo.common.utils.coders import DeltaXYWHBBoxCoder
+from otx.algo.detection.backbones import DetectionBackboneFactory
 from otx.algo.detection.detectors import SingleStageDetector
 from otx.algo.detection.heads import SSDHead
 from otx.algo.detection.losses import SSDCriterion
@@ -43,29 +43,40 @@ if TYPE_CHECKING:
 logger = logging.getLogger()
 
 
+AVAILABLE_MODEL_VERSIONS: list[str] = ["ssd_mobilenetv2"]
+
+PRETRAINED_ROOT: (
+    str
+) = "https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/object_detection/v2/"
+
+PRETRAINED_WEIGHTS: dict[str, str] = {
+    "ssd_mobilenetv2": PRETRAINED_ROOT + "mobilenet_v2-2s_ssd-992x736.pth",
+}
+
+
 class SSD(ExplainableOTXDetModel):
     """Detecion model class for SSD."""
 
-    load_from = (
-        "https://storage.openvinotoolkit.org/repositories/openvino_training_extensions"
-        "/models/object_detection/v2/mobilenet_v2-2s_ssd-992x736.pth"
-    )
-    mean = (0.0, 0.0, 0.0)
-    std = (255.0, 255.0, 255.0)
+    mean: ClassVar[tuple[float, float, float]] = (0.0, 0.0, 0.0)
+    std: ClassVar[tuple[float, float, float]] = (255.0, 255.0, 255.0)
 
     def __init__(
         self,
+        model_version: str,
         label_info: LabelInfoTypes,
-        input_size: tuple[int, int] = (864, 864),
+        input_size: tuple[int, int] | None = None,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MeanAveragePrecisionFMeasureCallable,
         torch_compile: bool = False,
         tile_config: TileConfig = TileConfig(enable_tiler=False),
     ) -> None:
+        self.load_from: str = PRETRAINED_WEIGHTS[model_version]
+        _input_size: tuple[int, int] = input_size or (864, 864)
         super().__init__(
+            model_version=model_version,
             label_info=label_info,
-            input_size=input_size,
+            input_size=_input_size,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
@@ -94,16 +105,10 @@ class SSD(ExplainableOTXDetModel):
             "score_thr": 0.02,
             "max_per_img": 200,
         }
-        backbone = build_model_including_pytorchcv(
-            cfg={
-                "type": "mobilenetv2_w1",
-                "out_indices": [4, 5],
-                "frozen_stages": -1,
-                "norm_eval": False,
-                "pretrained": True,
-            },
-        )
+        backbone = DetectionBackboneFactory(version=self.model_version)
         bbox_head = SSDHead(
+            version=self.model_version,
+            num_classes=num_classes,
             anchor_generator=SSDAnchorGeneratorClustered(
                 strides=[16, 32],
                 widths=[
@@ -119,12 +124,13 @@ class SSD(ExplainableOTXDetModel):
                 target_means=(0.0, 0.0, 0.0, 0.0),
                 target_stds=(0.1, 0.1, 0.2, 0.2),
             ),
-            num_classes=num_classes,
-            in_channels=(96, 320),
-            use_depthwise=True,
-            init_cfg={"type": "Xavier", "layer": "Conv2d", "distribution": "uniform"},
-            train_cfg=train_cfg,
-            test_cfg=test_cfg,
+            init_cfg={
+                "type": "Xavier",
+                "layer": "Conv2d",
+                "distribution": "uniform",
+            },  # TODO (sungchul, kirill): remove
+            train_cfg=train_cfg,  # TODO (sungchul, kirill): remove
+            test_cfg=test_cfg,  # TODO (sungchul, kirill): remove
         )
         criterion = SSDCriterion(
             num_classes=num_classes,
@@ -137,8 +143,8 @@ class SSD(ExplainableOTXDetModel):
             backbone=backbone,
             bbox_head=bbox_head,
             criterion=criterion,
-            train_cfg=train_cfg,
-            test_cfg=test_cfg,
+            train_cfg=train_cfg,  # TODO (sungchul, kirill): remove
+            test_cfg=test_cfg,  # TODO (sungchul, kirill): remove
         )
 
     def setup(self, stage: str) -> None:

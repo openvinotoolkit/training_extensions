@@ -8,11 +8,13 @@ Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/d
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, ClassVar
 
 import torch
 from torch import Tensor, nn
 
+from otx.algo.common.utils.coders import BaseBBoxCoder
+from otx.algo.common.utils.prior_generators import BasePriorGenerator
 from otx.algo.common.utils.samplers import PseudoSampler
 from otx.algo.detection.heads.anchor_head import AnchorHead
 
@@ -20,7 +22,7 @@ if TYPE_CHECKING:
     from otx.algo.utils.mmengine_utils import InstanceData
 
 
-class SSDHead(AnchorHead):
+class SSDHeadModule(AnchorHead):
     """Implementation of `SSD head <https://arxiv.org/abs/1512.02325>`_.
 
     Args:
@@ -211,3 +213,39 @@ class SSDHead(AnchorHead):
                 self.cls_convs.append(
                     nn.Conv2d(in_channel, num_base_priors * self.cls_out_channels, kernel_size=3, padding=1),
                 )
+
+
+class SSDHead:
+    """SSDHead factory for detection."""
+
+    SSDHEAD_CFG: ClassVar[dict[str, Any]] = {
+        "rtmdet_tiny": {
+            "in_channels": (96, 320),
+            "use_depthwise": True,
+        },
+    }
+
+    def __new__(
+        cls,
+        version: str,
+        num_classes: int,
+        anchor_generator: BasePriorGenerator,
+        bbox_coder: BaseBBoxCoder,
+        init_cfg: dict,
+        train_cfg: dict,
+        test_cfg: dict | None = None,
+    ) -> SSDHeadModule:
+        """Constructor for SSDHead."""
+        if version not in cls.SSDHEAD_CFG:
+            msg = f"model type '{version}' is not supported"
+            raise KeyError(msg)
+
+        return SSDHeadModule(
+            **cls.SSDHEAD_CFG[version],
+            num_classes=num_classes,
+            anchor_generator=anchor_generator,
+            bbox_coder=bbox_coder,
+            init_cfg=init_cfg,  # TODO (sungchul, kirill): remove
+            train_cfg=train_cfg,  # TODO (sungchul, kirill): remove
+            test_cfg=test_cfg,  # TODO (sungchul, kirill): remove
+        )
