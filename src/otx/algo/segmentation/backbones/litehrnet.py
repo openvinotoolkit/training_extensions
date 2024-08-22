@@ -1261,7 +1261,7 @@ class LiteHRNetBackbone:
             "pretrained_weights": "https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/custom_semantic_segmentation/litehrnetsv2_imagenet1k_rsc.pth",
         },
         "lite_hrnet_18": {
-            "stem_configuration" : {},
+            "stem_configuration": {},
             "num_stages": 3,
             "stages_spec": {
                 "num_modules": [2, 4, 2],
