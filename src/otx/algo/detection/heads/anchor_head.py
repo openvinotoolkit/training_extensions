@@ -13,7 +13,8 @@ import warnings
 import torch
 from torch import Tensor, nn
 
-from otx.algo.common.utils.prior_generators import AnchorGenerator
+from otx.algo.common.utils.coders import BaseBBoxCoder
+from otx.algo.common.utils.prior_generators import AnchorGenerator, BasePriorGenerator
 from otx.algo.common.utils.utils import multi_apply
 from otx.algo.detection.heads.base_head import BaseDenseHead
 from otx.algo.detection.utils.prior_generators.utils import anchor_inside_flags
@@ -28,10 +29,14 @@ class AnchorHead(BaseDenseHead):
         num_classes (int): Number of categories excluding the background
             category.
         in_channels (tuple[int, ...], int): Number of channels in the input feature map.
-        anchor_generator (nn.Module): Module for anchor generator
-        bbox_coder (nn.Module): Module of bounding box coder.
-        loss_cls (nn.Module): Module of classification loss.
-        loss_bbox (nn.Module): Module of localization loss.
+        anchor_generator (BasePriorGenerator): Anchor generator class.
+        bbox_coder (BaseBBoxCoder): Bounding box coder class.
+        loss_cls (nn.Module | None): Module of classification loss.
+            It is related to RPNHead for iseg, will be deprecated.
+            Defaults to None.
+        loss_bbox (nn.Module | None): Module of localization loss.
+            It is related to RPNHead for iseg, will be deprecated.
+            Defaults to None.
         assigner (nn.Module): Module of assigner.
         sampler (nn.Module): Module of sampler.
         feat_channels (int): Number of hidden channels. Used in child classes.
@@ -81,7 +86,7 @@ class AnchorHead(BaseDenseHead):
         self.in_channels = in_channels
         self.num_classes = num_classes
         self.feat_channels = feat_channels
-        self.use_sigmoid_cls = loss_cls.use_sigmoid
+        self.use_sigmoid_cls = loss_cls.use_sigmoid if loss_cls else True  # TODO (kirill): revert or update
         if self.use_sigmoid_cls:
             self.cls_out_channels = num_classes
         else:
@@ -426,6 +431,8 @@ class AnchorHead(BaseDenseHead):
     ) -> tuple:
         """Calculate the loss of a single scale level based on the features extracted by the detection head.
 
+        TODO (kirill): it is related to RPNHead for iseg, will be deprecated
+
         Args:
             cls_score (Tensor): Box scores for each scale level
                 Has shape (N, num_anchors * num_classes, H, W).
@@ -450,7 +457,7 @@ class AnchorHead(BaseDenseHead):
         labels = labels.reshape(-1)
         label_weights = label_weights.reshape(-1)
         cls_score = cls_score.permute(0, 2, 3, 1).reshape(-1, self.cls_out_channels)
-        loss_cls = self.loss_cls(cls_score, labels, label_weights, avg_factor=avg_factor)
+        loss_cls = self.loss_cls(cls_score, labels, label_weights, avg_factor=avg_factor)  # type: ignore[misc] # TODO (kirill): fix
         # regression loss
         target_dim = bbox_targets.size(-1)
         bbox_targets = bbox_targets.reshape(-1, target_dim)
@@ -462,7 +469,7 @@ class AnchorHead(BaseDenseHead):
             # decodes the already encoded coordinates to absolute format.
             anchors = anchors.reshape(-1, anchors.size(-1))
             bbox_pred = self.bbox_coder.decode(anchors, bbox_pred)
-        loss_bbox = self.loss_bbox(bbox_pred, bbox_targets, bbox_weights, avg_factor=avg_factor)
+        loss_bbox = self.loss_bbox(bbox_pred, bbox_targets, bbox_weights, avg_factor=avg_factor)  # type: ignore[misc] # TODO (kirill): fix
         return loss_cls, loss_bbox
 
     def loss_by_feat(
@@ -474,6 +481,8 @@ class AnchorHead(BaseDenseHead):
         batch_gt_instances_ignore: list[InstanceData] | None = None,
     ) -> dict:
         """Calculate the loss based on the features extracted by the detection head.
+
+        TODO (kirill): it is related to RPNHead for iseg, will be deprecated
 
         Args:
             cls_scores (list[Tensor]): Box scores for each scale level

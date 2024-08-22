@@ -3,8 +3,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 
 """This implementation replaces the functionality of mmcv.cnn.bricks.norm.build_norm_layer."""
-# TODO(someone): Revisit mypy errors after deprecation of mmlab
-# mypy: ignore-errors
 
 from __future__ import annotations
 
@@ -156,11 +154,11 @@ def _get_norm_type(normalization: Callable[..., nn.Module]) -> type:
         (type): Class type of given normalization callable.
 
     """
-    return normalization.func if isinstance(normalization, partial) else normalization
+    return normalization.func if isinstance(normalization, partial) else normalization  # type: ignore[return-value]
 
 
 def build_norm_layer(
-    normalization: Callable[..., nn.Module] | tuple[str, nn.Module] | nn.Module,
+    normalization: Callable[..., nn.Module] | tuple[str, nn.Module] | nn.Module | None,
     num_features: int,
     postfix: int | str = "",
     layer_name: str | None = None,
@@ -191,7 +189,7 @@ def build_norm_layer(
     """
     if normalization is None or isinstance(normalization, tuple):
         # return tuple or None as is
-        return normalization
+        return normalization  # type: ignore[return-value]
 
     if isinstance(normalization, nn.Module):
         # return nn.Module with empty name string

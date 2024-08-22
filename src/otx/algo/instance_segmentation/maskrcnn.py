@@ -18,6 +18,7 @@ from otx.algo.instance_segmentation.backbones import MaskRCNNBackbone
 from otx.algo.instance_segmentation.heads import CustomConvFCBBoxHead, CustomRoIHead, FCNMaskHead, RPNHead
 from otx.algo.instance_segmentation.necks import FPN
 from otx.algo.instance_segmentation.segmentors.two_stage import TwoStageDetector
+from otx.algo.instance_segmentation.losses import ROICriterion, RPNCriterion
 from otx.algo.instance_segmentation.utils.roi_extractors import SingleRoIExtractor
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.exporter.base import OTXModelExporter
@@ -93,6 +94,10 @@ class MaskRCNN(ExplainableOTXInstanceSegModel):
         loss_roi_cls = CrossSigmoidFocalLoss(loss_weight=1.0, use_sigmoid=False)
 
         neck = FPN(model_name=self.model_name)
+        rpn_bbox_coder=DeltaXYWHBBoxCoder(
+                target_means=(0.0, 0.0, 0.0, 0.0),
+                target_stds=(1.0, 1.0, 1.0, 1.0),
+            )
 
         rpn_head = RPNHead(
             anchor_generator=AnchorGenerator(
@@ -100,10 +105,7 @@ class MaskRCNN(ExplainableOTXInstanceSegModel):
                 ratios=[0.5, 1.0, 2.0],
                 scales=[8],
             ),
-            bbox_coder=DeltaXYWHBBoxCoder(
-                target_means=(0.0, 0.0, 0.0, 0.0),
-                target_stds=(1.0, 1.0, 1.0, 1.0),
-            ),
+            bbox_coder=rpn_bbox_coder,
             assigner=rpn_assigner,
             sampler=rpn_sampler,
             loss_cls=loss_rpn_cls,
@@ -113,16 +115,9 @@ class MaskRCNN(ExplainableOTXInstanceSegModel):
         bbox_head = (
             CustomConvFCBBoxHead(
                 num_classes=num_classes,
-                reg_class_agnostic=False,
                 roi_feat_size=7,
                 fc_out_channels=1024,
                 in_channels=rpn_head.feat_channels,
-                bbox_coder=DeltaXYWHBBoxCoder(
-                    target_means=(0.0, 0.0, 0.0, 0.0),
-                    target_stds=(0.1, 0.1, 0.2, 0.2),
-                ),
-                loss_bbox=loss_bbox,
-                loss_cls=loss_roi_cls,
             ),
         )
 
@@ -156,7 +151,6 @@ class MaskRCNN(ExplainableOTXInstanceSegModel):
             FCNMaskHead(
                 conv_out_channels=rpn_head.feat_channels,
                 in_channels=rpn_head.feat_channels,
-                loss_mask=CrossEntropyLoss(loss_weight=1.0, use_mask=True),
                 num_classes=num_classes,
                 num_convs=4,
             ),
@@ -172,6 +166,24 @@ class MaskRCNN(ExplainableOTXInstanceSegModel):
             sampler=rcnn_sampler,
         )
 
+        rpn_criterion = RPNCriterion(
+            num_classes=num_classes,
+            bbox_coder=rpn_bbox_coder,
+            loss_bbox=loss_bbox,
+            loss_cls=loss_rpn_cls
+        )
+
+        roi_criterion = ROICriterion(
+            num_classes=num_classes,
+            bbox_coder=DeltaXYWHBBoxCoder(
+                target_means=(0.0, 0.0, 0.0, 0.0),
+                target_stds=(0.1, 0.1, 0.2, 0.2),
+            ),
+            loss_bbox=loss_bbox,
+            loss_cls=loss_roi_cls,
+            loss_mask=CrossEntropyLoss(loss_weight=1.0, use_mask=True),
+            class_agnostic=False
+        )
         # TODO check that other model are aligned here
 
         return TwoStageDetector(
@@ -179,6 +191,8 @@ class MaskRCNN(ExplainableOTXInstanceSegModel):
             neck=neck,
             rpn_head=rpn_head,
             roi_head=roi_head,
+            roi_criterion=roi_criterion,
+            rpn_criterion=rpn_criterion
         )
 
     @property

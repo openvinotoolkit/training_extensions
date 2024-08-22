@@ -5,5 +5,8 @@
 
 from .accuracy import accuracy
 from .dice_loss import DiceLoss
+from .rtmdet_inst_loss import RTMDetInstCriterion
+from .roi_loss import ROICriterion
+from .rpn_loss import RPNCriterion
 
-__all__ = ["accuracy", "DiceLoss"]
+__all__ = ["accuracy", "DiceLoss", "RTMDetInstCriterion", "ROICriterion", "RPNCriterion"]

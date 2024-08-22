@@ -9,13 +9,11 @@ Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/d
 from __future__ import annotations
 
 from functools import partial
-from typing import Callable
+from typing import Any, Callable, ClassVar
 
 import torch
 from torch import Tensor, nn
 
-from otx.algo.common.losses import CrossEntropyLoss, CrossSigmoidFocalLoss
-from otx.algo.common.utils.bbox_overlaps import bbox_overlaps
 from otx.algo.common.utils.utils import multi_apply, reduce_mean
 from otx.algo.detection.heads.anchor_head import AnchorHead
 from otx.algo.detection.heads.class_incremental_mixin import (
@@ -31,7 +29,7 @@ from otx.algo.utils.mmengine_utils import InstanceData
 EPS = 1e-12
 
 
-class ATSSHead(ClassIncrementalMixin, AnchorHead):
+class ATSSHeadModule(ClassIncrementalMixin, AnchorHead):
     """Detection Head of `ATSS <https://arxiv.org/abs/1912.02424>`_.
 
     ATSS head structure is similar with FCOS, however ATSS use anchor boxes
@@ -51,6 +49,7 @@ class ATSSHead(ClassIncrementalMixin, AnchorHead):
             coordinates format. Defaults to False. It should be `True` when
             using `IoULoss`, `GIoULoss`, or `DIoULoss` in the bbox head.
         loss_centerness (nn.Module, optinoal): Module of centerness loss. Defaults to None.
+        init_cfg (dict, list[dict], optional): Initialization config dict.
     """
 
     def __init__(
@@ -68,10 +67,6 @@ class ATSSHead(ClassIncrementalMixin, AnchorHead):
             requires_grad=True,
         ),
         reg_decoded_bbox: bool = True,
-        loss_centerness: nn.Module | None = None,
-        bg_loss_weight: float = -1.0,
-        use_qfl: bool = False,
-        qfl_cfg: dict | None = None,
         allowed_border: float = 0.0,
         pos_weight: float = 1.0,
         max_per_img: int = 1000,
@@ -84,19 +79,13 @@ class ATSSHead(ClassIncrementalMixin, AnchorHead):
         self.pred_kernel_size = pred_kernel_size
         self.stacked_convs = stacked_convs
         self.normalization = normalization
-        # init_cfg = {
-        #     "type": "Normal",
-        #     "layer": "Conv2d",
-        #     "std": 0.01,
-        #     "override": {"type": "Normal", "name": "atss_cls", "std": 0.01, "bias_prob": 0.01},
-        # }
+
         super().__init__(
             loss_cls=loss_cls,
             loss_bbox=loss_bbox,
             num_classes=num_classes,
             in_channels=in_channels,
             reg_decoded_bbox=reg_decoded_bbox,
-            init_cfg=init_cfg,
             max_per_img=max_per_img,
             min_bbox_size=min_bbox_size,
             nms_iou_threshold=nms_iou_threshold,
@@ -108,21 +97,6 @@ class ATSSHead(ClassIncrementalMixin, AnchorHead):
         )
 
         self.sampling = False
-        self.loss_centerness = loss_centerness or CrossEntropyLoss(use_sigmoid=True, loss_weight=1.0)
-
-        if use_qfl:
-            self.loss_cls = (
-                qfl_cfg
-                if qfl_cfg
-                else {
-                    "type": "QualityFocalLoss",
-                    "use_sigmoid": True,
-                    "beta": 2.0,
-                    "loss_weight": 1.0,
-                }
-            )
-        self.bg_loss_weight = bg_loss_weight
-        self.use_qfl = use_qfl
 
     def _init_layers(self) -> None:
         """Initialize layers of the head."""
@@ -246,7 +220,7 @@ class ATSSHead(ClassIncrementalMixin, AnchorHead):
                 Defaults to None.
 
         Returns:
-            dict[str, Tensor]: A dictionary of loss components.
+            dict[str, Tensor]: A dictionary of raw outputs.
         """
         featmap_sizes = [featmap.size()[-2:] for featmap in cls_scores]
         if len(featmap_sizes) != self.prior_generator.num_levels:
@@ -275,182 +249,17 @@ class ATSSHead(ClassIncrementalMixin, AnchorHead):
         ) = cls_reg_targets
         avg_factor = reduce_mean(torch.tensor(avg_factor, dtype=torch.float, device=device)).item()
 
-        losses_cls, losses_bbox, loss_centerness, bbox_avg_factor = multi_apply(
-            self.loss_by_feat_single,
-            anchor_list,
-            cls_scores,
-            bbox_preds,
-            centernesses,
-            labels_list,
-            label_weights_list,
-            bbox_targets_list,
-            valid_label_mask,
-            avg_factor=avg_factor,
-        )
-
-        bbox_avg_factor = sum(bbox_avg_factor)
-        bbox_avg_factor = reduce_mean(bbox_avg_factor).clamp_(min=1).item()
-        losses_bbox = [loss_bbox / bbox_avg_factor for loss_bbox in losses_bbox]
-        return {"loss_cls": losses_cls, "loss_bbox": losses_bbox, "loss_centerness": loss_centerness}
-
-    def loss_by_feat_single(  # type: ignore[override]
-        self,
-        anchors: Tensor,
-        cls_score: Tensor,
-        bbox_pred: Tensor,
-        centerness: Tensor,
-        labels: Tensor,
-        label_weights: Tensor,
-        bbox_targets: Tensor,
-        valid_label_mask: Tensor,
-        avg_factor: float,
-    ) -> tuple:
-        """Compute loss of a single scale level.
-
-        Args:
-            anchors (Tensor): Box reference for each scale level with shape
-                (N, num_total_anchors, 4).
-            cls_score (Tensor): Box scores for each scale level
-                Has shape (N, num_anchors * num_classes, H, W).
-            bbox_pred (Tensor): Box energies / deltas for each scale
-                level with shape (N, num_anchors * 4, H, W).
-            centerness(Tensor): Centerness scores for each scale level.
-            labels (Tensor): Labels of each anchors with shape
-                (N, num_total_anchors).
-            label_weights (Tensor): Label weights of each anchor with shape
-                (N, num_total_anchors)
-            bbox_targets (Tensor): BBox regression targets of each anchor with
-                shape (N, num_total_anchors, 4).
-            valid_label_mask (Tensor): Label mask for consideration of ignored
-                label with shape (N, num_total_anchors, 1).
-            avg_factor (float): Average factor that is used to average
-                the loss. When using sampling method, avg_factor is usually
-                the sum of positive and negative priors. When using
-                `PseudoSampler`, `avg_factor` is usually equal to the number
-                of positive priors.
-
-        Returns:
-            tuple[Tensor]: A tuple of loss components.
-        """
-        anchors = anchors.reshape(-1, 4)
-        cls_score = cls_score.permute(0, 2, 3, 1).reshape(-1, self.cls_out_channels).contiguous()
-        bbox_pred = bbox_pred.permute(0, 2, 3, 1).reshape(-1, 4)
-        centerness = centerness.permute(0, 2, 3, 1).reshape(-1)
-        bbox_targets = bbox_targets.reshape(-1, 4)
-        labels = labels.reshape(-1)
-        label_weights = label_weights.reshape(-1)
-        valid_label_mask = valid_label_mask.reshape(-1, self.cls_out_channels)
-
-        # FG cat_id: [0, num_classes -1], BG cat_id: num_classes
-        pos_inds = self._get_pos_inds(labels)
-
-        if self.use_qfl:
-            quality = label_weights.new_zeros(labels.shape)
-
-        if len(pos_inds) > 0:
-            pos_bbox_targets = bbox_targets[pos_inds]
-            pos_bbox_pred = bbox_pred[pos_inds]
-            pos_anchors = anchors[pos_inds]
-            pos_centerness = centerness[pos_inds]
-
-            centerness_targets = self.centerness_target(pos_anchors, pos_bbox_targets)
-            if self.reg_decoded_bbox:
-                pos_bbox_pred = self.bbox_coder.decode(pos_anchors, pos_bbox_pred)
-
-            if self.use_qfl:
-                quality[pos_inds] = bbox_overlaps(pos_bbox_pred.detach(), pos_bbox_targets, is_aligned=True).clamp(
-                    min=1e-6,
-                )
-
-            # regression loss
-            loss_bbox = self._get_loss_bbox(pos_bbox_targets, pos_bbox_pred, centerness_targets)
-
-            # centerness loss
-            loss_centerness = self._get_loss_centerness(avg_factor, pos_centerness, centerness_targets)
-
-        else:
-            loss_bbox = bbox_pred.sum() * 0
-            loss_centerness = centerness.sum() * 0
-            centerness_targets = bbox_targets.new_tensor(0.0)
-
-        # Re-weigting BG loss
-        if self.bg_loss_weight >= 0.0:
-            neg_indices = labels == self.num_classes
-            label_weights[neg_indices] = self.bg_loss_weight
-
-        if self.use_qfl:
-            labels = (labels, quality)  # For quality focal loss arg spec
-
-        # classification loss
-        loss_cls = self._get_loss_cls(cls_score, labels, label_weights, valid_label_mask, avg_factor)
-
-        return loss_cls, loss_bbox, loss_centerness, centerness_targets.sum()
-
-    def centerness_target(self, anchors: Tensor, gts: Tensor) -> Tensor:
-        """Calculate the centerness between anchors and gts.
-
-        Only calculate pos centerness targets, otherwise there may be nan.
-
-        Args:
-            anchors (Tensor): Anchors with shape (N, 4), "xyxy" format.
-            gts (Tensor): Ground truth bboxes with shape (N, 4), "xyxy" format.
-
-        Returns:
-            Tensor: Centerness between anchors and gts.
-        """
-        anchors_cx = (anchors[:, 2] + anchors[:, 0]) / 2
-        anchors_cy = (anchors[:, 3] + anchors[:, 1]) / 2
-        l_ = anchors_cx - gts[:, 0]
-        t_ = anchors_cy - gts[:, 1]
-        r_ = gts[:, 2] - anchors_cx
-        b_ = gts[:, 3] - anchors_cy
-
-        left_right = torch.stack([l_, r_], dim=1)
-        top_bottom = torch.stack([t_, b_], dim=1)
-        return torch.sqrt(
-            (left_right.min(dim=-1)[0] / left_right.max(dim=-1)[0])
-            * (top_bottom.min(dim=-1)[0] / top_bottom.max(dim=-1)[0]),
-        )
-
-    def _get_pos_inds(self, labels: Tensor) -> Tensor:
-        bg_class_ind = self.num_classes
-        return ((labels >= 0) & (labels < bg_class_ind)).nonzero().squeeze(1)
-
-    def _get_loss_cls(
-        self,
-        cls_score: Tensor,
-        labels: Tensor,
-        label_weights: Tensor,
-        valid_label_mask: Tensor,
-        avg_factor: Tensor,
-    ) -> Tensor:
-        if isinstance(self.loss_cls, CrossSigmoidFocalLoss):
-            loss_cls = self.loss_cls(
-                cls_score,
-                labels,
-                label_weights,
-                avg_factor=avg_factor,
-                valid_label_mask=valid_label_mask,
-            )
-        else:
-            loss_cls = self.loss_cls(cls_score, labels, label_weights, avg_factor=avg_factor)
-        return loss_cls
-
-    def _get_loss_centerness(
-        self,
-        avg_factor: Tensor,
-        pos_centerness: Tensor,
-        centerness_targets: Tensor,
-    ) -> Tensor:
-        return self.loss_centerness(pos_centerness, centerness_targets, avg_factor=avg_factor)
-
-    def _get_loss_bbox(
-        self,
-        pos_bbox_targets: Tensor,
-        pos_bbox_pred: Tensor,
-        centerness_targets: Tensor,
-    ) -> Tensor:
-        return self.loss_bbox(pos_bbox_pred, pos_bbox_targets, weight=centerness_targets, avg_factor=1.0)
+        return {
+            "anchors": anchor_list,
+            "cls_score": cls_scores,
+            "bbox_pred": bbox_preds,
+            "centerness": centernesses,
+            "labels": labels_list,
+            "label_weights": label_weights_list,
+            "bbox_targets": bbox_targets_list,
+            "valid_label_mask": valid_label_mask,
+            "avg_factor": avg_factor,
+        }
 
     def get_targets(
         self,
@@ -592,3 +401,41 @@ class ATSSHead(ClassIncrementalMixin, AnchorHead):
         """Get the number of valid anchors in every level."""
         split_inside_flags = torch.split(inside_flags, num_level_anchors)
         return [int(flags.sum()) for flags in split_inside_flags]
+
+
+class ATSSHead:
+    """ATSSHead factory for detection."""
+
+    ATSSHEAD_CFG: ClassVar[dict[str, Any]] = {
+        "atss_mobilenetv2": {
+            "in_channels": 64,
+            "feat_channels": 64,
+        },
+        "atss_resnext101": {
+            "in_channels": 256,
+            "feat_channels": 256,
+        },
+    }
+
+    def __new__(
+        cls,
+        version: str,
+        num_classes: int,
+        anchor_generator: object,
+        bbox_coder: object,
+        train_cfg: dict,
+        test_cfg: dict | None = None,
+    ) -> ATSSHeadModule:
+        """Constructor for FCNHead."""
+        if version not in cls.ATSSHEAD_CFG:
+            msg = f"model type '{version}' is not supported"
+            raise KeyError(msg)
+
+        return ATSSHeadModule(
+            **cls.ATSSHEAD_CFG[version],
+            num_classes=num_classes,
+            anchor_generator=anchor_generator,
+            bbox_coder=bbox_coder,
+            train_cfg=train_cfg,  # TODO (sungchul, kirill): remove
+            test_cfg=test_cfg,  # TODO (sungchul, kirill): remove
+        )

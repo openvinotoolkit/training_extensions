@@ -13,14 +13,12 @@ from typing import TYPE_CHECKING
 import torch
 from torch import Tensor
 
-from otx.algo.common.losses import CrossSigmoidFocalLoss
 from otx.algo.common.utils.structures import SamplingResult
 from otx.algo.common.utils.utils import multi_apply
 from otx.algo.detection.heads.class_incremental_mixin import (
     ClassIncrementalMixin,
 )
 from otx.algo.instance_segmentation.heads import Shared2FCBBoxHead
-from otx.algo.instance_segmentation.losses import accuracy
 from otx.algo.instance_segmentation.utils.structures.bbox import bbox2roi
 from otx.algo.instance_segmentation.utils.utils import empty_instances, unpack_inst_seg_entity
 from otx.core.data.entity.instance_segmentation import InstanceSegBatchDataEntity
@@ -650,68 +648,3 @@ class CustomConvFCBBoxHead(Shared2FCBBoxHead, ClassIncrementalMixin):
             bbox_weights = torch.cat(bbox_weights, 0)
             valid_label_mask = torch.cat(valid_label_mask, 0)
         return labels, label_weights, bbox_targets, bbox_weights, valid_label_mask
-
-    def loss(
-        self,
-        cls_score: Tensor,
-        bbox_pred: Tensor,
-        rois: Tensor,
-        labels: Tensor,
-        label_weights: Tensor,
-        bbox_targets: Tensor,
-        bbox_weights: Tensor,
-        valid_label_mask: Tensor | None = None,
-        reduction_override: str | None = None,
-    ) -> dict:
-        """Loss function for CustomConvFCBBoxHead."""
-        losses = {}
-        if cls_score is not None and cls_score.numel() > 0:
-            avg_factor = max(torch.sum(label_weights > 0).float().item(), 1.0)
-
-            if isinstance(self.loss_cls, CrossSigmoidFocalLoss):
-                losses["loss_cls"] = self.loss_cls(
-                    cls_score,
-                    labels,
-                    label_weights,
-                    avg_factor=avg_factor,
-                    reduction_override=reduction_override,
-                    valid_label_mask=valid_label_mask,
-                )
-            else:
-                losses["loss_cls"] = self.loss_cls(
-                    cls_score,
-                    labels,
-                    label_weights,
-                    avg_factor=avg_factor,
-                    reduction_override=reduction_override,
-                )
-            losses["acc"] = accuracy(cls_score, labels)
-        if bbox_pred is not None:
-            bg_class_ind = self.num_classes
-            # 0~self.num_classes-1 are FG, self.num_classes is BG
-            pos_inds = (labels >= 0) & (labels < bg_class_ind)
-            # do not perform bounding box regression for BG anymore.
-            if pos_inds.any():
-                if self.reg_decoded_bbox:
-                    # When the regression loss (e.g. `IouLoss`,
-                    # `GIouLoss`, `DIouLoss`) is applied directly on
-                    # the decoded bounding boxes, it decodes the
-                    # already encoded coordinates to absolute format.
-                    bbox_pred = self.bbox_coder.decode(rois[:, 1:], bbox_pred)
-                if self.reg_class_agnostic:
-                    pos_bbox_pred = bbox_pred.view(bbox_pred.size(0), 4)[pos_inds.type(torch.bool)]
-                else:
-                    pos_bbox_pred = bbox_pred.view(bbox_pred.size(0), -1, 4)[
-                        pos_inds.type(torch.bool),
-                        labels[pos_inds.type(torch.bool)],
-                    ]
-                losses["loss_bbox"] = self.loss_bbox(
-                    pos_bbox_pred,
-                    bbox_targets[pos_inds.type(torch.bool)],
-                    bbox_weights[pos_inds.type(torch.bool)],
-                    avg_factor=bbox_targets.size(0),
-                    reduction_override=reduction_override,
-                )
-            else:
-                losses["loss_bbox"] = bbox_pred[pos_inds].sum()
-        return losses

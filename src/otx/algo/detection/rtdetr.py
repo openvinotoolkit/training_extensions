@@ -16,7 +16,7 @@ from torchvision.ops import box_convert
 from torchvision.tv_tensors import BoundingBoxFormat
 
 from otx.algo.detection.backbones import PResNet
-from otx.algo.detection.base_models.detection_transformer import DETR
+from otx.algo.detection.detectors.detection_transformer import DETR
 from otx.algo.detection.heads import RTDETRTransformer
 from otx.algo.detection.necks import HybridEncoder
 from otx.algo.modules.norm import FrozenBatchNorm2d, build_norm_layer

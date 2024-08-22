@@ -13,9 +13,7 @@ from typing import TYPE_CHECKING
 import torch
 from torch import Tensor, nn
 
-from otx.algo.common.losses import CrossEntropyLoss, smooth_l1_loss
 from otx.algo.common.utils.samplers import PseudoSampler
-from otx.algo.common.utils.utils import multi_apply
 from otx.algo.detection.heads.anchor_head import AnchorHead
 
 if TYPE_CHECKING:
@@ -50,17 +48,16 @@ class SSDHead(AnchorHead):
         self,
         anchor_generator: nn.Module,
         bbox_coder: nn.Module,
-        init_cfg: dict | list[dict],
-        train_cfg: dict,
+        sampler: PseudoSampler,
+        assigner: nn.Module,
         num_classes: int = 80,
         in_channels: tuple[int, ...] | int = (512, 1024, 512, 256, 256, 256),
         stacked_convs: int = 0,
         feat_channels: int = 256,
         use_depthwise: bool = False,
         reg_decoded_bbox: bool = False,
-        test_cfg: dict | None = None,
     ) -> None:
-        super(AnchorHead, self).__init__(init_cfg=init_cfg)
+        super(AnchorHead, self).__init__()
         self.num_classes = num_classes
         self.in_channels = in_channels
         self.stacked_convs = stacked_convs
@@ -75,19 +72,14 @@ class SSDHead(AnchorHead):
         # heads but a list of int in SSDHead
         self.num_base_priors = self.prior_generator.num_base_priors
 
-        self.loss_cls = CrossEntropyLoss(use_sigmoid=False, reduction="none", loss_weight=1.0)
-
         self._init_layers()
 
         self.bbox_coder = bbox_coder
         self.reg_decoded_bbox = reg_decoded_bbox
         self.use_sigmoid_cls = False
         self.cls_focal_loss = False
-        self.train_cfg = train_cfg
-        self.test_cfg = test_cfg
-        if self.train_cfg:
-            self.assigner = self.train_cfg["assigner"]
-            self.sampler = PseudoSampler(context=self)  # type: ignore[no-untyped-call]
+        self.sampler = sampler
+        self.assigner = assigner
 
     def forward(self, x: tuple[Tensor]) -> tuple[list[Tensor], list[Tensor]]:
         """Forward features from the upstream network.
@@ -113,66 +105,6 @@ class SSDHead(AnchorHead):
             bbox_preds.append(reg_conv(feat))
         return cls_scores, bbox_preds
 
-    def loss_by_feat_single(
-        self,
-        cls_score: Tensor,
-        bbox_pred: Tensor,
-        anchor: Tensor,
-        labels: Tensor,
-        label_weights: Tensor,
-        bbox_targets: Tensor,
-        bbox_weights: Tensor,
-        avg_factor: int,
-    ) -> tuple[Tensor, Tensor]:
-        """Compute loss of a single image.
-
-        Args:
-            cls_score (Tensor): Box scores for each image has shape (num_total_anchors, num_classes).
-            bbox_pred (Tensor): Box energies / deltas for each image level with shape (num_total_anchors, 4).
-            anchors (Tensor): Box reference for each scale level with shape (num_total_anchors, 4).
-            labels (Tensor): Labels of each anchors with shape (num_total_anchors,).
-            label_weights (Tensor): Label weights of each anchor with shape (num_total_anchors,)
-            bbox_targets (Tensor): BBox regression targets of each anchor with shape (num_total_anchors, 4).
-            bbox_weights (Tensor): BBox regression loss weights of each anchor with shape (num_total_anchors, 4).
-            avg_factor (int): Average factor that is used to average
-                the loss. When using sampling method, avg_factor is usually
-                the sum of positive and negative priors. When using
-                `PseudoSampler`, `avg_factor` is usually equal to the number
-                of positive priors.
-
-        Returns:
-            tuple[Tensor, Tensor]: A tuple of cls loss and bbox loss of one
-            feature map.
-        """
-        loss_cls_all = nn.functional.cross_entropy(cls_score, labels, reduction="none") * label_weights
-        # FG cat_id: [0, num_classes -1], BG cat_id: num_classes
-        pos_inds = ((labels >= 0) & (labels < self.num_classes)).nonzero(as_tuple=False).reshape(-1)
-        neg_inds = (labels == self.num_classes).nonzero(as_tuple=False).view(-1)
-
-        num_pos_samples = pos_inds.size(0)
-        num_neg_samples = self.train_cfg["neg_pos_ratio"] * num_pos_samples
-        if num_neg_samples > neg_inds.size(0):
-            num_neg_samples = neg_inds.size(0)
-        topk_loss_cls_neg, _ = loss_cls_all[neg_inds].topk(num_neg_samples)
-        loss_cls_pos = loss_cls_all[pos_inds].sum()
-        loss_cls_neg = topk_loss_cls_neg.sum()
-        loss_cls = (loss_cls_pos + loss_cls_neg) / avg_factor
-
-        if self.reg_decoded_bbox:
-            # When the regression loss (e.g. `IouLoss`, `GIouLoss`)
-            # is applied directly on the decoded bounding boxes, it
-            # decodes the already encoded coordinates to absolute format.
-            bbox_pred = self.bbox_coder.decode(anchor, bbox_pred)
-
-        loss_bbox = smooth_l1_loss(
-            bbox_pred,
-            bbox_targets,
-            bbox_weights,
-            beta=self.train_cfg["smoothl1_beta"],
-            avg_factor=avg_factor,
-        )
-        return loss_cls[None], loss_bbox
-
     def loss_by_feat(
         self,
         cls_scores: list[Tensor],
@@ -180,7 +112,7 @@ class SSDHead(AnchorHead):
         batch_gt_instances: list[InstanceData],
         batch_img_metas: list[dict],
         batch_gt_instances_ignore: list[InstanceData] | None = None,
-    ) -> dict[str, list[Tensor]]:
+    ) -> dict[str, Tensor]:
         """Compute losses of the head.
 
         Args:
@@ -195,13 +127,7 @@ class SSDHead(AnchorHead):
                 Defaults to None.
 
         Returns:
-            dict[str, list[Tensor]]: A dictionary of loss components. the dict
-            has components below:
-
-            - loss_cls (list[Tensor]): A list containing each feature map \
-            classification loss.
-            - loss_bbox (list[Tensor]): A list containing each feature map \
-            regression loss.
+            dict[str, Tensor]: A dictionary of raw outputs.
         """
         featmap_sizes = [featmap.size()[-2:] for featmap in cls_scores]
 
@@ -232,18 +158,16 @@ class SSDHead(AnchorHead):
         # concat all level anchors to a single tensor
         all_anchors = [torch.cat(anchor) for anchor in anchor_list]
 
-        losses_cls, losses_bbox = multi_apply(
-            self.loss_by_feat_single,
-            all_cls_scores,
-            all_bbox_preds,
-            all_anchors,
-            all_labels,
-            all_label_weights,
-            all_bbox_targets,
-            all_bbox_weights,
-            avg_factor=avg_factor,
-        )
-        return {"loss_cls": losses_cls, "loss_bbox": losses_bbox}
+        return {
+            "cls_score": all_cls_scores,
+            "bbox_pred": all_bbox_preds,
+            "anchor": all_anchors,
+            "labels": all_labels,
+            "label_weights": all_label_weights,
+            "bbox_targets": all_bbox_targets,
+            "bbox_weights": all_bbox_weights,
+            "avg_factor": avg_factor,
+        }
 
     def _init_layers(self) -> None:
         """Initialize layers of the head.

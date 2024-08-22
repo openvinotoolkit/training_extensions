@@ -3,7 +3,7 @@
 
 import pytest
 import torch
-from otx.algo.classification.backbones import OTXEfficientNet
+from otx.algo.classification.backbones import EfficientNetBackbone
 from otx.algo.classification.classifier import SemiSLClassifier
 from otx.algo.classification.heads import SemiSLLinearClsHead
 from otx.algo.classification.necks.gap import GlobalAveragePooling
@@ -12,7 +12,7 @@ from otx.algo.classification.necks.gap import GlobalAveragePooling
 class TestSemiSLClassifier:
     @pytest.fixture()
     def fxt_semi_sl_classifier(self):
-        backbone = OTXEfficientNet(version="b0")
+        backbone = EfficientNetBackbone(version="b0")
         neck = GlobalAveragePooling(dim=2)
         head = SemiSLLinearClsHead(
             num_classes=2,

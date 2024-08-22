@@ -27,6 +27,7 @@ class SingleStageDetector(nn.Module):
     Args:
         backbone (nn.Module): Backbone module.
         bbox_head (nn.Module): Bbox head module.
+        criterion (nn.Module | None, optional): Criterion module.
         neck (nn.Module | None, optional): Neck module. Defaults to None.
     """
 
@@ -34,6 +35,7 @@ class SingleStageDetector(nn.Module):
         self,
         backbone: nn.Module,
         bbox_head: nn.Module,
+        criterion: nn.Module,
         neck: nn.Module | None = None,
     ) -> None:
         super().__init__()
@@ -41,6 +43,7 @@ class SingleStageDetector(nn.Module):
         self.backbone = backbone
         self.bbox_head = bbox_head
         self.neck = neck
+        self.criterion = criterion
 
     def _load_from_state_dict(
         self,
@@ -121,7 +124,7 @@ class SingleStageDetector(nn.Module):
     def loss(
         self,
         entity: DetBatchDataEntity,
-    ) -> dict | list:
+    ) -> dict:
         """Calculate losses from a batch of inputs and data samples.
 
         Args:
@@ -135,7 +138,10 @@ class SingleStageDetector(nn.Module):
             dict: A dictionary of loss components.
         """
         x = self.extract_feat(entity.images)
-        return self.bbox_head.loss(x, entity)
+        # TODO (sungchul): compare .loss with other forwards and remove duplicated code
+        outputs: dict[str, Tensor] = self.bbox_head.loss(x, entity)
+
+        return self.criterion(**outputs)
 
     def predict(
         self,

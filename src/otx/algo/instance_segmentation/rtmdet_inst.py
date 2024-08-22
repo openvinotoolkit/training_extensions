@@ -11,15 +11,15 @@ from typing import TYPE_CHECKING, Any, ClassVar
 from torch import nn
 
 from otx.algo.common.backbones import CSPNeXt
-from otx.algo.common.losses import CrossEntropyLoss, GIoULoss, QualityFocalLoss
+from otx.algo.common.losses import GIoULoss, QualityFocalLoss
 from otx.algo.common.utils.assigners import DynamicSoftLabelAssigner
 from otx.algo.common.utils.coders import DistancePointBBoxCoder
 from otx.algo.common.utils.prior_generators import MlvlPointGenerator
 from otx.algo.common.utils.samplers import PseudoSampler
-from otx.algo.detection.base_models import SingleStageDetector
+from otx.algo.detection.detectors import SingleStageDetector
 from otx.algo.detection.necks import CSPNeXtPAFPN
 from otx.algo.instance_segmentation.heads import RTMDetInsSepBNHead
-from otx.algo.instance_segmentation.losses import DiceLoss
+from otx.algo.instance_segmentation.losses import DiceLoss, RTMDetInstCriterion
 from otx.algo.modules.norm import build_norm_layer
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter
@@ -147,6 +147,7 @@ class RTMDetInst(ExplainableOTXInstanceSegModel):
             feat_channels=96,
             normalization=partial(build_norm_layer, nn.BatchNorm2d, requires_grad=True),
             activation=partial(nn.SiLU, inplace=True),
+<<<<<<< HEAD
             anchor_generator=anchor_generator,
             loss_centerness=loss_centerness,
             loss_cls=loss_cls,
@@ -155,10 +156,39 @@ class RTMDetInst(ExplainableOTXInstanceSegModel):
             bbox_coder=bbox_coder,
             assigner=assigner,
             sampler=sampler,
+=======
+            anchor_generator=MlvlPointGenerator(
+                offset=0,
+                strides=[8, 16, 32],
+            ),
+            bbox_coder=DistancePointBBoxCoder(),
+            train_cfg=train_cfg,
+            test_cfg=test_cfg,
+        )
+        criterion = RTMDetInstCriterion(
+            num_classes=num_classes,
+            loss_cls=QualityFocalLoss(
+                use_sigmoid=True,
+                beta=2.0,
+                loss_weight=1.0,
+            ),
+            loss_bbox=GIoULoss(loss_weight=2.0),
+            loss_mask=DiceLoss(
+                loss_weight=2.0,
+                eps=5.0e-06,
+                reduction="mean",
+            ),
+>>>>>>> sungchul/refactoring-detection
         )
 
         return SingleStageDetector(
             backbone=backbone,
             neck=neck,
             bbox_head=bbox_head,
+<<<<<<< HEAD
+=======
+            criterion=criterion,
+            train_cfg=train_cfg,
+            test_cfg=test_cfg,
+>>>>>>> sungchul/refactoring-detection
         )

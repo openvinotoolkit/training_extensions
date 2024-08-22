@@ -70,29 +70,6 @@ class TestRTMDetHead:
             assert cls_score.shape[1] == rtmdet_head.num_base_priors * rtmdet_head.cls_out_channels
             assert bbox_pred.shape[1] == rtmdet_head.num_base_priors * 4
 
-    def test_loss_by_feat_single(self, rtmdet_head) -> None:
-        # Create dummy data to simulate the inputs to the loss_by_feat_single method
-        cls_score = torch.rand(1, 2, 100, 80)
-        bbox_pred = torch.rand(1, 2, 100, 4)
-        labels = torch.randint(0, 80, (2, 100))
-        label_weights = torch.rand(2, 100)
-        bbox_targets = torch.rand(2, 100, 4)
-        assign_metrics = torch.rand(2, 100)
-        stride = [8, 8]
-
-        loss_cls, loss_bbox, _, _ = rtmdet_head.loss_by_feat_single(
-            cls_score,
-            bbox_pred,
-            labels,
-            label_weights,
-            bbox_targets,
-            assign_metrics,
-            stride,
-        )
-
-        assert loss_cls is not None
-        assert loss_bbox is not None
-
     def test_export_by_feat(self, mocker, rtmdet_head) -> None:
         batch_size = 2
         num_priors = 1

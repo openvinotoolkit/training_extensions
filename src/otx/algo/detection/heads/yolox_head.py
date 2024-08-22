@@ -18,13 +18,11 @@ import torch.nn.functional as F  # noqa: N812
 from torch import Tensor, nn
 from torchvision.ops import box_convert
 
-from otx.algo.common.losses import CrossEntropyLoss, L1Loss
 from otx.algo.common.utils.nms import batched_nms, multiclass_nms
 from otx.algo.common.utils.prior_generators import MlvlPointGenerator
 from otx.algo.common.utils.samplers import PseudoSampler
 from otx.algo.common.utils.utils import multi_apply, reduce_mean
 from otx.algo.detection.heads.base_head import BaseDenseHead
-from otx.algo.detection.losses import IoULoss
 from otx.algo.modules.activation import Swish, build_activation_layer
 from otx.algo.modules.conv_module import Conv2dModule, DepthwiseSeparableConvModule
 from otx.algo.modules.norm import build_norm_layer
@@ -56,10 +54,6 @@ class YOLOXHead(BaseDenseHead):
             Defaults to ``partial(nn.BatchNorm2d, momentum=0.03, eps=0.001)``.
         activation (Callable[..., nn.Module]): Activation layer module.
             Defaults to ``Swish``.
-        loss_cls (nn.Module, optional): Module of classification loss.
-        loss_bbox (nn.Module, optional): Module of localization loss.
-        loss_obj (nn.Module, optional): Module of objectness loss.
-        loss_l1 (nn.Module, optional): Module of L1 loss.
         train_cfg (dict, optional): Training config of anchor head.
             Defaults to None.
         test_cfg (dict, optional): Testing config of anchor head.
@@ -80,10 +74,6 @@ class YOLOXHead(BaseDenseHead):
         conv_bias: bool | str = "auto",
         normalization: Callable[..., nn.Module] = partial(nn.BatchNorm2d, momentum=0.03, eps=0.001),
         activation: Callable[..., nn.Module] = Swish,
-        loss_cls: nn.Module | None = None,
-        loss_bbox: nn.Module | None = None,
-        loss_obj: nn.Module | None = None,
-        loss_l1: nn.Module | None = None,
         train_cfg: dict | None = None,
         test_cfg: dict | None = None,
         init_cfg: dict | list[dict] | None = None,
@@ -117,12 +107,7 @@ class YOLOXHead(BaseDenseHead):
         self.normalization = normalization
         self.activation = activation
 
-        self.loss_cls = loss_cls or CrossEntropyLoss(use_sigmoid=True, reduction="sum", loss_weight=1.0)
-        self.loss_bbox = loss_bbox or IoULoss(mode="square", eps=1e-16, reduction="sum", loss_weight=5.0)
-        self.loss_obj = loss_obj or CrossEntropyLoss(use_sigmoid=True, reduction="sum", loss_weight=1.0)
-
         self.use_l1 = False  # This flag will be modified by hooks.
-        self.loss_l1 = loss_l1 or L1Loss(reduction="sum", loss_weight=1.0)
 
         self.prior_generator = MlvlPointGenerator(strides, offset=0)  # type: ignore[arg-type]
 
@@ -394,7 +379,7 @@ class YOLOXHead(BaseDenseHead):
         """Decode regression results (delta_x, delta_x, w, h) to bboxes (tl_x, tl_y, br_x, br_y).
 
         Args:
-            priors (Tensor): Center proiors of an image, has shape (num_instances, 2).
+            priors (Tensor): Center priors of an image, has shape (num_instances, 2).
             bbox_preds (Tensor): Box energies / deltas for all instances, has shape (batch_size, num_instances, 4).
 
         Returns:
@@ -425,7 +410,7 @@ class YOLOXHead(BaseDenseHead):
         the nms operation. Usually `with_nms` is False is used for aug test.
 
         Args:
-            results (InstaceData): Detection instance results,
+            results (InstanceData): Detection instance results,
                 each item has shape (num_bboxes, ).
             cfg (dict): Test / postprocessing configuration,
                 if None, test_cfg would be used.
@@ -490,7 +475,7 @@ class YOLOXHead(BaseDenseHead):
                 Defaults to None.
 
         Returns:
-            dict[str, Tensor]: A dictionary of losses.
+            dict[str, Tensor]: A dictionary of raw outputs.
         """
         num_imgs = len(batch_img_metas)
         if batch_gt_instances_ignore is None:
@@ -542,34 +527,19 @@ class YOLOXHead(BaseDenseHead):
         if self.use_l1:
             l1_targets = torch.cat(l1_targets, 0)
 
-        loss_obj = self.loss_obj(flatten_objectness.view(-1, 1), obj_targets) / num_total_samples
-        if num_pos > 0:
-            loss_cls = (
-                self.loss_cls(flatten_cls_preds.view(-1, self.num_classes)[pos_masks], cls_targets) / num_total_samples
-            )
-            loss_bbox = self.loss_bbox(flatten_bboxes.view(-1, 4)[pos_masks], bbox_targets) / num_total_samples
-        else:
-            # Avoid cls and reg branch not participating in the gradient
-            # propagation when there is no ground-truth in the images.
-            # For more details, please refer to
-            # https://github.com/open-mmlab/mmdetection/issues/7298
-            loss_cls = flatten_cls_preds.sum() * 0
-            loss_bbox = flatten_bboxes.sum() * 0
-
-        loss_dict = {"loss_cls": loss_cls, "loss_bbox": loss_bbox, "loss_obj": loss_obj}
-
-        if self.use_l1:
-            if num_pos > 0:
-                loss_l1 = self.loss_l1(flatten_bbox_preds.view(-1, 4)[pos_masks], l1_targets) / num_total_samples
-            else:
-                # Avoid cls and reg branch not participating in the gradient
-                # propagation when there is no ground-truth in the images.
-                # For more details, please refer to
-                # https://github.com/open-mmlab/mmdetection/issues/7298
-                loss_l1 = flatten_bbox_preds.sum() * 0
-            loss_dict.update(loss_l1=loss_l1)
-
-        return loss_dict
+        return {
+            "flatten_objectness": flatten_objectness,
+            "flatten_cls_preds": flatten_cls_preds,
+            "flatten_bbox_preds": flatten_bbox_preds,
+            "flatten_bboxes": flatten_bboxes,
+            "obj_targets": obj_targets,
+            "cls_targets": cls_targets,
+            "bbox_targets": bbox_targets,
+            "l1_targets": l1_targets,
+            "num_total_samples": num_total_samples,
+            "num_pos": num_pos,
+            "pos_masks": pos_masks,
+        }
 
     @torch.no_grad()
     def _get_targets_single(

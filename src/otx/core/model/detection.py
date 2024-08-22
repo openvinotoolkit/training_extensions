@@ -35,13 +35,17 @@ if TYPE_CHECKING:
     from model_api.models.utils import DetectionResult
     from torch import nn
 
-    from otx.algo.detection.base_models import SingleStageDetector
+    from otx.algo.detection.detectors import SingleStageDetector
 
 
 class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity]):
     """Base class for the detection models used in OTX."""
 
     input_size: tuple[int, int]
+
+    def __init__(self, model_version: str, *args, **kwargs) -> None:
+        self.model_version = model_version
+        super().__init__(*args, **kwargs)
 
     def test_step(self, batch: DetBatchDataEntity, batch_idx: int) -> None:
         """Perform a single test step on a batch of data from the test set.
@@ -386,6 +390,7 @@ class ExplainableOTXDetModel(OTXDetectionModel):
 
     def __init__(
         self,
+        model_version: str,
         label_info: LabelInfoTypes,
         input_size: tuple[int, int],
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
@@ -397,6 +402,7 @@ class ExplainableOTXDetModel(OTXDetectionModel):
         from otx.algo.explain.explain_algo import feature_vector_fn
 
         super().__init__(
+            model_version=model_version,
             label_info=label_info,
             input_size=input_size,
             optimizer=optimizer,

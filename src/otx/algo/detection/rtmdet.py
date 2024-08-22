@@ -12,13 +12,13 @@ from torch import nn
 
 from otx.algo.common.backbones import CSPNeXt
 from otx.algo.common.losses import GIoULoss, QualityFocalLoss
-from otx.algo.common.losses.cross_entropy_loss import CrossEntropyLoss
 from otx.algo.common.utils.assigners import DynamicSoftLabelAssigner
 from otx.algo.common.utils.coders import DistancePointBBoxCoder
 from otx.algo.common.utils.prior_generators import MlvlPointGenerator
 from otx.algo.common.utils.samplers import PseudoSampler
-from otx.algo.detection.base_models import SingleStageDetector
+from otx.algo.detection.detectors import SingleStageDetector
 from otx.algo.detection.heads import RTMDetSepBNHead
+from otx.algo.detection.losses import RTMDetCriterion
 from otx.algo.detection.necks import CSPNeXtPAFPN
 from otx.core.config.data import TileConfig
 from otx.core.exporter.base import OTXModelExporter
@@ -144,19 +144,23 @@ class RTMDetTiny(RTMDet):
             with_objectness=False,
             anchor_generator=MlvlPointGenerator(offset=0, strides=[8, 16, 32]),
             bbox_coder=DistancePointBBoxCoder(),
-            loss_cls=QualityFocalLoss(use_sigmoid=True, beta=2.0, loss_weight=1.0),
-            loss_bbox=GIoULoss(loss_weight=2.0),
-            loss_centerness=CrossEntropyLoss(use_sigmoid=True, loss_weight=1.0),
             normalization=nn.BatchNorm2d,
             activation=partial(nn.SiLU, inplace=True),
             train_cfg=train_cfg,
             test_cfg=test_cfg,
         )
 
+        criterion = RTMDetCriterion(
+            num_classes=num_classes,
+            loss_cls=QualityFocalLoss(use_sigmoid=True, beta=2.0, loss_weight=1.0),
+            loss_bbox=GIoULoss(loss_weight=2.0),
+        )
+
         return SingleStageDetector(
             backbone=backbone,
             neck=neck,
             bbox_head=bbox_head,
+            criterion=criterion,
             train_cfg=train_cfg,
             test_cfg=test_cfg,
         )

@@ -28,6 +28,8 @@ class TwoStageDetector(nn.Module):
         neck: nn.Module,
         rpn_head: nn.Module,
         roi_head: nn.Module,
+        roi_criterion: nn.Module,
+        rpn_criterion: nn.Module
     ) -> None:
         super().__init__()
 
@@ -35,6 +37,8 @@ class TwoStageDetector(nn.Module):
         self.neck = neck
         self.rpn_head = rpn_head
         self.roi_head = roi_head
+        self.roi_criterion = roi_criterion
+        self.rpn_criterion = rpn_criterion
 
     def _load_from_state_dict(
         self,
@@ -138,6 +142,45 @@ class TwoStageDetector(nn.Module):
             x = self.neck(x)
         return x
 
+    def loss_and_predict(
+        self,
+        x: tuple[Tensor],
+        rpn_entity: InstanceSegBatchDataEntity,
+    ) -> tuple[dict, list[InstanceData]]:
+        """Forward propagation of the head, then calculate loss and predictions from the features and data samples.
+
+        Args:
+            x (tuple[Tensor]): Features from FPN.
+            batch_data_samples (list[InstanceSegBatchDataEntity]): Each item contains
+                the meta information of each image and corresponding
+                annotations.
+
+        Returns:
+            tuple: the return value is a tuple contains:
+
+                - losses: (dict[str, Tensor]): A dictionary of loss components.
+                - predictions (list[InstanceData]): Detection
+                  results of each image after the post process.
+        """
+        batch_gt_instances, batch_img_metas = unpack_inst_seg_entity(rpn_entity)
+
+        cls_scores, bbox_preds = self(x)
+
+        losses = self.loss_by_feat(
+            cls_scores,
+            bbox_preds,
+            batch_gt_instances,
+            batch_img_metas,
+        )
+
+        predictions = self.predict_by_feat(
+            cls_scores,
+            bbox_preds,
+            batch_img_metas=batch_img_metas,
+        )
+        return losses, predictions
+
+
     def loss(self, batch_inputs: InstanceSegBatchDataEntity) -> dict:
         """Calculate losses from a batch of inputs and data samples.
 
@@ -152,20 +195,14 @@ class TwoStageDetector(nn.Module):
 
         losses = {}
 
-        # Copy data entity and set gt_labels to 0 in RPN
-        rpn_entity = InstanceSegBatchDataEntity(
-            images=torch.empty(0),
-            batch_size=batch_inputs.batch_size,
-            imgs_info=batch_inputs.imgs_info,
-            bboxes=batch_inputs.bboxes,
-            masks=batch_inputs.masks,
-            labels=[torch.zeros_like(labels) for labels in batch_inputs.labels],
-            polygons=batch_inputs.polygons,
-        )
+        batch_gt_instances, batch_img_metas = self.unpack_inst_seg_entity(batch_inputs)
+        cls_scores, bbox_preds = self.rpn_head(x)
 
-        rpn_losses, rpn_results_list = self.rpn_head.loss_and_predict(
-            x,
-            rpn_entity,
+        rpn_losses, rpn_results_list = self.rpn_criterion(
+            cls_scores,
+            bbox_preds,
+            batch_gt_instances,
+            batch_img_metas
         )
         # avoid get same name with roi_head loss
         keys = rpn_losses.keys()
@@ -174,7 +211,7 @@ class TwoStageDetector(nn.Module):
                 rpn_losses[f"rpn_{key}"] = rpn_losses.pop(key)
         losses.update(rpn_losses)
 
-        roi_losses = self.roi_head.loss(x, rpn_results_list, batch_inputs)
+        roi_losses = self.roi_criterion(x, rpn_results_list, batch_inputs)
         losses.update(roi_losses)
 
         return losses
@@ -214,3 +251,49 @@ class TwoStageDetector(nn.Module):
             batch_img_metas,
             rescale=False,
         )
+
+    def unpack_inst_seg_entity(entity: InstanceSegBatchDataEntity) -> tuple:
+        """Unpack gt_instances, gt_instances_ignore and img_metas based on batch_data_samples.
+
+        Args:
+            batch_data_samples (DetBatchDataEntity): Data entity from dataset.
+
+        Returns:
+            tuple:
+
+                - batch_gt_instances (list[InstanceData]): Batch of
+                    gt_instance. It usually includes ``bboxes`` and ``labels``
+                    attributes.
+                - batch_img_metas (list[dict]): Meta information of each image,
+                    e.g., image size, scaling factor, etc.
+        """
+        batch_gt_instances = []
+        batch_img_metas = []
+        for img_info, masks, polygons, bboxes, labels in zip(
+            entity.imgs_info,
+            entity.masks,
+            entity.polygons,
+            entity.bboxes,
+            entity.labels
+        ):
+            metainfo = {
+                "img_id": img_info.img_idx,
+                "img_shape": img_info.img_shape,
+                "ori_shape": img_info.ori_shape,
+                "scale_factor": img_info.scale_factor,
+                "ignored_labels": img_info.ignored_labels,
+            }
+            batch_img_metas.append(metainfo)
+
+            gt_masks = masks if len(masks) > 0 else polygons
+
+            batch_gt_instances.append(
+                InstanceData(
+                    metainfo=metainfo,
+                    masks=gt_masks,
+                    bboxes=bboxes,
+                    labels=[torch.zeros_like(labels)],
+                ),
+            )
+
+        return batch_gt_instances, batch_img_metas
