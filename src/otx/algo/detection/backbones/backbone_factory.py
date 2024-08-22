@@ -36,5 +36,10 @@ class BackboneFactory:
                 init_cfg={"type": "Pretrained", "checkpoint": "open-mmlab://resnext101_64x4d"},
             )
 
+        if "yolox" in version:
+            from otx.algo.detection.backbones import CSPDarknet
+
+            return CSPDarknet(version)
+
         msg = f"Unknown backbone name: {version}"
         raise ValueError(msg)

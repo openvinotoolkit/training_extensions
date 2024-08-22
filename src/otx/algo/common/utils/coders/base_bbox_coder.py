@@ -11,6 +11,8 @@ from torch import Tensor
 class BaseBBoxCoder:
     """Base class for bounding box coder."""
 
+    encode_size: int
+
     @abstractmethod
     def encode(self, *args, **kwargs) -> Tensor:
         """Encode bounding boxes."""

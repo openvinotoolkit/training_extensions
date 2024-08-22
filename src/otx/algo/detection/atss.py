@@ -59,14 +59,15 @@ class ATSS(ExplainableOTXDetModel):
         self,
         model_version: str,
         label_info: LabelInfoTypes,
-        input_size: tuple[int, int],
+        input_size: tuple[int, int] | None = None,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MeanAveragePrecisionFMeasureCallable,
         torch_compile: bool = False,
         tile_config: TileConfig = TileConfig(enable_tiler=False),
     ) -> None:
-        self.load_from = PRETRAINED_WEIGHTS[model_version]
+        self.load_from: str = PRETRAINED_WEIGHTS[model_version]
+        input_size = input_size or (800, 992)
         super().__init__(
             model_version=model_version,
             label_info=label_info,

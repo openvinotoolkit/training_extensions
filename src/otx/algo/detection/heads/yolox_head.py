@@ -11,7 +11,7 @@ from __future__ import annotations
 import logging
 import math
 from functools import partial
-from typing import Callable, Sequence
+from typing import Any, Callable, ClassVar, Sequence
 
 import torch
 import torch.nn.functional as F  # noqa: N812
@@ -31,7 +31,7 @@ from otx.algo.utils.mmengine_utils import InstanceData
 logger = logging.getLogger()
 
 
-class YOLOXHead(BaseDenseHead):
+class YOLOXHeadModule(BaseDenseHead):
     """YOLOXHead head used in `YOLOX <https://arxiv.org/abs/2107.08430>`_.
 
     Args:
@@ -629,3 +629,45 @@ class YOLOXHead(BaseDenseHead):
         l1_target[:, :2] = (gt_cxcywh[:, :2] - priors[:, :2]) / priors[:, 2:]
         l1_target[:, 2:] = torch.log(gt_cxcywh[:, 2:] / priors[:, 2:] + eps)
         return l1_target
+
+
+class YOLOXHead:
+    """YOLOXHead factory for detection."""
+
+    YOLOXHEAD_CFG: ClassVar[dict[str, Any]] = {
+        "yolox_tiny": {
+            "in_channels": 96,
+            "feat_channels": 96,
+        },
+        "yolox_s": {
+            "in_channels": 128,
+            "feat_channels": 128,
+        },
+        "yolox_l": {
+            "in_channels": 256,
+            "feat_channels": 256,
+        },
+        "yolox_x": {
+            "in_channels": 320,
+            "feat_channels": 320,
+        },
+    }
+
+    def __new__(
+        cls,
+        version: str,
+        num_classes: int,
+        train_cfg: dict,
+        test_cfg: dict | None = None,
+    ) -> YOLOXHeadModule:
+        """Constructor for YOLOXHead."""
+        if version not in cls.YOLOXHEAD_CFG:
+            msg = f"model type '{version}' is not supported"
+            raise KeyError(msg)
+
+        return YOLOXHeadModule(
+            **cls.YOLOXHEAD_CFG[version],
+            num_classes=num_classes,
+            train_cfg=train_cfg,  # TODO (sungchul, kirill): remove
+            test_cfg=test_cfg,  # TODO (sungchul, kirill): remove
+        )

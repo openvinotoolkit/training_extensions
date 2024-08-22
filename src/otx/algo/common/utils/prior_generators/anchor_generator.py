@@ -74,7 +74,7 @@ class AnchorGenerator(BasePriorGenerator):
             raise ValueError(msg)
 
         # calculate base sizes of anchors
-        self.strides = [_pair(stride) for stride in strides]
+        self.strides: list[tuple[int, int]] = [_pair(stride) for stride in strides]
         self.base_sizes = [min(stride) for stride in self.strides] if base_sizes is None else base_sizes
 
         if scales is not None:

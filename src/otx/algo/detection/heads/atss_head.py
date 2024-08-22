@@ -414,7 +414,7 @@ class ATSSHead:
         train_cfg: dict,
         test_cfg: dict | None = None,
     ) -> ATSSHeadModule:
-        """Constructor for FCNHead."""
+        """Constructor for ATSSHead."""
         if version not in cls.ATSSHEAD_CFG:
             msg = f"model type '{version}' is not supported"
             raise KeyError(msg)

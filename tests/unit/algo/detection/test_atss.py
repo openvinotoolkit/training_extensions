@@ -13,7 +13,7 @@ from otx.core.types.export import TaskLevelExportParameters
 
 class TestATSS:
     def test(self, mocker) -> None:
-        model = ATSS(model_version="atss_mobilenetv2", label_info=2, input_size=(800, 992))
+        model = ATSS(model_version="atss_mobilenetv2", label_info=2)
         mock_load_ckpt = mocker.patch.object(OTXv1Helper, "load_det_ckpt")
         model.load_from_otx_v1_ckpt({})
         mock_load_ckpt.assert_called_once_with({}, "model.")
@@ -24,8 +24,8 @@ class TestATSS:
     @pytest.mark.parametrize(
         "model",
         [
-            ATSS(model_version="atss_mobilenetv2", label_info=3, input_size=(800, 992)),
-            ATSS(model_version="atss_resnext101", label_info=3, input_size=(800, 992)),
+            ATSS(model_version="atss_mobilenetv2", label_info=3),
+            ATSS(model_version="atss_resnext101", label_info=3),
         ],
     )
     def test_loss(self, model, fxt_data_module):
@@ -39,8 +39,8 @@ class TestATSS:
     @pytest.mark.parametrize(
         "model",
         [
-            ATSS(model_version="atss_mobilenetv2", label_info=3, input_size=(800, 992)),
-            ATSS(model_version="atss_resnext101", label_info=3, input_size=(800, 992)),
+            ATSS(model_version="atss_mobilenetv2", label_info=3),
+            ATSS(model_version="atss_resnext101", label_info=3),
         ],
     )
     def test_predict(self, model, fxt_data_module):
@@ -53,8 +53,8 @@ class TestATSS:
     @pytest.mark.parametrize(
         "model",
         [
-            ATSS(model_version="atss_mobilenetv2", label_info=3, input_size=(800, 992)),
-            ATSS(model_version="atss_resnext101", label_info=3, input_size=(800, 992)),
+            ATSS(model_version="atss_mobilenetv2", label_info=3),
+            ATSS(model_version="atss_resnext101", label_info=3),
         ],
     )
     def test_export(self, model):

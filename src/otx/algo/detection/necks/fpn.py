@@ -225,7 +225,7 @@ class FPN:
     }
 
     def __new__(cls, version: str) -> FPNModule:
-        """Constructor for FCNHead."""
+        """Constructor for FPN."""
         if version not in cls.FPN_CFG:
             msg = f"model type '{version}' is not supported"
             raise KeyError(msg)
