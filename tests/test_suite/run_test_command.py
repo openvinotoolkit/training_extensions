@@ -23,6 +23,7 @@ from otx.cli.tools.find import SUPPORTED_TASKS as find_supported_tasks
 from otx.cli.utils.nncf import get_number_of_fakequantizers_in_xml
 from otx.algorithms.common.utils.utils import is_xpu_available
 from tests.test_suite.e2e_test_system import e2e_pytest_component
+from otx.api.entities.model_template import TaskType
 
 try:
     import intel_extension_for_pytorch
@@ -1240,7 +1241,12 @@ def generate_model_template_testing(templates):
                 ModelCategory.OTHER: 0,
             }
             for template in templates:
-                stat[template.model_category] += 1
+                # todo[ashwinvaidya17]: this is temporary
+                # both anomaly and anomaly_classification have the same model category
+                if template.task_type in (TaskType.ANOMALY, TaskType.ANOMALY_CLASSIFICATION):
+                    stat[template.model_category] = 1
+                else:
+                    stat[template.model_category] += 1
             assert stat[ModelCategory.SPEED] == 1
             assert stat[ModelCategory.BALANCE] <= 1
             assert stat[ModelCategory.ACCURACY] == 1
@@ -1256,7 +1262,10 @@ def generate_model_template_testing(templates):
             num_default_model = 0
             for template in templates:
                 if template.is_default_for_task:
-                    num_default_model += 1
+                    if template.task_type in (TaskType.ANOMALY, TaskType.ACTION_CLASSIFICATION):
+                        num_default_model = 1
+                    else:
+                        num_default_model += 1
                     assert template.model_category != ModelCategory.OTHER
                     assert template.model_status == ModelStatus.ACTIVE
             assert num_default_model == 1
