@@ -23,6 +23,7 @@ from typing import Any, Dict, List
 from otx.api.entities.label import LabelEntity
 from otx.api.entities.label_schema import LabelSchemaEntity
 from otx.api.serialization.label_mapper import LabelSchemaMapper
+from otx.api.utils.labels_utils import get_normalized_label_name
 
 
 def get_multihead_class_info(label_schema: LabelSchemaEntity):  # pylint: disable=too-many-locals
@@ -30,7 +31,7 @@ def get_multihead_class_info(label_schema: LabelSchemaEntity):  # pylint: disabl
     all_groups = label_schema.get_groups(include_empty=False)
     all_groups_str = []
     for g in all_groups:
-        group_labels_str = [lbl.name for lbl in g.labels]
+        group_labels_str = [get_normalized_label_name(lbl) for lbl in g.labels]
         all_groups_str.append(group_labels_str)
 
     single_label_groups = [g for g in all_groups_str if len(g) == 1]
@@ -112,7 +113,7 @@ def get_cls_model_api_configuration(label_schema: LabelSchemaEntity, inference_c
     all_labels = ""
     all_label_ids = ""
     for lbl in label_entities:
-        all_labels += lbl.name.replace(" ", "_") + " "
+        all_labels += get_normalized_label_name(lbl) + " "
         all_label_ids += f"{lbl.id_} "
 
     mapi_config[("model_info", "labels")] = all_labels.strip()
@@ -122,7 +123,7 @@ def get_cls_model_api_configuration(label_schema: LabelSchemaEntity, inference_c
     hierarchical_config["cls_heads_info"] = get_multihead_class_info(label_schema)
     hierarchical_config["label_tree_edges"] = []
     for edge in label_schema.label_tree.edges:  # (child, parent)
-        hierarchical_config["label_tree_edges"].append((edge[0].name, edge[1].name))
+        hierarchical_config["label_tree_edges"].append((get_normalized_label_name(edge[0]), get_normalized_label_name(edge[1])))
 
     mapi_config[("model_info", "hierarchical_config")] = json.dumps(hierarchical_config)
     return mapi_config
@@ -137,7 +138,7 @@ def get_hierarchical_label_list(hierarchical_cls_heads_info: Dict, labels: List)
     hierarchical_labels = []
     for label_str, _ in label_to_idx.items():
         for label_entity in labels:
-            if label_entity.name == label_str:
+            if get_normalized_label_name(label_entity) == label_str:
                 hierarchical_labels.append(label_entity)
                 break
     return hierarchical_labels
