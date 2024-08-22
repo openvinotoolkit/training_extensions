@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING, Any, ClassVar
 from otx.algo.segmentation.backbones import MSCAN
 from otx.algo.segmentation.heads import LightHamHead
 from otx.algo.segmentation.losses import CrossEntropyLossWithIgnore
-from otx.algo.segmentation.segmentors import BaseSegmModel
+from otx.algo.segmentation.segmentors import BaseSegmentationModel
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.model.segmentation import OTXSegmentationModel
 
@@ -29,14 +29,14 @@ class SegNext(OTXSegmentationModel):
 
     def _build_model(self) -> nn.Module:
         # initialize backbones
-        if self.model_version not in self.AVAILABLE_MODEL_VERSIONS:
-            msg = f"Model version {self.model_version} is not supported."
+        if self.model_name not in self.AVAILABLE_MODEL_VERSIONS:
+            msg = f"Model version {self.model_name} is not supported."
             raise ValueError(msg)
 
-        backbone = MSCAN(version=self.model_version)
-        decode_head = LightHamHead(version=self.model_version, num_classes=self.num_classes)
+        backbone = MSCAN(model_name=self.model_name)
+        decode_head = LightHamHead(model_name=self.model_name, num_classes=self.num_classes)
         criterion = CrossEntropyLossWithIgnore(ignore_index=self.label_info.ignore_index)  # type: ignore[attr-defined]
-        return BaseSegmModel(
+        return BaseSegmentationModel(
             backbone=backbone,
             decode_head=decode_head,
             criterion=criterion,
