@@ -107,6 +107,7 @@ base = [
 
 transformers = [
     "transformers==4.44.0",
+    "diffusers==0.29.3"
 ]
 
 mmlab = [

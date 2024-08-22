@@ -8,7 +8,6 @@ from functools import partial
 from typing import Callable
 
 from datumaro import Image
-from transformers import CLIPTokenizer
 
 from otx.core.data.dataset.base import OTXDataset
 from otx.core.data.entity.base import ImageInfo
@@ -17,11 +16,6 @@ from otx.core.data.entity.diffusion import DiffusionBatchDataEntity, DiffusionDa
 
 class OTXDiffusionDataset(OTXDataset[DiffusionDataEntity]):
     """Diffusion dataset class."""
-
-    tokenizer: CLIPTokenizer = CLIPTokenizer.from_pretrained(
-        "CompVis/stable-diffusion-v1-4",
-        subfolder="tokenizer",
-    )
 
     def _get_item_impl(self, idx: int) -> DiffusionDataEntity | None:
         item = self.dm_subset[idx]

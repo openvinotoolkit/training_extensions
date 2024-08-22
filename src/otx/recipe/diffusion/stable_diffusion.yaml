@@ -20,7 +20,7 @@ engine:
   task: DIFFUSION
   device: auto
 
-callback_monitor: val/clip_score
+callback_monitor: val/fid
 
 data: ../_base_/data/diffusion.yaml
 max_epochs: 50

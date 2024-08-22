@@ -47,6 +47,7 @@ DEFAULT_CONFIG_PER_TASK = {
     OTXTaskType.VISUAL_PROMPTING: RECIPE_PATH / "visual_prompting" / "sam_tiny_vit.yaml",
     OTXTaskType.ZERO_SHOT_VISUAL_PROMPTING: RECIPE_PATH / "zero_shot_visual_prompting" / "sam_tiny_vit.yaml",
     OTXTaskType.KEYPOINT_DETECTION: RECIPE_PATH / "keypoint_detection" / "rtmpose_tiny.yaml",
+    OTXTaskType.DIFFUSION: RECIPE_PATH / "diffusion" / "stable_diffusion.yaml",
 }
 
 TASK_PER_DATA_FORMAT = {
@@ -64,9 +65,7 @@ TASK_PER_DATA_FORMAT = {
         OTXTaskType.INSTANCE_SEGMENTATION,
         OTXTaskType.VISUAL_PROMPTING,
     ],
-    "coco_captions": [
-        OTXTaskType.DIFFUSION,
-    ],
+    "coco_captions": [OTXTaskType.DIFFUSION],
     "common_semantic_segmentation_with_subset_dirs": [OTXTaskType.SEMANTIC_SEGMENTATION],
     "kinetics": [OTXTaskType.ACTION_CLASSIFICATION],
     "mvtec": [OTXTaskType.ANOMALY_CLASSIFICATION, OTXTaskType.ANOMALY_DETECTION, OTXTaskType.ANOMALY_SEGMENTATION],

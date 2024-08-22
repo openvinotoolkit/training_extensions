@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING, Any
 
 import torch
 import torch.nn.functional as F  # noqa: N812
-from diffusers.pipelines.stable_diffusion import StableDiffusionPipeline
+from diffusers.pipelines import StableDiffusionPipeline
 from torch import nn
 
 from otx.core.data.entity.base import OTXBatchLossEntity
@@ -19,19 +19,16 @@ from otx.core.data.entity.diffusion import (
     DiffusionBatchPredEntity,
 )
 from otx.core.data.entity.utils import stack_batch
-from otx.core.metrics.diffusion import DiffusionMetricCallable
-from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
 from otx.core.model.diffusion import OTXDiffusionModel
-from otx.core.schedulers import LRSchedulerListCallable
-from otx.core.types.label import LabelInfoTypes
 
 if TYPE_CHECKING:
-    from diffusers import AutoencoderKL, DDPMScheduler, UNet2DConditionModel
-    from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
+    from diffusers.models.autoencoders.autoencoder_kl import AutoencoderKL
+    from diffusers.models.unets.unet_2d_condition import UNet2DConditionModel
+    from diffusers.schedulers.scheduling_utils import KarrasDiffusionSchedulers
     from transformers import CLIPTextModel
-    from transformers.utils.generic import ModelOutput
 
-    from otx.core.metrics import MetricCallable, MetricInput
+    from otx.core.metrics import MetricInput
+
 
 # WEIGHT_DTYPE = torch.float16
 
@@ -44,7 +41,7 @@ class StableDiffusion(nn.Module):
         text_encoder: CLIPTextModel,
         vae: AutoencoderKL,
         unet: UNet2DConditionModel,
-        noise_scheduler: DDPMScheduler,
+        noise_scheduler: KarrasDiffusionSchedulers,
     ):
         """Initializes the StableDiffusion module.
 
@@ -144,39 +141,23 @@ class HuggingFaceModelForDiffusion(OTXDiffusionModel):
 
     Example:
         1. API
-            >>> model = HuggingFaceModelForDetection(
-            ...     model_name_or_path="facebook/detr-resnet-50",
-            ...     label_info=<Number-of-classes>,
+            >>> model = HuggingFaceModelForDiffusion(
+            ...     model_name_or_path="CompVis/stable-diffusion-v1-4",
             ... )
         2. CLI
             >>> otx train \
-            ... --model otx.algo.detection.huggingface_model.HuggingFaceModelForDetection \
-            ... --model.model_name_or_path facebook/detr-resnet-50
+            ... --model otx.algo.detection.huggingface_model.HuggingFaceModelForDiffusion \
+            ... --model.model_name_or_path CompVis/stable-diffusion-v1-4
     """
 
-    def __init__(
-        self,
-        model_name_or_path: str,
-        label_info: LabelInfoTypes,
-        optimizer: OptimizerCallable = DefaultOptimizerCallable,
-        scheduler: (LRSchedulerCallable | LRSchedulerListCallable) = DefaultSchedulerCallable,
-        metric: MetricCallable = DiffusionMetricCallable,
-        torch_compile: bool = False,
-    ) -> None:
+    def __init__(self, model_name_or_path: str, *args, **kwargs):
         self.model_name = model_name_or_path
         self.load_from = None
         self.pipe: StableDiffusionPipeline = StableDiffusionPipeline.from_pretrained(
             model_name_or_path,
         )
+        super().__init__(*args, **kwargs)
         self.pipe.set_progress_bar_config(disable=True)
-
-        super().__init__(
-            label_info=label_info,
-            optimizer=optimizer,
-            scheduler=scheduler,
-            metric=metric,
-            torch_compile=torch_compile,
-        )
 
         self.epoch_idx = 0
 
@@ -219,18 +200,23 @@ class HuggingFaceModelForDiffusion(OTXDiffusionModel):
 
     def _customize_outputs(
         self,
-        outputs: ModelOutput,
+        outputs: tuple[torch.Tensor, torch.Tensor],
         inputs: DiffusionBatchDataEntity,
     ) -> DiffusionBatchPredEntity | OTXBatchLossEntity:
         for output in outputs:
             if torch.isnan(output).any():
                 error_msg = "NaN detected in the output."
                 raise ValueError(error_msg)
+        preds, targets = outputs
         if self.training:
-            return F.mse_loss(outputs[0], outputs[1], reduction="mean")
+            return OTXBatchLossEntity(
+                {
+                    "mse": F.mse_loss(preds, targets, reduction="mean"),
+                },
+            )
 
         images = self.pipe.vae.decode(
-            outputs[0] / self.pipe.vae.config.scaling_factor,
+            preds / self.pipe.vae.config.scaling_factor,
             return_dict=False,
         )[0]
 
@@ -246,9 +232,7 @@ class HuggingFaceModelForDiffusion(OTXDiffusionModel):
         preds: DiffusionBatchPredEntity,
         inputs: DiffusionBatchDataEntity,
     ) -> MetricInput:
-        return {
-            "imgs": preds.images,
-        }
+        return {"imgs": preds.images, "real": False}
 
     def validation_step(self, batch: DiffusionBatchDataEntity, batch_idx: int) -> None:
         """Perform a single validation step on a batch of data from the validation set.

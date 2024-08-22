@@ -4,9 +4,9 @@
 """Type definitions for OTX metrics."""
 
 import logging
-from typing import Callable
+from typing import Any, Callable
 
-from torch import Tensor, zeros
+from torch import zeros
 from torchmetrics import Metric, MetricCollection
 
 from otx.core.types.label import LabelInfo
@@ -34,5 +34,6 @@ def _null_metric_callable(_: LabelInfo) -> Metric:
 
 NullMetricCallable = _null_metric_callable
 
-# TODO(vinnamki): Remove the second typing list[dict[str, Tensor]] coming from semantic seg task if possible
-MetricInput = dict[str, list[dict[str, Tensor]]] | list[dict[str, Tensor]]
+_SingleMetricInput = dict[str, Any]
+# TODO(vinnamki): Remove the second typing list[_SingleMetricInput] coming from semantic seg task if possible
+MetricInput = _SingleMetricInput | list[_SingleMetricInput] | dict[str, list[_SingleMetricInput]]
