@@ -58,11 +58,7 @@ class RTMDetInsHead(RTMDetHead):
 
     def __init__(
         self,
-<<<<<<< HEAD
-        loss_mask: nn.Module,
-=======
         *args,
->>>>>>> sungchul/refactoring-detection
         num_prototypes: int = 8,
         dyconv_channels: int = 8,
         num_dyconvs: int = 3,
@@ -92,13 +88,7 @@ class RTMDetInsHead(RTMDetHead):
         self.num_dyconvs = num_dyconvs
         self.dyconv_channels = dyconv_channels
         self.mask_loss_stride = mask_loss_stride
-<<<<<<< HEAD
-        self.mask_threshold_binary = mask_threshold_binary
-
-        self.loss_mask = loss_mask
-=======
         super().__init__(*args, **kwargs)
->>>>>>> sungchul/refactoring-detection
 
     def _init_layers(self) -> None:
         """Initialize layers of the head."""

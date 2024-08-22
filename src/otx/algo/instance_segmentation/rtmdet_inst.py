@@ -147,16 +147,6 @@ class RTMDetInst(ExplainableOTXInstanceSegModel):
             feat_channels=96,
             normalization=partial(build_norm_layer, nn.BatchNorm2d, requires_grad=True),
             activation=partial(nn.SiLU, inplace=True),
-<<<<<<< HEAD
-            anchor_generator=anchor_generator,
-            loss_centerness=loss_centerness,
-            loss_cls=loss_cls,
-            loss_bbox=loss_bbox,
-            loss_mask=loss_mask,
-            bbox_coder=bbox_coder,
-            assigner=assigner,
-            sampler=sampler,
-=======
             anchor_generator=MlvlPointGenerator(
                 offset=0,
                 strides=[8, 16, 32],
@@ -178,17 +168,13 @@ class RTMDetInst(ExplainableOTXInstanceSegModel):
                 eps=5.0e-06,
                 reduction="mean",
             ),
->>>>>>> sungchul/refactoring-detection
         )
 
         return SingleStageDetector(
             backbone=backbone,
             neck=neck,
             bbox_head=bbox_head,
-<<<<<<< HEAD
-=======
             criterion=criterion,
             train_cfg=train_cfg,
             test_cfg=test_cfg,
->>>>>>> sungchul/refactoring-detection
         )

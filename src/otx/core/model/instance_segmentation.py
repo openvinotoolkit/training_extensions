@@ -85,7 +85,8 @@ class OTXInstanceSegModel(OTXModel[InstanceSegBatchDataEntity, InstanceSegBatchP
 
     def _create_model(self) -> nn.Module:
         detector = self._build_model(num_classes=self.label_info.num_classes)
-        detector.init_weights()
+        if hasattr(detector, "init_weights"):
+            detector.init_weights()
         self.classification_layers = self.get_classification_layers("model.")
 
         if isinstance(self.load_from, dict):

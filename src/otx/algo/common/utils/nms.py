@@ -168,7 +168,7 @@ def batched_nms(
 
     # Won't split to multiple nms nodes when exporting to onnx
     if boxes_for_nms.shape[0] < split_thr:
-        dets, keep = nms_op(boxes_for_nms, scores)
+        dets, keep = nms_op(boxes_for_nms, scores, iou_threshold=iou_threshold)
         boxes = boxes[keep]
 
         # This assumes `dets` has arbitrary dimensions where

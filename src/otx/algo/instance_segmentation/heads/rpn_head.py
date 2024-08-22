@@ -228,41 +228,6 @@ class RPNHeadModule(AnchorHead):
 
         return self.predict_by_feat(cls_scores, bbox_preds, batch_img_metas=batch_img_metas, rescale=rescale)
 
-    def loss_by_feat(
-        self,
-        cls_scores: list[Tensor],
-        bbox_preds: list[Tensor],
-        batch_gt_instances: list[InstanceData],
-        batch_img_metas: list[dict],
-        batch_gt_instances_ignore: list[InstanceData] | None = None,
-    ) -> dict:
-        """Calculate the loss based on the features extracted by the detection head.
-
-        Args:
-            cls_scores (list[Tensor]): Box scores for each scale level,
-                has shape (N, num_anchors * num_classes, H, W).
-            bbox_preds (list[Tensor]): Box energies / deltas for each scale
-                level with shape (N, num_anchors * 4, H, W).
-            batch_gt_instances (list[InstanceData]): Batch of gt_instance.
-                It usually includes ``bboxes`` and ``labels`` attributes.
-            batch_img_metas (list[dict]): Meta information of each image, e.g.,
-                image size, scaling factor, etc.
-            batch_gt_instances_ignore (list[InstanceData], Optional):
-                Batch of gt_instances_ignore. It includes ``bboxes`` attribute
-                data that is ignored during training and testing.
-
-        Returns:
-            dict[str, Tensor]: A dictionary of loss components.
-        """
-        losses = super().loss_by_feat(
-            cls_scores,
-            bbox_preds,
-            batch_gt_instances,
-            batch_img_metas,
-            batch_gt_instances_ignore=batch_gt_instances_ignore,
-        )
-        return {"loss_rpn_cls": losses["loss_cls"], "loss_rpn_bbox": losses["loss_bbox"]}
-
     def _predict_by_feat_single(  # type: ignore[override]
         self,
         cls_score_list: list[Tensor],
@@ -395,7 +360,13 @@ class RPNHeadModule(AnchorHead):
 
         if results.bboxes.numel() > 0:  # type: ignore[attr-defined]
             bboxes = results.bboxes  # type: ignore[attr-defined]
-            det_bboxes, keep_idxs = batched_nms(bboxes, results.scores, results.level_ids, nms_iou_thresh=0.5)  # type: ignore[attr-defined]
+            det_bboxes, keep_idxs = batched_nms(
+                bboxes,
+                results.scores,
+                results.level_ids,
+                iou_threshold=self.nms_iou_threshold,
+                max_num=self.max_per_img,
+            )  # type: ignore[attr-defined]
             results = results[keep_idxs]
             # some nms would reweight the score, such as softnms
             results.scores = det_bboxes[:, -1]
@@ -523,7 +494,7 @@ class RPNHead:
     """RPNHead factory for instance segmentation regional proposal network."""
 
     RPNHEAD_CFG: ClassVar[dict[str, Any]] = {
-        "maskrcnn_resnet50": {
+        "maskrcnn_resnet_50": {
             "in_channels": 256,
             "feat_channels": 256,
         },

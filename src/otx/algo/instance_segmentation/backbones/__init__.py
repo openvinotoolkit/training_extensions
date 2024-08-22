@@ -3,6 +3,5 @@
 """Custom backbone implementations for instance segmentation task."""
 
 from .maskrcnn_backbones import MaskRCNNBackbone
-from .swin import SwinTransformer
 
-__all__ = ["SwinTransformer", "MaskRCNNBackbone"]
+__all__ = ["MaskRCNNBackbone"]

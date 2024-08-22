@@ -9,7 +9,7 @@ from typing import Any, ClassVar
 from torch import nn
 
 from otx.algo.common.backbones import ResNet, build_model_including_pytorchcv
-from otx.algo.instance_segmentation.backbones import SwinTransformer
+from otx.algo.instance_segmentation.backbones.swin import SwinTransformer
 from otx.algo.modules.norm import build_norm_layer
 
 

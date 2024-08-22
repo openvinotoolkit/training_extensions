@@ -13,8 +13,7 @@ import warnings
 import torch
 from torch import Tensor, nn
 
-from otx.algo.common.utils.coders import BaseBBoxCoder
-from otx.algo.common.utils.prior_generators import AnchorGenerator, BasePriorGenerator
+from otx.algo.common.utils.prior_generators import AnchorGenerator
 from otx.algo.common.utils.utils import multi_apply
 from otx.algo.detection.heads.base_head import BaseDenseHead
 from otx.algo.detection.utils.prior_generators.utils import anchor_inside_flags

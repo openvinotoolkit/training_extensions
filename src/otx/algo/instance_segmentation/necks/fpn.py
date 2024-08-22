@@ -168,7 +168,7 @@ class FPN:
     """FPN factory."""
 
     FPN_CFG: ClassVar[dict[str, Any]] = {
-        "maskrcnn_resnet50": {"in_channels": [256, 512, 1024, 2048], "num_outs": 5, "out_channels": 256},
+        "maskrcnn_resnet_50": {"in_channels": [256, 512, 1024, 2048], "num_outs": 5, "out_channels": 256},
         "maskrcnn_efficientnet_b2b": {"in_channels": [24, 48, 120, 352], "out_channels": 80, "num_outs": 5},
         "maskrcnn_swin_tiny": {"in_channels": [96, 192, 384, 768], "out_channels": 256, "num_outs": 5},
     }
