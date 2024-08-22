@@ -15,10 +15,12 @@ import torch
 from torch import Tensor
 from torch.nn.modules.utils import _pair
 
+from .base_prior_generator import BasePriorGenerator
+
 DeviceType = Union[str, torch.device]
 
 
-class MlvlPointGenerator:
+class MlvlPointGenerator(BasePriorGenerator):
     """Standard points generator for multi-level (Mlvl) feature maps in 2D points-based detectors.
 
     # TODO (sungchul): change strides format from (w, h) to (h, w)

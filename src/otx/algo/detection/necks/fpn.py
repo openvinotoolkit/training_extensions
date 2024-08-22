@@ -10,7 +10,7 @@ Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/n
 
 from __future__ import annotations
 
-from typing import Callable
+from typing import Any, Callable, ClassVar
 
 from torch import Tensor, nn
 
@@ -20,7 +20,7 @@ from otx.algo.modules.conv_module import Conv2dModule
 from otx.algo.modules.norm import build_norm_layer
 
 
-class FPN(BaseModule):
+class FPNModule(BaseModule):
     r"""Feature Pyramid Network.
 
     This is an implementation of paper `Feature Pyramid Networks for Object Detection <https://arxiv.org/abs/1612.03144>`_.
@@ -200,3 +200,34 @@ class FPN(BaseModule):
                     else:
                         outs.append(self.fpn_convs[i](outs[-1]))
         return tuple(outs)
+
+
+class FPN:
+    """FPN factory for detection."""
+
+    FPN_CFG: ClassVar[dict[str, Any]] = {
+        "atss_mobilenetv2": {
+            "in_channels": [24, 32, 96, 320],
+            "out_channels": 64,
+            "num_outs": 5,
+            "start_level": 1,
+            "add_extra_convs": "on_output",
+            "relu_before_extra_convs": True,
+        },
+        "atss_resnext101": {
+            "in_channels": [256, 512, 1024, 2048],
+            "out_channels": 256,
+            "num_outs": 5,
+            "start_level": 1,
+            "add_extra_convs": "on_output",
+            "relu_before_extra_convs": True,
+        },
+    }
+
+    def __new__(cls, version: str) -> FPNModule:
+        """Constructor for FCNHead."""
+        if version not in cls.FPN_CFG:
+            msg = f"model type '{version}' is not supported"
+            raise KeyError(msg)
+
+        return FPNModule(**cls.FPN_CFG[version])

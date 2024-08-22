@@ -13,7 +13,8 @@ import warnings
 import torch
 from torch import Tensor, nn
 
-from otx.algo.common.utils.prior_generators import AnchorGenerator
+from otx.algo.common.utils.coders import BaseBBoxCoder
+from otx.algo.common.utils.prior_generators import AnchorGenerator, BasePriorGenerator
 from otx.algo.common.utils.utils import multi_apply
 from otx.algo.detection.heads.base_head import BaseDenseHead
 from otx.algo.detection.utils.prior_generators.utils import anchor_inside_flags
@@ -28,12 +29,14 @@ class AnchorHead(BaseDenseHead):
         num_classes (int): Number of categories excluding the background
             category.
         in_channels (tuple[int, ...], int): Number of channels in the input feature map.
-        anchor_generator (nn.Module): Module for anchor generator
-        bbox_coder (nn.Module): Module of bounding box coder.
-        loss_cls (nn.Module): Module of classification loss.
+        anchor_generator (BasePriorGenerator): Anchor generator class.
+        bbox_coder (BaseBBoxCoder): Bounding box coder class.
+        loss_cls (nn.Module | None): Module of classification loss.
             It is related to RPNHead for iseg, will be deprecated.
-        loss_bbox (nn.Module): Module of localization loss.
+            Defaults to None.
+        loss_bbox (nn.Module | None): Module of localization loss.
             It is related to RPNHead for iseg, will be deprecated.
+            Defaults to None.
         train_cfg (dict): Training config of anchor head.
         test_cfg (dict, optional): Testing config of anchor head.
         feat_channels (int): Number of hidden channels. Used in child classes.
@@ -49,8 +52,8 @@ class AnchorHead(BaseDenseHead):
         self,
         num_classes: int,
         in_channels: tuple[int, ...] | int,
-        anchor_generator: nn.Module,
-        bbox_coder: nn.Module,
+        anchor_generator: BasePriorGenerator,
+        bbox_coder: BaseBBoxCoder,
         train_cfg: dict,
         loss_cls: nn.Module | None = None,  # TODO (kirill): deprecated
         loss_bbox: nn.Module | None = None,  # TODO (kirill): deprecated

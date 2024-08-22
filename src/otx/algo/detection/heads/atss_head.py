@@ -9,7 +9,7 @@ Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/d
 from __future__ import annotations
 
 from functools import partial
-from typing import Callable
+from typing import Any, Callable, ClassVar
 
 import torch
 from torch import Tensor, nn
@@ -29,7 +29,7 @@ from otx.algo.utils.mmengine_utils import InstanceData
 EPS = 1e-12
 
 
-class ATSSHead(ClassIncrementalMixin, AnchorHead):
+class ATSSHeadModule(ClassIncrementalMixin, AnchorHead):
     """Detection Head of `ATSS <https://arxiv.org/abs/1912.02424>`_.
 
     ATSS head structure is similar with FCOS, however ATSS use anchor boxes
@@ -389,3 +389,41 @@ class ATSSHead(ClassIncrementalMixin, AnchorHead):
         """Get the number of valid anchors in every level."""
         split_inside_flags = torch.split(inside_flags, num_level_anchors)
         return [int(flags.sum()) for flags in split_inside_flags]
+
+
+class ATSSHead:
+    """ATSSHead factory for detection."""
+
+    ATSSHEAD_CFG: ClassVar[dict[str, Any]] = {
+        "atss_mobilenetv2": {
+            "in_channels": 64,
+            "feat_channels": 64,
+        },
+        "atss_resnext101": {
+            "in_channels": 256,
+            "feat_channels": 256,
+        },
+    }
+
+    def __new__(
+        cls,
+        version: str,
+        num_classes: int,
+        anchor_generator: object,
+        bbox_coder: object,
+        train_cfg: dict,
+        test_cfg: dict | None = None,
+    ) -> ATSSHeadModule:
+        """Constructor for FCNHead."""
+        if version not in cls.ATSSHEAD_CFG:
+            msg = f"model type '{version}' is not supported"
+            raise KeyError(msg)
+
+        return ATSSHeadModule(
+            **cls.ATSSHEAD_CFG[version],
+            num_classes=num_classes,
+            anchor_generator=anchor_generator,
+            bbox_coder=bbox_coder,
+            train_cfg=train_cfg,  # TODO (sungchul, kirill): remove
+            test_cfg=test_cfg,  # TODO (sungchul, kirill): remove
+        )

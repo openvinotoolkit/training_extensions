@@ -5,7 +5,7 @@
 import torch
 from otx.algo.common.losses import CrossEntropyLoss, CrossSigmoidFocalLoss, GIoULoss
 from otx.algo.common.utils.coders.delta_xywh_bbox_coder import DeltaXYWHBBoxCoder
-from otx.algo.detection.atss import MobileNetV2ATSS
+from otx.algo.detection.atss import ATSS
 from otx.algo.detection.losses import ATSSCriterion
 
 
@@ -16,7 +16,7 @@ class MockGTInstance:
 
 class TestClassIncrementalMixin:
     def test_ignore_label(self) -> None:
-        atss = MobileNetV2ATSS(3)
+        atss = ATSS(model_version="atss_mobilenetv2", label_info=3, input_size=(800, 992))
         criterion = ATSSCriterion(
             num_classes=3,
             bbox_coder=DeltaXYWHBBoxCoder(
