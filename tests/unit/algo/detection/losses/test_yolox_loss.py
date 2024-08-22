@@ -3,7 +3,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 
 import torch
-from otx.algo.detection.heads.yolox_head import YOLOXHead
+from otx.algo.detection.heads.yolox_head import YOLOXHeadModule
 from otx.algo.detection.losses import YOLOXCriterion
 from otx.algo.detection.utils.assigners.sim_ota_assigner import SimOTAAssigner
 from otx.algo.utils.mmengine_utils import InstanceData
@@ -23,7 +23,7 @@ class TestYOLOXCriterion:
         train_cfg = {
             "assigner": SimOTAAssigner(center_radius=2.5),
         }
-        head = YOLOXHead(num_classes=4, in_channels=1, stacked_convs=1, use_depthwise=False, train_cfg=train_cfg)
+        head = YOLOXHeadModule(num_classes=4, in_channels=1, stacked_convs=1, use_depthwise=False, train_cfg=train_cfg)
         feat = [torch.rand(1, 1, s // feat_size, s // feat_size) for feat_size in [4, 8, 16]]
         cls_scores, bbox_preds, objectnesses = head.forward(feat)
 
@@ -44,7 +44,7 @@ class TestYOLOXCriterion:
 
         # When truth is non-empty then both cls and box loss should be nonzero
         # for random inputs
-        head = YOLOXHead(num_classes=4, in_channels=1, stacked_convs=1, use_depthwise=True, train_cfg=train_cfg)
+        head = YOLOXHeadModule(num_classes=4, in_channels=1, stacked_convs=1, use_depthwise=True, train_cfg=train_cfg)
         head.use_l1 = True
         criterion.use_l1 = True
         gt_instances = InstanceData(

@@ -12,7 +12,7 @@ from otx.algo.common.utils.assigners import DynamicSoftLabelAssigner
 from otx.algo.common.utils.coders import DistancePointBBoxCoder
 from otx.algo.common.utils.prior_generators import MlvlPointGenerator
 from otx.algo.common.utils.samplers import PseudoSampler
-from otx.algo.detection.heads.rtmdet_head import RTMDetHead, RTMDetSepBNHead
+from otx.algo.detection.heads.rtmdet_head import RTMDetHead, RTMDetSepBNHeadModule
 from torch import nn
 
 
@@ -111,9 +111,9 @@ class TestRTMDetHead:
                 assert valid_flag.dtype == torch.bool
 
 
-class TestRTMDetSepBNHead:
+class TestRTMDetSepBNHeadModule:
     @pytest.fixture()
-    def rtmdet_sep_bn_head(self) -> RTMDetSepBNHead:
+    def rtmdet_sep_bn_head(self) -> RTMDetSepBNHeadModule:
         train_cfg = {
             "assigner": DynamicSoftLabelAssigner(topk=13),
             "sampler": PseudoSampler(),
@@ -132,7 +132,7 @@ class TestRTMDetSepBNHead:
                 "nms_pre": 30000,
             },
         )
-        return RTMDetSepBNHead(
+        return RTMDetSepBNHeadModule(
             num_classes=80,
             in_channels=96,
             stacked_convs=2,

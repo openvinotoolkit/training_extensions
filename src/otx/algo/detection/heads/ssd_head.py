@@ -219,7 +219,7 @@ class SSDHead:
     """SSDHead factory for detection."""
 
     SSDHEAD_CFG: ClassVar[dict[str, Any]] = {
-        "rtmdet_tiny": {
+        "ssd_mobilenetv2": {
             "in_channels": (96, 320),
             "use_depthwise": True,
         },
