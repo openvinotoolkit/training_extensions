@@ -11,7 +11,7 @@ from otx.algo.common.losses import CrossEntropyLoss, CrossSigmoidFocalLoss, GIoU
 from otx.algo.common.utils.coders import DeltaXYWHBBoxCoder
 from otx.algo.common.utils.prior_generators import AnchorGenerator
 from otx.algo.common.utils.samplers import PseudoSampler
-from otx.algo.detection.backbones import BackboneFactory
+from otx.algo.detection.backbones import DetectionBackboneFactory
 from otx.algo.detection.detectors import SingleStageDetector
 from otx.algo.detection.heads import ATSSHead
 from otx.algo.detection.losses import ATSSCriterion
@@ -99,7 +99,7 @@ class ATSS(ExplainableOTXDetModel):
             "max_per_img": 100,
             "nms_pre": 1000,
         }
-        backbone = BackboneFactory(version=self.model_version)
+        backbone = DetectionBackboneFactory(version=self.model_version)
         neck = FPN(version=self.model_version)
         bbox_head = ATSSHead(
             version=self.model_version,

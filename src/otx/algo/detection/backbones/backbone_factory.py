@@ -6,7 +6,7 @@
 from torch import nn
 
 
-class BackboneFactory:
+class DetectionBackboneFactory:
     """Factory class for backbone."""
 
     def __new__(cls, version: str) -> nn.Module:
@@ -40,6 +40,11 @@ class BackboneFactory:
             from otx.algo.detection.backbones import CSPDarknet
 
             return CSPDarknet(version)
+
+        if "rtmdet" in version:
+            from otx.algo.common.backbones import CSPNeXt
+
+            return CSPNeXt(version)
 
         msg = f"Unknown backbone name: {version}"
         raise ValueError(msg)

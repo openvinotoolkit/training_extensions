@@ -7,12 +7,12 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, ClassVar
 
-from otx.algo.common.backbones import CSPNeXt
 from otx.algo.common.losses import GIoULoss, QualityFocalLoss
 from otx.algo.common.utils.assigners import DynamicSoftLabelAssigner
 from otx.algo.common.utils.coders import DistancePointBBoxCoder
 from otx.algo.common.utils.prior_generators import MlvlPointGenerator
 from otx.algo.common.utils.samplers import PseudoSampler
+from otx.algo.detection.backbones import DetectionBackboneFactory
 from otx.algo.detection.detectors import SingleStageDetector
 from otx.algo.detection.heads import RTMDetSepBNHead
 from otx.algo.detection.losses import RTMDetCriterion
@@ -97,7 +97,7 @@ class RTMDet(ExplainableOTXDetModel):
             "nms_pre": 30000,
         }
 
-        backbone = CSPNeXt(version=self.model_version)
+        backbone = DetectionBackboneFactory(version=self.model_version)
         neck = CSPNeXtPAFPN(version=self.model_version)
         bbox_head = RTMDetSepBNHead(
             version=self.model_version,
