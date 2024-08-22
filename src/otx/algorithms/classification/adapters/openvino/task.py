@@ -282,7 +282,7 @@ class ClassificationOpenVINOTask(IDeploymentTask, IInferenceTask, IEvaluationTas
         self.inferencer.await_all()
 
         if self.inferencer.callback_exceptions:
-            raise RuntimeError("Inference failed, please check the exceptions log.")
+            raise RuntimeError("Inference failed, check the exceptions log.")
 
         self._avg_time_per_image = total_time / len(dataset)
         logger.info(f"Avg time per image: {self._avg_time_per_image} secs")
