@@ -452,7 +452,11 @@
         <span class="k">if</span> <span class="s2">&quot;logger&quot;</span> <span class="ow">in</span> <span class="n">added_arguments</span><span class="p">:</span>
             <span class="n">parser</span><span class="o">.</span><span class="n">link_arguments</span><span class="p">(</span><span class="s2">&quot;workspace.work_dir&quot;</span><span class="p">,</span> <span class="s2">&quot;logger.init_args.save_dir&quot;</span><span class="p">,</span> <span class="n">apply_on</span><span class="o">=</span><span class="s2">&quot;instantiate&quot;</span><span class="p">)</span>
             <span class="n">parser</span><span class="o">.</span><span class="n">link_arguments</span><span class="p">(</span><span class="s2">&quot;workspace.work_dir&quot;</span><span class="p">,</span> <span class="s2">&quot;logger.init_args.log_dir&quot;</span><span class="p">,</span> <span class="n">apply_on</span><span class="o">=</span><span class="s2">&quot;instantiate&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="s2">&quot;checkpoint&quot;</span> <span class="ow">in</span> <span class="n">added_arguments</span> <span class="ow">and</span> <span class="s2">&quot;--checkpoint&quot;</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">:</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="s2">&quot;checkpoint&quot;</span> <span class="ow">in</span> <span class="n">added_arguments</span>
+            <span class="ow">and</span> <span class="s2">&quot;--checkpoint&quot;</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span>
+            <span class="ow">and</span> <span class="nb">any</span><span class="p">(</span><span class="s2">&quot;openvino_model.yaml&quot;</span> <span class="ow">in</span> <span class="n">arg</span> <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">)</span>
+        <span class="p">):</span>
             <span class="c1"># This is code for an OVModel that uses checkpoint in model.model_name.</span>
             <span class="n">parser</span><span class="o">.</span><span class="n">link_arguments</span><span class="p">(</span><span class="s2">&quot;checkpoint&quot;</span><span class="p">,</span> <span class="s2">&quot;model.init_args.model_name&quot;</span><span class="p">)</span>
 

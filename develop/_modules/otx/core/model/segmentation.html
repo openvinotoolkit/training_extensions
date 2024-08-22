@@ -304,13 +304,13 @@
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">label_info</span><span class="p">:</span> <span class="n">LabelInfoTypes</span><span class="p">,</span>
+        <span class="n">model_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">input_size</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">512</span><span class="p">,</span> <span class="mi">512</span><span class="p">),</span>
         <span class="n">optimizer</span><span class="p">:</span> <span class="n">OptimizerCallable</span> <span class="o">=</span> <span class="n">DefaultOptimizerCallable</span><span class="p">,</span>
         <span class="n">scheduler</span><span class="p">:</span> <span class="n">LRSchedulerCallable</span> <span class="o">|</span> <span class="n">LRSchedulerListCallable</span> <span class="o">=</span> <span class="n">DefaultSchedulerCallable</span><span class="p">,</span>
         <span class="n">metric</span><span class="p">:</span> <span class="n">MetricCallable</span> <span class="o">=</span> <span class="n">SegmCallable</span><span class="p">,</span>  <span class="c1"># type: ignore[assignment]</span>
         <span class="n">torch_compile</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">train_type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="n">OTXTrainType</span><span class="o">.</span><span class="n">SUPERVISED</span><span class="p">,</span> <span class="n">OTXTrainType</span><span class="o">.</span><span class="n">SEMI_SUPERVISED</span><span class="p">]</span> <span class="o">=</span> <span class="n">OTXTrainType</span><span class="o">.</span><span class="n">SUPERVISED</span><span class="p">,</span>
-        <span class="n">model_version</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">unsupervised_weight</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.7</span><span class="p">,</span>
         <span class="n">semisl_start_epoch</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
         <span class="n">drop_unreliable_pixels_percent</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">20</span><span class="p">,</span>
@@ -319,6 +319,7 @@
 
 <span class="sd">        Args:</span>
 <span class="sd">            label_info (LabelInfoTypes): The label information for the segmentation model.</span>
+<span class="sd">            model_name (str): The version/name/size of the model.</span>
 <span class="sd">            input_size (tuple[int, int]): Model input size in the order of height and width.</span>
 <span class="sd">            optimizer (OptimizerCallable, optional): The optimizer to use for training.</span>
 <span class="sd">                Defaults to DefaultOptimizerCallable.</span>
@@ -330,7 +331,6 @@
 <span class="sd">                Defaults to False.</span>
 <span class="sd">            train_type (Literal[OTXTrainType.SUPERVISED, OTXTrainType.SEMI_SUPERVISED], optional):</span>
 <span class="sd">                The training type of the model. Defaults to OTXTrainType.SUPERVISED.</span>
-<span class="sd">            model_version (str | None, optional): The version of the model. Defaults to None.</span>
 <span class="sd">            unsupervised_weight (float, optional): The weight of the unsupervised loss.</span>
 <span class="sd">                Only for semi-supervised learning. Defaults to 0.7.</span>
 <span class="sd">            semisl_start_epoch (int, optional): The epoch at which the semi-supervised learning starts.</span>
@@ -338,7 +338,7 @@
 <span class="sd">            drop_unreliable_pixels_percent (int, optional): The percentage of unreliable pixels to drop.</span>
 <span class="sd">                Only for semi-supervised learning. Defaults to 20.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">model_version</span> <span class="o">=</span> <span class="n">model_version</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model_name</span> <span class="o">=</span> <span class="n">model_name</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">unsupervised_weight</span> <span class="o">=</span> <span class="n">unsupervised_weight</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">semisl_start_epoch</span> <span class="o">=</span> <span class="n">semisl_start_epoch</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">drop_unreliable_pixels_percent</span> <span class="o">=</span> <span class="n">drop_unreliable_pixels_percent</span>
