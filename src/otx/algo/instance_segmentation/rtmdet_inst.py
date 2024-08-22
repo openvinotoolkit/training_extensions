@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING
 from torch import nn
 
 from otx.algo.common.backbones import CSPNeXt
-from otx.algo.common.losses import CrossEntropyLoss, GIoULoss, QualityFocalLoss
+from otx.algo.common.losses import GIoULoss, QualityFocalLoss
 from otx.algo.common.utils.assigners import DynamicSoftLabelAssigner
 from otx.algo.common.utils.coders import DistancePointBBoxCoder
 from otx.algo.common.utils.prior_generators import MlvlPointGenerator
@@ -168,7 +168,6 @@ class RTMDetInstTiny(RTMDetInst):
                 strides=[8, 16, 32],
             ),
             bbox_coder=DistancePointBBoxCoder(),
-            loss_centerness=CrossEntropyLoss(use_sigmoid=True, loss_weight=1.0),
             train_cfg=train_cfg,
             test_cfg=test_cfg,
         )

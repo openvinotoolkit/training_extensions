@@ -51,9 +51,9 @@ class AnchorHead(BaseDenseHead):
         in_channels: tuple[int, ...] | int,
         anchor_generator: nn.Module,
         bbox_coder: nn.Module,
-        loss_cls: nn.Module,  # TODO (kirill): deprecated
-        loss_bbox: nn.Module,  # TODO (kirill): deprecated
         train_cfg: dict,
+        loss_cls: nn.Module | None = None,  # TODO (kirill): deprecated
+        loss_bbox: nn.Module | None = None,  # TODO (kirill): deprecated
         test_cfg: dict | None = None,
         feat_channels: int = 256,
         reg_decoded_bbox: bool = False,
@@ -63,7 +63,7 @@ class AnchorHead(BaseDenseHead):
         self.in_channels = in_channels
         self.num_classes = num_classes
         self.feat_channels = feat_channels
-        self.use_sigmoid_cls = loss_cls.use_sigmoid
+        self.use_sigmoid_cls = loss_cls.use_sigmoid if loss_cls else True  # TODO (kirill): revert or update
         if self.use_sigmoid_cls:
             self.cls_out_channels = num_classes
         else:
@@ -438,7 +438,7 @@ class AnchorHead(BaseDenseHead):
         labels = labels.reshape(-1)
         label_weights = label_weights.reshape(-1)
         cls_score = cls_score.permute(0, 2, 3, 1).reshape(-1, self.cls_out_channels)
-        loss_cls = self.loss_cls(cls_score, labels, label_weights, avg_factor=avg_factor)
+        loss_cls = self.loss_cls(cls_score, labels, label_weights, avg_factor=avg_factor)  # type: ignore[misc] # TODO (kirill): fix
         # regression loss
         target_dim = bbox_targets.size(-1)
         bbox_targets = bbox_targets.reshape(-1, target_dim)
@@ -450,7 +450,7 @@ class AnchorHead(BaseDenseHead):
             # decodes the already encoded coordinates to absolute format.
             anchors = anchors.reshape(-1, anchors.size(-1))
             bbox_pred = self.bbox_coder.decode(anchors, bbox_pred)
-        loss_bbox = self.loss_bbox(bbox_pred, bbox_targets, bbox_weights, avg_factor=avg_factor)
+        loss_bbox = self.loss_bbox(bbox_pred, bbox_targets, bbox_weights, avg_factor=avg_factor)  # type: ignore[misc] # TODO (kirill): fix
         return loss_cls, loss_bbox
 
     def loss_by_feat(
