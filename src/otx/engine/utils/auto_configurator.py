@@ -64,6 +64,9 @@ TASK_PER_DATA_FORMAT = {
         OTXTaskType.INSTANCE_SEGMENTATION,
         OTXTaskType.VISUAL_PROMPTING,
     ],
+    "coco_captions": [
+        OTXTaskType.DIFFUSION,
+    ],
     "common_semantic_segmentation_with_subset_dirs": [OTXTaskType.SEMANTIC_SEGMENTATION],
     "kinetics": [OTXTaskType.ACTION_CLASSIFICATION],
     "mvtec": [OTXTaskType.ANOMALY_CLASSIFICATION, OTXTaskType.ANOMALY_DETECTION, OTXTaskType.ANOMALY_SEGMENTATION],

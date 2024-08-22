@@ -124,7 +124,10 @@ class OTXDatasetFactory:
         if task in [OTXTaskType.ROTATED_DETECTION, OTXTaskType.INSTANCE_SEGMENTATION]:
             from .dataset.instance_segmentation import OTXInstanceSegDataset
 
-            return OTXInstanceSegDataset(include_polygons=include_polygons, **common_kwargs)
+            return OTXInstanceSegDataset(
+                include_polygons=include_polygons,
+                **common_kwargs,
+            )
 
         if task == OTXTaskType.SEMANTIC_SEGMENTATION:
             from .dataset.segmentation import OTXSegmentationDataset
@@ -141,18 +144,31 @@ class OTXDatasetFactory:
 
             use_bbox = getattr(vpm_config, "use_bbox", False)
             use_point = getattr(vpm_config, "use_point", False)
-            return OTXVisualPromptingDataset(use_bbox=use_bbox, use_point=use_point, **common_kwargs)
+            return OTXVisualPromptingDataset(
+                use_bbox=use_bbox,
+                use_point=use_point,
+                **common_kwargs,
+            )
 
         if task == OTXTaskType.ZERO_SHOT_VISUAL_PROMPTING:
             from .dataset.visual_prompting import OTXZeroShotVisualPromptingDataset
 
             use_bbox = getattr(vpm_config, "use_bbox", False)
             use_point = getattr(vpm_config, "use_point", False)
-            return OTXZeroShotVisualPromptingDataset(use_bbox=use_bbox, use_point=use_point, **common_kwargs)
+            return OTXZeroShotVisualPromptingDataset(
+                use_bbox=use_bbox,
+                use_point=use_point,
+                **common_kwargs,
+            )
 
         if task == OTXTaskType.KEYPOINT_DETECTION:
             from .dataset.keypoint_detection import OTXKeypointDetectionDataset
 
             return OTXKeypointDetectionDataset(**common_kwargs)
+
+        if task == OTXTaskType.DIFFUSION:
+            from .dataset.diffusion import OTXDiffusionDataset
+
+            return OTXDiffusionDataset(**common_kwargs)
 
         raise NotImplementedError(task)

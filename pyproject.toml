@@ -41,6 +41,7 @@ dependencies = [
     "typeguard==4.3.*",
     # TODO(ashwinvaidya17): https://github.com/openvinotoolkit/anomalib/issues/2126
     "setuptools<70",
+    "torchmetrics[image]>=0.7.0",
 ]
 
 [project.optional-dependencies]

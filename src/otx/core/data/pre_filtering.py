@@ -75,7 +75,7 @@ def is_valid_annot(item: DatasetItem, annotation: Annotation) -> bool:  # noqa: 
 def remove_unused_labels(dataset: DmDataset, data_format: str, ignore_index: int | None) -> DmDataset:
     """Remove unused labels in Datumaro dataset."""
     original_categories: list[str] = dataset.get_label_cat_names()
-    used_labels: list[int] = list({ann.label for item in dataset for ann in item.annotations})
+    used_labels: list[int] = list({ann.label for item in dataset for ann in item.annotations if hasattr(ann, "label")})
     if ignore_index is not None:
         used_labels = list(filter(lambda x: x != ignore_index, used_labels))
     if data_format == "ava":
