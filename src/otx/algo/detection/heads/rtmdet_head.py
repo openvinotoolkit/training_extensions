@@ -9,14 +9,16 @@ Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/d
 from __future__ import annotations
 
 from functools import partial
-from typing import Callable
+from typing import Any, Callable, ClassVar
 
 import torch
 from torch import Tensor, nn
 
+from otx.algo.common.utils.coders import BaseBBoxCoder
 from otx.algo.common.utils.nms import multiclass_nms
+from otx.algo.common.utils.prior_generators import BasePriorGenerator
 from otx.algo.common.utils.utils import distance2bbox, inverse_sigmoid, multi_apply
-from otx.algo.detection.heads import ATSSHead
+from otx.algo.detection.heads.atss_head import ATSSHeadModule
 from otx.algo.detection.utils.prior_generators.utils import anchor_inside_flags
 from otx.algo.detection.utils.utils import (
     images_to_levels,
@@ -31,7 +33,7 @@ from otx.algo.utils.mmengine_utils import InstanceData
 from otx.algo.utils.weight_init import bias_init_with_prob, constant_init, normal_init
 
 
-class RTMDetHead(ATSSHead):
+class RTMDetHead(ATSSHeadModule):
     """Detection Head of RTMDet.
 
     Args:
@@ -559,7 +561,7 @@ class RTMDetHead(ATSSHead):
         return anchor_list, valid_flag_list
 
 
-class RTMDetSepBNHead(RTMDetHead):
+class RTMDetSepBNHeadModule(RTMDetHead):
     """RTMDetHead with separated BN layers and shared conv layers.
 
     Args:
@@ -722,3 +724,41 @@ class RTMDetSepBNHead(RTMDetHead):
             cls_scores.append(cls_score)
             bbox_preds.append(reg_dist)
         return tuple(cls_scores), tuple(bbox_preds)
+
+
+class RTMDetSepBNHead:
+    """RTMDetSepBNHead factory for detection."""
+
+    RTMDETSEPBNHEAD_CFG: ClassVar[dict[str, Any]] = {
+        "rtmdet_tiny": {
+            "in_channels": 96,
+            "stacked_convs": 2,
+            "feat_channels": 96,
+            "with_objectness": False,
+            "normalization": nn.BatchNorm2d,
+            "activation": partial(nn.SiLU, inplace=True),
+        },
+    }
+
+    def __new__(
+        cls,
+        version: str,
+        num_classes: int,
+        anchor_generator: BasePriorGenerator,
+        bbox_coder: BaseBBoxCoder,
+        train_cfg: dict,
+        test_cfg: dict | None = None,
+    ) -> RTMDetSepBNHeadModule:
+        """Constructor for RTMDetSepBNHead."""
+        if version not in cls.RTMDETSEPBNHEAD_CFG:
+            msg = f"model type '{version}' is not supported"
+            raise KeyError(msg)
+
+        return RTMDetSepBNHeadModule(
+            **cls.RTMDETSEPBNHEAD_CFG[version],
+            num_classes=num_classes,
+            anchor_generator=anchor_generator,
+            bbox_coder=bbox_coder,
+            train_cfg=train_cfg,  # TODO (sungchul, kirill): remove
+            test_cfg=test_cfg,  # TODO (sungchul, kirill): remove
+        )

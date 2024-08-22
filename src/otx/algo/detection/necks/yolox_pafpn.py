@@ -201,7 +201,7 @@ class YOLOXPAFPN:
     }
 
     def __new__(cls, version: str) -> YOLOXPAFPNModule:
-        """Constructor for FPN."""
+        """Constructor for YOLOXPAFPN."""
         if version not in cls.YOLOXPAFPN_CFG:
             msg = f"model type '{version}' is not supported"
             raise KeyError(msg)

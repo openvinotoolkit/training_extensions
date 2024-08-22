@@ -14,6 +14,8 @@ from typing import Any, Callable, ClassVar
 import torch
 from torch import Tensor, nn
 
+from otx.algo.common.utils.coders import BaseBBoxCoder
+from otx.algo.common.utils.prior_generators import BasePriorGenerator
 from otx.algo.common.utils.utils import multi_apply, reduce_mean
 from otx.algo.detection.heads.anchor_head import AnchorHead
 from otx.algo.detection.heads.class_incremental_mixin import (
@@ -409,8 +411,8 @@ class ATSSHead:
         cls,
         version: str,
         num_classes: int,
-        anchor_generator: object,
-        bbox_coder: object,
+        anchor_generator: BasePriorGenerator,
+        bbox_coder: BaseBBoxCoder,
         train_cfg: dict,
         test_cfg: dict | None = None,
     ) -> ATSSHeadModule:

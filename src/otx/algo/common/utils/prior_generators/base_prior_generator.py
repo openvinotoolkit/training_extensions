@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 class BasePriorGenerator:
     """Base class for prior generator."""
 
-    strides: list[int] | list[tuple[int, int]]
+    strides: list[tuple[int, int]]
     grid_anchors: Callable[..., list[Tensor]]
 
     @property
