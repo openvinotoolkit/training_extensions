@@ -150,6 +150,7 @@ class ClassificationOpenVINOInferencer(IInferencer):
             result_handler(id, annotation, aux_data)
 
         except Exception as e:
+            logger.exception(e)
             self.callback_exceptions.append(e)
 
     def predict(self, image: np.ndarray) -> Tuple[ClassificationResult, AnnotationSceneEntity]:
@@ -279,6 +280,9 @@ class ClassificationOpenVINOTask(IDeploymentTask, IInferenceTask, IEvaluationTas
             update_progress_callback(int(i / dataset_size * 100))
 
         self.inferencer.await_all()
+
+        if self.inferencer.callback_exceptions:
+            raise RuntimeError("Inference failed, please check the exceptions log.")
 
         self._avg_time_per_image = total_time / len(dataset)
         logger.info(f"Avg time per image: {self._avg_time_per_image} secs")
