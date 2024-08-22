@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING, Literal
 
 from torch import Tensor, nn
 
-from otx.algo.classification.backbones.efficientnet import EFFICIENTNET_VERSION, OTXEfficientNet
+from otx.algo.classification.backbones.efficientnet import EFFICIENTNET_VERSION, EfficientNetBackbone
 from otx.algo.classification.classifier import HLabelClassifier, ImageClassifier, SemiSLClassifier
 from otx.algo.classification.heads import (
     HierarchicalCBAMClsHead,
@@ -87,7 +87,7 @@ class EfficientNetForMulticlassCls(OTXMulticlassClsModel):
         return model
 
     def _build_model(self, num_classes: int) -> nn.Module:
-        backbone = OTXEfficientNet(version=self.version, input_size=self.input_size, pretrained=self.pretrained)
+        backbone = EfficientNetBackbone(version=self.version, input_size=self.input_size, pretrained=self.pretrained)
         neck = GlobalAveragePooling(dim=2)
         if self.train_type == OTXTrainType.SEMI_SUPERVISED:
             return SemiSLClassifier(
@@ -177,7 +177,7 @@ class EfficientNetForMultilabelCls(OTXMultilabelClsModel):
         return model
 
     def _build_model(self, num_classes: int) -> nn.Module:
-        backbone = OTXEfficientNet(version=self.version, input_size=self.input_size, pretrained=self.pretrained)
+        backbone = EfficientNetBackbone(version=self.version, input_size=self.input_size, pretrained=self.pretrained)
         return ImageClassifier(
             backbone=backbone,
             neck=GlobalAveragePooling(dim=2),
@@ -265,7 +265,7 @@ class EfficientNetForHLabelCls(OTXHlabelClsModel):
         if not isinstance(self.label_info, HLabelInfo):
             raise TypeError(self.label_info)
 
-        backbone = OTXEfficientNet(version=self.version, input_size=self.input_size, pretrained=self.pretrained)
+        backbone = EfficientNetBackbone(version=self.version, input_size=self.input_size, pretrained=self.pretrained)
 
         copied_head_config = copy(head_config)
         copied_head_config["step_size"] = (ceil(self.input_size[0] / 32), ceil(self.input_size[1] / 32))
