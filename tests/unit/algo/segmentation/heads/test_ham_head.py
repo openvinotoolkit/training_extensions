@@ -6,11 +6,11 @@ from typing import Any
 import pytest
 import torch
 from otx.algo.modules.norm import build_norm_layer
-from otx.algo.segmentation.heads.ham_head import NNLightHamHead
+from otx.algo.segmentation.heads.ham_head import LightHamHeadModule
 from torch import nn
 
 
-class TestNNLightHamHead:
+class TestLightHamHeadModule:
     @pytest.fixture()
     def head_config(self) -> dict[str, Any]:
         return {
@@ -26,7 +26,7 @@ class TestNNLightHamHead:
         }
 
     def test_init(self, head_config):
-        light_ham_head = NNLightHamHead(**head_config)
+        light_ham_head = LightHamHeadModule(**head_config)
         assert light_ham_head.ham_channels == head_config["ham_channels"]
 
     @pytest.fixture()
@@ -43,7 +43,7 @@ class TestNNLightHamHead:
         ]
 
     def test_forward(self, head_config, fake_input, batch_size):
-        light_ham_head = NNLightHamHead(**head_config)
+        light_ham_head = LightHamHeadModule(**head_config)
         out = light_ham_head.forward(fake_input)
         assert out.size()[0] == batch_size
         assert out.size()[2] == fake_input[head_config["in_index"][0]].size()[2]
