@@ -19,20 +19,14 @@ class TestDETR:
     @pytest.fixture()
     def rt_detr_model(self):
         num_classes = 10
-        backbone = PResNet(
-            depth=18,
-            pretrained=False,
-            return_idx=[1, 2, 3],
-        )
+        backbone = PResNet(version="rtdetr_18")
         encoder = HybridEncoder(
-            in_channels=[128, 256, 512],
-            dim_feedforward=1024,
+            version="rtdetr_18",
             eval_spatial_size=(640, 640),
         )
         decoder = RTDETRTransformer(
+            version="rtdetr_18",
             num_classes=num_classes,
-            num_decoder_layers=1,
-            feat_channels=[256, 256, 256],
             eval_spatial_size=(640, 640),
         )
         criterion = DetrCriterion(

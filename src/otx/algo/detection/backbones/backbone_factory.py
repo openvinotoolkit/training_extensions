@@ -58,5 +58,10 @@ class DetectionBackboneFactory:
 
             return CSPNeXt(version)
 
+        if "rtdetr" in version:
+            from otx.algo.detection.backbones import PResNet
+
+            return PResNet(version)
+
         msg = f"Unknown backbone name: {version}"
         raise ValueError(msg)

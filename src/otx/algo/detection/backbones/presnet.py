@@ -15,7 +15,7 @@ from torch import nn
 from otx.algo.modules.activation import build_activation_layer
 from otx.algo.modules.base_module import BaseModule
 from otx.algo.modules.conv_module import Conv2dModule
-from otx.algo.modules.norm import build_norm_layer
+from otx.algo.modules.norm import FrozenBatchNorm2d, build_norm_layer
 
 __all__ = ["PResNet"]
 
@@ -243,7 +243,7 @@ class Blocks(nn.Module):
         return out
 
 
-class PResNet(BaseModule):
+class PResNetModule(BaseModule):
     """PResNet backbone.
 
     Args:
@@ -369,3 +369,37 @@ class PResNet(BaseModule):
             if idx in self.return_idx:
                 outs.append(x)
         return outs
+
+
+class PResNet:
+    """PResNet factory for detection."""
+
+    PRESNET_CFG: ClassVar[dict[str, Any]] = {
+        "rtdetr_18": {
+            "depth": 18,
+            "pretrained": True,
+            "return_idx": [1, 2, 3],
+        },
+        "rtdetr_50": {
+            "depth": 50,
+            "return_idx": [1, 2, 3],
+            "pretrained": True,
+            "freeze_at": 0,
+            "normalization": partial(build_norm_layer, FrozenBatchNorm2d, layer_name="norm"),
+        },
+        "rtdetr_101": {
+            "depth": 101,
+            "return_idx": [1, 2, 3],
+            "normalization": partial(build_norm_layer, FrozenBatchNorm2d, layer_name="norm"),
+            "pretrained": True,
+            "freeze_at": 0,
+        },
+    }
+
+    def __new__(cls, version: str) -> PResNetModule:
+        """Constructor for PResNet."""
+        if version not in cls.PRESNET_CFG:
+            msg = f"model type '{version}' is not supported"
+            raise KeyError(msg)
+
+        return PResNetModule(**cls.PRESNET_CFG[version])

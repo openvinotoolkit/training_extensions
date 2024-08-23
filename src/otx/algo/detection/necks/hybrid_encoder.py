@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import copy
 from functools import partial
-from typing import Callable
+from typing import Any, Callable, ClassVar
 
 import torch
 from torch import nn
@@ -100,7 +100,7 @@ class TransformerEncoder(nn.Module):
         return output
 
 
-class HybridEncoder(BaseModule):
+class HybridEncoderModule(BaseModule):
     """HybridEncoder for RTDetr.
 
     Args:
@@ -319,3 +319,28 @@ class HybridEncoder(BaseModule):
             outs.append(out)
 
         return outs
+
+
+class HybridEncoder:
+    """HybridEncoder factory for detection."""
+
+    HYBRIDENCODER_CFG: ClassVar[dict[str, Any]] = {
+        "rtdetr_18": {
+            "in_channels": [128, 256, 512],
+            "expansion": 0.5,
+        },
+        "rtdetr_50": {},
+        "rtdetr_101": {
+            "hidden_dim": 384,
+            "dim_feedforward": 2048,
+            "in_channels": [512, 1024, 2048],
+        },
+    }
+
+    def __new__(cls, version: str, eval_spatial_size: tuple[int, int] | None = None) -> HybridEncoderModule:
+        """Constructor for HybridEncoder."""
+        if version not in cls.HYBRIDENCODER_CFG:
+            msg = f"model type '{version}' is not supported"
+            raise KeyError(msg)
+
+        return HybridEncoderModule(**cls.HYBRIDENCODER_CFG[version], eval_spatial_size=eval_spatial_size)
