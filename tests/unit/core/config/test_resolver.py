@@ -8,11 +8,11 @@ from omegaconf import OmegaConf
 class TestResolver:
     def test_as_int_tuple(self) -> None:
         cfg_str = """
-        mem_cache_img_max_size: ${as_int_tuple:1333,800}
+        mem_cache_img_min_size: ${as_int_tuple:1333,800}
         """
         cfg = OmegaConf.create(cfg_str)
-        assert isinstance(cfg.mem_cache_img_max_size, tuple)
-        assert cfg.mem_cache_img_max_size == (1333, 800)
+        assert isinstance(cfg.mem_cache_img_min_size, tuple)
+        assert cfg.mem_cache_img_min_size == (1333, 800)
 
     def test_as_torch_dtype(self) -> None:
         cfg_str = """

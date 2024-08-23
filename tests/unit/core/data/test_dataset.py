@@ -23,7 +23,7 @@ class TestDataset:
         dataset = dataset_cls(
             dm_subset=fxt_mock_dm_subset,
             transforms=[lambda x: x],
-            mem_cache_img_max_size=None,
+            mem_cache_img_min_size=None,
             max_refetch=3,
             **kwargs,
         )
@@ -48,17 +48,17 @@ class TestDataset:
         dataset = dataset_cls(
             dm_subset=fxt_mock_dm_subset,
             transforms=lambda x: x,
-            mem_cache_img_max_size=None,
+            mem_cache_img_min_size=None,
             **kwargs,
         )
         dataset.num_classes = 1
         assert dataset._sample_another_idx() < len(dataset)
 
-    @pytest.mark.parametrize("mem_cache_img_max_size", [(3, 5), (5, 3)])
+    @pytest.mark.parametrize("mem_cache_img_min_size", [(3, 5), (5, 3)])
     def test_mem_cache_resize(
         self,
         mocker,
-        mem_cache_img_max_size,
+        mem_cache_img_min_size,
         fxt_mem_cache_handler,
         fxt_dataset_and_data_entity_cls,
         fxt_mock_dm_subset: MagicMock,
@@ -71,7 +71,7 @@ class TestDataset:
             dm_subset=fxt_mock_dm_subset,
             transforms=lambda x: x,
             mem_cache_handler=fxt_mem_cache_handler,
-            mem_cache_img_max_size=mem_cache_img_max_size,
+            mem_cache_img_min_size=mem_cache_img_min_size,
             **kwargs,
         )
         dataset.num_classes = 1
@@ -79,7 +79,7 @@ class TestDataset:
         item = dataset[0]  # Put in the cache
 
         # The returned image should be resized because it was resized before caching
-        h_expected = w_expected = min(mem_cache_img_max_size)
+        h_expected = w_expected = max(mem_cache_img_min_size)
         if dataset_cls != OTXActionClsDataset:  # Action classification dataset handle video, not image.
             assert item.image.shape[:2] == (h_expected, w_expected)
             assert item.img_info.img_shape == (h_expected, w_expected)
@@ -95,7 +95,7 @@ class TestOTXSegmentationDataset:
         dataset = OTXSegmentationDataset(
             dm_subset=fxt_mock_dm_subset,
             transforms=lambda x: x,
-            mem_cache_img_max_size=None,
+            mem_cache_img_min_size=None,
             ignore_index=100,
         )
 
@@ -109,7 +109,7 @@ class TestOTXSegmentationDataset:
         dataset = OTXSegmentationDataset(
             dm_subset=fxt_mock_dm_subset,
             transforms=lambda x: x,
-            mem_cache_img_max_size=None,
+            mem_cache_img_min_size=None,
             ignore_index=65536,
         )
         with pytest.raises(
@@ -131,7 +131,7 @@ class TestOTXSegmentationDataset:
         dataset = OTXSegmentationDataset(
             dm_subset=fxt_mock_dm_subset,
             transforms=lambda x: x,
-            mem_cache_img_max_size=None,
+            mem_cache_img_min_size=None,
             ignore_index=100,
         )
 

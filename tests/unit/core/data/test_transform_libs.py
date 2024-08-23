@@ -178,7 +178,7 @@ class TestTorchVisionTransformLib:
         dataset = dataset_cls(
             dm_subset=fxt_mock_dm_subset,
             transforms=transform,
-            mem_cache_img_max_size=None,
+            mem_cache_img_min_size=None,
             **kwargs,
         )
         dataset.num_classes = 1
@@ -260,7 +260,7 @@ class TestTorchVisionTransformLib:
         dataset = dataset_cls(
             dm_subset=fxt_mock_dm_subset,
             transforms=transform,
-            mem_cache_img_max_size=None,
+            mem_cache_img_min_size=None,
             image_color_channel=fxt_image_color_channel,
             **kwargs,
         )

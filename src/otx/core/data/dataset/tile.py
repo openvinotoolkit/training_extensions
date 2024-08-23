@@ -212,7 +212,7 @@ class OTXTileDataset(OTXDataset):
             dataset.dm_subset,
             dataset.transforms,
             dataset.mem_cache_handler,
-            dataset.mem_cache_img_max_size,
+            dataset.mem_cache_img_min_size,
             dataset.max_refetch,
         )
         self.tile_config = tile_config
@@ -354,7 +354,7 @@ class OTXTileDetTestDataset(OTXTileDataset):
             tile_attr_list=tile_attrs,
             ori_img_info=ImageInfo(
                 img_idx=index,
-                img_shape=img_shape,
+                img_shape=img_data.shape[:2],
                 ori_shape=img_shape,
             ),
             ori_bboxes=tv_tensors.BoundingBoxes(
@@ -456,7 +456,7 @@ class OTXTileInstSegTestDataset(OTXTileDataset):
             tile_attr_list=tile_attrs,
             ori_img_info=ImageInfo(
                 img_idx=index,
-                img_shape=img_shape,
+                img_shape=img_data.shape[:2],
                 ori_shape=img_shape,
             ),
             ori_bboxes=tv_tensors.BoundingBoxes(

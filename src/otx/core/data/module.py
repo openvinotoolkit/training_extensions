@@ -66,7 +66,7 @@ class OTXDataModule(LightningDataModule):
         tile_config: TileConfig = TileConfig(enable_tiler=False),
         vpm_config: VisualPromptingConfig = VisualPromptingConfig(),  # noqa: B008
         mem_cache_size: str = "1GB",
-        mem_cache_img_max_size: tuple[int, int] | None = None,
+        mem_cache_img_min_size: tuple[int, int] | None = None,
         image_color_channel: ImageColorChannel = ImageColorChannel.RGB,
         stack_images: bool = True,
         include_polygons: bool = False,
@@ -93,7 +93,7 @@ class OTXDataModule(LightningDataModule):
         self.vpm_config = vpm_config
 
         self.mem_cache_size = mem_cache_size
-        self.mem_cache_img_max_size = mem_cache_img_max_size
+        self.mem_cache_img_min_size = mem_cache_img_min_size
 
         self.image_color_channel = image_color_channel
         self.stack_images = stack_images
@@ -147,8 +147,8 @@ class OTXDataModule(LightningDataModule):
                 if subset_cfg.input_size is None:
                     subset_cfg.input_size = input_size
 
-            if self.mem_cache_img_max_size is None:
-                self.mem_cache_img_max_size = (
+            if self.mem_cache_img_min_size is None:
+                self.mem_cache_img_min_size = (
                     (input_size, input_size)  # type: ignore[assignment]
                     if isinstance(input_size, int)
                     else tuple(input_size)
@@ -157,6 +157,7 @@ class OTXDataModule(LightningDataModule):
         self.input_size = input_size
 
         if self.tile_config.enable_tiler and self.tile_config.enable_adaptive_tiling:
+            self.mem_cache_img_min_size = None
             adapt_tile_config(self.tile_config, dataset=dataset)
 
         config_mapping = {
@@ -201,7 +202,7 @@ class OTXDataModule(LightningDataModule):
                 dm_subset=dm_subset.as_dataset(),
                 cfg_subset=config_mapping[name],
                 mem_cache_handler=mem_cache_handler,
-                mem_cache_img_max_size=self.mem_cache_img_max_size,
+                mem_cache_img_min_size=self.mem_cache_img_min_size,
                 image_color_channel=image_color_channel,
                 stack_images=stack_images,
                 include_polygons=include_polygons,
@@ -239,7 +240,7 @@ class OTXDataModule(LightningDataModule):
                         dm_subset=dm_subset,
                         cfg_subset=unlabeled_config,
                         mem_cache_handler=mem_cache_handler,
-                        mem_cache_img_max_size=self.mem_cache_img_max_size,
+                        mem_cache_img_min_size=self.mem_cache_img_min_size,
                         image_color_channel=image_color_channel,
                         stack_images=stack_images,
                         include_polygons=include_polygons,
@@ -253,7 +254,7 @@ class OTXDataModule(LightningDataModule):
                     dm_subset=dm_subset.as_dataset(),
                     cfg_subset=self.unlabeled_subset,
                     mem_cache_handler=mem_cache_handler,
-                    mem_cache_img_max_size=self.mem_cache_img_max_size,
+                    mem_cache_img_min_size=self.mem_cache_img_min_size,
                     image_color_channel=image_color_channel,
                     stack_images=stack_images,
                     include_polygons=include_polygons,
@@ -464,7 +465,7 @@ class OTXDataModule(LightningDataModule):
                 self.tile_config,
                 self.vpm_config,
                 self.mem_cache_size,
-                self.mem_cache_img_max_size,
+                self.mem_cache_img_min_size,
                 self.image_color_channel,
                 self.stack_images,
                 self.include_polygons,

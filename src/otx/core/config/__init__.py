@@ -21,7 +21,7 @@ def as_int_tuple(*args) -> tuple[int, ...]:
         YAML file example::
 
             ```yaml
-            mem_cache_img_max_size: ${as_int_tuple:500,500}
+            mem_cache_img_min_size: ${as_int_tuple:500,500}
             ```
     """
     return tuple(int(arg) for arg in args)

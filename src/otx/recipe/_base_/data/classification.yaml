@@ -1,7 +1,7 @@
 task: MULTI_CLASS_CLS
 input_size: 224
 mem_cache_size: 1GB
-mem_cache_img_max_size:
+mem_cache_img_min_size:
   - 500
   - 500
 image_color_channel: RGB
