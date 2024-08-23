@@ -98,10 +98,10 @@ You can find more details with examples in the [CLI command intro](https://openv
 
 ## Updates
 
-### v1.6.4 (3Q24)
+### v1.6.5 (3Q24)
 
-- Pad input image to square when tiling is enabled
-- Fix confusion matrix calculation
+- Fix labels names in hierarchical config
+- Fix Learning Rate and Loss Handling in Tile Classifier MaskRCNN EfficientNet
 
 ### Release History
 

@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## \[v1.6.5\]
+
+### Bug fixes
+
+- Fix labels names in hierarchical config (<https://github.com/openvinotoolkit/training_extensions/pull/3879>)
+- Fix Learning Rate and Loss Handling in Tile Classifier MaskRCNN EfficientNet (<https://github.com/openvinotoolkit/training_extensions/pull/3873>)
+
 ## \[v1.6.4\]
 
 ### Bug fixes
