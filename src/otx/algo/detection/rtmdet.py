@@ -5,7 +5,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, ClassVar
+from typing import TYPE_CHECKING
 
 from otx.algo.common.losses import GIoULoss, QualityFocalLoss
 from otx.algo.common.utils.assigners import DynamicSoftLabelAssigner
@@ -48,8 +48,8 @@ class RTMDet(ExplainableOTXDetModel):
     """OTX Detection model class for RTMDet."""
 
     input_size_multiplier = 32
-    mean: ClassVar[tuple[float, float, float]] = (103.53, 116.28, 123.675)
-    std: ClassVar[tuple[float, float, float]] = (57.375, 57.12, 58.395)
+    mean: tuple[float, float, float] = (103.53, 116.28, 123.675)
+    std: tuple[float, float, float] = (57.375, 57.12, 58.395)
 
     def __init__(
         self,

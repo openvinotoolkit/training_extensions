@@ -403,7 +403,6 @@ class ATSSHead:
         },
         "atss_resnext101": {
             "in_channels": 256,
-            "feat_channels": 256,
         },
     }
 

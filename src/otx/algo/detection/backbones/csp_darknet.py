@@ -257,7 +257,7 @@ class CSPDarknet:
     CSPDARKNET_CFG: ClassVar[dict[str, Any]] = {
         "yolox_tiny": {"deepen_factor": 0.33, "widen_factor": 0.375},
         "yolox_s": {"deepen_factor": 0.33, "widen_factor": 0.5},
-        "yolox_l": {"deepen_factor": 1.0, "widen_factor": 1.0},
+        "yolox_l": {},
         "yolox_x": {"deepen_factor": 1.33, "widen_factor": 1.25},
     }
 

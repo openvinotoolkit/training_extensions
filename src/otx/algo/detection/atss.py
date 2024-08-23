@@ -5,7 +5,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, ClassVar
+from typing import TYPE_CHECKING
 
 from otx.algo.common.losses import CrossEntropyLoss, CrossSigmoidFocalLoss, GIoULoss
 from otx.algo.common.utils.coders import DeltaXYWHBBoxCoder
@@ -52,8 +52,8 @@ PRETRAINED_WEIGHTS: dict[str, str] = {
 class ATSS(ExplainableOTXDetModel):
     """OTX Detection model class for ATSS."""
 
-    mean: ClassVar[tuple[float, float, float]] = (0.0, 0.0, 0.0)
-    std: ClassVar[tuple[float, float, float]] = (255.0, 255.0, 255.0)
+    mean: tuple[float, float, float] = (0.0, 0.0, 0.0)
+    std: tuple[float, float, float] = (255.0, 255.0, 255.0)
 
     def __init__(
         self,

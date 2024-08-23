@@ -191,7 +191,6 @@ class YOLOXPAFPN:
         "yolox_l": {
             "in_channels": [256, 512, 1024],
             "out_channels": 256,
-            "num_csp_blocks": 3,
         },
         "yolox_x": {
             "in_channels": [320, 640, 1280],

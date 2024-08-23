@@ -10,7 +10,7 @@ Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/d
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, Any, ClassVar
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 from datumaro.components.annotation import Bbox
@@ -57,8 +57,8 @@ PRETRAINED_WEIGHTS: dict[str, str] = {
 class SSD(ExplainableOTXDetModel):
     """Detecion model class for SSD."""
 
-    mean: ClassVar[tuple[float, float, float]] = (0.0, 0.0, 0.0)
-    std: ClassVar[tuple[float, float, float]] = (255.0, 255.0, 255.0)
+    mean: tuple[float, float, float] = (0.0, 0.0, 0.0)
+    std: tuple[float, float, float] = (255.0, 255.0, 255.0)
 
     def __init__(
         self,
