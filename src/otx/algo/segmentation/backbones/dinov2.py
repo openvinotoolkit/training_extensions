@@ -24,7 +24,7 @@ class DinoVisionTransformer(nn.Module):
 
     def __init__(
         self,
-        name: str,
+        model_name: str,
         freeze_backbone: bool,
         out_index: list[int],
         pretrained_weights: str | None = None,
@@ -37,17 +37,17 @@ class DinoVisionTransformer(nn.Module):
         if ci_data_root is not None and Path(ci_data_root).exists():
             pretrained = False
 
-        self.backbone = torch.hub.load(repo_or_dir="facebookresearch/dinov2", model=name, pretrained=pretrained)
+        self.backbone = torch.hub.load(repo_or_dir="facebookresearch/dinov2", model=model_name, pretrained=pretrained)
 
         if ci_data_root is not None and Path(ci_data_root).exists():
-            ckpt_filename = f"{name}4_pretrain.pth"
+            ckpt_filename = f"{model_name}4_pretrain.pth"
             ckpt_path = Path(ci_data_root) / "torch" / "hub" / "checkpoints" / ckpt_filename
             if not ckpt_path.exists():
                 msg = (
                     f"Internal cache was specified but cannot find weights file: {ckpt_filename}. load from torch hub."
                 )
                 logger.warning(msg)
-                self.backbone = torch.hub.load(repo_or_dir="facebookresearch/dinov2", model=name, pretrained=True)
+                self.backbone = torch.hub.load(repo_or_dir="facebookresearch/dinov2", model=model_name, pretrained=True)
             else:
                 self.backbone.load_state_dict(torch.load(ckpt_path))
 
