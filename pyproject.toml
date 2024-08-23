@@ -54,9 +54,6 @@ dev = [
     "pytest-mock",
     "pytest-csv",
     "pytest-cov",
-    "mlflow==2.15.1",     # For perf benchmark
-    "py-cpuinfo==9.0.0",  # For perf benchmark
-    "openpyxl",           # For perf benchmark
 ]
 
 docs = [
@@ -134,6 +131,8 @@ ci_benchmark = [
     "ipython==8.26.0",
     "ipykernel==6.29.5",
     "openpyxl==3.1.5",
+    "mlflow==2.15.1",
+    "py-cpuinfo==9.0.0",
 ]
 
 [project.scripts]
