@@ -15,7 +15,7 @@ from typing import TYPE_CHECKING, Callable, ClassVar, Literal
 import torch
 import torchvision.transforms.v2 as tvt_v2
 from torch import Tensor, nn
-from torchvision.tv_tensors import BoundingBoxes, Image, Mask
+from torchvision.tv_tensors import BoundingBoxes, Image
 
 from otx.algo.visual_prompting.decoders import SAMMaskDecoder
 from otx.algo.visual_prompting.encoders import SAMImageEncoder, SAMPromptEncoder
@@ -23,6 +23,7 @@ from otx.algo.visual_prompting.losses.sam_loss import SAMCriterion
 from otx.algo.visual_prompting.visual_prompters import SegmentAnything, ZeroShotSegmentAnything
 from otx.core.data.entity.base import OTXBatchLossEntity, Points
 from otx.core.data.entity.visual_prompting import (
+    ZeroShotPromptType,
     ZeroShotVisualPromptingBatchDataEntity,
     ZeroShotVisualPromptingBatchPredEntity,
 )
@@ -34,7 +35,6 @@ from otx.core.types.label import LabelInfoTypes, NullLabelInfo
 
 if TYPE_CHECKING:
     import numpy as np
-    from datumaro import Polygon as dmPolygon
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
 
     from otx.core.metrics import MetricCallable
@@ -359,23 +359,13 @@ class ZeroShotSAM(OTXZeroShotVisualPromptingModel, CommonSettingMixin):
     def _gather_prompts_with_labels(
         self,
         inputs: ZeroShotVisualPromptingBatchDataEntity,
-    ) -> list[dict[int, list[BoundingBoxes | Points | dmPolygon | Mask]]]:
+    ) -> list[dict[int, list[ZeroShotPromptType]]]:
         """Gather prompts according to labels."""
-        total_processed_prompts: list[dict[int, list[BoundingBoxes | Points | dmPolygon | Mask]]] = []
-        for batch, batch_labels in enumerate(inputs.labels):
+        total_processed_prompts: list[dict[int, list[ZeroShotPromptType]]] = []
+        for prompts, labels in zip(inputs.prompts, inputs.labels):
             processed_prompts = defaultdict(list)
-            for prompt_type in ["prompts", "polygons", "masks"]:
-                _prompts = getattr(inputs, prompt_type, None)
-                prompt_labels = getattr(batch_labels, prompt_type, None)
-                if _prompts is None or prompt_labels is None:
-                    continue
-
-                for idx, _label in enumerate(prompt_labels):
-                    if prompt_type in ("prompts", "polygons"):
-                        processed_prompts[int(_label)].append(_prompts[batch][idx])
-                    else:
-                        # for mask
-                        processed_prompts[int(_label)].append(Mask(_prompts[batch][idx]))
+            for prompt, label in zip(prompts, labels):
+                processed_prompts[int(label)].append(prompt)
 
             sorted_processed_prompts = dict(sorted(processed_prompts.items(), key=lambda x: x))
             total_processed_prompts.append(sorted_processed_prompts)
@@ -411,19 +401,18 @@ class ZeroShotSAM(OTXZeroShotVisualPromptingModel, CommonSettingMixin):
 
     def apply_prompts(
         self,
-        prompts: list[Points | BoundingBoxes],
+        prompts: list[ZeroShotPromptType],
         ori_shape: tuple[int, ...],
         target_length: int = 1024,
-    ) -> list[Points | BoundingBoxes]:
+    ) -> list[ZeroShotPromptType]:
         """Preprocess prompts to be used in the model."""
-        transformed_prompts: list[Points | BoundingBoxes] = []
+        transformed_prompts: list[ZeroShotPromptType] = []
         for prompt in prompts:
             if isinstance(prompt, Points):
                 transformed_prompts.append(self.apply_points(prompt, ori_shape, target_length))
             elif isinstance(prompt, BoundingBoxes):
                 transformed_prompts.append(self.apply_boxes(prompt, ori_shape, target_length))
             else:
-                log.info(f"Current prompt ({prompt.__class__.__name__}) is not supported, saved as it is.")
                 transformed_prompts.append(prompt)
         return transformed_prompts
 
@@ -452,9 +441,6 @@ class ZeroShotSAM(OTXZeroShotVisualPromptingModel, CommonSettingMixin):
                 self.apply_prompts(prompt, info.ori_shape, self.model.image_size)
                 for prompt, info in zip(entity.prompts, entity.imgs_info)
             ],
-            masks=entity.masks,
-            polygons=entity.polygons,
-            labels=entity.labels,
         )
 
     def initialize_reference_info(self) -> None:

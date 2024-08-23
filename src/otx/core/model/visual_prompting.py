@@ -31,7 +31,6 @@ from otx.core.data.entity.visual_prompting import (
     VisualPromptingBatchPredEntity,
     ZeroShotVisualPromptingBatchDataEntity,
     ZeroShotVisualPromptingBatchPredEntity,
-    ZeroShotVisualPromptingLabel,
 )
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.visual_prompting import OTXVisualPromptingModelExporter
@@ -131,11 +130,6 @@ def _inference_step_for_zero_shot(
 
     if not isinstance(preds, ZeroShotVisualPromptingBatchPredEntity):
         raise TypeError(preds)
-
-    # filter labels using corresponding ground truth
-    inputs.labels = [
-        label.masks if inputs.masks and label.masks is not None else label.polygons for label in inputs.labels
-    ]
 
     converted_entities: dict[str, list[dict[str, Tensor]]] = _convert_pred_entity_to_compute_metric(preds, inputs)  # type: ignore[assignment]
 
@@ -596,7 +590,7 @@ class OTXZeroShotVisualPromptingModel(
     def get_dummy_input(self, batch_size: int = 1) -> ZeroShotVisualPromptingBatchDataEntity:
         """Returns a dummy input for ZSL VPT model."""
         images = [torch.rand(3, *self.input_size) for _ in range(batch_size)]
-        labels = [ZeroShotVisualPromptingLabel(prompts=torch.LongTensor([0]))] * batch_size
+        labels = [{"points": torch.LongTensor([0] * batch_size)}] * batch_size
         prompts = [torch.zeros((1, 2))] * batch_size
         infos = []
         for i, img in enumerate(images):
@@ -1125,10 +1119,9 @@ class OVZeroShotVisualPromptingModel(
         images: list[np.ndarray] = []
         processed_prompts: list[dict[str, Any]] = []
 
-        for image, prompts, polygons, labels in zip(
+        for image, prompts, labels in zip(
             entity.images,
             entity.prompts,
-            entity.polygons,
             entity.labels,
         ):
             # preprocess image encoder inputs
@@ -1136,25 +1129,28 @@ class OVZeroShotVisualPromptingModel(
             images.append(numpy_image)
 
             if self.training:
-                _bboxes: list[Prompt] = []
+                _boxes: list[Prompt] = []
                 _points: list[Prompt] = []
                 _polygons: list[Prompt] = []
                 for prompt, label in zip(prompts, labels.prompts):  # type: ignore[arg-type]
                     if isinstance(prompt, tv_tensors.BoundingBoxes):
-                        _bboxes.append(Prompt(prompt.cpu().numpy(), label.cpu().numpy()))
+                        _boxes.append(Prompt(prompt.cpu().numpy(), label.cpu().numpy()))
                     elif isinstance(prompt, Points):
                         _points.append(Prompt(prompt.cpu().numpy(), label.cpu().numpy()))
+                    elif isinstance(prompt, dmPolygon):
+                        _polygons.extend(
+                            [
+                                Prompt(np.array(polygon.points, dtype=np.int32), label.cpu().numpy())
+                                for polygon in prompt
+                            ],
+                        )
 
-                if polygons and labels.polygons is not None:
-                    for polygon, label in zip(polygons, labels.polygons):
-                        _polygons.append(Prompt(np.array(polygon.points, dtype=np.int32), label.cpu().numpy()))
-
-                # TODO (sungchul, sovrasov): support mask?
+                    # TODO (sungchul, sovrasov): support mask?
 
                 # preprocess decoder inputs
                 processed_prompts.append(
                     {
-                        "boxes": _bboxes,
+                        "boxes": _boxes,
                         "points": _points,
                         "polygons": _polygons,
                     },
@@ -1543,7 +1539,7 @@ class OVZeroShotVisualPromptingModel(
         """Returns a dummy input for classification OV model."""
         # Resize is embedded to the OV model, which means we don't need to know the actual size
         images = [torch.rand(3, 224, 224) for _ in range(batch_size)]
-        labels = [ZeroShotVisualPromptingLabel(prompts=torch.LongTensor([0]))] * batch_size
+        labels = [torch.LongTensor([0] * batch_size)] * batch_size
         prompts = [torch.zeros((1, 2))] * batch_size
         infos = []
         for i, img in enumerate(images):
