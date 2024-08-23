@@ -26,7 +26,9 @@ from otx.api.serialization.label_mapper import LabelSchemaMapper
 from otx.api.utils.labels_utils import get_normalized_label_name
 
 
-def get_multihead_class_info(label_schema: LabelSchemaEntity, normalize_labels=False):  # pylint: disable=too-many-locals
+def get_multihead_class_info(
+    label_schema: LabelSchemaEntity, normalize_labels: bool = False
+):  # pylint: disable=too-many-locals
     """Get multihead info by label schema."""
     all_groups = label_schema.get_groups(include_empty=False)
     all_groups_str = []
