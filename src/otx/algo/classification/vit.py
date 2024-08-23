@@ -290,7 +290,6 @@ class VisionTransformerForMulticlassCls(ForwardExplainMixInForViT, OTXMulticlass
                     in_channels=vit_backbone.embed_dim,
                 ),
                 loss=nn.CrossEntropyLoss(reduction="none"),
-                init_cfg=init_cfg,
             )
 
         return ImageClassifier(
