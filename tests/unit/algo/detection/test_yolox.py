@@ -21,6 +21,9 @@ class TestYOLOX:
         assert otx_yolox_l.input_size == (640, 640)
 
         otx_yolox_tiny = YOLOX(model_version="yolox_tiny", label_info=3)
+        assert otx_yolox_tiny.input_size == (640, 640)
+
+        otx_yolox_tiny = YOLOX(model_version="yolox_tiny", label_info=3, input_size=(416, 416))
         assert otx_yolox_tiny.input_size == (416, 416)
 
     def test_exporter(self) -> None:
