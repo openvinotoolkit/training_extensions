@@ -35,9 +35,9 @@ if TYPE_CHECKING:
 
 AVAILABLE_MODEL_VERSIONS: list[str] = ["rtmdet_tiny"]
 
-PRETRAINED_ROOT: str = (
-    "https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/object_detection/v2/"
-)
+PRETRAINED_ROOT: (
+    str
+) = "https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/object_detection/v2/"
 
 PRETRAINED_WEIGHTS: dict[str, str] = {
     "rtmdet_tiny": PRETRAINED_ROOT + "rtmdet_tiny.pth",

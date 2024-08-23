@@ -39,9 +39,9 @@ AVAILABLE_MODEL_VERSIONS: list[str] = [
     "atss_resnext101",
 ]
 
-PRETRAINED_ROOT: str = (
-    "https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/object_detection/v2/"
-)
+PRETRAINED_ROOT: (
+    str
+) = "https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/object_detection/v2/"
 
 PRETRAINED_WEIGHTS: dict[str, str] = {
     "atss_mobilenetv2": PRETRAINED_ROOT + "mobilenet_v2-atss.pth",

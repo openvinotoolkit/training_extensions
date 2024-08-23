@@ -45,9 +45,9 @@ logger = logging.getLogger()
 
 AVAILABLE_MODEL_VERSIONS: list[str] = ["ssd_mobilenetv2"]
 
-PRETRAINED_ROOT: str = (
-    "https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/object_detection/v2/"
-)
+PRETRAINED_ROOT: (
+    str
+) = "https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/object_detection/v2/"
 
 PRETRAINED_WEIGHTS: dict[str, str] = {
     "ssd_mobilenetv2": PRETRAINED_ROOT + "mobilenet_v2-2s_ssd-992x736.pth",
