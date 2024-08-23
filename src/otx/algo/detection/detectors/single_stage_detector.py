@@ -26,7 +26,7 @@ class SingleStageDetector(BaseModule):
     Args:
         backbone (nn.Module): Backbone module.
         bbox_head (nn.Module): Bbox head module.
-        criterion (nn.Module | None, optional): Criterion module.
+        criterion (nn.Module): Criterion module.
         neck (nn.Module | None, optional): Neck module. Defaults to None.
         train_cfg (dict | None, optional): Training config. Defaults to None.
         test_cfg (dict | None, optional): Test config. Defaults to None.

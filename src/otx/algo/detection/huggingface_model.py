@@ -68,7 +68,6 @@ class HuggingFaceModelForDetection(OTXDetectionModel):
         metric: MetricCallable = MeanAveragePrecisionFMeasureCallable,
         torch_compile: bool = False,
     ) -> None:
-        self.model_name = model_name_or_path
         self.load_from = None
 
         super().__init__(
@@ -80,11 +79,11 @@ class HuggingFaceModelForDetection(OTXDetectionModel):
             metric=metric,
             torch_compile=torch_compile,
         )
-        self.image_processor = AutoImageProcessor.from_pretrained(self.model_name)
+        self.image_processor = AutoImageProcessor.from_pretrained(self.model_version)
 
     def _build_model(self, num_classes: int) -> nn.Module:
         return AutoModelForObjectDetection.from_pretrained(
-            pretrained_model_name_or_path=self.model_name,
+            pretrained_model_name_or_path=self.model_version,
             num_labels=num_classes,
             ignore_mismatched_sizes=True,
         )
