@@ -142,11 +142,7 @@ class OTXDataset(Dataset, Generic[T_OTXDataEntity]):
         raise RuntimeError(msg)
 
     def _get_img_data_and_shape(self, img: Image) -> tuple[np.ndarray, tuple[int, int]]:
-        """Get image and original image shape from the memory cache.
-
-        Returns:
-            tuple[np.ndarray, tuple[int, int]]: _description_
-        """
+        """Get image and original image shape from the memory cache."""
         key = img.path if isinstance(img, ImageFromFile) else id(img)
         img_shape = img.size
 
@@ -195,7 +191,7 @@ class OTXDataset(Dataset, Generic[T_OTXDataEntity]):
         height, width = img_data.shape[:2]
         min_height, min_width = self.mem_cache_img_min_size
 
-        if height <= min_height and width <= min_width:
+        if height <= min_height or width <= min_width:
             self.mem_cache_handler.put(key=key, data=img_data, meta=None)
             return img_data
 
