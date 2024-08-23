@@ -418,6 +418,8 @@ class ZeroShotSegmentAnything(SegmentAnything):
         return_single_mask: bool = False,
         return_extra_metrics: bool = False,
         stability_score_offset: float = 1.0,
+        use_mask: bool = False,
+        use_polygon: bool = False,
     ) -> None:
         super().__init__(
             image_encoder=image_encoder,
@@ -442,6 +444,9 @@ class ZeroShotSegmentAnything(SegmentAnything):
         # set default constants
         self.point_labels_box = torch.tensor([[2, 3]], dtype=torch.float32)
         self.has_mask_inputs = [torch.tensor([[0.0]]), torch.tensor([[1.0]])]
+
+        self.use_mask = use_mask
+        self.use_polygon = use_polygon
 
     def expand_reference_info(self, reference_feats: Tensor, new_largest_label: int) -> Tensor:
         """Expand reference info dimensions if newly given processed prompts have more labels."""
@@ -498,10 +503,10 @@ class ZeroShotSegmentAnything(SegmentAnything):
                 # TODO (sungchul): ensemble multi reference features (current : use merged masks)
                 ref_mask = torch.zeros(*map(int, ori_shape), dtype=torch.uint8, device=image.device)
                 for input_prompt in input_prompts:
-                    if isinstance(input_prompt, tv_tensors.Mask):
+                    if self.use_mask and isinstance(input_prompt, tv_tensors.Mask):
                         # directly use annotation information as a mask
                         ref_mask[input_prompt] += 1
-                    elif isinstance(input_prompt, dmPolygon):
+                    elif self.use_polygon and isinstance(input_prompt, dmPolygon):
                         ref_mask[torch.as_tensor(polygon_to_bitmap([input_prompt], *ori_shape)[0])] += 1
                     else:
                         if isinstance(input_prompt, tv_tensors.BoundingBoxes):
