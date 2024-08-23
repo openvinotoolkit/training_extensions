@@ -202,10 +202,10 @@ class CSPNeXtPAFPN:
         },
     }
 
-    def __new__(cls, version: str) -> CSPNeXtPAFPNModule:
+    def __new__(cls, model_name: str) -> CSPNeXtPAFPNModule:
         """Constructor for CSPNeXtPAFPN."""
-        if version not in cls.CSPNEXTPAFPN_CFG:
-            msg = f"model type '{version}' is not supported"
+        if model_name not in cls.CSPNEXTPAFPN_CFG:
+            msg = f"model type '{model_name}' is not supported"
             raise KeyError(msg)
 
-        return CSPNeXtPAFPNModule(**cls.CSPNEXTPAFPN_CFG[version])
+        return CSPNeXtPAFPNModule(**cls.CSPNEXTPAFPN_CFG[model_name])

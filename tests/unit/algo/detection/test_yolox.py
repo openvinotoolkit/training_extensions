@@ -14,25 +14,25 @@ from otx.core.exporter.native import OTXNativeModelExporter
 
 class TestYOLOX:
     def test_init(self) -> None:
-        otx_yolox_l = YOLOX(model_version="yolox_l", label_info=3)
+        otx_yolox_l = YOLOX(model_name="yolox_l", label_info=3)
         assert isinstance(otx_yolox_l.model.backbone, CSPDarknetModule)
         assert isinstance(otx_yolox_l.model.neck, YOLOXPAFPNModule)
         assert isinstance(otx_yolox_l.model.bbox_head, YOLOXHeadModule)
         assert otx_yolox_l.input_size == (640, 640)
 
-        otx_yolox_tiny = YOLOX(model_version="yolox_tiny", label_info=3)
+        otx_yolox_tiny = YOLOX(model_name="yolox_tiny", label_info=3)
         assert otx_yolox_tiny.input_size == (640, 640)
 
-        otx_yolox_tiny = YOLOX(model_version="yolox_tiny", label_info=3, input_size=(416, 416))
+        otx_yolox_tiny = YOLOX(model_name="yolox_tiny", label_info=3, input_size=(416, 416))
         assert otx_yolox_tiny.input_size == (416, 416)
 
     def test_exporter(self) -> None:
-        otx_yolox_l = YOLOX(model_version="yolox_l", label_info=3)
+        otx_yolox_l = YOLOX(model_name="yolox_l", label_info=3)
         otx_yolox_l_exporter = otx_yolox_l._exporter
         assert isinstance(otx_yolox_l_exporter, OTXNativeModelExporter)
         assert otx_yolox_l_exporter.swap_rgb is True
 
-        otx_yolox_tiny = YOLOX(model_version="yolox_tiny", label_info=3)
+        otx_yolox_tiny = YOLOX(model_name="yolox_tiny", label_info=3)
         otx_yolox_tiny_exporter = otx_yolox_tiny._exporter
         assert isinstance(otx_yolox_tiny_exporter, OTXNativeModelExporter)
         assert otx_yolox_tiny_exporter.swap_rgb is False
@@ -40,10 +40,10 @@ class TestYOLOX:
     @pytest.mark.parametrize(
         "model",
         [
-            YOLOX(model_version="yolox_tiny", label_info=3),
-            YOLOX(model_version="yolox_s", label_info=3),
-            YOLOX(model_version="yolox_l", label_info=3),
-            YOLOX(model_version="yolox_x", label_info=3),
+            YOLOX(model_name="yolox_tiny", label_info=3),
+            YOLOX(model_name="yolox_s", label_info=3),
+            YOLOX(model_name="yolox_l", label_info=3),
+            YOLOX(model_name="yolox_x", label_info=3),
         ],
     )
     def test_loss(self, model, fxt_data_module):
@@ -57,10 +57,10 @@ class TestYOLOX:
     @pytest.mark.parametrize(
         "model",
         [
-            YOLOX(model_version="yolox_tiny", label_info=3),
-            YOLOX(model_version="yolox_s", label_info=3),
-            YOLOX(model_version="yolox_l", label_info=3),
-            YOLOX(model_version="yolox_x", label_info=3),
+            YOLOX(model_name="yolox_tiny", label_info=3),
+            YOLOX(model_name="yolox_s", label_info=3),
+            YOLOX(model_name="yolox_l", label_info=3),
+            YOLOX(model_name="yolox_x", label_info=3),
         ],
     )
     def test_predict(self, model, fxt_data_module):
@@ -73,10 +73,10 @@ class TestYOLOX:
     @pytest.mark.parametrize(
         "model",
         [
-            YOLOX(model_version="yolox_tiny", label_info=3),
-            YOLOX(model_version="yolox_s", label_info=3),
-            YOLOX(model_version="yolox_l", label_info=3),
-            YOLOX(model_version="yolox_x", label_info=3),
+            YOLOX(model_name="yolox_tiny", label_info=3),
+            YOLOX(model_name="yolox_s", label_info=3),
+            YOLOX(model_name="yolox_l", label_info=3),
+            YOLOX(model_name="yolox_x", label_info=3),
         ],
     )
     def test_export(self, model):

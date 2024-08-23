@@ -337,10 +337,10 @@ class HybridEncoder:
         },
     }
 
-    def __new__(cls, version: str, eval_spatial_size: tuple[int, int] | None = None) -> HybridEncoderModule:
+    def __new__(cls, model_name: str, eval_spatial_size: tuple[int, int] | None = None) -> HybridEncoderModule:
         """Constructor for HybridEncoder."""
-        if version not in cls.HYBRIDENCODER_CFG:
-            msg = f"model type '{version}' is not supported"
+        if model_name not in cls.HYBRIDENCODER_CFG:
+            msg = f"model type '{model_name}' is not supported"
             raise KeyError(msg)
 
-        return HybridEncoderModule(**cls.HYBRIDENCODER_CFG[version], eval_spatial_size=eval_spatial_size)
+        return HybridEncoderModule(**cls.HYBRIDENCODER_CFG[model_name], eval_spatial_size=eval_spatial_size)

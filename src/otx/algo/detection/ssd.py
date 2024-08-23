@@ -45,9 +45,9 @@ logger = logging.getLogger()
 
 AVAILABLE_MODEL_VERSIONS: list[str] = ["ssd_mobilenetv2"]
 
-PRETRAINED_ROOT: (
-    str
-) = "https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/object_detection/v2/"
+PRETRAINED_ROOT: str = (
+    "https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/object_detection/v2/"
+)
 
 PRETRAINED_WEIGHTS: dict[str, str] = {
     "ssd_mobilenetv2": PRETRAINED_ROOT + "mobilenet_v2-2s_ssd-992x736.pth",
@@ -66,7 +66,7 @@ class SSD(ExplainableOTXDetModel):
 
     def __init__(
         self,
-        model_version: str,
+        model_name: str,
         label_info: LabelInfoTypes,
         input_size: tuple[int, int] = (864, 864),
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
@@ -75,9 +75,9 @@ class SSD(ExplainableOTXDetModel):
         torch_compile: bool = False,
         tile_config: TileConfig = TileConfig(enable_tiler=False),
     ) -> None:
-        self.load_from: str = PRETRAINED_WEIGHTS[model_version]
+        self.load_from: str = PRETRAINED_WEIGHTS[model_name]
         super().__init__(
-            model_version=model_version,
+            model_name=model_name,
             label_info=label_info,
             input_size=input_size,
             optimizer=optimizer,
@@ -108,9 +108,9 @@ class SSD(ExplainableOTXDetModel):
             "score_thr": 0.02,
             "max_per_img": 200,
         }
-        backbone = DetectionBackboneFactory(version=self.model_version)
+        backbone = DetectionBackboneFactory(model_name=self.model_name)
         bbox_head = SSDHead(
-            version=self.model_version,
+            model_name=self.model_name,
             num_classes=num_classes,
             anchor_generator=SSDAnchorGeneratorClustered(
                 strides=[16, 32],

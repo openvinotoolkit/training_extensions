@@ -227,7 +227,7 @@ class SSDHead:
 
     def __new__(
         cls,
-        version: str,
+        model_name: str,
         num_classes: int,
         anchor_generator: BasePriorGenerator,
         bbox_coder: BaseBBoxCoder,
@@ -236,12 +236,12 @@ class SSDHead:
         test_cfg: dict | None = None,
     ) -> SSDHeadModule:
         """Constructor for SSDHead."""
-        if version not in cls.SSDHEAD_CFG:
-            msg = f"model type '{version}' is not supported"
+        if model_name not in cls.SSDHEAD_CFG:
+            msg = f"model type '{model_name}' is not supported"
             raise KeyError(msg)
 
         return SSDHeadModule(
-            **cls.SSDHEAD_CFG[version],
+            **cls.SSDHEAD_CFG[model_name],
             num_classes=num_classes,
             anchor_generator=anchor_generator,
             bbox_coder=bbox_coder,

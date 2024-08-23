@@ -258,10 +258,10 @@ class CSPNeXt:
         },
     }
 
-    def __new__(cls, version: str) -> CSPNeXtModule:
+    def __new__(cls, model_name: str) -> CSPNeXtModule:
         """Constructor for CSPNeXt."""
-        if version not in cls.CSPNEXT_CFG:
-            msg = f"model type '{version}' is not supported"
+        if model_name not in cls.CSPNEXT_CFG:
+            msg = f"model type '{model_name}' is not supported"
             raise KeyError(msg)
 
-        return CSPNeXtModule(**cls.CSPNEXT_CFG[version])
+        return CSPNeXtModule(**cls.CSPNEXT_CFG[model_name])

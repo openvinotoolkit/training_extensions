@@ -135,8 +135,8 @@ class RTMDetInstTiny(RTMDetInst):
             "nms_pre": 300,
         }
 
-        backbone = CSPNeXt(version="rtmdet_inst_tiny")
-        neck = CSPNeXtPAFPN(version="rtmdet_inst_tiny")
+        backbone = CSPNeXt(model_name="rtmdet_inst_tiny")
+        neck = CSPNeXtPAFPN(model_name="rtmdet_inst_tiny")
         bbox_head = RTMDetInsSepBNHead(
             num_classes=num_classes,
             in_channels=96,

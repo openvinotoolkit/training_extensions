@@ -822,17 +822,17 @@ class RTDETRTransformer:
 
     def __new__(
         cls,
-        version: str,
+        model_name: str,
         num_classes: int,
         eval_spatial_size: tuple[int, int] | None = None,
     ) -> RTDETRTransformerModule:
         """Constructor for RTDETRTransformer."""
-        if version not in cls.RTDETRTRANSFORMER_CFG:
-            msg = f"model type '{version}' is not supported"
+        if model_name not in cls.RTDETRTRANSFORMER_CFG:
+            msg = f"model type '{model_name}' is not supported"
             raise KeyError(msg)
 
         return RTDETRTransformerModule(
-            **cls.RTDETRTRANSFORMER_CFG[version],
+            **cls.RTDETRTRANSFORMER_CFG[model_name],
             num_classes=num_classes,
             eval_spatial_size=eval_spatial_size,
         )

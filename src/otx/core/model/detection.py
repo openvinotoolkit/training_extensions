@@ -43,8 +43,8 @@ class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity]):
 
     input_size: tuple[int, int]
 
-    def __init__(self, model_version: str, *args, **kwargs) -> None:
-        self.model_version = model_version
+    def __init__(self, model_name: str, *args, **kwargs) -> None:
+        self.model_name = model_name
         super().__init__(*args, **kwargs)
 
     def test_step(self, batch: DetBatchDataEntity, batch_idx: int) -> None:
@@ -390,7 +390,7 @@ class ExplainableOTXDetModel(OTXDetectionModel):
 
     def __init__(
         self,
-        model_version: str,
+        model_name: str,
         label_info: LabelInfoTypes,
         input_size: tuple[int, int],
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
@@ -402,7 +402,7 @@ class ExplainableOTXDetModel(OTXDetectionModel):
         from otx.algo.explain.explain_algo import feature_vector_fn
 
         super().__init__(
-            model_version=model_version,
+            model_name=model_name,
             label_info=label_info,
             input_size=input_size,
             optimizer=optimizer,

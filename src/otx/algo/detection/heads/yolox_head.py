@@ -655,18 +655,18 @@ class YOLOXHead:
 
     def __new__(
         cls,
-        version: str,
+        model_name: str,
         num_classes: int,
         train_cfg: dict,
         test_cfg: dict | None = None,
     ) -> YOLOXHeadModule:
         """Constructor for YOLOXHead."""
-        if version not in cls.YOLOXHEAD_CFG:
-            msg = f"model type '{version}' is not supported"
+        if model_name not in cls.YOLOXHEAD_CFG:
+            msg = f"model type '{model_name}' is not supported"
             raise KeyError(msg)
 
         return YOLOXHeadModule(
-            **cls.YOLOXHEAD_CFG[version],
+            **cls.YOLOXHEAD_CFG[model_name],
             num_classes=num_classes,
             train_cfg=train_cfg,  # TODO (sungchul, kirill): remove
             test_cfg=test_cfg,  # TODO (sungchul, kirill): remove

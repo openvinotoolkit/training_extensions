@@ -59,7 +59,7 @@ class RTDETR(ExplainableOTXDetModel):
 
     def __init__(
         self,
-        model_version: str,
+        model_name: str,
         label_info: LabelInfoTypes,
         input_size: tuple[int, int] = (640, 640),
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
@@ -68,9 +68,9 @@ class RTDETR(ExplainableOTXDetModel):
         torch_compile: bool = False,
         tile_config: TileConfig = TileConfig(enable_tiler=False),
     ) -> None:
-        self.load_from: str = PRETRAINED_WEIGHTS[model_version]
+        self.load_from: str = PRETRAINED_WEIGHTS[model_name]
         super().__init__(
-            model_version=model_version,
+            model_name=model_name,
             label_info=label_info,
             input_size=input_size,
             optimizer=optimizer,
@@ -81,17 +81,17 @@ class RTDETR(ExplainableOTXDetModel):
         )
 
     def _build_model(self, num_classes: int) -> nn.Module:
-        if self.model_version not in AVAILABLE_MODEL_VERSIONS:
-            msg = f"Model version {self.model_version} is not supported."
+        if self.model_name not in AVAILABLE_MODEL_VERSIONS:
+            msg = f"Model version {self.model_name} is not supported."
             raise ValueError(msg)
 
-        backbone = DetectionBackboneFactory(version=self.model_version)
+        backbone = DetectionBackboneFactory(model_name=self.model_name)
         encoder = HybridEncoder(
-            version=self.model_version,
+            model_name=self.model_name,
             eval_spatial_size=self.input_size,
         )
         decoder = RTDETRTransformer(
-            version=self.model_version,
+            model_name=self.model_name,
             num_classes=num_classes,
             eval_spatial_size=self.input_size,
         )

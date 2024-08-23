@@ -343,7 +343,7 @@ class TestOTXTiling:
 
     def test_det_tile_merge(self, fxt_det_data_config):
         model = ATSS(
-            model_version="atss_mobilenetv2",
+            model_name="atss_mobilenetv2",
             label_info=3,
         )  # updated from OTXDetectionModel to avoid NotImplementedError in _build_model
         # Enable tile adapter
@@ -362,7 +362,7 @@ class TestOTXTiling:
 
     def test_explain_det_tile_merge(self, fxt_det_data_config):
         model = ATSS(
-            model_version="atss_mobilenetv2",
+            model_name="atss_mobilenetv2",
             label_info=3,
         )  # updated from OTXDetectionModel to avoid NotImplementedError in _build_model
         # Enable tile adapter

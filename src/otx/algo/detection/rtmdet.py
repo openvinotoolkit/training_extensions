@@ -35,9 +35,9 @@ if TYPE_CHECKING:
 
 AVAILABLE_MODEL_VERSIONS: list[str] = ["rtmdet_tiny"]
 
-PRETRAINED_ROOT: (
-    str
-) = "https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/object_detection/v2/"
+PRETRAINED_ROOT: str = (
+    "https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/object_detection/v2/"
+)
 
 PRETRAINED_WEIGHTS: dict[str, str] = {
     "rtmdet_tiny": PRETRAINED_ROOT + "rtmdet_tiny.pth",
@@ -57,7 +57,7 @@ class RTMDet(ExplainableOTXDetModel):
 
     def __init__(
         self,
-        model_version: str,
+        model_name: str,
         label_info: LabelInfoTypes,
         input_size: tuple[int, int] = (640, 640),
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
@@ -66,9 +66,9 @@ class RTMDet(ExplainableOTXDetModel):
         torch_compile: bool = False,
         tile_config: TileConfig = TileConfig(enable_tiler=False),
     ) -> None:
-        self.load_from: str = PRETRAINED_WEIGHTS[model_version]
+        self.load_from: str = PRETRAINED_WEIGHTS[model_name]
         super().__init__(
-            model_version=model_version,
+            model_name=model_name,
             label_info=label_info,
             input_size=input_size,
             optimizer=optimizer,
@@ -79,8 +79,8 @@ class RTMDet(ExplainableOTXDetModel):
         )
 
     def _build_model(self, num_classes: int) -> RTMDet:
-        if self.model_version not in AVAILABLE_MODEL_VERSIONS:
-            msg = f"Model version {self.model_version} is not supported."
+        if self.model_name not in AVAILABLE_MODEL_VERSIONS:
+            msg = f"Model version {self.model_name} is not supported."
             raise ValueError(msg)
 
         train_cfg = {
@@ -100,10 +100,10 @@ class RTMDet(ExplainableOTXDetModel):
             "nms_pre": 30000,
         }
 
-        backbone = DetectionBackboneFactory(version=self.model_version)
-        neck = CSPNeXtPAFPN(version=self.model_version)
+        backbone = DetectionBackboneFactory(model_name=self.model_name)
+        neck = CSPNeXtPAFPN(model_name=self.model_name)
         bbox_head = RTMDetSepBNHead(
-            version=self.model_version,
+            model_name=self.model_name,
             num_classes=num_classes,
             anchor_generator=MlvlPointGenerator(offset=0, strides=[8, 16, 32]),
             bbox_coder=DistancePointBBoxCoder(),

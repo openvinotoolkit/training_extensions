@@ -71,7 +71,7 @@ class YOLOX(ExplainableOTXDetModel):
 
     def __init__(
         self,
-        model_version: str,
+        model_name: str,
         label_info: LabelInfoTypes,
         input_size: tuple[int, int] = (640, 640),
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
@@ -80,9 +80,9 @@ class YOLOX(ExplainableOTXDetModel):
         torch_compile: bool = False,
         tile_config: TileConfig = TileConfig(enable_tiler=False),
     ) -> None:
-        self.load_from: str = PRETRAINED_WEIGHTS[model_version]
+        self.load_from: str = PRETRAINED_WEIGHTS[model_name]
         super().__init__(
-            model_version=model_version,
+            model_name=model_name,
             label_info=label_info,
             input_size=input_size,
             optimizer=optimizer,
@@ -92,7 +92,7 @@ class YOLOX(ExplainableOTXDetModel):
             tile_config=tile_config,
         )
 
-        if model_version == "yolox_tiny":
+        if model_name == "yolox_tiny":
             self.mean = (123.675, 116.28, 103.53)
             self.std = (58.395, 57.12, 57.375)
         else:
@@ -100,8 +100,8 @@ class YOLOX(ExplainableOTXDetModel):
             self.std = (1.0, 1.0, 1.0)
 
     def _build_model(self, num_classes: int) -> SingleStageDetector:
-        if self.model_version not in AVAILABLE_MODEL_VERSIONS:
-            msg = f"Model version {self.model_version} is not supported."
+        if self.model_name not in AVAILABLE_MODEL_VERSIONS:
+            msg = f"Model version {self.model_name} is not supported."
             raise ValueError(msg)
 
         train_cfg: dict[str, Any] = {"assigner": SimOTAAssigner(center_radius=2.5)}
@@ -110,10 +110,10 @@ class YOLOX(ExplainableOTXDetModel):
             "score_thr": 0.01,
             "max_per_img": 100,
         }
-        backbone = DetectionBackboneFactory(version=self.model_version)
-        neck = YOLOXPAFPN(version=self.model_version)
+        backbone = DetectionBackboneFactory(model_name=self.model_name)
+        neck = YOLOXPAFPN(model_name=self.model_name)
         bbox_head = YOLOXHead(
-            version=self.model_version,
+            model_name=self.model_name,
             num_classes=num_classes,
             train_cfg=train_cfg,  # TODO (sungchul, kirill): remove
             test_cfg=test_cfg,  # TODO (sungchul, kirill): remove
@@ -149,7 +149,7 @@ class YOLOX(ExplainableOTXDetModel):
             msg = f"Input size attribute is not set for {self.__class__}"
             raise ValueError(msg)
 
-        swap_rgb = self.model_version != "yolox_tiny"  # only YOLOX-TINY uses RGB
+        swap_rgb = self.model_name != "yolox_tiny"  # only YOLOX-TINY uses RGB
 
         return OTXNativeModelExporter(
             task_level_export_parameters=self._export_parameters,

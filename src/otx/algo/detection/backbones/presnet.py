@@ -396,10 +396,10 @@ class PResNet:
         },
     }
 
-    def __new__(cls, version: str) -> PResNetModule:
+    def __new__(cls, model_name: str) -> PResNetModule:
         """Constructor for PResNet."""
-        if version not in cls.PRESNET_CFG:
-            msg = f"model type '{version}' is not supported"
+        if model_name not in cls.PRESNET_CFG:
+            msg = f"model type '{model_name}' is not supported"
             raise KeyError(msg)
 
-        return PResNetModule(**cls.PRESNET_CFG[version])
+        return PResNetModule(**cls.PRESNET_CFG[model_name])

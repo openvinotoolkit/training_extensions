@@ -199,10 +199,10 @@ class YOLOXPAFPN:
         },
     }
 
-    def __new__(cls, version: str) -> YOLOXPAFPNModule:
+    def __new__(cls, model_name: str) -> YOLOXPAFPNModule:
         """Constructor for YOLOXPAFPN."""
-        if version not in cls.YOLOXPAFPN_CFG:
-            msg = f"model type '{version}' is not supported"
+        if model_name not in cls.YOLOXPAFPN_CFG:
+            msg = f"model type '{model_name}' is not supported"
             raise KeyError(msg)
 
-        return YOLOXPAFPNModule(**cls.YOLOXPAFPN_CFG[version])
+        return YOLOXPAFPNModule(**cls.YOLOXPAFPN_CFG[model_name])

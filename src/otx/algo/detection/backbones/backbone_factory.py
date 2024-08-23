@@ -9,9 +9,9 @@ from torch import nn
 class DetectionBackboneFactory:
     """Factory class for backbone."""
 
-    def __new__(cls, version: str) -> nn.Module:
+    def __new__(cls, model_name: str) -> nn.Module:
         """Create backbone instance."""
-        if "ssd" in version and "mobilenetv2" in version:
+        if "ssd" in model_name and "mobilenetv2" in model_name:
             from otx.algo.common.backbones import build_model_including_pytorchcv
 
             return build_model_including_pytorchcv(
@@ -24,8 +24,8 @@ class DetectionBackboneFactory:
                 },
             )
 
-        if "atss" in version:
-            if "mobilenetv2" in version:
+        if "atss" in model_name:
+            if "mobilenetv2" in model_name:
                 from otx.algo.common.backbones import build_model_including_pytorchcv
 
                 return build_model_including_pytorchcv(
@@ -38,7 +38,7 @@ class DetectionBackboneFactory:
                     },
                 )
 
-            if "resnext101" in version:
+            if "resnext101" in model_name:
                 from otx.algo.common.backbones import ResNeXt
 
                 return ResNeXt(
@@ -48,20 +48,20 @@ class DetectionBackboneFactory:
                     init_cfg={"type": "Pretrained", "checkpoint": "open-mmlab://resnext101_64x4d"},
                 )
 
-        if "yolox" in version:
+        if "yolox" in model_name:
             from otx.algo.detection.backbones import CSPDarknet
 
-            return CSPDarknet(version)
+            return CSPDarknet(model_name)
 
-        if "rtmdet" in version:
+        if "rtmdet" in model_name:
             from otx.algo.common.backbones import CSPNeXt
 
-            return CSPNeXt(version)
+            return CSPNeXt(model_name)
 
-        if "rtdetr" in version:
+        if "rtdetr" in model_name:
             from otx.algo.detection.backbones import PResNet
 
-            return PResNet(version)
+            return PResNet(model_name)
 
-        msg = f"Unknown backbone name: {version}"
+        msg = f"Unknown backbone name: {model_name}"
         raise ValueError(msg)

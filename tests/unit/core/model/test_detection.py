@@ -55,7 +55,7 @@ class TestOTXDetectionModel:
 
     @pytest.fixture()
     def otx_model(self) -> ATSS:
-        return ATSS(model_version="atss_mobilenetv2", label_info=1)
+        return ATSS(model_name="atss_mobilenetv2", label_info=1)
 
     def test_configure_metric_with_ckpt(
         self,
@@ -64,7 +64,7 @@ class TestOTXDetectionModel:
         mock_ckpt,
     ) -> None:
         model = ATSS(
-            model_version="atss_mobilenetv2",
+            model_name="atss_mobilenetv2",
             label_info=2,
             torch_compile=False,
             optimizer=mock_optimizer,

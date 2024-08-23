@@ -39,9 +39,9 @@ AVAILABLE_MODEL_VERSIONS: list[str] = [
     "atss_resnext101",
 ]
 
-PRETRAINED_ROOT: (
-    str
-) = "https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/object_detection/v2/"
+PRETRAINED_ROOT: str = (
+    "https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/object_detection/v2/"
+)
 
 PRETRAINED_WEIGHTS: dict[str, str] = {
     "atss_mobilenetv2": PRETRAINED_ROOT + "mobilenet_v2-atss.pth",
@@ -62,7 +62,7 @@ class ATSS(ExplainableOTXDetModel):
 
     def __init__(
         self,
-        model_version: str,
+        model_name: str,
         label_info: LabelInfoTypes,
         input_size: tuple[int, int] = (800, 992),
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
@@ -71,9 +71,9 @@ class ATSS(ExplainableOTXDetModel):
         torch_compile: bool = False,
         tile_config: TileConfig = TileConfig(enable_tiler=False),
     ) -> None:
-        self.load_from: str = PRETRAINED_WEIGHTS[model_version]
+        self.load_from: str = PRETRAINED_WEIGHTS[model_name]
         super().__init__(
-            model_version=model_version,
+            model_name=model_name,
             label_info=label_info,
             input_size=input_size,
             optimizer=optimizer,
@@ -85,8 +85,8 @@ class ATSS(ExplainableOTXDetModel):
 
     def _build_model(self, num_classes: int) -> SingleStageDetector:
         # initialize backbones
-        if self.model_version not in AVAILABLE_MODEL_VERSIONS:
-            msg = f"Model version {self.model_version} is not supported."
+        if self.model_name not in AVAILABLE_MODEL_VERSIONS:
+            msg = f"Model version {self.model_name} is not supported."
             raise ValueError(msg)
 
         train_cfg = {
@@ -103,10 +103,10 @@ class ATSS(ExplainableOTXDetModel):
             "max_per_img": 100,
             "nms_pre": 1000,
         }
-        backbone = DetectionBackboneFactory(version=self.model_version)
-        neck = FPN(version=self.model_version)
+        backbone = DetectionBackboneFactory(model_name=self.model_name)
+        neck = FPN(model_name=self.model_name)
         bbox_head = ATSSHead(
-            version=self.model_version,
+            model_name=self.model_name,
             num_classes=num_classes,
             anchor_generator=AnchorGenerator(
                 ratios=[1.0],
@@ -181,7 +181,7 @@ class ATSS(ExplainableOTXDetModel):
     def to(self, *args, **kwargs) -> Self:
         """Return a model with specified device."""
         ret = super().to(*args, **kwargs)
-        if self.model_version == "atss_resnext101" and self.device.type == "xpu":
+        if self.model_name == "atss_resnext101" and self.device.type == "xpu":
             msg = f"{type(self).__name__} doesn't support XPU."
             raise RuntimeError(msg)
         return ret

@@ -261,10 +261,10 @@ class CSPDarknet:
         "yolox_x": {"deepen_factor": 1.33, "widen_factor": 1.25},
     }
 
-    def __new__(cls, version: str) -> CSPDarknetModule:
+    def __new__(cls, model_name: str) -> CSPDarknetModule:
         """Constructor for CSPDarknet."""
-        if version not in cls.CSPDARKNET_CFG:
-            msg = f"model type '{version}' is not supported"
+        if model_name not in cls.CSPDARKNET_CFG:
+            msg = f"model type '{model_name}' is not supported"
             raise KeyError(msg)
 
-        return CSPDarknetModule(**cls.CSPDARKNET_CFG[version])
+        return CSPDarknetModule(**cls.CSPDARKNET_CFG[model_name])

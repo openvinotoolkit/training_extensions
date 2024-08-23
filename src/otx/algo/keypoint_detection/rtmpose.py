@@ -93,7 +93,7 @@ class RTMPoseTiny(RTMPose):
         simcc_split_ratio = 2.0
         sigma = (4.9, 5.66)
 
-        backbone = CSPNeXt(version="rtmpose_tiny")
+        backbone = CSPNeXt(model_name="rtmpose_tiny")
         head = RTMCCHead(
             out_channels=num_classes,
             in_channels=384,

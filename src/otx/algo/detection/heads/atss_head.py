@@ -408,7 +408,7 @@ class ATSSHead:
 
     def __new__(
         cls,
-        version: str,
+        model_name: str,
         num_classes: int,
         anchor_generator: BasePriorGenerator,
         bbox_coder: BaseBBoxCoder,
@@ -416,12 +416,12 @@ class ATSSHead:
         test_cfg: dict | None = None,
     ) -> ATSSHeadModule:
         """Constructor for ATSSHead."""
-        if version not in cls.ATSSHEAD_CFG:
-            msg = f"model type '{version}' is not supported"
+        if model_name not in cls.ATSSHEAD_CFG:
+            msg = f"model type '{model_name}' is not supported"
             raise KeyError(msg)
 
         return ATSSHeadModule(
-            **cls.ATSSHEAD_CFG[version],
+            **cls.ATSSHEAD_CFG[model_name],
             num_classes=num_classes,
             anchor_generator=anchor_generator,
             bbox_coder=bbox_coder,

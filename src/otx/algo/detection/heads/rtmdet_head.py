@@ -742,7 +742,7 @@ class RTMDetSepBNHead:
 
     def __new__(
         cls,
-        version: str,
+        model_name: str,
         num_classes: int,
         anchor_generator: BasePriorGenerator,
         bbox_coder: BaseBBoxCoder,
@@ -750,12 +750,12 @@ class RTMDetSepBNHead:
         test_cfg: dict | None = None,
     ) -> RTMDetSepBNHeadModule:
         """Constructor for RTMDetSepBNHead."""
-        if version not in cls.RTMDETSEPBNHEAD_CFG:
-            msg = f"model type '{version}' is not supported"
+        if model_name not in cls.RTMDETSEPBNHEAD_CFG:
+            msg = f"model type '{model_name}' is not supported"
             raise KeyError(msg)
 
         return RTMDetSepBNHeadModule(
-            **cls.RTMDETSEPBNHEAD_CFG[version],
+            **cls.RTMDETSEPBNHEAD_CFG[model_name],
             num_classes=num_classes,
             anchor_generator=anchor_generator,
             bbox_coder=bbox_coder,
