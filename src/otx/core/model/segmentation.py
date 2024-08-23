@@ -41,8 +41,8 @@ if TYPE_CHECKING:
 class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity]):
     """Base class for the semantic segmentation models used in OTX."""
 
-    mean: ClassVar[tuple[float, float, float]] = (0.485, 0.456, 0.406)
-    scale: ClassVar[tuple[float, float, float]] = (0.229, 0.224, 0.225)
+    mean: ClassVar[tuple[float, float, float]] = (123.675, 116.28, 103.53)
+    scale: ClassVar[tuple[float, float, float]] = (58.395, 57.12, 57.375)
 
     def __init__(
         self,
