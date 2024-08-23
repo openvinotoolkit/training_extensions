@@ -72,6 +72,7 @@ class HuggingFaceModelForDetection(OTXDetectionModel):
         self.load_from = None
 
         super().__init__(
+            model_version=model_name_or_path,
             label_info=label_info,
             input_size=input_size,
             optimizer=optimizer,

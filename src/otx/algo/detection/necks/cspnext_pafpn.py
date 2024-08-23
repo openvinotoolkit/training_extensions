@@ -192,6 +192,14 @@ class CSPNeXtPAFPN:
             "normalization": nn.BatchNorm2d,
             "activation": partial(nn.SiLU, inplace=True),
         },
+        "rtmdet_inst_tiny": {
+            "in_channels": (96, 192, 384),
+            "out_channels": 96,
+            "num_csp_blocks": 1,
+            "expand_ratio": 0.5,
+            "normalization": nn.BatchNorm2d,
+            "activation": partial(nn.SiLU, inplace=True),
+        },
     }
 
     def __new__(cls, version: str) -> CSPNeXtPAFPNModule:

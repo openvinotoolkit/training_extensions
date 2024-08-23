@@ -135,25 +135,8 @@ class RTMDetInstTiny(RTMDetInst):
             "nms_pre": 300,
         }
 
-        backbone = CSPNeXt(
-            arch="P5",
-            expand_ratio=0.5,
-            deepen_factor=0.167,
-            widen_factor=0.375,
-            channel_attention=True,
-            normalization=nn.BatchNorm2d,
-            activation=partial(nn.SiLU, inplace=True),
-        )
-
-        neck = CSPNeXtPAFPN(
-            in_channels=(96, 192, 384),
-            out_channels=96,
-            num_csp_blocks=1,
-            expand_ratio=0.5,
-            normalization=nn.BatchNorm2d,
-            activation=partial(nn.SiLU, inplace=True),
-        )
-
+        backbone = CSPNeXt(version="rtmdet_inst_tiny")
+        neck = CSPNeXtPAFPN(version="rtmdet_inst_tiny")
         bbox_head = RTMDetInsSepBNHead(
             num_classes=num_classes,
             in_channels=96,

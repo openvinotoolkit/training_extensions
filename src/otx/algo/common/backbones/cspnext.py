@@ -237,6 +237,25 @@ class CSPNeXt:
             "normalization": nn.BatchNorm2d,
             "activation": partial(nn.SiLU, inplace=True),
         },
+        "rtmpose_tiny": {
+            "arch": "P5",
+            "expand_ratio": 0.5,
+            "deepen_factor": 0.167,
+            "widen_factor": 0.375,
+            "out_indices": (4,),
+            "channel_attention": True,
+            "normalization": nn.BatchNorm2d,
+            "activation": partial(nn.SiLU, inplace=True),
+        },
+        "rtmdet_inst_tiny": {
+            "arch": "P5",
+            "expand_ratio": 0.5,
+            "deepen_factor": 0.167,
+            "widen_factor": 0.375,
+            "channel_attention": True,
+            "normalization": nn.BatchNorm2d,
+            "activation": partial(nn.SiLU, inplace=True),
+        },
     }
 
     def __new__(cls, version: str) -> CSPNeXtModule:

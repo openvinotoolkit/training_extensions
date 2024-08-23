@@ -5,7 +5,6 @@
 
 from __future__ import annotations
 
-from functools import partial
 from typing import TYPE_CHECKING
 
 from otx.algo.common.backbones import CSPNeXt
@@ -16,7 +15,6 @@ from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.metrics.pck import PCKMeasureCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
 from otx.core.model.keypoint_detection import OTXKeypointDetectionModel
-from torch import nn
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
@@ -95,16 +93,7 @@ class RTMPoseTiny(RTMPose):
         simcc_split_ratio = 2.0
         sigma = (4.9, 5.66)
 
-        backbone = CSPNeXt(
-            arch="P5",
-            expand_ratio=0.5,
-            deepen_factor=0.167,
-            widen_factor=0.375,
-            out_indices=(4,),
-            channel_attention=True,
-            normalization=nn.BatchNorm2d,
-            activation=partial(nn.SiLU, inplace=True),
-        )
+        backbone = CSPNeXt(version="rtmpose_tiny")
         head = RTMCCHead(
             out_channels=num_classes,
             in_channels=384,
