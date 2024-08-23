@@ -151,6 +151,7 @@ class OpenVINOSegmentationInferencer(IInferencer):
             result_handler(id, annotation, processed_prediciton.feature_vector, processed_prediciton.saliency_map)
 
         except Exception as e:
+            logger.exception(e)
             self.callback_exceptions.append(e)
 
 
@@ -253,6 +254,9 @@ class OpenVINOSegmentationTask(IDeploymentTask, IInferenceTask, IEvaluationTask,
             update_progress_callback(int(i / dataset_size * 100), None)
 
         self.inferencer.await_all()
+
+        if self.inferencer.callback_exceptions:
+            raise RuntimeError("Inference failed, check the exceptions log.")
 
         self._avg_time_per_image = total_time / len(dataset)
         logger.info(f"Avg time per image: {self._avg_time_per_image} secs")
