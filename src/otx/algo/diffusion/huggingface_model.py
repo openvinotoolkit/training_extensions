@@ -27,8 +27,6 @@ if TYPE_CHECKING:
     from diffusers.schedulers.scheduling_utils import KarrasDiffusionSchedulers
     from transformers import CLIPTextModel
 
-    from otx.core.metrics import MetricInput
-
 
 # WEIGHT_DTYPE = torch.float16
 
@@ -169,6 +167,14 @@ class HuggingFaceModelForDiffusion(OTXDiffusionModel):
             self.pipe.scheduler,
         )
 
+    def on_fit_start(self) -> None:
+        """Called at the very beginning of fit.
+
+        If on DDP it is called on every process
+
+        """
+        self.configure_metric()
+
     def _customize_inputs(
         self,
         entity: DiffusionBatchDataEntity,
@@ -197,6 +203,13 @@ class HuggingFaceModelForDiffusion(OTXDiffusionModel):
             "pixel_values": entity.images,
             "input_ids": input_ids,
         }
+
+    def training_step(self, batch: DiffusionBatchDataEntity, batch_idx: int) -> torch.Tensor:
+        """Step for model training."""
+        train_loss = super().training_step(batch, batch_idx)
+        if self.epoch_idx == 0:
+            self.metric.update(batch.images, real=True)
+        return train_loss
 
     def _customize_outputs(
         self,
@@ -227,13 +240,6 @@ class HuggingFaceModelForDiffusion(OTXDiffusionModel):
             scores=[],
         )
 
-    def _convert_pred_entity_to_compute_metric(
-        self,
-        preds: DiffusionBatchPredEntity,
-        inputs: DiffusionBatchDataEntity,
-    ) -> MetricInput:
-        return {"imgs": preds.images, "real": False}
-
     def validation_step(self, batch: DiffusionBatchDataEntity, batch_idx: int) -> None:
         """Perform a single validation step on a batch of data from the validation set.
 
@@ -254,7 +260,8 @@ class HuggingFaceModelForDiffusion(OTXDiffusionModel):
             output_type="pt",
             do_denormalize=[True] * len(images),
         )
-        self.metric.update(images=images, text=batch.captions)
+
+        self.metric.update(images, real=False)
 
         # Save images
         images = self.pipe.image_processor.pt_to_numpy(images)
@@ -274,5 +281,18 @@ class HuggingFaceModelForDiffusion(OTXDiffusionModel):
 
     def on_validation_epoch_start(self) -> None:
         """Callback triggered when the validation epoch starts."""
-        super().on_validation_epoch_start()
         self.epoch_idx += 1
+
+    def on_validation_epoch_end(self) -> None:
+        """Callback triggered when the validation epoch ends."""
+        super().on_validation_epoch_end()
+        self.metric.reset()
+
+    def on_test_epoch_start(self) -> None:
+        """Callback triggered when the test epoch starts."""
+
+    def on_validation_start(self) -> None:
+        """Called at the beginning of validation."""
+
+    def on_test_start(self) -> None:
+        """Called at the beginning of testing."""

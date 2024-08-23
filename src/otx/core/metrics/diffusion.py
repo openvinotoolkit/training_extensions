@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 def _diffusion_metric_callable(
     _: LabelInfo,
 ) -> MetricCollection:
-    return MetricCollection({"fid": FrechetInceptionDistance()})
+    return MetricCollection({"fid": FrechetInceptionDistance(normalize=True, reset_real_features=False)})
 
 
 DiffusionMetricCallable = _diffusion_metric_callable
