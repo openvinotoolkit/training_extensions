@@ -3,12 +3,12 @@
 #
 """Base bounding box coder."""
 
-from abc import abstractmethod
+from abc import ABCMeta, abstractmethod
 
 from torch import Tensor
 
 
-class BaseBBoxCoder:
+class BaseBBoxCoder(metaclass=ABCMeta):
     """Base class for bounding box coder."""
 
     encode_size: int

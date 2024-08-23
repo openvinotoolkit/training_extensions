@@ -5,14 +5,14 @@
 
 from __future__ import annotations
 
-from abc import abstractmethod
+from abc import ABCMeta, abstractmethod
 from typing import TYPE_CHECKING, Callable
 
 if TYPE_CHECKING:
     from torch import Tensor
 
 
-class BasePriorGenerator:
+class BasePriorGenerator(metaclass=ABCMeta):
     """Base class for prior generator."""
 
     strides: list[tuple[int, int]]
