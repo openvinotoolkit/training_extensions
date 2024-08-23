@@ -50,7 +50,12 @@ PRETRAINED_WEIGHTS: dict[str, str] = {
 
 
 class ATSS(ExplainableOTXDetModel):
-    """OTX Detection model class for ATSS."""
+    """OTX Detection model class for ATSS.
+
+    Default input size per model:
+        - atss_mobilenetv2 : (800, 992)
+        - atss_resnext101 : (800, 992)
+    """
 
     mean: tuple[float, float, float] = (0.0, 0.0, 0.0)
     std: tuple[float, float, float] = (255.0, 255.0, 255.0)
@@ -59,7 +64,7 @@ class ATSS(ExplainableOTXDetModel):
         self,
         model_version: str,
         label_info: LabelInfoTypes,
-        input_size: tuple[int, int] | None = None,
+        input_size: tuple[int, int] = (800, 992),
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MeanAveragePrecisionFMeasureCallable,
@@ -67,11 +72,10 @@ class ATSS(ExplainableOTXDetModel):
         tile_config: TileConfig = TileConfig(enable_tiler=False),
     ) -> None:
         self.load_from: str = PRETRAINED_WEIGHTS[model_version]
-        _input_size: tuple[int, int] = input_size or (800, 992)
         super().__init__(
             model_version=model_version,
             label_info=label_info,
-            input_size=_input_size,
+            input_size=input_size,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,

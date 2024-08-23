@@ -55,7 +55,11 @@ PRETRAINED_WEIGHTS: dict[str, str] = {
 
 
 class SSD(ExplainableOTXDetModel):
-    """Detecion model class for SSD."""
+    """OTX Detection model class for SSD.
+
+    Default input size per model:
+        - ssd_mobilenetv2 : (864, 864)
+    """
 
     mean: tuple[float, float, float] = (0.0, 0.0, 0.0)
     std: tuple[float, float, float] = (255.0, 255.0, 255.0)
@@ -64,7 +68,7 @@ class SSD(ExplainableOTXDetModel):
         self,
         model_version: str,
         label_info: LabelInfoTypes,
-        input_size: tuple[int, int] | None = None,
+        input_size: tuple[int, int] = (864, 864),
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MeanAveragePrecisionFMeasureCallable,
@@ -72,11 +76,10 @@ class SSD(ExplainableOTXDetModel):
         tile_config: TileConfig = TileConfig(enable_tiler=False),
     ) -> None:
         self.load_from: str = PRETRAINED_WEIGHTS[model_version]
-        _input_size: tuple[int, int] = input_size or (864, 864)
         super().__init__(
             model_version=model_version,
             label_info=label_info,
-            input_size=_input_size,
+            input_size=input_size,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,

@@ -42,13 +42,6 @@ AVAILABLE_MODEL_VERSIONS: list[str] = [
     "yolox_x",
 ]
 
-DEFAULT_INPUT_SIZE: dict[str, tuple[int, int]] = {
-    "yolox_tiny": (416, 416),
-    "yolox_s": (640, 640),
-    "yolox_l": (640, 640),
-    "yolox_x": (640, 640),
-}
-
 PRETRAINED_ROOT: dict[str, str] = {
     "openvino": "https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/object_detection/v2/",
     "mmdet": "https://download.openmmlab.com/mmdetection/v2.0/yolox/",
@@ -63,7 +56,14 @@ PRETRAINED_WEIGHTS: dict[str, str] = {
 
 
 class YOLOX(ExplainableOTXDetModel):
-    """OTX Detection model class for YOLOX."""
+    """OTX Detection model class for YOLOX.
+
+    Default input size per model:
+        - yolox_tiny : (416, 416)
+        - yolox_s : (640, 640)
+        - yolox_l : (640, 640)
+        - yolox_x : (640, 640)
+    """
 
     input_size_multiplier = 32
     mean: tuple[float, float, float]
@@ -73,7 +73,7 @@ class YOLOX(ExplainableOTXDetModel):
         self,
         model_version: str,
         label_info: LabelInfoTypes,
-        input_size: tuple[int, int] | None = None,
+        input_size: tuple[int, int] = (640, 640),
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MeanAveragePrecisionFMeasureCallable,
@@ -81,11 +81,10 @@ class YOLOX(ExplainableOTXDetModel):
         tile_config: TileConfig = TileConfig(enable_tiler=False),
     ) -> None:
         self.load_from: str = PRETRAINED_WEIGHTS[model_version]
-        _input_size: tuple[int, int] = input_size or DEFAULT_INPUT_SIZE[model_version]
         super().__init__(
             model_version=model_version,
             label_info=label_info,
-            input_size=_input_size,
+            input_size=input_size,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,

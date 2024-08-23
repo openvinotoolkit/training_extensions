@@ -47,7 +47,11 @@ PRETRAINED_WEIGHTS: dict[str, str] = {
 
 
 class RTDETR(ExplainableOTXDetModel):
-    """RTDETR model."""
+    """OTX Detection model class for RTDETR.
+
+    Default input size per model:
+        - ssd_mobilenetv2 : (640, 640)
+    """
 
     input_size_multiplier = 32
     mean: tuple[float, float, float] = (0.0, 0.0, 0.0)
@@ -57,7 +61,7 @@ class RTDETR(ExplainableOTXDetModel):
         self,
         model_version: str,
         label_info: LabelInfoTypes,
-        input_size: tuple[int, int] | None = None,
+        input_size: tuple[int, int] = (640, 640),
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MeanAveragePrecisionFMeasureCallable,
@@ -65,11 +69,10 @@ class RTDETR(ExplainableOTXDetModel):
         tile_config: TileConfig = TileConfig(enable_tiler=False),
     ) -> None:
         self.load_from: str = PRETRAINED_WEIGHTS[model_version]
-        _input_size: tuple[int, int] = input_size or (640, 640)
         super().__init__(
             model_version=model_version,
             label_info=label_info,
-            input_size=_input_size,
+            input_size=input_size,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
