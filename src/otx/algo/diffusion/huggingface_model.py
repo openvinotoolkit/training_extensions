@@ -24,11 +24,8 @@ from otx.core.model.diffusion import OTXDiffusionModel
 if TYPE_CHECKING:
     from diffusers.models.autoencoders.autoencoder_kl import AutoencoderKL
     from diffusers.models.unets.unet_2d_condition import UNet2DConditionModel
-    from diffusers.schedulers.scheduling_utils import KarrasDiffusionSchedulers
+    from diffusers.schedulers.scheduling_ddim import DDIMScheduler
     from transformers import CLIPTextModel
-
-
-# WEIGHT_DTYPE = torch.float16
 
 
 class StableDiffusion(nn.Module):
@@ -39,7 +36,7 @@ class StableDiffusion(nn.Module):
         text_encoder: CLIPTextModel,
         vae: AutoencoderKL,
         unet: UNet2DConditionModel,
-        noise_scheduler: KarrasDiffusionSchedulers,
+        noise_scheduler: DDIMScheduler,
     ):
         """Initializes the StableDiffusion module.
 
@@ -167,14 +164,6 @@ class HuggingFaceModelForDiffusion(OTXDiffusionModel):
             self.pipe.scheduler,
         )
 
-    def on_fit_start(self) -> None:
-        """Called at the very beginning of fit.
-
-        If on DDP it is called on every process
-
-        """
-        self.configure_metric()
-
     def _customize_inputs(
         self,
         entity: DiffusionBatchDataEntity,
@@ -204,13 +193,6 @@ class HuggingFaceModelForDiffusion(OTXDiffusionModel):
             "input_ids": input_ids,
         }
 
-    def training_step(self, batch: DiffusionBatchDataEntity, batch_idx: int) -> torch.Tensor:
-        """Step for model training."""
-        train_loss = super().training_step(batch, batch_idx)
-        if self.epoch_idx == 0:
-            self.metric.update(batch.images, real=True)
-        return train_loss
-
     def _customize_outputs(
         self,
         outputs: tuple[torch.Tensor, torch.Tensor],
@@ -221,24 +203,10 @@ class HuggingFaceModelForDiffusion(OTXDiffusionModel):
                 error_msg = "NaN detected in the output."
                 raise ValueError(error_msg)
         preds, targets = outputs
-        if self.training:
-            return OTXBatchLossEntity(
-                {
-                    "mse": F.mse_loss(preds, targets, reduction="mean"),
-                },
-            )
-
-        images = self.pipe.vae.decode(
-            preds / self.pipe.vae.config.scaling_factor,
-            return_dict=False,
-        )[0]
-
-        return DiffusionBatchPredEntity(
-            batch_size=inputs.batch_size,
-            images=self.pipe.image_processor.postprocess(images, output_type="pt"),
-            imgs_info=inputs.imgs_info,
-            scores=[],
-        )
+        if not self.training:
+            msg = "This should never raise since `validation_step` is overridden."
+            raise NotImplementedError(msg)
+        return OTXBatchLossEntity(mse=F.mse_loss(preds, targets, reduction="mean"))
 
     def validation_step(self, batch: DiffusionBatchDataEntity, batch_idx: int) -> None:
         """Perform a single validation step on a batch of data from the validation set.
@@ -269,30 +237,3 @@ class HuggingFaceModelForDiffusion(OTXDiffusionModel):
         Path(f"val_images/{self.epoch_idx}").mkdir(parents=True, exist_ok=True)
         for image, caption in zip(images, batch.captions):
             image.save(f"val_images/{self.epoch_idx}/{caption}.png")
-
-    def test_step(self, batch: DiffusionBatchDataEntity, batch_idx: int) -> None:
-        """Perform a single test step on a batch of data from the test set.
-
-        :param batch: A batch of data (a tuple) containing the input tensor of images and target
-            labels.
-        :param batch_idx: The index of the current batch.
-        """
-        self.validation_step(batch, batch_idx)
-
-    def on_validation_epoch_start(self) -> None:
-        """Callback triggered when the validation epoch starts."""
-        self.epoch_idx += 1
-
-    def on_validation_epoch_end(self) -> None:
-        """Callback triggered when the validation epoch ends."""
-        super().on_validation_epoch_end()
-        self.metric.reset()
-
-    def on_test_epoch_start(self) -> None:
-        """Callback triggered when the test epoch starts."""
-
-    def on_validation_start(self) -> None:
-        """Called at the beginning of validation."""
-
-    def on_test_start(self) -> None:
-        """Called at the beginning of testing."""
