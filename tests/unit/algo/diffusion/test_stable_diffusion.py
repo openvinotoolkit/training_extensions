@@ -3,7 +3,6 @@
 
 import pytest
 import torch
-
 from otx.algo.diffusion import OTXStableDiffusion
 from otx.algo.diffusion.model.unet import UNetModel
 from otx.core.data.entity.base import ImageInfo
@@ -14,7 +13,6 @@ from otx.core.data.entity.diffusion import (
 SKIP_TRANSFORMERS_TEST = False
 try:
     from diffusers import StableDiffusionPipeline
-
     from otx.algo.diffusion.huggingface_model import HuggingFaceModelForDiffusion
 except ImportError:
     SKIP_TRANSFORMERS_TEST = True
@@ -25,7 +23,7 @@ except ImportError:
     reason="Either 'transformers' or 'diffusers' (or both) are not installed",
 )
 class TestOTXModelForDiffusion:
-    @pytest.fixture
+    @pytest.fixture()
     def fxt_diffusion_model(self):
         return OTXStableDiffusion(
             in_ch=4,
@@ -40,7 +38,7 @@ class TestOTXModelForDiffusion:
             use_linear=False,
         )
 
-    @pytest.fixture
+    @pytest.fixture()
     def fxt_diffusion_batch_data_entity(self) -> DiffusionBatchDataEntity:
         return DiffusionBatchDataEntity(
             batch_size=1,

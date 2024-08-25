@@ -3,42 +3,18 @@
 from __future__ import annotations
 
 import gzip
-import hashlib
 import re
-import tempfile
-import urllib.request
 from functools import lru_cache
-from pathlib import Path
+
+from .utils.download import download
 
 
-def _fetch(url: str, name: str, gunzip: bool = False) -> Path:
-    fp = Path((name or hashlib.md5(url.encode("utf-8")).hexdigest()) + (".gunzip" if gunzip else "")).resolve()
-    if not url.startswith("http"):
-        msg = "Only HTTP(S) URLs are supported"
-        raise ValueError(msg)
-    with urllib.request.urlopen(url, timeout=10) as r:
-        if r.status != 200:
-            raise RuntimeError("Request failed with status code: " + str(r.status))
-        total_length = int(r.headers.get("content-length", 0))
-        (path := fp.parent).mkdir(parents=True, exist_ok=True)
-        readfile = gzip.GzipFile(fileobj=r) if gunzip else r
-        with tempfile.NamedTemporaryFile(dir=path, delete=False) as f:
-            while chunk := readfile.read(16384):
-                f.write(chunk)
-            f.close()
-            if (file_size := Path(f.name).stat().st_size) < total_length:
-                msg = f"fetch size incomplete, {file_size} < {total_length}"
-                raise RuntimeError(msg)
-            Path(f.name).rename(fp)
-    return fp
-
-
-@lru_cache()
-def _default_bpe() -> Path:
+@lru_cache
+def _default_bpe() -> str:
     # Clip tokenizer, taken from https://github.com/openai/CLIP/blob/main/clip/simple_tokenizer.py (MIT license)
-    return _fetch(
+    return download(
         "https://github.com/openai/CLIP/raw/main/clip/bpe_simple_vocab_16e6.txt.gz",
-        "bpe_simple_vocab_16e6.txt.gz",
+        ".",
     )
 
 

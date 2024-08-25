@@ -9,7 +9,10 @@ import torch
 
 
 def cosine_beta_schedule(
-    timesteps: int, beta_start: float = 0.0, beta_end: float = 0.999, s: float = 0.008
+    timesteps: int,
+    beta_start: float = 0.0,
+    beta_end: float = 0.999,
+    s: float = 0.008,
 ) -> torch.Tensor:
     """Compute the cosine beta schedule.
 
