@@ -54,9 +54,9 @@ class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity]):
         torch_compile: bool = False,
         train_type: Literal[OTXTrainType.SUPERVISED, OTXTrainType.SEMI_SUPERVISED] = OTXTrainType.SUPERVISED,
         model_version: str | None = None,
-        unsupervised_weight: float = 0.6,
+        unsupervised_weight: float = 0.7,
         semisl_start_epoch: int = 2,
-        drop_unreliable_pixels_percent: int = 80,
+        drop_unreliable_pixels_percent: int = 20,
     ):
         """Base semantic segmentation model.
 

@@ -43,4 +43,3 @@ overrides:
       init_args:
         momentum: 0.99
         start_epoch: 2
-
