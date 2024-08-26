@@ -8,7 +8,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 from otx.algo.common.losses import CrossEntropyLoss, L1Loss
-from otx.algo.detection.backbones import DetectionBackboneFactory
+from otx.algo.detection.backbones import CSPDarknet
 from otx.algo.detection.detectors import SingleStageDetector
 from otx.algo.detection.heads import YOLOXHead
 from otx.algo.detection.losses import IoULoss, YOLOXCriterion
@@ -110,7 +110,7 @@ class YOLOX(ExplainableOTXDetModel):
             "score_thr": 0.01,
             "max_per_img": 100,
         }
-        backbone = DetectionBackboneFactory(model_name=self.model_name)
+        backbone = CSPDarknet(model_name=self.model_name)
         neck = YOLOXPAFPN(model_name=self.model_name)
         bbox_head = YOLOXHead(
             model_name=self.model_name,

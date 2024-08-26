@@ -14,8 +14,8 @@ from torch import Tensor, nn
 from torchvision.ops import box_convert
 from torchvision.tv_tensors import BoundingBoxFormat
 
-from otx.algo.detection.backbones import DetectionBackboneFactory
-from otx.algo.detection.detectors.detection_transformer import DETR
+from otx.algo.detection.backbones import PResNet
+from otx.algo.detection.detectors import DETR
 from otx.algo.detection.heads import RTDETRTransformer
 from otx.algo.detection.necks import HybridEncoder
 from otx.core.config.data import TileConfig
@@ -85,7 +85,7 @@ class RTDETR(ExplainableOTXDetModel):
             msg = f"Model version {self.model_name} is not supported."
             raise ValueError(msg)
 
-        backbone = DetectionBackboneFactory(model_name=self.model_name)
+        backbone = PResNet(model_name=self.model_name)
         encoder = HybridEncoder(
             model_name=self.model_name,
             eval_spatial_size=self.input_size,

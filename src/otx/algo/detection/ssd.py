@@ -17,7 +17,6 @@ from datumaro.components.annotation import Bbox
 
 from otx.algo.common.utils.assigners import MaxIoUAssigner
 from otx.algo.common.utils.coders import DeltaXYWHBBoxCoder
-from otx.algo.detection.backbones import DetectionBackboneFactory
 from otx.algo.detection.detectors import SingleStageDetector
 from otx.algo.detection.heads import SSDHead
 from otx.algo.detection.losses import SSDCriterion
@@ -33,6 +32,7 @@ from otx.core.model.detection import ExplainableOTXDetModel
 if TYPE_CHECKING:
     import torch
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
+    from torch import nn
 
     from otx.core.data.dataset.base import OTXDataset
     from otx.core.metrics import MetricCallable
@@ -108,7 +108,7 @@ class SSD(ExplainableOTXDetModel):
             "score_thr": 0.02,
             "max_per_img": 200,
         }
-        backbone = DetectionBackboneFactory(model_name=self.model_name)
+        backbone = self._build_backbone(model_name=self.model_name)
         bbox_head = SSDHead(
             model_name=self.model_name,
             num_classes=num_classes,
@@ -149,6 +149,23 @@ class SSD(ExplainableOTXDetModel):
             train_cfg=train_cfg,  # TODO (sungchul, kirill): remove
             test_cfg=test_cfg,  # TODO (sungchul, kirill): remove
         )
+
+    def _build_backbone(self, model_name: str) -> nn.Module:
+        if "mobilenetv2" in model_name:
+            from otx.algo.common.backbones import build_model_including_pytorchcv
+
+            return build_model_including_pytorchcv(
+                cfg={
+                    "type": "mobilenetv2_w1",
+                    "out_indices": [4, 5],
+                    "frozen_stages": -1,
+                    "norm_eval": False,
+                    "pretrained": True,
+                },
+            )
+
+        msg = f"Unknown backbone name: {model_name}"
+        raise ValueError(msg)
 
     def setup(self, stage: str) -> None:
         """Callback for setup OTX SSD Model.

@@ -3,8 +3,7 @@
 #
 """Custom backbone implementations for detection task."""
 
-from .backbone_factory import DetectionBackboneFactory
 from .csp_darknet import CSPDarknet
 from .presnet import PResNet
 
-__all__ = ["DetectionBackboneFactory", "CSPDarknet", "PResNet"]
+__all__ = ["CSPDarknet", "PResNet"]

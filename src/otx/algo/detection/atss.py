@@ -11,7 +11,6 @@ from otx.algo.common.losses import CrossEntropyLoss, CrossSigmoidFocalLoss, GIoU
 from otx.algo.common.utils.coders import DeltaXYWHBBoxCoder
 from otx.algo.common.utils.prior_generators import AnchorGenerator
 from otx.algo.common.utils.samplers import PseudoSampler
-from otx.algo.detection.backbones import DetectionBackboneFactory
 from otx.algo.detection.detectors import SingleStageDetector
 from otx.algo.detection.heads import ATSSHead
 from otx.algo.detection.losses import ATSSCriterion
@@ -27,6 +26,7 @@ from otx.core.model.detection import ExplainableOTXDetModel
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
+    from torch import nn
     from typing_extensions import Self
 
     from otx.core.metrics import MetricCallable
@@ -103,7 +103,7 @@ class ATSS(ExplainableOTXDetModel):
             "max_per_img": 100,
             "nms_pre": 1000,
         }
-        backbone = DetectionBackboneFactory(model_name=self.model_name)
+        backbone = self._build_backbone(model_name=self.model_name)
         neck = FPN(model_name=self.model_name)
         bbox_head = ATSSHead(
             model_name=self.model_name,
@@ -144,6 +144,33 @@ class ATSS(ExplainableOTXDetModel):
             train_cfg=train_cfg,  # TODO (sungchul, kirill): remove
             test_cfg=test_cfg,  # TODO (sungchul, kirill): remove
         )
+
+    def _build_backbone(self, model_name: str) -> nn.Module:
+        if "mobilenetv2" in model_name:
+            from otx.algo.common.backbones import build_model_including_pytorchcv
+
+            return build_model_including_pytorchcv(
+                cfg={
+                    "type": "mobilenetv2_w1",
+                    "out_indices": [2, 3, 4, 5],
+                    "frozen_stages": -1,
+                    "norm_eval": False,
+                    "pretrained": True,
+                },
+            )
+
+        if "resnext101" in model_name:
+            from otx.algo.common.backbones import ResNeXt
+
+            return ResNeXt(
+                depth=101,
+                groups=64,
+                frozen_stages=1,
+                init_cfg={"type": "Pretrained", "checkpoint": "open-mmlab://resnext101_64x4d"},
+            )
+
+        msg = f"Unknown backbone name: {model_name}"
+        raise ValueError(msg)
 
     @property
     def _exporter(self) -> OTXModelExporter:
