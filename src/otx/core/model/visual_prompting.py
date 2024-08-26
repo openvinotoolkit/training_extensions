@@ -58,7 +58,10 @@ def _convert_pred_entity_to_compute_metric(
     preds: VisualPromptingBatchPredEntity | ZeroShotVisualPromptingBatchPredEntity,
     inputs: VisualPromptingBatchDataEntity | ZeroShotVisualPromptingBatchDataEntity,
 ) -> MetricInput:
-    """Convert the prediction entity to the format required by the compute metric function."""
+    """Convert the prediction entity to the format required by the compute metric function.
+
+    TODO (sungchul): consider to use iseg and sseg's metrics
+    """
     pred_info = []
     target_info = []
 
@@ -81,10 +84,14 @@ def _convert_pred_entity_to_compute_metric(
         inputs.polygons,
         inputs.labels,
     ):
-        bit_masks = masks if len(masks) else polygon_to_bitmap(polygons, *imgs_info.ori_shape)
+        bit_masks = (
+            masks
+            if len(masks)
+            else tv_tensors.Mask(polygon_to_bitmap(polygons, *imgs_info.ori_shape), dtype=torch.uint8)
+        )
         target_info.append(
             {
-                "masks": tv_tensors.Mask(bit_masks, dtype=torch.bool).data,
+                "masks": bit_masks.data,
                 "labels": torch.cat(list(labels.values())) if isinstance(labels, dict) else labels,
             },
         )
@@ -93,42 +100,17 @@ def _convert_pred_entity_to_compute_metric(
 
 
 def _inference_step(
-    model: OTXVisualPromptingModel | OVVisualPromptingModel,
+    model: OTXVisualPromptingModel
+    | OVVisualPromptingModel
+    | OTXZeroShotVisualPromptingModel
+    | OVZeroShotVisualPromptingModel,
     metric: MetricCollection,
-    inputs: VisualPromptingBatchDataEntity,
+    inputs: VisualPromptingBatchDataEntity | ZeroShotVisualPromptingBatchDataEntity,
 ) -> None:
     """Perform a single inference step on a batch of data from the inference set."""
-    preds = model.forward(inputs)
+    preds = model.forward(inputs)  # type: ignore[arg-type]
 
-    if not isinstance(preds, VisualPromptingBatchPredEntity):
-        raise TypeError(preds)
-
-    converted_entities: dict[str, list[dict[str, Tensor]]] = _convert_pred_entity_to_compute_metric(preds, inputs)  # type: ignore[assignment]
-
-    for _name, _metric in metric.items():
-        if _name == "mAP":
-            # MeanAveragePrecision
-            _preds = [
-                {k: v > 0.5 if k == "masks" else v.squeeze(1) if k == "scores" else v for k, v in ett.items()}
-                for ett in converted_entities["preds"]
-            ]
-            _target = converted_entities["target"]
-            _metric.update(preds=_preds, target=_target)
-        elif _name in ["iou", "f1-score", "dice"]:
-            # BinaryJaccardIndex, BinaryF1Score, Dice
-            for cvt_preds, cvt_target in zip(converted_entities["preds"], converted_entities["target"]):
-                _metric.update(cvt_preds["masks"], cvt_target["masks"])
-
-
-def _inference_step_for_zero_shot(
-    model: OTXZeroShotVisualPromptingModel | OVZeroShotVisualPromptingModel,
-    metric: MetricCollection,
-    inputs: ZeroShotVisualPromptingBatchDataEntity,
-) -> None:
-    """Perform a single inference step on a batch of data from the inference set."""
-    preds = model.forward(inputs)
-
-    if not isinstance(preds, ZeroShotVisualPromptingBatchPredEntity):
+    if not isinstance(preds, (VisualPromptingBatchPredEntity, ZeroShotVisualPromptingBatchPredEntity)):
         raise TypeError(preds)
 
     converted_entities: dict[str, list[dict[str, Tensor]]] = _convert_pred_entity_to_compute_metric(preds, inputs)  # type: ignore[assignment]
@@ -145,10 +127,16 @@ def _inference_step_for_zero_shot(
         elif _name in ["iou", "f1-score", "dice"]:
             # BinaryJaccardIndex, BinaryF1Score, Dice
             for cvt_preds, cvt_target in zip(converted_entities["preds"], converted_entities["target"]):
-                _metric.update(
-                    cvt_preds["masks"].sum(dim=0).clamp(0, 1),
-                    cvt_target["masks"].sum(dim=0).clamp(0, 1),
-                )
+                max_label = torch.cat((cvt_preds["labels"], cvt_target["labels"])).max()
+                for label in range(max_label + 1):
+                    mask_preds = cvt_preds["masks"][cvt_preds["labels"] == label]
+                    mask_target = cvt_target["masks"][cvt_target["labels"] == label]
+                    if len(mask_preds) == 0:
+                        mask_preds = torch.zeros((1, *mask_target.shape[1:]), device=model.device)
+                    if len(mask_target) == 0:
+                        mask_target = torch.zeros((1, *mask_preds.shape[1:]), device=model.device, dtype=torch.uint8)
+
+                    _metric.update(mask_preds.sum(dim=0).clamp(0, 1), mask_target.sum(dim=0).clamp(0, 1))
 
 
 class OTXVisualPromptingModel(OTXModel[VisualPromptingBatchDataEntity, VisualPromptingBatchPredEntity]):
@@ -573,7 +561,7 @@ class OTXZeroShotVisualPromptingModel(
         Raises:
             TypeError: If the predictions are not of type ZeroShotVisualPromptingBatchDataEntity.
         """
-        _inference_step_for_zero_shot(model=self, metric=self.metric, inputs=inputs)
+        _inference_step(model=self, metric=self.metric, inputs=inputs)
 
     def _convert_pred_entity_to_compute_metric(
         self,
@@ -1517,7 +1505,7 @@ class OVZeroShotVisualPromptingModel(
         Raises:
             TypeError: If the predictions are not of type ZeroShotVisualPromptingBatchPredEntity.
         """
-        _inference_step_for_zero_shot(model=self, metric=self.metric, inputs=inputs)
+        _inference_step(model=self, metric=self.metric, inputs=inputs)
 
     def _convert_pred_entity_to_compute_metric(
         self,
