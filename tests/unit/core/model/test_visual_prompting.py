@@ -17,7 +17,6 @@ from model_api.models.utils import PredictedMask
 from otx.core.data.entity.base import Points
 from otx.core.data.entity.visual_prompting import (
     VisualPromptingBatchPredEntity,
-    ZeroShotVisualPromptingBatchDataEntity,
     ZeroShotVisualPromptingBatchPredEntity,
 )
 from otx.core.exporter.visual_prompting import OTXVisualPromptingModelExporter

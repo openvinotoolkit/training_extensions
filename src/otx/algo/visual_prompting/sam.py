@@ -10,7 +10,7 @@ import pickle  # nosec  B403   used pickle for dumping object
 from collections import defaultdict
 from copy import deepcopy
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, ClassVar, Literal, Mapping
+from typing import TYPE_CHECKING, Any, ClassVar, Literal
 
 import torch
 import torchvision.transforms.v2 as tvt_v2
@@ -56,11 +56,10 @@ class CommonSettingMixin:
         "vit_l": "https://dl.fbaipublicfiles.com/segment_anything/sam_vit_l_0b3195.pth",
         "vit_h": "https://dl.fbaipublicfiles.com/segment_anything/sam_vit_h_4b8939.pth",
     }
-    load_state_dict: Callable[[dict[str, Tensor]], None]
 
     def load_state_dict(
         self,
-        state_dict: Mapping[str, Any] | None = None,
+        state_dict: dict[str, Any] | None = None,
         strict: bool = True,
         assign: bool = False,
         load_from: str | None = None,
@@ -72,21 +71,22 @@ class CommonSettingMixin:
         """
         try:
             if load_from is not None:
-                state_dict = torch.hub.load_state_dict_from_url(str(load_from))
+                _state_dict: dict[str, Any] = torch.hub.load_state_dict_from_url(str(load_from))
                 for key in [
                     "image_encoder.norm_head.weight",
                     "image_encoder.norm_head.bias",
                     "image_encoder.head.weight",
                     "image_encoder.head.bias",
                 ]:
-                    if key in state_dict:
-                        state_dict.pop(key)
+                    if key in _state_dict:
+                        _state_dict.pop(key)
 
                 # add prefix 'model.' to all keys
-                for key in list(state_dict.keys()):
-                    state_dict["model." + key] = state_dict.pop(key)
+                for key in list(_state_dict.keys()):
+                    _state_dict["model." + key] = _state_dict.pop(key)
 
-            super().load_state_dict(state_dict, strict, assign)
+                state_dict = _state_dict
+            super().load_state_dict(state_dict, strict, assign)  # type: ignore[misc]
 
         except (ValueError, RuntimeError) as e:
             log.info(
@@ -158,7 +158,7 @@ class CommonSettingMixin:
         )
 
 
-class SAM(CommonSettingMixin, OTXVisualPromptingModel):
+class SAM(CommonSettingMixin, OTXVisualPromptingModel):  # type: ignore[misc]
     """OTX visual prompting model class for Segment Anything Model (SAM)."""
 
     input_size_multiplier = 16
@@ -226,7 +226,7 @@ class SAM(CommonSettingMixin, OTXVisualPromptingModel):
         )
 
 
-class ZeroShotSAM(CommonSettingMixin, OTXZeroShotVisualPromptingModel):
+class ZeroShotSAM(CommonSettingMixin, OTXZeroShotVisualPromptingModel):  # type: ignore[misc]
     """Zero-Shot Visual Prompting model."""
 
     def __init__(  # noqa: PLR0913

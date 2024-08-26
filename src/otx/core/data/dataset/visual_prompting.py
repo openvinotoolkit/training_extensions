@@ -74,7 +74,7 @@ class OTXVisualPromptingDataset(OTXDataset[VisualPromptingDataEntity]):
             # if using only point prompt
             self.prob = 0.0
 
-        self.label_info = NullLabelInfo()
+        self.label_info = NullLabelInfo()  # TODO (sungchul): update label_info for multi-label support
 
     def _get_item_impl(self, index: int) -> VisualPromptingDataEntity | None:
         item = self.dm_subset[index]
@@ -224,7 +224,7 @@ class OTXZeroShotVisualPromptingDataset(OTXDataset[ZeroShotVisualPromptingDataEn
             # if using only point prompt
             self.prob = 0.0
 
-        self.label_info = NullLabelInfo()
+        self.label_info = NullLabelInfo()  # TODO (sungchul): update label_info for multi-label support
 
     def _get_item_impl(self, index: int) -> ZeroShotVisualPromptingDataEntity | None:
         item = self.dm_subset[index]

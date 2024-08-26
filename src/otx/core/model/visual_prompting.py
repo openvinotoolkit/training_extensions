@@ -126,6 +126,9 @@ def _inference_step(
             _metric.update(preds=_preds, target=_target)
         elif _name in ["iou", "f1-score", "dice"]:
             # BinaryJaccardIndex, BinaryF1Score, Dice
+            # TODO (sungchul): change to multi-class metric
+            # Currently, label_info is NullLabelInfo and it is required to be changed for multi-label support.
+            # But huge changes is required, it will be changed in the near future.
             for cvt_preds, cvt_target in zip(converted_entities["preds"], converted_entities["target"]):
                 max_label = torch.cat((cvt_preds["labels"], cvt_target["labels"])).max()
                 for label in range(max_label + 1):
@@ -136,7 +139,10 @@ def _inference_step(
                     if len(mask_target) == 0:
                         mask_target = torch.zeros((1, *mask_preds.shape[1:]), device=model.device, dtype=torch.uint8)
 
-                    _metric.update(mask_preds.sum(dim=0).clamp(0, 1), mask_target.sum(dim=0).clamp(0, 1))
+                    _metric.update(
+                        mask_preds.sum(dim=0).clamp(0, 1).float().flatten(),
+                        mask_target.sum(dim=0).clamp(0, 1).flatten(),
+                    )
 
 
 class OTXVisualPromptingModel(OTXModel[VisualPromptingBatchDataEntity, VisualPromptingBatchPredEntity]):
@@ -144,7 +150,7 @@ class OTXVisualPromptingModel(OTXModel[VisualPromptingBatchDataEntity, VisualPro
 
     def __init__(
         self,
-        label_info: LabelInfoTypes = NullLabelInfo(),
+        label_info: LabelInfoTypes = NullLabelInfo(),  # TODO (sungchul): update label_info for multi-label support
         input_size: tuple[int, int] = (1024, 1024),
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
@@ -154,7 +160,7 @@ class OTXVisualPromptingModel(OTXModel[VisualPromptingBatchDataEntity, VisualPro
         msg = f"Given label_info={label_info} has no effect."
         log.debug(msg)
         super().__init__(
-            label_info=NullLabelInfo(),
+            label_info=NullLabelInfo(),  # TODO (sungchul): update label_info for multi-label support
             input_size=input_size,
             optimizer=optimizer,
             scheduler=scheduler,
@@ -330,7 +336,7 @@ class OTXZeroShotVisualPromptingModel(
     def __init__(
         self,
         input_size: tuple[int, int],
-        label_info: LabelInfoTypes = NullLabelInfo(),
+        label_info: LabelInfoTypes = NullLabelInfo(),  # TODO (sungchul): update label_info for multi-label support
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = VisualPromptingMetricCallable,
@@ -339,7 +345,7 @@ class OTXZeroShotVisualPromptingModel(
         msg = f"Given label_info={label_info} has no effect."
         log.debug(msg)
         super().__init__(
-            label_info=NullLabelInfo(),
+            label_info=NullLabelInfo(),  # TODO (sungchul): update label_info for multi-label support
             input_size=input_size,
             optimizer=optimizer,
             scheduler=scheduler,
@@ -916,7 +922,7 @@ class OVVisualPromptingModel(
 
     def _create_label_info_from_ov_ir(self) -> LabelInfo:
         """Create NullLabelInfo since Visual Prompting tasks has no use of label information."""
-        return NullLabelInfo()
+        return NullLabelInfo()  # TODO (sungchul): update label_info for multi-label support
 
     def _set_label_info(self, _: LabelInfoTypes) -> None:
         msg = f"Reconfiguring label_info has no effect on {self.__class__.__name__}."
@@ -1517,7 +1523,7 @@ class OVZeroShotVisualPromptingModel(
 
     def _create_label_info_from_ov_ir(self) -> LabelInfo:
         """Create NullLabelInfo since Visual Prompting tasks has no use of label information."""
-        return NullLabelInfo()
+        return NullLabelInfo()  # TODO (sungchul): update label_info for multi-label support
 
     def _set_label_info(self, _: LabelInfoTypes) -> None:
         msg = f"Reconfiguring label_info has no effect on {self.__class__.__name__}."
