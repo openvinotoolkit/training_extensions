@@ -5,7 +5,8 @@
 
 from __future__ import annotations
 
-from copy import deepcopy
+from copy import copy, deepcopy
+from math import ceil
 from typing import TYPE_CHECKING, Literal
 
 import torch
@@ -267,12 +268,14 @@ class TimmModelForHLabelCls(OTXHlabelClsModel):
 
     def _build_model(self, head_config: dict) -> nn.Module:
         backbone = TimmBackbone(backbone=self.backbone, pretrained=self.pretrained)
+        copied_head_config = copy(head_config)
+        copied_head_config["step_size"] = (ceil(self.input_size[0] / 32), ceil(self.input_size[1] / 32))
         return HLabelClassifier(
             backbone=backbone,
             neck=nn.Identity(),
             head=HierarchicalCBAMClsHead(
                 in_channels=backbone.num_features,
-                **head_config,
+                **copied_head_config,
             ),
             multiclass_loss=nn.CrossEntropyLoss(),
             multilabel_loss=AsymmetricAngularLossWithIgnore(gamma_pos=0.0, gamma_neg=1.0, reduction="sum"),
