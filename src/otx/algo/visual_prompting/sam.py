@@ -10,7 +10,7 @@ import pickle  # nosec  B403   used pickle for dumping object
 from collections import defaultdict
 from copy import deepcopy
 from pathlib import Path
-from typing import TYPE_CHECKING, Callable, ClassVar, Literal
+from typing import TYPE_CHECKING, Any, Callable, ClassVar, Literal, Mapping
 
 import torch
 import torchvision.transforms.v2 as tvt_v2
@@ -58,28 +58,35 @@ class CommonSettingMixin:
     }
     load_state_dict: Callable[[dict[str, Tensor]], None]
 
-    def load_checkpoint(self, load_from: str | None) -> None:
+    def load_state_dict(
+        self,
+        state_dict: Mapping[str, Any] | None = None,
+        strict: bool = True,
+        assign: bool = False,
+        load_from: str | None = None,
+    ) -> None:
         """Load checkpoint for SAM.
 
         Args:
             load_from (Optional[str], optional): Checkpoint path for SAM. Defaults to None.
         """
         try:
-            state_dict = torch.hub.load_state_dict_from_url(str(load_from))
-            for key in [
-                "image_encoder.norm_head.weight",
-                "image_encoder.norm_head.bias",
-                "image_encoder.head.weight",
-                "image_encoder.head.bias",
-            ]:
-                if key in state_dict:
-                    state_dict.pop(key)
+            if load_from is not None:
+                state_dict = torch.hub.load_state_dict_from_url(str(load_from))
+                for key in [
+                    "image_encoder.norm_head.weight",
+                    "image_encoder.norm_head.bias",
+                    "image_encoder.head.weight",
+                    "image_encoder.head.bias",
+                ]:
+                    if key in state_dict:
+                        state_dict.pop(key)
 
-            # add prefix 'model.' to all keys
-            for key in list(state_dict.keys()):
-                state_dict["model." + key] = state_dict.pop(key)
+                # add prefix 'model.' to all keys
+                for key in list(state_dict.keys()):
+                    state_dict["model." + key] = state_dict.pop(key)
 
-            self.load_state_dict(state_dict)
+            super().load_state_dict(state_dict, strict, assign)
 
         except (ValueError, RuntimeError) as e:
             log.info(
@@ -151,7 +158,7 @@ class CommonSettingMixin:
         )
 
 
-class SAM(OTXVisualPromptingModel, CommonSettingMixin):
+class SAM(CommonSettingMixin, OTXVisualPromptingModel):
     """OTX visual prompting model class for Segment Anything Model (SAM)."""
 
     input_size_multiplier = 16
@@ -195,7 +202,7 @@ class SAM(OTXVisualPromptingModel, CommonSettingMixin):
             torch_compile=torch_compile,
         )
 
-        self.load_checkpoint(load_from=self.load_from[backbone_type])
+        self.load_state_dict(load_from=self.load_from[backbone_type])
         self.freeze_networks(freeze_image_encoder, freeze_prompt_encoder, freeze_mask_decoder)
 
     def _build_model(self) -> nn.Module:
@@ -219,7 +226,7 @@ class SAM(OTXVisualPromptingModel, CommonSettingMixin):
         )
 
 
-class ZeroShotSAM(OTXZeroShotVisualPromptingModel, CommonSettingMixin):
+class ZeroShotSAM(CommonSettingMixin, OTXZeroShotVisualPromptingModel):
     """Zero-Shot Visual Prompting model."""
 
     def __init__(  # noqa: PLR0913
@@ -276,7 +283,7 @@ class ZeroShotSAM(OTXZeroShotVisualPromptingModel, CommonSettingMixin):
             freeze_prompt_encoder = True
             freeze_mask_decoder = True
 
-        self.load_checkpoint(load_from=self.load_from[backbone_type])
+        self.load_state_dict(load_from=self.load_from[backbone_type])
         self.freeze_networks(freeze_image_encoder, freeze_prompt_encoder, freeze_mask_decoder)
 
         self.save_outputs = save_outputs

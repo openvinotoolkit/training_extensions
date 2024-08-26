@@ -1120,7 +1120,7 @@ class OVZeroShotVisualPromptingModel(
                 _boxes: list[Prompt] = []
                 _points: list[Prompt] = []
                 _polygons: list[Prompt] = []
-                for prompt, label in zip(prompts, labels.prompts):  # type: ignore[arg-type]
+                for prompt, label in zip(prompts, labels):  # type: ignore[arg-type]
                     if isinstance(prompt, tv_tensors.BoundingBoxes):
                         _boxes.append(Prompt(prompt.cpu().numpy(), label.cpu().numpy()))
                     elif isinstance(prompt, Points):

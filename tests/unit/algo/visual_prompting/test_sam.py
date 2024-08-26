@@ -38,7 +38,7 @@ class TestCommonSettingMixin:
         mixin.load_state_dict = mock.Mock()
 
         # Call the load_checkpoint method
-        mixin.load_checkpoint("https://example.com/checkpoint.pth")
+        mixin.load_state_dict("https://example.com/checkpoint.pth")
 
         # Assertions
         mock_load_state_dict_from_url.assert_called_once_with("https://example.com/checkpoint.pth")
@@ -52,7 +52,7 @@ class TestCommonSettingMixin:
         mock_log_info = mocker.patch("logging.info")
 
         mixin = CommonSettingMixin()
-        mixin.load_checkpoint("invalid_url")
+        mixin.load_state_dict("invalid_url")
 
         mock_load_state_dict_from_url.assert_called_once_with("invalid_url")
         mock_log_info.assert_called_once_with(
