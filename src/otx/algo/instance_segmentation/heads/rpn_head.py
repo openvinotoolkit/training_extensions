@@ -64,7 +64,7 @@ class RPNHeadModule(AnchorHead):
             Defaults to 1.
     """
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         in_channels: int,
         anchor_generator: nn.Module,
@@ -73,6 +73,9 @@ class RPNHeadModule(AnchorHead):
         loss_bbox: nn.Module,
         assigner: nn.Module,
         sampler: nn.Module,
+        train_cfg: dict,  # TODO(Sungchul, Kirill): depricate it
+        test_cfg: dict,  # TODO(Sungchul, Kirill): depricate it
+        init_cfg: dict | None = None,  # TODO(Sungchul, Kirill): depricate it
         feat_channels: int = 256,
         reg_decoded_bbox: bool = False,
         allowed_border: float = 0.0,
@@ -82,6 +85,7 @@ class RPNHeadModule(AnchorHead):
         max_per_img: int = 1000,
         min_bbox_size: int = 0,
         nms_iou_threshold: float = 0.7,
+        score_threshold: float = 0.5,
         nms_pre: int = 1000,
         with_nms: bool = True,
     ) -> None:
@@ -97,18 +101,23 @@ class RPNHeadModule(AnchorHead):
             bbox_coder=bbox_coder,
             loss_cls=loss_cls,
             loss_bbox=loss_bbox,
-            assigner=assigner,
-            sampler=sampler,
             feat_channels=feat_channels,
-            reg_decoded_bbox=reg_decoded_bbox,
-            allowed_border=allowed_border,
-            pos_weight=pos_weight,
-            max_per_img=max_per_img,
-            min_bbox_size=min_bbox_size,
-            nms_iou_threshold=nms_iou_threshold,
-            nms_pre=nms_pre,
-            with_nms=with_nms,
+            train_cfg=train_cfg,
+            test_cfg=test_cfg,
+            init_cfg=init_cfg,
         )
+
+        self.nms_iou_threshold = nms_iou_threshold
+        self.nms_pre = nms_pre
+        self.with_nms = with_nms
+        self.min_bbox_size = min_bbox_size
+        self.max_per_img = max_per_img
+        self.pos_weight = pos_weight
+        self.reg_decoded_bbox = reg_decoded_bbox
+        self.allowed_border = allowed_border
+        self.assigner = assigner
+        self.sampler = sampler
+        self.score_threshold = score_threshold
 
     def _init_layers(self) -> None:
         """Initialize layers of the head."""
@@ -189,8 +198,49 @@ class RPNHeadModule(AnchorHead):
             cls_scores,
             bbox_preds,
             batch_img_metas=batch_img_metas,
+            cfg=self.test_cfg,  # TODO (Sungchul, Kirill): remove
         )
+
         return losses, predictions
+
+    def forward_for_loss(
+        self,
+        x: tuple[Tensor],
+        rpn_entity: InstanceSegBatchDataEntity,
+    ) -> tuple[list[Any], tuple[Any, ...], Any, Any, list[InstanceData]]:
+        """Forward propagation of the head, then calculate loss and predictions from the features and data samples.
+
+        Args:
+            x (tuple[Tensor]): Features from FPN.
+            batch_data_samples (list[InstanceSegBatchDataEntity]): Each item contains
+                the meta information of each image and corresponding
+                annotations.
+
+        Returns:
+            tuple: the return value is a tuple contains:
+
+                - losses: (dict[str, Tensor]): A dictionary of loss components.
+                - predictions (list[InstanceData]): Detection
+                results of each image after the post process.
+        """
+        batch_gt_instances, batch_img_metas = unpack_inst_seg_entity(rpn_entity)
+
+        cls_scores, bbox_preds = self(x)
+
+        all_anchor_list, cls_reg_targets = self.get_targets_for_loss(
+            cls_scores,
+            batch_gt_instances,
+            batch_img_metas,
+        )
+
+        rpn_results_list = self.predict_by_feat(
+            cls_scores,
+            bbox_preds,
+            batch_img_metas=batch_img_metas,
+            cfg=self.test_cfg,  # TODO (Sungchul, Kirill): remove
+        )
+
+        return all_anchor_list, cls_reg_targets, bbox_preds, cls_scores, rpn_results_list
 
     def predict(
         self,
@@ -226,7 +276,13 @@ class RPNHeadModule(AnchorHead):
 
         cls_scores, bbox_preds = self(x)
 
-        return self.predict_by_feat(cls_scores, bbox_preds, batch_img_metas=batch_img_metas, rescale=rescale)
+        return self.predict_by_feat(
+            cls_scores,
+            bbox_preds,
+            batch_img_metas=batch_img_metas,
+            rescale=rescale,
+            cfg=self.test_cfg,
+        )
 
     def _predict_by_feat_single(  # type: ignore[override]
         self,
@@ -235,7 +291,9 @@ class RPNHeadModule(AnchorHead):
         score_factor_list: list[Tensor],
         mlvl_priors: list[Tensor],
         img_meta: dict,
+        cfg: dict,  # TODO (Sungchul, Kirill): remove
         rescale: bool = False,
+        with_nms: bool = True,
     ) -> InstanceData:
         """Transform a single image's features extracted from the head into bbox results.
 
@@ -311,13 +369,15 @@ class RPNHeadModule(AnchorHead):
         results.scores = torch.cat(mlvl_scores)
         results.level_ids = torch.cat(level_ids)
 
-        return self._bbox_post_process(results=results, rescale=rescale, img_meta=img_meta)
+        return self._bbox_post_process(results=results, rescale=rescale, img_meta=img_meta, cfg={})
 
     def _bbox_post_process(
         self,
         results: InstanceData,
+        cfg: dict,  # TODO (Sungchul, Kirill): remove
         img_meta: dict,
         rescale: bool = False,
+        with_nms: bool = True,
     ) -> InstanceData:
         """Bbox post-processing method.
 
@@ -360,13 +420,11 @@ class RPNHeadModule(AnchorHead):
 
         if results.bboxes.numel() > 0:  # type: ignore[attr-defined]
             bboxes = results.bboxes  # type: ignore[attr-defined]
-            det_bboxes, keep_idxs = batched_nms(
-                bboxes,
-                results.scores,
-                results.level_ids,
-                iou_threshold=self.nms_iou_threshold,
-                max_num=self.max_per_img,
-            )  # type: ignore[attr-defined]
+            nms_cfg = {
+                "type": "nms",
+                "iou_threshold": self.nms_iou_threshold,
+            }  # TODO(Kirill, Sungchul): depricate
+            det_bboxes, keep_idxs = batched_nms(bboxes, results.scores, results.level_ids, nms_cfg)  # type: ignore[attr-defined]
             results = results[keep_idxs]
             # some nms would reweight the score, such as softnms
             results.scores = det_bboxes[:, -1]
@@ -390,9 +448,10 @@ class RPNHeadModule(AnchorHead):
         bbox_preds: list[Tensor],
         score_factors: list[Tensor] | None = None,
         batch_img_metas: list[dict] | None = None,
-        score_thr: float = 0.05,
+        cfg: dict | None = None,  # TODO (Sungchul, Kirill): remove
         rescale: bool = False,
-    ) -> tuple[torch.Tensor, torch.Tensor] | tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+        with_nms: bool = True,
+    ) -> tuple[Tensor, Tensor] | tuple[Tensor, Tensor, Tensor]:
         """Rewrite `predict_by_feat` of `RPNHead` for default backend."""
         warnings.warn(f"score_factors: {score_factors} is not used in RPNHead.export", stacklevel=2)
         warnings.warn(f"rescale: {rescale} is not used in RPNHead.export", stacklevel=2)
@@ -484,7 +543,7 @@ class RPNHeadModule(AnchorHead):
             batch_mlvl_scores,
             max_output_boxes_per_class,
             iou_threshold=self.nms_iou_threshold,
-            score_threshold=score_thr,
+            score_threshold=self.score_threshold,
             pre_top_k=pre_top_k,
             keep_top_k=self.max_per_img,
         )
@@ -520,6 +579,8 @@ class RPNHead:
         sampler: BaseSampler,
         loss_cls: nn.Module,
         loss_bbox: nn.Module,
+        train_cfg: dict,  # TODO (Sungchul, Kirill): remove
+        test_cfg: dict,  # TODO (Sungchul, Kirill): remove
     ) -> RPNHeadModule:
         """RPNHead factory for instance segmentation regional proposal network."""
         return RPNHeadModule(
@@ -530,4 +591,6 @@ class RPNHead:
             sampler=sampler,
             loss_bbox=loss_bbox,
             loss_cls=loss_cls,
+            train_cfg=train_cfg,
+            test_cfg=test_cfg,
         )

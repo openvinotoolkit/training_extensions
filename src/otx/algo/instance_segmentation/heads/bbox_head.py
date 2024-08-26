@@ -302,12 +302,16 @@ class BBoxHead(BaseModule):
         box_dim = bboxes.size(-1)
         bboxes = bboxes.view(num_rois, -1)
 
+        nms_cfg = {
+            "type": "nms",
+            "iou_threshold": self.nms_iou_threshold,
+        }  # TODO(Kirill, Sungchul): depricate
         det_bboxes, det_labels = multiclass_nms_torch(  # type: ignore [misc]
-            bboxes,
-            scores,
-            self.score_threshold,
-            self.nms_iou_threshold,
-            self.max_per_img,
+            multi_bboxes=bboxes,
+            multi_scores=scores,
+            score_thr=self.score_threshold,
+            nms_cfg=nms_cfg,
+            max_num=self.max_per_img,
             box_dim=box_dim,
         )
         results.bboxes = det_bboxes[:, :-1]

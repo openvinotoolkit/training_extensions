@@ -9,6 +9,7 @@ Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/d
 from __future__ import annotations
 
 import warnings
+from typing import Any
 
 import torch
 from torch import Tensor, nn
@@ -62,6 +63,9 @@ class AnchorHead(BaseDenseHead):
         reg_decoded_bbox: bool = False,
         init_cfg: dict | list[dict] | None = None,
     ) -> None:
+        if init_cfg is None:
+            init_cfg = {"type": "Normal", "layer": "Conv2d", "std": 0.01}
+
         super().__init__(init_cfg=init_cfg)
         self.in_channels = in_channels
         self.num_classes = num_classes
@@ -505,7 +509,6 @@ class AnchorHead(BaseDenseHead):
         # concat all level anchors and flags to a single tensor
         concat_anchor_list = [torch.cat(anchor) for anchor in anchor_list]
         all_anchor_list = images_to_levels(concat_anchor_list, num_level_anchors)
-
         losses_cls, losses_bbox = multi_apply(
             self.loss_by_feat_single,
             cls_scores,
@@ -518,3 +521,48 @@ class AnchorHead(BaseDenseHead):
             avg_factor=avg_factor,
         )
         return {"loss_cls": losses_cls, "loss_bbox": losses_bbox}
+
+    def get_targets_for_loss(
+        self,
+        cls_scores: list[Tensor],
+        batch_gt_instances: list[InstanceData],
+        batch_img_metas: list[dict],
+        batch_gt_instances_ignore: list[InstanceData] | None = None,
+    ) -> tuple[list[Any], tuple[Any, ...]]:
+        """Calculate the loss based on the features extracted by the detection head.
+
+        Args:
+            cls_scores (list[Tensor]): Box scores for each scale level
+                has shape (N, num_anchors * num_classes, H, W).
+            bbox_preds (list[Tensor]): Box energies / deltas for each scale
+                level with shape (N, num_anchors * 4, H, W).
+            batch_gt_instances (list[InstanceData]): Batch of
+                gt_instance. It usually includes ``bboxes`` and ``labels``
+                attributes.
+            batch_img_metas (list[dict]): Meta information of each image, e.g.,
+                image size, scaling factor, etc.
+            batch_gt_instances_ignore (list[InstanceData], optional):
+                Batch of gt_instances_ignore. It includes ``bboxes`` attribute
+                data that is ignored during training and testing.
+                Defaults to None.
+
+        """
+        featmap_sizes = [featmap.size()[-2:] for featmap in cls_scores]
+
+        device = cls_scores[0].device
+
+        anchor_list, valid_flag_list = self.get_anchors(featmap_sizes, batch_img_metas, device=device)
+        cls_reg_targets = self.get_targets(
+            anchor_list,
+            valid_flag_list,
+            batch_gt_instances,
+            batch_img_metas,
+            batch_gt_instances_ignore=batch_gt_instances_ignore,
+        )
+
+        # anchor number of multi levels
+        num_level_anchors = [anchors.size(0) for anchors in anchor_list[0]]
+        # concat all level anchors and flags to a single tensor
+        concat_anchor_list = [torch.cat(anchor) for anchor in anchor_list]
+        all_anchor_list = images_to_levels(concat_anchor_list, num_level_anchors)
+        return all_anchor_list, cls_reg_targets

@@ -126,10 +126,6 @@ class MaskRCNNTV(_MaskRCNN):
 class MaskRCNNBackbone:
     """Implementation of MaskRCNN torchvision factory for instance segmentation."""
 
-    MASKRCNN_CFG: ClassVar[dict[str, Any]] = {
-        "maskrcnn_resnet50": resnet50(progress=True),
-    }
-
     def __new__(cls, model_name: str) -> nn.Module:
         """Create MaskRCNNBackbone."""
         trainable_backbone_layers = _validate_trainable_layers(
@@ -138,14 +134,18 @@ class MaskRCNNBackbone:
             max_value=5,
             default_value=3,
         )
-        return _resnet_fpn_extractor(cls.MASKRCNN_CFG[model_name], trainable_backbone_layers, norm_layer=nn.BatchNorm2d)
+        if model_name == "maskrcnn_resnet_50":
+            return _resnet_fpn_extractor(resnet50(progress=True), trainable_backbone_layers, norm_layer=nn.BatchNorm2d)
+
+        msg = "Model name {model_name} is not supported."
+        raise ValueError(msg)
 
 
 class RPNHead:
     """Implementation of RPNHead for MaskRCNN."""
 
     RPNHEAD_CFG: ClassVar[dict[str, Any]] = {
-        "maskrcnn_resnet50": {
+        "maskrcnn_resnet_50": {
             "in_channels": 256,
             "conv_depth": 2,
         },
@@ -160,31 +160,29 @@ class FastRCNNConvFCHead:
     """Implementation of FastRCNNConvFCHead for MaskRCNN."""
 
     FASTRCNN_CFG: ClassVar[dict[str, Any]] = {
-        "maskrcnn_resnet50": {
+        "maskrcnn_resnet_50": {
             "input_size": (256, 7, 7),
             "conv_layers": [256, 256, 256, 256],
             "fc_layers": [1024],
-            "norm_layer": nn.BatchNorm2d,
         },
     }
 
     def __new__(cls, model_name: str) -> nn.Module:
         """Create FastRCNNConvFCHead."""
-        return _FastRCNNConvFCHead(**cls.FASTRCNN_CFG[model_name])
+        return _FastRCNNConvFCHead(**cls.FASTRCNN_CFG[model_name], norm_layer=nn.BatchNorm2d)
 
 
 class MaskRCNNHeads:
     """Implementation of MaskRCNNHeads for MaskRCNN."""
 
     MASKRCNNHEADS_CFG: ClassVar[dict[str, Any]] = {
-        "maskrcnn_resnet50": {
+        "maskrcnn_resnet_50": {
             "in_channels": 256,
             "layers": [256, 256, 256, 256],
             "dilation": 1,
-            "norm_layer": nn.BatchNorm2d,
         },
     }
 
     def __new__(cls, model_name: str) -> nn.Module:
         """Create MaskRCNNHeads."""
-        return _MaskRCNNHeads(**cls.MASKRCNNHEADS_CFG[model_name])
+        return _MaskRCNNHeads(**cls.MASKRCNNHEADS_CFG[model_name], norm_layer=nn.BatchNorm2d)

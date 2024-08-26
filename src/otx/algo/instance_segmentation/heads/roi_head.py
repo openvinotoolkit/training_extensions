@@ -527,6 +527,53 @@ class RoIHead(nn.Module):
         segm_results = segm_results.reshape(batch_size, num_det, segm_results.shape[-2], segm_results.shape[-1])
         return dets, det_labels, segm_results
 
+    def forward_for_loss(
+        self,
+        x: tuple[Tensor],
+        rpn_results_list: list[InstanceData],
+        entity: InstanceSegBatchDataEntity,
+    ) -> tuple[dict, Tensor, Tensor, Tensor, Tensor, Tensor]:
+        """Perform forward propagation and loss calculation of the detection roi on the features."""
+        batch_gt_instances, batch_img_metas = unpack_inst_seg_entity(entity)
+
+        # assign gts and sample proposals
+        num_imgs = entity.batch_size
+        sampling_results = []
+        for i in range(num_imgs):
+            # rename rpn_results.bboxes to rpn_results.priors
+            rpn_results = rpn_results_list[i]
+            rpn_results.priors = rpn_results.pop("bboxes")
+
+            assign_result = self.bbox_assigner.assign(rpn_results, batch_gt_instances[i])
+            sampling_result = self.bbox_sampler.sample(
+                assign_result,
+                rpn_results,
+                batch_gt_instances[i],
+                feats=[lvl_feat[i][None] for lvl_feat in x],
+            )
+            sampling_results.append(sampling_result)
+
+        # bbox head loss
+        rois = bbox2roi([res.bboxes for res in sampling_results])
+        pos_rois = bbox2roi([res.pos_priors for res in sampling_results])
+
+        bbox_results = self._bbox_forward(x, rois)
+        cls_reg_targets = self.bbox_head.get_targets(
+            sampling_results,
+            concat=True,
+            batch_img_metas=batch_img_metas,
+        )
+
+        # mask head forward and loss
+        mask_results = self._mask_forward(x, pos_rois)
+        mask_targets = self.mask_head.get_targets(
+            sampling_results=sampling_results,
+            batch_gt_instances=batch_gt_instances,
+        )
+        pos_labels = torch.cat([res.pos_gt_labels for res in sampling_results])
+
+        return bbox_results, mask_results, cls_reg_targets, mask_targets, pos_labels, rois
+
     def loss(
         self,
         x: tuple[Tensor],

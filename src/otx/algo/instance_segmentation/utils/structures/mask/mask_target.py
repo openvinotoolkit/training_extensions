@@ -41,7 +41,7 @@ def mask_target(
     """
     mask_size_list = [mask_size for _ in range(len(pos_proposals_list))]
     mask_targets = map(
-        mask_target_single,
+        mask_target_single,  # type: ignore[arg-type]
         pos_proposals_list,
         pos_assigned_gt_inds_list,
         gt_masks_list,
@@ -58,7 +58,7 @@ def mask_target_single(
     pos_proposals: Tensor,
     pos_assigned_gt_inds: Tensor,
     gt_masks: list[Polygon] | tv_tensors.Mask,
-    mask_size: tuple[int, int],
+    mask_size: list[int],
     meta_info: dict,
 ) -> Tensor:
     """Compute mask target for each positive proposal in the image."""
@@ -83,7 +83,7 @@ def mask_target_single(
         mask_targets = crop_and_resize(
             gt_masks,
             proposals_np,
-            mask_size,
+            mask_size,  # type: ignore[arg-type]
             inds=pos_assigned_gt_inds,
             device=device,
         )

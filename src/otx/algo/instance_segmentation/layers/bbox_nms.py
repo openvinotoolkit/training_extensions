@@ -18,7 +18,7 @@ def multiclass_nms_torch(
     multi_bboxes: Tensor,
     multi_scores: Tensor,
     score_thr: float,
-    iou_threshold: float,
+    nms_cfg: dict,
     max_num: int = -1,
     score_factors: Tensor | None = None,
     return_inds: bool = False,
@@ -95,7 +95,7 @@ def multiclass_nms_torch(
             return dets, labels, inds
         return dets, labels
 
-    dets, keep = batched_nms(bboxes, scores, labels, iou_threshold=iou_threshold, max_num=max_num)
+    dets, keep = batched_nms(bboxes, scores, labels, nms_cfg)
 
     if max_num > 0:
         dets = dets[:max_num]

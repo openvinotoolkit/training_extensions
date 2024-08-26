@@ -35,12 +35,12 @@ from otx.core.model.instance_segmentation import ExplainableOTXInstanceSegModel
 class TVMaskRCNN(ExplainableOTXInstanceSegModel):
     """Implementation of torchvision MaskRCNN for instance segmentation."""
 
-    load_from: ClassVar[dict[str, Any]] = {"maskrcnn_resnet50": MaskRCNN_ResNet50_FPN_V2_Weights.verify("DEFAULT")}
+    load_from: ClassVar[dict[str, Any]] = {"maskrcnn_resnet_50": MaskRCNN_ResNet50_FPN_V2_Weights.verify("DEFAULT")}
     mean = (123.675, 116.28, 103.53)
     std = (58.395, 57.12, 57.375)
 
     AVAILABLE_MODEL_VERSIONS: ClassVar[list[str]] = [
-        "maskrcnn_resnet50",
+        "maskrcnn_resnet_50",
     ]
 
     def _create_model(self) -> nn.Module:

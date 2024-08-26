@@ -6,11 +6,9 @@
 
 from __future__ import annotations
 
-import torch
 from torch import Tensor, nn
 
 from otx.algo.common.utils.utils import multi_apply
-from otx.algo.detection.utils.utils import images_to_levels
 
 
 class RPNCriterion(nn.Module):
@@ -33,35 +31,24 @@ class RPNCriterion(nn.Module):
 
     def __init__(
         self,
-        num_classes: int,
         bbox_coder: nn.Module,
         loss_cls: nn.Module,
         loss_bbox: nn.Module,
         reg_decoded_bbox: bool = True,
     ) -> None:
         super().__init__()
-        self.num_classes = num_classes
         self.bbox_coder = bbox_coder
         self.loss_bbox = loss_bbox
         self.loss_cls = loss_cls
-        self.use_sigmoid_cls = loss_cls.use_sigmoid
+        self.cls_out_channels = 1 if loss_cls.use_sigmoid else 2
         self.reg_decoded_bbox = reg_decoded_bbox
-
-        if self.use_sigmoid_cls:
-            self.cls_out_channels = num_classes
-        else:
-            self.cls_out_channels = num_classes + 1
-
-        if self.cls_out_channels <= 0:
-            msg = f"num_classes={num_classes} is too small"
-            raise ValueError(msg)
 
     def forward(
         self,
-        cls_scores: list[Tensor],
+        cls_reg_targets: tuple[list[Tensor], list[Tensor], list[Tensor], list[Tensor], int],
         bbox_preds: list[Tensor],
-        cls_reg_targets: list[Tensor],
-        anchor_list: list[Tensor],
+        cls_scores: list[Tensor],
+        all_anchor_list: list[Tensor],
     ) -> dict:
         """Calculate the loss based on the features extracted by the detection head.
 
@@ -87,12 +74,6 @@ class RPNCriterion(nn.Module):
         """
         (labels_list, label_weights_list, bbox_targets_list, bbox_weights_list, avg_factor) = cls_reg_targets
 
-        # anchor number of multi levels
-        num_level_anchors = [anchors.size(0) for anchors in anchor_list[0]]
-        # concat all level anchors and flags to a single tensor
-        concat_anchor_list = [torch.cat(anchor) for anchor in anchor_list]
-        all_anchor_list = images_to_levels(concat_anchor_list, num_level_anchors)
-
         losses_cls, losses_bbox = multi_apply(
             self._forward,
             cls_scores,
@@ -104,7 +85,7 @@ class RPNCriterion(nn.Module):
             bbox_weights_list,
             avg_factor=avg_factor,
         )
-        return {"loss_cls": losses_cls, "loss_bbox": losses_bbox}
+        return {"loss_cls_rpn": losses_cls, "loss_bbox_rpn": losses_bbox}
 
     def _forward(
         self,
@@ -145,7 +126,7 @@ class RPNCriterion(nn.Module):
         labels = labels.reshape(-1)
         label_weights = label_weights.reshape(-1)
         cls_score = cls_score.permute(0, 2, 3, 1).reshape(-1, self.cls_out_channels)
-        loss_cls = self.loss_cls(cls_score, labels, label_weights, avg_factor=avg_factor)  # type: ignore[misc] # TODO (kirill): fix
+        loss_cls = self.loss_cls(cls_score, labels, label_weights, avg_factor=avg_factor)
         # regression loss
         target_dim = bbox_targets.size(-1)
         bbox_targets = bbox_targets.reshape(-1, target_dim)
@@ -157,5 +138,5 @@ class RPNCriterion(nn.Module):
             # decodes the already encoded coordinates to absolute format.
             anchors = anchors.reshape(-1, anchors.size(-1))
             bbox_pred = self.bbox_coder.decode(anchors, bbox_pred)
-        loss_bbox = self.loss_bbox(bbox_pred, bbox_targets, bbox_weights, avg_factor=avg_factor)  # type: ignore[misc] # TODO (kirill): fix
+        loss_bbox = self.loss_bbox(bbox_pred, bbox_targets, bbox_weights, avg_factor=avg_factor)
         return loss_cls, loss_bbox

@@ -11,17 +11,16 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from torch import nn
-
+from otx.algo.modules.base_module import BaseModule
 from otx.algo.utils.mmengine_utils import InstanceData
 from otx.core.data.entity.detection import DetBatchDataEntity
 
 if TYPE_CHECKING:
     import torch
-    from torch import Tensor
+    from torch import Tensor, nn
 
 
-class SingleStageDetector(nn.Module):
+class SingleStageDetector(BaseModule):
     """Single stage detector implementation.
 
     Args:
@@ -29,6 +28,9 @@ class SingleStageDetector(nn.Module):
         bbox_head (nn.Module): Bbox head module.
         criterion (nn.Module): Criterion module.
         neck (nn.Module | None, optional): Neck module. Defaults to None.
+        train_cfg (dict | None, optional): Training config. Defaults to None.
+        test_cfg (dict | None, optional): Test config. Defaults to None.
+        init_cfg (dict | list[dict], optional): Initialization config. Defaults to None.
     """
 
     def __init__(
@@ -37,6 +39,9 @@ class SingleStageDetector(nn.Module):
         bbox_head: nn.Module,
         criterion: nn.Module,
         neck: nn.Module | None = None,
+        train_cfg: dict | None = None,
+        test_cfg: dict | None = None,
+        init_cfg: dict | list[dict] | None = None,
     ) -> None:
         super().__init__()
         self._is_init = False
@@ -44,6 +49,9 @@ class SingleStageDetector(nn.Module):
         self.bbox_head = bbox_head
         self.neck = neck
         self.criterion = criterion
+        self.init_cfg = init_cfg
+        self.train_cfg = train_cfg
+        self.test_cfg = test_cfg
 
     def _load_from_state_dict(
         self,

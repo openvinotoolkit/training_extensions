@@ -154,8 +154,6 @@ class TwoStageDetector(nn.Module):
         """
         x = self.extract_feat(batch_inputs.images)
 
-        losses = {}
-
         # Copy data entity and set gt_labels to 0 in RPN
         rpn_entity = InstanceSegBatchDataEntity(
             images=torch.empty(0),
@@ -167,18 +165,45 @@ class TwoStageDetector(nn.Module):
             polygons=batch_inputs.polygons,
         )
 
-        rpn_losses, rpn_results_list = self.rpn_head.loss_and_predict(
+        all_anchor_list, cls_reg_targets, bbox_preds, cls_scores, rpn_results_list = self.rpn_head.forward_for_loss(
             x,
             rpn_entity,
         )
-        # avoid get same name with roi_head loss
-        keys = rpn_losses.keys()
-        for key in list(keys):
-            if "loss" in key and "rpn" not in key:
-                rpn_losses[f"rpn_{key}"] = rpn_losses.pop(key)
-        losses.update(rpn_losses)
+        losses = self.rpn_criterion(
+            cls_reg_targets=cls_reg_targets,
+            bbox_preds=bbox_preds,
+            cls_scores=cls_scores,
+            all_anchor_list=all_anchor_list,
+        )
 
-        roi_losses = self.roi_head.loss(x, rpn_results_list, batch_inputs)
+        (
+            bbox_results,
+            mask_results,
+            cls_reg_targets_roi,
+            mask_targets,
+            pos_labels,
+            rois,
+        ) = self.roi_head.forward_for_loss(
+            x,
+            rpn_results_list,
+            batch_inputs,
+        )
+        labels, label_weights, bbox_targets, bbox_weights, valid_label_mask = cls_reg_targets_roi
+
+        roi_losses = self.roi_criterion(
+            cls_score=bbox_results["cls_score"],
+            bbox_pred=bbox_results["bbox_pred"],
+            rois=rois,
+            labels=labels,
+            label_weights=label_weights,
+            bbox_targets=bbox_targets,
+            bbox_weights=bbox_weights,
+            mask_preds=mask_results["mask_preds"],
+            mask_targets=mask_targets,
+            pos_labels=pos_labels,
+            valid_label_mask=valid_label_mask,
+        )
+
         losses.update(roi_losses)
 
         return losses
@@ -219,6 +244,7 @@ class TwoStageDetector(nn.Module):
             rescale=False,
         )
 
+    @staticmethod
     def unpack_inst_seg_entity(entity: InstanceSegBatchDataEntity) -> tuple:
         """Unpack gt_instances, gt_instances_ignore and img_metas based on batch_data_samples.
 

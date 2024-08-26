@@ -54,6 +54,75 @@ class MaskRCNN(ExplainableOTXInstanceSegModel):
             msg = f"Model version {self.model_name} is not supported."
             raise ValueError(msg)
 
+        train_cfg = {
+            "rpn": {
+                "allowed_border": -1,
+                "debug": False,
+                "pos_weight": -1,
+                "assigner": MaxIoUAssigner(
+                    pos_iou_thr=0.7,
+                    neg_iou_thr=0.3,
+                    min_pos_iou=0.3,
+                    ignore_iof_thr=-1,
+                    match_low_quality=True,
+                ),
+                "sampler": RandomSampler(
+                    add_gt_as_proposals=False,
+                    num=256,
+                    pos_fraction=0.5,
+                    neg_pos_ub=-1,
+                ),
+            },
+            "rpn_proposal": {
+                "max_per_img": 1000,
+                "min_bbox_size": 0,
+                "nms": {
+                    "type": "nms",
+                    "iou_threshold": 0.7,
+                },
+                "nms_pre": 2000,
+            },
+            "rcnn": {
+                "assigner": MaxIoUAssigner(
+                    pos_iou_thr=0.5,
+                    neg_iou_thr=0.5,
+                    min_pos_iou=0.5,
+                    ignore_iof_thr=-1,
+                    match_low_quality=True,
+                ),
+                "sampler": RandomSampler(
+                    add_gt_as_proposals=True,
+                    num=512,
+                    pos_fraction=0.25,
+                    neg_pos_ub=-1,
+                ),
+                "debug": False,
+                "mask_size": 28,
+                "pos_weight": -1,
+            },
+        }
+
+        test_cfg = {
+            "rpn": {
+                "max_per_img": 1000,
+                "min_bbox_size": 0,
+                "nms": {
+                    "type": "nms",
+                    "iou_threshold": 0.7,
+                },
+                "nms_pre": 1000,
+            },
+            "rcnn": {
+                "mask_thr_binary": 0.5,
+                "max_per_img": 100,
+                "nms": {
+                    "type": "nms",
+                    "iou_threshold": 0.5,
+                },
+                "score_thr": 0.05,
+            },
+        }
+
         rpn_assigner = MaxIoUAssigner(
             pos_iou_thr=0.7,
             neg_iou_thr=0.3,
@@ -109,6 +178,8 @@ class MaskRCNN(ExplainableOTXInstanceSegModel):
             sampler=rpn_sampler,
             loss_cls=loss_rpn_cls,
             loss_bbox=loss_bbox,
+            train_cfg=train_cfg["rpn"],
+            test_cfg=test_cfg["rpn"],
         )
 
         roi_bbox_coder = DeltaXYWHBBoxCoder(
@@ -164,8 +235,7 @@ class MaskRCNN(ExplainableOTXInstanceSegModel):
         )
 
         rpn_criterion = RPNCriterion(
-            num_classes=num_classes,
-            bbox_coder=rpn_bbox_coder,
+            bbox_coder=rpn_head.bbox_coder,
             loss_bbox=loss_bbox,
             loss_cls=loss_rpn_cls,
         )
