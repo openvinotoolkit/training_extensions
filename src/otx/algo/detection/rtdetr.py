@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import copy
 import re
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Literal
 
 import torch
 from torch import Tensor, nn
@@ -35,8 +35,6 @@ if TYPE_CHECKING:
     from otx.core.types.label import LabelInfoTypes
 
 
-AVAILABLE_MODEL_VERSIONS: list[str] = ["rtdetr_18", "rtdetr_50", "rtdetr_101"]
-
 PRETRAINED_ROOT: str = "https://github.com/lyuwenyu/storage/releases/download/v0.1/"
 
 PRETRAINED_WEIGHTS: dict[str, str] = {
@@ -59,7 +57,7 @@ class RTDETR(ExplainableOTXDetModel):
 
     def __init__(
         self,
-        model_name: str,
+        model_name: Literal["rtdetr_18", "rtdetr_50", "rtdetr_101"],
         label_info: LabelInfoTypes,
         input_size: tuple[int, int] = (640, 640),
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
@@ -80,11 +78,7 @@ class RTDETR(ExplainableOTXDetModel):
             tile_config=tile_config,
         )
 
-    def _build_model(self, num_classes: int) -> nn.Module:
-        if self.model_name not in AVAILABLE_MODEL_VERSIONS:
-            msg = f"Model version {self.model_name} is not supported."
-            raise ValueError(msg)
-
+    def _build_model(self, num_classes: int) -> DETR:
         backbone = PResNet(model_name=self.model_name)
         encoder = HybridEncoder(
             model_name=self.model_name,

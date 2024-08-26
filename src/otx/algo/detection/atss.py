@@ -5,7 +5,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal
 
 from otx.algo.common.losses import CrossEntropyLoss, CrossSigmoidFocalLoss, GIoULoss
 from otx.algo.common.utils.coders import DeltaXYWHBBoxCoder
@@ -34,11 +34,6 @@ if TYPE_CHECKING:
     from otx.core.types.label import LabelInfoTypes
 
 
-AVAILABLE_MODEL_VERSIONS: list[str] = [
-    "atss_mobilenetv2",
-    "atss_resnext101",
-]
-
 PRETRAINED_ROOT: (
     str
 ) = "https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/object_detection/v2/"
@@ -62,7 +57,7 @@ class ATSS(ExplainableOTXDetModel):
 
     def __init__(
         self,
-        model_name: str,
+        model_name: Literal["atss_mobilenetv2", "atss_resnext101"],
         label_info: LabelInfoTypes,
         input_size: tuple[int, int] = (800, 992),
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
@@ -85,10 +80,6 @@ class ATSS(ExplainableOTXDetModel):
 
     def _build_model(self, num_classes: int) -> SingleStageDetector:
         # initialize backbones
-        if self.model_name not in AVAILABLE_MODEL_VERSIONS:
-            msg = f"Model version {self.model_name} is not supported."
-            raise ValueError(msg)
-
         train_cfg = {
             "assigner": ATSSAssigner(topk=9),
             "sampler": PseudoSampler(),

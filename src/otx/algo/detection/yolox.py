@@ -5,7 +5,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Literal
 
 from otx.algo.common.losses import CrossEntropyLoss, L1Loss
 from otx.algo.detection.backbones import CSPDarknet
@@ -34,13 +34,6 @@ if TYPE_CHECKING:
     from otx.core.schedulers import LRSchedulerListCallable
     from otx.core.types.label import LabelInfoTypes
 
-
-AVAILABLE_MODEL_VERSIONS: list[str] = [
-    "yolox_tiny",
-    "yolox_s",
-    "yolox_l",
-    "yolox_x",
-]
 
 PRETRAINED_ROOT: dict[str, str] = {
     "openvino": "https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/object_detection/v2/",
@@ -71,7 +64,7 @@ class YOLOX(ExplainableOTXDetModel):
 
     def __init__(
         self,
-        model_name: str,
+        model_name: Literal["yolox_tiny", "yolox_s", "yolox_l", "yolox_x"],
         label_info: LabelInfoTypes,
         input_size: tuple[int, int] = (640, 640),
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
@@ -100,10 +93,6 @@ class YOLOX(ExplainableOTXDetModel):
             self.std = (1.0, 1.0, 1.0)
 
     def _build_model(self, num_classes: int) -> SingleStageDetector:
-        if self.model_name not in AVAILABLE_MODEL_VERSIONS:
-            msg = f"Model version {self.model_name} is not supported."
-            raise ValueError(msg)
-
         train_cfg: dict[str, Any] = {"assigner": SimOTAAssigner(center_radius=2.5)}
         test_cfg = {
             "nms": {"type": "nms", "iou_threshold": 0.65},

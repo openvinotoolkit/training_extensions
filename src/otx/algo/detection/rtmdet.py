@@ -5,7 +5,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal
 
 from otx.algo.common.backbones import CSPNeXt
 from otx.algo.common.losses import GIoULoss, QualityFocalLoss
@@ -33,8 +33,6 @@ if TYPE_CHECKING:
     from otx.core.types.label import LabelInfoTypes
 
 
-AVAILABLE_MODEL_VERSIONS: list[str] = ["rtmdet_tiny"]
-
 PRETRAINED_ROOT: (
     str
 ) = "https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/object_detection/v2/"
@@ -57,7 +55,7 @@ class RTMDet(ExplainableOTXDetModel):
 
     def __init__(
         self,
-        model_name: str,
+        model_name: Literal["rtmdet_tiny"],
         label_info: LabelInfoTypes,
         input_size: tuple[int, int] = (640, 640),
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
@@ -78,11 +76,7 @@ class RTMDet(ExplainableOTXDetModel):
             tile_config=tile_config,
         )
 
-    def _build_model(self, num_classes: int) -> RTMDet:
-        if self.model_name not in AVAILABLE_MODEL_VERSIONS:
-            msg = f"Model version {self.model_name} is not supported."
-            raise ValueError(msg)
-
+    def _build_model(self, num_classes: int) -> SingleStageDetector:
         train_cfg = {
             "assigner": DynamicSoftLabelAssigner(topk=13),
             "sampler": PseudoSampler(),

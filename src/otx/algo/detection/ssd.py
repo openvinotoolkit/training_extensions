@@ -10,7 +10,7 @@ Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/d
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Literal
 
 import numpy as np
 from datumaro.components.annotation import Bbox
@@ -66,7 +66,7 @@ class SSD(ExplainableOTXDetModel):
 
     def __init__(
         self,
-        model_name: str,
+        model_name: Literal["ssd_mobilenetv2"],
         label_info: LabelInfoTypes,
         input_size: tuple[int, int] = (864, 864),
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
