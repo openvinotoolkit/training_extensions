@@ -16,7 +16,7 @@ class MockGTInstance:
 
 class TestClassIncrementalMixin:
     def test_ignore_label(self) -> None:
-        atss = ATSS(model_version="atss_mobilenetv2", label_info=3, input_size=(800, 992))
+        atss = ATSS(model_name="atss_mobilenetv2", label_info=3, input_size=(800, 992))
         criterion = ATSSCriterion(
             num_classes=3,
             bbox_coder=DeltaXYWHBBoxCoder(

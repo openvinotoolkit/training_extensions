@@ -8,39 +8,26 @@ Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/d
 
 from __future__ import annotations
 
+import copy
 from abc import abstractmethod
 
 import torch
-from torch import Tensor, nn
+from torch import Tensor
 
 from otx.algo.common.utils.nms import batched_nms, multiclass_nms
 from otx.algo.common.utils.utils import dynamic_topk, filter_scores_and_topk, gather_topk, select_single_mlvl
 from otx.algo.detection.utils.utils import unpack_det_entity
+from otx.algo.modules.base_module import BaseModule
 from otx.algo.utils.mmengine_utils import InstanceData
 from otx.core.data.entity.base import OTXBatchDataEntity
 from otx.core.data.entity.detection import DetBatchDataEntity
 
 
-class BaseDenseHead(nn.Module):
+class BaseDenseHead(BaseModule):
     """Base class for DenseHeads."""
 
-    def __init__(
-        self,
-        max_per_img: int = 1000,
-        min_bbox_size: int = 0,
-        nms_iou_threshold: float = 0.7,
-        score_threshold: float = 0.05,
-        nms_pre: int = 1000,
-        with_nms: bool = True,
-    ) -> None:
-        super().__init__()
-
-        self.max_per_img = max_per_img
-        self.min_bbox_size = min_bbox_size
-        self.score_threshold = score_threshold
-        self.nms_iou_threshold = nms_iou_threshold
-        self.nms_pre = nms_pre
-        self.with_nms = with_nms
+    def __init__(self, init_cfg: dict | list[dict] | None = None) -> None:
+        super().__init__(init_cfg=init_cfg)
         # `_raw_positive_infos` will be used in `get_positive_infos`, which
         # can get positive information.
         self._raw_positive_infos: dict = {}
@@ -137,7 +124,9 @@ class BaseDenseHead(nn.Module):
         bbox_preds: list[Tensor],
         score_factors: list[Tensor] | None = None,
         batch_img_metas: list[dict] | None = None,
+        cfg: dict | None = None,
         rescale: bool = False,
+        with_nms: bool = True,
     ) -> list[InstanceData]:
         """Transform a batch of output features extracted from the head into bbox results.
 
@@ -157,8 +146,12 @@ class BaseDenseHead(nn.Module):
                 (batch_size, num_priors * 1, H, W). Defaults to None.
             batch_img_metas (list[dict], Optional): Batch image meta info.
                 Defaults to None.
+            cfg (dict, optional): Test / postprocessing configuration, if None, test_cfg would be used.
+                Defaults to None.
             rescale (bool): If True, return boxes in original image space.
                 Defaults to False.
+            with_nms (bool): If True, do nms before return boxes.
+                Defaults to True.
 
         Returns:
             list[InstanceData]: Object detection results of each image
@@ -200,7 +193,9 @@ class BaseDenseHead(nn.Module):
                 score_factor_list=score_factor_list,
                 mlvl_priors=mlvl_priors,
                 img_meta=img_meta,
+                cfg=cfg,
                 rescale=rescale,
+                with_nms=with_nms,
             )
             result_list.append(results)
         return result_list
@@ -212,8 +207,9 @@ class BaseDenseHead(nn.Module):
         score_factor_list: list[Tensor],
         mlvl_priors: list[Tensor],
         img_meta: dict,
+        cfg: dict | None = None,
         rescale: bool = False,
-        score_thr: float = 0.05,
+        with_nms: bool = True,
     ) -> InstanceData:
         """Transform a single image's features extracted from the head into bbox results.
 
@@ -234,8 +230,12 @@ class BaseDenseHead(nn.Module):
                 when `with_stride=True`, otherwise it still has shape
                 (num_priors, 4).
             img_meta (dict): Image meta info.
+            cfg (dict, optional): Test / postprocessing configuration,
+                if None, test_cfg would be used.
             rescale (bool): If True, return boxes in original image space.
                 Defaults to False.
+            with_nms (bool): If True, do nms before return boxes.
+                Defaults to True.
 
         Returns:
             InstanceData: Detection results of each image
@@ -249,7 +249,11 @@ class BaseDenseHead(nn.Module):
                   the last dimension 4 arrange as (x1, y1, x2, y2).
         """
         with_score_factors = score_factor_list[0] is not None
+
+        cfg = self.test_cfg if cfg is None else cfg
+        cfg = copy.deepcopy(cfg)
         img_shape = img_meta["img_shape"]
+        nms_pre = cfg.get("nms_pre", -1)
 
         mlvl_bbox_preds = []
         mlvl_valid_priors = []
@@ -286,11 +290,13 @@ class BaseDenseHead(nn.Module):
             # There is no difference in performance for most models. If you
             # find a slight drop in performance, you can set a larger
             # `nms_pre` than before.
+            score_thr = cfg.get("score_thr", 0)
+
             filtered_results: dict
             scores, labels, keep_idxs, filtered_results = filter_scores_and_topk(  # type: ignore[assignment]
                 scores,
                 score_thr,
-                self.nms_pre,
+                nms_pre,
                 {"bbox_pred": bbox_pred, "priors": priors},
             )
 
@@ -319,15 +325,15 @@ class BaseDenseHead(nn.Module):
         if with_score_factors:
             results.score_factors = torch.cat(mlvl_score_factors)
 
-        return self._bbox_post_process(results=results, rescale=rescale, img_meta=img_meta)
+        return self._bbox_post_process(results=results, cfg=cfg, rescale=rescale, with_nms=with_nms, img_meta=img_meta)
 
     def _bbox_post_process(
         self,
         results: InstanceData,
+        cfg: dict,
         img_meta: dict,
         rescale: bool = False,
-        class_agnostic: bool = False,
-        split_thr: int = 10000,
+        with_nms: bool = True,
     ) -> InstanceData:
         """Bbox post-processing method.
 
@@ -337,8 +343,12 @@ class BaseDenseHead(nn.Module):
         Args:
             results (InstaceData): Detection instance results,
                 each item has shape (num_bboxes, ).
+            cfg (dict): Test / postprocessing configuration,
+                if None, test_cfg would be used.
             rescale (bool): If True, return boxes in original image space.
                 Default to False.
+            with_nms (bool): If True, do nms before return boxes.
+                Default to True.
             img_meta (dict, optional): Image meta info. Defaults to None.
 
         Returns:
@@ -363,28 +373,20 @@ class BaseDenseHead(nn.Module):
             results.scores = results.scores * score_factors  # type: ignore[attr-defined]
 
         # filter small size bboxes
-        if self.min_bbox_size >= 0:
+        if (min_bbox_size := cfg.get("min_bbox_size", -1)) >= 0:
             w = results.bboxes[:, 2] - results.bboxes[:, 0]  # type: ignore[attr-defined]
             h = results.bboxes[:, 3] - results.bboxes[:, 1]  # type: ignore[attr-defined]
-            valid_mask = (w > self.min_bbox_size) & (h > self.min_bbox_size)
+            valid_mask = (w > min_bbox_size) & (h > min_bbox_size)
             if not valid_mask.all():
                 results = results[valid_mask]
 
-        if self.with_nms and results.bboxes.numel() > 0:  # type: ignore[attr-defined]
+        if with_nms and results.bboxes.numel() > 0:  # type: ignore[attr-defined]
             bboxes = results.bboxes  # type: ignore[attr-defined]
-            det_bboxes, keep_idxs = batched_nms(
-                bboxes,
-                results.scores,
-                results.labels,
-                iou_threshold=self.nms_iou_threshold,
-                split_thr=split_thr,
-                class_agnostic=class_agnostic,
-                max_num=self.max_per_img,
-            )  # type: ignore[attr-defined]
+            det_bboxes, keep_idxs = batched_nms(bboxes, results.scores, results.labels, cfg["nms"])  # type: ignore[attr-defined]
             results = results[keep_idxs]
             # some nms would reweight the score, such as softnms
             results.scores = det_bboxes[:, -1]
-            results = results[: self.max_per_img]
+            results = results[: cfg["max_per_img"]]
 
         return results
 
@@ -417,7 +419,9 @@ class BaseDenseHead(nn.Module):
         bbox_preds: list[Tensor],
         score_factors: list[Tensor] | None = None,
         batch_img_metas: list[dict] | None = None,
+        cfg: dict | None = None,
         rescale: bool = False,
+        with_nms: bool = True,
     ) -> tuple[Tensor, Tensor] | tuple[Tensor, Tensor, Tensor]:
         """Transform a batch of output features extracted from the head into bbox results.
 
@@ -439,8 +443,13 @@ class BaseDenseHead(nn.Module):
                 (batch_size, num_priors * 1, H, W). Defaults to None.
             batch_img_metas (list[dict], Optional): Batch image meta info.
                 Defaults to None.
+            cfg (dict, optional): Test / postprocessing
+                configuration, if None, test_cfg would be used.
+                Defaults to None.
             rescale (bool): If True, return boxes in original image space.
                 Defaults to False.
+            with_nms (bool): If True, do nms before return boxes.
+                Defaults to True.
 
         Returns:
             tuple[Tensor, Tensor] | tuple[Tensor, Tensor, Tensor]:
@@ -478,7 +487,8 @@ class BaseDenseHead(nn.Module):
 
         img_shape = batch_img_metas[0]["img_shape"]
         batch_size = cls_scores[0].shape[0]
-        pre_topk = self.nms_pre
+        cfg = cfg or self.test_cfg
+        pre_topk = cfg.get("nms_pre", -1)
 
         mlvl_valid_bboxes = []
         mlvl_valid_scores = []
@@ -552,8 +562,8 @@ class BaseDenseHead(nn.Module):
             batch_bboxes,
             batch_scores,
             max_output_boxes_per_class=200,  # TODO (sungchul): temporarily set to mmdeploy cfg, will be updated
-            iou_threshold=self.nms_iou_threshold,
-            score_threshold=self.score_threshold,
+            iou_threshold=cfg["nms"]["iou_threshold"],
+            score_threshold=cfg["score_thr"],
             pre_top_k=5000,
-            keep_top_k=self.max_per_img,
+            keep_top_k=cfg["max_per_img"],
         )

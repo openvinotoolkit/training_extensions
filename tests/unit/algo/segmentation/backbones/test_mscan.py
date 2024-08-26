@@ -4,7 +4,7 @@ from unittest.mock import MagicMock
 import pytest
 import torch
 from otx.algo.segmentation.backbones import mscan as target_file
-from otx.algo.segmentation.backbones.mscan import NNMSCAN, DropPath, drop_path
+from otx.algo.segmentation.backbones.mscan import DropPath, MSCANModule, drop_path
 
 
 @pytest.mark.parametrize("dim", [1, 2, 3, 4])
@@ -59,7 +59,7 @@ class TestDropPath:
 class TestMSCABlock:
     def test_init(self):
         num_stages = 4
-        mscan = NNMSCAN(num_stages=num_stages)
+        mscan = MSCANModule(num_stages=num_stages)
 
         for i in range(num_stages):
             assert hasattr(mscan, f"patch_embed{i + 1}")
@@ -68,7 +68,7 @@ class TestMSCABlock:
 
     def test_forward(self):
         num_stages = 4
-        mscan = NNMSCAN(num_stages=num_stages)
+        mscan = MSCANModule(num_stages=num_stages)
         x = torch.rand(8, 3, 3, 3)
         out = mscan.forward(x)
 
@@ -93,14 +93,14 @@ class TestMSCABlock:
         return mocker.patch("otx.algo.segmentation.backbones.mscan.torch.load")
 
     def test_load_pretrained_weights(self, pretrained_weight, mock_torch_load, mock_load_checkpoint_to_model):
-        NNMSCAN(pretrained_weights=pretrained_weight)
+        MSCANModule(pretrained_weights=pretrained_weight)
 
         mock_torch_load.assert_called_once_with(pretrained_weight, "cpu")
         mock_load_checkpoint_to_model.assert_called_once()
 
     def test_load_pretrained_weights_from_url(self, mock_load_from_http, mock_load_checkpoint_to_model):
         pretrained_weight = "www.fake.com/fake.pth"
-        NNMSCAN(pretrained_weights=pretrained_weight)
+        MSCANModule(pretrained_weights=pretrained_weight)
 
         cache_dir = Path.home() / ".cache" / "torch" / "hub" / "checkpoints"
         mock_load_from_http.assert_called_once_with(filename=pretrained_weight, map_location="cpu", model_dir=cache_dir)

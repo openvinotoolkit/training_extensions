@@ -13,7 +13,8 @@ import warnings
 import torch
 from torch import Tensor, nn
 
-from otx.algo.common.utils.prior_generators import AnchorGenerator
+from otx.algo.common.utils.coders import BaseBBoxCoder
+from otx.algo.common.utils.prior_generators import BasePriorGenerator
 from otx.algo.common.utils.utils import multi_apply
 from otx.algo.detection.heads.base_head import BaseDenseHead
 from otx.algo.detection.utils.prior_generators.utils import anchor_inside_flags
@@ -36,52 +37,32 @@ class AnchorHead(BaseDenseHead):
         loss_bbox (nn.Module | None): Module of localization loss.
             It is related to RPNHead for iseg, will be deprecated.
             Defaults to None.
-        assigner (nn.Module): Module of assigner.
-        sampler (nn.Module): Module of sampler.
+        train_cfg (dict): Training config of anchor head.
+        test_cfg (dict, optional): Testing config of anchor head.
         feat_channels (int): Number of hidden channels. Used in child classes.
         reg_decoded_bbox (bool): If true, the regression loss would be
             applied directly on decoded bounding boxes, converting both
             the predicted boxes and regression targets to absolute
             coordinates format. Default False. It should be `True` when
             using `IoULoss`, `GIoULoss`, or `DIoULoss` in the bbox head.
-        allowed_border (float): The border to allow the proposal target
-            when the height or width of an instance is smaller than
-            this value. In most cases, 0 is used. Only used in
-            `RCNNHead`.
-        pos_weight (float): Weight of positive examples in loss calculation.
-            Defaults to 1.
+        init_cfg (dict, list[dict], optional): Initialization config dict.
     """
 
     def __init__(
         self,
         num_classes: int,
         in_channels: tuple[int, ...] | int,
-        anchor_generator: nn.Module,
-        bbox_coder: nn.Module,
-        loss_cls: nn.Module,
-        loss_bbox: nn.Module,
-        assigner: nn.Module,
-        sampler: nn.Module,
+        anchor_generator: BasePriorGenerator,
+        bbox_coder: BaseBBoxCoder,
+        train_cfg: dict,
+        loss_cls: nn.Module | None = None,  # TODO (kirill): deprecated
+        loss_bbox: nn.Module | None = None,  # TODO (kirill): deprecated
+        test_cfg: dict | None = None,
         feat_channels: int = 256,
         reg_decoded_bbox: bool = False,
-        allowed_border: float = 0.0,
-        pos_weight: float = 1.0,
-        max_per_img: int = 1000,
-        min_bbox_size: int = 0,
-        nms_iou_threshold: float = 0.7,
-        score_threshold: float = 0.05,
-        nms_pre: int = 1000,
-        with_nms: bool = True,
+        init_cfg: dict | list[dict] | None = None,
     ) -> None:
-        super().__init__(
-            max_per_img=max_per_img,
-            min_bbox_size=min_bbox_size,
-            nms_iou_threshold=nms_iou_threshold,
-            nms_pre=nms_pre,
-            score_threshold=score_threshold,
-            with_nms=with_nms,
-        )
-
+        super().__init__(init_cfg=init_cfg)
         self.in_channels = in_channels
         self.num_classes = num_classes
         self.feat_channels = feat_channels
@@ -99,10 +80,14 @@ class AnchorHead(BaseDenseHead):
         self.bbox_coder = bbox_coder
         self.loss_cls = loss_cls
         self.loss_bbox = loss_bbox
-        self.assigner = assigner
-        self.sampler = sampler
-        self.allowed_border = allowed_border
-        self.pos_weight = pos_weight
+        self.train_cfg = train_cfg
+        self.test_cfg = test_cfg
+        if self.train_cfg:
+            self.assigner = self.train_cfg.get("assigner", None)
+            self.sampler = self.train_cfg.get("sampler", None)
+
+        self.fp16_enabled = False
+
         self.prior_generator = anchor_generator
 
         # Usually the numbers of anchors for each level are the same
@@ -123,7 +108,7 @@ class AnchorHead(BaseDenseHead):
         return self.prior_generator.num_base_priors[0]
 
     @property
-    def anchor_generator(self) -> AnchorGenerator:
+    def anchor_generator(self) -> BasePriorGenerator:
         """Anchor generator."""
         warnings.warn(
             "DeprecationWarning: anchor_generator is deprecated, please use `prior_generator` instead",
@@ -253,7 +238,7 @@ class AnchorHead(BaseDenseHead):
             flat_anchors,
             valid_flags,
             img_meta["img_shape"][:2],
-            self.allowed_border,
+            self.train_cfg["allowed_border"],
         )
         if not inside_flags.any():
             msg = (
@@ -293,10 +278,10 @@ class AnchorHead(BaseDenseHead):
             bbox_weights[pos_inds, :] = 1.0
 
             labels[pos_inds] = sampling_result.pos_gt_labels
-            if self.pos_weight <= 0:
+            if self.train_cfg["pos_weight"] <= 0:
                 label_weights[pos_inds] = 1.0
             else:
-                label_weights[pos_inds] = self.pos_weight
+                label_weights[pos_inds] = self.train_cfg["pos_weight"]
         if len(neg_inds) > 0:
             label_weights[neg_inds] = 1.0
 

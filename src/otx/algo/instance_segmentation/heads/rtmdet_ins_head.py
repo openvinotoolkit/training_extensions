@@ -639,14 +639,6 @@ class RTMDetInsHead(RTMDetHead):
         """Compute losses of the head."""
         num_imgs = len(batch_img_metas)
         device = cls_scores[0].device
-        raw_outputs = super().loss_by_feat(
-            cls_scores=cls_scores,
-            bbox_preds=bbox_preds,
-            batch_gt_instances=batch_gt_instances,
-            batch_img_metas=batch_img_metas,
-            batch_gt_instances_ignore=batch_gt_instances_ignore,
-        )
-
         flatten_kernels = torch.cat(
             [
                 kernel_pred.permute(0, 2, 3, 1).reshape(num_imgs, -1, self.num_gen_params)
@@ -662,6 +654,14 @@ class RTMDetInsHead(RTMDetHead):
                 if len(ndarray_masks) == 0:
                     ndarray_masks = np.empty((0, *img_meta["img_shape"]), dtype=np.uint8)
                 gt_instances.masks = torch.tensor(ndarray_masks, dtype=torch.bool, device=device)
+
+        raw_outputs = super().loss_by_feat(
+            cls_scores=cls_scores,
+            bbox_preds=bbox_preds,
+            batch_gt_instances=batch_gt_instances,
+            batch_img_metas=batch_img_metas,
+            batch_gt_instances_ignore=batch_gt_instances_ignore,
+        )
 
         raw_iseg_outputs = self.loss_mask_by_feat(
             mask_feat,

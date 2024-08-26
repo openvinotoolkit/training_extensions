@@ -9,14 +9,16 @@ Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/d
 from __future__ import annotations
 
 from functools import partial
-from typing import Callable
+from typing import Any, Callable, ClassVar
 
 import torch
 from torch import Tensor, nn
 
+from otx.algo.common.utils.coders import BaseBBoxCoder
 from otx.algo.common.utils.nms import multiclass_nms
+from otx.algo.common.utils.prior_generators import BasePriorGenerator
 from otx.algo.common.utils.utils import distance2bbox, inverse_sigmoid, multi_apply
-from otx.algo.detection.heads import ATSSHead
+from otx.algo.detection.heads.atss_head import ATSSHeadModule
 from otx.algo.detection.utils.prior_generators.utils import anchor_inside_flags
 from otx.algo.detection.utils.utils import (
     images_to_levels,
@@ -31,7 +33,7 @@ from otx.algo.utils.mmengine_utils import InstanceData
 from otx.algo.utils.weight_init import bias_init_with_prob, constant_init, normal_init
 
 
-class RTMDetHead(ATSSHead):
+class RTMDetHead(ATSSHeadModule):
     """Detection Head of RTMDet.
 
     Args:
@@ -47,35 +49,15 @@ class RTMDetHead(ATSSHead):
         self,
         num_classes: int,
         in_channels: int,
-        assigner: nn.Module,
-        sampler: nn.Module,
         with_objectness: bool = True,
         activation: Callable[..., nn.Module] = nn.ReLU,
-        allowed_border: float = 0.0,
-        pos_weight: float = 1.0,
-        max_per_img: int = 1000,
-        min_bbox_size: int = 0,
-        nms_iou_threshold: float = 0.7,
-        score_threshold: float = 0.05,
-        nms_pre: int = 1000,
-        with_nms: bool = True,
+        **kwargs,
     ) -> None:
         self.activation = activation
         self.with_objectness = with_objectness
-        super().__init__(
-            num_classes,
-            in_channels,
-            max_per_img=max_per_img,
-            min_bbox_size=min_bbox_size,
-            nms_iou_threshold=nms_iou_threshold,
-            nms_pre=nms_pre,
-            score_threshold=score_threshold,
-            with_nms=with_nms,
-            allowed_border=allowed_border,
-            pos_weight=pos_weight,
-        )
-        self.assigner = assigner
-        self.sampler = sampler
+        super().__init__(num_classes, in_channels, **kwargs)
+        if self.train_cfg:
+            self.assigner = self.train_cfg["assigner"]
 
     def _init_layers(self) -> None:
         """Initialize layers of the head."""
@@ -261,6 +243,7 @@ class RTMDetHead(ATSSHead):
         cls_scores: list[Tensor],
         bbox_preds: list[Tensor],
         batch_img_metas: list[dict] | None = None,
+        cfg: dict | None = None,
         rescale: bool = False,
         with_nms: bool = True,
     ) -> tuple[Tensor, Tensor] | tuple[Tensor, Tensor, Tensor]:
@@ -277,6 +260,9 @@ class RTMDetHead(ATSSHead):
                 (batch_size, num_priors * 4, H, W).
             batch_img_metas (list[dict], Optional): Batch image meta info.
                 Defaults to None.
+            cfg (dict, optional): Test / postprocessing
+                configuration, if None, test_cfg would be used.
+                Defaults to None.
             rescale (bool): If True, return boxes in original image space.
                 Defaults to False.
             with_nms (bool): If True, do nms before return boxes.
@@ -291,6 +277,7 @@ class RTMDetHead(ATSSHead):
         """
         assert len(cls_scores) == len(bbox_preds)  # noqa: S101
         device = cls_scores[0].device
+        cfg = self.test_cfg if cfg is None else cfg
         batch_size = bbox_preds[0].shape[0]
         featmap_sizes = [cls_score.shape[2:] for cls_score in cls_scores]
         mlvl_priors = self.prior_generator.grid_priors(featmap_sizes, device=device)
@@ -315,10 +302,10 @@ class RTMDetHead(ATSSHead):
             bboxes,
             scores,
             max_output_boxes_per_class=200,
-            iou_threshold=self.nms_iou_threshold,
-            score_threshold=self.score_threshold,
+            iou_threshold=cfg["nms"]["iou_threshold"],  # type: ignore[index]
+            score_threshold=cfg["score_thr"],  # type: ignore[index]
             pre_top_k=5000,
-            keep_top_k=self.max_per_img,
+            keep_top_k=cfg["max_per_img"],  # type: ignore[index]
         )
 
     def get_targets(  # type: ignore[override]
@@ -485,7 +472,7 @@ class RTMDetHead(ATSSHead):
             flat_anchors,
             valid_flags,
             img_meta["img_shape"][:2],
-            self.allowed_border,
+            self.train_cfg["allowed_border"],
         )
         if not inside_flags.any():
             return (None,) * 7
@@ -516,10 +503,10 @@ class RTMDetHead(ATSSHead):
             bbox_targets[pos_inds, :] = pos_bbox_targets
 
             labels[pos_inds] = sampling_result.pos_gt_labels
-            if self.pos_weight <= 0:
+            if self.train_cfg["pos_weight"] <= 0:
                 label_weights[pos_inds] = 1.0
             else:
-                label_weights[pos_inds] = self.pos_weight
+                label_weights[pos_inds] = self.train_cfg["pos_weight"]
         if len(neg_inds) > 0:
             label_weights[neg_inds] = 1.0
 
@@ -574,7 +561,7 @@ class RTMDetHead(ATSSHead):
         return anchor_list, valid_flag_list
 
 
-class RTMDetSepBNHead(RTMDetHead):
+class RTMDetSepBNHeadModule(RTMDetHead):
     """RTMDetHead with separated BN layers and shared conv layers.
 
     Args:
@@ -737,3 +724,41 @@ class RTMDetSepBNHead(RTMDetHead):
             cls_scores.append(cls_score)
             bbox_preds.append(reg_dist)
         return tuple(cls_scores), tuple(bbox_preds)
+
+
+class RTMDetSepBNHead:
+    """RTMDetSepBNHead factory for detection."""
+
+    RTMDETSEPBNHEAD_CFG: ClassVar[dict[str, Any]] = {
+        "rtmdet_tiny": {
+            "in_channels": 96,
+            "stacked_convs": 2,
+            "feat_channels": 96,
+            "with_objectness": False,
+            "normalization": nn.BatchNorm2d,
+            "activation": partial(nn.SiLU, inplace=True),
+        },
+    }
+
+    def __new__(
+        cls,
+        model_name: str,
+        num_classes: int,
+        anchor_generator: BasePriorGenerator,
+        bbox_coder: BaseBBoxCoder,
+        train_cfg: dict,
+        test_cfg: dict | None = None,
+    ) -> RTMDetSepBNHeadModule:
+        """Constructor for RTMDetSepBNHead."""
+        if model_name not in cls.RTMDETSEPBNHEAD_CFG:
+            msg = f"model type '{model_name}' is not supported"
+            raise KeyError(msg)
+
+        return RTMDetSepBNHeadModule(
+            **cls.RTMDETSEPBNHEAD_CFG[model_name],
+            num_classes=num_classes,
+            anchor_generator=anchor_generator,
+            bbox_coder=bbox_coder,
+            train_cfg=train_cfg,  # TODO (sungchul, kirill): remove
+            test_cfg=test_cfg,  # TODO (sungchul, kirill): remove
+        )

@@ -14,6 +14,8 @@ from typing import Any, Callable, ClassVar
 import torch
 from torch import Tensor, nn
 
+from otx.algo.common.utils.coders import BaseBBoxCoder
+from otx.algo.common.utils.prior_generators import BasePriorGenerator
 from otx.algo.common.utils.utils import multi_apply, reduce_mean
 from otx.algo.detection.heads.anchor_head import AnchorHead
 from otx.algo.detection.heads.class_incremental_mixin import (
@@ -48,7 +50,6 @@ class ATSSHeadModule(ClassIncrementalMixin, AnchorHead):
             the predicted boxes and regression targets to absolute
             coordinates format. Defaults to False. It should be `True` when
             using `IoULoss`, `GIoULoss`, or `DIoULoss` in the bbox head.
-        loss_centerness (nn.Module, optinoal): Module of centerness loss. Defaults to None.
         init_cfg (dict, list[dict], optional): Initialization config dict.
     """
 
@@ -56,8 +57,6 @@ class ATSSHeadModule(ClassIncrementalMixin, AnchorHead):
         self,
         num_classes: int,
         in_channels: int,
-        loss_cls: nn.Module,
-        loss_bbox: nn.Module,
         pred_kernel_size: int = 3,
         stacked_convs: int = 4,
         normalization: Callable[..., nn.Module] = partial(
@@ -67,33 +66,24 @@ class ATSSHeadModule(ClassIncrementalMixin, AnchorHead):
             requires_grad=True,
         ),
         reg_decoded_bbox: bool = True,
-        allowed_border: float = 0.0,
-        pos_weight: float = 1.0,
-        max_per_img: int = 1000,
-        min_bbox_size: int = 0,
-        nms_iou_threshold: float = 0.7,
-        score_threshold: float = 0.05,
-        nms_pre: int = 1000,
-        with_nms: bool = True,
+        init_cfg: dict | None = None,
+        **kwargs,
     ) -> None:
         self.pred_kernel_size = pred_kernel_size
         self.stacked_convs = stacked_convs
         self.normalization = normalization
-
+        init_cfg = init_cfg or {
+            "type": "Normal",
+            "layer": "Conv2d",
+            "std": 0.01,
+            "override": {"type": "Normal", "name": "atss_cls", "std": 0.01, "bias_prob": 0.01},
+        }
         super().__init__(
-            loss_cls=loss_cls,
-            loss_bbox=loss_bbox,
             num_classes=num_classes,
             in_channels=in_channels,
             reg_decoded_bbox=reg_decoded_bbox,
-            max_per_img=max_per_img,
-            min_bbox_size=min_bbox_size,
-            nms_iou_threshold=nms_iou_threshold,
-            nms_pre=nms_pre,
-            score_threshold=score_threshold,
-            with_nms=with_nms,
-            allowed_border=allowed_border,
-            pos_weight=pos_weight,
+            init_cfg=init_cfg,
+            **kwargs,
         )
 
         self.sampling = False
@@ -338,7 +328,7 @@ class ATSSHeadModule(ClassIncrementalMixin, AnchorHead):
             flat_anchors,
             valid_flags,
             img_meta["img_shape"][:2],
-            self.allowed_border,
+            self.train_cfg["allowed_border"],
         )
         if not inside_flags.any():
             msg = (
@@ -379,10 +369,10 @@ class ATSSHeadModule(ClassIncrementalMixin, AnchorHead):
             bbox_weights[pos_inds, :] = 1.0
 
             labels[pos_inds] = sampling_result.pos_gt_labels
-            if self.pos_weight <= 0:
+            if self.train_cfg["pos_weight"] <= 0:
                 label_weights[pos_inds] = 1.0
             else:
-                label_weights[pos_inds] = self.pos_weight
+                label_weights[pos_inds] = self.train_cfg["pos_weight"]
         if len(neg_inds) > 0:
             label_weights[neg_inds] = 1.0
 
@@ -413,26 +403,25 @@ class ATSSHead:
         },
         "atss_resnext101": {
             "in_channels": 256,
-            "feat_channels": 256,
         },
     }
 
     def __new__(
         cls,
-        version: str,
+        model_name: str,
         num_classes: int,
-        anchor_generator: object,
-        bbox_coder: object,
+        anchor_generator: BasePriorGenerator,
+        bbox_coder: BaseBBoxCoder,
         train_cfg: dict,
         test_cfg: dict | None = None,
     ) -> ATSSHeadModule:
-        """Constructor for FCNHead."""
-        if version not in cls.ATSSHEAD_CFG:
-            msg = f"model type '{version}' is not supported"
+        """Constructor for ATSSHead."""
+        if model_name not in cls.ATSSHEAD_CFG:
+            msg = f"model type '{model_name}' is not supported"
             raise KeyError(msg)
 
         return ATSSHeadModule(
-            **cls.ATSSHEAD_CFG[version],
+            **cls.ATSSHEAD_CFG[model_name],
             num_classes=num_classes,
             anchor_generator=anchor_generator,
             bbox_coder=bbox_coder,

@@ -190,7 +190,11 @@ class OTXCLI:
         if "logger" in added_arguments:
             parser.link_arguments("workspace.work_dir", "logger.init_args.save_dir", apply_on="instantiate")
             parser.link_arguments("workspace.work_dir", "logger.init_args.log_dir", apply_on="instantiate")
-        if "checkpoint" in added_arguments and "--checkpoint" in sys.argv:
+        if (
+            "checkpoint" in added_arguments
+            and "--checkpoint" in sys.argv
+            and any("openvino_model.yaml" in arg for arg in sys.argv)
+        ):
             # This is code for an OVModel that uses checkpoint in model.model_name.
             parser.link_arguments("checkpoint", "model.init_args.model_name")
 

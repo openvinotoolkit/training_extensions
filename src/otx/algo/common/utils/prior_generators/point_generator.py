@@ -33,7 +33,7 @@ class MlvlPointGenerator(BasePriorGenerator):
     """
 
     def __init__(self, strides: list[int] | list[tuple[int, int]], offset: float = 0.5) -> None:
-        self.strides = [_pair(stride) for stride in strides]
+        self.strides: list[tuple[int, int]] = [_pair(stride) for stride in strides]
         self.offset = offset
 
     @property

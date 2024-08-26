@@ -5,13 +5,12 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, ClassVar
+from typing import TYPE_CHECKING, Literal
 
 from otx.algo.common.losses import CrossEntropyLoss, CrossSigmoidFocalLoss, GIoULoss
 from otx.algo.common.utils.coders import DeltaXYWHBBoxCoder
 from otx.algo.common.utils.prior_generators import AnchorGenerator
 from otx.algo.common.utils.samplers import PseudoSampler
-from otx.algo.detection.backbones import BackboneFactory
 from otx.algo.detection.detectors import SingleStageDetector
 from otx.algo.detection.heads import ATSSHead
 from otx.algo.detection.losses import ATSSCriterion
@@ -27,17 +26,13 @@ from otx.core.model.detection import ExplainableOTXDetModel
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
+    from torch import nn
     from typing_extensions import Self
 
     from otx.core.metrics import MetricCallable
     from otx.core.schedulers import LRSchedulerListCallable
     from otx.core.types.label import LabelInfoTypes
 
-
-AVAILABLE_MODEL_VERSIONS: list[str] = [
-    "atss_mobilenetv2",
-    "atss_resnext101",
-]
 
 PRETRAINED_ROOT: (
     str
@@ -50,25 +45,30 @@ PRETRAINED_WEIGHTS: dict[str, str] = {
 
 
 class ATSS(ExplainableOTXDetModel):
-    """OTX Detection model class for ATSS."""
+    """OTX Detection model class for ATSS.
 
-    mean: ClassVar[tuple[float, float, float]] = (0.0, 0.0, 0.0)
-    std: ClassVar[tuple[float, float, float]] = (255.0, 255.0, 255.0)
+    Default input size per model:
+        - atss_mobilenetv2 : (800, 992)
+        - atss_resnext101 : (800, 992)
+    """
+
+    mean: tuple[float, float, float] = (0.0, 0.0, 0.0)
+    std: tuple[float, float, float] = (255.0, 255.0, 255.0)
 
     def __init__(
         self,
-        model_version: str,
+        model_name: Literal["atss_mobilenetv2", "atss_resnext101"],
         label_info: LabelInfoTypes,
-        input_size: tuple[int, int],
+        input_size: tuple[int, int] = (800, 992),
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MeanAveragePrecisionFMeasureCallable,
         torch_compile: bool = False,
         tile_config: TileConfig = TileConfig(enable_tiler=False),
     ) -> None:
-        self.load_from = PRETRAINED_WEIGHTS[model_version]
+        self.load_from: str = PRETRAINED_WEIGHTS[model_name]
         super().__init__(
-            model_version=model_version,
+            model_name=model_name,
             label_info=label_info,
             input_size=input_size,
             optimizer=optimizer,
@@ -80,10 +80,6 @@ class ATSS(ExplainableOTXDetModel):
 
     def _build_model(self, num_classes: int) -> SingleStageDetector:
         # initialize backbones
-        if self.model_version not in AVAILABLE_MODEL_VERSIONS:
-            msg = f"Model version {self.model_version} is not supported."
-            raise ValueError(msg)
-
         train_cfg = {
             "assigner": ATSSAssigner(topk=9),
             "sampler": PseudoSampler(),
@@ -98,10 +94,10 @@ class ATSS(ExplainableOTXDetModel):
             "max_per_img": 100,
             "nms_pre": 1000,
         }
-        backbone = BackboneFactory(version=self.model_version)
-        neck = FPN(version=self.model_version)
+        backbone = self._build_backbone(model_name=self.model_name)
+        neck = FPN(model_name=self.model_name)
         bbox_head = ATSSHead(
-            version=self.model_version,
+            model_name=self.model_name,
             num_classes=num_classes,
             anchor_generator=AnchorGenerator(
                 ratios=[1.0],
@@ -140,6 +136,33 @@ class ATSS(ExplainableOTXDetModel):
             test_cfg=test_cfg,  # TODO (sungchul, kirill): remove
         )
 
+    def _build_backbone(self, model_name: str) -> nn.Module:
+        if "mobilenetv2" in model_name:
+            from otx.algo.common.backbones import build_model_including_pytorchcv
+
+            return build_model_including_pytorchcv(
+                cfg={
+                    "type": "mobilenetv2_w1",
+                    "out_indices": [2, 3, 4, 5],
+                    "frozen_stages": -1,
+                    "norm_eval": False,
+                    "pretrained": True,
+                },
+            )
+
+        if "resnext101" in model_name:
+            from otx.algo.common.backbones import ResNeXt
+
+            return ResNeXt(
+                depth=101,
+                groups=64,
+                frozen_stages=1,
+                init_cfg={"type": "Pretrained", "checkpoint": "open-mmlab://resnext101_64x4d"},
+            )
+
+        msg = f"Unknown backbone name: {model_name}"
+        raise ValueError(msg)
+
     @property
     def _exporter(self) -> OTXModelExporter:
         """Creates OTXModelExporter object that can export the model."""
@@ -176,7 +199,7 @@ class ATSS(ExplainableOTXDetModel):
     def to(self, *args, **kwargs) -> Self:
         """Return a model with specified device."""
         ret = super().to(*args, **kwargs)
-        if self.model_version == "atss_resnext101" and self.device.type == "xpu":
+        if self.model_name == "atss_resnext101" and self.device.type == "xpu":
             msg = f"{type(self).__name__} doesn't support XPU."
             raise RuntimeError(msg)
         return ret

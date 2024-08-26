@@ -224,10 +224,10 @@ class FPN:
         },
     }
 
-    def __new__(cls, version: str) -> FPNModule:
-        """Constructor for FCNHead."""
-        if version not in cls.FPN_CFG:
-            msg = f"model type '{version}' is not supported"
+    def __new__(cls, model_name: str) -> FPNModule:
+        """Constructor for FPN."""
+        if model_name not in cls.FPN_CFG:
+            msg = f"model type '{model_name}' is not supported"
             raise KeyError(msg)
 
-        return FPNModule(**cls.FPN_CFG[version])
+        return FPNModule(**cls.FPN_CFG[model_name])

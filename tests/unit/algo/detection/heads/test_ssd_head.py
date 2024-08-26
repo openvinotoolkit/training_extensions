@@ -1,10 +1,10 @@
 # Copyright (C) 2023-2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-"""Test of CustomSSDHead."""
+"""Test of SSDHead."""
 
 from omegaconf import DictConfig
 from otx.algo.common.utils.coders import DeltaXYWHBBoxCoder
-from otx.algo.detection.heads import SSDHead
+from otx.algo.detection.heads.ssd_head import SSDHeadModule
 from otx.algo.detection.utils.prior_generators import SSDAnchorGeneratorClustered
 
 
@@ -36,7 +36,7 @@ class TestSSDHead:
                 "max_per_img": 200,
             },
         )
-        self.head = SSDHead(
+        self.head = SSDHeadModule(
             anchor_generator=SSDAnchorGeneratorClustered(
                 strides=[16, 32],
                 widths=[

@@ -8,13 +8,13 @@ Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/tests/test_mod
 
 import torch
 from omegaconf import DictConfig
-from otx.algo.detection.heads import YOLOXHead
+from otx.algo.detection.heads.yolox_head import YOLOXHeadModule
 from otx.algo.detection.utils.assigners import SimOTAAssigner
 from otx.algo.modules.conv_module import Conv2dModule, DepthwiseSeparableConvModule
 from otx.algo.utils.mmengine_utils import InstanceData
 
 
-class TestYOLOXHead:
+class TestYOLOXHeadModule:
     def test_predict_by_feat(self):
         s = 256
         img_metas = [
@@ -24,7 +24,7 @@ class TestYOLOXHead:
             },
         ]
         test_cfg = DictConfig({"score_thr": 0.01, "nms": {"type": "nms", "iou_threshold": 0.65}})
-        head = YOLOXHead(num_classes=4, in_channels=1, stacked_convs=1, use_depthwise=False, test_cfg=test_cfg)
+        head = YOLOXHeadModule(num_classes=4, in_channels=1, stacked_convs=1, use_depthwise=False, test_cfg=test_cfg)
         feat = [torch.rand(1, 1, s // feat_size, s // feat_size) for feat_size in [4, 8, 16]]
         cls_scores, bbox_preds, objectnesses = head.forward(feat)
         head.predict_by_feat(cls_scores, bbox_preds, objectnesses, img_metas, cfg=test_cfg, rescale=True, with_nms=True)
@@ -49,7 +49,7 @@ class TestYOLOXHead:
         train_cfg = {
             "assigner": SimOTAAssigner(center_radius=2.5),
         }
-        head = YOLOXHead(num_classes=4, in_channels=1, stacked_convs=1, use_depthwise=False, train_cfg=train_cfg)
+        head = YOLOXHeadModule(num_classes=4, in_channels=1, stacked_convs=1, use_depthwise=False, train_cfg=train_cfg)
         assert not head.use_l1
         assert isinstance(head.multi_level_cls_convs[0][0], Conv2dModule)
 
@@ -78,5 +78,5 @@ class TestYOLOXHead:
 
         # When truth is non-empty then both cls and box loss should be nonzero
         # for random inputs
-        head = YOLOXHead(num_classes=4, in_channels=1, stacked_convs=1, use_depthwise=True, train_cfg=train_cfg)
+        head = YOLOXHeadModule(num_classes=4, in_channels=1, stacked_convs=1, use_depthwise=True, train_cfg=train_cfg)
         assert isinstance(head.multi_level_cls_convs[0][0], DepthwiseSeparableConvModule)

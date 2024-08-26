@@ -43,8 +43,8 @@ class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity]):
 
     input_size: tuple[int, int]
 
-    def __init__(self, model_version: str, *args, **kwargs) -> None:
-        self.model_version = model_version
+    def __init__(self, model_name: str, *args, **kwargs) -> None:
+        self.model_name = model_name
         super().__init__(*args, **kwargs)
 
     def test_step(self, batch: DetBatchDataEntity, batch_idx: int) -> None:
@@ -390,7 +390,7 @@ class ExplainableOTXDetModel(OTXDetectionModel):
 
     def __init__(
         self,
-        model_version: str,
+        model_name: str,
         label_info: LabelInfoTypes,
         input_size: tuple[int, int],
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
@@ -402,7 +402,7 @@ class ExplainableOTXDetModel(OTXDetectionModel):
         from otx.algo.explain.explain_algo import feature_vector_fn
 
         super().__init__(
-            model_version=model_version,
+            model_name=model_name,
             label_info=label_info,
             input_size=input_size,
             optimizer=optimizer,
@@ -467,11 +467,14 @@ class ExplainableOTXDetModel(OTXDetectionModel):
 
     def get_explain_fn(self) -> Callable:
         """Returns explain function."""
-        from otx.algo.detection.heads import SSDHead
+        from otx.algo.detection.heads.ssd_head import SSDHeadModule
         from otx.algo.explain.explain_algo import DetClassProbabilityMap
 
         # SSD-like heads also have background class
-        background_class = hasattr(self.model, "bbox_head") and isinstance(self.model.bbox_head, SSDHead)
+        background_class = hasattr(self.model, "bbox_head") and isinstance(
+            self.model.bbox_head,
+            SSDHeadModule,
+        )  # TODO (sungchul): revert module's name?
         tiling_mode = self.tile_config.enable_tiler if hasattr(self, "tile_config") else False
         explainer = DetClassProbabilityMap(
             num_classes=self.num_classes + background_class,

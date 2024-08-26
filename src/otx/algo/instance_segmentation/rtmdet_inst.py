@@ -32,19 +32,6 @@ if TYPE_CHECKING:
 class RTMDetInst(ExplainableOTXInstanceSegModel):
     """Implementation of RTMDet for instance segmentation."""
 
-    load_from: ClassVar[dict[str, Any]] = {
-        "rtmdet_tiny": (
-            "https://download.openmmlab.com/mmdetection/v3.0/rtmdet/rtmdet-ins_tiny_8xb32-300e_coco/"
-            "rtmdet-ins_tiny_8xb32-300e_coco_20221130_151727-ec670f7e.pth"
-        ),
-    }
-    mean = (123.675, 116.28, 103.53)
-    std = (58.395, 57.12, 57.375)
-
-    AVAILABLE_MODEL_VERSIONS: ClassVar[list[str]] = [
-        "rtmdet_tiny",
-    ]
-
     @property
     def _exporter(self) -> OTXModelExporter:
         """Creates OTXModelExporter object that can export the model."""
@@ -91,53 +78,37 @@ class RTMDetInst(ExplainableOTXInstanceSegModel):
         meta_info_list = [meta_info] * len(inputs)
         return self.model.export(inputs, meta_info_list, explain_mode=self.explain_mode)
 
+
+class RTMDetInstTiny(RTMDetInst):
+    """RTMDetInst Tiny Model."""
+
+    load_from = (
+        "https://download.openmmlab.com/mmdetection/v3.0/rtmdet/rtmdet-ins_tiny_8xb32-300e_coco/"
+        "rtmdet-ins_tiny_8xb32-300e_coco_20221130_151727-ec670f7e.pth"
+    )
+    mean = (123.675, 116.28, 103.53)
+    std = (58.395, 57.12, 57.375)
+
     def _build_model(self, num_classes: int) -> SingleStageDetector:
-        if self.model_name not in self.AVAILABLE_MODEL_VERSIONS:
-            msg = f"Model version {self.model_name} is not supported."
-            raise ValueError(msg)
+        train_cfg = {
+            "assigner": DynamicSoftLabelAssigner(topk=13),
+            "sampler": PseudoSampler(),
+            "allowed_border": -1,
+            "pos_weight": -1,
+            "debug": False,
+        }
 
-        assigner = DynamicSoftLabelAssigner(topk=13)
-        sampler = PseudoSampler()
+        test_cfg = {
+            "nms": {"type": "nms", "iou_threshold": 0.5},
+            "score_thr": 0.05,
+            "mask_thr_binary": 0.5,
+            "max_per_img": 100,
+            "min_bbox_size": 0,
+            "nms_pre": 300,
+        }
 
-        backbone = CSPNeXt(
-            arch="P5",
-            expand_ratio=0.5,
-            deepen_factor=0.167,
-            widen_factor=0.375,
-            channel_attention=True,
-            normalization=nn.BatchNorm2d,
-            activation=partial(nn.SiLU, inplace=True),
-        )
-
-        neck = CSPNeXtPAFPN(
-            in_channels=(96, 192, 384),
-            out_channels=96,
-            num_csp_blocks=1,
-            expand_ratio=0.5,
-            normalization=nn.BatchNorm2d,
-            activation=partial(nn.SiLU, inplace=True),
-        )
-
-        loss_centerness = CrossEntropyLoss(use_sigmoid=True, loss_weight=1.0)
-        loss_cls = QualityFocalLoss(
-            use_sigmoid=True,
-            beta=2.0,
-            loss_weight=1.0,
-        )
-
-        loss_bbox = GIoULoss(loss_weight=2.0)
-        loss_mask = DiceLoss(
-            loss_weight=2.0,
-            eps=5.0e-06,
-            reduction="mean",
-        )
-
-        anchor_generator = MlvlPointGenerator(
-            offset=0,
-            strides=[8, 16, 32],
-        )
-        bbox_coder = DistancePointBBoxCoder()
-
+        backbone = CSPNeXt(model_name="rtmdet_inst_tiny")
+        neck = CSPNeXtPAFPN(model_name="rtmdet_inst_tiny")
         bbox_head = RTMDetInsSepBNHead(
             num_classes=num_classes,
             in_channels=96,
