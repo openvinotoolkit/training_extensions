@@ -16,7 +16,6 @@ from otx.api.entities.label_schema import LabelSchemaEntity
 from otx.api.entities.model_template import TaskType
 from otx.api.serialization.label_mapper import LabelSchemaMapper
 from otx.api.utils.detection_utils import detection2array
-from otx.api.utils.tiler import Tiler
 
 from .utils import get_model_path, get_parameters
 
@@ -51,7 +50,7 @@ class ModelContainer:
         self.model_parameters = self.parameters["model_parameters"]
 
         if self._task_type in (
-            TaskType.ANOMALY_CLASSIFICATION,
+            TaskType.ANOMALY,
             TaskType.ANOMALY_DETECTION,
             TaskType.ANOMALY_SEGMENTATION,
         ):
