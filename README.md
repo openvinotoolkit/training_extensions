@@ -102,6 +102,7 @@ You can find more details with examples in the [CLI command intro](https://openv
 
 - Fix labels names in hierarchical config
 - Fix Learning Rate and Loss Handling in Tile Classifier MaskRCNN EfficientNet
+- Enhance Memeory Cache Handler with Complex Unique Keys
 
 ### Release History
 
