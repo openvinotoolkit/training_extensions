@@ -90,7 +90,7 @@ class Focus(nn.Module):
         return self.conv(x)
 
 
-class CSPDarknet(BaseModule):
+class CSPDarknetModule(BaseModule):
     """CSP-Darknet backbone used in YOLOv5 and YOLOX.
 
     Args:
@@ -249,3 +249,22 @@ class CSPDarknet(BaseModule):
             if i in self.out_indices:
                 outs.append(x)
         return tuple(outs)
+
+
+class CSPDarknet:
+    """CSPDarknet factory for detection."""
+
+    CSPDARKNET_CFG: ClassVar[dict[str, Any]] = {
+        "yolox_tiny": {"deepen_factor": 0.33, "widen_factor": 0.375},
+        "yolox_s": {"deepen_factor": 0.33, "widen_factor": 0.5},
+        "yolox_l": {},
+        "yolox_x": {"deepen_factor": 1.33, "widen_factor": 1.25},
+    }
+
+    def __new__(cls, model_name: str) -> CSPDarknetModule:
+        """Constructor for CSPDarknet."""
+        if model_name not in cls.CSPDARKNET_CFG:
+            msg = f"model type '{model_name}' is not supported"
+            raise KeyError(msg)
+
+        return CSPDarknetModule(**cls.CSPDARKNET_CFG[model_name])

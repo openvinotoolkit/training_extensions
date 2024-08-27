@@ -14,7 +14,7 @@ class MockGT:
 
 class TestClassIncrementalMixin:
     def test_ignore_label(self) -> None:
-        hrnet = LiteHRNet(3, input_size=(128, 128), model_version="lite_hrnet_18")
+        hrnet = LiteHRNet(3, input_size=(128, 128), model_name="lite_hrnet_18")
 
         seg_logits = torch.randn(1, 3, 128, 128)
         # no annotations for class=3

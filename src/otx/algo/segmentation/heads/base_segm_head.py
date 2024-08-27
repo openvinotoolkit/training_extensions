@@ -16,7 +16,7 @@ from otx.algo.segmentation.modules import resize
 from otx.algo.utils.mmengine_utils import load_checkpoint_to_model, load_from_http
 
 
-class BaseSegmHead(nn.Module):
+class BaseSegmentationHead(nn.Module):
     """Base class for segmentation heads.
 
     Args:

@@ -9,14 +9,16 @@ Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/d
 from __future__ import annotations
 
 from functools import partial
-from typing import Callable
+from typing import Any, Callable, ClassVar
 
 import torch
 from torch import Tensor, nn
 
+from otx.algo.common.utils.coders import BaseBBoxCoder
 from otx.algo.common.utils.nms import multiclass_nms
-from otx.algo.common.utils.utils import distance2bbox, inverse_sigmoid, multi_apply, reduce_mean
-from otx.algo.detection.heads import ATSSHead
+from otx.algo.common.utils.prior_generators import BasePriorGenerator
+from otx.algo.common.utils.utils import distance2bbox, inverse_sigmoid, multi_apply
+from otx.algo.detection.heads.atss_head import ATSSHeadModule
 from otx.algo.detection.utils.prior_generators.utils import anchor_inside_flags
 from otx.algo.detection.utils.utils import (
     images_to_levels,
@@ -31,7 +33,7 @@ from otx.algo.utils.mmengine_utils import InstanceData
 from otx.algo.utils.weight_init import bias_init_with_prob, constant_init, normal_init
 
 
-class RTMDetHead(ATSSHead):
+class RTMDetHead(ATSSHeadModule):
     """Detection Head of RTMDet.
 
     Args:
@@ -155,75 +157,6 @@ class RTMDetHead(ATSSHead):
             bbox_preds.append(reg_dist)
         return tuple(cls_scores), tuple(bbox_preds)
 
-    def loss_by_feat_single(  # type: ignore[override]
-        self,
-        cls_score: Tensor,
-        bbox_pred: Tensor,
-        labels: Tensor,
-        label_weights: Tensor,
-        bbox_targets: Tensor,
-        assign_metrics: Tensor,
-        stride: list[int],
-    ) -> tuple[Tensor, ...]:
-        """Compute loss of a single scale level.
-
-        Args:
-            cls_score (Tensor): Box scores for each scale level
-                Has shape (N, num_anchors * num_classes, H, W).
-            bbox_pred (Tensor): Decoded bboxes for each scale
-                level with shape (N, num_anchors * 4, H, W).
-            labels (Tensor): Labels of each anchors with shape
-                (N, num_total_anchors).
-            label_weights (Tensor): Label weights of each anchor with shape
-                (N, num_total_anchors).
-            bbox_targets (Tensor): BBox regression targets of each anchor with
-                shape (N, num_total_anchors, 4).
-            assign_metrics (Tensor): Assign metrics with shape
-                (N, num_total_anchors).
-            stride (list[int]): Downsample stride of the feature map.
-
-        Returns:
-            dict[str, Tensor]: A dictionary of loss components.
-        """
-        if stride[0] != stride[1]:
-            msg = "h stride is not equal to w stride!"
-            raise ValueError(msg)
-        cls_score = cls_score.permute(0, 2, 3, 1).reshape(-1, self.cls_out_channels).contiguous()
-        bbox_pred = bbox_pred.reshape(-1, 4)
-        bbox_targets = bbox_targets.reshape(-1, 4)
-        labels = labels.reshape(-1)
-        assign_metrics = assign_metrics.reshape(-1)
-        label_weights = label_weights.reshape(-1)
-        targets = (labels, assign_metrics)
-
-        loss_cls = self.loss_cls(cls_score, targets, label_weights, avg_factor=1.0)
-
-        # FG cat_id: [0, num_classes -1], BG cat_id: num_classes
-        bg_class_ind = self.num_classes
-        pos_inds = ((labels >= 0) & (labels < bg_class_ind)).nonzero().squeeze(1)
-
-        if len(pos_inds) > 0:
-            pos_bbox_targets = bbox_targets[pos_inds]
-            pos_bbox_pred = bbox_pred[pos_inds]
-
-            pos_decode_bbox_pred = pos_bbox_pred
-            pos_decode_bbox_targets = pos_bbox_targets
-
-            # regression loss
-            pos_bbox_weight = assign_metrics[pos_inds]
-
-            loss_bbox = self.loss_bbox(
-                pos_decode_bbox_pred,
-                pos_decode_bbox_targets,
-                weight=pos_bbox_weight,
-                avg_factor=1.0,
-            )
-        else:
-            loss_bbox = bbox_pred.sum() * 0
-            pos_bbox_weight = bbox_targets.new_tensor(0.0)
-
-        return loss_cls, loss_bbox, assign_metrics.sum(), pos_bbox_weight.sum()
-
     def loss_by_feat(  # type: ignore[override]
         self,
         cls_scores: list[Tensor],
@@ -251,7 +184,7 @@ class RTMDetHead(ATSSHead):
                 Defaults to None.
 
         Returns:
-            dict[str, Tensor]: A dictionary of loss components.
+            dict[str, Tensor]: A dictionary of raw outputs.
         """
         num_imgs = len(batch_img_metas)
         featmap_sizes = [featmap.size()[-2:] for featmap in cls_scores]
@@ -294,23 +227,16 @@ class RTMDetHead(ATSSHead):
             batch_gt_instances_ignore=batch_gt_instances_ignore,
         )
 
-        losses_cls, losses_bbox, cls_avg_factors, bbox_avg_factors = multi_apply(
-            self.loss_by_feat_single,
-            cls_scores,
-            decoded_bboxes,
-            labels_list,
-            label_weights_list,
-            bbox_targets_list,
-            assign_metrics_list,
-            self.prior_generator.strides,
-        )
-
-        cls_avg_factor = reduce_mean(sum(cls_avg_factors)).clamp_(min=1).item()
-        losses_cls = [x / cls_avg_factor for x in losses_cls]
-
-        bbox_avg_factor = reduce_mean(sum(bbox_avg_factors)).clamp_(min=1).item()
-        losses_bbox = [x / bbox_avg_factor for x in losses_bbox]
-        return {"loss_cls": losses_cls, "loss_bbox": losses_bbox}
+        return {
+            "cls_score": cls_scores,
+            "bbox_pred": decoded_bboxes,
+            "labels": labels_list,
+            "label_weights": label_weights_list,
+            "bbox_targets": bbox_targets_list,
+            "assign_metrics": assign_metrics_list,
+            "stride": self.prior_generator.strides,
+            "sampling_results_list": sampling_results_list,
+        }
 
     def export_by_feat(  # type: ignore[override]
         self,
@@ -635,7 +561,7 @@ class RTMDetHead(ATSSHead):
         return anchor_list, valid_flag_list
 
 
-class RTMDetSepBNHead(RTMDetHead):
+class RTMDetSepBNHeadModule(RTMDetHead):
     """RTMDetHead with separated BN layers and shared conv layers.
 
     Args:
@@ -798,3 +724,41 @@ class RTMDetSepBNHead(RTMDetHead):
             cls_scores.append(cls_score)
             bbox_preds.append(reg_dist)
         return tuple(cls_scores), tuple(bbox_preds)
+
+
+class RTMDetSepBNHead:
+    """RTMDetSepBNHead factory for detection."""
+
+    RTMDETSEPBNHEAD_CFG: ClassVar[dict[str, Any]] = {
+        "rtmdet_tiny": {
+            "in_channels": 96,
+            "stacked_convs": 2,
+            "feat_channels": 96,
+            "with_objectness": False,
+            "normalization": nn.BatchNorm2d,
+            "activation": partial(nn.SiLU, inplace=True),
+        },
+    }
+
+    def __new__(
+        cls,
+        model_name: str,
+        num_classes: int,
+        anchor_generator: BasePriorGenerator,
+        bbox_coder: BaseBBoxCoder,
+        train_cfg: dict,
+        test_cfg: dict | None = None,
+    ) -> RTMDetSepBNHeadModule:
+        """Constructor for RTMDetSepBNHead."""
+        if model_name not in cls.RTMDETSEPBNHEAD_CFG:
+            msg = f"model type '{model_name}' is not supported"
+            raise KeyError(msg)
+
+        return RTMDetSepBNHeadModule(
+            **cls.RTMDETSEPBNHEAD_CFG[model_name],
+            num_classes=num_classes,
+            anchor_generator=anchor_generator,
+            bbox_coder=bbox_coder,
+            train_cfg=train_cfg,  # TODO (sungchul, kirill): remove
+            test_cfg=test_cfg,  # TODO (sungchul, kirill): remove
+        )

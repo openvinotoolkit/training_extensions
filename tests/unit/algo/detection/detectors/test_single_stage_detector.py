@@ -5,7 +5,7 @@
 
 import pytest
 import torch
-from otx.algo.detection.base_models.single_stage_detector import SingleStageDetector
+from otx.algo.detection.detectors.single_stage_detector import SingleStageDetector
 from otx.core.data.entity.detection import DetBatchDataEntity
 from otx.core.types import LabelInfo
 from torch import nn
@@ -28,12 +28,14 @@ class TestSingleStageDetector:
                 self.linear = nn.Linear(16, 10)
                 self.relu = nn.ReLU()
                 self.linear2 = nn.Linear(10, 4)
-                self.loss = lambda x, _: {"loss": torch.sum(x)}
 
             def forward(self, x: torch.Tensor) -> torch.Tensor:
                 x = self.linear(x)
                 x = self.relu(x)
                 return self.linear2(x)
+
+            def loss(self, x: torch.Tensor, *args, **kwargs) -> dict:
+                return {"x": x}
 
             def predict(self, x: torch.Tensor, *args, **kwargs) -> torch.Tensor:
                 return self.forward(x)
@@ -55,8 +57,19 @@ class TestSingleStageDetector:
         )
 
     @pytest.fixture()
-    def detector(self, backbone, bbox_head):
-        return SingleStageDetector(backbone=backbone, bbox_head=bbox_head)
+    def criterion(self):
+        class Criterion(nn.Module):
+            def __init__(self):
+                super().__init__()
+
+            def forward(self, x: torch.Tensor, *args, **kwargs) -> dict:
+                return {"loss": torch.sum(x)}
+
+        return Criterion()
+
+    @pytest.fixture()
+    def detector(self, backbone, bbox_head, criterion):
+        return SingleStageDetector(backbone=backbone, bbox_head=bbox_head, criterion=criterion)
 
     def test_forward(self, detector, batch):
         output = detector.forward(batch.images)
