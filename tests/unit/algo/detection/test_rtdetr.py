@@ -15,7 +15,7 @@ class TestRTDETR:
     def test_customize_outputs(self, mocker):
         label_info = LabelInfo(["a", "b", "c"], [["a", "b", "c"]])
         mocker.patch("otx.algo.detection.rtdetr.RTDETR._build_model", return_value=mocker.MagicMock())
-        model = RTDETR(label_info)
+        model = RTDETR(model_name="rtdetr_18", label_info=label_info)
         model.model.load_from = None
         model.train()
         outputs = {

@@ -14,7 +14,7 @@ import torch
 from datumaro import Dataset as DmDataset
 from datumaro import Polygon
 from omegaconf import DictConfig, OmegaConf
-from otx.algo.detection.atss import MobileNetV2ATSS
+from otx.algo.detection.atss import ATSS
 from otx.algo.instance_segmentation.maskrcnn import MaskRCNNEfficientNet
 from otx.core.config.data import (
     SubsetConfig,
@@ -342,7 +342,8 @@ class TestOTXTiling:
             assert isinstance(batch, TileBatchDetDataEntity)
 
     def test_det_tile_merge(self, fxt_det_data_config):
-        model = MobileNetV2ATSS(
+        model = ATSS(
+            model_name="atss_mobilenetv2",
             label_info=3,
         )  # updated from OTXDetectionModel to avoid NotImplementedError in _build_model
         # Enable tile adapter
@@ -360,7 +361,8 @@ class TestOTXTiling:
             model.forward_tiles(batch)
 
     def test_explain_det_tile_merge(self, fxt_det_data_config):
-        model = MobileNetV2ATSS(
+        model = ATSS(
+            model_name="atss_mobilenetv2",
             label_info=3,
         )  # updated from OTXDetectionModel to avoid NotImplementedError in _build_model
         # Enable tile adapter

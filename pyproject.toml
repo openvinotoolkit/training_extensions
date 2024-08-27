@@ -33,7 +33,7 @@ dependencies = [
     "psutil==6.0.0", # Mem cache needs system checks
     "ftfy==6.2.3",
     "regex==2024.7.24",
-    "importlib_resources==6.4.3",
+    "importlib_resources==6.4.4",
     "docstring_parser==0.16", # CLI help-formatter
     "rich_argparse==1.5.2", # CLI help-formatter
     "einops==0.8.0",
@@ -54,9 +54,6 @@ dev = [
     "pytest-mock",
     "pytest-csv",
     "pytest-cov",
-    "mlflow==2.15.1",     # For perf benchmark
-    "py-cpuinfo==9.0.0",  # For perf benchmark
-    "openpyxl",           # For perf benchmark
 ]
 
 docs = [
@@ -105,7 +102,7 @@ base = [
 ]
 
 transformers = [
-    "transformers==4.44.1",
+    "transformers==4.44.2",
     "diffusers==0.30.0",
     "torchmetrics[image]>=0.7.0"
 ]
@@ -136,6 +133,8 @@ ci_benchmark = [
     "ipython==8.26.0",
     "ipykernel==6.29.5",
     "openpyxl==3.1.5",
+    "mlflow==2.15.1",
+    "py-cpuinfo==9.0.0",
 ]
 
 [project.scripts]
