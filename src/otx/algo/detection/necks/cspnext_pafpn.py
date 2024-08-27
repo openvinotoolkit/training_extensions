@@ -12,7 +12,7 @@ from __future__ import annotations
 
 import math
 from functools import partial
-from typing import Callable
+from typing import Any, Callable, ClassVar
 
 import torch
 from torch import Tensor, nn
@@ -24,7 +24,7 @@ from otx.algo.modules.conv_module import Conv2dModule, DepthwiseSeparableConvMod
 from otx.algo.modules.norm import build_norm_layer
 
 
-class CSPNeXtPAFPN(BaseModule):
+class CSPNeXtPAFPNModule(BaseModule):
     """Path Aggregation Network with CSPNeXt blocks.
 
     Args:
@@ -179,3 +179,33 @@ class CSPNeXtPAFPN(BaseModule):
             outs[idx] = conv(outs[idx])
 
         return tuple(outs)
+
+
+class CSPNeXtPAFPN:
+    """CSPNeXtPAFPN factory for detection."""
+
+    CSPNEXTPAFPN_CFG: ClassVar[dict[str, Any]] = {
+        "rtmdet_tiny": {
+            "in_channels": (96, 192, 384),
+            "out_channels": 96,
+            "num_csp_blocks": 1,
+            "normalization": nn.BatchNorm2d,
+            "activation": partial(nn.SiLU, inplace=True),
+        },
+        "rtmdet_inst_tiny": {
+            "in_channels": (96, 192, 384),
+            "out_channels": 96,
+            "num_csp_blocks": 1,
+            "expand_ratio": 0.5,
+            "normalization": nn.BatchNorm2d,
+            "activation": partial(nn.SiLU, inplace=True),
+        },
+    }
+
+    def __new__(cls, model_name: str) -> CSPNeXtPAFPNModule:
+        """Constructor for CSPNeXtPAFPN."""
+        if model_name not in cls.CSPNEXTPAFPN_CFG:
+            msg = f"model type '{model_name}' is not supported"
+            raise KeyError(msg)
+
+        return CSPNeXtPAFPNModule(**cls.CSPNEXTPAFPN_CFG[model_name])

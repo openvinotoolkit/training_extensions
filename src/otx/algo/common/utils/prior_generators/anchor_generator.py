@@ -15,8 +15,10 @@ import torch
 from torch import Tensor
 from torch.nn.modules.utils import _pair
 
+from .base_prior_generator import BasePriorGenerator
 
-class AnchorGenerator:
+
+class AnchorGenerator(BasePriorGenerator):
     """Standard anchor generator for 2D anchor-based detectors.
 
     # TODO (sungchul): change strides format from (w, h) to (h, w)
@@ -72,7 +74,7 @@ class AnchorGenerator:
             raise ValueError(msg)
 
         # calculate base sizes of anchors
-        self.strides = [_pair(stride) for stride in strides]
+        self.strides: list[tuple[int, int]] = [_pair(stride) for stride in strides]
         self.base_sizes = [min(stride) for stride in self.strides] if base_sizes is None else base_sizes
 
         if scales is not None:
