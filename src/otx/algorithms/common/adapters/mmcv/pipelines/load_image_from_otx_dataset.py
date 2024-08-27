@@ -44,8 +44,10 @@ class LoadImageFromOTXDataset:
         d_item = results["dataset_item"]
         if d_item.media.path:  # when video extracted frames come, media.path is None
             results["cache_key"] = d_item.media.path, d_item.roi.id
-        else:
+        elif len(d_item.annotation_scene.annotations) > 0:
             results["cache_key"] = d_item.roi.id, d_item.annotation_scene.annotations[0].id
+        else:
+            results["cache_key"] = d_item.roi.id
         return results["cache_key"]
 
     def _get_memcache_handler(self):
