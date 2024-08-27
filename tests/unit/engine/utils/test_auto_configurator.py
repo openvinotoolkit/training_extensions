@@ -158,6 +158,7 @@ class TestAutoConfigurator:
     def test_get_optimizer(self, fxt_task: OTXTaskType) -> None:
         if fxt_task in {
             OTXTaskType.ANOMALY,
+            OTXTaskType.ANOMALY_CLASSIFICATION,
             OTXTaskType.ANOMALY_SEGMENTATION,
             OTXTaskType.ANOMALY_DETECTION,
         }:
@@ -174,6 +175,7 @@ class TestAutoConfigurator:
     def test_get_scheduler(self, fxt_task: OTXTaskType) -> None:
         if fxt_task in {
             OTXTaskType.ANOMALY,
+            OTXTaskType.ANOMALY_CLASSIFICATION,
             OTXTaskType.ANOMALY_SEGMENTATION,
             OTXTaskType.ANOMALY_DETECTION,
         }:

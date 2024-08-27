@@ -1,4 +1,4 @@
-task: ANOMALY
+task: ANOMALY_CLASSIFICATION
 input_size: 256
 data_format: mvtec
 mem_cache_size: 1GB

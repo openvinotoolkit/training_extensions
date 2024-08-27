@@ -117,6 +117,7 @@ def fxt_mock_dm_subset(mocker: MockerFixture, fxt_dm_item: DatasetItem) -> Magic
         (OTXSegmentationDataset, SegDataEntity, {}),
         (OTXActionClsDataset, ActionClsDataEntity, {}),
         (AnomalyDataset, AnomalyClassificationDataItem, {"task_type": OTXTaskType.ANOMALY}),
+        (AnomalyDataset, AnomalyClassificationDataItem, {"task_type": OTXTaskType.ANOMALY_CLASSIFICATION}),
         (AnomalyDataset, AnomalyDetectionDataItem, {"task_type": OTXTaskType.ANOMALY_DETECTION}),
         (AnomalyDataset, AnomalySegmentationDataItem, {"task_type": OTXTaskType.ANOMALY_SEGMENTATION}),
     ],
