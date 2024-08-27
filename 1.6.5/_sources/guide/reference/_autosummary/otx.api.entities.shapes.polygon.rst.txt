@@ -1,0 +1,30 @@
+otx.api.entities.shapes.polygon
+===============================
+
+.. automodule:: otx.api.entities.shapes.polygon
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      Point
+      Polygon
+   
+   
+
+   
+   
+   
+
+
+

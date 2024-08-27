@@ -1,0 +1,29 @@
+otx.api.utils.shape\_factory
+============================
+
+.. automodule:: otx.api.utils.shape_factory
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      ShapeFactory
+   
+   
+
+   
+   
+   
+
+
+

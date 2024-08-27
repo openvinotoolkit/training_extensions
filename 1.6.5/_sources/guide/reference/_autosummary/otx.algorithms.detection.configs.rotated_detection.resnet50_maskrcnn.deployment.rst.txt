@@ -1,0 +1,23 @@
+otx.algorithms.detection.configs.rotated\_detection.resnet50\_maskrcnn.deployment
+=================================================================================
+
+.. automodule:: otx.algorithms.detection.configs.rotated_detection.resnet50_maskrcnn.deployment
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

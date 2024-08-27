@@ -1,0 +1,32 @@
+otx.cli.utils.telemetry
+=======================
+
+.. automodule:: otx.cli.utils.telemetry
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      close_telemetry_session
+      init_telemetry_session
+      send_cmd_results
+      send_version
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

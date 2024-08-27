@@ -1,0 +1,31 @@
+otx.api.configuration.metadata\_keys
+====================================
+
+.. automodule:: otx.api.configuration.metadata_keys
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      all_keys
+      allows_dictionary_values
+      allows_model_template_override
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

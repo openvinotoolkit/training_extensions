@@ -1,0 +1,32 @@
+otx.algorithms.segmentation.configs.ham\_segnext\_s.semisl
+==========================================================
+
+.. automodule:: otx.algorithms.segmentation.configs.ham_segnext_s.semisl
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   otx.algorithms.segmentation.configs.ham_segnext_s.semisl.data_pipeline
+   otx.algorithms.segmentation.configs.ham_segnext_s.semisl.model
+

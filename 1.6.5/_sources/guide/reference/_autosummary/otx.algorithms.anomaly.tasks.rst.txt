@@ -1,0 +1,32 @@
+otx.algorithms.anomaly.tasks
+============================
+
+.. automodule:: otx.algorithms.anomaly.tasks
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      InferenceTask
+      TrainingTask
+      NNCFTask
+      OpenVINOTask
+   
+   
+
+   
+   
+   
+
+
+

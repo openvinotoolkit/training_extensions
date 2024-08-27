@@ -1,0 +1,31 @@
+otx.algorithms.anomaly.adapters.anomalib.callbacks
+==================================================
+
+.. automodule:: otx.algorithms.anomaly.adapters.anomalib.callbacks
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      AnomalyInferenceCallback
+      IterationTimer
+      ProgressCallback
+   
+   
+
+   
+   
+   
+
+
+

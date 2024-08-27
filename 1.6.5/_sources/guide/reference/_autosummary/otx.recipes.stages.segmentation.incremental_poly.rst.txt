@@ -1,0 +1,23 @@
+otx.recipes.stages.segmentation.incremental\_poly
+=================================================
+
+.. automodule:: otx.recipes.stages.segmentation.incremental_poly
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
