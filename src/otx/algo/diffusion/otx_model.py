@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import PIL.Image
 import torch
@@ -23,10 +23,14 @@ from .model.unet import UNetModel
 from .otx_model_pretrained import PretrainedOTXStableDiffusion
 from .utils.download import download
 
+if TYPE_CHECKING:
+    from lightning.pytorch.loggers import TensorBoardLogger
+
 
 class OTXStableDiffusion(OTXDiffusionModel):
     """OTX Stable Diffusion model."""
 
+    logger: TensorBoardLogger
     model: nn.Module
 
     def __init__(
@@ -180,6 +184,7 @@ class OTXStableDiffusion(OTXDiffusionModel):
             PIL.Image.fromarray(
                 (image.permute(1, 2, 0).clip(0, 1) * 255).to(torch.uint8).detach().cpu().numpy(),
             ).save(f"val_images/{self.epoch_idx}/{caption}.png")
+            self.logger.experiment.add_image(f"val/{caption}", image.cpu().float(), self.epoch_idx)
 
     def _encode_images(
         self,

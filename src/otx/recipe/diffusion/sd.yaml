@@ -26,6 +26,14 @@ model:
       init_args:
         factor: 1.0
 
+logger:
+  - class_path: lightning.pytorch.loggers.tensorboard.TensorBoardLogger
+    init_args:
+      save_dir: ""
+      name: "tensorboard/"
+      log_graph: false
+      default_hp_metric: true
+      prefix: ""
 engine:
   task: DIFFUSION
   device: auto
