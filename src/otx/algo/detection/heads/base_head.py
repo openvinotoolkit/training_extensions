@@ -55,7 +55,11 @@ class BaseDenseHead(BaseModule):
             positive_infos.append(pos_info)
         return positive_infos
 
-    def get_preds_and_targets(self, x: tuple[Tensor], entity: DetBatchDataEntity) -> dict:
+    def get_preds_and_targets(
+        self,
+        x: tuple[Tensor],
+        entity: DetBatchDataEntity,
+    ) -> dict | tuple:
         """Perform forward propagation of the detection head and prepare for loss calculation.
 
         Args:
@@ -81,7 +85,7 @@ class BaseDenseHead(BaseModule):
         batch_gt_instances: list[InstanceData],
         batch_img_metas: list[dict],
         batch_gt_instances_ignore: list[InstanceData] | None = None,
-    ) -> dict:
+    ) -> dict | tuple:
         """Prepare features for the loss calculation."""
 
     def predict(
@@ -275,8 +279,6 @@ class BaseDenseHead(BaseModule):
             # the `custom_cls_channels` parameter is derived from
             # CrossEntropyCustomLoss and FocalCustomLoss, and is currently used
             # in v3det.
-            if hasattr(self, "loss_cls") and getattr(self.loss_cls, "custom_cls_channels", False):
-                scores = self.loss_cls.get_activation(cls_score)  # TODO (sungchul): remove `loss_cls` in head
             scores = cls_score.sigmoid()
 
             # After https://github.com/open-mmlab/mmdetection/pull/6268/,
@@ -496,8 +498,6 @@ class BaseDenseHead(BaseModule):
         ):
             scores = cls_score.permute(0, 2, 3, 1).reshape(batch_size, -1, self.cls_out_channels)
 
-            if hasattr(self, "loss_cls") and getattr(self.loss_cls, "custom_cls_channels", False):
-                scores = self.loss_cls.get_activation(cls_score)  # TODO (sungchul): remove `loss_cls` in head
             scores = scores.sigmoid()
 
             if with_score_factors:

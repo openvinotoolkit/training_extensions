@@ -165,7 +165,7 @@ class TwoStageDetector(nn.Module):
             polygons=batch_inputs.polygons,
         )
 
-        cls_reg_targets, bbox_preds, cls_scores, rpn_results_list = self.rpn_head.forward_for_loss(
+        cls_reg_targets, bbox_preds, cls_scores, rpn_results_list = self.rpn_head.get_preds_and_targets(
             x,
             rpn_entity,
         )
@@ -242,50 +242,3 @@ class TwoStageDetector(nn.Module):
             batch_img_metas,
             rescale=False,
         )
-
-    @staticmethod
-    def unpack_inst_seg_entity(entity: InstanceSegBatchDataEntity) -> tuple:
-        """Unpack gt_instances, gt_instances_ignore and img_metas based on batch_data_samples.
-
-        Args:
-            batch_data_samples (DetBatchDataEntity): Data entity from dataset.
-
-        Returns:
-            tuple:
-
-                - batch_gt_instances (list[InstanceData]): Batch of
-                    gt_instance. It usually includes ``bboxes`` and ``labels``
-                    attributes.
-                - batch_img_metas (list[dict]): Meta information of each image,
-                    e.g., image size, scaling factor, etc.
-        """
-        batch_gt_instances = []
-        batch_img_metas = []
-        for img_info, masks, polygons, bboxes, labels in zip(
-            entity.imgs_info,
-            entity.masks,
-            entity.polygons,
-            entity.bboxes,
-            entity.labels,
-        ):
-            metainfo = {
-                "img_id": img_info.img_idx,
-                "img_shape": img_info.img_shape,
-                "ori_shape": img_info.ori_shape,
-                "scale_factor": img_info.scale_factor,
-                "ignored_labels": img_info.ignored_labels,
-            }
-            batch_img_metas.append(metainfo)
-
-            gt_masks = masks if len(masks) > 0 else polygons
-
-            batch_gt_instances.append(
-                InstanceData(
-                    metainfo=metainfo,
-                    masks=gt_masks,
-                    bboxes=bboxes,
-                    labels=[torch.zeros_like(labels)],
-                ),
-            )
-
-        return batch_gt_instances, batch_img_metas

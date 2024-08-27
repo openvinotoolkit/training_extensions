@@ -269,7 +269,7 @@ class RTMDetInsHead(RTMDetHead):
             bbox_pred = bbox_pred.permute(1, 2, 0).reshape(-1, dim)  # noqa: PLW2901
             cls_score = cls_score.permute(1, 2, 0).reshape(-1, self.cls_out_channels)  # noqa: PLW2901
             kernel_pred = kernel_pred.permute(1, 2, 0).reshape(-1, self.num_gen_params)  # noqa: PLW2901
-            scores = cls_score.sigmoid() if self.use_sigmoid_cls else cls_score.softmax(-1)[:, :-1]
+            scores = cls_score.sigmoid()
 
             # After https://github.com/open-mmlab/mmdetection/pull/6268/,
             # this operation keeps fewer bboxes under the same `nms_pre`.

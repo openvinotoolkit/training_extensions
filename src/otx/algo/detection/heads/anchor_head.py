@@ -9,7 +9,6 @@ Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/d
 from __future__ import annotations
 
 import warnings
-from typing import Any
 
 import torch
 from torch import Tensor, nn
@@ -398,7 +397,7 @@ class AnchorHead(BaseDenseHead):
         batch_gt_instances: list[InstanceData],
         batch_img_metas: list[dict],
         batch_gt_instances_ignore: list[InstanceData] | None = None,
-    ) -> tuple[list[Any], tuple[Any, ...]]:
+    ) -> tuple:
         """Calculate the loss based on the features extracted by the detection head.
 
         Args:

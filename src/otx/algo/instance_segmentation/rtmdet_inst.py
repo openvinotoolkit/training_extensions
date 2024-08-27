@@ -32,7 +32,7 @@ if TYPE_CHECKING:
 class RTMDetInst(ExplainableOTXInstanceSegModel):
     """Implementation of RTMDet for instance segmentation."""
 
-    load_from: ClassVar[list[str]] = {
+    load_from: ClassVar[dict[str, str]] = {
         "rtmdet_inst_tiny": (
             "https://download.openmmlab.com/mmdetection/v3.0/rtmdet/rtmdet-ins_tiny_8xb32-300e_coco/"
             "rtmdet-ins_tiny_8xb32-300e_coco_20221130_151727-ec670f7e.pth"

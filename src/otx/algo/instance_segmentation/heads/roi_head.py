@@ -8,7 +8,7 @@ Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/r
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import torch
 from torch import Tensor, nn
@@ -493,7 +493,7 @@ class RoIHead(nn.Module):
         x: tuple[Tensor],
         rpn_results_list: list[InstanceData],
         entity: InstanceSegBatchDataEntity,
-    ) -> tuple[dict, Tensor, Tensor, Tensor, Tensor, Tensor]:
+    ) -> tuple[dict, dict, Any, Any, Any]:
         """Perform forward propagation and loss calculation of the detection roi on the features."""
         batch_gt_instances, batch_img_metas = unpack_inst_seg_entity(entity)
 

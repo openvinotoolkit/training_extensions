@@ -169,16 +169,16 @@ class RPNHeadModule(AnchorHead):
         rpn_bbox_pred = self.rpn_reg(x)
         return rpn_cls_score, rpn_bbox_pred
 
-    def forward_for_loss(
+    def get_preds_and_targets(
         self,
         x: tuple[Tensor],
-        rpn_entity: InstanceSegBatchDataEntity,
-    ) -> tuple[list[Any], tuple[Any, ...], Any, Any, list[InstanceData]]:
+        entity: InstanceSegBatchDataEntity,  # type: ignore[override]
+    ) -> tuple[tuple[Any, ...], Any, Any, list[InstanceData]]:
         """Forward propagation of the head, then calculate loss and predictions from the features and data samples.
 
         Args:
             x (tuple[Tensor]): Features from FPN.
-            batch_data_samples (list[InstanceSegBatchDataEntity]): Each item contains
+            entity (InstanceSegBatchDataEntity): entity contains
                 the meta information of each image and corresponding
                 annotations.
 
@@ -189,7 +189,7 @@ class RPNHeadModule(AnchorHead):
                 - predictions (list[InstanceData]): Detection
                 results of each image after the post process.
         """
-        batch_gt_instances, batch_img_metas = unpack_inst_seg_entity(rpn_entity)
+        batch_gt_instances, batch_img_metas = unpack_inst_seg_entity(entity)
 
         cls_scores, bbox_preds = self(x)
 

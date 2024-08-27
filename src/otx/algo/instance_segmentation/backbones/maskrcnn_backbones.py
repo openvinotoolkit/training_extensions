@@ -31,8 +31,6 @@ class MaskRCNNBackbone:
             "out_indices": [2, 3, 4, 5],
             "frozen_stages": -1,
             "pretrained": True,
-            "activation": nn.SiLU,
-            "normalization": partial(build_norm_layer, nn.BatchNorm2d, requires_grad=True),
         },
     }
 
@@ -44,9 +42,10 @@ class MaskRCNNBackbone:
             )
 
         if "efficientnet" in model_name:
-            return build_model_including_pytorchcv(
-                cfg=cls.BACKBONE_CFG[model_name],
-            )
+            cfg = cls.BACKBONE_CFG[model_name]
+            cfg["activation"] = nn.SiLU
+            cfg["normalization"] = partial(build_norm_layer, nn.BatchNorm2d, requires_grad=True)
+            return build_model_including_pytorchcv(cfg=cfg)
 
         if "swin" in model_name:
             return SwinTransformer(
