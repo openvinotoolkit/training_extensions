@@ -173,7 +173,7 @@ class RPNHeadModule(AnchorHead):
         self,
         x: tuple[Tensor],
         entity: InstanceSegBatchDataEntity,  # type: ignore[override]
-    ) -> tuple[tuple[Any, ...], Any, Any, list[InstanceData]]:
+    ) -> tuple:
         """Forward propagation of the head, then calculate loss and predictions from the features and data samples.
 
         Args:
@@ -190,9 +190,23 @@ class RPNHeadModule(AnchorHead):
                 results of each image after the post process.
         """
         batch_gt_instances, batch_img_metas = unpack_inst_seg_entity(entity)
-
         cls_scores, bbox_preds = self(x)
 
+        return self.forward_for_loss(
+            cls_scores,
+            bbox_preds,
+            batch_gt_instances,
+            batch_img_metas,
+        )
+
+    def forward_for_loss(  # type: ignore[override]
+        self,
+        cls_scores: list[Tensor],
+        bbox_preds: list[Tensor],
+        batch_gt_instances: list[InstanceData],
+        batch_img_metas: list[dict],
+    ) -> tuple:
+        """Prepare features for the loss calculation."""
         cls_reg_targets = self.get_targets_for_loss(
             cls_scores,
             batch_gt_instances,

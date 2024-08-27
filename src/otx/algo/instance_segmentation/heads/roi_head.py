@@ -488,7 +488,7 @@ class RoIHead(nn.Module):
         segm_results = segm_results.reshape(batch_size, num_det, segm_results.shape[-2], segm_results.shape[-1])
         return dets, det_labels, segm_results
 
-    def forward_for_loss(
+    def get_preds_and_targets(
         self,
         x: tuple[Tensor],
         rpn_results_list: list[InstanceData],

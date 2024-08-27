@@ -182,7 +182,7 @@ class TwoStageDetector(nn.Module):
             cls_reg_targets_roi,
             mask_targets,
             pos_labels,
-        ) = self.roi_head.forward_for_loss(
+        ) = self.roi_head.get_preds_and_targets(
             x,
             rpn_results_list,
             batch_inputs,
