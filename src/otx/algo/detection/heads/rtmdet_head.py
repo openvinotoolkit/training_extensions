@@ -157,7 +157,7 @@ class RTMDetHead(ATSSHeadModule):
             bbox_preds.append(reg_dist)
         return tuple(cls_scores), tuple(bbox_preds)
 
-    def loss_by_feat(  # type: ignore[override]
+    def forward_for_loss(  # type: ignore[override]
         self,
         cls_scores: list[Tensor],
         bbox_preds: list[Tensor],
@@ -165,7 +165,7 @@ class RTMDetHead(ATSSHeadModule):
         batch_img_metas: list[dict],
         batch_gt_instances_ignore: list[InstanceData] | None = None,
     ) -> dict[str, Tensor]:
-        """Compute losses of the head.
+        """Forward the head for a loss computation.
 
         Args:
             cls_scores (list[Tensor]): Box scores for each scale level

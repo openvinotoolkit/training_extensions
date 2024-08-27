@@ -24,8 +24,6 @@ class ROICriterion(nn.Module):
             Defaults to None.
         use_qfl (bool, optional): Whether to use the Quality Focal Loss (QFL).
             Defaults to ``CrossEntropyLoss(use_sigmoid=True, loss_weight=1.0)``.
-        reg_decoded_bbox (bool, optional): Whether to use the decoded bounding box coordinates
-            for regression loss calculation. Defaults to True.
         bg_loss_weight (float, optional): The weight for the background loss.
             Defaults to -1.0.
     """
@@ -38,7 +36,6 @@ class ROICriterion(nn.Module):
         loss_mask: nn.Module,
         loss_bbox: nn.Module,
         class_agnostic: bool = False,
-        reg_decoded_bbox: bool = True,
     ) -> None:
         super().__init__()
         self.num_classes = num_classes
@@ -48,7 +45,6 @@ class ROICriterion(nn.Module):
         self.loss_mask = loss_mask
         self.use_sigmoid_cls = loss_cls.use_sigmoid
         self.class_agnostic = class_agnostic
-        self.reg_decoded_bbox = reg_decoded_bbox
 
         if self.use_sigmoid_cls:
             self.cls_out_channels = num_classes
@@ -63,7 +59,6 @@ class ROICriterion(nn.Module):
         self,
         cls_score: Tensor,
         bbox_pred: Tensor,
-        rois: Tensor,
         labels: Tensor,
         label_weights: Tensor,
         bbox_targets: Tensor,
@@ -103,12 +98,6 @@ class ROICriterion(nn.Module):
             pos_inds = (labels >= 0) & (labels < bg_class_ind)
             # do not perform bounding box regression for BG anymore.
             if pos_inds.any():
-                if self.reg_decoded_bbox:
-                    # When the regression loss (e.g. `IouLoss`,
-                    # `GIouLoss`, `DIouLoss`) is applied directly on
-                    # the decoded bounding boxes, it decodes the
-                    # already encoded coordinates to absolute format.
-                    bbox_pred = self.bbox_coder.decode(rois[:, 1:], bbox_pred)
                 if self.class_agnostic:
                     pos_bbox_pred = bbox_pred.view(bbox_pred.size(0), 4)[pos_inds.type(torch.bool)]
                 else:

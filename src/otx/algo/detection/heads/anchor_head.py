@@ -32,12 +32,6 @@ class AnchorHead(BaseDenseHead):
         in_channels (tuple[int, ...], int): Number of channels in the input feature map.
         anchor_generator (BasePriorGenerator): Anchor generator class.
         bbox_coder (BaseBBoxCoder): Bounding box coder class.
-        loss_cls (nn.Module | None): Module of classification loss.
-            It is related to RPNHead for iseg, will be deprecated.
-            Defaults to None.
-        loss_bbox (nn.Module | None): Module of localization loss.
-            It is related to RPNHead for iseg, will be deprecated.
-            Defaults to None.
         train_cfg (dict): Training config of anchor head.
         test_cfg (dict, optional): Testing config of anchor head.
         feat_channels (int): Number of hidden channels. Used in child classes.
@@ -56,8 +50,6 @@ class AnchorHead(BaseDenseHead):
         anchor_generator: BasePriorGenerator,
         bbox_coder: BaseBBoxCoder,
         train_cfg: dict,
-        loss_cls: nn.Module | None = None,  # TODO (kirill): deprecated
-        loss_bbox: nn.Module | None = None,  # TODO (kirill): deprecated
         test_cfg: dict | None = None,
         feat_channels: int = 256,
         reg_decoded_bbox: bool = False,
@@ -70,11 +62,7 @@ class AnchorHead(BaseDenseHead):
         self.in_channels = in_channels
         self.num_classes = num_classes
         self.feat_channels = feat_channels
-        self.use_sigmoid_cls = loss_cls.use_sigmoid if loss_cls else True  # TODO (kirill): revert or update
-        if self.use_sigmoid_cls:
-            self.cls_out_channels = num_classes
-        else:
-            self.cls_out_channels = num_classes + 1
+        self.cls_out_channels = num_classes
 
         if self.cls_out_channels <= 0:
             msg = f"num_classes={num_classes} is too small"
@@ -82,8 +70,6 @@ class AnchorHead(BaseDenseHead):
         self.reg_decoded_bbox = reg_decoded_bbox
 
         self.bbox_coder = bbox_coder
-        self.loss_cls = loss_cls
-        self.loss_bbox = loss_bbox
         self.train_cfg = train_cfg
         self.test_cfg = test_cfg
         if self.train_cfg:
@@ -406,122 +392,6 @@ class AnchorHead(BaseDenseHead):
 
         return res + tuple(rest_results)
 
-    def loss_by_feat_single(
-        self,
-        cls_score: Tensor,
-        bbox_pred: Tensor,
-        anchors: Tensor,
-        labels: Tensor,
-        label_weights: Tensor,
-        bbox_targets: Tensor,
-        bbox_weights: Tensor,
-        avg_factor: int,
-    ) -> tuple:
-        """Calculate the loss of a single scale level based on the features extracted by the detection head.
-
-        TODO (kirill): it is related to RPNHead for iseg, will be deprecated
-
-        Args:
-            cls_score (Tensor): Box scores for each scale level
-                Has shape (N, num_anchors * num_classes, H, W).
-            bbox_pred (Tensor): Box energies / deltas for each scale
-                level with shape (N, num_anchors * 4, H, W).
-            anchors (Tensor): Box reference for each scale level with shape
-                (N, num_total_anchors, 4).
-            labels (Tensor): Labels of each anchors with shape
-                (N, num_total_anchors).
-            label_weights (Tensor): Label weights of each anchor with shape
-                (N, num_total_anchors)
-            bbox_targets (Tensor): BBox regression targets of each anchor
-                weight shape (N, num_total_anchors, 4).
-            bbox_weights (Tensor): BBox regression loss weights of each anchor
-                with shape (N, num_total_anchors, 4).
-            avg_factor (int): Average factor that is used to average the loss.
-
-        Returns:
-            tuple: loss components.
-        """
-        # classification loss
-        labels = labels.reshape(-1)
-        label_weights = label_weights.reshape(-1)
-        cls_score = cls_score.permute(0, 2, 3, 1).reshape(-1, self.cls_out_channels)
-        loss_cls = self.loss_cls(cls_score, labels, label_weights, avg_factor=avg_factor)  # type: ignore[misc] # TODO (kirill): fix
-        # regression loss
-        target_dim = bbox_targets.size(-1)
-        bbox_targets = bbox_targets.reshape(-1, target_dim)
-        bbox_weights = bbox_weights.reshape(-1, target_dim)
-        bbox_pred = bbox_pred.permute(0, 2, 3, 1).reshape(-1, self.bbox_coder.encode_size)
-        if self.reg_decoded_bbox:
-            # When the regression loss (e.g. `IouLoss`, `GIouLoss`)
-            # is applied directly on the decoded bounding boxes, it
-            # decodes the already encoded coordinates to absolute format.
-            anchors = anchors.reshape(-1, anchors.size(-1))
-            bbox_pred = self.bbox_coder.decode(anchors, bbox_pred)
-        loss_bbox = self.loss_bbox(bbox_pred, bbox_targets, bbox_weights, avg_factor=avg_factor)  # type: ignore[misc] # TODO (kirill): fix
-        return loss_cls, loss_bbox
-
-    def loss_by_feat(
-        self,
-        cls_scores: list[Tensor],
-        bbox_preds: list[Tensor],
-        batch_gt_instances: list[InstanceData],
-        batch_img_metas: list[dict],
-        batch_gt_instances_ignore: list[InstanceData] | None = None,
-    ) -> dict:
-        """Calculate the loss based on the features extracted by the detection head.
-
-        TODO (kirill): it is related to RPNHead for iseg, will be deprecated
-
-        Args:
-            cls_scores (list[Tensor]): Box scores for each scale level
-                has shape (N, num_anchors * num_classes, H, W).
-            bbox_preds (list[Tensor]): Box energies / deltas for each scale
-                level with shape (N, num_anchors * 4, H, W).
-            batch_gt_instances (list[InstanceData]): Batch of
-                gt_instance. It usually includes ``bboxes`` and ``labels``
-                attributes.
-            batch_img_metas (list[dict]): Meta information of each image, e.g.,
-                image size, scaling factor, etc.
-            batch_gt_instances_ignore (list[InstanceData], optional):
-                Batch of gt_instances_ignore. It includes ``bboxes`` attribute
-                data that is ignored during training and testing.
-                Defaults to None.
-
-        Returns:
-            dict: A dictionary of loss components.
-        """
-        featmap_sizes = [featmap.size()[-2:] for featmap in cls_scores]
-
-        device = cls_scores[0].device
-
-        anchor_list, valid_flag_list = self.get_anchors(featmap_sizes, batch_img_metas, device=device)
-        cls_reg_targets = self.get_targets(
-            anchor_list,
-            valid_flag_list,
-            batch_gt_instances,
-            batch_img_metas,
-            batch_gt_instances_ignore=batch_gt_instances_ignore,
-        )
-        (labels_list, label_weights_list, bbox_targets_list, bbox_weights_list, avg_factor) = cls_reg_targets
-
-        # anchor number of multi levels
-        num_level_anchors = [anchors.size(0) for anchors in anchor_list[0]]
-        # concat all level anchors and flags to a single tensor
-        concat_anchor_list = [torch.cat(anchor) for anchor in anchor_list]
-        all_anchor_list = images_to_levels(concat_anchor_list, num_level_anchors)
-        losses_cls, losses_bbox = multi_apply(
-            self.loss_by_feat_single,
-            cls_scores,
-            bbox_preds,
-            all_anchor_list,
-            labels_list,
-            label_weights_list,
-            bbox_targets_list,
-            bbox_weights_list,
-            avg_factor=avg_factor,
-        )
-        return {"loss_cls": losses_cls, "loss_bbox": losses_bbox}
-
     def get_targets_for_loss(
         self,
         cls_scores: list[Tensor],
@@ -552,17 +422,10 @@ class AnchorHead(BaseDenseHead):
         device = cls_scores[0].device
 
         anchor_list, valid_flag_list = self.get_anchors(featmap_sizes, batch_img_metas, device=device)
-        cls_reg_targets = self.get_targets(
+        return self.get_targets(
             anchor_list,
             valid_flag_list,
             batch_gt_instances,
             batch_img_metas,
             batch_gt_instances_ignore=batch_gt_instances_ignore,
         )
-
-        # anchor number of multi levels
-        num_level_anchors = [anchors.size(0) for anchors in anchor_list[0]]
-        # concat all level anchors and flags to a single tensor
-        concat_anchor_list = [torch.cat(anchor) for anchor in anchor_list]
-        all_anchor_list = images_to_levels(concat_anchor_list, num_level_anchors)
-        return all_anchor_list, cls_reg_targets

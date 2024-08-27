@@ -31,7 +31,7 @@ class TestYOLOXCriterion:
         # background
         gt_instances = InstanceData(bboxes=torch.empty((0, 4)), labels=torch.LongTensor([]))
 
-        raw_dict = head.loss_by_feat(cls_scores, bbox_preds, objectnesses, [gt_instances], img_metas)
+        raw_dict = head.forward_for_loss(cls_scores, bbox_preds, objectnesses, [gt_instances], img_metas)
         empty_gt_losses = criterion(**raw_dict)
         # When there is no truth, the cls loss should be nonzero but there
         # should be no box loss.
@@ -52,7 +52,7 @@ class TestYOLOXCriterion:
             labels=torch.LongTensor([2]),
         )
 
-        raw_dict = head.loss_by_feat(cls_scores, bbox_preds, objectnesses, [gt_instances], img_metas)
+        raw_dict = head.forward_for_loss(cls_scores, bbox_preds, objectnesses, [gt_instances], img_metas)
         one_gt_losses = criterion(**raw_dict)
         onegt_cls_loss = one_gt_losses["loss_cls"].sum()
         onegt_box_loss = one_gt_losses["loss_bbox"].sum()
@@ -68,7 +68,7 @@ class TestYOLOXCriterion:
             bboxes=torch.Tensor([[s * 4, s * 4, s * 4 + 10, s * 4 + 10]]),
             labels=torch.LongTensor([2]),
         )
-        raw_dict = head.loss_by_feat(cls_scores, bbox_preds, objectnesses, [gt_instances], img_metas)
+        raw_dict = head.forward_for_loss(cls_scores, bbox_preds, objectnesses, [gt_instances], img_metas)
         empty_gt_losses = criterion(**raw_dict)
         # When gt_bboxes out of bound, the assign results should be empty,
         # so the cls and bbox loss should be zero.

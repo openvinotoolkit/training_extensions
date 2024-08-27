@@ -34,21 +34,18 @@ class RPNCriterion(nn.Module):
         bbox_coder: nn.Module,
         loss_cls: nn.Module,
         loss_bbox: nn.Module,
-        reg_decoded_bbox: bool = True,
     ) -> None:
         super().__init__()
         self.bbox_coder = bbox_coder
         self.loss_bbox = loss_bbox
         self.loss_cls = loss_cls
         self.cls_out_channels = 1 if loss_cls.use_sigmoid else 2
-        self.reg_decoded_bbox = reg_decoded_bbox
 
     def forward(
         self,
         cls_reg_targets: tuple[list[Tensor], list[Tensor], list[Tensor], list[Tensor], int],
         bbox_preds: list[Tensor],
         cls_scores: list[Tensor],
-        all_anchor_list: list[Tensor],
     ) -> dict:
         """Calculate the loss based on the features extracted by the detection head.
 
@@ -78,7 +75,6 @@ class RPNCriterion(nn.Module):
             self._forward,
             cls_scores,
             bbox_preds,
-            all_anchor_list,
             labels_list,
             label_weights_list,
             bbox_targets_list,
@@ -91,7 +87,6 @@ class RPNCriterion(nn.Module):
         self,
         cls_score: Tensor,
         bbox_pred: Tensor,
-        anchors: Tensor,
         labels: Tensor,
         label_weights: Tensor,
         bbox_targets: Tensor,
@@ -107,8 +102,6 @@ class RPNCriterion(nn.Module):
                 Has shape (N, num_anchors * num_classes, H, W).
             bbox_pred (Tensor): Box energies / deltas for each scale
                 level with shape (N, num_anchors * 4, H, W).
-            anchors (Tensor): Box reference for each scale level with shape
-                (N, num_total_anchors, 4).
             labels (Tensor): Labels of each anchors with shape
                 (N, num_total_anchors).
             label_weights (Tensor): Label weights of each anchor with shape
@@ -132,11 +125,5 @@ class RPNCriterion(nn.Module):
         bbox_targets = bbox_targets.reshape(-1, target_dim)
         bbox_weights = bbox_weights.reshape(-1, target_dim)
         bbox_pred = bbox_pred.permute(0, 2, 3, 1).reshape(-1, self.bbox_coder.encode_size)
-        if self.reg_decoded_bbox:
-            # When the regression loss (e.g. `IouLoss`, `GIouLoss`)
-            # is applied directly on the decoded bounding boxes, it
-            # decodes the already encoded coordinates to absolute format.
-            anchors = anchors.reshape(-1, anchors.size(-1))
-            bbox_pred = self.bbox_coder.decode(anchors, bbox_pred)
         loss_bbox = self.loss_bbox(bbox_pred, bbox_targets, bbox_weights, avg_factor=avg_factor)
         return loss_cls, loss_bbox

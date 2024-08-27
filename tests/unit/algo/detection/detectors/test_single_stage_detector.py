@@ -34,7 +34,7 @@ class TestSingleStageDetector:
                 x = self.relu(x)
                 return self.linear2(x)
 
-            def loss(self, x: torch.Tensor, *args, **kwargs) -> dict:
+            def get_preds_and_targets(self, x: torch.Tensor, *args, **kwargs) -> dict:
                 return {"x": x}
 
             def predict(self, x: torch.Tensor, *args, **kwargs) -> torch.Tensor:

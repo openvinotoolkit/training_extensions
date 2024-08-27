@@ -182,7 +182,7 @@ class ATSSHeadModule(ClassIncrementalMixin, AnchorHead):
         centerness = self.atss_centerness(reg_feat)
         return cls_score, bbox_pred, centerness
 
-    def loss_by_feat(  # type: ignore[override]
+    def forward_for_loss(  # type: ignore[override]
         self,
         cls_scores: list[Tensor],
         bbox_preds: list[Tensor],
@@ -191,7 +191,7 @@ class ATSSHeadModule(ClassIncrementalMixin, AnchorHead):
         batch_img_metas: list[dict],
         batch_gt_instances_ignore: list[InstanceData] | None = None,
     ) -> dict[str, Tensor]:
-        """Compute losses of the head.
+        """Forward the head for a loss computation.
 
         Args:
             cls_scores (list[Tensor]): Box scores for each scale level
@@ -265,8 +265,6 @@ class ATSSHeadModule(ClassIncrementalMixin, AnchorHead):
         This method is almost the same as `AnchorHead.get_targets()`. Besides
         returning the targets as the parent method does, it also returns the
         anchors as the first element of the returned tuple.
-        However, if the detector's head loss uses CrossSigmoidFocalLoss,
-        the labels_weights_list consists of (binarized label schema * weights) of batch images
         """
         return self.get_atss_targets(
             anchor_list,

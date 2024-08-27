@@ -38,7 +38,6 @@ class FCNMaskHead(BaseModule):
 
     def __init__(
         self,
-        loss_mask: nn.Module,
         num_convs: int = 4,
         roi_feat_size: int = 14,
         in_channels: int = 256,
@@ -62,8 +61,6 @@ class FCNMaskHead(BaseModule):
         self.normalization = normalization
         self.mask_size = mask_size
         self.mask_thr_binary = mask_thr_binary
-
-        self.loss_mask = loss_mask
 
         self.convs = ModuleList()
         for i in range(self.num_convs):
@@ -147,43 +144,6 @@ class FCNMaskHead(BaseModule):
             self.mask_size,
             meta_infos,
         )
-
-    def loss_and_target(
-        self,
-        mask_preds: Tensor,
-        sampling_results: list[SamplingResult],
-        batch_gt_instances: list[InstanceData],
-    ) -> dict:
-        """Calculate the loss based on the features extracted by the mask head.
-
-        Args:
-            mask_preds (Tensor): Predicted foreground masks, has shape
-                (num_pos, num_classes, h, w).
-            sampling_results (List[SamplingResult]): Assign results of
-                all images in a batch after sampling.
-            batch_gt_instances (list[InstanceData]): Batch of
-                gt_instance. It usually includes ``bboxes``, ``labels``, and
-                ``masks`` attributes.
-
-        Returns:
-            dict: A dictionary of loss and targets components.
-        """
-        mask_targets = self.get_targets(
-            sampling_results=sampling_results,
-            batch_gt_instances=batch_gt_instances,
-        )
-
-        pos_labels = torch.cat([res.pos_gt_labels for res in sampling_results])
-
-        loss = {}
-        if mask_preds.size(0) == 0:
-            loss_mask = mask_preds.sum()
-        elif self.class_agnostic:
-            loss_mask = self.loss_mask(mask_preds, mask_targets, torch.zeros_like(pos_labels))
-        else:
-            loss_mask = self.loss_mask(mask_preds, mask_targets, pos_labels)
-        loss["loss_mask"] = loss_mask
-        return {"loss_mask": loss, "mask_targets": mask_targets}
 
     def predict_by_feat(
         self,

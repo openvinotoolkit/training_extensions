@@ -6,7 +6,7 @@
 from __future__ import annotations
 
 from functools import partial
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, ClassVar
 
 from torch import nn
 
@@ -32,60 +32,12 @@ if TYPE_CHECKING:
 class RTMDetInst(ExplainableOTXInstanceSegModel):
     """Implementation of RTMDet for instance segmentation."""
 
-    @property
-    def _exporter(self) -> OTXModelExporter:
-        """Creates OTXModelExporter object that can export the model."""
-        if self.input_size is None:
-            msg = f"Input size attribute is not set for {self.__class__}"
-            raise ValueError(msg)
-
-        return OTXNativeModelExporter(
-            task_level_export_parameters=self._export_parameters,
-            input_size=(1, 3, *self.input_size),
-            mean=self.mean,
-            std=self.std,
-            resize_mode="fit_to_window_letterbox",
-            pad_value=114,
-            swap_rgb=False,
-            via_onnx=True,
-            onnx_export_configuration={
-                "input_names": ["image"],
-                "output_names": ["boxes", "labels", "masks"],
-                "dynamic_axes": {
-                    "image": {0: "batch", 2: "height", 3: "width"},
-                    "boxes": {0: "batch", 1: "num_dets"},
-                    "labels": {0: "batch", 1: "num_dets"},
-                    "masks": {0: "batch", 1: "num_dets", 2: "height", 3: "width"},
-                },
-                "opset_version": 11,
-                "autograd_inlining": False,
-            },
-            output_names=["bboxes", "labels", "masks", "feature_vector", "saliency_map"] if self.explain_mode else None,
-        )
-
-    def forward_for_tracing(self, inputs: Tensor) -> tuple[Tensor, ...]:
-        """Forward function for export.
-
-        NOTE : RTMDetInst uses explain_mode unlike other models.
-        """
-        shape = (int(inputs.shape[2]), int(inputs.shape[3]))
-        meta_info = {
-            "pad_shape": shape,
-            "batch_input_shape": shape,
-            "img_shape": shape,
-            "scale_factor": (1.0, 1.0),
-        }
-        meta_info_list = [meta_info] * len(inputs)
-        return self.model.export(inputs, meta_info_list, explain_mode=self.explain_mode)
-
-
-class RTMDetInstTiny(RTMDetInst):
-    """RTMDetInst Tiny Model."""
-
-    load_from = (
-        "https://download.openmmlab.com/mmdetection/v3.0/rtmdet/rtmdet-ins_tiny_8xb32-300e_coco/"
-        "rtmdet-ins_tiny_8xb32-300e_coco_20221130_151727-ec670f7e.pth"
-    )
+    load_from: ClassVar[list[str]] = {
+        "rtmdet_inst_tiny": (
+            "https://download.openmmlab.com/mmdetection/v3.0/rtmdet/rtmdet-ins_tiny_8xb32-300e_coco/"
+            "rtmdet-ins_tiny_8xb32-300e_coco_20221130_151727-ec670f7e.pth"
+        ),
+    }
     mean = (123.675, 116.28, 103.53)
     std = (58.395, 57.12, 57.375)
 
@@ -149,3 +101,49 @@ class RTMDetInstTiny(RTMDetInst):
             train_cfg=train_cfg,
             test_cfg=test_cfg,
         )
+
+    @property
+    def _exporter(self) -> OTXModelExporter:
+        """Creates OTXModelExporter object that can export the model."""
+        if self.input_size is None:
+            msg = f"Input size attribute is not set for {self.__class__}"
+            raise ValueError(msg)
+
+        return OTXNativeModelExporter(
+            task_level_export_parameters=self._export_parameters,
+            input_size=(1, 3, *self.input_size),
+            mean=self.mean,
+            std=self.std,
+            resize_mode="fit_to_window_letterbox",
+            pad_value=114,
+            swap_rgb=False,
+            via_onnx=True,
+            onnx_export_configuration={
+                "input_names": ["image"],
+                "output_names": ["boxes", "labels", "masks"],
+                "dynamic_axes": {
+                    "image": {0: "batch", 2: "height", 3: "width"},
+                    "boxes": {0: "batch", 1: "num_dets"},
+                    "labels": {0: "batch", 1: "num_dets"},
+                    "masks": {0: "batch", 1: "num_dets", 2: "height", 3: "width"},
+                },
+                "opset_version": 11,
+                "autograd_inlining": False,
+            },
+            output_names=["bboxes", "labels", "masks", "feature_vector", "saliency_map"] if self.explain_mode else None,
+        )
+
+    def forward_for_tracing(self, inputs: Tensor) -> tuple[Tensor, ...]:
+        """Forward function for export.
+
+        NOTE : RTMDetInst uses explain_mode unlike other models.
+        """
+        shape = (int(inputs.shape[2]), int(inputs.shape[3]))
+        meta_info = {
+            "pad_shape": shape,
+            "batch_input_shape": shape,
+            "img_shape": shape,
+            "scale_factor": (1.0, 1.0),
+        }
+        meta_info_list = [meta_info] * len(inputs)
+        return self.model.export(inputs, meta_info_list, explain_mode=self.explain_mode)

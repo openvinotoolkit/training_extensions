@@ -147,7 +147,7 @@ class SingleStageDetector(BaseModule):
         """
         x = self.extract_feat(entity.images)
         # TODO (sungchul): compare .loss with other forwards and remove duplicated code
-        outputs: dict[str, Tensor] = self.bbox_head.loss(x, entity)
+        outputs: dict[str, Tensor] = self.bbox_head.get_preds_and_targets(x, entity)
 
         return self.criterion(**outputs)
 

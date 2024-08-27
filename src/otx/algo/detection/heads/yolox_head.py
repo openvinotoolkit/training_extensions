@@ -443,7 +443,7 @@ class YOLOXHeadModule(BaseDenseHead):
             results.scores = det_bboxes[:, -1]
         return results
 
-    def loss_by_feat(  # type: ignore[override]
+    def forward_for_loss(  # type: ignore[override]
         self,
         cls_scores: Sequence[Tensor],
         bbox_preds: Sequence[Tensor],
@@ -452,7 +452,7 @@ class YOLOXHeadModule(BaseDenseHead):
         batch_img_metas: Sequence[dict],
         batch_gt_instances_ignore: Sequence[InstanceData] | None = None,
     ) -> dict:
-        """Calculate the loss based on the features extracted by the detection head.
+        """Forward the head for a loss computation.
 
         Args:
             cls_scores (Sequence[Tensor]): Box scores for each scale level,

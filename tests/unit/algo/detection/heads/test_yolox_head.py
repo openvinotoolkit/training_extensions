@@ -38,7 +38,7 @@ class TestYOLOXHeadModule:
             with_nms=False,
         )
 
-    def test_loss_by_feat(self):
+    def test_forward_for_loss(self):
         s = 256
         img_metas = [
             {
@@ -60,7 +60,7 @@ class TestYOLOXHeadModule:
         # background
         gt_instances = InstanceData(bboxes=torch.empty((0, 4)), labels=torch.LongTensor([]))
 
-        raw_dict = head.loss_by_feat(cls_scores, bbox_preds, objectnesses, [gt_instances], img_metas)
+        raw_dict = head.forward_for_loss(cls_scores, bbox_preds, objectnesses, [gt_instances], img_metas)
         for key in [
             "flatten_objectness",
             "flatten_cls_preds",

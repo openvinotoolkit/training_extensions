@@ -46,8 +46,6 @@ class RPNHeadModule(AnchorHead):
             category.
         anchor_generator (nn.Module): Module for anchor generator
         bbox_coder (nn.Module): Module of bounding box coder.
-        loss_cls (nn.Module): Module of classification loss.
-        loss_bbox (nn.Module): Module of localization loss.
         assigner (nn.Module): Module of assigner.
         sampler (nn.Module): Module of sampler.
         feat_channels (int): Number of hidden channels. Used in child classes.
@@ -62,6 +60,18 @@ class RPNHeadModule(AnchorHead):
             `RCNNHead`.
         pos_weight (float): Weight of positive examples in loss calculation.
             Defaults to 1.
+        max_per_img (int): Maximum number of detections per image.
+            Defaults to 1000.
+        min_bbox_size (int): Minimum size of the bounding box.
+            Defaults to 0.
+        nms_iou_threshold (float): IoU threshold for non-maximum suppression (NMS).
+            Defaults to 0.7.
+        score_threshold (float): Threshold for filtering out low-confidence detections.
+            Defaults to 0.5.
+        nms_pre (int): Number of detections to keep before NMS.
+            Defaults to 1000.
+        with_nms (bool): Whether to apply NMS to the detections.
+            Defaults to True.
     """
 
     def __init__(  # noqa: PLR0913
@@ -69,8 +79,6 @@ class RPNHeadModule(AnchorHead):
         in_channels: int,
         anchor_generator: nn.Module,
         bbox_coder: nn.Module,
-        loss_cls: nn.Module,
-        loss_bbox: nn.Module,
         assigner: nn.Module,
         sampler: nn.Module,
         train_cfg: dict,  # TODO(Sungchul, Kirill): depricate it
@@ -99,8 +107,6 @@ class RPNHeadModule(AnchorHead):
             in_channels=in_channels,
             anchor_generator=anchor_generator,
             bbox_coder=bbox_coder,
-            loss_cls=loss_cls,
-            loss_bbox=loss_bbox,
             feat_channels=feat_channels,
             train_cfg=train_cfg,
             test_cfg=test_cfg,
@@ -163,46 +169,6 @@ class RPNHeadModule(AnchorHead):
         rpn_bbox_pred = self.rpn_reg(x)
         return rpn_cls_score, rpn_bbox_pred
 
-    def loss_and_predict(
-        self,
-        x: tuple[Tensor],
-        rpn_entity: InstanceSegBatchDataEntity,
-    ) -> tuple[dict, list[InstanceData]]:
-        """Forward propagation of the head, then calculate loss and predictions from the features and data samples.
-
-        Args:
-            x (tuple[Tensor]): Features from FPN.
-            batch_data_samples (list[InstanceSegBatchDataEntity]): Each item contains
-                the meta information of each image and corresponding
-                annotations.
-
-        Returns:
-            tuple: the return value is a tuple contains:
-
-                - losses: (dict[str, Tensor]): A dictionary of loss components.
-                - predictions (list[InstanceData]): Detection
-                  results of each image after the post process.
-        """
-        batch_gt_instances, batch_img_metas = unpack_inst_seg_entity(rpn_entity)
-
-        cls_scores, bbox_preds = self(x)
-
-        losses = self.loss_by_feat(
-            cls_scores,
-            bbox_preds,
-            batch_gt_instances,
-            batch_img_metas,
-        )
-
-        predictions = self.predict_by_feat(
-            cls_scores,
-            bbox_preds,
-            batch_img_metas=batch_img_metas,
-            cfg=self.test_cfg,  # TODO (Sungchul, Kirill): remove
-        )
-
-        return losses, predictions
-
     def forward_for_loss(
         self,
         x: tuple[Tensor],
@@ -227,20 +193,20 @@ class RPNHeadModule(AnchorHead):
 
         cls_scores, bbox_preds = self(x)
 
-        all_anchor_list, cls_reg_targets = self.get_targets_for_loss(
+        cls_reg_targets = self.get_targets_for_loss(
             cls_scores,
             batch_gt_instances,
             batch_img_metas,
         )
 
-        rpn_results_list = self.predict_by_feat(
+        predictions = self.predict_by_feat(
             cls_scores,
             bbox_preds,
             batch_img_metas=batch_img_metas,
             cfg=self.test_cfg,  # TODO (Sungchul, Kirill): remove
         )
 
-        return all_anchor_list, cls_reg_targets, bbox_preds, cls_scores, rpn_results_list
+        return cls_reg_targets, bbox_preds, cls_scores, predictions
 
     def predict(
         self,
@@ -342,7 +308,7 @@ class RPNHeadModule(AnchorHead):
             reg_dim = self.bbox_coder.encode_size
             bbox_pred = bbox_pred.permute(1, 2, 0).reshape(-1, reg_dim)
             cls_score = cls_score.permute(1, 2, 0).reshape(-1, self.cls_out_channels)
-            scores = cls_score.sigmoid() if self.use_sigmoid_cls else cls_score.softmax(-1)[:, :-1]
+            scores = cls_score.sigmoid()
 
             scores = torch.squeeze(scores)
             if 0 < self.nms_pre < scores.shape[0]:
@@ -485,16 +451,9 @@ class RPNHeadModule(AnchorHead):
                 msg = "cls_score and bbox_pred should have the same size"
                 raise ValueError(msg)
             cls_score = cls_score.permute(0, 2, 3, 1)
-            if self.use_sigmoid_cls:
-                cls_score = cls_score.reshape(batch_size, -1)
-                scores = cls_score.sigmoid()
-            else:
-                cls_score = cls_score.reshape(batch_size, -1, 2)
-                # We set FG labels to [0, num_class-1] and BG label to
-                # num_class in RPN head since mmdet v2.5, which is unified to
-                # be consistent with other head since mmdet v2.0. In mmdet v2.0
-                # to v2.4 we keep BG label as 0 and FG label as 1 in rpn head.
-                scores = cls_score.softmax(-1)[..., 0]
+            cls_score = cls_score.reshape(batch_size, -1)
+            scores = cls_score.sigmoid()
+
             scores = scores.reshape(batch_size, -1, 1)
             dim = self.bbox_coder.encode_size
             bbox_pred = bbox_pred.permute(0, 2, 3, 1).reshape(batch_size, -1, dim)
@@ -528,8 +487,7 @@ class RPNHeadModule(AnchorHead):
             max_shape=img_metas[0]["img_shape"],  # type: ignore[index]
         )
         # ignore background class
-        if not self.use_sigmoid_cls:
-            batch_mlvl_scores = batch_mlvl_scores[..., : self.num_classes]
+        batch_mlvl_scores = batch_mlvl_scores[..., : self.num_classes]
         if not self.with_nms:
             return batch_mlvl_bboxes, batch_mlvl_scores
 
@@ -577,8 +535,6 @@ class RPNHead:
         bbox_coder: DeltaXYWHBBoxCoder,
         assigner: MaxIoUAssigner,
         sampler: BaseSampler,
-        loss_cls: nn.Module,
-        loss_bbox: nn.Module,
         train_cfg: dict,  # TODO (Sungchul, Kirill): remove
         test_cfg: dict,  # TODO (Sungchul, Kirill): remove
     ) -> RPNHeadModule:
@@ -589,8 +545,6 @@ class RPNHead:
             bbox_coder=bbox_coder,
             assigner=assigner,
             sampler=sampler,
-            loss_bbox=loss_bbox,
-            loss_cls=loss_cls,
             train_cfg=train_cfg,
             test_cfg=test_cfg,
         )

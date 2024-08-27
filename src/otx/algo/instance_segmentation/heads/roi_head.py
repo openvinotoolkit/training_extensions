@@ -13,7 +13,6 @@ from typing import TYPE_CHECKING
 import torch
 from torch import Tensor, nn
 
-from otx.algo.common.utils.structures import SamplingResult
 from otx.algo.instance_segmentation.utils.structures.bbox import bbox2roi
 from otx.algo.instance_segmentation.utils.utils import empty_instances, unpack_inst_seg_entity
 from otx.core.data.entity.instance_segmentation import InstanceSegBatchDataEntity
@@ -88,44 +87,6 @@ class RoIHead(nn.Module):
         cls_score, bbox_pred = self.bbox_head(bbox_feats)
 
         return {"cls_score": cls_score, "bbox_pred": bbox_pred, "bbox_feats": bbox_feats}
-
-    def mask_loss(
-        self,
-        x: tuple[Tensor],
-        sampling_results: list[SamplingResult],
-        bbox_feats: Tensor,
-        batch_gt_instances: list[InstanceData],
-    ) -> dict:
-        """Perform forward propagation and loss calculation of the mask head on the features of the upstream network.
-
-        Args:
-            x (tuple[Tensor]): Tuple of multi-level img features.
-            sampling_results (list[SamplingResult]): Sampling results.
-            bbox_feats (Tensor): Extract bbox RoI features.
-            batch_gt_instances (list[InstanceData]): Batch of
-                gt_instance. It usually includes ``bboxes``, ``labels``, and
-                ``masks`` attributes.
-
-        Returns:
-            dict: Usually returns a dictionary with keys:
-
-                - `mask_preds` (Tensor): Mask prediction.
-                - `mask_feats` (Tensor): Extract mask RoI features.
-                - `mask_targets` (Tensor): Mask target of each positive\
-                    proposals in the image.
-                - `loss_mask` (dict): A dictionary of mask loss components.
-        """
-        pos_rois = bbox2roi([res.pos_priors for res in sampling_results])
-        mask_results = self._mask_forward(x, pos_rois)
-
-        mask_loss_and_target = self.mask_head.loss_and_target(
-            mask_preds=mask_results["mask_preds"],
-            sampling_results=sampling_results,
-            batch_gt_instances=batch_gt_instances,
-        )
-
-        mask_results.update(loss_mask=mask_loss_and_target["loss_mask"])
-        return mask_results
 
     def _mask_forward(
         self,
@@ -572,73 +533,4 @@ class RoIHead(nn.Module):
         )
         pos_labels = torch.cat([res.pos_gt_labels for res in sampling_results])
 
-        return bbox_results, mask_results, cls_reg_targets, mask_targets, pos_labels, rois
-
-    def loss(
-        self,
-        x: tuple[Tensor],
-        rpn_results_list: list[InstanceData],
-        entity: InstanceSegBatchDataEntity,
-    ) -> dict:
-        """Perform forward propagation and loss calculation of the detection roi on the features."""
-        batch_gt_instances, batch_img_metas = unpack_inst_seg_entity(entity)
-
-        # assign gts and sample proposals
-        num_imgs = entity.batch_size
-        sampling_results = []
-        for i in range(num_imgs):
-            # rename rpn_results.bboxes to rpn_results.priors
-            rpn_results = rpn_results_list[i]
-            rpn_results.priors = rpn_results.pop("bboxes")
-
-            assign_result = self.bbox_assigner.assign(rpn_results, batch_gt_instances[i])
-            sampling_result = self.bbox_sampler.sample(
-                assign_result,
-                rpn_results,
-                batch_gt_instances[i],
-                feats=[lvl_feat[i][None] for lvl_feat in x],
-            )
-            sampling_results.append(sampling_result)
-
-        losses = {}
-        # bbox head loss
-        if self.with_bbox:
-            bbox_results = self.bbox_loss(x, sampling_results, batch_img_metas)
-            losses.update(bbox_results["loss_bbox"])
-
-        # mask head forward and loss
-        if self.with_mask:
-            mask_results = self.mask_loss(x, sampling_results, bbox_results["bbox_feats"], batch_gt_instances)
-            losses.update(mask_results["loss_mask"])
-
-        return losses
-
-    def bbox_loss(self, x: tuple[Tensor], sampling_results: list[SamplingResult], batch_img_metas: list[dict]) -> dict:
-        """Perform forward propagation and loss calculation of the bbox head on the features of the upstream network.
-
-        Args:
-            x (tuple[Tensor]): list of multi-level img features.
-            sampling_results (list[SamplingResult]): Sampling results.
-            batch_img_metas (list[dict]): Meta information of each image, e.g., image size, scaling factor, etc.
-
-        Returns:
-            dict[str, Tensor]: Usually returns a dictionary with keys:
-
-                - `cls_score` (Tensor): Classification scores.
-                - `bbox_pred` (Tensor): Box energies / deltas.
-                - `bbox_feats` (Tensor): Extract bbox RoI features.
-                - `loss_bbox` (dict): A dictionary of bbox loss components.
-        """
-        rois = bbox2roi([res.bboxes for res in sampling_results])
-        bbox_results = self._bbox_forward(x, rois)
-
-        bbox_loss_and_target = self.bbox_head.loss_and_target(
-            cls_score=bbox_results["cls_score"],
-            bbox_pred=bbox_results["bbox_pred"],
-            rois=rois,
-            sampling_results=sampling_results,
-            batch_img_metas=batch_img_metas,
-        )
-        bbox_results.update(loss_bbox=bbox_loss_and_target["loss_bbox"])
-
-        return bbox_results
+        return bbox_results, mask_results, cls_reg_targets, mask_targets, pos_labels

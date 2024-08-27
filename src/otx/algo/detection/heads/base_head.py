@@ -55,8 +55,8 @@ class BaseDenseHead(BaseModule):
             positive_infos.append(pos_info)
         return positive_infos
 
-    def loss(self, x: tuple[Tensor], entity: DetBatchDataEntity) -> dict:
-        """Perform forward propagation and loss calculation of the detection head.
+    def get_preds_and_targets(self, x: tuple[Tensor], entity: DetBatchDataEntity) -> dict:
+        """Perform forward propagation of the detection head and prepare for loss calculation.
 
         Args:
             x (tuple[Tensor]): Features from the upstream network, each is
@@ -70,11 +70,11 @@ class BaseDenseHead(BaseModule):
 
         batch_gt_instances, batch_img_metas = unpack_det_entity(entity)
 
-        loss_inputs = (*outs, batch_gt_instances, batch_img_metas)
-        return self.loss_by_feat(*loss_inputs)
+        inputs = (*outs, batch_gt_instances, batch_img_metas)
+        return self.forward_for_loss(*inputs)
 
     @abstractmethod
-    def loss_by_feat(
+    def forward_for_loss(
         self,
         cls_scores: list[Tensor],
         bbox_preds: list[Tensor],
@@ -82,7 +82,7 @@ class BaseDenseHead(BaseModule):
         batch_img_metas: list[dict],
         batch_gt_instances_ignore: list[InstanceData] | None = None,
     ) -> dict:
-        """Calculate the loss based on the features extracted by the detection head."""
+        """Prepare features for the loss calculation."""
 
     def predict(
         self,
@@ -277,13 +277,7 @@ class BaseDenseHead(BaseModule):
             # in v3det.
             if hasattr(self, "loss_cls") and getattr(self.loss_cls, "custom_cls_channels", False):
                 scores = self.loss_cls.get_activation(cls_score)  # TODO (sungchul): remove `loss_cls` in head
-            elif self.use_sigmoid_cls:
-                scores = cls_score.sigmoid()
-            else:
-                # remind that we set FG labels to [0, num_class-1]
-                # since mmdet v2.0
-                # BG cat_id: num_class
-                scores = cls_score.softmax(-1)[:, :-1]
+            scores = cls_score.sigmoid()
 
             # After https://github.com/open-mmlab/mmdetection/pull/6268/,
             # this operation keeps fewer bboxes under the same `nms_pre`.
@@ -504,10 +498,7 @@ class BaseDenseHead(BaseModule):
 
             if hasattr(self, "loss_cls") and getattr(self.loss_cls, "custom_cls_channels", False):
                 scores = self.loss_cls.get_activation(cls_score)  # TODO (sungchul): remove `loss_cls` in head
-            elif self.use_sigmoid_cls:
-                scores = scores.sigmoid()
-            else:
-                scores = scores.softmax(-1)[:, :, :-1]
+            scores = scores.sigmoid()
 
             if with_score_factors:
                 score_factors = score_factors.permute(0, 2, 3, 1).reshape(batch_size, -1).sigmoid()  # type: ignore[union-attr, attr-defined] # noqa: PLW2901
@@ -522,10 +513,7 @@ class BaseDenseHead(BaseModule):
                     nms_pre_score = nms_pre_score * score_factors
 
                 # Get maximum scores for foreground classes.
-                if self.use_sigmoid_cls:
-                    max_scores, _ = nms_pre_score.max(-1)
-                else:
-                    max_scores, _ = nms_pre_score[..., :-1].max(-1)
+                max_scores, _ = nms_pre_score.max(-1)
                 _, topk_inds = dynamic_topk(max_scores, pre_topk)
                 bbox_pred, scores, score_factors = gather_topk(  # noqa: PLW2901
                     bbox_pred,
@@ -552,8 +540,7 @@ class BaseDenseHead(BaseModule):
         if with_score_factors:
             batch_score_factors = torch.cat(mlvl_score_factors, dim=1)
 
-        if not self.use_sigmoid_cls:
-            batch_scores = batch_scores[..., : self.num_classes]
+        batch_scores = batch_scores[..., : self.num_classes]
 
         if with_score_factors:
             batch_scores = batch_scores * batch_score_factors

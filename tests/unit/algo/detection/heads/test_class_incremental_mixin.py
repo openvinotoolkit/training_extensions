@@ -68,7 +68,7 @@ class TestClassIncrementalMixin:
         ]
 
         loss_with_ignored_labels = criterion(
-            **atss_head.loss_by_feat(
+            **atss_head.forward_for_loss(
                 cls_scores,
                 bbox_preds,
                 centernesses,
@@ -88,7 +88,7 @@ class TestClassIncrementalMixin:
             },
         ]
         loss_without_ignored_labels = criterion(
-            **atss_head.loss_by_feat(
+            **atss_head.forward_for_loss(
                 cls_scores,
                 bbox_preds,
                 centernesses,

@@ -54,7 +54,7 @@ class MaskRCNN(ExplainableOTXInstanceSegModel):
             msg = f"Model version {self.model_name} is not supported."
             raise ValueError(msg)
 
-        train_cfg = {
+        train_cfg = {  # TODO(Sungchul, Kirill): depricate it
             "rpn": {
                 "allowed_border": -1,
                 "debug": False,
@@ -102,7 +102,7 @@ class MaskRCNN(ExplainableOTXInstanceSegModel):
             },
         }
 
-        test_cfg = {
+        test_cfg = {  # TODO(Sungchul, Kirill): depricate it
             "rpn": {
                 "max_per_img": 1000,
                 "min_bbox_size": 0,
@@ -154,11 +154,6 @@ class MaskRCNN(ExplainableOTXInstanceSegModel):
         )
 
         backbone = MaskRCNNBackbone(model_name=self.model_name)
-        loss_bbox = L1Loss(loss_weight=1.0)
-        loss_rpn_cls = CrossEntropyLoss(loss_weight=1.0, use_sigmoid=True)
-        # TODO(someone): performance of CrossSigmoidFocalLoss is worse without mmcv
-        # https://github.com/openvinotoolkit/training_extensions/pull/3431
-        loss_roi_cls = CrossSigmoidFocalLoss(loss_weight=1.0, use_sigmoid=False)
 
         neck = FPN(model_name=self.model_name)
         rpn_bbox_coder = DeltaXYWHBBoxCoder(
@@ -176,8 +171,6 @@ class MaskRCNN(ExplainableOTXInstanceSegModel):
             bbox_coder=rpn_bbox_coder,
             assigner=rpn_assigner,
             sampler=rpn_sampler,
-            loss_cls=loss_rpn_cls,
-            loss_bbox=loss_bbox,
             train_cfg=train_cfg["rpn"],
             test_cfg=test_cfg["rpn"],
         )
@@ -191,8 +184,6 @@ class MaskRCNN(ExplainableOTXInstanceSegModel):
             model_name=self.model_name,
             num_classes=num_classes,
             bbox_coder=roi_bbox_coder,
-            loss_cls=loss_roi_cls,
-            loss_bbox=loss_bbox,
         )
 
         bbox_roi_extractor = SingleRoIExtractor(
@@ -222,7 +213,6 @@ class MaskRCNN(ExplainableOTXInstanceSegModel):
             in_channels=rpn_head.feat_channels,
             num_classes=num_classes,
             num_convs=4,
-            loss_mask=CrossEntropyLoss(loss_weight=1.0, use_mask=True),
         )
 
         roi_head = RoIHead(
@@ -235,16 +225,24 @@ class MaskRCNN(ExplainableOTXInstanceSegModel):
         )
 
         rpn_criterion = RPNCriterion(
-            bbox_coder=rpn_head.bbox_coder,
-            loss_bbox=loss_bbox,
-            loss_cls=loss_rpn_cls,
+            bbox_coder=DeltaXYWHBBoxCoder(
+                target_means=(0.0, 0.0, 0.0, 0.0),
+                target_stds=(1.0, 1.0, 1.0, 1.0),
+            ),
+            loss_bbox=L1Loss(loss_weight=1.0),
+            loss_cls=CrossEntropyLoss(loss_weight=1.0, use_sigmoid=True),
         )
 
         roi_criterion = ROICriterion(
             num_classes=num_classes,
-            bbox_coder=roi_bbox_coder,
-            loss_bbox=loss_bbox,
-            loss_cls=loss_roi_cls,
+            bbox_coder=DeltaXYWHBBoxCoder(
+                target_means=(0.0, 0.0, 0.0, 0.0),
+                target_stds=(0.1, 0.1, 0.2, 0.2),
+            ),
+            loss_bbox=L1Loss(loss_weight=1.0),
+            # TODO(someone): performance of CrossSigmoidFocalLoss is worse without mmcv
+            # https://github.com/openvinotoolkit/training_extensions/pull/3431
+            loss_cls=CrossSigmoidFocalLoss(loss_weight=1.0, use_sigmoid=False),
             loss_mask=CrossEntropyLoss(loss_weight=1.0, use_mask=True),
             class_agnostic=False,
         )

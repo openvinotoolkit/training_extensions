@@ -111,7 +111,7 @@ class SSDHeadModule(AnchorHead):
             bbox_preds.append(reg_conv(feat))
         return cls_scores, bbox_preds
 
-    def loss_by_feat(
+    def forward_for_loss(
         self,
         cls_scores: list[Tensor],
         bbox_preds: list[Tensor],
@@ -119,7 +119,7 @@ class SSDHeadModule(AnchorHead):
         batch_img_metas: list[dict],
         batch_gt_instances_ignore: list[InstanceData] | None = None,
     ) -> dict[str, Tensor]:
-        """Compute losses of the head.
+        """Forward the head for a loss computation.
 
         Args:
             cls_scores (list[Tensor]): Box scores for each scale level has shape (N, num_anchors * num_classes, H, W)
