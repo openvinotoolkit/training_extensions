@@ -173,7 +173,7 @@ class AnomalyOpenVINO(OVModel):
             msg = "Model is already optimized by PTQ"
             raise RuntimeError(msg)
 
-        val_dataset = data_module.val_dataloader()
+        val_dataset = data_module.train_dataloader()
 
         ptq_config_from_ir = self._read_ptq_config_from_ir(ov_model)
         if ptq_config is not None:
@@ -190,7 +190,7 @@ class AnomalyOpenVINO(OVModel):
             **ptq_config,
         )
 
-        openvino.save_model(compressed_model, output_model_path)
+        openvino.save_model(compressed_model, output_model_path, compress_to_fp16=False)
 
         return output_model_path
 
