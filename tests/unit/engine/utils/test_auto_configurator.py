@@ -20,7 +20,7 @@ from otx.engine.utils.auto_configurator import (
 from otx.utils.utils import should_pass_label_info
 
 
-@pytest.fixture
+@pytest.fixture()
 def fxt_data_root_per_task_type() -> dict:
     return {
         "tests/assets/classification_dataset": OTXTaskType.MULTI_CLASS_CLS,

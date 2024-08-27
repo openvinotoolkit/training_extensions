@@ -398,7 +398,7 @@ def fxt_multilabel_labelinfo() -> LabelInfo:
     )
 
 
-@pytest.fixture
+@pytest.fixture()
 def fxt_hlabel_multilabel_info() -> HLabelInfo:
     return HLabelInfo(
         label_names=[
@@ -464,7 +464,7 @@ def fxt_hlabel_multilabel_info() -> HLabelInfo:
     )
 
 
-@pytest.fixture
+@pytest.fixture()
 def fxt_xpu_support_task() -> list[OTXTaskType]:
     return [
         OTXTaskType.ANOMALY,
@@ -481,7 +481,7 @@ def fxt_xpu_support_task() -> list[OTXTaskType]:
     ]
 
 
-@pytest.fixture
+@pytest.fixture()
 def fxt_export_list() -> list[ExportCase2Test]:
     return [
         ExportCase2Test("ONNX", False, "exported_model.onnx"),

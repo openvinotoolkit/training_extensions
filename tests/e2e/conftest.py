@@ -89,7 +89,7 @@ def pytest_configure(config):
 
 
 # [TODO]: This is a temporary approach.
-@pytest.fixture
+@pytest.fixture()
 def fxt_target_dataset_per_task(fxt_ci_data_root) -> dict:
     return {
         OTXTaskType.MULTI_CLASS_CLS: {
@@ -123,7 +123,7 @@ def fxt_target_dataset_per_task(fxt_ci_data_root) -> dict:
     }
 
 
-@pytest.fixture
+@pytest.fixture()
 def fxt_cli_override_command_per_task() -> dict:
     return {
         OTXTaskType.MULTI_CLASS_CLS: [],
