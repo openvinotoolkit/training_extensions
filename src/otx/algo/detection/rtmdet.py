@@ -5,20 +5,17 @@
 
 from __future__ import annotations
 
-from functools import partial
-from typing import TYPE_CHECKING
-
-from torch import nn
+from typing import TYPE_CHECKING, Literal
 
 from otx.algo.common.backbones import CSPNeXt
 from otx.algo.common.losses import GIoULoss, QualityFocalLoss
-from otx.algo.common.losses.cross_entropy_loss import CrossEntropyLoss
 from otx.algo.common.utils.assigners import DynamicSoftLabelAssigner
 from otx.algo.common.utils.coders import DistancePointBBoxCoder
 from otx.algo.common.utils.prior_generators import MlvlPointGenerator
 from otx.algo.common.utils.samplers import PseudoSampler
-from otx.algo.detection.base_models import SingleStageDetector
+from otx.algo.detection.detectors import SingleStageDetector
 from otx.algo.detection.heads import RTMDetSepBNHead
+from otx.algo.detection.losses import RTMDetCriterion
 from otx.algo.detection.necks import CSPNeXtPAFPN
 from otx.core.config.data import TileConfig
 from otx.core.exporter.base import OTXModelExporter
@@ -36,13 +33,29 @@ if TYPE_CHECKING:
     from otx.core.types.label import LabelInfoTypes
 
 
+PRETRAINED_ROOT: (
+    str
+) = "https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/object_detection/v2/"
+
+PRETRAINED_WEIGHTS: dict[str, str] = {
+    "rtmdet_tiny": PRETRAINED_ROOT + "rtmdet_tiny.pth",
+}
+
+
 class RTMDet(ExplainableOTXDetModel):
-    """OTX Detection model class for RTMDet."""
+    """OTX Detection model class for RTMDet.
+
+    Default input size per model:
+        - rtmdet_tiny : (640, 640)
+    """
 
     input_size_multiplier = 32
+    mean: tuple[float, float, float] = (103.53, 116.28, 123.675)
+    std: tuple[float, float, float] = (57.375, 57.12, 58.395)
 
     def __init__(
         self,
+        model_name: Literal["rtmdet_tiny"],
         label_info: LabelInfoTypes,
         input_size: tuple[int, int] = (640, 640),
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
@@ -51,7 +64,9 @@ class RTMDet(ExplainableOTXDetModel):
         torch_compile: bool = False,
         tile_config: TileConfig = TileConfig(enable_tiler=False),
     ) -> None:
+        self.load_from: str = PRETRAINED_WEIGHTS[model_name]
         super().__init__(
+            model_name=model_name,
             label_info=label_info,
             input_size=input_size,
             optimizer=optimizer,
@@ -59,6 +74,48 @@ class RTMDet(ExplainableOTXDetModel):
             metric=metric,
             torch_compile=torch_compile,
             tile_config=tile_config,
+        )
+
+    def _build_model(self, num_classes: int) -> SingleStageDetector:
+        train_cfg = {
+            "assigner": DynamicSoftLabelAssigner(topk=13),
+            "sampler": PseudoSampler(),
+            "allowed_border": -1,
+            "pos_weight": -1,
+            "debug": False,
+        }
+
+        test_cfg = {
+            "nms": {"type": "nms", "iou_threshold": 0.65},
+            "score_thr": 0.001,
+            "mask_thr_binary": 0.5,
+            "max_per_img": 300,
+            "min_bbox_size": 0,
+            "nms_pre": 30000,
+        }
+
+        backbone = CSPNeXt(model_name=self.model_name)
+        neck = CSPNeXtPAFPN(model_name=self.model_name)
+        bbox_head = RTMDetSepBNHead(
+            model_name=self.model_name,
+            num_classes=num_classes,
+            anchor_generator=MlvlPointGenerator(offset=0, strides=[8, 16, 32]),
+            bbox_coder=DistancePointBBoxCoder(),
+            train_cfg=train_cfg,  # TODO (sungchul, kirill): remove
+            test_cfg=test_cfg,  # TODO (sungchul, kirill): remove
+        )
+        criterion = RTMDetCriterion(
+            num_classes=num_classes,
+            loss_cls=QualityFocalLoss(use_sigmoid=True, beta=2.0, loss_weight=1.0),
+            loss_bbox=GIoULoss(loss_weight=2.0),
+        )
+        return SingleStageDetector(
+            backbone=backbone,
+            neck=neck,
+            bbox_head=bbox_head,
+            criterion=criterion,
+            train_cfg=train_cfg,  # TODO (sungchul, kirill): remove
+            test_cfg=test_cfg,  # TODO (sungchul, kirill): remove
         )
 
     @property
@@ -94,69 +151,3 @@ class RTMDet(ExplainableOTXDetModel):
     def _export_parameters(self) -> TaskLevelExportParameters:
         """Defines parameters required to export a particular model implementation."""
         return super()._export_parameters.wrap(optimization_config={"preset": "mixed"})
-
-
-class RTMDetTiny(RTMDet):
-    """RTMDet Tiny Model."""
-
-    load_from = "https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/object_detection/v2/rtmdet_tiny.pth"
-    mean = (103.53, 116.28, 123.675)
-    std = (57.375, 57.12, 58.395)
-
-    def _build_model(self, num_classes: int) -> RTMDet:
-        train_cfg = {
-            "assigner": DynamicSoftLabelAssigner(topk=13),
-            "sampler": PseudoSampler(),
-            "allowed_border": -1,
-            "pos_weight": -1,
-            "debug": False,
-        }
-
-        test_cfg = {
-            "nms": {"type": "nms", "iou_threshold": 0.65},
-            "score_thr": 0.001,
-            "mask_thr_binary": 0.5,
-            "max_per_img": 300,
-            "min_bbox_size": 0,
-            "nms_pre": 30000,
-        }
-
-        backbone = CSPNeXt(
-            deepen_factor=0.167,
-            widen_factor=0.375,
-            normalization=nn.BatchNorm2d,
-            activation=partial(nn.SiLU, inplace=True),
-        )
-
-        neck = CSPNeXtPAFPN(
-            in_channels=(96, 192, 384),
-            out_channels=96,
-            num_csp_blocks=1,
-            normalization=nn.BatchNorm2d,
-            activation=partial(nn.SiLU, inplace=True),
-        )
-
-        bbox_head = RTMDetSepBNHead(
-            num_classes=num_classes,
-            in_channels=96,
-            stacked_convs=2,
-            feat_channels=96,
-            with_objectness=False,
-            anchor_generator=MlvlPointGenerator(offset=0, strides=[8, 16, 32]),
-            bbox_coder=DistancePointBBoxCoder(),
-            loss_cls=QualityFocalLoss(use_sigmoid=True, beta=2.0, loss_weight=1.0),
-            loss_bbox=GIoULoss(loss_weight=2.0),
-            loss_centerness=CrossEntropyLoss(use_sigmoid=True, loss_weight=1.0),
-            normalization=nn.BatchNorm2d,
-            activation=partial(nn.SiLU, inplace=True),
-            train_cfg=train_cfg,
-            test_cfg=test_cfg,
-        )
-
-        return SingleStageDetector(
-            backbone=backbone,
-            neck=neck,
-            bbox_head=bbox_head,
-            train_cfg=train_cfg,
-            test_cfg=test_cfg,
-        )

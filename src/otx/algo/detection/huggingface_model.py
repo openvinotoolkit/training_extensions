@@ -68,10 +68,10 @@ class HuggingFaceModelForDetection(OTXDetectionModel):
         metric: MetricCallable = MeanAveragePrecisionFMeasureCallable,
         torch_compile: bool = False,
     ) -> None:
-        self.model_name = model_name_or_path
         self.load_from = None
 
         super().__init__(
+            model_name=model_name_or_path,
             label_info=label_info,
             input_size=input_size,
             optimizer=optimizer,

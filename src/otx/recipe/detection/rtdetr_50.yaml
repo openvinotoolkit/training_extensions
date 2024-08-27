@@ -1,6 +1,7 @@
 model:
-  class_path: otx.algo.detection.rtdetr.RTDETR50
+  class_path: otx.algo.detection.rtdetr.RTDETR
   init_args:
+    model_name: rtdetr_50
     label_info: 80
 
     optimizer:

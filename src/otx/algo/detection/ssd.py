@@ -10,16 +10,16 @@ Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/d
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Literal
 
 import numpy as np
 from datumaro.components.annotation import Bbox
 
-from otx.algo.common.backbones import build_model_including_pytorchcv
 from otx.algo.common.utils.assigners import MaxIoUAssigner
 from otx.algo.common.utils.coders import DeltaXYWHBBoxCoder
-from otx.algo.detection.base_models import SingleStageDetector
+from otx.algo.detection.detectors import SingleStageDetector
 from otx.algo.detection.heads import SSDHead
+from otx.algo.detection.losses import SSDCriterion
 from otx.algo.detection.utils.prior_generators import SSDAnchorGeneratorClustered
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.config.data import TileConfig
@@ -32,6 +32,7 @@ from otx.core.model.detection import ExplainableOTXDetModel
 if TYPE_CHECKING:
     import torch
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
+    from torch import nn
 
     from otx.core.data.dataset.base import OTXDataset
     from otx.core.metrics import MetricCallable
@@ -42,18 +43,30 @@ if TYPE_CHECKING:
 logger = logging.getLogger()
 
 
-class SSD(ExplainableOTXDetModel):
-    """Detecion model class for SSD."""
+AVAILABLE_MODEL_VERSIONS: list[str] = ["ssd_mobilenetv2"]
 
-    load_from = (
-        "https://storage.openvinotoolkit.org/repositories/openvino_training_extensions"
-        "/models/object_detection/v2/mobilenet_v2-2s_ssd-992x736.pth"
-    )
-    mean = (0.0, 0.0, 0.0)
-    std = (255.0, 255.0, 255.0)
+PRETRAINED_ROOT: (
+    str
+) = "https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/object_detection/v2/"
+
+PRETRAINED_WEIGHTS: dict[str, str] = {
+    "ssd_mobilenetv2": PRETRAINED_ROOT + "mobilenet_v2-2s_ssd-992x736.pth",
+}
+
+
+class SSD(ExplainableOTXDetModel):
+    """OTX Detection model class for SSD.
+
+    Default input size per model:
+        - ssd_mobilenetv2 : (864, 864)
+    """
+
+    mean: tuple[float, float, float] = (0.0, 0.0, 0.0)
+    std: tuple[float, float, float] = (255.0, 255.0, 255.0)
 
     def __init__(
         self,
+        model_name: Literal["ssd_mobilenetv2"],
         label_info: LabelInfoTypes,
         input_size: tuple[int, int] = (864, 864),
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
@@ -62,7 +75,9 @@ class SSD(ExplainableOTXDetModel):
         torch_compile: bool = False,
         tile_config: TileConfig = TileConfig(enable_tiler=False),
     ) -> None:
+        self.load_from: str = PRETRAINED_WEIGHTS[model_name]
         super().__init__(
+            model_name=model_name,
             label_info=label_info,
             input_size=input_size,
             optimizer=optimizer,
@@ -81,10 +96,8 @@ class SSD(ExplainableOTXDetModel):
                 pos_iou_thr=0.4,
                 neg_iou_thr=0.4,
             ),
-            "smoothl1_beta": 1.0,
             "allowed_border": -1,
             "pos_weight": -1,
-            "neg_pos_ratio": 3,
             "debug": False,
             "use_giou": False,
             "use_focal": False,
@@ -95,16 +108,10 @@ class SSD(ExplainableOTXDetModel):
             "score_thr": 0.02,
             "max_per_img": 200,
         }
-        backbone = build_model_including_pytorchcv(
-            cfg={
-                "type": "mobilenetv2_w1",
-                "out_indices": [4, 5],
-                "frozen_stages": -1,
-                "norm_eval": False,
-                "pretrained": True,
-            },
-        )
+        backbone = self._build_backbone(model_name=self.model_name)
         bbox_head = SSDHead(
+            model_name=self.model_name,
+            num_classes=num_classes,
             anchor_generator=SSDAnchorGeneratorClustered(
                 strides=[16, 32],
                 widths=[
@@ -120,14 +127,45 @@ class SSD(ExplainableOTXDetModel):
                 target_means=(0.0, 0.0, 0.0, 0.0),
                 target_stds=(0.1, 0.1, 0.2, 0.2),
             ),
-            num_classes=num_classes,
-            in_channels=(96, 320),
-            use_depthwise=True,
-            init_cfg={"type": "Xavier", "layer": "Conv2d", "distribution": "uniform"},
-            train_cfg=train_cfg,
-            test_cfg=test_cfg,
+            init_cfg={
+                "type": "Xavier",
+                "layer": "Conv2d",
+                "distribution": "uniform",
+            },  # TODO (sungchul, kirill): remove
+            train_cfg=train_cfg,  # TODO (sungchul, kirill): remove
+            test_cfg=test_cfg,  # TODO (sungchul, kirill): remove
         )
-        return SingleStageDetector(backbone, bbox_head, train_cfg=train_cfg, test_cfg=test_cfg)
+        criterion = SSDCriterion(
+            num_classes=num_classes,
+            bbox_coder=DeltaXYWHBBoxCoder(
+                target_means=(0.0, 0.0, 0.0, 0.0),
+                target_stds=(0.1, 0.1, 0.2, 0.2),
+            ),
+        )
+        return SingleStageDetector(
+            backbone=backbone,
+            bbox_head=bbox_head,
+            criterion=criterion,
+            train_cfg=train_cfg,  # TODO (sungchul, kirill): remove
+            test_cfg=test_cfg,  # TODO (sungchul, kirill): remove
+        )
+
+    def _build_backbone(self, model_name: str) -> nn.Module:
+        if "mobilenetv2" in model_name:
+            from otx.algo.common.backbones import build_model_including_pytorchcv
+
+            return build_model_including_pytorchcv(
+                cfg={
+                    "type": "mobilenetv2_w1",
+                    "out_indices": [4, 5],
+                    "frozen_stages": -1,
+                    "norm_eval": False,
+                    "pretrained": True,
+                },
+            )
+
+        msg = f"Unknown backbone name: {model_name}"
+        raise ValueError(msg)
 
     def setup(self, stage: str) -> None:
         """Callback for setup OTX SSD Model.
