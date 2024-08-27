@@ -18,7 +18,6 @@ def _default_bpe() -> str:
     )
 
 
-@staticmethod
 def _get_pairs(word: tuple[str, ...]) -> set:
     """Return set of symbol pairs in a word.
 
@@ -27,13 +26,11 @@ def _get_pairs(word: tuple[str, ...]) -> set:
     return set(zip(word, word[1:]))
 
 
-@staticmethod
 def _whitespace_clean(text: str) -> str:
     text = re.sub(r"\s+", " ", text)
     return text.strip()
 
 
-@staticmethod
 def _bytes_to_unicode() -> dict:
     """Returns list of utf-8 byte and a corresponding list of unicode strings.
 
@@ -52,25 +49,25 @@ def _bytes_to_unicode() -> dict:
             bs.append(b)
             cs.append(2**8 + n)
             n += 1
-    cs = [chr(n) for n in cs]
-    return dict(zip(bs, cs))
+    chars = [chr(n) for n in cs]
+    return dict(zip(bs, chars))
 
 
-class ClipTokenizer:
+class CLIPTokenizer:
     """Tokenizes text using the ClipTokenizer algorithm."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.byte_encoder = _bytes_to_unicode()
         merges = gzip.open(_default_bpe()).read().decode("utf-8").split("\n")
         merges = merges[1 : 49152 - 256 - 2 + 1]
-        merges = [tuple(merge.split()) for merge in merges]
+        bpes = [tuple(merge.split()) for merge in merges]
         vocab = list(_bytes_to_unicode().values())
         vocab = vocab + [v + "</w>" for v in vocab]
-        for merge in merges:
+        for merge in bpes:
             vocab.append("".join(merge))
         vocab.extend(["<|startoftext|>", "<|endoftext|>"])
         self.encoder = dict(zip(vocab, range(len(vocab))))
-        self.bpe_ranks = dict(zip(merges, range(len(merges))))
+        self.bpe_ranks = dict(zip(bpes, range(len(bpes))))
         self.cache = {"<|startoftext|>": "<|startoftext|>", "<|endoftext|>": "<|endoftext|>"}
         self.pat = re.compile(r"""<\|startoftext\|>|<\|endoftext\|>|'s|'t|'re|'ve|'m|'ll|'d|[^\s]+""", re.IGNORECASE)
 
@@ -96,7 +93,7 @@ class ClipTokenizer:
             if bigram not in self.bpe_ranks:
                 break
             first, second = bigram
-            new_word = []
+            new_word: list[str] = []
             i = 0
             while i < len(word):
                 try:
@@ -113,14 +110,14 @@ class ClipTokenizer:
                 else:
                     new_word.append(word[i])
                     i += 1
-            new_word = tuple(new_word)
-            word = new_word
+            new_word_tuple = tuple(new_word)
+            word = new_word_tuple
             if len(word) == 1:
                 break
             pairs = _get_pairs(word)
-        word = " ".join(word)
-        self.cache[token] = word
-        return word
+        word_str = " ".join(word)
+        self.cache[token] = word_str
+        return word_str
 
     def encode(self, text: str, pad_with_zeros: bool = False) -> list[int]:
         """Encode the given text using the ClipTokenizer.

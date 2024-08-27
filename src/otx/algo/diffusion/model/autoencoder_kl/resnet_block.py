@@ -8,13 +8,13 @@ from torch import nn
 class ResnetBlock(nn.Module):
     """Residual block for a ResNet-based model."""
 
-    def __init__(self, in_channels: int, out_channels: int):
+    def __init__(self, in_channels: int, out_channels: int) -> None:
         super().__init__()
         self.norm1 = nn.GroupNorm(32, in_channels)
         self.conv1 = nn.Conv2d(in_channels, out_channels, 3, padding=1)
         self.norm2 = nn.GroupNorm(32, out_channels)
         self.conv2 = nn.Conv2d(out_channels, out_channels, 3, padding=1)
-        self.nin_shortcut = nn.Conv2d(in_channels, out_channels, 1) if in_channels != out_channels else lambda x: x
+        self.nin_shortcut = nn.Conv2d(in_channels, out_channels, 1) if in_channels != out_channels else nn.Identity()
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Forward pass for the ResnetBlock.

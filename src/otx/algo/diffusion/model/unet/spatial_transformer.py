@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Callable
+
 import torch
 from torch import nn
 
@@ -54,7 +56,10 @@ class SpatialTransformer(nn.Module):
         b, c, h, w = x.shape
         x_in = x
         x = self.norm(x)
-        ops = [(lambda z: z.reshape(b, c, h * w).permute(0, 2, 1)), (lambda z: self.proj_in(z))]
+        ops: list[Callable[[torch.Tensor], torch.Tensor]] = [
+            (lambda z: z.reshape(b, c, h * w).permute(0, 2, 1)),
+            self.proj_in,
+        ]
         if not self.use_linear:
             ops = list(reversed(ops))
         for op in ops:

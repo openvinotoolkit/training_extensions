@@ -11,6 +11,7 @@ model:
     transformer_depth: [1, 1, 1, 1]
     ctx_dim: 768
     use_linear: False
+    checkpoint_url: https://huggingface.co/CompVis/stable-diffusion-v-1-4-original/resolve/main/sd-v1-4.ckpt
 
     optimizer:
       class_path: torch.optim.AdamW

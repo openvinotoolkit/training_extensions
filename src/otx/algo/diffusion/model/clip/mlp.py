@@ -5,10 +5,10 @@ import torch.nn.functional as F  # noqa: N812
 from torch import nn
 
 
-class ClipMlp(nn.Module):
+class MLP(nn.Module):
     """Multi-layer perceptron for CLIP."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.fc1 = nn.Linear(768, 3072)
         self.fc2 = nn.Linear(3072, 768)

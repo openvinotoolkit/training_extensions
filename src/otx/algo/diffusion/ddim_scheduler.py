@@ -117,7 +117,6 @@ class DDIMScheduler:
             pred_original_sample = torch.clamp(pred_original_sample, -1, 1)
 
         # 5. compute variance: "sigma_t(η)" -> see formula (16)
-        # σ_t = sqrt((1 − α_t−1)/(1 − α_t)) * sqrt(1 − α_t/α_t−1)
         variance = self._get_variance(timestep, prev_timestep)
         std_dev_t = eta * variance**0.5
         # the model_output is always re-derived from the clipped x_0 in Glide
@@ -135,7 +134,12 @@ class DDIMScheduler:
 
         return prev_sample
 
-    def add_noise(self, original_samples: torch.Tensor, noise: torch.Tensor, timesteps: torch.Tensor) -> torch.Tensor:
+    def add_noise(
+        self,
+        original_samples: torch.Tensor,
+        noise: torch.Tensor,
+        timesteps: torch.LongTensor,
+    ) -> torch.Tensor:
         """Adds noise to the original samples based on the given timesteps.
 
         Args:

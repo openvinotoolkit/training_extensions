@@ -1,3 +1,5 @@
-from .clip_text_transformer import ClipTextTransformer
+"""This package contains the definition of the TextTransformer class."""
 
-__all__ = ["ClipTextTransformer"]
+from .text_transformer import TextTransformer
+
+__all__ = ["TextTransformer"]

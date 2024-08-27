@@ -1,0 +1,48 @@
+{
+  "images": [
+    { "id": 0, "file_name": "c30cc23d.jpg" },
+    { "id": 1, "file_name": "188bf7ec.jpg" },
+    { "id": 2, "file_name": "628d4224.jpg" },
+    { "id": 3, "file_name": "7258ac19.jpg" },
+    { "id": 4, "file_name": "b793cab3.jpg" },
+    { "id": 5, "file_name": "ea15e617.jpg" },
+    { "id": 6, "file_name": "5d734b74.jpg" },
+    { "id": 7, "file_name": "9d8b7677.jpg" },
+    { "id": 8, "file_name": "a06cbb83.jpg" }
+  ],
+  "annotations": [
+    {
+      "id": 0,
+      "image_id": 0,
+      "caption": "a man with dark hair and brown eyes"
+    },
+    {
+      "id": 1,
+      "image_id": 1,
+      "caption": "a man in a hoodie with a fire in the background"
+    },
+    {
+      "id": 2,
+      "image_id": 2,
+      "caption": "a man with a red hair and a black shirt"
+    },
+    { "id": 3, "image_id": 3, "caption": "a man in a blue shirt and headband" },
+    {
+      "id": 4,
+      "image_id": 4,
+      "caption": "a dog in a blue shirt laying on the ground"
+    },
+    { "id": 5, "image_id": 5, "caption": "a man in a blue and white outfit" },
+    {
+      "id": 6,
+      "image_id": 6,
+      "caption": "a man with a white hair and a blue shirt"
+    },
+    { "id": 7, "image_id": 7, "caption": "a dog with a banda around its neck" },
+    {
+      "id": 8,
+      "image_id": 8,
+      "caption": "a person with blue hair and green eyes"
+    }
+  ]
+}

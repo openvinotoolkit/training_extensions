@@ -21,6 +21,7 @@ class ResBlock(nn.Module):
         self.out_layers = nn.Sequential(
             nn.GroupNorm(32, out_channels),
             nn.SiLU(),
+            nn.Identity(),  # required for checkpoint loading
             nn.Conv2d(out_channels, out_channels, 3, padding=1),
         )
         self.skip_connection = nn.Conv2d(channels, out_channels, 1) if channels != out_channels else (lambda x: x)

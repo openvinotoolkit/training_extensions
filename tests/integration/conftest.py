@@ -66,6 +66,8 @@ def get_task_list(task: str) -> list[OTXTaskType]:
         tasks = [OTXTaskType.ANOMALY_DETECTION]
     elif task == "anomaly_segmentation":
         tasks = [OTXTaskType.ANOMALY_SEGMENTATION]
+    elif task == "diffusion":
+        tasks = [OTXTaskType.DIFFUSION]
     else:
         tasks = [OTXTaskType(task.upper())]
     return tasks
@@ -131,6 +133,7 @@ def fxt_target_dataset_per_task() -> dict:
         "anomaly_classification": "tests/assets/anomaly_hazelnut",
         "anomaly_detection": "tests/assets/anomaly_hazelnut",
         "anomaly_segmentation": "tests/assets/anomaly_hazelnut",
+        "diffusion": "tests/assets/naruto_blip_captions",
     }
 
 

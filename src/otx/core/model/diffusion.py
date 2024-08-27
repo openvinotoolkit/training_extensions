@@ -27,27 +27,27 @@ class OTXDiffusionModel(OTXModel[DiffusionBatchDataEntity, DiffusionBatchPredEnt
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: (LRSchedulerCallable | LRSchedulerListCallable) = DefaultSchedulerCallable,
         metric: MetricCallable = DiffusionMetricCallable,
-        torch_compile: bool = False,
+        label_info: int = 0,
+        **kwargs,
     ):
         super().__init__(
-            label_info=0,
+            label_info=label_info,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
-            torch_compile=torch_compile,
+            **kwargs,
         )
         self.epoch_idx = 0
+        self.configure_metric()
 
     def _create_model(self) -> nn.Module:
         raise NotImplementedError
 
-    def on_fit_start(self) -> None:
-        """Called at the very beginning of fit.
+    def configure_metric(self) -> None:
+        """Configure the metric."""
+        super().configure_metric()
 
-        If on DDP it is called on every process
-
-        """
-        self.configure_metric()
+        self.metric.persistent(True)
 
     def training_step(self, batch: DiffusionBatchDataEntity, batch_idx: int) -> torch.Tensor:
         """Step for model training."""
@@ -55,6 +55,11 @@ class OTXDiffusionModel(OTXModel[DiffusionBatchDataEntity, DiffusionBatchPredEnt
         if self.epoch_idx == 0:
             self.metric.update(batch.images, real=True)
         return train_loss
+
+    def on_train_epoch_end(self) -> None:
+        """Called in the training loop at the very end of the epoch."""
+        super().on_train_epoch_end()
+        self.epoch_idx += 1
 
     def test_step(self, batch: DiffusionBatchDataEntity, batch_idx: int) -> None:
         """Perform a single test step on a batch of data from the test set.
@@ -65,20 +70,14 @@ class OTXDiffusionModel(OTXModel[DiffusionBatchDataEntity, DiffusionBatchPredEnt
         """
         self.validation_step(batch, batch_idx)
 
-    def on_validation_epoch_start(self) -> None:
-        """Callback triggered when the validation epoch starts."""
-        self.epoch_idx += 1
-
-    def on_validation_epoch_end(self) -> None:
-        """Callback triggered when the validation epoch ends."""
-        super().on_validation_epoch_end()
-        self.metric.reset()
-
-    def on_test_epoch_start(self) -> None:
-        """Callback triggered when the test epoch starts."""
-
     def on_validation_start(self) -> None:
-        """Called at the beginning of validation."""
+        """Called at the beginning of validation.
+
+        Don't configure the metric here. Do it in constructor.
+        """
 
     def on_test_start(self) -> None:
-        """Called at the beginning of testing."""
+        """Called at the beginning of testing.
+
+        Don't configure the metric here. Do it in constructor.
+        """

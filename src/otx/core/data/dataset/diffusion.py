@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 """Module for OTX diffusion dataset."""
+
 from __future__ import annotations
 
 from functools import partial

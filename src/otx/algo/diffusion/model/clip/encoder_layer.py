@@ -3,18 +3,18 @@
 import torch
 from torch import nn
 
-from .clip_attention import ClipAttention
-from .clip_mlp import ClipMlp
+from .attention import Attention
+from .mlp import MLP
 
 
-class ClipEncoderLayer(nn.Module):
+class EncoderLayer(nn.Module):
     """Encoder layer for CLIP."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
-        self.self_attn = ClipAttention()
+        self.self_attn = Attention()
         self.layer_norm1 = nn.LayerNorm(768)
-        self.mlp = ClipMlp()
+        self.mlp = MLP()
         self.layer_norm2 = nn.LayerNorm(768)
 
     def forward(self, hidden_states: torch.Tensor, causal_attention_mask: torch.Tensor) -> torch.Tensor:

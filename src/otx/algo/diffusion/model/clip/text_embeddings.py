@@ -4,10 +4,10 @@ import torch
 from torch import nn
 
 
-class ClipTextEmbeddings(nn.Module):
+class TextEmbeddings(nn.Module):
     """Embedding module for CLIP text inputs."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.token_embedding = nn.Embedding(49408, 768)
         self.position_embedding = nn.Embedding(77, 768)

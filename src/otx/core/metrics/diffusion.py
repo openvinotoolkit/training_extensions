@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 """Module for OTX Frechet Inception Distance (FID) metric used for diffusion tasks."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

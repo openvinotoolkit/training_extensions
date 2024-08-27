@@ -5,10 +5,10 @@ import torch.nn.functional as F  # noqa: N812
 from torch import nn
 
 
-class ClipAttention(nn.Module):
+class Attention(nn.Module):
     """Attention module for CLIP."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.embed_dim = 768
         self.num_heads = 12

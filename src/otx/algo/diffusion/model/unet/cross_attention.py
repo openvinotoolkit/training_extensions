@@ -17,7 +17,7 @@ class CrossAttention(nn.Module):
         self.to_v = nn.Linear(ctx_dim, n_heads * d_head, bias=False)
         self.num_heads = n_heads
         self.head_size = d_head
-        self.to_out = nn.Linear(n_heads * d_head, query_dim)
+        self.to_out = nn.ModuleList([nn.Linear(n_heads * d_head, query_dim)])
 
     def forward(self, x: torch.Tensor, ctx: torch.Tensor | None = None) -> torch.Tensor:
         """Perform forward pass of the CrossAttention module.
@@ -34,4 +34,4 @@ class CrossAttention(nn.Module):
         q, k, v = (y.reshape(x.shape[0], -1, self.num_heads, self.head_size).transpose(1, 2) for y in (q, k, v))
         attention = F.scaled_dot_product_attention(q, k, v).transpose(1, 2)
         h_ = attention.reshape(x.shape[0], -1, self.num_heads * self.head_size)
-        return self.to_out(h_)
+        return self.to_out[0](h_)

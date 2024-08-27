@@ -18,7 +18,7 @@ from otx.core.data.entity.utils import register_pytree_node
 from otx.core.types.task import OTXTaskType
 
 if TYPE_CHECKING:
-    from torch import FloatTensor
+    from torch import Tensor
 
 
 @register_pytree_node
@@ -49,6 +49,8 @@ class DiffusionBatchDataEntity(OTXBatchDataEntity[DiffusionDataEntity]):
     :param images: a list of original images
     :param noise: a list of generated Gaussian noises corresponding to the images
     """
+
+    images: Tensor
 
     @property
     def task(self) -> OTXTaskType:
@@ -86,4 +88,4 @@ class DiffusionBatchDataEntity(OTXBatchDataEntity[DiffusionDataEntity]):
 class DiffusionBatchPredEntity(OTXBatchPredEntity):
     """Data entity to represent model output predictions for keypoint detection task."""
 
-    images: FloatTensor
+    images: Tensor

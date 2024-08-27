@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import math
-from typing import Any
 
 import torch
 from torch import nn
@@ -87,32 +86,37 @@ class UNetModel(nn.Module):
             nn.Linear(time_embed_dim, time_embed_dim),
         )
 
-        self.input_blocks: nn.ModuleList = nn.ModuleList([nn.Conv2d(in_ch, model_ch, 3, padding=1)])
-        self.input_blocks_groups: list[list[nn.Module]] = [[self.input_blocks[0]]]
+        self.input_blocks: nn.ModuleList = nn.ModuleList([nn.ModuleList([nn.Conv2d(in_ch, model_ch, 3, padding=1)])])
         input_block_channels = [model_ch]
         ch = model_ch
         ds = 1
-        self.input_group_idx = [0]
         for idx, mult in enumerate(channel_mult):
             for _ in range(self.num_res_blocks[idx]):
-                layers: list[Any] = [
-                    ResBlock(ch, time_embed_dim, model_ch * mult),
-                ]
+                layers = nn.ModuleList(
+                    [
+                        ResBlock(ch, time_embed_dim, model_ch * mult),
+                    ],
+                )
                 ch = mult * model_ch
                 if ds in attention_resolutions:
                     d_head, n_heads = get_d_and_n_heads(ch)
                     layers.append(
-                        SpatialTransformer(ch, n_heads, d_head, ctx_dim, use_linear, depth=transformer_depth[idx]),
+                        SpatialTransformer(
+                            ch,
+                            n_heads,
+                            d_head,
+                            ctx_dim,
+                            use_linear,
+                            depth=transformer_depth[idx],
+                        ),
                     )
 
-                self.input_blocks.extend(layers)
-                self.input_blocks_groups.append(layers)
+                self.input_blocks.append(layers)
                 input_block_channels.append(ch)
 
             if idx != len(channel_mult) - 1:
-                downsample = nn.Conv2d(ch, ch, 3, stride=2, padding=1)
-                self.input_blocks.append(downsample)
-                self.input_blocks_groups.append([downsample])
+                downsample = nn.ModuleDict({"op": nn.Conv2d(ch, ch, 3, stride=2, padding=1)})
+                self.input_blocks.append(nn.ModuleList([downsample]))
                 input_block_channels.append(ch)
                 ds *= 2
 
@@ -124,28 +128,34 @@ class UNetModel(nn.Module):
                 ResBlock(ch, time_embed_dim, ch),
             ],
         )
-        self.group_idx = []
         self.output_blocks = nn.ModuleList()
-        self.output_blocks_groups: list[list[nn.Module]] = []
         for idx, mult in list(enumerate(channel_mult))[::-1]:
             for i in range(self.num_res_blocks[idx] + 1):
                 ich = input_block_channels.pop()
-                layers = [
-                    ResBlock(ch + ich, time_embed_dim, model_ch * mult),
-                ]
+                layers = nn.ModuleList(
+                    [
+                        ResBlock(ch + ich, time_embed_dim, model_ch * mult),
+                    ],
+                )
                 ch = model_ch * mult
 
                 if ds in attention_resolutions:
                     d_head, n_heads = get_d_and_n_heads(ch)
                     layers.append(
-                        SpatialTransformer(ch, n_heads, d_head, ctx_dim, use_linear, depth=transformer_depth[idx]),
+                        SpatialTransformer(
+                            ch,
+                            n_heads,
+                            d_head,
+                            ctx_dim,
+                            use_linear,
+                            depth=transformer_depth[idx],
+                        ),
                     )
 
                 if idx > 0 and i == self.num_res_blocks[idx]:
                     layers.append(Upsample(ch))
                     ds //= 2
-                self.output_blocks.extend(layers)
-                self.output_blocks_groups.append(layers)
+                self.output_blocks.append(layers)
 
         self.out = nn.Sequential(
             nn.GroupNorm(32, ch),
@@ -182,18 +192,21 @@ class UNetModel(nn.Module):
                 x = bb(x, emb)
             elif isinstance(bb, SpatialTransformer):
                 x = bb(x, ctx)
+            elif isinstance(bb, nn.ModuleDict):
+                for m in bb.values():
+                    x = m(x)
             else:
                 x = bb(x)
             return x
 
         saved_inputs = []
-        for b in self.input_blocks_groups:
+        for b in self.input_blocks:
             for bb in b:
                 x = run(x, bb)
             saved_inputs.append(x)
         for b in self.middle_block:
             x = run(x, b)
-        for b in self.output_blocks_groups:
+        for b in self.output_blocks:
             x = torch.cat((x, saved_inputs.pop()), dim=1)
             for bb in b:
                 x = run(x, bb)
