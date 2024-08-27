@@ -398,6 +398,7 @@ def test_otx_ov_test(
         "visual_prompting",
         "zero_shot_visual_prompting",
         "anomaly",
+        "anomaly_classification",
         "anomaly_detection",
         "anomaly_segmentation",
         "action_classification",

@@ -20,7 +20,7 @@ from otx.engine.utils.auto_configurator import (
 from otx.utils.utils import should_pass_label_info
 
 
-@pytest.fixture()
+@pytest.fixture
 def fxt_data_root_per_task_type() -> dict:
     return {
         "tests/assets/classification_dataset": OTXTaskType.MULTI_CLASS_CLS,
@@ -157,6 +157,7 @@ class TestAutoConfigurator:
     def test_get_optimizer(self, fxt_task: OTXTaskType) -> None:
         if fxt_task in {
             OTXTaskType.ANOMALY,
+            OTXTaskType.ANOMALY_CLASSIFICATION,
             OTXTaskType.ANOMALY_SEGMENTATION,
             OTXTaskType.ANOMALY_DETECTION,
         }:
@@ -173,6 +174,7 @@ class TestAutoConfigurator:
     def test_get_scheduler(self, fxt_task: OTXTaskType) -> None:
         if fxt_task in {
             OTXTaskType.ANOMALY,
+            OTXTaskType.ANOMALY_CLASSIFICATION,
             OTXTaskType.ANOMALY_SEGMENTATION,
             OTXTaskType.ANOMALY_DETECTION,
         }:

@@ -56,7 +56,7 @@ if TYPE_CHECKING:
 _LABEL_NAMES = ["Non-Rigid", "Rigid", "Rectangle", "Triangle", "Circle", "Lion", "Panda"]
 
 
-@pytest.fixture()
+@pytest.fixture
 def fxt_mem_cache_handler(monkeypatch) -> MemCacheHandlerBase:
     monkeypatch.setattr(MemCacheHandlerSingleton, "check_system_memory", lambda *_: True)
     handler = MemCacheHandlerSingleton.create(mode="singleprocessing", mem_size=1024 * 1024)
@@ -96,7 +96,7 @@ def fxt_dm_item(request, tmpdir) -> DatasetItem:
     )
 
 
-@pytest.fixture()
+@pytest.fixture
 def fxt_mock_dm_subset(mocker: MockerFixture, fxt_dm_item: DatasetItem) -> MagicMock:
     mock_dm_subset = mocker.MagicMock(spec=DmDataset)
     mock_dm_subset.__getitem__.return_value = fxt_dm_item
@@ -115,6 +115,7 @@ def fxt_mock_dm_subset(mocker: MockerFixture, fxt_dm_item: DatasetItem) -> Magic
         (OTXSegmentationDataset, SegDataEntity, {}),
         (OTXActionClsDataset, ActionClsDataEntity, {}),
         (AnomalyDataset, AnomalyClassificationDataItem, {"task_type": OTXTaskType.ANOMALY}),
+        (AnomalyDataset, AnomalyClassificationDataItem, {"task_type": OTXTaskType.ANOMALY_CLASSIFICATION}),
         (AnomalyDataset, AnomalyDetectionDataItem, {"task_type": OTXTaskType.ANOMALY_DETECTION}),
         (AnomalyDataset, AnomalySegmentationDataItem, {"task_type": OTXTaskType.ANOMALY_SEGMENTATION}),
     ],
@@ -137,7 +138,7 @@ def fxt_dataset_and_data_entity_cls(
     return request.param
 
 
-@pytest.fixture()
+@pytest.fixture
 def fxt_mock_hlabelinfo():
     mock_dict = MagicMock()
     mock_dict.__getitem__.return_value = (0, 0)

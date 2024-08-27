@@ -46,6 +46,7 @@ class Padim(OTXAnomaly, AnomalibPadim):
         n_features: int | None = None,
         task: Literal[
             OTXTaskType.ANOMALY,
+            OTXTaskType.ANOMALY_CLASSIFICATION,
             OTXTaskType.ANOMALY_DETECTION,
             OTXTaskType.ANOMALY_SEGMENTATION,
         ] = OTXTaskType.ANOMALY,

@@ -45,6 +45,7 @@ def get_task_list(task: str) -> list[OTXTaskType]:
     if task == "anomaly":
         return [
             OTXTaskType.ANOMALY,
+            OTXTaskType.ANOMALY_CLASSIFICATION,
             OTXTaskType.ANOMALY_DETECTION,
             OTXTaskType.ANOMALY_SEGMENTATION,
         ]
@@ -88,7 +89,7 @@ def pytest_configure(config):
 
 
 # [TODO]: This is a temporary approach.
-@pytest.fixture()
+@pytest.fixture
 def fxt_target_dataset_per_task(fxt_ci_data_root) -> dict:
     return {
         OTXTaskType.MULTI_CLASS_CLS: {
@@ -115,13 +116,14 @@ def fxt_target_dataset_per_task(fxt_ci_data_root) -> dict:
             fxt_ci_data_root / "v2/zero_shot_visual_prompting/coco_car_person_medium",
         ),
         OTXTaskType.ANOMALY: Path(fxt_ci_data_root / "v2/anomaly/mvtec/hazelnut_large"),
+        OTXTaskType.ANOMALY_CLASSIFICATION: Path(fxt_ci_data_root / "v2/anomaly/mvtec/hazelnut_large"),
         OTXTaskType.ANOMALY_DETECTION: Path(fxt_ci_data_root / "v2/anomaly/mvtec/hazelnut_large"),
         OTXTaskType.ANOMALY_SEGMENTATION: Path(fxt_ci_data_root / "v2/anomaly/mvtec/hazelnut_large"),
         OTXTaskType.KEYPOINT_DETECTION: Path(fxt_ci_data_root / "v2/keypoint_detection/coco_keypoint_medium"),
     }
 
 
-@pytest.fixture()
+@pytest.fixture
 def fxt_cli_override_command_per_task() -> dict:
     return {
         OTXTaskType.MULTI_CLASS_CLS: [],
@@ -135,6 +137,7 @@ def fxt_cli_override_command_per_task() -> dict:
         OTXTaskType.VISUAL_PROMPTING: [],
         OTXTaskType.ZERO_SHOT_VISUAL_PROMPTING: [],
         OTXTaskType.ANOMALY: [],
+        OTXTaskType.ANOMALY_CLASSIFICATION: [],
         OTXTaskType.ANOMALY_DETECTION: [],
         OTXTaskType.ANOMALY_SEGMENTATION: [],
         OTXTaskType.KEYPOINT_DETECTION: [],
