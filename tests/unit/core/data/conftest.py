@@ -127,6 +127,7 @@ def fxt_mock_dm_subset(mocker: MockerFixture, fxt_dm_item: DatasetItem) -> Magic
         "instance_seg",
         "semantic_seg",
         "action_cls",
+        "anomaly",
         "anomaly_cls",
         "anomaly_det",
         "anomaly_seg",
