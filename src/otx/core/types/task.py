@@ -17,6 +17,7 @@ class OTXTaskType(str, Enum):
     # Anomaly Detection
     # TODO(ashwinvaidya17): Remove rest after greenlight from backend.
     ANOMALY = "ANOMALY"
+    ANOMALY_CLASSIFICATION = "ANOMALY_CLASSIFICATION"
     ANOMALY_DETECTION = "ANOMALY_DETECTION"
     ANOMALY_SEGMENTATION = "ANOMALY_SEGMENTATION"
 

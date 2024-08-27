@@ -1,0 +1,21 @@
+model:
+  class_path: otx.algo.anomaly.openvino_model.AnomalyOpenVINO
+  init_args:
+    model_name: openvino.xml
+    async_inference: True
+    use_throughput_mode: False
+    task: ANOMALY_CLASSIFICATION
+
+engine:
+  task: ANOMALY_CLASSIFICATION
+  device: cpu
+
+callback_monitor: val/accuracy
+
+data: ../_base_/data/torchvision_base.yaml
+
+overrides:
+  data:
+    task: ANOMALY_CLASSIFICATION
+    image_color_channel: RGB
+    data_format: mvtec
