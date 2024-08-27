@@ -21,10 +21,8 @@ from torch import Tensor, nn
 
 from otx.algo.common.utils.nms import batched_nms, multiclass_nms
 from otx.algo.common.utils.utils import (
-    distance2bbox,
     filter_scores_and_topk,
     inverse_sigmoid,
-    multi_apply,
     reduce_mean,
     select_single_mlvl,
 )
@@ -50,7 +48,6 @@ class RTMDetInsHead(RTMDetHead):
     """Detection Head of RTMDet-Ins.
 
     Args:
-        loss_mask (nn.Module): A module for mask loss.
         num_prototypes (int): Number of mask prototype features extracted
             from the mask head. Defaults to 8.
         dyconv_channels (int): Channel of the dynamic conv layers.
@@ -64,7 +61,6 @@ class RTMDetInsHead(RTMDetHead):
     def __init__(
         self,
         *args,
-        loss_mask: nn.Module,
         num_prototypes: int = 8,
         dyconv_channels: int = 8,
         num_dyconvs: int = 3,
@@ -76,7 +72,6 @@ class RTMDetInsHead(RTMDetHead):
         self.dyconv_channels = dyconv_channels
         self.mask_loss_stride = mask_loss_stride
         super().__init__(*args, **kwargs)
-        self.loss_mask = loss_mask
 
     def _init_layers(self) -> None:
         """Initialize layers of the head."""
@@ -541,7 +536,7 @@ class RTMDetInsHead(RTMDetHead):
         flatten_kernels: Tensor,
         sampling_results_list: list,
         batch_gt_instances: list[InstanceData],
-    ) -> Tensor:
+    ) -> dict[str, Tensor]:
         """Compute instance segmentation loss.
 
         Args:
@@ -556,7 +551,7 @@ class RTMDetInsHead(RTMDetHead):
                 attributes.
 
         Returns:
-            Tensor: The mask loss tensor.
+            dict[str, Tensor]: A dictionary of raw outputs.
         """
         batch_pos_mask_logits = []
         pos_gt_masks = []
@@ -612,7 +607,11 @@ class RTMDetInsHead(RTMDetHead):
             self.mask_loss_stride // 2 :: self.mask_loss_stride,
         ]
 
-        return self.loss_mask(batch_pos_mask_logits, pos_gt_masks, weight=None, avg_factor=num_pos)
+        return {
+            "batch_pos_mask_logits": batch_pos_mask_logits,
+            "pos_gt_masks": pos_gt_masks,
+            "num_pos": num_pos,
+        }
 
     def loss_by_feat(
         self,
@@ -626,17 +625,7 @@ class RTMDetInsHead(RTMDetHead):
     ) -> dict[str, Tensor]:
         """Compute losses of the head."""
         num_imgs = len(batch_img_metas)
-        featmap_sizes = [featmap.size()[-2:] for featmap in cls_scores]
-        if len(featmap_sizes) != self.prior_generator.num_levels:
-            msg = "The number of featmap sizes should be equal to the number of levels."
-            raise ValueError(msg)
-
         device = cls_scores[0].device
-        anchor_list, valid_flag_list = self.get_anchors(featmap_sizes, batch_img_metas, device=device)
-        flatten_cls_scores = torch.cat(
-            [cls_score.permute(0, 2, 3, 1).reshape(num_imgs, -1, self.cls_out_channels) for cls_score in cls_scores],
-            1,
-        )
         flatten_kernels = torch.cat(
             [
                 kernel_pred.permute(0, 2, 3, 1).reshape(num_imgs, -1, self.num_gen_params)
@@ -644,14 +633,7 @@ class RTMDetInsHead(RTMDetHead):
             ],
             1,
         )
-        decoded_bboxes = []
-        for anchor, bbox_pred in zip(anchor_list[0], bbox_preds):
-            anchor = anchor.reshape(-1, 4)  # noqa: PLW2901
-            bbox_pred = bbox_pred.permute(0, 2, 3, 1).reshape(num_imgs, -1, 4)  # noqa: PLW2901
-            bbox_pred = distance2bbox(anchor, bbox_pred)  # noqa: PLW2901
-            decoded_bboxes.append(bbox_pred)
 
-        flatten_bboxes = torch.cat(decoded_bboxes, 1)
         # Convert polygon masks to bitmap masks
         if isinstance(batch_gt_instances[0].masks[0], Polygon):
             for gt_instances, img_meta in zip(batch_gt_instances, batch_img_metas):
@@ -660,43 +642,23 @@ class RTMDetInsHead(RTMDetHead):
                     ndarray_masks = np.empty((0, *img_meta["img_shape"]), dtype=np.uint8)
                 gt_instances.masks = torch.tensor(ndarray_masks, dtype=torch.bool, device=device)
 
-        cls_reg_targets = self.get_targets(
-            flatten_cls_scores,
-            flatten_bboxes,
-            anchor_list,
-            valid_flag_list,
-            batch_gt_instances,
-            batch_img_metas,
+        raw_outputs = super().loss_by_feat(
+            cls_scores=cls_scores,
+            bbox_preds=bbox_preds,
+            batch_gt_instances=batch_gt_instances,
+            batch_img_metas=batch_img_metas,
             batch_gt_instances_ignore=batch_gt_instances_ignore,
         )
-        (
-            anchor_list,
-            labels_list,
-            label_weights_list,
-            bbox_targets_list,
-            assign_metrics_list,
-            sampling_results_list,
-        ) = cls_reg_targets
 
-        losses_cls, losses_bbox, cls_avg_factors, bbox_avg_factors = multi_apply(
-            self.loss_by_feat_single,
-            cls_scores,
-            decoded_bboxes,
-            labels_list,
-            label_weights_list,
-            bbox_targets_list,
-            assign_metrics_list,
-            self.prior_generator.strides,
+        raw_iseg_outputs = self.loss_mask_by_feat(
+            mask_feat,
+            flatten_kernels,
+            raw_outputs["sampling_results_list"],
+            batch_gt_instances,
         )
+        raw_outputs.update(raw_iseg_outputs)
 
-        cls_avg_factor = reduce_mean(sum(cls_avg_factors)).clamp_(min=1).item()
-        losses_cls = [x / cls_avg_factor for x in losses_cls]
-
-        bbox_avg_factor = reduce_mean(sum(bbox_avg_factors)).clamp_(min=1).item()
-        losses_bbox = [x / bbox_avg_factor for x in losses_bbox]
-
-        loss_mask = self.loss_mask_by_feat(mask_feat, flatten_kernels, sampling_results_list, batch_gt_instances)
-        return {"loss_cls": losses_cls, "loss_bbox": losses_bbox, "loss_mask": loss_mask}
+        return raw_outputs
 
 
 class MaskFeatModule(BaseModule):

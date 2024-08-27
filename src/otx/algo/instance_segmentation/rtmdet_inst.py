@@ -11,15 +11,15 @@ from typing import TYPE_CHECKING
 from torch import nn
 
 from otx.algo.common.backbones import CSPNeXt
-from otx.algo.common.losses import CrossEntropyLoss, GIoULoss, QualityFocalLoss
+from otx.algo.common.losses import GIoULoss, QualityFocalLoss
 from otx.algo.common.utils.assigners import DynamicSoftLabelAssigner
 from otx.algo.common.utils.coders import DistancePointBBoxCoder
 from otx.algo.common.utils.prior_generators import MlvlPointGenerator
 from otx.algo.common.utils.samplers import PseudoSampler
-from otx.algo.detection.base_models import SingleStageDetector
+from otx.algo.detection.detectors import SingleStageDetector
 from otx.algo.detection.necks import CSPNeXtPAFPN
 from otx.algo.instance_segmentation.heads import RTMDetInsSepBNHead
-from otx.algo.instance_segmentation.losses import DiceLoss
+from otx.algo.instance_segmentation.losses import DiceLoss, RTMDetInstCriterion
 from otx.algo.modules.norm import build_norm_layer
 from otx.core.config.data import TileConfig
 from otx.core.exporter.base import OTXModelExporter
@@ -135,25 +135,8 @@ class RTMDetInstTiny(RTMDetInst):
             "nms_pre": 300,
         }
 
-        backbone = CSPNeXt(
-            arch="P5",
-            expand_ratio=0.5,
-            deepen_factor=0.167,
-            widen_factor=0.375,
-            channel_attention=True,
-            normalization=nn.BatchNorm2d,
-            activation=partial(nn.SiLU, inplace=True),
-        )
-
-        neck = CSPNeXtPAFPN(
-            in_channels=(96, 192, 384),
-            out_channels=96,
-            num_csp_blocks=1,
-            expand_ratio=0.5,
-            normalization=nn.BatchNorm2d,
-            activation=partial(nn.SiLU, inplace=True),
-        )
-
+        backbone = CSPNeXt(model_name="rtmdet_inst_tiny")
+        neck = CSPNeXtPAFPN(model_name="rtmdet_inst_tiny")
         bbox_head = RTMDetInsSepBNHead(
             num_classes=num_classes,
             in_channels=96,
@@ -168,7 +151,11 @@ class RTMDetInstTiny(RTMDetInst):
                 strides=[8, 16, 32],
             ),
             bbox_coder=DistancePointBBoxCoder(),
-            loss_centerness=CrossEntropyLoss(use_sigmoid=True, loss_weight=1.0),
+            train_cfg=train_cfg,
+            test_cfg=test_cfg,
+        )
+        criterion = RTMDetInstCriterion(
+            num_classes=num_classes,
             loss_cls=QualityFocalLoss(
                 use_sigmoid=True,
                 beta=2.0,
@@ -180,14 +167,13 @@ class RTMDetInstTiny(RTMDetInst):
                 eps=5.0e-06,
                 reduction="mean",
             ),
-            train_cfg=train_cfg,
-            test_cfg=test_cfg,
         )
 
         return SingleStageDetector(
             backbone=backbone,
             neck=neck,
             bbox_head=bbox_head,
+            criterion=criterion,
             train_cfg=train_cfg,
             test_cfg=test_cfg,
         )

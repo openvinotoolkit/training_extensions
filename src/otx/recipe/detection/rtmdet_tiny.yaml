@@ -1,6 +1,7 @@
 model:
-  class_path: otx.algo.detection.rtmdet.RTMDetTiny
+  class_path: otx.algo.detection.rtmdet.RTMDet
   init_args:
+    model_name: rtmdet_tiny
     label_info: 80
 
     optimizer:
