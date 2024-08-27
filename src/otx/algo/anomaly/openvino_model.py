@@ -190,7 +190,7 @@ class AnomalyOpenVINO(OVModel):
             **ptq_config,
         )
 
-        openvino.save_model(compressed_model, output_model_path, compress_to_fp16=False)
+        openvino.save_model(compressed_model, output_model_path)
 
         return output_model_path
 
