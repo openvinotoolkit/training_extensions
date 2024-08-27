@@ -675,15 +675,4 @@ class MaskRCNNSwinT(MaskRCNN):
     @property
     def _optimization_config(self) -> dict[str, Any]:
         """PTQ config for MaskRCNN-SwinT."""
-        return {
-            "ignored_scope": {
-                "types": [
-                    "Add",
-                    "MVN",
-                    "Divide",
-                    "Multiply",
-                ],
-                "validate": False,
-            },
-            "preset": "mixed",
-        }
+        return {"model_type": "transformer"}
