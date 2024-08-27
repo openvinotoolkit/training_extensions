@@ -21,7 +21,7 @@ overrides:
   reset:
     - data.train_subset.transforms
 
-  max_epochs: 200
+  max_epochs: 90
   callbacks:
     - class_path: otx.algo.callbacks.adaptive_early_stopping.EarlyStoppingWithWarmup
       init_args:
