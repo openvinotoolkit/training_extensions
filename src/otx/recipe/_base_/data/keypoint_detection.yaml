@@ -12,6 +12,7 @@ train_subset:
   subset_name: train
   batch_size: 32
   transforms:
+    - class_path: otx.core.data.transform_libs.torchvision.GetBBoxCenterScale
     - class_path: otx.core.data.transform_libs.torchvision.RandomBBoxTransform
     - class_path: otx.core.data.transform_libs.torchvision.TopdownAffine
       init_args:
@@ -30,6 +31,7 @@ val_subset:
   subset_name: val
   batch_size: 32
   transforms:
+    - class_path: otx.core.data.transform_libs.torchvision.GetBBoxCenterScale
     - class_path: otx.core.data.transform_libs.torchvision.TopdownAffine
       init_args:
         input_size: $(input_size)
@@ -42,9 +44,10 @@ val_subset:
         mean: [123.675, 116.28, 103.53]
         std: [58.395, 57.12, 57.375]
 test_subset:
-  subset_name: test
+  subset_name: val
   batch_size: 32
   transforms:
+    - class_path: otx.core.data.transform_libs.torchvision.GetBBoxCenterScale
     - class_path: otx.core.data.transform_libs.torchvision.TopdownAffine
       init_args:
         input_size: $(input_size)
