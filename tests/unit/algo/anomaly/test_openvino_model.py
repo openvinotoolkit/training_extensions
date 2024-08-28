@@ -9,7 +9,6 @@ import pytest
 import torch
 from anomalib.metrics.min_max import MinMax
 from anomalib.metrics.threshold import ManualThreshold
-
 from otx.algo.anomaly.openvino_model import AnomalyOpenVINO
 from otx.algo.anomaly.padim import Padim
 from otx.algo.anomaly.stfpm import Stfpm

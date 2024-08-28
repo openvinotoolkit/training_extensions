@@ -7,7 +7,6 @@ from pathlib import Path
 
 import pytest
 from model_api.tilers import Tiler
-
 from otx.algo.classification.efficientnet import EfficientNetForMulticlassCls
 from otx.core.config.hpo import HpoConfig
 from otx.core.data.module import OTXDataModule
