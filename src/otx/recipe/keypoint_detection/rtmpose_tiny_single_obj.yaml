@@ -27,20 +27,18 @@ engine:
 
 callback_monitor: val/accuracy
 
-data:
-  task: KEYPOINT_DETECTION
-  mem_cache_size: 1GB
-  mem_cache_img_max_size: null
-  stack_images: true
-  data_format: coco_person_keypoints
-  unannotated_items_ratio: 0.0
-  image_color_channel: RGB
+data: ../_base_/data/keypoint_detection.yaml
+
+overrides:
+  gradient_clip_val: 35.0
+  reset:
+    - data.train_subset.transforms
+    - data.val_subset.transforms
+    - data.test_subset.transforms
   input_size:
     - 512
     - 512
   train_subset:
-    subset_name: train
-    batch_size: 32
     transforms:
       - class_path: otx.core.data.transform_libs.torchvision.TopdownAffine
         init_args:
@@ -56,8 +54,6 @@ data:
           mean: [123.675, 116.28, 103.53]
           std: [58.395, 57.12, 57.375]
   val_subset:
-    subset_name: val
-    batch_size: 32
     transforms:
       - class_path: otx.core.data.transform_libs.torchvision.TopdownAffine
         init_args:
@@ -71,8 +67,6 @@ data:
           mean: [123.675, 116.28, 103.53]
           std: [58.395, 57.12, 57.375]
   test_subset:
-    subset_name: test
-    batch_size: 32
     transforms:
       - class_path: otx.core.data.transform_libs.torchvision.TopdownAffine
         init_args:
@@ -85,6 +79,3 @@ data:
         init_args:
           mean: [123.675, 116.28, 103.53]
           std: [58.395, 57.12, 57.375]
-
-overrides:
-  gradient_clip_val: 35.0
