@@ -149,6 +149,8 @@ class CustomMaskRCNNTileOptimized(CustomMaskRCNN):
             img, img_metas, gt_bboxes, gt_labels, gt_bboxes_ignore, gt_masks, proposals, **kwargs
         )
         losses.update(rcnn_loss)
+        if "acc" in losses:
+            losses.pop("acc")
         return losses
 
     @staticmethod

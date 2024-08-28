@@ -211,3 +211,4 @@ class TestTilingTileClassifier:
         hyper_parameters.tiling_parameters.enable_tiling = True
         hyper_parameters.tiling_parameters.enable_tile_classifier = True
         patch_tiling(cfg, hyper_parameters, self.dataset)
+        assert cfg.optimizer.lr == 0.002, "Learning rate should be 0.002 when MRCNN EfficientNet is used"

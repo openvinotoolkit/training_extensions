@@ -18,3 +18,8 @@ def get_empty_label(label_schema: LabelSchemaEntity) -> Optional[LabelEntity]:
     if empty_candidates:
         return empty_candidates[0]
     return None
+
+
+def get_normalized_label_name(label: LabelEntity) -> str:
+    """Gets a nomalized label name"""
+    return label.name.replace(" ", "_")

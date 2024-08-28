@@ -565,7 +565,7 @@ tiling_parameters:
     header: Enable tile classifier
     description: Enabling tile classifier enhances the speed of tiling inference by incorporating a tile classifier into the instance segmentation model. This feature prevents the detector from making predictions on tiles that do not contain any objects, thus optimizing its speed performance.
     default_value: false
-    editable: true
+    editable: false
     affects_outcome_of: TRAINING
     type: BOOLEAN
     ui_rules:
@@ -573,8 +573,8 @@ tiling_parameters:
       operator: AND
       rules: []
       type: UI_RULES
-    value: true
-    visible_in_ui: true
+    value: false
+    visible_in_ui: false
     warning: The tile classifier prioritizes inference speed over training speed, it requires more training in order to achieve its optimized performance.
 
   enable_adaptive_params:

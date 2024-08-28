@@ -98,11 +98,11 @@ You can find more details with examples in the [CLI command intro](https://openv
 
 ## Updates
 
-### v1.6.3 (3Q24)
+### v1.6.5 (3Q24)
 
-- Improve Vitens Kiemgetal OTX 1.6.x
-- Fix rotated detection data pipeline
-- Update dependencies to omit vulnerabilities
+- Fix labels names in hierarchical config
+- Fix Learning Rate and Loss Handling in Tile Classifier MaskRCNN EfficientNet
+- Enhance Memeory Cache Handler with Complex Unique Keys
 
 ### Release History
 

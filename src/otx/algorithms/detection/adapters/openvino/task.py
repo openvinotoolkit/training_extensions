@@ -155,6 +155,7 @@ class BaseInferencerWithConverter(IInferencer):
             result_handler(id, processed_prediciton, features)
 
         except Exception as e:
+            logger.exception(e)
             self.callback_exceptions.append(e)
 
     def enqueue_prediction(self, image: np.ndarray, id: int, result_handler: Any) -> None:
@@ -556,6 +557,9 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
             total_time += end_time
 
         self.inferencer.await_all()
+
+        if self.inferencer.callback_exceptions:
+            raise RuntimeError("Inference failed, check the exceptions log.")
 
         self._avg_time_per_image = total_time / len(dataset)
         logger.info(f"Avg time per image: {self._avg_time_per_image} secs")
