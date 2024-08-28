@@ -1,0 +1,104 @@
+model:
+  class_path: otx.algo.segmentation.litehrnet.LiteHRNet
+  init_args:
+    label_info: 2
+    model_name: lite_hrnet_s
+
+    optimizer:
+      class_path: torch.optim.Adam
+      init_args:
+        lr: 0.001
+        betas:
+          - 0.9
+          - 0.999
+        weight_decay: 0.0
+
+    scheduler:
+      class_path: otx.core.schedulers.LinearWarmupSchedulerCallable
+      init_args:
+        num_warmup_steps: 100
+        main_scheduler_callable:
+          class_path: lightning.pytorch.cli.ReduceLROnPlateau
+          init_args:
+            mode: max
+            factor: 0.1
+            patience: 4
+            monitor: val/Dice
+
+engine:
+  task: SEMANTIC_SEGMENTATION
+  device: auto
+
+callback_monitor: val/Dice
+
+data: ../_base_/data/semantic_segmentation.yaml
+overrides:
+  callbacks:
+    - class_path: otx.algo.callbacks.adaptive_early_stopping.EarlyStoppingWithWarmup
+      init_args:
+        warmup_iters: 100
+  data:
+    input_size:
+      - 512
+      - 512
+    tile_config:
+      enable_tiler: true
+      enable_adaptive_tiling: false
+
+    train_subset:
+      transforms:
+        - class_path: otx.core.data.transform_libs.torchvision.Resize
+          init_args:
+            transform_mask: true
+            scale: $(input_size)
+        - class_path: otx.core.data.transform_libs.torchvision.Pad
+          init_args:
+            pad_to_square: true
+            transform_mask: true
+        - class_path: otx.core.data.transform_libs.torchvision.RandomFlip
+          init_args:
+            prob: 0.5
+            is_numpy_to_tvtensor: true
+        - class_path: torchvision.transforms.v2.ToDtype
+          init_args:
+            dtype: ${as_torch_dtype:torch.float32}
+        - class_path: torchvision.transforms.v2.Normalize
+          init_args:
+            mean: [123.675, 116.28, 103.53]
+            std: [58.395, 57.12, 57.375]
+    
+    val_subset:
+      transforms:
+        - class_path: otx.core.data.transform_libs.torchvision.Resize
+          init_args:
+            scale: $(input_size)
+        - class_path: otx.core.data.transform_libs.torchvision.Pad
+          init_args:
+            pad_to_square: true
+            is_numpy_to_tvtensor: true
+        - class_path: torchvision.transforms.v2.ToDtype
+          init_args:
+            dtype: ${as_torch_dtype:torch.float32}
+        - class_path: torchvision.transforms.v2.Normalize
+          init_args:
+            mean: [123.675, 116.28, 103.53]
+            std: [58.395, 57.12, 57.375]
+      sampler:
+        class_path: torch.utils.data.RandomSampler
+
+    test_subset:
+      transforms:
+        - class_path: otx.core.data.transform_libs.torchvision.Resize
+          init_args:
+            scale: $(input_size)
+        - class_path: otx.core.data.transform_libs.torchvision.Pad
+          init_args:
+            pad_to_square: true
+            is_numpy_to_tvtensor: true
+        - class_path: torchvision.transforms.v2.ToDtype
+          init_args:
+            dtype: ${as_torch_dtype:torch.float32}
+        - class_path: torchvision.transforms.v2.Normalize
+          init_args:
+            mean: [123.675, 116.28, 103.53]
+            std: [58.395, 57.12, 57.375]
