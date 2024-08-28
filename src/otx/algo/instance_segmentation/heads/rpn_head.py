@@ -172,7 +172,7 @@ class RPNHeadModule(AnchorHead):
         x: tuple[Tensor],
         entity: InstanceSegBatchDataEntity,  # type: ignore[override]
     ) -> tuple:
-        """Forward propagation of the head, then calculate loss and predictions from the features and data samples.
+        """Forward propagation of the head, then calculate predictions from the features and data samples.
 
         Args:
             x (tuple[Tensor]): Features from FPN.

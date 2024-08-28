@@ -398,13 +398,11 @@ class AnchorHead(BaseDenseHead):
         batch_img_metas: list[dict],
         batch_gt_instances_ignore: list[InstanceData] | None = None,
     ) -> tuple:
-        """Calculate the loss based on the features extracted by the detection head.
+        """Prepare inputs for the loss based on the features extracted by the detection head.
 
         Args:
             cls_scores (list[Tensor]): Box scores for each scale level
                 has shape (N, num_anchors * num_classes, H, W).
-            bbox_preds (list[Tensor]): Box energies / deltas for each scale
-                level with shape (N, num_anchors * 4, H, W).
             batch_gt_instances (list[InstanceData]): Batch of
                 gt_instance. It usually includes ``bboxes`` and ``labels``
                 attributes.

@@ -15,18 +15,9 @@ class RPNCriterion(nn.Module):
     """RPNCriterion is a loss criterion used in the Region Proposal Network (RPN) algorithm.
 
     Args:
-        num_classes (int): The number of object classes.
         bbox_coder (nn.Module): The module used for encoding and decoding bounding box coordinates.
         loss_cls (nn.Module): The module used for calculating the classification loss.
         loss_bbox (nn.Module): The module used for calculating the bounding box regression loss.
-        loss_centerness (nn.Module | None, optional): The module used for calculating the centerness loss.
-            Defaults to None.
-        use_qfl (bool, optional): Whether to use the Quality Focal Loss (QFL).
-            Defaults to ``CrossEntropyLoss(use_sigmoid=True, loss_weight=1.0)``.
-        reg_decoded_bbox (bool, optional): Whether to use the decoded bounding box coordinates
-            for regression loss calculation. Defaults to True.
-        bg_loss_weight (float, optional): The weight for the background loss.
-            Defaults to -1.0.
     """
 
     def __init__(
@@ -50,19 +41,14 @@ class RPNCriterion(nn.Module):
         """Calculate the loss based on the features extracted by the detection head.
 
         Args:
-            cls_scores (list[Tensor]): Box scores for each scale level
-                has shape (N, num_anchors * num_classes, H, W).
-            bbox_preds (list[Tensor]): Box energies / deltas for each scale
-                level with shape (N, num_anchors * 4, H, W).
-            batch_gt_instances (list[InstanceData]): Batch of
-                gt_instance. It usually includes ``bboxes`` and ``labels``
-                attributes.
-            batch_img_metas (list[dict]): Meta information of each image, e.g.,
-                image size, scaling factor, etc.
-            batch_gt_instances_ignore (list[InstanceData], optional):
-                Batch of gt_instances_ignore. It includes ``bboxes`` attribute
-                data that is ignored during training and testing.
-                Defaults to None.
+            cls_reg_targets (tuple): A tuple containing the following elements:
+                - labels_list (list[Tensor]): Labels of each anchor.
+                - label_weights_list (list[Tensor]): Label weights of each anchor.
+                - bbox_targets_list (list[Tensor]): BBox regression targets of each anchor.
+                - bbox_weights_list (list[Tensor]): BBox regression loss weights of each anchor.
+                - avg_factor (int): Average factor that is used to average the loss.
+            bbox_preds (list[Tensor]): Box energies / deltas for each scale level.
+            cls_scores (list[Tensor]): Box scores for each scale
 
         Returns:
             dict: A dictionary of loss components.

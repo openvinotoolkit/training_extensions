@@ -387,7 +387,7 @@ class RoIHead(nn.Module):
         rpn_results_list: tuple[Tensor, Tensor],
         rescale: bool = False,
     ) -> tuple[Tensor, ...]:
-        """Rewrite `predict_bbox` of `StandardRoIHead` for default backend.
+        """Rewrite `predict_bbox` of `RoIHead` for default backend.
 
         Args:
             x (tuple[Tensor]): Feature maps of all scale level.

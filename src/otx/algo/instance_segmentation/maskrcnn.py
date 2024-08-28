@@ -14,10 +14,10 @@ from otx.algo.common.utils.assigners import MaxIoUAssigner
 from otx.algo.common.utils.coders import DeltaXYWHBBoxCoder
 from otx.algo.common.utils.prior_generators import AnchorGenerator
 from otx.algo.common.utils.samplers import RandomSampler
+from otx.algo.detection.necks import FPN
 from otx.algo.instance_segmentation.backbones import MaskRCNNBackbone
 from otx.algo.instance_segmentation.heads import ConvFCBBoxHead, FCNMaskHead, RoIHead, RPNHead
 from otx.algo.instance_segmentation.losses import ROICriterion, RPNCriterion
-from otx.algo.detection.necks import FPN
 from otx.algo.instance_segmentation.segmentors.two_stage import TwoStageDetector
 from otx.algo.instance_segmentation.utils.roi_extractors import SingleRoIExtractor
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
