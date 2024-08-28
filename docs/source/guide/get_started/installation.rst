@@ -68,7 +68,7 @@ according to your system environment.
 
 .. note::
 
-    Currently, only torch==2.1.1 was fully validated. (older versions are not supported due to security issues).
+    Currently, only torch==2.2 was fully validated. (older versions are not supported due to security issues).
 
 
 3. Once the package is installed in the virtual environment, you can use full

@@ -104,8 +104,8 @@ class OTXKeypointDetectionDataset(OTXDataset[KeypointDetDataEntity]):
         ).reshape(-1, 2)
         keypoints_visible = np.minimum(1, keypoints)[..., 0]
 
-        bbox_center = (bboxes[0, 2:] + bboxes[0, :2]) * 0.5
-        bbox_scale = (bboxes[0, 2:] - bboxes[0, :2]) * 1.25
+        bbox_center = np.array(img_shape) / 2.0
+        bbox_scale = np.array(img_shape)
         bbox_rotation = 0.0
 
         entity = KeypointDetDataEntity(
