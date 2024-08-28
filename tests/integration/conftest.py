@@ -8,7 +8,6 @@ import inspect
 from pathlib import Path
 
 import pytest
-
 from otx.core.types.task import OTXTaskType
 
 
