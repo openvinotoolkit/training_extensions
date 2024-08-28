@@ -915,6 +915,11 @@ class TestTopdownAffine:
         )
         results = transform(deepcopy(keypoint_det_entity))
 
+<<<<<<< HEAD
         assert np.array_equal(results.bbox_info.center, np.array([3.5, 3.5]))
         assert np.array_equal(results.bbox_info.scale, np.array([8.75, 8.75]))
+=======
+        assert torch.all(results.bbox_info.center == torch.Tensor([[3.5, 3.5]]))
+        assert torch.all(results.bbox_info.scale == torch.Tensor([[8.75, 8.75]]))
+>>>>>>> add rtmpose_tiny for single obj
         assert results.keypoints.shape == (4, 2)
