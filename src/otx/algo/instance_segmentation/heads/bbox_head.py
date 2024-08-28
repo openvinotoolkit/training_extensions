@@ -81,7 +81,7 @@ class BBoxHead(BaseModule):
         box_dim = self.bbox_coder.encode_size
         out_dim_reg = box_dim if reg_class_agnostic else box_dim * num_classes
         self.fc_reg = nn.Linear(in_features=in_channels, out_features=out_dim_reg)
-        self.debug_imgs = None
+
         if init_cfg is None:
             self.init_cfg = []
             self.init_cfg += [

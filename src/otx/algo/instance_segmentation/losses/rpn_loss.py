@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 # Copyright (c) OpenMMLab. All rights reserved.
 #
-"""ATSS criterion."""
+"""RPN criterion."""
 
 from __future__ import annotations
 
@@ -49,8 +49,6 @@ class RPNCriterion(nn.Module):
     ) -> dict:
         """Calculate the loss based on the features extracted by the detection head.
 
-        TODO (kirill): it is related to RPNHead for iseg, will be deprecated
-
         Args:
             cls_scores (list[Tensor]): Box scores for each scale level
                 has shape (N, num_anchors * num_classes, H, W).
@@ -94,8 +92,6 @@ class RPNCriterion(nn.Module):
         avg_factor: int,
     ) -> tuple:
         """Calculate the loss of a single scale level based on the features extracted by the detection head.
-
-        TODO (kirill): it is related to RPNHead for iseg, will be deprecated
 
         Args:
             cls_score (Tensor): Box scores for each scale level

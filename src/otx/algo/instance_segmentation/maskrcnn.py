@@ -17,7 +17,7 @@ from otx.algo.common.utils.samplers import RandomSampler
 from otx.algo.instance_segmentation.backbones import MaskRCNNBackbone
 from otx.algo.instance_segmentation.heads import ConvFCBBoxHead, FCNMaskHead, RoIHead, RPNHead
 from otx.algo.instance_segmentation.losses import ROICriterion, RPNCriterion
-from otx.algo.instance_segmentation.necks import FPN
+from otx.algo.detection.necks import FPN
 from otx.algo.instance_segmentation.segmentors.two_stage import TwoStageDetector
 from otx.algo.instance_segmentation.utils.roi_extractors import SingleRoIExtractor
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
@@ -54,7 +54,8 @@ class MaskRCNN(ExplainableOTXInstanceSegModel):
             msg = f"Model version {self.model_name} is not supported."
             raise ValueError(msg)
 
-        train_cfg = {  # TODO(Sungchul, Kirill): depricate it
+        # TODO(Sungchul, Kirill): depricate train_cfg/test_cfg
+        train_cfg = {
             "rpn": {
                 "allowed_border": -1,
                 "debug": False,
@@ -102,7 +103,7 @@ class MaskRCNN(ExplainableOTXInstanceSegModel):
             },
         }
 
-        test_cfg = {  # TODO(Sungchul, Kirill): depricate it
+        test_cfg = {
             "rpn": {
                 "max_per_img": 1000,
                 "min_bbox_size": 0,
@@ -304,17 +305,6 @@ class MaskRCNN(ExplainableOTXInstanceSegModel):
             }
 
         if self.model_name == "maskrcnn_swin_t":
-            return {
-                "ignored_scope": {
-                    "types": [
-                        "Add",
-                        "MVN",
-                        "Divide",
-                        "Multiply",
-                    ],
-                    "validate": False,
-                },
-                "preset": "mixed",
-            }
+            return {"model_type": "transformer"}
 
         return {}

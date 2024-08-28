@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 # Copyright (c) OpenMMLab. All rights reserved.
 #
-"""ATSS criterion."""
+"""ROI criterion."""
 
 from __future__ import annotations
 

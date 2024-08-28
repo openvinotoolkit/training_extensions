@@ -81,9 +81,9 @@ class RPNHeadModule(AnchorHead):
         bbox_coder: nn.Module,
         assigner: nn.Module,
         sampler: nn.Module,
-        train_cfg: dict,  # TODO(Sungchul, Kirill): depricate it
-        test_cfg: dict,  # TODO(Sungchul, Kirill): depricate it
-        init_cfg: dict | None = None,  # TODO(Sungchul, Kirill): depricate it
+        train_cfg: dict,
+        test_cfg: dict,
+        init_cfg: dict | None = None,
         feat_channels: int = 256,
         reg_decoded_bbox: bool = False,
         allowed_border: float = 0.0,
@@ -121,8 +121,6 @@ class RPNHeadModule(AnchorHead):
         self.pos_weight = pos_weight
         self.reg_decoded_bbox = reg_decoded_bbox
         self.allowed_border = allowed_border
-        self.assigner = assigner
-        self.sampler = sampler
         self.score_threshold = score_threshold
 
     def _init_layers(self) -> None:
@@ -178,7 +176,7 @@ class RPNHeadModule(AnchorHead):
 
         Args:
             x (tuple[Tensor]): Features from FPN.
-            entity (InstanceSegBatchDataEntity): entity contains
+            entity (InstanceSegBatchDataEntity): Entity contains
                 the meta information of each image and corresponding
                 annotations.
 
@@ -217,7 +215,7 @@ class RPNHeadModule(AnchorHead):
             cls_scores,
             bbox_preds,
             batch_img_metas=batch_img_metas,
-            cfg=self.test_cfg,  # TODO (Sungchul, Kirill): remove
+            cfg=self.test_cfg,
         )
 
         return cls_reg_targets, bbox_preds, cls_scores, predictions
@@ -271,7 +269,7 @@ class RPNHeadModule(AnchorHead):
         score_factor_list: list[Tensor],
         mlvl_priors: list[Tensor],
         img_meta: dict,
-        cfg: dict,  # TODO (Sungchul, Kirill): remove
+        cfg: dict,
         rescale: bool = False,
         with_nms: bool = True,
     ) -> InstanceData:
@@ -354,7 +352,7 @@ class RPNHeadModule(AnchorHead):
     def _bbox_post_process(
         self,
         results: InstanceData,
-        cfg: dict,  # TODO (Sungchul, Kirill): remove
+        cfg: dict,
         img_meta: dict,
         rescale: bool = False,
         with_nms: bool = True,
@@ -428,7 +426,7 @@ class RPNHeadModule(AnchorHead):
         bbox_preds: list[Tensor],
         score_factors: list[Tensor] | None = None,
         batch_img_metas: list[dict] | None = None,
-        cfg: dict | None = None,  # TODO (Sungchul, Kirill): remove
+        cfg: dict | None = None,
         rescale: bool = False,
         with_nms: bool = True,
     ) -> tuple[Tensor, Tensor] | tuple[Tensor, Tensor, Tensor]:
@@ -549,8 +547,8 @@ class RPNHead:
         bbox_coder: DeltaXYWHBBoxCoder,
         assigner: MaxIoUAssigner,
         sampler: BaseSampler,
-        train_cfg: dict,  # TODO (Sungchul, Kirill): remove
-        test_cfg: dict,  # TODO (Sungchul, Kirill): remove
+        train_cfg: dict,
+        test_cfg: dict,
     ) -> RPNHeadModule:
         """RPNHead factory for instance segmentation regional proposal network."""
         return RPNHeadModule(

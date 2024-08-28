@@ -530,7 +530,7 @@ class RTMDetInsHead(RTMDetHead):
                 x = torch.nn.functional.relu(x)
         return x.reshape(num_inst, h, w)
 
-    def get_mask_targets(
+    def prepare_mask_loss_inputs(
         self,
         mask_feats: Tensor,
         flatten_kernels: Tensor,
@@ -650,7 +650,7 @@ class RTMDetInsHead(RTMDetHead):
             batch_gt_instances_ignore=batch_gt_instances_ignore,
         )
 
-        raw_iseg_outputs = self.get_mask_targets(
+        raw_iseg_outputs = self.prepare_mask_loss_inputs(
             mask_feat,
             flatten_kernels,
             raw_outputs["sampling_results_list"],
@@ -957,6 +957,7 @@ class RTMDetInsSepBNHead(RTMDetInsHead):
         batch_gt_instances, batch_img_metas = unpack_inst_seg_entity(entity)
 
         inputs = (*outs, batch_gt_instances, batch_img_metas)
+
         return self.forward_for_loss(*inputs)
 
     def export_by_feat(
