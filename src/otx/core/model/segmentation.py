@@ -11,12 +11,14 @@ from collections.abc import Sequence
 from typing import TYPE_CHECKING, Any, ClassVar, Literal
 
 import torch
+import torch.nn.functional as f
 from torch import nn
 from torchvision import tv_tensors
 
 from otx.algo.segmentation.segmentors import MeanTeacher
 from otx.core.data.entity.base import ImageInfo, OTXBatchLossEntity
 from otx.core.data.entity.segmentation import SegBatchDataEntity, SegBatchPredEntity
+from otx.core.data.entity.tile import OTXTileBatchDataEntity
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.metrics import MetricInput
@@ -27,6 +29,7 @@ from otx.core.types.export import OTXExportFormatType, TaskLevelExportParameters
 from otx.core.types.label import LabelInfo, LabelInfoTypes, SegLabelInfo
 from otx.core.types.precision import OTXPrecisionType
 from otx.core.types.task import OTXTrainType
+from otx.core.utils.tile_merge import SegmentationTileMerge
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -216,6 +219,56 @@ class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity]):
             return label_info
 
         raise TypeError(label_info)
+
+    def forward_tiles(self, inputs: OTXTileBatchDataEntity[SegBatchDataEntity]) -> SegBatchPredEntity:
+        """Unpack segmentation tiles.
+
+        Args:
+            inputs (TileBatchSegDataEntity): Tile batch data entity.
+
+        Returns:
+            DetBatchPredEntity: Merged detection prediction.
+        """
+        if self.explain_mode:
+            raise NotImplementedError("Explain mode is not supported for tiling")
+
+        tile_preds: list[SegBatchPredEntity] = []
+        tile_attrs: list[list[dict[str, int | str]]] = []
+        merger = SegmentationTileMerge(
+            inputs.imgs_info,
+            self.num_classes,
+            self.tile_config,
+        )
+        for batch_tile_attrs, batch_tile_input in inputs.unbind():
+            tile_size = batch_tile_attrs[0]["tile_size"]
+            output = self.model(
+                inputs=batch_tile_input.images,
+                img_metas=batch_tile_input.imgs_info,
+                mode="tensor",
+            )
+            output = self._customize_outputs(
+                outputs=f.interpolate(output, size=tile_size, mode="bilinear", align_corners=True).argmax(dim=1),
+                inputs=batch_tile_input,
+            )
+            if isinstance(output, OTXBatchLossEntity):
+                msg = "Loss output is not supported for tile merging"
+                raise TypeError(msg)
+            tile_preds.append(output)
+            tile_attrs.append(batch_tile_attrs)
+        pred_entities = merger.merge(tile_preds, tile_attrs)
+
+        pred_entity = SegBatchPredEntity(
+            batch_size=inputs.batch_size,
+            images=[pred_entity.image for pred_entity in pred_entities],
+            imgs_info=[pred_entity.img_info for pred_entity in pred_entities],
+            masks=[pred_entity.masks for pred_entity in pred_entities],
+            scores=[],
+        )
+        if self.explain_mode:
+            pred_entity.saliency_map = [pred_entity.saliency_map for pred_entity in pred_entities]
+            pred_entity.feature_vector = [pred_entity.feature_vector for pred_entity in pred_entities]
+
+        return pred_entity
 
     def forward_for_tracing(self, image: Tensor) -> Tensor | dict[str, Tensor]:
         """Model forward function used for the model tracing during model exportation."""

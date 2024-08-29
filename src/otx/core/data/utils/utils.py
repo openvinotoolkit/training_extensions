@@ -75,10 +75,11 @@ def compute_robust_scale_statistics(values: np.array) -> dict[str, float]:
     return stat
 
 
-def compute_robust_dataset_statistics(dataset: DatasetSubset, max_samples: int = 1000) -> dict[str, Any]:
+def compute_robust_dataset_statistics(dataset: DatasetSubset, task, max_samples: int = 1000) -> dict[str, Any]:
     """Computes robust statistics of image & annotation sizes.
 
     Args:
+        task: Task type of the model.
         dataset (DatasetSubset): Input dataset.
         max_samples (int, optional): Maximum number of dataset subsamples to analyze. Defaults to 1000.
 
@@ -160,6 +161,7 @@ _MIN_DETECTION_INPUT_SIZE = 256  # Minimum input size for object detection
 
 def adapt_input_size_to_dataset(
     dataset: Dataset,
+    task,
     base_input_size: int | tuple[int, int] | None = None,
     downscale_only: bool = True,
     input_size_multiplier: int | None = None,
@@ -188,7 +190,7 @@ def adapt_input_size_to_dataset(
         return None
 
     logger.info("Adapting model input size based on dataset stat")
-    stat = compute_robust_dataset_statistics(train_dataset)
+    stat = compute_robust_dataset_statistics(train_dataset, task)
     max_image_size: list[int] = [
         stat["image"].get("height", {}).get("robust_max", 0),
         stat["image"].get("width", {}).get("robust_max", 0),
@@ -240,7 +242,7 @@ def adapt_input_size_to_dataset(
     return image_size  # type: ignore[return-value]
 
 
-def adapt_tile_config(tile_config: TileConfig, dataset: Dataset) -> None:
+def adapt_tile_config(tile_config: TileConfig, dataset: Dataset, task) -> None:
     """Config tile parameters.
 
     Adapt based on annotation statistics.
@@ -249,9 +251,10 @@ def adapt_tile_config(tile_config: TileConfig, dataset: Dataset) -> None:
     Args:
         tile_config (TileConfig): tiling parameters of the model
         dataset (Dataset): Datumaro dataset including all subsets
+        task (Task): task type of the model
     """
     if (train_dataset := dataset.subsets().get("train")) is not None:
-        stat = compute_robust_dataset_statistics(train_dataset)
+        stat = compute_robust_dataset_statistics(train_dataset, task)
         max_num_objects = round(stat["annotation"]["num_per_image"]["max"])
         avg_size = stat["annotation"]["size_of_shape"]["avg"]
         min_size = stat["annotation"]["size_of_shape"]["robust_min"]
