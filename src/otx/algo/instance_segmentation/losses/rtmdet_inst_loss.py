@@ -80,10 +80,13 @@ class RTMDetInstCriterion(RTMDetCriterion):
             stride=stride,
         )
 
+        if (num_pos := kwargs.pop("num_pos")) == 0:
+            zero_loss: Tensor = kwargs.pop("zero_loss")
+            loss_dict.update({"loss_mask": zero_loss})
+            return loss_dict
+
         batch_pos_mask_logits: Tensor = kwargs.pop("batch_pos_mask_logits")
         pos_gt_masks: Tensor = kwargs.pop("pos_gt_masks")
-        num_pos: int = kwargs.pop("num_pos")
-
         loss_mask = self.loss_mask(batch_pos_mask_logits, pos_gt_masks, weight=None, avg_factor=num_pos)
         loss_dict.update({"loss_mask": loss_mask})
         return loss_dict

@@ -49,8 +49,9 @@ class OTXDetectionDataset(OTXDataset[DetDataEntity]):
                 bboxes,
                 format=tv_tensors.BoundingBoxFormat.XYXY,
                 canvas_size=img_shape,
+                dtype=torch.float32,
             ),
-            labels=torch.as_tensor([ann.label for ann in bbox_anns]),
+            labels=torch.as_tensor([ann.label for ann in bbox_anns], dtype=torch.long),
         )
 
         return self._apply_transforms(entity)

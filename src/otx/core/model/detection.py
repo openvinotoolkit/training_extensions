@@ -297,7 +297,7 @@ class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity]):
             "preds": [
                 {
                     "boxes": bboxes.data,
-                    "scores": scores,
+                    "scores": scores.type(torch.float32),
                     "labels": labels,
                 }
                 for bboxes, scores, labels in zip(

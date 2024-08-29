@@ -576,8 +576,14 @@ class RTMDetInsHead(RTMDetHead):
         pos_gt_masks = torch.cat(pos_gt_masks, 0)
         batch_pos_mask_logits = torch.cat(batch_pos_mask_logits, 0)
 
+        if (num_pos := batch_pos_mask_logits.shape[0]) == 0:
+            # return zero loss when there is no positive sample
+            return {
+                "num_pos": num_pos,
+                "zero_loss": mask_feats.sum() * 0,
+            }
+
         # avg_factor
-        num_pos = batch_pos_mask_logits.shape[0]
         num_pos = (
             reduce_mean(
                 mask_feats.new_tensor(
@@ -590,10 +596,7 @@ class RTMDetInsHead(RTMDetHead):
             .item()
         )
 
-        if batch_pos_mask_logits.shape[0] == 0:
-            return mask_feats.sum() * 0
-
-        scale = self.prior_generator.strides[0][0] // self.mask_stride
+        scale = self.prior_generator.strides[0][0] // self.mask_loss_stride
         # upsample pred masks
         batch_pos_mask_logits = torch.nn.functional.interpolate(
             batch_pos_mask_logits.unsqueeze(0),
@@ -684,7 +687,7 @@ class RTMDetInsHead(RTMDetHead):
             batch_img_metas,
         )
 
-        raw_outputs = {
+        outputs = {
             "cls_score": cls_scores,
             "bbox_pred": decoded_bboxes,
             "labels": labels_list,
@@ -695,15 +698,15 @@ class RTMDetInsHead(RTMDetHead):
             "sampling_results_list": sampling_results_list,
         }
 
-        raw_iseg_outputs = self.prepare_mask_loss_inputs(
+        iseg_outputs = self.prepare_mask_loss_inputs(
             mask_feat,
             flatten_kernels,
-            raw_outputs["sampling_results_list"],
+            outputs["sampling_results_list"],
             batch_gt_instances,
         )
-        raw_outputs.update(raw_iseg_outputs)
+        outputs.update(iseg_outputs)
 
-        return raw_outputs
+        return outputs
 
 
 class MaskFeatModule(BaseModule):
