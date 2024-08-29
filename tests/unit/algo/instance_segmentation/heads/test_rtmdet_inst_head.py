@@ -14,10 +14,12 @@ from otx.algo.common.utils.coders import DistancePointBBoxCoder
 from otx.algo.common.utils.prior_generators import MlvlPointGenerator
 from otx.algo.common.utils.samplers import PseudoSampler
 from otx.algo.instance_segmentation.heads.rtmdet_inst_head import RTMDetInstHead
-from otx.core.data.entity.instance_segmentation import InstanceSegBatchDataEntity
 from otx.algo.modules.norm import build_norm_layer
+from otx.core.data.entity.instance_segmentation import InstanceSegBatchDataEntity
 from torch import nn
+
 from src.otx.core.data.entity.base import ImageInfo
+
 
 def set_mock_sampling_results_list(batch_size: int) -> list[Mock]:
     sampling_results_list: list[Mock] = []
@@ -124,7 +126,10 @@ class TestRTMDetInsHead:
         entity = InstanceSegBatchDataEntity(
             batch_size=2,
             images=[torch.randn(640, 640, 3), torch.randn(640, 640, 3)],
-            imgs_info=[ImageInfo(0, img_shape=(640, 640), ori_shape=(640, 640)), ImageInfo(1, img_shape=(640, 640), ori_shape=(640, 640))],
+            imgs_info=[
+                ImageInfo(0, img_shape=(640, 640), ori_shape=(640, 640)),
+                ImageInfo(1, img_shape=(640, 640), ori_shape=(640, 640)),
+            ],
             bboxes=[torch.randn(2, 4), torch.randn(3, 4)],
             labels=[torch.randint(0, 3, (2,)), torch.randint(0, 3, (3,))],
             masks=[torch.zeros(2, 640, 640), torch.zeros(3, 640, 640)],
