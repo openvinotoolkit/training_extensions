@@ -103,7 +103,7 @@ class TestClassIncrementalMixin:
             cls_reg_targets_roi,
             mask_targets,
             pos_labels,
-        ) = maskrcnn.model.roi_head.get_preds_and_targets(
+        ) = maskrcnn.model.roi_head.prepare_loss_inputs(
             input_tensors,
             deepcopy(fxt_instance_list),
             fxt_inst_seg_batch_entity,
@@ -127,7 +127,7 @@ class TestClassIncrementalMixin:
             cls_reg_targets_roi,
             mask_targets,
             pos_labels,
-        ) = maskrcnn.model.roi_head.get_preds_and_targets(
+        ) = maskrcnn.model.roi_head.prepare_loss_inputs(
             input_tensors,
             deepcopy(fxt_instance_list),
             fxt_inst_seg_batch_entity_with_ignored_label,

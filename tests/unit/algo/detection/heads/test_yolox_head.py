@@ -38,7 +38,7 @@ class TestYOLOXHeadModule:
             with_nms=False,
         )
 
-    def test_forward_for_loss(self):
+    def test_prepare_loss_inputs(self, mocker):
         s = 256
         img_metas = [
             {
@@ -54,13 +54,12 @@ class TestYOLOXHeadModule:
         assert isinstance(head.multi_level_cls_convs[0][0], Conv2dModule)
 
         feat = [torch.rand(1, 1, s // feat_size, s // feat_size) for feat_size in [4, 8, 16]]
-        cls_scores, bbox_preds, objectnesses = head.forward(feat)
-
         # Test that empty ground truth encourages the network to predict
         # background
-        gt_instances = InstanceData(bboxes=torch.empty((0, 4)), labels=torch.LongTensor([]))
+        gt_instances = [InstanceData(bboxes=torch.empty((0, 4)), labels=torch.LongTensor([]))]
+        mocker.patch("otx.algo.detection.heads.base_head.unpack_det_entity", return_value=(gt_instances, img_metas))
 
-        raw_dict = head.forward_for_loss(cls_scores, bbox_preds, objectnesses, [gt_instances], img_metas)
+        raw_dict = head.prepare_loss_inputs(x=feat, entity=mocker.MagicMock())
         for key in [
             "flatten_objectness",
             "flatten_cls_preds",

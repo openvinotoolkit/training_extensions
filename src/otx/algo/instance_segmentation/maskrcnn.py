@@ -5,21 +5,25 @@
 
 from __future__ import annotations
 
+from functools import partial
 from typing import Any, ClassVar
 
+from torch import nn
 from torchvision.ops import RoIAlign
 
+from otx.algo.common.backbones import ResNet, build_model_including_pytorchcv
 from otx.algo.common.losses import CrossEntropyLoss, CrossSigmoidFocalLoss, L1Loss
 from otx.algo.common.utils.assigners import MaxIoUAssigner
 from otx.algo.common.utils.coders import DeltaXYWHBBoxCoder
 from otx.algo.common.utils.prior_generators import AnchorGenerator
 from otx.algo.common.utils.samplers import RandomSampler
 from otx.algo.detection.necks import FPN
-from otx.algo.instance_segmentation.backbones import MaskRCNNBackbone
-from otx.algo.instance_segmentation.heads import ConvFCBBoxHead, FCNMaskHead, RoIHead, RPNHead
+from otx.algo.instance_segmentation.backbones.swin import SwinTransformer
+from otx.algo.instance_segmentation.heads import BBoxHead, FCNMaskHead, RoIHead, RPNHead
 from otx.algo.instance_segmentation.losses import ROICriterion, RPNCriterion
 from otx.algo.instance_segmentation.segmentors.two_stage import TwoStageDetector
 from otx.algo.instance_segmentation.utils.roi_extractors import SingleRoIExtractor
+from otx.algo.modules.norm import build_norm_layer
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter
@@ -154,8 +158,7 @@ class MaskRCNN(ExplainableOTXInstanceSegModel):
             neg_pos_ub=-1,
         )
 
-        backbone = MaskRCNNBackbone(model_name=self.model_name)
-
+        backbone = self._build_backbone()
         neck = FPN(model_name=self.model_name)
         rpn_bbox_coder = DeltaXYWHBBoxCoder(
             target_means=(0.0, 0.0, 0.0, 0.0),
@@ -181,7 +184,7 @@ class MaskRCNN(ExplainableOTXInstanceSegModel):
             target_stds=(0.1, 0.1, 0.2, 0.2),
         )
 
-        bbox_head = ConvFCBBoxHead(
+        bbox_head = BBoxHead(
             model_name=self.model_name,
             num_classes=num_classes,
             bbox_coder=roi_bbox_coder,
@@ -256,6 +259,45 @@ class MaskRCNN(ExplainableOTXInstanceSegModel):
             roi_criterion=roi_criterion,
             rpn_criterion=rpn_criterion,
         )
+
+    def _build_backbone(self) -> nn.Module:
+        """Builds the backbone for the model."""
+        backbone_cfg: dict[str, Any] = {
+            "maskrcnn_resnet_50": {
+                "depth": 50,
+                "frozen_stages": 1,
+            },
+            "maskrcnn_swin_tiny": {
+                "drop_path_rate": 0.2,
+                "patch_norm": True,
+                "convert_weights": True,
+            },
+            "maskrcnn_efficientnet_b2b": {
+                "type": "efficientnet_b2b",
+                "out_indices": [2, 3, 4, 5],
+                "frozen_stages": -1,
+                "pretrained": True,
+                "activation": nn.SiLU,
+                "normalization": partial(build_norm_layer, nn.BatchNorm2d, requires_grad=True),
+            },
+        }
+
+        if "resnet" in self.model_name:
+            return ResNet(
+                **backbone_cfg[self.model_name],
+            )
+
+        if "efficientnet" in self.model_name:
+            cfg = backbone_cfg[self.model_name]
+            return build_model_including_pytorchcv(cfg=cfg)
+
+        if "swin" in self.model_name:
+            return SwinTransformer(
+                **backbone_cfg[self.model_name],
+            )
+
+        msg = ValueError(f"Model {self.model_name} is not supported.")
+        raise msg
 
     @property
     def _exporter(self) -> OTXModelExporter:

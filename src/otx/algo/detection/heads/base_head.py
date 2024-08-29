@@ -9,7 +9,6 @@ Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/d
 from __future__ import annotations
 
 import copy
-from abc import abstractmethod
 
 import torch
 from torch import Tensor
@@ -55,7 +54,7 @@ class BaseDenseHead(BaseModule):
             positive_infos.append(pos_info)
         return positive_infos
 
-    def get_preds_and_targets(
+    def prepare_loss_inputs(
         self,
         x: tuple[Tensor],
         entity: DetBatchDataEntity,
@@ -70,23 +69,9 @@ class BaseDenseHead(BaseModule):
         Returns:
             dict: A dictionary of loss components.
         """
-        outs = self(x)
-
         batch_gt_instances, batch_img_metas = unpack_det_entity(entity)
 
-        inputs = (*outs, batch_gt_instances, batch_img_metas)
-        return self.forward_for_loss(*inputs)
-
-    @abstractmethod
-    def forward_for_loss(
-        self,
-        cls_scores: list[Tensor],
-        bbox_preds: list[Tensor],
-        batch_gt_instances: list[InstanceData],
-        batch_img_metas: list[dict],
-        batch_gt_instances_ignore: list[InstanceData] | None = None,
-    ) -> dict | tuple:
-        """Prepare features for the loss calculation."""
+        return *self(x), batch_gt_instances, batch_img_metas
 
     def predict(
         self,

@@ -21,6 +21,7 @@ from torch import Tensor, nn
 
 from otx.algo.common.utils.nms import batched_nms, multiclass_nms
 from otx.algo.common.utils.utils import (
+    distance2bbox,
     filter_scores_and_topk,
     inverse_sigmoid,
     reduce_mean,
@@ -613,17 +614,18 @@ class RTMDetInsHead(RTMDetHead):
             "num_pos": num_pos,
         }
 
-    def forward_for_loss(
-        self,
-        cls_scores: list[Tensor],
-        bbox_preds: list[Tensor],
-        kernel_preds: list[Tensor],
-        mask_feat: Tensor,
-        batch_gt_instances: list[InstanceData],
-        batch_img_metas: list[dict],
-        batch_gt_instances_ignore: list[InstanceData] | None = None,
-    ) -> dict[str, Tensor]:
-        """Forward the head for a loss computation."""
+    def prepare_loss_inputs(self, x: tuple[Tensor], entity: InstanceSegBatchDataEntity) -> dict:
+        """Perform forward propagation and prepare outputs for loss calculation.
+
+        Args:
+            x (tuple[Tensor]): Features from the upstream network, each is
+                a 4D-tensor.
+            entity (InstanceSegBatchDataEntity): Entity from OTX dataset.
+
+        """
+        cls_scores, bbox_preds, kernel_preds, mask_feat = self(x)
+        batch_gt_instances, batch_img_metas = unpack_inst_seg_entity(entity)
+
         num_imgs = len(batch_img_metas)
         device = cls_scores[0].device
         flatten_kernels = torch.cat(
@@ -642,13 +644,56 @@ class RTMDetInsHead(RTMDetHead):
                     ndarray_masks = np.empty((0, *img_meta["img_shape"]), dtype=np.uint8)
                 gt_instances.masks = torch.tensor(ndarray_masks, dtype=torch.bool, device=device)
 
-        raw_outputs = super().forward_for_loss(
-            cls_scores=cls_scores,
-            bbox_preds=bbox_preds,
-            batch_gt_instances=batch_gt_instances,
-            batch_img_metas=batch_img_metas,
-            batch_gt_instances_ignore=batch_gt_instances_ignore,
+        num_imgs = len(batch_img_metas)
+        featmap_sizes = [featmap.size()[-2:] for featmap in cls_scores]
+        if len(featmap_sizes) != self.prior_generator.num_levels:
+            msg = (
+                f"The number of featmap_sizes (={len(featmap_sizes)}) and the number of levels of prior_generator "
+                f"(={self.prior_generator.num_levels}) should be same."
+            )
+            raise ValueError(msg)
+
+        device = cls_scores[0].device
+        anchor_list, valid_flag_list = self.get_anchors(featmap_sizes, batch_img_metas, device=device)
+        flatten_cls_scores = torch.cat(
+            [cls_score.permute(0, 2, 3, 1).reshape(num_imgs, -1, self.cls_out_channels) for cls_score in cls_scores],
+            1,
         )
+        decoded_bboxes = []
+        for anchor, bbox_pred in zip(anchor_list[0], bbox_preds):
+            anchor = anchor.reshape(-1, 4)  # noqa: PLW2901
+            bbox_pred = bbox_pred.permute(0, 2, 3, 1).reshape(num_imgs, -1, 4)  # noqa: PLW2901
+            bbox_pred = distance2bbox(anchor, bbox_pred)  # noqa: PLW2901
+            decoded_bboxes.append(bbox_pred)
+
+        flatten_bboxes = torch.cat(decoded_bboxes, 1)
+
+        (
+            anchor_list,
+            labels_list,
+            label_weights_list,
+            bbox_targets_list,
+            assign_metrics_list,
+            sampling_results_list,
+        ) = self.get_targets(  # type: ignore[misc]
+            flatten_cls_scores,
+            flatten_bboxes,
+            anchor_list,
+            valid_flag_list,
+            batch_gt_instances,
+            batch_img_metas,
+        )
+
+        raw_outputs = {
+            "cls_score": cls_scores,
+            "bbox_pred": decoded_bboxes,
+            "labels": labels_list,
+            "label_weights": label_weights_list,
+            "bbox_targets": bbox_targets_list,
+            "assign_metrics": assign_metrics_list,
+            "stride": self.prior_generator.strides,
+            "sampling_results_list": sampling_results_list,
+        }
 
         raw_iseg_outputs = self.prepare_mask_loss_inputs(
             mask_feat,
@@ -942,23 +987,6 @@ class RTMDetInsSepBNHead(RTMDetInsHead):
             bbox_preds.append(reg_dist)
             kernel_preds.append(kernel_pred)
         return tuple(cls_scores), tuple(bbox_preds), tuple(kernel_preds), mask_feat
-
-    def get_preds_and_targets(self, x: tuple[Tensor], entity: InstanceSegBatchDataEntity) -> dict:
-        """Perform forward propagation and prepare outputs for loss calculation.
-
-        Args:
-            x (tuple[Tensor]): Features from the upstream network, each is
-                a 4D-tensor.
-            entity (InstanceSegBatchDataEntity): Entity from OTX dataset.
-
-        """
-        outs = self(x)
-
-        batch_gt_instances, batch_img_metas = unpack_inst_seg_entity(entity)
-
-        inputs = (*outs, batch_gt_instances, batch_img_metas)
-
-        return self.forward_for_loss(*inputs)
 
     def export_by_feat(
         self,

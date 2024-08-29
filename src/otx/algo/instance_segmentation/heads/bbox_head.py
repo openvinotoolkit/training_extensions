@@ -32,7 +32,7 @@ if TYPE_CHECKING:
     from otx.algo.common.utils.coders import DeltaXYWHBBoxCoder
 
 
-class BBoxHead(BaseModule):
+class BBoxHeadModule(BaseModule):
     """Simple RoI head, with only two fc layers for classification and regression respectively.
 
     Args:
@@ -376,7 +376,7 @@ class BBoxHead(BaseModule):
         )
 
 
-class ConvFCBBoxHeadModule(BBoxHead, ClassIncrementalMixin):
+class ConvFCBBoxHeadModule(BBoxHeadModule, ClassIncrementalMixin):
     r"""More general bbox head, with shared conv and fc layers and two optional separated branches.
 
     .. code-block:: none
@@ -638,7 +638,7 @@ class ConvFCBBoxHeadModule(BBoxHead, ClassIncrementalMixin):
         return labels, label_weights, bbox_targets, bbox_weights, valid_label_mask
 
 
-class ConvFCBBoxHead:
+class BBoxHead:
     """ConvFCBBoxHead factory for instance segmentation task."""
 
     BBOXHEAD_CFG: ClassVar[dict[str, Any]] = {

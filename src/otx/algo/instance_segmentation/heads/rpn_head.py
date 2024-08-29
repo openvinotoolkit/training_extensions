@@ -101,6 +101,8 @@ class RPNHeadModule(AnchorHead):
         if num_classes != 1:
             msg = "num_classes must be 1 for RPNHead"
             raise ValueError(msg)
+        if init_cfg is None:
+            init_cfg = {"type": "Normal", "layer": "Conv2d", "std": 0.01}
 
         super().__init__(
             num_classes=num_classes,
@@ -167,44 +169,15 @@ class RPNHeadModule(AnchorHead):
         rpn_bbox_pred = self.rpn_reg(x)
         return rpn_cls_score, rpn_bbox_pred
 
-    def get_preds_and_targets(
+    def prepare_loss_inputs(  # type: ignore[override]
         self,
         x: tuple[Tensor],
         entity: InstanceSegBatchDataEntity,  # type: ignore[override]
     ) -> tuple:
-        """Forward propagation of the head, then calculate predictions from the features and data samples.
-
-        Args:
-            x (tuple[Tensor]): Features from FPN.
-            entity (InstanceSegBatchDataEntity): Entity contains
-                the meta information of each image and corresponding
-                annotations.
-
-        Returns:
-            tuple: the return value is a tuple contains:
-
-                - losses: (dict[str, Tensor]): A dictionary of loss components.
-                - predictions (list[InstanceData]): Detection
-                results of each image after the post process.
-        """
+        """Prepare features for the loss calculation."""
         batch_gt_instances, batch_img_metas = unpack_inst_seg_entity(entity)
         cls_scores, bbox_preds = self(x)
 
-        return self.forward_for_loss(
-            cls_scores,
-            bbox_preds,
-            batch_gt_instances,
-            batch_img_metas,
-        )
-
-    def forward_for_loss(  # type: ignore[override]
-        self,
-        cls_scores: list[Tensor],
-        bbox_preds: list[Tensor],
-        batch_gt_instances: list[InstanceData],
-        batch_img_metas: list[dict],
-    ) -> tuple:
-        """Prepare features for the loss calculation."""
         cls_reg_targets = self.get_targets_for_loss(
             cls_scores,
             batch_gt_instances,

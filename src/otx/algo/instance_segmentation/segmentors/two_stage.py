@@ -165,7 +165,7 @@ class TwoStageDetector(nn.Module):
             polygons=batch_inputs.polygons,
         )
 
-        cls_reg_targets, bbox_preds, cls_scores, rpn_results_list = self.rpn_head.get_preds_and_targets(
+        cls_reg_targets, bbox_preds, cls_scores, rpn_results_list = self.rpn_head.prepare_loss_inputs(
             x,
             rpn_entity,
         )
@@ -182,7 +182,7 @@ class TwoStageDetector(nn.Module):
             cls_reg_targets_roi,
             mask_targets,
             pos_labels,
-        ) = self.roi_head.get_preds_and_targets(
+        ) = self.roi_head.prepare_loss_inputs(
             x,
             rpn_results_list,
             batch_inputs,

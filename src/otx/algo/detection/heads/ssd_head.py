@@ -8,7 +8,7 @@ Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/models/d
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, ClassVar
+from typing import Any, ClassVar
 
 import torch
 from torch import Tensor, nn
@@ -17,9 +17,7 @@ from otx.algo.common.utils.coders import BaseBBoxCoder
 from otx.algo.common.utils.prior_generators import BasePriorGenerator
 from otx.algo.common.utils.samplers import PseudoSampler
 from otx.algo.detection.heads.anchor_head import AnchorHead
-
-if TYPE_CHECKING:
-    from otx.algo.utils.mmengine_utils import InstanceData
+from otx.core.data.entity.detection import DetBatchDataEntity
 
 
 class SSDHeadModule(AnchorHead):
@@ -111,30 +109,22 @@ class SSDHeadModule(AnchorHead):
             bbox_preds.append(reg_conv(feat))
         return cls_scores, bbox_preds
 
-    def forward_for_loss(
+    def prepare_loss_inputs(
         self,
-        cls_scores: list[Tensor],
-        bbox_preds: list[Tensor],
-        batch_gt_instances: list[InstanceData],
-        batch_img_metas: list[dict],
-        batch_gt_instances_ignore: list[InstanceData] | None = None,
-    ) -> dict[str, Tensor]:
-        """Forward the head for a loss computation.
+        x: tuple[Tensor],
+        entity: DetBatchDataEntity,
+    ) -> dict | tuple:
+        """Perform forward propagation of the detection head and prepare for loss calculation.
 
         Args:
-            cls_scores (list[Tensor]): Box scores for each scale level has shape (N, num_anchors * num_classes, H, W)
-            bbox_preds (list[Tensor]): Box energies deltas for each scale level with shape (N, num_anchors * 4, H, W)
-            batch_gt_instances (list[InstanceData]): Batch of gt_instance.
-                It usually includes ``bboxes`` and ``labels`` attributes.
-            batch_img_metas (list[dict]): Meta information of each image,
-                e.g., image size, scaling factor, etc.
-            batch_gt_instances_ignore (list[InstanceData], Optional): Batch of gt_instances_ignore.
-                It includes ``bboxes`` attribute data that is ignored during training and testing.
-                Defaults to None.
+            x (tuple[Tensor]): Features from the upstream network, each is
+                a 4D-tensor.
+            entity (DetBatchDataEntity): Entity from OTX dataset.
 
         Returns:
-            dict[str, Tensor]: A dictionary of raw outputs.
+            dict: A dictionary of loss components.
         """
+        cls_scores, bbox_preds, batch_gt_instances, batch_img_metas = super().prepare_loss_inputs(x, entity)
         featmap_sizes = [featmap.size()[-2:] for featmap in cls_scores]
 
         device = cls_scores[0].device
@@ -145,7 +135,6 @@ class SSDHeadModule(AnchorHead):
             valid_flag_list,
             batch_gt_instances,
             batch_img_metas,
-            batch_gt_instances_ignore=batch_gt_instances_ignore,
             unmap_outputs=True,
         )
         (labels_list, label_weights_list, bbox_targets_list, bbox_weights_list, avg_factor) = cls_reg_targets

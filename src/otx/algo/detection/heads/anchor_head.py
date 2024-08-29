@@ -54,9 +54,6 @@ class AnchorHead(BaseDenseHead):
         reg_decoded_bbox: bool = False,
         init_cfg: dict | list[dict] | None = None,
     ) -> None:
-        if init_cfg is None:
-            init_cfg = {"type": "Normal", "layer": "Conv2d", "std": 0.01}
-
         super().__init__(init_cfg=init_cfg)
         self.in_channels = in_channels
         self.num_classes = num_classes

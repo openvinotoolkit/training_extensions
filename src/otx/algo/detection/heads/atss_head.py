@@ -27,6 +27,7 @@ from otx.algo.modules.conv_module import Conv2dModule
 from otx.algo.modules.norm import build_norm_layer
 from otx.algo.modules.scale import Scale
 from otx.algo.utils.mmengine_utils import InstanceData
+from otx.core.data.entity.detection import DetBatchDataEntity
 
 EPS = 1e-12
 
@@ -182,36 +183,24 @@ class ATSSHeadModule(ClassIncrementalMixin, AnchorHead):
         centerness = self.atss_centerness(reg_feat)
         return cls_score, bbox_pred, centerness
 
-    def forward_for_loss(  # type: ignore[override]
+    def prepare_loss_inputs(
         self,
-        cls_scores: list[Tensor],
-        bbox_preds: list[Tensor],
-        centernesses: list[Tensor],
-        batch_gt_instances: list[InstanceData],
-        batch_img_metas: list[dict],
-        batch_gt_instances_ignore: list[InstanceData] | None = None,
-    ) -> dict[str, Tensor]:
-        """Forward the head for a loss computation.
+        x: tuple[Tensor],
+        entity: DetBatchDataEntity,
+    ) -> dict | tuple:
+        """Perform forward propagation of the detection head and prepare for loss calculation.
 
         Args:
-            cls_scores (list[Tensor]): Box scores for each scale level
-                Has shape (N, num_anchors * num_classes, H, W)
-            bbox_preds (list[Tensor]): Box energies / deltas for each scale
-                level with shape (N, num_anchors * 4, H, W)
-            centernesses (list[Tensor]): Centerness for each scale
-                level with shape (N, num_anchors * 1, H, W)
-            batch_gt_instances (list[InstanceData]): Batch of gt_instance.
-                It usually includes ``bboxes`` and ``labels`` attributes.
-            batch_img_metas (list[dict]): Meta information of each image,
-                e.g., image size, scaling factor, etc.
-            batch_gt_instances_ignore (list[InstanceData], Optional):
-                Batch of gt_instances_ignore. It includes ``bboxes`` attribute
-                data that is ignored during training and testing.
-                Defaults to None.
+            x (tuple[Tensor]): Features from the upstream network, each is
+                a 4D-tensor.
+            entity (DetBatchDataEntity): Entity from OTX dataset.
 
         Returns:
-            dict[str, Tensor]: A dictionary of raw outputs.
+            dict: A dictionary of loss components.
         """
+        outs = super().prepare_loss_inputs(x, entity)
+
+        cls_scores, bbox_preds, centernesses, batch_gt_instances, batch_img_metas = outs
         featmap_sizes = [featmap.size()[-2:] for featmap in cls_scores]
         if len(featmap_sizes) != self.prior_generator.num_levels:
             msg = "featmap_sizes and self.prior_generator.num_levels have different levels."
@@ -225,7 +214,6 @@ class ATSSHeadModule(ClassIncrementalMixin, AnchorHead):
             valid_flag_list,
             batch_gt_instances,
             batch_img_metas,
-            batch_gt_instances_ignore=batch_gt_instances_ignore,
         )
 
         (

@@ -27,6 +27,7 @@ from otx.algo.modules.activation import Swish, build_activation_layer
 from otx.algo.modules.conv_module import Conv2dModule, DepthwiseSeparableConvModule
 from otx.algo.modules.norm import build_norm_layer
 from otx.algo.utils.mmengine_utils import InstanceData
+from otx.core.data.entity.detection import DetBatchDataEntity
 
 logger = logging.getLogger()
 
@@ -443,43 +444,26 @@ class YOLOXHeadModule(BaseDenseHead):
             results.scores = det_bboxes[:, -1]
         return results
 
-    def forward_for_loss(  # type: ignore[override]
+    def prepare_loss_inputs(
         self,
-        cls_scores: Sequence[Tensor],
-        bbox_preds: Sequence[Tensor],
-        objectnesses: Sequence[Tensor],
-        batch_gt_instances: Sequence[InstanceData],
-        batch_img_metas: Sequence[dict],
-        batch_gt_instances_ignore: Sequence[InstanceData] | None = None,
-    ) -> dict:
-        """Forward the head for a loss computation.
+        x: tuple[Tensor],
+        entity: DetBatchDataEntity,
+    ) -> dict | tuple:
+        """Perform forward propagation of the detection head and prepare for loss calculation.
 
         Args:
-            cls_scores (Sequence[Tensor]): Box scores for each scale level,
-                each is a 4D-tensor, the channel number is
-                num_priors * num_classes.
-            bbox_preds (Sequence[Tensor]): Box energies / deltas for each scale
-                level, each is a 4D-tensor, the channel number is
-                num_priors * 4.
-            objectnesses (Sequence[Tensor]): Score factor for
-                all scale level, each is a 4D-tensor, has shape
-                (batch_size, 1, H, W).
-            batch_gt_instances (list[InstanceData]): Batch of
-                gt_instance. It usually includes ``bboxes`` and ``labels``
-                attributes.
-            batch_img_metas (list[dict]): Meta information of each image, e.g.,
-                image size, scaling factor, etc.
-            batch_gt_instances_ignore (list[InstanceData], optional):
-                Batch of gt_instances_ignore. It includes ``bboxes`` attribute
-                data that is ignored during training and testing.
-                Defaults to None.
+            x (tuple[Tensor]): Features from the upstream network, each is
+                a 4D-tensor.
+            entity (DetBatchDataEntity): Entity from OTX dataset.
 
         Returns:
-            dict[str, Tensor]: A dictionary of raw outputs.
+        dict: A dictionary of loss components.
         """
+        cls_scores, bbox_preds, objectnesses, batch_gt_instances, batch_img_metas = super().prepare_loss_inputs(
+            x,
+            entity,
+        )
         num_imgs = len(batch_img_metas)
-        if batch_gt_instances_ignore is None:
-            batch_gt_instances_ignore = [None] * num_imgs  # type: ignore[list-item]
 
         featmap_sizes = [cls_score.shape[2:] for cls_score in cls_scores]
         mlvl_priors = self.prior_generator.grid_priors(
@@ -512,7 +496,6 @@ class YOLOXHeadModule(BaseDenseHead):
             flatten_objectness.detach(),
             batch_gt_instances,
             batch_img_metas,
-            batch_gt_instances_ignore,
         )
 
         # The experimental results show that 'reduce_mean' can improve
