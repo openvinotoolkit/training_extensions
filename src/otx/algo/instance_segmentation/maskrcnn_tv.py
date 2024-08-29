@@ -19,9 +19,9 @@ from torchvision.models.detection.mask_rcnn import (
 from otx.algo.instance_segmentation.heads import TVRoIHeads
 from otx.algo.instance_segmentation.segmentors.maskrcnn_tv import (
     FastRCNNConvFCHead,
+    MaskRCNN,
     MaskRCNNBackbone,
     MaskRCNNHeads,
-    MaskRCNNTV,
     RPNHead,
 )
 from otx.core.data.entity.base import OTXBatchLossEntity
@@ -32,7 +32,7 @@ from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.model.instance_segmentation import ExplainableOTXInstanceSegModel
 
 
-class TVMaskRCNN(ExplainableOTXInstanceSegModel):
+class MaskRCNNTV(ExplainableOTXInstanceSegModel):
     """Implementation of torchvision MaskRCNN for instance segmentation."""
 
     load_from: ClassVar[dict[str, Any]] = {"maskrcnn_resnet_50": MaskRCNN_ResNet50_FPN_V2_Weights.verify("DEFAULT")}
@@ -60,7 +60,7 @@ class TVMaskRCNN(ExplainableOTXInstanceSegModel):
         box_head = FastRCNNConvFCHead(model_name=self.model_name)
         mask_head = MaskRCNNHeads(model_name=self.model_name)
 
-        model = MaskRCNNTV(
+        model = MaskRCNN(
             backbone,
             num_classes=91,
             rpn_anchor_generator=rpn_anchor_generator,

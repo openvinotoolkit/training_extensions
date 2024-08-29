@@ -3,7 +3,7 @@
 #
 """Module for OTX instance segmentation segmentors."""
 
-from .maskrcnn_tv import MaskRCNNTV
+from .maskrcnn_tv import MaskRCNN
 from .two_stage import TwoStageDetector
 
-__all__ = ["MaskRCNNTV", "TwoStageDetector"]
+__all__ = ["MaskRCNN", "TwoStageDetector"]

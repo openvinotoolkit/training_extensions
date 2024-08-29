@@ -28,7 +28,7 @@ if TYPE_CHECKING:
     from otx.core.data.entity.instance_segmentation import InstanceSegBatchDataEntity
 
 
-class MaskRCNNTV(_MaskRCNN):
+class MaskRCNN(_MaskRCNN):
     """Torchvision MaskRCNN model with forward method accepting InstanceSegBatchDataEntity."""
 
     def forward(self, entity: InstanceSegBatchDataEntity) -> dict[str, Tensor] | list[dict[str, Tensor]]:
