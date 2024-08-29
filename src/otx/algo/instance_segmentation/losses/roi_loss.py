@@ -16,16 +16,12 @@ class ROICriterion(nn.Module):
     """ROICriterion is a loss criterion used in the Region of Interest (ROI) algorithm.
 
     Args:
-        num_classes (int): The number of object classes.
-        bbox_coder (nn.Module): The module used for encoding and decoding bounding box coordinates.
-        loss_cls (nn.Module): The module used for calculating the classification loss.
-        loss_bbox (nn.Module): The module used for calculating the bounding box regression loss.
-        loss_centerness (nn.Module | None, optional): The module used for calculating the centerness loss.
-            Defaults to None.
-        use_qfl (bool, optional): Whether to use the Quality Focal Loss (QFL).
-            Defaults to ``CrossEntropyLoss(use_sigmoid=True, loss_weight=1.0)``.
-        bg_loss_weight (float, optional): The weight for the background loss.
-            Defaults to -1.0.
+        num_classes (int): Number of classes.
+        bbox_coder (nn.Module): Bounding box coder.
+        loss_cls (nn.Module): Classification loss.
+        loss_mask (nn.Module): Mask loss.
+        loss_bbox (nn.Module): Bounding box loss.
+        class_agnostic (bool): Whether to use class agnostic
     """
 
     def __init__(
@@ -69,7 +65,21 @@ class ROICriterion(nn.Module):
         valid_label_mask: Tensor | None = None,
         reduction_override: str | None = None,
     ) -> dict[str, Tensor]:
-        """Loss function for CustomConvFCBBoxHead."""
+        """Forward function for ROI loss.
+
+        Args:
+            cls_score (Tensor): Classification score.
+            bbox_pred (Tensor): Bounding box prediction.
+            labels (Tensor): Labels.
+            label_weights (Tensor): Label weights.
+            bbox_targets (Tensor): Bounding box targets.
+            bbox_weights (Tensor): Bounding box weights.
+            mask_preds (Tensor): Mask prediction.
+            mask_targets (Tensor): Mask targets.
+            pos_labels (Tensor): Positive labels.
+            valid_label_mask (Tensor, optional): Valid label mask. Defaults to None.
+            reduction_override (str, optional): Reduction method. Defaults to None.
+        """
         losses = {}
         if cls_score is not None and cls_score.numel() > 0:
             avg_factor = max(torch.sum(label_weights > 0).float().item(), 1.0)

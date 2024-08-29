@@ -262,6 +262,7 @@ class MaskRCNN(ExplainableOTXInstanceSegModel):
 
     def _build_backbone(self) -> nn.Module:
         """Builds the backbone for the model."""
+
         backbone_cfg: dict[str, Any] = {
             "maskrcnn_resnet_50": {
                 "depth": 50,
@@ -310,7 +311,7 @@ class MaskRCNN(ExplainableOTXInstanceSegModel):
             task_level_export_parameters=self._export_parameters,
             input_size=(1, 3, *self.input_size),
             mean=self.mean,
-            std=self.std,
+            std=self.std if "efficientnet" not in self.model_name else self.effnet_std,
             resize_mode="fit_to_window",
             pad_value=0,
             swap_rgb=False,

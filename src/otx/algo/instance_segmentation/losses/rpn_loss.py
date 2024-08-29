@@ -38,7 +38,7 @@ class RPNCriterion(nn.Module):
         bbox_preds: list[Tensor],
         cls_scores: list[Tensor],
     ) -> dict:
-        """Calculate the loss based on the features extracted by the detection head.
+        """Calculate the loss based on the features extracted by the RPN head.
 
         Args:
             cls_reg_targets (tuple): A tuple containing the following elements:
@@ -77,7 +77,7 @@ class RPNCriterion(nn.Module):
         bbox_weights: Tensor,
         avg_factor: int,
     ) -> tuple:
-        """Calculate the loss of a single scale level based on the features extracted by the detection head.
+        """Calculate the loss of a single scale level based on the features extracted by the RPN head.
 
         Args:
             cls_score (Tensor): Box scores for each scale level
@@ -93,9 +93,6 @@ class RPNCriterion(nn.Module):
             bbox_weights (Tensor): BBox regression loss weights of each anchor
                 with shape (N, num_total_anchors, 4).
             avg_factor (int): Average factor that is used to average the loss.
-
-        Returns:
-            tuple: loss components.
         """
         # classification loss
         labels = labels.reshape(-1)

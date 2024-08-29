@@ -7,7 +7,7 @@ from .fcn_mask_head import FCNMaskHead
 from .roi_head import RoIHead
 from .roi_head_tv import TVRoIHeads
 from .rpn_head import RPNHead
-from .rtmdet_ins_head import RTMDetInsSepBNHead
+from .rtmdet_inst_head import RTMDetInstSepBNHead
 
 __all__ = [
     "BBoxHead",
@@ -15,5 +15,5 @@ __all__ = [
     "FCNMaskHead",
     "TVRoIHeads",
     "RPNHead",
-    "RTMDetInsSepBNHead",
+    "RTMDetInstSepBNHead",
 ]

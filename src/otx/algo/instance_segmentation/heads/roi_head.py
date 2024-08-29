@@ -22,7 +22,20 @@ if TYPE_CHECKING:
 
 
 class RoIHead(nn.Module):
-    """Base class for RoIHeads."""
+    """Base class for RoIHeads.
+
+    Args:
+        bbox_roi_extractor (nn.Module): Module to extract bbox features.
+        bbox_head (nn.Module): Module to make predictions from bbox features.
+        mask_roi_extractor (nn.Module): Module to extract mask features.
+        mask_head (nn.Module): Module to make predictions from mask features.
+        assigner (nn.Module): Module to assign gt to bboxes.
+        sampler (nn.Module): Module to sample bboxes.
+        mask_thr_binary (float): Threshold to convert mask to binary.
+        max_per_img (int): Maximum number of instances per image.
+        nms_iou_threshold (float): IoU threshold for NMS.
+        score_thr (float): Threshold to filter out low score
+    """
 
     def __init__(
         self,
@@ -494,7 +507,15 @@ class RoIHead(nn.Module):
         rpn_results_list: list[InstanceData],
         entity: InstanceSegBatchDataEntity,
     ) -> tuple[dict, dict, Any, Any, Any]:
-        """Perform forward propagation and loss calculation of the detection roi on the features."""
+        """Perform forward propagation and prepare outputs for loss calculation.
+
+        Args:
+            x (tuple[Tensor]): Features from the upstream network, each is
+                a 4D-tensor.
+            rpn_results_list (list[InstanceData]): List of region proposals.
+            entity (InstanceSegBatchDataEntity): Entity from OTX dataset.
+
+        """
         batch_gt_instances, batch_img_metas = unpack_inst_seg_entity(entity)
 
         # assign gts and sample proposals

@@ -169,12 +169,20 @@ class RPNHeadModule(AnchorHead):
         rpn_bbox_pred = self.rpn_reg(x)
         return rpn_cls_score, rpn_bbox_pred
 
-    def prepare_loss_inputs(  # type: ignore[override]
+    def prepare_loss_inputs(
         self,
         x: tuple[Tensor],
         entity: InstanceSegBatchDataEntity,  # type: ignore[override]
     ) -> tuple:
-        """Prepare features for the loss calculation."""
+        """Perform forward propagation and prepare outputs for loss calculation.
+
+        Args:
+            x (tuple[Tensor]): Features from the upstream network, each is
+                a 4D-tensor.
+            entity (InstanceSegBatchDataEntity): Entity from OTX dataset.
+
+        """
+
         batch_gt_instances, batch_img_metas = unpack_inst_seg_entity(entity)
         cls_scores, bbox_preds = self(x)
 

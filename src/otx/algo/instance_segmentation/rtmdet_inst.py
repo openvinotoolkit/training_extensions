@@ -18,7 +18,7 @@ from otx.algo.common.utils.prior_generators import MlvlPointGenerator
 from otx.algo.common.utils.samplers import PseudoSampler
 from otx.algo.detection.detectors import SingleStageDetector
 from otx.algo.detection.necks import CSPNeXtPAFPN
-from otx.algo.instance_segmentation.heads import RTMDetInsSepBNHead
+from otx.algo.instance_segmentation.heads import RTMDetInstSepBNHead
 from otx.algo.instance_segmentation.losses import DiceLoss, RTMDetInstCriterion
 from otx.algo.modules.norm import build_norm_layer
 from otx.core.exporter.base import OTXModelExporter
@@ -61,7 +61,7 @@ class RTMDetInst(ExplainableOTXInstanceSegModel):
 
         backbone = CSPNeXt(model_name="rtmdet_inst_tiny")
         neck = CSPNeXtPAFPN(model_name="rtmdet_inst_tiny")
-        bbox_head = RTMDetInsSepBNHead(
+        bbox_head = RTMDetInstSepBNHead(
             num_classes=num_classes,
             in_channels=96,
             stacked_convs=2,
