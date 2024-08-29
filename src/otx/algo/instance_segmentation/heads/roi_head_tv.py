@@ -26,6 +26,7 @@ def maskrcnn_loss(
     image_shapes: list[tuple[int, int]],
 ) -> Tensor:
     """Compute the mask prediction loss.
+
     Args:
         mask_logits (Tensor): the mask predictions.
         proposals (list[Tensor]): the region proposals.
@@ -34,7 +35,6 @@ def maskrcnn_loss(
         mask_matched_idxs (list[Tensor]): the matched indices.
         image_shapes (list[tuple[int, int]]): the image shapes.
     """
-
     meta_infos = [{"img_shape": img_shape} for img_shape in image_shapes]
     labels = [gt_label[idxs] for gt_label, idxs in zip(gt_labels, mask_matched_idxs)]
 

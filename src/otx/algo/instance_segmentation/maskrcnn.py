@@ -262,7 +262,6 @@ class MaskRCNN(ExplainableOTXInstanceSegModel):
 
     def _build_backbone(self) -> nn.Module:
         """Builds the backbone for the model."""
-
         backbone_cfg: dict[str, Any] = {
             "maskrcnn_resnet_50": {
                 "depth": 50,

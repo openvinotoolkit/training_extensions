@@ -182,7 +182,6 @@ class RPNHeadModule(AnchorHead):
             entity (InstanceSegBatchDataEntity): Entity from OTX dataset.
 
         """
-
         batch_gt_instances, batch_img_metas = unpack_inst_seg_entity(entity)
         cls_scores, bbox_preds = self(x)
 
