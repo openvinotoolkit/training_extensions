@@ -104,6 +104,7 @@ You can find more details with examples in the [CLI command intro](https://openv
 - Fix Learning Rate and Loss Handling in Tile Classifier MaskRCNN EfficientNet
 - Pad tile to image size (512 x 512)
 - Don't apply labels normalization on training
+- Enhance Memeory Cache Handler with Complex Unique Keys
 
 ### Release History
 
