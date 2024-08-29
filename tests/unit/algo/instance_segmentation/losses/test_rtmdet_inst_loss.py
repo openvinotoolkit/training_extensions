@@ -8,7 +8,6 @@ from typing import Any
 
 import pytest
 import torch
-
 from otx.algo.common.losses import GIoULoss, QualityFocalLoss
 from otx.algo.instance_segmentation.losses import DiceLoss, RTMDetInstCriterion
 
@@ -43,7 +42,14 @@ class TestRTMDetInstCriterion:
         )
 
         loss = criterion(
-            cls_score=0, bbox_pred=0, labels=0, label_weights=0, bbox_targets=0, assign_metrics=0, stride=0, **kwargs
+            cls_score=0,
+            bbox_pred=0,
+            labels=0,
+            label_weights=0,
+            bbox_targets=0,
+            assign_metrics=0,
+            stride=0,
+            **kwargs,
         )
         assert "loss_cls" in loss
         assert "loss_bbox" in loss
