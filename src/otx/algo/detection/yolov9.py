@@ -5,6 +5,7 @@
 
 from __future__ import annotations
 
+import re
 from typing import TYPE_CHECKING, Literal
 
 from otx.algo.common.losses import CrossEntropyLoss, L1Loss
@@ -35,6 +36,50 @@ PRETRAINED_WEIGHTS: dict[str, str] = {
     "yolov9-c": "https://github.com/WongKinYiu/YOLO/releases/download/v1.0-alpha/v9-c.pt",
     # "yolov9-e": "https://github.com/WongKinYiu/YOLO/releases/download/v1.0-alpha/v9-e.pt", # TO BE UPDATED
 }
+
+
+def _load_from_state_dict_for_yolov9(
+    self: SingleStageDetector,
+    state_dict: dict,
+    prefix: str,
+    local_metadata: dict,
+    strict: bool,
+    missing_keys: list[str] | str,
+    unexpected_keys: list[str] | str,
+    error_msgs: list[str] | str,
+) -> None:
+    backbone_len: int = len(self.backbone)
+    neck_len: int = len(self.neck)
+    new_state_dict_keys: dict[str, str] = {}
+    for key in state_dict:
+        match = re.match(r"^(\d+)\.(.*)$", key)
+        if match:
+            orig_idx = int(match.group(1))
+            rest_key = match.group(2)
+
+            if orig_idx < backbone_len:
+                new_key = f"backbone.{orig_idx}.{rest_key}"
+            elif orig_idx < backbone_len + neck_len:
+                new_idx = orig_idx - backbone_len
+                new_key = f"neck.{new_idx}.{rest_key}"
+            else:  # for bbox_head
+                new_idx = orig_idx - backbone_len - neck_len
+                new_key = f"bbox_head.{new_idx}.{rest_key}"
+            new_state_dict_keys[key] = new_key
+
+    for old_key, new_key in new_state_dict_keys.items():
+        value = state_dict.pop(old_key)
+        state_dict[new_key] = value
+
+    super(SingleStageDetector, self)._load_from_state_dict(
+        state_dict,
+        prefix,
+        local_metadata,
+        strict,
+        missing_keys,
+        unexpected_keys,
+        error_msgs,
+    )
 
 
 class YOLOv9(ExplainableOTXDetModel):
@@ -87,6 +132,9 @@ class YOLOv9(ExplainableOTXDetModel):
             loss_obj=CrossEntropyLoss(use_sigmoid=True, reduction="sum", loss_weight=1.0),
             loss_l1=L1Loss(reduction="sum", loss_weight=1.0),
         )
+
+        # patch _load_from_state_dict
+        SingleStageDetector._load_from_state_dict = _load_from_state_dict_for_yolov9
         return SingleStageDetector(
             backbone=backbone,
             neck=neck,
