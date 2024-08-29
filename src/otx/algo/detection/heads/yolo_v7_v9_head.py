@@ -153,6 +153,7 @@ class YOLOv9Head(nn.Module):
 
     def __new__(cls, model_name: str, num_classes: int) -> nn.ModuleList:
         nn.ModuleList.forward = module_list_forward
+        nn.ModuleList.loss = module_list_forward
         if model_name == "yolov9-s":
             return nn.ModuleList(
                 [

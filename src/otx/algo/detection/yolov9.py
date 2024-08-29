@@ -5,6 +5,7 @@
 
 from __future__ import annotations
 
+from functools import partial
 import re
 from typing import TYPE_CHECKING, Literal
 
@@ -13,7 +14,9 @@ from otx.algo.detection.backbones.yolo_v7_v9_backbone import YOLOv9Backbone
 from otx.algo.detection.detectors import SingleStageDetector
 from otx.algo.detection.heads.yolo_v7_v9_head import YOLOv9Head
 from otx.algo.detection.losses import IoULoss, YOLOXCriterion
+from otx.algo.detection.losses.yolov9_loss import BCELoss, BoxLoss, DFLoss, YOLOv9Criterion
 from otx.algo.detection.necks.yolo_v7_v9_neck import YOLOv9Neck
+from otx.algo.detection.utils.yolov7_v9_utils import Vec2Box
 from otx.core.config.data import TileConfig
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter
@@ -30,11 +33,11 @@ if TYPE_CHECKING:
 
 
 PRETRAINED_WEIGHTS: dict[str, str] = {
-    # "yolov9-t": "https://github.com/WongKinYiu/YOLO/releases/download/v1.0-alpha/v9-t.pt", # TO BE UPDATED
+    # "yolov9-t": "https://github.com/WongKinYiu/YOLO/releases/download/v1.0-alpha/v9-t.pt", # not supported
     "yolov9-s": "https://github.com/WongKinYiu/YOLO/releases/download/v1.0-alpha/v9-s.pt",
     "yolov9-m": "https://github.com/WongKinYiu/YOLO/releases/download/v1.0-alpha/v9-m.pt",
     "yolov9-c": "https://github.com/WongKinYiu/YOLO/releases/download/v1.0-alpha/v9-c.pt",
-    # "yolov9-e": "https://github.com/WongKinYiu/YOLO/releases/download/v1.0-alpha/v9-e.pt", # TO BE UPDATED
+    # "yolov9-e": "https://github.com/WongKinYiu/YOLO/releases/download/v1.0-alpha/v9-e.pt", # not supported
 }
 
 
@@ -86,11 +89,11 @@ class YOLOv9(ExplainableOTXDetModel):
     """OTX Detection model class for YOLOv9.
 
     Default input size per model:
-        - yolov9-t : (640, 640) # TO BE UPDATED
+        - yolov9-t : (640, 640) # not supported
         - yolov9-s : (640, 640)
         - yolov9-m : (640, 640)
         - yolov9-c : (640, 640)
-        - yolov9-e : (640, 640) # TO BE UPDATED
+        - yolov9-e : (640, 640) # not supported
     """
 
     input_size_multiplier = 32  # TODO (sungchul): need to check
@@ -125,22 +128,28 @@ class YOLOv9(ExplainableOTXDetModel):
         backbone = YOLOv9Backbone(model_name=self.model_name)
         neck = YOLOv9Neck(model_name=self.model_name)
         bbox_head = YOLOv9Head(model_name=self.model_name, num_classes=num_classes)
-        criterion = YOLOXCriterion(
-            num_classes=num_classes,
-            loss_cls=CrossEntropyLoss(use_sigmoid=True, reduction="sum", loss_weight=1.0),
-            loss_bbox=IoULoss(mode="square", eps=1e-16, reduction="sum", loss_weight=5.0),
-            loss_obj=CrossEntropyLoss(use_sigmoid=True, reduction="sum", loss_weight=1.0),
-            loss_l1=L1Loss(reduction="sum", loss_weight=1.0),
-        )
 
         # patch _load_from_state_dict
-        SingleStageDetector._load_from_state_dict = _load_from_state_dict_for_yolov9
-        return SingleStageDetector(
+        SingleStageDetector._load_from_state_dict = _load_from_state_dict_for_yolov9  # noqa: SLF001
+        detector = SingleStageDetector(
             backbone=backbone,
             neck=neck,
             bbox_head=bbox_head,
-            criterion=criterion,
+            criterion=None,
         )
+
+        # set criterion
+        strides: list[int] | None = [8, 16, 32] if self.model_name == "yolov9-c" else None
+        vec2box = Vec2Box(detector, self.input_size, strides)
+        detector.criterion = YOLOv9Criterion(
+            num_classes=num_classes,
+            loss_cls=BCELoss(),
+            loss_dfl=DFLoss(vec2box),
+            loss_iou=BoxLoss(),
+            vec2box=vec2box,
+        )
+
+        return detector
 
     @property
     def _exporter(self) -> OTXModelExporter:

@@ -273,7 +273,7 @@ def build_layer(layer_dict: dict[str, Any]) -> nn.Module:
     return layer
 
 
-def module_list_forward(self: nn.ModuleList, x: Tensor | dict[str, Tensor]) -> Tensor:
+def module_list_forward(self: nn.ModuleList, x: Tensor | dict[str, Tensor], *args, **kwargs) -> Tensor:
     outputs: dict[str, Tensor] = {0: x} if isinstance(x, Tensor) else x
     for layer in self:
         if hasattr(layer, "source") and isinstance(layer.source, list):

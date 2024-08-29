@@ -164,7 +164,7 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
                     prog_bar=True,
                 )
 
-            total_train_loss = sum(train_loss.values())
+            total_train_loss = train_loss.get("loss", sum(train_loss.values()))
             self.log(
                 "train/loss",
                 total_train_loss,
