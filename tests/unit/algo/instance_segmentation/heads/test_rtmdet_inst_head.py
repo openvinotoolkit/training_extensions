@@ -15,10 +15,9 @@ from otx.algo.common.utils.prior_generators import MlvlPointGenerator
 from otx.algo.common.utils.samplers import PseudoSampler
 from otx.algo.instance_segmentation.heads.rtmdet_inst_head import RTMDetInstHead
 from otx.algo.modules.norm import build_norm_layer
+from otx.core.data.entity.base import ImageInfo
 from otx.core.data.entity.instance_segmentation import InstanceSegBatchDataEntity
 from torch import nn
-
-from src.otx.core.data.entity.base import ImageInfo
 
 
 def set_mock_sampling_results_list(batch_size: int) -> list[Mock]:
