@@ -8,6 +8,8 @@ All notable changes to this project will be documented in this file.
 
 - Fix labels names in hierarchical config (<https://github.com/openvinotoolkit/training_extensions/pull/3879>)
 - Fix Learning Rate and Loss Handling in Tile Classifier MaskRCNN EfficientNet (<https://github.com/openvinotoolkit/training_extensions/pull/3873>)
+- Pad tile to image size (512 x 512) (<https://github.com/openvinotoolkit/training_extensions/pull/3887>)
+- Don't apply labels normalization on training (<https://github.com/openvinotoolkit/training_extensions/pull/3886>)
 - Disable Tile Classifier in Rotated Detection (<https://github.com/openvinotoolkit/training_extensions/pull/3894>)
 - Enhance Memeory Cache Handler with Complex Unique Keys (<https://github.com/openvinotoolkit/training_extensions/pull/3897>)
 
