@@ -21,25 +21,26 @@ class BCELoss(nn.Module):
         # TODO: origin v9 assing pos_weight == 1?
         self.bce = BCEWithLogitsLoss(reduction="none")
 
-    def forward(self, predicts_cls: Tensor, targets_cls: Tensor, cls_norm: Tensor) -> Any:
+    def forward(self, predicts_cls: Tensor, targets_cls: Tensor, cls_norm: Tensor) -> Tensor:
         return self.bce(predicts_cls, targets_cls).sum() / cls_norm
 
 
 class BoxLoss(nn.Module):
-    def __init__(self) -> None:
-        super().__init__()
-
     def forward(
-        self, predicts_bbox: Tensor, targets_bbox: Tensor, valid_masks: Tensor, box_norm: Tensor, cls_norm: Tensor
-    ) -> Any:
+        self,
+        predicts_bbox: Tensor,
+        targets_bbox: Tensor,
+        valid_masks: Tensor,
+        box_norm: Tensor,
+        cls_norm: Tensor,
+    ) -> Tensor:
         valid_bbox = valid_masks[..., None].expand(-1, -1, 4)
         picked_predict = predicts_bbox[valid_bbox].view(-1, 4)
         picked_targets = targets_bbox[valid_bbox].view(-1, 4)
 
         iou = calculate_iou(picked_predict, picked_targets, "ciou").diag()
         loss_iou = 1.0 - iou
-        loss_iou = (loss_iou * box_norm).sum() / cls_norm
-        return loss_iou
+        return (loss_iou * box_norm).sum() / cls_norm
 
 
 class DFLoss(nn.Module):
@@ -50,7 +51,7 @@ class DFLoss(nn.Module):
 
     def forward(
         self, predicts_anc: Tensor, targets_bbox: Tensor, valid_masks: Tensor, box_norm: Tensor, cls_norm: Tensor
-    ) -> Any:
+    ) -> Tensor:
         valid_bbox = valid_masks[..., None].expand(-1, -1, 4)
         bbox_lt, bbox_rb = targets_bbox.chunk(2, -1)
         targets_dist = torch.cat(((self.anchors_norm - bbox_lt), (bbox_rb - self.anchors_norm)), -1).clamp(
@@ -66,8 +67,7 @@ class DFLoss(nn.Module):
         loss_right = nn.functional.cross_entropy(picked_predict, label_right.to(torch.long), reduction="none")
         loss_dfl = loss_left * weight_left + loss_right * weight_right
         loss_dfl = loss_dfl.view(-1, 4).mean(-1)
-        loss_dfl = (loss_dfl * box_norm).sum() / cls_norm
-        return loss_dfl
+        return (loss_dfl * box_norm).sum() / cls_norm
 
 
 class BoxMatcher:
@@ -194,7 +194,7 @@ class BoxMatcher:
 
         align_bbox = torch.gather(target_bbox, 1, unique_indices.repeat(1, 1, 4))
         align_cls = torch.gather(target_cls, 1, unique_indices).squeeze(-1)
-        align_cls = F.one_hot(align_cls, self.class_num)
+        align_cls = nn.functional.one_hot(align_cls, self.class_num)
 
         # normalize class ditribution
         max_target = target_matrix.amax(dim=-1, keepdim=True)
@@ -239,6 +239,9 @@ class YOLOv9Criterion(nn.Module):
         main_predicts: list[Tensor],
         targets: Tensor,
     ) -> tuple[Tensor, dict[str, Tensor]]:
+        aux_predicts = self.vec2box(aux_predicts)
+        main_predicts = self.vec2box(main_predicts)
+
         aux_iou, aux_dfl, aux_cls = self._forward(aux_predicts, targets)
         main_iou, main_dfl, main_cls = self._forward(main_predicts, targets)
 
@@ -262,11 +265,11 @@ class YOLOv9Criterion(nn.Module):
         box_norm = targets_cls.sum(-1)[valid_masks]
 
         ## -- CLS -- ##
-        loss_cls = self.cls(predicts_cls, targets_cls, cls_norm)
+        loss_cls = self.loss_cls(predicts_cls, targets_cls, cls_norm)
         ## -- IOU -- ##
-        loss_iou = self.iou(predicts_box, targets_bbox, valid_masks, box_norm, cls_norm)
+        loss_iou = self.loss_iou(predicts_box, targets_bbox, valid_masks, box_norm, cls_norm)
         ## -- DFL -- ##
-        loss_dfl = self.dfl(predicts_anc, targets_bbox, valid_masks, box_norm, cls_norm)
+        loss_dfl = self.loss_dfl(predicts_anc, targets_bbox, valid_masks, box_norm, cls_norm)
 
         return loss_iou, loss_dfl, loss_cls
 
@@ -274,6 +277,6 @@ class YOLOv9Criterion(nn.Module):
         """
         separate anchor and bbouding box
         """
-        anchors_cls, anchors_box = torch.split(anchors, (self.class_num, 4), dim=-1)
+        anchors_cls, anchors_box = torch.split(anchors, (self.num_classes, 4), dim=-1)
         anchors_box = anchors_box / self.vec2box.scaler[None, :, None]
         return anchors_cls, anchors_box

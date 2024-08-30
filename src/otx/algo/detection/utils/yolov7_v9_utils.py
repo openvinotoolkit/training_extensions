@@ -12,6 +12,7 @@ from typing import Any
 import torch
 from einops import rearrange
 from torch import Tensor
+from torchvision.ops import batched_nms
 
 from otx.algo.detection.detectors import SingleStageDetector
 
@@ -151,8 +152,7 @@ class Vec2Box:
     ) -> None:
         self.device = device
         self.strides = strides if strides else self.create_auto_anchor(detector, image_size)
-        self.anchor_grid, self.scaler = generate_anchors(image_size, self.strides)
-        # self.anchor_grid, self.scaler = anchor_grid.to(device), scaler.to(device)
+        self.update(image_size, device)
 
     def create_auto_anchor(self, detector: SingleStageDetector, image_size: tuple[int, int]) -> list[int]:
         dummy_input = torch.zeros(1, 3, *image_size).to(self.device)
@@ -163,9 +163,9 @@ class Vec2Box:
             strides.append(image_size[1] // anchor_num[1])
         return strides
 
-    def update(self, image_size: tuple[int, int]) -> None:
-        self.anchor_grid, self.scaler = generate_anchors(image_size, self.strides)
-        # self.anchor_grid, self.scaler = anchor_grid.to(self.device), scaler.to(self.device)
+    def update(self, image_size: tuple[int, int], device: str | torch.device) -> None:
+        anchor_grid, scaler = generate_anchors(image_size, self.strides)
+        self.anchor_grid, self.scaler = anchor_grid.to(device), scaler.to(device)
 
     def __call__(self, predicts: list[Any]) -> tuple[Tensor, Tensor, Tensor]:
         preds_cls, preds_anc, preds_box = [], [], []
@@ -182,3 +182,33 @@ class Vec2Box:
         lt, rb = pred_LTRB.chunk(2, dim=-1)
         preds_box = torch.cat([self.anchor_grid - lt, self.anchor_grid + rb], dim=-1)
         return preds_cls, preds_anc, preds_box
+
+
+def bbox_nms(
+    cls_dist: Tensor,
+    bbox: Tensor,
+    min_confidence: float = 0.05,
+    min_iou: float = 0.9,
+    confidence: Tensor | None = None,
+):
+    cls_dist = cls_dist.sigmoid() * (1 if confidence is None else confidence)
+
+    # filter class by confidence
+    cls_val, cls_idx = cls_dist.max(dim=-1, keepdim=True)
+    valid_mask = cls_val > min_confidence
+    valid_cls = cls_idx[valid_mask].float()
+    valid_con = cls_val[valid_mask].float()
+    valid_box = bbox[valid_mask.repeat(1, 1, 4)].view(-1, 4)
+
+    batch_idx, *_ = torch.where(valid_mask)
+    nms_idx = batched_nms(valid_box, valid_cls, batch_idx, min_iou)
+    predicts_nms = []
+    for idx in range(cls_dist.size(0)):
+        instance_idx = nms_idx[idx == batch_idx[nms_idx]]
+
+        predict_nms = torch.cat(
+            [valid_cls[instance_idx][:, None], valid_box[instance_idx], valid_con[instance_idx][:, None]], dim=-1
+        )
+
+        predicts_nms.append(predict_nms)
+    return predicts_nms

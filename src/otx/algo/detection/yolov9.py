@@ -5,9 +5,11 @@
 
 from __future__ import annotations
 
-from functools import partial
 import re
-from typing import TYPE_CHECKING, Literal
+from functools import partial
+from typing import TYPE_CHECKING, Literal, Self
+
+import torch
 
 from otx.algo.common.losses import CrossEntropyLoss, L1Loss
 from otx.algo.detection.backbones.yolo_v7_v9_backbone import YOLOv9Backbone
@@ -16,8 +18,11 @@ from otx.algo.detection.heads.yolo_v7_v9_head import YOLOv9Head
 from otx.algo.detection.losses import IoULoss, YOLOXCriterion
 from otx.algo.detection.losses.yolov9_loss import BCELoss, BoxLoss, DFLoss, YOLOv9Criterion
 from otx.algo.detection.necks.yolo_v7_v9_neck import YOLOv9Neck
-from otx.algo.detection.utils.yolov7_v9_utils import Vec2Box
+from otx.algo.detection.utils.yolov7_v9_utils import Vec2Box, bbox_nms
+from otx.algo.utils.mmengine_utils import InstanceData
 from otx.core.config.data import TileConfig
+from otx.core.data.entity.base import OTXBatchLossEntity
+from otx.core.data.entity.detection import DetBatchDataEntity, DetBatchPredEntity
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.metrics.fmeasure import MeanAveragePrecisionFMeasureCallable
@@ -140,16 +145,45 @@ class YOLOv9(ExplainableOTXDetModel):
 
         # set criterion
         strides: list[int] | None = [8, 16, 32] if self.model_name == "yolov9-c" else None
-        vec2box = Vec2Box(detector, self.input_size, strides)
+        self.vec2box = Vec2Box(detector, self.input_size, strides)
         detector.criterion = YOLOv9Criterion(
             num_classes=num_classes,
             loss_cls=BCELoss(),
-            loss_dfl=DFLoss(vec2box),
+            loss_dfl=DFLoss(self.vec2box),
             loss_iou=BoxLoss(),
-            vec2box=vec2box,
+            vec2box=self.vec2box,
         )
 
         return detector
+
+    def _customize_outputs(
+        self,
+        outputs: dict,
+        inputs: DetBatchDataEntity,
+    ) -> DetBatchPredEntity | OTXBatchLossEntity:
+        if self.training:
+            return super()._customize_outputs(outputs, inputs)
+
+        prediction = self.vec2box(outputs["Main"])
+        pred_class, _, pred_bbox = prediction[:3]
+        pred_conf = prediction[3] if len(prediction) == 4 else None
+
+        # rescale
+        scale_factors = [[1 / s for s in img_info.scale_factor][::-1] for img_info in inputs.imgs_info]
+        pred_bbox *= pred_bbox.new_tensor(scale_factors).unsqueeze(1).repeat(1, 1, int(pred_bbox.size(-1) / 2))
+
+        pred_bbox = bbox_nms(pred_class, pred_bbox, confidence=pred_conf)  # TODO (sungchul): into the bbox_head
+
+        # TODO (sungchul): don't use InstanceData
+        refined_outputs = [
+            InstanceData(
+                labels=box[:, 0].type(torch.int64),
+                bboxes=box[:, 1:5],
+                scores=box[:, 5],
+            )
+            for box in pred_bbox
+        ]
+        return super()._customize_outputs(refined_outputs, inputs)
 
     @property
     def _exporter(self) -> OTXModelExporter:
@@ -187,3 +221,12 @@ class YOLOv9(ExplainableOTXDetModel):
             },
             output_names=None,  # TODO (someone): support XAI
         )
+
+    def to(self, *args, **kwargs) -> Self:
+        """Return a model with specified device."""
+        ret = super().to(*args, **kwargs)
+        ret.vec2box.update(self.input_size, *args, **kwargs)
+        ret.model.criterion.vec2box.update(self.input_size, *args, **kwargs)
+        ret.model.criterion.matcher.anchors = ret.model.criterion.matcher.anchors.to(*args, **kwargs)
+        ret.model.criterion.loss_dfl.anchors_norm = ret.model.criterion.loss_dfl.anchors_norm.to(*args, **kwargs)
+        return ret

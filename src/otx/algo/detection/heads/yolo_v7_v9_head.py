@@ -16,6 +16,7 @@ from otx.algo.detection.backbones.yolo_v7_v9_backbone import (
     module_list_forward,
 )
 from otx.algo.detection.necks.yolo_v7_v9_neck import SPPELAN, Concat, UpSample
+from otx.core.data.entity.detection import DetBatchDataEntity
 
 
 def round_up(x: int | Tensor, div: int = 1) -> int | Tensor:
@@ -145,6 +146,27 @@ class MultiheadDetection(nn.Module):
         return [head(x) for x, head in zip(x_list, self.heads)]
 
 
+def patch_bbox_head_loss(
+    self: nn.ModuleList,
+    x: Tensor | dict[str, Tensor],
+    entity: DetBatchDataEntity,
+    *args,
+    **kwargs,
+) -> dict[str, Tensor]:
+    outputs = self(x)
+
+    # pad and concatenate labels and bboxes
+    max_len = max(len(b) for b in entity.bboxes)
+    padded_labels = [
+        nn.functional.pad(label.unsqueeze(1), (0, 0, 0, max_len - len(label)), value=-1) for label in entity.labels
+    ]
+    padded_bboxes = [nn.functional.pad(box, (0, 0, 0, max_len - len(box)), value=0) for box in entity.bboxes]
+    merged_padded_labels_bboxes = torch.stack(
+        [torch.cat((label, box), dim=1) for label, box in zip(padded_labels, padded_bboxes)], dim=0
+    )
+    return {"main_predicts": outputs["Main"], "aux_predicts": outputs["AUX"], "targets": merged_padded_labels_bboxes}
+
+
 class YOLOv9Head(nn.Module):
     """Head for YOLOv9.
 
@@ -153,7 +175,8 @@ class YOLOv9Head(nn.Module):
 
     def __new__(cls, model_name: str, num_classes: int) -> nn.ModuleList:
         nn.ModuleList.forward = module_list_forward
-        nn.ModuleList.loss = module_list_forward
+        nn.ModuleList.loss = patch_bbox_head_loss
+        nn.ModuleList.predict = module_list_forward
         if model_name == "yolov9-s":
             return nn.ModuleList(
                 [

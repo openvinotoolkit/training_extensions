@@ -12,17 +12,17 @@ model:
         weight_decay: 0.0005
         nesterov: true
 
-    scheduler: # TODO (sungchul): update
+    scheduler:
       class_path: otx.core.schedulers.LinearWarmupSchedulerCallable
       init_args:
         num_warmup_steps: 3
+        warmup_interval: epoch
         main_scheduler_callable:
-          class_path: lightning.pytorch.cli.ReduceLROnPlateau
+          class_path: torch.optim.lr_scheduler.LinearLR
           init_args:
-            mode: max
-            factor: 0.1
-            patience: 4
-            monitor: val/map_50
+            total_iters: 200
+            start_factor: 1
+            end_factor: 0.01
 
 engine:
   task: DETECTION
