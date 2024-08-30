@@ -1,9 +1,12 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
+import os
+import shutil
 from pathlib import Path
 
 import torch
+
 from otx.algo.classification.backbones.timm import TimmBackbone
 
 
@@ -17,9 +20,10 @@ class TestOTXEfficientNetV2:
         assert model.get_config_optim([0.01])[0]["lr"] == 0.01
         assert model.get_config_optim(0.01)[0]["lr"] == 0.01
 
-    def test_check_pretrained_weight(self):
+    def test_check_pretrained_weight_download(self):
+        target = Path(os.environ.get("XDG_CACHE_HOME")) / "huggingface/hub/models--timm--tf_efficientnetv2_s.in21k"
+        if target.exists():
+            shutil.rmtree(target)
+        assert not target.exists()
         TimmBackbone(backbone="tf_efficientnetv2_s.in21k", pretrained=True)
-        assert Path(
-            Path.home(),
-            ".cache/torch/hub/checkpoints/huggingface/hub/models--timm--tf_efficientnetv2_s.in21k",
-        ).exists()
+        assert target.exists()
