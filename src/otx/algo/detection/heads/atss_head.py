@@ -52,6 +52,8 @@ class ATSSHeadModule(ClassIncrementalMixin, AnchorHead):
             coordinates format. Defaults to False. It should be `True` when
             using `IoULoss`, `GIoULoss`, or `DIoULoss` in the bbox head.
         init_cfg (dict, list[dict], optional): Initialization config dict.
+        use_sigmoid_cls (bool): Whether to use a sigmoid activation function
+            for classification prediction. Defaults to True.
     """
 
     def __init__(
@@ -68,6 +70,7 @@ class ATSSHeadModule(ClassIncrementalMixin, AnchorHead):
         ),
         reg_decoded_bbox: bool = True,
         init_cfg: dict | None = None,
+        use_sigmoid_cls: bool = True,
         **kwargs,
     ) -> None:
         self.pred_kernel_size = pred_kernel_size
@@ -84,6 +87,7 @@ class ATSSHeadModule(ClassIncrementalMixin, AnchorHead):
             in_channels=in_channels,
             reg_decoded_bbox=reg_decoded_bbox,
             init_cfg=init_cfg,
+            use_sigmoid_cls=use_sigmoid_cls,
             **kwargs,
         )
 

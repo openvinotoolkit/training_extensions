@@ -39,39 +39,28 @@ class RPNHeadModule(AnchorHead):
     """Implementation of RPN head.
 
     Args:
-        in_channels (int): Number of channels in the input feature map.
-        num_convs (int): Number of convolution layers in the head.
-            Defaults to 1.
-        num_classes (int): Number of categories excluding the background
-            category.
-        anchor_generator (nn.Module): Module for anchor generator
-        bbox_coder (nn.Module): Module of bounding box coder.
-        assigner (nn.Module): Module of assigner.
-        sampler (nn.Module): Module of sampler.
-        feat_channels (int): Number of hidden channels. Used in child classes.
-        reg_decoded_bbox (bool): If true, the regression loss would be
-            applied directly on decoded bounding boxes, converting both
-            the predicted boxes and regression targets to absolute
-            coordinates format. Default False. It should be `True` when
-            using `IoULoss`, `GIoULoss`, or `DIoULoss` in the bbox head.
-        allowed_border (float): The border to allow the proposal target
-            when the height or width of an instance is smaller than
-            this value. In most cases, 0 is used. Only used in
-            `RCNNHead`.
-        pos_weight (float): Weight of positive examples in loss calculation.
-            Defaults to 1.
-        max_per_img (int): Maximum number of detections per image.
-            Defaults to 1000.
-        min_bbox_size (int): Minimum size of the bounding box.
-            Defaults to 0.
-        nms_iou_threshold (float): IoU threshold for non-maximum suppression (NMS).
-            Defaults to 0.7.
-        score_threshold (float): Threshold for filtering out low-confidence detections.
-            Defaults to 0.5.
-        nms_pre (int): Number of detections to keep before NMS.
-            Defaults to 1000.
-        with_nms (bool): Whether to apply NMS to the detections.
-            Defaults to True.
+        in_channels (int): Number of input channels.
+        anchor_generator (nn.Module): Module that generates anchors.
+        bbox_coder (nn.Module): Module that encodes/decodes bboxes.
+        assigner (nn.Module): Module that assigns bboxes to ground truth.
+        sampler (nn.Module): Module that samples bboxes.
+        train_cfg (dict): Training configuration.
+        test_cfg (dict): Testing configuration.
+        init_cfg (dict, optional): Initialization configuration. Defaults to None.
+        feat_channels (int, optional): Number of feature channels. Defaults to 256.
+        reg_decoded_bbox (bool, optional): Whether to decode bbox. Defaults to False.
+        allowed_border (float, optional): Allowed border. Defaults to 0.0.
+        pos_weight (float, optional): Positive weight. Defaults to 1.0.
+        num_classes (int, optional): Number of classes. Defaults to 1.
+        num_convs (int, optional): Number of convolutions. Defaults to 1.
+        max_per_img (int, optional): Maximum number of bboxes per image. Defaults to 1000.
+        min_bbox_size (int, optional): Minimum bbox size. Defaults to 0.
+        nms_iou_threshold (float, optional): NMS IoU threshold. Defaults to 0.7.
+        score_threshold (float, optional): Score threshold. Defaults to 0.5.
+        nms_pre (int, optional): NMS pre. Defaults to 1000.
+        with_nms (bool, optional): Whether to use NMS. Defaults to True.
+        use_sigmoid_cls (bool): Whether to use a sigmoid activation function
+            for classification prediction. Defaults to True.
     """
 
     def __init__(  # noqa: PLR0913
@@ -96,6 +85,7 @@ class RPNHeadModule(AnchorHead):
         score_threshold: float = 0.5,
         nms_pre: int = 1000,
         with_nms: bool = True,
+        use_sigmoid_cls: bool = True,
     ) -> None:
         self.num_convs = num_convs
         if num_classes != 1:
@@ -113,6 +103,7 @@ class RPNHeadModule(AnchorHead):
             train_cfg=train_cfg,
             test_cfg=test_cfg,
             init_cfg=init_cfg,
+            use_sigmoid_cls=use_sigmoid_cls,
         )
 
         self.nms_iou_threshold = nms_iou_threshold
@@ -185,8 +176,15 @@ class RPNHeadModule(AnchorHead):
         batch_gt_instances, batch_img_metas = unpack_inst_seg_entity(entity)
         cls_scores, bbox_preds = self(x)
 
-        cls_reg_targets = self.get_targets_for_loss(
-            cls_scores,
+        featmap_sizes = [featmap.size()[-2:] for featmap in cls_scores]
+
+        device = cls_scores[0].device
+
+        anchor_list, valid_flag_list = self.get_anchors(featmap_sizes, batch_img_metas, device=device)
+
+        cls_reg_targets = self.get_targets(
+            anchor_list,
+            valid_flag_list,
             batch_gt_instances,
             batch_img_metas,
         )

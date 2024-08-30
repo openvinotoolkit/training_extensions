@@ -270,7 +270,7 @@ class RTMDetInstHead(RTMDetHead):
             bbox_pred = bbox_pred.permute(1, 2, 0).reshape(-1, dim)  # noqa: PLW2901
             cls_score = cls_score.permute(1, 2, 0).reshape(-1, self.cls_out_channels)  # noqa: PLW2901
             kernel_pred = kernel_pred.permute(1, 2, 0).reshape(-1, self.num_gen_params)  # noqa: PLW2901
-            scores = cls_score.sigmoid()
+            scores = cls_score.sigmoid() if self.use_sigmoid_cls else cls_score.softmax(-1)[:, :-1]
 
             # After https://github.com/open-mmlab/mmdetection/pull/6268/,
             # this operation keeps fewer bboxes under the same `nms_pre`.
@@ -788,6 +788,8 @@ class RTMDetInstSepBNHead(RTMDetInstHead):
         activation (Callable[..., nn.Module]): Activation layer module.
             Defaults to ``partial(nn.SiLU, inplace=True)``.
         pred_kernel_size (int): Kernel size of prediction layer. Defaults to 1.
+        use_sigmoid_cls (bool): Whether to use a sigmoid activation function
+            for classification prediction. Defaults to True.
     """
 
     def __init__(
@@ -799,6 +801,7 @@ class RTMDetInstSepBNHead(RTMDetInstHead):
         normalization: Callable[..., nn.Module] = partial(nn.BatchNorm2d, requires_grad=True),
         activation: Callable[..., nn.Module] = partial(nn.SiLU, inplace=True),
         pred_kernel_size: int = 1,
+        use_sigmoid_cls: bool = True,
         **kwargs,
     ) -> None:
         self.share_conv = share_conv
@@ -809,6 +812,7 @@ class RTMDetInstSepBNHead(RTMDetInstHead):
             activation=activation,
             pred_kernel_size=pred_kernel_size,
             with_objectness=with_objectness,
+            use_sigmoid_cls=use_sigmoid_cls,
             **kwargs,
         )
 

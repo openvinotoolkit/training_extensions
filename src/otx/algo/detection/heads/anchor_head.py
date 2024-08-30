@@ -40,6 +40,8 @@ class AnchorHead(BaseDenseHead):
             coordinates format. Default False. It should be `True` when
             using `IoULoss`, `GIoULoss`, or `DIoULoss` in the bbox head.
         init_cfg (dict, list[dict], optional): Initialization config dict.
+        use_sigmoid_cls (bool): Whether to use a sigmoid activation function
+            for classification prediction. Defaults to True.
     """
 
     def __init__(
@@ -53,11 +55,16 @@ class AnchorHead(BaseDenseHead):
         feat_channels: int = 256,
         reg_decoded_bbox: bool = False,
         init_cfg: dict | list[dict] | None = None,
+        use_sigmoid_cls: bool = True,
     ) -> None:
-        super().__init__(init_cfg=init_cfg)
+        super().__init__(init_cfg=init_cfg, use_sigmoid_cls=use_sigmoid_cls)
         self.in_channels = in_channels
         self.num_classes = num_classes
         self.feat_channels = feat_channels
+        if self.use_sigmoid_cls:
+            self.cls_out_channels = num_classes
+        else:
+            self.cls_out_channels = num_classes + 1
         self.cls_out_channels = num_classes
 
         if self.cls_out_channels <= 0:
@@ -387,39 +394,3 @@ class AnchorHead(BaseDenseHead):
             rest_results[i] = images_to_levels(r, num_level_anchors)
 
         return res + tuple(rest_results)
-
-    def get_targets_for_loss(
-        self,
-        cls_scores: list[Tensor],
-        batch_gt_instances: list[InstanceData],
-        batch_img_metas: list[dict],
-        batch_gt_instances_ignore: list[InstanceData] | None = None,
-    ) -> tuple:
-        """Prepare inputs for the loss based on the features extracted by the detection head.
-
-        Args:
-            cls_scores (list[Tensor]): Box scores for each scale level
-                has shape (N, num_anchors * num_classes, H, W).
-            batch_gt_instances (list[InstanceData]): Batch of
-                gt_instance. It usually includes ``bboxes`` and ``labels``
-                attributes.
-            batch_img_metas (list[dict]): Meta information of each image, e.g.,
-                image size, scaling factor, etc.
-            batch_gt_instances_ignore (list[InstanceData], optional):
-                Batch of gt_instances_ignore. It includes ``bboxes`` attribute
-                data that is ignored during training and testing.
-                Defaults to None.
-
-        """
-        featmap_sizes = [featmap.size()[-2:] for featmap in cls_scores]
-
-        device = cls_scores[0].device
-
-        anchor_list, valid_flag_list = self.get_anchors(featmap_sizes, batch_img_metas, device=device)
-        return self.get_targets(
-            anchor_list,
-            valid_flag_list,
-            batch_gt_instances,
-            batch_img_metas,
-            batch_gt_instances_ignore=batch_gt_instances_ignore,
-        )

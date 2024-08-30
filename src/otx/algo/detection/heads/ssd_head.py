@@ -42,6 +42,8 @@ class SSDHeadModule(AnchorHead):
             coordinates format. Defaults to False. It should be `True` when
             using `IoULoss`, `GIoULoss`, or `DIoULoss` in the bbox head.
         test_cfg (dict, Optional): Testing config of anchor head.
+        use_sigmoid_cls (bool): Whether to use a sigmoid activation function for
+            classification prediction. Defaults to False.
     """
 
     def __init__(
@@ -57,8 +59,9 @@ class SSDHeadModule(AnchorHead):
         use_depthwise: bool = False,
         reg_decoded_bbox: bool = False,
         test_cfg: dict | None = None,
+        use_sigmoid_cls: bool = False,
     ) -> None:
-        super(AnchorHead, self).__init__(init_cfg=init_cfg)
+        super(AnchorHead, self).__init__(init_cfg=init_cfg, use_sigmoid_cls=use_sigmoid_cls)
         self.num_classes = num_classes
         self.in_channels = in_channels
         self.stacked_convs = stacked_convs
@@ -77,8 +80,6 @@ class SSDHeadModule(AnchorHead):
 
         self.bbox_coder = bbox_coder
         self.reg_decoded_bbox = reg_decoded_bbox
-        self.use_sigmoid_cls = False
-        self.cls_focal_loss = False
         self.train_cfg = train_cfg
         self.test_cfg = test_cfg
         if self.train_cfg:
@@ -237,4 +238,5 @@ class SSDHead:
             init_cfg=init_cfg,  # TODO (sungchul, kirill): remove
             train_cfg=train_cfg,  # TODO (sungchul, kirill): remove
             test_cfg=test_cfg,  # TODO (sungchul, kirill): remove
+            use_sigmoid_cls=False,  # use softmax cls
         )

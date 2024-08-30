@@ -23,13 +23,19 @@ from otx.core.data.entity.detection import DetBatchDataEntity
 
 
 class BaseDenseHead(BaseModule):
-    """Base class for DenseHeads."""
+    """Base class for DenseHeads.
 
-    def __init__(self, init_cfg: dict | list[dict] | None = None) -> None:
+    Args:
+        init_cfg (dict | list[dict] | None, optional): Initialization configuration. Defaults to None.
+        use_sigmoid_cls (bool, optional): Whether to use sigmoid operation in classification. Defaults to True.
+    """
+
+    def __init__(self, init_cfg: dict | list[dict] | None = None, use_sigmoid_cls: bool = True) -> None:
         super().__init__(init_cfg=init_cfg)
         # `_raw_positive_infos` will be used in `get_positive_infos`, which
         # can get positive information.
         self._raw_positive_infos: dict = {}
+        self.use_sigmoid_cls = use_sigmoid_cls
 
     def get_positive_infos(self) -> list[InstanceData] | None:
         """Get positive information from sampling results.
@@ -260,11 +266,7 @@ class BaseDenseHead(BaseModule):
             if with_score_factors:
                 score_factor = score_factor.permute(1, 2, 0).reshape(-1).sigmoid()  # noqa: PLW2901
             cls_score = cls_score.permute(1, 2, 0).reshape(-1, self.cls_out_channels)  # noqa: PLW2901
-
-            # the `custom_cls_channels` parameter is derived from
-            # CrossEntropyCustomLoss and FocalCustomLoss, and is currently used
-            # in v3det.
-            scores = cls_score.sigmoid()
+            scores = cls_score.sigmoid() if self.use_sigmoid_cls else cls_score.softmax(-1)[:, :-1]
 
             # After https://github.com/open-mmlab/mmdetection/pull/6268/,
             # this operation keeps fewer bboxes under the same `nms_pre`.
@@ -482,8 +484,7 @@ class BaseDenseHead(BaseModule):
             mlvl_priors,
         ):
             scores = cls_score.permute(0, 2, 3, 1).reshape(batch_size, -1, self.cls_out_channels)
-
-            scores = scores.sigmoid()
+            scores = scores.sigmoid() if self.use_sigmoid_cls else scores.softmax(-1)[:, :, :-1]
 
             if with_score_factors:
                 score_factors = score_factors.permute(0, 2, 3, 1).reshape(batch_size, -1).sigmoid()  # type: ignore[union-attr, attr-defined] # noqa: PLW2901
@@ -498,7 +499,7 @@ class BaseDenseHead(BaseModule):
                     nms_pre_score = nms_pre_score * score_factors
 
                 # Get maximum scores for foreground classes.
-                max_scores, _ = nms_pre_score.max(-1)
+                max_scores, _ = nms_pre_score.max(-1) if self.use_sigmoid_cls else nms_pre_score[..., :-1].max(-1)
                 _, topk_inds = dynamic_topk(max_scores, pre_topk)
                 bbox_pred, scores, score_factors = gather_topk(  # noqa: PLW2901
                     bbox_pred,
@@ -525,7 +526,8 @@ class BaseDenseHead(BaseModule):
         if with_score_factors:
             batch_score_factors = torch.cat(mlvl_score_factors, dim=1)
 
-        batch_scores = batch_scores[..., : self.num_classes]
+        if not self.use_sigmoid_cls:
+            batch_scores = batch_scores[..., : self.num_classes]
 
         if with_score_factors:
             batch_scores = batch_scores * batch_score_factors

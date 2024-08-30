@@ -568,6 +568,8 @@ class RTMDetSepBNHeadModule(RTMDetHead):
             Defaults to ``nn.SiLU``.
         pred_kernel_size (int): Kernel size of prediction layer. Defaults to 1.
         exp_on_reg (bool): Whether using exponential of regression features or not. Defaults to False.
+        use_sigmoid_cls (bool): Whether to use a sigmoid activation function
+            for classification prediction. Defaults to True.
     """
 
     def __init__(
@@ -580,6 +582,7 @@ class RTMDetSepBNHeadModule(RTMDetHead):
         activation: Callable[..., nn.Module] = nn.SiLU,
         pred_kernel_size: int = 1,
         exp_on_reg: bool = False,
+        use_sigmoid_cls: bool = True,
         **kwargs,
     ) -> None:
         self.share_conv = share_conv
@@ -591,6 +594,7 @@ class RTMDetSepBNHeadModule(RTMDetHead):
             normalization=normalization,
             activation=activation,
             pred_kernel_size=pred_kernel_size,
+            use_sigmoid_cls=use_sigmoid_cls,
             **kwargs,
         )
 
@@ -728,6 +732,7 @@ class RTMDetSepBNHead:
             "with_objectness": False,
             "normalization": nn.BatchNorm2d,
             "activation": partial(nn.SiLU, inplace=True),
+            "use_sigmoid_cls": True,
         },
     }
 

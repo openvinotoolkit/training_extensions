@@ -61,6 +61,8 @@ class YOLOXHeadModule(BaseDenseHead):
             Defaults to None.
         init_cfg (dict or list[dict], optional): Initialization config dict.
             Defaults to None.
+        use_sigmoid_cls (bool): Whether to use a sigmoid activation function for
+            classification prediction. Defaults to True.
     """
 
     def __init__(
@@ -78,6 +80,7 @@ class YOLOXHeadModule(BaseDenseHead):
         train_cfg: dict | None = None,
         test_cfg: dict | None = None,
         init_cfg: dict | list[dict] | None = None,
+        use_sigmoid_cls: bool = True,
     ) -> None:
         if init_cfg is None:
             init_cfg = {
@@ -89,7 +92,7 @@ class YOLOXHeadModule(BaseDenseHead):
                 "nonlinearity": "leaky_relu",
             }
 
-        super().__init__(init_cfg=init_cfg)
+        super().__init__(init_cfg=init_cfg, use_sigmoid_cls=use_sigmoid_cls)
 
         self.num_classes = num_classes
         self.cls_out_channels = num_classes
@@ -103,7 +106,6 @@ class YOLOXHeadModule(BaseDenseHead):
             msg = f"conv_bias (={conv_bias}) should be bool or str."
             raise ValueError(msg)
         self.conv_bias = conv_bias
-        self.use_sigmoid_cls = True
 
         self.normalization = normalization
         self.activation = activation
