@@ -20,7 +20,7 @@ class TestOTXEfficientNetV2:
         assert model.get_config_optim(0.01)[0]["lr"] == 0.01
 
     def test_check_pretrained_weight_download(self):
-        target = Path(os.environ.get("XDG_CACHE_HOME")) / "huggingface/hub/models--timm--tf_efficientnetv2_s.in21k"
+        target = Path(os.environ.get("HF_HUB_CACHE")) / "models--timm--tf_efficientnetv2_s.in21k"
         if target.exists():
             shutil.rmtree(target)
         assert not target.exists()
