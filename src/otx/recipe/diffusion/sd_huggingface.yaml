@@ -22,13 +22,13 @@ engine:
 
 callback_monitor: val/fid
 logger:
-    - class_path: lightning.pytorch.loggers.tensorboard.TensorBoardLogger
-      init_args:
-        save_dir: ""
-        name: "tensorboard/"
-        log_graph: false
-        default_hp_metric: true
-        prefix: ""
+  - class_path: lightning.pytorch.loggers.tensorboard.TensorBoardLogger
+    init_args:
+      save_dir: ""
+      name: "tensorboard/"
+      log_graph: false
+      default_hp_metric: true
+      prefix: ""
 
 data: ../_base_/data/diffusion.yaml
 max_steps: 60000
