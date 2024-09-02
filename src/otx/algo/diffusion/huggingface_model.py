@@ -5,29 +5,22 @@
 
 from __future__ import annotations
 
-from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable
+from typing import TYPE_CHECKING, Any
 
 import torch
 import torch.nn.functional as F  # noqa: N812
 from diffusers import StableDiffusionPipeline
-from lightning.pytorch.core.optimizer import LightningOptimizer
-from torch import nn
-from torch.optim.optimizer import Optimizer
-
 from otx.core.data.entity.base import OTXBatchLossEntity
-from otx.core.data.entity.diffusion import (
-    DiffusionBatchDataEntity,
-    DiffusionBatchPredEntity,
-)
 from otx.core.data.entity.utils import stack_batch
 from otx.core.model.diffusion import OTXDiffusionModel
+from torch import nn
 
 if TYPE_CHECKING:
-    from diffusers.models.autoencoders.autoencoder_kl import AutoencoderKL
     from diffusers.models.unets.unet_2d_condition import UNet2DConditionModel
-    from diffusers.schedulers.scheduling_ddim import DDIMScheduler
-    from transformers import CLIPTextModel
+    from otx.core.data.entity.diffusion import (
+        DiffusionBatchDataEntity,
+        DiffusionBatchPredEntity,
+    )
 
 
 class UNetWrapper(nn.Module):
