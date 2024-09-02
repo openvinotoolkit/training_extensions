@@ -3,8 +3,6 @@
 
 import pytest
 import torch
-from otx.algo.diffusion import OTXStableDiffusion
-from otx.algo.diffusion.model.unet import UNetModel
 from otx.core.data.entity.base import ImageInfo
 from otx.core.data.entity.diffusion import (
     DiffusionBatchDataEntity,
@@ -22,20 +20,11 @@ except ImportError:
     SKIP_TRANSFORMERS_TEST,
     reason="Either 'transformers' or 'diffusers' (or both) are not installed",
 )
-class TestOTXModelForDiffusion:
+class TestHuggingFaceModelForDiffusion:
     @pytest.fixture()
     def fxt_diffusion_model(self):
-        return OTXStableDiffusion(
-            in_ch=4,
-            out_ch=4,
-            model_ch=320,
-            attention_resolutions=[4, 2, 1],
-            num_res_blocks=2,
-            channel_mult=[1, 2, 4, 4],
-            n_heads=8,
-            transformer_depth=[1, 1, 1, 1],
-            ctx_dim=768,
-            use_linear=False,
+        return HuggingFaceModelForDiffusion(
+            model_name_or_path="CompVis/stable-diffusion-v1-4",
         )
 
     @pytest.fixture()
@@ -52,7 +41,7 @@ class TestOTXModelForDiffusion:
 
     def test_init(self, fxt_diffusion_model):
         print(fxt_diffusion_model.__dict__)
-        assert isinstance(fxt_diffusion_model.model, UNetModel)
+        assert isinstance(fxt_diffusion_model.pipe, StableDiffusionPipeline)
 
     def test_customize_inputs(self, fxt_diffusion_model, fxt_diffusion_batch_data_entity):
         outputs = fxt_diffusion_model._customize_inputs(fxt_diffusion_batch_data_entity)
@@ -76,15 +65,3 @@ class TestOTXModelForDiffusion:
                 outputs,
                 fxt_diffusion_batch_data_entity,
             )
-
-
-class TestHuggingFaceModelForDiffusion(TestOTXModelForDiffusion):
-    @pytest.fixture
-    def fxt_diffusion_model(self):
-        return HuggingFaceModelForDiffusion(
-            model_name_or_path="CompVis/stable-diffusion-v1-4",
-        )
-
-    def test_init(self, fxt_diffusion_model):
-        print(fxt_diffusion_model.__dict__)
-        assert isinstance(fxt_diffusion_model.pipe, StableDiffusionPipeline)
