@@ -41,6 +41,8 @@ if TYPE_CHECKING:
     from otx.core.metrics import MetricCallable
 
 
+# TODO
+
 class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity]):
     """Base class for the semantic segmentation models used in OTX."""
 
@@ -344,6 +346,17 @@ class OVSegmentationModel(OVModel[SegBatchDataEntity, SegBatchPredEntity]):
             use_throughput_mode=use_throughput_mode,
             model_api_configuration=model_api_configuration,
             metric=metric,
+        )
+
+    def _setup_tiler(self) -> None:
+        """Setup tiler for tile task."""
+        execution_mode = "async" if self.async_inference else "sync"
+        # Note: Disable async_inference as tiling has its own sync/async implementation
+        self.async_inference = False
+        self.model = DetectionTiler(self.model, execution_mode=execution_mode)
+        log.info(
+            f"Enable tiler with tile size: {self.model.tile_size} \
+                and overlap: {self.model.tiles_overlap}",
         )
 
     def _customize_outputs(
