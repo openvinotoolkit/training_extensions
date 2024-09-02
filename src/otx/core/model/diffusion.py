@@ -37,7 +37,6 @@ class OTXDiffusionModel(OTXModel[DiffusionBatchDataEntity, DiffusionBatchPredEnt
             metric=metric,
             **kwargs,
         )
-        self.epoch_idx = 0
         self.configure_metric()
 
     def _create_model(self) -> nn.Module:
@@ -48,18 +47,14 @@ class OTXDiffusionModel(OTXModel[DiffusionBatchDataEntity, DiffusionBatchPredEnt
         super().configure_metric()
 
         self.metric.persistent(True)
+        self.metric.eval()
 
     def training_step(self, batch: DiffusionBatchDataEntity, batch_idx: int) -> torch.Tensor:
         """Step for model training."""
         train_loss = super().training_step(batch, batch_idx)
-        if self.epoch_idx == 0:
+        if self.current_epoch == 0:
             self.metric.update(batch.images, real=True)
         return train_loss
-
-    def on_train_epoch_end(self) -> None:
-        """Called in the training loop at the very end of the epoch."""
-        super().on_train_epoch_end()
-        self.epoch_idx += 1
 
     def test_step(self, batch: DiffusionBatchDataEntity, batch_idx: int) -> None:
         """Perform a single test step on a batch of data from the test set.

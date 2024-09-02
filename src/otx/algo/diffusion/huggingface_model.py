@@ -6,12 +6,14 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Callable
 
 import torch
 import torch.nn.functional as F  # noqa: N812
-from diffusers.pipelines import StableDiffusionPipeline
+from diffusers import StableDiffusionPipeline
+from lightning.pytorch.core.optimizer import LightningOptimizer
 from torch import nn
+from torch.optim.optimizer import Optimizer
 
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.diffusion import (
@@ -28,15 +30,12 @@ if TYPE_CHECKING:
     from transformers import CLIPTextModel
 
 
-class StableDiffusion(nn.Module):
+class UNetWrapper(nn.Module):
     """StableDiffusion module for performing stable diffusion process."""
 
     def __init__(
         self,
-        text_encoder: CLIPTextModel,
-        vae: AutoencoderKL,
         unet: UNet2DConditionModel,
-        noise_scheduler: DDIMScheduler,
     ):
         """Initializes the StableDiffusion module.
 
@@ -47,30 +46,14 @@ class StableDiffusion(nn.Module):
             noise_scheduler (DDPMScheduler): The noise scheduler.
         """
         super().__init__()
-        self.text_encoder = text_encoder
-        self.vae = vae
         self.unet = unet
-        self.noise_scheduler = noise_scheduler
 
-        # Freeze weights
-        self.text_encoder.requires_grad_(False)
-        self.vae.requires_grad_(False)
-        self.train()
-
-    def train(self, mode: bool = True) -> StableDiffusion:
-        """Sets the training mode for the UNet model.
-
-        Args:
-            mode (bool, optional): Whether to set the training mode to True or False.
-                Defaults to True.
-
-        Returns:
-            self: The StableDiffusion instance.
-        """
-        self.unet.train(mode)
-        return self
-
-    def forward(self, pixel_values: torch.Tensor, input_ids: torch.Tensor) -> tuple:
+    def forward(
+        self,
+        sample: torch.Tensor,
+        timestep: torch.Tensor,
+        encoder_hidden_states: torch.Tensor,
+    ) -> torch.Tensor:
         """Performs the forward diffusion process.
 
         Args:
@@ -80,44 +63,13 @@ class StableDiffusion(nn.Module):
         Returns:
             tuple: A tuple containing the model predictions and the target values.
         """
-        latents = self.vae.encode(pixel_values).latent_dist.sample()
-        latents = latents * self.vae.config.scaling_factor
-
-        # Sample noise that we'll add to the latents
-        noise = torch.randn_like(latents)
-        bsz = latents.shape[0]
-        # Sample a random timestep for each image
-        timesteps = torch.randint(
-            0,
-            self.noise_scheduler.config.num_train_timesteps,
-            (bsz,),
-            device=latents.device,
-        )
-        timesteps = timesteps.long()
-
-        # Add noise to the latents according to the noise magnitude at each timestep
-        # (this is the forward diffusion process)
-        noisy_latents = self.noise_scheduler.add_noise(latents, noise, timesteps)
-
-        # Get the text embedding for conditioning
-        encoder_hidden_states = self.text_encoder(input_ids, return_dict=False)[0]
-
-        if self.noise_scheduler.config.prediction_type == "epsilon":
-            target = noise
-        elif self.noise_scheduler.config.prediction_type == "v_prediction":
-            target = self.noise_scheduler.get_velocity(latents, noise, timesteps)
-        else:
-            error_msg = f"Invalid prediction type: {self.noise_scheduler.config.prediction_type}"
-            raise ValueError(error_msg)
-
         # Predict the noise residual
-        model_pred = self.unet(
-            noisy_latents,
-            timesteps,
-            encoder_hidden_states,
+        return self.unet(
+            sample=sample,
+            timestep=timestep,
+            encoder_hidden_states=encoder_hidden_states,
             return_dict=False,
         )[0]
-        return model_pred, target
 
 
 class HuggingFaceModelForDiffusion(OTXDiffusionModel):
@@ -131,7 +83,7 @@ class HuggingFaceModelForDiffusion(OTXDiffusionModel):
         scheduler (LRSchedulerCallable | LRSchedulerListCallable, optional):
             The learning rate scheduler for training the model. Defaults to DefaultSchedulerCallable.
         metric (MetricCallable, optional): The evaluation metric for the model.
-            Defaults to MeanAveragePrecisionFMeasureCallable.
+            Defaults to DiffusionMetricCallable.
         torch_compile (bool, optional): Whether to compile the model using TorchScript. Defaults to False.
 
     Example:
@@ -148,21 +100,14 @@ class HuggingFaceModelForDiffusion(OTXDiffusionModel):
     def __init__(self, model_name_or_path: str, *args, **kwargs):
         self.model_name = model_name_or_path
         self.load_from = None
-        self.pipe: StableDiffusionPipeline = StableDiffusionPipeline.from_pretrained(
-            model_name_or_path,
-        )
+        self.pipe: StableDiffusionPipeline = StableDiffusionPipeline.from_pretrained(model_name_or_path)
         super().__init__(*args, **kwargs)
         self.pipe.set_progress_bar_config(disable=True)
-
-        self.epoch_idx = 0
+        self.pipe.text_encoder.eval()
+        self.pipe.vae.eval()
 
     def _create_model(self) -> nn.Module:
-        return StableDiffusion(
-            self.pipe.text_encoder,
-            self.pipe.vae,
-            self.pipe.unet,
-            self.pipe.scheduler,
-        )
+        return UNetWrapper(self.pipe.unet)
 
     def _customize_inputs(
         self,
@@ -177,36 +122,69 @@ class HuggingFaceModelForDiffusion(OTXDiffusionModel):
                 pad_size_divisor=pad_size_divisor,
                 pad_value=pad_value,
             )
-        input_ids = (
-            self.pipe.tokenizer(
-                entity.captions,
-                max_length=self.pipe.tokenizer.model_max_length,
-                padding="max_length",
-                truncation=True,
-                return_tensors="pt",
-            ).input_ids,
+        input_ids = self.pipe.tokenizer(
+            entity.captions,
+            max_length=self.pipe.tokenizer.model_max_length,
+            padding="max_length",
+            truncation=True,
+            return_tensors="pt",
+        ).input_ids.to(self.device)
+        latents = self.pipe.vae.encode(entity.images).latent_dist.sample()
+        latents = latents * self.pipe.vae.config.scaling_factor
+
+        # Sample noise that we'll add to the latents
+        noise = torch.randn_like(latents)
+        # Sample a random timestep for each image
+        timesteps = torch.randint(
+            0,
+            self.pipe.scheduler.config.num_train_timesteps,
+            (latents.shape[0],),
+            device=latents.device,
         )
-        input_ids = torch.hstack(input_ids).to(self.device)
+        timesteps = timesteps.long()
+
+        # Add noise to the latents according to the noise magnitude at each timestep
+        # (this is the forward diffusion process)
+        noisy_latents = self.pipe.scheduler.add_noise(latents, noise, timesteps)
+
+        # Get the text embedding for conditioning
+        encoder_hidden_states = self.pipe.text_encoder(input_ids, return_dict=False)[0]
+
+        if self.pipe.scheduler.config.prediction_type == "epsilon":
+            self.target = noise
+        elif self.pipe.scheduler.config.prediction_type == "v_prediction":
+            self.target = self.pipe.scheduler.get_velocity(latents, noise, timesteps)
+        else:
+            error_msg = f"Invalid prediction type: {self.pipe.scheduler.config.prediction_type}"
+            raise ValueError(error_msg)
 
         return {
-            "pixel_values": entity.images,
-            "input_ids": input_ids,
+            "sample": noisy_latents,
+            "timestep": timesteps,
+            "encoder_hidden_states": encoder_hidden_states,
         }
 
     def _customize_outputs(
         self,
-        outputs: tuple[torch.Tensor, torch.Tensor],
+        outputs: torch.Tensor,
         inputs: DiffusionBatchDataEntity,
     ) -> DiffusionBatchPredEntity | OTXBatchLossEntity:
-        for output in outputs:
-            if torch.isnan(output).any():
-                error_msg = "NaN detected in the output."
-                raise ValueError(error_msg)
-        preds, targets = outputs
+        if torch.isnan(outputs).any():
+            error_msg = "NaN detected in the output."
+            raise ValueError(error_msg)
         if not self.training:
             msg = "This should never raise since `validation_step` is overridden."
             raise NotImplementedError(msg)
-        return OTXBatchLossEntity(mse=F.mse_loss(preds, targets, reduction="mean"))
+        return OTXBatchLossEntity(mse=F.mse_loss(outputs, self.target, reduction="mean"))
+
+    def on_fit_start(self) -> None:
+        """Called at the very beginning of fit.
+
+        If on DDP it is called on every process
+
+        """
+        self.pipe.to(self.device)
+        return super().on_fit_start()
 
     def validation_step(self, batch: DiffusionBatchDataEntity, batch_idx: int) -> None:
         """Perform a single validation step on a batch of data from the validation set.
@@ -215,8 +193,6 @@ class HuggingFaceModelForDiffusion(OTXDiffusionModel):
             labels.
         :param batch_idx: The index of the current batch.
         """
-        self.pipe.to(self.device)
-
         # We use "latent" output type to overcome built-in NSFW filtering that blacks out some random images
         images = self.pipe(batch.captions, output_type="latent").images
         images = self.pipe.vae.decode(
@@ -228,12 +204,8 @@ class HuggingFaceModelForDiffusion(OTXDiffusionModel):
             output_type="pt",
             do_denormalize=[True] * len(images),
         )
-
         self.metric.update(images, real=False)
 
         # Save images
-        images = self.pipe.image_processor.pt_to_numpy(images)
-        images = self.pipe.image_processor.numpy_to_pil(images)
-        Path(f"val_images/{self.epoch_idx}").mkdir(parents=True, exist_ok=True)
         for image, caption in zip(images, batch.captions):
-            image.save(f"val_images/{self.epoch_idx}/{caption}.png")
+            self.logger.experiment.add_image(f"val/images/{caption}", image.detach().cpu())

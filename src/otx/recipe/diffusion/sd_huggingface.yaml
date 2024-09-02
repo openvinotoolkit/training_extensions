@@ -6,7 +6,7 @@ model:
     optimizer:
       class_path: torch.optim.AdamW
       init_args:
-        lr: 1e-4
+        lr: 1e-5
         betas: [0.9, 0.999]
         weight_decay: 1e-2
         eps: 1e-08
@@ -21,6 +21,18 @@ engine:
   device: auto
 
 callback_monitor: val/fid
+logger:
+    - class_path: lightning.pytorch.loggers.tensorboard.TensorBoardLogger
+      init_args:
+        save_dir: ""
+        name: "tensorboard/"
+        log_graph: false
+        default_hp_metric: true
+        prefix: ""
 
 data: ../_base_/data/diffusion.yaml
-max_epochs: 50
+max_steps: 60000
+min_steps: 60000
+
+overrides:
+  gradient_clip_val: 1.0
