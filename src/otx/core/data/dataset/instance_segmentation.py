@@ -75,6 +75,7 @@ class OTXInstanceSegDataset(OTXDataset[InstanceSegDataEntity]):
                 bboxes,
                 format=tv_tensors.BoundingBoxFormat.XYXY,
                 canvas_size=img_shape,
+                dtype=torch.float32,
             ),
             masks=tv_tensors.Mask(masks, dtype=torch.uint8),
             labels=torch.as_tensor(labels),
