@@ -34,6 +34,8 @@ class TaskLevelExportParameters:
             Only specified for the classification task.
         hierarchical (bool | None): Whether it is hierarchical or not.
             Only specified for the classification task.
+        output_raw_scores (bool | None): Whether to output raw scores.
+            Only specified for the classification task.
         confidence_threshold (float | None): Confidence threshold for model prediction probability.
             It is used only for classification tasks, detection and instance segmentation tasks.
         iou_threshold (float | None): The Intersection over Union (IoU) threshold
@@ -60,6 +62,7 @@ class TaskLevelExportParameters:
     # (Optional) Classification tasks
     multilabel: bool | None = None
     hierarchical: bool | None = None
+    output_raw_scores: bool | None = None
 
     # (Optional) Classification tasks, detection and instance segmentation task
     confidence_threshold: float | None = None
@@ -132,6 +135,9 @@ class TaskLevelExportParameters:
 
         if self.hierarchical is not None:
             metadata[("model_info", "hierarchical")] = str(self.hierarchical)
+
+        if self.output_raw_scores is not None:
+            metadata[("model_info", "output_raw_scores")] = str(self.output_raw_scores)
 
         if self.confidence_threshold is not None:
             metadata[("model_info", "confidence_threshold")] = str(self.confidence_threshold)
