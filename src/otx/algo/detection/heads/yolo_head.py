@@ -1,6 +1,9 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-"""Head implementation of YOLOv7 and YOLOv9."""
+"""Head implementation of YOLOv7 and YOLOv9.
+
+Reference : https://github.com/WongKinYiu/YOLO
+"""
 
 from __future__ import annotations
 
@@ -11,17 +14,16 @@ from einops import rearrange
 from torch import Tensor, nn
 from torchvision.ops import batched_nms
 
-from otx.algo.detection.backbones.yolo_v7_v9_backbone import (
+from otx.algo.detection.gelan import (
     AConv,
     ADown,
     Conv,
     RepNCSPELAN,
     auto_pad,
-    insert_io_info_into_module,
 )
 from otx.algo.detection.heads.base_head import BaseDenseHead
-from otx.algo.detection.necks.yolo_neck import SPPELAN, Concat, UpSample
-from otx.algo.detection.utils.yolov7_v9_utils import bbox_nms
+from otx.algo.detection.utils.yolov7_v9_utils import bbox_nms, set_info_into_module
+from otx.algo.detection.yolo_neck import SPPELAN, Concat, UpSample
 from otx.algo.utils.mmengine_utils import InstanceData
 from otx.core.data.entity.detection import DetBatchDataEntity
 
@@ -244,12 +246,12 @@ class YOLOHeadModule(BaseDenseHead):
             # for yolov9-s
             self.module.append(UpSample(scale_factor=2, mode="nearest"))
             self.module.append(
-                insert_io_info_into_module({"module": Concat(), "source": pre_upsample_concat_cfg.get("source")})
+                set_info_into_module({"module": Concat(), "source": pre_upsample_concat_cfg.get("source")})
             )
 
         output_channels: list[int] = []
         self.module.append(
-            insert_io_info_into_module(
+            set_info_into_module(
                 {
                     "module": RepNCSPELAN(
                         csp_channels[0][0],
@@ -270,9 +272,9 @@ class YOLOHeadModule(BaseDenseHead):
             start=4,
         ):
             self.module.append(aconv_adown_object(aconv_adown_channel[0], aconv_adown_channel[1]))
-            self.module.append(insert_io_info_into_module({"module": Concat(), "source": concat_source}))
+            self.module.append(set_info_into_module({"module": Concat(), "source": concat_source}))
             self.module.append(
-                insert_io_info_into_module(
+                set_info_into_module(
                     {
                         "module": RepNCSPELAN(
                             csp_channel[0],
@@ -287,7 +289,7 @@ class YOLOHeadModule(BaseDenseHead):
             output_channels.append(csp_channel[1])
 
         self.module.append(
-            insert_io_info_into_module(
+            set_info_into_module(
                 {
                     "module": MultiheadDetection(output_channels, num_classes),
                     "source": ["P3", "P4", "P5"],
@@ -302,16 +304,16 @@ class YOLOHeadModule(BaseDenseHead):
             if sppelan_channels := self.aux_cfg.get("sppelan_channels", None):
                 # for yolov9-s
                 self.module.append(
-                    insert_io_info_into_module(
+                    set_info_into_module(
                         {"module": SPPELAN(sppelan_channels[0], sppelan_channels[1]), "source": "B5", "tags": "A5"}
                     )
                 )
                 aux_output_channels.append(sppelan_channels[1])
                 for idx, csp_channel in enumerate(aux_cfg.get("csp_channels", [])):
                     self.module.append(UpSample(scale_factor=2, mode="nearest"))
-                    self.module.append(insert_io_info_into_module({"module": Concat(), "source": [-1, f"B{4-idx}"]}))
+                    self.module.append(set_info_into_module({"module": Concat(), "source": [-1, f"B{4-idx}"]}))
                     self.module.append(
-                        insert_io_info_into_module(
+                        set_info_into_module(
                             {
                                 "module": RepNCSPELAN(
                                     csp_channel[0],
@@ -330,7 +332,7 @@ class YOLOHeadModule(BaseDenseHead):
                 # for yolov9-m, c
                 for idx, cblinear_channel in enumerate(cblinear_channels, start=3):
                     self.module.append(
-                        insert_io_info_into_module(
+                        set_info_into_module(
                             {
                                 "module": CBLinear(cblinear_channel[0], cblinear_channel[1]),
                                 "source": f"B{idx}",
@@ -356,7 +358,7 @@ class YOLOHeadModule(BaseDenseHead):
                     if idx == 0 and len(aux_aconv_adown_channel) == 0 and len(cbfuse_index) == 0:
                         conv_channels = aux_cfg.get("conv_channels")
                         self.module.append(
-                            insert_io_info_into_module(
+                            set_info_into_module(
                                 {"module": Conv(conv_channels[0][0], conv_channels[0][1], 3, stride=2), "source": 0}
                             )
                         )
@@ -367,10 +369,10 @@ class YOLOHeadModule(BaseDenseHead):
                             aux_aconv_adown_object(aux_aconv_adown_channel[0], aux_aconv_adown_channel[1])
                         )
                         self.module.append(
-                            insert_io_info_into_module({"module": CBFuse(cbfuse_index), "source": cbfuse_source})
+                            set_info_into_module({"module": CBFuse(cbfuse_index), "source": cbfuse_source})
                         )
                         self.module.append(
-                            insert_io_info_into_module(
+                            set_info_into_module(
                                 {
                                     "module": RepNCSPELAN(csp_channel[0], csp_channel[1], part_channels=csp_channel[2]),
                                     "tags": f"A{idx+2}",
@@ -380,7 +382,7 @@ class YOLOHeadModule(BaseDenseHead):
                         aux_output_channels.append(csp_channel[1])
 
             self.module.append(
-                insert_io_info_into_module(
+                set_info_into_module(
                     {
                         "module": MultiheadDetection(aux_output_channels, num_classes),
                         "source": ["A3", "A4", "A5"],

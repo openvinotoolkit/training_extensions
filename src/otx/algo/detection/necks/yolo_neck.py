@@ -1,6 +1,9 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-"""Neck implementation of YOLOv7 and YOLOv9."""
+"""Neck implementation of YOLOv7 and YOLOv9.
+
+Reference : https://github.com/WongKinYiu/YOLO
+"""
 
 from __future__ import annotations
 
@@ -9,8 +12,8 @@ from typing import Any, ClassVar
 import torch
 from torch import Tensor, nn
 
-from otx.algo.detection.backbones.gelan import RepNCSPELAN
-from otx.algo.detection.backbones.yolo_v7_v9_backbone import Conv, Pool, insert_io_info_into_module
+from otx.algo.detection.gelan import Conv, Pool, RepNCSPELAN
+from otx.algo.detection.utils.yolov7_v9_utils import set_info_into_module
 
 
 class SPPELAN(nn.Module):
@@ -67,7 +70,7 @@ class YOLONeckModule(nn.Module):
             layer = SPPELAN if elan_channel["type"] == "SPPELAN" else RepNCSPELAN
             _csp_args = {"csp_args": self.csp_args} if elan_channel["type"] == "RepNCSPELAN" else {}
             self.module.append(
-                insert_io_info_into_module(
+                set_info_into_module(
                     {
                         "module": layer(**elan_channel["args"], **_csp_args),
                         "tags": elan_channel["tags"],
@@ -76,7 +79,7 @@ class YOLONeckModule(nn.Module):
             )
             if len(concat_sources) > idx:
                 self.module.append(UpSample(scale_factor=2, mode="nearest"))
-                self.module.append(insert_io_info_into_module({"module": Concat(), "source": concat_sources[idx]}))
+                self.module.append(set_info_into_module({"module": Concat(), "source": concat_sources[idx]}))
 
     def forward(self, x: Tensor | dict[str, Tensor], *args, **kwargs) -> dict[str, Tensor]:
         outputs: dict[str, Tensor] = {0: x} if isinstance(x, Tensor) else x

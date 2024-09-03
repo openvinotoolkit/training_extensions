@@ -2,7 +2,10 @@
 # SPDX-License-Identifier: Apache-2.0
 # Copyright (c) OpenMMLab. All rights reserved.
 #
-"""Utils for YOLOv7 and v9."""
+"""Utils for YOLOv7 and v9.
+
+Reference : https://github.com/WongKinYiu/YOLO
+"""
 
 from __future__ import annotations
 
@@ -11,7 +14,7 @@ from typing import Any
 
 import torch
 from einops import rearrange
-from torch import Tensor
+from torch import Tensor, nn
 from torchvision.ops import batched_nms
 
 from otx.algo.detection.detectors import SingleStageDetector
@@ -212,3 +215,10 @@ def bbox_nms(
 
         predicts_nms.append(predict_nms)
     return predicts_nms
+
+
+def set_info_into_module(layer_dict: dict[str, Any]) -> nn.Module:
+    layer = layer_dict.pop("module")
+    for k, v in layer_dict.items():
+        setattr(layer, k, v)
+    return layer

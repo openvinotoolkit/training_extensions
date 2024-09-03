@@ -8,12 +8,11 @@ from __future__ import annotations
 import re
 from typing import TYPE_CHECKING, Literal, Self
 
-from otx.algo.detection.backbones.gelan import GELAN
-from otx.algo.detection.backbones.yolo_v7_v9_backbone import YOLOv9Backbone
+from otx.algo.detection.backbones import GELAN
 from otx.algo.detection.detectors import SingleStageDetector
-from otx.algo.detection.heads.yolo_head import YOLOHead
-from otx.algo.detection.losses.yolov9_loss import BCELoss, BoxLoss, DFLoss, YOLOv9Criterion
-from otx.algo.detection.necks.yolo_neck import YOLONeck
+from otx.algo.detection.heads import YOLOHead
+from otx.algo.detection.losses import BCELoss, BoxLoss, DFLoss, YOLOv9Criterion
+from otx.algo.detection.necks import YOLONeck
 from otx.algo.detection.utils.yolov7_v9_utils import Vec2Box
 from otx.core.config.data import TileConfig
 from otx.core.exporter.base import OTXModelExporter
@@ -49,7 +48,7 @@ def _load_from_state_dict_for_yolov9(
     unexpected_keys: list[str] | str,
     error_msgs: list[str] | str,
 ) -> None:
-    backbone_len: int = len(self.backbone)
+    backbone_len: int = len(self.backbone.module)
     neck_len: int = len(self.neck.module)
     new_state_dict_keys: dict[str, str] = {}
     for key in state_dict:
@@ -59,7 +58,7 @@ def _load_from_state_dict_for_yolov9(
             rest_key = match.group(2)
 
             if orig_idx < backbone_len:
-                new_key = f"backbone.{orig_idx}.{rest_key}"
+                new_key = f"backbone.module.{orig_idx}.{rest_key}"
             elif orig_idx < backbone_len + neck_len:
                 new_idx = orig_idx - backbone_len
                 new_key = f"neck.module.{new_idx}.{rest_key}"
@@ -122,7 +121,7 @@ class YOLOv9(ExplainableOTXDetModel):
         )
 
     def _build_model(self, num_classes: int) -> SingleStageDetector:
-        backbone = YOLOv9Backbone(model_name=self.model_name)
+        backbone = GELAN(model_name=self.model_name)
         neck = YOLONeck(model_name=self.model_name)
         bbox_head = YOLOHead(model_name=self.model_name, num_classes=num_classes)
 

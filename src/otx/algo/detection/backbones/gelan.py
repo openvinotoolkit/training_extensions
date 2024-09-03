@@ -13,6 +13,7 @@ import torch
 from torch import Tensor, nn
 from torch.nn.common_types import _size_2_t
 
+from otx.algo.detection.utils.yolov7_v9_utils import set_info_into_module
 
 # TODO (sungchul): Update docstring
 # TODO (sungchul): replace `build_activation_layer` in src/otx/algo/modules/activation.py with `create_activation_function`
@@ -273,70 +274,91 @@ class ADown(nn.Module):
         return torch.cat((x1, x2), dim=1)
 
 
+class GELANModule(nn.Module):
+    def __init__(
+        self,
+        first_dim: int,
+        block_entry_cfg: dict[str, Any],
+        csp_channels: list[list[int]],
+        csp_args: dict[str, Any] | None = None,
+        is_aconv_adown: str = "AConv",
+    ) -> None:
+        super().__init__()
+
+        self.first_dim = first_dim
+        self.block_entry_cfg = block_entry_cfg
+        self.csp_channels = csp_channels
+        self.csp_args = csp_args or {}
+
+        self.module = nn.ModuleList()
+        self.module.append(set_info_into_module({"module": Conv(3, first_dim, 3, stride=2), "source": 0}))
+        self.module.append(Conv(first_dim, first_dim * 2, 3, stride=2))
+
+        block_entry_layer = ELAN if block_entry_cfg["type"] == "ELAN" else RepNCSPELAN
+        self.module.append(block_entry_layer(**block_entry_cfg["args"]))
+
+        aconv_adown_layer = AConv if is_aconv_adown == "AConv" else ADown
+        for idx, csp_channel in enumerate(csp_channels):
+            prev_output_channel = csp_channels[idx - 1][1] if idx > 0 else block_entry_cfg["args"]["out_channels"]
+            self.module.append(aconv_adown_layer(prev_output_channel, csp_channel[0]))
+            self.module.append(
+                set_info_into_module(
+                    {
+                        "module": RepNCSPELAN(
+                            csp_channel[0], csp_channel[1], part_channels=csp_channel[2], csp_args=self.csp_args
+                        ),
+                        "tags": f"B{idx+3}",
+                    },
+                )
+            )
+
+    def forward(self, x: Tensor | dict[str, Tensor], *args, **kwargs) -> dict[str, Tensor]:
+        outputs: dict[str, Tensor] = {0: x} if isinstance(x, Tensor) else x
+        for layer in self.module:
+            if hasattr(layer, "source") and isinstance(layer.source, list):
+                model_input = [outputs[idx] for idx in layer.source]
+            else:
+                model_input = outputs[getattr(layer, "source", -1)]
+            x = layer(model_input)
+            outputs[-1] = x
+            if hasattr(layer, "tags"):
+                outputs[layer.tags] = x
+        return outputs
+
+
 class GELAN:
     """Generalized Efficient Layer Aggregation Network (GELAN) implementation for YOLOv9."""
 
     GELAN_CFG: ClassVar[dict[str, Any]] = {
         "yolov9-s": {
-            "fitst_dim": 32,
-            "rep_ncsp_elan_dim": [128, 192, 256],
+            "first_dim": 32,
+            "block_entry_cfg": {"type": "ELAN", "args": {"in_channels": 64, "out_channels": 64, "part_channels": 64}},
+            "csp_channels": [[128, 128, 128], [192, 192, 192], [256, 256, 256]],
             "csp_args": {"repeat_num": 3},
         },
-        "yolov9_m": {
-            "fitst_dim": 32,
-            "rep_ncsp_elan_dim": [128, 240, 360, 480],
+        "yolov9-m": {
+            "first_dim": 32,
+            "block_entry_cfg": {
+                "type": "RepNCSPELAN",
+                "args": {"in_channels": 64, "out_channels": 128, "part_channels": 128},
+            },
+            "csp_channels": [[240, 240, 240], [360, 360, 360], [480, 480, 480]],
         },
-        "yolov9_c": {
-            "fitst_dim": 64,
-            "rep_ncsp_elan_dim": [256, 512, 512, 512],
+        "yolov9-c": {
+            "first_dim": 64,
+            "block_entry_cfg": {
+                "type": "RepNCSPELAN",
+                "args": {"in_channels": 128, "out_channels": 256, "part_channels": 128},
+            },
+            "csp_channels": [[256, 512, 256], [512, 512, 512], [512, 512, 512]],
+            "is_aconv_adown": "ADown",
         },
     }
-    # GELAN_CFG: ClassVar[list[dict[str, Any]]] = {
-    #     "yolov9_s": [
-    #         {"module": Conv(3, 32, 3, stride=2), "source": 0},
-    #         {"module": Conv(32, 64, 3, stride=2)},
-    #         {"module": ELAN(64, 64, part_channels=64)},
-    #         {"module": AConv(64, 128)},
-    #         {"module": RepNCSPELAN(128, 128, part_channels=128, csp_args={"repeat_num": 3}), "tags": "B3"},
-    #         {"module": AConv(128, 192)},
-    #         {"module": RepNCSPELAN(192, 192, part_channels=192, csp_args={"repeat_num": 3}), "tags": "B4"},
-    #         {"module": AConv(192, 256)},
-    #         {"module": RepNCSPELAN(256, 256, part_channels=256, csp_args={"repeat_num": 3}), "tags": "B5"},
-    #     ],
-    #     "yolov9_m": [
-    #         {"module": Conv(3, 32, 3, stride=2), "source": 0},
-    #         {"module": Conv(32, 64, 3, stride=2)},
-    #         {"module": RepNCSPELAN(64, 128, part_channels=128)},
-    #         {"module": AConv(128, 240)},
-    #         {"module": RepNCSPELAN(240, 240, part_channels=240), "tags": "B3"},
-    #         {"module": AConv(240, 360)},
-    #         {"module": RepNCSPELAN(360, 360, part_channels=360), "tags": "B4"},
-    #         {"module": AConv(360, 480)},
-    #         {"module": RepNCSPELAN(480, 480, part_channels=480), "tags": "B5"},
-    #     ],
-    #     "yolov9_c": [
-    #         {"module": Conv(3, 64, 3, stride=2), "source": 0},
-    #         {"module": Conv(64, 128, 3, stride=2)},
-    #         {"module": RepNCSPELAN(128, 256, part_channels=128)},
-    #         {"module": ADown(256, 256)},
-    #         {"module": RepNCSPELAN(256, 512, part_channels=256), "tags": "B3"},
-    #         {"module": ADown(512, 512)},
-    #         {"module": RepNCSPELAN(512, 512, part_channels=512), "tags": "B4"},
-    #         {"module": ADown(512, 512)},
-    #         {"module": RepNCSPELAN(512, 512, part_channels=512), "tags": "B5"},
-    #     ],
-    # }
 
-    def __new__(self, model_name: str) -> nn.ModuleList:
-        modules = nn.ModuleList()
+    def __new__(cls, model_name: str) -> GELANModule:
+        """Constructor for GELAN for v7 and v9."""
+        if model_name not in cls.GELAN_CFG:
+            msg = f"model type '{model_name}' is not supported"
+            raise KeyError(msg)
 
-        # first convs
-        fitst_dim: int = self.GELAN_CFG[model_name]["fitst_dim"]
-        modules.append(Conv(3, fitst_dim, 3, stride=2))
-
-        return modules
-
-        # for layer_dict in self.GELAN_CFG[model_name]:
-        #     layer = layer_dict.pop("module")
-        #     for k, v in layer_dict.items():
-        #         setattr(layer, k, v)
+        return GELANModule(**cls.GELAN_CFG[model_name])
