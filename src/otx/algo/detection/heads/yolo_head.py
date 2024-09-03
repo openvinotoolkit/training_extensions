@@ -3,21 +3,22 @@
 """Head implementation of YOLOv7 and YOLOv9."""
 
 from __future__ import annotations
+
 from typing import Any, ClassVar
 
 import torch
 from einops import rearrange
 from torch import Tensor, nn
-
 from torchvision.ops import batched_nms
+
 from otx.algo.detection.backbones.yolo_v7_v9_backbone import (
     AConv,
+    ADown,
     Conv,
     RepNCSPELAN,
-    build_layer,
-    module_list_forward,
+    auto_pad,
+    insert_io_info_into_module,
 )
-
 from otx.algo.detection.heads.base_head import BaseDenseHead
 from otx.algo.detection.necks.yolo_v7_v9_neck import SPPELAN, Concat, UpSample
 from otx.algo.detection.utils.yolov7_v9_utils import bbox_nms
@@ -42,6 +43,37 @@ class Anchor2Vec(nn.Module):
         vector_x = anchor_x.softmax(dim=1)
         vector_x = self.anc2vec(vector_x)[:, 0]
         return anchor_x, vector_x
+
+
+class CBLinear(nn.Module):
+    """Convolutional block that outputs multiple feature maps split along the channel dimension."""
+
+    def __init__(self, in_channels: int, out_channels: list[int], kernel_size: int = 1, **kwargs):
+        super().__init__()
+        kwargs.setdefault("padding", auto_pad(kernel_size, **kwargs))
+        self.conv = nn.Conv2d(in_channels, sum(out_channels), kernel_size, **kwargs)
+        self.out_channels = list(out_channels)
+
+    def forward(self, x: Tensor) -> tuple[Tensor]:
+        x = self.conv(x)
+        return x.split(self.out_channels, dim=1)
+
+
+class CBFuse(nn.Module):
+    def __init__(self, index: list[int], mode: str = "nearest"):
+        super().__init__()
+        self.idx = index
+        self.mode = mode
+
+    def forward(self, x_list: list[torch.Tensor]) -> list[Tensor]:
+        target = x_list[-1]
+        target_size = target.shape[2:]  # Batch, Channel, H, W
+
+        res = [
+            nn.functional.interpolate(x[pick_id], size=target_size, mode=self.mode)
+            for pick_id, x in zip(self.idx, x_list)
+        ]
+        return torch.stack(res + [target]).sum(dim=0)
 
 
 class ImplicitA(nn.Module):
@@ -167,27 +199,6 @@ def pad_bbox_labels(bboxes: list[Tensor], labels: list[Tensor]) -> tuple[Tensor,
     return padded_bboxes, padded_labels
 
 
-def patch_bbox_head_export(
-    self: nn.ModuleList,
-    x: Tensor | dict[str, Tensor],
-    entity: DetBatchDataEntity,
-    *args,
-    **kwargs,
-) -> dict[str, Tensor]:
-    outputs = self(x)
-
-    prediction = self.vec2box(outputs["Main"])
-    pred_class, _, pred_bbox = prediction[:3]
-    pred_conf = prediction[3] if len(prediction) == 4 else None
-
-    # rescale
-    scale_factors = [[1 / s for s in ett["scale_factor"]][::-1] for ett in entity]
-    pred_bbox *= pred_bbox.new_tensor(scale_factors).unsqueeze(1).repeat(1, 1, int(pred_bbox.size(-1) / 2))
-
-    pred_bbox = bbox_nms(pred_class, pred_bbox, confidence=pred_conf)
-    return pad_bbox_labels([box[:, 1:5] for box in pred_bbox], [box[:, 0].type(torch.int64) for box in pred_bbox])
-
-
 class YOLOHeadModule(BaseDenseHead):
     """Head for YOLOv7 and v9."""
 
@@ -195,31 +206,34 @@ class YOLOHeadModule(BaseDenseHead):
         self,
         num_classes: int,
         csp_channels: list[list[int]],
-        aconv_channels: list[list[int]],
-        block_concat_sources: list[str],
+        concat_sources: list[str, int],
+        aconv_channels: list[list[int]] | None = None,
+        adown_channels: list[list[int]] | None = None,
         pre_upsample_concat_cfg: dict[str, Any] | None = None,
-        csp_args: dict[str, Any] | None = {},
+        csp_args: dict[str, Any] | None = None,
         aux_cfg: dict[str, Any] | None = None,
         with_nms: bool = True,
         min_confidence: float = 0.05,
         min_iou: float = 0.9,
     ) -> None:
-        if not (len(csp_channels) - 1 == len(aconv_channels) == len(block_concat_sources)):
+        if len(csp_channels) - 1 != len(concat_sources):
             msg = (
-                f"len(csp_channels) - 1 ({len(csp_channels) - 1}), "
-                f"len(aconv_channels) ({len(aconv_channels)}), "
-                f"and len(block_concat_sources) ({len(block_concat_sources)}) should be the same."
+                f"len(csp_channels) - 1 ({len(csp_channels) - 1}) "
+                f"and len(concat_sources) ({len(concat_sources)}) should be the same."
             )
             raise ValueError(msg)
 
-        super().__init__()
+        if not (bool(aconv_channels) ^ bool(adown_channels)):
+            msg = "Only one of aconv_channels or adown_channels should be provided."
+            raise ValueError(msg)
 
+        super().__init__()
         self.num_classes = num_classes
         self.csp_channels = csp_channels
         self.aconv_channels = aconv_channels
-        self.block_concat_sources = block_concat_sources
+        self.concat_sources = concat_sources
         self.pre_upsample_concat_cfg = pre_upsample_concat_cfg
-        self.csp_args = csp_args
+        self.csp_args = csp_args or {}
         self.aux_cfg = aux_cfg
         self.with_nms = with_nms
         self.min_confidence = min_confidence
@@ -229,37 +243,42 @@ class YOLOHeadModule(BaseDenseHead):
         if pre_upsample_concat_cfg:
             # for yolov9-s
             self.module.append(UpSample(scale_factor=2, mode="nearest"))
-            self.module.append(build_layer({"module": Concat(), "source": pre_upsample_concat_cfg.get("source")}))
+            self.module.append(
+                insert_io_info_into_module({"module": Concat(), "source": pre_upsample_concat_cfg.get("source")})
+            )
 
         output_channels: list[int] = []
         self.module.append(
-            build_layer(
+            insert_io_info_into_module(
                 {
                     "module": RepNCSPELAN(
                         csp_channels[0][0],
                         csp_channels[0][1],
                         part_channels=csp_channels[0][2],
-                        csp_args=csp_args,
+                        csp_args=self.csp_args,
                     ),
                     "tags": "P3",
                 },
             )
         )
         output_channels.append(csp_channels[0][1])
-        for idx, (csp_channel, aconv_channel, concat_source) in enumerate(
-            zip(csp_channels[1:], aconv_channels, block_concat_sources),
+
+        aconv_adown_channels = aconv_channels or adown_channels
+        aconv_adown_object = AConv if aconv_channels else ADown
+        for idx, (csp_channel, aconv_adown_channel, concat_source) in enumerate(
+            zip(csp_channels[1:], aconv_adown_channels, concat_sources),
             start=4,
         ):
-            self.module.append(AConv(aconv_channel[0], aconv_channel[1]))
-            self.module.append(build_layer({"module": Concat(), "source": [-1, concat_source]}))
+            self.module.append(aconv_adown_object(aconv_adown_channel[0], aconv_adown_channel[1]))
+            self.module.append(insert_io_info_into_module({"module": Concat(), "source": concat_source}))
             self.module.append(
-                build_layer(
+                insert_io_info_into_module(
                     {
                         "module": RepNCSPELAN(
                             csp_channel[0],
                             csp_channel[1],
                             part_channels=csp_channel[2],
-                            csp_args=csp_args,
+                            csp_args=self.csp_args,
                         ),
                         "tags": f"P{idx}",
                     },
@@ -268,7 +287,7 @@ class YOLOHeadModule(BaseDenseHead):
             output_channels.append(csp_channel[1])
 
         self.module.append(
-            build_layer(
+            insert_io_info_into_module(
                 {
                     "module": MultiheadDetection(output_channels, num_classes),
                     "source": ["P3", "P4", "P5"],
@@ -280,36 +299,90 @@ class YOLOHeadModule(BaseDenseHead):
 
         if self.aux_cfg:
             aux_output_channels: list[int] = []
-            if sppelan_channels := self.aux_cfg.get("sppelan_channels"):
+            if sppelan_channels := self.aux_cfg.get("sppelan_channels", None):
+                # for yolov9-s
                 self.module.append(
-                    build_layer(
+                    insert_io_info_into_module(
                         {"module": SPPELAN(sppelan_channels[0], sppelan_channels[1]), "source": "B5", "tags": "A5"}
                     )
                 )
                 aux_output_channels.append(sppelan_channels[1])
-
-            for idx, block_channel in enumerate(aux_cfg.get("block_channels", [])):
-                self.module.append(UpSample(scale_factor=2, mode="nearest"))
-                self.module.append(build_layer({"module": Concat(), "source": [-1, f"B{4-idx}"]}))
-                self.module.append(
-                    build_layer(
-                        {
-                            "module": RepNCSPELAN(
-                                block_channel[0],
-                                block_channel[1],
-                                part_channels=block_channel[2],
-                                csp_args=csp_args,
-                            ),
-                            "tags": f"A{4-idx}",
-                        }
+                for idx, csp_channel in enumerate(aux_cfg.get("csp_channels", [])):
+                    self.module.append(UpSample(scale_factor=2, mode="nearest"))
+                    self.module.append(insert_io_info_into_module({"module": Concat(), "source": [-1, f"B{4-idx}"]}))
+                    self.module.append(
+                        insert_io_info_into_module(
+                            {
+                                "module": RepNCSPELAN(
+                                    csp_channel[0],
+                                    csp_channel[1],
+                                    part_channels=csp_channel[2],
+                                    csp_args=self.csp_args,
+                                ),
+                                "tags": f"A{4-idx}",
+                            }
+                        )
                     )
-                )
-                aux_output_channels.append(block_channel[1])
+                    aux_output_channels.append(csp_channel[1])
+                aux_output_channels = aux_output_channels[::-1]  # reverse channels
+
+            elif cblinear_channels := self.aux_cfg.get("cblinear_channels", None):
+                # for yolov9-m, c
+                for idx, cblinear_channel in enumerate(cblinear_channels, start=3):
+                    self.module.append(
+                        insert_io_info_into_module(
+                            {
+                                "module": CBLinear(cblinear_channel[0], cblinear_channel[1]),
+                                "source": f"B{idx}",
+                                "tags": f"R{idx}",
+                            }
+                        )
+                    )
+
+                aux_aconv_adown_channels = aux_cfg.get("aconv_channels", None) or aux_cfg.get("adown_channels", None)
+                if aux_aconv_adown_channels is None:
+                    msg = "Only one of aconv_channels or adown_channels should be provided."
+                    raise ValueError(msg)
+
+                aux_aconv_adown_object = AConv if aconv_channels else ADown
+                for idx, (csp_channel, aux_aconv_adown_channel, cbfuse_index, cbfuse_source) in enumerate(
+                    zip(
+                        aux_cfg.get("csp_channels", []),
+                        aux_aconv_adown_channels,
+                        aux_cfg.get("cbfuse_indices", []),
+                        aux_cfg.get("cbfuse_sources", []),
+                    )
+                ):
+                    if idx == 0 and len(aux_aconv_adown_channel) == 0 and len(cbfuse_index) == 0:
+                        conv_channels = aux_cfg.get("conv_channels")
+                        self.module.append(
+                            insert_io_info_into_module(
+                                {"module": Conv(conv_channels[0][0], conv_channels[0][1], 3, stride=2), "source": 0}
+                            )
+                        )
+                        self.module.append(Conv(conv_channels[1][0], conv_channels[1][1], 3, stride=2))
+                        self.module.append(RepNCSPELAN(csp_channel[0], csp_channel[1], part_channels=csp_channel[2]))
+                    else:
+                        self.module.append(
+                            aux_aconv_adown_object(aux_aconv_adown_channel[0], aux_aconv_adown_channel[1])
+                        )
+                        self.module.append(
+                            insert_io_info_into_module({"module": CBFuse(cbfuse_index), "source": cbfuse_source})
+                        )
+                        self.module.append(
+                            insert_io_info_into_module(
+                                {
+                                    "module": RepNCSPELAN(csp_channel[0], csp_channel[1], part_channels=csp_channel[2]),
+                                    "tags": f"A{idx+2}",
+                                }
+                            )
+                        )
+                        aux_output_channels.append(csp_channel[1])
 
             self.module.append(
-                build_layer(
+                insert_io_info_into_module(
                     {
-                        "module": MultiheadDetection(aux_output_channels[::-1], num_classes),
+                        "module": MultiheadDetection(aux_output_channels, num_classes),
                         "source": ["A3", "A4", "A5"],
                         "tags": "AUX",
                         "output": True,
@@ -458,14 +531,40 @@ class YOLOHead:
         "yolov9-s": {
             "csp_channels": [[320, 128, 128], [288, 192, 192], [384, 256, 256]],
             "aconv_channels": [[128, 96], [192, 128]],
-            "block_concat_sources": ["N4", "N3"],
+            "concat_sources": [[-1, "N4"], [-1, "N3"]],
             "pre_upsample_concat_cfg": {"source": [-1, "B3"]},
             "csp_args": {"repeat_num": 3},
             "aux_cfg": {
                 "sppelan_channels": [256, 256],
-                "block_channels": [[448, 192, 192], [320, 128, 128]],
+                "csp_channels": [[448, 192, 192], [320, 128, 128]],
             },
-        }
+        },
+        "yolov9-m": {
+            "csp_channels": [[600, 240, 240], [544, 360, 360], [720, 480, 480]],
+            "aconv_channels": [[240, 184], [360, 240]],
+            "concat_sources": [[-1, "N4"], [-1, "N3"]],
+            "aux_cfg": {
+                "cblinear_channels": [[240, [240]], [360, [240, 360]], [480, [240, 360, 480]]],
+                "csp_channels": [[64, 128, 128], [240, 240, 240], [360, 360, 360], [480, 480, 480]],
+                "conv_channels": [[3, 32], [32, 64]],
+                "aconv_channels": [[], [128, 240], [240, 360], [360, 480]],
+                "cbfuse_indices": [[], [0, 0, 0], [1, 1], [2]],
+                "cbfuse_sources": [[], ["R3", "R4", "R5", -1], ["R4", "R5", -1], ["R5", -1]],
+            },
+        },
+        "yolov9-c": {
+            "csp_channels": [[1024, 256, 256], [768, 512, 512], [1024, 512, 512]],
+            "adown_channels": [[256, 256], [512, 512]],
+            "concat_sources": [[-1, "N4"], [-1, "N3"]],
+            "aux_cfg": {
+                "cblinear_channels": [[512, [256]], [512, [256, 512]], [512, [256, 512, 512]]],
+                "csp_channels": [[128, 256, 128], [256, 512, 256], [512, 512, 512], [512, 512, 512]],
+                "conv_channels": [[3, 64], [64, 128]],
+                "adown_channels": [[], [256, 256], [512, 512], [512, 512]],
+                "cbfuse_indices": [[], [0, 0, 0], [1, 1], [2]],
+                "cbfuse_sources": [[], ["R3", "R4", "R5", -1], ["R4", "R5", -1], ["R5", -1]],
+            },
+        },
     }
 
     def __new__(cls, model_name: str, num_classes: int) -> YOLOHeadModule:

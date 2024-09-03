@@ -7,7 +7,13 @@ from __future__ import annotations
 import torch
 from torch import Tensor, nn
 
-from otx.algo.detection.backbones.yolo_v7_v9_backbone import Conv, Pool, RepNCSPELAN, build_layer, module_list_forward
+from otx.algo.detection.backbones.yolo_v7_v9_backbone import (
+    Conv,
+    Pool,
+    RepNCSPELAN,
+    insert_io_info_into_module,
+    module_list_forward,
+)
 
 
 class SPPELAN(nn.Module):
@@ -57,38 +63,38 @@ class YOLOv9Neck(nn.Module):
         if model_name == "yolov9-s":
             return nn.ModuleList(
                 [
-                    build_layer({"module": SPPELAN(256, 256), "tags": "N3"}),
-                    build_layer({"module": UpSample(scale_factor=2, mode="nearest")}),
-                    build_layer({"module": Concat(), "source": [-1, "B4"]}),
-                    build_layer(
+                    insert_io_info_into_module({"module": SPPELAN(256, 256), "tags": "N3"}),
+                    UpSample(scale_factor=2, mode="nearest"),
+                    insert_io_info_into_module({"module": Concat(), "source": [-1, "B4"]}),  # 256 + 192 = 448
+                    insert_io_info_into_module(
                         {"module": RepNCSPELAN(448, 192, part_channels=192, csp_args={"repeat_num": 3}), "tags": "N4"},
                     ),
                 ],
             )
 
-        # if model_name == "v9-m":
-        #     return nn.ModuleList(
-        #         [
-        #             SPPELAN(480, 480),
-        #             UpSample(scale_factor=2, mode="nearest"),
-        #             Concat(),
-        #             RepNCSPELAN(480, 360, part_channels=360),
-        #             UpSample(scale_factor=2, mode="nearest"),
-        #             Concat(),
-        #         ]
-        #     )
+        if model_name == "yolov9-m":
+            return nn.ModuleList(
+                [
+                    insert_io_info_into_module({"module": SPPELAN(480, 480), "tags": "N3"}),
+                    UpSample(scale_factor=2, mode="nearest"),
+                    insert_io_info_into_module({"module": Concat(), "source": [-1, "B4"]}),  # 480 + 360 = 840
+                    insert_io_info_into_module({"module": RepNCSPELAN(840, 360, part_channels=360), "tags": "N4"}),
+                    UpSample(scale_factor=2, mode="nearest"),
+                    insert_io_info_into_module({"module": Concat(), "source": [-1, "B3"]}),  # 360 + 240 = 600
+                ]
+            )
 
-        # if model_name == "v9-c":
-        #     return nn.ModuleList(
-        #         [
-        #             SPPELAN(512, 512),
-        #             UpSample(scale_factor=2, mode="nearest"),
-        #             Concat(),
-        #             RepNCSPELAN(512, 512, part_channels=512),
-        #             UpSample(scale_factor=2, mode="nearest"),
-        #             Concat(),
-        #         ]
-        #     )
+        if model_name == "yolov9-c":
+            return nn.ModuleList(
+                [
+                    insert_io_info_into_module({"module": SPPELAN(512, 512), "tags": "N3"}),
+                    UpSample(scale_factor=2, mode="nearest"),
+                    insert_io_info_into_module({"module": Concat(), "source": [-1, "B4"]}),  # 512 + 512 = 1024
+                    insert_io_info_into_module({"module": RepNCSPELAN(1024, 512, part_channels=512), "tags": "N4"}),
+                    UpSample(scale_factor=2, mode="nearest"),
+                    insert_io_info_into_module({"module": Concat(), "source": [-1, "B3"]}),  # 512 + 512 = 1024
+                ]
+            )
 
         msg = f"Unknown model_name: {model_name}"
         raise ValueError(msg)

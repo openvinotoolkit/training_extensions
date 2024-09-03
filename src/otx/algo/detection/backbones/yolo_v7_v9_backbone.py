@@ -266,7 +266,7 @@ class ADown(nn.Module):
         return torch.cat((x1, x2), dim=1)
 
 
-def build_layer(layer_dict: dict[str, Any]) -> nn.Module:
+def insert_io_info_into_module(layer_dict: dict[str, Any]) -> nn.Module:
     layer = layer_dict.pop("module")
     for k, v in layer_dict.items():
         setattr(layer, k, v)
@@ -298,53 +298,53 @@ class YOLOv9Backbone(nn.Module):
         if model_name == "yolov9-s":
             return nn.ModuleList(
                 [
-                    build_layer({"module": Conv(3, 32, 3, stride=2), "source": 0}),
-                    build_layer({"module": Conv(32, 64, 3, stride=2)}),
-                    build_layer({"module": ELAN(64, 64, part_channels=64)}),
-                    build_layer({"module": AConv(64, 128)}),
-                    build_layer(
+                    insert_io_info_into_module({"module": Conv(3, 32, 3, stride=2), "source": 0}),
+                    Conv(32, 64, 3, stride=2),
+                    ELAN(64, 64, part_channels=64),
+                    AConv(64, 128),
+                    insert_io_info_into_module(
                         {"module": RepNCSPELAN(128, 128, part_channels=128, csp_args={"repeat_num": 3}), "tags": "B3"},
                     ),
-                    build_layer({"module": AConv(128, 192)}),
-                    build_layer(
+                    AConv(128, 192),
+                    insert_io_info_into_module(
                         {"module": RepNCSPELAN(192, 192, part_channels=192, csp_args={"repeat_num": 3}), "tags": "B4"},
                     ),
-                    build_layer({"module": AConv(192, 256)}),
-                    build_layer(
+                    AConv(192, 256),
+                    insert_io_info_into_module(
                         {"module": RepNCSPELAN(256, 256, part_channels=256, csp_args={"repeat_num": 3}), "tags": "B5"},
                     ),
                 ],
             )
 
-        # if model_name == "yolov9-m":
-        #     return nn.ModuleList(
-        #         [
-        #             Conv(3, 32, 3, stride=2),
-        #             Conv(32, 64, 3, stride=2),
-        #             RepNCSPELAN(64, 128, part_channels=128),
-        #             AConv(128, 240),
-        #             RepNCSPELAN(240, 240, part_channels=240),
-        #             AConv(240, 360),
-        #             RepNCSPELAN(360, 360, part_channels=360),
-        #             AConv(360, 480),
-        #             RepNCSPELAN(480, 480, part_channels=480),
-        #         ]
-        #     )
+        if model_name == "yolov9-m":
+            return nn.ModuleList(
+                [
+                    insert_io_info_into_module({"module": Conv(3, 32, 3, stride=2), "source": 0}),
+                    Conv(32, 64, 3, stride=2),
+                    RepNCSPELAN(64, 128, part_channels=128),
+                    AConv(128, 240),
+                    insert_io_info_into_module({"module": RepNCSPELAN(240, 240, part_channels=240), "tags": "B3"}),
+                    AConv(240, 360),
+                    insert_io_info_into_module({"module": RepNCSPELAN(360, 360, part_channels=360), "tags": "B4"}),
+                    AConv(360, 480),
+                    insert_io_info_into_module({"module": RepNCSPELAN(480, 480, part_channels=480), "tags": "B5"}),
+                ]
+            )
 
-        # if model_name == "yolov9-c":
-        #     return nn.ModuleList(
-        #         [
-        #             Conv(3, 64, 3, stride=2),
-        #             Conv(64, 128, 3, stride=2),
-        #             RepNCSPELAN(128, 256, part_channels=128),
-        #             ADown(256, 256),
-        #             RepNCSPELAN(256, 512, part_channels=256),
-        #             AConv(512, 512),
-        #             RepNCSPELAN(512, 512, part_channels=512),
-        #             AConv(512, 512),
-        #             RepNCSPELAN(512, 512, part_channels=512),
-        #         ]
-        #     )
+        if model_name == "yolov9-c":
+            return nn.ModuleList(
+                [
+                    insert_io_info_into_module({"module": Conv(3, 64, 3, stride=2), "source": 0}),
+                    Conv(64, 128, 3, stride=2),
+                    RepNCSPELAN(128, 256, part_channels=128),
+                    ADown(256, 256),
+                    insert_io_info_into_module({"module": RepNCSPELAN(256, 512, part_channels=256), "tags": "B3"}),
+                    ADown(512, 512),
+                    insert_io_info_into_module({"module": RepNCSPELAN(512, 512, part_channels=512), "tags": "B4"}),
+                    ADown(512, 512),
+                    insert_io_info_into_module({"module": RepNCSPELAN(512, 512, part_channels=512), "tags": "B5"}),
+                ]
+            )
 
         msg = f"Unknown model_name: {model_name}"
         raise ValueError(msg)
