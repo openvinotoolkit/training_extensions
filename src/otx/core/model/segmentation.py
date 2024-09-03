@@ -16,6 +16,7 @@ from torch import nn
 from torchvision import tv_tensors
 
 from otx.algo.segmentation.segmentors import MeanTeacher
+from otx.core.config.data import TileConfig
 from otx.core.data.entity.base import ImageInfo, OTXBatchLossEntity
 from otx.core.data.entity.segmentation import SegBatchDataEntity, SegBatchPredEntity
 from otx.core.data.entity.tile import OTXTileBatchDataEntity
@@ -41,8 +42,6 @@ if TYPE_CHECKING:
     from otx.core.metrics import MetricCallable
 
 
-# TODO
-
 class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity]):
     """Base class for the semantic segmentation models used in OTX."""
 
@@ -62,6 +61,7 @@ class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity]):
         unsupervised_weight: float = 0.7,
         semisl_start_epoch: int = 2,
         drop_unreliable_pixels_percent: int = 20,
+        tile_config: TileConfig = TileConfig(enable_tiler=False),
     ):
         """Base semantic segmentation model.
 
@@ -99,6 +99,7 @@ class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity]):
             metric=metric,
             torch_compile=torch_compile,
             train_type=train_type,
+            tile_config=tile_config,
         )
         self.input_size: tuple[int, int]
 

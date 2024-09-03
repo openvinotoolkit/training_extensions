@@ -71,12 +71,14 @@ class LiteHRNet(OTXSegmentationModel):
             msg = f"Input size attribute is not set for {self.__class__}"
             raise ValueError(msg)
 
+        resize_type = "fit_to_window" if self.tile_config.enable_tiler else "standard"
+
         return OTXNativeModelExporter(
             task_level_export_parameters=self._export_parameters,
             input_size=(1, 3, *self.input_size),
             mean=self.mean,
             std=self.scale,
-            resize_mode="standard",
+            resize_mode=resize_type,
             pad_value=0,
             swap_rgb=False,
             via_onnx=False,
