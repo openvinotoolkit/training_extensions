@@ -1,17 +1,21 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-"""Backbone implementation (CSP-ELAN?) of YOLOv7 and YOLOv9."""
+"""GELAN implementation for YOLOv9.
+
+Reference : https://github.com/WongKinYiu/YOLO
+"""
 
 from __future__ import annotations
 
-import logging
-from typing import Any
+from typing import Any, ClassVar
 
 import torch
 from torch import Tensor, nn
 from torch.nn.common_types import _size_2_t
 
-logger = logging.getLogger()
+
+# TODO (sungchul): Update docstring
+# TODO (sungchul): replace `build_activation_layer` in src/otx/algo/modules/activation.py with `create_activation_function`
 
 
 def auto_pad(kernel_size: _size_2_t, dilation: _size_2_t = 1, **kwargs) -> tuple[int, int]:
@@ -27,7 +31,10 @@ def auto_pad(kernel_size: _size_2_t, dilation: _size_2_t = 1, **kwargs) -> tuple
 
 
 def create_activation_function(activation: str) -> nn.Module:
-    """Retrieves an activation function from the PyTorch nn module based on its name, case-insensitively."""
+    """Retrieves an activation function from the PyTorch nn module based on its name, case-insensitively.
+
+    TODO (sungchul): change to use `build_activation_layer` in src/otx/algo/modules/activation.py.
+    """
     if not activation or activation.lower() in ["false", "none"]:
         return nn.Identity()
 
@@ -43,7 +50,10 @@ def create_activation_function(activation: str) -> nn.Module:
 
 
 class Conv(nn.Module):
-    """A basic convolutional block that includes convolution, batch normalization, and activation."""
+    """A basic convolutional block that includes convolution, batch normalization, and activation.
+
+    TODO (sungchul): replace it to `ConvModule` in src/otx/algo/modules/conv_module.py.
+    """
 
     def __init__(
         self,
@@ -90,8 +100,7 @@ class ELAN(nn.Module):
         x1, x2 = self.conv1(x).chunk(2, 1)
         x3 = self.conv2(x2)
         x4 = self.conv3(x3)
-        x5 = self.conv4(torch.cat([x1, x2, x3, x4], dim=1))
-        return x5
+        return self.conv4(torch.cat([x1, x2, x3, x4], dim=1))
 
 
 class Pool(nn.Module):
@@ -118,8 +127,7 @@ class AConv(nn.Module):
 
     def forward(self, x: Tensor) -> Tensor:
         x = self.avg_pool(x)
-        x = self.conv(x)
-        return x
+        return self.conv(x)
 
 
 class RepConv(nn.Module):
@@ -240,8 +248,7 @@ class RepNCSPELAN(nn.Module):
         x1, x2 = self.conv1(x).chunk(2, 1)
         x3 = self.conv2(x2)
         x4 = self.conv3(x3)
-        x5 = self.conv4(torch.cat([x1, x2, x3, x4], dim=1))
-        return x5
+        return self.conv4(torch.cat([x1, x2, x3, x4], dim=1))
 
 
 class ADown(nn.Module):
@@ -266,85 +273,70 @@ class ADown(nn.Module):
         return torch.cat((x1, x2), dim=1)
 
 
-def build_layer(layer_dict: dict[str, Any]) -> nn.Module:
-    layer = layer_dict.pop("module")
-    for k, v in layer_dict.items():
-        setattr(layer, k, v)
-    return layer
+class GELAN:
+    """Generalized Efficient Layer Aggregation Network (GELAN) implementation for YOLOv9."""
 
+    GELAN_CFG: ClassVar[dict[str, Any]] = {
+        "yolov9-s": {
+            "fitst_dim": 32,
+            "rep_ncsp_elan_dim": [128, 192, 256],
+            "csp_args": {"repeat_num": 3},
+        },
+        "yolov9_m": {
+            "fitst_dim": 32,
+            "rep_ncsp_elan_dim": [128, 240, 360, 480],
+        },
+        "yolov9_c": {
+            "fitst_dim": 64,
+            "rep_ncsp_elan_dim": [256, 512, 512, 512],
+        },
+    }
+    # GELAN_CFG: ClassVar[list[dict[str, Any]]] = {
+    #     "yolov9_s": [
+    #         {"module": Conv(3, 32, 3, stride=2), "source": 0},
+    #         {"module": Conv(32, 64, 3, stride=2)},
+    #         {"module": ELAN(64, 64, part_channels=64)},
+    #         {"module": AConv(64, 128)},
+    #         {"module": RepNCSPELAN(128, 128, part_channels=128, csp_args={"repeat_num": 3}), "tags": "B3"},
+    #         {"module": AConv(128, 192)},
+    #         {"module": RepNCSPELAN(192, 192, part_channels=192, csp_args={"repeat_num": 3}), "tags": "B4"},
+    #         {"module": AConv(192, 256)},
+    #         {"module": RepNCSPELAN(256, 256, part_channels=256, csp_args={"repeat_num": 3}), "tags": "B5"},
+    #     ],
+    #     "yolov9_m": [
+    #         {"module": Conv(3, 32, 3, stride=2), "source": 0},
+    #         {"module": Conv(32, 64, 3, stride=2)},
+    #         {"module": RepNCSPELAN(64, 128, part_channels=128)},
+    #         {"module": AConv(128, 240)},
+    #         {"module": RepNCSPELAN(240, 240, part_channels=240), "tags": "B3"},
+    #         {"module": AConv(240, 360)},
+    #         {"module": RepNCSPELAN(360, 360, part_channels=360), "tags": "B4"},
+    #         {"module": AConv(360, 480)},
+    #         {"module": RepNCSPELAN(480, 480, part_channels=480), "tags": "B5"},
+    #     ],
+    #     "yolov9_c": [
+    #         {"module": Conv(3, 64, 3, stride=2), "source": 0},
+    #         {"module": Conv(64, 128, 3, stride=2)},
+    #         {"module": RepNCSPELAN(128, 256, part_channels=128)},
+    #         {"module": ADown(256, 256)},
+    #         {"module": RepNCSPELAN(256, 512, part_channels=256), "tags": "B3"},
+    #         {"module": ADown(512, 512)},
+    #         {"module": RepNCSPELAN(512, 512, part_channels=512), "tags": "B4"},
+    #         {"module": ADown(512, 512)},
+    #         {"module": RepNCSPELAN(512, 512, part_channels=512), "tags": "B5"},
+    #     ],
+    # }
 
-def module_list_forward(self: nn.ModuleList, x: Tensor | dict[str, Tensor], *args, **kwargs) -> dict[str, Tensor]:
-    outputs: dict[str, Tensor] = {0: x} if isinstance(x, Tensor) else x
-    for layer in self:
-        if hasattr(layer, "source") and isinstance(layer.source, list):
-            model_input = [outputs[idx] for idx in layer.source]
-        else:
-            model_input = outputs[getattr(layer, "source", -1)]
-        x = layer(model_input)
-        outputs[-1] = x
-        if hasattr(layer, "tags"):
-            outputs[layer.tags] = x
-    return outputs
+    def __new__(self, model_name: str) -> nn.ModuleList:
+        modules = nn.ModuleList()
 
+        # first convs
+        fitst_dim: int = self.GELAN_CFG[model_name]["fitst_dim"]
+        modules.append(Conv(3, fitst_dim, 3, stride=2))
 
-class YOLOv9Backbone(nn.Module):
-    """Backbone for YOLOv9.
+        return modules
 
-    TODO (sungchul): change backbone name
-    """
-
-    def __new__(cls, model_name: str) -> None:
-        nn.ModuleList.forward = module_list_forward
-        if model_name == "yolov9-s":
-            return nn.ModuleList(
-                [
-                    build_layer({"module": Conv(3, 32, 3, stride=2), "source": 0}),
-                    build_layer({"module": Conv(32, 64, 3, stride=2)}),
-                    build_layer({"module": ELAN(64, 64, part_channels=64)}),
-                    build_layer({"module": AConv(64, 128)}),
-                    build_layer(
-                        {"module": RepNCSPELAN(128, 128, part_channels=128, csp_args={"repeat_num": 3}), "tags": "B3"},
-                    ),
-                    build_layer({"module": AConv(128, 192)}),
-                    build_layer(
-                        {"module": RepNCSPELAN(192, 192, part_channels=192, csp_args={"repeat_num": 3}), "tags": "B4"},
-                    ),
-                    build_layer({"module": AConv(192, 256)}),
-                    build_layer(
-                        {"module": RepNCSPELAN(256, 256, part_channels=256, csp_args={"repeat_num": 3}), "tags": "B5"},
-                    ),
-                ],
-            )
-
-        # if model_name == "yolov9-m":
-        #     return nn.ModuleList(
-        #         [
-        #             Conv(3, 32, 3, stride=2),
-        #             Conv(32, 64, 3, stride=2),
-        #             RepNCSPELAN(64, 128, part_channels=128),
-        #             AConv(128, 240),
-        #             RepNCSPELAN(240, 240, part_channels=240),
-        #             AConv(240, 360),
-        #             RepNCSPELAN(360, 360, part_channels=360),
-        #             AConv(360, 480),
-        #             RepNCSPELAN(480, 480, part_channels=480),
-        #         ]
-        #     )
-
-        # if model_name == "yolov9-c":
-        #     return nn.ModuleList(
-        #         [
-        #             Conv(3, 64, 3, stride=2),
-        #             Conv(64, 128, 3, stride=2),
-        #             RepNCSPELAN(128, 256, part_channels=128),
-        #             ADown(256, 256),
-        #             RepNCSPELAN(256, 512, part_channels=256),
-        #             AConv(512, 512),
-        #             RepNCSPELAN(512, 512, part_channels=512),
-        #             AConv(512, 512),
-        #             RepNCSPELAN(512, 512, part_channels=512),
-        #         ]
-        #     )
-
-        msg = f"Unknown model_name: {model_name}"
-        raise ValueError(msg)
+        # for layer_dict in self.GELAN_CFG[model_name]:
+        #     layer = layer_dict.pop("module")
+        #     for k, v in layer_dict.items():
+        #         setattr(layer, k, v)

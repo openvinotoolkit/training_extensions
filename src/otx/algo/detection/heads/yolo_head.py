@@ -1,0 +1,480 @@
+# Copyright (C) 2024 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+"""Head implementation of YOLOv7 and YOLOv9."""
+
+from __future__ import annotations
+from typing import Any, ClassVar
+
+import torch
+from einops import rearrange
+from torch import Tensor, nn
+
+from torchvision.ops import batched_nms
+from otx.algo.detection.backbones.yolo_v7_v9_backbone import (
+    AConv,
+    Conv,
+    RepNCSPELAN,
+    build_layer,
+    module_list_forward,
+)
+
+from otx.algo.detection.heads.base_head import BaseDenseHead
+from otx.algo.detection.necks.yolo_v7_v9_neck import SPPELAN, Concat, UpSample
+from otx.algo.detection.utils.yolov7_v9_utils import bbox_nms
+from otx.algo.utils.mmengine_utils import InstanceData
+from otx.core.data.entity.detection import DetBatchDataEntity
+
+
+def round_up(x: int | Tensor, div: int = 1) -> int | Tensor:
+    """Rounds up `x` to the bigger-nearest multiple of `div`."""
+    return x + (-x % div)
+
+
+class Anchor2Vec(nn.Module):
+    def __init__(self, reg_max: int = 16) -> None:
+        super().__init__()
+        reverse_reg = torch.arange(reg_max, dtype=torch.float32).view(1, reg_max, 1, 1, 1)
+        self.anc2vec = nn.Conv3d(in_channels=reg_max, out_channels=1, kernel_size=1, bias=False)
+        self.anc2vec.weight = nn.Parameter(reverse_reg, requires_grad=False)
+
+    def forward(self, anchor_x: Tensor) -> Tensor:
+        anchor_x = rearrange(anchor_x, "B (P R) h w -> B R P h w", P=4)
+        vector_x = anchor_x.softmax(dim=1)
+        vector_x = self.anc2vec(vector_x)[:, 0]
+        return anchor_x, vector_x
+
+
+class ImplicitA(nn.Module):
+    """Implement YOLOR - implicit knowledge(Add), paper: https://arxiv.org/abs/2105.04206"""
+
+    def __init__(self, channel: int, mean: float = 0.0, std: float = 0.02):
+        super().__init__()
+        self.channel = channel
+        self.mean = mean
+        self.std = std
+
+        self.implicit = nn.Parameter(torch.empty(1, channel, 1, 1))
+        nn.init.normal_(self.implicit, mean=mean, std=self.std)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return self.implicit + x
+
+
+class ImplicitM(nn.Module):
+    """Implement YOLOR - implicit knowledge(multiply), paper: https://arxiv.org/abs/2105.04206"""
+
+    def __init__(self, channel: int, mean: float = 1.0, std: float = 0.02):
+        super().__init__()
+        self.channel = channel
+        self.mean = mean
+        self.std = std
+
+        self.implicit = nn.Parameter(torch.empty(1, channel, 1, 1))
+        nn.init.normal_(self.implicit, mean=self.mean, std=self.std)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return self.implicit * x
+
+
+class Detection(nn.Module):
+    """A single YOLO Detection head for detection models"""
+
+    def __init__(self, in_channels: tuple[int], num_classes: int, *, reg_max: int = 16, use_group: bool = True):
+        super().__init__()
+
+        groups = 4 if use_group else 1
+        anchor_channels = 4 * reg_max
+
+        first_neck, in_channels = in_channels
+        anchor_neck = max(round_up(first_neck // 4, groups), anchor_channels, reg_max)
+        class_neck = max(first_neck, min(num_classes * 2, 128))
+
+        self.anchor_conv = nn.Sequential(
+            Conv(in_channels, anchor_neck, 3),
+            Conv(anchor_neck, anchor_neck, 3, groups=groups),
+            nn.Conv2d(anchor_neck, anchor_channels, 1, groups=groups),
+        )
+        self.class_conv = nn.Sequential(
+            Conv(in_channels, class_neck, 3),
+            Conv(class_neck, class_neck, 3),
+            nn.Conv2d(class_neck, num_classes, 1),
+        )
+
+        self.anc2vec = Anchor2Vec(reg_max=reg_max)
+
+        self.anchor_conv[-1].bias.data.fill_(1.0)
+        self.class_conv[-1].bias.data.fill_(-10)  # TODO: math.log(5 * 4 ** idx / 80 ** 3)
+
+    def forward(self, x: Tensor) -> tuple[Tensor]:
+        anchor_x = self.anchor_conv(x)
+        class_x = self.class_conv(x)
+        anchor_x, vector_x = self.anc2vec(anchor_x)
+        return class_x, anchor_x, vector_x
+
+
+class IDetection(nn.Module):
+    def __init__(self, in_channels: tuple[int], num_classes: int, *args, anchor_num: int = 3, **kwargs):
+        super().__init__()
+
+        if isinstance(in_channels, tuple):
+            in_channels = in_channels[1]
+
+        out_channel = num_classes + 5
+        out_channels = out_channel * anchor_num
+        self.head_conv = nn.Conv2d(in_channels, out_channels, 1)
+
+        self.implicit_a = ImplicitA(in_channels)
+        self.implicit_m = ImplicitM(out_channels)
+
+    def forward(self, x):
+        x = self.implicit_a(x)
+        x = self.head_conv(x)
+        x = self.implicit_m(x)
+
+        return x
+
+
+class MultiheadDetection(nn.Module):
+    """Mutlihead Detection module for Dual detect or Triple detect"""
+
+    def __init__(self, in_channels: list[int], num_classes: int, **head_kwargs):
+        super().__init__()
+        DetectionHead = Detection
+
+        if head_kwargs.pop("version", None) == "v7":
+            DetectionHead = IDetection
+
+        self.heads = nn.ModuleList(
+            [DetectionHead((in_channels[0], in_channel), num_classes, **head_kwargs) for in_channel in in_channels],
+        )
+
+    def forward(self, x_list: list[Tensor]) -> list[Tensor]:
+        return [head(x) for x, head in zip(x_list, self.heads)]
+
+
+def pad_bbox_labels(bboxes: list[Tensor], labels: list[Tensor]) -> tuple[Tensor, Tensor]:
+    max_len = max(b.shape[0] for b in bboxes)
+    padded_labels = torch.stack(
+        [nn.functional.pad(label.unsqueeze(1), (0, 0, 0, max_len - len(label)), value=-1) for label in labels], dim=0
+    )
+    padded_bboxes = torch.stack(
+        [
+            nn.functional.pad(box, (0, 0, 0, max_len - len(box)), value=0) if max_len - len(box) > 0 else box
+            for box in bboxes
+        ],
+        dim=0,
+    )
+    return padded_bboxes, padded_labels
+
+
+def patch_bbox_head_export(
+    self: nn.ModuleList,
+    x: Tensor | dict[str, Tensor],
+    entity: DetBatchDataEntity,
+    *args,
+    **kwargs,
+) -> dict[str, Tensor]:
+    outputs = self(x)
+
+    prediction = self.vec2box(outputs["Main"])
+    pred_class, _, pred_bbox = prediction[:3]
+    pred_conf = prediction[3] if len(prediction) == 4 else None
+
+    # rescale
+    scale_factors = [[1 / s for s in ett["scale_factor"]][::-1] for ett in entity]
+    pred_bbox *= pred_bbox.new_tensor(scale_factors).unsqueeze(1).repeat(1, 1, int(pred_bbox.size(-1) / 2))
+
+    pred_bbox = bbox_nms(pred_class, pred_bbox, confidence=pred_conf)
+    return pad_bbox_labels([box[:, 1:5] for box in pred_bbox], [box[:, 0].type(torch.int64) for box in pred_bbox])
+
+
+class YOLOHeadModule(BaseDenseHead):
+    """Head for YOLOv7 and v9."""
+
+    def __init__(
+        self,
+        num_classes: int,
+        csp_channels: list[list[int]],
+        aconv_channels: list[list[int]],
+        block_concat_sources: list[str],
+        pre_upsample_concat_cfg: dict[str, Any] | None = None,
+        csp_args: dict[str, Any] | None = {},
+        aux_cfg: dict[str, Any] | None = None,
+        with_nms: bool = True,
+        min_confidence: float = 0.05,
+        min_iou: float = 0.9,
+    ) -> None:
+        if not (len(csp_channels) - 1 == len(aconv_channels) == len(block_concat_sources)):
+            msg = (
+                f"len(csp_channels) - 1 ({len(csp_channels) - 1}), "
+                f"len(aconv_channels) ({len(aconv_channels)}), "
+                f"and len(block_concat_sources) ({len(block_concat_sources)}) should be the same."
+            )
+            raise ValueError(msg)
+
+        super().__init__()
+
+        self.num_classes = num_classes
+        self.csp_channels = csp_channels
+        self.aconv_channels = aconv_channels
+        self.block_concat_sources = block_concat_sources
+        self.pre_upsample_concat_cfg = pre_upsample_concat_cfg
+        self.csp_args = csp_args
+        self.aux_cfg = aux_cfg
+        self.with_nms = with_nms
+        self.min_confidence = min_confidence
+        self.min_iou = min_iou
+
+        self.module = nn.ModuleList()
+        if pre_upsample_concat_cfg:
+            # for yolov9-s
+            self.module.append(UpSample(scale_factor=2, mode="nearest"))
+            self.module.append(build_layer({"module": Concat(), "source": pre_upsample_concat_cfg.get("source")}))
+
+        output_channels: list[int] = []
+        self.module.append(
+            build_layer(
+                {
+                    "module": RepNCSPELAN(
+                        csp_channels[0][0],
+                        csp_channels[0][1],
+                        part_channels=csp_channels[0][2],
+                        csp_args=csp_args,
+                    ),
+                    "tags": "P3",
+                },
+            )
+        )
+        output_channels.append(csp_channels[0][1])
+        for idx, (csp_channel, aconv_channel, concat_source) in enumerate(
+            zip(csp_channels[1:], aconv_channels, block_concat_sources),
+            start=4,
+        ):
+            self.module.append(AConv(aconv_channel[0], aconv_channel[1]))
+            self.module.append(build_layer({"module": Concat(), "source": [-1, concat_source]}))
+            self.module.append(
+                build_layer(
+                    {
+                        "module": RepNCSPELAN(
+                            csp_channel[0],
+                            csp_channel[1],
+                            part_channels=csp_channel[2],
+                            csp_args=csp_args,
+                        ),
+                        "tags": f"P{idx}",
+                    },
+                )
+            )
+            output_channels.append(csp_channel[1])
+
+        self.module.append(
+            build_layer(
+                {
+                    "module": MultiheadDetection(output_channels, num_classes),
+                    "source": ["P3", "P4", "P5"],
+                    "tags": "Main",
+                    "output": True,
+                },
+            )
+        )
+
+        if self.aux_cfg:
+            aux_output_channels: list[int] = []
+            if sppelan_channels := self.aux_cfg.get("sppelan_channels"):
+                self.module.append(
+                    build_layer(
+                        {"module": SPPELAN(sppelan_channels[0], sppelan_channels[1]), "source": "B5", "tags": "A5"}
+                    )
+                )
+                aux_output_channels.append(sppelan_channels[1])
+
+            for idx, block_channel in enumerate(aux_cfg.get("block_channels", [])):
+                self.module.append(UpSample(scale_factor=2, mode="nearest"))
+                self.module.append(build_layer({"module": Concat(), "source": [-1, f"B{4-idx}"]}))
+                self.module.append(
+                    build_layer(
+                        {
+                            "module": RepNCSPELAN(
+                                block_channel[0],
+                                block_channel[1],
+                                part_channels=block_channel[2],
+                                csp_args=csp_args,
+                            ),
+                            "tags": f"A{4-idx}",
+                        }
+                    )
+                )
+                aux_output_channels.append(block_channel[1])
+
+            self.module.append(
+                build_layer(
+                    {
+                        "module": MultiheadDetection(aux_output_channels[::-1], num_classes),
+                        "source": ["A3", "A4", "A5"],
+                        "tags": "AUX",
+                        "output": True,
+                    },
+                ),
+            )
+
+    @property
+    def is_aux(self) -> bool:
+        return bool(self.aux_cfg)
+
+    def forward(self, x: Tensor | dict[str, Tensor], *args, **kwargs) -> tuple[Tensor, None] | tuple[Tensor, Tensor]:
+        outputs: dict[str, Tensor] = {0: x} if isinstance(x, Tensor) else x
+        for layer in self.module:
+            if hasattr(layer, "source") and isinstance(layer.source, list):
+                model_input = [outputs[idx] for idx in layer.source]
+            else:
+                model_input = outputs[getattr(layer, "source", -1)]
+            x = layer(model_input)
+            outputs[-1] = x
+            if hasattr(layer, "tags"):
+                outputs[layer.tags] = x
+
+        if self.is_aux:
+            return outputs["Main"], outputs["AUX"]
+        return outputs["Main"], None
+
+    def loss(self, x: tuple[Tensor], entity: DetBatchDataEntity) -> dict:
+        """Perform forward propagation and loss calculation of the detection head.
+
+        Args:
+            x (tuple[Tensor]): Features from the upstream network, each is
+                a 4D-tensor.
+            entity (DetBatchDataEntity): Entity from OTX dataset.
+
+        Returns:
+            dict: A dictionary of loss components.
+        """
+        main_preds, aux_preds = self(x)
+
+        padded_bboxes, padded_labels = pad_bbox_labels(entity.bboxes, entity.labels)
+        merged_padded_labels_bboxes = torch.cat((padded_labels, padded_bboxes), dim=-1)
+        return {
+            "main_preds": main_preds,
+            "aux_preds": aux_preds,
+            "targets": merged_padded_labels_bboxes,
+        }
+
+    def loss_by_feat(self, *args, **kwargs):
+        """Calculate the loss based on the features extracted by the detection head.
+
+        TODO (sungchul): For abstractmethod, will be removed.
+        """
+        raise NotImplementedError
+
+    def predict(
+        self,
+        x: tuple[Tensor],
+        entity: DetBatchDataEntity,
+        rescale: bool = False,
+    ) -> list[InstanceData]:
+        """Perform forward propagation of the detection head and predict detection results.
+
+        Args:
+            x (tuple[Tensor]): Multi-level features from the
+                upstream network, each is a 4D-tensor.
+            entity (DetBatchDataEntity): Entity from OTX dataset.
+            rescale (bool, optional): Whether to rescale the results.
+                Defaults to False.
+
+        Returns:
+            list[InstanceData]: Detection results of each image
+            after the post process.
+        """
+        main_preds, _ = self(x)
+
+        pred_bboxes: Tensor | list[Tensor]
+        pred_scores: Tensor | list[Tensor]
+        pred_labels: Tensor | list[Tensor]
+
+        prediction = self.vec2box(main_preds)
+        pred_classes, _, pred_bboxes = prediction[:3]
+        pred_scores = pred_classes.sigmoid() * (prediction[3] if len(prediction) == 4 else 1)
+
+        # TODO (sungchul): use otx modules
+        pred_scores, pred_labels = pred_scores.max(dim=-1, keepdim=True)
+        if rescale:
+            # rescale
+            scale_factors = [img_info.scale_factor[::-1] for img_info in entity.imgs_info]
+            pred_bboxes /= pred_bboxes.new_tensor(scale_factors).repeat((1, 2)).unsqueeze(1)
+
+        if self.with_nms and pred_bboxes.numel():
+            # filter class by confidence
+            valid_mask = pred_scores > self.min_confidence
+            valid_labels = pred_labels[valid_mask].float()
+            valid_scores = pred_scores[valid_mask].float()
+            valid_bboxes = pred_bboxes[valid_mask.repeat(1, 1, 4)].view(-1, 4)
+
+            # nms
+            batch_idx, *_ = torch.where(valid_mask)
+            nms_idx = batched_nms(valid_bboxes, valid_scores, valid_labels, self.min_iou)
+
+            def filter_predictions() -> tuple[list[Tensor], list[Tensor], list[Tensor]]:
+                _pred_bboxes = []
+                _pred_scores = []
+                _pred_labels = []
+                for idx in range(pred_classes.size(0)):
+                    instance_idx = nms_idx[idx == batch_idx[nms_idx]]
+                    _pred_bboxes.append(valid_bboxes[instance_idx])
+                    _pred_scores.append(valid_scores[instance_idx])
+                    _pred_labels.append(valid_labels[instance_idx])
+                return _pred_bboxes, _pred_scores, _pred_labels
+
+            pred_bboxes, pred_scores, pred_labels = filter_predictions()
+
+        return [
+            InstanceData(
+                bboxes=pred_bboxes[idx],
+                scores=pred_scores[idx],
+                labels=pred_labels[idx].type(torch.long),
+            )
+            for idx in range(pred_classes.size(0))
+        ]
+
+    def export_by_feat(
+        self,
+        outputs: dict[str, Tensor],
+        entity: DetBatchDataEntity,
+        *args,
+        **kwargs,
+    ) -> dict[str, Tensor]:
+        prediction = self.vec2box(outputs["Main"])
+        pred_class, _, pred_bbox = prediction[:3]
+        pred_conf = prediction[3] if len(prediction) == 4 else None
+
+        # rescale
+        scale_factors = [[1 / s for s in ett["scale_factor"]][::-1] for ett in entity]
+        pred_bbox *= pred_bbox.new_tensor(scale_factors).unsqueeze(1).repeat(1, 1, int(pred_bbox.size(-1) / 2))
+
+        pred_bbox = bbox_nms(pred_class, pred_bbox, confidence=pred_conf)
+        return pad_bbox_labels([box[:, 1:5] for box in pred_bbox], [box[:, 0].type(torch.int64) for box in pred_bbox])
+
+
+class YOLOHead:
+    YOLOHEAD_CFG: ClassVar[dict[str, Any]] = {
+        "yolov9-s": {
+            "csp_channels": [[320, 128, 128], [288, 192, 192], [384, 256, 256]],
+            "aconv_channels": [[128, 96], [192, 128]],
+            "block_concat_sources": ["N4", "N3"],
+            "pre_upsample_concat_cfg": {"source": [-1, "B3"]},
+            "csp_args": {"repeat_num": 3},
+            "aux_cfg": {
+                "sppelan_channels": [256, 256],
+                "block_channels": [[448, 192, 192], [320, 128, 128]],
+            },
+        }
+    }
+
+    def __new__(cls, model_name: str, num_classes: int) -> YOLOHeadModule:
+        """Constructor for YOLOHead for v7 and v9."""
+        if model_name not in cls.YOLOHEAD_CFG:
+            msg = f"model type '{model_name}' is not supported"
+            raise KeyError(msg)
+
+        return YOLOHeadModule(
+            **cls.YOLOHEAD_CFG[model_name],
+            num_classes=num_classes,
+        )

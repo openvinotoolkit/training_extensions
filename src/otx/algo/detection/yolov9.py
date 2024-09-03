@@ -12,9 +12,10 @@ from typing import TYPE_CHECKING, Literal, Self
 import torch
 
 from otx.algo.common.losses import CrossEntropyLoss, L1Loss
+from otx.algo.detection.backbones.gelan import GELAN
 from otx.algo.detection.backbones.yolo_v7_v9_backbone import YOLOv9Backbone
 from otx.algo.detection.detectors import SingleStageDetector
-from otx.algo.detection.heads.yolo_v7_v9_head import YOLOv9Head
+from otx.algo.detection.heads.yolo_head import YOLOHead
 from otx.algo.detection.losses import IoULoss, YOLOXCriterion
 from otx.algo.detection.losses.yolov9_loss import BCELoss, BoxLoss, DFLoss, YOLOv9Criterion
 from otx.algo.detection.necks.yolo_v7_v9_neck import YOLOv9Neck
@@ -72,7 +73,7 @@ def _load_from_state_dict_for_yolov9(
                 new_key = f"neck.{new_idx}.{rest_key}"
             else:  # for bbox_head
                 new_idx = orig_idx - backbone_len - neck_len
-                new_key = f"bbox_head.{new_idx}.{rest_key}"
+                new_key = f"bbox_head.module.{new_idx}.{rest_key}"
             new_state_dict_keys[key] = new_key
 
     for old_key, new_key in new_state_dict_keys.items():
@@ -129,10 +130,9 @@ class YOLOv9(ExplainableOTXDetModel):
         )
 
     def _build_model(self, num_classes: int) -> SingleStageDetector:
-        # 'backbone', 'neck', 'head', 'detection', 'auxiliary'
         backbone = YOLOv9Backbone(model_name=self.model_name)
         neck = YOLOv9Neck(model_name=self.model_name)
-        bbox_head = YOLOv9Head(model_name=self.model_name, num_classes=num_classes)
+        bbox_head = YOLOHead(model_name=self.model_name, num_classes=num_classes)
 
         # patch _load_from_state_dict
         SingleStageDetector._load_from_state_dict = _load_from_state_dict_for_yolov9  # noqa: SLF001
@@ -146,6 +146,7 @@ class YOLOv9(ExplainableOTXDetModel):
         # set criterion
         strides: list[int] | None = [8, 16, 32] if self.model_name == "yolov9-c" else None
         self.vec2box = Vec2Box(detector, self.input_size, strides)
+        detector.bbox_head.vec2box = self.vec2box
         detector.criterion = YOLOv9Criterion(
             num_classes=num_classes,
             loss_cls=BCELoss(),
@@ -155,35 +156,6 @@ class YOLOv9(ExplainableOTXDetModel):
         )
 
         return detector
-
-    def _customize_outputs(
-        self,
-        outputs: dict,
-        inputs: DetBatchDataEntity,
-    ) -> DetBatchPredEntity | OTXBatchLossEntity:
-        if self.training:
-            return super()._customize_outputs(outputs, inputs)
-
-        prediction = self.vec2box(outputs["Main"])
-        pred_class, _, pred_bbox = prediction[:3]
-        pred_conf = prediction[3] if len(prediction) == 4 else None
-
-        # rescale
-        scale_factors = [[1 / s for s in img_info.scale_factor][::-1] for img_info in inputs.imgs_info]
-        pred_bbox *= pred_bbox.new_tensor(scale_factors).unsqueeze(1).repeat(1, 1, int(pred_bbox.size(-1) / 2))
-
-        pred_bbox = bbox_nms(pred_class, pred_bbox, confidence=pred_conf)  # TODO (sungchul): into the bbox_head
-
-        # TODO (sungchul): don't use InstanceData
-        refined_outputs = [
-            InstanceData(
-                labels=box[:, 0].type(torch.int64),
-                bboxes=box[:, 1:5],
-                scores=box[:, 5],
-            )
-            for box in pred_bbox
-        ]
-        return super()._customize_outputs(refined_outputs, inputs)
 
     @property
     def _exporter(self) -> OTXModelExporter:

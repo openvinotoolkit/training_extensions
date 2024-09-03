@@ -235,15 +235,17 @@ class YOLOv9Criterion(nn.Module):
 
     def forward(
         self,
-        aux_predicts: list[Tensor],
-        main_predicts: list[Tensor],
+        main_preds: list[Tensor],
         targets: Tensor,
+        aux_preds: list[Tensor] | None = None,
     ) -> tuple[Tensor, dict[str, Tensor]]:
-        aux_predicts = self.vec2box(aux_predicts)
-        main_predicts = self.vec2box(main_predicts)
+        main_preds = self.vec2box(main_preds)
+        main_iou, main_dfl, main_cls = self._forward(main_preds, targets)
 
-        aux_iou, aux_dfl, aux_cls = self._forward(aux_predicts, targets)
-        main_iou, main_dfl, main_cls = self._forward(main_predicts, targets)
+        aux_iou, aux_dfl, aux_cls = 0., 0., 0.
+        if aux_preds:
+            aux_preds = self.vec2box(aux_preds)
+            aux_iou, aux_dfl, aux_cls = self._forward(aux_preds, targets)
 
         loss_dict = {
             "loss_cls": self.cls_rate * (aux_cls * self.aux_rate + main_cls),

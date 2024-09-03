@@ -156,9 +156,9 @@ class Vec2Box:
 
     def create_auto_anchor(self, detector: SingleStageDetector, image_size: tuple[int, int]) -> list[int]:
         dummy_input = torch.zeros(1, 3, *image_size).to(self.device)
-        dummy_output = detector(dummy_input)
+        dummy_main_preds, _ = detector(dummy_input)
         strides = []
-        for predict_head in dummy_output["Main"]:
+        for predict_head in dummy_main_preds:
             _, _, *anchor_num = predict_head[2].shape
             strides.append(image_size[1] // anchor_num[1])
         return strides
