@@ -20,7 +20,7 @@ from otx.algo.detection.backbones.yolo_v7_v9_backbone import (
     insert_io_info_into_module,
 )
 from otx.algo.detection.heads.base_head import BaseDenseHead
-from otx.algo.detection.necks.yolo_v7_v9_neck import SPPELAN, Concat, UpSample
+from otx.algo.detection.necks.yolo_neck import SPPELAN, Concat, UpSample
 from otx.algo.detection.utils.yolov7_v9_utils import bbox_nms
 from otx.algo.utils.mmengine_utils import InstanceData
 from otx.core.data.entity.detection import DetBatchDataEntity
